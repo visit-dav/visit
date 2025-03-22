@@ -506,8 +506,11 @@ LineObject_dealloc(PyObject *v)
 // }
 
 static PyObject *
-LineObject_getattr(PyObject *self, char *name)
+LineObject_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "visible") == 0)
         return LineObject_GetVisible(self, NULL);
     if(strcmp(name, "active") == 0)
@@ -535,14 +538,19 @@ LineObject_getattr(PyObject *self, char *name)
     if(strcmp(name, "Solid") == 0)
         return PyInt_FromLong(long(2));
 
-    return Py_FindMethod(LineObject_methods, self, name);
+    PyObject *meth = Py_FindMethod(LineObject_methods, self, (char*)name);
+    if (meth) return meth;
+
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 static int
-LineObject_setattr(PyObject *self, char *name, PyObject *args)
+LineObject_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     // Create a tuple to contain the arguments since all of the Set
     // functions expect a tuple.
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
     PyObject *tuple = PyTuple_New(1);
     PyTuple_SET_ITEM(tuple, 0, args);
     Py_INCREF(args);
@@ -568,6 +576,8 @@ LineObject_setattr(PyObject *self, char *name, PyObject *args)
         retval = (LineObject_SetBeginArrow(self, tuple) != NULL);
     else if(strcmp(name, "endArrow") == 0)
         retval = (LineObject_SetEndArrow(self, tuple) != NULL);
+    else
+        retval = PyObject_GenericSetAttr(self, attr_name, args);
 
     Py_DECREF(tuple);
     return retval ? 0 : -1;
@@ -668,8 +678,8 @@ static PyObject *LineObject_richcompare(PyObject *self, PyObject *other, int op)
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -683,8 +693,8 @@ VISIT_PY_TYPE_OBJ(LineObjectType,
                   LineObjectObject,
                   LineObject_dealloc,
                   LineObject_print,
-                  LineObject_getattr,
-                  LineObject_setattr,
+                  LineObject_getattro,
+                  LineObject_setattro,
                   LineObject_str,
                   LineObject_Purpose,
                   LineObject_richcompare,

@@ -23,8 +23,8 @@ void           PyCracksClipperAttributes_SetParent(PyObject *obj, PyObject *pare
 void           PyCracksClipperAttributes_SetDefaults(const CracksClipperAttributes *atts);
 std::string    PyCracksClipperAttributes_GetLogString();
 std::string    PyCracksClipperAttributes_ToString(const CracksClipperAttributes *, const char *, const bool=false);
-PyObject *     PyCracksClipperAttributes_getattr(PyObject *self, char *name);
-int            PyCracksClipperAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PyCracksClipperAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyCracksClipperAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PyCracksClipperAttributes_methods[CRACKSCLIPPERATTRIBUTES_NMETH];
 
 #endif

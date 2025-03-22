@@ -550,8 +550,11 @@ InteractorAttributes_dealloc(PyObject *v)
 
 static PyObject *InteractorAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyInteractorAttributes_getattr(PyObject *self, char *name)
+PyInteractorAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "showGuidelines") == 0)
         return InteractorAttributes_GetShowGuidelines(self, NULL);
     if(strcmp(name, "clampSquare") == 0)
@@ -579,15 +582,19 @@ PyInteractorAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(InteractorAttributes::Auto));
 
 
+    PyObject *meth = Py_FindMethod(PyInteractorAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyInteractorAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyInteractorAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyInteractorAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "showGuidelines") == 0)
         obj = InteractorAttributes_SetShowGuidelines(self, args);
@@ -601,6 +608,8 @@ PyInteractorAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = InteractorAttributes_SetAxisArraySnap(self, args);
     else if(strcmp(name, "boundingBoxMode") == 0)
         obj = InteractorAttributes_SetBoundingBoxMode(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -648,8 +657,8 @@ static char *InteractorAttributes_Purpose = "This class contains attributes asso
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -660,12 +669,12 @@ static char *InteractorAttributes_Purpose = "This class contains attributes asso
 //
 
 VISIT_PY_TYPE_OBJ(InteractorAttributesType,         \
-                  "InteractorAttributes",           \
+                  "InteractorAttributes",         \
                   InteractorAttributesObject,       \
                   InteractorAttributes_dealloc,     \
                   InteractorAttributes_print,       \
-                  PyInteractorAttributes_getattr,   \
-                  PyInteractorAttributes_setattr,   \
+                  PyInteractorAttributes_getattro,  \
+                  PyInteractorAttributes_setattro,  \
                   InteractorAttributes_str,         \
                   InteractorAttributes_Purpose,     \
                   InteractorAttributes_richcompare, \
@@ -729,6 +738,7 @@ NewInteractorAttributes(int useCurrent)
         newObject->data = new InteractorAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&InteractorAttributesType);
     return (PyObject *)newObject;
 }
 

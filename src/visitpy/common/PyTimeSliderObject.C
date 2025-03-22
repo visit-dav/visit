@@ -763,8 +763,11 @@ TimeSliderObject_dealloc(PyObject *v)
 // }
 
 static PyObject *
-TimeSliderObject_getattr(PyObject *self, char *name)
+TimeSliderObject_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "visible") == 0)
         return TimeSliderObject_GetVisible(self, NULL);
     if(strcmp(name, "active") == 0)
@@ -805,14 +808,19 @@ TimeSliderObject_getattr(PyObject *self, char *name)
     if(strcmp(name, "shaded") == 0)
         return TimeSliderObject_GetShaded(self, NULL);
 
-    return Py_FindMethod(TimeSliderObject_methods, self, name);
+    PyObject *meth = Py_FindMethod(TimeSliderObject_methods, self, (char*)name);
+    if (meth) return meth;
+
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 static int
-TimeSliderObject_setattr(PyObject *self, char *name, PyObject *args)
+TimeSliderObject_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     // Create a tuple to contain the arguments since all of the Set
     // functions expect a tuple.
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
     PyObject *tuple = PyTuple_New(1);
     PyTuple_SET_ITEM(tuple, 0, args);
     Py_INCREF(args);
@@ -848,6 +856,8 @@ TimeSliderObject_setattr(PyObject *self, char *name, PyObject *args)
         retval = (TimeSliderObject_SetRounded(self, tuple) != NULL);
     else if(strcmp(name, "shaded") == 0)
         retval = (TimeSliderObject_SetShaded(self, tuple) != NULL);
+    else
+        retval = PyObject_GenericSetAttr(self, attr_name, args);
 
     Py_DECREF(tuple);
     return retval ? 0 : -1;
@@ -982,8 +992,8 @@ static PyObject *TimeSliderObject_richcompare(PyObject *self, PyObject *other, i
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -997,8 +1007,8 @@ VISIT_PY_TYPE_OBJ( TimeSliderObjectType,              \
                    TimeSliderObjectObject,            \
                    TimeSliderObject_dealloc,          \
                    TimeSliderObject_print,            \
-                   TimeSliderObject_getattr,          \
-                   TimeSliderObject_setattr,          \
+                   TimeSliderObject_getattro,         \
+                   TimeSliderObject_setattro,         \
                    TimeSliderObject_str,              \
                    TimeSliderObject_Purpose,          \
                    TimeSliderObject_richcompare,      \

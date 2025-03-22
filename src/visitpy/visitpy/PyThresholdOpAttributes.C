@@ -810,8 +810,11 @@ ThresholdOpAttributes_dealloc(PyObject *v)
 
 static PyObject *ThresholdOpAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyThresholdOpAttributes_getattr(PyObject *self, char *name)
+PyThresholdOpAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "outputMeshType") == 0)
         return ThresholdOpAttributes_GetOutputMeshType(self, NULL);
     if(strcmp(name, "boundsInputType") == 0)
@@ -831,15 +834,19 @@ PyThresholdOpAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "boundsRange") == 0)
         return ThresholdOpAttributes_GetBoundsRange(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyThresholdOpAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyThresholdOpAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyThresholdOpAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyThresholdOpAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "outputMeshType") == 0)
         obj = ThresholdOpAttributes_SetOutputMeshType(self, args);
@@ -859,6 +866,8 @@ PyThresholdOpAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ThresholdOpAttributes_SetDefaultVarIsScalar(self, args);
     else if(strcmp(name, "boundsRange") == 0)
         obj = ThresholdOpAttributes_SetBoundsRange(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -906,8 +915,8 @@ static char *ThresholdOpAttributes_Purpose = "This class contains attributes for
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -918,12 +927,12 @@ static char *ThresholdOpAttributes_Purpose = "This class contains attributes for
 //
 
 VISIT_PY_TYPE_OBJ(ThresholdOpAttributesType,         \
-                  "ThresholdOpAttributes",           \
+                  "ThresholdOpAttributes",         \
                   ThresholdOpAttributesObject,       \
                   ThresholdOpAttributes_dealloc,     \
                   ThresholdOpAttributes_print,       \
-                  PyThresholdOpAttributes_getattr,   \
-                  PyThresholdOpAttributes_setattr,   \
+                  PyThresholdOpAttributes_getattro,  \
+                  PyThresholdOpAttributes_setattro,  \
                   ThresholdOpAttributes_str,         \
                   ThresholdOpAttributes_Purpose,     \
                   ThresholdOpAttributes_richcompare, \
@@ -987,6 +996,7 @@ NewThresholdOpAttributes(int useCurrent)
         newObject->data = new ThresholdOpAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&ThresholdOpAttributesType);
     return (PyObject *)newObject;
 }
 

@@ -268,27 +268,36 @@ ColorControlPoint_dealloc(PyObject *v)
 
 static PyObject *ColorControlPoint_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyColorControlPoint_getattr(PyObject *self, char *name)
+PyColorControlPoint_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "colors") == 0)
         return ColorControlPoint_GetColors(self, NULL);
     if(strcmp(name, "position") == 0)
         return ColorControlPoint_GetPosition(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyColorControlPoint_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyColorControlPoint_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyColorControlPoint_setattr(PyObject *self, char *name, PyObject *args)
+PyColorControlPoint_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "colors") == 0)
         obj = ColorControlPoint_SetColors(self, args);
     else if(strcmp(name, "position") == 0)
         obj = ColorControlPoint_SetPosition(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -336,8 +345,8 @@ static char *ColorControlPoint_Purpose = "This class contains an RGBA color with
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -348,12 +357,12 @@ static char *ColorControlPoint_Purpose = "This class contains an RGBA color with
 //
 
 VISIT_PY_TYPE_OBJ(ColorControlPointType,         \
-                  "ColorControlPoint",           \
+                  "ColorControlPoint",         \
                   ColorControlPointObject,       \
                   ColorControlPoint_dealloc,     \
                   ColorControlPoint_print,       \
-                  PyColorControlPoint_getattr,   \
-                  PyColorControlPoint_setattr,   \
+                  PyColorControlPoint_getattro,  \
+                  PyColorControlPoint_setattro,  \
                   ColorControlPoint_str,         \
                   ColorControlPoint_Purpose,     \
                   ColorControlPoint_richcompare, \
@@ -417,6 +426,7 @@ NewColorControlPoint(int useCurrent)
         newObject->data = new ColorControlPoint;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&ColorControlPointType);
     return (PyObject *)newObject;
 }
 

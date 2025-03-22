@@ -170,23 +170,32 @@ FFTAttributes_dealloc(PyObject *v)
 
 static PyObject *FFTAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyFFTAttributes_getattr(PyObject *self, char *name)
+PyFFTAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "dummy") == 0)
         return FFTAttributes_GetDummy(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyFFTAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyFFTAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyFFTAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyFFTAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "dummy") == 0)
         obj = FFTAttributes_SetDummy(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -234,8 +243,8 @@ static char *FFTAttributes_Purpose = "This class contains attributes for the FFT
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -246,12 +255,12 @@ static char *FFTAttributes_Purpose = "This class contains attributes for the FFT
 //
 
 VISIT_PY_TYPE_OBJ(FFTAttributesType,         \
-                  "FFTAttributes",           \
+                  "FFTAttributes",         \
                   FFTAttributesObject,       \
                   FFTAttributes_dealloc,     \
                   FFTAttributes_print,       \
-                  PyFFTAttributes_getattr,   \
-                  PyFFTAttributes_setattr,   \
+                  PyFFTAttributes_getattro,  \
+                  PyFFTAttributes_setattro,  \
                   FFTAttributes_str,         \
                   FFTAttributes_Purpose,     \
                   FFTAttributes_richcompare, \
@@ -315,6 +324,7 @@ NewFFTAttributes(int useCurrent)
         newObject->data = new FFTAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&FFTAttributesType);
     return (PyObject *)newObject;
 }
 

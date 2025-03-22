@@ -23,8 +23,8 @@ void           PySpreadsheetAttributes_SetParent(PyObject *obj, PyObject *parent
 void           PySpreadsheetAttributes_SetDefaults(const SpreadsheetAttributes *atts);
 std::string    PySpreadsheetAttributes_GetLogString();
 std::string    PySpreadsheetAttributes_ToString(const SpreadsheetAttributes *, const char *, const bool=false);
-PyObject *     PySpreadsheetAttributes_getattr(PyObject *self, char *name);
-int            PySpreadsheetAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PySpreadsheetAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PySpreadsheetAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PySpreadsheetAttributes_methods[SPREADSHEETATTRIBUTES_NMETH];
 
 #endif

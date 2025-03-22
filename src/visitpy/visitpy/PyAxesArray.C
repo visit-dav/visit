@@ -479,8 +479,11 @@ AxesArray_dealloc(PyObject *v)
 
 static PyObject *AxesArray_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyAxesArray_getattr(PyObject *self, char *name)
+PyAxesArray_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "visible") == 0)
         return AxesArray_GetVisible(self, NULL);
     if(strcmp(name, "ticksVisible") == 0)
@@ -494,15 +497,19 @@ PyAxesArray_getattr(PyObject *self, char *name)
     if(strcmp(name, "axes") == 0)
         return AxesArray_GetAxes(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyAxesArray_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyAxesArray_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyAxesArray_setattr(PyObject *self, char *name, PyObject *args)
+PyAxesArray_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "visible") == 0)
         obj = AxesArray_SetVisible(self, args);
@@ -516,6 +523,8 @@ PyAxesArray_setattr(PyObject *self, char *name, PyObject *args)
         obj = AxesArray_SetLineWidth(self, args);
     else if(strcmp(name, "axes") == 0)
         obj = AxesArray_SetAxes(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -563,8 +572,8 @@ static char *AxesArray_Purpose = "Contains the properties for the array axes.";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -575,12 +584,12 @@ static char *AxesArray_Purpose = "Contains the properties for the array axes.";
 //
 
 VISIT_PY_TYPE_OBJ(AxesArrayType,         \
-                  "AxesArray",           \
+                  "AxesArray",         \
                   AxesArrayObject,       \
                   AxesArray_dealloc,     \
                   AxesArray_print,       \
-                  PyAxesArray_getattr,   \
-                  PyAxesArray_setattr,   \
+                  PyAxesArray_getattro,  \
+                  PyAxesArray_setattro,  \
                   AxesArray_str,         \
                   AxesArray_Purpose,     \
                   AxesArray_richcompare, \
@@ -644,6 +653,7 @@ NewAxesArray(int useCurrent)
         newObject->data = new AxesArray;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&AxesArrayType);
     return (PyObject *)newObject;
 }
 

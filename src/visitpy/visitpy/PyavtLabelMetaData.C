@@ -127,31 +127,40 @@ avtLabelMetaData_dealloc(PyObject *v)
 
 static PyObject *avtLabelMetaData_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyavtLabelMetaData_getattr(PyObject *self, char *name)
+PyavtLabelMetaData_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
 
     if(strcmp(name, "__methods__") != 0)
     {
-        PyObject *retval = PyavtVarMetaData_getattr(self, name);
+        PyObject *retval = PyavtVarMetaData_getattro(self, attr_name);
         if (retval) return retval;
     }
 
     PyavtLabelMetaData_ExtendSetGetMethodTable();
+    PyObject *meth = Py_FindMethod(PyavtLabelMetaData_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyavtLabelMetaData_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyavtLabelMetaData_setattr(PyObject *self, char *name, PyObject *args)
+PyavtLabelMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
-    if (PyavtVarMetaData_setattr(self, name, args) != -1)
+    if (PyavtVarMetaData_setattro(self, attr_name, args) != -1)
         return 0;
     else
         PyErr_Clear();
 
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -199,8 +208,8 @@ static char *avtLabelMetaData_Purpose = "Contains label metadata attributes";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -211,12 +220,12 @@ static char *avtLabelMetaData_Purpose = "Contains label metadata attributes";
 //
 
 VISIT_PY_TYPE_OBJ(avtLabelMetaDataType,         \
-                  "avtLabelMetaData",           \
+                  "avtLabelMetaData",         \
                   avtLabelMetaDataObject,       \
                   avtLabelMetaData_dealloc,     \
                   avtLabelMetaData_print,       \
-                  PyavtLabelMetaData_getattr,   \
-                  PyavtLabelMetaData_setattr,   \
+                  PyavtLabelMetaData_getattro,  \
+                  PyavtLabelMetaData_setattro,  \
                   avtLabelMetaData_str,         \
                   avtLabelMetaData_Purpose,     \
                   avtLabelMetaData_richcompare, \
@@ -280,6 +289,7 @@ NewavtLabelMetaData(int useCurrent)
         newObject->data = new avtLabelMetaData;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&avtLabelMetaDataType);
     return (PyObject *)newObject;
 }
 

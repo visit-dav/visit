@@ -981,8 +981,11 @@ avtSubsetsMetaData_dealloc(PyObject *v)
 
 static PyObject *avtSubsetsMetaData_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyavtSubsetsMetaData_getattr(PyObject *self, char *name)
+PyavtSubsetsMetaData_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "catName") == 0)
         return avtSubsetsMetaData_GetCatName(self, NULL);
     if(strcmp(name, "catCount") == 0)
@@ -1019,25 +1022,29 @@ PyavtSubsetsMetaData_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "__methods__") != 0)
     {
-        PyObject *retval = PyavtVarMetaData_getattr(self, name);
+        PyObject *retval = PyavtVarMetaData_getattro(self, attr_name);
         if (retval) return retval;
     }
 
     PyavtSubsetsMetaData_ExtendSetGetMethodTable();
+    PyObject *meth = Py_FindMethod(PyavtSubsetsMetaData_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyavtSubsetsMetaData_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyavtSubsetsMetaData_setattr(PyObject *self, char *name, PyObject *args)
+PyavtSubsetsMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
-    if (PyavtVarMetaData_setattr(self, name, args) != -1)
+    if (PyavtVarMetaData_setattro(self, attr_name, args) != -1)
         return 0;
     else
         PyErr_Clear();
 
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "catName") == 0)
         obj = avtSubsetsMetaData_SetCatName(self, args);
@@ -1063,6 +1070,8 @@ PyavtSubsetsMetaData_setattr(PyObject *self, char *name, PyObject *args)
         obj = avtSubsetsMetaData_SetDecompMode(self, args);
     else if(strcmp(name, "maxTopoDim") == 0)
         obj = avtSubsetsMetaData_SetMaxTopoDim(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -1110,8 +1119,8 @@ static char *avtSubsetsMetaData_Purpose = "Information about a particular catego
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1122,12 +1131,12 @@ static char *avtSubsetsMetaData_Purpose = "Information about a particular catego
 //
 
 VISIT_PY_TYPE_OBJ(avtSubsetsMetaDataType,         \
-                  "avtSubsetsMetaData",           \
+                  "avtSubsetsMetaData",         \
                   avtSubsetsMetaDataObject,       \
                   avtSubsetsMetaData_dealloc,     \
                   avtSubsetsMetaData_print,       \
-                  PyavtSubsetsMetaData_getattr,   \
-                  PyavtSubsetsMetaData_setattr,   \
+                  PyavtSubsetsMetaData_getattro,  \
+                  PyavtSubsetsMetaData_setattro,  \
                   avtSubsetsMetaData_str,         \
                   avtSubsetsMetaData_Purpose,     \
                   avtSubsetsMetaData_richcompare, \
@@ -1191,6 +1200,7 @@ NewavtSubsetsMetaData(int useCurrent)
         newObject->data = new avtSubsetsMetaData;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&avtSubsetsMetaDataType);
     return (PyObject *)newObject;
 }
 

@@ -23,8 +23,8 @@ void           PyExtractPointFunction2DAttributes_SetParent(PyObject *obj, PyObj
 void           PyExtractPointFunction2DAttributes_SetDefaults(const ExtractPointFunction2DAttributes *atts);
 std::string    PyExtractPointFunction2DAttributes_GetLogString();
 std::string    PyExtractPointFunction2DAttributes_ToString(const ExtractPointFunction2DAttributes *, const char *, const bool=false);
-PyObject *     PyExtractPointFunction2DAttributes_getattr(PyObject *self, char *name);
-int            PyExtractPointFunction2DAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PyExtractPointFunction2DAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyExtractPointFunction2DAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PyExtractPointFunction2DAttributes_methods[EXTRACTPOINTFUNCTION2DATTRIBUTES_NMETH];
 
 #endif

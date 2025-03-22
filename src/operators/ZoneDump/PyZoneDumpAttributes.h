@@ -23,8 +23,8 @@ void           PyZoneDumpAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyZoneDumpAttributes_SetDefaults(const ZoneDumpAttributes *atts);
 std::string    PyZoneDumpAttributes_GetLogString();
 std::string    PyZoneDumpAttributes_ToString(const ZoneDumpAttributes *, const char *, const bool=false);
-PyObject *     PyZoneDumpAttributes_getattr(PyObject *self, char *name);
-int            PyZoneDumpAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PyZoneDumpAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyZoneDumpAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PyZoneDumpAttributes_methods[ZONEDUMPATTRIBUTES_NMETH];
 
 #endif

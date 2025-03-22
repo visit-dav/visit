@@ -24,8 +24,8 @@ void VISITPY_API           PyavtBaseVarMetaData_SetParent(PyObject *obj, PyObjec
 void VISITPY_API           PyavtBaseVarMetaData_SetDefaults(const avtBaseVarMetaData *atts);
 std::string VISITPY_API    PyavtBaseVarMetaData_GetLogString();
 std::string VISITPY_API    PyavtBaseVarMetaData_ToString(const avtBaseVarMetaData *, const char *, const bool=false);
-VISITPY_API PyObject *     PyavtBaseVarMetaData_getattr(PyObject *self, char *name);
-int VISITPY_API            PyavtBaseVarMetaData_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyavtBaseVarMetaData_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyavtBaseVarMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyavtBaseVarMetaData_methods[AVTBASEVARMETADATA_NMETH];
 
 #endif

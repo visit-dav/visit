@@ -23,8 +23,8 @@ void           PyFilledBoundaryAttributes_SetParent(PyObject *obj, PyObject *par
 void           PyFilledBoundaryAttributes_SetDefaults(const FilledBoundaryAttributes *atts);
 std::string    PyFilledBoundaryAttributes_GetLogString();
 std::string    PyFilledBoundaryAttributes_ToString(const FilledBoundaryAttributes *, const char *, const bool=false);
-PyObject *     PyFilledBoundaryAttributes_getattr(PyObject *self, char *name);
-int            PyFilledBoundaryAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PyFilledBoundaryAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyFilledBoundaryAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PyFilledBoundaryAttributes_methods[FILLEDBOUNDARYATTRIBUTES_NMETH];
 
 #endif

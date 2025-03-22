@@ -298,8 +298,11 @@ StaggerAttributes_dealloc(PyObject *v)
 
 static PyObject *StaggerAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyStaggerAttributes_getattr(PyObject *self, char *name)
+PyStaggerAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "offsetX") == 0)
         return StaggerAttributes_GetOffsetX(self, NULL);
     if(strcmp(name, "offsetY") == 0)
@@ -307,15 +310,19 @@ PyStaggerAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "offsetZ") == 0)
         return StaggerAttributes_GetOffsetZ(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyStaggerAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyStaggerAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyStaggerAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyStaggerAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "offsetX") == 0)
         obj = StaggerAttributes_SetOffsetX(self, args);
@@ -323,6 +330,8 @@ PyStaggerAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = StaggerAttributes_SetOffsetY(self, args);
     else if(strcmp(name, "offsetZ") == 0)
         obj = StaggerAttributes_SetOffsetZ(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -370,8 +379,8 @@ static char *StaggerAttributes_Purpose = "This class contains attributes for the
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -382,12 +391,12 @@ static char *StaggerAttributes_Purpose = "This class contains attributes for the
 //
 
 VISIT_PY_TYPE_OBJ(StaggerAttributesType,         \
-                  "StaggerAttributes",           \
+                  "StaggerAttributes",         \
                   StaggerAttributesObject,       \
                   StaggerAttributes_dealloc,     \
                   StaggerAttributes_print,       \
-                  PyStaggerAttributes_getattr,   \
-                  PyStaggerAttributes_setattr,   \
+                  PyStaggerAttributes_getattro,  \
+                  PyStaggerAttributes_setattro,  \
                   StaggerAttributes_str,         \
                   StaggerAttributes_Purpose,     \
                   StaggerAttributes_richcompare, \
@@ -451,6 +460,7 @@ NewStaggerAttributes(int useCurrent)
         newObject->data = new StaggerAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&StaggerAttributesType);
     return (PyObject *)newObject;
 }
 

@@ -299,8 +299,11 @@ CartographicProjectionAttributes_dealloc(PyObject *v)
 
 static PyObject *CartographicProjectionAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyCartographicProjectionAttributes_getattr(PyObject *self, char *name)
+PyCartographicProjectionAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "projectionID") == 0)
         return CartographicProjectionAttributes_GetProjectionID(self, NULL);
     if(strcmp(name, "aitoff") == 0)
@@ -329,20 +332,26 @@ PyCartographicProjectionAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "centralMeridian") == 0)
         return CartographicProjectionAttributes_GetCentralMeridian(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyCartographicProjectionAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyCartographicProjectionAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyCartographicProjectionAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyCartographicProjectionAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "projectionID") == 0)
         obj = CartographicProjectionAttributes_SetProjectionID(self, args);
     else if(strcmp(name, "centralMeridian") == 0)
         obj = CartographicProjectionAttributes_SetCentralMeridian(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -390,8 +399,8 @@ static char *CartographicProjectionAttributes_Purpose = "";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -402,12 +411,12 @@ static char *CartographicProjectionAttributes_Purpose = "";
 //
 
 VISIT_PY_TYPE_OBJ(CartographicProjectionAttributesType,         \
-                  "CartographicProjectionAttributes",           \
+                  "CartographicProjectionAttributes",         \
                   CartographicProjectionAttributesObject,       \
                   CartographicProjectionAttributes_dealloc,     \
                   CartographicProjectionAttributes_print,       \
-                  PyCartographicProjectionAttributes_getattr,   \
-                  PyCartographicProjectionAttributes_setattr,   \
+                  PyCartographicProjectionAttributes_getattro,  \
+                  PyCartographicProjectionAttributes_setattro,  \
                   CartographicProjectionAttributes_str,         \
                   CartographicProjectionAttributes_Purpose,     \
                   CartographicProjectionAttributes_richcompare, \
@@ -471,6 +480,7 @@ NewCartographicProjectionAttributes(int useCurrent)
         newObject->data = new CartographicProjectionAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&CartographicProjectionAttributesType);
     return (PyObject *)newObject;
 }
 

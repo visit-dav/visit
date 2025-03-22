@@ -24,8 +24,8 @@ void VISITPY_API           PyLaunchProfile_SetParent(PyObject *obj, PyObject *pa
 void VISITPY_API           PyLaunchProfile_SetDefaults(const LaunchProfile *atts);
 std::string VISITPY_API    PyLaunchProfile_GetLogString();
 std::string VISITPY_API    PyLaunchProfile_ToString(const LaunchProfile *, const char *, const bool=false);
-VISITPY_API PyObject *     PyLaunchProfile_getattr(PyObject *self, char *name);
-int VISITPY_API            PyLaunchProfile_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyLaunchProfile_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyLaunchProfile_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyLaunchProfile_methods[LAUNCHPROFILE_NMETH];
 
 #endif

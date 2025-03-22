@@ -366,8 +366,11 @@ avtMaterialMetaData_dealloc(PyObject *v)
 
 static PyObject *avtMaterialMetaData_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyavtMaterialMetaData_getattr(PyObject *self, char *name)
+PyavtMaterialMetaData_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "numMaterials") == 0)
         return avtMaterialMetaData_GetNumMaterials(self, NULL);
     if(strcmp(name, "materialNames") == 0)
@@ -377,25 +380,29 @@ PyavtMaterialMetaData_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "__methods__") != 0)
     {
-        PyObject *retval = PyavtBaseVarMetaData_getattr(self, name);
+        PyObject *retval = PyavtBaseVarMetaData_getattro(self, attr_name);
         if (retval) return retval;
     }
 
     PyavtMaterialMetaData_ExtendSetGetMethodTable();
+    PyObject *meth = Py_FindMethod(PyavtMaterialMetaData_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyavtMaterialMetaData_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyavtMaterialMetaData_setattr(PyObject *self, char *name, PyObject *args)
+PyavtMaterialMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
-    if (PyavtBaseVarMetaData_setattr(self, name, args) != -1)
+    if (PyavtBaseVarMetaData_setattro(self, attr_name, args) != -1)
         return 0;
     else
         PyErr_Clear();
 
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "numMaterials") == 0)
         obj = avtMaterialMetaData_SetNumMaterials(self, args);
@@ -403,6 +410,8 @@ PyavtMaterialMetaData_setattr(PyObject *self, char *name, PyObject *args)
         obj = avtMaterialMetaData_SetMaterialNames(self, args);
     else if(strcmp(name, "colorNames") == 0)
         obj = avtMaterialMetaData_SetColorNames(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -450,8 +459,8 @@ static char *avtMaterialMetaData_Purpose = "Contains material metadata attribute
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -462,12 +471,12 @@ static char *avtMaterialMetaData_Purpose = "Contains material metadata attribute
 //
 
 VISIT_PY_TYPE_OBJ(avtMaterialMetaDataType,         \
-                  "avtMaterialMetaData",           \
+                  "avtMaterialMetaData",         \
                   avtMaterialMetaDataObject,       \
                   avtMaterialMetaData_dealloc,     \
                   avtMaterialMetaData_print,       \
-                  PyavtMaterialMetaData_getattr,   \
-                  PyavtMaterialMetaData_setattr,   \
+                  PyavtMaterialMetaData_getattro,  \
+                  PyavtMaterialMetaData_setattro,  \
                   avtMaterialMetaData_str,         \
                   avtMaterialMetaData_Purpose,     \
                   avtMaterialMetaData_richcompare, \
@@ -531,6 +540,7 @@ NewavtMaterialMetaData(int useCurrent)
         newObject->data = new avtMaterialMetaData;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&avtMaterialMetaDataType);
     return (PyObject *)newObject;
 }
 

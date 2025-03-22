@@ -702,8 +702,11 @@ NameschemeAttributes_dealloc(PyObject *v)
 
 static PyObject *NameschemeAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyNameschemeAttributes_getattr(PyObject *self, char *name)
+PyNameschemeAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "namescheme") == 0)
         return NameschemeAttributes_GetNamescheme(self, NULL);
     if(strcmp(name, "externalArrayNames") == 0)
@@ -719,15 +722,19 @@ PyNameschemeAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "explicitNames") == 0)
         return NameschemeAttributes_GetExplicitNames(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyNameschemeAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyNameschemeAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyNameschemeAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyNameschemeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "namescheme") == 0)
         obj = NameschemeAttributes_SetNamescheme(self, args);
@@ -743,6 +750,8 @@ PyNameschemeAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = NameschemeAttributes_SetExplicitIds(self, args);
     else if(strcmp(name, "explicitNames") == 0)
         obj = NameschemeAttributes_SetExplicitNames(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -790,8 +799,8 @@ static char *NameschemeAttributes_Purpose = "Information and methods to manage n
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -802,12 +811,12 @@ static char *NameschemeAttributes_Purpose = "Information and methods to manage n
 //
 
 VISIT_PY_TYPE_OBJ(NameschemeAttributesType,         \
-                  "NameschemeAttributes",           \
+                  "NameschemeAttributes",         \
                   NameschemeAttributesObject,       \
                   NameschemeAttributes_dealloc,     \
                   NameschemeAttributes_print,       \
-                  PyNameschemeAttributes_getattr,   \
-                  PyNameschemeAttributes_setattr,   \
+                  PyNameschemeAttributes_getattro,  \
+                  PyNameschemeAttributes_setattro,  \
                   NameschemeAttributes_str,         \
                   NameschemeAttributes_Purpose,     \
                   NameschemeAttributes_richcompare, \
@@ -871,6 +880,7 @@ NewNameschemeAttributes(int useCurrent)
         newObject->data = new NameschemeAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&NameschemeAttributesType);
     return (PyObject *)newObject;
 }
 

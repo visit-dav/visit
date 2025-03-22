@@ -495,8 +495,11 @@ SaveSubWindowAttributes_dealloc(PyObject *v)
 
 static PyObject *SaveSubWindowAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PySaveSubWindowAttributes_getattr(PyObject *self, char *name)
+PySaveSubWindowAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "position") == 0)
         return SaveSubWindowAttributes_GetPosition(self, NULL);
     if(strcmp(name, "size") == 0)
@@ -508,15 +511,19 @@ PySaveSubWindowAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "omitWindow") == 0)
         return SaveSubWindowAttributes_GetOmitWindow(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PySaveSubWindowAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PySaveSubWindowAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PySaveSubWindowAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PySaveSubWindowAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "position") == 0)
         obj = SaveSubWindowAttributes_SetPosition(self, args);
@@ -528,6 +535,8 @@ PySaveSubWindowAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = SaveSubWindowAttributes_SetTransparency(self, args);
     else if(strcmp(name, "omitWindow") == 0)
         obj = SaveSubWindowAttributes_SetOmitWindow(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -575,8 +584,8 @@ static char *SaveSubWindowAttributes_Purpose = "The attributes for saving a sub 
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -587,12 +596,12 @@ static char *SaveSubWindowAttributes_Purpose = "The attributes for saving a sub 
 //
 
 VISIT_PY_TYPE_OBJ(SaveSubWindowAttributesType,         \
-                  "SaveSubWindowAttributes",           \
+                  "SaveSubWindowAttributes",         \
                   SaveSubWindowAttributesObject,       \
                   SaveSubWindowAttributes_dealloc,     \
                   SaveSubWindowAttributes_print,       \
-                  PySaveSubWindowAttributes_getattr,   \
-                  PySaveSubWindowAttributes_setattr,   \
+                  PySaveSubWindowAttributes_getattro,  \
+                  PySaveSubWindowAttributes_setattro,  \
                   SaveSubWindowAttributes_str,         \
                   SaveSubWindowAttributes_Purpose,     \
                   SaveSubWindowAttributes_richcompare, \
@@ -656,6 +665,7 @@ NewSaveSubWindowAttributes(int useCurrent)
         newObject->data = new SaveSubWindowAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&SaveSubWindowAttributesType);
     return (PyObject *)newObject;
 }
 

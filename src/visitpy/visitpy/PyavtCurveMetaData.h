@@ -25,8 +25,8 @@ void VISITPY_API           PyavtCurveMetaData_SetParent(PyObject *obj, PyObject 
 void VISITPY_API           PyavtCurveMetaData_SetDefaults(const avtCurveMetaData *atts);
 std::string VISITPY_API    PyavtCurveMetaData_GetLogString();
 std::string VISITPY_API    PyavtCurveMetaData_ToString(const avtCurveMetaData *, const char *, const bool=false);
-VISITPY_API PyObject *     PyavtCurveMetaData_getattr(PyObject *self, char *name);
-int VISITPY_API            PyavtCurveMetaData_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyavtCurveMetaData_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyavtCurveMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyavtCurveMetaData_methods[AVTCURVEMETADATA_NMETH];
 
 #endif

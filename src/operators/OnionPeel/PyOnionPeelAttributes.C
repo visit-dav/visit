@@ -737,8 +737,11 @@ OnionPeelAttributes_dealloc(PyObject *v)
 
 static PyObject *OnionPeelAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyOnionPeelAttributes_getattr(PyObject *self, char *name)
+PyOnionPeelAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "adjacencyType") == 0)
         return OnionPeelAttributes_GetAdjacencyType(self, NULL);
     if(strcmp(name, "Node") == 0)
@@ -768,15 +771,19 @@ PyOnionPeelAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "honorOriginalMesh") == 0)
         return OnionPeelAttributes_GetHonorOriginalMesh(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyOnionPeelAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyOnionPeelAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyOnionPeelAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyOnionPeelAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "adjacencyType") == 0)
         obj = OnionPeelAttributes_SetAdjacencyType(self, args);
@@ -796,6 +803,8 @@ PyOnionPeelAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = OnionPeelAttributes_SetSeedType(self, args);
     else if(strcmp(name, "honorOriginalMesh") == 0)
         obj = OnionPeelAttributes_SetHonorOriginalMesh(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -843,8 +852,8 @@ static char *OnionPeelAttributes_Purpose = "Attributes for the onion peel operat
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -855,12 +864,12 @@ static char *OnionPeelAttributes_Purpose = "Attributes for the onion peel operat
 //
 
 VISIT_PY_TYPE_OBJ(OnionPeelAttributesType,         \
-                  "OnionPeelAttributes",           \
+                  "OnionPeelAttributes",         \
                   OnionPeelAttributesObject,       \
                   OnionPeelAttributes_dealloc,     \
                   OnionPeelAttributes_print,       \
-                  PyOnionPeelAttributes_getattr,   \
-                  PyOnionPeelAttributes_setattr,   \
+                  PyOnionPeelAttributes_getattro,  \
+                  PyOnionPeelAttributes_setattro,  \
                   OnionPeelAttributes_str,         \
                   OnionPeelAttributes_Purpose,     \
                   OnionPeelAttributes_richcompare, \
@@ -924,6 +933,7 @@ NewOnionPeelAttributes(int useCurrent)
         newObject->data = new OnionPeelAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&OnionPeelAttributesType);
     return (PyObject *)newObject;
 }
 

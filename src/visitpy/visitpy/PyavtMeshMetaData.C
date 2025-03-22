@@ -3674,8 +3674,11 @@ avtMeshMetaData_dealloc(PyObject *v)
 
 static PyObject *avtMeshMetaData_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyavtMeshMetaData_getattr(PyObject *self, char *name)
+PyavtMeshMetaData_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "name") == 0)
         return avtMeshMetaData_GetName(self, NULL);
     if(strcmp(name, "originalName") == 0)
@@ -3831,15 +3834,19 @@ PyavtMeshMetaData_getattr(PyObject *self, char *name)
     if(strcmp(name, "hasExtraGhostInfo") == 0)
         return avtMeshMetaData_GetHasExtraGhostInfo(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyavtMeshMetaData_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyavtMeshMetaData_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyavtMeshMetaData_setattr(PyObject *self, char *name, PyObject *args)
+PyavtMeshMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "name") == 0)
         obj = avtMeshMetaData_SetName(self, args);
@@ -3947,6 +3954,8 @@ PyavtMeshMetaData_setattr(PyObject *self, char *name, PyObject *args)
         obj = avtMeshMetaData_SetZonesWereSplit(self, args);
     else if(strcmp(name, "hasExtraGhostInfo") == 0)
         obj = avtMeshMetaData_SetHasExtraGhostInfo(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -3994,8 +4003,8 @@ static char *avtMeshMetaData_Purpose = "Contains mesh metadata attributes";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -4006,12 +4015,12 @@ static char *avtMeshMetaData_Purpose = "Contains mesh metadata attributes";
 //
 
 VISIT_PY_TYPE_OBJ(avtMeshMetaDataType,         \
-                  "avtMeshMetaData",           \
+                  "avtMeshMetaData",         \
                   avtMeshMetaDataObject,       \
                   avtMeshMetaData_dealloc,     \
                   avtMeshMetaData_print,       \
-                  PyavtMeshMetaData_getattr,   \
-                  PyavtMeshMetaData_setattr,   \
+                  PyavtMeshMetaData_getattro,  \
+                  PyavtMeshMetaData_setattro,  \
                   avtMeshMetaData_str,         \
                   avtMeshMetaData_Purpose,     \
                   avtMeshMetaData_richcompare, \
@@ -4075,6 +4084,7 @@ NewavtMeshMetaData(int useCurrent)
         newObject->data = new avtMeshMetaData;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&avtMeshMetaDataType);
     return (PyObject *)newObject;
 }
 

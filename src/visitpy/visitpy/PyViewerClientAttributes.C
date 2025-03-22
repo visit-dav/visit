@@ -758,8 +758,11 @@ ViewerClientAttributes_dealloc(PyObject *v)
 
 static PyObject *ViewerClientAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyViewerClientAttributes_getattr(PyObject *self, char *name)
+PyViewerClientAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "renderingType") == 0)
         return ViewerClientAttributes_GetRenderingType(self, NULL);
     if(strcmp(name, "None") == 0)
@@ -788,15 +791,19 @@ PyViewerClientAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "renderingTypes") == 0)
         return ViewerClientAttributes_GetRenderingTypes(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyViewerClientAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyViewerClientAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyViewerClientAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyViewerClientAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "renderingType") == 0)
         obj = ViewerClientAttributes_SetRenderingType(self, args);
@@ -816,6 +823,8 @@ PyViewerClientAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ViewerClientAttributes_SetExternalClient(self, args);
     else if(strcmp(name, "renderingTypes") == 0)
         obj = ViewerClientAttributes_SetRenderingTypes(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -863,8 +872,8 @@ static char *ViewerClientAttributes_Purpose = "This class contains attributes us
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -875,12 +884,12 @@ static char *ViewerClientAttributes_Purpose = "This class contains attributes us
 //
 
 VISIT_PY_TYPE_OBJ(ViewerClientAttributesType,         \
-                  "ViewerClientAttributes",           \
+                  "ViewerClientAttributes",         \
                   ViewerClientAttributesObject,       \
                   ViewerClientAttributes_dealloc,     \
                   ViewerClientAttributes_print,       \
-                  PyViewerClientAttributes_getattr,   \
-                  PyViewerClientAttributes_setattr,   \
+                  PyViewerClientAttributes_getattro,  \
+                  PyViewerClientAttributes_setattro,  \
                   ViewerClientAttributes_str,         \
                   ViewerClientAttributes_Purpose,     \
                   ViewerClientAttributes_richcompare, \
@@ -944,6 +953,7 @@ NewViewerClientAttributes(int useCurrent)
         newObject->data = new ViewerClientAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&ViewerClientAttributesType);
     return (PyObject *)newObject;
 }
 

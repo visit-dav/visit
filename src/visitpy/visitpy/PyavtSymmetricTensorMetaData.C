@@ -192,35 +192,44 @@ avtSymmetricTensorMetaData_dealloc(PyObject *v)
 
 static PyObject *avtSymmetricTensorMetaData_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyavtSymmetricTensorMetaData_getattr(PyObject *self, char *name)
+PyavtSymmetricTensorMetaData_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "dim") == 0)
         return avtSymmetricTensorMetaData_GetDim(self, NULL);
 
     if(strcmp(name, "__methods__") != 0)
     {
-        PyObject *retval = PyavtVarMetaData_getattr(self, name);
+        PyObject *retval = PyavtVarMetaData_getattro(self, attr_name);
         if (retval) return retval;
     }
 
     PyavtSymmetricTensorMetaData_ExtendSetGetMethodTable();
+    PyObject *meth = Py_FindMethod(PyavtSymmetricTensorMetaData_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyavtSymmetricTensorMetaData_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyavtSymmetricTensorMetaData_setattr(PyObject *self, char *name, PyObject *args)
+PyavtSymmetricTensorMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
-    if (PyavtVarMetaData_setattr(self, name, args) != -1)
+    if (PyavtVarMetaData_setattro(self, attr_name, args) != -1)
         return 0;
     else
         PyErr_Clear();
 
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "dim") == 0)
         obj = avtSymmetricTensorMetaData_SetDim(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -268,8 +277,8 @@ static char *avtSymmetricTensorMetaData_Purpose = "Contains symmetricTensor meta
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -280,12 +289,12 @@ static char *avtSymmetricTensorMetaData_Purpose = "Contains symmetricTensor meta
 //
 
 VISIT_PY_TYPE_OBJ(avtSymmetricTensorMetaDataType,         \
-                  "avtSymmetricTensorMetaData",           \
+                  "avtSymmetricTensorMetaData",         \
                   avtSymmetricTensorMetaDataObject,       \
                   avtSymmetricTensorMetaData_dealloc,     \
                   avtSymmetricTensorMetaData_print,       \
-                  PyavtSymmetricTensorMetaData_getattr,   \
-                  PyavtSymmetricTensorMetaData_setattr,   \
+                  PyavtSymmetricTensorMetaData_getattro,  \
+                  PyavtSymmetricTensorMetaData_setattro,  \
                   avtSymmetricTensorMetaData_str,         \
                   avtSymmetricTensorMetaData_Purpose,     \
                   avtSymmetricTensorMetaData_richcompare, \
@@ -349,6 +358,7 @@ NewavtSymmetricTensorMetaData(int useCurrent)
         newObject->data = new avtSymmetricTensorMetaData;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&avtSymmetricTensorMetaDataType);
     return (PyObject *)newObject;
 }
 

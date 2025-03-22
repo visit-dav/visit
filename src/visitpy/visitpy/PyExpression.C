@@ -764,8 +764,11 @@ Expression_dealloc(PyObject *v)
 
 static PyObject *Expression_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyExpression_getattr(PyObject *self, char *name)
+PyExpression_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "name") == 0)
         return Expression_GetName(self, NULL);
     if(strcmp(name, "definition") == 0)
@@ -808,15 +811,19 @@ PyExpression_getattr(PyObject *self, char *name)
     if(strcmp(name, "autoExpression") == 0)
         return Expression_GetAutoExpression(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyExpression_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyExpression_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyExpression_setattr(PyObject *self, char *name, PyObject *args)
+PyExpression_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "name") == 0)
         obj = Expression_SetName(self, args);
@@ -838,6 +845,8 @@ PyExpression_setattr(PyObject *self, char *name, PyObject *args)
         obj = Expression_SetDbName(self, args);
     else if(strcmp(name, "autoExpression") == 0)
         obj = Expression_SetAutoExpression(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -885,8 +894,8 @@ static char *Expression_Purpose = "This class contains an expression.";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -897,12 +906,12 @@ static char *Expression_Purpose = "This class contains an expression.";
 //
 
 VISIT_PY_TYPE_OBJ(ExpressionType,         \
-                  "Expression",           \
+                  "Expression",         \
                   ExpressionObject,       \
                   Expression_dealloc,     \
                   Expression_print,       \
-                  PyExpression_getattr,   \
-                  PyExpression_setattr,   \
+                  PyExpression_getattro,  \
+                  PyExpression_setattro,  \
                   Expression_str,         \
                   Expression_Purpose,     \
                   Expression_richcompare, \
@@ -966,6 +975,7 @@ NewExpression(int useCurrent)
         newObject->data = new Expression;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&ExpressionType);
     return (PyObject *)newObject;
 }
 

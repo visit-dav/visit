@@ -279,8 +279,11 @@ avtArrayMetaData_dealloc(PyObject *v)
 
 static PyObject *avtArrayMetaData_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyavtArrayMetaData_getattr(PyObject *self, char *name)
+PyavtArrayMetaData_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "nVars") == 0)
         return avtArrayMetaData_GetNVars(self, NULL);
     if(strcmp(name, "compNames") == 0)
@@ -288,30 +291,36 @@ PyavtArrayMetaData_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "__methods__") != 0)
     {
-        PyObject *retval = PyavtVarMetaData_getattr(self, name);
+        PyObject *retval = PyavtVarMetaData_getattro(self, attr_name);
         if (retval) return retval;
     }
 
     PyavtArrayMetaData_ExtendSetGetMethodTable();
+    PyObject *meth = Py_FindMethod(PyavtArrayMetaData_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyavtArrayMetaData_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyavtArrayMetaData_setattr(PyObject *self, char *name, PyObject *args)
+PyavtArrayMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
-    if (PyavtVarMetaData_setattr(self, name, args) != -1)
+    if (PyavtVarMetaData_setattro(self, attr_name, args) != -1)
         return 0;
     else
         PyErr_Clear();
 
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "nVars") == 0)
         obj = avtArrayMetaData_SetNVars(self, args);
     else if(strcmp(name, "compNames") == 0)
         obj = avtArrayMetaData_SetCompNames(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -359,8 +368,8 @@ static char *avtArrayMetaData_Purpose = "Contains array metadata attributes";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -371,12 +380,12 @@ static char *avtArrayMetaData_Purpose = "Contains array metadata attributes";
 //
 
 VISIT_PY_TYPE_OBJ(avtArrayMetaDataType,         \
-                  "avtArrayMetaData",           \
+                  "avtArrayMetaData",         \
                   avtArrayMetaDataObject,       \
                   avtArrayMetaData_dealloc,     \
                   avtArrayMetaData_print,       \
-                  PyavtArrayMetaData_getattr,   \
-                  PyavtArrayMetaData_setattr,   \
+                  PyavtArrayMetaData_getattro,  \
+                  PyavtArrayMetaData_setattro,  \
                   avtArrayMetaData_str,         \
                   avtArrayMetaData_Purpose,     \
                   avtArrayMetaData_richcompare, \
@@ -440,6 +449,7 @@ NewavtArrayMetaData(int useCurrent)
         newObject->data = new avtArrayMetaData;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&avtArrayMetaDataType);
     return (PyObject *)newObject;
 }
 

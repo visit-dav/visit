@@ -1206,8 +1206,11 @@ ViewAttributes_dealloc(PyObject *v)
 
 static PyObject *ViewAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyViewAttributes_getattr(PyObject *self, char *name)
+PyViewAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "viewNormal") == 0)
         return ViewAttributes_GetViewNormal(self, NULL);
     if(strcmp(name, "focus") == 0)
@@ -1237,15 +1240,19 @@ PyViewAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "eyeAngle") == 0)
         return ViewAttributes_GetEyeAngle(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyViewAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyViewAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyViewAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyViewAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "viewNormal") == 0)
         obj = ViewAttributes_SetViewNormal(self, args);
@@ -1275,6 +1282,8 @@ PyViewAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ViewAttributes_SetViewportCoords(self, args);
     else if(strcmp(name, "eyeAngle") == 0)
         obj = ViewAttributes_SetEyeAngle(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -1322,8 +1331,8 @@ static char *ViewAttributes_Purpose = "This class contains the view attributes."
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1334,12 +1343,12 @@ static char *ViewAttributes_Purpose = "This class contains the view attributes."
 //
 
 VISIT_PY_TYPE_OBJ(ViewAttributesType,         \
-                  "ViewAttributes",           \
+                  "ViewAttributes",         \
                   ViewAttributesObject,       \
                   ViewAttributes_dealloc,     \
                   ViewAttributes_print,       \
-                  PyViewAttributes_getattr,   \
-                  PyViewAttributes_setattr,   \
+                  PyViewAttributes_getattro,  \
+                  PyViewAttributes_setattro,  \
                   ViewAttributes_str,         \
                   ViewAttributes_Purpose,     \
                   ViewAttributes_richcompare, \
@@ -1403,6 +1412,7 @@ NewViewAttributes(int useCurrent)
         newObject->data = new ViewAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&ViewAttributesType);
     return (PyObject *)newObject;
 }
 

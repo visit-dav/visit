@@ -1475,8 +1475,11 @@ HistogramAttributes_dealloc(PyObject *v)
 
 static PyObject *HistogramAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyHistogramAttributes_getattr(PyObject *self, char *name)
+PyHistogramAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "basedOn") == 0)
         return HistogramAttributes_GetBasedOn(self, NULL);
     if(strcmp(name, "ManyVarsForSingleZone") == 0)
@@ -1552,15 +1555,19 @@ PyHistogramAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "computeAsCDF") == 0)
         return HistogramAttributes_GetComputeAsCDF(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyHistogramAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyHistogramAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyHistogramAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyHistogramAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "basedOn") == 0)
         obj = HistogramAttributes_SetBasedOn(self, args);
@@ -1600,6 +1607,8 @@ PyHistogramAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = HistogramAttributes_SetNormalizeHistogram(self, args);
     else if(strcmp(name, "computeAsCDF") == 0)
         obj = HistogramAttributes_SetComputeAsCDF(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -1647,8 +1656,8 @@ static char *HistogramAttributes_Purpose = "Attributes for Histogram Plot";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1659,12 +1668,12 @@ static char *HistogramAttributes_Purpose = "Attributes for Histogram Plot";
 //
 
 VISIT_PY_TYPE_OBJ(HistogramAttributesType,         \
-                  "HistogramAttributes",           \
+                  "HistogramAttributes",         \
                   HistogramAttributesObject,       \
                   HistogramAttributes_dealloc,     \
                   HistogramAttributes_print,       \
-                  PyHistogramAttributes_getattr,   \
-                  PyHistogramAttributes_setattr,   \
+                  PyHistogramAttributes_getattro,  \
+                  PyHistogramAttributes_setattro,  \
                   HistogramAttributes_str,         \
                   HistogramAttributes_Purpose,     \
                   HistogramAttributes_richcompare, \
@@ -1728,6 +1737,7 @@ NewHistogramAttributes(int useCurrent)
         newObject->data = new HistogramAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&HistogramAttributesType);
     return (PyObject *)newObject;
 }
 

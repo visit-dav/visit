@@ -24,8 +24,8 @@ void VISITPY_API           PyGlobalAttributes_SetParent(PyObject *obj, PyObject 
 void VISITPY_API           PyGlobalAttributes_SetDefaults(const GlobalAttributes *atts);
 std::string VISITPY_API    PyGlobalAttributes_GetLogString();
 std::string VISITPY_API    PyGlobalAttributes_ToString(const GlobalAttributes *, const char *, const bool=false);
-VISITPY_API PyObject *     PyGlobalAttributes_getattr(PyObject *self, char *name);
-int VISITPY_API            PyGlobalAttributes_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyGlobalAttributes_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyGlobalAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyGlobalAttributes_methods[GLOBALATTRIBUTES_NMETH];
 
 #endif

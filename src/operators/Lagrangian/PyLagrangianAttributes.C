@@ -528,8 +528,11 @@ LagrangianAttributes_dealloc(PyObject *v)
 
 static PyObject *LagrangianAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyLagrangianAttributes_getattr(PyObject *self, char *name)
+PyLagrangianAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "seedPoint") == 0)
         return LagrangianAttributes_GetSeedPoint(self, NULL);
     if(strcmp(name, "numSteps") == 0)
@@ -567,15 +570,19 @@ PyLagrangianAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "variable") == 0)
         return LagrangianAttributes_GetVariable(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyLagrangianAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyLagrangianAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyLagrangianAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyLagrangianAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "seedPoint") == 0)
         obj = LagrangianAttributes_SetSeedPoint(self, args);
@@ -587,6 +594,8 @@ PyLagrangianAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = LagrangianAttributes_SetYAxisSample(self, args);
     else if(strcmp(name, "variable") == 0)
         obj = LagrangianAttributes_SetVariable(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -634,8 +643,8 @@ static char *LagrangianAttributes_Purpose = "Attributes for Lagrangian operator"
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -646,12 +655,12 @@ static char *LagrangianAttributes_Purpose = "Attributes for Lagrangian operator"
 //
 
 VISIT_PY_TYPE_OBJ(LagrangianAttributesType,         \
-                  "LagrangianAttributes",           \
+                  "LagrangianAttributes",         \
                   LagrangianAttributesObject,       \
                   LagrangianAttributes_dealloc,     \
                   LagrangianAttributes_print,       \
-                  PyLagrangianAttributes_getattr,   \
-                  PyLagrangianAttributes_setattr,   \
+                  PyLagrangianAttributes_getattro,  \
+                  PyLagrangianAttributes_setattro,  \
                   LagrangianAttributes_str,         \
                   LagrangianAttributes_Purpose,     \
                   LagrangianAttributes_richcompare, \
@@ -715,6 +724,7 @@ NewLagrangianAttributes(int useCurrent)
         newObject->data = new LagrangianAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&LagrangianAttributesType);
     return (PyObject *)newObject;
 }
 

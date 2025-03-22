@@ -1111,8 +1111,11 @@ PickVarInfo_dealloc(PyObject *v)
 
 static PyObject *PickVarInfo_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyPickVarInfo_getattr(PyObject *self, char *name)
+PyPickVarInfo_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "variableName") == 0)
         return PickVarInfo_GetVariableName(self, NULL);
     if(strcmp(name, "variableType") == 0)
@@ -1149,15 +1152,19 @@ PyPickVarInfo_getattr(PyObject *self, char *name)
     if(strcmp(name, "floatFormat") == 0)
         return PickVarInfo_GetFloatFormat(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyPickVarInfo_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyPickVarInfo_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyPickVarInfo_setattr(PyObject *self, char *name, PyObject *args)
+PyPickVarInfo_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "variableName") == 0)
         obj = PickVarInfo_SetVariableName(self, args);
@@ -1185,6 +1192,8 @@ PyPickVarInfo_setattr(PyObject *self, char *name, PyObject *args)
         obj = PickVarInfo_SetNumSpecsPerMat(self, args);
     else if(strcmp(name, "floatFormat") == 0)
         obj = PickVarInfo_SetFloatFormat(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -1232,8 +1241,8 @@ static char *PickVarInfo_Purpose = "This class contains PickVarInfo.";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1244,12 +1253,12 @@ static char *PickVarInfo_Purpose = "This class contains PickVarInfo.";
 //
 
 VISIT_PY_TYPE_OBJ(PickVarInfoType,         \
-                  "PickVarInfo",           \
+                  "PickVarInfo",         \
                   PickVarInfoObject,       \
                   PickVarInfo_dealloc,     \
                   PickVarInfo_print,       \
-                  PyPickVarInfo_getattr,   \
-                  PyPickVarInfo_setattr,   \
+                  PyPickVarInfo_getattro,  \
+                  PyPickVarInfo_setattro,  \
                   PickVarInfo_str,         \
                   PickVarInfo_Purpose,     \
                   PickVarInfo_richcompare, \
@@ -1313,6 +1322,7 @@ NewPickVarInfo(int useCurrent)
         newObject->data = new PickVarInfo;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PickVarInfoType);
     return (PyObject *)newObject;
 }
 

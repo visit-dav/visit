@@ -24,8 +24,8 @@ void VISITPY_API           PyavtMeshMetaData_SetParent(PyObject *obj, PyObject *
 void VISITPY_API           PyavtMeshMetaData_SetDefaults(const avtMeshMetaData *atts);
 std::string VISITPY_API    PyavtMeshMetaData_GetLogString();
 std::string VISITPY_API    PyavtMeshMetaData_ToString(const avtMeshMetaData *, const char *, const bool=false);
-VISITPY_API PyObject *     PyavtMeshMetaData_getattr(PyObject *self, char *name);
-int VISITPY_API            PyavtMeshMetaData_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyavtMeshMetaData_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyavtMeshMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyavtMeshMetaData_methods[AVTMESHMETADATA_NMETH];
 
 #endif

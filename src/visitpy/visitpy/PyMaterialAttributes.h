@@ -24,8 +24,8 @@ void VISITPY_API           PyMaterialAttributes_SetParent(PyObject *obj, PyObjec
 void VISITPY_API           PyMaterialAttributes_SetDefaults(const MaterialAttributes *atts);
 std::string VISITPY_API    PyMaterialAttributes_GetLogString();
 std::string VISITPY_API    PyMaterialAttributes_ToString(const MaterialAttributes *, const char *, const bool=false);
-VISITPY_API PyObject *     PyMaterialAttributes_getattr(PyObject *self, char *name);
-int VISITPY_API            PyMaterialAttributes_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyMaterialAttributes_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyMaterialAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyMaterialAttributes_methods[MATERIALATTRIBUTES_NMETH];
 
 #endif

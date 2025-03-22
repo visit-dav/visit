@@ -848,8 +848,11 @@ RadialResampleAttributes_dealloc(PyObject *v)
 
 static PyObject *RadialResampleAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyRadialResampleAttributes_getattr(PyObject *self, char *name)
+PyRadialResampleAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "isFast") == 0)
         return RadialResampleAttributes_GetIsFast(self, NULL);
     if(strcmp(name, "minTheta") == 0)
@@ -873,15 +876,19 @@ PyRadialResampleAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "deltaAzimuth") == 0)
         return RadialResampleAttributes_GetDeltaAzimuth(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyRadialResampleAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyRadialResampleAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyRadialResampleAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyRadialResampleAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "isFast") == 0)
         obj = RadialResampleAttributes_SetIsFast(self, args);
@@ -905,6 +912,8 @@ PyRadialResampleAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = RadialResampleAttributes_SetMaxAzimuth(self, args);
     else if(strcmp(name, "deltaAzimuth") == 0)
         obj = RadialResampleAttributes_SetDeltaAzimuth(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -952,8 +961,8 @@ static char *RadialResampleAttributes_Purpose = "";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -964,12 +973,12 @@ static char *RadialResampleAttributes_Purpose = "";
 //
 
 VISIT_PY_TYPE_OBJ(RadialResampleAttributesType,         \
-                  "RadialResampleAttributes",           \
+                  "RadialResampleAttributes",         \
                   RadialResampleAttributesObject,       \
                   RadialResampleAttributes_dealloc,     \
                   RadialResampleAttributes_print,       \
-                  PyRadialResampleAttributes_getattr,   \
-                  PyRadialResampleAttributes_setattr,   \
+                  PyRadialResampleAttributes_getattro,  \
+                  PyRadialResampleAttributes_setattro,  \
                   RadialResampleAttributes_str,         \
                   RadialResampleAttributes_Purpose,     \
                   RadialResampleAttributes_richcompare, \
@@ -1033,6 +1042,7 @@ NewRadialResampleAttributes(int useCurrent)
         newObject->data = new RadialResampleAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&RadialResampleAttributesType);
     return (PyObject *)newObject;
 }
 

@@ -3000,8 +3000,11 @@ ScatterAttributes_dealloc(PyObject *v)
 
 static PyObject *ScatterAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyScatterAttributes_getattr(PyObject *self, char *name)
+PyScatterAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "var1") == 0)
         return ScatterAttributes_GetVar1(self, NULL);
     if(strcmp(name, "var1Role") == 0)
@@ -3189,15 +3192,19 @@ PyScatterAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "legendFlag") == 0)
         return ScatterAttributes_GetLegendFlag(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyScatterAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyScatterAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyScatterAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyScatterAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "var1") == 0)
         obj = ScatterAttributes_SetVar1(self, args);
@@ -3281,37 +3288,9 @@ PyScatterAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ScatterAttributes_SetInvertColorTable(self, args);
     else if(strcmp(name, "legendFlag") == 0)
         obj = ScatterAttributes_SetLegendFlag(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
-    // If the user changes one of the roles and one of the roles is
-    // "Color" then assume that they want to use the color table.
-
-    // If they do not want to use the color table and want to use
-    // either the foreground or a single color they must set it after
-    // all variables (roles) have been set.
-    if( strcmp(name, "var1Role") == 0 ||
-        strcmp(name, "var2Role") == 0 ||
-        strcmp(name, "var3Role") == 0 ||
-        strcmp(name, "var4Role") == 0 )
-    {
-        // A color variable has been specified.
-        if(ScatterAttributes_GetVar1Role(self, NULL) == PyInt_FromLong(3) ||
-           ScatterAttributes_GetVar2Role(self, NULL) == PyInt_FromLong(3) ||
-           ScatterAttributes_GetVar3Role(self, NULL) == PyInt_FromLong(3) ||
-           ScatterAttributes_GetVar4Role(self, NULL) == PyInt_FromLong(3) )
-        {
-            PyObject *new_args = Py_BuildValue("(i)", 2);
-            obj = ScatterAttributes_SetColorType(self, new_args);
-            Py_DECREF(new_args);
-        }
-
-        // No color variable so use the foreground as a default.
-        else
-        {
-            PyObject *new_args = Py_BuildValue("(i)", 0);
-            obj = ScatterAttributes_SetColorType(self, new_args);
-            Py_DECREF(new_args);
-        }
-    }
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -3358,8 +3337,8 @@ static char *ScatterAttributes_Purpose = "Attributes for the scatter plot";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -3370,12 +3349,12 @@ static char *ScatterAttributes_Purpose = "Attributes for the scatter plot";
 //
 
 VISIT_PY_TYPE_OBJ(ScatterAttributesType,         \
-                  "ScatterAttributes",           \
+                  "ScatterAttributes",         \
                   ScatterAttributesObject,       \
                   ScatterAttributes_dealloc,     \
                   ScatterAttributes_print,       \
-                  PyScatterAttributes_getattr,   \
-                  PyScatterAttributes_setattr,   \
+                  PyScatterAttributes_getattro,  \
+                  PyScatterAttributes_setattro,  \
                   ScatterAttributes_str,         \
                   ScatterAttributes_Purpose,     \
                   ScatterAttributes_richcompare, \
@@ -3439,6 +3418,7 @@ NewScatterAttributes(int useCurrent)
         newObject->data = new ScatterAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&ScatterAttributesType);
     return (PyObject *)newObject;
 }
 

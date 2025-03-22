@@ -629,8 +629,11 @@ SelectionSummary_dealloc(PyObject *v)
 
 static PyObject *SelectionSummary_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PySelectionSummary_getattr(PyObject *self, char *name)
+PySelectionSummary_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "name") == 0)
         return SelectionSummary_GetName(self, NULL);
     if(strcmp(name, "variables") == 0)
@@ -646,15 +649,19 @@ PySelectionSummary_getattr(PyObject *self, char *name)
     if(strcmp(name, "histogramMaxBin") == 0)
         return SelectionSummary_GetHistogramMaxBin(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PySelectionSummary_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PySelectionSummary_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PySelectionSummary_setattr(PyObject *self, char *name, PyObject *args)
+PySelectionSummary_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "name") == 0)
         obj = SelectionSummary_SetName(self, args);
@@ -668,6 +675,8 @@ PySelectionSummary_setattr(PyObject *self, char *name, PyObject *args)
         obj = SelectionSummary_SetHistogramMinBin(self, args);
     else if(strcmp(name, "histogramMaxBin") == 0)
         obj = SelectionSummary_SetHistogramMaxBin(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -715,8 +724,8 @@ static char *SelectionSummary_Purpose = "Contains attributes for a selection";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -727,12 +736,12 @@ static char *SelectionSummary_Purpose = "Contains attributes for a selection";
 //
 
 VISIT_PY_TYPE_OBJ(SelectionSummaryType,         \
-                  "SelectionSummary",           \
+                  "SelectionSummary",         \
                   SelectionSummaryObject,       \
                   SelectionSummary_dealloc,     \
                   SelectionSummary_print,       \
-                  PySelectionSummary_getattr,   \
-                  PySelectionSummary_setattr,   \
+                  PySelectionSummary_getattro,  \
+                  PySelectionSummary_setattro,  \
                   SelectionSummary_str,         \
                   SelectionSummary_Purpose,     \
                   SelectionSummary_richcompare, \
@@ -796,6 +805,7 @@ NewSelectionSummary(int useCurrent)
         newObject->data = new SelectionSummary;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&SelectionSummaryType);
     return (PyObject *)newObject;
 }
 

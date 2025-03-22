@@ -23,8 +23,8 @@ void           PyBoundaryOpAttributes_SetParent(PyObject *obj, PyObject *parent)
 void           PyBoundaryOpAttributes_SetDefaults(const BoundaryOpAttributes *atts);
 std::string    PyBoundaryOpAttributes_GetLogString();
 std::string    PyBoundaryOpAttributes_ToString(const BoundaryOpAttributes *, const char *, const bool=false);
-PyObject *     PyBoundaryOpAttributes_getattr(PyObject *self, char *name);
-int            PyBoundaryOpAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PyBoundaryOpAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyBoundaryOpAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PyBoundaryOpAttributes_methods[BOUNDARYOPATTRIBUTES_NMETH];
 
 #endif

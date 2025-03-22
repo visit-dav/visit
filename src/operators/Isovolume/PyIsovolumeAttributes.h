@@ -23,8 +23,8 @@ void           PyIsovolumeAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyIsovolumeAttributes_SetDefaults(const IsovolumeAttributes *atts);
 std::string    PyIsovolumeAttributes_GetLogString();
 std::string    PyIsovolumeAttributes_ToString(const IsovolumeAttributes *, const char *, const bool=false);
-PyObject *     PyIsovolumeAttributes_getattr(PyObject *self, char *name);
-int            PyIsovolumeAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PyIsovolumeAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyIsovolumeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PyIsovolumeAttributes_methods[ISOVOLUMEATTRIBUTES_NMETH];
 
 #endif

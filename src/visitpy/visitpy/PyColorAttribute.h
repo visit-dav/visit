@@ -24,8 +24,8 @@ void VISITPY_API           PyColorAttribute_SetParent(PyObject *obj, PyObject *p
 void VISITPY_API           PyColorAttribute_SetDefaults(const ColorAttribute *atts);
 std::string VISITPY_API    PyColorAttribute_GetLogString();
 std::string VISITPY_API    PyColorAttribute_ToString(const ColorAttribute *, const char *, const bool=false);
-VISITPY_API PyObject *     PyColorAttribute_getattr(PyObject *self, char *name);
-int VISITPY_API            PyColorAttribute_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyColorAttribute_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyColorAttribute_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyColorAttribute_methods[COLORATTRIBUTE_NMETH];
 
 #endif

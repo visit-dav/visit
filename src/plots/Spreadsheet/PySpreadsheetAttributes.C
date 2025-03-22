@@ -1028,8 +1028,11 @@ SpreadsheetAttributes_dealloc(PyObject *v)
 
 static PyObject *SpreadsheetAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PySpreadsheetAttributes_getattr(PyObject *self, char *name)
+PySpreadsheetAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "subsetName") == 0)
         return SpreadsheetAttributes_GetSubsetName(self, NULL);
     if(strcmp(name, "formatString") == 0)
@@ -1066,15 +1069,19 @@ PySpreadsheetAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "pastPickLetters") == 0)
         return SpreadsheetAttributes_GetPastPickLetters(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PySpreadsheetAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PySpreadsheetAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PySpreadsheetAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PySpreadsheetAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "subsetName") == 0)
         obj = SpreadsheetAttributes_SetSubsetName(self, args);
@@ -1104,6 +1111,8 @@ PySpreadsheetAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = SpreadsheetAttributes_SetCurrentPickLetter(self, args);
     else if(strcmp(name, "pastPickLetters") == 0)
         obj = SpreadsheetAttributes_SetPastPickLetters(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -1151,8 +1160,8 @@ static char *SpreadsheetAttributes_Purpose = "Contains the attributes for the vi
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1163,12 +1172,12 @@ static char *SpreadsheetAttributes_Purpose = "Contains the attributes for the vi
 //
 
 VISIT_PY_TYPE_OBJ(SpreadsheetAttributesType,         \
-                  "SpreadsheetAttributes",           \
+                  "SpreadsheetAttributes",         \
                   SpreadsheetAttributesObject,       \
                   SpreadsheetAttributes_dealloc,     \
                   SpreadsheetAttributes_print,       \
-                  PySpreadsheetAttributes_getattr,   \
-                  PySpreadsheetAttributes_setattr,   \
+                  PySpreadsheetAttributes_getattro,  \
+                  PySpreadsheetAttributes_setattro,  \
                   SpreadsheetAttributes_str,         \
                   SpreadsheetAttributes_Purpose,     \
                   SpreadsheetAttributes_richcompare, \
@@ -1232,6 +1241,7 @@ NewSpreadsheetAttributes(int useCurrent)
         newObject->data = new SpreadsheetAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&SpreadsheetAttributesType);
     return (PyObject *)newObject;
 }
 

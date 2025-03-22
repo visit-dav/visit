@@ -204,23 +204,32 @@ ColorAttribute_dealloc(PyObject *v)
 
 static PyObject *ColorAttribute_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyColorAttribute_getattr(PyObject *self, char *name)
+PyColorAttribute_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "color") == 0)
         return ColorAttribute_GetColor(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyColorAttribute_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyColorAttribute_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyColorAttribute_setattr(PyObject *self, char *name, PyObject *args)
+PyColorAttribute_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "color") == 0)
         obj = ColorAttribute_SetColor(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -268,8 +277,8 @@ static char *ColorAttribute_Purpose = "This class contains RGBA color informatio
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -280,12 +289,12 @@ static char *ColorAttribute_Purpose = "This class contains RGBA color informatio
 //
 
 VISIT_PY_TYPE_OBJ(ColorAttributeType,         \
-                  "ColorAttribute",           \
+                  "ColorAttribute",         \
                   ColorAttributeObject,       \
                   ColorAttribute_dealloc,     \
                   ColorAttribute_print,       \
-                  PyColorAttribute_getattr,   \
-                  PyColorAttribute_setattr,   \
+                  PyColorAttribute_getattro,  \
+                  PyColorAttribute_setattro,  \
                   ColorAttribute_str,         \
                   ColorAttribute_Purpose,     \
                   ColorAttribute_richcompare, \
@@ -349,6 +358,7 @@ NewColorAttribute(int useCurrent)
         newObject->data = new ColorAttribute;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&ColorAttributeType);
     return (PyObject *)newObject;
 }
 

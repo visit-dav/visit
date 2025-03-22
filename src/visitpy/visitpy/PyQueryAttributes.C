@@ -655,8 +655,11 @@ QueryAttributes_dealloc(PyObject *v)
 
 static PyObject *QueryAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyQueryAttributes_getattr(PyObject *self, char *name)
+PyQueryAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "resultsMessage") == 0)
         return QueryAttributes_GetResultsMessage(self, NULL);
     if(strcmp(name, "resultsValue") == 0)
@@ -676,15 +679,19 @@ PyQueryAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "queryInputParams") == 0)
         return QueryAttributes_GetQueryInputParams(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyQueryAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyQueryAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyQueryAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyQueryAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "resultsMessage") == 0)
         obj = QueryAttributes_SetResultsMessage(self, args);
@@ -702,6 +709,8 @@ PyQueryAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = QueryAttributes_SetFloatFormat(self, args);
     else if(strcmp(name, "xmlResult") == 0)
         obj = QueryAttributes_SetXmlResult(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -749,8 +758,8 @@ static char *QueryAttributes_Purpose = "This class contains attributes used for 
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -761,12 +770,12 @@ static char *QueryAttributes_Purpose = "This class contains attributes used for 
 //
 
 VISIT_PY_TYPE_OBJ(QueryAttributesType,         \
-                  "QueryAttributes",           \
+                  "QueryAttributes",         \
                   QueryAttributesObject,       \
                   QueryAttributes_dealloc,     \
                   QueryAttributes_print,       \
-                  PyQueryAttributes_getattr,   \
-                  PyQueryAttributes_setattr,   \
+                  PyQueryAttributes_getattro,  \
+                  PyQueryAttributes_setattro,  \
                   QueryAttributes_str,         \
                   QueryAttributes_Purpose,     \
                   QueryAttributes_richcompare, \
@@ -830,6 +839,7 @@ NewQueryAttributes(int useCurrent)
         newObject->data = new QueryAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&QueryAttributesType);
     return (PyObject *)newObject;
 }
 

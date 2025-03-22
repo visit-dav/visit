@@ -1404,8 +1404,11 @@ Axes3D_dealloc(PyObject *v)
 
 static PyObject *Axes3D_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyAxes3D_getattr(PyObject *self, char *name)
+PyAxes3D_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "visible") == 0)
         return Axes3D_GetVisible(self, NULL);
     if(strcmp(name, "autoSetTicks") == 0)
@@ -1463,15 +1466,19 @@ PyAxes3D_getattr(PyObject *self, char *name)
     if(strcmp(name, "triadSetManually") == 0)
         return Axes3D_GetTriadSetManually(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyAxes3D_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyAxes3D_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyAxes3D_setattr(PyObject *self, char *name, PyObject *args)
+PyAxes3D_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "visible") == 0)
         obj = Axes3D_SetVisible(self, args);
@@ -1511,6 +1518,8 @@ PyAxes3D_setattr(PyObject *self, char *name, PyObject *args)
         obj = Axes3D_SetTriadItalic(self, args);
     else if(strcmp(name, "triadSetManually") == 0)
         obj = Axes3D_SetTriadSetManually(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -1558,8 +1567,8 @@ static char *Axes3D_Purpose = "Contains the properties for the 3D axes.";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1570,12 +1579,12 @@ static char *Axes3D_Purpose = "Contains the properties for the 3D axes.";
 //
 
 VISIT_PY_TYPE_OBJ(Axes3DType,         \
-                  "Axes3D",           \
+                  "Axes3D",         \
                   Axes3DObject,       \
                   Axes3D_dealloc,     \
                   Axes3D_print,       \
-                  PyAxes3D_getattr,   \
-                  PyAxes3D_setattr,   \
+                  PyAxes3D_getattro,  \
+                  PyAxes3D_setattro,  \
                   Axes3D_str,         \
                   Axes3D_Purpose,     \
                   Axes3D_richcompare, \
@@ -1639,6 +1648,7 @@ NewAxes3D(int useCurrent)
         newObject->data = new Axes3D;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&Axes3DType);
     return (PyObject *)newObject;
 }
 

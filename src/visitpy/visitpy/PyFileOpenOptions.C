@@ -581,8 +581,11 @@ FileOpenOptions_dealloc(PyObject *v)
 
 static PyObject *FileOpenOptions_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyFileOpenOptions_getattr(PyObject *self, char *name)
+PyFileOpenOptions_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "typeNames") == 0)
         return FileOpenOptions_GetTypeNames(self, NULL);
     if(strcmp(name, "typeIDs") == 0)
@@ -594,15 +597,19 @@ PyFileOpenOptions_getattr(PyObject *self, char *name)
     if(strcmp(name, "preferredIDs") == 0)
         return FileOpenOptions_GetPreferredIDs(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyFileOpenOptions_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyFileOpenOptions_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyFileOpenOptions_setattr(PyObject *self, char *name, PyObject *args)
+PyFileOpenOptions_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "typeNames") == 0)
         obj = FileOpenOptions_SetTypeNames(self, args);
@@ -612,6 +619,8 @@ PyFileOpenOptions_setattr(PyObject *self, char *name, PyObject *args)
         obj = FileOpenOptions_SetEnabled(self, args);
     else if(strcmp(name, "preferredIDs") == 0)
         obj = FileOpenOptions_SetPreferredIDs(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -659,8 +668,8 @@ static char *FileOpenOptions_Purpose = "This class contains the file opening opt
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -671,12 +680,12 @@ static char *FileOpenOptions_Purpose = "This class contains the file opening opt
 //
 
 VISIT_PY_TYPE_OBJ(FileOpenOptionsType,         \
-                  "FileOpenOptions",           \
+                  "FileOpenOptions",         \
                   FileOpenOptionsObject,       \
                   FileOpenOptions_dealloc,     \
                   FileOpenOptions_print,       \
-                  PyFileOpenOptions_getattr,   \
-                  PyFileOpenOptions_setattr,   \
+                  PyFileOpenOptions_getattro,  \
+                  PyFileOpenOptions_setattro,  \
                   FileOpenOptions_str,         \
                   FileOpenOptions_Purpose,     \
                   FileOpenOptions_richcompare, \
@@ -740,6 +749,7 @@ NewFileOpenOptions(int useCurrent)
         newObject->data = new FileOpenOptions;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&FileOpenOptionsType);
     return (PyObject *)newObject;
 }
 

@@ -1155,8 +1155,11 @@ ResampleAttributes_dealloc(PyObject *v)
 
 static PyObject *ResampleAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyResampleAttributes_getattr(PyObject *self, char *name)
+PyResampleAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "useExtents") == 0)
         return ResampleAttributes_GetUseExtents(self, NULL);
     if(strcmp(name, "startX") == 0)
@@ -1197,15 +1200,19 @@ PyResampleAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "cellCenteredOutput") == 0)
         return ResampleAttributes_GetCellCenteredOutput(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyResampleAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyResampleAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyResampleAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyResampleAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "useExtents") == 0)
         obj = ResampleAttributes_SetUseExtents(self, args);
@@ -1239,6 +1246,8 @@ PyResampleAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ResampleAttributes_SetDistributedResample(self, args);
     else if(strcmp(name, "cellCenteredOutput") == 0)
         obj = ResampleAttributes_SetCellCenteredOutput(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -1286,8 +1295,8 @@ static char *ResampleAttributes_Purpose = "Atts for Resample operator";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1298,12 +1307,12 @@ static char *ResampleAttributes_Purpose = "Atts for Resample operator";
 //
 
 VISIT_PY_TYPE_OBJ(ResampleAttributesType,         \
-                  "ResampleAttributes",           \
+                  "ResampleAttributes",         \
                   ResampleAttributesObject,       \
                   ResampleAttributes_dealloc,     \
                   ResampleAttributes_print,       \
-                  PyResampleAttributes_getattr,   \
-                  PyResampleAttributes_setattr,   \
+                  PyResampleAttributes_getattro,  \
+                  PyResampleAttributes_setattro,  \
                   ResampleAttributes_str,         \
                   ResampleAttributes_Purpose,     \
                   ResampleAttributes_richcompare, \
@@ -1367,6 +1376,7 @@ NewResampleAttributes(int useCurrent)
         newObject->data = new ResampleAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&ResampleAttributesType);
     return (PyObject *)newObject;
 }
 

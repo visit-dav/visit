@@ -23,8 +23,8 @@ void           PySphereSliceAttributes_SetParent(PyObject *obj, PyObject *parent
 void           PySphereSliceAttributes_SetDefaults(const SphereSliceAttributes *atts);
 std::string    PySphereSliceAttributes_GetLogString();
 std::string    PySphereSliceAttributes_ToString(const SphereSliceAttributes *, const char *, const bool=false);
-PyObject *     PySphereSliceAttributes_getattr(PyObject *self, char *name);
-int            PySphereSliceAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PySphereSliceAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PySphereSliceAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PySphereSliceAttributes_methods[SPHERESLICEATTRIBUTES_NMETH];
 
 #endif

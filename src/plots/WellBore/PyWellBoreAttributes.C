@@ -1594,8 +1594,11 @@ WellBoreAttributes_dealloc(PyObject *v)
 
 static PyObject *WellBoreAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyWellBoreAttributes_getattr(PyObject *self, char *name)
+PyWellBoreAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "defaultPalette") == 0)
         return WellBoreAttributes_GetDefaultPalette(self, NULL);
     if(strcmp(name, "changedColors") == 0)
@@ -1665,15 +1668,19 @@ PyWellBoreAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "wellNames") == 0)
         return WellBoreAttributes_GetWellNames(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyWellBoreAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyWellBoreAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyWellBoreAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyWellBoreAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "defaultPalette") == 0)
         obj = WellBoreAttributes_SetDefaultPalette(self, args);
@@ -1711,6 +1718,8 @@ PyWellBoreAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = WellBoreAttributes_SetWellBores(self, args);
     else if(strcmp(name, "wellNames") == 0)
         obj = WellBoreAttributes_SetWellNames(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -1758,8 +1767,8 @@ static char *WellBoreAttributes_Purpose = "This class contains the plot attribut
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1770,12 +1779,12 @@ static char *WellBoreAttributes_Purpose = "This class contains the plot attribut
 //
 
 VISIT_PY_TYPE_OBJ(WellBoreAttributesType,         \
-                  "WellBoreAttributes",           \
+                  "WellBoreAttributes",         \
                   WellBoreAttributesObject,       \
                   WellBoreAttributes_dealloc,     \
                   WellBoreAttributes_print,       \
-                  PyWellBoreAttributes_getattr,   \
-                  PyWellBoreAttributes_setattr,   \
+                  PyWellBoreAttributes_getattro,  \
+                  PyWellBoreAttributes_setattro,  \
                   WellBoreAttributes_str,         \
                   WellBoreAttributes_Purpose,     \
                   WellBoreAttributes_richcompare, \
@@ -1839,6 +1848,7 @@ NewWellBoreAttributes(int useCurrent)
         newObject->data = new WellBoreAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&WellBoreAttributesType);
     return (PyObject *)newObject;
 }
 

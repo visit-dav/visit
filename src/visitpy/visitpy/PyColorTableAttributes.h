@@ -24,8 +24,8 @@ void VISITPY_API           PyColorTableAttributes_SetParent(PyObject *obj, PyObj
 void VISITPY_API           PyColorTableAttributes_SetDefaults(const ColorTableAttributes *atts);
 std::string VISITPY_API    PyColorTableAttributes_GetLogString();
 std::string VISITPY_API    PyColorTableAttributes_ToString(const ColorTableAttributes *, const char *, const bool=false);
-VISITPY_API PyObject *     PyColorTableAttributes_getattr(PyObject *self, char *name);
-int VISITPY_API            PyColorTableAttributes_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyColorTableAttributes_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyColorTableAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyColorTableAttributes_methods[COLORTABLEATTRIBUTES_NMETH];
 
 #endif

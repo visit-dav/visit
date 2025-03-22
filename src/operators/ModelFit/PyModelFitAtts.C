@@ -1127,8 +1127,11 @@ ModelFitAtts_dealloc(PyObject *v)
 
 static PyObject *ModelFitAtts_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyModelFitAtts_getattr(PyObject *self, char *name)
+PyModelFitAtts_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "Vars") == 0)
         return ModelFitAtts_GetVars(self, NULL);
     if(strcmp(name, "numVars") == 0)
@@ -1152,15 +1155,19 @@ PyModelFitAtts_getattr(PyObject *self, char *name)
     if(strcmp(name, "modelNums") == 0)
         return ModelFitAtts_GetModelNums(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyModelFitAtts_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyModelFitAtts_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyModelFitAtts_setattr(PyObject *self, char *name, PyObject *args)
+PyModelFitAtts_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "Vars") == 0)
         obj = ModelFitAtts_SetVars(self, args);
@@ -1184,6 +1191,8 @@ PyModelFitAtts_setattr(PyObject *self, char *name, PyObject *args)
         obj = ModelFitAtts_SetModelNames(self, args);
     else if(strcmp(name, "modelNums") == 0)
         obj = ModelFitAtts_SetModelNums(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -1231,8 +1240,8 @@ static char *ModelFitAtts_Purpose = "This file contains attributes for the Model
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1243,12 +1252,12 @@ static char *ModelFitAtts_Purpose = "This file contains attributes for the Model
 //
 
 VISIT_PY_TYPE_OBJ(ModelFitAttsType,         \
-                  "ModelFitAtts",           \
+                  "ModelFitAtts",         \
                   ModelFitAttsObject,       \
                   ModelFitAtts_dealloc,     \
                   ModelFitAtts_print,       \
-                  PyModelFitAtts_getattr,   \
-                  PyModelFitAtts_setattr,   \
+                  PyModelFitAtts_getattro,  \
+                  PyModelFitAtts_setattro,  \
                   ModelFitAtts_str,         \
                   ModelFitAtts_Purpose,     \
                   ModelFitAtts_richcompare, \
@@ -1312,6 +1321,7 @@ NewModelFitAtts(int useCurrent)
         newObject->data = new ModelFitAtts;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&ModelFitAttsType);
     return (PyObject *)newObject;
 }
 

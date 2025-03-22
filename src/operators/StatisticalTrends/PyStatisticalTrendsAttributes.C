@@ -739,8 +739,11 @@ StatisticalTrendsAttributes_dealloc(PyObject *v)
 
 static PyObject *StatisticalTrendsAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyStatisticalTrendsAttributes_getattr(PyObject *self, char *name)
+PyStatisticalTrendsAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "startIndex") == 0)
         return StatisticalTrendsAttributes_GetStartIndex(self, NULL);
     if(strcmp(name, "stopIndex") == 0)
@@ -793,15 +796,19 @@ PyStatisticalTrendsAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(StatisticalTrendsAttributes::OperatorExpression));
 
 
+    PyObject *meth = Py_FindMethod(PyStatisticalTrendsAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyStatisticalTrendsAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyStatisticalTrendsAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyStatisticalTrendsAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "startIndex") == 0)
         obj = StatisticalTrendsAttributes_SetStartIndex(self, args);
@@ -819,6 +826,8 @@ PyStatisticalTrendsAttributes_setattr(PyObject *self, char *name, PyObject *args
         obj = StatisticalTrendsAttributes_SetTrendAxis(self, args);
     else if(strcmp(name, "variableSource") == 0)
         obj = StatisticalTrendsAttributes_SetVariableSource(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -866,8 +875,8 @@ static char *StatisticalTrendsAttributes_Purpose = "This class contains attribut
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -878,12 +887,12 @@ static char *StatisticalTrendsAttributes_Purpose = "This class contains attribut
 //
 
 VISIT_PY_TYPE_OBJ(StatisticalTrendsAttributesType,         \
-                  "StatisticalTrendsAttributes",           \
+                  "StatisticalTrendsAttributes",         \
                   StatisticalTrendsAttributesObject,       \
                   StatisticalTrendsAttributes_dealloc,     \
                   StatisticalTrendsAttributes_print,       \
-                  PyStatisticalTrendsAttributes_getattr,   \
-                  PyStatisticalTrendsAttributes_setattr,   \
+                  PyStatisticalTrendsAttributes_getattro,  \
+                  PyStatisticalTrendsAttributes_setattro,  \
                   StatisticalTrendsAttributes_str,         \
                   StatisticalTrendsAttributes_Purpose,     \
                   StatisticalTrendsAttributes_richcompare, \
@@ -947,6 +956,7 @@ NewStatisticalTrendsAttributes(int useCurrent)
         newObject->data = new StatisticalTrendsAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&StatisticalTrendsAttributesType);
     return (PyObject *)newObject;
 }
 

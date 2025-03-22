@@ -23,8 +23,8 @@ void           PyParallelCoordinatesAttributes_SetParent(PyObject *obj, PyObject
 void           PyParallelCoordinatesAttributes_SetDefaults(const ParallelCoordinatesAttributes *atts);
 std::string    PyParallelCoordinatesAttributes_GetLogString();
 std::string    PyParallelCoordinatesAttributes_ToString(const ParallelCoordinatesAttributes *, const char *, const bool=false);
-PyObject *     PyParallelCoordinatesAttributes_getattr(PyObject *self, char *name);
-int            PyParallelCoordinatesAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PyParallelCoordinatesAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyParallelCoordinatesAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PyParallelCoordinatesAttributes_methods[PARALLELCOORDINATESATTRIBUTES_NMETH];
 
 #endif

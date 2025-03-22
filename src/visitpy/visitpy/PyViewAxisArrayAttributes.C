@@ -397,8 +397,11 @@ ViewAxisArrayAttributes_dealloc(PyObject *v)
 
 static PyObject *ViewAxisArrayAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyViewAxisArrayAttributes_getattr(PyObject *self, char *name)
+PyViewAxisArrayAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "domainCoords") == 0)
         return ViewAxisArrayAttributes_GetDomainCoords(self, NULL);
     if(strcmp(name, "rangeCoords") == 0)
@@ -406,15 +409,19 @@ PyViewAxisArrayAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "viewportCoords") == 0)
         return ViewAxisArrayAttributes_GetViewportCoords(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyViewAxisArrayAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyViewAxisArrayAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyViewAxisArrayAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyViewAxisArrayAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "domainCoords") == 0)
         obj = ViewAxisArrayAttributes_SetDomainCoords(self, args);
@@ -422,6 +429,8 @@ PyViewAxisArrayAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ViewAxisArrayAttributes_SetRangeCoords(self, args);
     else if(strcmp(name, "viewportCoords") == 0)
         obj = ViewAxisArrayAttributes_SetViewportCoords(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -469,8 +478,8 @@ static char *ViewAxisArrayAttributes_Purpose = "This class contains the axis arr
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -481,12 +490,12 @@ static char *ViewAxisArrayAttributes_Purpose = "This class contains the axis arr
 //
 
 VISIT_PY_TYPE_OBJ(ViewAxisArrayAttributesType,         \
-                  "ViewAxisArrayAttributes",           \
+                  "ViewAxisArrayAttributes",         \
                   ViewAxisArrayAttributesObject,       \
                   ViewAxisArrayAttributes_dealloc,     \
                   ViewAxisArrayAttributes_print,       \
-                  PyViewAxisArrayAttributes_getattr,   \
-                  PyViewAxisArrayAttributes_setattr,   \
+                  PyViewAxisArrayAttributes_getattro,  \
+                  PyViewAxisArrayAttributes_setattro,  \
                   ViewAxisArrayAttributes_str,         \
                   ViewAxisArrayAttributes_Purpose,     \
                   ViewAxisArrayAttributes_richcompare, \
@@ -550,6 +559,7 @@ NewViewAxisArrayAttributes(int useCurrent)
         newObject->data = new ViewAxisArrayAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&ViewAxisArrayAttributesType);
     return (PyObject *)newObject;
 }
 

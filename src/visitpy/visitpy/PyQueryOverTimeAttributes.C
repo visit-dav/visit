@@ -884,8 +884,11 @@ QueryOverTimeAttributes_dealloc(PyObject *v)
 
 static PyObject *QueryOverTimeAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyQueryOverTimeAttributes_getattr(PyObject *self, char *name)
+PyQueryOverTimeAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "timeType") == 0)
         return QueryOverTimeAttributes_GetTimeType(self, NULL);
     if(strcmp(name, "Cycle") == 0)
@@ -916,15 +919,19 @@ PyQueryOverTimeAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "useCachedPts") == 0)
         return QueryOverTimeAttributes_GetUseCachedPts(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyQueryOverTimeAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyQueryOverTimeAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyQueryOverTimeAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyQueryOverTimeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "timeType") == 0)
         obj = QueryOverTimeAttributes_SetTimeType(self, args);
@@ -948,6 +955,8 @@ PyQueryOverTimeAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = QueryOverTimeAttributes_SetCachedCurvePts(self, args);
     else if(strcmp(name, "useCachedPts") == 0)
         obj = QueryOverTimeAttributes_SetUseCachedPts(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -995,8 +1004,8 @@ static char *QueryOverTimeAttributes_Purpose = "Attributes for queries over time
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1007,12 +1016,12 @@ static char *QueryOverTimeAttributes_Purpose = "Attributes for queries over time
 //
 
 VISIT_PY_TYPE_OBJ(QueryOverTimeAttributesType,         \
-                  "QueryOverTimeAttributes",           \
+                  "QueryOverTimeAttributes",         \
                   QueryOverTimeAttributesObject,       \
                   QueryOverTimeAttributes_dealloc,     \
                   QueryOverTimeAttributes_print,       \
-                  PyQueryOverTimeAttributes_getattr,   \
-                  PyQueryOverTimeAttributes_setattr,   \
+                  PyQueryOverTimeAttributes_getattro,  \
+                  PyQueryOverTimeAttributes_setattro,  \
                   QueryOverTimeAttributes_str,         \
                   QueryOverTimeAttributes_Purpose,     \
                   QueryOverTimeAttributes_richcompare, \
@@ -1076,6 +1085,7 @@ NewQueryOverTimeAttributes(int useCurrent)
         newObject->data = new QueryOverTimeAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&QueryOverTimeAttributesType);
     return (PyObject *)newObject;
 }
 

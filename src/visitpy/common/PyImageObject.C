@@ -497,8 +497,11 @@ ImageObject_dealloc(PyObject *v)
 /// OLD REMOVET HTIS
 
 static PyObject *
-ImageObject_getattr(PyObject *self, char *name)
+ImageObject_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "visible") == 0)
         return ImageObject_GetVisible(self, NULL);
     if(strcmp(name, "active") == 0)
@@ -518,14 +521,19 @@ ImageObject_getattr(PyObject *self, char *name)
     if(strcmp(name, "image") == 0)
         return ImageObject_GetImage(self, NULL);
 
-    return Py_FindMethod(ImageObject_methods, self, name);
+    PyObject *meth = Py_FindMethod(ImageObject_methods, self, (char*)name);
+    if (meth) return meth;
+
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 static int
-ImageObject_setattr(PyObject *self, char *name, PyObject *args)
+ImageObject_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     // Create a tuple to contain the arguments since all of the Set
     // functions expect a tuple.
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
     PyObject *tuple = PyTuple_New(1);
     PyTuple_SET_ITEM(tuple, 0, args);
     Py_INCREF(args);
@@ -549,6 +557,8 @@ ImageObject_setattr(PyObject *self, char *name, PyObject *args)
         retval = (ImageObject_SetMaintainAspectRatio(self, tuple) != NULL);
     else if(strcmp(name, "image") == 0)
         retval = (ImageObject_SetImage(self, tuple) != NULL);
+    else
+        retval = PyObject_GenericSetAttr(self, attr_name, args);
 
     Py_DECREF(tuple);
     return retval ? 0 : -1;
@@ -651,8 +661,8 @@ static PyObject *ImageObject_richcompare(PyObject *self, PyObject *other, int op
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -666,8 +676,8 @@ VISIT_PY_TYPE_OBJ(ImageObjectType,
                   ImageObjectObject,
                   ImageObject_dealloc,
                   ImageObject_print,
-                  ImageObject_getattr,
-                  ImageObject_setattr,
+                  ImageObject_getattro,
+                  ImageObject_setattro,
                   ImageObject_str,
                   ImageObject_Purpose,
                   ImageObject_richcompare,

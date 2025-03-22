@@ -407,8 +407,11 @@ ZoneDumpAttributes_dealloc(PyObject *v)
 
 static PyObject *ZoneDumpAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyZoneDumpAttributes_getattr(PyObject *self, char *name)
+PyZoneDumpAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "variable") == 0)
         return ZoneDumpAttributes_GetVariable(self, NULL);
     if(strcmp(name, "lowerBound") == 0)
@@ -420,15 +423,19 @@ PyZoneDumpAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "enabled") == 0)
         return ZoneDumpAttributes_GetEnabled(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyZoneDumpAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyZoneDumpAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyZoneDumpAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyZoneDumpAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "variable") == 0)
         obj = ZoneDumpAttributes_SetVariable(self, args);
@@ -440,6 +447,8 @@ PyZoneDumpAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ZoneDumpAttributes_SetOutputFile(self, args);
     else if(strcmp(name, "enabled") == 0)
         obj = ZoneDumpAttributes_SetEnabled(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -487,8 +496,8 @@ static char *ZoneDumpAttributes_Purpose = "Zone Dump Control";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -499,12 +508,12 @@ static char *ZoneDumpAttributes_Purpose = "Zone Dump Control";
 //
 
 VISIT_PY_TYPE_OBJ(ZoneDumpAttributesType,         \
-                  "ZoneDumpAttributes",           \
+                  "ZoneDumpAttributes",         \
                   ZoneDumpAttributesObject,       \
                   ZoneDumpAttributes_dealloc,     \
                   ZoneDumpAttributes_print,       \
-                  PyZoneDumpAttributes_getattr,   \
-                  PyZoneDumpAttributes_setattr,   \
+                  PyZoneDumpAttributes_getattro,  \
+                  PyZoneDumpAttributes_setattro,  \
                   ZoneDumpAttributes_str,         \
                   ZoneDumpAttributes_Purpose,     \
                   ZoneDumpAttributes_richcompare, \
@@ -568,6 +577,7 @@ NewZoneDumpAttributes(int useCurrent)
         newObject->data = new ZoneDumpAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&ZoneDumpAttributesType);
     return (PyObject *)newObject;
 }
 

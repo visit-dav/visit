@@ -329,10 +329,10 @@ class PythonGeneratorField : public virtual Field
 //     ca.point1=1,2,3     # handled by Python same as above
 //     ca.SetPoint1(1,2,3) # handled by Python as ((1,2,3),)
 //
-// The assignment operator (1) passes through the object's setattr() method and
+// The assignment operator (1) passes through the object's setattro() method and
 // that method (as implemented here) then turns around and calls the Set function
 // for the specific member. The function call to the Set method (2) bypasses the
-// object's setattr() method and arrives in the Set function directly.
+// object's setattro() method and arrives in the Set function directly.
 //
 // In addition to the above difference, the Python interpreter itself also passes
 // the arguments here to the C/C++ extension library differently. In the assignment
@@ -2959,8 +2959,8 @@ class PythonGeneratorAttribute : public GeneratorBase
         h << "void "<<api<<"          Py"<<name<<"_SetDefaults(const "<<name<<" *atts);" << Endl;
         h << "std::string "<<api<<"   Py"<<name<<"_GetLogString();" << Endl;
         h << "std::string "<<api<<"   Py"<<name<<"_ToString(const " << name << " *, const char *, const bool=false);" << Endl;
-        h << api << "PyObject * "<<"    Py"<<name<<"_getattr(PyObject *self, char *name);" << Endl;
-        h << "int "<<api<<"           Py"<<name<<"_setattr(PyObject *self, char *name, PyObject *args);" << Endl;
+        h << api << "PyObject * "<<"    Py"<<name<<"_getattro(PyObject *self, PyObject *attr_name);" << Endl;
+        h << "int "<<api<<"           Py"<<name<<"_setattro(PyObject *self, PyObject *attr_name, PyObject *args);" << Endl;
         h << api << "extern PyMethodDef Py"<<name<<"_methods["<<name.toUpper()<<"_NMETH];" << Endl;
 
         h << Endl;
@@ -3184,7 +3184,7 @@ class PythonGeneratorAttribute : public GeneratorBase
 
     void WriteGetAttrFunction(QTextStream &c)
     {
-        QString mName("Py" + name + "_getattr");
+        QString mName("Py" + name + "_getattro");
         if(HasFunction(mName))
         {
             PrintFunction(c, mName);
@@ -3193,8 +3193,11 @@ class PythonGeneratorAttribute : public GeneratorBase
         }
 
         c << "PyObject *" << Endl;
-        c << mName << "(PyObject *self, char *name)" << Endl;
+        c << mName << "(PyObject *self, PyObject *attr_name)" << Endl;
         c << "{" << Endl;
+        c << "    const char *name = PyUnicode_AsUTF8(attr_name);" << Endl;
+        c << "    if (!name) return NULL;" << Endl;
+        c << Endl;
         if(HasCode(mName, 0))
             PrintCode(c, mName, 0);
         for(size_t i = 0; i < fields.size(); ++i)
@@ -3206,21 +3209,23 @@ class PythonGeneratorAttribute : public GeneratorBase
         {
             c << "    if(strcmp(name, \"__methods__\") != 0)" << Endl;
             c << "    {" << Endl;
-            c << "        PyObject *retval = Py"<<baseClass<<"_getattr(self, name);" << Endl;
+            c << "        PyObject *retval = Py"<<baseClass<<"_getattro(self, attr_name);" << Endl;
             c << "        if (retval) return retval;" << Endl;
             c << "    }" << Endl;
             c << Endl;
             c << "    Py"<<name<<"_ExtendSetGetMethodTable();" << Endl;
         }
+        c << "    PyObject *meth = Py_FindMethod(Py"<<name<<"_methods, self, (char*)name);" << Endl;
+        c << "    if (meth) return meth;" << Endl;
         c << Endl;
-        c << "    return Py_FindMethod(Py"<<name<<"_methods, self, name);" << Endl;
+        c << "    return PyObject_GenericGetAttr(self, attr_name);" << Endl;
         c << "}" << Endl;
         c << Endl;
     }
 
     void WriteSetAttrFunction(QTextStream &c)
     {
-        QString mName("Py" + name + "_setattr");
+        QString mName("Py" + name + "_setattro");
         if(HasFunction(mName))
         {
             PrintFunction(c, mName);
@@ -3229,11 +3234,11 @@ class PythonGeneratorAttribute : public GeneratorBase
         }
 
         c << "int" << Endl;
-        c << mName << "(PyObject *self, char *name, PyObject *args)" << Endl;
+        c << mName << "(PyObject *self, PyObject *attr_name, PyObject *args)" << Endl;
         c << "{" << Endl;
         if (custombase)
         {
-            c << "    if (Py"<<baseClass<<"_setattr(self, name, args) != -1)" << Endl;
+            c << "    if (Py"<<baseClass<<"_setattro(self, attr_name, args) != -1)" << Endl;
             c << "        return 0;" << Endl;
             c << "    else" << Endl;
             c << "        PyErr_Clear();" << Endl;
@@ -3243,9 +3248,11 @@ class PythonGeneratorAttribute : public GeneratorBase
             PrintCode(c, mName, 0);
         c << "    PyObject NULL_PY_OBJ;" << Endl;
         c << "    PyObject *obj = &NULL_PY_OBJ;" << Endl;
+        c << "    const char *name = PyUnicode_AsUTF8(attr_name);" << Endl;
+        c << "    if (!name) return -1;" << Endl;
         c << Endl;
 
-        // Figure out the first field that can write a _setattr method.
+        // Figure out the first field that can write a _setattro method.
         size_t i, index = 0;
         for(i = 0; i < fields.size(); ++i)
         {
@@ -3258,6 +3265,8 @@ class PythonGeneratorAttribute : public GeneratorBase
 
         for(i = index; i < fields.size(); ++i)
             fields[i]->WriteSetAttr(c, name, i == index);
+        c << "    else" << Endl;
+        c << "        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));" << Endl;
         c << Endl;
 
         if(HasCode(mName, 1))
@@ -3412,8 +3421,8 @@ class PythonGeneratorAttribute : public GeneratorBase
           << "//                            VPY_OBJECT,"    << Endl
           << "//                            VPY_DEALLOC,"   << Endl
           << "//                            VPY_PRINT,"     << Endl
-          << "//                            VPY_GETATTR,"   << Endl
-          << "//                            VPY_SETATTR,"   << Endl
+          << "//                            VPY_GETATTRO,"   << Endl
+          << "//                            VPY_SETATTRO,"   << Endl
           << "//                            VPY_STR,"       << Endl
           << "//                            VPY_PURPOSE,"   << Endl
           << "//                            VPY_RICHCOMP,"  << Endl
@@ -3425,12 +3434,12 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "//" << Endl << Endl;
 
         c << "VISIT_PY_TYPE_OBJ("<<name<<"Type,         \\" << Endl;
-        c << "                  \""<<name<<"\",           \\" << Endl;
+        c << "                  \""<<name<<"\",         \\" << Endl;
         c << "                  "<<name<<"Object,       \\" << Endl;
         c << "                  "<<name<<"_dealloc,     \\" << Endl;
         c << "                  "<<name<<"_print,       \\" << Endl;
-        c << "                  Py"<<name<<"_getattr,   \\" << Endl;
-        c << "                  Py"<<name<<"_setattr,   \\" << Endl;
+        c << "                  Py"<<name<<"_getattro,  \\" << Endl;
+        c << "                  Py"<<name<<"_setattro,  \\" << Endl;
         c << "                  "<<name<<"_str,         \\" << Endl;
         c << "                  "<<name<<"_Purpose,     \\" << Endl;
         c << "                  "<<name<<"_richcompare, \\" << Endl;
@@ -3496,6 +3505,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "        newObject->data = new "<<name<<";" << Endl;
         c << "    newObject->owns = true;" << Endl;
         c << "    newObject->parent = 0;" << Endl;
+        c << "    PyType_Ready(&"<<name<<"Type);" << Endl;
         c << "    return (PyObject *)newObject;" << Endl;
         c << "}" << Endl;
         c << Endl;

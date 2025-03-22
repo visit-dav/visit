@@ -127,31 +127,40 @@ ThresholdAttributes_dealloc(PyObject *v)
 
 static PyObject *ThresholdAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyThresholdAttributes_getattr(PyObject *self, char *name)
+PyThresholdAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
 
     if(strcmp(name, "__methods__") != 0)
     {
-        PyObject *retval = PyThresholdOpAttributes_getattr(self, name);
+        PyObject *retval = PyThresholdOpAttributes_getattro(self, attr_name);
         if (retval) return retval;
     }
 
     PyThresholdAttributes_ExtendSetGetMethodTable();
+    PyObject *meth = Py_FindMethod(PyThresholdAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyThresholdAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyThresholdAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyThresholdAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
-    if (PyThresholdOpAttributes_setattr(self, name, args) != -1)
+    if (PyThresholdOpAttributes_setattro(self, attr_name, args) != -1)
         return 0;
     else
         PyErr_Clear();
 
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -199,8 +208,8 @@ static char *ThresholdAttributes_Purpose = "This class contains attributes for t
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -211,12 +220,12 @@ static char *ThresholdAttributes_Purpose = "This class contains attributes for t
 //
 
 VISIT_PY_TYPE_OBJ(ThresholdAttributesType,         \
-                  "ThresholdAttributes",           \
+                  "ThresholdAttributes",         \
                   ThresholdAttributesObject,       \
                   ThresholdAttributes_dealloc,     \
                   ThresholdAttributes_print,       \
-                  PyThresholdAttributes_getattr,   \
-                  PyThresholdAttributes_setattr,   \
+                  PyThresholdAttributes_getattro,  \
+                  PyThresholdAttributes_setattro,  \
                   ThresholdAttributes_str,         \
                   ThresholdAttributes_Purpose,     \
                   ThresholdAttributes_richcompare, \
@@ -280,6 +289,7 @@ NewThresholdAttributes(int useCurrent)
         newObject->data = new ThresholdAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&ThresholdAttributesType);
     return (PyObject *)newObject;
 }
 

@@ -524,9 +524,11 @@ ColorTableAttributes_dealloc(PyObject *v)
 
 static PyObject *ColorTableAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyColorTableAttributes_getattr(PyObject *self, char *name)
+PyColorTableAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
-#include <visit-config.h>
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "colorTableNames") == 0)
         return ColorTableAttributes_GetColorTableNames(self, NULL);
     if(strcmp(name, "colorTableActiveFlags") == 0)
@@ -538,54 +540,19 @@ PyColorTableAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "defaultDiscrete") == 0)
         return ColorTableAttributes_GetDefaultDiscrete(self, NULL);
 
-#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
-#error This code is obsolete in this version. Please remove it.
-#else
-    // Try and handle legacy fields in ColorTableAttributes
+    PyObject *meth = Py_FindMethod(PyColorTableAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    //
-    // Removed in 3.3.0
-    //
-    if(strcmp(name, "activeContinuous") == 0)
-    {
-        ColorTableAttributesObject *ColorTableObj = (ColorTableAttributesObject *)self;
-        std::string defaultContinuous = ColorTableObj->data->GetDefaultContinuous();
-        return PyString_FromString(defaultContinuous.c_str());
-    }
-    if(strcmp(name, "activeDiscrete") == 0)
-    {
-        ColorTableAttributesObject *ColorTableObj = (ColorTableAttributesObject *)self;
-        std::string defaultDiscrete = ColorTableObj->data->GetDefaultDiscrete();
-        return PyString_FromString(defaultDiscrete.c_str());
-    }
-#endif
-#if VISIT_OBSOLETE_AT_VERSION(3,6,0)
-#error This code is obsolete in this version. Please remove it.
-#else
-    // Try and handle legacy fields in ColorTableAttributes
-
-    //
-    // Removed in 3.4.0
-    //
-    if(strcmp(name, "taggingFlag") == 0)
-    {
-        PyErr_WarnEx(NULL,
-                    "taggingFlag is no longer a valid Color Table "
-                    "attribute.\nIt's value is being ignored, please remove "
-                    "it from your script.\n", 3);
-        return PyInt_FromLong(0L);
-    }
-#endif
-
-    return Py_FindMethod(PyColorTableAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyColorTableAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyColorTableAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
-#include <visit-config.h>
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "colorTableNames") == 0)
         obj = ColorTableAttributes_SetColorTableNames(self, args);
@@ -595,53 +562,9 @@ PyColorTableAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ColorTableAttributes_SetDefaultContinuous(self, args);
     else if(strcmp(name, "defaultDiscrete") == 0)
         obj = ColorTableAttributes_SetDefaultDiscrete(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
-#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
-#error This code is obsolete in this version. Please remove it.
-#else
-   // Try and handle legacy fields in ColorTableAttributes
-    if(obj == &NULL_PY_OBJ)
-    {
-        ColorTableAttributesObject *ColorTableObj = (ColorTableAttributesObject *)self;
-
-        //
-        // Removed in 3.3.0
-        //
-        if(strcmp(name, "activeContinuous") == 0)
-        {
-            const std::string defaultCont = PyString_AsString(args);
-            PyErr_WarnEx(NULL, "'activeContinuous' is obsolete. Use 'defaultContinuous'.", 3);
-            ColorTableObj->data->SetDefaultContinuous(defaultCont);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        if(strcmp(name, "activeDiscrete") == 0)
-        {
-            const std::string defaultDisc = PyString_AsString(args);
-            PyErr_WarnEx(NULL, "'activeDiscrete' is obsolete. Use 'defaultDiscrete'.", 3);
-            ColorTableObj->data->SetDefaultDiscrete(defaultDisc);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-    }
-#endif
-#if VISIT_OBSOLETE_AT_VERSION(3,6,0)
-#error This code is obsolete in this version. Please remove it.
-#else
-   // Try and handle legacy fields in ColorTableAttributes
-    if(obj == &NULL_PY_OBJ)
-    {
-        //
-        // Removed in 3.4.0
-        //
-        if(strcmp(name, "taggingFlag") == 0)
-        {
-            PyErr_WarnEx(NULL, "'taggingFlag' is obsolete. Tags are always enabled now.", 3);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-    }
-#endif
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -688,8 +611,8 @@ static char *ColorTableAttributes_Purpose = "This class contains the list of col
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -700,12 +623,12 @@ static char *ColorTableAttributes_Purpose = "This class contains the list of col
 //
 
 VISIT_PY_TYPE_OBJ(ColorTableAttributesType,         \
-                  "ColorTableAttributes",           \
+                  "ColorTableAttributes",         \
                   ColorTableAttributesObject,       \
                   ColorTableAttributes_dealloc,     \
                   ColorTableAttributes_print,       \
-                  PyColorTableAttributes_getattr,   \
-                  PyColorTableAttributes_setattr,   \
+                  PyColorTableAttributes_getattro,  \
+                  PyColorTableAttributes_setattro,  \
                   ColorTableAttributes_str,         \
                   ColorTableAttributes_Purpose,     \
                   ColorTableAttributes_richcompare, \
@@ -769,6 +692,7 @@ NewColorTableAttributes(int useCurrent)
         newObject->data = new ColorTableAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&ColorTableAttributesType);
     return (PyObject *)newObject;
 }
 

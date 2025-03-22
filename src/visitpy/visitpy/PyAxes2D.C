@@ -639,8 +639,11 @@ Axes2D_dealloc(PyObject *v)
 
 static PyObject *Axes2D_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyAxes2D_getattr(PyObject *self, char *name)
+PyAxes2D_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "visible") == 0)
         return Axes2D_GetVisible(self, NULL);
     if(strcmp(name, "autoSetTicks") == 0)
@@ -676,15 +679,19 @@ PyAxes2D_getattr(PyObject *self, char *name)
     if(strcmp(name, "yAxis") == 0)
         return Axes2D_GetYAxis(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyAxes2D_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyAxes2D_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyAxes2D_setattr(PyObject *self, char *name, PyObject *args)
+PyAxes2D_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "visible") == 0)
         obj = Axes2D_SetVisible(self, args);
@@ -702,6 +709,8 @@ PyAxes2D_setattr(PyObject *self, char *name, PyObject *args)
         obj = Axes2D_SetXAxis(self, args);
     else if(strcmp(name, "yAxis") == 0)
         obj = Axes2D_SetYAxis(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -749,8 +758,8 @@ static char *Axes2D_Purpose = "Contains the properties for the 2D axes.";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -761,12 +770,12 @@ static char *Axes2D_Purpose = "Contains the properties for the 2D axes.";
 //
 
 VISIT_PY_TYPE_OBJ(Axes2DType,         \
-                  "Axes2D",           \
+                  "Axes2D",         \
                   Axes2DObject,       \
                   Axes2D_dealloc,     \
                   Axes2D_print,       \
-                  PyAxes2D_getattr,   \
-                  PyAxes2D_setattr,   \
+                  PyAxes2D_getattro,  \
+                  PyAxes2D_setattro,  \
                   Axes2D_str,         \
                   Axes2D_Purpose,     \
                   Axes2D_richcompare, \
@@ -830,6 +839,7 @@ NewAxes2D(int useCurrent)
         newObject->data = new Axes2D;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&Axes2DType);
     return (PyObject *)newObject;
 }
 

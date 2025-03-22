@@ -23,8 +23,8 @@ void           PyMultiCurveAttributes_SetParent(PyObject *obj, PyObject *parent)
 void           PyMultiCurveAttributes_SetDefaults(const MultiCurveAttributes *atts);
 std::string    PyMultiCurveAttributes_GetLogString();
 std::string    PyMultiCurveAttributes_ToString(const MultiCurveAttributes *, const char *, const bool=false);
-PyObject *     PyMultiCurveAttributes_getattr(PyObject *self, char *name);
-int            PyMultiCurveAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PyMultiCurveAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyMultiCurveAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PyMultiCurveAttributes_methods[MULTICURVEATTRIBUTES_NMETH];
 
 #endif

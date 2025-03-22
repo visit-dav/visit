@@ -672,8 +672,11 @@ static PyObject *DatabaseCorrelation_richcompare(PyObject *self, PyObject *other
 
 
 PyObject *
-PyDatabaseCorrelation_getattr(PyObject *self, char *name)
+PyDatabaseCorrelation_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "name") == 0)
         return DatabaseCorrelation_GetName(self, NULL);
     if(strcmp(name, "numStates") == 0)
@@ -696,7 +699,10 @@ PyDatabaseCorrelation_getattr(PyObject *self, char *name)
     if(strcmp(name, "databaseNStates") == 0)
         return DatabaseCorrelation_GetDatabaseNStates(self, NULL);
 
-    return Py_FindMethod(DatabaseCorrelation_methods, self, name);
+    PyObject *meth = Py_FindMethod(DatabaseCorrelation_methods, self, (char*)name);
+    if (meth) return meth;
+
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 
@@ -705,7 +711,7 @@ PyDatabaseCorrelation_getattr(PyObject *self, char *name)
 ///////////////////////////////////////////////////////////////////////////////
 
 int
-PyDatabaseCorrelation_setattr(PyObject *self, char *name, PyObject *args)
+PyDatabaseCorrelation_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     return -1;
 }
@@ -742,8 +748,8 @@ static char *DatabaseCorrelation_Purpose = "This class encapsulates a database c
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -758,8 +764,8 @@ VISIT_PY_TYPE_OBJ(DatabaseCorrelationType,         \
                   DatabaseCorrelationObject,       \
                   DatabaseCorrelation_dealloc,     \
                   DatabaseCorrelation_print,       \
-                  PyDatabaseCorrelation_getattr,   \
-                  PyDatabaseCorrelation_setattr,   \
+                  PyDatabaseCorrelation_getattro,  \
+                  PyDatabaseCorrelation_setattro,  \
                   DatabaseCorrelation_str,         \
                   DatabaseCorrelation_Purpose,     \
                   DatabaseCorrelation_richcompare, \

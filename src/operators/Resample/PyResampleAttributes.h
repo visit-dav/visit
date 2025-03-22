@@ -23,8 +23,8 @@ void           PyResampleAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyResampleAttributes_SetDefaults(const ResampleAttributes *atts);
 std::string    PyResampleAttributes_GetLogString();
 std::string    PyResampleAttributes_ToString(const ResampleAttributes *, const char *, const bool=false);
-PyObject *     PyResampleAttributes_getattr(PyObject *self, char *name);
-int            PyResampleAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PyResampleAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyResampleAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PyResampleAttributes_methods[RESAMPLEATTRIBUTES_NMETH];
 
 #endif

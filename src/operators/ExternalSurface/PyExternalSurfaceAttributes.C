@@ -240,27 +240,36 @@ ExternalSurfaceAttributes_dealloc(PyObject *v)
 
 static PyObject *ExternalSurfaceAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyExternalSurfaceAttributes_getattr(PyObject *self, char *name)
+PyExternalSurfaceAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "removeGhosts") == 0)
         return ExternalSurfaceAttributes_GetRemoveGhosts(self, NULL);
     if(strcmp(name, "edgesIn2D") == 0)
         return ExternalSurfaceAttributes_GetEdgesIn2D(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyExternalSurfaceAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyExternalSurfaceAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyExternalSurfaceAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyExternalSurfaceAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "removeGhosts") == 0)
         obj = ExternalSurfaceAttributes_SetRemoveGhosts(self, args);
     else if(strcmp(name, "edgesIn2D") == 0)
         obj = ExternalSurfaceAttributes_SetEdgesIn2D(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -308,8 +317,8 @@ static char *ExternalSurfaceAttributes_Purpose = "This class contains attributes
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -320,12 +329,12 @@ static char *ExternalSurfaceAttributes_Purpose = "This class contains attributes
 //
 
 VISIT_PY_TYPE_OBJ(ExternalSurfaceAttributesType,         \
-                  "ExternalSurfaceAttributes",           \
+                  "ExternalSurfaceAttributes",         \
                   ExternalSurfaceAttributesObject,       \
                   ExternalSurfaceAttributes_dealloc,     \
                   ExternalSurfaceAttributes_print,       \
-                  PyExternalSurfaceAttributes_getattr,   \
-                  PyExternalSurfaceAttributes_setattr,   \
+                  PyExternalSurfaceAttributes_getattro,  \
+                  PyExternalSurfaceAttributes_setattro,  \
                   ExternalSurfaceAttributes_str,         \
                   ExternalSurfaceAttributes_Purpose,     \
                   ExternalSurfaceAttributes_richcompare, \
@@ -389,6 +398,7 @@ NewExternalSurfaceAttributes(int useCurrent)
         newObject->data = new ExternalSurfaceAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&ExternalSurfaceAttributesType);
     return (PyObject *)newObject;
 }
 

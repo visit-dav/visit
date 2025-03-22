@@ -23,8 +23,8 @@ void           PyIndexSelectAttributes_SetParent(PyObject *obj, PyObject *parent
 void           PyIndexSelectAttributes_SetDefaults(const IndexSelectAttributes *atts);
 std::string    PyIndexSelectAttributes_GetLogString();
 std::string    PyIndexSelectAttributes_ToString(const IndexSelectAttributes *, const char *, const bool=false);
-PyObject *     PyIndexSelectAttributes_getattr(PyObject *self, char *name);
-int            PyIndexSelectAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PyIndexSelectAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyIndexSelectAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PyIndexSelectAttributes_methods[INDEXSELECTATTRIBUTES_NMETH];
 
 #endif

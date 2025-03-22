@@ -1449,8 +1449,11 @@ SelectionProperties_dealloc(PyObject *v)
 
 static PyObject *SelectionProperties_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PySelectionProperties_getattr(PyObject *self, char *name)
+PySelectionProperties_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "name") == 0)
         return SelectionProperties_GetName(self, NULL);
     if(strcmp(name, "source") == 0)
@@ -1518,15 +1521,19 @@ PySelectionProperties_getattr(PyObject *self, char *name)
     if(strcmp(name, "histogramVariable") == 0)
         return SelectionProperties_GetHistogramVariable(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PySelectionProperties_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PySelectionProperties_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PySelectionProperties_setattr(PyObject *self, char *name, PyObject *args)
+PySelectionProperties_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "name") == 0)
         obj = SelectionProperties_SetName(self, args);
@@ -1566,6 +1573,8 @@ PySelectionProperties_setattr(PyObject *self, char *name, PyObject *args)
         obj = SelectionProperties_SetHistogramEndBin(self, args);
     else if(strcmp(name, "histogramVariable") == 0)
         obj = SelectionProperties_SetHistogramVariable(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -1613,8 +1622,8 @@ static char *SelectionProperties_Purpose = "Contains attributes for a selection"
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1625,12 +1634,12 @@ static char *SelectionProperties_Purpose = "Contains attributes for a selection"
 //
 
 VISIT_PY_TYPE_OBJ(SelectionPropertiesType,         \
-                  "SelectionProperties",           \
+                  "SelectionProperties",         \
                   SelectionPropertiesObject,       \
                   SelectionProperties_dealloc,     \
                   SelectionProperties_print,       \
-                  PySelectionProperties_getattr,   \
-                  PySelectionProperties_setattr,   \
+                  PySelectionProperties_getattro,  \
+                  PySelectionProperties_setattro,  \
                   SelectionProperties_str,         \
                   SelectionProperties_Purpose,     \
                   SelectionProperties_richcompare, \
@@ -1694,6 +1703,7 @@ NewSelectionProperties(int useCurrent)
         newObject->data = new SelectionProperties;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&SelectionPropertiesType);
     return (PyObject *)newObject;
 }
 

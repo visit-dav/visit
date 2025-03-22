@@ -454,8 +454,11 @@ AxisTitles_dealloc(PyObject *v)
 
 static PyObject *AxisTitles_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyAxisTitles_getattr(PyObject *self, char *name)
+PyAxisTitles_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "visible") == 0)
         return AxisTitles_GetVisible(self, NULL);
     if(strcmp(name, "font") == 0)
@@ -469,15 +472,19 @@ PyAxisTitles_getattr(PyObject *self, char *name)
     if(strcmp(name, "units") == 0)
         return AxisTitles_GetUnits(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyAxisTitles_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyAxisTitles_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyAxisTitles_setattr(PyObject *self, char *name, PyObject *args)
+PyAxisTitles_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "visible") == 0)
         obj = AxisTitles_SetVisible(self, args);
@@ -491,6 +498,8 @@ PyAxisTitles_setattr(PyObject *self, char *name, PyObject *args)
         obj = AxisTitles_SetTitle(self, args);
     else if(strcmp(name, "units") == 0)
         obj = AxisTitles_SetUnits(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -538,8 +547,8 @@ static char *AxisTitles_Purpose = "Contains the title properties for one axis.";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -550,12 +559,12 @@ static char *AxisTitles_Purpose = "Contains the title properties for one axis.";
 //
 
 VISIT_PY_TYPE_OBJ(AxisTitlesType,         \
-                  "AxisTitles",           \
+                  "AxisTitles",         \
                   AxisTitlesObject,       \
                   AxisTitles_dealloc,     \
                   AxisTitles_print,       \
-                  PyAxisTitles_getattr,   \
-                  PyAxisTitles_setattr,   \
+                  PyAxisTitles_getattro,  \
+                  PyAxisTitles_setattro,  \
                   AxisTitles_str,         \
                   AxisTitles_Purpose,     \
                   AxisTitles_richcompare, \
@@ -619,6 +628,7 @@ NewAxisTitles(int useCurrent)
         newObject->data = new AxisTitles;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&AxisTitlesType);
     return (PyObject *)newObject;
 }
 

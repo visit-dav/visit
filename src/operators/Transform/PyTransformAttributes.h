@@ -23,8 +23,8 @@ void           PyTransformAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyTransformAttributes_SetDefaults(const TransformAttributes *atts);
 std::string    PyTransformAttributes_GetLogString();
 std::string    PyTransformAttributes_ToString(const TransformAttributes *, const char *, const bool=false);
-PyObject *     PyTransformAttributes_getattr(PyObject *self, char *name);
-int            PyTransformAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PyTransformAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyTransformAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PyTransformAttributes_methods[TRANSFORMATTRIBUTES_NMETH];
 
 #endif

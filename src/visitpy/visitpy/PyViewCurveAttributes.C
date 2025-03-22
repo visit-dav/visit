@@ -479,8 +479,11 @@ ViewCurveAttributes_dealloc(PyObject *v)
 
 static PyObject *ViewCurveAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyViewCurveAttributes_getattr(PyObject *self, char *name)
+PyViewCurveAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "domainCoords") == 0)
         return ViewCurveAttributes_GetDomainCoords(self, NULL);
     if(strcmp(name, "rangeCoords") == 0)
@@ -502,15 +505,19 @@ PyViewCurveAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(1));
 
 
+    PyObject *meth = Py_FindMethod(PyViewCurveAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyViewCurveAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyViewCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyViewCurveAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "domainCoords") == 0)
         obj = ViewCurveAttributes_SetDomainCoords(self, args);
@@ -522,6 +529,8 @@ PyViewCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ViewCurveAttributes_SetDomainScale(self, args);
     else if(strcmp(name, "rangeScale") == 0)
         obj = ViewCurveAttributes_SetRangeScale(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -569,8 +578,8 @@ static char *ViewCurveAttributes_Purpose = "This class contains the curve view a
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -581,12 +590,12 @@ static char *ViewCurveAttributes_Purpose = "This class contains the curve view a
 //
 
 VISIT_PY_TYPE_OBJ(ViewCurveAttributesType,         \
-                  "ViewCurveAttributes",           \
+                  "ViewCurveAttributes",         \
                   ViewCurveAttributesObject,       \
                   ViewCurveAttributes_dealloc,     \
                   ViewCurveAttributes_print,       \
-                  PyViewCurveAttributes_getattr,   \
-                  PyViewCurveAttributes_setattr,   \
+                  PyViewCurveAttributes_getattro,  \
+                  PyViewCurveAttributes_setattro,  \
                   ViewCurveAttributes_str,         \
                   ViewCurveAttributes_Purpose,     \
                   ViewCurveAttributes_richcompare, \
@@ -650,6 +659,7 @@ NewViewCurveAttributes(int useCurrent)
         newObject->data = new ViewCurveAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&ViewCurveAttributesType);
     return (PyObject *)newObject;
 }
 

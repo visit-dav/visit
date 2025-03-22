@@ -763,8 +763,11 @@ SaveSubWindowsAttributes_dealloc(PyObject *v)
 
 static PyObject *SaveSubWindowsAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PySaveSubWindowsAttributes_getattr(PyObject *self, char *name)
+PySaveSubWindowsAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "win1") == 0)
         return SaveSubWindowsAttributes_GetWin1(self, NULL);
     if(strcmp(name, "win2") == 0)
@@ -798,15 +801,19 @@ PySaveSubWindowsAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "win16") == 0)
         return SaveSubWindowsAttributes_GetWin16(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PySaveSubWindowsAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PySaveSubWindowsAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PySaveSubWindowsAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PySaveSubWindowsAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "win1") == 0)
         obj = SaveSubWindowsAttributes_SetWin1(self, args);
@@ -840,6 +847,8 @@ PySaveSubWindowsAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = SaveSubWindowsAttributes_SetWin15(self, args);
     else if(strcmp(name, "win16") == 0)
         obj = SaveSubWindowsAttributes_SetWin16(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -887,8 +896,8 @@ static char *SaveSubWindowsAttributes_Purpose = "";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -899,12 +908,12 @@ static char *SaveSubWindowsAttributes_Purpose = "";
 //
 
 VISIT_PY_TYPE_OBJ(SaveSubWindowsAttributesType,         \
-                  "SaveSubWindowsAttributes",           \
+                  "SaveSubWindowsAttributes",         \
                   SaveSubWindowsAttributesObject,       \
                   SaveSubWindowsAttributes_dealloc,     \
                   SaveSubWindowsAttributes_print,       \
-                  PySaveSubWindowsAttributes_getattr,   \
-                  PySaveSubWindowsAttributes_setattr,   \
+                  PySaveSubWindowsAttributes_getattro,  \
+                  PySaveSubWindowsAttributes_setattro,  \
                   SaveSubWindowsAttributes_str,         \
                   SaveSubWindowsAttributes_Purpose,     \
                   SaveSubWindowsAttributes_richcompare, \
@@ -968,6 +977,7 @@ NewSaveSubWindowsAttributes(int useCurrent)
         newObject->data = new SaveSubWindowsAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&SaveSubWindowsAttributesType);
     return (PyObject *)newObject;
 }
 

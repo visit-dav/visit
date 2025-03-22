@@ -636,8 +636,11 @@ ProcessAttributes_dealloc(PyObject *v)
 
 static PyObject *ProcessAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyProcessAttributes_getattr(PyObject *self, char *name)
+PyProcessAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "pids") == 0)
         return ProcessAttributes_GetPids(self, NULL);
     if(strcmp(name, "ppids") == 0)
@@ -651,15 +654,19 @@ PyProcessAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "times") == 0)
         return ProcessAttributes_GetTimes(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyProcessAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyProcessAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyProcessAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyProcessAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "pids") == 0)
         obj = ProcessAttributes_SetPids(self, args);
@@ -673,6 +680,8 @@ PyProcessAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ProcessAttributes_SetMemory(self, args);
     else if(strcmp(name, "times") == 0)
         obj = ProcessAttributes_SetTimes(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -720,8 +729,8 @@ static char *ProcessAttributes_Purpose = "attributes to describe a running proce
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -732,12 +741,12 @@ static char *ProcessAttributes_Purpose = "attributes to describe a running proce
 //
 
 VISIT_PY_TYPE_OBJ(ProcessAttributesType,         \
-                  "ProcessAttributes",           \
+                  "ProcessAttributes",         \
                   ProcessAttributesObject,       \
                   ProcessAttributes_dealloc,     \
                   ProcessAttributes_print,       \
-                  PyProcessAttributes_getattr,   \
-                  PyProcessAttributes_setattr,   \
+                  PyProcessAttributes_getattro,  \
+                  PyProcessAttributes_setattro,  \
                   ProcessAttributes_str,         \
                   ProcessAttributes_Purpose,     \
                   ProcessAttributes_richcompare, \
@@ -801,6 +810,7 @@ NewProcessAttributes(int useCurrent)
         newObject->data = new ProcessAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&ProcessAttributesType);
     return (PyObject *)newObject;
 }
 

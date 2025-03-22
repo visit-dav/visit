@@ -481,8 +481,11 @@ ToroidalPoloidalProjection_dealloc(PyObject *v)
 
 static PyObject *ToroidalPoloidalProjection_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyToroidalPoloidalProjection_getattr(PyObject *self, char *name)
+PyToroidalPoloidalProjection_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "R0") == 0)
         return ToroidalPoloidalProjection_GetR0(self, NULL);
     if(strcmp(name, "r") == 0)
@@ -499,15 +502,19 @@ PyToroidalPoloidalProjection_getattr(PyObject *self, char *name)
     if(strcmp(name, "project2D") == 0)
         return ToroidalPoloidalProjection_GetProject2D(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyToroidalPoloidalProjection_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyToroidalPoloidalProjection_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyToroidalPoloidalProjection_setattr(PyObject *self, char *name, PyObject *args)
+PyToroidalPoloidalProjection_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "R0") == 0)
         obj = ToroidalPoloidalProjection_SetR0(self, args);
@@ -519,6 +526,8 @@ PyToroidalPoloidalProjection_setattr(PyObject *self, char *name, PyObject *args)
         obj = ToroidalPoloidalProjection_SetCentroid(self, args);
     else if(strcmp(name, "project2D") == 0)
         obj = ToroidalPoloidalProjection_SetProject2D(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -566,8 +575,8 @@ static char *ToroidalPoloidalProjection_Purpose = "Projects Exterior of Torus fr
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -578,12 +587,12 @@ static char *ToroidalPoloidalProjection_Purpose = "Projects Exterior of Torus fr
 //
 
 VISIT_PY_TYPE_OBJ(ToroidalPoloidalProjectionType,         \
-                  "ToroidalPoloidalProjection",           \
+                  "ToroidalPoloidalProjection",         \
                   ToroidalPoloidalProjectionObject,       \
                   ToroidalPoloidalProjection_dealloc,     \
                   ToroidalPoloidalProjection_print,       \
-                  PyToroidalPoloidalProjection_getattr,   \
-                  PyToroidalPoloidalProjection_setattr,   \
+                  PyToroidalPoloidalProjection_getattro,  \
+                  PyToroidalPoloidalProjection_setattro,  \
                   ToroidalPoloidalProjection_str,         \
                   ToroidalPoloidalProjection_Purpose,     \
                   ToroidalPoloidalProjection_richcompare, \
@@ -647,6 +656,7 @@ NewToroidalPoloidalProjection(int useCurrent)
         newObject->data = new ToroidalPoloidalProjection;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&ToroidalPoloidalProjectionType);
     return (PyObject *)newObject;
 }
 

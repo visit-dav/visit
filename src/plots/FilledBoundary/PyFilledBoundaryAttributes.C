@@ -1580,8 +1580,11 @@ FilledBoundaryAttributes_dealloc(PyObject *v)
 
 static PyObject *FilledBoundaryAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyFilledBoundaryAttributes_getattr(PyObject *self, char *name)
+PyFilledBoundaryAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "colorType") == 0)
         return FilledBoundaryAttributes_GetColorType(self, NULL);
     if(strcmp(name, "ColorBySingleColor") == 0)
@@ -1645,15 +1648,19 @@ PyFilledBoundaryAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "pointSizePixels") == 0)
         return FilledBoundaryAttributes_GetPointSizePixels(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyFilledBoundaryAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyFilledBoundaryAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyFilledBoundaryAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyFilledBoundaryAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "colorType") == 0)
         obj = FilledBoundaryAttributes_SetColorType(self, args);
@@ -1693,6 +1700,8 @@ PyFilledBoundaryAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = FilledBoundaryAttributes_SetPointSizeVar(self, args);
     else if(strcmp(name, "pointSizePixels") == 0)
         obj = FilledBoundaryAttributes_SetPointSizePixels(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -1740,8 +1749,8 @@ static char *FilledBoundaryAttributes_Purpose = "This class contains the plot at
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1752,12 +1761,12 @@ static char *FilledBoundaryAttributes_Purpose = "This class contains the plot at
 //
 
 VISIT_PY_TYPE_OBJ(FilledBoundaryAttributesType,         \
-                  "FilledBoundaryAttributes",           \
+                  "FilledBoundaryAttributes",         \
                   FilledBoundaryAttributesObject,       \
                   FilledBoundaryAttributes_dealloc,     \
                   FilledBoundaryAttributes_print,       \
-                  PyFilledBoundaryAttributes_getattr,   \
-                  PyFilledBoundaryAttributes_setattr,   \
+                  PyFilledBoundaryAttributes_getattro,  \
+                  PyFilledBoundaryAttributes_setattro,  \
                   FilledBoundaryAttributes_str,         \
                   FilledBoundaryAttributes_Purpose,     \
                   FilledBoundaryAttributes_richcompare, \
@@ -1821,6 +1830,7 @@ NewFilledBoundaryAttributes(int useCurrent)
         newObject->data = new FilledBoundaryAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&FilledBoundaryAttributesType);
     return (PyObject *)newObject;
 }
 

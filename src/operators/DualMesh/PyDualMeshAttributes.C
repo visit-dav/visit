@@ -194,8 +194,11 @@ DualMeshAttributes_dealloc(PyObject *v)
 
 static PyObject *DualMeshAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyDualMeshAttributes_getattr(PyObject *self, char *name)
+PyDualMeshAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "mode") == 0)
         return DualMeshAttributes_GetMode(self, NULL);
     if(strcmp(name, "Auto") == 0)
@@ -206,18 +209,24 @@ PyDualMeshAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(DualMeshAttributes::ZonesToNodes));
 
 
+    PyObject *meth = Py_FindMethod(PyDualMeshAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyDualMeshAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyDualMeshAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyDualMeshAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "mode") == 0)
         obj = DualMeshAttributes_SetMode(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -265,8 +274,8 @@ static char *DualMeshAttributes_Purpose = "Atts for Dual Mesh Operator";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -277,12 +286,12 @@ static char *DualMeshAttributes_Purpose = "Atts for Dual Mesh Operator";
 //
 
 VISIT_PY_TYPE_OBJ(DualMeshAttributesType,         \
-                  "DualMeshAttributes",           \
+                  "DualMeshAttributes",         \
                   DualMeshAttributesObject,       \
                   DualMeshAttributes_dealloc,     \
                   DualMeshAttributes_print,       \
-                  PyDualMeshAttributes_getattr,   \
-                  PyDualMeshAttributes_setattr,   \
+                  PyDualMeshAttributes_getattro,  \
+                  PyDualMeshAttributes_setattro,  \
                   DualMeshAttributes_str,         \
                   DualMeshAttributes_Purpose,     \
                   DualMeshAttributes_richcompare, \
@@ -346,6 +355,7 @@ NewDualMeshAttributes(int useCurrent)
         newObject->data = new DualMeshAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&DualMeshAttributesType);
     return (PyObject *)newObject;
 }
 

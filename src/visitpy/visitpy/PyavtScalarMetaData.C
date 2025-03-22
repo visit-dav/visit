@@ -1354,8 +1354,11 @@ avtScalarMetaData_dealloc(PyObject *v)
 
 static PyObject *avtScalarMetaData_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyavtScalarMetaData_getattr(PyObject *self, char *name)
+PyavtScalarMetaData_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "treatAsASCII") == 0)
         return avtScalarMetaData_GetTreatAsASCII(self, NULL);
     if(strcmp(name, "enumerationType") == 0)
@@ -1418,25 +1421,29 @@ PyavtScalarMetaData_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "__methods__") != 0)
     {
-        PyObject *retval = PyavtVarMetaData_getattr(self, name);
+        PyObject *retval = PyavtVarMetaData_getattro(self, attr_name);
         if (retval) return retval;
     }
 
     PyavtScalarMetaData_ExtendSetGetMethodTable();
+    PyObject *meth = Py_FindMethod(PyavtScalarMetaData_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyavtScalarMetaData_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyavtScalarMetaData_setattr(PyObject *self, char *name, PyObject *args)
+PyavtScalarMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
-    if (PyavtVarMetaData_setattr(self, name, args) != -1)
+    if (PyavtVarMetaData_setattro(self, attr_name, args) != -1)
         return 0;
     else
         PyErr_Clear();
 
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "treatAsASCII") == 0)
         obj = avtScalarMetaData_SetTreatAsASCII(self, args);
@@ -1466,6 +1473,8 @@ PyavtScalarMetaData_setattr(PyObject *self, char *name, PyObject *args)
         obj = avtScalarMetaData_SetMissingDataType(self, args);
     else if(strcmp(name, "missingData") == 0)
         obj = avtScalarMetaData_SetMissingData(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -1513,8 +1522,8 @@ static char *avtScalarMetaData_Purpose = "Contains scalar metadata attributes";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1525,12 +1534,12 @@ static char *avtScalarMetaData_Purpose = "Contains scalar metadata attributes";
 //
 
 VISIT_PY_TYPE_OBJ(avtScalarMetaDataType,         \
-                  "avtScalarMetaData",           \
+                  "avtScalarMetaData",         \
                   avtScalarMetaDataObject,       \
                   avtScalarMetaData_dealloc,     \
                   avtScalarMetaData_print,       \
-                  PyavtScalarMetaData_getattr,   \
-                  PyavtScalarMetaData_setattr,   \
+                  PyavtScalarMetaData_getattro,  \
+                  PyavtScalarMetaData_setattro,  \
                   avtScalarMetaData_str,         \
                   avtScalarMetaData_Purpose,     \
                   avtScalarMetaData_richcompare, \
@@ -1594,6 +1603,7 @@ NewavtScalarMetaData(int useCurrent)
         newObject->data = new avtScalarMetaData;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&avtScalarMetaDataType);
     return (PyObject *)newObject;
 }
 

@@ -572,8 +572,11 @@ CracksClipperAttributes_dealloc(PyObject *v)
 
 static PyObject *CracksClipperAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyCracksClipperAttributes_getattr(PyObject *self, char *name)
+PyCracksClipperAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "crack1Var") == 0)
         return CracksClipperAttributes_GetCrack1Var(self, NULL);
     if(strcmp(name, "crack2Var") == 0)
@@ -591,15 +594,19 @@ PyCracksClipperAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "inMassVar") == 0)
         return CracksClipperAttributes_GetInMassVar(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyCracksClipperAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyCracksClipperAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyCracksClipperAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyCracksClipperAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "crack1Var") == 0)
         obj = CracksClipperAttributes_SetCrack1Var(self, args);
@@ -617,6 +624,8 @@ PyCracksClipperAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = CracksClipperAttributes_SetShowCrack3(self, args);
     else if(strcmp(name, "inMassVar") == 0)
         obj = CracksClipperAttributes_SetInMassVar(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -664,8 +673,8 @@ static char *CracksClipperAttributes_Purpose = "Attributes for the cracks clippe
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -676,12 +685,12 @@ static char *CracksClipperAttributes_Purpose = "Attributes for the cracks clippe
 //
 
 VISIT_PY_TYPE_OBJ(CracksClipperAttributesType,         \
-                  "CracksClipperAttributes",           \
+                  "CracksClipperAttributes",         \
                   CracksClipperAttributesObject,       \
                   CracksClipperAttributes_dealloc,     \
                   CracksClipperAttributes_print,       \
-                  PyCracksClipperAttributes_getattr,   \
-                  PyCracksClipperAttributes_setattr,   \
+                  PyCracksClipperAttributes_getattro,  \
+                  PyCracksClipperAttributes_setattro,  \
                   CracksClipperAttributes_str,         \
                   CracksClipperAttributes_Purpose,     \
                   CracksClipperAttributes_richcompare, \
@@ -745,6 +754,7 @@ NewCracksClipperAttributes(int useCurrent)
         newObject->data = new CracksClipperAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&CracksClipperAttributesType);
     return (PyObject *)newObject;
 }
 

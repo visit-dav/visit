@@ -724,8 +724,11 @@ Line3DObject_dealloc(PyObject *v)
 // }
 
 static PyObject *
-Line3DObject_getattr(PyObject *self, char *name)
+Line3DObject_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "visible") == 0)
         return Line3DObject_GetVisible(self, NULL);
     if(strcmp(name, "active") == 0)
@@ -776,15 +779,19 @@ Line3DObject_getattr(PyObject *self, char *name)
     if(strcmp(name, "arrow2Height") == 0)
         return Line3DObject_GetArrow2Height(self, NULL);
 
+    PyObject *meth = Py_FindMethod(Line3DObject_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(Line3DObject_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 static int
-Line3DObject_setattr(PyObject *self, char *name, PyObject *args)
+Line3DObject_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     // Create a tuple to contain the arguments since all of the Set
     // functions expect a tuple.
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
     PyObject *tuple = PyTuple_New(1);
     PyTuple_SET_ITEM(tuple, 0, args);
     Py_INCREF(args);
@@ -828,6 +835,8 @@ Line3DObject_setattr(PyObject *self, char *name, PyObject *args)
         retval = (Line3DObject_SetArrow2Radius(self, tuple) != NULL);
     else if(strcmp(name, "arrow2Height") == 0)
         retval = (Line3DObject_SetArrow2Height(self, tuple) != NULL);
+    else
+        retval = PyObject_GenericSetAttr(self, attr_name, args);
 
     Py_DECREF(tuple);
     return retval ? 0 : -1;
@@ -966,8 +975,8 @@ static PyObject *Line3DObject_richcompare(PyObject *self, PyObject *other, int o
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -981,8 +990,8 @@ VISIT_PY_TYPE_OBJ(Line3DObjectType,
                   Line3DObjectObject,
                   Line3DObject_dealloc,
                   Line3DObject_print,
-                  Line3DObject_getattr,
-                  Line3DObject_setattr,
+                  Line3DObject_getattro,
+                  Line3DObject_setattro,
                   Line3DObject_str,
                   Line3DObject_Purpose,
                   Line3DObject_richcompare,

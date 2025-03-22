@@ -868,7 +868,7 @@ SILRestriction_compare(PyObject *v, PyObject *w)
 }
 
 // ****************************************************************************
-// Function: SILRestriction_getattr
+// Function: SILRestriction_getattro
 //
 // Purpose:
 //   Attribute fetch for PySILRestriction.
@@ -882,20 +882,15 @@ SILRestriction_compare(PyObject *v, PyObject *w)
 // ****************************************************************************
 
 static PyObject *
-SILRestriction_getattr(PyObject *self, char *name)
+SILRestriction_getattro(PyObject *self, PyObject *attr_name)
 {
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; SILRestriction_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(SILRestriction_methods[i].ml_name),
-                PyString_FromString(SILRestriction_methods[i].ml_name));
-        return result;
-    }
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
 
-    return Py_FindMethod(SILRestriction_methods, self, name);
+    PyObject *meth = Py_FindMethod(SILRestriction_methods, self, (char*)name);
+    if (meth) return meth;
+
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 
@@ -938,8 +933,8 @@ static char *SILRestriction_Purpose = "This class contains attributes used to re
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -953,7 +948,7 @@ VISIT_PY_TYPE_OBJ(PySILRestrictionType,        \
                   PySILRestrictionObject,      \
                   SILRestriction_dealloc,      \
                   SILRestriction_print,        \
-                  SILRestriction_getattr,      \
+                  SILRestriction_getattro,     \
                   0,                           \
                   0,                           \
                   SILRestriction_Purpose,      \

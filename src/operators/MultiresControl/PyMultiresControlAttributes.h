@@ -23,8 +23,8 @@ void           PyMultiresControlAttributes_SetParent(PyObject *obj, PyObject *pa
 void           PyMultiresControlAttributes_SetDefaults(const MultiresControlAttributes *atts);
 std::string    PyMultiresControlAttributes_GetLogString();
 std::string    PyMultiresControlAttributes_ToString(const MultiresControlAttributes *, const char *, const bool=false);
-PyObject *     PyMultiresControlAttributes_getattr(PyObject *self, char *name);
-int            PyMultiresControlAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PyMultiresControlAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyMultiresControlAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PyMultiresControlAttributes_methods[MULTIRESCONTROLATTRIBUTES_NMETH];
 
 #endif

@@ -2543,8 +2543,11 @@ LaunchProfile_dealloc(PyObject *v)
 
 static PyObject *LaunchProfile_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyLaunchProfile_getattr(PyObject *self, char *name)
+PyLaunchProfile_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "profileName") == 0)
         return LaunchProfile_GetProfileName(self, NULL);
     if(strcmp(name, "timeout") == 0)
@@ -2622,15 +2625,19 @@ PyLaunchProfile_getattr(PyObject *self, char *name)
     if(strcmp(name, "allowableProcs") == 0)
         return LaunchProfile_GetAllowableProcs(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyLaunchProfile_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyLaunchProfile_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyLaunchProfile_setattr(PyObject *self, char *name, PyObject *args)
+PyLaunchProfile_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "profileName") == 0)
         obj = LaunchProfile_SetProfileName(self, args);
@@ -2708,6 +2715,8 @@ PyLaunchProfile_setattr(PyObject *self, char *name, PyObject *args)
         obj = LaunchProfile_SetAllowableNodes(self, args);
     else if(strcmp(name, "allowableProcs") == 0)
         obj = LaunchProfile_SetAllowableProcs(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -2755,8 +2764,8 @@ static char *LaunchProfile_Purpose = "This class contains information needed to 
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -2767,12 +2776,12 @@ static char *LaunchProfile_Purpose = "This class contains information needed to 
 //
 
 VISIT_PY_TYPE_OBJ(LaunchProfileType,         \
-                  "LaunchProfile",           \
+                  "LaunchProfile",         \
                   LaunchProfileObject,       \
                   LaunchProfile_dealloc,     \
                   LaunchProfile_print,       \
-                  PyLaunchProfile_getattr,   \
-                  PyLaunchProfile_setattr,   \
+                  PyLaunchProfile_getattro,  \
+                  PyLaunchProfile_setattro,  \
                   LaunchProfile_str,         \
                   LaunchProfile_Purpose,     \
                   LaunchProfile_richcompare, \
@@ -2836,6 +2845,7 @@ NewLaunchProfile(int useCurrent)
         newObject->data = new LaunchProfile;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&LaunchProfileType);
     return (PyObject *)newObject;
 }
 

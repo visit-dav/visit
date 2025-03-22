@@ -313,25 +313,34 @@ ViewerClientInformation_dealloc(PyObject *v)
 
 static PyObject *ViewerClientInformation_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyViewerClientInformation_getattr(PyObject *self, char *name)
+PyViewerClientInformation_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "vars") == 0)
         return ViewerClientInformation_GetVars(self, NULL);
     if(strcmp(name, "supportedFormats") == 0)
         return ViewerClientInformation_GetSupportedFormats(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyViewerClientInformation_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyViewerClientInformation_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyViewerClientInformation_setattr(PyObject *self, char *name, PyObject *args)
+PyViewerClientInformation_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "supportedFormats") == 0)
         obj = ViewerClientInformation_SetSupportedFormats(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -379,8 +388,8 @@ static char *ViewerClientInformation_Purpose = "This class contains information 
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -391,12 +400,12 @@ static char *ViewerClientInformation_Purpose = "This class contains information 
 //
 
 VISIT_PY_TYPE_OBJ(ViewerClientInformationType,         \
-                  "ViewerClientInformation",           \
+                  "ViewerClientInformation",         \
                   ViewerClientInformationObject,       \
                   ViewerClientInformation_dealloc,     \
                   ViewerClientInformation_print,       \
-                  PyViewerClientInformation_getattr,   \
-                  PyViewerClientInformation_setattr,   \
+                  PyViewerClientInformation_getattro,  \
+                  PyViewerClientInformation_setattro,  \
                   ViewerClientInformation_str,         \
                   ViewerClientInformation_Purpose,     \
                   ViewerClientInformation_richcompare, \
@@ -460,6 +469,7 @@ NewViewerClientInformation(int useCurrent)
         newObject->data = new ViewerClientInformation;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&ViewerClientInformationType);
     return (PyObject *)newObject;
 }
 

@@ -1359,8 +1359,11 @@ SliceAttributes_dealloc(PyObject *v)
 
 static PyObject *SliceAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PySliceAttributes_getattr(PyObject *self, char *name)
+PySliceAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "originType") == 0)
         return SliceAttributes_GetOriginType(self, NULL);
     if(strcmp(name, "Point") == 0)
@@ -1418,15 +1421,19 @@ PySliceAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "phi") == 0)
         return SliceAttributes_GetPhi(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PySliceAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PySliceAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PySliceAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PySliceAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "originType") == 0)
         obj = SliceAttributes_SetOriginType(self, args);
@@ -1462,6 +1469,8 @@ PySliceAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = SliceAttributes_SetTheta(self, args);
     else if(strcmp(name, "phi") == 0)
         obj = SliceAttributes_SetPhi(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -1509,8 +1518,8 @@ static char *SliceAttributes_Purpose = "This class contains attributes for the a
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1521,12 +1530,12 @@ static char *SliceAttributes_Purpose = "This class contains attributes for the a
 //
 
 VISIT_PY_TYPE_OBJ(SliceAttributesType,         \
-                  "SliceAttributes",           \
+                  "SliceAttributes",         \
                   SliceAttributesObject,       \
                   SliceAttributes_dealloc,     \
                   SliceAttributes_print,       \
-                  PySliceAttributes_getattr,   \
-                  PySliceAttributes_setattr,   \
+                  PySliceAttributes_getattro,  \
+                  PySliceAttributes_setattro,  \
                   SliceAttributes_str,         \
                   SliceAttributes_Purpose,     \
                   SliceAttributes_richcompare, \
@@ -1590,6 +1599,7 @@ NewSliceAttributes(int useCurrent)
         newObject->data = new SliceAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&SliceAttributesType);
     return (PyObject *)newObject;
 }
 

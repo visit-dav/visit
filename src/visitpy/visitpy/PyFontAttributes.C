@@ -542,8 +542,11 @@ FontAttributes_dealloc(PyObject *v)
 
 static PyObject *FontAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyFontAttributes_getattr(PyObject *self, char *name)
+PyFontAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "font") == 0)
         return FontAttributes_GetFont(self, NULL);
     if(strcmp(name, "Arial") == 0)
@@ -564,15 +567,19 @@ PyFontAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "italic") == 0)
         return FontAttributes_GetItalic(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyFontAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyFontAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyFontAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyFontAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "font") == 0)
         obj = FontAttributes_SetFont(self, args);
@@ -586,6 +593,8 @@ PyFontAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = FontAttributes_SetBold(self, args);
     else if(strcmp(name, "italic") == 0)
         obj = FontAttributes_SetItalic(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -633,8 +642,8 @@ static char *FontAttributes_Purpose = "Describes font properties that we can set
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -645,12 +654,12 @@ static char *FontAttributes_Purpose = "Describes font properties that we can set
 //
 
 VISIT_PY_TYPE_OBJ(FontAttributesType,         \
-                  "FontAttributes",           \
+                  "FontAttributes",         \
                   FontAttributesObject,       \
                   FontAttributes_dealloc,     \
                   FontAttributes_print,       \
-                  PyFontAttributes_getattr,   \
-                  PyFontAttributes_setattr,   \
+                  PyFontAttributes_getattro,  \
+                  PyFontAttributes_setattro,  \
                   FontAttributes_str,         \
                   FontAttributes_Purpose,     \
                   FontAttributes_richcompare, \
@@ -714,6 +723,7 @@ NewFontAttributes(int useCurrent)
         newObject->data = new FontAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&FontAttributesType);
     return (PyObject *)newObject;
 }
 

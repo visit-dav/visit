@@ -431,8 +431,11 @@ CylinderAttributes_dealloc(PyObject *v)
 
 static PyObject *CylinderAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyCylinderAttributes_getattr(PyObject *self, char *name)
+PyCylinderAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "point1") == 0)
         return CylinderAttributes_GetPoint1(self, NULL);
     if(strcmp(name, "point2") == 0)
@@ -442,15 +445,19 @@ PyCylinderAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "inverse") == 0)
         return CylinderAttributes_GetInverse(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyCylinderAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyCylinderAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyCylinderAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyCylinderAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "point1") == 0)
         obj = CylinderAttributes_SetPoint1(self, args);
@@ -460,6 +467,8 @@ PyCylinderAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = CylinderAttributes_SetRadius(self, args);
     else if(strcmp(name, "inverse") == 0)
         obj = CylinderAttributes_SetInverse(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -507,8 +516,8 @@ static char *CylinderAttributes_Purpose = "Contain the attributes for a cylinder
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -519,12 +528,12 @@ static char *CylinderAttributes_Purpose = "Contain the attributes for a cylinder
 //
 
 VISIT_PY_TYPE_OBJ(CylinderAttributesType,         \
-                  "CylinderAttributes",           \
+                  "CylinderAttributes",         \
                   CylinderAttributesObject,       \
                   CylinderAttributes_dealloc,     \
                   CylinderAttributes_print,       \
-                  PyCylinderAttributes_getattr,   \
-                  PyCylinderAttributes_setattr,   \
+                  PyCylinderAttributes_getattro,  \
+                  PyCylinderAttributes_setattro,  \
                   CylinderAttributes_str,         \
                   CylinderAttributes_Purpose,     \
                   CylinderAttributes_richcompare, \
@@ -588,6 +597,7 @@ NewCylinderAttributes(int useCurrent)
         newObject->data = new CylinderAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&CylinderAttributesType);
     return (PyObject *)newObject;
 }
 

@@ -24,8 +24,8 @@ void VISITPY_API           PyPickVarInfo_SetParent(PyObject *obj, PyObject *pare
 void VISITPY_API           PyPickVarInfo_SetDefaults(const PickVarInfo *atts);
 std::string VISITPY_API    PyPickVarInfo_GetLogString();
 std::string VISITPY_API    PyPickVarInfo_ToString(const PickVarInfo *, const char *, const bool=false);
-VISITPY_API PyObject *     PyPickVarInfo_getattr(PyObject *self, char *name);
-int VISITPY_API            PyPickVarInfo_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyPickVarInfo_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyPickVarInfo_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyPickVarInfo_methods[PICKVARINFO_NMETH];
 
 #endif

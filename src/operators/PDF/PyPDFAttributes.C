@@ -1932,8 +1932,11 @@ PDFAttributes_dealloc(PyObject *v)
 
 static PyObject *PDFAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyPDFAttributes_getattr(PyObject *self, char *name)
+PyPDFAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "var1") == 0)
         return PDFAttributes_GetVar1(self, NULL);
     if(strcmp(name, "var1MinFlag") == 0)
@@ -2020,15 +2023,19 @@ PyPDFAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(PDFAttributes::ZoneCount));
 
 
+    PyObject *meth = Py_FindMethod(PyPDFAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyPDFAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyPDFAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyPDFAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "var1") == 0)
         obj = PDFAttributes_SetVar1(self, args);
@@ -2084,6 +2091,8 @@ PyPDFAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PDFAttributes_SetScaleCube(self, args);
     else if(strcmp(name, "densityType") == 0)
         obj = PDFAttributes_SetDensityType(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -2131,8 +2140,8 @@ static char *PDFAttributes_Purpose = "Attributes for the PDF operator";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -2143,12 +2152,12 @@ static char *PDFAttributes_Purpose = "Attributes for the PDF operator";
 //
 
 VISIT_PY_TYPE_OBJ(PDFAttributesType,         \
-                  "PDFAttributes",           \
+                  "PDFAttributes",         \
                   PDFAttributesObject,       \
                   PDFAttributes_dealloc,     \
                   PDFAttributes_print,       \
-                  PyPDFAttributes_getattr,   \
-                  PyPDFAttributes_setattr,   \
+                  PyPDFAttributes_getattro,  \
+                  PyPDFAttributes_setattro,  \
                   PDFAttributes_str,         \
                   PDFAttributes_Purpose,     \
                   PDFAttributes_richcompare, \
@@ -2212,6 +2221,7 @@ NewPDFAttributes(int useCurrent)
         newObject->data = new PDFAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PDFAttributesType);
     return (PyObject *)newObject;
 }
 

@@ -811,8 +811,11 @@ ElevateAttributes_dealloc(PyObject *v)
 
 static PyObject *ElevateAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyElevateAttributes_getattr(PyObject *self, char *name)
+PyElevateAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "useXYLimits") == 0)
         return ElevateAttributes_GetUseXYLimits(self, NULL);
     if(strcmp(name, "Never") == 0)
@@ -853,15 +856,19 @@ PyElevateAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "variable") == 0)
         return ElevateAttributes_GetVariable(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyElevateAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyElevateAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyElevateAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyElevateAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "useXYLimits") == 0)
         obj = ElevateAttributes_SetUseXYLimits(self, args);
@@ -883,6 +890,8 @@ PyElevateAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ElevateAttributes_SetZeroFlag(self, args);
     else if(strcmp(name, "variable") == 0)
         obj = ElevateAttributes_SetVariable(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -930,8 +939,8 @@ static char *ElevateAttributes_Purpose = "Attributes for the elevate operator";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -942,12 +951,12 @@ static char *ElevateAttributes_Purpose = "Attributes for the elevate operator";
 //
 
 VISIT_PY_TYPE_OBJ(ElevateAttributesType,         \
-                  "ElevateAttributes",           \
+                  "ElevateAttributes",         \
                   ElevateAttributesObject,       \
                   ElevateAttributes_dealloc,     \
                   ElevateAttributes_print,       \
-                  PyElevateAttributes_getattr,   \
-                  PyElevateAttributes_setattr,   \
+                  PyElevateAttributes_getattro,  \
+                  PyElevateAttributes_setattro,  \
                   ElevateAttributes_str,         \
                   ElevateAttributes_Purpose,     \
                   ElevateAttributes_richcompare, \
@@ -1011,6 +1020,7 @@ NewElevateAttributes(int useCurrent)
         newObject->data = new ElevateAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&ElevateAttributesType);
     return (PyObject *)newObject;
 }
 

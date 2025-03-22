@@ -173,23 +173,32 @@ EdgeAttributes_dealloc(PyObject *v)
 
 static PyObject *EdgeAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyEdgeAttributes_getattr(PyObject *self, char *name)
+PyEdgeAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "dummy") == 0)
         return EdgeAttributes_GetDummy(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyEdgeAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyEdgeAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyEdgeAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyEdgeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "dummy") == 0)
         obj = EdgeAttributes_SetDummy(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -237,8 +246,8 @@ static char *EdgeAttributes_Purpose = "Attributes for the Edge operator";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -249,12 +258,12 @@ static char *EdgeAttributes_Purpose = "Attributes for the Edge operator";
 //
 
 VISIT_PY_TYPE_OBJ(EdgeAttributesType,         \
-                  "EdgeAttributes",           \
+                  "EdgeAttributes",         \
                   EdgeAttributesObject,       \
                   EdgeAttributes_dealloc,     \
                   EdgeAttributes_print,       \
-                  PyEdgeAttributes_getattr,   \
-                  PyEdgeAttributes_setattr,   \
+                  PyEdgeAttributes_getattro,  \
+                  PyEdgeAttributes_setattro,  \
                   EdgeAttributes_str,         \
                   EdgeAttributes_Purpose,     \
                   EdgeAttributes_richcompare, \
@@ -318,6 +327,7 @@ NewEdgeAttributes(int useCurrent)
         newObject->data = new EdgeAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&EdgeAttributesType);
     return (PyObject *)newObject;
 }
 

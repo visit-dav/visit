@@ -264,27 +264,36 @@ DBOptionsAttributes_dealloc(PyObject *v)
 
 static PyObject *DBOptionsAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyDBOptionsAttributes_getattr(PyObject *self, char *name)
+PyDBOptionsAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "types") == 0)
         return DBOptionsAttributes_GetTypes(self, NULL);
     if(strcmp(name, "help") == 0)
         return DBOptionsAttributes_GetHelp(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyDBOptionsAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyDBOptionsAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyDBOptionsAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyDBOptionsAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "types") == 0)
         obj = DBOptionsAttributes_SetTypes(self, args);
     else if(strcmp(name, "help") == 0)
         obj = DBOptionsAttributes_SetHelp(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -332,8 +341,8 @@ static char *DBOptionsAttributes_Purpose = "Attributes of database options";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -344,12 +353,12 @@ static char *DBOptionsAttributes_Purpose = "Attributes of database options";
 //
 
 VISIT_PY_TYPE_OBJ(DBOptionsAttributesType,         \
-                  "DBOptionsAttributes",           \
+                  "DBOptionsAttributes",         \
                   DBOptionsAttributesObject,       \
                   DBOptionsAttributes_dealloc,     \
                   DBOptionsAttributes_print,       \
-                  PyDBOptionsAttributes_getattr,   \
-                  PyDBOptionsAttributes_setattr,   \
+                  PyDBOptionsAttributes_getattro,  \
+                  PyDBOptionsAttributes_setattro,  \
                   DBOptionsAttributes_str,         \
                   DBOptionsAttributes_Purpose,     \
                   DBOptionsAttributes_richcompare, \
@@ -413,6 +422,7 @@ NewDBOptionsAttributes(int useCurrent)
         newObject->data = new DBOptionsAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&DBOptionsAttributesType);
     return (PyObject *)newObject;
 }
 

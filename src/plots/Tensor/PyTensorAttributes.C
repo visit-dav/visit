@@ -1395,8 +1395,11 @@ TensorAttributes_dealloc(PyObject *v)
 
 static PyObject *TensorAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyTensorAttributes_getattr(PyObject *self, char *name)
+PyTensorAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "glyphLocation") == 0)
         return TensorAttributes_GetGlyphLocation(self, NULL);
     if(strcmp(name, "AdaptsToMeshResolution") == 0)
@@ -1446,15 +1449,19 @@ PyTensorAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "animationStep") == 0)
         return TensorAttributes_GetAnimationStep(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyTensorAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyTensorAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyTensorAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyTensorAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "glyphLocation") == 0)
         obj = TensorAttributes_SetGlyphLocation(self, args);
@@ -1494,6 +1501,8 @@ PyTensorAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = TensorAttributes_SetAutoScale(self, args);
     else if(strcmp(name, "animationStep") == 0)
         obj = TensorAttributes_SetAnimationStep(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -1541,8 +1550,8 @@ static char *TensorAttributes_Purpose = "Attributes for the tensor plot";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1553,12 +1562,12 @@ static char *TensorAttributes_Purpose = "Attributes for the tensor plot";
 //
 
 VISIT_PY_TYPE_OBJ(TensorAttributesType,         \
-                  "TensorAttributes",           \
+                  "TensorAttributes",         \
                   TensorAttributesObject,       \
                   TensorAttributes_dealloc,     \
                   TensorAttributes_print,       \
-                  PyTensorAttributes_getattr,   \
-                  PyTensorAttributes_setattr,   \
+                  PyTensorAttributes_getattro,  \
+                  PyTensorAttributes_setattro,  \
                   TensorAttributes_str,         \
                   TensorAttributes_Purpose,     \
                   TensorAttributes_richcompare, \
@@ -1622,6 +1631,7 @@ NewTensorAttributes(int useCurrent)
         newObject->data = new TensorAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&TensorAttributesType);
     return (PyObject *)newObject;
 }
 

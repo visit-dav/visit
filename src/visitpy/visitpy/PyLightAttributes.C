@@ -506,8 +506,11 @@ LightAttributes_dealloc(PyObject *v)
 
 static PyObject *LightAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyLightAttributes_getattr(PyObject *self, char *name)
+PyLightAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "enabledFlag") == 0)
         return LightAttributes_GetEnabledFlag(self, NULL);
     if(strcmp(name, "type") == 0)
@@ -526,15 +529,19 @@ PyLightAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "brightness") == 0)
         return LightAttributes_GetBrightness(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyLightAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyLightAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyLightAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyLightAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "enabledFlag") == 0)
         obj = LightAttributes_SetEnabledFlag(self, args);
@@ -546,6 +553,8 @@ PyLightAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = LightAttributes_SetColor(self, args);
     else if(strcmp(name, "brightness") == 0)
         obj = LightAttributes_SetBrightness(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -593,8 +602,8 @@ static char *LightAttributes_Purpose = "This class is a light in a light list.";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -605,12 +614,12 @@ static char *LightAttributes_Purpose = "This class is a light in a light list.";
 //
 
 VISIT_PY_TYPE_OBJ(LightAttributesType,         \
-                  "LightAttributes",           \
+                  "LightAttributes",         \
                   LightAttributesObject,       \
                   LightAttributes_dealloc,     \
                   LightAttributes_print,       \
-                  PyLightAttributes_getattr,   \
-                  PyLightAttributes_setattr,   \
+                  PyLightAttributes_getattro,  \
+                  PyLightAttributes_setattro,  \
                   LightAttributes_str,         \
                   LightAttributes_Purpose,     \
                   LightAttributes_richcompare, \
@@ -674,6 +683,7 @@ NewLightAttributes(int useCurrent)
         newObject->data = new LightAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&LightAttributesType);
     return (PyObject *)newObject;
 }
 

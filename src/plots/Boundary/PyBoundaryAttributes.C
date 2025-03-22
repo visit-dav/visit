@@ -1034,8 +1034,11 @@ BoundaryAttributes_dealloc(PyObject *v)
 
 static PyObject *BoundaryAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyBoundaryAttributes_getattr(PyObject *self, char *name)
+PyBoundaryAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "colorType") == 0)
         return BoundaryAttributes_GetColorType(self, NULL);
     if(strcmp(name, "ColorBySingleColor") == 0)
@@ -1066,15 +1069,19 @@ PyBoundaryAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "smoothingLevel") == 0)
         return BoundaryAttributes_GetSmoothingLevel(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyBoundaryAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyBoundaryAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyBoundaryAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyBoundaryAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "colorType") == 0)
         obj = BoundaryAttributes_SetColorType(self, args);
@@ -1098,6 +1105,8 @@ PyBoundaryAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = BoundaryAttributes_SetWireframe(self, args);
     else if(strcmp(name, "smoothingLevel") == 0)
         obj = BoundaryAttributes_SetSmoothingLevel(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -1145,8 +1154,8 @@ static char *BoundaryAttributes_Purpose = "This class contains the plot attribut
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1157,12 +1166,12 @@ static char *BoundaryAttributes_Purpose = "This class contains the plot attribut
 //
 
 VISIT_PY_TYPE_OBJ(BoundaryAttributesType,         \
-                  "BoundaryAttributes",           \
+                  "BoundaryAttributes",         \
                   BoundaryAttributesObject,       \
                   BoundaryAttributes_dealloc,     \
                   BoundaryAttributes_print,       \
-                  PyBoundaryAttributes_getattr,   \
-                  PyBoundaryAttributes_setattr,   \
+                  PyBoundaryAttributes_getattro,  \
+                  PyBoundaryAttributes_setattro,  \
                   BoundaryAttributes_str,         \
                   BoundaryAttributes_Purpose,     \
                   BoundaryAttributes_richcompare, \
@@ -1226,6 +1235,7 @@ NewBoundaryAttributes(int useCurrent)
         newObject->data = new BoundaryAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&BoundaryAttributesType);
     return (PyObject *)newObject;
 }
 

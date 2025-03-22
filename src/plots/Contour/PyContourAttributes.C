@@ -1640,8 +1640,11 @@ ContourAttributes_dealloc(PyObject *v)
 
 static PyObject *ContourAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyContourAttributes_getattr(PyObject *self, char *name)
+PyContourAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "defaultPalette") == 0)
         return ContourAttributes_GetDefaultPalette(self, NULL);
     if(strcmp(name, "changedColors") == 0)
@@ -1700,15 +1703,19 @@ PyContourAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "wireframe") == 0)
         return ContourAttributes_GetWireframe(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyContourAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyContourAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyContourAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyContourAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "defaultPalette") == 0)
         obj = ContourAttributes_SetDefaultPalette(self, args);
@@ -1748,6 +1755,8 @@ PyContourAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ContourAttributes_SetScaling(self, args);
     else if(strcmp(name, "wireframe") == 0)
         obj = ContourAttributes_SetWireframe(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -1795,8 +1804,8 @@ static char *ContourAttributes_Purpose = "This class contains the plot attribute
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1807,12 +1816,12 @@ static char *ContourAttributes_Purpose = "This class contains the plot attribute
 //
 
 VISIT_PY_TYPE_OBJ(ContourAttributesType,         \
-                  "ContourAttributes",           \
+                  "ContourAttributes",         \
                   ContourAttributesObject,       \
                   ContourAttributes_dealloc,     \
                   ContourAttributes_print,       \
-                  PyContourAttributes_getattr,   \
-                  PyContourAttributes_setattr,   \
+                  PyContourAttributes_getattro,  \
+                  PyContourAttributes_setattro,  \
                   ContourAttributes_str,         \
                   ContourAttributes_Purpose,     \
                   ContourAttributes_richcompare, \
@@ -1876,6 +1885,7 @@ NewContourAttributes(int useCurrent)
         newObject->data = new ContourAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&ContourAttributesType);
     return (PyObject *)newObject;
 }
 

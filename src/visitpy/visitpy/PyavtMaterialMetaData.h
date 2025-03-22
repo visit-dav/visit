@@ -25,8 +25,8 @@ void VISITPY_API           PyavtMaterialMetaData_SetParent(PyObject *obj, PyObje
 void VISITPY_API           PyavtMaterialMetaData_SetDefaults(const avtMaterialMetaData *atts);
 std::string VISITPY_API    PyavtMaterialMetaData_GetLogString();
 std::string VISITPY_API    PyavtMaterialMetaData_ToString(const avtMaterialMetaData *, const char *, const bool=false);
-VISITPY_API PyObject *     PyavtMaterialMetaData_getattr(PyObject *self, char *name);
-int VISITPY_API            PyavtMaterialMetaData_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyavtMaterialMetaData_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyavtMaterialMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyavtMaterialMetaData_methods[AVTMATERIALMETADATA_NMETH];
 
 #endif

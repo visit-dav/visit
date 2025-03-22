@@ -899,8 +899,11 @@ RemapAttributes_dealloc(PyObject *v)
 
 static PyObject *RemapAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyRemapAttributes_getattr(PyObject *self, char *name)
+PyRemapAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "useExtents") == 0)
         return RemapAttributes_GetUseExtents(self, NULL);
     if(strcmp(name, "startX") == 0)
@@ -931,15 +934,19 @@ PyRemapAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(RemapAttributes::extrinsic));
 
 
+    PyObject *meth = Py_FindMethod(PyRemapAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyRemapAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyRemapAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyRemapAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "useExtents") == 0)
         obj = RemapAttributes_SetUseExtents(self, args);
@@ -965,6 +972,8 @@ PyRemapAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = RemapAttributes_SetCellsZ(self, args);
     else if(strcmp(name, "variableType") == 0)
         obj = RemapAttributes_SetVariableType(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -1012,8 +1021,8 @@ static char *RemapAttributes_Purpose = "Atts for Remap operator";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1024,12 +1033,12 @@ static char *RemapAttributes_Purpose = "Atts for Remap operator";
 //
 
 VISIT_PY_TYPE_OBJ(RemapAttributesType,         \
-                  "RemapAttributes",           \
+                  "RemapAttributes",         \
                   RemapAttributesObject,       \
                   RemapAttributes_dealloc,     \
                   RemapAttributes_print,       \
-                  PyRemapAttributes_getattr,   \
-                  PyRemapAttributes_setattr,   \
+                  PyRemapAttributes_getattro,  \
+                  PyRemapAttributes_setattro,  \
                   RemapAttributes_str,         \
                   RemapAttributes_Purpose,     \
                   RemapAttributes_richcompare, \
@@ -1093,6 +1102,7 @@ NewRemapAttributes(int useCurrent)
         newObject->data = new RemapAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&RemapAttributesType);
     return (PyObject *)newObject;
 }
 

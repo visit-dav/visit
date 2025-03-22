@@ -2093,8 +2093,11 @@ CurveAttributes_dealloc(PyObject *v)
 
 static PyObject *CurveAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyCurveAttributes_getattr(PyObject *self, char *name)
+PyCurveAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "showLines") == 0)
         return CurveAttributes_GetShowLines(self, NULL);
     if(strcmp(name, "lineWidth") == 0)
@@ -2194,15 +2197,19 @@ PyCurveAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(CurveAttributes::Degrees));
 
 
+    PyObject *meth = Py_FindMethod(PyCurveAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyCurveAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyCurveAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "showLines") == 0)
         obj = CurveAttributes_SetShowLines(self, args);
@@ -2258,6 +2265,8 @@ PyCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = CurveAttributes_SetPolarCoordinateOrder(self, args);
     else if(strcmp(name, "angleUnits") == 0)
         obj = CurveAttributes_SetAngleUnits(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -2305,8 +2314,8 @@ static char *CurveAttributes_Purpose = "Attributes for the xy plot";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -2317,12 +2326,12 @@ static char *CurveAttributes_Purpose = "Attributes for the xy plot";
 //
 
 VISIT_PY_TYPE_OBJ(CurveAttributesType,         \
-                  "CurveAttributes",           \
+                  "CurveAttributes",         \
                   CurveAttributesObject,       \
                   CurveAttributes_dealloc,     \
                   CurveAttributes_print,       \
-                  PyCurveAttributes_getattr,   \
-                  PyCurveAttributes_setattr,   \
+                  PyCurveAttributes_getattro,  \
+                  PyCurveAttributes_setattro,  \
                   CurveAttributes_str,         \
                   CurveAttributes_Purpose,     \
                   CurveAttributes_richcompare, \
@@ -2386,6 +2395,7 @@ NewCurveAttributes(int useCurrent)
         newObject->data = new CurveAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&CurveAttributesType);
     return (PyObject *)newObject;
 }
 

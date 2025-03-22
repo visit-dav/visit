@@ -5453,8 +5453,11 @@ IntegralCurveAttributes_dealloc(PyObject *v)
 
 static PyObject *IntegralCurveAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyIntegralCurveAttributes_getattr(PyObject *self, char *name)
+PyIntegralCurveAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "sourceType") == 0)
         return IntegralCurveAttributes_GetSourceType(self, NULL);
     if(strcmp(name, "SpecifiedPoint") == 0)
@@ -5732,37 +5735,19 @@ PyIntegralCurveAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "selection") == 0)
         return IntegralCurveAttributes_GetSelection(self, NULL);
 
-#include <visit-config.h>
+    PyObject *meth = Py_FindMethod(PyIntegralCurveAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
-#error This code is obsolete in this version of VisIt and should be removed.
-#else
-    // Try and handle legacy fields
-#define NAME_CHANGE_MESSAGE2(oldname, newname) \
-    PyErr_WarnFormat(NULL, 1, "'%s' is no longer a valid IntegralCurve attribute.\n" \
-                    "It's name has been changed to '%s', " \
-                    "please update your script.\n", oldname, newname);
-
-    // parallelizationAlgorithmType 
-    if(strcmp(name, "MasterSlave") == 0)
-    {
-        NAME_CHANGE_MESSAGE2(name, "ManagerWorker");
-        return PyInt_FromLong(long(IntegralCurveAttributes::ManagerWorker));
-    }
-    // end parallelizationAlgorithmType 
-    // NOTE: no cooresponding _setattr method is needed for this case because this
-    // is handling only a change in enum symbol name. Those are constants in the
-    // python object and never set
-#endif
-
-    return Py_FindMethod(PyIntegralCurveAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyIntegralCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyIntegralCurveAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "sourceType") == 0)
         obj = IntegralCurveAttributes_SetSourceType(self, args);
@@ -5906,6 +5891,8 @@ PyIntegralCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = IntegralCurveAttributes_SetCorrelationDistanceMinDistType(self, args);
     else if(strcmp(name, "selection") == 0)
         obj = IntegralCurveAttributes_SetSelection(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -5953,8 +5940,8 @@ static char *IntegralCurveAttributes_Purpose = "Attributes for the IntegralCurve
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -5965,12 +5952,12 @@ static char *IntegralCurveAttributes_Purpose = "Attributes for the IntegralCurve
 //
 
 VISIT_PY_TYPE_OBJ(IntegralCurveAttributesType,         \
-                  "IntegralCurveAttributes",           \
+                  "IntegralCurveAttributes",         \
                   IntegralCurveAttributesObject,       \
                   IntegralCurveAttributes_dealloc,     \
                   IntegralCurveAttributes_print,       \
-                  PyIntegralCurveAttributes_getattr,   \
-                  PyIntegralCurveAttributes_setattr,   \
+                  PyIntegralCurveAttributes_getattro,  \
+                  PyIntegralCurveAttributes_setattro,  \
                   IntegralCurveAttributes_str,         \
                   IntegralCurveAttributes_Purpose,     \
                   IntegralCurveAttributes_richcompare, \
@@ -6034,6 +6021,7 @@ NewIntegralCurveAttributes(int useCurrent)
         newObject->data = new IntegralCurveAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&IntegralCurveAttributesType);
     return (PyObject *)newObject;
 }
 

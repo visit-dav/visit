@@ -23,8 +23,8 @@ void           PySmoothOperatorAttributes_SetParent(PyObject *obj, PyObject *par
 void           PySmoothOperatorAttributes_SetDefaults(const SmoothOperatorAttributes *atts);
 std::string    PySmoothOperatorAttributes_GetLogString();
 std::string    PySmoothOperatorAttributes_ToString(const SmoothOperatorAttributes *, const char *, const bool=false);
-PyObject *     PySmoothOperatorAttributes_getattr(PyObject *self, char *name);
-int            PySmoothOperatorAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PySmoothOperatorAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PySmoothOperatorAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PySmoothOperatorAttributes_methods[SMOOTHOPERATORATTRIBUTES_NMETH];
 
 #endif

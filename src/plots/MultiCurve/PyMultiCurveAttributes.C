@@ -1315,8 +1315,11 @@ MultiCurveAttributes_dealloc(PyObject *v)
 
 static PyObject *MultiCurveAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyMultiCurveAttributes_getattr(PyObject *self, char *name)
+PyMultiCurveAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "defaultPalette") == 0)
         return MultiCurveAttributes_GetDefaultPalette(self, NULL);
     if(strcmp(name, "changedColors") == 0)
@@ -1355,15 +1358,19 @@ PyMultiCurveAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "legendFlag") == 0)
         return MultiCurveAttributes_GetLegendFlag(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyMultiCurveAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyMultiCurveAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyMultiCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyMultiCurveAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "defaultPalette") == 0)
         obj = MultiCurveAttributes_SetDefaultPalette(self, args);
@@ -1397,6 +1404,8 @@ PyMultiCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = MultiCurveAttributes_SetIdVariable(self, args);
     else if(strcmp(name, "legendFlag") == 0)
         obj = MultiCurveAttributes_SetLegendFlag(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -1444,8 +1453,8 @@ static char *MultiCurveAttributes_Purpose = "This class contains the plot attrib
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1456,12 +1465,12 @@ static char *MultiCurveAttributes_Purpose = "This class contains the plot attrib
 //
 
 VISIT_PY_TYPE_OBJ(MultiCurveAttributesType,         \
-                  "MultiCurveAttributes",           \
+                  "MultiCurveAttributes",         \
                   MultiCurveAttributesObject,       \
                   MultiCurveAttributes_dealloc,     \
                   MultiCurveAttributes_print,       \
-                  PyMultiCurveAttributes_getattr,   \
-                  PyMultiCurveAttributes_setattr,   \
+                  PyMultiCurveAttributes_getattro,  \
+                  PyMultiCurveAttributes_setattro,  \
                   MultiCurveAttributes_str,         \
                   MultiCurveAttributes_Purpose,     \
                   MultiCurveAttributes_richcompare, \
@@ -1525,6 +1534,7 @@ NewMultiCurveAttributes(int useCurrent)
         newObject->data = new MultiCurveAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&MultiCurveAttributesType);
     return (PyObject *)newObject;
 }
 

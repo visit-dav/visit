@@ -24,8 +24,8 @@ void VISITPY_API           PyFontAttributes_SetParent(PyObject *obj, PyObject *p
 void VISITPY_API           PyFontAttributes_SetDefaults(const FontAttributes *atts);
 std::string VISITPY_API    PyFontAttributes_GetLogString();
 std::string VISITPY_API    PyFontAttributes_ToString(const FontAttributes *, const char *, const bool=false);
-VISITPY_API PyObject *     PyFontAttributes_getattr(PyObject *self, char *name);
-int VISITPY_API            PyFontAttributes_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyFontAttributes_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyFontAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyFontAttributes_methods[FONTATTRIBUTES_NMETH];
 
 #endif

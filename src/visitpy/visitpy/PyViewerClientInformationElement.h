@@ -24,8 +24,8 @@ void VISITPY_API           PyViewerClientInformationElement_SetParent(PyObject *
 void VISITPY_API           PyViewerClientInformationElement_SetDefaults(const ViewerClientInformationElement *atts);
 std::string VISITPY_API    PyViewerClientInformationElement_GetLogString();
 std::string VISITPY_API    PyViewerClientInformationElement_ToString(const ViewerClientInformationElement *, const char *, const bool=false);
-VISITPY_API PyObject *     PyViewerClientInformationElement_getattr(PyObject *self, char *name);
-int VISITPY_API            PyViewerClientInformationElement_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyViewerClientInformationElement_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyViewerClientInformationElement_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyViewerClientInformationElement_methods[VIEWERCLIENTINFORMATIONELEMENT_NMETH];
 
 #endif

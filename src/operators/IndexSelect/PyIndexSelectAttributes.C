@@ -1424,8 +1424,11 @@ IndexSelectAttributes_dealloc(PyObject *v)
 
 static PyObject *IndexSelectAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyIndexSelectAttributes_getattr(PyObject *self, char *name)
+PyIndexSelectAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "maxDim") == 0)
         return IndexSelectAttributes_GetMaxDim(self, NULL);
     if(strcmp(name, "OneD") == 0)
@@ -1481,15 +1484,19 @@ PyIndexSelectAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "subsetName") == 0)
         return IndexSelectAttributes_GetSubsetName(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyIndexSelectAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyIndexSelectAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyIndexSelectAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyIndexSelectAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "maxDim") == 0)
         obj = IndexSelectAttributes_SetMaxDim(self, args);
@@ -1531,6 +1538,8 @@ PyIndexSelectAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = IndexSelectAttributes_SetCategoryName(self, args);
     else if(strcmp(name, "subsetName") == 0)
         obj = IndexSelectAttributes_SetSubsetName(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -1578,8 +1587,8 @@ static char *IndexSelectAttributes_Purpose = "This class contains attributes for
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1590,12 +1599,12 @@ static char *IndexSelectAttributes_Purpose = "This class contains attributes for
 //
 
 VISIT_PY_TYPE_OBJ(IndexSelectAttributesType,         \
-                  "IndexSelectAttributes",           \
+                  "IndexSelectAttributes",         \
                   IndexSelectAttributesObject,       \
                   IndexSelectAttributes_dealloc,     \
                   IndexSelectAttributes_print,       \
-                  PyIndexSelectAttributes_getattr,   \
-                  PyIndexSelectAttributes_setattr,   \
+                  PyIndexSelectAttributes_getattro,  \
+                  PyIndexSelectAttributes_setattro,  \
                   IndexSelectAttributes_str,         \
                   IndexSelectAttributes_Purpose,     \
                   IndexSelectAttributes_richcompare, \
@@ -1659,6 +1668,7 @@ NewIndexSelectAttributes(int useCurrent)
         newObject->data = new IndexSelectAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&IndexSelectAttributesType);
     return (PyObject *)newObject;
 }
 

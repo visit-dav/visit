@@ -1289,8 +1289,11 @@ SurfaceAttributes_dealloc(PyObject *v)
 
 static PyObject *SurfaceAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PySurfaceAttributes_getattr(PyObject *self, char *name)
+PySurfaceAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "legendFlag") == 0)
         return SurfaceAttributes_GetLegendFlag(self, NULL);
     if(strcmp(name, "lightingFlag") == 0)
@@ -1338,15 +1341,19 @@ PySurfaceAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "invertColorTable") == 0)
         return SurfaceAttributes_GetInvertColorTable(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PySurfaceAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PySurfaceAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PySurfaceAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PySurfaceAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "legendFlag") == 0)
         obj = SurfaceAttributes_SetLegendFlag(self, args);
@@ -1382,6 +1389,8 @@ PySurfaceAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = SurfaceAttributes_SetColorTableName(self, args);
     else if(strcmp(name, "invertColorTable") == 0)
         obj = SurfaceAttributes_SetInvertColorTable(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -1429,8 +1438,8 @@ static char *SurfaceAttributes_Purpose = "Attributes for the surface plot";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1441,12 +1450,12 @@ static char *SurfaceAttributes_Purpose = "Attributes for the surface plot";
 //
 
 VISIT_PY_TYPE_OBJ(SurfaceAttributesType,         \
-                  "SurfaceAttributes",           \
+                  "SurfaceAttributes",         \
                   SurfaceAttributesObject,       \
                   SurfaceAttributes_dealloc,     \
                   SurfaceAttributes_print,       \
-                  PySurfaceAttributes_getattr,   \
-                  PySurfaceAttributes_setattr,   \
+                  PySurfaceAttributes_getattro,  \
+                  PySurfaceAttributes_setattro,  \
                   SurfaceAttributes_str,         \
                   SurfaceAttributes_Purpose,     \
                   SurfaceAttributes_richcompare, \
@@ -1510,6 +1519,7 @@ NewSurfaceAttributes(int useCurrent)
         newObject->data = new SurfaceAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&SurfaceAttributesType);
     return (PyObject *)newObject;
 }
 

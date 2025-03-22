@@ -421,8 +421,11 @@ SubdivideQuadsAttributes_dealloc(PyObject *v)
 
 static PyObject *SubdivideQuadsAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PySubdivideQuadsAttributes_getattr(PyObject *self, char *name)
+PySubdivideQuadsAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "threshold") == 0)
         return SubdivideQuadsAttributes_GetThreshold(self, NULL);
     if(strcmp(name, "maxSubdivs") == 0)
@@ -434,15 +437,19 @@ PySubdivideQuadsAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "variable") == 0)
         return SubdivideQuadsAttributes_GetVariable(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PySubdivideQuadsAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PySubdivideQuadsAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PySubdivideQuadsAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PySubdivideQuadsAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "threshold") == 0)
         obj = SubdivideQuadsAttributes_SetThreshold(self, args);
@@ -454,6 +461,8 @@ PySubdivideQuadsAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = SubdivideQuadsAttributes_SetDoTriangles(self, args);
     else if(strcmp(name, "variable") == 0)
         obj = SubdivideQuadsAttributes_SetVariable(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -501,8 +510,8 @@ static char *SubdivideQuadsAttributes_Purpose = "Attributes for SubdivideQuads o
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -513,12 +522,12 @@ static char *SubdivideQuadsAttributes_Purpose = "Attributes for SubdivideQuads o
 //
 
 VISIT_PY_TYPE_OBJ(SubdivideQuadsAttributesType,         \
-                  "SubdivideQuadsAttributes",           \
+                  "SubdivideQuadsAttributes",         \
                   SubdivideQuadsAttributesObject,       \
                   SubdivideQuadsAttributes_dealloc,     \
                   SubdivideQuadsAttributes_print,       \
-                  PySubdivideQuadsAttributes_getattr,   \
-                  PySubdivideQuadsAttributes_setattr,   \
+                  PySubdivideQuadsAttributes_getattro,  \
+                  PySubdivideQuadsAttributes_setattro,  \
                   SubdivideQuadsAttributes_str,         \
                   SubdivideQuadsAttributes_Purpose,     \
                   SubdivideQuadsAttributes_richcompare, \
@@ -582,6 +591,7 @@ NewSubdivideQuadsAttributes(int useCurrent)
         newObject->data = new SubdivideQuadsAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&SubdivideQuadsAttributesType);
     return (PyObject *)newObject;
 }
 

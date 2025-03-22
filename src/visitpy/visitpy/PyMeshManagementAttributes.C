@@ -704,8 +704,11 @@ MeshManagementAttributes_dealloc(PyObject *v)
 
 static PyObject *MeshManagementAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyMeshManagementAttributes_getattr(PyObject *self, char *name)
+PyMeshManagementAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "discretizationTolerance") == 0)
         return MeshManagementAttributes_GetDiscretizationTolerance(self, NULL);
     if(strcmp(name, "discretizationToleranceX") == 0)
@@ -728,15 +731,19 @@ PyMeshManagementAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "passNativeCSG") == 0)
         return MeshManagementAttributes_GetPassNativeCSG(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyMeshManagementAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyMeshManagementAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyMeshManagementAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyMeshManagementAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "discretizationTolerance") == 0)
         obj = MeshManagementAttributes_SetDiscretizationTolerance(self, args);
@@ -752,6 +759,8 @@ PyMeshManagementAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = MeshManagementAttributes_SetDiscretizeBoundaryOnly(self, args);
     else if(strcmp(name, "passNativeCSG") == 0)
         obj = MeshManagementAttributes_SetPassNativeCSG(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -799,8 +808,8 @@ static char *MeshManagementAttributes_Purpose = "Global variables controlling re
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -811,12 +820,12 @@ static char *MeshManagementAttributes_Purpose = "Global variables controlling re
 //
 
 VISIT_PY_TYPE_OBJ(MeshManagementAttributesType,         \
-                  "MeshManagementAttributes",           \
+                  "MeshManagementAttributes",         \
                   MeshManagementAttributesObject,       \
                   MeshManagementAttributes_dealloc,     \
                   MeshManagementAttributes_print,       \
-                  PyMeshManagementAttributes_getattr,   \
-                  PyMeshManagementAttributes_setattr,   \
+                  PyMeshManagementAttributes_getattro,  \
+                  PyMeshManagementAttributes_setattro,  \
                   MeshManagementAttributes_str,         \
                   MeshManagementAttributes_Purpose,     \
                   MeshManagementAttributes_richcompare, \
@@ -880,6 +889,7 @@ NewMeshManagementAttributes(int useCurrent)
         newObject->data = new MeshManagementAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&MeshManagementAttributesType);
     return (PyObject *)newObject;
 }
 

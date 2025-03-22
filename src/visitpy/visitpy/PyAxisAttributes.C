@@ -296,8 +296,11 @@ AxisAttributes_dealloc(PyObject *v)
 
 static PyObject *AxisAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyAxisAttributes_getattr(PyObject *self, char *name)
+PyAxisAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "title") == 0)
         return AxisAttributes_GetTitle(self, NULL);
     if(strcmp(name, "label") == 0)
@@ -307,15 +310,19 @@ PyAxisAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "grid") == 0)
         return AxisAttributes_GetGrid(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyAxisAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyAxisAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyAxisAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyAxisAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "title") == 0)
         obj = AxisAttributes_SetTitle(self, args);
@@ -325,6 +332,8 @@ PyAxisAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = AxisAttributes_SetTickMarks(self, args);
     else if(strcmp(name, "grid") == 0)
         obj = AxisAttributes_SetGrid(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -372,8 +381,8 @@ static char *AxisAttributes_Purpose = "Contains the properties for one axis.";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -384,12 +393,12 @@ static char *AxisAttributes_Purpose = "Contains the properties for one axis.";
 //
 
 VISIT_PY_TYPE_OBJ(AxisAttributesType,         \
-                  "AxisAttributes",           \
+                  "AxisAttributes",         \
                   AxisAttributesObject,       \
                   AxisAttributes_dealloc,     \
                   AxisAttributes_print,       \
-                  PyAxisAttributes_getattr,   \
-                  PyAxisAttributes_setattr,   \
+                  PyAxisAttributes_getattro,  \
+                  PyAxisAttributes_setattro,  \
                   AxisAttributes_str,         \
                   AxisAttributes_Purpose,     \
                   AxisAttributes_richcompare, \
@@ -453,6 +462,7 @@ NewAxisAttributes(int useCurrent)
         newObject->data = new AxisAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&AxisAttributesType);
     return (PyObject *)newObject;
 }
 

@@ -954,8 +954,11 @@ ReplicateAttributes_dealloc(PyObject *v)
 
 static PyObject *ReplicateAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyReplicateAttributes_getattr(PyObject *self, char *name)
+PyReplicateAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "useUnitCellVectors") == 0)
         return ReplicateAttributes_GetUseUnitCellVectors(self, NULL);
     if(strcmp(name, "xVector") == 0)
@@ -979,15 +982,19 @@ PyReplicateAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "newPeriodicOrigin") == 0)
         return ReplicateAttributes_GetNewPeriodicOrigin(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyReplicateAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyReplicateAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyReplicateAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyReplicateAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "useUnitCellVectors") == 0)
         obj = ReplicateAttributes_SetUseUnitCellVectors(self, args);
@@ -1011,6 +1018,8 @@ PyReplicateAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ReplicateAttributes_SetShiftPeriodicAtomOrigin(self, args);
     else if(strcmp(name, "newPeriodicOrigin") == 0)
         obj = ReplicateAttributes_SetNewPeriodicOrigin(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -1058,8 +1067,8 @@ static char *ReplicateAttributes_Purpose = "This class contains attributes for t
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1070,12 +1079,12 @@ static char *ReplicateAttributes_Purpose = "This class contains attributes for t
 //
 
 VISIT_PY_TYPE_OBJ(ReplicateAttributesType,         \
-                  "ReplicateAttributes",           \
+                  "ReplicateAttributes",         \
                   ReplicateAttributesObject,       \
                   ReplicateAttributes_dealloc,     \
                   ReplicateAttributes_print,       \
-                  PyReplicateAttributes_getattr,   \
-                  PyReplicateAttributes_setattr,   \
+                  PyReplicateAttributes_getattro,  \
+                  PyReplicateAttributes_setattro,  \
                   ReplicateAttributes_str,         \
                   ReplicateAttributes_Purpose,     \
                   ReplicateAttributes_richcompare, \
@@ -1139,6 +1148,7 @@ NewReplicateAttributes(int useCurrent)
         newObject->data = new ReplicateAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&ReplicateAttributesType);
     return (PyObject *)newObject;
 }
 

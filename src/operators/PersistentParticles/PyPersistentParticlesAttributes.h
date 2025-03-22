@@ -23,8 +23,8 @@ void           PyPersistentParticlesAttributes_SetParent(PyObject *obj, PyObject
 void           PyPersistentParticlesAttributes_SetDefaults(const PersistentParticlesAttributes *atts);
 std::string    PyPersistentParticlesAttributes_GetLogString();
 std::string    PyPersistentParticlesAttributes_ToString(const PersistentParticlesAttributes *, const char *, const bool=false);
-PyObject *     PyPersistentParticlesAttributes_getattr(PyObject *self, char *name);
-int            PyPersistentParticlesAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PyPersistentParticlesAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyPersistentParticlesAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PyPersistentParticlesAttributes_methods[PERSISTENTPARTICLESATTRIBUTES_NMETH];
 
 #endif

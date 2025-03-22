@@ -494,8 +494,11 @@ Text2DObject_dealloc(PyObject *v)
 // }
 
 static PyObject *
-Text2DObject_getattr(PyObject *self, char *name)
+Text2DObject_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "visible") == 0)
         return Text2DObject_GetVisible(self, NULL);
     if(strcmp(name, "active") == 0)
@@ -526,14 +529,19 @@ Text2DObject_getattr(PyObject *self, char *name)
     if(strcmp(name, "fontShadow") == 0)
         return Text2DObject_GetFontShadow(self, NULL);
 
-    return Py_FindMethod(Text2DObject_methods, self, name);
+    PyObject *meth = Py_FindMethod(Text2DObject_methods, self, (char*)name);
+    if (meth) return meth;
+
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 static int
-Text2DObject_setattr(PyObject *self, char *name, PyObject *args)
+Text2DObject_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     // Create a tuple to contain the arguments since all of the Set
     // functions expect a tuple.
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
     PyObject *tuple = PyTuple_New(1);
     PyTuple_SET_ITEM(tuple, 0, args);
     Py_INCREF(args);
@@ -561,6 +569,8 @@ Text2DObject_setattr(PyObject *self, char *name, PyObject *args)
         retval = (Text2DObject_SetFontItalic(self, tuple) != NULL);
     else if(strcmp(name, "fontShadow") == 0)
         retval = (Text2DObject_SetFontShadow(self, tuple) != NULL);
+    else
+        retval = PyObject_GenericSetAttr(self, attr_name, args);
 
     Py_DECREF(tuple);
     return retval ? 0 : -1;
@@ -665,8 +675,8 @@ static PyObject *Text2DObject_richcompare(PyObject *self, PyObject *other, int o
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -680,8 +690,8 @@ VISIT_PY_TYPE_OBJ( Text2DObjectType,         \
                    Text2DObjectObject,       \
                    Text2DObject_dealloc,     \
                    Text2DObject_print,       \
-                   Text2DObject_getattr,     \
-                   Text2DObject_setattr,     \
+                   Text2DObject_getattro,    \
+                   Text2DObject_setattro,    \
                    Text2DObject_str,         \
                    Text2DObject_Purpose,     \
                    Text2DObject_richcompare, \

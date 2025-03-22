@@ -534,8 +534,11 @@ View2DAttributes_dealloc(PyObject *v)
 
 static PyObject *View2DAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyView2DAttributes_getattr(PyObject *self, char *name)
+PyView2DAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "windowCoords") == 0)
         return View2DAttributes_GetWindowCoords(self, NULL);
     if(strcmp(name, "viewportCoords") == 0)
@@ -568,14 +571,19 @@ PyView2DAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "windowValid") == 0)
         return View2DAttributes_GetWindowValid(self, NULL);
 
-    return Py_FindMethod(PyView2DAttributes_methods, self, name);
+    PyObject *meth = Py_FindMethod(PyView2DAttributes_methods, self, (char*)name);
+    if (meth) return meth;
+
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyView2DAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyView2DAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     // Create a tuple to contain the arguments since all of the Set
     // functions expect a tuple.
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
     PyObject *tuple = PyTuple_New(1);
     PyTuple_SET_ITEM(tuple, 0, args);
     Py_INCREF(args);
@@ -595,6 +603,8 @@ PyView2DAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = View2DAttributes_SetYScale(self, tuple);
     else if(strcmp(name, "windowValid") == 0)
         obj = View2DAttributes_SetWindowValid(self, tuple);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if(obj != NULL)
         Py_DECREF(obj);
@@ -807,8 +817,8 @@ static char *View2DAttributes_Purpose = "This class contains the 2d view attribu
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -819,8 +829,8 @@ VISIT_PY_TYPE_OBJ(View2DAttributesType,          \
                   View2DAttributesObject,        \
                   View2DAttributes_dealloc,      \
                   View2DAttributes_print,        \
-                  PyView2DAttributes_getattr,    \
-                  PyView2DAttributes_setattr,    \
+                  PyView2DAttributes_getattro,    \
+                  PyView2DAttributes_setattro,    \
                   View2DAttributes_str,          \
                   View2DAttributes_Purpose,      \
                   View2DAttributes_richcompare,  \

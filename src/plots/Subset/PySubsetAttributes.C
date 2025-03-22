@@ -1431,8 +1431,11 @@ SubsetAttributes_dealloc(PyObject *v)
 
 static PyObject *SubsetAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PySubsetAttributes_getattr(PyObject *self, char *name)
+PySubsetAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "colorType") == 0)
         return SubsetAttributes_GetColorType(self, NULL);
     if(strcmp(name, "ColorBySingleColor") == 0)
@@ -1492,15 +1495,19 @@ PySubsetAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "pointSizePixels") == 0)
         return SubsetAttributes_GetPointSizePixels(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PySubsetAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PySubsetAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PySubsetAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PySubsetAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "colorType") == 0)
         obj = SubsetAttributes_SetColorType(self, args);
@@ -1536,6 +1543,8 @@ PySubsetAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = SubsetAttributes_SetPointSizeVar(self, args);
     else if(strcmp(name, "pointSizePixels") == 0)
         obj = SubsetAttributes_SetPointSizePixels(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -1583,8 +1592,8 @@ static char *SubsetAttributes_Purpose = "This class contains the plot attributes
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1595,12 +1604,12 @@ static char *SubsetAttributes_Purpose = "This class contains the plot attributes
 //
 
 VISIT_PY_TYPE_OBJ(SubsetAttributesType,         \
-                  "SubsetAttributes",           \
+                  "SubsetAttributes",         \
                   SubsetAttributesObject,       \
                   SubsetAttributes_dealloc,     \
                   SubsetAttributes_print,       \
-                  PySubsetAttributes_getattr,   \
-                  PySubsetAttributes_setattr,   \
+                  PySubsetAttributes_getattro,  \
+                  PySubsetAttributes_setattro,  \
                   SubsetAttributes_str,         \
                   SubsetAttributes_Purpose,     \
                   SubsetAttributes_richcompare, \
@@ -1664,6 +1673,7 @@ NewSubsetAttributes(int useCurrent)
         newObject->data = new SubsetAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&SubsetAttributesType);
     return (PyObject *)newObject;
 }
 

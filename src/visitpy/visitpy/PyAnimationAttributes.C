@@ -477,8 +477,11 @@ AnimationAttributes_dealloc(PyObject *v)
 
 static PyObject *AnimationAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyAnimationAttributes_getattr(PyObject *self, char *name)
+PyAnimationAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "animationMode") == 0)
         return AnimationAttributes_GetAnimationMode(self, NULL);
     if(strcmp(name, "ReversePlayMode") == 0)
@@ -504,15 +507,19 @@ PyAnimationAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(AnimationAttributes::Swing));
 
 
+    PyObject *meth = Py_FindMethod(PyAnimationAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyAnimationAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyAnimationAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyAnimationAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "animationMode") == 0)
         obj = AnimationAttributes_SetAnimationMode(self, args);
@@ -524,6 +531,8 @@ PyAnimationAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = AnimationAttributes_SetTimeout(self, args);
     else if(strcmp(name, "playbackMode") == 0)
         obj = AnimationAttributes_SetPlaybackMode(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -571,8 +580,8 @@ static char *AnimationAttributes_Purpose = "This class contains the animation at
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -583,12 +592,12 @@ static char *AnimationAttributes_Purpose = "This class contains the animation at
 //
 
 VISIT_PY_TYPE_OBJ(AnimationAttributesType,         \
-                  "AnimationAttributes",           \
+                  "AnimationAttributes",         \
                   AnimationAttributesObject,       \
                   AnimationAttributes_dealloc,     \
                   AnimationAttributes_print,       \
-                  PyAnimationAttributes_getattr,   \
-                  PyAnimationAttributes_setattr,   \
+                  PyAnimationAttributes_getattro,  \
+                  PyAnimationAttributes_setattro,  \
                   AnimationAttributes_str,         \
                   AnimationAttributes_Purpose,     \
                   AnimationAttributes_richcompare, \
@@ -652,6 +661,7 @@ NewAnimationAttributes(int useCurrent)
         newObject->data = new AnimationAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&AnimationAttributesType);
     return (PyObject *)newObject;
 }
 

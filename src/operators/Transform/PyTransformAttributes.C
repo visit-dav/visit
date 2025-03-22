@@ -2711,8 +2711,11 @@ TransformAttributes_dealloc(PyObject *v)
 
 static PyObject *TransformAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyTransformAttributes_getattr(PyObject *self, char *name)
+PyTransformAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "doRotate") == 0)
         return TransformAttributes_GetDoRotate(self, NULL);
     if(strcmp(name, "rotateOrigin") == 0)
@@ -2825,15 +2828,19 @@ PyTransformAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "transformVectors") == 0)
         return TransformAttributes_GetTransformVectors(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyTransformAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyTransformAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyTransformAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyTransformAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "doRotate") == 0)
         obj = TransformAttributes_SetDoRotate(self, args);
@@ -2909,6 +2916,8 @@ PyTransformAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = TransformAttributes_SetVectorTransformMethod(self, args);
     else if(strcmp(name, "transformVectors") == 0)
         obj = TransformAttributes_SetTransformVectors(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -2956,8 +2965,8 @@ static char *TransformAttributes_Purpose = "This class contains attributes for t
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -2968,12 +2977,12 @@ static char *TransformAttributes_Purpose = "This class contains attributes for t
 //
 
 VISIT_PY_TYPE_OBJ(TransformAttributesType,         \
-                  "TransformAttributes",           \
+                  "TransformAttributes",         \
                   TransformAttributesObject,       \
                   TransformAttributes_dealloc,     \
                   TransformAttributes_print,       \
-                  PyTransformAttributes_getattr,   \
-                  PyTransformAttributes_setattr,   \
+                  PyTransformAttributes_getattro,  \
+                  PyTransformAttributes_setattro,  \
                   TransformAttributes_str,         \
                   TransformAttributes_Purpose,     \
                   TransformAttributes_richcompare, \
@@ -3037,6 +3046,7 @@ NewTransformAttributes(int useCurrent)
         newObject->data = new TransformAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&TransformAttributesType);
     return (PyObject *)newObject;
 }
 

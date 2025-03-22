@@ -24,8 +24,8 @@ void VISITPY_API           PyQueryOverTimeAttributes_SetParent(PyObject *obj, Py
 void VISITPY_API           PyQueryOverTimeAttributes_SetDefaults(const QueryOverTimeAttributes *atts);
 std::string VISITPY_API    PyQueryOverTimeAttributes_GetLogString();
 std::string VISITPY_API    PyQueryOverTimeAttributes_ToString(const QueryOverTimeAttributes *, const char *, const bool=false);
-VISITPY_API PyObject *     PyQueryOverTimeAttributes_getattr(PyObject *self, char *name);
-int VISITPY_API            PyQueryOverTimeAttributes_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyQueryOverTimeAttributes_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyQueryOverTimeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyQueryOverTimeAttributes_methods[QUERYOVERTIMEATTRIBUTES_NMETH];
 
 #endif

@@ -23,8 +23,8 @@ void           PyMeshAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyMeshAttributes_SetDefaults(const MeshAttributes *atts);
 std::string    PyMeshAttributes_GetLogString();
 std::string    PyMeshAttributes_ToString(const MeshAttributes *, const char *, const bool=false);
-PyObject *     PyMeshAttributes_getattr(PyObject *self, char *name);
-int            PyMeshAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PyMeshAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyMeshAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PyMeshAttributes_methods[MESHATTRIBUTES_NMETH];
 
 #endif

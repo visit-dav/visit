@@ -569,8 +569,11 @@ avtSpeciesMetaData_dealloc(PyObject *v)
 
 static PyObject *avtSpeciesMetaData_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyavtSpeciesMetaData_getattr(PyObject *self, char *name)
+PyavtSpeciesMetaData_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "name") == 0)
         return avtSpeciesMetaData_GetName(self, NULL);
     if(strcmp(name, "originalName") == 0)
@@ -586,15 +589,19 @@ PyavtSpeciesMetaData_getattr(PyObject *self, char *name)
     if(strcmp(name, "species") == 0)
         return avtSpeciesMetaData_GetSpecies(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyavtSpeciesMetaData_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyavtSpeciesMetaData_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyavtSpeciesMetaData_setattr(PyObject *self, char *name, PyObject *args)
+PyavtSpeciesMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "name") == 0)
         obj = avtSpeciesMetaData_SetName(self, args);
@@ -608,6 +615,8 @@ PyavtSpeciesMetaData_setattr(PyObject *self, char *name, PyObject *args)
         obj = avtSpeciesMetaData_SetMaterialName(self, args);
     else if(strcmp(name, "numMaterials") == 0)
         obj = avtSpeciesMetaData_SetNumMaterials(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -655,8 +664,8 @@ static char *avtSpeciesMetaData_Purpose = "Contains species metadata attributes"
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -667,12 +676,12 @@ static char *avtSpeciesMetaData_Purpose = "Contains species metadata attributes"
 //
 
 VISIT_PY_TYPE_OBJ(avtSpeciesMetaDataType,         \
-                  "avtSpeciesMetaData",           \
+                  "avtSpeciesMetaData",         \
                   avtSpeciesMetaDataObject,       \
                   avtSpeciesMetaData_dealloc,     \
                   avtSpeciesMetaData_print,       \
-                  PyavtSpeciesMetaData_getattr,   \
-                  PyavtSpeciesMetaData_setattr,   \
+                  PyavtSpeciesMetaData_getattro,  \
+                  PyavtSpeciesMetaData_setattro,  \
                   avtSpeciesMetaData_str,         \
                   avtSpeciesMetaData_Purpose,     \
                   avtSpeciesMetaData_richcompare, \
@@ -736,6 +745,7 @@ NewavtSpeciesMetaData(int useCurrent)
         newObject->data = new avtSpeciesMetaData;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&avtSpeciesMetaDataType);
     return (PyObject *)newObject;
 }
 

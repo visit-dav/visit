@@ -844,8 +844,11 @@ IsosurfaceAttributes_dealloc(PyObject *v)
 
 static PyObject *IsosurfaceAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyIsosurfaceAttributes_getattr(PyObject *self, char *name)
+PyIsosurfaceAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "contourNLevels") == 0)
         return IsosurfaceAttributes_GetContourNLevels(self, NULL);
     if(strcmp(name, "contourValue") == 0)
@@ -879,15 +882,19 @@ PyIsosurfaceAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "variable") == 0)
         return IsosurfaceAttributes_GetVariable(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyIsosurfaceAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyIsosurfaceAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyIsosurfaceAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyIsosurfaceAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "contourNLevels") == 0)
         obj = IsosurfaceAttributes_SetContourNLevels(self, args);
@@ -909,6 +916,8 @@ PyIsosurfaceAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = IsosurfaceAttributes_SetScaling(self, args);
     else if(strcmp(name, "variable") == 0)
         obj = IsosurfaceAttributes_SetVariable(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -956,8 +965,8 @@ static char *IsosurfaceAttributes_Purpose = "Attributes for the isosurface opera
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -968,12 +977,12 @@ static char *IsosurfaceAttributes_Purpose = "Attributes for the isosurface opera
 //
 
 VISIT_PY_TYPE_OBJ(IsosurfaceAttributesType,         \
-                  "IsosurfaceAttributes",           \
+                  "IsosurfaceAttributes",         \
                   IsosurfaceAttributesObject,       \
                   IsosurfaceAttributes_dealloc,     \
                   IsosurfaceAttributes_print,       \
-                  PyIsosurfaceAttributes_getattr,   \
-                  PyIsosurfaceAttributes_setattr,   \
+                  PyIsosurfaceAttributes_getattro,  \
+                  PyIsosurfaceAttributes_setattro,  \
                   IsosurfaceAttributes_str,         \
                   IsosurfaceAttributes_Purpose,     \
                   IsosurfaceAttributes_richcompare, \
@@ -1037,6 +1046,7 @@ NewIsosurfaceAttributes(int useCurrent)
         newObject->data = new IsosurfaceAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&IsosurfaceAttributesType);
     return (PyObject *)newObject;
 }
 

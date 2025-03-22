@@ -588,8 +588,11 @@ avtCurveMetaData_dealloc(PyObject *v)
 
 static PyObject *avtCurveMetaData_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyavtCurveMetaData_getattr(PyObject *self, char *name)
+PyavtCurveMetaData_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "xUnits") == 0)
         return avtCurveMetaData_GetXUnits(self, NULL);
     if(strcmp(name, "xLabel") == 0)
@@ -609,25 +612,29 @@ PyavtCurveMetaData_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "__methods__") != 0)
     {
-        PyObject *retval = PyavtVarMetaData_getattr(self, name);
+        PyObject *retval = PyavtVarMetaData_getattro(self, attr_name);
         if (retval) return retval;
     }
 
     PyavtCurveMetaData_ExtendSetGetMethodTable();
+    PyObject *meth = Py_FindMethod(PyavtCurveMetaData_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyavtCurveMetaData_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyavtCurveMetaData_setattr(PyObject *self, char *name, PyObject *args)
+PyavtCurveMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
-    if (PyavtVarMetaData_setattr(self, name, args) != -1)
+    if (PyavtVarMetaData_setattro(self, attr_name, args) != -1)
         return 0;
     else
         PyErr_Clear();
 
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "xUnits") == 0)
         obj = avtCurveMetaData_SetXUnits(self, args);
@@ -645,6 +652,8 @@ PyavtCurveMetaData_setattr(PyObject *self, char *name, PyObject *args)
         obj = avtCurveMetaData_SetMaxSpatialExtents(self, args);
     else if(strcmp(name, "from1DScalarName") == 0)
         obj = avtCurveMetaData_SetFrom1DScalarName(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -692,8 +701,8 @@ static char *avtCurveMetaData_Purpose = "Contains curve metadata attributes";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -704,12 +713,12 @@ static char *avtCurveMetaData_Purpose = "Contains curve metadata attributes";
 //
 
 VISIT_PY_TYPE_OBJ(avtCurveMetaDataType,         \
-                  "avtCurveMetaData",           \
+                  "avtCurveMetaData",         \
                   avtCurveMetaDataObject,       \
                   avtCurveMetaData_dealloc,     \
                   avtCurveMetaData_print,       \
-                  PyavtCurveMetaData_getattr,   \
-                  PyavtCurveMetaData_setattr,   \
+                  PyavtCurveMetaData_getattro,  \
+                  PyavtCurveMetaData_setattro,  \
                   avtCurveMetaData_str,         \
                   avtCurveMetaData_Purpose,     \
                   avtCurveMetaData_richcompare, \
@@ -773,6 +782,7 @@ NewavtCurveMetaData(int useCurrent)
         newObject->data = new avtCurveMetaData;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&avtCurveMetaDataType);
     return (PyObject *)newObject;
 }
 

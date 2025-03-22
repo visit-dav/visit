@@ -568,8 +568,11 @@ TubeAttributes_dealloc(PyObject *v)
 
 static PyObject *TubeAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyTubeAttributes_getattr(PyObject *self, char *name)
+PyTubeAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "scaleByVarFlag") == 0)
         return TubeAttributes_GetScaleByVarFlag(self, NULL);
     if(strcmp(name, "tubeRadiusType") == 0)
@@ -590,15 +593,19 @@ PyTubeAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "capping") == 0)
         return TubeAttributes_GetCapping(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyTubeAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyTubeAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyTubeAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyTubeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "scaleByVarFlag") == 0)
         obj = TubeAttributes_SetScaleByVarFlag(self, args);
@@ -614,6 +621,8 @@ PyTubeAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = TubeAttributes_SetFineness(self, args);
     else if(strcmp(name, "capping") == 0)
         obj = TubeAttributes_SetCapping(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -661,8 +670,8 @@ static char *TubeAttributes_Purpose = "This class contains attributes for the tu
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -673,12 +682,12 @@ static char *TubeAttributes_Purpose = "This class contains attributes for the tu
 //
 
 VISIT_PY_TYPE_OBJ(TubeAttributesType,         \
-                  "TubeAttributes",           \
+                  "TubeAttributes",         \
                   TubeAttributesObject,       \
                   TubeAttributes_dealloc,     \
                   TubeAttributes_print,       \
-                  PyTubeAttributes_getattr,   \
-                  PyTubeAttributes_setattr,   \
+                  PyTubeAttributes_getattro,  \
+                  PyTubeAttributes_setattro,  \
                   TubeAttributes_str,         \
                   TubeAttributes_Purpose,     \
                   TubeAttributes_richcompare, \
@@ -742,6 +751,7 @@ NewTubeAttributes(int useCurrent)
         newObject->data = new TubeAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&TubeAttributesType);
     return (PyObject *)newObject;
 }
 

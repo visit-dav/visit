@@ -24,8 +24,8 @@ void VISITPY_API           PyGlobalLineoutAttributes_SetParent(PyObject *obj, Py
 void VISITPY_API           PyGlobalLineoutAttributes_SetDefaults(const GlobalLineoutAttributes *atts);
 std::string VISITPY_API    PyGlobalLineoutAttributes_GetLogString();
 std::string VISITPY_API    PyGlobalLineoutAttributes_ToString(const GlobalLineoutAttributes *, const char *, const bool=false);
-VISITPY_API PyObject *     PyGlobalLineoutAttributes_getattr(PyObject *self, char *name);
-int VISITPY_API            PyGlobalLineoutAttributes_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyGlobalLineoutAttributes_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyGlobalLineoutAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyGlobalLineoutAttributes_methods[GLOBALLINEOUTATTRIBUTES_NMETH];
 
 #endif

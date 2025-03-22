@@ -1015,8 +1015,11 @@ LabelAttributes_dealloc(PyObject *v)
 
 static PyObject *LabelAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyLabelAttributes_getattr(PyObject *self, char *name)
+PyLabelAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "legendFlag") == 0)
         return LabelAttributes_GetLegendFlag(self, NULL);
     if(strcmp(name, "showNodes") == 0)
@@ -1079,15 +1082,19 @@ PyLabelAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "formatTemplate") == 0)
         return LabelAttributes_GetFormatTemplate(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyLabelAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyLabelAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyLabelAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyLabelAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "legendFlag") == 0)
         obj = LabelAttributes_SetLegendFlag(self, args);
@@ -1115,6 +1122,8 @@ PyLabelAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = LabelAttributes_SetDepthTestMode(self, args);
     else if(strcmp(name, "formatTemplate") == 0)
         obj = LabelAttributes_SetFormatTemplate(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -1162,8 +1171,8 @@ static char *LabelAttributes_Purpose = "This class contains the fields that we n
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1174,12 +1183,12 @@ static char *LabelAttributes_Purpose = "This class contains the fields that we n
 //
 
 VISIT_PY_TYPE_OBJ(LabelAttributesType,         \
-                  "LabelAttributes",           \
+                  "LabelAttributes",         \
                   LabelAttributesObject,       \
                   LabelAttributes_dealloc,     \
                   LabelAttributes_print,       \
-                  PyLabelAttributes_getattr,   \
-                  PyLabelAttributes_setattr,   \
+                  PyLabelAttributes_getattro,  \
+                  PyLabelAttributes_setattro,  \
                   LabelAttributes_str,         \
                   LabelAttributes_Purpose,     \
                   LabelAttributes_richcompare, \
@@ -1243,6 +1252,7 @@ NewLabelAttributes(int useCurrent)
         newObject->data = new LabelAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&LabelAttributesType);
     return (PyObject *)newObject;
 }
 

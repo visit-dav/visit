@@ -2595,8 +2595,11 @@ RenderingAttributes_dealloc(PyObject *v)
 
 static PyObject *RenderingAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyRenderingAttributes_getattr(PyObject *self, char *name)
+PyRenderingAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "antialiasing") == 0)
         return RenderingAttributes_GetAntialiasing(self, NULL);
     if(strcmp(name, "orderComposite") == 0)
@@ -2705,15 +2708,19 @@ PyRenderingAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "osprayShadows") == 0)
         return RenderingAttributes_GetOsprayShadows(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyRenderingAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyRenderingAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyRenderingAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyRenderingAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "antialiasing") == 0)
         obj = RenderingAttributes_SetAntialiasing(self, args);
@@ -2785,6 +2792,8 @@ PyRenderingAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = RenderingAttributes_SetOsprayAO(self, args);
     else if(strcmp(name, "osprayShadows") == 0)
         obj = RenderingAttributes_SetOsprayShadows(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -2832,8 +2841,8 @@ static char *RenderingAttributes_Purpose = "This class contains special renderin
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -2844,12 +2853,12 @@ static char *RenderingAttributes_Purpose = "This class contains special renderin
 //
 
 VISIT_PY_TYPE_OBJ(RenderingAttributesType,         \
-                  "RenderingAttributes",           \
+                  "RenderingAttributes",         \
                   RenderingAttributesObject,       \
                   RenderingAttributes_dealloc,     \
                   RenderingAttributes_print,       \
-                  PyRenderingAttributes_getattr,   \
-                  PyRenderingAttributes_setattr,   \
+                  PyRenderingAttributes_getattro,  \
+                  PyRenderingAttributes_setattro,  \
                   RenderingAttributes_str,         \
                   RenderingAttributes_Purpose,     \
                   RenderingAttributes_richcompare, \
@@ -2913,6 +2922,7 @@ NewRenderingAttributes(int useCurrent)
         newObject->data = new RenderingAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&RenderingAttributesType);
     return (PyObject *)newObject;
 }
 

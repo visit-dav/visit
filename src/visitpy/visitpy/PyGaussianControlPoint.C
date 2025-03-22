@@ -426,8 +426,11 @@ GaussianControlPoint_dealloc(PyObject *v)
 
 static PyObject *GaussianControlPoint_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyGaussianControlPoint_getattr(PyObject *self, char *name)
+PyGaussianControlPoint_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "x") == 0)
         return GaussianControlPoint_GetX(self, NULL);
     if(strcmp(name, "height") == 0)
@@ -439,15 +442,19 @@ PyGaussianControlPoint_getattr(PyObject *self, char *name)
     if(strcmp(name, "yBias") == 0)
         return GaussianControlPoint_GetYBias(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyGaussianControlPoint_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyGaussianControlPoint_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyGaussianControlPoint_setattr(PyObject *self, char *name, PyObject *args)
+PyGaussianControlPoint_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "x") == 0)
         obj = GaussianControlPoint_SetX(self, args);
@@ -459,6 +466,8 @@ PyGaussianControlPoint_setattr(PyObject *self, char *name, PyObject *args)
         obj = GaussianControlPoint_SetXBias(self, args);
     else if(strcmp(name, "yBias") == 0)
         obj = GaussianControlPoint_SetYBias(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -506,8 +515,8 @@ static char *GaussianControlPoint_Purpose = "This class contains the information
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -518,12 +527,12 @@ static char *GaussianControlPoint_Purpose = "This class contains the information
 //
 
 VISIT_PY_TYPE_OBJ(GaussianControlPointType,         \
-                  "GaussianControlPoint",           \
+                  "GaussianControlPoint",         \
                   GaussianControlPointObject,       \
                   GaussianControlPoint_dealloc,     \
                   GaussianControlPoint_print,       \
-                  PyGaussianControlPoint_getattr,   \
-                  PyGaussianControlPoint_setattr,   \
+                  PyGaussianControlPoint_getattro,  \
+                  PyGaussianControlPoint_setattro,  \
                   GaussianControlPoint_str,         \
                   GaussianControlPoint_Purpose,     \
                   GaussianControlPoint_richcompare, \
@@ -587,6 +596,7 @@ NewGaussianControlPoint(int useCurrent)
         newObject->data = new GaussianControlPoint;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&GaussianControlPointType);
     return (PyObject *)newObject;
 }
 

@@ -1190,8 +1190,11 @@ ConstructDataBinningAttributes_dealloc(PyObject *v)
 
 static PyObject *ConstructDataBinningAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyConstructDataBinningAttributes_getattr(PyObject *self, char *name)
+PyConstructDataBinningAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "name") == 0)
         return ConstructDataBinningAttributes_GetName(self, NULL);
     if(strcmp(name, "varnames") == 0)
@@ -1250,15 +1253,19 @@ PyConstructDataBinningAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(ConstructDataBinningAttributes::Discard));
 
 
+    PyObject *meth = Py_FindMethod(PyConstructDataBinningAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyConstructDataBinningAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyConstructDataBinningAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyConstructDataBinningAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "name") == 0)
         obj = ConstructDataBinningAttributes_SetName(self, args);
@@ -1288,6 +1295,8 @@ PyConstructDataBinningAttributes_setattr(PyObject *self, char *name, PyObject *a
         obj = ConstructDataBinningAttributes_SetTimeStride(self, args);
     else if(strcmp(name, "outOfBoundsBehavior") == 0)
         obj = ConstructDataBinningAttributes_SetOutOfBoundsBehavior(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -1335,8 +1344,8 @@ static char *ConstructDataBinningAttributes_Purpose = "Attributes for constructi
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1347,12 +1356,12 @@ static char *ConstructDataBinningAttributes_Purpose = "Attributes for constructi
 //
 
 VISIT_PY_TYPE_OBJ(ConstructDataBinningAttributesType,         \
-                  "ConstructDataBinningAttributes",           \
+                  "ConstructDataBinningAttributes",         \
                   ConstructDataBinningAttributesObject,       \
                   ConstructDataBinningAttributes_dealloc,     \
                   ConstructDataBinningAttributes_print,       \
-                  PyConstructDataBinningAttributes_getattr,   \
-                  PyConstructDataBinningAttributes_setattr,   \
+                  PyConstructDataBinningAttributes_getattro,  \
+                  PyConstructDataBinningAttributes_setattro,  \
                   ConstructDataBinningAttributes_str,         \
                   ConstructDataBinningAttributes_Purpose,     \
                   ConstructDataBinningAttributes_richcompare, \
@@ -1416,6 +1425,7 @@ NewConstructDataBinningAttributes(int useCurrent)
         newObject->data = new ConstructDataBinningAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&ConstructDataBinningAttributesType);
     return (PyObject *)newObject;
 }
 

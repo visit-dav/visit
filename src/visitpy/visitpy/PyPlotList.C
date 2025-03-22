@@ -226,21 +226,30 @@ PlotList_dealloc(PyObject *v)
 
 static PyObject *PlotList_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyPlotList_getattr(PyObject *self, char *name)
+PyPlotList_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "plots") == 0)
         return PlotList_GetPlots(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyPlotList_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyPlotList_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyPlotList_setattr(PyObject *self, char *name, PyObject *args)
+PyPlotList_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -288,8 +297,8 @@ static char *PlotList_Purpose = "This class contains a list of plots.";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -300,12 +309,12 @@ static char *PlotList_Purpose = "This class contains a list of plots.";
 //
 
 VISIT_PY_TYPE_OBJ(PlotListType,         \
-                  "PlotList",           \
+                  "PlotList",         \
                   PlotListObject,       \
                   PlotList_dealloc,     \
                   PlotList_print,       \
-                  PyPlotList_getattr,   \
-                  PyPlotList_setattr,   \
+                  PyPlotList_getattro,  \
+                  PyPlotList_setattro,  \
                   PlotList_str,         \
                   PlotList_Purpose,     \
                   PlotList_richcompare, \
@@ -369,6 +378,7 @@ NewPlotList(int useCurrent)
         newObject->data = new PlotList;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PlotListType);
     return (PyObject *)newObject;
 }
 

@@ -23,8 +23,8 @@ void           PyMergeOperatorAttributes_SetParent(PyObject *obj, PyObject *pare
 void           PyMergeOperatorAttributes_SetDefaults(const MergeOperatorAttributes *atts);
 std::string    PyMergeOperatorAttributes_GetLogString();
 std::string    PyMergeOperatorAttributes_ToString(const MergeOperatorAttributes *, const char *, const bool=false);
-PyObject *     PyMergeOperatorAttributes_getattr(PyObject *self, char *name);
-int            PyMergeOperatorAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PyMergeOperatorAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyMergeOperatorAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PyMergeOperatorAttributes_methods[MERGEOPERATORATTRIBUTES_NMETH];
 
 #endif

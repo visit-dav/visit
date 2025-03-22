@@ -384,8 +384,11 @@ SelectionVariableSummary_dealloc(PyObject *v)
 
 static PyObject *SelectionVariableSummary_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PySelectionVariableSummary_getattr(PyObject *self, char *name)
+PySelectionVariableSummary_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "name") == 0)
         return SelectionVariableSummary_GetName(self, NULL);
     if(strcmp(name, "minimum") == 0)
@@ -395,15 +398,19 @@ PySelectionVariableSummary_getattr(PyObject *self, char *name)
     if(strcmp(name, "histogram") == 0)
         return SelectionVariableSummary_GetHistogram(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PySelectionVariableSummary_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PySelectionVariableSummary_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PySelectionVariableSummary_setattr(PyObject *self, char *name, PyObject *args)
+PySelectionVariableSummary_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "name") == 0)
         obj = SelectionVariableSummary_SetName(self, args);
@@ -413,6 +420,8 @@ PySelectionVariableSummary_setattr(PyObject *self, char *name, PyObject *args)
         obj = SelectionVariableSummary_SetMaximum(self, args);
     else if(strcmp(name, "histogram") == 0)
         obj = SelectionVariableSummary_SetHistogram(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -460,8 +469,8 @@ static char *SelectionVariableSummary_Purpose = "Contains a summary of a variabl
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -472,12 +481,12 @@ static char *SelectionVariableSummary_Purpose = "Contains a summary of a variabl
 //
 
 VISIT_PY_TYPE_OBJ(SelectionVariableSummaryType,         \
-                  "SelectionVariableSummary",           \
+                  "SelectionVariableSummary",         \
                   SelectionVariableSummaryObject,       \
                   SelectionVariableSummary_dealloc,     \
                   SelectionVariableSummary_print,       \
-                  PySelectionVariableSummary_getattr,   \
-                  PySelectionVariableSummary_setattr,   \
+                  PySelectionVariableSummary_getattro,  \
+                  PySelectionVariableSummary_setattro,  \
                   SelectionVariableSummary_str,         \
                   SelectionVariableSummary_Purpose,     \
                   SelectionVariableSummary_richcompare, \
@@ -541,6 +550,7 @@ NewSelectionVariableSummary(int useCurrent)
         newObject->data = new SelectionVariableSummary;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&SelectionVariableSummaryType);
     return (PyObject *)newObject;
 }
 

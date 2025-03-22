@@ -1491,8 +1491,11 @@ SaveWindowAttributes_dealloc(PyObject *v)
 
 static PyObject *SaveWindowAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PySaveWindowAttributes_getattr(PyObject *self, char *name)
+PySaveWindowAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "outputToCurrentDirectory") == 0)
         return SaveWindowAttributes_GetOutputToCurrentDirectory(self, NULL);
     if(strcmp(name, "outputDirectory") == 0)
@@ -1585,15 +1588,19 @@ PySaveWindowAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "opts") == 0)
         return SaveWindowAttributes_GetOpts(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PySaveWindowAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PySaveWindowAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PySaveWindowAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PySaveWindowAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "outputToCurrentDirectory") == 0)
         obj = SaveWindowAttributes_SetOutputToCurrentDirectory(self, args);
@@ -1635,6 +1642,8 @@ PySaveWindowAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = SaveWindowAttributes_SetSubWindowAtts(self, args);
     else if(strcmp(name, "opts") == 0)
         obj = SaveWindowAttributes_SetOpts(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -1682,8 +1691,8 @@ static char *SaveWindowAttributes_Purpose = "This class contains the attributes 
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1694,12 +1703,12 @@ static char *SaveWindowAttributes_Purpose = "This class contains the attributes 
 //
 
 VISIT_PY_TYPE_OBJ(SaveWindowAttributesType,         \
-                  "SaveWindowAttributes",           \
+                  "SaveWindowAttributes",         \
                   SaveWindowAttributesObject,       \
                   SaveWindowAttributes_dealloc,     \
                   SaveWindowAttributes_print,       \
-                  PySaveWindowAttributes_getattr,   \
-                  PySaveWindowAttributes_setattr,   \
+                  PySaveWindowAttributes_getattro,  \
+                  PySaveWindowAttributes_setattro,  \
                   SaveWindowAttributes_str,         \
                   SaveWindowAttributes_Purpose,     \
                   SaveWindowAttributes_richcompare, \
@@ -1763,6 +1772,7 @@ NewSaveWindowAttributes(int useCurrent)
         newObject->data = new SaveWindowAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&SaveWindowAttributesType);
     return (PyObject *)newObject;
 }
 

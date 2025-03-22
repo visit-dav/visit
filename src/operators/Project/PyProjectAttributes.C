@@ -303,8 +303,11 @@ ProjectAttributes_dealloc(PyObject *v)
 
 static PyObject *ProjectAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyProjectAttributes_getattr(PyObject *self, char *name)
+PyProjectAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "projectionType") == 0)
         return ProjectAttributes_GetProjectionType(self, NULL);
     if(strcmp(name, "ZYCartesian") == 0)
@@ -334,20 +337,26 @@ PyProjectAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(ProjectAttributes::AsDirection));
 
 
+    PyObject *meth = Py_FindMethod(PyProjectAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyProjectAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyProjectAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyProjectAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "projectionType") == 0)
         obj = ProjectAttributes_SetProjectionType(self, args);
     else if(strcmp(name, "vectorTransformMethod") == 0)
         obj = ProjectAttributes_SetVectorTransformMethod(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -395,8 +404,8 @@ static char *ProjectAttributes_Purpose = "Project data from three to two dimensi
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -407,12 +416,12 @@ static char *ProjectAttributes_Purpose = "Project data from three to two dimensi
 //
 
 VISIT_PY_TYPE_OBJ(ProjectAttributesType,         \
-                  "ProjectAttributes",           \
+                  "ProjectAttributes",         \
                   ProjectAttributesObject,       \
                   ProjectAttributes_dealloc,     \
                   ProjectAttributes_print,       \
-                  PyProjectAttributes_getattr,   \
-                  PyProjectAttributes_setattr,   \
+                  PyProjectAttributes_getattro,  \
+                  PyProjectAttributes_setattro,  \
                   ProjectAttributes_str,         \
                   ProjectAttributes_Purpose,     \
                   ProjectAttributes_richcompare, \
@@ -476,6 +485,7 @@ NewProjectAttributes(int useCurrent)
         newObject->data = new ProjectAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&ProjectAttributesType);
     return (PyObject *)newObject;
 }
 

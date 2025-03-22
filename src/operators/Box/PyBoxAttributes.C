@@ -640,8 +640,11 @@ BoxAttributes_dealloc(PyObject *v)
 
 static PyObject *BoxAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyBoxAttributes_getattr(PyObject *self, char *name)
+PyBoxAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "amount") == 0)
         return BoxAttributes_GetAmount(self, NULL);
     if(strcmp(name, "Some") == 0)
@@ -664,15 +667,19 @@ PyBoxAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "inverse") == 0)
         return BoxAttributes_GetInverse(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyBoxAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyBoxAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyBoxAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyBoxAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "amount") == 0)
         obj = BoxAttributes_SetAmount(self, args);
@@ -690,6 +697,8 @@ PyBoxAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = BoxAttributes_SetMaxz(self, args);
     else if(strcmp(name, "inverse") == 0)
         obj = BoxAttributes_SetInverse(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -737,8 +746,8 @@ static char *BoxAttributes_Purpose = "This class contains attributes for the box
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -749,12 +758,12 @@ static char *BoxAttributes_Purpose = "This class contains attributes for the box
 //
 
 VISIT_PY_TYPE_OBJ(BoxAttributesType,         \
-                  "BoxAttributes",           \
+                  "BoxAttributes",         \
                   BoxAttributesObject,       \
                   BoxAttributes_dealloc,     \
                   BoxAttributes_print,       \
-                  PyBoxAttributes_getattr,   \
-                  PyBoxAttributes_setattr,   \
+                  PyBoxAttributes_getattro,  \
+                  PyBoxAttributes_setattro,  \
                   BoxAttributes_str,         \
                   BoxAttributes_Purpose,     \
                   BoxAttributes_richcompare, \
@@ -818,6 +827,7 @@ NewBoxAttributes(int useCurrent)
         newObject->data = new BoxAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&BoxAttributesType);
     return (PyObject *)newObject;
 }
 

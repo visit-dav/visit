@@ -286,8 +286,11 @@ MultiresControlAttributes_dealloc(PyObject *v)
 
 static PyObject *MultiresControlAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyMultiresControlAttributes_getattr(PyObject *self, char *name)
+PyMultiresControlAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "resolution") == 0)
         return MultiresControlAttributes_GetResolution(self, NULL);
     if(strcmp(name, "maxResolution") == 0)
@@ -295,15 +298,19 @@ PyMultiresControlAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "info") == 0)
         return MultiresControlAttributes_GetInfo(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyMultiresControlAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyMultiresControlAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyMultiresControlAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyMultiresControlAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "resolution") == 0)
         obj = MultiresControlAttributes_SetResolution(self, args);
@@ -311,6 +318,8 @@ PyMultiresControlAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = MultiresControlAttributes_SetMaxResolution(self, args);
     else if(strcmp(name, "info") == 0)
         obj = MultiresControlAttributes_SetInfo(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -358,8 +367,8 @@ static char *MultiresControlAttributes_Purpose = "";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -370,12 +379,12 @@ static char *MultiresControlAttributes_Purpose = "";
 //
 
 VISIT_PY_TYPE_OBJ(MultiresControlAttributesType,         \
-                  "MultiresControlAttributes",           \
+                  "MultiresControlAttributes",         \
                   MultiresControlAttributesObject,       \
                   MultiresControlAttributes_dealloc,     \
                   MultiresControlAttributes_print,       \
-                  PyMultiresControlAttributes_getattr,   \
-                  PyMultiresControlAttributes_setattr,   \
+                  PyMultiresControlAttributes_getattro,  \
+                  PyMultiresControlAttributes_setattro,  \
                   MultiresControlAttributes_str,         \
                   MultiresControlAttributes_Purpose,     \
                   MultiresControlAttributes_richcompare, \
@@ -439,6 +448,7 @@ NewMultiresControlAttributes(int useCurrent)
         newObject->data = new MultiresControlAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&MultiresControlAttributesType);
     return (PyObject *)newObject;
 }
 

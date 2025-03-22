@@ -24,8 +24,8 @@ void VISITPY_API           PyAnimationAttributes_SetParent(PyObject *obj, PyObje
 void VISITPY_API           PyAnimationAttributes_SetDefaults(const AnimationAttributes *atts);
 std::string VISITPY_API    PyAnimationAttributes_GetLogString();
 std::string VISITPY_API    PyAnimationAttributes_ToString(const AnimationAttributes *, const char *, const bool=false);
-VISITPY_API PyObject *     PyAnimationAttributes_getattr(PyObject *self, char *name);
-int VISITPY_API            PyAnimationAttributes_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyAnimationAttributes_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyAnimationAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyAnimationAttributes_methods[ANIMATIONATTRIBUTES_NMETH];
 
 #endif

@@ -418,8 +418,11 @@ EngineProperties_dealloc(PyObject *v)
 
 static PyObject *EngineProperties_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyEngineProperties_getattr(PyObject *self, char *name)
+PyEngineProperties_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "numNodes") == 0)
         return EngineProperties_GetNumNodes(self, NULL);
     if(strcmp(name, "numProcessors") == 0)
@@ -431,15 +434,19 @@ PyEngineProperties_getattr(PyObject *self, char *name)
     if(strcmp(name, "loadBalancingScheme") == 0)
         return EngineProperties_GetLoadBalancingScheme(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyEngineProperties_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyEngineProperties_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyEngineProperties_setattr(PyObject *self, char *name, PyObject *args)
+PyEngineProperties_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "numNodes") == 0)
         obj = EngineProperties_SetNumNodes(self, args);
@@ -451,6 +458,8 @@ PyEngineProperties_setattr(PyObject *self, char *name, PyObject *args)
         obj = EngineProperties_SetDynamicLoadBalancing(self, args);
     else if(strcmp(name, "loadBalancingScheme") == 0)
         obj = EngineProperties_SetLoadBalancingScheme(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -498,8 +507,8 @@ static char *EngineProperties_Purpose = "This class contains properties about ru
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -510,12 +519,12 @@ static char *EngineProperties_Purpose = "This class contains properties about ru
 //
 
 VISIT_PY_TYPE_OBJ(EnginePropertiesType,         \
-                  "EngineProperties",           \
+                  "EngineProperties",         \
                   EnginePropertiesObject,       \
                   EngineProperties_dealloc,     \
                   EngineProperties_print,       \
-                  PyEngineProperties_getattr,   \
-                  PyEngineProperties_setattr,   \
+                  PyEngineProperties_getattro,  \
+                  PyEngineProperties_setattro,  \
                   EngineProperties_str,         \
                   EngineProperties_Purpose,     \
                   EngineProperties_richcompare, \
@@ -579,6 +588,7 @@ NewEngineProperties(int useCurrent)
         newObject->data = new EngineProperties;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&EnginePropertiesType);
     return (PyObject *)newObject;
 }
 

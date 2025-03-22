@@ -700,8 +700,11 @@ PrinterAttributes_dealloc(PyObject *v)
 
 static PyObject *PrinterAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyPrinterAttributes_getattr(PyObject *self, char *name)
+PyPrinterAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "printerName") == 0)
         return PrinterAttributes_GetPrinterName(self, NULL);
     if(strcmp(name, "printProgram") == 0)
@@ -723,15 +726,19 @@ PyPrinterAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "pageSize") == 0)
         return PrinterAttributes_GetPageSize(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyPrinterAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyPrinterAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyPrinterAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyPrinterAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "printerName") == 0)
         obj = PrinterAttributes_SetPrinterName(self, args);
@@ -753,6 +760,8 @@ PyPrinterAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PrinterAttributes_SetOutputToFileName(self, args);
     else if(strcmp(name, "pageSize") == 0)
         obj = PrinterAttributes_SetPageSize(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -800,8 +809,8 @@ static char *PrinterAttributes_Purpose = "This class contains the attributes use
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -812,12 +821,12 @@ static char *PrinterAttributes_Purpose = "This class contains the attributes use
 //
 
 VISIT_PY_TYPE_OBJ(PrinterAttributesType,         \
-                  "PrinterAttributes",           \
+                  "PrinterAttributes",         \
                   PrinterAttributesObject,       \
                   PrinterAttributes_dealloc,     \
                   PrinterAttributes_print,       \
-                  PyPrinterAttributes_getattr,   \
-                  PyPrinterAttributes_setattr,   \
+                  PyPrinterAttributes_getattro,  \
+                  PyPrinterAttributes_setattro,  \
                   PrinterAttributes_str,         \
                   PrinterAttributes_Purpose,     \
                   PrinterAttributes_richcompare, \
@@ -881,6 +890,7 @@ NewPrinterAttributes(int useCurrent)
         newObject->data = new PrinterAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PrinterAttributesType);
     return (PyObject *)newObject;
 }
 

@@ -680,8 +680,11 @@ ConeAttributes_dealloc(PyObject *v)
 
 static PyObject *ConeAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyConeAttributes_getattr(PyObject *self, char *name)
+PyConeAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "angle") == 0)
         return ConeAttributes_GetAngle(self, NULL);
     if(strcmp(name, "origin") == 0)
@@ -704,15 +707,19 @@ PyConeAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "length") == 0)
         return ConeAttributes_GetLength(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyConeAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyConeAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyConeAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyConeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "angle") == 0)
         obj = ConeAttributes_SetAngle(self, args);
@@ -728,6 +735,8 @@ PyConeAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ConeAttributes_SetCutByLength(self, args);
     else if(strcmp(name, "length") == 0)
         obj = ConeAttributes_SetLength(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -775,8 +784,8 @@ static char *ConeAttributes_Purpose = "This class contains attributes for the co
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -787,12 +796,12 @@ static char *ConeAttributes_Purpose = "This class contains attributes for the co
 //
 
 VISIT_PY_TYPE_OBJ(ConeAttributesType,         \
-                  "ConeAttributes",           \
+                  "ConeAttributes",         \
                   ConeAttributesObject,       \
                   ConeAttributes_dealloc,     \
                   ConeAttributes_print,       \
-                  PyConeAttributes_getattr,   \
-                  PyConeAttributes_setattr,   \
+                  PyConeAttributes_getattro,  \
+                  PyConeAttributes_setattro,  \
                   ConeAttributes_str,         \
                   ConeAttributes_Purpose,     \
                   ConeAttributes_richcompare, \
@@ -856,6 +865,7 @@ NewConeAttributes(int useCurrent)
         newObject->data = new ConeAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&ConeAttributesType);
     return (PyObject *)newObject;
 }
 

@@ -370,8 +370,11 @@ CoordSwapAttributes_dealloc(PyObject *v)
 
 static PyObject *CoordSwapAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyCoordSwapAttributes_getattr(PyObject *self, char *name)
+PyCoordSwapAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "newCoord1") == 0)
         return CoordSwapAttributes_GetNewCoord1(self, NULL);
     if(strcmp(name, "Coord1") == 0)
@@ -400,15 +403,19 @@ PyCoordSwapAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(CoordSwapAttributes::Coord3));
 
 
+    PyObject *meth = Py_FindMethod(PyCoordSwapAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyCoordSwapAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyCoordSwapAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyCoordSwapAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "newCoord1") == 0)
         obj = CoordSwapAttributes_SetNewCoord1(self, args);
@@ -416,6 +423,8 @@ PyCoordSwapAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = CoordSwapAttributes_SetNewCoord2(self, args);
     else if(strcmp(name, "newCoord3") == 0)
         obj = CoordSwapAttributes_SetNewCoord3(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -463,8 +472,8 @@ static char *CoordSwapAttributes_Purpose = "This class contains attributes for t
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -475,12 +484,12 @@ static char *CoordSwapAttributes_Purpose = "This class contains attributes for t
 //
 
 VISIT_PY_TYPE_OBJ(CoordSwapAttributesType,         \
-                  "CoordSwapAttributes",           \
+                  "CoordSwapAttributes",         \
                   CoordSwapAttributesObject,       \
                   CoordSwapAttributes_dealloc,     \
                   CoordSwapAttributes_print,       \
-                  PyCoordSwapAttributes_getattr,   \
-                  PyCoordSwapAttributes_setattr,   \
+                  PyCoordSwapAttributes_getattro,  \
+                  PyCoordSwapAttributes_setattro,  \
                   CoordSwapAttributes_str,         \
                   CoordSwapAttributes_Purpose,     \
                   CoordSwapAttributes_richcompare, \
@@ -544,6 +553,7 @@ NewCoordSwapAttributes(int useCurrent)
         newObject->data = new CoordSwapAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&CoordSwapAttributesType);
     return (PyObject *)newObject;
 }
 

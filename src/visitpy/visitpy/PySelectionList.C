@@ -413,8 +413,11 @@ SelectionList_dealloc(PyObject *v)
 
 static PyObject *SelectionList_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PySelectionList_getattr(PyObject *self, char *name)
+PySelectionList_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "autoApplyUpdates") == 0)
         return SelectionList_GetAutoApplyUpdates(self, NULL);
     if(strcmp(name, "selections") == 0)
@@ -422,18 +425,24 @@ PySelectionList_getattr(PyObject *self, char *name)
     if(strcmp(name, "selectionSummary") == 0)
         return SelectionList_GetSelectionSummary(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PySelectionList_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PySelectionList_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PySelectionList_setattr(PyObject *self, char *name, PyObject *args)
+PySelectionList_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "autoApplyUpdates") == 0)
         obj = SelectionList_SetAutoApplyUpdates(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -481,8 +490,8 @@ static char *SelectionList_Purpose = "Contains a list of SelectionProperties obj
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -493,12 +502,12 @@ static char *SelectionList_Purpose = "Contains a list of SelectionProperties obj
 //
 
 VISIT_PY_TYPE_OBJ(SelectionListType,         \
-                  "SelectionList",           \
+                  "SelectionList",         \
                   SelectionListObject,       \
                   SelectionList_dealloc,     \
                   SelectionList_print,       \
-                  PySelectionList_getattr,   \
-                  PySelectionList_setattr,   \
+                  PySelectionList_getattro,  \
+                  PySelectionList_setattro,  \
                   SelectionList_str,         \
                   SelectionList_Purpose,     \
                   SelectionList_richcompare, \
@@ -562,6 +571,7 @@ NewSelectionList(int useCurrent)
         newObject->data = new SelectionList;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&SelectionListType);
     return (PyObject *)newObject;
 }
 

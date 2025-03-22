@@ -24,8 +24,8 @@ void VISITPY_API           PyGaussianControlPoint_SetParent(PyObject *obj, PyObj
 void VISITPY_API           PyGaussianControlPoint_SetDefaults(const GaussianControlPoint *atts);
 std::string VISITPY_API    PyGaussianControlPoint_GetLogString();
 std::string VISITPY_API    PyGaussianControlPoint_ToString(const GaussianControlPoint *, const char *, const bool=false);
-VISITPY_API PyObject *     PyGaussianControlPoint_getattr(PyObject *self, char *name);
-int VISITPY_API            PyGaussianControlPoint_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyGaussianControlPoint_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyGaussianControlPoint_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyGaussianControlPoint_methods[GAUSSIANCONTROLPOINT_NMETH];
 
 #endif

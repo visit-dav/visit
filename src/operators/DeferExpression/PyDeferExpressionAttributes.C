@@ -193,23 +193,32 @@ DeferExpressionAttributes_dealloc(PyObject *v)
 
 static PyObject *DeferExpressionAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyDeferExpressionAttributes_getattr(PyObject *self, char *name)
+PyDeferExpressionAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "exprs") == 0)
         return DeferExpressionAttributes_GetExprs(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyDeferExpressionAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyDeferExpressionAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyDeferExpressionAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyDeferExpressionAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "exprs") == 0)
         obj = DeferExpressionAttributes_SetExprs(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -257,8 +266,8 @@ static char *DeferExpressionAttributes_Purpose = "Attributes for the DeferExpres
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -269,12 +278,12 @@ static char *DeferExpressionAttributes_Purpose = "Attributes for the DeferExpres
 //
 
 VISIT_PY_TYPE_OBJ(DeferExpressionAttributesType,         \
-                  "DeferExpressionAttributes",           \
+                  "DeferExpressionAttributes",         \
                   DeferExpressionAttributesObject,       \
                   DeferExpressionAttributes_dealloc,     \
                   DeferExpressionAttributes_print,       \
-                  PyDeferExpressionAttributes_getattr,   \
-                  PyDeferExpressionAttributes_setattr,   \
+                  PyDeferExpressionAttributes_getattro,  \
+                  PyDeferExpressionAttributes_setattro,  \
                   DeferExpressionAttributes_str,         \
                   DeferExpressionAttributes_Purpose,     \
                   DeferExpressionAttributes_richcompare, \
@@ -338,6 +347,7 @@ NewDeferExpressionAttributes(int useCurrent)
         newObject->data = new DeferExpressionAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&DeferExpressionAttributesType);
     return (PyObject *)newObject;
 }
 

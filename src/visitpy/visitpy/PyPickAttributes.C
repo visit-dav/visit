@@ -2373,8 +2373,11 @@ PickAttributes_dealloc(PyObject *v)
 
 static PyObject *PickAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyPickAttributes_getattr(PyObject *self, char *name)
+PyPickAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "variables") == 0)
         return PickAttributes_GetVariables(self, NULL);
     if(strcmp(name, "showIncidentElements") == 0)
@@ -2454,15 +2457,19 @@ PyPickAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "removeLabelTwins") == 0)
         return PickAttributes_GetRemoveLabelTwins(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyPickAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyPickAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyPickAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyPickAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "variables") == 0)
         obj = PickAttributes_SetVariables(self, args);
@@ -2530,6 +2537,8 @@ PyPickAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PickAttributes_SetForcedPickLabel(self, args);
     else if(strcmp(name, "removeLabelTwins") == 0)
         obj = PickAttributes_SetRemoveLabelTwins(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -2577,8 +2586,8 @@ static char *PickAttributes_Purpose = "This class contains attributes used for p
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -2589,12 +2598,12 @@ static char *PickAttributes_Purpose = "This class contains attributes used for p
 //
 
 VISIT_PY_TYPE_OBJ(PickAttributesType,         \
-                  "PickAttributes",           \
+                  "PickAttributes",         \
                   PickAttributesObject,       \
                   PickAttributes_dealloc,     \
                   PickAttributes_print,       \
-                  PyPickAttributes_getattr,   \
-                  PyPickAttributes_setattr,   \
+                  PyPickAttributes_getattro,  \
+                  PyPickAttributes_setattro,  \
                   PickAttributes_str,         \
                   PickAttributes_Purpose,     \
                   PickAttributes_richcompare, \
@@ -2658,6 +2667,7 @@ NewPickAttributes(int useCurrent)
         newObject->data = new PickAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PickAttributesType);
     return (PyObject *)newObject;
 }
 

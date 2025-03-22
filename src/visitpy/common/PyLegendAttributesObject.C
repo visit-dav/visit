@@ -1004,8 +1004,11 @@ LegendAttributesObject_dealloc(PyObject *v)
 }
 
 static PyObject *
-LegendAttributesObject_getattr(PyObject *self, char *name)
+LegendAttributesObject_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "active") == 0)
         return LegendAttributesObject_GetActive(self, NULL);
     if(strcmp(name, "position") == 0)
@@ -1086,14 +1089,19 @@ LegendAttributesObject_getattr(PyObject *self, char *name)
     if(strcmp(name, "suppliedLabels") == 0)
         return LegendAttributesObject_GetSuppliedLabels(self, NULL);
 
-    return Py_FindMethod(LegendAttributesObject_methods, self, name);
+    PyObject *meth = Py_FindMethod(LegendAttributesObject_methods, self, (char*)name);
+    if (meth) return meth;
+
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 static int
-LegendAttributesObject_setattr(PyObject *self, char *name, PyObject *args)
+LegendAttributesObject_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     // Create a tuple to contain the arguments since all of the Set
     // functions expect a tuple.
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
     PyObject *tuple = PyTuple_New(1);
     PyTuple_SET_ITEM(tuple, 0, args);
     Py_INCREF(args);
@@ -1151,6 +1159,8 @@ LegendAttributesObject_setattr(PyObject *self, char *name, PyObject *args)
         retval = (LegendAttributesObject_SetSuppliedValues(self, tuple) != NULL);
     else if(strcmp(name, "suppliedLabels") == 0)
         retval = (LegendAttributesObject_SetSuppliedLabels(self, tuple) != NULL);
+    else
+        retval = PyObject_GenericSetAttr(self, attr_name, args);
 
     Py_DECREF(tuple);
     return retval ? 0 : -1;
@@ -1381,8 +1391,8 @@ static PyObject *LegendAttributesObject_richcompare(PyObject *self, PyObject *ot
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1396,8 +1406,8 @@ VISIT_PY_TYPE_OBJ(LegendAttributesObjectType,
                   LegendAttributesObjectObject,
                   LegendAttributesObject_dealloc,
                   LegendAttributesObject_print,
-                  LegendAttributesObject_getattr,
-                  LegendAttributesObject_setattr,
+                  LegendAttributesObject_getattro,
+                  LegendAttributesObject_setattro,
                   LegendAttributesObject_str,
                   LegendAttributesObject_Purpose,
                   LegendAttributesObject_richcompare,

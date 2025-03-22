@@ -2136,8 +2136,11 @@ WindowInformation_dealloc(PyObject *v)
 
 static PyObject *WindowInformation_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyWindowInformation_getattr(PyObject *self, char *name)
+PyWindowInformation_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "activeSource") == 0)
         return WindowInformation_GetActiveSource(self, NULL);
     if(strcmp(name, "activeTimeSlider") == 0)
@@ -2197,15 +2200,19 @@ PyWindowInformation_getattr(PyObject *self, char *name)
     if(strcmp(name, "DDTConnected") == 0)
         return WindowInformation_GetDDTConnected(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyWindowInformation_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyWindowInformation_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyWindowInformation_setattr(PyObject *self, char *name, PyObject *args)
+PyWindowInformation_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "activeSource") == 0)
         obj = WindowInformation_SetActiveSource(self, args);
@@ -2265,6 +2272,8 @@ PyWindowInformation_setattr(PyObject *self, char *name, PyObject *args)
         obj = WindowInformation_SetDDTSim(self, args);
     else if(strcmp(name, "DDTConnected") == 0)
         obj = WindowInformation_SetDDTConnected(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -2312,8 +2321,8 @@ static char *WindowInformation_Purpose = "This class contains the attributes tha
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -2324,12 +2333,12 @@ static char *WindowInformation_Purpose = "This class contains the attributes tha
 //
 
 VISIT_PY_TYPE_OBJ(WindowInformationType,         \
-                  "WindowInformation",           \
+                  "WindowInformation",         \
                   WindowInformationObject,       \
                   WindowInformation_dealloc,     \
                   WindowInformation_print,       \
-                  PyWindowInformation_getattr,   \
-                  PyWindowInformation_setattr,   \
+                  PyWindowInformation_getattro,  \
+                  PyWindowInformation_setattro,  \
                   WindowInformation_str,         \
                   WindowInformation_Purpose,     \
                   WindowInformation_richcompare, \
@@ -2393,6 +2402,7 @@ NewWindowInformation(int useCurrent)
         newObject->data = new WindowInformation;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&WindowInformationType);
     return (PyObject *)newObject;
 }
 

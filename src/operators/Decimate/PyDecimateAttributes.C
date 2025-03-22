@@ -170,23 +170,32 @@ DecimateAttributes_dealloc(PyObject *v)
 
 static PyObject *DecimateAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyDecimateAttributes_getattr(PyObject *self, char *name)
+PyDecimateAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "target") == 0)
         return DecimateAttributes_GetTarget(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyDecimateAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyDecimateAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyDecimateAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyDecimateAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "target") == 0)
         obj = DecimateAttributes_SetTarget(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -234,8 +243,8 @@ static char *DecimateAttributes_Purpose = "This class contains attributes for th
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -246,12 +255,12 @@ static char *DecimateAttributes_Purpose = "This class contains attributes for th
 //
 
 VISIT_PY_TYPE_OBJ(DecimateAttributesType,         \
-                  "DecimateAttributes",           \
+                  "DecimateAttributes",         \
                   DecimateAttributesObject,       \
                   DecimateAttributes_dealloc,     \
                   DecimateAttributes_print,       \
-                  PyDecimateAttributes_getattr,   \
-                  PyDecimateAttributes_setattr,   \
+                  PyDecimateAttributes_getattro,  \
+                  PyDecimateAttributes_setattro,  \
                   DecimateAttributes_str,         \
                   DecimateAttributes_Purpose,     \
                   DecimateAttributes_richcompare, \
@@ -315,6 +324,7 @@ NewDecimateAttributes(int useCurrent)
         newObject->data = new DecimateAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&DecimateAttributesType);
     return (PyObject *)newObject;
 }
 

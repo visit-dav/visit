@@ -1246,8 +1246,11 @@ ParallelCoordinatesAttributes_dealloc(PyObject *v)
 
 static PyObject *ParallelCoordinatesAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyParallelCoordinatesAttributes_getattr(PyObject *self, char *name)
+PyParallelCoordinatesAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "scalarAxisNames") == 0)
         return ParallelCoordinatesAttributes_GetScalarAxisNames(self, NULL);
     if(strcmp(name, "visualAxisNames") == 0)
@@ -1286,15 +1289,19 @@ PyParallelCoordinatesAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(ParallelCoordinatesAttributes::BinsColoredByPopulation));
 
 
+    PyObject *meth = Py_FindMethod(PyParallelCoordinatesAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyParallelCoordinatesAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyParallelCoordinatesAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyParallelCoordinatesAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "scalarAxisNames") == 0)
         obj = ParallelCoordinatesAttributes_SetScalarAxisNames(self, args);
@@ -1326,6 +1333,8 @@ PyParallelCoordinatesAttributes_setattr(PyObject *self, char *name, PyObject *ar
         obj = ParallelCoordinatesAttributes_SetFocusGamma(self, args);
     else if(strcmp(name, "drawFocusAs") == 0)
         obj = ParallelCoordinatesAttributes_SetDrawFocusAs(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -1373,8 +1382,8 @@ static char *ParallelCoordinatesAttributes_Purpose = "This class contains the pl
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1385,12 +1394,12 @@ static char *ParallelCoordinatesAttributes_Purpose = "This class contains the pl
 //
 
 VISIT_PY_TYPE_OBJ(ParallelCoordinatesAttributesType,         \
-                  "ParallelCoordinatesAttributes",           \
+                  "ParallelCoordinatesAttributes",         \
                   ParallelCoordinatesAttributesObject,       \
                   ParallelCoordinatesAttributes_dealloc,     \
                   ParallelCoordinatesAttributes_print,       \
-                  PyParallelCoordinatesAttributes_getattr,   \
-                  PyParallelCoordinatesAttributes_setattr,   \
+                  PyParallelCoordinatesAttributes_getattro,  \
+                  PyParallelCoordinatesAttributes_setattro,  \
                   ParallelCoordinatesAttributes_str,         \
                   ParallelCoordinatesAttributes_Purpose,     \
                   ParallelCoordinatesAttributes_richcompare, \
@@ -1454,6 +1463,7 @@ NewParallelCoordinatesAttributes(int useCurrent)
         newObject->data = new ParallelCoordinatesAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&ParallelCoordinatesAttributesType);
     return (PyObject *)newObject;
 }
 

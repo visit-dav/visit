@@ -560,8 +560,11 @@ SmoothOperatorAttributes_dealloc(PyObject *v)
 
 static PyObject *SmoothOperatorAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PySmoothOperatorAttributes_getattr(PyObject *self, char *name)
+PySmoothOperatorAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "numIterations") == 0)
         return SmoothOperatorAttributes_GetNumIterations(self, NULL);
     if(strcmp(name, "relaxationFactor") == 0)
@@ -577,15 +580,19 @@ PySmoothOperatorAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "smoothBoundaries") == 0)
         return SmoothOperatorAttributes_GetSmoothBoundaries(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PySmoothOperatorAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PySmoothOperatorAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PySmoothOperatorAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PySmoothOperatorAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "numIterations") == 0)
         obj = SmoothOperatorAttributes_SetNumIterations(self, args);
@@ -601,6 +608,8 @@ PySmoothOperatorAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = SmoothOperatorAttributes_SetEdgeAngle(self, args);
     else if(strcmp(name, "smoothBoundaries") == 0)
         obj = SmoothOperatorAttributes_SetSmoothBoundaries(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -648,8 +657,8 @@ static char *SmoothOperatorAttributes_Purpose = "Attributes for the Smooth Opera
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -660,12 +669,12 @@ static char *SmoothOperatorAttributes_Purpose = "Attributes for the Smooth Opera
 //
 
 VISIT_PY_TYPE_OBJ(SmoothOperatorAttributesType,         \
-                  "SmoothOperatorAttributes",           \
+                  "SmoothOperatorAttributes",         \
                   SmoothOperatorAttributesObject,       \
                   SmoothOperatorAttributes_dealloc,     \
                   SmoothOperatorAttributes_print,       \
-                  PySmoothOperatorAttributes_getattr,   \
-                  PySmoothOperatorAttributes_setattr,   \
+                  PySmoothOperatorAttributes_getattro,  \
+                  PySmoothOperatorAttributes_setattro,  \
                   SmoothOperatorAttributes_str,         \
                   SmoothOperatorAttributes_Purpose,     \
                   SmoothOperatorAttributes_richcompare, \
@@ -729,6 +738,7 @@ NewSmoothOperatorAttributes(int useCurrent)
         newObject->data = new SmoothOperatorAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&SmoothOperatorAttributesType);
     return (PyObject *)newObject;
 }
 

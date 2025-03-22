@@ -23,8 +23,8 @@ void           PyTensorAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyTensorAttributes_SetDefaults(const TensorAttributes *atts);
 std::string    PyTensorAttributes_GetLogString();
 std::string    PyTensorAttributes_ToString(const TensorAttributes *, const char *, const bool=false);
-PyObject *     PyTensorAttributes_getattr(PyObject *self, char *name);
-int            PyTensorAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PyTensorAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyTensorAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PyTensorAttributes_methods[TENSORATTRIBUTES_NMETH];
 
 #endif

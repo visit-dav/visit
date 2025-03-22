@@ -633,8 +633,11 @@ LineoutAttributes_dealloc(PyObject *v)
 
 static PyObject *LineoutAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyLineoutAttributes_getattr(PyObject *self, char *name)
+PyLineoutAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "point1") == 0)
         return LineoutAttributes_GetPoint1(self, NULL);
     if(strcmp(name, "point2") == 0)
@@ -650,15 +653,19 @@ PyLineoutAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "reflineLabels") == 0)
         return LineoutAttributes_GetReflineLabels(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyLineoutAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyLineoutAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyLineoutAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyLineoutAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "point1") == 0)
         obj = LineoutAttributes_SetPoint1(self, args);
@@ -674,6 +681,8 @@ PyLineoutAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = LineoutAttributes_SetNumberOfSamplePoints(self, args);
     else if(strcmp(name, "reflineLabels") == 0)
         obj = LineoutAttributes_SetReflineLabels(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -721,8 +730,8 @@ static char *LineoutAttributes_Purpose = "Attributes for the Lineout operator.";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -733,12 +742,12 @@ static char *LineoutAttributes_Purpose = "Attributes for the Lineout operator.";
 //
 
 VISIT_PY_TYPE_OBJ(LineoutAttributesType,         \
-                  "LineoutAttributes",           \
+                  "LineoutAttributes",         \
                   LineoutAttributesObject,       \
                   LineoutAttributes_dealloc,     \
                   LineoutAttributes_print,       \
-                  PyLineoutAttributes_getattr,   \
-                  PyLineoutAttributes_setattr,   \
+                  PyLineoutAttributes_getattro,  \
+                  PyLineoutAttributes_setattro,  \
                   LineoutAttributes_str,         \
                   LineoutAttributes_Purpose,     \
                   LineoutAttributes_richcompare, \
@@ -802,6 +811,7 @@ NewLineoutAttributes(int useCurrent)
         newObject->data = new LineoutAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&LineoutAttributesType);
     return (PyObject *)newObject;
 }
 

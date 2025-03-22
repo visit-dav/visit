@@ -482,8 +482,11 @@ AxisAlignedSlice4DAttributes_dealloc(PyObject *v)
 
 static PyObject *AxisAlignedSlice4DAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyAxisAlignedSlice4DAttributes_getattr(PyObject *self, char *name)
+PyAxisAlignedSlice4DAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "I") == 0)
         return AxisAlignedSlice4DAttributes_GetI(self, NULL);
     if(strcmp(name, "J") == 0)
@@ -493,15 +496,19 @@ PyAxisAlignedSlice4DAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "L") == 0)
         return AxisAlignedSlice4DAttributes_GetL(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyAxisAlignedSlice4DAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyAxisAlignedSlice4DAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyAxisAlignedSlice4DAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyAxisAlignedSlice4DAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "I") == 0)
         obj = AxisAlignedSlice4DAttributes_SetI(self, args);
@@ -511,6 +518,8 @@ PyAxisAlignedSlice4DAttributes_setattr(PyObject *self, char *name, PyObject *arg
         obj = AxisAlignedSlice4DAttributes_SetK(self, args);
     else if(strcmp(name, "L") == 0)
         obj = AxisAlignedSlice4DAttributes_SetL(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -558,8 +567,8 @@ static char *AxisAlignedSlice4DAttributes_Purpose = "Attributes for AxisAlignedS
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -570,12 +579,12 @@ static char *AxisAlignedSlice4DAttributes_Purpose = "Attributes for AxisAlignedS
 //
 
 VISIT_PY_TYPE_OBJ(AxisAlignedSlice4DAttributesType,         \
-                  "AxisAlignedSlice4DAttributes",           \
+                  "AxisAlignedSlice4DAttributes",         \
                   AxisAlignedSlice4DAttributesObject,       \
                   AxisAlignedSlice4DAttributes_dealloc,     \
                   AxisAlignedSlice4DAttributes_print,       \
-                  PyAxisAlignedSlice4DAttributes_getattr,   \
-                  PyAxisAlignedSlice4DAttributes_setattr,   \
+                  PyAxisAlignedSlice4DAttributes_getattro,  \
+                  PyAxisAlignedSlice4DAttributes_setattro,  \
                   AxisAlignedSlice4DAttributes_str,         \
                   AxisAlignedSlice4DAttributes_Purpose,     \
                   AxisAlignedSlice4DAttributes_richcompare, \
@@ -639,6 +648,7 @@ NewAxisAlignedSlice4DAttributes(int useCurrent)
         newObject->data = new AxisAlignedSlice4DAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&AxisAlignedSlice4DAttributesType);
     return (PyObject *)newObject;
 }
 

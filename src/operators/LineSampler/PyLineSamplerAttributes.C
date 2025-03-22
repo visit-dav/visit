@@ -3858,8 +3858,11 @@ LineSamplerAttributes_dealloc(PyObject *v)
 
 static PyObject *LineSamplerAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyLineSamplerAttributes_getattr(PyObject *self, char *name)
+PyLineSamplerAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "meshGeometry") == 0)
         return LineSamplerAttributes_GetMeshGeometry(self, NULL);
     if(strcmp(name, "Cartesian") == 0)
@@ -4056,15 +4059,19 @@ PyLineSamplerAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "channelListToroidalAngle") == 0)
         return LineSamplerAttributes_GetChannelListToroidalAngle(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyLineSamplerAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyLineSamplerAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyLineSamplerAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyLineSamplerAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "meshGeometry") == 0)
         obj = LineSamplerAttributes_SetMeshGeometry(self, args);
@@ -4170,6 +4177,8 @@ PyLineSamplerAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = LineSamplerAttributes_SetChannelListToroidalArrayAngle(self, args);
     else if(strcmp(name, "channelListToroidalAngle") == 0)
         obj = LineSamplerAttributes_SetChannelListToroidalAngle(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -4217,8 +4226,8 @@ static char *LineSamplerAttributes_Purpose = "This class contains attributes for
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -4229,12 +4238,12 @@ static char *LineSamplerAttributes_Purpose = "This class contains attributes for
 //
 
 VISIT_PY_TYPE_OBJ(LineSamplerAttributesType,         \
-                  "LineSamplerAttributes",           \
+                  "LineSamplerAttributes",         \
                   LineSamplerAttributesObject,       \
                   LineSamplerAttributes_dealloc,     \
                   LineSamplerAttributes_print,       \
-                  PyLineSamplerAttributes_getattr,   \
-                  PyLineSamplerAttributes_setattr,   \
+                  PyLineSamplerAttributes_getattro,  \
+                  PyLineSamplerAttributes_setattro,  \
                   LineSamplerAttributes_str,         \
                   LineSamplerAttributes_Purpose,     \
                   LineSamplerAttributes_richcompare, \
@@ -4298,6 +4307,7 @@ NewLineSamplerAttributes(int useCurrent)
         newObject->data = new LineSamplerAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&LineSamplerAttributesType);
     return (PyObject *)newObject;
 }
 

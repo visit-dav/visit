@@ -1510,8 +1510,11 @@ ClipAttributes_dealloc(PyObject *v)
 
 static PyObject *ClipAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyClipAttributes_getattr(PyObject *self, char *name)
+PyClipAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "quality") == 0)
         return ClipAttributes_GetQuality(self, NULL);
     if(strcmp(name, "Fast") == 0)
@@ -1568,15 +1571,19 @@ PyClipAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "crinkleClip") == 0)
         return ClipAttributes_GetCrinkleClip(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyClipAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyClipAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyClipAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyClipAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "quality") == 0)
         obj = ClipAttributes_SetQuality(self, args);
@@ -1612,6 +1619,8 @@ PyClipAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ClipAttributes_SetSphereInverse(self, args);
     else if(strcmp(name, "crinkleClip") == 0)
         obj = ClipAttributes_SetCrinkleClip(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -1659,8 +1668,8 @@ static char *ClipAttributes_Purpose = "This class contains attributes for the cl
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1671,12 +1680,12 @@ static char *ClipAttributes_Purpose = "This class contains attributes for the cl
 //
 
 VISIT_PY_TYPE_OBJ(ClipAttributesType,         \
-                  "ClipAttributes",           \
+                  "ClipAttributes",         \
                   ClipAttributesObject,       \
                   ClipAttributes_dealloc,     \
                   ClipAttributes_print,       \
-                  PyClipAttributes_getattr,   \
-                  PyClipAttributes_setattr,   \
+                  PyClipAttributes_getattro,  \
+                  PyClipAttributes_setattro,  \
                   ClipAttributes_str,         \
                   ClipAttributes_Purpose,     \
                   ClipAttributes_richcompare, \
@@ -1740,6 +1749,7 @@ NewClipAttributes(int useCurrent)
         newObject->data = new ClipAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&ClipAttributesType);
     return (PyObject *)newObject;
 }
 

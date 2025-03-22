@@ -189,8 +189,11 @@ SurfaceNormalAttributes_dealloc(PyObject *v)
 
 static PyObject *SurfaceNormalAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PySurfaceNormalAttributes_getattr(PyObject *self, char *name)
+PySurfaceNormalAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "centering") == 0)
         return SurfaceNormalAttributes_GetCentering(self, NULL);
     if(strcmp(name, "Point") == 0)
@@ -199,18 +202,24 @@ PySurfaceNormalAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(SurfaceNormalAttributes::Cell));
 
 
+    PyObject *meth = Py_FindMethod(PySurfaceNormalAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PySurfaceNormalAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PySurfaceNormalAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PySurfaceNormalAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "centering") == 0)
         obj = SurfaceNormalAttributes_SetCentering(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -258,8 +267,8 @@ static char *SurfaceNormalAttributes_Purpose = "Attributes for SurfaceNormal ope
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -270,12 +279,12 @@ static char *SurfaceNormalAttributes_Purpose = "Attributes for SurfaceNormal ope
 //
 
 VISIT_PY_TYPE_OBJ(SurfaceNormalAttributesType,         \
-                  "SurfaceNormalAttributes",           \
+                  "SurfaceNormalAttributes",         \
                   SurfaceNormalAttributesObject,       \
                   SurfaceNormalAttributes_dealloc,     \
                   SurfaceNormalAttributes_print,       \
-                  PySurfaceNormalAttributes_getattr,   \
-                  PySurfaceNormalAttributes_setattr,   \
+                  PySurfaceNormalAttributes_getattro,  \
+                  PySurfaceNormalAttributes_setattro,  \
                   SurfaceNormalAttributes_str,         \
                   SurfaceNormalAttributes_Purpose,     \
                   SurfaceNormalAttributes_richcompare, \
@@ -339,6 +348,7 @@ NewSurfaceNormalAttributes(int useCurrent)
         newObject->data = new SurfaceNormalAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&SurfaceNormalAttributesType);
     return (PyObject *)newObject;
 }
 

@@ -23,8 +23,8 @@ void           PyElevateAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyElevateAttributes_SetDefaults(const ElevateAttributes *atts);
 std::string    PyElevateAttributes_GetLogString();
 std::string    PyElevateAttributes_ToString(const ElevateAttributes *, const char *, const bool=false);
-PyObject *     PyElevateAttributes_getattr(PyObject *self, char *name);
-int            PyElevateAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PyElevateAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyElevateAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PyElevateAttributes_methods[ELEVATEATTRIBUTES_NMETH];
 
 #endif

@@ -25,8 +25,8 @@ void VISITPY_API           PyavtTensorMetaData_SetParent(PyObject *obj, PyObject
 void VISITPY_API           PyavtTensorMetaData_SetDefaults(const avtTensorMetaData *atts);
 std::string VISITPY_API    PyavtTensorMetaData_GetLogString();
 std::string VISITPY_API    PyavtTensorMetaData_ToString(const avtTensorMetaData *, const char *, const bool=false);
-VISITPY_API PyObject *     PyavtTensorMetaData_getattr(PyObject *self, char *name);
-int VISITPY_API            PyavtTensorMetaData_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyavtTensorMetaData_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyavtTensorMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyavtTensorMetaData_methods[AVTTENSORMETADATA_NMETH];
 
 #endif

@@ -1061,8 +1061,11 @@ View3DAttributes_dealloc(PyObject *v)
 
 static PyObject *View3DAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyView3DAttributes_getattr(PyObject *self, char *name)
+PyView3DAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "viewNormal") == 0)
         return View3DAttributes_GetViewNormal(self, NULL);
     if(strcmp(name, "focus") == 0)
@@ -1098,14 +1101,19 @@ PyView3DAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "windowValid") == 0)
         return View3DAttributes_GetWindowValid(self, NULL);
 
-    return Py_FindMethod(PyView3DAttributes_methods, self, name);
+    PyObject *meth = Py_FindMethod(PyView3DAttributes_methods, self, (char*)name);
+    if (meth) return meth;
+
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyView3DAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyView3DAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     // Create a tuple to contain the arguments since all of the Set
     // functions expect a tuple.
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
     PyObject *tuple = PyTuple_New(1);
     PyTuple_SET_ITEM(tuple, 0, args);
     Py_INCREF(args);
@@ -1145,6 +1153,8 @@ PyView3DAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = View3DAttributes_SetShear(self, tuple);
     else if(strcmp(name, "windowValid") == 0)
         obj = View3DAttributes_SetWindowValid(self, tuple);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if(obj != NULL)
         Py_DECREF(obj);
@@ -1355,8 +1365,8 @@ static char *View3DAttributes_Purpose = "This class contains the 3d view attribu
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1367,8 +1377,8 @@ VISIT_PY_TYPE_OBJ(View3DAttributesType,          \
                   View3DAttributesObject,        \
                   View3DAttributes_dealloc,      \
                   View3DAttributes_print,        \
-                  PyView3DAttributes_getattr,    \
-                  PyView3DAttributes_setattr,    \
+                  PyView3DAttributes_getattro,    \
+                  PyView3DAttributes_setattro,    \
                   View3DAttributes_str,          \
                   View3DAttributes_Purpose,      \
                   View3DAttributes_richcompare,  \

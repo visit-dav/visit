@@ -429,8 +429,11 @@ AxisTickMarks_dealloc(PyObject *v)
 
 static PyObject *AxisTickMarks_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyAxisTickMarks_getattr(PyObject *self, char *name)
+PyAxisTickMarks_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "visible") == 0)
         return AxisTickMarks_GetVisible(self, NULL);
     if(strcmp(name, "majorMinimum") == 0)
@@ -442,15 +445,19 @@ PyAxisTickMarks_getattr(PyObject *self, char *name)
     if(strcmp(name, "majorSpacing") == 0)
         return AxisTickMarks_GetMajorSpacing(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyAxisTickMarks_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyAxisTickMarks_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyAxisTickMarks_setattr(PyObject *self, char *name, PyObject *args)
+PyAxisTickMarks_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "visible") == 0)
         obj = AxisTickMarks_SetVisible(self, args);
@@ -462,6 +469,8 @@ PyAxisTickMarks_setattr(PyObject *self, char *name, PyObject *args)
         obj = AxisTickMarks_SetMinorSpacing(self, args);
     else if(strcmp(name, "majorSpacing") == 0)
         obj = AxisTickMarks_SetMajorSpacing(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -509,8 +518,8 @@ static char *AxisTickMarks_Purpose = "Contains the tick mark properties for one 
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -521,12 +530,12 @@ static char *AxisTickMarks_Purpose = "Contains the tick mark properties for one 
 //
 
 VISIT_PY_TYPE_OBJ(AxisTickMarksType,         \
-                  "AxisTickMarks",           \
+                  "AxisTickMarks",         \
                   AxisTickMarksObject,       \
                   AxisTickMarks_dealloc,     \
                   AxisTickMarks_print,       \
-                  PyAxisTickMarks_getattr,   \
-                  PyAxisTickMarks_setattr,   \
+                  PyAxisTickMarks_getattro,  \
+                  PyAxisTickMarks_setattro,  \
                   AxisTickMarks_str,         \
                   AxisTickMarks_Purpose,     \
                   AxisTickMarks_richcompare, \
@@ -590,6 +599,7 @@ NewAxisTickMarks(int useCurrent)
         newObject->data = new AxisTickMarks;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&AxisTickMarksType);
     return (PyObject *)newObject;
 }
 

@@ -810,8 +810,11 @@ PersistentParticlesAttributes_dealloc(PyObject *v)
 
 static PyObject *PersistentParticlesAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyPersistentParticlesAttributes_getattr(PyObject *self, char *name)
+PyPersistentParticlesAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "startIndex") == 0)
         return PersistentParticlesAttributes_GetStartIndex(self, NULL);
     if(strcmp(name, "stopIndex") == 0)
@@ -845,15 +848,19 @@ PyPersistentParticlesAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "indexVariable") == 0)
         return PersistentParticlesAttributes_GetIndexVariable(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyPersistentParticlesAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyPersistentParticlesAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyPersistentParticlesAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyPersistentParticlesAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "startIndex") == 0)
         obj = PersistentParticlesAttributes_SetStartIndex(self, args);
@@ -877,6 +884,8 @@ PyPersistentParticlesAttributes_setattr(PyObject *self, char *name, PyObject *ar
         obj = PersistentParticlesAttributes_SetShowPoints(self, args);
     else if(strcmp(name, "indexVariable") == 0)
         obj = PersistentParticlesAttributes_SetIndexVariable(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -924,8 +933,8 @@ static char *PersistentParticlesAttributes_Purpose = "This class contains attrib
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -936,12 +945,12 @@ static char *PersistentParticlesAttributes_Purpose = "This class contains attrib
 //
 
 VISIT_PY_TYPE_OBJ(PersistentParticlesAttributesType,         \
-                  "PersistentParticlesAttributes",           \
+                  "PersistentParticlesAttributes",         \
                   PersistentParticlesAttributesObject,       \
                   PersistentParticlesAttributes_dealloc,     \
                   PersistentParticlesAttributes_print,       \
-                  PyPersistentParticlesAttributes_getattr,   \
-                  PyPersistentParticlesAttributes_setattr,   \
+                  PyPersistentParticlesAttributes_getattro,  \
+                  PyPersistentParticlesAttributes_setattro,  \
                   PersistentParticlesAttributes_str,         \
                   PersistentParticlesAttributes_Purpose,     \
                   PersistentParticlesAttributes_richcompare, \
@@ -1005,6 +1014,7 @@ NewPersistentParticlesAttributes(int useCurrent)
         newObject->data = new PersistentParticlesAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PersistentParticlesAttributesType);
     return (PyObject *)newObject;
 }
 

@@ -735,8 +735,11 @@ GlobalLineoutAttributes_dealloc(PyObject *v)
 
 static PyObject *GlobalLineoutAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyGlobalLineoutAttributes_getattr(PyObject *self, char *name)
+PyGlobalLineoutAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "Dynamic") == 0)
         return GlobalLineoutAttributes_GetDynamic(self, NULL);
     if(strcmp(name, "createWindow") == 0)
@@ -766,15 +769,19 @@ PyGlobalLineoutAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "freezeInTime") == 0)
         return GlobalLineoutAttributes_GetFreezeInTime(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyGlobalLineoutAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyGlobalLineoutAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyGlobalLineoutAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyGlobalLineoutAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "Dynamic") == 0)
         obj = GlobalLineoutAttributes_SetDynamic(self, args);
@@ -794,6 +801,8 @@ PyGlobalLineoutAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = GlobalLineoutAttributes_SetColorOption(self, args);
     else if(strcmp(name, "freezeInTime") == 0)
         obj = GlobalLineoutAttributes_SetFreezeInTime(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -841,8 +850,8 @@ static char *GlobalLineoutAttributes_Purpose = "This file contains global attrib
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -853,12 +862,12 @@ static char *GlobalLineoutAttributes_Purpose = "This file contains global attrib
 //
 
 VISIT_PY_TYPE_OBJ(GlobalLineoutAttributesType,         \
-                  "GlobalLineoutAttributes",           \
+                  "GlobalLineoutAttributes",         \
                   GlobalLineoutAttributesObject,       \
                   GlobalLineoutAttributes_dealloc,     \
                   GlobalLineoutAttributes_print,       \
-                  PyGlobalLineoutAttributes_getattr,   \
-                  PyGlobalLineoutAttributes_setattr,   \
+                  PyGlobalLineoutAttributes_getattro,  \
+                  PyGlobalLineoutAttributes_setattro,  \
                   GlobalLineoutAttributes_str,         \
                   GlobalLineoutAttributes_Purpose,     \
                   GlobalLineoutAttributes_richcompare, \
@@ -922,6 +931,7 @@ NewGlobalLineoutAttributes(int useCurrent)
         newObject->data = new GlobalLineoutAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&GlobalLineoutAttributesType);
     return (PyObject *)newObject;
 }
 

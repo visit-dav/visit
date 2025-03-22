@@ -23,8 +23,8 @@ void           PyExternalSurfaceAttributes_SetParent(PyObject *obj, PyObject *pa
 void           PyExternalSurfaceAttributes_SetDefaults(const ExternalSurfaceAttributes *atts);
 std::string    PyExternalSurfaceAttributes_GetLogString();
 std::string    PyExternalSurfaceAttributes_ToString(const ExternalSurfaceAttributes *, const char *, const bool=false);
-PyObject *     PyExternalSurfaceAttributes_getattr(PyObject *self, char *name);
-int            PyExternalSurfaceAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PyExternalSurfaceAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyExternalSurfaceAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PyExternalSurfaceAttributes_methods[EXTERNALSURFACEATTRIBUTES_NMETH];
 
 #endif

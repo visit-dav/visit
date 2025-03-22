@@ -854,8 +854,11 @@ SPHResampleAttributes_dealloc(PyObject *v)
 
 static PyObject *SPHResampleAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PySPHResampleAttributes_getattr(PyObject *self, char *name)
+PySPHResampleAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "minX") == 0)
         return SPHResampleAttributes_GetMinX(self, NULL);
     if(strcmp(name, "maxX") == 0)
@@ -881,15 +884,19 @@ PySPHResampleAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "RK") == 0)
         return SPHResampleAttributes_GetRK(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PySPHResampleAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PySPHResampleAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PySPHResampleAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PySPHResampleAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "minX") == 0)
         obj = SPHResampleAttributes_SetMinX(self, args);
@@ -915,6 +922,8 @@ PySPHResampleAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = SPHResampleAttributes_SetWeightVariable(self, args);
     else if(strcmp(name, "RK") == 0)
         obj = SPHResampleAttributes_SetRK(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -962,8 +971,8 @@ static char *SPHResampleAttributes_Purpose = "";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -974,12 +983,12 @@ static char *SPHResampleAttributes_Purpose = "";
 //
 
 VISIT_PY_TYPE_OBJ(SPHResampleAttributesType,         \
-                  "SPHResampleAttributes",           \
+                  "SPHResampleAttributes",         \
                   SPHResampleAttributesObject,       \
                   SPHResampleAttributes_dealloc,     \
                   SPHResampleAttributes_print,       \
-                  PySPHResampleAttributes_getattr,   \
-                  PySPHResampleAttributes_setattr,   \
+                  PySPHResampleAttributes_getattro,  \
+                  PySPHResampleAttributes_setattro,  \
                   SPHResampleAttributes_str,         \
                   SPHResampleAttributes_Purpose,     \
                   SPHResampleAttributes_richcompare, \
@@ -1043,6 +1052,7 @@ NewSPHResampleAttributes(int useCurrent)
         newObject->data = new SPHResampleAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&SPHResampleAttributesType);
     return (PyObject *)newObject;
 }
 

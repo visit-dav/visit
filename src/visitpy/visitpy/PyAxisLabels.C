@@ -278,8 +278,11 @@ AxisLabels_dealloc(PyObject *v)
 
 static PyObject *AxisLabels_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyAxisLabels_getattr(PyObject *self, char *name)
+PyAxisLabels_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "visible") == 0)
         return AxisLabels_GetVisible(self, NULL);
     if(strcmp(name, "font") == 0)
@@ -287,15 +290,19 @@ PyAxisLabels_getattr(PyObject *self, char *name)
     if(strcmp(name, "scaling") == 0)
         return AxisLabels_GetScaling(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyAxisLabels_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyAxisLabels_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyAxisLabels_setattr(PyObject *self, char *name, PyObject *args)
+PyAxisLabels_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "visible") == 0)
         obj = AxisLabels_SetVisible(self, args);
@@ -303,6 +310,8 @@ PyAxisLabels_setattr(PyObject *self, char *name, PyObject *args)
         obj = AxisLabels_SetFont(self, args);
     else if(strcmp(name, "scaling") == 0)
         obj = AxisLabels_SetScaling(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -350,8 +359,8 @@ static char *AxisLabels_Purpose = "Contains the label properties for one axis.";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -362,12 +371,12 @@ static char *AxisLabels_Purpose = "Contains the label properties for one axis.";
 //
 
 VISIT_PY_TYPE_OBJ(AxisLabelsType,         \
-                  "AxisLabels",           \
+                  "AxisLabels",         \
                   AxisLabelsObject,       \
                   AxisLabels_dealloc,     \
                   AxisLabels_print,       \
-                  PyAxisLabels_getattr,   \
-                  PyAxisLabels_setattr,   \
+                  PyAxisLabels_getattro,  \
+                  PyAxisLabels_setattro,  \
                   AxisLabels_str,         \
                   AxisLabels_Purpose,     \
                   AxisLabels_richcompare, \
@@ -431,6 +440,7 @@ NewAxisLabels(int useCurrent)
         newObject->data = new AxisLabels;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&AxisLabelsType);
     return (PyObject *)newObject;
 }
 

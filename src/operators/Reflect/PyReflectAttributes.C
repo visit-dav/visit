@@ -987,8 +987,11 @@ ReflectAttributes_dealloc(PyObject *v)
 
 static PyObject *ReflectAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyReflectAttributes_getattr(PyObject *self, char *name)
+PyReflectAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "octant") == 0)
         return ReflectAttributes_GetOctant(self, NULL);
     if(strcmp(name, "PXPYPZ") == 0)
@@ -1034,15 +1037,19 @@ PyReflectAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(ReflectAttributes::Axis));
 
 
+    PyObject *meth = Py_FindMethod(PyReflectAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyReflectAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyReflectAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyReflectAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "octant") == 0)
         obj = ReflectAttributes_SetOctant(self, args);
@@ -1066,6 +1073,8 @@ PyReflectAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ReflectAttributes_SetPlaneNormal(self, args);
     else if(strcmp(name, "reflectType") == 0)
         obj = ReflectAttributes_SetReflectType(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -1113,8 +1122,8 @@ static char *ReflectAttributes_Purpose = "This class contains attributes for the
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1125,12 +1134,12 @@ static char *ReflectAttributes_Purpose = "This class contains attributes for the
 //
 
 VISIT_PY_TYPE_OBJ(ReflectAttributesType,         \
-                  "ReflectAttributes",           \
+                  "ReflectAttributes",         \
                   ReflectAttributesObject,       \
                   ReflectAttributes_dealloc,     \
                   ReflectAttributes_print,       \
-                  PyReflectAttributes_getattr,   \
-                  PyReflectAttributes_setattr,   \
+                  PyReflectAttributes_getattro,  \
+                  PyReflectAttributes_setattro,  \
                   ReflectAttributes_str,         \
                   ReflectAttributes_Purpose,     \
                   ReflectAttributes_richcompare, \
@@ -1194,6 +1203,7 @@ NewReflectAttributes(int useCurrent)
         newObject->data = new ReflectAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&ReflectAttributesType);
     return (PyObject *)newObject;
 }
 

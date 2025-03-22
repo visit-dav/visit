@@ -3784,8 +3784,11 @@ PseudocolorAttributes_dealloc(PyObject *v)
 
 static PyObject *PseudocolorAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyPseudocolorAttributes_getattr(PyObject *self, char *name)
+PyPseudocolorAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "scaling") == 0)
         return PseudocolorAttributes_GetScaling(self, NULL);
     if(strcmp(name, "Linear") == 0)
@@ -3975,15 +3978,19 @@ PyPseudocolorAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "pointColor") == 0)
         return PseudocolorAttributes_GetPointColor(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyPseudocolorAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyPseudocolorAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyPseudocolorAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyPseudocolorAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "scaling") == 0)
         obj = PseudocolorAttributes_SetScaling(self, args);
@@ -4091,6 +4098,8 @@ PyPseudocolorAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PseudocolorAttributes_SetWireframeColor(self, args);
     else if(strcmp(name, "pointColor") == 0)
         obj = PseudocolorAttributes_SetPointColor(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -4138,8 +4147,8 @@ static char *PseudocolorAttributes_Purpose = "Attributes for the pseudocolor plo
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -4150,12 +4159,12 @@ static char *PseudocolorAttributes_Purpose = "Attributes for the pseudocolor plo
 //
 
 VISIT_PY_TYPE_OBJ(PseudocolorAttributesType,         \
-                  "PseudocolorAttributes",           \
+                  "PseudocolorAttributes",         \
                   PseudocolorAttributesObject,       \
                   PseudocolorAttributes_dealloc,     \
                   PseudocolorAttributes_print,       \
-                  PyPseudocolorAttributes_getattr,   \
-                  PyPseudocolorAttributes_setattr,   \
+                  PyPseudocolorAttributes_getattro,  \
+                  PyPseudocolorAttributes_setattro,  \
                   PseudocolorAttributes_str,         \
                   PseudocolorAttributes_Purpose,     \
                   PseudocolorAttributes_richcompare, \
@@ -4219,6 +4228,7 @@ NewPseudocolorAttributes(int useCurrent)
         newObject->data = new PseudocolorAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PseudocolorAttributesType);
     return (PyObject *)newObject;
 }
 

@@ -300,8 +300,8 @@ PyUnicode_From_UTF32_Unicode_Buffer(const char *unicode_buffer,
                            VPY_OBJECT,    \
                            VPY_DEALLOC,   \
                            VPY_PRINT,     \
-                           VPY_GETATTR,   \
-                           VPY_SETATTR,   \
+                           VPY_GETATTRO,  \
+                           VPY_SETATTRO,  \
                            VPY_STR,       \
                            VPY_PURPOSE,   \
                            VPY_RICHCOMP,  \
@@ -315,8 +315,8 @@ static PyTypeObject VPY_TYPE = \
     0,                         /* tp_itemsize */ \
     (destructor)VPY_DEALLOC,   /* tp_dealloc */ \
     0,                         /* tp_print (python 2) or tp_vectorcall_offset (python3.8 > ) */ \
-    (getattrfunc)VPY_GETATTR,  /* tp_getattr */ \
-    (setattrfunc)VPY_SETATTR,  /* tp_setattr */ \
+    0,                         /* tp_getattr */ \
+    0,                         /* tp_setattr */ \
     0,                         /* tp_reserved */ \
     (reprfunc)VPY_STR,         /* tp_repr */ \
     VPY_AS_NUMBER,             /* tp_as_number */ \
@@ -325,8 +325,8 @@ static PyTypeObject VPY_TYPE = \
     0,                         /* tp_hash  */ \
     0,                         /* tp_call */ \
     (reprfunc)VPY_STR,         /* tp_str */ \
-    0,                         /* tp_getattro */ \
-    0,                         /* tp_setattro */ \
+    (getattrofunc)VPY_GETATTRO,/* tp_getattro */ \
+    (setattrofunc)VPY_SETATTRO,/* tp_setattro */ \
     0,                         /* tp_as_buffer */ \
     PY_VISIT_TPFLAGS_DEFAULT,  /* tp_flags */ \
     VPY_PURPOSE,               /* tp_doc */ \

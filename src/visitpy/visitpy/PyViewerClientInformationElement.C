@@ -449,8 +449,11 @@ ViewerClientInformationElement_dealloc(PyObject *v)
 
 static PyObject *ViewerClientInformationElement_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyViewerClientInformationElement_getattr(PyObject *self, char *name)
+PyViewerClientInformationElement_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "data") == 0)
         return ViewerClientInformationElement_GetData(self, NULL);
     if(strcmp(name, "rawData") == 0)
@@ -462,15 +465,19 @@ PyViewerClientInformationElement_getattr(PyObject *self, char *name)
     if(strcmp(name, "windowId") == 0)
         return ViewerClientInformationElement_GetWindowId(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyViewerClientInformationElement_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyViewerClientInformationElement_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyViewerClientInformationElement_setattr(PyObject *self, char *name, PyObject *args)
+PyViewerClientInformationElement_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "data") == 0)
         obj = ViewerClientInformationElement_SetData(self, args);
@@ -482,6 +489,8 @@ PyViewerClientInformationElement_setattr(PyObject *self, char *name, PyObject *a
         obj = ViewerClientInformationElement_SetIsRaw(self, args);
     else if(strcmp(name, "windowId") == 0)
         obj = ViewerClientInformationElement_SetWindowId(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -529,8 +538,8 @@ static char *ViewerClientInformationElement_Purpose = "This class contains the r
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -541,12 +550,12 @@ static char *ViewerClientInformationElement_Purpose = "This class contains the r
 //
 
 VISIT_PY_TYPE_OBJ(ViewerClientInformationElementType,         \
-                  "ViewerClientInformationElement",           \
+                  "ViewerClientInformationElement",         \
                   ViewerClientInformationElementObject,       \
                   ViewerClientInformationElement_dealloc,     \
                   ViewerClientInformationElement_print,       \
-                  PyViewerClientInformationElement_getattr,   \
-                  PyViewerClientInformationElement_setattr,   \
+                  PyViewerClientInformationElement_getattro,  \
+                  PyViewerClientInformationElement_setattro,  \
                   ViewerClientInformationElement_str,         \
                   ViewerClientInformationElement_Purpose,     \
                   ViewerClientInformationElement_richcompare, \
@@ -610,6 +619,7 @@ NewViewerClientInformationElement(int useCurrent)
         newObject->data = new ViewerClientInformationElement;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&ViewerClientInformationElementType);
     return (PyObject *)newObject;
 }
 

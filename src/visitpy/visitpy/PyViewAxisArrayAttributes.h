@@ -24,8 +24,8 @@ void VISITPY_API           PyViewAxisArrayAttributes_SetParent(PyObject *obj, Py
 void VISITPY_API           PyViewAxisArrayAttributes_SetDefaults(const ViewAxisArrayAttributes *atts);
 std::string VISITPY_API    PyViewAxisArrayAttributes_GetLogString();
 std::string VISITPY_API    PyViewAxisArrayAttributes_ToString(const ViewAxisArrayAttributes *, const char *, const bool=false);
-VISITPY_API PyObject *     PyViewAxisArrayAttributes_getattr(PyObject *self, char *name);
-int VISITPY_API            PyViewAxisArrayAttributes_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyViewAxisArrayAttributes_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyViewAxisArrayAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyViewAxisArrayAttributes_methods[VIEWAXISARRAYATTRIBUTES_NMETH];
 
 #endif

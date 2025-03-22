@@ -25,8 +25,8 @@ void VISITPY_API           PyavtLabelMetaData_SetParent(PyObject *obj, PyObject 
 void VISITPY_API           PyavtLabelMetaData_SetDefaults(const avtLabelMetaData *atts);
 std::string VISITPY_API    PyavtLabelMetaData_GetLogString();
 std::string VISITPY_API    PyavtLabelMetaData_ToString(const avtLabelMetaData *, const char *, const bool=false);
-VISITPY_API PyObject *     PyavtLabelMetaData_getattr(PyObject *self, char *name);
-int VISITPY_API            PyavtLabelMetaData_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyavtLabelMetaData_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyavtLabelMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyavtLabelMetaData_methods[AVTLABELMETADATA_NMETH];
 
 #endif

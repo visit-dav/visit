@@ -173,23 +173,32 @@ ConnectedComponentsAttributes_dealloc(PyObject *v)
 
 static PyObject *ConnectedComponentsAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyConnectedComponentsAttributes_getattr(PyObject *self, char *name)
+PyConnectedComponentsAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "EnableGhostNeighborsOptimization") == 0)
         return ConnectedComponentsAttributes_GetEnableGhostNeighborsOptimization(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyConnectedComponentsAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyConnectedComponentsAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyConnectedComponentsAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyConnectedComponentsAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "EnableGhostNeighborsOptimization") == 0)
         obj = ConnectedComponentsAttributes_SetEnableGhostNeighborsOptimization(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -237,8 +246,8 @@ static char *ConnectedComponentsAttributes_Purpose = "Attributes for Connected C
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -249,12 +258,12 @@ static char *ConnectedComponentsAttributes_Purpose = "Attributes for Connected C
 //
 
 VISIT_PY_TYPE_OBJ(ConnectedComponentsAttributesType,         \
-                  "ConnectedComponentsAttributes",           \
+                  "ConnectedComponentsAttributes",         \
                   ConnectedComponentsAttributesObject,       \
                   ConnectedComponentsAttributes_dealloc,     \
                   ConnectedComponentsAttributes_print,       \
-                  PyConnectedComponentsAttributes_getattr,   \
-                  PyConnectedComponentsAttributes_setattr,   \
+                  PyConnectedComponentsAttributes_getattro,  \
+                  PyConnectedComponentsAttributes_setattro,  \
                   ConnectedComponentsAttributes_str,         \
                   ConnectedComponentsAttributes_Purpose,     \
                   ConnectedComponentsAttributes_richcompare, \
@@ -318,6 +327,7 @@ NewConnectedComponentsAttributes(int useCurrent)
         newObject->data = new ConnectedComponentsAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&ConnectedComponentsAttributesType);
     return (PyObject *)newObject;
 }
 

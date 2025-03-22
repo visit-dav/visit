@@ -1509,8 +1509,11 @@ AnnotationAttributes_dealloc(PyObject *v)
 
 static PyObject *AnnotationAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyAnnotationAttributes_getattr(PyObject *self, char *name)
+PyAnnotationAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "axes2D") == 0)
         return AnnotationAttributes_GetAxes2D(self, NULL);
     if(strcmp(name, "axes3D") == 0)
@@ -1585,15 +1588,19 @@ PyAnnotationAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "axesArray") == 0)
         return AnnotationAttributes_GetAxesArray(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyAnnotationAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyAnnotationAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyAnnotationAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyAnnotationAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "axes2D") == 0)
         obj = AnnotationAttributes_SetAxes2D(self, args);
@@ -1637,6 +1644,8 @@ PyAnnotationAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = AnnotationAttributes_SetImageRepeatY(self, args);
     else if(strcmp(name, "axesArray") == 0)
         obj = AnnotationAttributes_SetAxesArray(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -1684,8 +1693,8 @@ static char *AnnotationAttributes_Purpose = "This class contains the attributes 
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1696,12 +1705,12 @@ static char *AnnotationAttributes_Purpose = "This class contains the attributes 
 //
 
 VISIT_PY_TYPE_OBJ(AnnotationAttributesType,         \
-                  "AnnotationAttributes",           \
+                  "AnnotationAttributes",         \
                   AnnotationAttributesObject,       \
                   AnnotationAttributes_dealloc,     \
                   AnnotationAttributes_print,       \
-                  PyAnnotationAttributes_getattr,   \
-                  PyAnnotationAttributes_setattr,   \
+                  PyAnnotationAttributes_getattro,  \
+                  PyAnnotationAttributes_setattro,  \
                   AnnotationAttributes_str,         \
                   AnnotationAttributes_Purpose,     \
                   AnnotationAttributes_richcompare, \
@@ -1765,6 +1774,7 @@ NewAnnotationAttributes(int useCurrent)
         newObject->data = new AnnotationAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&AnnotationAttributesType);
     return (PyObject *)newObject;
 }
 

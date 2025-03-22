@@ -24,8 +24,8 @@ void VISITPY_API           PySelectionVariableSummary_SetParent(PyObject *obj, P
 void VISITPY_API           PySelectionVariableSummary_SetDefaults(const SelectionVariableSummary *atts);
 std::string VISITPY_API    PySelectionVariableSummary_GetLogString();
 std::string VISITPY_API    PySelectionVariableSummary_ToString(const SelectionVariableSummary *, const char *, const bool=false);
-VISITPY_API PyObject *     PySelectionVariableSummary_getattr(PyObject *self, char *name);
-int VISITPY_API            PySelectionVariableSummary_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PySelectionVariableSummary_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PySelectionVariableSummary_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PySelectionVariableSummary_methods[SELECTIONVARIABLESUMMARY_NMETH];
 
 #endif

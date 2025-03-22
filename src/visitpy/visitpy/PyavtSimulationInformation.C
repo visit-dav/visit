@@ -831,8 +831,11 @@ avtSimulationInformation_dealloc(PyObject *v)
 
 static PyObject *avtSimulationInformation_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyavtSimulationInformation_getattr(PyObject *self, char *name)
+PyavtSimulationInformation_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "host") == 0)
         return avtSimulationInformation_GetHost(self, NULL);
     if(strcmp(name, "port") == 0)
@@ -859,15 +862,19 @@ PyavtSimulationInformation_getattr(PyObject *self, char *name)
     if(strcmp(name, "message") == 0)
         return avtSimulationInformation_GetMessage(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyavtSimulationInformation_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyavtSimulationInformation_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyavtSimulationInformation_setattr(PyObject *self, char *name, PyObject *args)
+PyavtSimulationInformation_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "host") == 0)
         obj = avtSimulationInformation_SetHost(self, args);
@@ -883,6 +890,8 @@ PyavtSimulationInformation_setattr(PyObject *self, char *name, PyObject *args)
         obj = avtSimulationInformation_SetMode(self, args);
     else if(strcmp(name, "message") == 0)
         obj = avtSimulationInformation_SetMessage(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -930,8 +939,8 @@ static char *avtSimulationInformation_Purpose = "Contains information about simu
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -942,12 +951,12 @@ static char *avtSimulationInformation_Purpose = "Contains information about simu
 //
 
 VISIT_PY_TYPE_OBJ(avtSimulationInformationType,         \
-                  "avtSimulationInformation",           \
+                  "avtSimulationInformation",         \
                   avtSimulationInformationObject,       \
                   avtSimulationInformation_dealloc,     \
                   avtSimulationInformation_print,       \
-                  PyavtSimulationInformation_getattr,   \
-                  PyavtSimulationInformation_setattr,   \
+                  PyavtSimulationInformation_getattro,  \
+                  PyavtSimulationInformation_setattro,  \
                   avtSimulationInformation_str,         \
                   avtSimulationInformation_Purpose,     \
                   avtSimulationInformation_richcompare, \
@@ -1011,6 +1020,7 @@ NewavtSimulationInformation(int useCurrent)
         newObject->data = new avtSimulationInformation;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&avtSimulationInformationType);
     return (PyObject *)newObject;
 }
 

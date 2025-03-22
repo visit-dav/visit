@@ -237,27 +237,36 @@ TruecolorAttributes_dealloc(PyObject *v)
 
 static PyObject *TruecolorAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyTruecolorAttributes_getattr(PyObject *self, char *name)
+PyTruecolorAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "opacity") == 0)
         return TruecolorAttributes_GetOpacity(self, NULL);
     if(strcmp(name, "lightingFlag") == 0)
         return TruecolorAttributes_GetLightingFlag(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyTruecolorAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyTruecolorAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyTruecolorAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyTruecolorAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "opacity") == 0)
         obj = TruecolorAttributes_SetOpacity(self, args);
     else if(strcmp(name, "lightingFlag") == 0)
         obj = TruecolorAttributes_SetLightingFlag(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -305,8 +314,8 @@ static char *TruecolorAttributes_Purpose = "Truecolor plot";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -317,12 +326,12 @@ static char *TruecolorAttributes_Purpose = "Truecolor plot";
 //
 
 VISIT_PY_TYPE_OBJ(TruecolorAttributesType,         \
-                  "TruecolorAttributes",           \
+                  "TruecolorAttributes",         \
                   TruecolorAttributesObject,       \
                   TruecolorAttributes_dealloc,     \
                   TruecolorAttributes_print,       \
-                  PyTruecolorAttributes_getattr,   \
-                  PyTruecolorAttributes_setattr,   \
+                  PyTruecolorAttributes_getattro,  \
+                  PyTruecolorAttributes_setattro,  \
                   TruecolorAttributes_str,         \
                   TruecolorAttributes_Purpose,     \
                   TruecolorAttributes_richcompare, \
@@ -386,6 +395,7 @@ NewTruecolorAttributes(int useCurrent)
         newObject->data = new TruecolorAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&TruecolorAttributesType);
     return (PyObject *)newObject;
 }
 

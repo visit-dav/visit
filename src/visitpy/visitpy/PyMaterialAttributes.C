@@ -926,8 +926,11 @@ MaterialAttributes_dealloc(PyObject *v)
 
 static PyObject *MaterialAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyMaterialAttributes_getattr(PyObject *self, char *name)
+PyMaterialAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "smoothing") == 0)
         return MaterialAttributes_GetSmoothing(self, NULL);
     if(strcmp(name, "forceMIR") == 0)
@@ -964,15 +967,19 @@ PyMaterialAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "annealingTime") == 0)
         return MaterialAttributes_GetAnnealingTime(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyMaterialAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyMaterialAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyMaterialAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyMaterialAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "smoothing") == 0)
         obj = MaterialAttributes_SetSmoothing(self, args);
@@ -998,6 +1005,8 @@ PyMaterialAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = MaterialAttributes_SetIsoVolumeFraction(self, args);
     else if(strcmp(name, "annealingTime") == 0)
         obj = MaterialAttributes_SetAnnealingTime(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -1045,8 +1054,8 @@ static char *MaterialAttributes_Purpose = "Attributes to control material interf
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1057,12 +1066,12 @@ static char *MaterialAttributes_Purpose = "Attributes to control material interf
 //
 
 VISIT_PY_TYPE_OBJ(MaterialAttributesType,         \
-                  "MaterialAttributes",           \
+                  "MaterialAttributes",         \
                   MaterialAttributesObject,       \
                   MaterialAttributes_dealloc,     \
                   MaterialAttributes_print,       \
-                  PyMaterialAttributes_getattr,   \
-                  PyMaterialAttributes_setattr,   \
+                  PyMaterialAttributes_getattro,  \
+                  PyMaterialAttributes_setattro,  \
                   MaterialAttributes_str,         \
                   MaterialAttributes_Purpose,     \
                   MaterialAttributes_richcompare, \
@@ -1126,6 +1135,7 @@ NewMaterialAttributes(int useCurrent)
         newObject->data = new MaterialAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&MaterialAttributesType);
     return (PyObject *)newObject;
 }
 

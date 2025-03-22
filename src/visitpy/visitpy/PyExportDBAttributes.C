@@ -716,8 +716,11 @@ ExportDBAttributes_dealloc(PyObject *v)
 
 static PyObject *ExportDBAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyExportDBAttributes_getattr(PyObject *self, char *name)
+PyExportDBAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "allTimes") == 0)
         return ExportDBAttributes_GetAllTimes(self, NULL);
     if(strcmp(name, "dirname") == 0)
@@ -739,15 +742,19 @@ PyExportDBAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "opts") == 0)
         return ExportDBAttributes_GetOpts(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyExportDBAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyExportDBAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyExportDBAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyExportDBAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "allTimes") == 0)
         obj = ExportDBAttributes_SetAllTimes(self, args);
@@ -769,6 +776,8 @@ PyExportDBAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ExportDBAttributes_SetGroupSize(self, args);
     else if(strcmp(name, "opts") == 0)
         obj = ExportDBAttributes_SetOpts(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -816,8 +825,8 @@ static char *ExportDBAttributes_Purpose = "The attributes for export a database"
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -828,12 +837,12 @@ static char *ExportDBAttributes_Purpose = "The attributes for export a database"
 //
 
 VISIT_PY_TYPE_OBJ(ExportDBAttributesType,         \
-                  "ExportDBAttributes",           \
+                  "ExportDBAttributes",         \
                   ExportDBAttributesObject,       \
                   ExportDBAttributes_dealloc,     \
                   ExportDBAttributes_print,       \
-                  PyExportDBAttributes_getattr,   \
-                  PyExportDBAttributes_setattr,   \
+                  PyExportDBAttributes_getattro,  \
+                  PyExportDBAttributes_setattro,  \
                   ExportDBAttributes_str,         \
                   ExportDBAttributes_Purpose,     \
                   ExportDBAttributes_richcompare, \
@@ -897,6 +906,7 @@ NewExportDBAttributes(int useCurrent)
         newObject->data = new ExportDBAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&ExportDBAttributesType);
     return (PyObject *)newObject;
 }
 

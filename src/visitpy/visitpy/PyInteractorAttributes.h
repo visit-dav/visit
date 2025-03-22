@@ -24,8 +24,8 @@ void VISITPY_API           PyInteractorAttributes_SetParent(PyObject *obj, PyObj
 void VISITPY_API           PyInteractorAttributes_SetDefaults(const InteractorAttributes *atts);
 std::string VISITPY_API    PyInteractorAttributes_GetLogString();
 std::string VISITPY_API    PyInteractorAttributes_ToString(const InteractorAttributes *, const char *, const bool=false);
-VISITPY_API PyObject *     PyInteractorAttributes_getattr(PyObject *self, char *name);
-int VISITPY_API            PyInteractorAttributes_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyInteractorAttributes_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyInteractorAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyInteractorAttributes_methods[INTERACTORATTRIBUTES_NMETH];
 
 #endif

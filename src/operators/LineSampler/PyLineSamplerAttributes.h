@@ -23,8 +23,8 @@ void           PyLineSamplerAttributes_SetParent(PyObject *obj, PyObject *parent
 void           PyLineSamplerAttributes_SetDefaults(const LineSamplerAttributes *atts);
 std::string    PyLineSamplerAttributes_GetLogString();
 std::string    PyLineSamplerAttributes_ToString(const LineSamplerAttributes *, const char *, const bool=false);
-PyObject *     PyLineSamplerAttributes_getattr(PyObject *self, char *name);
-int            PyLineSamplerAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PyLineSamplerAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyLineSamplerAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PyLineSamplerAttributes_methods[LINESAMPLERATTRIBUTES_NMETH];
 
 #endif

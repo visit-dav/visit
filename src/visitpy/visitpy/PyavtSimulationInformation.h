@@ -24,8 +24,8 @@ void VISITPY_API           PyavtSimulationInformation_SetParent(PyObject *obj, P
 void VISITPY_API           PyavtSimulationInformation_SetDefaults(const avtSimulationInformation *atts);
 std::string VISITPY_API    PyavtSimulationInformation_GetLogString();
 std::string VISITPY_API    PyavtSimulationInformation_ToString(const avtSimulationInformation *, const char *, const bool=false);
-VISITPY_API PyObject *     PyavtSimulationInformation_getattr(PyObject *self, char *name);
-int VISITPY_API            PyavtSimulationInformation_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyavtSimulationInformation_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyavtSimulationInformation_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyavtSimulationInformation_methods[AVTSIMULATIONINFORMATION_NMETH];
 
 #endif

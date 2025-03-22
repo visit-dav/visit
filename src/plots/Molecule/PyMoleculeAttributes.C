@@ -1578,8 +1578,11 @@ MoleculeAttributes_dealloc(PyObject *v)
 
 static PyObject *MoleculeAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyMoleculeAttributes_getattr(PyObject *self, char *name)
+PyMoleculeAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "drawAtomsAs") == 0)
         return MoleculeAttributes_GetDrawAtomsAs(self, NULL);
     if(strcmp(name, "NoAtoms") == 0)
@@ -1669,15 +1672,19 @@ PyMoleculeAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "scalarMax") == 0)
         return MoleculeAttributes_GetScalarMax(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyMoleculeAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyMoleculeAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyMoleculeAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyMoleculeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "drawAtomsAs") == 0)
         obj = MoleculeAttributes_SetDrawAtomsAs(self, args);
@@ -1721,6 +1728,8 @@ PyMoleculeAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = MoleculeAttributes_SetMaxFlag(self, args);
     else if(strcmp(name, "scalarMax") == 0)
         obj = MoleculeAttributes_SetScalarMax(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -1768,8 +1777,8 @@ static char *MoleculeAttributes_Purpose = "This class contains the plot attribut
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1780,12 +1789,12 @@ static char *MoleculeAttributes_Purpose = "This class contains the plot attribut
 //
 
 VISIT_PY_TYPE_OBJ(MoleculeAttributesType,         \
-                  "MoleculeAttributes",           \
+                  "MoleculeAttributes",         \
                   MoleculeAttributesObject,       \
                   MoleculeAttributes_dealloc,     \
                   MoleculeAttributes_print,       \
-                  PyMoleculeAttributes_getattr,   \
-                  PyMoleculeAttributes_setattr,   \
+                  PyMoleculeAttributes_getattro,  \
+                  PyMoleculeAttributes_setattro,  \
                   MoleculeAttributes_str,         \
                   MoleculeAttributes_Purpose,     \
                   MoleculeAttributes_richcompare, \
@@ -1849,6 +1858,7 @@ NewMoleculeAttributes(int useCurrent)
         newObject->data = new MoleculeAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&MoleculeAttributesType);
     return (PyObject *)newObject;
 }
 

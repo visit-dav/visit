@@ -24,8 +24,8 @@ void VISITPY_API           PyDBOptionsAttributes_SetParent(PyObject *obj, PyObje
 void VISITPY_API           PyDBOptionsAttributes_SetDefaults(const DBOptionsAttributes *atts);
 std::string VISITPY_API    PyDBOptionsAttributes_GetLogString();
 std::string VISITPY_API    PyDBOptionsAttributes_ToString(const DBOptionsAttributes *, const char *, const bool=false);
-VISITPY_API PyObject *     PyDBOptionsAttributes_getattr(PyObject *self, char *name);
-int VISITPY_API            PyDBOptionsAttributes_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyDBOptionsAttributes_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyDBOptionsAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyDBOptionsAttributes_methods[DBOPTIONSATTRIBUTES_NMETH];
 
 #endif

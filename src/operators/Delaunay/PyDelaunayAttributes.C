@@ -194,8 +194,11 @@ DelaunayAttributes_dealloc(PyObject *v)
 
 static PyObject *DelaunayAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyDelaunayAttributes_getattr(PyObject *self, char *name)
+PyDelaunayAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "dimension") == 0)
         return DelaunayAttributes_GetDimension(self, NULL);
     if(strcmp(name, "Automatic") == 0)
@@ -206,18 +209,24 @@ PyDelaunayAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(DelaunayAttributes::Tetrahedralization));
 
 
+    PyObject *meth = Py_FindMethod(PyDelaunayAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyDelaunayAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyDelaunayAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyDelaunayAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "dimension") == 0)
         obj = DelaunayAttributes_SetDimension(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -265,8 +274,8 @@ static char *DelaunayAttributes_Purpose = "Attributes for the Delaunay Operator"
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -277,12 +286,12 @@ static char *DelaunayAttributes_Purpose = "Attributes for the Delaunay Operator"
 //
 
 VISIT_PY_TYPE_OBJ(DelaunayAttributesType,         \
-                  "DelaunayAttributes",           \
+                  "DelaunayAttributes",         \
                   DelaunayAttributesObject,       \
                   DelaunayAttributes_dealloc,     \
                   DelaunayAttributes_print,       \
-                  PyDelaunayAttributes_getattr,   \
-                  PyDelaunayAttributes_setattr,   \
+                  PyDelaunayAttributes_getattro,  \
+                  PyDelaunayAttributes_setattro,  \
                   DelaunayAttributes_str,         \
                   DelaunayAttributes_Purpose,     \
                   DelaunayAttributes_richcompare, \
@@ -346,6 +355,7 @@ NewDelaunayAttributes(int useCurrent)
         newObject->data = new DelaunayAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&DelaunayAttributesType);
     return (PyObject *)newObject;
 }
 

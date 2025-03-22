@@ -1550,8 +1550,11 @@ MachineProfile_dealloc(PyObject *v)
 
 static PyObject *MachineProfile_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyMachineProfile_getattr(PyObject *self, char *name)
+PyMachineProfile_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "host") == 0)
         return MachineProfile_GetHost(self, NULL);
     if(strcmp(name, "userName") == 0)
@@ -1604,15 +1607,19 @@ PyMachineProfile_getattr(PyObject *self, char *name)
     if(strcmp(name, "activeProfile") == 0)
         return MachineProfile_GetActiveProfile(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyMachineProfile_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyMachineProfile_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyMachineProfile_setattr(PyObject *self, char *name, PyObject *args)
+PyMachineProfile_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "host") == 0)
         obj = MachineProfile_SetHost(self, args);
@@ -1656,6 +1663,8 @@ PyMachineProfile_setattr(PyObject *self, char *name, PyObject *args)
         obj = MachineProfile_SetMaximumProcessors(self, args);
     else if(strcmp(name, "activeProfile") == 0)
         obj = MachineProfile_SetActiveProfile(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -1703,8 +1712,8 @@ static char *MachineProfile_Purpose = "This class contains information about a h
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1715,12 +1724,12 @@ static char *MachineProfile_Purpose = "This class contains information about a h
 //
 
 VISIT_PY_TYPE_OBJ(MachineProfileType,         \
-                  "MachineProfile",           \
+                  "MachineProfile",         \
                   MachineProfileObject,       \
                   MachineProfile_dealloc,     \
                   MachineProfile_print,       \
-                  PyMachineProfile_getattr,   \
-                  PyMachineProfile_setattr,   \
+                  PyMachineProfile_getattro,  \
+                  PyMachineProfile_setattro,  \
                   MachineProfile_str,         \
                   MachineProfile_Purpose,     \
                   MachineProfile_richcompare, \
@@ -1784,6 +1793,7 @@ NewMachineProfile(int useCurrent)
         newObject->data = new MachineProfile;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&MachineProfileType);
     return (PyObject *)newObject;
 }
 

@@ -1067,8 +1067,11 @@ ExtrudeStackedAttributes_dealloc(PyObject *v)
 
 static PyObject *ExtrudeStackedAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyExtrudeStackedAttributes_getattr(PyObject *self, char *name)
+PyExtrudeStackedAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "axis") == 0)
         return ExtrudeStackedAttributes_GetAxis(self, NULL);
     if(strcmp(name, "byVariable") == 0)
@@ -1103,15 +1106,19 @@ PyExtrudeStackedAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "preserveOriginalCellNumbers") == 0)
         return ExtrudeStackedAttributes_GetPreserveOriginalCellNumbers(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyExtrudeStackedAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyExtrudeStackedAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyExtrudeStackedAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyExtrudeStackedAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "axis") == 0)
         obj = ExtrudeStackedAttributes_SetAxis(self, args);
@@ -1137,6 +1144,8 @@ PyExtrudeStackedAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ExtrudeStackedAttributes_SetSteps(self, args);
     else if(strcmp(name, "preserveOriginalCellNumbers") == 0)
         obj = ExtrudeStackedAttributes_SetPreserveOriginalCellNumbers(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -1184,8 +1193,8 @@ static char *ExtrudeStackedAttributes_Purpose = "This class contains attributes 
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1196,12 +1205,12 @@ static char *ExtrudeStackedAttributes_Purpose = "This class contains attributes 
 //
 
 VISIT_PY_TYPE_OBJ(ExtrudeStackedAttributesType,         \
-                  "ExtrudeStackedAttributes",           \
+                  "ExtrudeStackedAttributes",         \
                   ExtrudeStackedAttributesObject,       \
                   ExtrudeStackedAttributes_dealloc,     \
                   ExtrudeStackedAttributes_print,       \
-                  PyExtrudeStackedAttributes_getattr,   \
-                  PyExtrudeStackedAttributes_setattr,   \
+                  PyExtrudeStackedAttributes_getattro,  \
+                  PyExtrudeStackedAttributes_setattro,  \
                   ExtrudeStackedAttributes_str,         \
                   ExtrudeStackedAttributes_Purpose,     \
                   ExtrudeStackedAttributes_richcompare, \
@@ -1265,6 +1274,7 @@ NewExtrudeStackedAttributes(int useCurrent)
         newObject->data = new ExtrudeStackedAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&ExtrudeStackedAttributesType);
     return (PyObject *)newObject;
 }
 

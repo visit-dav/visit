@@ -279,8 +279,11 @@ FluxAttributes_dealloc(PyObject *v)
 
 static PyObject *FluxAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyFluxAttributes_getattr(PyObject *self, char *name)
+PyFluxAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "flowField") == 0)
         return FluxAttributes_GetFlowField(self, NULL);
     if(strcmp(name, "weight") == 0)
@@ -288,15 +291,19 @@ PyFluxAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "weightField") == 0)
         return FluxAttributes_GetWeightField(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyFluxAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyFluxAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyFluxAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyFluxAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "flowField") == 0)
         obj = FluxAttributes_SetFlowField(self, args);
@@ -304,6 +311,8 @@ PyFluxAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = FluxAttributes_SetWeight(self, args);
     else if(strcmp(name, "weightField") == 0)
         obj = FluxAttributes_SetWeightField(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -351,8 +360,8 @@ static char *FluxAttributes_Purpose = "Attributes for Flux operator";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -363,12 +372,12 @@ static char *FluxAttributes_Purpose = "Attributes for Flux operator";
 //
 
 VISIT_PY_TYPE_OBJ(FluxAttributesType,         \
-                  "FluxAttributes",           \
+                  "FluxAttributes",         \
                   FluxAttributesObject,       \
                   FluxAttributes_dealloc,     \
                   FluxAttributes_print,       \
-                  PyFluxAttributes_getattr,   \
-                  PyFluxAttributes_setattr,   \
+                  PyFluxAttributes_getattro,  \
+                  PyFluxAttributes_setattro,  \
                   FluxAttributes_str,         \
                   FluxAttributes_Purpose,     \
                   FluxAttributes_richcompare, \
@@ -432,6 +441,7 @@ NewFluxAttributes(int useCurrent)
         newObject->data = new FluxAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&FluxAttributesType);
     return (PyObject *)newObject;
 }
 

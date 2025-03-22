@@ -24,8 +24,8 @@ void VISITPY_API           PyAnnotationAttributes_SetParent(PyObject *obj, PyObj
 void VISITPY_API           PyAnnotationAttributes_SetDefaults(const AnnotationAttributes *atts);
 std::string VISITPY_API    PyAnnotationAttributes_GetLogString();
 std::string VISITPY_API    PyAnnotationAttributes_ToString(const AnnotationAttributes *, const char *, const bool=false);
-VISITPY_API PyObject *     PyAnnotationAttributes_getattr(PyObject *self, char *name);
-int VISITPY_API            PyAnnotationAttributes_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyAnnotationAttributes_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyAnnotationAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyAnnotationAttributes_methods[ANNOTATIONATTRIBUTES_NMETH];
 
 #endif

@@ -223,27 +223,36 @@ DisplaceAttributes_dealloc(PyObject *v)
 
 static PyObject *DisplaceAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyDisplaceAttributes_getattr(PyObject *self, char *name)
+PyDisplaceAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "factor") == 0)
         return DisplaceAttributes_GetFactor(self, NULL);
     if(strcmp(name, "variable") == 0)
         return DisplaceAttributes_GetVariable(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyDisplaceAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyDisplaceAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyDisplaceAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyDisplaceAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "factor") == 0)
         obj = DisplaceAttributes_SetFactor(self, args);
     else if(strcmp(name, "variable") == 0)
         obj = DisplaceAttributes_SetVariable(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -291,8 +300,8 @@ static char *DisplaceAttributes_Purpose = "This class contains attributes for th
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -303,12 +312,12 @@ static char *DisplaceAttributes_Purpose = "This class contains attributes for th
 //
 
 VISIT_PY_TYPE_OBJ(DisplaceAttributesType,         \
-                  "DisplaceAttributes",           \
+                  "DisplaceAttributes",         \
                   DisplaceAttributesObject,       \
                   DisplaceAttributes_dealloc,     \
                   DisplaceAttributes_print,       \
-                  PyDisplaceAttributes_getattr,   \
-                  PyDisplaceAttributes_setattr,   \
+                  PyDisplaceAttributes_getattro,  \
+                  PyDisplaceAttributes_setattro,  \
                   DisplaceAttributes_str,         \
                   DisplaceAttributes_Purpose,     \
                   DisplaceAttributes_richcompare, \
@@ -372,6 +381,7 @@ NewDisplaceAttributes(int useCurrent)
         newObject->data = new DisplaceAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&DisplaceAttributesType);
     return (PyObject *)newObject;
 }
 

@@ -3385,8 +3385,11 @@ ViewerRPC_dealloc(PyObject *v)
 
 static PyObject *ViewerRPC_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyViewerRPC_getattr(PyObject *self, char *name)
+PyViewerRPC_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "RPCType") == 0)
         return ViewerRPC_GetRPCType(self, NULL);
     if(strcmp(name, "CloseRPC") == 0)
@@ -3879,15 +3882,19 @@ PyViewerRPC_getattr(PyObject *self, char *name)
     if(strcmp(name, "queryParams") == 0)
         return ViewerRPC_GetQueryParams(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyViewerRPC_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyViewerRPC_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyViewerRPC_setattr(PyObject *self, char *name, PyObject *args)
+PyViewerRPC_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "RPCType") == 0)
         obj = ViewerRPC_SetRPCType(self, args);
@@ -3953,6 +3960,8 @@ PyViewerRPC_setattr(PyObject *self, char *name, PyObject *args)
         obj = ViewerRPC_SetStringArg2(self, args);
     else if(strcmp(name, "toolUpdateMode") == 0)
         obj = ViewerRPC_SetToolUpdateMode(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -4000,8 +4009,8 @@ static char *ViewerRPC_Purpose = "This class contains the attributes for control
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -4012,12 +4021,12 @@ static char *ViewerRPC_Purpose = "This class contains the attributes for control
 //
 
 VISIT_PY_TYPE_OBJ(ViewerRPCType,         \
-                  "ViewerRPC",           \
+                  "ViewerRPC",         \
                   ViewerRPCObject,       \
                   ViewerRPC_dealloc,     \
                   ViewerRPC_print,       \
-                  PyViewerRPC_getattr,   \
-                  PyViewerRPC_setattr,   \
+                  PyViewerRPC_getattro,  \
+                  PyViewerRPC_setattro,  \
                   ViewerRPC_str,         \
                   ViewerRPC_Purpose,     \
                   ViewerRPC_richcompare, \
@@ -4081,6 +4090,7 @@ NewViewerRPC(int useCurrent)
         newObject->data = new ViewerRPC;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&ViewerRPCType);
     return (PyObject *)newObject;
 }
 

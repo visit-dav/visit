@@ -1225,8 +1225,11 @@ CreateBondsAttributes_dealloc(PyObject *v)
 
 static PyObject *CreateBondsAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyCreateBondsAttributes_getattr(PyObject *self, char *name)
+PyCreateBondsAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "elementVariable") == 0)
         return CreateBondsAttributes_GetElementVariable(self, NULL);
     if(strcmp(name, "atomicNumber1") == 0)
@@ -1256,15 +1259,19 @@ PyCreateBondsAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "zVector") == 0)
         return CreateBondsAttributes_GetZVector(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyCreateBondsAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyCreateBondsAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyCreateBondsAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyCreateBondsAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "elementVariable") == 0)
         obj = CreateBondsAttributes_SetElementVariable(self, args);
@@ -1294,6 +1301,8 @@ PyCreateBondsAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = CreateBondsAttributes_SetYVector(self, args);
     else if(strcmp(name, "zVector") == 0)
         obj = CreateBondsAttributes_SetZVector(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -1341,8 +1350,8 @@ static char *CreateBondsAttributes_Purpose = "Attributes for the CreateBondsOper
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1353,12 +1362,12 @@ static char *CreateBondsAttributes_Purpose = "Attributes for the CreateBondsOper
 //
 
 VISIT_PY_TYPE_OBJ(CreateBondsAttributesType,         \
-                  "CreateBondsAttributes",           \
+                  "CreateBondsAttributes",         \
                   CreateBondsAttributesObject,       \
                   CreateBondsAttributes_dealloc,     \
                   CreateBondsAttributes_print,       \
-                  PyCreateBondsAttributes_getattr,   \
-                  PyCreateBondsAttributes_setattr,   \
+                  PyCreateBondsAttributes_getattro,  \
+                  PyCreateBondsAttributes_setattro,  \
                   CreateBondsAttributes_str,         \
                   CreateBondsAttributes_Purpose,     \
                   CreateBondsAttributes_richcompare, \
@@ -1422,6 +1431,7 @@ NewCreateBondsAttributes(int useCurrent)
         newObject->data = new CreateBondsAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&CreateBondsAttributesType);
     return (PyObject *)newObject;
 }
 

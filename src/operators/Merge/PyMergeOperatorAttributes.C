@@ -237,27 +237,36 @@ MergeOperatorAttributes_dealloc(PyObject *v)
 
 static PyObject *MergeOperatorAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyMergeOperatorAttributes_getattr(PyObject *self, char *name)
+PyMergeOperatorAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "parallelMerge") == 0)
         return MergeOperatorAttributes_GetParallelMerge(self, NULL);
     if(strcmp(name, "tolerance") == 0)
         return MergeOperatorAttributes_GetTolerance(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyMergeOperatorAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyMergeOperatorAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyMergeOperatorAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyMergeOperatorAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "parallelMerge") == 0)
         obj = MergeOperatorAttributes_SetParallelMerge(self, args);
     else if(strcmp(name, "tolerance") == 0)
         obj = MergeOperatorAttributes_SetTolerance(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -305,8 +314,8 @@ static char *MergeOperatorAttributes_Purpose = "Attributes for Merge operaetor";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -317,12 +326,12 @@ static char *MergeOperatorAttributes_Purpose = "Attributes for Merge operaetor";
 //
 
 VISIT_PY_TYPE_OBJ(MergeOperatorAttributesType,         \
-                  "MergeOperatorAttributes",           \
+                  "MergeOperatorAttributes",         \
                   MergeOperatorAttributesObject,       \
                   MergeOperatorAttributes_dealloc,     \
                   MergeOperatorAttributes_print,       \
-                  PyMergeOperatorAttributes_getattr,   \
-                  PyMergeOperatorAttributes_setattr,   \
+                  PyMergeOperatorAttributes_getattro,  \
+                  PyMergeOperatorAttributes_setattro,  \
                   MergeOperatorAttributes_str,         \
                   MergeOperatorAttributes_Purpose,     \
                   MergeOperatorAttributes_richcompare, \
@@ -386,6 +395,7 @@ NewMergeOperatorAttributes(int useCurrent)
         newObject->data = new MergeOperatorAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&MergeOperatorAttributesType);
     return (PyObject *)newObject;
 }
 

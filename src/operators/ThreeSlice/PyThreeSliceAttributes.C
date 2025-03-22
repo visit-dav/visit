@@ -365,8 +365,11 @@ ThreeSliceAttributes_dealloc(PyObject *v)
 
 static PyObject *ThreeSliceAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyThreeSliceAttributes_getattr(PyObject *self, char *name)
+PyThreeSliceAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "x") == 0)
         return ThreeSliceAttributes_GetX(self, NULL);
     if(strcmp(name, "y") == 0)
@@ -376,15 +379,19 @@ PyThreeSliceAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "interactive") == 0)
         return ThreeSliceAttributes_GetInteractive(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyThreeSliceAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyThreeSliceAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyThreeSliceAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyThreeSliceAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "x") == 0)
         obj = ThreeSliceAttributes_SetX(self, args);
@@ -394,6 +401,8 @@ PyThreeSliceAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ThreeSliceAttributes_SetZ(self, args);
     else if(strcmp(name, "interactive") == 0)
         obj = ThreeSliceAttributes_SetInteractive(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -441,8 +450,8 @@ static char *ThreeSliceAttributes_Purpose = "This class contains attributes for 
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -453,12 +462,12 @@ static char *ThreeSliceAttributes_Purpose = "This class contains attributes for 
 //
 
 VISIT_PY_TYPE_OBJ(ThreeSliceAttributesType,         \
-                  "ThreeSliceAttributes",           \
+                  "ThreeSliceAttributes",         \
                   ThreeSliceAttributesObject,       \
                   ThreeSliceAttributes_dealloc,     \
                   ThreeSliceAttributes_print,       \
-                  PyThreeSliceAttributes_getattr,   \
-                  PyThreeSliceAttributes_setattr,   \
+                  PyThreeSliceAttributes_getattro,  \
+                  PyThreeSliceAttributes_setattro,  \
                   ThreeSliceAttributes_str,         \
                   ThreeSliceAttributes_Purpose,     \
                   ThreeSliceAttributes_richcompare, \
@@ -522,6 +531,7 @@ NewThreeSliceAttributes(int useCurrent)
         newObject->data = new ThreeSliceAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&ThreeSliceAttributesType);
     return (PyObject *)newObject;
 }
 

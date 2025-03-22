@@ -3182,8 +3182,11 @@ avtDatabaseMetaData_dealloc(PyObject *v)
 
 static PyObject *avtDatabaseMetaData_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyavtDatabaseMetaData_getattr(PyObject *self, char *name)
+PyavtDatabaseMetaData_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "hasTemporalExtents") == 0)
         return avtDatabaseMetaData_GetHasTemporalExtents(self, NULL);
     if(strcmp(name, "minTemporalExtents") == 0)
@@ -3257,15 +3260,19 @@ PyavtDatabaseMetaData_getattr(PyObject *self, char *name)
     if(strcmp(name, "replacementMask") == 0)
         return avtDatabaseMetaData_GetReplacementMask(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyavtDatabaseMetaData_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyavtDatabaseMetaData_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyavtDatabaseMetaData_setattr(PyObject *self, char *name, PyObject *args)
+PyavtDatabaseMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "hasTemporalExtents") == 0)
         obj = avtDatabaseMetaData_SetHasTemporalExtents(self, args);
@@ -3315,6 +3322,8 @@ PyavtDatabaseMetaData_setattr(PyObject *self, char *name, PyObject *args)
         obj = avtDatabaseMetaData_SetSuggestedDefaultSILRestriction(self, args);
     else if(strcmp(name, "replacementMask") == 0)
         obj = avtDatabaseMetaData_SetReplacementMask(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -3362,8 +3371,8 @@ static char *avtDatabaseMetaData_Purpose = "Contains database metadata attribute
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -3374,12 +3383,12 @@ static char *avtDatabaseMetaData_Purpose = "Contains database metadata attribute
 //
 
 VISIT_PY_TYPE_OBJ(avtDatabaseMetaDataType,         \
-                  "avtDatabaseMetaData",           \
+                  "avtDatabaseMetaData",         \
                   avtDatabaseMetaDataObject,       \
                   avtDatabaseMetaData_dealloc,     \
                   avtDatabaseMetaData_print,       \
-                  PyavtDatabaseMetaData_getattr,   \
-                  PyavtDatabaseMetaData_setattr,   \
+                  PyavtDatabaseMetaData_getattro,  \
+                  PyavtDatabaseMetaData_setattro,  \
                   avtDatabaseMetaData_str,         \
                   avtDatabaseMetaData_Purpose,     \
                   avtDatabaseMetaData_richcompare, \
@@ -3443,6 +3452,7 @@ NewavtDatabaseMetaData(int useCurrent)
         newObject->data = new avtDatabaseMetaData;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&avtDatabaseMetaDataType);
     return (PyObject *)newObject;
 }
 

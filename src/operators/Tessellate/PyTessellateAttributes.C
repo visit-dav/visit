@@ -301,8 +301,11 @@ TessellateAttributes_dealloc(PyObject *v)
 
 static PyObject *TessellateAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyTessellateAttributes_getattr(PyObject *self, char *name)
+PyTessellateAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "chordError") == 0)
         return TessellateAttributes_GetChordError(self, NULL);
     if(strcmp(name, "fieldCriterion") == 0)
@@ -310,15 +313,19 @@ PyTessellateAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "mergePoints") == 0)
         return TessellateAttributes_GetMergePoints(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyTessellateAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyTessellateAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyTessellateAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyTessellateAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "chordError") == 0)
         obj = TessellateAttributes_SetChordError(self, args);
@@ -326,6 +333,8 @@ PyTessellateAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = TessellateAttributes_SetFieldCriterion(self, args);
     else if(strcmp(name, "mergePoints") == 0)
         obj = TessellateAttributes_SetMergePoints(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -373,8 +382,8 @@ static char *TessellateAttributes_Purpose = "Attributes for the Tessellate Opera
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -385,12 +394,12 @@ static char *TessellateAttributes_Purpose = "Attributes for the Tessellate Opera
 //
 
 VISIT_PY_TYPE_OBJ(TessellateAttributesType,         \
-                  "TessellateAttributes",           \
+                  "TessellateAttributes",         \
                   TessellateAttributesObject,       \
                   TessellateAttributes_dealloc,     \
                   TessellateAttributes_print,       \
-                  PyTessellateAttributes_getattr,   \
-                  PyTessellateAttributes_setattr,   \
+                  PyTessellateAttributes_getattro,  \
+                  PyTessellateAttributes_setattro,  \
                   TessellateAttributes_str,         \
                   TessellateAttributes_Purpose,     \
                   TessellateAttributes_richcompare, \
@@ -454,6 +463,7 @@ NewTessellateAttributes(int useCurrent)
         newObject->data = new TessellateAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&TessellateAttributesType);
     return (PyObject *)newObject;
 }
 

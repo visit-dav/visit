@@ -267,27 +267,36 @@ SphereSliceAttributes_dealloc(PyObject *v)
 
 static PyObject *SphereSliceAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PySphereSliceAttributes_getattr(PyObject *self, char *name)
+PySphereSliceAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "origin") == 0)
         return SphereSliceAttributes_GetOrigin(self, NULL);
     if(strcmp(name, "radius") == 0)
         return SphereSliceAttributes_GetRadius(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PySphereSliceAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PySphereSliceAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PySphereSliceAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PySphereSliceAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "origin") == 0)
         obj = SphereSliceAttributes_SetOrigin(self, args);
     else if(strcmp(name, "radius") == 0)
         obj = SphereSliceAttributes_SetRadius(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -335,8 +344,8 @@ static char *SphereSliceAttributes_Purpose = "This class contains attributes for
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -347,12 +356,12 @@ static char *SphereSliceAttributes_Purpose = "This class contains attributes for
 //
 
 VISIT_PY_TYPE_OBJ(SphereSliceAttributesType,         \
-                  "SphereSliceAttributes",           \
+                  "SphereSliceAttributes",         \
                   SphereSliceAttributesObject,       \
                   SphereSliceAttributes_dealloc,     \
                   SphereSliceAttributes_print,       \
-                  PySphereSliceAttributes_getattr,   \
-                  PySphereSliceAttributes_setattr,   \
+                  PySphereSliceAttributes_getattro,  \
+                  PySphereSliceAttributes_setattro,  \
                   SphereSliceAttributes_str,         \
                   SphereSliceAttributes_Purpose,     \
                   SphereSliceAttributes_richcompare, \
@@ -416,6 +425,7 @@ NewSphereSliceAttributes(int useCurrent)
         newObject->data = new SphereSliceAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&SphereSliceAttributesType);
     return (PyObject *)newObject;
 }
 

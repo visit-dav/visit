@@ -192,35 +192,44 @@ avtVectorMetaData_dealloc(PyObject *v)
 
 static PyObject *avtVectorMetaData_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyavtVectorMetaData_getattr(PyObject *self, char *name)
+PyavtVectorMetaData_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "varDim") == 0)
         return avtVectorMetaData_GetVarDim(self, NULL);
 
     if(strcmp(name, "__methods__") != 0)
     {
-        PyObject *retval = PyavtVarMetaData_getattr(self, name);
+        PyObject *retval = PyavtVarMetaData_getattro(self, attr_name);
         if (retval) return retval;
     }
 
     PyavtVectorMetaData_ExtendSetGetMethodTable();
+    PyObject *meth = Py_FindMethod(PyavtVectorMetaData_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyavtVectorMetaData_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyavtVectorMetaData_setattr(PyObject *self, char *name, PyObject *args)
+PyavtVectorMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
-    if (PyavtVarMetaData_setattr(self, name, args) != -1)
+    if (PyavtVarMetaData_setattro(self, attr_name, args) != -1)
         return 0;
     else
         PyErr_Clear();
 
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "varDim") == 0)
         obj = avtVectorMetaData_SetVarDim(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -268,8 +277,8 @@ static char *avtVectorMetaData_Purpose = "Contains vector metadata attributes";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -280,12 +289,12 @@ static char *avtVectorMetaData_Purpose = "Contains vector metadata attributes";
 //
 
 VISIT_PY_TYPE_OBJ(avtVectorMetaDataType,         \
-                  "avtVectorMetaData",           \
+                  "avtVectorMetaData",         \
                   avtVectorMetaDataObject,       \
                   avtVectorMetaData_dealloc,     \
                   avtVectorMetaData_print,       \
-                  PyavtVectorMetaData_getattr,   \
-                  PyavtVectorMetaData_setattr,   \
+                  PyavtVectorMetaData_getattro,  \
+                  PyavtVectorMetaData_setattro,  \
                   avtVectorMetaData_str,         \
                   avtVectorMetaData_Purpose,     \
                   avtVectorMetaData_richcompare, \
@@ -349,6 +358,7 @@ NewavtVectorMetaData(int useCurrent)
         newObject->data = new avtVectorMetaData;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&avtVectorMetaDataType);
     return (PyObject *)newObject;
 }
 

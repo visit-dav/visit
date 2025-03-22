@@ -1349,8 +1349,11 @@ ExplodeAttributes_dealloc(PyObject *v)
 
 static PyObject *ExplodeAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyExplodeAttributes_getattr(PyObject *self, char *name)
+PyExplodeAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "explosionType") == 0)
         return ExplodeAttributes_GetExplosionType(self, NULL);
     if(strcmp(name, "Point") == 0)
@@ -1394,15 +1397,19 @@ PyExplodeAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "explosions") == 0)
         return ExplodeAttributes_GetExplosions(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyExplodeAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyExplodeAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyExplodeAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyExplodeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "explosionType") == 0)
         obj = ExplodeAttributes_SetExplosionType(self, args);
@@ -1432,6 +1439,8 @@ PyExplodeAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ExplodeAttributes_SetExplodeAllCells(self, args);
     else if(strcmp(name, "boundaryNames") == 0)
         obj = ExplodeAttributes_SetBoundaryNames(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -1479,8 +1488,8 @@ static char *ExplodeAttributes_Purpose = "This class contains attributes for the
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1491,12 +1500,12 @@ static char *ExplodeAttributes_Purpose = "This class contains attributes for the
 //
 
 VISIT_PY_TYPE_OBJ(ExplodeAttributesType,         \
-                  "ExplodeAttributes",           \
+                  "ExplodeAttributes",         \
                   ExplodeAttributesObject,       \
                   ExplodeAttributes_dealloc,     \
                   ExplodeAttributes_print,       \
-                  PyExplodeAttributes_getattr,   \
-                  PyExplodeAttributes_setattr,   \
+                  PyExplodeAttributes_getattro,  \
+                  PyExplodeAttributes_setattro,  \
                   ExplodeAttributes_str,         \
                   ExplodeAttributes_Purpose,     \
                   ExplodeAttributes_richcompare, \
@@ -1560,6 +1569,7 @@ NewExplodeAttributes(int useCurrent)
         newObject->data = new ExplodeAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&ExplodeAttributesType);
     return (PyObject *)newObject;
 }
 

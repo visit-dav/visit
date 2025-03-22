@@ -23,8 +23,8 @@ void           PyConnectedComponentsAttributes_SetParent(PyObject *obj, PyObject
 void           PyConnectedComponentsAttributes_SetDefaults(const ConnectedComponentsAttributes *atts);
 std::string    PyConnectedComponentsAttributes_GetLogString();
 std::string    PyConnectedComponentsAttributes_ToString(const ConnectedComponentsAttributes *, const char *, const bool=false);
-PyObject *     PyConnectedComponentsAttributes_getattr(PyObject *self, char *name);
-int            PyConnectedComponentsAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PyConnectedComponentsAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyConnectedComponentsAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PyConnectedComponentsAttributes_methods[CONNECTEDCOMPONENTSATTRIBUTES_NMETH];
 
 #endif

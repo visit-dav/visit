@@ -399,8 +399,11 @@ avtBaseVarMetaData_dealloc(PyObject *v)
 
 static PyObject *avtBaseVarMetaData_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyavtBaseVarMetaData_getattr(PyObject *self, char *name)
+PyavtBaseVarMetaData_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "name") == 0)
         return avtBaseVarMetaData_GetName(self, NULL);
     if(strcmp(name, "originalName") == 0)
@@ -412,15 +415,19 @@ PyavtBaseVarMetaData_getattr(PyObject *self, char *name)
     if(strcmp(name, "hideFromGUI") == 0)
         return avtBaseVarMetaData_GetHideFromGUI(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyavtBaseVarMetaData_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyavtBaseVarMetaData_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyavtBaseVarMetaData_setattr(PyObject *self, char *name, PyObject *args)
+PyavtBaseVarMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "name") == 0)
         obj = avtBaseVarMetaData_SetName(self, args);
@@ -432,6 +439,8 @@ PyavtBaseVarMetaData_setattr(PyObject *self, char *name, PyObject *args)
         obj = avtBaseVarMetaData_SetValidVariable(self, args);
     else if(strcmp(name, "hideFromGUI") == 0)
         obj = avtBaseVarMetaData_SetHideFromGUI(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -479,8 +488,8 @@ static char *avtBaseVarMetaData_Purpose = "Contains metadata attributes associat
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -491,12 +500,12 @@ static char *avtBaseVarMetaData_Purpose = "Contains metadata attributes associat
 //
 
 VISIT_PY_TYPE_OBJ(avtBaseVarMetaDataType,         \
-                  "avtBaseVarMetaData",           \
+                  "avtBaseVarMetaData",         \
                   avtBaseVarMetaDataObject,       \
                   avtBaseVarMetaData_dealloc,     \
                   avtBaseVarMetaData_print,       \
-                  PyavtBaseVarMetaData_getattr,   \
-                  PyavtBaseVarMetaData_setattr,   \
+                  PyavtBaseVarMetaData_getattro,  \
+                  PyavtBaseVarMetaData_setattro,  \
                   avtBaseVarMetaData_str,         \
                   avtBaseVarMetaData_Purpose,     \
                   avtBaseVarMetaData_richcompare, \
@@ -560,6 +569,7 @@ NewavtBaseVarMetaData(int useCurrent)
         newObject->data = new avtBaseVarMetaData;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&avtBaseVarMetaDataType);
     return (PyObject *)newObject;
 }
 

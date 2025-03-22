@@ -1878,8 +1878,11 @@ DataBinningAttributes_dealloc(PyObject *v)
 
 static PyObject *DataBinningAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyDataBinningAttributes_getattr(PyObject *self, char *name)
+PyDataBinningAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "numDimensions") == 0)
         return DataBinningAttributes_GetNumDimensions(self, NULL);
     if(strcmp(name, "One") == 0)
@@ -1994,15 +1997,19 @@ PyDataBinningAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "removeEmptyValFromCurve") == 0)
         return DataBinningAttributes_GetRemoveEmptyValFromCurve(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyDataBinningAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyDataBinningAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyDataBinningAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyDataBinningAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "numDimensions") == 0)
         obj = DataBinningAttributes_SetNumDimensions(self, args);
@@ -2054,6 +2061,8 @@ PyDataBinningAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = DataBinningAttributes_SetOutputType(self, args);
     else if(strcmp(name, "removeEmptyValFromCurve") == 0)
         obj = DataBinningAttributes_SetRemoveEmptyValFromCurve(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -2101,8 +2110,8 @@ static char *DataBinningAttributes_Purpose = "The attributes for the DataBinning
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -2113,12 +2122,12 @@ static char *DataBinningAttributes_Purpose = "The attributes for the DataBinning
 //
 
 VISIT_PY_TYPE_OBJ(DataBinningAttributesType,         \
-                  "DataBinningAttributes",           \
+                  "DataBinningAttributes",         \
                   DataBinningAttributesObject,       \
                   DataBinningAttributes_dealloc,     \
                   DataBinningAttributes_print,       \
-                  PyDataBinningAttributes_getattr,   \
-                  PyDataBinningAttributes_setattr,   \
+                  PyDataBinningAttributes_getattro,  \
+                  PyDataBinningAttributes_setattro,  \
                   DataBinningAttributes_str,         \
                   DataBinningAttributes_Purpose,     \
                   DataBinningAttributes_richcompare, \
@@ -2182,6 +2191,7 @@ NewDataBinningAttributes(int useCurrent)
         newObject->data = new DataBinningAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&DataBinningAttributesType);
     return (PyObject *)newObject;
 }
 

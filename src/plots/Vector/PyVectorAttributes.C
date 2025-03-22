@@ -1992,8 +1992,11 @@ VectorAttributes_dealloc(PyObject *v)
 
 static PyObject *VectorAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyVectorAttributes_getattr(PyObject *self, char *name)
+PyVectorAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "glyphLocation") == 0)
         return VectorAttributes_GetGlyphLocation(self, NULL);
     if(strcmp(name, "AdaptsToMeshResolution") == 0)
@@ -2081,15 +2084,19 @@ PyVectorAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "animationStep") == 0)
         return VectorAttributes_GetAnimationStep(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyVectorAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyVectorAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyVectorAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyVectorAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "glyphLocation") == 0)
         obj = VectorAttributes_SetGlyphLocation(self, args);
@@ -2145,6 +2152,8 @@ PyVectorAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = VectorAttributes_SetGeometryQuality(self, args);
     else if(strcmp(name, "animationStep") == 0)
         obj = VectorAttributes_SetAnimationStep(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -2192,8 +2201,8 @@ static char *VectorAttributes_Purpose = "Attributes for the vector plot";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -2204,12 +2213,12 @@ static char *VectorAttributes_Purpose = "Attributes for the vector plot";
 //
 
 VISIT_PY_TYPE_OBJ(VectorAttributesType,         \
-                  "VectorAttributes",           \
+                  "VectorAttributes",         \
                   VectorAttributesObject,       \
                   VectorAttributes_dealloc,     \
                   VectorAttributes_print,       \
-                  PyVectorAttributes_getattr,   \
-                  PyVectorAttributes_setattr,   \
+                  PyVectorAttributes_getattro,  \
+                  PyVectorAttributes_setattro,  \
                   VectorAttributes_str,         \
                   VectorAttributes_Purpose,     \
                   VectorAttributes_richcompare, \
@@ -2273,6 +2282,7 @@ NewVectorAttributes(int useCurrent)
         newObject->data = new VectorAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&VectorAttributesType);
     return (PyObject *)newObject;
 }
 

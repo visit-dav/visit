@@ -24,8 +24,8 @@ void VISITPY_API           PyThresholdOpAttributes_SetParent(PyObject *obj, PyOb
 void VISITPY_API           PyThresholdOpAttributes_SetDefaults(const ThresholdOpAttributes *atts);
 std::string VISITPY_API    PyThresholdOpAttributes_GetLogString();
 std::string VISITPY_API    PyThresholdOpAttributes_ToString(const ThresholdOpAttributes *, const char *, const bool=false);
-VISITPY_API PyObject *     PyThresholdOpAttributes_getattr(PyObject *self, char *name);
-int VISITPY_API            PyThresholdOpAttributes_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyThresholdOpAttributes_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyThresholdOpAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyThresholdOpAttributes_methods[THRESHOLDOPATTRIBUTES_NMETH];
 
 #endif

@@ -25,8 +25,8 @@ void VISITPY_API           PyavtSymmetricTensorMetaData_SetParent(PyObject *obj,
 void VISITPY_API           PyavtSymmetricTensorMetaData_SetDefaults(const avtSymmetricTensorMetaData *atts);
 std::string VISITPY_API    PyavtSymmetricTensorMetaData_GetLogString();
 std::string VISITPY_API    PyavtSymmetricTensorMetaData_ToString(const avtSymmetricTensorMetaData *, const char *, const bool=false);
-VISITPY_API PyObject *     PyavtSymmetricTensorMetaData_getattr(PyObject *self, char *name);
-int VISITPY_API            PyavtSymmetricTensorMetaData_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyavtSymmetricTensorMetaData_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyavtSymmetricTensorMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyavtSymmetricTensorMetaData_methods[AVTSYMMETRICTENSORMETADATA_NMETH];
 
 #endif

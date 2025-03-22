@@ -23,8 +23,8 @@ void           PySurfaceNormalAttributes_SetParent(PyObject *obj, PyObject *pare
 void           PySurfaceNormalAttributes_SetDefaults(const SurfaceNormalAttributes *atts);
 std::string    PySurfaceNormalAttributes_GetLogString();
 std::string    PySurfaceNormalAttributes_ToString(const SurfaceNormalAttributes *, const char *, const bool=false);
-PyObject *     PySurfaceNormalAttributes_getattr(PyObject *self, char *name);
-int            PySurfaceNormalAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PySurfaceNormalAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PySurfaceNormalAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PySurfaceNormalAttributes_methods[SURFACENORMALATTRIBUTES_NMETH];
 
 #endif

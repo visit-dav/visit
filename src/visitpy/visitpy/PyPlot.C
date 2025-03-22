@@ -1807,8 +1807,11 @@ Plot_dealloc(PyObject *v)
 
 static PyObject *Plot_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyPlot_getattr(PyObject *self, char *name)
+PyPlot_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "stateType") == 0)
         return Plot_GetStateType(self, NULL);
     if(strcmp(name, "NewlyCreated") == 0)
@@ -1867,15 +1870,19 @@ PyPlot_getattr(PyObject *self, char *name)
     if(strcmp(name, "animatingFlag") == 0)
         return Plot_GetAnimatingFlag(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyPlot_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyPlot_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyPlot_setattr(PyObject *self, char *name, PyObject *args)
+PyPlot_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "stateType") == 0)
         obj = Plot_SetStateType(self, args);
@@ -1925,6 +1932,8 @@ PyPlot_setattr(PyObject *self, char *name, PyObject *args)
         obj = Plot_SetSelection(self, args);
     else if(strcmp(name, "animatingFlag") == 0)
         obj = Plot_SetAnimatingFlag(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -1972,8 +1981,8 @@ static char *Plot_Purpose = "This class is a plot element in a plot list.";
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -1984,12 +1993,12 @@ static char *Plot_Purpose = "This class is a plot element in a plot list.";
 //
 
 VISIT_PY_TYPE_OBJ(PlotType,         \
-                  "Plot",           \
+                  "Plot",         \
                   PlotObject,       \
                   Plot_dealloc,     \
                   Plot_print,       \
-                  PyPlot_getattr,   \
-                  PyPlot_setattr,   \
+                  PyPlot_getattro,  \
+                  PyPlot_setattro,  \
                   Plot_str,         \
                   Plot_Purpose,     \
                   Plot_richcompare, \
@@ -2053,6 +2062,7 @@ NewPlot(int useCurrent)
         newObject->data = new Plot;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PlotType);
     return (PyObject *)newObject;
 }
 

@@ -575,8 +575,11 @@ InverseGhostZoneAttributes_dealloc(PyObject *v)
 
 static PyObject *InverseGhostZoneAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyInverseGhostZoneAttributes_getattr(PyObject *self, char *name)
+PyInverseGhostZoneAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "requestGhostZones") == 0)
         return InverseGhostZoneAttributes_GetRequestGhostZones(self, NULL);
     if(strcmp(name, "showDuplicated") == 0)
@@ -592,15 +595,19 @@ PyInverseGhostZoneAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "showNotApplicable") == 0)
         return InverseGhostZoneAttributes_GetShowNotApplicable(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyInverseGhostZoneAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyInverseGhostZoneAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyInverseGhostZoneAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyInverseGhostZoneAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "requestGhostZones") == 0)
         obj = InverseGhostZoneAttributes_SetRequestGhostZones(self, args);
@@ -616,6 +623,8 @@ PyInverseGhostZoneAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = InverseGhostZoneAttributes_SetShowExterior(self, args);
     else if(strcmp(name, "showNotApplicable") == 0)
         obj = InverseGhostZoneAttributes_SetShowNotApplicable(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -663,8 +672,8 @@ static char *InverseGhostZoneAttributes_Purpose = "This class contains attribute
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -675,12 +684,12 @@ static char *InverseGhostZoneAttributes_Purpose = "This class contains attribute
 //
 
 VISIT_PY_TYPE_OBJ(InverseGhostZoneAttributesType,         \
-                  "InverseGhostZoneAttributes",           \
+                  "InverseGhostZoneAttributes",         \
                   InverseGhostZoneAttributesObject,       \
                   InverseGhostZoneAttributes_dealloc,     \
                   InverseGhostZoneAttributes_print,       \
-                  PyInverseGhostZoneAttributes_getattr,   \
-                  PyInverseGhostZoneAttributes_setattr,   \
+                  PyInverseGhostZoneAttributes_getattro,  \
+                  PyInverseGhostZoneAttributes_setattro,  \
                   InverseGhostZoneAttributes_str,         \
                   InverseGhostZoneAttributes_Purpose,     \
                   InverseGhostZoneAttributes_richcompare, \
@@ -744,6 +753,7 @@ NewInverseGhostZoneAttributes(int useCurrent)
         newObject->data = new InverseGhostZoneAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&InverseGhostZoneAttributesType);
     return (PyObject *)newObject;
 }
 

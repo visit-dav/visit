@@ -304,8 +304,11 @@ KeyframeAttributes_dealloc(PyObject *v)
 
 static PyObject *KeyframeAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyKeyframeAttributes_getattr(PyObject *self, char *name)
+PyKeyframeAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "enabled") == 0)
         return KeyframeAttributes_GetEnabled(self, NULL);
     if(strcmp(name, "nFrames") == 0)
@@ -313,15 +316,19 @@ PyKeyframeAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "nFramesWasUserSet") == 0)
         return KeyframeAttributes_GetNFramesWasUserSet(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyKeyframeAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyKeyframeAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyKeyframeAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyKeyframeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "enabled") == 0)
         obj = KeyframeAttributes_SetEnabled(self, args);
@@ -329,6 +336,8 @@ PyKeyframeAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = KeyframeAttributes_SetNFrames(self, args);
     else if(strcmp(name, "nFramesWasUserSet") == 0)
         obj = KeyframeAttributes_SetNFramesWasUserSet(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -376,8 +385,8 @@ static char *KeyframeAttributes_Purpose = "This class contains the attributes us
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -388,12 +397,12 @@ static char *KeyframeAttributes_Purpose = "This class contains the attributes us
 //
 
 VISIT_PY_TYPE_OBJ(KeyframeAttributesType,         \
-                  "KeyframeAttributes",           \
+                  "KeyframeAttributes",         \
                   KeyframeAttributesObject,       \
                   KeyframeAttributes_dealloc,     \
                   KeyframeAttributes_print,       \
-                  PyKeyframeAttributes_getattr,   \
-                  PyKeyframeAttributes_setattr,   \
+                  PyKeyframeAttributes_getattro,  \
+                  PyKeyframeAttributes_setattro,  \
                   KeyframeAttributes_str,         \
                   KeyframeAttributes_Purpose,     \
                   KeyframeAttributes_richcompare, \
@@ -457,6 +466,7 @@ NewKeyframeAttributes(int useCurrent)
         newObject->data = new KeyframeAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&KeyframeAttributesType);
     return (PyObject *)newObject;
 }
 

@@ -555,8 +555,11 @@ RevolveAttributes_dealloc(PyObject *v)
 
 static PyObject *RevolveAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyRevolveAttributes_getattr(PyObject *self, char *name)
+PyRevolveAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "meshType") == 0)
         return RevolveAttributes_GetMeshType(self, NULL);
     if(strcmp(name, "Auto") == 0)
@@ -579,15 +582,19 @@ PyRevolveAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "steps") == 0)
         return RevolveAttributes_GetSteps(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyRevolveAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyRevolveAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyRevolveAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyRevolveAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "meshType") == 0)
         obj = RevolveAttributes_SetMeshType(self, args);
@@ -601,6 +608,8 @@ PyRevolveAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = RevolveAttributes_SetStopAngle(self, args);
     else if(strcmp(name, "steps") == 0)
         obj = RevolveAttributes_SetSteps(self, args);
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -648,8 +657,8 @@ static char *RevolveAttributes_Purpose = "This class contains attributes for the
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -660,12 +669,12 @@ static char *RevolveAttributes_Purpose = "This class contains attributes for the
 //
 
 VISIT_PY_TYPE_OBJ(RevolveAttributesType,         \
-                  "RevolveAttributes",           \
+                  "RevolveAttributes",         \
                   RevolveAttributesObject,       \
                   RevolveAttributes_dealloc,     \
                   RevolveAttributes_print,       \
-                  PyRevolveAttributes_getattr,   \
-                  PyRevolveAttributes_setattr,   \
+                  PyRevolveAttributes_getattro,  \
+                  PyRevolveAttributes_setattro,  \
                   RevolveAttributes_str,         \
                   RevolveAttributes_Purpose,     \
                   RevolveAttributes_richcompare, \
@@ -729,6 +738,7 @@ NewRevolveAttributes(int useCurrent)
         newObject->data = new RevolveAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&RevolveAttributesType);
     return (PyObject *)newObject;
 }
 

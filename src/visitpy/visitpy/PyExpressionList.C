@@ -226,21 +226,30 @@ ExpressionList_dealloc(PyObject *v)
 
 static PyObject *ExpressionList_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyExpressionList_getattr(PyObject *self, char *name)
+PyExpressionList_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "expressions") == 0)
         return ExpressionList_GetExpressions(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyExpressionList_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(PyExpressionList_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyExpressionList_setattr(PyObject *self, char *name, PyObject *args)
+PyExpressionList_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
+    else
+        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -288,8 +297,8 @@ static char *ExpressionList_Purpose = "This class contains a list of expressions
 //                            VPY_OBJECT,
 //                            VPY_DEALLOC,
 //                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
+//                            VPY_GETATTRO,
+//                            VPY_SETATTRO,
 //                            VPY_STR,
 //                            VPY_PURPOSE,
 //                            VPY_RICHCOMP,
@@ -300,12 +309,12 @@ static char *ExpressionList_Purpose = "This class contains a list of expressions
 //
 
 VISIT_PY_TYPE_OBJ(ExpressionListType,         \
-                  "ExpressionList",           \
+                  "ExpressionList",         \
                   ExpressionListObject,       \
                   ExpressionList_dealloc,     \
                   ExpressionList_print,       \
-                  PyExpressionList_getattr,   \
-                  PyExpressionList_setattr,   \
+                  PyExpressionList_getattro,  \
+                  PyExpressionList_setattro,  \
                   ExpressionList_str,         \
                   ExpressionList_Purpose,     \
                   ExpressionList_richcompare, \
@@ -369,6 +378,7 @@ NewExpressionList(int useCurrent)
         newObject->data = new ExpressionList;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&ExpressionListType);
     return (PyObject *)newObject;
 }
 
