@@ -456,14 +456,6 @@ PyavtBaseVarMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *arg
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-avtBaseVarMetaData_print(PyObject *v, FILE *fp, int flags)
-{
-    avtBaseVarMetaDataObject *obj = (avtBaseVarMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtBaseVarMetaData_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 avtBaseVarMetaData_str(PyObject *v)
 {
@@ -481,36 +473,22 @@ static char *avtBaseVarMetaData_Purpose = "Contains metadata attributes associat
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(avtBaseVarMetaDataType,         \
-                  "avtBaseVarMetaData",         \
-                  avtBaseVarMetaDataObject,       \
-                  avtBaseVarMetaData_dealloc,     \
-                  avtBaseVarMetaData_print,       \
-                  PyavtBaseVarMetaData_getattro,  \
-                  PyavtBaseVarMetaData_setattro,  \
-                  avtBaseVarMetaData_str,         \
-                  avtBaseVarMetaData_Purpose,     \
-                  avtBaseVarMetaData_richcompare, \
-                  0, /* as_number*/       \
-                  PyavtBaseVarMetaData_methods);
+static PyTypeObject avtBaseVarMetaDataType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "avtBaseVarMetaData",
+    .tp_basicsize = sizeof(avtBaseVarMetaDataObject),
+    .tp_dealloc = avtBaseVarMetaData_dealloc,
+    .tp_repr = avtBaseVarMetaData_str,
+    .tp_str = avtBaseVarMetaData_str,
+    .tp_getattro = PyavtBaseVarMetaData_getattro,
+    .tp_setattro = PyavtBaseVarMetaData_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = avtBaseVarMetaData_Purpose,
+    .tp_richcompare = avtBaseVarMetaData_richcompare,
+    .tp_methods = PyavtBaseVarMetaData_methods};
 
 //
 // Helper function for comparing.

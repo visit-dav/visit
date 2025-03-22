@@ -285,14 +285,6 @@ PyExternalSurfaceAttributes_setattro(PyObject *self, PyObject *attr_name, PyObje
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ExternalSurfaceAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    ExternalSurfaceAttributesObject *obj = (ExternalSurfaceAttributesObject *)v;
-    fprintf(fp, "%s", PyExternalSurfaceAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 ExternalSurfaceAttributes_str(PyObject *v)
 {
@@ -310,36 +302,22 @@ static char *ExternalSurfaceAttributes_Purpose = "This class contains attributes
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(ExternalSurfaceAttributesType,         \
-                  "ExternalSurfaceAttributes",         \
-                  ExternalSurfaceAttributesObject,       \
-                  ExternalSurfaceAttributes_dealloc,     \
-                  ExternalSurfaceAttributes_print,       \
-                  PyExternalSurfaceAttributes_getattro,  \
-                  PyExternalSurfaceAttributes_setattro,  \
-                  ExternalSurfaceAttributes_str,         \
-                  ExternalSurfaceAttributes_Purpose,     \
-                  ExternalSurfaceAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyExternalSurfaceAttributes_methods);
+static PyTypeObject ExternalSurfaceAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "ExternalSurfaceAttributes",
+    .tp_basicsize = sizeof(ExternalSurfaceAttributesObject),
+    .tp_dealloc = ExternalSurfaceAttributes_dealloc,
+    .tp_repr = ExternalSurfaceAttributes_str,
+    .tp_str = ExternalSurfaceAttributes_str,
+    .tp_getattro = PyExternalSurfaceAttributes_getattro,
+    .tp_setattro = PyExternalSurfaceAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = ExternalSurfaceAttributes_Purpose,
+    .tp_richcompare = ExternalSurfaceAttributes_richcompare,
+    .tp_methods = PyExternalSurfaceAttributes_methods};
 
 //
 // Helper function for comparing.

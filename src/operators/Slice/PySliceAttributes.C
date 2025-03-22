@@ -1486,14 +1486,6 @@ PySliceAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-SliceAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    SliceAttributesObject *obj = (SliceAttributesObject *)v;
-    fprintf(fp, "%s", PySliceAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 SliceAttributes_str(PyObject *v)
 {
@@ -1511,36 +1503,22 @@ static char *SliceAttributes_Purpose = "This class contains attributes for the a
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(SliceAttributesType,         \
-                  "SliceAttributes",         \
-                  SliceAttributesObject,       \
-                  SliceAttributes_dealloc,     \
-                  SliceAttributes_print,       \
-                  PySliceAttributes_getattro,  \
-                  PySliceAttributes_setattro,  \
-                  SliceAttributes_str,         \
-                  SliceAttributes_Purpose,     \
-                  SliceAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PySliceAttributes_methods);
+static PyTypeObject SliceAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "SliceAttributes",
+    .tp_basicsize = sizeof(SliceAttributesObject),
+    .tp_dealloc = SliceAttributes_dealloc,
+    .tp_repr = SliceAttributes_str,
+    .tp_str = SliceAttributes_str,
+    .tp_getattro = PySliceAttributes_getattro,
+    .tp_setattro = PySliceAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = SliceAttributes_Purpose,
+    .tp_richcompare = SliceAttributes_richcompare,
+    .tp_methods = PySliceAttributes_methods};
 
 //
 // Helper function for comparing.

@@ -552,14 +552,6 @@ PySaveSubWindowAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-SaveSubWindowAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    SaveSubWindowAttributesObject *obj = (SaveSubWindowAttributesObject *)v;
-    fprintf(fp, "%s", PySaveSubWindowAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 SaveSubWindowAttributes_str(PyObject *v)
 {
@@ -577,36 +569,22 @@ static char *SaveSubWindowAttributes_Purpose = "The attributes for saving a sub 
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(SaveSubWindowAttributesType,         \
-                  "SaveSubWindowAttributes",         \
-                  SaveSubWindowAttributesObject,       \
-                  SaveSubWindowAttributes_dealloc,     \
-                  SaveSubWindowAttributes_print,       \
-                  PySaveSubWindowAttributes_getattro,  \
-                  PySaveSubWindowAttributes_setattro,  \
-                  SaveSubWindowAttributes_str,         \
-                  SaveSubWindowAttributes_Purpose,     \
-                  SaveSubWindowAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PySaveSubWindowAttributes_methods);
+static PyTypeObject SaveSubWindowAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "SaveSubWindowAttributes",
+    .tp_basicsize = sizeof(SaveSubWindowAttributesObject),
+    .tp_dealloc = SaveSubWindowAttributes_dealloc,
+    .tp_repr = SaveSubWindowAttributes_str,
+    .tp_str = SaveSubWindowAttributes_str,
+    .tp_getattro = PySaveSubWindowAttributes_getattro,
+    .tp_setattro = PySaveSubWindowAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = SaveSubWindowAttributes_Purpose,
+    .tp_richcompare = SaveSubWindowAttributes_richcompare,
+    .tp_methods = PySaveSubWindowAttributes_methods};
 
 //
 // Helper function for comparing.

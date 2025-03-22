@@ -245,14 +245,6 @@ PyavtTensorMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-avtTensorMetaData_print(PyObject *v, FILE *fp, int flags)
-{
-    avtTensorMetaDataObject *obj = (avtTensorMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtTensorMetaData_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 avtTensorMetaData_str(PyObject *v)
 {
@@ -270,36 +262,22 @@ static char *avtTensorMetaData_Purpose = "Contains tensor metadata attributes";
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(avtTensorMetaDataType,         \
-                  "avtTensorMetaData",         \
-                  avtTensorMetaDataObject,       \
-                  avtTensorMetaData_dealloc,     \
-                  avtTensorMetaData_print,       \
-                  PyavtTensorMetaData_getattro,  \
-                  PyavtTensorMetaData_setattro,  \
-                  avtTensorMetaData_str,         \
-                  avtTensorMetaData_Purpose,     \
-                  avtTensorMetaData_richcompare, \
-                  0, /* as_number*/       \
-                  PyavtTensorMetaData_methods);
+static PyTypeObject avtTensorMetaDataType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "avtTensorMetaData",
+    .tp_basicsize = sizeof(avtTensorMetaDataObject),
+    .tp_dealloc = avtTensorMetaData_dealloc,
+    .tp_repr = avtTensorMetaData_str,
+    .tp_str = avtTensorMetaData_str,
+    .tp_getattro = PyavtTensorMetaData_getattro,
+    .tp_setattro = PyavtTensorMetaData_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = avtTensorMetaData_Purpose,
+    .tp_richcompare = avtTensorMetaData_richcompare,
+    .tp_methods = PyavtTensorMetaData_methods};
 
 //
 // Helper function for comparing.

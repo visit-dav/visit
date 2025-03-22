@@ -1087,14 +1087,6 @@ PyavtSubsetsMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *arg
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-avtSubsetsMetaData_print(PyObject *v, FILE *fp, int flags)
-{
-    avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtSubsetsMetaData_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 avtSubsetsMetaData_str(PyObject *v)
 {
@@ -1112,36 +1104,22 @@ static char *avtSubsetsMetaData_Purpose = "Information about a particular catego
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(avtSubsetsMetaDataType,         \
-                  "avtSubsetsMetaData",         \
-                  avtSubsetsMetaDataObject,       \
-                  avtSubsetsMetaData_dealloc,     \
-                  avtSubsetsMetaData_print,       \
-                  PyavtSubsetsMetaData_getattro,  \
-                  PyavtSubsetsMetaData_setattro,  \
-                  avtSubsetsMetaData_str,         \
-                  avtSubsetsMetaData_Purpose,     \
-                  avtSubsetsMetaData_richcompare, \
-                  0, /* as_number*/       \
-                  PyavtSubsetsMetaData_methods);
+static PyTypeObject avtSubsetsMetaDataType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "avtSubsetsMetaData",
+    .tp_basicsize = sizeof(avtSubsetsMetaDataObject),
+    .tp_dealloc = avtSubsetsMetaData_dealloc,
+    .tp_repr = avtSubsetsMetaData_str,
+    .tp_str = avtSubsetsMetaData_str,
+    .tp_getattro = PyavtSubsetsMetaData_getattro,
+    .tp_setattro = PyavtSubsetsMetaData_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = avtSubsetsMetaData_Purpose,
+    .tp_richcompare = avtSubsetsMetaData_richcompare,
+    .tp_methods = PyavtSubsetsMetaData_methods};
 
 //
 // Helper function for comparing.

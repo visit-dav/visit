@@ -2933,14 +2933,6 @@ PyTransformAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *ar
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-TransformAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    TransformAttributesObject *obj = (TransformAttributesObject *)v;
-    fprintf(fp, "%s", PyTransformAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 TransformAttributes_str(PyObject *v)
 {
@@ -2958,36 +2950,22 @@ static char *TransformAttributes_Purpose = "This class contains attributes for t
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(TransformAttributesType,         \
-                  "TransformAttributes",         \
-                  TransformAttributesObject,       \
-                  TransformAttributes_dealloc,     \
-                  TransformAttributes_print,       \
-                  PyTransformAttributes_getattro,  \
-                  PyTransformAttributes_setattro,  \
-                  TransformAttributes_str,         \
-                  TransformAttributes_Purpose,     \
-                  TransformAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyTransformAttributes_methods);
+static PyTypeObject TransformAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "TransformAttributes",
+    .tp_basicsize = sizeof(TransformAttributesObject),
+    .tp_dealloc = TransformAttributes_dealloc,
+    .tp_repr = TransformAttributes_str,
+    .tp_str = TransformAttributes_str,
+    .tp_getattro = PyTransformAttributes_getattro,
+    .tp_setattro = PyTransformAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = TransformAttributes_Purpose,
+    .tp_richcompare = TransformAttributes_richcompare,
+    .tp_methods = PyTransformAttributes_methods};
 
 //
 // Helper function for comparing.

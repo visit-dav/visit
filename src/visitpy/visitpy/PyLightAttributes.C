@@ -570,14 +570,6 @@ PyLightAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-LightAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    LightAttributesObject *obj = (LightAttributesObject *)v;
-    fprintf(fp, "%s", PyLightAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 LightAttributes_str(PyObject *v)
 {
@@ -595,36 +587,22 @@ static char *LightAttributes_Purpose = "This class is a light in a light list.";
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(LightAttributesType,         \
-                  "LightAttributes",         \
-                  LightAttributesObject,       \
-                  LightAttributes_dealloc,     \
-                  LightAttributes_print,       \
-                  PyLightAttributes_getattro,  \
-                  PyLightAttributes_setattro,  \
-                  LightAttributes_str,         \
-                  LightAttributes_Purpose,     \
-                  LightAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyLightAttributes_methods);
+static PyTypeObject LightAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "LightAttributes",
+    .tp_basicsize = sizeof(LightAttributesObject),
+    .tp_dealloc = LightAttributes_dealloc,
+    .tp_repr = LightAttributes_str,
+    .tp_str = LightAttributes_str,
+    .tp_getattro = PyLightAttributes_getattro,
+    .tp_setattro = PyLightAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = LightAttributes_Purpose,
+    .tp_richcompare = LightAttributes_richcompare,
+    .tp_methods = PyLightAttributes_methods};
 
 //
 // Helper function for comparing.

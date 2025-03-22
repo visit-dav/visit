@@ -245,14 +245,6 @@ PyavtSymmetricTensorMetaData_setattro(PyObject *self, PyObject *attr_name, PyObj
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-avtSymmetricTensorMetaData_print(PyObject *v, FILE *fp, int flags)
-{
-    avtSymmetricTensorMetaDataObject *obj = (avtSymmetricTensorMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtSymmetricTensorMetaData_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 avtSymmetricTensorMetaData_str(PyObject *v)
 {
@@ -270,36 +262,22 @@ static char *avtSymmetricTensorMetaData_Purpose = "Contains symmetricTensor meta
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(avtSymmetricTensorMetaDataType,         \
-                  "avtSymmetricTensorMetaData",         \
-                  avtSymmetricTensorMetaDataObject,       \
-                  avtSymmetricTensorMetaData_dealloc,     \
-                  avtSymmetricTensorMetaData_print,       \
-                  PyavtSymmetricTensorMetaData_getattro,  \
-                  PyavtSymmetricTensorMetaData_setattro,  \
-                  avtSymmetricTensorMetaData_str,         \
-                  avtSymmetricTensorMetaData_Purpose,     \
-                  avtSymmetricTensorMetaData_richcompare, \
-                  0, /* as_number*/       \
-                  PyavtSymmetricTensorMetaData_methods);
+static PyTypeObject avtSymmetricTensorMetaDataType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "avtSymmetricTensorMetaData",
+    .tp_basicsize = sizeof(avtSymmetricTensorMetaDataObject),
+    .tp_dealloc = avtSymmetricTensorMetaData_dealloc,
+    .tp_repr = avtSymmetricTensorMetaData_str,
+    .tp_str = avtSymmetricTensorMetaData_str,
+    .tp_getattro = PyavtSymmetricTensorMetaData_getattro,
+    .tp_setattro = PyavtSymmetricTensorMetaData_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = avtSymmetricTensorMetaData_Purpose,
+    .tp_richcompare = avtSymmetricTensorMetaData_richcompare,
+    .tp_methods = PyavtSymmetricTensorMetaData_methods};
 
 //
 // Helper function for comparing.

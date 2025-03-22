@@ -1139,14 +1139,6 @@ PyLabelAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-LabelAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    LabelAttributesObject *obj = (LabelAttributesObject *)v;
-    fprintf(fp, "%s", PyLabelAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 LabelAttributes_str(PyObject *v)
 {
@@ -1164,36 +1156,22 @@ static char *LabelAttributes_Purpose = "This class contains the fields that we n
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(LabelAttributesType,         \
-                  "LabelAttributes",         \
-                  LabelAttributesObject,       \
-                  LabelAttributes_dealloc,     \
-                  LabelAttributes_print,       \
-                  PyLabelAttributes_getattro,  \
-                  PyLabelAttributes_setattro,  \
-                  LabelAttributes_str,         \
-                  LabelAttributes_Purpose,     \
-                  LabelAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyLabelAttributes_methods);
+static PyTypeObject LabelAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "LabelAttributes",
+    .tp_basicsize = sizeof(LabelAttributesObject),
+    .tp_dealloc = LabelAttributes_dealloc,
+    .tp_repr = LabelAttributes_str,
+    .tp_str = LabelAttributes_str,
+    .tp_getattro = PyLabelAttributes_getattro,
+    .tp_setattro = PyLabelAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = LabelAttributes_Purpose,
+    .tp_richcompare = LabelAttributes_richcompare,
+    .tp_methods = PyLabelAttributes_methods};
 
 //
 // Helper function for comparing.

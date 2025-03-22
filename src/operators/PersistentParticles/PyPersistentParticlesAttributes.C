@@ -901,14 +901,6 @@ PyPersistentParticlesAttributes_setattro(PyObject *self, PyObject *attr_name, Py
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-PersistentParticlesAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)v;
-    fprintf(fp, "%s", PyPersistentParticlesAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 PersistentParticlesAttributes_str(PyObject *v)
 {
@@ -926,36 +918,22 @@ static char *PersistentParticlesAttributes_Purpose = "This class contains attrib
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(PersistentParticlesAttributesType,         \
-                  "PersistentParticlesAttributes",         \
-                  PersistentParticlesAttributesObject,       \
-                  PersistentParticlesAttributes_dealloc,     \
-                  PersistentParticlesAttributes_print,       \
-                  PyPersistentParticlesAttributes_getattro,  \
-                  PyPersistentParticlesAttributes_setattro,  \
-                  PersistentParticlesAttributes_str,         \
-                  PersistentParticlesAttributes_Purpose,     \
-                  PersistentParticlesAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyPersistentParticlesAttributes_methods);
+static PyTypeObject PersistentParticlesAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "PersistentParticlesAttributes",
+    .tp_basicsize = sizeof(PersistentParticlesAttributesObject),
+    .tp_dealloc = PersistentParticlesAttributes_dealloc,
+    .tp_repr = PersistentParticlesAttributes_str,
+    .tp_str = PersistentParticlesAttributes_str,
+    .tp_getattro = PyPersistentParticlesAttributes_getattro,
+    .tp_setattro = PyPersistentParticlesAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = PersistentParticlesAttributes_Purpose,
+    .tp_richcompare = PersistentParticlesAttributes_richcompare,
+    .tp_methods = PyPersistentParticlesAttributes_methods};
 
 //
 // Helper function for comparing.

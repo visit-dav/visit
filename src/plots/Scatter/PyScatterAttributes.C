@@ -3305,14 +3305,6 @@ PyScatterAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ScatterAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)v;
-    fprintf(fp, "%s", PyScatterAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 ScatterAttributes_str(PyObject *v)
 {
@@ -3330,36 +3322,22 @@ static char *ScatterAttributes_Purpose = "Attributes for the scatter plot";
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(ScatterAttributesType,         \
-                  "ScatterAttributes",         \
-                  ScatterAttributesObject,       \
-                  ScatterAttributes_dealloc,     \
-                  ScatterAttributes_print,       \
-                  PyScatterAttributes_getattro,  \
-                  PyScatterAttributes_setattro,  \
-                  ScatterAttributes_str,         \
-                  ScatterAttributes_Purpose,     \
-                  ScatterAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyScatterAttributes_methods);
+static PyTypeObject ScatterAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "ScatterAttributes",
+    .tp_basicsize = sizeof(ScatterAttributesObject),
+    .tp_dealloc = ScatterAttributes_dealloc,
+    .tp_repr = ScatterAttributes_str,
+    .tp_str = ScatterAttributes_str,
+    .tp_getattro = PyScatterAttributes_getattro,
+    .tp_setattro = PyScatterAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = ScatterAttributes_Purpose,
+    .tp_richcompare = ScatterAttributes_richcompare,
+    .tp_methods = PyScatterAttributes_methods};
 
 //
 // Helper function for comparing.

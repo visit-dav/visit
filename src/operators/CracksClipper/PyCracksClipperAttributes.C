@@ -641,14 +641,6 @@ PyCracksClipperAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-CracksClipperAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    CracksClipperAttributesObject *obj = (CracksClipperAttributesObject *)v;
-    fprintf(fp, "%s", PyCracksClipperAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 CracksClipperAttributes_str(PyObject *v)
 {
@@ -666,36 +658,22 @@ static char *CracksClipperAttributes_Purpose = "Attributes for the cracks clippe
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(CracksClipperAttributesType,         \
-                  "CracksClipperAttributes",         \
-                  CracksClipperAttributesObject,       \
-                  CracksClipperAttributes_dealloc,     \
-                  CracksClipperAttributes_print,       \
-                  PyCracksClipperAttributes_getattro,  \
-                  PyCracksClipperAttributes_setattro,  \
-                  CracksClipperAttributes_str,         \
-                  CracksClipperAttributes_Purpose,     \
-                  CracksClipperAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyCracksClipperAttributes_methods);
+static PyTypeObject CracksClipperAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "CracksClipperAttributes",
+    .tp_basicsize = sizeof(CracksClipperAttributesObject),
+    .tp_dealloc = CracksClipperAttributes_dealloc,
+    .tp_repr = CracksClipperAttributes_str,
+    .tp_str = CracksClipperAttributes_str,
+    .tp_getattro = PyCracksClipperAttributes_getattro,
+    .tp_setattro = PyCracksClipperAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = CracksClipperAttributes_Purpose,
+    .tp_richcompare = CracksClipperAttributes_richcompare,
+    .tp_methods = PyCracksClipperAttributes_methods};
 
 //
 // Helper function for comparing.

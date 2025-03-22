@@ -698,14 +698,6 @@ PyLineoutAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-LineoutAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    LineoutAttributesObject *obj = (LineoutAttributesObject *)v;
-    fprintf(fp, "%s", PyLineoutAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 LineoutAttributes_str(PyObject *v)
 {
@@ -723,36 +715,22 @@ static char *LineoutAttributes_Purpose = "Attributes for the Lineout operator.";
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(LineoutAttributesType,         \
-                  "LineoutAttributes",         \
-                  LineoutAttributesObject,       \
-                  LineoutAttributes_dealloc,     \
-                  LineoutAttributes_print,       \
-                  PyLineoutAttributes_getattro,  \
-                  PyLineoutAttributes_setattro,  \
-                  LineoutAttributes_str,         \
-                  LineoutAttributes_Purpose,     \
-                  LineoutAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyLineoutAttributes_methods);
+static PyTypeObject LineoutAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "LineoutAttributes",
+    .tp_basicsize = sizeof(LineoutAttributesObject),
+    .tp_dealloc = LineoutAttributes_dealloc,
+    .tp_repr = LineoutAttributes_str,
+    .tp_str = LineoutAttributes_str,
+    .tp_getattro = PyLineoutAttributes_getattro,
+    .tp_setattro = PyLineoutAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = LineoutAttributes_Purpose,
+    .tp_richcompare = LineoutAttributes_richcompare,
+    .tp_methods = PyLineoutAttributes_methods};
 
 //
 // Helper function for comparing.

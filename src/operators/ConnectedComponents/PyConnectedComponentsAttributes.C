@@ -214,14 +214,6 @@ PyConnectedComponentsAttributes_setattro(PyObject *self, PyObject *attr_name, Py
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ConnectedComponentsAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    ConnectedComponentsAttributesObject *obj = (ConnectedComponentsAttributesObject *)v;
-    fprintf(fp, "%s", PyConnectedComponentsAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 ConnectedComponentsAttributes_str(PyObject *v)
 {
@@ -239,36 +231,22 @@ static char *ConnectedComponentsAttributes_Purpose = "Attributes for Connected C
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(ConnectedComponentsAttributesType,         \
-                  "ConnectedComponentsAttributes",         \
-                  ConnectedComponentsAttributesObject,       \
-                  ConnectedComponentsAttributes_dealloc,     \
-                  ConnectedComponentsAttributes_print,       \
-                  PyConnectedComponentsAttributes_getattro,  \
-                  PyConnectedComponentsAttributes_setattro,  \
-                  ConnectedComponentsAttributes_str,         \
-                  ConnectedComponentsAttributes_Purpose,     \
-                  ConnectedComponentsAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyConnectedComponentsAttributes_methods);
+static PyTypeObject ConnectedComponentsAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "ConnectedComponentsAttributes",
+    .tp_basicsize = sizeof(ConnectedComponentsAttributesObject),
+    .tp_dealloc = ConnectedComponentsAttributes_dealloc,
+    .tp_repr = ConnectedComponentsAttributes_str,
+    .tp_str = ConnectedComponentsAttributes_str,
+    .tp_getattro = PyConnectedComponentsAttributes_getattro,
+    .tp_setattro = PyConnectedComponentsAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = ConnectedComponentsAttributes_Purpose,
+    .tp_richcompare = ConnectedComponentsAttributes_richcompare,
+    .tp_methods = PyConnectedComponentsAttributes_methods};
 
 //
 // Helper function for comparing.

@@ -242,14 +242,6 @@ PyDualMeshAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *arg
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-DualMeshAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    DualMeshAttributesObject *obj = (DualMeshAttributesObject *)v;
-    fprintf(fp, "%s", PyDualMeshAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 DualMeshAttributes_str(PyObject *v)
 {
@@ -267,36 +259,22 @@ static char *DualMeshAttributes_Purpose = "Atts for Dual Mesh Operator";
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(DualMeshAttributesType,         \
-                  "DualMeshAttributes",         \
-                  DualMeshAttributesObject,       \
-                  DualMeshAttributes_dealloc,     \
-                  DualMeshAttributes_print,       \
-                  PyDualMeshAttributes_getattro,  \
-                  PyDualMeshAttributes_setattro,  \
-                  DualMeshAttributes_str,         \
-                  DualMeshAttributes_Purpose,     \
-                  DualMeshAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyDualMeshAttributes_methods);
+static PyTypeObject DualMeshAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "DualMeshAttributes",
+    .tp_basicsize = sizeof(DualMeshAttributesObject),
+    .tp_dealloc = DualMeshAttributes_dealloc,
+    .tp_repr = DualMeshAttributes_str,
+    .tp_str = DualMeshAttributes_str,
+    .tp_getattro = PyDualMeshAttributes_getattro,
+    .tp_setattro = PyDualMeshAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = DualMeshAttributes_Purpose,
+    .tp_richcompare = DualMeshAttributes_richcompare,
+    .tp_methods = PyDualMeshAttributes_methods};
 
 //
 // Helper function for comparing.

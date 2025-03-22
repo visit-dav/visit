@@ -776,14 +776,6 @@ PyMeshManagementAttributes_setattro(PyObject *self, PyObject *attr_name, PyObjec
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-MeshManagementAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    MeshManagementAttributesObject *obj = (MeshManagementAttributesObject *)v;
-    fprintf(fp, "%s", PyMeshManagementAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 MeshManagementAttributes_str(PyObject *v)
 {
@@ -801,36 +793,22 @@ static char *MeshManagementAttributes_Purpose = "Global variables controlling re
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(MeshManagementAttributesType,         \
-                  "MeshManagementAttributes",         \
-                  MeshManagementAttributesObject,       \
-                  MeshManagementAttributes_dealloc,     \
-                  MeshManagementAttributes_print,       \
-                  PyMeshManagementAttributes_getattro,  \
-                  PyMeshManagementAttributes_setattro,  \
-                  MeshManagementAttributes_str,         \
-                  MeshManagementAttributes_Purpose,     \
-                  MeshManagementAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyMeshManagementAttributes_methods);
+static PyTypeObject MeshManagementAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "MeshManagementAttributes",
+    .tp_basicsize = sizeof(MeshManagementAttributesObject),
+    .tp_dealloc = MeshManagementAttributes_dealloc,
+    .tp_repr = MeshManagementAttributes_str,
+    .tp_str = MeshManagementAttributes_str,
+    .tp_getattro = PyMeshManagementAttributes_getattro,
+    .tp_setattro = PyMeshManagementAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = MeshManagementAttributes_Purpose,
+    .tp_richcompare = MeshManagementAttributes_richcompare,
+    .tp_methods = PyMeshManagementAttributes_methods};
 
 //
 // Helper function for comparing.

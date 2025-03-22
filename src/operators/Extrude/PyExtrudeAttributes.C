@@ -579,14 +579,6 @@ PyExtrudeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ExtrudeAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)v;
-    fprintf(fp, "%s", PyExtrudeAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 ExtrudeAttributes_str(PyObject *v)
 {
@@ -604,36 +596,22 @@ static char *ExtrudeAttributes_Purpose = "This class contains attributes for the
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(ExtrudeAttributesType,         \
-                  "ExtrudeAttributes",         \
-                  ExtrudeAttributesObject,       \
-                  ExtrudeAttributes_dealloc,     \
-                  ExtrudeAttributes_print,       \
-                  PyExtrudeAttributes_getattro,  \
-                  PyExtrudeAttributes_setattro,  \
-                  ExtrudeAttributes_str,         \
-                  ExtrudeAttributes_Purpose,     \
-                  ExtrudeAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyExtrudeAttributes_methods);
+static PyTypeObject ExtrudeAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "ExtrudeAttributes",
+    .tp_basicsize = sizeof(ExtrudeAttributesObject),
+    .tp_dealloc = ExtrudeAttributes_dealloc,
+    .tp_repr = ExtrudeAttributes_str,
+    .tp_str = ExtrudeAttributes_str,
+    .tp_getattro = PyExtrudeAttributes_getattro,
+    .tp_setattro = PyExtrudeAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = ExtrudeAttributes_Purpose,
+    .tp_richcompare = ExtrudeAttributes_richcompare,
+    .tp_methods = PyExtrudeAttributes_methods};
 
 //
 // Helper function for comparing.

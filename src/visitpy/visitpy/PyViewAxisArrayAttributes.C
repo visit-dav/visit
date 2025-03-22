@@ -446,14 +446,6 @@ PyViewAxisArrayAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ViewAxisArrayAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    ViewAxisArrayAttributesObject *obj = (ViewAxisArrayAttributesObject *)v;
-    fprintf(fp, "%s", PyViewAxisArrayAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 ViewAxisArrayAttributes_str(PyObject *v)
 {
@@ -471,36 +463,22 @@ static char *ViewAxisArrayAttributes_Purpose = "This class contains the axis arr
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(ViewAxisArrayAttributesType,         \
-                  "ViewAxisArrayAttributes",         \
-                  ViewAxisArrayAttributesObject,       \
-                  ViewAxisArrayAttributes_dealloc,     \
-                  ViewAxisArrayAttributes_print,       \
-                  PyViewAxisArrayAttributes_getattro,  \
-                  PyViewAxisArrayAttributes_setattro,  \
-                  ViewAxisArrayAttributes_str,         \
-                  ViewAxisArrayAttributes_Purpose,     \
-                  ViewAxisArrayAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyViewAxisArrayAttributes_methods);
+static PyTypeObject ViewAxisArrayAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "ViewAxisArrayAttributes",
+    .tp_basicsize = sizeof(ViewAxisArrayAttributesObject),
+    .tp_dealloc = ViewAxisArrayAttributes_dealloc,
+    .tp_repr = ViewAxisArrayAttributes_str,
+    .tp_str = ViewAxisArrayAttributes_str,
+    .tp_getattro = PyViewAxisArrayAttributes_getattro,
+    .tp_setattro = PyViewAxisArrayAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = ViewAxisArrayAttributes_Purpose,
+    .tp_richcompare = ViewAxisArrayAttributes_richcompare,
+    .tp_methods = PyViewAxisArrayAttributes_methods};
 
 //
 // Helper function for comparing.

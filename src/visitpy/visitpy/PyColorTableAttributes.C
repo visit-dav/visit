@@ -579,14 +579,6 @@ PyColorTableAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *a
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ColorTableAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)v;
-    fprintf(fp, "%s", PyColorTableAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 ColorTableAttributes_str(PyObject *v)
 {
@@ -604,36 +596,22 @@ static char *ColorTableAttributes_Purpose = "This class contains the list of col
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(ColorTableAttributesType,         \
-                  "ColorTableAttributes",         \
-                  ColorTableAttributesObject,       \
-                  ColorTableAttributes_dealloc,     \
-                  ColorTableAttributes_print,       \
-                  PyColorTableAttributes_getattro,  \
-                  PyColorTableAttributes_setattro,  \
-                  ColorTableAttributes_str,         \
-                  ColorTableAttributes_Purpose,     \
-                  ColorTableAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyColorTableAttributes_methods);
+static PyTypeObject ColorTableAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "ColorTableAttributes",
+    .tp_basicsize = sizeof(ColorTableAttributesObject),
+    .tp_dealloc = ColorTableAttributes_dealloc,
+    .tp_repr = ColorTableAttributes_str,
+    .tp_str = ColorTableAttributes_str,
+    .tp_getattro = PyColorTableAttributes_getattro,
+    .tp_setattro = PyColorTableAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = ColorTableAttributes_Purpose,
+    .tp_richcompare = ColorTableAttributes_richcompare,
+    .tp_methods = PyColorTableAttributes_methods};
 
 //
 // Helper function for comparing.

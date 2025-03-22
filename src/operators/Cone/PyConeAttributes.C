@@ -752,14 +752,6 @@ PyConeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ConeAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    ConeAttributesObject *obj = (ConeAttributesObject *)v;
-    fprintf(fp, "%s", PyConeAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 ConeAttributes_str(PyObject *v)
 {
@@ -777,36 +769,22 @@ static char *ConeAttributes_Purpose = "This class contains attributes for the co
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(ConeAttributesType,         \
-                  "ConeAttributes",         \
-                  ConeAttributesObject,       \
-                  ConeAttributes_dealloc,     \
-                  ConeAttributes_print,       \
-                  PyConeAttributes_getattro,  \
-                  PyConeAttributes_setattro,  \
-                  ConeAttributes_str,         \
-                  ConeAttributes_Purpose,     \
-                  ConeAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyConeAttributes_methods);
+static PyTypeObject ConeAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "ConeAttributes",
+    .tp_basicsize = sizeof(ConeAttributesObject),
+    .tp_dealloc = ConeAttributes_dealloc,
+    .tp_repr = ConeAttributes_str,
+    .tp_str = ConeAttributes_str,
+    .tp_getattro = PyConeAttributes_getattro,
+    .tp_setattro = PyConeAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = ConeAttributes_Purpose,
+    .tp_richcompare = ConeAttributes_richcompare,
+    .tp_methods = PyConeAttributes_methods};
 
 //
 // Helper function for comparing.

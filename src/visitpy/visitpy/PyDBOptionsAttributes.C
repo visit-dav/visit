@@ -309,14 +309,6 @@ PyDBOptionsAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *ar
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-DBOptionsAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    DBOptionsAttributesObject *obj = (DBOptionsAttributesObject *)v;
-    fprintf(fp, "%s", PyDBOptionsAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 DBOptionsAttributes_str(PyObject *v)
 {
@@ -334,36 +326,22 @@ static char *DBOptionsAttributes_Purpose = "Attributes of database options";
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(DBOptionsAttributesType,         \
-                  "DBOptionsAttributes",         \
-                  DBOptionsAttributesObject,       \
-                  DBOptionsAttributes_dealloc,     \
-                  DBOptionsAttributes_print,       \
-                  PyDBOptionsAttributes_getattro,  \
-                  PyDBOptionsAttributes_setattro,  \
-                  DBOptionsAttributes_str,         \
-                  DBOptionsAttributes_Purpose,     \
-                  DBOptionsAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyDBOptionsAttributes_methods);
+static PyTypeObject DBOptionsAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "DBOptionsAttributes",
+    .tp_basicsize = sizeof(DBOptionsAttributesObject),
+    .tp_dealloc = DBOptionsAttributes_dealloc,
+    .tp_repr = DBOptionsAttributes_str,
+    .tp_str = DBOptionsAttributes_str,
+    .tp_getattro = PyDBOptionsAttributes_getattro,
+    .tp_setattro = PyDBOptionsAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = DBOptionsAttributes_Purpose,
+    .tp_richcompare = DBOptionsAttributes_richcompare,
+    .tp_methods = PyDBOptionsAttributes_methods};
 
 //
 // Helper function for comparing.

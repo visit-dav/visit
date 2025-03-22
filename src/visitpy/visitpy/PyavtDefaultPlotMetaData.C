@@ -348,14 +348,6 @@ PyavtDefaultPlotMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject 
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-avtDefaultPlotMetaData_print(PyObject *v, FILE *fp, int flags)
-{
-    avtDefaultPlotMetaDataObject *obj = (avtDefaultPlotMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtDefaultPlotMetaData_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 avtDefaultPlotMetaData_str(PyObject *v)
 {
@@ -373,36 +365,22 @@ static char *avtDefaultPlotMetaData_Purpose = "Contains default plot metadata at
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(avtDefaultPlotMetaDataType,         \
-                  "avtDefaultPlotMetaData",         \
-                  avtDefaultPlotMetaDataObject,       \
-                  avtDefaultPlotMetaData_dealloc,     \
-                  avtDefaultPlotMetaData_print,       \
-                  PyavtDefaultPlotMetaData_getattro,  \
-                  PyavtDefaultPlotMetaData_setattro,  \
-                  avtDefaultPlotMetaData_str,         \
-                  avtDefaultPlotMetaData_Purpose,     \
-                  avtDefaultPlotMetaData_richcompare, \
-                  0, /* as_number*/       \
-                  PyavtDefaultPlotMetaData_methods);
+static PyTypeObject avtDefaultPlotMetaDataType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "avtDefaultPlotMetaData",
+    .tp_basicsize = sizeof(avtDefaultPlotMetaDataObject),
+    .tp_dealloc = avtDefaultPlotMetaData_dealloc,
+    .tp_repr = avtDefaultPlotMetaData_str,
+    .tp_str = avtDefaultPlotMetaData_str,
+    .tp_getattro = PyavtDefaultPlotMetaData_getattro,
+    .tp_setattro = PyavtDefaultPlotMetaData_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = avtDefaultPlotMetaData_Purpose,
+    .tp_richcompare = avtDefaultPlotMetaData_richcompare,
+    .tp_methods = PyavtDefaultPlotMetaData_methods};
 
 //
 // Helper function for comparing.

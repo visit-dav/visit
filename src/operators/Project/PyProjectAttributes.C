@@ -372,14 +372,6 @@ PyProjectAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ProjectAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    ProjectAttributesObject *obj = (ProjectAttributesObject *)v;
-    fprintf(fp, "%s", PyProjectAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 ProjectAttributes_str(PyObject *v)
 {
@@ -397,36 +389,22 @@ static char *ProjectAttributes_Purpose = "Project data from three to two dimensi
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(ProjectAttributesType,         \
-                  "ProjectAttributes",         \
-                  ProjectAttributesObject,       \
-                  ProjectAttributes_dealloc,     \
-                  ProjectAttributes_print,       \
-                  PyProjectAttributes_getattro,  \
-                  PyProjectAttributes_setattro,  \
-                  ProjectAttributes_str,         \
-                  ProjectAttributes_Purpose,     \
-                  ProjectAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyProjectAttributes_methods);
+static PyTypeObject ProjectAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "ProjectAttributes",
+    .tp_basicsize = sizeof(ProjectAttributesObject),
+    .tp_dealloc = ProjectAttributes_dealloc,
+    .tp_repr = ProjectAttributes_str,
+    .tp_str = ProjectAttributes_str,
+    .tp_getattro = PyProjectAttributes_getattro,
+    .tp_setattro = PyProjectAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = ProjectAttributes_Purpose,
+    .tp_richcompare = ProjectAttributes_richcompare,
+    .tp_methods = PyProjectAttributes_methods};
 
 //
 // Helper function for comparing.

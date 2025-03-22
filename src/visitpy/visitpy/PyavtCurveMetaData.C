@@ -669,14 +669,6 @@ PyavtCurveMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-avtCurveMetaData_print(PyObject *v, FILE *fp, int flags)
-{
-    avtCurveMetaDataObject *obj = (avtCurveMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtCurveMetaData_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 avtCurveMetaData_str(PyObject *v)
 {
@@ -694,36 +686,22 @@ static char *avtCurveMetaData_Purpose = "Contains curve metadata attributes";
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(avtCurveMetaDataType,         \
-                  "avtCurveMetaData",         \
-                  avtCurveMetaDataObject,       \
-                  avtCurveMetaData_dealloc,     \
-                  avtCurveMetaData_print,       \
-                  PyavtCurveMetaData_getattro,  \
-                  PyavtCurveMetaData_setattro,  \
-                  avtCurveMetaData_str,         \
-                  avtCurveMetaData_Purpose,     \
-                  avtCurveMetaData_richcompare, \
-                  0, /* as_number*/       \
-                  PyavtCurveMetaData_methods);
+static PyTypeObject avtCurveMetaDataType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "avtCurveMetaData",
+    .tp_basicsize = sizeof(avtCurveMetaDataObject),
+    .tp_dealloc = avtCurveMetaData_dealloc,
+    .tp_repr = avtCurveMetaData_str,
+    .tp_str = avtCurveMetaData_str,
+    .tp_getattro = PyavtCurveMetaData_getattro,
+    .tp_setattro = PyavtCurveMetaData_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = avtCurveMetaData_Purpose,
+    .tp_richcompare = avtCurveMetaData_richcompare,
+    .tp_methods = PyavtCurveMetaData_methods};
 
 //
 // Helper function for comparing.

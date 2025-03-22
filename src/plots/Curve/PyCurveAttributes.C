@@ -2282,14 +2282,6 @@ PyCurveAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-CurveAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    CurveAttributesObject *obj = (CurveAttributesObject *)v;
-    fprintf(fp, "%s", PyCurveAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 CurveAttributes_str(PyObject *v)
 {
@@ -2307,36 +2299,22 @@ static char *CurveAttributes_Purpose = "Attributes for the xy plot";
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(CurveAttributesType,         \
-                  "CurveAttributes",         \
-                  CurveAttributesObject,       \
-                  CurveAttributes_dealloc,     \
-                  CurveAttributes_print,       \
-                  PyCurveAttributes_getattro,  \
-                  PyCurveAttributes_setattro,  \
-                  CurveAttributes_str,         \
-                  CurveAttributes_Purpose,     \
-                  CurveAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyCurveAttributes_methods);
+static PyTypeObject CurveAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "CurveAttributes",
+    .tp_basicsize = sizeof(CurveAttributesObject),
+    .tp_dealloc = CurveAttributes_dealloc,
+    .tp_repr = CurveAttributes_str,
+    .tp_str = CurveAttributes_str,
+    .tp_getattro = PyCurveAttributes_getattro,
+    .tp_setattro = PyCurveAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = CurveAttributes_Purpose,
+    .tp_richcompare = CurveAttributes_richcompare,
+    .tp_methods = PyCurveAttributes_methods};
 
 //
 // Helper function for comparing.

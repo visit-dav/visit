@@ -446,14 +446,6 @@ PyEllipsoidSliceAttributes_setattro(PyObject *self, PyObject *attr_name, PyObjec
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-EllipsoidSliceAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    EllipsoidSliceAttributesObject *obj = (EllipsoidSliceAttributesObject *)v;
-    fprintf(fp, "%s", PyEllipsoidSliceAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 EllipsoidSliceAttributes_str(PyObject *v)
 {
@@ -471,36 +463,22 @@ static char *EllipsoidSliceAttributes_Purpose = "EllipsoidSliceAttributes";
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(EllipsoidSliceAttributesType,         \
-                  "EllipsoidSliceAttributes",         \
-                  EllipsoidSliceAttributesObject,       \
-                  EllipsoidSliceAttributes_dealloc,     \
-                  EllipsoidSliceAttributes_print,       \
-                  PyEllipsoidSliceAttributes_getattro,  \
-                  PyEllipsoidSliceAttributes_setattro,  \
-                  EllipsoidSliceAttributes_str,         \
-                  EllipsoidSliceAttributes_Purpose,     \
-                  EllipsoidSliceAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyEllipsoidSliceAttributes_methods);
+static PyTypeObject EllipsoidSliceAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "EllipsoidSliceAttributes",
+    .tp_basicsize = sizeof(EllipsoidSliceAttributesObject),
+    .tp_dealloc = EllipsoidSliceAttributes_dealloc,
+    .tp_repr = EllipsoidSliceAttributes_str,
+    .tp_str = EllipsoidSliceAttributes_str,
+    .tp_getattro = PyEllipsoidSliceAttributes_getattro,
+    .tp_setattro = PyEllipsoidSliceAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = EllipsoidSliceAttributes_Purpose,
+    .tp_richcompare = EllipsoidSliceAttributes_richcompare,
+    .tp_methods = PyEllipsoidSliceAttributes_methods};
 
 //
 // Helper function for comparing.

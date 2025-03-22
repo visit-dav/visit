@@ -2732,14 +2732,6 @@ PyLaunchProfile_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-LaunchProfile_print(PyObject *v, FILE *fp, int flags)
-{
-    LaunchProfileObject *obj = (LaunchProfileObject *)v;
-    fprintf(fp, "%s", PyLaunchProfile_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 LaunchProfile_str(PyObject *v)
 {
@@ -2757,36 +2749,22 @@ static char *LaunchProfile_Purpose = "This class contains information needed to 
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(LaunchProfileType,         \
-                  "LaunchProfile",         \
-                  LaunchProfileObject,       \
-                  LaunchProfile_dealloc,     \
-                  LaunchProfile_print,       \
-                  PyLaunchProfile_getattro,  \
-                  PyLaunchProfile_setattro,  \
-                  LaunchProfile_str,         \
-                  LaunchProfile_Purpose,     \
-                  LaunchProfile_richcompare, \
-                  0, /* as_number*/       \
-                  PyLaunchProfile_methods);
+static PyTypeObject LaunchProfileType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "LaunchProfile",
+    .tp_basicsize = sizeof(LaunchProfileObject),
+    .tp_dealloc = LaunchProfile_dealloc,
+    .tp_repr = LaunchProfile_str,
+    .tp_str = LaunchProfile_str,
+    .tp_getattro = PyLaunchProfile_getattro,
+    .tp_setattro = PyLaunchProfile_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = LaunchProfile_Purpose,
+    .tp_richcompare = LaunchProfile_richcompare,
+    .tp_methods = PyLaunchProfile_methods};
 
 //
 // Helper function for comparing.

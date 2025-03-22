@@ -327,14 +327,6 @@ PyAxisLabels_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-AxisLabels_print(PyObject *v, FILE *fp, int flags)
-{
-    AxisLabelsObject *obj = (AxisLabelsObject *)v;
-    fprintf(fp, "%s", PyAxisLabels_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 AxisLabels_str(PyObject *v)
 {
@@ -352,36 +344,22 @@ static char *AxisLabels_Purpose = "Contains the label properties for one axis.";
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(AxisLabelsType,         \
-                  "AxisLabels",         \
-                  AxisLabelsObject,       \
-                  AxisLabels_dealloc,     \
-                  AxisLabels_print,       \
-                  PyAxisLabels_getattro,  \
-                  PyAxisLabels_setattro,  \
-                  AxisLabels_str,         \
-                  AxisLabels_Purpose,     \
-                  AxisLabels_richcompare, \
-                  0, /* as_number*/       \
-                  PyAxisLabels_methods);
+static PyTypeObject AxisLabelsType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "AxisLabels",
+    .tp_basicsize = sizeof(AxisLabelsObject),
+    .tp_dealloc = AxisLabels_dealloc,
+    .tp_repr = AxisLabels_str,
+    .tp_str = AxisLabels_str,
+    .tp_getattro = PyAxisLabels_getattro,
+    .tp_setattro = PyAxisLabels_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = AxisLabels_Purpose,
+    .tp_richcompare = AxisLabels_richcompare,
+    .tp_methods = PyAxisLabels_methods};
 
 //
 // Helper function for comparing.

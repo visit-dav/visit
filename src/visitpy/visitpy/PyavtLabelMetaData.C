@@ -176,14 +176,6 @@ PyavtLabelMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-avtLabelMetaData_print(PyObject *v, FILE *fp, int flags)
-{
-    avtLabelMetaDataObject *obj = (avtLabelMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtLabelMetaData_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 avtLabelMetaData_str(PyObject *v)
 {
@@ -201,36 +193,22 @@ static char *avtLabelMetaData_Purpose = "Contains label metadata attributes";
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(avtLabelMetaDataType,         \
-                  "avtLabelMetaData",         \
-                  avtLabelMetaDataObject,       \
-                  avtLabelMetaData_dealloc,     \
-                  avtLabelMetaData_print,       \
-                  PyavtLabelMetaData_getattro,  \
-                  PyavtLabelMetaData_setattro,  \
-                  avtLabelMetaData_str,         \
-                  avtLabelMetaData_Purpose,     \
-                  avtLabelMetaData_richcompare, \
-                  0, /* as_number*/       \
-                  PyavtLabelMetaData_methods);
+static PyTypeObject avtLabelMetaDataType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "avtLabelMetaData",
+    .tp_basicsize = sizeof(avtLabelMetaDataObject),
+    .tp_dealloc = avtLabelMetaData_dealloc,
+    .tp_repr = avtLabelMetaData_str,
+    .tp_str = avtLabelMetaData_str,
+    .tp_getattro = PyavtLabelMetaData_getattro,
+    .tp_setattro = PyavtLabelMetaData_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = avtLabelMetaData_Purpose,
+    .tp_richcompare = avtLabelMetaData_richcompare,
+    .tp_methods = PyavtLabelMetaData_methods};
 
 //
 // Helper function for comparing.

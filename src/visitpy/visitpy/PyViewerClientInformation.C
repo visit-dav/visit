@@ -356,14 +356,6 @@ PyViewerClientInformation_setattro(PyObject *self, PyObject *attr_name, PyObject
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ViewerClientInformation_print(PyObject *v, FILE *fp, int flags)
-{
-    ViewerClientInformationObject *obj = (ViewerClientInformationObject *)v;
-    fprintf(fp, "%s", PyViewerClientInformation_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 ViewerClientInformation_str(PyObject *v)
 {
@@ -381,36 +373,22 @@ static char *ViewerClientInformation_Purpose = "This class contains information 
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(ViewerClientInformationType,         \
-                  "ViewerClientInformation",         \
-                  ViewerClientInformationObject,       \
-                  ViewerClientInformation_dealloc,     \
-                  ViewerClientInformation_print,       \
-                  PyViewerClientInformation_getattro,  \
-                  PyViewerClientInformation_setattro,  \
-                  ViewerClientInformation_str,         \
-                  ViewerClientInformation_Purpose,     \
-                  ViewerClientInformation_richcompare, \
-                  0, /* as_number*/       \
-                  PyViewerClientInformation_methods);
+static PyTypeObject ViewerClientInformationType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "ViewerClientInformation",
+    .tp_basicsize = sizeof(ViewerClientInformationObject),
+    .tp_dealloc = ViewerClientInformation_dealloc,
+    .tp_repr = ViewerClientInformation_str,
+    .tp_str = ViewerClientInformation_str,
+    .tp_getattro = PyViewerClientInformation_getattro,
+    .tp_setattro = PyViewerClientInformation_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = ViewerClientInformation_Purpose,
+    .tp_richcompare = ViewerClientInformation_richcompare,
+    .tp_methods = PyViewerClientInformation_methods};
 
 //
 // Helper function for comparing.

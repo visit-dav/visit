@@ -2221,14 +2221,6 @@ PyGlobalAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-GlobalAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)v;
-    fprintf(fp, "%s", PyGlobalAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 GlobalAttributes_str(PyObject *v)
 {
@@ -2246,36 +2238,22 @@ static char *GlobalAttributes_Purpose = "This class contains attributes associat
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(GlobalAttributesType,         \
-                  "GlobalAttributes",         \
-                  GlobalAttributesObject,       \
-                  GlobalAttributes_dealloc,     \
-                  GlobalAttributes_print,       \
-                  PyGlobalAttributes_getattro,  \
-                  PyGlobalAttributes_setattro,  \
-                  GlobalAttributes_str,         \
-                  GlobalAttributes_Purpose,     \
-                  GlobalAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyGlobalAttributes_methods);
+static PyTypeObject GlobalAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "GlobalAttributes",
+    .tp_basicsize = sizeof(GlobalAttributesObject),
+    .tp_dealloc = GlobalAttributes_dealloc,
+    .tp_repr = GlobalAttributes_str,
+    .tp_str = GlobalAttributes_str,
+    .tp_getattro = PyGlobalAttributes_getattro,
+    .tp_setattro = PyGlobalAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = GlobalAttributes_Purpose,
+    .tp_richcompare = GlobalAttributes_richcompare,
+    .tp_methods = PyGlobalAttributes_methods};
 
 //
 // Helper function for comparing.

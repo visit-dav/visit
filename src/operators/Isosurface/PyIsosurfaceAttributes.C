@@ -933,14 +933,6 @@ PyIsosurfaceAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *a
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-IsosurfaceAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    IsosurfaceAttributesObject *obj = (IsosurfaceAttributesObject *)v;
-    fprintf(fp, "%s", PyIsosurfaceAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 IsosurfaceAttributes_str(PyObject *v)
 {
@@ -958,36 +950,22 @@ static char *IsosurfaceAttributes_Purpose = "Attributes for the isosurface opera
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(IsosurfaceAttributesType,         \
-                  "IsosurfaceAttributes",         \
-                  IsosurfaceAttributesObject,       \
-                  IsosurfaceAttributes_dealloc,     \
-                  IsosurfaceAttributes_print,       \
-                  PyIsosurfaceAttributes_getattro,  \
-                  PyIsosurfaceAttributes_setattro,  \
-                  IsosurfaceAttributes_str,         \
-                  IsosurfaceAttributes_Purpose,     \
-                  IsosurfaceAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyIsosurfaceAttributes_methods);
+static PyTypeObject IsosurfaceAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "IsosurfaceAttributes",
+    .tp_basicsize = sizeof(IsosurfaceAttributesObject),
+    .tp_dealloc = IsosurfaceAttributes_dealloc,
+    .tp_repr = IsosurfaceAttributes_str,
+    .tp_str = IsosurfaceAttributes_str,
+    .tp_getattro = PyIsosurfaceAttributes_getattro,
+    .tp_setattro = PyIsosurfaceAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = IsosurfaceAttributes_Purpose,
+    .tp_richcompare = IsosurfaceAttributes_richcompare,
+    .tp_methods = PyIsosurfaceAttributes_methods};
 
 //
 // Helper function for comparing.

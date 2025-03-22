@@ -1456,14 +1456,6 @@ PyExplodeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ExplodeAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)v;
-    fprintf(fp, "%s", PyExplodeAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 ExplodeAttributes_str(PyObject *v)
 {
@@ -1481,36 +1473,22 @@ static char *ExplodeAttributes_Purpose = "This class contains attributes for the
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(ExplodeAttributesType,         \
-                  "ExplodeAttributes",         \
-                  ExplodeAttributesObject,       \
-                  ExplodeAttributes_dealloc,     \
-                  ExplodeAttributes_print,       \
-                  PyExplodeAttributes_getattro,  \
-                  PyExplodeAttributes_setattro,  \
-                  ExplodeAttributes_str,         \
-                  ExplodeAttributes_Purpose,     \
-                  ExplodeAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyExplodeAttributes_methods);
+static PyTypeObject ExplodeAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "ExplodeAttributes",
+    .tp_basicsize = sizeof(ExplodeAttributesObject),
+    .tp_dealloc = ExplodeAttributes_dealloc,
+    .tp_repr = ExplodeAttributes_str,
+    .tp_str = ExplodeAttributes_str,
+    .tp_getattro = PyExplodeAttributes_getattro,
+    .tp_setattro = PyExplodeAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = ExplodeAttributes_Purpose,
+    .tp_richcompare = ExplodeAttributes_richcompare,
+    .tp_methods = PyExplodeAttributes_methods};
 
 //
 // Helper function for comparing.

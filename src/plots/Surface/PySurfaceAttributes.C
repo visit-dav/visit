@@ -1406,14 +1406,6 @@ PySurfaceAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-SurfaceAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)v;
-    fprintf(fp, "%s", PySurfaceAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 SurfaceAttributes_str(PyObject *v)
 {
@@ -1431,36 +1423,22 @@ static char *SurfaceAttributes_Purpose = "Attributes for the surface plot";
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(SurfaceAttributesType,         \
-                  "SurfaceAttributes",         \
-                  SurfaceAttributesObject,       \
-                  SurfaceAttributes_dealloc,     \
-                  SurfaceAttributes_print,       \
-                  PySurfaceAttributes_getattro,  \
-                  PySurfaceAttributes_setattro,  \
-                  SurfaceAttributes_str,         \
-                  SurfaceAttributes_Purpose,     \
-                  SurfaceAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PySurfaceAttributes_methods);
+static PyTypeObject SurfaceAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "SurfaceAttributes",
+    .tp_basicsize = sizeof(SurfaceAttributesObject),
+    .tp_dealloc = SurfaceAttributes_dealloc,
+    .tp_repr = SurfaceAttributes_str,
+    .tp_str = SurfaceAttributes_str,
+    .tp_getattro = PySurfaceAttributes_getattro,
+    .tp_setattro = PySurfaceAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = SurfaceAttributes_Purpose,
+    .tp_richcompare = SurfaceAttributes_richcompare,
+    .tp_methods = PySurfaceAttributes_methods};
 
 //
 // Helper function for comparing.

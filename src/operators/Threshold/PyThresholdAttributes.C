@@ -176,14 +176,6 @@ PyThresholdAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *ar
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ThresholdAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    ThresholdAttributesObject *obj = (ThresholdAttributesObject *)v;
-    fprintf(fp, "%s", PyThresholdAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 ThresholdAttributes_str(PyObject *v)
 {
@@ -201,36 +193,22 @@ static char *ThresholdAttributes_Purpose = "This class contains attributes for t
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(ThresholdAttributesType,         \
-                  "ThresholdAttributes",         \
-                  ThresholdAttributesObject,       \
-                  ThresholdAttributes_dealloc,     \
-                  ThresholdAttributes_print,       \
-                  PyThresholdAttributes_getattro,  \
-                  PyThresholdAttributes_setattro,  \
-                  ThresholdAttributes_str,         \
-                  ThresholdAttributes_Purpose,     \
-                  ThresholdAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyThresholdAttributes_methods);
+static PyTypeObject ThresholdAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "ThresholdAttributes",
+    .tp_basicsize = sizeof(ThresholdAttributesObject),
+    .tp_dealloc = ThresholdAttributes_dealloc,
+    .tp_repr = ThresholdAttributes_str,
+    .tp_str = ThresholdAttributes_str,
+    .tp_getattro = PyThresholdAttributes_getattro,
+    .tp_setattro = PyThresholdAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = ThresholdAttributes_Purpose,
+    .tp_richcompare = ThresholdAttributes_richcompare,
+    .tp_methods = PyThresholdAttributes_methods};
 
 //
 // Helper function for comparing.

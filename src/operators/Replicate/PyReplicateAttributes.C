@@ -1035,14 +1035,6 @@ PyReplicateAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *ar
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ReplicateAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    ReplicateAttributesObject *obj = (ReplicateAttributesObject *)v;
-    fprintf(fp, "%s", PyReplicateAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 ReplicateAttributes_str(PyObject *v)
 {
@@ -1060,36 +1052,22 @@ static char *ReplicateAttributes_Purpose = "This class contains attributes for t
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(ReplicateAttributesType,         \
-                  "ReplicateAttributes",         \
-                  ReplicateAttributesObject,       \
-                  ReplicateAttributes_dealloc,     \
-                  ReplicateAttributes_print,       \
-                  PyReplicateAttributes_getattro,  \
-                  PyReplicateAttributes_setattro,  \
-                  ReplicateAttributes_str,         \
-                  ReplicateAttributes_Purpose,     \
-                  ReplicateAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyReplicateAttributes_methods);
+static PyTypeObject ReplicateAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "ReplicateAttributes",
+    .tp_basicsize = sizeof(ReplicateAttributesObject),
+    .tp_dealloc = ReplicateAttributes_dealloc,
+    .tp_repr = ReplicateAttributes_str,
+    .tp_str = ReplicateAttributes_str,
+    .tp_getattro = PyReplicateAttributes_getattro,
+    .tp_setattro = PyReplicateAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = ReplicateAttributes_Purpose,
+    .tp_richcompare = ReplicateAttributes_richcompare,
+    .tp_methods = PyReplicateAttributes_methods};
 
 //
 // Helper function for comparing.

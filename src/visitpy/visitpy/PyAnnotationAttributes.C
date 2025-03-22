@@ -1661,14 +1661,6 @@ PyAnnotationAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *a
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-AnnotationAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)v;
-    fprintf(fp, "%s", PyAnnotationAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 AnnotationAttributes_str(PyObject *v)
 {
@@ -1686,36 +1678,22 @@ static char *AnnotationAttributes_Purpose = "This class contains the attributes 
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(AnnotationAttributesType,         \
-                  "AnnotationAttributes",         \
-                  AnnotationAttributesObject,       \
-                  AnnotationAttributes_dealloc,     \
-                  AnnotationAttributes_print,       \
-                  PyAnnotationAttributes_getattro,  \
-                  PyAnnotationAttributes_setattro,  \
-                  AnnotationAttributes_str,         \
-                  AnnotationAttributes_Purpose,     \
-                  AnnotationAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyAnnotationAttributes_methods);
+static PyTypeObject AnnotationAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "AnnotationAttributes",
+    .tp_basicsize = sizeof(AnnotationAttributesObject),
+    .tp_dealloc = AnnotationAttributes_dealloc,
+    .tp_repr = AnnotationAttributes_str,
+    .tp_str = AnnotationAttributes_str,
+    .tp_getattro = PyAnnotationAttributes_getattro,
+    .tp_setattro = PyAnnotationAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = AnnotationAttributes_Purpose,
+    .tp_richcompare = AnnotationAttributes_richcompare,
+    .tp_methods = PyAnnotationAttributes_methods};
 
 //
 // Helper function for comparing.

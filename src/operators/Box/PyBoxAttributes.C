@@ -714,14 +714,6 @@ PyBoxAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-BoxAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    BoxAttributesObject *obj = (BoxAttributesObject *)v;
-    fprintf(fp, "%s", PyBoxAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 BoxAttributes_str(PyObject *v)
 {
@@ -739,36 +731,22 @@ static char *BoxAttributes_Purpose = "This class contains attributes for the box
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(BoxAttributesType,         \
-                  "BoxAttributes",         \
-                  BoxAttributesObject,       \
-                  BoxAttributes_dealloc,     \
-                  BoxAttributes_print,       \
-                  PyBoxAttributes_getattro,  \
-                  PyBoxAttributes_setattro,  \
-                  BoxAttributes_str,         \
-                  BoxAttributes_Purpose,     \
-                  BoxAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyBoxAttributes_methods);
+static PyTypeObject BoxAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "BoxAttributes",
+    .tp_basicsize = sizeof(BoxAttributesObject),
+    .tp_dealloc = BoxAttributes_dealloc,
+    .tp_repr = BoxAttributes_str,
+    .tp_str = BoxAttributes_str,
+    .tp_getattro = PyBoxAttributes_getattro,
+    .tp_setattro = PyBoxAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = BoxAttributes_Purpose,
+    .tp_richcompare = BoxAttributes_richcompare,
+    .tp_methods = PyBoxAttributes_methods};
 
 //
 // Helper function for comparing.

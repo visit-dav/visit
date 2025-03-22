@@ -1535,14 +1535,6 @@ PyAxes3D_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-Axes3D_print(PyObject *v, FILE *fp, int flags)
-{
-    Axes3DObject *obj = (Axes3DObject *)v;
-    fprintf(fp, "%s", PyAxes3D_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 Axes3D_str(PyObject *v)
 {
@@ -1560,36 +1552,22 @@ static char *Axes3D_Purpose = "Contains the properties for the 3D axes.";
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(Axes3DType,         \
-                  "Axes3D",         \
-                  Axes3DObject,       \
-                  Axes3D_dealloc,     \
-                  Axes3D_print,       \
-                  PyAxes3D_getattro,  \
-                  PyAxes3D_setattro,  \
-                  Axes3D_str,         \
-                  Axes3D_Purpose,     \
-                  Axes3D_richcompare, \
-                  0, /* as_number*/       \
-                  PyAxes3D_methods);
+static PyTypeObject Axes3DType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "Axes3D",
+    .tp_basicsize = sizeof(Axes3DObject),
+    .tp_dealloc = Axes3D_dealloc,
+    .tp_repr = Axes3D_str,
+    .tp_str = Axes3D_str,
+    .tp_getattro = PyAxes3D_getattro,
+    .tp_setattro = PyAxes3D_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = Axes3D_Purpose,
+    .tp_richcompare = Axes3D_richcompare,
+    .tp_methods = PyAxes3D_methods};
 
 //
 // Helper function for comparing.

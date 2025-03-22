@@ -1122,14 +1122,6 @@ PyBoundaryAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *arg
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-BoundaryAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    BoundaryAttributesObject *obj = (BoundaryAttributesObject *)v;
-    fprintf(fp, "%s", PyBoundaryAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 BoundaryAttributes_str(PyObject *v)
 {
@@ -1147,36 +1139,22 @@ static char *BoundaryAttributes_Purpose = "This class contains the plot attribut
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(BoundaryAttributesType,         \
-                  "BoundaryAttributes",         \
-                  BoundaryAttributesObject,       \
-                  BoundaryAttributes_dealloc,     \
-                  BoundaryAttributes_print,       \
-                  PyBoundaryAttributes_getattro,  \
-                  PyBoundaryAttributes_setattro,  \
-                  BoundaryAttributes_str,         \
-                  BoundaryAttributes_Purpose,     \
-                  BoundaryAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyBoundaryAttributes_methods);
+static PyTypeObject BoundaryAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "BoundaryAttributes",
+    .tp_basicsize = sizeof(BoundaryAttributesObject),
+    .tp_dealloc = BoundaryAttributes_dealloc,
+    .tp_repr = BoundaryAttributes_str,
+    .tp_str = BoundaryAttributes_str,
+    .tp_getattro = PyBoundaryAttributes_getattro,
+    .tp_setattro = PyBoundaryAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = BoundaryAttributes_Purpose,
+    .tp_richcompare = BoundaryAttributes_richcompare,
+    .tp_methods = PyBoundaryAttributes_methods};
 
 //
 // Helper function for comparing.

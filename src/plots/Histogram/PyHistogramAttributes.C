@@ -1624,14 +1624,6 @@ PyHistogramAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *ar
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-HistogramAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)v;
-    fprintf(fp, "%s", PyHistogramAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 HistogramAttributes_str(PyObject *v)
 {
@@ -1649,36 +1641,22 @@ static char *HistogramAttributes_Purpose = "Attributes for Histogram Plot";
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(HistogramAttributesType,         \
-                  "HistogramAttributes",         \
-                  HistogramAttributesObject,       \
-                  HistogramAttributes_dealloc,     \
-                  HistogramAttributes_print,       \
-                  PyHistogramAttributes_getattro,  \
-                  PyHistogramAttributes_setattro,  \
-                  HistogramAttributes_str,         \
-                  HistogramAttributes_Purpose,     \
-                  HistogramAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyHistogramAttributes_methods);
+static PyTypeObject HistogramAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "HistogramAttributes",
+    .tp_basicsize = sizeof(HistogramAttributesObject),
+    .tp_dealloc = HistogramAttributes_dealloc,
+    .tp_repr = HistogramAttributes_str,
+    .tp_str = HistogramAttributes_str,
+    .tp_getattro = PyHistogramAttributes_getattro,
+    .tp_setattro = PyHistogramAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = HistogramAttributes_Purpose,
+    .tp_richcompare = HistogramAttributes_richcompare,
+    .tp_methods = PyHistogramAttributes_methods};
 
 //
 // Helper function for comparing.

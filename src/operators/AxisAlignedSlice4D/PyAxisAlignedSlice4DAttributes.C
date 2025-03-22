@@ -535,14 +535,6 @@ PyAxisAlignedSlice4DAttributes_setattro(PyObject *self, PyObject *attr_name, PyO
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-AxisAlignedSlice4DAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    AxisAlignedSlice4DAttributesObject *obj = (AxisAlignedSlice4DAttributesObject *)v;
-    fprintf(fp, "%s", PyAxisAlignedSlice4DAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 AxisAlignedSlice4DAttributes_str(PyObject *v)
 {
@@ -560,36 +552,22 @@ static char *AxisAlignedSlice4DAttributes_Purpose = "Attributes for AxisAlignedS
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(AxisAlignedSlice4DAttributesType,         \
-                  "AxisAlignedSlice4DAttributes",         \
-                  AxisAlignedSlice4DAttributesObject,       \
-                  AxisAlignedSlice4DAttributes_dealloc,     \
-                  AxisAlignedSlice4DAttributes_print,       \
-                  PyAxisAlignedSlice4DAttributes_getattro,  \
-                  PyAxisAlignedSlice4DAttributes_setattro,  \
-                  AxisAlignedSlice4DAttributes_str,         \
-                  AxisAlignedSlice4DAttributes_Purpose,     \
-                  AxisAlignedSlice4DAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyAxisAlignedSlice4DAttributes_methods);
+static PyTypeObject AxisAlignedSlice4DAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "AxisAlignedSlice4DAttributes",
+    .tp_basicsize = sizeof(AxisAlignedSlice4DAttributesObject),
+    .tp_dealloc = AxisAlignedSlice4DAttributes_dealloc,
+    .tp_repr = AxisAlignedSlice4DAttributes_str,
+    .tp_str = AxisAlignedSlice4DAttributes_str,
+    .tp_getattro = PyAxisAlignedSlice4DAttributes_getattro,
+    .tp_setattro = PyAxisAlignedSlice4DAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = AxisAlignedSlice4DAttributes_Purpose,
+    .tp_richcompare = AxisAlignedSlice4DAttributes_richcompare,
+    .tp_methods = PyAxisAlignedSlice4DAttributes_methods};
 
 //
 // Helper function for comparing.

@@ -1421,14 +1421,6 @@ PyMultiCurveAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *a
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-MultiCurveAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)v;
-    fprintf(fp, "%s", PyMultiCurveAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 MultiCurveAttributes_str(PyObject *v)
 {
@@ -1446,36 +1438,22 @@ static char *MultiCurveAttributes_Purpose = "This class contains the plot attrib
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(MultiCurveAttributesType,         \
-                  "MultiCurveAttributes",         \
-                  MultiCurveAttributesObject,       \
-                  MultiCurveAttributes_dealloc,     \
-                  MultiCurveAttributes_print,       \
-                  PyMultiCurveAttributes_getattro,  \
-                  PyMultiCurveAttributes_setattro,  \
-                  MultiCurveAttributes_str,         \
-                  MultiCurveAttributes_Purpose,     \
-                  MultiCurveAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyMultiCurveAttributes_methods);
+static PyTypeObject MultiCurveAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "MultiCurveAttributes",
+    .tp_basicsize = sizeof(MultiCurveAttributesObject),
+    .tp_dealloc = MultiCurveAttributes_dealloc,
+    .tp_repr = MultiCurveAttributes_str,
+    .tp_str = MultiCurveAttributes_str,
+    .tp_getattro = PyMultiCurveAttributes_getattro,
+    .tp_setattro = PyMultiCurveAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = MultiCurveAttributes_Purpose,
+    .tp_richcompare = MultiCurveAttributes_richcompare,
+    .tp_methods = PyMultiCurveAttributes_methods};
 
 //
 // Helper function for comparing.

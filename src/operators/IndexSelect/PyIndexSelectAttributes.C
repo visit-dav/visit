@@ -1555,14 +1555,6 @@ PyIndexSelectAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-IndexSelectAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)v;
-    fprintf(fp, "%s", PyIndexSelectAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 IndexSelectAttributes_str(PyObject *v)
 {
@@ -1580,36 +1572,22 @@ static char *IndexSelectAttributes_Purpose = "This class contains attributes for
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(IndexSelectAttributesType,         \
-                  "IndexSelectAttributes",         \
-                  IndexSelectAttributesObject,       \
-                  IndexSelectAttributes_dealloc,     \
-                  IndexSelectAttributes_print,       \
-                  PyIndexSelectAttributes_getattro,  \
-                  PyIndexSelectAttributes_setattro,  \
-                  IndexSelectAttributes_str,         \
-                  IndexSelectAttributes_Purpose,     \
-                  IndexSelectAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyIndexSelectAttributes_methods);
+static PyTypeObject IndexSelectAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "IndexSelectAttributes",
+    .tp_basicsize = sizeof(IndexSelectAttributesObject),
+    .tp_dealloc = IndexSelectAttributes_dealloc,
+    .tp_repr = IndexSelectAttributes_str,
+    .tp_str = IndexSelectAttributes_str,
+    .tp_getattro = PyIndexSelectAttributes_getattro,
+    .tp_setattro = PyIndexSelectAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = IndexSelectAttributes_Purpose,
+    .tp_richcompare = IndexSelectAttributes_richcompare,
+    .tp_methods = PyIndexSelectAttributes_methods};
 
 //
 // Helper function for comparing.

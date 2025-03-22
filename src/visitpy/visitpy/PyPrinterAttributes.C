@@ -777,14 +777,6 @@ PyPrinterAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-PrinterAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    PrinterAttributesObject *obj = (PrinterAttributesObject *)v;
-    fprintf(fp, "%s", PyPrinterAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 PrinterAttributes_str(PyObject *v)
 {
@@ -802,36 +794,22 @@ static char *PrinterAttributes_Purpose = "This class contains the attributes use
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(PrinterAttributesType,         \
-                  "PrinterAttributes",         \
-                  PrinterAttributesObject,       \
-                  PrinterAttributes_dealloc,     \
-                  PrinterAttributes_print,       \
-                  PyPrinterAttributes_getattro,  \
-                  PyPrinterAttributes_setattro,  \
-                  PrinterAttributes_str,         \
-                  PrinterAttributes_Purpose,     \
-                  PrinterAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyPrinterAttributes_methods);
+static PyTypeObject PrinterAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "PrinterAttributes",
+    .tp_basicsize = sizeof(PrinterAttributesObject),
+    .tp_dealloc = PrinterAttributes_dealloc,
+    .tp_repr = PrinterAttributes_str,
+    .tp_str = PrinterAttributes_str,
+    .tp_getattro = PyPrinterAttributes_getattro,
+    .tp_setattro = PyPrinterAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = PrinterAttributes_Purpose,
+    .tp_richcompare = PrinterAttributes_richcompare,
+    .tp_methods = PyPrinterAttributes_methods};
 
 //
 // Helper function for comparing.

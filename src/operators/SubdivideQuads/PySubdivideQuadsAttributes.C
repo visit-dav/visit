@@ -478,14 +478,6 @@ PySubdivideQuadsAttributes_setattro(PyObject *self, PyObject *attr_name, PyObjec
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-SubdivideQuadsAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    SubdivideQuadsAttributesObject *obj = (SubdivideQuadsAttributesObject *)v;
-    fprintf(fp, "%s", PySubdivideQuadsAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 SubdivideQuadsAttributes_str(PyObject *v)
 {
@@ -503,36 +495,22 @@ static char *SubdivideQuadsAttributes_Purpose = "Attributes for SubdivideQuads o
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(SubdivideQuadsAttributesType,         \
-                  "SubdivideQuadsAttributes",         \
-                  SubdivideQuadsAttributesObject,       \
-                  SubdivideQuadsAttributes_dealloc,     \
-                  SubdivideQuadsAttributes_print,       \
-                  PySubdivideQuadsAttributes_getattro,  \
-                  PySubdivideQuadsAttributes_setattro,  \
-                  SubdivideQuadsAttributes_str,         \
-                  SubdivideQuadsAttributes_Purpose,     \
-                  SubdivideQuadsAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PySubdivideQuadsAttributes_methods);
+static PyTypeObject SubdivideQuadsAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "SubdivideQuadsAttributes",
+    .tp_basicsize = sizeof(SubdivideQuadsAttributesObject),
+    .tp_dealloc = SubdivideQuadsAttributes_dealloc,
+    .tp_repr = SubdivideQuadsAttributes_str,
+    .tp_str = SubdivideQuadsAttributes_str,
+    .tp_getattro = PySubdivideQuadsAttributes_getattro,
+    .tp_setattro = PySubdivideQuadsAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = SubdivideQuadsAttributes_Purpose,
+    .tp_richcompare = SubdivideQuadsAttributes_richcompare,
+    .tp_methods = PySubdivideQuadsAttributes_methods};
 
 //
 // Helper function for comparing.

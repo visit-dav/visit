@@ -328,14 +328,6 @@ PyFluxAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-FluxAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    FluxAttributesObject *obj = (FluxAttributesObject *)v;
-    fprintf(fp, "%s", PyFluxAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 FluxAttributes_str(PyObject *v)
 {
@@ -353,36 +345,22 @@ static char *FluxAttributes_Purpose = "Attributes for Flux operator";
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(FluxAttributesType,         \
-                  "FluxAttributes",         \
-                  FluxAttributesObject,       \
-                  FluxAttributes_dealloc,     \
-                  FluxAttributes_print,       \
-                  PyFluxAttributes_getattro,  \
-                  PyFluxAttributes_setattro,  \
-                  FluxAttributes_str,         \
-                  FluxAttributes_Purpose,     \
-                  FluxAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyFluxAttributes_methods);
+static PyTypeObject FluxAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "FluxAttributes",
+    .tp_basicsize = sizeof(FluxAttributesObject),
+    .tp_dealloc = FluxAttributes_dealloc,
+    .tp_repr = FluxAttributes_str,
+    .tp_str = FluxAttributes_str,
+    .tp_getattro = PyFluxAttributes_getattro,
+    .tp_setattro = PyFluxAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = FluxAttributes_Purpose,
+    .tp_richcompare = FluxAttributes_richcompare,
+    .tp_methods = PyFluxAttributes_methods};
 
 //
 // Helper function for comparing.

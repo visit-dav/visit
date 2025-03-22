@@ -335,14 +335,6 @@ PyMultiresControlAttributes_setattro(PyObject *self, PyObject *attr_name, PyObje
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-MultiresControlAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    MultiresControlAttributesObject *obj = (MultiresControlAttributesObject *)v;
-    fprintf(fp, "%s", PyMultiresControlAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 MultiresControlAttributes_str(PyObject *v)
 {
@@ -360,36 +352,22 @@ static char *MultiresControlAttributes_Purpose = "";
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(MultiresControlAttributesType,         \
-                  "MultiresControlAttributes",         \
-                  MultiresControlAttributesObject,       \
-                  MultiresControlAttributes_dealloc,     \
-                  MultiresControlAttributes_print,       \
-                  PyMultiresControlAttributes_getattro,  \
-                  PyMultiresControlAttributes_setattro,  \
-                  MultiresControlAttributes_str,         \
-                  MultiresControlAttributes_Purpose,     \
-                  MultiresControlAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyMultiresControlAttributes_methods);
+static PyTypeObject MultiresControlAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "MultiresControlAttributes",
+    .tp_basicsize = sizeof(MultiresControlAttributesObject),
+    .tp_dealloc = MultiresControlAttributes_dealloc,
+    .tp_repr = MultiresControlAttributes_str,
+    .tp_str = MultiresControlAttributes_str,
+    .tp_getattro = PyMultiresControlAttributes_getattro,
+    .tp_setattro = PyMultiresControlAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = MultiresControlAttributes_Purpose,
+    .tp_richcompare = MultiresControlAttributes_richcompare,
+    .tp_methods = PyMultiresControlAttributes_methods};
 
 //
 // Helper function for comparing.

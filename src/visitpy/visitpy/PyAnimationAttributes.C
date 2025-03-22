@@ -548,14 +548,6 @@ PyAnimationAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *ar
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-AnimationAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    AnimationAttributesObject *obj = (AnimationAttributesObject *)v;
-    fprintf(fp, "%s", PyAnimationAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 AnimationAttributes_str(PyObject *v)
 {
@@ -573,36 +565,22 @@ static char *AnimationAttributes_Purpose = "This class contains the animation at
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(AnimationAttributesType,         \
-                  "AnimationAttributes",         \
-                  AnimationAttributesObject,       \
-                  AnimationAttributes_dealloc,     \
-                  AnimationAttributes_print,       \
-                  PyAnimationAttributes_getattro,  \
-                  PyAnimationAttributes_setattro,  \
-                  AnimationAttributes_str,         \
-                  AnimationAttributes_Purpose,     \
-                  AnimationAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyAnimationAttributes_methods);
+static PyTypeObject AnimationAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "AnimationAttributes",
+    .tp_basicsize = sizeof(AnimationAttributesObject),
+    .tp_dealloc = AnimationAttributes_dealloc,
+    .tp_repr = AnimationAttributes_str,
+    .tp_str = AnimationAttributes_str,
+    .tp_getattro = PyAnimationAttributes_getattro,
+    .tp_setattro = PyAnimationAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = AnimationAttributes_Purpose,
+    .tp_richcompare = AnimationAttributes_richcompare,
+    .tp_methods = PyAnimationAttributes_methods};
 
 //
 // Helper function for comparing.

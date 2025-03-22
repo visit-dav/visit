@@ -349,14 +349,6 @@ PyAxisAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-AxisAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    AxisAttributesObject *obj = (AxisAttributesObject *)v;
-    fprintf(fp, "%s", PyAxisAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 AxisAttributes_str(PyObject *v)
 {
@@ -374,36 +366,22 @@ static char *AxisAttributes_Purpose = "Contains the properties for one axis.";
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(AxisAttributesType,         \
-                  "AxisAttributes",         \
-                  AxisAttributesObject,       \
-                  AxisAttributes_dealloc,     \
-                  AxisAttributes_print,       \
-                  PyAxisAttributes_getattro,  \
-                  PyAxisAttributes_setattro,  \
-                  AxisAttributes_str,         \
-                  AxisAttributes_Purpose,     \
-                  AxisAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyAxisAttributes_methods);
+static PyTypeObject AxisAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "AxisAttributes",
+    .tp_basicsize = sizeof(AxisAttributesObject),
+    .tp_dealloc = AxisAttributes_dealloc,
+    .tp_repr = AxisAttributes_str,
+    .tp_str = AxisAttributes_str,
+    .tp_getattro = PyAxisAttributes_getattro,
+    .tp_setattro = PyAxisAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = AxisAttributes_Purpose,
+    .tp_richcompare = AxisAttributes_richcompare,
+    .tp_methods = PyAxisAttributes_methods};
 
 //
 // Helper function for comparing.

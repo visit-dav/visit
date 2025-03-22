@@ -818,14 +818,6 @@ PyGlobalLineoutAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-GlobalLineoutAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    GlobalLineoutAttributesObject *obj = (GlobalLineoutAttributesObject *)v;
-    fprintf(fp, "%s", PyGlobalLineoutAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 GlobalLineoutAttributes_str(PyObject *v)
 {
@@ -843,36 +835,22 @@ static char *GlobalLineoutAttributes_Purpose = "This file contains global attrib
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(GlobalLineoutAttributesType,         \
-                  "GlobalLineoutAttributes",         \
-                  GlobalLineoutAttributesObject,       \
-                  GlobalLineoutAttributes_dealloc,     \
-                  GlobalLineoutAttributes_print,       \
-                  PyGlobalLineoutAttributes_getattro,  \
-                  PyGlobalLineoutAttributes_setattro,  \
-                  GlobalLineoutAttributes_str,         \
-                  GlobalLineoutAttributes_Purpose,     \
-                  GlobalLineoutAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyGlobalLineoutAttributes_methods);
+static PyTypeObject GlobalLineoutAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "GlobalLineoutAttributes",
+    .tp_basicsize = sizeof(GlobalLineoutAttributesObject),
+    .tp_dealloc = GlobalLineoutAttributes_dealloc,
+    .tp_repr = GlobalLineoutAttributes_str,
+    .tp_str = GlobalLineoutAttributes_str,
+    .tp_getattro = PyGlobalLineoutAttributes_getattro,
+    .tp_setattro = PyGlobalLineoutAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = GlobalLineoutAttributes_Purpose,
+    .tp_richcompare = GlobalLineoutAttributes_richcompare,
+    .tp_methods = PyGlobalLineoutAttributes_methods};
 
 //
 // Helper function for comparing.

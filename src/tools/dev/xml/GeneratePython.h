@@ -3288,30 +3288,6 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << Endl;
     }
 
-    void WritePrintFunction(QTextStream &c)
-    {
-        QString mName(name + "_print");
-        if(HasFunction(mName))
-        {
-            PrintFunction(c, mName);
-            c << Endl;
-            return;
-        }
-
-        c << "static int" << Endl;
-        c << mName << "(PyObject *v, FILE *fp, int flags)" << Endl;
-        c << "{" << Endl;
-        c << "    "<<name<<"Object *obj = ("<<name<<"Object *)v;" << Endl;
-        if(HasCode(mName, 0))
-            PrintCode(c, mName, 0);
-        c << "    fprintf(fp, \"%s\", Py" << name << "_ToString(obj->data, \"\",false).c_str());" << Endl;
-        if(HasCode(mName, 1))
-            PrintCode(c, mName, 1);
-        c << "    return 0;" << Endl;
-        c << "}" << Endl;
-        c << Endl;
-    }
-
     void WriteToStringFunction(QTextStream &c)
     {
         QString mName(QString("Py") + name + "_ToString");
@@ -3394,9 +3370,6 @@ class PythonGeneratorAttribute : public GeneratorBase
         // Write the setattr function
         WriteSetAttrFunction(c);
 
-        // Write the print function
-        WritePrintFunction(c);
-
         // Write the str function.
         WriteStringRepresentationFunction(c);
 
@@ -3411,40 +3384,22 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "#endif" << Endl;
         c << Endl;
 
-        // add helpful comments about where VISIT_PY_TYPE_OBJ is defd and
-        // how to use it
-        c << "//" << Endl
-          << "// Python Type Struct Def Macro from Py2and3Support.h" << Endl
-          << "//" << Endl
-          << "//         VISIT_PY_TYPE_OBJ( VPY_TYPE,"      << Endl
-          << "//                            VPY_NAME,"      << Endl
-          << "//                            VPY_OBJECT,"    << Endl
-          << "//                            VPY_DEALLOC,"   << Endl
-          << "//                            VPY_PRINT,"     << Endl
-          << "//                            VPY_GETATTRO,"   << Endl
-          << "//                            VPY_SETATTRO,"   << Endl
-          << "//                            VPY_STR,"       << Endl
-          << "//                            VPY_PURPOSE,"   << Endl
-          << "//                            VPY_RICHCOMP,"  << Endl
-          << "//                            VPY_AS_NUMBER)" << Endl
-          << Endl;
-
         c << "//" << Endl;
         c << "// The type description structure" << Endl;
         c << "//" << Endl << Endl;
-
-        c << "VISIT_PY_TYPE_OBJ("<<name<<"Type,         \\" << Endl;
-        c << "                  \""<<name<<"\",         \\" << Endl;
-        c << "                  "<<name<<"Object,       \\" << Endl;
-        c << "                  "<<name<<"_dealloc,     \\" << Endl;
-        c << "                  "<<name<<"_print,       \\" << Endl;
-        c << "                  Py"<<name<<"_getattro,  \\" << Endl;
-        c << "                  Py"<<name<<"_setattro,  \\" << Endl;
-        c << "                  "<<name<<"_str,         \\" << Endl;
-        c << "                  "<<name<<"_Purpose,     \\" << Endl;
-        c << "                  "<<name<<"_richcompare, \\" << Endl;
-        c << "                  0, /* as_number*/       \\" << Endl;
-        c << "                  Py"<<name<<"_methods);" << Endl;
+        c << "static PyTypeObject "<<name<<"Type = {" << Endl;
+        c << "    PyVarObject_HEAD_INIT(NULL, 0)" << Endl;
+        c << "    .tp_name = \""<<name<<"\"," << Endl;
+        c << "    .tp_basicsize = sizeof("<<name<<"Object)," << Endl;
+        c << "    .tp_dealloc = "<<name<<"_dealloc," << Endl;
+        c << "    .tp_repr = "<<name<<"_str," << Endl;
+        c << "    .tp_str = "<<name<<"_str," << Endl;
+        c << "    .tp_getattro = Py"<<name<<"_getattro," << Endl;
+        c << "    .tp_setattro = Py"<<name<<"_setattro," << Endl;
+        c << "    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE," << Endl;
+        c << "    .tp_doc = "<<name<<"_Purpose," << Endl;
+        c << "    .tp_richcompare = "<<name<<"_richcompare," << Endl;
+        c << "    .tp_methods = Py"<<name<<"_methods};" << Endl;
         c << Endl;
 
         c << "//" << Endl;

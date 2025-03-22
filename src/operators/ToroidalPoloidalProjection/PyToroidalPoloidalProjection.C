@@ -543,14 +543,6 @@ PyToroidalPoloidalProjection_setattro(PyObject *self, PyObject *attr_name, PyObj
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ToroidalPoloidalProjection_print(PyObject *v, FILE *fp, int flags)
-{
-    ToroidalPoloidalProjectionObject *obj = (ToroidalPoloidalProjectionObject *)v;
-    fprintf(fp, "%s", PyToroidalPoloidalProjection_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 ToroidalPoloidalProjection_str(PyObject *v)
 {
@@ -568,36 +560,22 @@ static char *ToroidalPoloidalProjection_Purpose = "Projects Exterior of Torus fr
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(ToroidalPoloidalProjectionType,         \
-                  "ToroidalPoloidalProjection",         \
-                  ToroidalPoloidalProjectionObject,       \
-                  ToroidalPoloidalProjection_dealloc,     \
-                  ToroidalPoloidalProjection_print,       \
-                  PyToroidalPoloidalProjection_getattro,  \
-                  PyToroidalPoloidalProjection_setattro,  \
-                  ToroidalPoloidalProjection_str,         \
-                  ToroidalPoloidalProjection_Purpose,     \
-                  ToroidalPoloidalProjection_richcompare, \
-                  0, /* as_number*/       \
-                  PyToroidalPoloidalProjection_methods);
+static PyTypeObject ToroidalPoloidalProjectionType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "ToroidalPoloidalProjection",
+    .tp_basicsize = sizeof(ToroidalPoloidalProjectionObject),
+    .tp_dealloc = ToroidalPoloidalProjection_dealloc,
+    .tp_repr = ToroidalPoloidalProjection_str,
+    .tp_str = ToroidalPoloidalProjection_str,
+    .tp_getattro = PyToroidalPoloidalProjection_getattro,
+    .tp_setattro = PyToroidalPoloidalProjection_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = ToroidalPoloidalProjection_Purpose,
+    .tp_richcompare = ToroidalPoloidalProjection_richcompare,
+    .tp_methods = PyToroidalPoloidalProjection_methods};
 
 //
 // Helper function for comparing.

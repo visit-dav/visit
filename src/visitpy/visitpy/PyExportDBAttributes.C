@@ -793,14 +793,6 @@ PyExportDBAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *arg
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ExportDBAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    ExportDBAttributesObject *obj = (ExportDBAttributesObject *)v;
-    fprintf(fp, "%s", PyExportDBAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 ExportDBAttributes_str(PyObject *v)
 {
@@ -818,36 +810,22 @@ static char *ExportDBAttributes_Purpose = "The attributes for export a database"
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(ExportDBAttributesType,         \
-                  "ExportDBAttributes",         \
-                  ExportDBAttributesObject,       \
-                  ExportDBAttributes_dealloc,     \
-                  ExportDBAttributes_print,       \
-                  PyExportDBAttributes_getattro,  \
-                  PyExportDBAttributes_setattro,  \
-                  ExportDBAttributes_str,         \
-                  ExportDBAttributes_Purpose,     \
-                  ExportDBAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyExportDBAttributes_methods);
+static PyTypeObject ExportDBAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "ExportDBAttributes",
+    .tp_basicsize = sizeof(ExportDBAttributesObject),
+    .tp_dealloc = ExportDBAttributes_dealloc,
+    .tp_repr = ExportDBAttributes_str,
+    .tp_str = ExportDBAttributes_str,
+    .tp_getattro = PyExportDBAttributes_getattro,
+    .tp_setattro = PyExportDBAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = ExportDBAttributes_Purpose,
+    .tp_richcompare = ExportDBAttributes_richcompare,
+    .tp_methods = PyExportDBAttributes_methods};
 
 //
 // Helper function for comparing.

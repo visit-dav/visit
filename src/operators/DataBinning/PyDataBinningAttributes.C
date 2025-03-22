@@ -2078,14 +2078,6 @@ PyDataBinningAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-DataBinningAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)v;
-    fprintf(fp, "%s", PyDataBinningAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 DataBinningAttributes_str(PyObject *v)
 {
@@ -2103,36 +2095,22 @@ static char *DataBinningAttributes_Purpose = "The attributes for the DataBinning
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(DataBinningAttributesType,         \
-                  "DataBinningAttributes",         \
-                  DataBinningAttributesObject,       \
-                  DataBinningAttributes_dealloc,     \
-                  DataBinningAttributes_print,       \
-                  PyDataBinningAttributes_getattro,  \
-                  PyDataBinningAttributes_setattro,  \
-                  DataBinningAttributes_str,         \
-                  DataBinningAttributes_Purpose,     \
-                  DataBinningAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyDataBinningAttributes_methods);
+static PyTypeObject DataBinningAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "DataBinningAttributes",
+    .tp_basicsize = sizeof(DataBinningAttributesObject),
+    .tp_dealloc = DataBinningAttributes_dealloc,
+    .tp_repr = DataBinningAttributes_str,
+    .tp_str = DataBinningAttributes_str,
+    .tp_getattro = PyDataBinningAttributes_getattro,
+    .tp_setattro = PyDataBinningAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = DataBinningAttributes_Purpose,
+    .tp_richcompare = DataBinningAttributes_richcompare,
+    .tp_methods = PyDataBinningAttributes_methods};
 
 //
 // Helper function for comparing.

@@ -625,14 +625,6 @@ PyInteractorAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *a
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-InteractorAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    InteractorAttributesObject *obj = (InteractorAttributesObject *)v;
-    fprintf(fp, "%s", PyInteractorAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 InteractorAttributes_str(PyObject *v)
 {
@@ -650,36 +642,22 @@ static char *InteractorAttributes_Purpose = "This class contains attributes asso
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(InteractorAttributesType,         \
-                  "InteractorAttributes",         \
-                  InteractorAttributesObject,       \
-                  InteractorAttributes_dealloc,     \
-                  InteractorAttributes_print,       \
-                  PyInteractorAttributes_getattro,  \
-                  PyInteractorAttributes_setattro,  \
-                  InteractorAttributes_str,         \
-                  InteractorAttributes_Purpose,     \
-                  InteractorAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyInteractorAttributes_methods);
+static PyTypeObject InteractorAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "InteractorAttributes",
+    .tp_basicsize = sizeof(InteractorAttributesObject),
+    .tp_dealloc = InteractorAttributes_dealloc,
+    .tp_repr = InteractorAttributes_str,
+    .tp_str = InteractorAttributes_str,
+    .tp_getattro = PyInteractorAttributes_getattro,
+    .tp_setattro = PyInteractorAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = InteractorAttributes_Purpose,
+    .tp_richcompare = InteractorAttributes_richcompare,
+    .tp_methods = PyInteractorAttributes_methods};
 
 //
 // Helper function for comparing.

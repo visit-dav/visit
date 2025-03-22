@@ -1636,14 +1636,6 @@ PyClipAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ClipAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    ClipAttributesObject *obj = (ClipAttributesObject *)v;
-    fprintf(fp, "%s", PyClipAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 ClipAttributes_str(PyObject *v)
 {
@@ -1661,36 +1653,22 @@ static char *ClipAttributes_Purpose = "This class contains attributes for the cl
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(ClipAttributesType,         \
-                  "ClipAttributes",         \
-                  ClipAttributesObject,       \
-                  ClipAttributes_dealloc,     \
-                  ClipAttributes_print,       \
-                  PyClipAttributes_getattro,  \
-                  PyClipAttributes_setattro,  \
-                  ClipAttributes_str,         \
-                  ClipAttributes_Purpose,     \
-                  ClipAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyClipAttributes_methods);
+static PyTypeObject ClipAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "ClipAttributes",
+    .tp_basicsize = sizeof(ClipAttributesObject),
+    .tp_dealloc = ClipAttributes_dealloc,
+    .tp_repr = ClipAttributes_str,
+    .tp_str = ClipAttributes_str,
+    .tp_getattro = PyClipAttributes_getattro,
+    .tp_setattro = PyClipAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = ClipAttributes_Purpose,
+    .tp_richcompare = ClipAttributes_richcompare,
+    .tp_methods = PyClipAttributes_methods};
 
 //
 // Helper function for comparing.

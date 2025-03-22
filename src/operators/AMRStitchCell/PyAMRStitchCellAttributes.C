@@ -242,14 +242,6 @@ PyAMRStitchCellAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-AMRStitchCellAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    AMRStitchCellAttributesObject *obj = (AMRStitchCellAttributesObject *)v;
-    fprintf(fp, "%s", PyAMRStitchCellAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 AMRStitchCellAttributes_str(PyObject *v)
 {
@@ -267,36 +259,22 @@ static char *AMRStitchCellAttributes_Purpose = "Attributes for Stitch Cell Opera
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(AMRStitchCellAttributesType,         \
-                  "AMRStitchCellAttributes",         \
-                  AMRStitchCellAttributesObject,       \
-                  AMRStitchCellAttributes_dealloc,     \
-                  AMRStitchCellAttributes_print,       \
-                  PyAMRStitchCellAttributes_getattro,  \
-                  PyAMRStitchCellAttributes_setattro,  \
-                  AMRStitchCellAttributes_str,         \
-                  AMRStitchCellAttributes_Purpose,     \
-                  AMRStitchCellAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyAMRStitchCellAttributes_methods);
+static PyTypeObject AMRStitchCellAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "AMRStitchCellAttributes",
+    .tp_basicsize = sizeof(AMRStitchCellAttributesObject),
+    .tp_dealloc = AMRStitchCellAttributes_dealloc,
+    .tp_repr = AMRStitchCellAttributes_str,
+    .tp_str = AMRStitchCellAttributes_str,
+    .tp_getattro = PyAMRStitchCellAttributes_getattro,
+    .tp_setattro = PyAMRStitchCellAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = AMRStitchCellAttributes_Purpose,
+    .tp_richcompare = AMRStitchCellAttributes_richcompare,
+    .tp_methods = PyAMRStitchCellAttributes_methods};
 
 //
 // Helper function for comparing.

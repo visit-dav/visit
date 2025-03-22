@@ -486,14 +486,6 @@ PyAxisTickMarks_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-AxisTickMarks_print(PyObject *v, FILE *fp, int flags)
-{
-    AxisTickMarksObject *obj = (AxisTickMarksObject *)v;
-    fprintf(fp, "%s", PyAxisTickMarks_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 AxisTickMarks_str(PyObject *v)
 {
@@ -511,36 +503,22 @@ static char *AxisTickMarks_Purpose = "Contains the tick mark properties for one 
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(AxisTickMarksType,         \
-                  "AxisTickMarks",         \
-                  AxisTickMarksObject,       \
-                  AxisTickMarks_dealloc,     \
-                  AxisTickMarks_print,       \
-                  PyAxisTickMarks_getattro,  \
-                  PyAxisTickMarks_setattro,  \
-                  AxisTickMarks_str,         \
-                  AxisTickMarks_Purpose,     \
-                  AxisTickMarks_richcompare, \
-                  0, /* as_number*/       \
-                  PyAxisTickMarks_methods);
+static PyTypeObject AxisTickMarksType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "AxisTickMarks",
+    .tp_basicsize = sizeof(AxisTickMarksObject),
+    .tp_dealloc = AxisTickMarks_dealloc,
+    .tp_repr = AxisTickMarks_str,
+    .tp_str = AxisTickMarks_str,
+    .tp_getattro = PyAxisTickMarks_getattro,
+    .tp_setattro = PyAxisTickMarks_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = AxisTickMarks_Purpose,
+    .tp_richcompare = AxisTickMarks_richcompare,
+    .tp_methods = PyAxisTickMarks_methods};
 
 //
 // Helper function for comparing.

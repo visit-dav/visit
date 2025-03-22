@@ -484,14 +484,6 @@ PyCylinderAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *arg
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-CylinderAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    CylinderAttributesObject *obj = (CylinderAttributesObject *)v;
-    fprintf(fp, "%s", PyCylinderAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 CylinderAttributes_str(PyObject *v)
 {
@@ -509,36 +501,22 @@ static char *CylinderAttributes_Purpose = "Contain the attributes for a cylinder
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(CylinderAttributesType,         \
-                  "CylinderAttributes",         \
-                  CylinderAttributesObject,       \
-                  CylinderAttributes_dealloc,     \
-                  CylinderAttributes_print,       \
-                  PyCylinderAttributes_getattro,  \
-                  PyCylinderAttributes_setattro,  \
-                  CylinderAttributes_str,         \
-                  CylinderAttributes_Purpose,     \
-                  CylinderAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyCylinderAttributes_methods);
+static PyTypeObject CylinderAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "CylinderAttributes",
+    .tp_basicsize = sizeof(CylinderAttributesObject),
+    .tp_dealloc = CylinderAttributes_dealloc,
+    .tp_repr = CylinderAttributes_str,
+    .tp_str = CylinderAttributes_str,
+    .tp_getattro = PyCylinderAttributes_getattro,
+    .tp_setattro = PyCylinderAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = CylinderAttributes_Purpose,
+    .tp_richcompare = CylinderAttributes_richcompare,
+    .tp_methods = PyCylinderAttributes_methods};
 
 //
 // Helper function for comparing.

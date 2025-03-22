@@ -625,14 +625,6 @@ PySmoothOperatorAttributes_setattro(PyObject *self, PyObject *attr_name, PyObjec
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-SmoothOperatorAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    SmoothOperatorAttributesObject *obj = (SmoothOperatorAttributesObject *)v;
-    fprintf(fp, "%s", PySmoothOperatorAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 SmoothOperatorAttributes_str(PyObject *v)
 {
@@ -650,36 +642,22 @@ static char *SmoothOperatorAttributes_Purpose = "Attributes for the Smooth Opera
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(SmoothOperatorAttributesType,         \
-                  "SmoothOperatorAttributes",         \
-                  SmoothOperatorAttributesObject,       \
-                  SmoothOperatorAttributes_dealloc,     \
-                  SmoothOperatorAttributes_print,       \
-                  PySmoothOperatorAttributes_getattro,  \
-                  PySmoothOperatorAttributes_setattro,  \
-                  SmoothOperatorAttributes_str,         \
-                  SmoothOperatorAttributes_Purpose,     \
-                  SmoothOperatorAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PySmoothOperatorAttributes_methods);
+static PyTypeObject SmoothOperatorAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "SmoothOperatorAttributes",
+    .tp_basicsize = sizeof(SmoothOperatorAttributesObject),
+    .tp_dealloc = SmoothOperatorAttributes_dealloc,
+    .tp_repr = SmoothOperatorAttributes_str,
+    .tp_str = SmoothOperatorAttributes_str,
+    .tp_getattro = PySmoothOperatorAttributes_getattro,
+    .tp_setattro = PySmoothOperatorAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = SmoothOperatorAttributes_Purpose,
+    .tp_richcompare = SmoothOperatorAttributes_richcompare,
+    .tp_methods = PySmoothOperatorAttributes_methods};
 
 //
 // Helper function for comparing.

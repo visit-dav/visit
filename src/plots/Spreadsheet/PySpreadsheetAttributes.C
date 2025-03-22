@@ -1128,14 +1128,6 @@ PySpreadsheetAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-SpreadsheetAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)v;
-    fprintf(fp, "%s", PySpreadsheetAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 SpreadsheetAttributes_str(PyObject *v)
 {
@@ -1153,36 +1145,22 @@ static char *SpreadsheetAttributes_Purpose = "Contains the attributes for the vi
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(SpreadsheetAttributesType,         \
-                  "SpreadsheetAttributes",         \
-                  SpreadsheetAttributesObject,       \
-                  SpreadsheetAttributes_dealloc,     \
-                  SpreadsheetAttributes_print,       \
-                  PySpreadsheetAttributes_getattro,  \
-                  PySpreadsheetAttributes_setattro,  \
-                  SpreadsheetAttributes_str,         \
-                  SpreadsheetAttributes_Purpose,     \
-                  SpreadsheetAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PySpreadsheetAttributes_methods);
+static PyTypeObject SpreadsheetAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "SpreadsheetAttributes",
+    .tp_basicsize = sizeof(SpreadsheetAttributesObject),
+    .tp_dealloc = SpreadsheetAttributes_dealloc,
+    .tp_repr = SpreadsheetAttributes_str,
+    .tp_str = SpreadsheetAttributes_str,
+    .tp_getattro = PySpreadsheetAttributes_getattro,
+    .tp_setattro = PySpreadsheetAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = SpreadsheetAttributes_Purpose,
+    .tp_richcompare = SpreadsheetAttributes_richcompare,
+    .tp_methods = PySpreadsheetAttributes_methods};
 
 //
 // Helper function for comparing.

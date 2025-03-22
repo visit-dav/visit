@@ -336,14 +336,6 @@ PyIsovolumeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *ar
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-IsovolumeAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    IsovolumeAttributesObject *obj = (IsovolumeAttributesObject *)v;
-    fprintf(fp, "%s", PyIsovolumeAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 IsovolumeAttributes_str(PyObject *v)
 {
@@ -361,36 +353,22 @@ static char *IsovolumeAttributes_Purpose = "This class contains attributes for t
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(IsovolumeAttributesType,         \
-                  "IsovolumeAttributes",         \
-                  IsovolumeAttributesObject,       \
-                  IsovolumeAttributes_dealloc,     \
-                  IsovolumeAttributes_print,       \
-                  PyIsovolumeAttributes_getattro,  \
-                  PyIsovolumeAttributes_setattro,  \
-                  IsovolumeAttributes_str,         \
-                  IsovolumeAttributes_Purpose,     \
-                  IsovolumeAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyIsovolumeAttributes_methods);
+static PyTypeObject IsovolumeAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "IsovolumeAttributes",
+    .tp_basicsize = sizeof(IsovolumeAttributesObject),
+    .tp_dealloc = IsovolumeAttributes_dealloc,
+    .tp_repr = IsovolumeAttributes_str,
+    .tp_str = IsovolumeAttributes_str,
+    .tp_getattro = PyIsovolumeAttributes_getattro,
+    .tp_setattro = PyIsovolumeAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = IsovolumeAttributes_Purpose,
+    .tp_richcompare = IsovolumeAttributes_richcompare,
+    .tp_methods = PyIsovolumeAttributes_methods};
 
 //
 // Helper function for comparing.

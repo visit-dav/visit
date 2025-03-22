@@ -939,14 +939,6 @@ PySPHResampleAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-SPHResampleAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)v;
-    fprintf(fp, "%s", PySPHResampleAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 SPHResampleAttributes_str(PyObject *v)
 {
@@ -964,36 +956,22 @@ static char *SPHResampleAttributes_Purpose = "";
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(SPHResampleAttributesType,         \
-                  "SPHResampleAttributes",         \
-                  SPHResampleAttributesObject,       \
-                  SPHResampleAttributes_dealloc,     \
-                  SPHResampleAttributes_print,       \
-                  PySPHResampleAttributes_getattro,  \
-                  PySPHResampleAttributes_setattro,  \
-                  SPHResampleAttributes_str,         \
-                  SPHResampleAttributes_Purpose,     \
-                  SPHResampleAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PySPHResampleAttributes_methods);
+static PyTypeObject SPHResampleAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "SPHResampleAttributes",
+    .tp_basicsize = sizeof(SPHResampleAttributesObject),
+    .tp_dealloc = SPHResampleAttributes_dealloc,
+    .tp_repr = SPHResampleAttributes_str,
+    .tp_str = SPHResampleAttributes_str,
+    .tp_getattro = PySPHResampleAttributes_getattro,
+    .tp_setattro = PySPHResampleAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = SPHResampleAttributes_Purpose,
+    .tp_richcompare = SPHResampleAttributes_richcompare,
+    .tp_methods = PySPHResampleAttributes_methods};
 
 //
 // Helper function for comparing.

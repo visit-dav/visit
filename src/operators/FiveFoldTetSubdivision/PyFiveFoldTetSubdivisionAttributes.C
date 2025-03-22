@@ -720,14 +720,6 @@ PyFiveFoldTetSubdivisionAttributes_setattro(PyObject *self, PyObject *attr_name,
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-FiveFoldTetSubdivisionAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    FiveFoldTetSubdivisionAttributesObject *obj = (FiveFoldTetSubdivisionAttributesObject *)v;
-    fprintf(fp, "%s", PyFiveFoldTetSubdivisionAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 FiveFoldTetSubdivisionAttributes_str(PyObject *v)
 {
@@ -745,36 +737,22 @@ static char *FiveFoldTetSubdivisionAttributes_Purpose = "Attributes for five fol
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(FiveFoldTetSubdivisionAttributesType,         \
-                  "FiveFoldTetSubdivisionAttributes",         \
-                  FiveFoldTetSubdivisionAttributesObject,       \
-                  FiveFoldTetSubdivisionAttributes_dealloc,     \
-                  FiveFoldTetSubdivisionAttributes_print,       \
-                  PyFiveFoldTetSubdivisionAttributes_getattro,  \
-                  PyFiveFoldTetSubdivisionAttributes_setattro,  \
-                  FiveFoldTetSubdivisionAttributes_str,         \
-                  FiveFoldTetSubdivisionAttributes_Purpose,     \
-                  FiveFoldTetSubdivisionAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyFiveFoldTetSubdivisionAttributes_methods);
+static PyTypeObject FiveFoldTetSubdivisionAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "FiveFoldTetSubdivisionAttributes",
+    .tp_basicsize = sizeof(FiveFoldTetSubdivisionAttributesObject),
+    .tp_dealloc = FiveFoldTetSubdivisionAttributes_dealloc,
+    .tp_repr = FiveFoldTetSubdivisionAttributes_str,
+    .tp_str = FiveFoldTetSubdivisionAttributes_str,
+    .tp_getattro = PyFiveFoldTetSubdivisionAttributes_getattro,
+    .tp_setattro = PyFiveFoldTetSubdivisionAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = FiveFoldTetSubdivisionAttributes_Purpose,
+    .tp_richcompare = FiveFoldTetSubdivisionAttributes_richcompare,
+    .tp_methods = PyFiveFoldTetSubdivisionAttributes_methods};
 
 //
 // Helper function for comparing.

@@ -640,14 +640,6 @@ PyInverseGhostZoneAttributes_setattro(PyObject *self, PyObject *attr_name, PyObj
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-InverseGhostZoneAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    InverseGhostZoneAttributesObject *obj = (InverseGhostZoneAttributesObject *)v;
-    fprintf(fp, "%s", PyInverseGhostZoneAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 InverseGhostZoneAttributes_str(PyObject *v)
 {
@@ -665,36 +657,22 @@ static char *InverseGhostZoneAttributes_Purpose = "This class contains attribute
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(InverseGhostZoneAttributesType,         \
-                  "InverseGhostZoneAttributes",         \
-                  InverseGhostZoneAttributesObject,       \
-                  InverseGhostZoneAttributes_dealloc,     \
-                  InverseGhostZoneAttributes_print,       \
-                  PyInverseGhostZoneAttributes_getattro,  \
-                  PyInverseGhostZoneAttributes_setattro,  \
-                  InverseGhostZoneAttributes_str,         \
-                  InverseGhostZoneAttributes_Purpose,     \
-                  InverseGhostZoneAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyInverseGhostZoneAttributes_methods);
+static PyTypeObject InverseGhostZoneAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "InverseGhostZoneAttributes",
+    .tp_basicsize = sizeof(InverseGhostZoneAttributesObject),
+    .tp_dealloc = InverseGhostZoneAttributes_dealloc,
+    .tp_repr = InverseGhostZoneAttributes_str,
+    .tp_str = InverseGhostZoneAttributes_str,
+    .tp_getattro = PyInverseGhostZoneAttributes_getattro,
+    .tp_setattro = PyInverseGhostZoneAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = InverseGhostZoneAttributes_Purpose,
+    .tp_richcompare = InverseGhostZoneAttributes_richcompare,
+    .tp_methods = PyInverseGhostZoneAttributes_methods};
 
 //
 // Helper function for comparing.

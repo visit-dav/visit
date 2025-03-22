@@ -2169,14 +2169,6 @@ PyVectorAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-VectorAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    VectorAttributesObject *obj = (VectorAttributesObject *)v;
-    fprintf(fp, "%s", PyVectorAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 VectorAttributes_str(PyObject *v)
 {
@@ -2194,36 +2186,22 @@ static char *VectorAttributes_Purpose = "Attributes for the vector plot";
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(VectorAttributesType,         \
-                  "VectorAttributes",         \
-                  VectorAttributesObject,       \
-                  VectorAttributes_dealloc,     \
-                  VectorAttributes_print,       \
-                  PyVectorAttributes_getattro,  \
-                  PyVectorAttributes_setattro,  \
-                  VectorAttributes_str,         \
-                  VectorAttributes_Purpose,     \
-                  VectorAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyVectorAttributes_methods);
+static PyTypeObject VectorAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "VectorAttributes",
+    .tp_basicsize = sizeof(VectorAttributesObject),
+    .tp_dealloc = VectorAttributes_dealloc,
+    .tp_repr = VectorAttributes_str,
+    .tp_str = VectorAttributes_str,
+    .tp_getattro = PyVectorAttributes_getattro,
+    .tp_setattro = PyVectorAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = VectorAttributes_Purpose,
+    .tp_richcompare = VectorAttributes_richcompare,
+    .tp_methods = PyVectorAttributes_methods};
 
 //
 // Helper function for comparing.

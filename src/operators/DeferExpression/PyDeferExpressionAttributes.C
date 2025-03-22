@@ -234,14 +234,6 @@ PyDeferExpressionAttributes_setattro(PyObject *self, PyObject *attr_name, PyObje
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-DeferExpressionAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    DeferExpressionAttributesObject *obj = (DeferExpressionAttributesObject *)v;
-    fprintf(fp, "%s", PyDeferExpressionAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 DeferExpressionAttributes_str(PyObject *v)
 {
@@ -259,36 +251,22 @@ static char *DeferExpressionAttributes_Purpose = "Attributes for the DeferExpres
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(DeferExpressionAttributesType,         \
-                  "DeferExpressionAttributes",         \
-                  DeferExpressionAttributesObject,       \
-                  DeferExpressionAttributes_dealloc,     \
-                  DeferExpressionAttributes_print,       \
-                  PyDeferExpressionAttributes_getattro,  \
-                  PyDeferExpressionAttributes_setattro,  \
-                  DeferExpressionAttributes_str,         \
-                  DeferExpressionAttributes_Purpose,     \
-                  DeferExpressionAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyDeferExpressionAttributes_methods);
+static PyTypeObject DeferExpressionAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "DeferExpressionAttributes",
+    .tp_basicsize = sizeof(DeferExpressionAttributesObject),
+    .tp_dealloc = DeferExpressionAttributes_dealloc,
+    .tp_repr = DeferExpressionAttributes_str,
+    .tp_str = DeferExpressionAttributes_str,
+    .tp_getattro = PyDeferExpressionAttributes_getattro,
+    .tp_setattro = PyDeferExpressionAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = DeferExpressionAttributes_Purpose,
+    .tp_richcompare = DeferExpressionAttributes_richcompare,
+    .tp_methods = PyDeferExpressionAttributes_methods};
 
 //
 // Helper function for comparing.

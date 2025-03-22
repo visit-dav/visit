@@ -907,14 +907,6 @@ PyavtSimulationInformation_setattro(PyObject *self, PyObject *attr_name, PyObjec
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-avtSimulationInformation_print(PyObject *v, FILE *fp, int flags)
-{
-    avtSimulationInformationObject *obj = (avtSimulationInformationObject *)v;
-    fprintf(fp, "%s", PyavtSimulationInformation_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 avtSimulationInformation_str(PyObject *v)
 {
@@ -932,36 +924,22 @@ static char *avtSimulationInformation_Purpose = "Contains information about simu
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(avtSimulationInformationType,         \
-                  "avtSimulationInformation",         \
-                  avtSimulationInformationObject,       \
-                  avtSimulationInformation_dealloc,     \
-                  avtSimulationInformation_print,       \
-                  PyavtSimulationInformation_getattro,  \
-                  PyavtSimulationInformation_setattro,  \
-                  avtSimulationInformation_str,         \
-                  avtSimulationInformation_Purpose,     \
-                  avtSimulationInformation_richcompare, \
-                  0, /* as_number*/       \
-                  PyavtSimulationInformation_methods);
+static PyTypeObject avtSimulationInformationType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "avtSimulationInformation",
+    .tp_basicsize = sizeof(avtSimulationInformationObject),
+    .tp_dealloc = avtSimulationInformation_dealloc,
+    .tp_repr = avtSimulationInformation_str,
+    .tp_str = avtSimulationInformation_str,
+    .tp_getattro = PyavtSimulationInformation_getattro,
+    .tp_setattro = PyavtSimulationInformation_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = avtSimulationInformation_Purpose,
+    .tp_richcompare = avtSimulationInformation_richcompare,
+    .tp_methods = PyavtSimulationInformation_methods};
 
 //
 // Helper function for comparing.

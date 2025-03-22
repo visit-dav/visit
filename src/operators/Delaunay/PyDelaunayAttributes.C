@@ -242,14 +242,6 @@ PyDelaunayAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *arg
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-DelaunayAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    DelaunayAttributesObject *obj = (DelaunayAttributesObject *)v;
-    fprintf(fp, "%s", PyDelaunayAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 DelaunayAttributes_str(PyObject *v)
 {
@@ -267,36 +259,22 @@ static char *DelaunayAttributes_Purpose = "Attributes for the Delaunay Operator"
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(DelaunayAttributesType,         \
-                  "DelaunayAttributes",         \
-                  DelaunayAttributesObject,       \
-                  DelaunayAttributes_dealloc,     \
-                  DelaunayAttributes_print,       \
-                  PyDelaunayAttributes_getattro,  \
-                  PyDelaunayAttributes_setattro,  \
-                  DelaunayAttributes_str,         \
-                  DelaunayAttributes_Purpose,     \
-                  DelaunayAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyDelaunayAttributes_methods);
+static PyTypeObject DelaunayAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "DelaunayAttributes",
+    .tp_basicsize = sizeof(DelaunayAttributesObject),
+    .tp_dealloc = DelaunayAttributes_dealloc,
+    .tp_repr = DelaunayAttributes_str,
+    .tp_str = DelaunayAttributes_str,
+    .tp_getattro = PyDelaunayAttributes_getattro,
+    .tp_setattro = PyDelaunayAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = DelaunayAttributes_Purpose,
+    .tp_richcompare = DelaunayAttributes_richcompare,
+    .tp_methods = PyDelaunayAttributes_methods};
 
 //
 // Helper function for comparing.

@@ -515,14 +515,6 @@ PyAxisTitles_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-AxisTitles_print(PyObject *v, FILE *fp, int flags)
-{
-    AxisTitlesObject *obj = (AxisTitlesObject *)v;
-    fprintf(fp, "%s", PyAxisTitles_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 AxisTitles_str(PyObject *v)
 {
@@ -540,36 +532,22 @@ static char *AxisTitles_Purpose = "Contains the title properties for one axis.";
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(AxisTitlesType,         \
-                  "AxisTitles",         \
-                  AxisTitlesObject,       \
-                  AxisTitles_dealloc,     \
-                  AxisTitles_print,       \
-                  PyAxisTitles_getattro,  \
-                  PyAxisTitles_setattro,  \
-                  AxisTitles_str,         \
-                  AxisTitles_Purpose,     \
-                  AxisTitles_richcompare, \
-                  0, /* as_number*/       \
-                  PyAxisTitles_methods);
+static PyTypeObject AxisTitlesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "AxisTitles",
+    .tp_basicsize = sizeof(AxisTitlesObject),
+    .tp_dealloc = AxisTitles_dealloc,
+    .tp_repr = AxisTitles_str,
+    .tp_str = AxisTitles_str,
+    .tp_getattro = PyAxisTitles_getattro,
+    .tp_setattro = PyAxisTitles_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = AxisTitles_Purpose,
+    .tp_richcompare = AxisTitles_richcompare,
+    .tp_methods = PyAxisTitles_methods};
 
 //
 // Helper function for comparing.

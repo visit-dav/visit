@@ -427,14 +427,6 @@ PyavtMaterialMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *ar
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-avtMaterialMetaData_print(PyObject *v, FILE *fp, int flags)
-{
-    avtMaterialMetaDataObject *obj = (avtMaterialMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtMaterialMetaData_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 avtMaterialMetaData_str(PyObject *v)
 {
@@ -452,36 +444,22 @@ static char *avtMaterialMetaData_Purpose = "Contains material metadata attribute
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(avtMaterialMetaDataType,         \
-                  "avtMaterialMetaData",         \
-                  avtMaterialMetaDataObject,       \
-                  avtMaterialMetaData_dealloc,     \
-                  avtMaterialMetaData_print,       \
-                  PyavtMaterialMetaData_getattro,  \
-                  PyavtMaterialMetaData_setattro,  \
-                  avtMaterialMetaData_str,         \
-                  avtMaterialMetaData_Purpose,     \
-                  avtMaterialMetaData_richcompare, \
-                  0, /* as_number*/       \
-                  PyavtMaterialMetaData_methods);
+static PyTypeObject avtMaterialMetaDataType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "avtMaterialMetaData",
+    .tp_basicsize = sizeof(avtMaterialMetaDataObject),
+    .tp_dealloc = avtMaterialMetaData_dealloc,
+    .tp_repr = avtMaterialMetaData_str,
+    .tp_str = avtMaterialMetaData_str,
+    .tp_getattro = PyavtMaterialMetaData_getattro,
+    .tp_setattro = PyavtMaterialMetaData_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = avtMaterialMetaData_Purpose,
+    .tp_richcompare = avtMaterialMetaData_richcompare,
+    .tp_methods = PyavtMaterialMetaData_methods};
 
 //
 // Helper function for comparing.

@@ -1590,14 +1590,6 @@ PySelectionProperties_setattro(PyObject *self, PyObject *attr_name, PyObject *ar
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-SelectionProperties_print(PyObject *v, FILE *fp, int flags)
-{
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)v;
-    fprintf(fp, "%s", PySelectionProperties_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 SelectionProperties_str(PyObject *v)
 {
@@ -1615,36 +1607,22 @@ static char *SelectionProperties_Purpose = "Contains attributes for a selection"
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(SelectionPropertiesType,         \
-                  "SelectionProperties",         \
-                  SelectionPropertiesObject,       \
-                  SelectionProperties_dealloc,     \
-                  SelectionProperties_print,       \
-                  PySelectionProperties_getattro,  \
-                  PySelectionProperties_setattro,  \
-                  SelectionProperties_str,         \
-                  SelectionProperties_Purpose,     \
-                  SelectionProperties_richcompare, \
-                  0, /* as_number*/       \
-                  PySelectionProperties_methods);
+static PyTypeObject SelectionPropertiesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "SelectionProperties",
+    .tp_basicsize = sizeof(SelectionPropertiesObject),
+    .tp_dealloc = SelectionProperties_dealloc,
+    .tp_repr = SelectionProperties_str,
+    .tp_str = SelectionProperties_str,
+    .tp_getattro = PySelectionProperties_getattro,
+    .tp_setattro = PySelectionProperties_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = SelectionProperties_Purpose,
+    .tp_richcompare = SelectionProperties_richcompare,
+    .tp_methods = PySelectionProperties_methods};
 
 //
 // Helper function for comparing.

@@ -373,14 +373,6 @@ PyavtMatSpeciesMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-avtMatSpeciesMetaData_print(PyObject *v, FILE *fp, int flags)
-{
-    avtMatSpeciesMetaDataObject *obj = (avtMatSpeciesMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtMatSpeciesMetaData_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 avtMatSpeciesMetaData_str(PyObject *v)
 {
@@ -398,36 +390,22 @@ static char *avtMatSpeciesMetaData_Purpose = "Contains material species metadata
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(avtMatSpeciesMetaDataType,         \
-                  "avtMatSpeciesMetaData",         \
-                  avtMatSpeciesMetaDataObject,       \
-                  avtMatSpeciesMetaData_dealloc,     \
-                  avtMatSpeciesMetaData_print,       \
-                  PyavtMatSpeciesMetaData_getattro,  \
-                  PyavtMatSpeciesMetaData_setattro,  \
-                  avtMatSpeciesMetaData_str,         \
-                  avtMatSpeciesMetaData_Purpose,     \
-                  avtMatSpeciesMetaData_richcompare, \
-                  0, /* as_number*/       \
-                  PyavtMatSpeciesMetaData_methods);
+static PyTypeObject avtMatSpeciesMetaDataType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "avtMatSpeciesMetaData",
+    .tp_basicsize = sizeof(avtMatSpeciesMetaDataObject),
+    .tp_dealloc = avtMatSpeciesMetaData_dealloc,
+    .tp_repr = avtMatSpeciesMetaData_str,
+    .tp_str = avtMatSpeciesMetaData_str,
+    .tp_getattro = PyavtMatSpeciesMetaData_getattro,
+    .tp_setattro = PyavtMatSpeciesMetaData_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = avtMatSpeciesMetaData_Purpose,
+    .tp_richcompare = avtMatSpeciesMetaData_richcompare,
+    .tp_methods = PyavtMatSpeciesMetaData_methods};
 
 //
 // Helper function for comparing.

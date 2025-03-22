@@ -3971,14 +3971,6 @@ PyavtMeshMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-avtMeshMetaData_print(PyObject *v, FILE *fp, int flags)
-{
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtMeshMetaData_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 avtMeshMetaData_str(PyObject *v)
 {
@@ -3996,36 +3988,22 @@ static char *avtMeshMetaData_Purpose = "Contains mesh metadata attributes";
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(avtMeshMetaDataType,         \
-                  "avtMeshMetaData",         \
-                  avtMeshMetaDataObject,       \
-                  avtMeshMetaData_dealloc,     \
-                  avtMeshMetaData_print,       \
-                  PyavtMeshMetaData_getattro,  \
-                  PyavtMeshMetaData_setattro,  \
-                  avtMeshMetaData_str,         \
-                  avtMeshMetaData_Purpose,     \
-                  avtMeshMetaData_richcompare, \
-                  0, /* as_number*/       \
-                  PyavtMeshMetaData_methods);
+static PyTypeObject avtMeshMetaDataType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "avtMeshMetaData",
+    .tp_basicsize = sizeof(avtMeshMetaDataObject),
+    .tp_dealloc = avtMeshMetaData_dealloc,
+    .tp_repr = avtMeshMetaData_str,
+    .tp_str = avtMeshMetaData_str,
+    .tp_getattro = PyavtMeshMetaData_getattro,
+    .tp_setattro = PyavtMeshMetaData_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = avtMeshMetaData_Purpose,
+    .tp_richcompare = avtMeshMetaData_richcompare,
+    .tp_methods = PyavtMeshMetaData_methods};
 
 //
 // Helper function for comparing.

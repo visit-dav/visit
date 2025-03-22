@@ -4506,14 +4506,6 @@ PyLCSAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-LCSAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    LCSAttributesObject *obj = (LCSAttributesObject *)v;
-    fprintf(fp, "%s", PyLCSAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 LCSAttributes_str(PyObject *v)
 {
@@ -4531,36 +4523,22 @@ static char *LCSAttributes_Purpose = "Attributes for LCS";
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(LCSAttributesType,         \
-                  "LCSAttributes",         \
-                  LCSAttributesObject,       \
-                  LCSAttributes_dealloc,     \
-                  LCSAttributes_print,       \
-                  PyLCSAttributes_getattro,  \
-                  PyLCSAttributes_setattro,  \
-                  LCSAttributes_str,         \
-                  LCSAttributes_Purpose,     \
-                  LCSAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyLCSAttributes_methods);
+static PyTypeObject LCSAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "LCSAttributes",
+    .tp_basicsize = sizeof(LCSAttributesObject),
+    .tp_dealloc = LCSAttributes_dealloc,
+    .tp_repr = LCSAttributes_str,
+    .tp_str = LCSAttributes_str,
+    .tp_getattro = PyLCSAttributes_getattro,
+    .tp_setattro = PyLCSAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = LCSAttributes_Purpose,
+    .tp_richcompare = LCSAttributes_richcompare,
+    .tp_methods = PyLCSAttributes_methods};
 
 //
 // Helper function for comparing.

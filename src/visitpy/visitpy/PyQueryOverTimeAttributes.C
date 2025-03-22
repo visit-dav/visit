@@ -972,14 +972,6 @@ PyQueryOverTimeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-QueryOverTimeAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)v;
-    fprintf(fp, "%s", PyQueryOverTimeAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 QueryOverTimeAttributes_str(PyObject *v)
 {
@@ -997,36 +989,22 @@ static char *QueryOverTimeAttributes_Purpose = "Attributes for queries over time
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(QueryOverTimeAttributesType,         \
-                  "QueryOverTimeAttributes",         \
-                  QueryOverTimeAttributesObject,       \
-                  QueryOverTimeAttributes_dealloc,     \
-                  QueryOverTimeAttributes_print,       \
-                  PyQueryOverTimeAttributes_getattro,  \
-                  PyQueryOverTimeAttributes_setattro,  \
-                  QueryOverTimeAttributes_str,         \
-                  QueryOverTimeAttributes_Purpose,     \
-                  QueryOverTimeAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyQueryOverTimeAttributes_methods);
+static PyTypeObject QueryOverTimeAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "QueryOverTimeAttributes",
+    .tp_basicsize = sizeof(QueryOverTimeAttributesObject),
+    .tp_dealloc = QueryOverTimeAttributes_dealloc,
+    .tp_repr = QueryOverTimeAttributes_str,
+    .tp_str = QueryOverTimeAttributes_str,
+    .tp_getattro = PyQueryOverTimeAttributes_getattro,
+    .tp_setattro = PyQueryOverTimeAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = QueryOverTimeAttributes_Purpose,
+    .tp_richcompare = QueryOverTimeAttributes_richcompare,
+    .tp_methods = PyQueryOverTimeAttributes_methods};
 
 //
 // Helper function for comparing.

@@ -540,14 +540,6 @@ PyAxesArray_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-AxesArray_print(PyObject *v, FILE *fp, int flags)
-{
-    AxesArrayObject *obj = (AxesArrayObject *)v;
-    fprintf(fp, "%s", PyAxesArray_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 AxesArray_str(PyObject *v)
 {
@@ -565,36 +557,22 @@ static char *AxesArray_Purpose = "Contains the properties for the array axes.";
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(AxesArrayType,         \
-                  "AxesArray",         \
-                  AxesArrayObject,       \
-                  AxesArray_dealloc,     \
-                  AxesArray_print,       \
-                  PyAxesArray_getattro,  \
-                  PyAxesArray_setattro,  \
-                  AxesArray_str,         \
-                  AxesArray_Purpose,     \
-                  AxesArray_richcompare, \
-                  0, /* as_number*/       \
-                  PyAxesArray_methods);
+static PyTypeObject AxesArrayType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "AxesArray",
+    .tp_basicsize = sizeof(AxesArrayObject),
+    .tp_dealloc = AxesArray_dealloc,
+    .tp_repr = AxesArray_str,
+    .tp_str = AxesArray_str,
+    .tp_getattro = PyAxesArray_getattro,
+    .tp_setattro = PyAxesArray_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = AxesArray_Purpose,
+    .tp_richcompare = AxesArray_richcompare,
+    .tp_methods = PyAxesArray_methods};
 
 //
 // Helper function for comparing.

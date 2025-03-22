@@ -4772,14 +4772,6 @@ PyLimitCycleAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *a
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-LimitCycleAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)v;
-    fprintf(fp, "%s", PyLimitCycleAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 LimitCycleAttributes_str(PyObject *v)
 {
@@ -4797,36 +4789,22 @@ static char *LimitCycleAttributes_Purpose = "Attributes for the LimitCycle";
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(LimitCycleAttributesType,         \
-                  "LimitCycleAttributes",         \
-                  LimitCycleAttributesObject,       \
-                  LimitCycleAttributes_dealloc,     \
-                  LimitCycleAttributes_print,       \
-                  PyLimitCycleAttributes_getattro,  \
-                  PyLimitCycleAttributes_setattro,  \
-                  LimitCycleAttributes_str,         \
-                  LimitCycleAttributes_Purpose,     \
-                  LimitCycleAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyLimitCycleAttributes_methods);
+static PyTypeObject LimitCycleAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "LimitCycleAttributes",
+    .tp_basicsize = sizeof(LimitCycleAttributesObject),
+    .tp_dealloc = LimitCycleAttributes_dealloc,
+    .tp_repr = LimitCycleAttributes_str,
+    .tp_str = LimitCycleAttributes_str,
+    .tp_getattro = PyLimitCycleAttributes_getattro,
+    .tp_setattro = PyLimitCycleAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = LimitCycleAttributes_Purpose,
+    .tp_richcompare = LimitCycleAttributes_richcompare,
+    .tp_methods = PyLimitCycleAttributes_methods};
 
 //
 // Helper function for comparing.

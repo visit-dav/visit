@@ -1560,14 +1560,6 @@ PySubsetAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-SubsetAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)v;
-    fprintf(fp, "%s", PySubsetAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 SubsetAttributes_str(PyObject *v)
 {
@@ -1585,36 +1577,22 @@ static char *SubsetAttributes_Purpose = "This class contains the plot attributes
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(SubsetAttributesType,         \
-                  "SubsetAttributes",         \
-                  SubsetAttributesObject,       \
-                  SubsetAttributes_dealloc,     \
-                  SubsetAttributes_print,       \
-                  PySubsetAttributes_getattro,  \
-                  PySubsetAttributes_setattro,  \
-                  SubsetAttributes_str,         \
-                  SubsetAttributes_Purpose,     \
-                  SubsetAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PySubsetAttributes_methods);
+static PyTypeObject SubsetAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "SubsetAttributes",
+    .tp_basicsize = sizeof(SubsetAttributesObject),
+    .tp_dealloc = SubsetAttributes_dealloc,
+    .tp_repr = SubsetAttributes_str,
+    .tp_str = SubsetAttributes_str,
+    .tp_getattro = PySubsetAttributes_getattro,
+    .tp_setattro = PySubsetAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = SubsetAttributes_Purpose,
+    .tp_richcompare = SubsetAttributes_richcompare,
+    .tp_methods = PySubsetAttributes_methods};
 
 //
 // Helper function for comparing.

@@ -339,14 +339,6 @@ PyExtractPointFunction2DAttributes_setattro(PyObject *self, PyObject *attr_name,
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ExtractPointFunction2DAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    ExtractPointFunction2DAttributesObject *obj = (ExtractPointFunction2DAttributesObject *)v;
-    fprintf(fp, "%s", PyExtractPointFunction2DAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 ExtractPointFunction2DAttributes_str(PyObject *v)
 {
@@ -364,36 +356,22 @@ static char *ExtractPointFunction2DAttributes_Purpose = "Attributes for ExtractP
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(ExtractPointFunction2DAttributesType,         \
-                  "ExtractPointFunction2DAttributes",         \
-                  ExtractPointFunction2DAttributesObject,       \
-                  ExtractPointFunction2DAttributes_dealloc,     \
-                  ExtractPointFunction2DAttributes_print,       \
-                  PyExtractPointFunction2DAttributes_getattro,  \
-                  PyExtractPointFunction2DAttributes_setattro,  \
-                  ExtractPointFunction2DAttributes_str,         \
-                  ExtractPointFunction2DAttributes_Purpose,     \
-                  ExtractPointFunction2DAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyExtractPointFunction2DAttributes_methods);
+static PyTypeObject ExtractPointFunction2DAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "ExtractPointFunction2DAttributes",
+    .tp_basicsize = sizeof(ExtractPointFunction2DAttributesObject),
+    .tp_dealloc = ExtractPointFunction2DAttributes_dealloc,
+    .tp_repr = ExtractPointFunction2DAttributes_str,
+    .tp_str = ExtractPointFunction2DAttributes_str,
+    .tp_getattro = PyExtractPointFunction2DAttributes_getattro,
+    .tp_setattro = PyExtractPointFunction2DAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = ExtractPointFunction2DAttributes_Purpose,
+    .tp_richcompare = ExtractPointFunction2DAttributes_richcompare,
+    .tp_methods = PyExtractPointFunction2DAttributes_methods};
 
 //
 // Helper function for comparing.

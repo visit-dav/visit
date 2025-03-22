@@ -840,14 +840,6 @@ PyViewerClientAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject 
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ViewerClientAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    ViewerClientAttributesObject *obj = (ViewerClientAttributesObject *)v;
-    fprintf(fp, "%s", PyViewerClientAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 ViewerClientAttributes_str(PyObject *v)
 {
@@ -865,36 +857,22 @@ static char *ViewerClientAttributes_Purpose = "This class contains attributes us
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(ViewerClientAttributesType,         \
-                  "ViewerClientAttributes",         \
-                  ViewerClientAttributesObject,       \
-                  ViewerClientAttributes_dealloc,     \
-                  ViewerClientAttributes_print,       \
-                  PyViewerClientAttributes_getattro,  \
-                  PyViewerClientAttributes_setattro,  \
-                  ViewerClientAttributes_str,         \
-                  ViewerClientAttributes_Purpose,     \
-                  ViewerClientAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyViewerClientAttributes_methods);
+static PyTypeObject ViewerClientAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "ViewerClientAttributes",
+    .tp_basicsize = sizeof(ViewerClientAttributesObject),
+    .tp_dealloc = ViewerClientAttributes_dealloc,
+    .tp_repr = ViewerClientAttributes_str,
+    .tp_str = ViewerClientAttributes_str,
+    .tp_getattro = PyViewerClientAttributes_getattro,
+    .tp_setattro = PyViewerClientAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = ViewerClientAttributes_Purpose,
+    .tp_richcompare = ViewerClientAttributes_richcompare,
+    .tp_methods = PyViewerClientAttributes_methods};
 
 //
 // Helper function for comparing.

@@ -245,14 +245,6 @@ PyavtVectorMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-avtVectorMetaData_print(PyObject *v, FILE *fp, int flags)
-{
-    avtVectorMetaDataObject *obj = (avtVectorMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtVectorMetaData_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 avtVectorMetaData_str(PyObject *v)
 {
@@ -270,36 +262,22 @@ static char *avtVectorMetaData_Purpose = "Contains vector metadata attributes";
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(avtVectorMetaDataType,         \
-                  "avtVectorMetaData",         \
-                  avtVectorMetaDataObject,       \
-                  avtVectorMetaData_dealloc,     \
-                  avtVectorMetaData_print,       \
-                  PyavtVectorMetaData_getattro,  \
-                  PyavtVectorMetaData_setattro,  \
-                  avtVectorMetaData_str,         \
-                  avtVectorMetaData_Purpose,     \
-                  avtVectorMetaData_richcompare, \
-                  0, /* as_number*/       \
-                  PyavtVectorMetaData_methods);
+static PyTypeObject avtVectorMetaDataType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "avtVectorMetaData",
+    .tp_basicsize = sizeof(avtVectorMetaDataObject),
+    .tp_dealloc = avtVectorMetaData_dealloc,
+    .tp_repr = avtVectorMetaData_str,
+    .tp_str = avtVectorMetaData_str,
+    .tp_getattro = PyavtVectorMetaData_getattro,
+    .tp_setattro = PyavtVectorMetaData_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = avtVectorMetaData_Purpose,
+    .tp_richcompare = avtVectorMetaData_richcompare,
+    .tp_methods = PyavtVectorMetaData_methods};
 
 //
 // Helper function for comparing.

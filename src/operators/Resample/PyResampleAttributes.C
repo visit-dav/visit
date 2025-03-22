@@ -1263,14 +1263,6 @@ PyResampleAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *arg
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ResampleAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    ResampleAttributesObject *obj = (ResampleAttributesObject *)v;
-    fprintf(fp, "%s", PyResampleAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 ResampleAttributes_str(PyObject *v)
 {
@@ -1288,36 +1280,22 @@ static char *ResampleAttributes_Purpose = "Atts for Resample operator";
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(ResampleAttributesType,         \
-                  "ResampleAttributes",         \
-                  ResampleAttributesObject,       \
-                  ResampleAttributes_dealloc,     \
-                  ResampleAttributes_print,       \
-                  PyResampleAttributes_getattro,  \
-                  PyResampleAttributes_setattro,  \
-                  ResampleAttributes_str,         \
-                  ResampleAttributes_Purpose,     \
-                  ResampleAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyResampleAttributes_methods);
+static PyTypeObject ResampleAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "ResampleAttributes",
+    .tp_basicsize = sizeof(ResampleAttributesObject),
+    .tp_dealloc = ResampleAttributes_dealloc,
+    .tp_repr = ResampleAttributes_str,
+    .tp_str = ResampleAttributes_str,
+    .tp_getattro = PyResampleAttributes_getattro,
+    .tp_setattro = PyResampleAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = ResampleAttributes_Purpose,
+    .tp_richcompare = ResampleAttributes_richcompare,
+    .tp_methods = PyResampleAttributes_methods};
 
 //
 // Helper function for comparing.

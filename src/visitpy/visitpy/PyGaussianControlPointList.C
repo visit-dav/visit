@@ -286,14 +286,6 @@ PyGaussianControlPointList_setattro(PyObject *self, PyObject *attr_name, PyObjec
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-GaussianControlPointList_print(PyObject *v, FILE *fp, int flags)
-{
-    GaussianControlPointListObject *obj = (GaussianControlPointListObject *)v;
-    fprintf(fp, "%s", PyGaussianControlPointList_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 GaussianControlPointList_str(PyObject *v)
 {
@@ -311,36 +303,22 @@ static char *GaussianControlPointList_Purpose = "This class contains a list of G
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(GaussianControlPointListType,         \
-                  "GaussianControlPointList",         \
-                  GaussianControlPointListObject,       \
-                  GaussianControlPointList_dealloc,     \
-                  GaussianControlPointList_print,       \
-                  PyGaussianControlPointList_getattro,  \
-                  PyGaussianControlPointList_setattro,  \
-                  GaussianControlPointList_str,         \
-                  GaussianControlPointList_Purpose,     \
-                  GaussianControlPointList_richcompare, \
-                  0, /* as_number*/       \
-                  PyGaussianControlPointList_methods);
+static PyTypeObject GaussianControlPointListType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "GaussianControlPointList",
+    .tp_basicsize = sizeof(GaussianControlPointListObject),
+    .tp_dealloc = GaussianControlPointList_dealloc,
+    .tp_repr = GaussianControlPointList_str,
+    .tp_str = GaussianControlPointList_str,
+    .tp_getattro = PyGaussianControlPointList_getattro,
+    .tp_setattro = PyGaussianControlPointList_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = GaussianControlPointList_Purpose,
+    .tp_richcompare = GaussianControlPointList_richcompare,
+    .tp_methods = PyGaussianControlPointList_methods};
 
 //
 // Helper function for comparing.

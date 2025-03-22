@@ -464,14 +464,6 @@ PyZoneDumpAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *arg
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ZoneDumpAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    ZoneDumpAttributesObject *obj = (ZoneDumpAttributesObject *)v;
-    fprintf(fp, "%s", PyZoneDumpAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 ZoneDumpAttributes_str(PyObject *v)
 {
@@ -489,36 +481,22 @@ static char *ZoneDumpAttributes_Purpose = "Zone Dump Control";
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(ZoneDumpAttributesType,         \
-                  "ZoneDumpAttributes",         \
-                  ZoneDumpAttributesObject,       \
-                  ZoneDumpAttributes_dealloc,     \
-                  ZoneDumpAttributes_print,       \
-                  PyZoneDumpAttributes_getattro,  \
-                  PyZoneDumpAttributes_setattro,  \
-                  ZoneDumpAttributes_str,         \
-                  ZoneDumpAttributes_Purpose,     \
-                  ZoneDumpAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyZoneDumpAttributes_methods);
+static PyTypeObject ZoneDumpAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "ZoneDumpAttributes",
+    .tp_basicsize = sizeof(ZoneDumpAttributesObject),
+    .tp_dealloc = ZoneDumpAttributes_dealloc,
+    .tp_repr = ZoneDumpAttributes_str,
+    .tp_str = ZoneDumpAttributes_str,
+    .tp_getattro = PyZoneDumpAttributes_getattro,
+    .tp_setattro = PyZoneDumpAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = ZoneDumpAttributes_Purpose,
+    .tp_richcompare = ZoneDumpAttributes_richcompare,
+    .tp_methods = PyZoneDumpAttributes_methods};
 
 //
 // Helper function for comparing.

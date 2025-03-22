@@ -418,14 +418,6 @@ PyThreeSliceAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *a
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ThreeSliceAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    ThreeSliceAttributesObject *obj = (ThreeSliceAttributesObject *)v;
-    fprintf(fp, "%s", PyThreeSliceAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 ThreeSliceAttributes_str(PyObject *v)
 {
@@ -443,36 +435,22 @@ static char *ThreeSliceAttributes_Purpose = "This class contains attributes for 
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(ThreeSliceAttributesType,         \
-                  "ThreeSliceAttributes",         \
-                  ThreeSliceAttributesObject,       \
-                  ThreeSliceAttributes_dealloc,     \
-                  ThreeSliceAttributes_print,       \
-                  PyThreeSliceAttributes_getattro,  \
-                  PyThreeSliceAttributes_setattro,  \
-                  ThreeSliceAttributes_str,         \
-                  ThreeSliceAttributes_Purpose,     \
-                  ThreeSliceAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyThreeSliceAttributes_methods);
+static PyTypeObject ThreeSliceAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "ThreeSliceAttributes",
+    .tp_basicsize = sizeof(ThreeSliceAttributesObject),
+    .tp_dealloc = ThreeSliceAttributes_dealloc,
+    .tp_repr = ThreeSliceAttributes_str,
+    .tp_str = ThreeSliceAttributes_str,
+    .tp_getattro = PyThreeSliceAttributes_getattro,
+    .tp_setattro = PyThreeSliceAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = ThreeSliceAttributes_Purpose,
+    .tp_richcompare = ThreeSliceAttributes_richcompare,
+    .tp_methods = PyThreeSliceAttributes_methods};
 
 //
 // Helper function for comparing.

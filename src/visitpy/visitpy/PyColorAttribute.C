@@ -245,14 +245,6 @@ PyColorAttribute_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ColorAttribute_print(PyObject *v, FILE *fp, int flags)
-{
-    ColorAttributeObject *obj = (ColorAttributeObject *)v;
-    fprintf(fp, "%s", PyColorAttribute_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 ColorAttribute_str(PyObject *v)
 {
@@ -270,36 +262,22 @@ static char *ColorAttribute_Purpose = "This class contains RGBA color informatio
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(ColorAttributeType,         \
-                  "ColorAttribute",         \
-                  ColorAttributeObject,       \
-                  ColorAttribute_dealloc,     \
-                  ColorAttribute_print,       \
-                  PyColorAttribute_getattro,  \
-                  PyColorAttribute_setattro,  \
-                  ColorAttribute_str,         \
-                  ColorAttribute_Purpose,     \
-                  ColorAttribute_richcompare, \
-                  0, /* as_number*/       \
-                  PyColorAttribute_methods);
+static PyTypeObject ColorAttributeType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "ColorAttribute",
+    .tp_basicsize = sizeof(ColorAttributeObject),
+    .tp_dealloc = ColorAttribute_dealloc,
+    .tp_repr = ColorAttribute_str,
+    .tp_str = ColorAttribute_str,
+    .tp_getattro = PyColorAttribute_getattro,
+    .tp_setattro = PyColorAttribute_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = ColorAttribute_Purpose,
+    .tp_richcompare = ColorAttribute_richcompare,
+    .tp_methods = PyColorAttribute_methods};
 
 //
 // Helper function for comparing.

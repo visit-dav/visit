@@ -929,14 +929,6 @@ PyRadialResampleAttributes_setattro(PyObject *self, PyObject *attr_name, PyObjec
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-RadialResampleAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)v;
-    fprintf(fp, "%s", PyRadialResampleAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 RadialResampleAttributes_str(PyObject *v)
 {
@@ -954,36 +946,22 @@ static char *RadialResampleAttributes_Purpose = "";
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(RadialResampleAttributesType,         \
-                  "RadialResampleAttributes",         \
-                  RadialResampleAttributesObject,       \
-                  RadialResampleAttributes_dealloc,     \
-                  RadialResampleAttributes_print,       \
-                  PyRadialResampleAttributes_getattro,  \
-                  PyRadialResampleAttributes_setattro,  \
-                  RadialResampleAttributes_str,         \
-                  RadialResampleAttributes_Purpose,     \
-                  RadialResampleAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyRadialResampleAttributes_methods);
+static PyTypeObject RadialResampleAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "RadialResampleAttributes",
+    .tp_basicsize = sizeof(RadialResampleAttributesObject),
+    .tp_dealloc = RadialResampleAttributes_dealloc,
+    .tp_repr = RadialResampleAttributes_str,
+    .tp_str = RadialResampleAttributes_str,
+    .tp_getattro = PyRadialResampleAttributes_getattro,
+    .tp_setattro = PyRadialResampleAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = RadialResampleAttributes_Purpose,
+    .tp_richcompare = RadialResampleAttributes_richcompare,
+    .tp_methods = PyRadialResampleAttributes_methods};
 
 //
 // Helper function for comparing.

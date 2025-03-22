@@ -883,14 +883,6 @@ PyThresholdOpAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ThresholdOpAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    ThresholdOpAttributesObject *obj = (ThresholdOpAttributesObject *)v;
-    fprintf(fp, "%s", PyThresholdOpAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 ThresholdOpAttributes_str(PyObject *v)
 {
@@ -908,36 +900,22 @@ static char *ThresholdOpAttributes_Purpose = "This class contains attributes for
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(ThresholdOpAttributesType,         \
-                  "ThresholdOpAttributes",         \
-                  ThresholdOpAttributesObject,       \
-                  ThresholdOpAttributes_dealloc,     \
-                  ThresholdOpAttributes_print,       \
-                  PyThresholdOpAttributes_getattro,  \
-                  PyThresholdOpAttributes_setattro,  \
-                  ThresholdOpAttributes_str,         \
-                  ThresholdOpAttributes_Purpose,     \
-                  ThresholdOpAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyThresholdOpAttributes_methods);
+static PyTypeObject ThresholdOpAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "ThresholdOpAttributes",
+    .tp_basicsize = sizeof(ThresholdOpAttributesObject),
+    .tp_dealloc = ThresholdOpAttributes_dealloc,
+    .tp_repr = ThresholdOpAttributes_str,
+    .tp_str = ThresholdOpAttributes_str,
+    .tp_getattro = PyThresholdOpAttributes_getattro,
+    .tp_setattro = PyThresholdOpAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = ThresholdOpAttributes_Purpose,
+    .tp_richcompare = ThresholdOpAttributes_richcompare,
+    .tp_methods = PyThresholdOpAttributes_methods};
 
 //
 // Helper function for comparing.

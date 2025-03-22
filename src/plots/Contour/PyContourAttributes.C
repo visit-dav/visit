@@ -1772,14 +1772,6 @@ PyContourAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ContourAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    ContourAttributesObject *obj = (ContourAttributesObject *)v;
-    fprintf(fp, "%s", PyContourAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 ContourAttributes_str(PyObject *v)
 {
@@ -1797,36 +1789,22 @@ static char *ContourAttributes_Purpose = "This class contains the plot attribute
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(ContourAttributesType,         \
-                  "ContourAttributes",         \
-                  ContourAttributesObject,       \
-                  ContourAttributes_dealloc,     \
-                  ContourAttributes_print,       \
-                  PyContourAttributes_getattro,  \
-                  PyContourAttributes_setattro,  \
-                  ContourAttributes_str,         \
-                  ContourAttributes_Purpose,     \
-                  ContourAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyContourAttributes_methods);
+static PyTypeObject ContourAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "ContourAttributes",
+    .tp_basicsize = sizeof(ContourAttributesObject),
+    .tp_dealloc = ContourAttributes_dealloc,
+    .tp_repr = ContourAttributes_str,
+    .tp_str = ContourAttributes_str,
+    .tp_getattro = PyContourAttributes_getattro,
+    .tp_setattro = PyContourAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = ContourAttributes_Purpose,
+    .tp_richcompare = ContourAttributes_richcompare,
+    .tp_methods = PyContourAttributes_methods};
 
 //
 // Helper function for comparing.

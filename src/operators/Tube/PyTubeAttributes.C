@@ -638,14 +638,6 @@ PyTubeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-TubeAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    TubeAttributesObject *obj = (TubeAttributesObject *)v;
-    fprintf(fp, "%s", PyTubeAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 TubeAttributes_str(PyObject *v)
 {
@@ -663,36 +655,22 @@ static char *TubeAttributes_Purpose = "This class contains attributes for the tu
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(TubeAttributesType,         \
-                  "TubeAttributes",         \
-                  TubeAttributesObject,       \
-                  TubeAttributes_dealloc,     \
-                  TubeAttributes_print,       \
-                  PyTubeAttributes_getattro,  \
-                  PyTubeAttributes_setattro,  \
-                  TubeAttributes_str,         \
-                  TubeAttributes_Purpose,     \
-                  TubeAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyTubeAttributes_methods);
+static PyTypeObject TubeAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "TubeAttributes",
+    .tp_basicsize = sizeof(TubeAttributesObject),
+    .tp_dealloc = TubeAttributes_dealloc,
+    .tp_repr = TubeAttributes_str,
+    .tp_str = TubeAttributes_str,
+    .tp_getattro = PyTubeAttributes_getattro,
+    .tp_setattro = PyTubeAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = TubeAttributes_Purpose,
+    .tp_richcompare = TubeAttributes_richcompare,
+    .tp_methods = PyTubeAttributes_methods};
 
 //
 // Helper function for comparing.

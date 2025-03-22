@@ -214,14 +214,6 @@ PyEdgeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-EdgeAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    EdgeAttributesObject *obj = (EdgeAttributesObject *)v;
-    fprintf(fp, "%s", PyEdgeAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 EdgeAttributes_str(PyObject *v)
 {
@@ -239,36 +231,22 @@ static char *EdgeAttributes_Purpose = "Attributes for the Edge operator";
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(EdgeAttributesType,         \
-                  "EdgeAttributes",         \
-                  EdgeAttributesObject,       \
-                  EdgeAttributes_dealloc,     \
-                  EdgeAttributes_print,       \
-                  PyEdgeAttributes_getattro,  \
-                  PyEdgeAttributes_setattro,  \
-                  EdgeAttributes_str,         \
-                  EdgeAttributes_Purpose,     \
-                  EdgeAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyEdgeAttributes_methods);
+static PyTypeObject EdgeAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "EdgeAttributes",
+    .tp_basicsize = sizeof(EdgeAttributesObject),
+    .tp_dealloc = EdgeAttributes_dealloc,
+    .tp_repr = EdgeAttributes_str,
+    .tp_str = EdgeAttributes_str,
+    .tp_getattro = PyEdgeAttributes_getattro,
+    .tp_setattro = PyEdgeAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = EdgeAttributes_Purpose,
+    .tp_richcompare = EdgeAttributes_richcompare,
+    .tp_methods = PyEdgeAttributes_methods};
 
 //
 // Helper function for comparing.

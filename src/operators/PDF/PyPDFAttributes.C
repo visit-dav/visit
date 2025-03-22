@@ -2108,14 +2108,6 @@ PyPDFAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-PDFAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    PDFAttributesObject *obj = (PDFAttributesObject *)v;
-    fprintf(fp, "%s", PyPDFAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 PDFAttributes_str(PyObject *v)
 {
@@ -2133,36 +2125,22 @@ static char *PDFAttributes_Purpose = "Attributes for the PDF operator";
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(PDFAttributesType,         \
-                  "PDFAttributes",         \
-                  PDFAttributesObject,       \
-                  PDFAttributes_dealloc,     \
-                  PDFAttributes_print,       \
-                  PyPDFAttributes_getattro,  \
-                  PyPDFAttributes_setattro,  \
-                  PDFAttributes_str,         \
-                  PDFAttributes_Purpose,     \
-                  PDFAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyPDFAttributes_methods);
+static PyTypeObject PDFAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "PDFAttributes",
+    .tp_basicsize = sizeof(PDFAttributesObject),
+    .tp_dealloc = PDFAttributes_dealloc,
+    .tp_repr = PDFAttributes_str,
+    .tp_str = PDFAttributes_str,
+    .tp_getattro = PyPDFAttributes_getattro,
+    .tp_setattro = PyPDFAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = PDFAttributes_Purpose,
+    .tp_richcompare = PDFAttributes_richcompare,
+    .tp_methods = PyPDFAttributes_methods};
 
 //
 // Helper function for comparing.

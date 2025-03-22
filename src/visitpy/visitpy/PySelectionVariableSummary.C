@@ -437,14 +437,6 @@ PySelectionVariableSummary_setattro(PyObject *self, PyObject *attr_name, PyObjec
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-SelectionVariableSummary_print(PyObject *v, FILE *fp, int flags)
-{
-    SelectionVariableSummaryObject *obj = (SelectionVariableSummaryObject *)v;
-    fprintf(fp, "%s", PySelectionVariableSummary_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 SelectionVariableSummary_str(PyObject *v)
 {
@@ -462,36 +454,22 @@ static char *SelectionVariableSummary_Purpose = "Contains a summary of a variabl
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(SelectionVariableSummaryType,         \
-                  "SelectionVariableSummary",         \
-                  SelectionVariableSummaryObject,       \
-                  SelectionVariableSummary_dealloc,     \
-                  SelectionVariableSummary_print,       \
-                  PySelectionVariableSummary_getattro,  \
-                  PySelectionVariableSummary_setattro,  \
-                  SelectionVariableSummary_str,         \
-                  SelectionVariableSummary_Purpose,     \
-                  SelectionVariableSummary_richcompare, \
-                  0, /* as_number*/       \
-                  PySelectionVariableSummary_methods);
+static PyTypeObject SelectionVariableSummaryType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "SelectionVariableSummary",
+    .tp_basicsize = sizeof(SelectionVariableSummaryObject),
+    .tp_dealloc = SelectionVariableSummary_dealloc,
+    .tp_repr = SelectionVariableSummary_str,
+    .tp_str = SelectionVariableSummary_str,
+    .tp_getattro = PySelectionVariableSummary_getattro,
+    .tp_setattro = PySelectionVariableSummary_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = SelectionVariableSummary_Purpose,
+    .tp_richcompare = SelectionVariableSummary_richcompare,
+    .tp_methods = PySelectionVariableSummary_methods};
 
 //
 // Helper function for comparing.

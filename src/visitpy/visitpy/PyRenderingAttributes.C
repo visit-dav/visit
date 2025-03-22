@@ -2809,14 +2809,6 @@ PyRenderingAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *ar
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-RenderingAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    RenderingAttributesObject *obj = (RenderingAttributesObject *)v;
-    fprintf(fp, "%s", PyRenderingAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 RenderingAttributes_str(PyObject *v)
 {
@@ -2834,36 +2826,22 @@ static char *RenderingAttributes_Purpose = "This class contains special renderin
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(RenderingAttributesType,         \
-                  "RenderingAttributes",         \
-                  RenderingAttributesObject,       \
-                  RenderingAttributes_dealloc,     \
-                  RenderingAttributes_print,       \
-                  PyRenderingAttributes_getattro,  \
-                  PyRenderingAttributes_setattro,  \
-                  RenderingAttributes_str,         \
-                  RenderingAttributes_Purpose,     \
-                  RenderingAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyRenderingAttributes_methods);
+static PyTypeObject RenderingAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "RenderingAttributes",
+    .tp_basicsize = sizeof(RenderingAttributesObject),
+    .tp_dealloc = RenderingAttributes_dealloc,
+    .tp_repr = RenderingAttributes_str,
+    .tp_str = RenderingAttributes_str,
+    .tp_getattro = PyRenderingAttributes_getattro,
+    .tp_setattro = PyRenderingAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = RenderingAttributes_Purpose,
+    .tp_richcompare = RenderingAttributes_richcompare,
+    .tp_methods = PyRenderingAttributes_methods};
 
 //
 // Helper function for comparing.

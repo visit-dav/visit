@@ -3977,14 +3977,6 @@ PyViewerRPC_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ViewerRPC_print(PyObject *v, FILE *fp, int flags)
-{
-    ViewerRPCObject *obj = (ViewerRPCObject *)v;
-    fprintf(fp, "%s", PyViewerRPC_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 ViewerRPC_str(PyObject *v)
 {
@@ -4002,36 +3994,22 @@ static char *ViewerRPC_Purpose = "This class contains the attributes for control
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(ViewerRPCType,         \
-                  "ViewerRPC",         \
-                  ViewerRPCObject,       \
-                  ViewerRPC_dealloc,     \
-                  ViewerRPC_print,       \
-                  PyViewerRPC_getattro,  \
-                  PyViewerRPC_setattro,  \
-                  ViewerRPC_str,         \
-                  ViewerRPC_Purpose,     \
-                  ViewerRPC_richcompare, \
-                  0, /* as_number*/       \
-                  PyViewerRPC_methods);
+static PyTypeObject ViewerRPCType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "ViewerRPC",
+    .tp_basicsize = sizeof(ViewerRPCObject),
+    .tp_dealloc = ViewerRPC_dealloc,
+    .tp_repr = ViewerRPC_str,
+    .tp_str = ViewerRPC_str,
+    .tp_getattro = PyViewerRPC_getattro,
+    .tp_setattro = PyViewerRPC_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = ViewerRPC_Purpose,
+    .tp_richcompare = ViewerRPC_richcompare,
+    .tp_methods = PyViewerRPC_methods};
 
 //
 // Helper function for comparing.

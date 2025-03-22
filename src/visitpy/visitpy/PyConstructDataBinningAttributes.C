@@ -1312,14 +1312,6 @@ PyConstructDataBinningAttributes_setattro(PyObject *self, PyObject *attr_name, P
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ConstructDataBinningAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)v;
-    fprintf(fp, "%s", PyConstructDataBinningAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 ConstructDataBinningAttributes_str(PyObject *v)
 {
@@ -1337,36 +1329,22 @@ static char *ConstructDataBinningAttributes_Purpose = "Attributes for constructi
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(ConstructDataBinningAttributesType,         \
-                  "ConstructDataBinningAttributes",         \
-                  ConstructDataBinningAttributesObject,       \
-                  ConstructDataBinningAttributes_dealloc,     \
-                  ConstructDataBinningAttributes_print,       \
-                  PyConstructDataBinningAttributes_getattro,  \
-                  PyConstructDataBinningAttributes_setattro,  \
-                  ConstructDataBinningAttributes_str,         \
-                  ConstructDataBinningAttributes_Purpose,     \
-                  ConstructDataBinningAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyConstructDataBinningAttributes_methods);
+static PyTypeObject ConstructDataBinningAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "ConstructDataBinningAttributes",
+    .tp_basicsize = sizeof(ConstructDataBinningAttributesObject),
+    .tp_dealloc = ConstructDataBinningAttributes_dealloc,
+    .tp_repr = ConstructDataBinningAttributes_str,
+    .tp_str = ConstructDataBinningAttributes_str,
+    .tp_getattro = PyConstructDataBinningAttributes_getattro,
+    .tp_setattro = PyConstructDataBinningAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = ConstructDataBinningAttributes_Purpose,
+    .tp_richcompare = ConstructDataBinningAttributes_richcompare,
+    .tp_methods = PyConstructDataBinningAttributes_methods};
 
 //
 // Helper function for comparing.

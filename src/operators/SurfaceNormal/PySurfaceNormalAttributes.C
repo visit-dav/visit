@@ -235,14 +235,6 @@ PySurfaceNormalAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-SurfaceNormalAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    SurfaceNormalAttributesObject *obj = (SurfaceNormalAttributesObject *)v;
-    fprintf(fp, "%s", PySurfaceNormalAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 SurfaceNormalAttributes_str(PyObject *v)
 {
@@ -260,36 +252,22 @@ static char *SurfaceNormalAttributes_Purpose = "Attributes for SurfaceNormal ope
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(SurfaceNormalAttributesType,         \
-                  "SurfaceNormalAttributes",         \
-                  SurfaceNormalAttributesObject,       \
-                  SurfaceNormalAttributes_dealloc,     \
-                  SurfaceNormalAttributes_print,       \
-                  PySurfaceNormalAttributes_getattro,  \
-                  PySurfaceNormalAttributes_setattro,  \
-                  SurfaceNormalAttributes_str,         \
-                  SurfaceNormalAttributes_Purpose,     \
-                  SurfaceNormalAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PySurfaceNormalAttributes_methods);
+static PyTypeObject SurfaceNormalAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "SurfaceNormalAttributes",
+    .tp_basicsize = sizeof(SurfaceNormalAttributesObject),
+    .tp_dealloc = SurfaceNormalAttributes_dealloc,
+    .tp_repr = SurfaceNormalAttributes_str,
+    .tp_str = SurfaceNormalAttributes_str,
+    .tp_getattro = PySurfaceNormalAttributes_getattro,
+    .tp_setattro = PySurfaceNormalAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = SurfaceNormalAttributes_Purpose,
+    .tp_richcompare = SurfaceNormalAttributes_richcompare,
+    .tp_methods = PySurfaceNormalAttributes_methods};
 
 //
 // Helper function for comparing.

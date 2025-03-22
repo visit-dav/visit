@@ -350,14 +350,6 @@ PyTessellateAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *a
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-TessellateAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    TessellateAttributesObject *obj = (TessellateAttributesObject *)v;
-    fprintf(fp, "%s", PyTessellateAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 TessellateAttributes_str(PyObject *v)
 {
@@ -375,36 +367,22 @@ static char *TessellateAttributes_Purpose = "Attributes for the Tessellate Opera
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(TessellateAttributesType,         \
-                  "TessellateAttributes",         \
-                  TessellateAttributesObject,       \
-                  TessellateAttributes_dealloc,     \
-                  TessellateAttributes_print,       \
-                  PyTessellateAttributes_getattro,  \
-                  PyTessellateAttributes_setattro,  \
-                  TessellateAttributes_str,         \
-                  TessellateAttributes_Purpose,     \
-                  TessellateAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyTessellateAttributes_methods);
+static PyTypeObject TessellateAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "TessellateAttributes",
+    .tp_basicsize = sizeof(TessellateAttributesObject),
+    .tp_dealloc = TessellateAttributes_dealloc,
+    .tp_repr = TessellateAttributes_str,
+    .tp_str = TessellateAttributes_str,
+    .tp_getattro = PyTessellateAttributes_getattro,
+    .tp_setattro = PyTessellateAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = TessellateAttributes_Purpose,
+    .tp_richcompare = TessellateAttributes_richcompare,
+    .tp_methods = PyTessellateAttributes_methods};
 
 //
 // Helper function for comparing.

@@ -265,14 +265,6 @@ PyExpressionList_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ExpressionList_print(PyObject *v, FILE *fp, int flags)
-{
-    ExpressionListObject *obj = (ExpressionListObject *)v;
-    fprintf(fp, "%s", PyExpressionList_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 ExpressionList_str(PyObject *v)
 {
@@ -290,36 +282,22 @@ static char *ExpressionList_Purpose = "This class contains a list of expressions
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(ExpressionListType,         \
-                  "ExpressionList",         \
-                  ExpressionListObject,       \
-                  ExpressionList_dealloc,     \
-                  ExpressionList_print,       \
-                  PyExpressionList_getattro,  \
-                  PyExpressionList_setattro,  \
-                  ExpressionList_str,         \
-                  ExpressionList_Purpose,     \
-                  ExpressionList_richcompare, \
-                  0, /* as_number*/       \
-                  PyExpressionList_methods);
+static PyTypeObject ExpressionListType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "ExpressionList",
+    .tp_basicsize = sizeof(ExpressionListObject),
+    .tp_dealloc = ExpressionList_dealloc,
+    .tp_repr = ExpressionList_str,
+    .tp_str = ExpressionList_str,
+    .tp_getattro = PyExpressionList_getattro,
+    .tp_setattro = PyExpressionList_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = ExpressionList_Purpose,
+    .tp_richcompare = ExpressionList_richcompare,
+    .tp_methods = PyExpressionList_methods};
 
 //
 // Helper function for comparing.

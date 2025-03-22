@@ -1022,14 +1022,6 @@ PyMaterialAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *arg
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-MaterialAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    MaterialAttributesObject *obj = (MaterialAttributesObject *)v;
-    fprintf(fp, "%s", PyMaterialAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 MaterialAttributes_str(PyObject *v)
 {
@@ -1047,36 +1039,22 @@ static char *MaterialAttributes_Purpose = "Attributes to control material interf
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(MaterialAttributesType,         \
-                  "MaterialAttributes",         \
-                  MaterialAttributesObject,       \
-                  MaterialAttributes_dealloc,     \
-                  MaterialAttributes_print,       \
-                  PyMaterialAttributes_getattro,  \
-                  PyMaterialAttributes_setattro,  \
-                  MaterialAttributes_str,         \
-                  MaterialAttributes_Purpose,     \
-                  MaterialAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyMaterialAttributes_methods);
+static PyTypeObject MaterialAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "MaterialAttributes",
+    .tp_basicsize = sizeof(MaterialAttributesObject),
+    .tp_dealloc = MaterialAttributes_dealloc,
+    .tp_repr = MaterialAttributes_str,
+    .tp_str = MaterialAttributes_str,
+    .tp_getattro = PyMaterialAttributes_getattro,
+    .tp_setattro = PyMaterialAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = MaterialAttributes_Purpose,
+    .tp_richcompare = MaterialAttributes_richcompare,
+    .tp_methods = PyMaterialAttributes_methods};
 
 //
 // Helper function for comparing.

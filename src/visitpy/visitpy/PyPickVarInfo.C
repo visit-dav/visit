@@ -1209,14 +1209,6 @@ PyPickVarInfo_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-PickVarInfo_print(PyObject *v, FILE *fp, int flags)
-{
-    PickVarInfoObject *obj = (PickVarInfoObject *)v;
-    fprintf(fp, "%s", PyPickVarInfo_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 PickVarInfo_str(PyObject *v)
 {
@@ -1234,36 +1226,22 @@ static char *PickVarInfo_Purpose = "This class contains PickVarInfo.";
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(PickVarInfoType,         \
-                  "PickVarInfo",         \
-                  PickVarInfoObject,       \
-                  PickVarInfo_dealloc,     \
-                  PickVarInfo_print,       \
-                  PyPickVarInfo_getattro,  \
-                  PyPickVarInfo_setattro,  \
-                  PickVarInfo_str,         \
-                  PickVarInfo_Purpose,     \
-                  PickVarInfo_richcompare, \
-                  0, /* as_number*/       \
-                  PyPickVarInfo_methods);
+static PyTypeObject PickVarInfoType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "PickVarInfo",
+    .tp_basicsize = sizeof(PickVarInfoObject),
+    .tp_dealloc = PickVarInfo_dealloc,
+    .tp_repr = PickVarInfo_str,
+    .tp_str = PickVarInfo_str,
+    .tp_getattro = PyPickVarInfo_getattro,
+    .tp_setattro = PyPickVarInfo_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = PickVarInfo_Purpose,
+    .tp_richcompare = PickVarInfo_richcompare,
+    .tp_methods = PyPickVarInfo_methods};
 
 //
 // Helper function for comparing.

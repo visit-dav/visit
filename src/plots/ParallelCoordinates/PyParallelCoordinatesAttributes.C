@@ -1350,14 +1350,6 @@ PyParallelCoordinatesAttributes_setattro(PyObject *self, PyObject *attr_name, Py
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ParallelCoordinatesAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)v;
-    fprintf(fp, "%s", PyParallelCoordinatesAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 ParallelCoordinatesAttributes_str(PyObject *v)
 {
@@ -1375,36 +1367,22 @@ static char *ParallelCoordinatesAttributes_Purpose = "This class contains the pl
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(ParallelCoordinatesAttributesType,         \
-                  "ParallelCoordinatesAttributes",         \
-                  ParallelCoordinatesAttributesObject,       \
-                  ParallelCoordinatesAttributes_dealloc,     \
-                  ParallelCoordinatesAttributes_print,       \
-                  PyParallelCoordinatesAttributes_getattro,  \
-                  PyParallelCoordinatesAttributes_setattro,  \
-                  ParallelCoordinatesAttributes_str,         \
-                  ParallelCoordinatesAttributes_Purpose,     \
-                  ParallelCoordinatesAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyParallelCoordinatesAttributes_methods);
+static PyTypeObject ParallelCoordinatesAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "ParallelCoordinatesAttributes",
+    .tp_basicsize = sizeof(ParallelCoordinatesAttributesObject),
+    .tp_dealloc = ParallelCoordinatesAttributes_dealloc,
+    .tp_repr = ParallelCoordinatesAttributes_str,
+    .tp_str = ParallelCoordinatesAttributes_str,
+    .tp_getattro = PyParallelCoordinatesAttributes_getattro,
+    .tp_setattro = PyParallelCoordinatesAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = ParallelCoordinatesAttributes_Purpose,
+    .tp_richcompare = ParallelCoordinatesAttributes_richcompare,
+    .tp_methods = PyParallelCoordinatesAttributes_methods};
 
 //
 // Helper function for comparing.

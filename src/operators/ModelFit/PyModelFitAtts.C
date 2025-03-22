@@ -1208,14 +1208,6 @@ PyModelFitAtts_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ModelFitAtts_print(PyObject *v, FILE *fp, int flags)
-{
-    ModelFitAttsObject *obj = (ModelFitAttsObject *)v;
-    fprintf(fp, "%s", PyModelFitAtts_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 ModelFitAtts_str(PyObject *v)
 {
@@ -1233,36 +1225,22 @@ static char *ModelFitAtts_Purpose = "This file contains attributes for the Model
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(ModelFitAttsType,         \
-                  "ModelFitAtts",         \
-                  ModelFitAttsObject,       \
-                  ModelFitAtts_dealloc,     \
-                  ModelFitAtts_print,       \
-                  PyModelFitAtts_getattro,  \
-                  PyModelFitAtts_setattro,  \
-                  ModelFitAtts_str,         \
-                  ModelFitAtts_Purpose,     \
-                  ModelFitAtts_richcompare, \
-                  0, /* as_number*/       \
-                  PyModelFitAtts_methods);
+static PyTypeObject ModelFitAttsType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "ModelFitAtts",
+    .tp_basicsize = sizeof(ModelFitAttsObject),
+    .tp_dealloc = ModelFitAtts_dealloc,
+    .tp_repr = ModelFitAtts_str,
+    .tp_str = ModelFitAtts_str,
+    .tp_getattro = PyModelFitAtts_getattro,
+    .tp_setattro = PyModelFitAtts_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = ModelFitAtts_Purpose,
+    .tp_richcompare = ModelFitAtts_richcompare,
+    .tp_methods = PyModelFitAtts_methods};
 
 //
 // Helper function for comparing.

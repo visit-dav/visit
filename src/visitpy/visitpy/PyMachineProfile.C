@@ -1680,14 +1680,6 @@ PyMachineProfile_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-MachineProfile_print(PyObject *v, FILE *fp, int flags)
-{
-    MachineProfileObject *obj = (MachineProfileObject *)v;
-    fprintf(fp, "%s", PyMachineProfile_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 MachineProfile_str(PyObject *v)
 {
@@ -1705,36 +1697,22 @@ static char *MachineProfile_Purpose = "This class contains information about a h
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(MachineProfileType,         \
-                  "MachineProfile",         \
-                  MachineProfileObject,       \
-                  MachineProfile_dealloc,     \
-                  MachineProfile_print,       \
-                  PyMachineProfile_getattro,  \
-                  PyMachineProfile_setattro,  \
-                  MachineProfile_str,         \
-                  MachineProfile_Purpose,     \
-                  MachineProfile_richcompare, \
-                  0, /* as_number*/       \
-                  PyMachineProfile_methods);
+static PyTypeObject MachineProfileType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "MachineProfile",
+    .tp_basicsize = sizeof(MachineProfileObject),
+    .tp_dealloc = MachineProfile_dealloc,
+    .tp_repr = MachineProfile_str,
+    .tp_str = MachineProfile_str,
+    .tp_getattro = PyMachineProfile_getattro,
+    .tp_setattro = PyMachineProfile_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = MachineProfile_Purpose,
+    .tp_richcompare = MachineProfile_richcompare,
+    .tp_methods = PyMachineProfile_methods};
 
 //
 // Helper function for comparing.

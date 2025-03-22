@@ -1161,14 +1161,6 @@ PyExtrudeStackedAttributes_setattro(PyObject *self, PyObject *attr_name, PyObjec
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ExtrudeStackedAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    ExtrudeStackedAttributesObject *obj = (ExtrudeStackedAttributesObject *)v;
-    fprintf(fp, "%s", PyExtrudeStackedAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
 ExtrudeStackedAttributes_str(PyObject *v)
 {
@@ -1186,36 +1178,22 @@ static char *ExtrudeStackedAttributes_Purpose = "This class contains attributes 
 #endif
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
 
-VISIT_PY_TYPE_OBJ(ExtrudeStackedAttributesType,         \
-                  "ExtrudeStackedAttributes",         \
-                  ExtrudeStackedAttributesObject,       \
-                  ExtrudeStackedAttributes_dealloc,     \
-                  ExtrudeStackedAttributes_print,       \
-                  PyExtrudeStackedAttributes_getattro,  \
-                  PyExtrudeStackedAttributes_setattro,  \
-                  ExtrudeStackedAttributes_str,         \
-                  ExtrudeStackedAttributes_Purpose,     \
-                  ExtrudeStackedAttributes_richcompare, \
-                  0, /* as_number*/       \
-                  PyExtrudeStackedAttributes_methods);
+static PyTypeObject ExtrudeStackedAttributesType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "ExtrudeStackedAttributes",
+    .tp_basicsize = sizeof(ExtrudeStackedAttributesObject),
+    .tp_dealloc = ExtrudeStackedAttributes_dealloc,
+    .tp_repr = ExtrudeStackedAttributes_str,
+    .tp_str = ExtrudeStackedAttributes_str,
+    .tp_getattro = PyExtrudeStackedAttributes_getattro,
+    .tp_setattro = PyExtrudeStackedAttributes_setattro,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = ExtrudeStackedAttributes_Purpose,
+    .tp_richcompare = ExtrudeStackedAttributes_richcompare,
+    .tp_methods = PyExtrudeStackedAttributes_methods};
 
 //
 // Helper function for comparing.
