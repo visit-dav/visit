@@ -708,6 +708,17 @@ function(visit_import_third_party pkg)
                 message(STATUS "Skipping installation of ${pkg}")
             else()
 
+                # TODO:  this logic is intended for third-party libraries
+                # that were built by build_visit and are installed alongside
+                # VisIt, not for system libraries or ThirdParty libraries
+                # that aren't in the general VisIt-specified location.
+                # 
+                # Need a mechanism to bypass the below install commands
+                # but still be able to find all necessary dependencies
+                # during an 'import visit' or building against an installed
+                # version of VisIt
+
+               
                 # Install libs and headers
                 foreach(lib ${tplibs})
                     cmake_path(SET tmplib ${${lib}})
@@ -731,26 +742,6 @@ function(visit_import_third_party pkg)
 
             endif()
         endif()
-
-
-        #if(WIN32)
-        #    # need to copy the dll to the build dir and ensure it is installed
-        #    cmake_path(GET ${_${pkg}_LIBRARY} PATH _${pkg}_LIBRARY_DIR)
-        #    #get_filename_component(_${pkg}_LIBRARY_DIR ${_${pkg}_LIBRARY} PATH)
-        #    cmake_path(REPLACE_EXTENSION ${_libname} dll OUTPUT_VARIABLE _${pkg}_DLL)
-        #    if(EXISTS ${_${pkg}_DLL})
-        #        cmake_path(SET _${pkg}_DLL ${_${pkg}_LIBRARY_DIR}/${_${pkg}_DLL})
-        #    else()
-        #        cmake_path(SET _${pkg}_DLL NORMALIZE ${_${pkg}_LIBRARY_DIR}/../bin/${_${pkg}_DLL})
-        #    endif()
-        #    if(EXISTS ${_${pkg}_DLL})
-        #        execute_process(COMMAND ${CMAKE_COMMAND} -E copy
-        #                        ${_${pkg}_DLL}
-        #                        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
-        #    else()
-        ##        message(STATUS "Could not find a dll matching ${_libname}")
-        #    endif()
-        #endif()
         set(${pkg}_FOUND true CACHE BOOL "${pkg} library found" FORCE)
     endif()
 endfunction()
