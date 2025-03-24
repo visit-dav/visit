@@ -527,8 +527,9 @@ endfunction(THIRD_PARTY_INSTALL_INCLUDE)
   Assumes headers are in ${x_DIR}/include unless INCDIR argument is used
   Assumes libs are in ${x_DIR}/lib64 or ${x_DIR}/lib unless LIBDIR argument is used
   Either LIBS or LIBNAMES must be specified.
-  LIBS is used for multiple-libraray packages.
+  LIBS is used for multiple-library packages.
   LIBNAMES is used for single-library packges if the names may be different depending on platform/version.
+
   pkg is the name used to specify the x_DIR (generally upper case name of pkg)
 
   keyword arguments:
