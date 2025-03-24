@@ -653,8 +653,6 @@ function(visit_import_third_party pkg)
             _${pkg}_INCLUDE_DIR
             ${tplibs})
 
-
-
     if(${pkg}_FOUND)
         # create a list of libs using BUILD_INTERFACE
         set(buildlibs)
@@ -672,14 +670,6 @@ function(visit_import_third_party pkg)
             LIBRARIES   ${buildlibs}
             EXPORTABLE  ON)
 
-        # add INSTALL_INTERFACE libraries
-        # Need to to keep _IMPORT_PREFIX unevaluated, so don't use visit_patch_target
-        foreach(lib ${tplibs})
-            get_filename_component(_lib ${${lib}} NAME)
-            target_link_libraries(${LNAME} INTERFACE
-                $<INSTALL_INTERFACE:\${_IMPORT_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${_lib}>)
-        endforeach()
-
         if(DEFINED vitp_DEFINES)
             target_compile_definitions(${LNAME} INTERFACE ${vitp_DEFINES})
         endif()
@@ -693,6 +683,8 @@ function(visit_import_third_party pkg)
 
             # all dependencies must already have been declared as import targets
             # or full-path to a library
+            # they aren't installed by the logic below, only added to the
+            # interface of the current library being imported.
             foreach (X ${${pkg}_LIBDEP})
                 if(TARGET ${X})
                     message(STATUS "    found target for ${X}")
@@ -715,29 +707,50 @@ function(visit_import_third_party pkg)
             if(${VISIT_${pkg}_SKIP_INSTALL})
                 message(STATUS "Skipping installation of ${pkg}")
             else()
-                visit_install_export_targets(${LNAME})
+
+                # Install libs and headers
+                foreach(lib ${tplibs})
+                    cmake_path(SET tmplib ${${lib}})
+                    cmake_path(GET tmplib EXTENSION LAST_ONLY LIBEXT)
+                    if(${LIBEXT} STREQUAL ".a")
+                        set(dest ${VISIT_INSTALLED_VERSION_ARCHIVES})
+                    else()
+                        set(dest ${VISIT_INSTALLED_VERSION_LIB})
+                    endif()
+                    cmake_path(GET tmplib FILENAME _lib)
+                   # add INSTALL_INTERFACE
+                   target_link_libraries(${LNAME} INTERFACE
+                       $<INSTALL_INTERFACE:\${_IMPORT_PREFIX}/${dest}/${_lib}>)
+
+                    THIRD_PARTY_INSTALL_LIBRARY(${${lib}})
+                endforeach()
                 THIRD_PARTY_INSTALL_INCLUDE(${pkg} ${_${pkg}_INCLUDE_DIR})
+
+                # ensure the tp libs are added to visit's export set.
+                visit_install_export_targets(${LNAME})
+
             endif()
         endif()
 
 
-        if(WIN32)
-            # need to copy the dll to the build dir
-            get_filename_component(_${pkg}_LIBRARY_DIR ${_${pkg}_LIBRARY} PATH)
-            cmake_path(REPLACE_EXTENSION ${_libname} dll OUTPUT_VARIABLE _${pkg}_DLL)
-            if(EXISTS ${_${pkg}_DLL})
-                cmake_path(SET _${pkg}_DLL ${_${pkg}_LIBRARY_DIR}/${_${pkg}_DLL})
-            else()
-                cmake_path(SET _${pkg}_DLL NORMALIZE ${_${pkg}_LIBRARY_DIR}/../bin/${_${pkg}_DLL})
-            endif()
-            if(EXISTS ${_${pkg}_DLL})
-                execute_process(COMMAND ${CMAKE_COMMAND} -E copy
-                                ${_${pkg}_DLL}
-                                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
-            else()
-                message(STATUS "Could not find a dll matching ${_libname}")
-            endif()
-        endif()
+        #if(WIN32)
+        #    # need to copy the dll to the build dir and ensure it is installed
+        #    cmake_path(GET ${_${pkg}_LIBRARY} PATH _${pkg}_LIBRARY_DIR)
+        #    #get_filename_component(_${pkg}_LIBRARY_DIR ${_${pkg}_LIBRARY} PATH)
+        #    cmake_path(REPLACE_EXTENSION ${_libname} dll OUTPUT_VARIABLE _${pkg}_DLL)
+        #    if(EXISTS ${_${pkg}_DLL})
+        #        cmake_path(SET _${pkg}_DLL ${_${pkg}_LIBRARY_DIR}/${_${pkg}_DLL})
+        #    else()
+        #        cmake_path(SET _${pkg}_DLL NORMALIZE ${_${pkg}_LIBRARY_DIR}/../bin/${_${pkg}_DLL})
+        #    endif()
+        #    if(EXISTS ${_${pkg}_DLL})
+        #        execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+        #                        ${_${pkg}_DLL}
+        #                        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
+        #    else()
+        ##        message(STATUS "Could not find a dll matching ${_libname}")
+        #    endif()
+        #endif()
         set(${pkg}_FOUND true CACHE BOOL "${pkg} library found" FORCE)
     endif()
 endfunction()
