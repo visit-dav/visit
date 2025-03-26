@@ -1326,6 +1326,9 @@ static std::string log_SetRenderingAttributesRPC(ViewerRPC *rpc)
 //    Kathleen Biagas, Mon Mar 24 16:24:01 PDT 2014
 //    Log time_options for time picks.
 //
+//    Kathleen Biagas, Tue Mar 25, 2025
+//    Convert vector types to proper python tuples.
+//
 //*****************************************************************************
 
 static std::string log_QueryRPC(ViewerRPC *rpc)
@@ -1412,7 +1415,10 @@ static std::string log_QueryRPC(ViewerRPC *rpc)
                     s += ", ";
                 s += paramNames[i];
                 s += "=";
-                s += queryParams.GetEntry(paramNames[i])->ConvertToString();
+                if(queryParams.GetEntry(paramNames[i])->IsVector())
+                    s += queryParams.GetEntry(paramNames[i])->ConvertToPythonTupleString();
+                else
+                    s += queryParams.GetEntry(paramNames[i])->ConvertToString();
                 numPrinted++;
             }
         }
@@ -1424,7 +1430,7 @@ static std::string log_QueryRPC(ViewerRPC *rpc)
             if (numPrinted > 0)
                 s += ", ";
             s += "vars=";
-            s += queryParams.GetEntry("vars")->ConvertToString();
+            s += queryParams.GetEntry("vars")->ConvertToPythonTupleString();
         }
         s += ")\n";
     }
@@ -1456,7 +1462,10 @@ static std::string log_QueryRPC(ViewerRPC *rpc)
                 s += ", ";
                 s += paramNames[i];
                 s += "=";
-                s += queryParams.GetEntry(paramNames[i])->ConvertToString();
+                if(queryParams.GetEntry(paramNames[i])->IsVector())
+                    s += queryParams.GetEntry(paramNames[i])->ConvertToPythonTupleString();
+                else
+                    s += queryParams.GetEntry(paramNames[i])->ConvertToString();
             }
         }
         std::vector<std::string> vars;
@@ -1465,7 +1474,7 @@ static std::string log_QueryRPC(ViewerRPC *rpc)
         if (!vars.empty() && !(vars.size() == 1 && vars[0] == "default"))
         {
             s += ", vars=";
-            s += queryParams.GetEntry("vars")->ConvertToString();
+            s += queryParams.GetEntry("vars")->ConvertToPythonTupleString();
         }
 
         s += ")\n";
