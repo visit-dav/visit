@@ -791,8 +791,7 @@ avtMOABFileFormat::GetMesh(int domain, const char *meshname)
 
 
             debug1 << "avtMOABFileFormat options: showAllSets: " << showAllSets << " showDefaultTags: "<< showDefaultTags << "\n";
-            if(showAllSets)
-                ropts=ropts+string("STORE_SETS_FILEIDS;");
+            ropts=ropts+string("STORE_SETS_FILEIDS;");
             merr = mbCore->load_file(fileName, 0,ropts.c_str() );MBVIS_CHK_ERR(merr);
 #ifdef PARALLEL
             // some debugging info
