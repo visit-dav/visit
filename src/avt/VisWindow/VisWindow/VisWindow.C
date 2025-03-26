@@ -6964,7 +6964,7 @@ VisWindow::GetOsprayShadows() const
 }
 #endif
 
-#ifdef VISIT_ANARI
+#ifdef HAVE_ANARI
 // ****************************************************************************
 // Method: VisWindow::SetAnariRendering
 //

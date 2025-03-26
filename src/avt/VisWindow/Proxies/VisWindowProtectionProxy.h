@@ -233,7 +233,7 @@ class VISWINDOW_API VisWindowProtectionProxy
     int                 ProxiedGetOsprayAO();
     bool                ProxiedGetOsprayShadows();
 #endif
-#ifdef VISIT_ANARI
+#ifdef HAVE_ANARI
     bool                ProxiedGetAnariRendering();
     int                 ProxiedGetAnariSPP();
     int                 ProxiedGetAnariAO();

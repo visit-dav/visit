@@ -172,7 +172,7 @@ VisWinRenderingWithoutWindow::RenderRenderWindow(void)
     }
 #endif
 
-#ifdef VISIT_ANARI
+#ifdef HAVE_ANARI
     if(GetAnariRendering())
     {
         if(!anariPassValid)

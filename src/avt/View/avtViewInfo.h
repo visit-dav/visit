@@ -46,9 +46,6 @@ class vtkCamera;
 //   Kathleen Biagas, Wed Aug 17, 2022
 //   Added useOSPRay.
 //
-//   Kevin Griffin, Tue 04 Mar 2025 04:36:27 PM CST
-//   Added useAnari.
-//
 // ****************************************************************************
 
 struct AVTVIEW_API avtViewInfo
@@ -68,7 +65,6 @@ struct AVTVIEW_API avtViewInfo
     double   shear[3];
 
     bool     useOSPRay;
-    bool     useAnari;
 
   public:
                     avtViewInfo();

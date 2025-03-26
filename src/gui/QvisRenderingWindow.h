@@ -240,7 +240,7 @@ private:
     QSpinBox          *osprayAO;
     QCheckBox         *osprayShadowsToggle;
 #endif
-#ifdef VISIT_ANARI
+#ifdef HAVE_ANARI
     AnariRenderingWidget *anariRenderingWidget;
 #endif
     // Labels to display renderer information.

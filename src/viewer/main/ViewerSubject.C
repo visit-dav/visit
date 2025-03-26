@@ -2632,14 +2632,6 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
             GetViewerState()->GetRenderingAttributes()->SetOsprayRendering(true);
         }
 #endif
-#ifdef VISIT_ANARI
-        else if(strcmp(argv[i], "-anari") == 0)
-        {
-            debug5 << "Viewer launching with ANARI" << std::endl;
-            avtCallback::SetUseAnari(true);
-            GetViewerState()->GetRenderingAttributes()->SetAnariRendering(true);
-        }
-#endif
         else if (strcmp(argv[i], "-fullscreen") == 0)
         {
             GetViewerProperties()->SetWindowFullScreen(true);

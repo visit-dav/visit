@@ -75,7 +75,6 @@ avtViewInfo::operator=(const avtViewInfo &vi)
     shear[1]     = vi.shear[1];
     shear[2]     = vi.shear[2];
     useOSPRay    = vi.useOSPRay;
-    useAnari     = vi.useAnari;
     return *this;
 }
 
@@ -316,12 +315,17 @@ avtViewInfo::SetCameraFromView(vtkCamera *vtkcam) const
     vtkcam->SetWindowCenter(2.0*imagePan[0], 2.0*imagePan[1]);
     vtkcam->SetFocalDisk(imageZoom);
 
-    if (useOSPRay || useAnari)
+    #ifdef HAVE_ANARI
+        // vtkAnariCameraNode does not support SetWindowCenter or SetUserTransform
+        // like OSPRay does, so we need to use the Zoom method.
+        vtkcam->Zoom(imageZoom);
+    #else
+    if (useOSPRay)
     {
         // Currently the SetWindowCenter and SetUserTransform do not get
-        // used in the vtkOSPRayCameraNode so instead use the Zoom here and
-        // in the Navigate3D.C and Zoom3D.C pan the camera rather than the
-        // image.
+        // used in the vtkOSPRayCameraNode so instead use
+        // the Zoom here and in the Navigate3D.C and Zoom3D.C pan the camera
+        // rather than the image.
         vtkcam->Zoom(imageZoom);
     }
     else
@@ -343,4 +347,5 @@ avtViewInfo::SetCameraFromView(vtkCamera *vtkcam) const
             vtkcam->SetUserTransform(NULL);
         }
    }
+   #endif
 }

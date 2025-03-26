@@ -738,7 +738,7 @@ public:
     void SetOsprayShadows(bool);
     bool GetOsprayShadows() const;
 #endif
-#ifdef VISIT_ANARI
+#ifdef HAVE_ANARI
     void                SetAnariRendering(const bool enabled);
     bool                GetAnariRendering() const;
     void                SetAnariSPP(const int val);

@@ -2352,13 +2352,6 @@ Engine::ProcessCommandLine(int argc, char **argv)
             avtCallback::SetUseOSPRay(true);
         }
 #endif
-#ifdef VISIT_ANARI
-        else if (strcmp(argv[i], "-anari") == 0)
-        {
-            debug5 << "Engine found ANARI flag" << endl;
-            avtCallback::SetUseAnari(true);
-        }
-#endif
     }
     avtCallback::SetSoftwareRendering(!haveHWAccel);
 }

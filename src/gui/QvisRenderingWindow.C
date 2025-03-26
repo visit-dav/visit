@@ -22,7 +22,7 @@
 #include <WindowInformation.h>
 #include <QvisOpacitySlider.h>
 
-#ifdef VISIT_ANARI
+#ifdef HAVE_ANARI
     #include <AnariRenderingWidget.h>
 #endif
 
@@ -594,7 +594,7 @@ QvisRenderingWindow::CreateAdvancedPage()
     advLayout->addWidget(colorTexturingToggle, row, 0, 1, 3);
     row++;
 
-#ifdef VISIT_ANARI
+#ifdef HAVE_ANARI
     // Divider
     QFrame *separator = new QFrame(advancedOptions);
     separator->setFrameShape(QFrame::HLine);
@@ -1009,7 +1009,7 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             osprayShadowsToggle->blockSignals(false);
             break;
 #endif
-#ifdef VISIT_ANARI
+#ifdef HAVE_ANARI
         case RenderingAttributes::ID_anariRendering:
             anariRenderingWidget->SetChecked(renderAtts->GetAnariRendering());
             break;

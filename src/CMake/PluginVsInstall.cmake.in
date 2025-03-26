@@ -125,7 +125,7 @@
 #
 #   Kathleen Biagas, Wed Sep 18, 2024
 #   Added HAVE_LIBVTKM.
-# 
+#
 #****************************************************************************/
 
 ##
@@ -201,6 +201,7 @@ set(VISIT_JAVA                   @VISIT_JAVA@)
 set(VISIT_SLIVR                  @VISIT_SLIVR@)
 set(HAVE_LIBOSPRAY               @HAVE_LIBOSPRAY@)
 set(HAVE_OSPRAY                  @HAVE_OSPRAY@)
+set(HAVE_ANARI                   @HAVE_ANARI@)
 
 # Set up VTK
 set(VTK_VERSION @VTK_VERSION@)
@@ -401,4 +402,3 @@ set(VISIT_PARALLEL_LIBS         "@filtered_VISIT_PARALLEL_LIBS@")
 set(VISIT_PARALLEL_INCLUDE      "@filtered_VISIT_PARALLEL_INCLUDE@")
 set(VISIT_PARALLEL_DEFS         @filtered_VISIT_PARALLEL_DEFS@)
 set(VISIT_NOLINK_MPI_WITH_LIBRARIES @VISIT_NOLINK_MPI_WITH_LIBRARIES@)
-

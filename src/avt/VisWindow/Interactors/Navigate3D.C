@@ -76,6 +76,9 @@ Navigate3D::Navigate3D(VisWindowInteractorProxy &v) : VisitInteractor(v)
 //    It will be true only if HAVE_OSPRAY is true and ospray rendering is
 //    currently being used.
 //
+//    Kevin Griffin, Mon Mar 24 2025
+//    Test HAVE_ANARI to determine if PanCamera or PanImage should be used.
+//
 // ****************************************************************************
 
 void
@@ -96,6 +99,9 @@ Navigate3D::OnTimer(void)
         break;
 
       case VTKIS_PAN:
+        #ifdef HAVE_ANARI
+           PanCamera3D(Pos[0], Pos[1]);
+        #else
         // Currently the SetWindowCenter called from avtViewInfo.C
         // does not get used in the vtkOSPRayCamerNode so instead pan
         // the camera rather than the image.
@@ -107,6 +113,7 @@ Navigate3D::OnTimer(void)
         {
             PanImage3D(Pos[0], Pos[1]);
         }
+        #endif
         rwi->CreateTimer(VTKI_TIMER_UPDATE);
         break;
 
