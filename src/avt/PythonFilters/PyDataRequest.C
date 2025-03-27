@@ -2936,11 +2936,14 @@ DataRequest_SetNeedPostGhostMaterialInfo(PyObject *self, PyObject *args)
 
 
 
+// Forward declaration for methods table
+static PyObject *DataRequest_dir(PyObject *self, PyObject *args);
+
 //
 // Method Table
 //
-
 static struct PyMethodDef PyDataRequest_methods[] = {
+    {"__dir__",                                 DataRequest_dir, METH_NOARGS},
     // timestep
     {"GetTimestep",                             DataRequest_GetTimestep, METH_VARARGS},
     {"SetTimestep",                             DataRequest_SetTimestep, METH_VARARGS},
@@ -3082,6 +3085,26 @@ static struct PyMethodDef PyDataRequest_methods[] = {
 //
 // Type functions
 //
+static PyObject *
+DataRequest_dir(PyObject *self, PyObject *args)
+{
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = PyDataRequest_methods;
+         method && method->ml_name;
+         method++) {
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    return dir_list;
+}
+
 
 
 // ****************************************************************************

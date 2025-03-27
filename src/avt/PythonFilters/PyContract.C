@@ -397,13 +397,12 @@ Contract_GetDataRequest(PyObject *self, PyObject *args)
     return PyDataRequest_Wrap(req);
 }
 
+// Forward declaration for methods table
+static PyObject *Contract_dir(PyObject *self, PyObject *args);
 
 //
 // Method Table
 //
-
-
-static PyObject *Contract_dir(PyObject *self, PyObject *args);
 static PyMethodDef PyContract_methods[] = {
     {"__dir__",                                 Contract_dir, METH_NOARGS},
     {"ShouldUseStreaming",                      Contract_ShouldUseStreaming, METH_VARARGS},

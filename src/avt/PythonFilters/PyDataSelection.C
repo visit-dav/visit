@@ -30,7 +30,7 @@ struct PyDataSelectionObject
 // Function: DataSelection_GetType
 //
 // Purpose:
-//   Wrap avtDataRequest::GetType.
+//   Wrap avtDataSelection::GetType.
 //
 //
 // Programmer: Cyrus Harrison
@@ -49,11 +49,14 @@ DataSelection_GetType(PyObject *self, PyObject *args)
 }
 
 
+// Forward declearation for method table
+static PyObject *DataSelection_dir(PyObject *self, PyObject *args);
+
 //
 // Method Table
 //
-
-static struct PyMethodDef DataSelection_methods[] = {
+static struct PyMethodDef PyDataSelection_methods[] = {
+    {"__dir__",      DataSelection_dir, METH_NOARGS},
     {"GetType",      DataSelection_GetType, METH_VARARGS},
     {NULL, NULL}
 };
@@ -62,29 +65,28 @@ static struct PyMethodDef DataSelection_methods[] = {
 // Type functions
 //
 
-
-// ****************************************************************************
-// Function: DataSelection_dealloc
-//
-// Purpose:
-//   Destructor for PyDataDataSelection.
-//
-//
-// Programmer: Cyrus Harrison
-// Creation:   Tue Feb  9 08:58:23 PST 2010
-//
-// Modifications:
-//
-// ****************************************************************************
-static void
-DataSelection_dealloc(PyObject *v)
+static PyObject *
+DataSelection_dir(PyObject *self, PyObject *args)
 {
-    // do nothing
-}
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+       
+    // Add methods from the methods table
+    for (PyMethodDef const *method = PyDataSelection_methods;
+         method && method->ml_name;
+         method++) {
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
 
+    return dir_list;
+}   
 
 // ****************************************************************************
-// Function: DataSelection_getattr
+// Function: PyDataSelection_getattro
 //
 // Purpose:
 //   Attribute fetch for PyDataSelection.
@@ -97,49 +99,25 @@ DataSelection_dealloc(PyObject *v)
 //
 // ****************************************************************************
 static PyObject *
-DataSelection_getattr(PyObject *self, char *name)
+PyDataSelection_getattro(PyObject *self, PyObject *attr_name)
 {
-    return Py_FindMethod(DataSelection_methods, self, name);
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+    return Py_FindMethod(PyDataSelection_methods, self, (char*)name);
 }
 
+static char const *PyDataSelection_purpose = "This class provides access to the avt pipeline data selection base class.";
 
-
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *DataSelection_Doc = "This class provides access to the avt pipeline data selection base class.";
-#else
-static char *DataSelection_Doc = "This class provides access to the avt pipeline data selection base class.";
-#endif
-
-//
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-VISIT_PY_TYPE_OBJ(PyDataSelectionType,   \
-                  "DataSelection",       \
-                  PyDataSelectionObject, \
-                  DataSelection_dealloc, \
-                  0,                     \
-                  DataSelection_getattr, \
-                  0,                     \
-                  0,                     \
-                  DataSelection_Doc,     \
-                  0,                     \
-                  0, /* as_number*/      \
-                  DataSelection_methods);
+// Re-define tp slots for this custom object
+#undef VISIT_PY_TYPE_OBJ_TP_SLOTS
+#define VISIT_PY_TYPE_OBJ_TP_SLOTS(VSObjName)                                \
+    Py##VSObjName##Type.tp_doc = Py##VSObjName##_purpose;                    \
+    retval += ((void*) Py##VSObjName##Type.tp_doc != (void*)0);              \
+    Py##VSObjName##Type.tp_getattro = Py##VSObjName##_getattro;              \
+    retval += ((void*) Py##VSObjName##Type.tp_getattro != (void*)0);         \
+    Py##VSObjName##Type.tp_methods = Py##VSObjName##_methods;                \
+    retval += ((void*) Py##VSObjName##Type.tp_methods != (void*)0)
+VISIT_PY_TYPE_OBJ(DataSelection);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
