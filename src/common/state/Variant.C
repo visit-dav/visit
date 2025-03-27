@@ -3860,6 +3860,10 @@ string &
 Variant::ConvertToPythonTupleString()
 {
     tmp.clear();
+    if(!IsVector())
+    {
+        return tmp;    
+    }
     char retval[5000];
     tmp += "(";
     if (dataType == BOOL_VECTOR_TYPE)
