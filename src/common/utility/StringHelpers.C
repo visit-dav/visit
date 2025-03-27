@@ -138,7 +138,7 @@ void
 StringHelpers::GroupStrings(vector<string> stringList,
                             vector<vector<string> > &stringGroups,
                             vector<string> &groupNames,
-                            int numLeadingVals,
+                            unsigned int numLeadingVals,
                             string nonRelevantChars)
 {
 
@@ -163,34 +163,17 @@ StringHelpers::GroupStrings(vector<string> stringList,
 
    // adjust numLeadingVals if its too big
    int len = strlen(stringPtrs[0]);
-   if (numLeadingVals < 0)
-   {
-       if (-numLeadingVals > len)
-           numLeadingVals  = -len;
-   }
-   else
-   {
-       if (numLeadingVals > len)
-           numLeadingVals  = len;
-   }
-
+   if (numLeadingVals > len)
+       numLeadingVals  = len;
 
    // initialize the 'lastVal' for the loop below
    string lastVal;
-   if (numLeadingVals < 0)
-   {
-       for (i = len+numLeadingVals; i < len; i++)
-           lastVal += stringPtrs[0][i];
-   }
+   if (numLeadingVals == 0)
+       lastVal = stringPtrs[0];
    else
    {
-       if (numLeadingVals == 0)
-           lastVal = stringPtrs[0];
-       else
-       {
-           for (i = 0; i < numLeadingVals; i++)
-               lastVal += stringPtrs[0][i];
-       }
+       for (i = 0; i < numLeadingVals; i++)
+           lastVal += stringPtrs[0][i];
    }
 
    //
@@ -206,21 +189,12 @@ StringHelpers::GroupStrings(vector<string> stringList,
        string thisVal;
        int j;
 
-       if (numLeadingVals < 0)
-       {
-           int len = stringList[i].size()-1;
-           for (j = len+numLeadingVals; j < len; j++)
-               lastVal += stringPtrs[i][j];
-       }
+       if (numLeadingVals == 0)
+           thisVal = stringPtrs[i];
        else
        {
-           if (numLeadingVals == 0)
-               thisVal = stringPtrs[i];
-           else
-           {
-               for (j = 0; j < numLeadingVals; j++)
-                   thisVal += stringPtrs[i][j];
-           }
+           for (j = 0; j < numLeadingVals && j < strlen(stringPtrs[i]); j++)
+               thisVal += stringPtrs[i][j];
        }
 
        if (thisVal != lastVal)
