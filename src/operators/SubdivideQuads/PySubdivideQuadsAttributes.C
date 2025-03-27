@@ -492,11 +492,11 @@ static char const *PySubdivideQuadsAttributes_purpose = "Attributes for Subdivid
 
 //
 // Initialize the python object type structure with default values.
-// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
-// that allows for customization of the .tp_xxx slot methods. These
-// macros are defined in src/visitpy/common/Py2and3Support.h
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// and then re-define it here AHEAD of VISIT_PY_TYPE_OBJ. For examples, look
+// in src/avt/PythonFilters and in src/visitpy/common/Py2and3Support.h
 //
-VISIT_PY_TYPE_OBJ_DEFAULT(SubdivideQuadsAttributes);
+VISIT_PY_TYPE_OBJ(SubdivideQuadsAttributes);
 
 //
 // Helper function for comparing.

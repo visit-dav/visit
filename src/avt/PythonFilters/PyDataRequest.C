@@ -2940,7 +2940,7 @@ DataRequest_SetNeedPostGhostMaterialInfo(PyObject *self, PyObject *args)
 // Method Table
 //
 
-static struct PyMethodDef DataRequest_methods[] = {
+static struct PyMethodDef PyDataRequest_methods[] = {
     // timestep
     {"GetTimestep",                             DataRequest_GetTimestep, METH_VARARGS},
     {"SetTimestep",                             DataRequest_SetTimestep, METH_VARARGS},
@@ -3085,26 +3085,6 @@ static struct PyMethodDef DataRequest_methods[] = {
 
 
 // ****************************************************************************
-// Function: DataRequest_dealloc
-//
-// Purpose:
-//   Destructor for PyDataRequest.
-//
-//
-// Programmer: Cyrus Harrison
-// Creation:   Tue Feb  9 08:58:23 PST 2010
-//
-// Modifications:
-//
-// ****************************************************************************
-static void
-DataRequest_dealloc(PyObject *v)
-{
-    // DataRequest is  stored in a a ref ptr, so it will clean itself up.
-}
-
-
-// ****************************************************************************
 // Function: DataRequest_getattr
 //
 // Purpose:
@@ -3118,67 +3098,25 @@ DataRequest_dealloc(PyObject *v)
 //
 // ****************************************************************************
 static PyObject *
-DataRequest_getattr(PyObject *self, char *name)
+PyDataRequest_getattro(PyObject *self, PyObject *attr_name)
 {
-    return Py_FindMethod(DataRequest_methods, self, name);
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+    return Py_FindMethod(PyDataRequest_methods, self, (char*)name);
 }
 
+static char const *PyDataRequest_purpose = "This class provides access to the avt pipeline data req";
 
-// ****************************************************************************
-// Function: DataRequest_print
-//
-// Purpose:
-//   Print function for PyDataRequest.
-//
-//
-// Programmer: Cyrus Harrison
-// Creation:   Tue Feb  9 08:58:23 PST 2010
-//
-// Modifications:
-//
-// ****************************************************************************
-static int
-DataRequest_print(PyObject *v, FILE *fp, int flags)
-{
-    return 0;
-}
-
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *DataRequest_Doc = "This class provides access to the avt pipeline data request.";
-#else
-static char *DataRequest_Doc = "This class provides access to the avt pipeline data req";
-#endif
-
-//
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-VISIT_PY_TYPE_OBJ(PyDataRequestType,    \
-                  "DataRequest",        \
-                  PyDataRequestObject,  \
-                  DataRequest_dealloc,  \
-                  DataRequest_print,    \
-                  DataRequest_getattr,  \
-                  0,                    \
-                  0,                    \
-                  DataRequest_Doc,      \
-                  0,                    \
-                  0, /* as_number*/     \
-                  DataRequest_methods);
+// Re-define tp slots for this custom object
+#undef VISIT_PY_TYPE_OBJ_TP_SLOTS
+#define VISIT_PY_TYPE_OBJ_TP_SLOTS(VSObjName)                                \
+    Py##VSObjName##Type.tp_doc = Py##VSObjName##_purpose;                    \
+    retval += ((void*) Py##VSObjName##Type.tp_doc != (void*)0);              \
+    Py##VSObjName##Type.tp_getattro = Py##VSObjName##_getattro;              \
+    retval += ((void*) Py##VSObjName##Type.tp_getattro != (void*)0);         \
+    Py##VSObjName##Type.tp_methods = Py##VSObjName##_methods;                \
+    retval += ((void*) Py##VSObjName##Type.tp_methods != (void*)0)
+VISIT_PY_TYPE_OBJ(DataRequest);
 
 ///////////////////////////////////////////////////////////////////////////////
 //

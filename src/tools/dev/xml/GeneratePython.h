@@ -3381,11 +3381,11 @@ class PythonGeneratorAttribute : public GeneratorBase
 
         c << "//" << Endl;
         c << "// Initialize the python object type structure with default values." << Endl;
-        c << "// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM," << Endl;
-        c << "// that allows for customization of the .tp_xxx slot methods. These" << Endl;
-        c << "// macros are defined in src/visitpy/common/Py2and3Support.h" << Endl;
+        c << "// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS," << Endl;
+        c << "// and then re-define it here AHEAD of VISIT_PY_TYPE_OBJ. For examples, look" << Endl;
+        c << "// in src/avt/PythonFilters and in src/visitpy/common/Py2and3Support.h" << Endl;
         c << "//" << Endl;
-        c << "VISIT_PY_TYPE_OBJ_DEFAULT("<<name<<");" << Endl << Endl;
+        c << "VISIT_PY_TYPE_OBJ("<<name<<");" << Endl << Endl;
  
         c << "//" << Endl;
         c << "// Helper function for comparing." << Endl;
