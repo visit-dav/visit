@@ -1309,7 +1309,7 @@ typedef struct {
 //
 // The type description structure
 //
-static PyNumberMethods PyView3DAttributes_as_number = {
+static PyNumberMethods _PyView3DAttributes_as_number = {
     (binaryfunc)View3DAttributes_Add, /*nb_add*/
     (binaryfunc)0, /*nb_subtract*/
     (binaryfunc)View3DAttributes_Mul, /*nb_multiply*/
@@ -1368,6 +1368,7 @@ static PyNumberMethods PyView3DAttributes_as_number = {
     (binaryfunc)0 /*nb_inplace_matrix_multiply;*/
 #endif
 };
+static PyNumberMethods *PyView3DAttributes_as_number = &_PyView3DAttributes_as_number;
 
 //
 // The doc string for the class.
@@ -1380,14 +1381,13 @@ static PyObject * PyView3DAttributes_richcompare(PyObject *self, PyObject *other
 // Re-define tp slots for this custom object
 #undef VISIT_PY_TYPE_OBJ_TP_SLOTS
 #define VISIT_PY_TYPE_OBJ_TP_SLOTS(VSObjName)                          \
-    VISIT_PY_TYPE_OBJ_SLOT2(VSObjName, purpose, doc);                  \
+    VISIT_PY_TYPE_OBJ_SLOT2(VSObjName, doc, purpose);                  \
     VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, dealloc);                       \
     VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, getattro);                      \
     VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, setattro);                      \
     VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, str);                           \
     VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, richcompare);                   \
-    Py##VSObjName##Type.tp_as_number = &Py##VSObjName##_as_number;     \
-    retval += ((void*) Py##VSObjName##Type.tp_as_number != (void*)0);  \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, as_number);                     \
     VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, methods)
 VISIT_PY_TYPE_OBJ(View3DAttributes);
 
