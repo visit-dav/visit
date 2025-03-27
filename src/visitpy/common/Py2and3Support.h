@@ -288,33 +288,37 @@ PyUnicode_From_UTF32_Unicode_Buffer(const char *unicode_buffer,
 
 //
 // Mark C. Miller, Wed Mar 26 18:58:25 PDT 2025
-// Build a block of code representing the default set of .tp_xxx slot methods
+// These macros are used within the definition of VISIT_PY_TYPE_OBJ to help
+// build a block of code representing the default set of .tp_xxx slot methods
 // our standard objects need to define. Its likely overly cautious but the reason
 // for the funky retval incrimenting here is to ensure there is no way any compiler
 // optimizations could maybe decide the function in which this code block appears
 // could ever be optimized away because its return value could maybe be computed at
 // compile time.
 //
-// For non-standard objects, the correct approach is to #undef this macro and
-// then re-define it to what is needed AHEAD of invoking VISIT_PY_TYPE_OBJ().
-//
 // We make prolific use of the CPP paste operator (##) here to enforce naming
 // consistency.
 //
-#define VISIT_PY_TYPE_OBJ_TP_SLOTS(VSObjName)                                \
-    Py##VSObjName##Type.tp_dealloc = Py##VSObjName##_dealloc;                \
-    retval += ((void*) Py##VSObjName##Type.tp_dealloc != (void*)0);          \
-    Py##VSObjName##Type.tp_repr = Py##VSObjName##_str;                       \
-    Py##VSObjName##Type.tp_str = Py##VSObjName##_str;                        \
-    retval += ((void*) Py##VSObjName##Type.tp_str != (void*)0);              \
-    Py##VSObjName##Type.tp_getattro = Py##VSObjName##_getattro;              \
-    retval += ((void*) Py##VSObjName##Type.tp_getattro != (void*)0);         \
-    Py##VSObjName##Type.tp_setattro = Py##VSObjName##_setattro;              \
-    retval += ((void*) Py##VSObjName##Type.tp_setattro != (void*)0);         \
-    Py##VSObjName##Type.tp_richcompare = Py##VSObjName##_richcompare;        \
-    retval += ((void*) Py##VSObjName##Type.tp_richcompare != (void*)0);      \
-    Py##VSObjName##Type.tp_methods = Py##VSObjName##_methods;                \
-    retval += ((void*) Py##VSObjName##Type.tp_methods != (void*)0)
+#define VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, SLOT)                   \
+    Py##VSObjName##Type.tp_##SLOT = Py##VSObjName##_##SLOT;        \
+    retval += ((void*) Py##VSObjName##Type.tp_##SLOT != (void*)0)
+
+#define VISIT_PY_TYPE_OBJ_SLOT2(VSObjName, SLOT, FUNC)             \
+    Py##VSObjName##Type.tp_##SLOT = Py##VSObjName##_##FUNC;        \
+    retval += ((void*) Py##VSObjName##Type.tp_##SLOT != (void*)0)
+
+//
+// For non-standard objects, the correct approach is to #undef this macro and
+// then re-define it to what is needed AHEAD of invoking VISIT_PY_TYPE_OBJ().
+//
+#define VISIT_PY_TYPE_OBJ_TP_SLOTS(VSObjName)              \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, dealloc);           \
+    VISIT_PY_TYPE_OBJ_SLOT2(VSObjName, repr, str);         \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, str);               \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, getattro);          \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, setattro);          \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, richcompare);       \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, methods)
 
 // 2023/01/27 CYRUSH Note:
 // tp_print / tp_vectorcall_offset slot is not used by python 3.0 - 3.7

@@ -23,7 +23,7 @@
 //
 // This struct contains the Python type information and a View3DAttributes.
 //
-struct View3DAttributesObject
+struct PyView3DAttributesObject
 {
     PyObject_HEAD
     View3DAttributes *data;
@@ -191,7 +191,7 @@ PyView3DAttributes_ToString(const View3DAttributes *atts, const char *prefix)
 static PyObject *
 View3DAttributes_Notify(PyObject *self, PyObject *args)
 {
-    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -200,7 +200,7 @@ View3DAttributes_Notify(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View3DAttributes_SetViewNormal(PyObject *self, PyObject *args)
 {
-    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
 
     double *dvals = obj->data->GetViewNormal();
     if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
@@ -242,7 +242,7 @@ View3DAttributes_SetViewNormal(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View3DAttributes_GetViewNormal(PyObject *self, PyObject *args)
 {
-    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the viewNormal.
     PyObject *retval = PyTuple_New(3);
     const double *viewNormal = obj->data->GetViewNormal();
@@ -254,7 +254,7 @@ View3DAttributes_GetViewNormal(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View3DAttributes_SetFocus(PyObject *self, PyObject *args)
 {
-    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
 
     double *dvals = obj->data->GetFocus();
     if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
@@ -296,7 +296,7 @@ View3DAttributes_SetFocus(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View3DAttributes_GetFocus(PyObject *self, PyObject *args)
 {
-    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the focus.
     PyObject *retval = PyTuple_New(3);
     const double *focus = obj->data->GetFocus();
@@ -308,7 +308,7 @@ View3DAttributes_GetFocus(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View3DAttributes_SetViewUp(PyObject *self, PyObject *args)
 {
-    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
 
     double *dvals = obj->data->GetViewUp();
     if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
@@ -350,7 +350,7 @@ View3DAttributes_SetViewUp(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View3DAttributes_GetViewUp(PyObject *self, PyObject *args)
 {
-    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the viewUp.
     PyObject *retval = PyTuple_New(3);
     const double *viewUp = obj->data->GetViewUp();
@@ -362,7 +362,7 @@ View3DAttributes_GetViewUp(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View3DAttributes_SetViewAngle(PyObject *self, PyObject *args)
 {
-    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
@@ -378,7 +378,7 @@ View3DAttributes_SetViewAngle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View3DAttributes_GetViewAngle(PyObject *self, PyObject *args)
 {
-    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetViewAngle());
     return retval;
 }
@@ -386,7 +386,7 @@ View3DAttributes_GetViewAngle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View3DAttributes_SetParallelScale(PyObject *self, PyObject *args)
 {
-    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
@@ -402,7 +402,7 @@ View3DAttributes_SetParallelScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View3DAttributes_GetParallelScale(PyObject *self, PyObject *args)
 {
-    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetParallelScale());
     return retval;
 }
@@ -410,7 +410,7 @@ View3DAttributes_GetParallelScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View3DAttributes_SetNearPlane(PyObject *self, PyObject *args)
 {
-    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
@@ -426,7 +426,7 @@ View3DAttributes_SetNearPlane(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View3DAttributes_GetNearPlane(PyObject *self, PyObject *args)
 {
-    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetNearPlane());
     return retval;
 }
@@ -434,7 +434,7 @@ View3DAttributes_GetNearPlane(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View3DAttributes_SetFarPlane(PyObject *self, PyObject *args)
 {
-    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
@@ -450,7 +450,7 @@ View3DAttributes_SetFarPlane(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View3DAttributes_GetFarPlane(PyObject *self, PyObject *args)
 {
-    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetFarPlane());
     return retval;
 }
@@ -458,7 +458,7 @@ View3DAttributes_GetFarPlane(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View3DAttributes_SetImagePan(PyObject *self, PyObject *args)
 {
-    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
 
     double *dvals = obj->data->GetImagePan();
     if(!PyArg_ParseTuple(args, "dd", &dvals[0], &dvals[1]))
@@ -500,7 +500,7 @@ View3DAttributes_SetImagePan(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View3DAttributes_GetImagePan(PyObject *self, PyObject *args)
 {
-    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the imagePan.
     PyObject *retval = PyTuple_New(2);
     const double *imagePan = obj->data->GetImagePan();
@@ -512,7 +512,7 @@ View3DAttributes_GetImagePan(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View3DAttributes_SetImageZoom(PyObject *self, PyObject *args)
 {
-    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
@@ -528,7 +528,7 @@ View3DAttributes_SetImageZoom(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View3DAttributes_GetImageZoom(PyObject *self, PyObject *args)
 {
-    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetImageZoom());
     return retval;
 }
@@ -536,7 +536,7 @@ View3DAttributes_GetImageZoom(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View3DAttributes_SetPerspective(PyObject *self, PyObject *args)
 {
-    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -552,7 +552,7 @@ View3DAttributes_SetPerspective(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View3DAttributes_GetPerspective(PyObject *self, PyObject *args)
 {
-    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetPerspective()?1L:0L);
     return retval;
 }
@@ -560,7 +560,7 @@ View3DAttributes_GetPerspective(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View3DAttributes_SetEyeAngle(PyObject *self, PyObject *args)
 {
-    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
@@ -576,7 +576,7 @@ View3DAttributes_SetEyeAngle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View3DAttributes_GetEyeAngle(PyObject *self, PyObject *args)
 {
-    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetEyeAngle());
     return retval;
 }
@@ -584,7 +584,7 @@ View3DAttributes_GetEyeAngle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View3DAttributes_SetCenterOfRotationSet(PyObject *self, PyObject *args)
 {
-    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -600,7 +600,7 @@ View3DAttributes_SetCenterOfRotationSet(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View3DAttributes_GetCenterOfRotationSet(PyObject *self, PyObject *args)
 {
-    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetCenterOfRotationSet()?1L:0L);
     return retval;
 }
@@ -608,7 +608,7 @@ View3DAttributes_GetCenterOfRotationSet(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View3DAttributes_SetCenterOfRotation(PyObject *self, PyObject *args)
 {
-    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
 
     double *dvals = obj->data->GetCenterOfRotation();
     if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
@@ -650,7 +650,7 @@ View3DAttributes_SetCenterOfRotation(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View3DAttributes_GetCenterOfRotation(PyObject *self, PyObject *args)
 {
-    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the centerOfRotation.
     PyObject *retval = PyTuple_New(3);
     const double *centerOfRotation = obj->data->GetCenterOfRotation();
@@ -662,7 +662,7 @@ View3DAttributes_GetCenterOfRotation(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View3DAttributes_SetAxis3DScaleFlag(PyObject *self, PyObject *args)
 {
-    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -678,7 +678,7 @@ View3DAttributes_SetAxis3DScaleFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View3DAttributes_GetAxis3DScaleFlag(PyObject *self, PyObject *args)
 {
-    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetAxis3DScaleFlag()?1L:0L);
     return retval;
 }
@@ -686,7 +686,7 @@ View3DAttributes_GetAxis3DScaleFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View3DAttributes_SetAxis3DScales(PyObject *self, PyObject *args)
 {
-    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
 
     double *dvals = obj->data->GetAxis3DScales();
     if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
@@ -728,7 +728,7 @@ View3DAttributes_SetAxis3DScales(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View3DAttributes_GetAxis3DScales(PyObject *self, PyObject *args)
 {
-    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the axis3DScales.
     PyObject *retval = PyTuple_New(3);
     const double *axis3DScales = obj->data->GetAxis3DScales();
@@ -740,7 +740,7 @@ View3DAttributes_GetAxis3DScales(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View3DAttributes_SetShear(PyObject *self, PyObject *args)
 {
-    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
 
     double *dvals = obj->data->GetShear();
     if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
@@ -782,7 +782,7 @@ View3DAttributes_SetShear(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View3DAttributes_GetShear(PyObject *self, PyObject *args)
 {
-    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the shear.
     PyObject *retval = PyTuple_New(3);
     const double *shear = obj->data->GetShear();
@@ -794,7 +794,7 @@ View3DAttributes_GetShear(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View3DAttributes_SetWindowValid(PyObject *self, PyObject *args)
 {
-    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -810,7 +810,7 @@ View3DAttributes_SetWindowValid(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View3DAttributes_GetWindowValid(PyObject *self, PyObject *args)
 {
-    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetWindowValid()?1L:0L);
     return retval;
 }
@@ -839,7 +839,7 @@ View3DAttributes_RotateAxis(PyObject *self, PyObject *args)
 //
 // THIS METHOD IS CUSTOM CODED!!!!!!.
 //
-    View3DAttributesObject *obj = (View3DAttributesObject *)self;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)self;
 
     int ival;
     double dval;
@@ -884,8 +884,8 @@ View3DAttributes_Add(PyObject *v, PyObject *w)
 
     PyObject *retval = NewView3DAttributes(0);
     View3DAttributes *c = PyView3DAttributes_FromPyObject(retval);
-    View3DAttributes *a = ((View3DAttributesObject *)v)->data;
-    View3DAttributes *b = ((View3DAttributesObject *)w)->data;
+    View3DAttributes *a = ((PyView3DAttributesObject *)v)->data;
+    View3DAttributes *b = ((PyView3DAttributesObject *)w)->data;
 
     c->GetViewNormal()[0] = a->GetViewNormal()[0] + b->GetViewNormal()[0];
     c->GetViewNormal()[1] = a->GetViewNormal()[1] + b->GetViewNormal()[1];
@@ -946,12 +946,12 @@ View3DAttributes_Mul(PyObject *v, PyObject *w)
 
         if(arg1isObject)
         {
-            a = ((View3DAttributesObject *)v)->data;
+            a = ((PyView3DAttributesObject *)v)->data;
             num = w;
         }
         else
         {
-            a = ((View3DAttributesObject *)w)->data;
+            a = ((PyView3DAttributesObject *)w)->data;
             num = v;
         }
 
@@ -1003,8 +1003,12 @@ View3DAttributes_Mul(PyObject *v, PyObject *w)
 }
 
 
+// Forward declearation for method table
+static PyObject *View3DAttributes_dir(PyObject *self, PyObject *args);
+
 PyMethodDef PyView3DAttributes_methods[VIEW3DATTRIBUTES_NMETH] = {
-    {"Notify", View3DAttributes_Notify, METH_VARARGS},
+    {"__dir__", View3DAttributes_dir, METH_NOARGS},
+    {"Notify", View3DAttributes_Notify, METH_NOARGS},
     {"SetViewNormal", View3DAttributes_SetViewNormal, METH_VARARGS},
     {"GetViewNormal", View3DAttributes_GetViewNormal, METH_VARARGS},
     {"SetFocus", View3DAttributes_SetFocus, METH_VARARGS},
@@ -1048,18 +1052,45 @@ PyMethodDef PyView3DAttributes_methods[VIEW3DATTRIBUTES_NMETH] = {
 //
 // Type functions
 //
+static PyObject *
+View3DAttributes_dir(PyObject *self, PyObject *args)
+{
+    static View3DAttributes atts; // dummy to access field names
+    
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL; 
+    }
+    
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyView3DAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+    
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}   
 
 static void
-View3DAttributes_dealloc(PyObject *v)
+PyView3DAttributes_dealloc(PyObject *v)
 {
-   View3DAttributesObject *obj = (View3DAttributesObject *)v;
+   PyView3DAttributesObject *obj = (PyView3DAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *View3DAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyView3DAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -1165,21 +1196,12 @@ PyView3DAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-View3DAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    View3DAttributesObject *obj = (View3DAttributesObject *)v;
-    fprintf(fp, "%s", PyView3DAttributes_ToString(obj->data, "").c_str());
-    return 0;
-}
-
 PyObject *
-View3DAttributes_str(PyObject *v)
+PyView3DAttributes_str(PyObject *v)
 {
-    View3DAttributesObject *obj = (View3DAttributesObject *)v;
+    PyView3DAttributesObject *obj = (PyView3DAttributesObject *)v;
     return PyString_FromString(PyView3DAttributes_ToString(obj->data,"").c_str());
 }
-
 
 /*
 PyNumberMethods struct differs between Python 2 and Python 3
@@ -1287,7 +1309,7 @@ typedef struct {
 //
 // The type description structure
 //
-static PyNumberMethods View3DAttributes_as_number = {
+static PyNumberMethods PyView3DAttributes_as_number = {
     (binaryfunc)View3DAttributes_Add, /*nb_add*/
     (binaryfunc)0, /*nb_subtract*/
     (binaryfunc)View3DAttributes_Mul, /*nb_multiply*/
@@ -1350,56 +1372,39 @@ static PyNumberMethods View3DAttributes_as_number = {
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *View3DAttributes_Purpose = "This class contains the 3d view attributes.";
-#else
-static char *View3DAttributes_Purpose = "This class contains the 3d view attributes.";
-#endif
+static char const *PyView3DAttributes_purpose = "This class contains the 3d view attributes.";
 
-//
-// The type description structure
-//
+// Forward declare for python type object
+static PyObject * PyView3DAttributes_richcompare(PyObject *self, PyObject *other, int op);
 
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-VISIT_PY_TYPE_OBJ(View3DAttributesType,          \
-                  "View3DAttributes",            \
-                  View3DAttributesObject,        \
-                  View3DAttributes_dealloc,      \
-                  View3DAttributes_print,        \
-                  PyView3DAttributes_getattro,    \
-                  PyView3DAttributes_setattro,    \
-                  View3DAttributes_str,          \
-                  View3DAttributes_Purpose,      \
-                  View3DAttributes_richcompare,  \
-                  &View3DAttributes_as_number,   \
-                  PyView3DAttributes_methods);
-
+// Re-define tp slots for this custom object
+#undef VISIT_PY_TYPE_OBJ_TP_SLOTS
+#define VISIT_PY_TYPE_OBJ_TP_SLOTS(VSObjName)                          \
+    VISIT_PY_TYPE_OBJ_SLOT2(VSObjName, purpose, doc);                  \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, dealloc);                       \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, getattro);                      \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, setattro);                      \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, str);                           \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, richcompare);                   \
+    Py##VSObjName##Type.tp_as_number = &Py##VSObjName##_as_number;     \
+    retval += ((void*) Py##VSObjName##Type.tp_as_number != (void*)0);  \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, methods)
+VISIT_PY_TYPE_OBJ(View3DAttributes);
 
 static PyObject *
-View3DAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyView3DAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
     if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &View3DAttributesType)
+         && Py_TYPE(self) == &PyView3DAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    View3DAttributes *a = ((View3DAttributesObject *)self)->data;
-    View3DAttributes *b = ((View3DAttributesObject *)other)->data;
+    View3DAttributes *a = ((PyView3DAttributesObject *)self)->data;
+    View3DAttributes *b = ((PyView3DAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -1418,6 +1423,7 @@ View3DAttributes_richcompare(PyObject *self, PyObject *other, int op)
     return res;
 }
 
+
 //
 // Helper functions for object allocation.
 //
@@ -1428,8 +1434,8 @@ static View3DAttributes *currentAtts = 0;
 static PyObject *
 NewView3DAttributes(int useCurrent)
 {
-    View3DAttributesObject *newObject;
-    newObject = PyObject_NEW(View3DAttributesObject, &View3DAttributesType);
+    PyView3DAttributesObject *newObject;
+    newObject = PyObject_NEW(PyView3DAttributesObject, &PyView3DAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1446,8 +1452,8 @@ NewView3DAttributes(int useCurrent)
 static PyObject *
 WrapView3DAttributes(const View3DAttributes *attr)
 {
-    View3DAttributesObject *newObject;
-    newObject = PyObject_NEW(View3DAttributesObject, &View3DAttributesType);
+    PyView3DAttributesObject *newObject;
+    newObject = PyObject_NEW(PyView3DAttributesObject, &PyView3DAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (View3DAttributes *)attr;
@@ -1549,13 +1555,13 @@ PyView3DAttributes_GetMethodTable(int *nMethods)
 bool
 PyView3DAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &View3DAttributesType);
+    return (obj->ob_type == &PyView3DAttributesType);
 }
 
 View3DAttributes *
 PyView3DAttributes_FromPyObject(PyObject *obj)
 {
-    View3DAttributesObject *obj2 = (View3DAttributesObject *)obj;
+    PyView3DAttributesObject *obj2 = (PyView3DAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1574,7 +1580,7 @@ PyView3DAttributes_Wrap(const View3DAttributes *attr)
 void
 PyView3DAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    View3DAttributesObject *obj2 = (View3DAttributesObject *)obj;
+    PyView3DAttributesObject *obj2 = (PyView3DAttributesObject *)obj;
     obj2->parent = parent;
 }
 
