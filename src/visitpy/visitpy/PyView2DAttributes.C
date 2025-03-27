@@ -23,7 +23,7 @@
 //
 // This struct contains the Python type information and a View2DAttributes.
 //
-struct View2DAttributesObject
+struct PyView2DAttributesObject
 {
     PyObject_HEAD
     View2DAttributes *data;
@@ -109,9 +109,38 @@ PyView2DAttributes_ToString(const View2DAttributes *atts, const char *prefix)
 }
 
 static PyObject *
+View2DAttributes_dir(PyObject *self, PyObject *args)
+{
+    static View2DAttributes atts; // dummy to access field names
+    
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL; 
+    }
+    
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyView2DAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+    
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}   
+
+static PyObject *
 View2DAttributes_Notify(PyObject *self, PyObject *args)
 {
-    View2DAttributesObject *obj = (View2DAttributesObject *)self;
+    PyView2DAttributesObject *obj = (PyView2DAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -120,7 +149,7 @@ View2DAttributes_Notify(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View2DAttributes_SetWindowCoords(PyObject *self, PyObject *args)
 {
-    View2DAttributesObject *obj = (View2DAttributesObject *)self;
+    PyView2DAttributesObject *obj = (PyView2DAttributesObject *)self;
 
     double *dvals = obj->data->GetWindowCoords();
     if(!PyArg_ParseTuple(args, "dddd", &dvals[0], &dvals[1], &dvals[2], &dvals[3]))
@@ -162,7 +191,7 @@ View2DAttributes_SetWindowCoords(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View2DAttributes_GetWindowCoords(PyObject *self, PyObject *args)
 {
-    View2DAttributesObject *obj = (View2DAttributesObject *)self;
+    PyView2DAttributesObject *obj = (PyView2DAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the windowCoords.
     PyObject *retval = PyTuple_New(4);
     const double *windowCoords = obj->data->GetWindowCoords();
@@ -174,7 +203,7 @@ View2DAttributes_GetWindowCoords(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View2DAttributes_SetViewportCoords(PyObject *self, PyObject *args)
 {
-    View2DAttributesObject *obj = (View2DAttributesObject *)self;
+    PyView2DAttributesObject *obj = (PyView2DAttributesObject *)self;
 
     double *dvals = obj->data->GetViewportCoords();
     if(!PyArg_ParseTuple(args, "dddd", &dvals[0], &dvals[1], &dvals[2], &dvals[3]))
@@ -216,7 +245,7 @@ View2DAttributes_SetViewportCoords(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View2DAttributes_GetViewportCoords(PyObject *self, PyObject *args)
 {
-    View2DAttributesObject *obj = (View2DAttributesObject *)self;
+    PyView2DAttributesObject *obj = (PyView2DAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the viewportCoords.
     PyObject *retval = PyTuple_New(4);
     const double *viewportCoords = obj->data->GetViewportCoords();
@@ -228,7 +257,7 @@ View2DAttributes_GetViewportCoords(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View2DAttributes_SetFullFrameActivationMode(PyObject *self, PyObject *args)
 {
-    View2DAttributesObject *obj = (View2DAttributesObject *)self;
+    PyView2DAttributesObject *obj = (PyView2DAttributesObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -253,7 +282,7 @@ View2DAttributes_SetFullFrameActivationMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View2DAttributes_GetFullFrameActivationMode(PyObject *self, PyObject *args)
 {
-    View2DAttributesObject *obj = (View2DAttributesObject *)self;
+    PyView2DAttributesObject *obj = (PyView2DAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetFullFrameActivationMode()));
     return retval;
 }
@@ -261,7 +290,7 @@ View2DAttributes_GetFullFrameActivationMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View2DAttributes_SetFullFrameAutoThreshold(PyObject *self, PyObject *args)
 {
-    View2DAttributesObject *obj = (View2DAttributesObject *)self;
+    PyView2DAttributesObject *obj = (PyView2DAttributesObject *)self;
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
@@ -277,7 +306,7 @@ View2DAttributes_SetFullFrameAutoThreshold(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View2DAttributes_GetFullFrameAutoThreshold(PyObject *self, PyObject *args)
 {
-    View2DAttributesObject *obj = (View2DAttributesObject *)self;
+    PyView2DAttributesObject *obj = (PyView2DAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetFullFrameAutoThreshold());
     return retval;
 }
@@ -285,7 +314,7 @@ View2DAttributes_GetFullFrameAutoThreshold(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View2DAttributes_SetXScale(PyObject *self, PyObject *args)
 {
-    View2DAttributesObject *obj = (View2DAttributesObject *)self;
+    PyView2DAttributesObject *obj = (PyView2DAttributesObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -310,7 +339,7 @@ View2DAttributes_SetXScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View2DAttributes_GetXScale(PyObject *self, PyObject *args)
 {
-    View2DAttributesObject *obj = (View2DAttributesObject *)self;
+    PyView2DAttributesObject *obj = (PyView2DAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetXScale()));
     return retval;
 }
@@ -318,7 +347,7 @@ View2DAttributes_GetXScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View2DAttributes_SetYScale(PyObject *self, PyObject *args)
 {
-    View2DAttributesObject *obj = (View2DAttributesObject *)self;
+    PyView2DAttributesObject *obj = (PyView2DAttributesObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -343,7 +372,7 @@ View2DAttributes_SetYScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View2DAttributes_GetYScale(PyObject *self, PyObject *args)
 {
-    View2DAttributesObject *obj = (View2DAttributesObject *)self;
+    PyView2DAttributesObject *obj = (PyView2DAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetYScale()));
     return retval;
 }
@@ -351,7 +380,7 @@ View2DAttributes_GetYScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View2DAttributes_SetWindowValid(PyObject *self, PyObject *args)
 {
-    View2DAttributesObject *obj = (View2DAttributesObject *)self;
+    PyView2DAttributesObject *obj = (PyView2DAttributesObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -367,7 +396,7 @@ View2DAttributes_SetWindowValid(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 View2DAttributes_GetWindowValid(PyObject *self, PyObject *args)
 {
-    View2DAttributesObject *obj = (View2DAttributesObject *)self;
+    PyView2DAttributesObject *obj = (PyView2DAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetWindowValid()?1L:0L);
     return retval;
 }
@@ -387,8 +416,8 @@ View2DAttributes_Add(PyObject *v, PyObject *w)
 
     PyObject *retval = NewView2DAttributes(0);
     View2DAttributes *c = PyView2DAttributes_FromPyObject(retval);
-    View2DAttributes *a = ((View2DAttributesObject *)v)->data;
-    View2DAttributes *b = ((View2DAttributesObject *)w)->data;
+    View2DAttributes *a = ((PyView2DAttributesObject *)v)->data;
+    View2DAttributes *b = ((PyView2DAttributesObject *)w)->data;
 
 
     c->GetWindowCoords()[0] = a->GetWindowCoords()[0] + b->GetWindowCoords()[0];
@@ -452,12 +481,12 @@ View2DAttributes_Mul(PyObject *v, PyObject *w)
 
         if(arg1isObject)
         {
-            a = ((View2DAttributesObject *)v)->data;
+            a = ((PyView2DAttributesObject *)v)->data;
             num = w;
         }
         else
         {
-            a = ((View2DAttributesObject *)w)->data;
+            a = ((PyView2DAttributesObject *)w)->data;
             num = v;
         }
 
@@ -498,7 +527,8 @@ View2DAttributes_Mul(PyObject *v, PyObject *w)
 
 
 PyMethodDef PyView2DAttributes_methods[VIEW2DATTRIBUTES_NMETH] = {
-    {"Notify", View2DAttributes_Notify, METH_VARARGS},
+    {"__dir__", View2DAttributes_dir, METH_NOARGS},
+    {"Notify", View2DAttributes_Notify, METH_NOARGS},
     {"SetWindowCoords", View2DAttributes_SetWindowCoords, METH_VARARGS},
     {"GetWindowCoords", View2DAttributes_GetWindowCoords, METH_VARARGS},
     {"SetViewportCoords", View2DAttributes_SetViewportCoords, METH_VARARGS},
@@ -523,16 +553,16 @@ PyMethodDef PyView2DAttributes_methods[VIEW2DATTRIBUTES_NMETH] = {
 //
 
 static void
-View2DAttributes_dealloc(PyObject *v)
+PyView2DAttributes_dealloc(PyObject *v)
 {
-   View2DAttributesObject *obj = (View2DAttributesObject *)v;
+   PyView2DAttributesObject *obj = (PyView2DAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *View2DAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyView2DAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyView2DAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -615,18 +645,10 @@ PyView2DAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-View2DAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    View2DAttributesObject *obj = (View2DAttributesObject *)v;
-    fprintf(fp, "%s", PyView2DAttributes_ToString(obj->data, "").c_str());
-    return 0;
-}
-
 PyObject *
-View2DAttributes_str(PyObject *v)
+PyView2DAttributes_str(PyObject *v)
 {
-    View2DAttributesObject *obj = (View2DAttributesObject *)v;
+    PyView2DAttributesObject *obj = (PyView2DAttributesObject *)v;
     return PyString_FromString(PyView2DAttributes_ToString(obj->data,"").c_str());
 }
 
@@ -738,7 +760,7 @@ typedef struct {
 //
 // The type description structure
 //
-static PyNumberMethods View2DAttributes_as_number = {
+static PyNumberMethods _PyView2DAttributes_as_number = {
     (binaryfunc)View2DAttributes_Add, /*nb_add*/
     (binaryfunc)0, /*nb_subtract*/
     (binaryfunc)View2DAttributes_Mul, /*nb_multiply*/
@@ -797,61 +819,40 @@ static PyNumberMethods View2DAttributes_as_number = {
     (binaryfunc)0 /*nb_inplace_matrix_multiply;*/
 #endif
 };
+static PyNumberMethods *PyView2DAttributes_as_number = &_PyView2DAttributes_as_number;
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *View2DAttributes_Purpose = "This class contains the 2d view attributes.";
-#else
-static char *View2DAttributes_Purpose = "This class contains the 2d view attributes.";
-#endif
+static char const *PyView2DAttributes_purpose = "This class contains the 2d view attributes.";
 
-//
-// The type description structure
-//
-//
-
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-VISIT_PY_TYPE_OBJ(View2DAttributesType,          \
-                  "View2DAttributes",            \
-                  View2DAttributesObject,        \
-                  View2DAttributes_dealloc,      \
-                  View2DAttributes_print,        \
-                  PyView2DAttributes_getattro,    \
-                  PyView2DAttributes_setattro,    \
-                  View2DAttributes_str,          \
-                  View2DAttributes_Purpose,      \
-                  View2DAttributes_richcompare,  \
-                  &View2DAttributes_as_number,   \
-                  PyView2DAttributes_methods);
-
+// Re-define tp slots for this custom object
+#undef VISIT_PY_TYPE_OBJ_TP_SLOTS
+#define VISIT_PY_TYPE_OBJ_TP_SLOTS(VSObjName)                          \
+    VISIT_PY_TYPE_OBJ_SLOT2(VSObjName, doc, purpose);                  \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, dealloc);                       \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, getattro);                      \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, setattro);                      \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, str);                           \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, richcompare);                   \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, as_number);                     \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, methods)
+VISIT_PY_TYPE_OBJ(View2DAttributes);
 
 static PyObject *
-View2DAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyView2DAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
     if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &View2DAttributesType)
+         && Py_TYPE(self) == &PyView2DAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    View2DAttributes *a = ((View2DAttributesObject *)self)->data;
-    View2DAttributes *b = ((View2DAttributesObject *)other)->data;
+    View2DAttributes *a = ((PyView2DAttributesObject *)self)->data;
+    View2DAttributes *b = ((PyView2DAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -880,8 +881,8 @@ static View2DAttributes *currentAtts = 0;
 static PyObject *
 NewView2DAttributes(int useCurrent)
 {
-    View2DAttributesObject *newObject;
-    newObject = PyObject_NEW(View2DAttributesObject, &View2DAttributesType);
+    PyView2DAttributesObject *newObject;
+    newObject = PyObject_NEW(PyView2DAttributesObject, &PyView2DAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -898,8 +899,8 @@ NewView2DAttributes(int useCurrent)
 static PyObject *
 WrapView2DAttributes(const View2DAttributes *attr)
 {
-    View2DAttributesObject *newObject;
-    newObject = PyObject_NEW(View2DAttributesObject, &View2DAttributesType);
+    PyView2DAttributesObject *newObject;
+    newObject = PyObject_NEW(PyView2DAttributesObject, &PyView2DAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (View2DAttributes *)attr;
@@ -1001,13 +1002,13 @@ PyView2DAttributes_GetMethodTable(int *nMethods)
 bool
 PyView2DAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &View2DAttributesType);
+    return (obj->ob_type == &PyView2DAttributesType);
 }
 
 View2DAttributes *
 PyView2DAttributes_FromPyObject(PyObject *obj)
 {
-    View2DAttributesObject *obj2 = (View2DAttributesObject *)obj;
+    PyView2DAttributesObject *obj2 = (PyView2DAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1026,7 +1027,7 @@ PyView2DAttributes_Wrap(const View2DAttributes *attr)
 void
 PyView2DAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    View2DAttributesObject *obj2 = (View2DAttributesObject *)obj;
+    PyView2DAttributesObject *obj2 = (PyView2DAttributesObject *)obj;
     obj2->parent = parent;
 }
 
