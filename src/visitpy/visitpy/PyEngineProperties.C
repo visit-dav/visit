@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a EngineProperties.
 //
-struct EnginePropertiesObject
+struct PyEnginePropertiesObject
 {
     PyObject_HEAD
     EngineProperties *data;
@@ -61,7 +61,7 @@ PyEngineProperties_ToString(const EngineProperties *atts, const char *prefix, co
 static PyObject *
 EngineProperties_Notify(PyObject *self, PyObject *args)
 {
-    EnginePropertiesObject *obj = (EnginePropertiesObject *)self;
+    PyEnginePropertiesObject *obj = (PyEnginePropertiesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -98,7 +98,7 @@ EngineProperties_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 EngineProperties_SetNumNodes(PyObject *self, PyObject *args)
 {
-    EnginePropertiesObject *obj = (EnginePropertiesObject *)self;
+    PyEnginePropertiesObject *obj = (PyEnginePropertiesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -150,7 +150,7 @@ EngineProperties_SetNumNodes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 EngineProperties_GetNumNodes(PyObject *self, PyObject *args)
 {
-    EnginePropertiesObject *obj = (EnginePropertiesObject *)self;
+    PyEnginePropertiesObject *obj = (PyEnginePropertiesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNumNodes()));
     return retval;
 }
@@ -158,7 +158,7 @@ EngineProperties_GetNumNodes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 EngineProperties_SetNumProcessors(PyObject *self, PyObject *args)
 {
-    EnginePropertiesObject *obj = (EnginePropertiesObject *)self;
+    PyEnginePropertiesObject *obj = (PyEnginePropertiesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -210,7 +210,7 @@ EngineProperties_SetNumProcessors(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 EngineProperties_GetNumProcessors(PyObject *self, PyObject *args)
 {
-    EnginePropertiesObject *obj = (EnginePropertiesObject *)self;
+    PyEnginePropertiesObject *obj = (PyEnginePropertiesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNumProcessors()));
     return retval;
 }
@@ -218,7 +218,7 @@ EngineProperties_GetNumProcessors(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 EngineProperties_SetNumProcessorsUsingGPUs(PyObject *self, PyObject *args)
 {
-    EnginePropertiesObject *obj = (EnginePropertiesObject *)self;
+    PyEnginePropertiesObject *obj = (PyEnginePropertiesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -270,7 +270,7 @@ EngineProperties_SetNumProcessorsUsingGPUs(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 EngineProperties_GetNumProcessorsUsingGPUs(PyObject *self, PyObject *args)
 {
-    EnginePropertiesObject *obj = (EnginePropertiesObject *)self;
+    PyEnginePropertiesObject *obj = (PyEnginePropertiesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNumProcessorsUsingGPUs()));
     return retval;
 }
@@ -278,7 +278,7 @@ EngineProperties_GetNumProcessorsUsingGPUs(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 EngineProperties_SetDynamicLoadBalancing(PyObject *self, PyObject *args)
 {
-    EnginePropertiesObject *obj = (EnginePropertiesObject *)self;
+    PyEnginePropertiesObject *obj = (PyEnginePropertiesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -330,7 +330,7 @@ EngineProperties_SetDynamicLoadBalancing(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 EngineProperties_GetDynamicLoadBalancing(PyObject *self, PyObject *args)
 {
-    EnginePropertiesObject *obj = (EnginePropertiesObject *)self;
+    PyEnginePropertiesObject *obj = (PyEnginePropertiesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetDynamicLoadBalancing()?1L:0L);
     return retval;
 }
@@ -338,7 +338,7 @@ EngineProperties_GetDynamicLoadBalancing(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 EngineProperties_SetLoadBalancingScheme(PyObject *self, PyObject *args)
 {
-    EnginePropertiesObject *obj = (EnginePropertiesObject *)self;
+    PyEnginePropertiesObject *obj = (PyEnginePropertiesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -379,7 +379,7 @@ EngineProperties_SetLoadBalancingScheme(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 EngineProperties_GetLoadBalancingScheme(PyObject *self, PyObject *args)
 {
-    EnginePropertiesObject *obj = (EnginePropertiesObject *)self;
+    PyEnginePropertiesObject *obj = (PyEnginePropertiesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetLoadBalancingScheme().c_str());
     return retval;
 }
@@ -407,16 +407,16 @@ PyMethodDef PyEngineProperties_methods[ENGINEPROPERTIES_NMETH] = {
 //
 
 static void
-EngineProperties_dealloc(PyObject *v)
+PyEngineProperties_dealloc(PyObject *v)
 {
-   EnginePropertiesObject *obj = (EnginePropertiesObject *)v;
+   PyEnginePropertiesObject *obj = (PyEnginePropertiesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *EngineProperties_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyEngineProperties_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyEngineProperties_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -476,56 +476,42 @@ PyEngineProperties_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 }
 
 PyObject *
-EngineProperties_str(PyObject *v)
+PyEngineProperties_str(PyObject *v)
 {
-    EnginePropertiesObject *obj = (EnginePropertiesObject *)v;
+    PyEnginePropertiesObject *obj = (PyEnginePropertiesObject *)v;
     return PyString_FromString(PyEngineProperties_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *EngineProperties_Purpose = "This class contains properties about running engines.";
-#else
-static char *EngineProperties_Purpose = "This class contains properties about running engines.";
-#endif
+static char const *PyEngineProperties_purpose = "This class contains properties about running engines.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject EnginePropertiesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "EngineProperties",
-    .tp_basicsize = sizeof(EnginePropertiesObject),
-    .tp_dealloc = EngineProperties_dealloc,
-    .tp_repr = EngineProperties_str,
-    .tp_str = EngineProperties_str,
-    .tp_getattro = PyEngineProperties_getattro,
-    .tp_setattro = PyEngineProperties_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = EngineProperties_Purpose,
-    .tp_richcompare = EngineProperties_richcompare,
-    .tp_methods = PyEngineProperties_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(EngineProperties);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-EngineProperties_richcompare(PyObject *self, PyObject *other, int op)
+PyEngineProperties_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &EnginePropertiesType
-         || Py_TYPE(other) != &EnginePropertiesType)
+    if ( Py_TYPE(self) != &PyEnginePropertiesType
+         || Py_TYPE(other) != &PyEnginePropertiesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    EngineProperties *a = ((EnginePropertiesObject *)self)->data;
-    EngineProperties *b = ((EnginePropertiesObject *)other)->data;
+    EngineProperties *a = ((PyEnginePropertiesObject *)self)->data;
+    EngineProperties *b = ((PyEnginePropertiesObject *)other)->data;
 
     switch (op)
     {
@@ -554,8 +540,8 @@ static EngineProperties *currentAtts = 0;
 static PyObject *
 NewEngineProperties(int useCurrent)
 {
-    EnginePropertiesObject *newObject;
-    newObject = PyObject_NEW(EnginePropertiesObject, &EnginePropertiesType);
+    PyEnginePropertiesObject *newObject;
+    newObject = PyObject_NEW(PyEnginePropertiesObject, &PyEnginePropertiesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -566,15 +552,15 @@ NewEngineProperties(int useCurrent)
         newObject->data = new EngineProperties;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&EnginePropertiesType);
+    PyType_Ready(&PyEnginePropertiesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapEngineProperties(const EngineProperties *attr)
 {
-    EnginePropertiesObject *newObject;
-    newObject = PyObject_NEW(EnginePropertiesObject, &EnginePropertiesType);
+    PyEnginePropertiesObject *newObject;
+    newObject = PyObject_NEW(PyEnginePropertiesObject, &PyEnginePropertiesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (EngineProperties *)attr;
@@ -676,13 +662,13 @@ PyEngineProperties_GetMethodTable(int *nMethods)
 bool
 PyEngineProperties_Check(PyObject *obj)
 {
-    return (obj->ob_type == &EnginePropertiesType);
+    return (obj->ob_type == &PyEnginePropertiesType);
 }
 
 EngineProperties *
 PyEngineProperties_FromPyObject(PyObject *obj)
 {
-    EnginePropertiesObject *obj2 = (EnginePropertiesObject *)obj;
+    PyEnginePropertiesObject *obj2 = (PyEnginePropertiesObject *)obj;
     return obj2->data;
 }
 
@@ -701,7 +687,7 @@ PyEngineProperties_Wrap(const EngineProperties *attr)
 void
 PyEngineProperties_SetParent(PyObject *obj, PyObject *parent)
 {
-    EnginePropertiesObject *obj2 = (EnginePropertiesObject *)obj;
+    PyEnginePropertiesObject *obj2 = (PyEnginePropertiesObject *)obj;
     obj2->parent = parent;
 }
 

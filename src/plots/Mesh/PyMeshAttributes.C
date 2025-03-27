@@ -28,7 +28,7 @@
 //
 // This struct contains the Python type information and a MeshAttributes.
 //
-struct MeshAttributesObject
+struct PyMeshAttributesObject
 {
     PyObject_HEAD
     MeshAttributes *data;
@@ -199,7 +199,7 @@ PyMeshAttributes_ToString(const MeshAttributes *atts, const char *prefix, const 
 static PyObject *
 MeshAttributes_Notify(PyObject *self, PyObject *args)
 {
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
+    PyMeshAttributesObject *obj = (PyMeshAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -237,7 +237,7 @@ MeshAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MeshAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 {
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
+    PyMeshAttributesObject *obj = (PyMeshAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -289,7 +289,7 @@ MeshAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MeshAttributes_GetLegendFlag(PyObject *self, PyObject *args)
 {
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
+    PyMeshAttributesObject *obj = (PyMeshAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetLegendFlag()?1L:0L);
     return retval;
 }
@@ -297,7 +297,7 @@ MeshAttributes_GetLegendFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MeshAttributes_SetLineWidth(PyObject *self, PyObject *args)
 {
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
+    PyMeshAttributesObject *obj = (PyMeshAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -349,7 +349,7 @@ MeshAttributes_SetLineWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MeshAttributes_GetLineWidth(PyObject *self, PyObject *args)
 {
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
+    PyMeshAttributesObject *obj = (PyMeshAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetLineWidth()));
     return retval;
 }
@@ -357,7 +357,7 @@ MeshAttributes_GetLineWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MeshAttributes_SetMeshColor(PyObject *self, PyObject *args)
 {
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
+    PyMeshAttributesObject *obj = (PyMeshAttributesObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -420,7 +420,7 @@ MeshAttributes_SetMeshColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MeshAttributes_GetMeshColor(PyObject *self, PyObject *args)
 {
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
+    PyMeshAttributesObject *obj = (PyMeshAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the meshColor.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *meshColor = obj->data->GetMeshColor().GetColor();
@@ -434,7 +434,7 @@ MeshAttributes_GetMeshColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MeshAttributes_SetMeshColorSource(PyObject *self, PyObject *args)
 {
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
+    PyMeshAttributesObject *obj = (PyMeshAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -493,7 +493,7 @@ MeshAttributes_SetMeshColorSource(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MeshAttributes_GetMeshColorSource(PyObject *self, PyObject *args)
 {
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
+    PyMeshAttributesObject *obj = (PyMeshAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMeshColorSource()));
     return retval;
 }
@@ -501,7 +501,7 @@ MeshAttributes_GetMeshColorSource(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MeshAttributes_SetOpaqueColorSource(PyObject *self, PyObject *args)
 {
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
+    PyMeshAttributesObject *obj = (PyMeshAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -560,7 +560,7 @@ MeshAttributes_SetOpaqueColorSource(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MeshAttributes_GetOpaqueColorSource(PyObject *self, PyObject *args)
 {
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
+    PyMeshAttributesObject *obj = (PyMeshAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetOpaqueColorSource()));
     return retval;
 }
@@ -568,7 +568,7 @@ MeshAttributes_GetOpaqueColorSource(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MeshAttributes_SetOpaqueMode(PyObject *self, PyObject *args)
 {
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
+    PyMeshAttributesObject *obj = (PyMeshAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -627,7 +627,7 @@ MeshAttributes_SetOpaqueMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MeshAttributes_GetOpaqueMode(PyObject *self, PyObject *args)
 {
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
+    PyMeshAttributesObject *obj = (PyMeshAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetOpaqueMode()));
     return retval;
 }
@@ -635,7 +635,7 @@ MeshAttributes_GetOpaqueMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MeshAttributes_SetPointSize(PyObject *self, PyObject *args)
 {
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
+    PyMeshAttributesObject *obj = (PyMeshAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -687,7 +687,7 @@ MeshAttributes_SetPointSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MeshAttributes_GetPointSize(PyObject *self, PyObject *args)
 {
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
+    PyMeshAttributesObject *obj = (PyMeshAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetPointSize());
     return retval;
 }
@@ -695,7 +695,7 @@ MeshAttributes_GetPointSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MeshAttributes_SetOpaqueColor(PyObject *self, PyObject *args)
 {
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
+    PyMeshAttributesObject *obj = (PyMeshAttributesObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -758,7 +758,7 @@ MeshAttributes_SetOpaqueColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MeshAttributes_GetOpaqueColor(PyObject *self, PyObject *args)
 {
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
+    PyMeshAttributesObject *obj = (PyMeshAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the opaqueColor.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *opaqueColor = obj->data->GetOpaqueColor().GetColor();
@@ -772,7 +772,7 @@ MeshAttributes_GetOpaqueColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MeshAttributes_SetSmoothingLevel(PyObject *self, PyObject *args)
 {
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
+    PyMeshAttributesObject *obj = (PyMeshAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -831,7 +831,7 @@ MeshAttributes_SetSmoothingLevel(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MeshAttributes_GetSmoothingLevel(PyObject *self, PyObject *args)
 {
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
+    PyMeshAttributesObject *obj = (PyMeshAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetSmoothingLevel()));
     return retval;
 }
@@ -839,7 +839,7 @@ MeshAttributes_GetSmoothingLevel(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MeshAttributes_SetPointSizeVarEnabled(PyObject *self, PyObject *args)
 {
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
+    PyMeshAttributesObject *obj = (PyMeshAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -891,7 +891,7 @@ MeshAttributes_SetPointSizeVarEnabled(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MeshAttributes_GetPointSizeVarEnabled(PyObject *self, PyObject *args)
 {
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
+    PyMeshAttributesObject *obj = (PyMeshAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetPointSizeVarEnabled()?1L:0L);
     return retval;
 }
@@ -899,7 +899,7 @@ MeshAttributes_GetPointSizeVarEnabled(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MeshAttributes_SetPointSizeVar(PyObject *self, PyObject *args)
 {
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
+    PyMeshAttributesObject *obj = (PyMeshAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -940,7 +940,7 @@ MeshAttributes_SetPointSizeVar(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MeshAttributes_GetPointSizeVar(PyObject *self, PyObject *args)
 {
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
+    PyMeshAttributesObject *obj = (PyMeshAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetPointSizeVar().c_str());
     return retval;
 }
@@ -948,7 +948,7 @@ MeshAttributes_GetPointSizeVar(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MeshAttributes_SetPointType(PyObject *self, PyObject *args)
 {
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
+    PyMeshAttributesObject *obj = (PyMeshAttributesObject *)self;
 
     int ival = -999;
     if (PySequence_Check(args) && !PyArg_ParseTuple(args, "i", &ival))
@@ -978,7 +978,7 @@ MeshAttributes_SetPointType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MeshAttributes_GetPointType(PyObject *self, PyObject *args)
 {
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
+    PyMeshAttributesObject *obj = (PyMeshAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetPointType()));
     return retval;
 }
@@ -986,7 +986,7 @@ MeshAttributes_GetPointType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MeshAttributes_SetShowInternal(PyObject *self, PyObject *args)
 {
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
+    PyMeshAttributesObject *obj = (PyMeshAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1038,7 +1038,7 @@ MeshAttributes_SetShowInternal(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MeshAttributes_GetShowInternal(PyObject *self, PyObject *args)
 {
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
+    PyMeshAttributesObject *obj = (PyMeshAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowInternal()?1L:0L);
     return retval;
 }
@@ -1046,7 +1046,7 @@ MeshAttributes_GetShowInternal(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MeshAttributes_SetPointSizePixels(PyObject *self, PyObject *args)
 {
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
+    PyMeshAttributesObject *obj = (PyMeshAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1098,7 +1098,7 @@ MeshAttributes_SetPointSizePixels(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MeshAttributes_GetPointSizePixels(PyObject *self, PyObject *args)
 {
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
+    PyMeshAttributesObject *obj = (PyMeshAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetPointSizePixels()));
     return retval;
 }
@@ -1106,7 +1106,7 @@ MeshAttributes_GetPointSizePixels(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MeshAttributes_SetOpacity(PyObject *self, PyObject *args)
 {
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
+    PyMeshAttributesObject *obj = (PyMeshAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1158,7 +1158,7 @@ MeshAttributes_SetOpacity(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MeshAttributes_GetOpacity(PyObject *self, PyObject *args)
 {
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
+    PyMeshAttributesObject *obj = (PyMeshAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetOpacity());
     return retval;
 }
@@ -1206,16 +1206,16 @@ PyMethodDef PyMeshAttributes_methods[MESHATTRIBUTES_NMETH] = {
 //
 
 static void
-MeshAttributes_dealloc(PyObject *v)
+PyMeshAttributes_dealloc(PyObject *v)
 {
-   MeshAttributesObject *obj = (MeshAttributesObject *)v;
+   PyMeshAttributesObject *obj = (PyMeshAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *MeshAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyMeshAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyMeshAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -1362,56 +1362,42 @@ PyMeshAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 }
 
 PyObject *
-MeshAttributes_str(PyObject *v)
+PyMeshAttributes_str(PyObject *v)
 {
-    MeshAttributesObject *obj = (MeshAttributesObject *)v;
+    PyMeshAttributesObject *obj = (PyMeshAttributesObject *)v;
     return PyString_FromString(PyMeshAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *MeshAttributes_Purpose = "Attributes for the mesh plot";
-#else
-static char *MeshAttributes_Purpose = "Attributes for the mesh plot";
-#endif
+static char const *PyMeshAttributes_purpose = "Attributes for the mesh plot";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject MeshAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "MeshAttributes",
-    .tp_basicsize = sizeof(MeshAttributesObject),
-    .tp_dealloc = MeshAttributes_dealloc,
-    .tp_repr = MeshAttributes_str,
-    .tp_str = MeshAttributes_str,
-    .tp_getattro = PyMeshAttributes_getattro,
-    .tp_setattro = PyMeshAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = MeshAttributes_Purpose,
-    .tp_richcompare = MeshAttributes_richcompare,
-    .tp_methods = PyMeshAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(MeshAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-MeshAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyMeshAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &MeshAttributesType
-         || Py_TYPE(other) != &MeshAttributesType)
+    if ( Py_TYPE(self) != &PyMeshAttributesType
+         || Py_TYPE(other) != &PyMeshAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    MeshAttributes *a = ((MeshAttributesObject *)self)->data;
-    MeshAttributes *b = ((MeshAttributesObject *)other)->data;
+    MeshAttributes *a = ((PyMeshAttributesObject *)self)->data;
+    MeshAttributes *b = ((PyMeshAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -1440,8 +1426,8 @@ static MeshAttributes *currentAtts = 0;
 static PyObject *
 NewMeshAttributes(int useCurrent)
 {
-    MeshAttributesObject *newObject;
-    newObject = PyObject_NEW(MeshAttributesObject, &MeshAttributesType);
+    PyMeshAttributesObject *newObject;
+    newObject = PyObject_NEW(PyMeshAttributesObject, &PyMeshAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1452,15 +1438,15 @@ NewMeshAttributes(int useCurrent)
         newObject->data = new MeshAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&MeshAttributesType);
+    PyType_Ready(&PyMeshAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapMeshAttributes(const MeshAttributes *attr)
 {
-    MeshAttributesObject *newObject;
-    newObject = PyObject_NEW(MeshAttributesObject, &MeshAttributesType);
+    PyMeshAttributesObject *newObject;
+    newObject = PyObject_NEW(PyMeshAttributesObject, &PyMeshAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (MeshAttributes *)attr;
@@ -1562,13 +1548,13 @@ PyMeshAttributes_GetMethodTable(int *nMethods)
 bool
 PyMeshAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &MeshAttributesType);
+    return (obj->ob_type == &PyMeshAttributesType);
 }
 
 MeshAttributes *
 PyMeshAttributes_FromPyObject(PyObject *obj)
 {
-    MeshAttributesObject *obj2 = (MeshAttributesObject *)obj;
+    PyMeshAttributesObject *obj2 = (PyMeshAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1587,7 +1573,7 @@ PyMeshAttributes_Wrap(const MeshAttributes *attr)
 void
 PyMeshAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    MeshAttributesObject *obj2 = (MeshAttributesObject *)obj;
+    PyMeshAttributesObject *obj2 = (PyMeshAttributesObject *)obj;
     obj2->parent = parent;
 }
 

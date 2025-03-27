@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a DelaunayAttributes.
 //
-struct DelaunayAttributesObject
+struct PyDelaunayAttributesObject
 {
     PyObject_HEAD
     DelaunayAttributes *data;
@@ -67,7 +67,7 @@ PyDelaunayAttributes_ToString(const DelaunayAttributes *atts, const char *prefix
 static PyObject *
 DelaunayAttributes_Notify(PyObject *self, PyObject *args)
 {
-    DelaunayAttributesObject *obj = (DelaunayAttributesObject *)self;
+    PyDelaunayAttributesObject *obj = (PyDelaunayAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -104,7 +104,7 @@ DelaunayAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DelaunayAttributes_SetDimension(PyObject *self, PyObject *args)
 {
-    DelaunayAttributesObject *obj = (DelaunayAttributesObject *)self;
+    PyDelaunayAttributesObject *obj = (PyDelaunayAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -163,7 +163,7 @@ DelaunayAttributes_SetDimension(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DelaunayAttributes_GetDimension(PyObject *self, PyObject *args)
 {
-    DelaunayAttributesObject *obj = (DelaunayAttributesObject *)self;
+    PyDelaunayAttributesObject *obj = (PyDelaunayAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetDimension()));
     return retval;
 }
@@ -183,16 +183,16 @@ PyMethodDef PyDelaunayAttributes_methods[DELAUNAYATTRIBUTES_NMETH] = {
 //
 
 static void
-DelaunayAttributes_dealloc(PyObject *v)
+PyDelaunayAttributes_dealloc(PyObject *v)
 {
-   DelaunayAttributesObject *obj = (DelaunayAttributesObject *)v;
+   PyDelaunayAttributesObject *obj = (PyDelaunayAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *DelaunayAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyDelaunayAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyDelaunayAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -243,56 +243,42 @@ PyDelaunayAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *arg
 }
 
 PyObject *
-DelaunayAttributes_str(PyObject *v)
+PyDelaunayAttributes_str(PyObject *v)
 {
-    DelaunayAttributesObject *obj = (DelaunayAttributesObject *)v;
+    PyDelaunayAttributesObject *obj = (PyDelaunayAttributesObject *)v;
     return PyString_FromString(PyDelaunayAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *DelaunayAttributes_Purpose = "Attributes for the Delaunay Operator";
-#else
-static char *DelaunayAttributes_Purpose = "Attributes for the Delaunay Operator";
-#endif
+static char const *PyDelaunayAttributes_purpose = "Attributes for the Delaunay Operator";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject DelaunayAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "DelaunayAttributes",
-    .tp_basicsize = sizeof(DelaunayAttributesObject),
-    .tp_dealloc = DelaunayAttributes_dealloc,
-    .tp_repr = DelaunayAttributes_str,
-    .tp_str = DelaunayAttributes_str,
-    .tp_getattro = PyDelaunayAttributes_getattro,
-    .tp_setattro = PyDelaunayAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = DelaunayAttributes_Purpose,
-    .tp_richcompare = DelaunayAttributes_richcompare,
-    .tp_methods = PyDelaunayAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(DelaunayAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-DelaunayAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyDelaunayAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &DelaunayAttributesType
-         || Py_TYPE(other) != &DelaunayAttributesType)
+    if ( Py_TYPE(self) != &PyDelaunayAttributesType
+         || Py_TYPE(other) != &PyDelaunayAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    DelaunayAttributes *a = ((DelaunayAttributesObject *)self)->data;
-    DelaunayAttributes *b = ((DelaunayAttributesObject *)other)->data;
+    DelaunayAttributes *a = ((PyDelaunayAttributesObject *)self)->data;
+    DelaunayAttributes *b = ((PyDelaunayAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -321,8 +307,8 @@ static DelaunayAttributes *currentAtts = 0;
 static PyObject *
 NewDelaunayAttributes(int useCurrent)
 {
-    DelaunayAttributesObject *newObject;
-    newObject = PyObject_NEW(DelaunayAttributesObject, &DelaunayAttributesType);
+    PyDelaunayAttributesObject *newObject;
+    newObject = PyObject_NEW(PyDelaunayAttributesObject, &PyDelaunayAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -333,15 +319,15 @@ NewDelaunayAttributes(int useCurrent)
         newObject->data = new DelaunayAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&DelaunayAttributesType);
+    PyType_Ready(&PyDelaunayAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapDelaunayAttributes(const DelaunayAttributes *attr)
 {
-    DelaunayAttributesObject *newObject;
-    newObject = PyObject_NEW(DelaunayAttributesObject, &DelaunayAttributesType);
+    PyDelaunayAttributesObject *newObject;
+    newObject = PyObject_NEW(PyDelaunayAttributesObject, &PyDelaunayAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (DelaunayAttributes *)attr;
@@ -443,13 +429,13 @@ PyDelaunayAttributes_GetMethodTable(int *nMethods)
 bool
 PyDelaunayAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &DelaunayAttributesType);
+    return (obj->ob_type == &PyDelaunayAttributesType);
 }
 
 DelaunayAttributes *
 PyDelaunayAttributes_FromPyObject(PyObject *obj)
 {
-    DelaunayAttributesObject *obj2 = (DelaunayAttributesObject *)obj;
+    PyDelaunayAttributesObject *obj2 = (PyDelaunayAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -468,7 +454,7 @@ PyDelaunayAttributes_Wrap(const DelaunayAttributes *attr)
 void
 PyDelaunayAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    DelaunayAttributesObject *obj2 = (DelaunayAttributesObject *)obj;
+    PyDelaunayAttributesObject *obj2 = (PyDelaunayAttributesObject *)obj;
     obj2->parent = parent;
 }
 

@@ -26,7 +26,7 @@
 //
 // This struct contains the Python type information and a HistogramAttributes.
 //
-struct HistogramAttributesObject
+struct PyHistogramAttributesObject
 {
     PyObject_HEAD
     HistogramAttributes *data;
@@ -194,7 +194,7 @@ PyHistogramAttributes_ToString(const HistogramAttributes *atts, const char *pref
 static PyObject *
 HistogramAttributes_Notify(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -231,7 +231,7 @@ HistogramAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_SetBasedOn(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -289,7 +289,7 @@ HistogramAttributes_SetBasedOn(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_GetBasedOn(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetBasedOn()));
     return retval;
 }
@@ -297,7 +297,7 @@ HistogramAttributes_GetBasedOn(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_SetHistogramType(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -356,7 +356,7 @@ HistogramAttributes_SetHistogramType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_GetHistogramType(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetHistogramType()));
     return retval;
 }
@@ -364,7 +364,7 @@ HistogramAttributes_GetHistogramType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_SetWeightVariable(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -405,7 +405,7 @@ HistogramAttributes_SetWeightVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_GetWeightVariable(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetWeightVariable().c_str());
     return retval;
 }
@@ -413,7 +413,7 @@ HistogramAttributes_GetWeightVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_SetLimitsMode(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -471,7 +471,7 @@ HistogramAttributes_SetLimitsMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_GetLimitsMode(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetLimitsMode()));
     return retval;
 }
@@ -479,7 +479,7 @@ HistogramAttributes_GetLimitsMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_SetMinFlag(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -531,7 +531,7 @@ HistogramAttributes_SetMinFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_GetMinFlag(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetMinFlag()?1L:0L);
     return retval;
 }
@@ -539,7 +539,7 @@ HistogramAttributes_GetMinFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_SetMaxFlag(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -591,7 +591,7 @@ HistogramAttributes_SetMaxFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_GetMaxFlag(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetMaxFlag()?1L:0L);
     return retval;
 }
@@ -599,7 +599,7 @@ HistogramAttributes_GetMaxFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_SetMin(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -651,7 +651,7 @@ HistogramAttributes_SetMin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_GetMin(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMin());
     return retval;
 }
@@ -659,7 +659,7 @@ HistogramAttributes_GetMin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_SetMax(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -711,7 +711,7 @@ HistogramAttributes_SetMax(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_GetMax(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMax());
     return retval;
 }
@@ -719,7 +719,7 @@ HistogramAttributes_GetMax(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_SetNumBins(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -771,7 +771,7 @@ HistogramAttributes_SetNumBins(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_GetNumBins(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNumBins()));
     return retval;
 }
@@ -779,7 +779,7 @@ HistogramAttributes_GetNumBins(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_SetDomain(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -831,7 +831,7 @@ HistogramAttributes_SetDomain(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_GetDomain(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetDomain()));
     return retval;
 }
@@ -839,7 +839,7 @@ HistogramAttributes_GetDomain(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_SetZone(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -891,7 +891,7 @@ HistogramAttributes_SetZone(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_GetZone(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetZone()));
     return retval;
 }
@@ -899,7 +899,7 @@ HistogramAttributes_GetZone(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_SetUseBinWidths(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -951,7 +951,7 @@ HistogramAttributes_SetUseBinWidths(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_GetUseBinWidths(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetUseBinWidths()?1L:0L);
     return retval;
 }
@@ -959,7 +959,7 @@ HistogramAttributes_GetUseBinWidths(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_SetOutputType(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1017,7 +1017,7 @@ HistogramAttributes_SetOutputType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_GetOutputType(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetOutputType()));
     return retval;
 }
@@ -1025,7 +1025,7 @@ HistogramAttributes_GetOutputType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_SetLineWidth(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1077,7 +1077,7 @@ HistogramAttributes_SetLineWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_GetLineWidth(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetLineWidth()));
     return retval;
 }
@@ -1085,7 +1085,7 @@ HistogramAttributes_GetLineWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_SetColor(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -1148,7 +1148,7 @@ HistogramAttributes_SetColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_GetColor(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the color.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *color = obj->data->GetColor().GetColor();
@@ -1162,7 +1162,7 @@ HistogramAttributes_GetColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_SetDataScale(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1221,7 +1221,7 @@ HistogramAttributes_SetDataScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_GetDataScale(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetDataScale()));
     return retval;
 }
@@ -1229,7 +1229,7 @@ HistogramAttributes_GetDataScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_SetBinScale(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1288,7 +1288,7 @@ HistogramAttributes_SetBinScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_GetBinScale(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetBinScale()));
     return retval;
 }
@@ -1296,7 +1296,7 @@ HistogramAttributes_GetBinScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_SetNormalizeHistogram(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1348,7 +1348,7 @@ HistogramAttributes_SetNormalizeHistogram(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_GetNormalizeHistogram(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetNormalizeHistogram()?1L:0L);
     return retval;
 }
@@ -1356,7 +1356,7 @@ HistogramAttributes_GetNormalizeHistogram(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_SetComputeAsCDF(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1408,7 +1408,7 @@ HistogramAttributes_SetComputeAsCDF(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 HistogramAttributes_GetComputeAsCDF(PyObject *self, PyObject *args)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)self;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetComputeAsCDF()?1L:0L);
     return retval;
 }
@@ -1464,16 +1464,16 @@ PyMethodDef PyHistogramAttributes_methods[HISTOGRAMATTRIBUTES_NMETH] = {
 //
 
 static void
-HistogramAttributes_dealloc(PyObject *v)
+PyHistogramAttributes_dealloc(PyObject *v)
 {
-   HistogramAttributesObject *obj = (HistogramAttributesObject *)v;
+   PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *HistogramAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyHistogramAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyHistogramAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -1625,56 +1625,42 @@ PyHistogramAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *ar
 }
 
 PyObject *
-HistogramAttributes_str(PyObject *v)
+PyHistogramAttributes_str(PyObject *v)
 {
-    HistogramAttributesObject *obj = (HistogramAttributesObject *)v;
+    PyHistogramAttributesObject *obj = (PyHistogramAttributesObject *)v;
     return PyString_FromString(PyHistogramAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *HistogramAttributes_Purpose = "Attributes for Histogram Plot";
-#else
-static char *HistogramAttributes_Purpose = "Attributes for Histogram Plot";
-#endif
+static char const *PyHistogramAttributes_purpose = "Attributes for Histogram Plot";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject HistogramAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "HistogramAttributes",
-    .tp_basicsize = sizeof(HistogramAttributesObject),
-    .tp_dealloc = HistogramAttributes_dealloc,
-    .tp_repr = HistogramAttributes_str,
-    .tp_str = HistogramAttributes_str,
-    .tp_getattro = PyHistogramAttributes_getattro,
-    .tp_setattro = PyHistogramAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = HistogramAttributes_Purpose,
-    .tp_richcompare = HistogramAttributes_richcompare,
-    .tp_methods = PyHistogramAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(HistogramAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-HistogramAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyHistogramAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &HistogramAttributesType
-         || Py_TYPE(other) != &HistogramAttributesType)
+    if ( Py_TYPE(self) != &PyHistogramAttributesType
+         || Py_TYPE(other) != &PyHistogramAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    HistogramAttributes *a = ((HistogramAttributesObject *)self)->data;
-    HistogramAttributes *b = ((HistogramAttributesObject *)other)->data;
+    HistogramAttributes *a = ((PyHistogramAttributesObject *)self)->data;
+    HistogramAttributes *b = ((PyHistogramAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -1703,8 +1689,8 @@ static HistogramAttributes *currentAtts = 0;
 static PyObject *
 NewHistogramAttributes(int useCurrent)
 {
-    HistogramAttributesObject *newObject;
-    newObject = PyObject_NEW(HistogramAttributesObject, &HistogramAttributesType);
+    PyHistogramAttributesObject *newObject;
+    newObject = PyObject_NEW(PyHistogramAttributesObject, &PyHistogramAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1715,15 +1701,15 @@ NewHistogramAttributes(int useCurrent)
         newObject->data = new HistogramAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&HistogramAttributesType);
+    PyType_Ready(&PyHistogramAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapHistogramAttributes(const HistogramAttributes *attr)
 {
-    HistogramAttributesObject *newObject;
-    newObject = PyObject_NEW(HistogramAttributesObject, &HistogramAttributesType);
+    PyHistogramAttributesObject *newObject;
+    newObject = PyObject_NEW(PyHistogramAttributesObject, &PyHistogramAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (HistogramAttributes *)attr;
@@ -1825,13 +1811,13 @@ PyHistogramAttributes_GetMethodTable(int *nMethods)
 bool
 PyHistogramAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &HistogramAttributesType);
+    return (obj->ob_type == &PyHistogramAttributesType);
 }
 
 HistogramAttributes *
 PyHistogramAttributes_FromPyObject(PyObject *obj)
 {
-    HistogramAttributesObject *obj2 = (HistogramAttributesObject *)obj;
+    PyHistogramAttributesObject *obj2 = (PyHistogramAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1850,7 +1836,7 @@ PyHistogramAttributes_Wrap(const HistogramAttributes *attr)
 void
 PyHistogramAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    HistogramAttributesObject *obj2 = (HistogramAttributesObject *)obj;
+    PyHistogramAttributesObject *obj2 = (PyHistogramAttributesObject *)obj;
     obj2->parent = parent;
 }
 

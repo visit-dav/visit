@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a PrinterAttributes.
 //
-struct PrinterAttributesObject
+struct PyPrinterAttributesObject
 {
     PyObject_HEAD
     PrinterAttributes *data;
@@ -77,7 +77,7 @@ PyPrinterAttributes_ToString(const PrinterAttributes *atts, const char *prefix, 
 static PyObject *
 PrinterAttributes_Notify(PyObject *self, PyObject *args)
 {
-    PrinterAttributesObject *obj = (PrinterAttributesObject *)self;
+    PyPrinterAttributesObject *obj = (PyPrinterAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -114,7 +114,7 @@ PrinterAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PrinterAttributes_SetPrinterName(PyObject *self, PyObject *args)
 {
-    PrinterAttributesObject *obj = (PrinterAttributesObject *)self;
+    PyPrinterAttributesObject *obj = (PyPrinterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -155,7 +155,7 @@ PrinterAttributes_SetPrinterName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PrinterAttributes_GetPrinterName(PyObject *self, PyObject *args)
 {
-    PrinterAttributesObject *obj = (PrinterAttributesObject *)self;
+    PyPrinterAttributesObject *obj = (PyPrinterAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetPrinterName().c_str());
     return retval;
 }
@@ -163,7 +163,7 @@ PrinterAttributes_GetPrinterName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PrinterAttributes_SetPrintProgram(PyObject *self, PyObject *args)
 {
-    PrinterAttributesObject *obj = (PrinterAttributesObject *)self;
+    PyPrinterAttributesObject *obj = (PyPrinterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -204,7 +204,7 @@ PrinterAttributes_SetPrintProgram(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PrinterAttributes_GetPrintProgram(PyObject *self, PyObject *args)
 {
-    PrinterAttributesObject *obj = (PrinterAttributesObject *)self;
+    PyPrinterAttributesObject *obj = (PyPrinterAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetPrintProgram().c_str());
     return retval;
 }
@@ -212,7 +212,7 @@ PrinterAttributes_GetPrintProgram(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PrinterAttributes_SetDocumentName(PyObject *self, PyObject *args)
 {
-    PrinterAttributesObject *obj = (PrinterAttributesObject *)self;
+    PyPrinterAttributesObject *obj = (PyPrinterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -253,7 +253,7 @@ PrinterAttributes_SetDocumentName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PrinterAttributes_GetDocumentName(PyObject *self, PyObject *args)
 {
-    PrinterAttributesObject *obj = (PrinterAttributesObject *)self;
+    PyPrinterAttributesObject *obj = (PyPrinterAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetDocumentName().c_str());
     return retval;
 }
@@ -261,7 +261,7 @@ PrinterAttributes_GetDocumentName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PrinterAttributes_SetCreator(PyObject *self, PyObject *args)
 {
-    PrinterAttributesObject *obj = (PrinterAttributesObject *)self;
+    PyPrinterAttributesObject *obj = (PyPrinterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -302,7 +302,7 @@ PrinterAttributes_SetCreator(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PrinterAttributes_GetCreator(PyObject *self, PyObject *args)
 {
-    PrinterAttributesObject *obj = (PrinterAttributesObject *)self;
+    PyPrinterAttributesObject *obj = (PyPrinterAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetCreator().c_str());
     return retval;
 }
@@ -310,7 +310,7 @@ PrinterAttributes_GetCreator(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PrinterAttributes_SetNumCopies(PyObject *self, PyObject *args)
 {
-    PrinterAttributesObject *obj = (PrinterAttributesObject *)self;
+    PyPrinterAttributesObject *obj = (PyPrinterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -362,7 +362,7 @@ PrinterAttributes_SetNumCopies(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PrinterAttributes_GetNumCopies(PyObject *self, PyObject *args)
 {
-    PrinterAttributesObject *obj = (PrinterAttributesObject *)self;
+    PyPrinterAttributesObject *obj = (PyPrinterAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNumCopies()));
     return retval;
 }
@@ -370,7 +370,7 @@ PrinterAttributes_GetNumCopies(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PrinterAttributes_SetPortrait(PyObject *self, PyObject *args)
 {
-    PrinterAttributesObject *obj = (PrinterAttributesObject *)self;
+    PyPrinterAttributesObject *obj = (PyPrinterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -422,7 +422,7 @@ PrinterAttributes_SetPortrait(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PrinterAttributes_GetPortrait(PyObject *self, PyObject *args)
 {
-    PrinterAttributesObject *obj = (PrinterAttributesObject *)self;
+    PyPrinterAttributesObject *obj = (PyPrinterAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetPortrait()?1L:0L);
     return retval;
 }
@@ -430,7 +430,7 @@ PrinterAttributes_GetPortrait(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PrinterAttributes_SetPrintColor(PyObject *self, PyObject *args)
 {
-    PrinterAttributesObject *obj = (PrinterAttributesObject *)self;
+    PyPrinterAttributesObject *obj = (PyPrinterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -482,7 +482,7 @@ PrinterAttributes_SetPrintColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PrinterAttributes_GetPrintColor(PyObject *self, PyObject *args)
 {
-    PrinterAttributesObject *obj = (PrinterAttributesObject *)self;
+    PyPrinterAttributesObject *obj = (PyPrinterAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetPrintColor()?1L:0L);
     return retval;
 }
@@ -490,7 +490,7 @@ PrinterAttributes_GetPrintColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PrinterAttributes_SetOutputToFile(PyObject *self, PyObject *args)
 {
-    PrinterAttributesObject *obj = (PrinterAttributesObject *)self;
+    PyPrinterAttributesObject *obj = (PyPrinterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -542,7 +542,7 @@ PrinterAttributes_SetOutputToFile(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PrinterAttributes_GetOutputToFile(PyObject *self, PyObject *args)
 {
-    PrinterAttributesObject *obj = (PrinterAttributesObject *)self;
+    PyPrinterAttributesObject *obj = (PyPrinterAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetOutputToFile()?1L:0L);
     return retval;
 }
@@ -550,7 +550,7 @@ PrinterAttributes_GetOutputToFile(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PrinterAttributes_SetOutputToFileName(PyObject *self, PyObject *args)
 {
-    PrinterAttributesObject *obj = (PrinterAttributesObject *)self;
+    PyPrinterAttributesObject *obj = (PyPrinterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -591,7 +591,7 @@ PrinterAttributes_SetOutputToFileName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PrinterAttributes_GetOutputToFileName(PyObject *self, PyObject *args)
 {
-    PrinterAttributesObject *obj = (PrinterAttributesObject *)self;
+    PyPrinterAttributesObject *obj = (PyPrinterAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetOutputToFileName().c_str());
     return retval;
 }
@@ -599,7 +599,7 @@ PrinterAttributes_GetOutputToFileName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PrinterAttributes_SetPageSize(PyObject *self, PyObject *args)
 {
-    PrinterAttributesObject *obj = (PrinterAttributesObject *)self;
+    PyPrinterAttributesObject *obj = (PyPrinterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -651,7 +651,7 @@ PrinterAttributes_SetPageSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PrinterAttributes_GetPageSize(PyObject *self, PyObject *args)
 {
-    PrinterAttributesObject *obj = (PrinterAttributesObject *)self;
+    PyPrinterAttributesObject *obj = (PyPrinterAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetPageSize()));
     return retval;
 }
@@ -689,16 +689,16 @@ PyMethodDef PyPrinterAttributes_methods[PRINTERATTRIBUTES_NMETH] = {
 //
 
 static void
-PrinterAttributes_dealloc(PyObject *v)
+PyPrinterAttributes_dealloc(PyObject *v)
 {
-   PrinterAttributesObject *obj = (PrinterAttributesObject *)v;
+   PyPrinterAttributesObject *obj = (PyPrinterAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *PrinterAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyPrinterAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyPrinterAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -778,56 +778,42 @@ PyPrinterAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args
 }
 
 PyObject *
-PrinterAttributes_str(PyObject *v)
+PyPrinterAttributes_str(PyObject *v)
 {
-    PrinterAttributesObject *obj = (PrinterAttributesObject *)v;
+    PyPrinterAttributesObject *obj = (PyPrinterAttributesObject *)v;
     return PyString_FromString(PyPrinterAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *PrinterAttributes_Purpose = "This class contains the attributes used for controlling printers.";
-#else
-static char *PrinterAttributes_Purpose = "This class contains the attributes used for controlling printers.";
-#endif
+static char const *PyPrinterAttributes_purpose = "This class contains the attributes used for controlling printers.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject PrinterAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "PrinterAttributes",
-    .tp_basicsize = sizeof(PrinterAttributesObject),
-    .tp_dealloc = PrinterAttributes_dealloc,
-    .tp_repr = PrinterAttributes_str,
-    .tp_str = PrinterAttributes_str,
-    .tp_getattro = PyPrinterAttributes_getattro,
-    .tp_setattro = PyPrinterAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = PrinterAttributes_Purpose,
-    .tp_richcompare = PrinterAttributes_richcompare,
-    .tp_methods = PyPrinterAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(PrinterAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-PrinterAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyPrinterAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &PrinterAttributesType
-         || Py_TYPE(other) != &PrinterAttributesType)
+    if ( Py_TYPE(self) != &PyPrinterAttributesType
+         || Py_TYPE(other) != &PyPrinterAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    PrinterAttributes *a = ((PrinterAttributesObject *)self)->data;
-    PrinterAttributes *b = ((PrinterAttributesObject *)other)->data;
+    PrinterAttributes *a = ((PyPrinterAttributesObject *)self)->data;
+    PrinterAttributes *b = ((PyPrinterAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -856,8 +842,8 @@ static PrinterAttributes *currentAtts = 0;
 static PyObject *
 NewPrinterAttributes(int useCurrent)
 {
-    PrinterAttributesObject *newObject;
-    newObject = PyObject_NEW(PrinterAttributesObject, &PrinterAttributesType);
+    PyPrinterAttributesObject *newObject;
+    newObject = PyObject_NEW(PyPrinterAttributesObject, &PyPrinterAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -868,15 +854,15 @@ NewPrinterAttributes(int useCurrent)
         newObject->data = new PrinterAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&PrinterAttributesType);
+    PyType_Ready(&PyPrinterAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapPrinterAttributes(const PrinterAttributes *attr)
 {
-    PrinterAttributesObject *newObject;
-    newObject = PyObject_NEW(PrinterAttributesObject, &PrinterAttributesType);
+    PyPrinterAttributesObject *newObject;
+    newObject = PyObject_NEW(PyPrinterAttributesObject, &PyPrinterAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (PrinterAttributes *)attr;
@@ -978,13 +964,13 @@ PyPrinterAttributes_GetMethodTable(int *nMethods)
 bool
 PyPrinterAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &PrinterAttributesType);
+    return (obj->ob_type == &PyPrinterAttributesType);
 }
 
 PrinterAttributes *
 PyPrinterAttributes_FromPyObject(PyObject *obj)
 {
-    PrinterAttributesObject *obj2 = (PrinterAttributesObject *)obj;
+    PyPrinterAttributesObject *obj2 = (PyPrinterAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1003,7 +989,7 @@ PyPrinterAttributes_Wrap(const PrinterAttributes *attr)
 void
 PyPrinterAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    PrinterAttributesObject *obj2 = (PrinterAttributesObject *)obj;
+    PyPrinterAttributesObject *obj2 = (PyPrinterAttributesObject *)obj;
     obj2->parent = parent;
 }
 

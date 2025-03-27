@@ -28,7 +28,7 @@
 //
 // This struct contains the Python type information and a SubsetAttributes.
 //
-struct SubsetAttributesObject
+struct PySubsetAttributesObject
 {
     PyObject_HEAD
     SubsetAttributes *data;
@@ -179,7 +179,7 @@ PySubsetAttributes_ToString(const SubsetAttributes *atts, const char *prefix, co
 static PyObject *
 SubsetAttributes_Notify(PyObject *self, PyObject *args)
 {
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
+    PySubsetAttributesObject *obj = (PySubsetAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -217,7 +217,7 @@ SubsetAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubsetAttributes_SetColorType(PyObject *self, PyObject *args)
 {
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
+    PySubsetAttributesObject *obj = (PySubsetAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -276,7 +276,7 @@ SubsetAttributes_SetColorType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubsetAttributes_GetColorType(PyObject *self, PyObject *args)
 {
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
+    PySubsetAttributesObject *obj = (PySubsetAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetColorType()));
     return retval;
 }
@@ -284,7 +284,7 @@ SubsetAttributes_GetColorType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubsetAttributes_SetColorTableName(PyObject *self, PyObject *args)
 {
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
+    PySubsetAttributesObject *obj = (PySubsetAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -325,7 +325,7 @@ SubsetAttributes_SetColorTableName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubsetAttributes_GetColorTableName(PyObject *self, PyObject *args)
 {
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
+    PySubsetAttributesObject *obj = (PySubsetAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetColorTableName().c_str());
     return retval;
 }
@@ -333,7 +333,7 @@ SubsetAttributes_GetColorTableName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubsetAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
 {
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
+    PySubsetAttributesObject *obj = (PySubsetAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -385,7 +385,7 @@ SubsetAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubsetAttributes_GetInvertColorTable(PyObject *self, PyObject *args)
 {
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
+    PySubsetAttributesObject *obj = (PySubsetAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetInvertColorTable()?1L:0L);
     return retval;
 }
@@ -393,7 +393,7 @@ SubsetAttributes_GetInvertColorTable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubsetAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 {
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
+    PySubsetAttributesObject *obj = (PySubsetAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -445,7 +445,7 @@ SubsetAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubsetAttributes_GetLegendFlag(PyObject *self, PyObject *args)
 {
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
+    PySubsetAttributesObject *obj = (PySubsetAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetLegendFlag()?1L:0L);
     return retval;
 }
@@ -453,7 +453,7 @@ SubsetAttributes_GetLegendFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubsetAttributes_SetLineWidth(PyObject *self, PyObject *args)
 {
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
+    PySubsetAttributesObject *obj = (PySubsetAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -505,7 +505,7 @@ SubsetAttributes_SetLineWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubsetAttributes_GetLineWidth(PyObject *self, PyObject *args)
 {
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
+    PySubsetAttributesObject *obj = (PySubsetAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetLineWidth()));
     return retval;
 }
@@ -513,7 +513,7 @@ SubsetAttributes_GetLineWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubsetAttributes_SetSingleColor(PyObject *self, PyObject *args)
 {
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
+    PySubsetAttributesObject *obj = (PySubsetAttributesObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -576,7 +576,7 @@ SubsetAttributes_SetSingleColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubsetAttributes_GetSingleColor(PyObject *self, PyObject *args)
 {
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
+    PySubsetAttributesObject *obj = (PySubsetAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the singleColor.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *singleColor = obj->data->GetSingleColor().GetColor();
@@ -590,7 +590,7 @@ SubsetAttributes_GetSingleColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubsetAttributes_SetMultiColor(PyObject *self, PyObject *args)
 {
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
+    PySubsetAttributesObject *obj = (PySubsetAttributesObject *)self;
 
     PyObject *pyobj = NULL;
     ColorAttributeList &cL = obj->data->GetMultiColor();
@@ -757,7 +757,7 @@ SubsetAttributes_SetMultiColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubsetAttributes_GetMultiColor(PyObject *self, PyObject *args)
 {
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
+    PySubsetAttributesObject *obj = (PySubsetAttributesObject *)self;
     PyObject *retval = NULL;
     ColorAttributeList &cL = obj->data->GetMultiColor();
 
@@ -800,7 +800,7 @@ SubsetAttributes_GetMultiColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubsetAttributes_SetSubsetNames(PyObject *self, PyObject *args)
 {
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
+    PySubsetAttributesObject *obj = (PySubsetAttributesObject *)self;
 
     stringVector vec;
 
@@ -857,7 +857,7 @@ SubsetAttributes_SetSubsetNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubsetAttributes_GetSubsetNames(PyObject *self, PyObject *args)
 {
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
+    PySubsetAttributesObject *obj = (PySubsetAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the subsetNames.
     const stringVector &subsetNames = obj->data->GetSubsetNames();
     PyObject *retval = PyTuple_New(subsetNames.size());
@@ -869,7 +869,7 @@ SubsetAttributes_GetSubsetNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubsetAttributes_SetOpacity(PyObject *self, PyObject *args)
 {
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
+    PySubsetAttributesObject *obj = (PySubsetAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -921,7 +921,7 @@ SubsetAttributes_SetOpacity(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubsetAttributes_GetOpacity(PyObject *self, PyObject *args)
 {
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
+    PySubsetAttributesObject *obj = (PySubsetAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetOpacity());
     return retval;
 }
@@ -929,7 +929,7 @@ SubsetAttributes_GetOpacity(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubsetAttributes_SetWireframe(PyObject *self, PyObject *args)
 {
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
+    PySubsetAttributesObject *obj = (PySubsetAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -981,7 +981,7 @@ SubsetAttributes_SetWireframe(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubsetAttributes_GetWireframe(PyObject *self, PyObject *args)
 {
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
+    PySubsetAttributesObject *obj = (PySubsetAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetWireframe()?1L:0L);
     return retval;
 }
@@ -989,7 +989,7 @@ SubsetAttributes_GetWireframe(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubsetAttributes_SetDrawInternal(PyObject *self, PyObject *args)
 {
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
+    PySubsetAttributesObject *obj = (PySubsetAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1041,7 +1041,7 @@ SubsetAttributes_SetDrawInternal(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubsetAttributes_GetDrawInternal(PyObject *self, PyObject *args)
 {
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
+    PySubsetAttributesObject *obj = (PySubsetAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetDrawInternal()?1L:0L);
     return retval;
 }
@@ -1049,7 +1049,7 @@ SubsetAttributes_GetDrawInternal(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubsetAttributes_SetSmoothingLevel(PyObject *self, PyObject *args)
 {
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
+    PySubsetAttributesObject *obj = (PySubsetAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1101,7 +1101,7 @@ SubsetAttributes_SetSmoothingLevel(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubsetAttributes_GetSmoothingLevel(PyObject *self, PyObject *args)
 {
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
+    PySubsetAttributesObject *obj = (PySubsetAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetSmoothingLevel()));
     return retval;
 }
@@ -1109,7 +1109,7 @@ SubsetAttributes_GetSmoothingLevel(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubsetAttributes_SetPointSize(PyObject *self, PyObject *args)
 {
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
+    PySubsetAttributesObject *obj = (PySubsetAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1161,7 +1161,7 @@ SubsetAttributes_SetPointSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubsetAttributes_GetPointSize(PyObject *self, PyObject *args)
 {
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
+    PySubsetAttributesObject *obj = (PySubsetAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetPointSize());
     return retval;
 }
@@ -1169,7 +1169,7 @@ SubsetAttributes_GetPointSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubsetAttributes_SetPointType(PyObject *self, PyObject *args)
 {
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
+    PySubsetAttributesObject *obj = (PySubsetAttributesObject *)self;
 
     int ival = -999;
     if (PySequence_Check(args) && !PyArg_ParseTuple(args, "i", &ival))
@@ -1199,7 +1199,7 @@ SubsetAttributes_SetPointType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubsetAttributes_GetPointType(PyObject *self, PyObject *args)
 {
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
+    PySubsetAttributesObject *obj = (PySubsetAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetPointType()));
     return retval;
 }
@@ -1207,7 +1207,7 @@ SubsetAttributes_GetPointType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubsetAttributes_SetPointSizeVarEnabled(PyObject *self, PyObject *args)
 {
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
+    PySubsetAttributesObject *obj = (PySubsetAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1259,7 +1259,7 @@ SubsetAttributes_SetPointSizeVarEnabled(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubsetAttributes_GetPointSizeVarEnabled(PyObject *self, PyObject *args)
 {
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
+    PySubsetAttributesObject *obj = (PySubsetAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetPointSizeVarEnabled()?1L:0L);
     return retval;
 }
@@ -1267,7 +1267,7 @@ SubsetAttributes_GetPointSizeVarEnabled(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubsetAttributes_SetPointSizeVar(PyObject *self, PyObject *args)
 {
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
+    PySubsetAttributesObject *obj = (PySubsetAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1308,7 +1308,7 @@ SubsetAttributes_SetPointSizeVar(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubsetAttributes_GetPointSizeVar(PyObject *self, PyObject *args)
 {
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
+    PySubsetAttributesObject *obj = (PySubsetAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetPointSizeVar().c_str());
     return retval;
 }
@@ -1316,7 +1316,7 @@ SubsetAttributes_GetPointSizeVar(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubsetAttributes_SetPointSizePixels(PyObject *self, PyObject *args)
 {
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
+    PySubsetAttributesObject *obj = (PySubsetAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1368,7 +1368,7 @@ SubsetAttributes_SetPointSizePixels(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubsetAttributes_GetPointSizePixels(PyObject *self, PyObject *args)
 {
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
+    PySubsetAttributesObject *obj = (PySubsetAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetPointSizePixels()));
     return retval;
 }
@@ -1420,16 +1420,16 @@ PyMethodDef PySubsetAttributes_methods[SUBSETATTRIBUTES_NMETH] = {
 //
 
 static void
-SubsetAttributes_dealloc(PyObject *v)
+PySubsetAttributes_dealloc(PyObject *v)
 {
-   SubsetAttributesObject *obj = (SubsetAttributesObject *)v;
+   PySubsetAttributesObject *obj = (PySubsetAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *SubsetAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PySubsetAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PySubsetAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -1561,56 +1561,42 @@ PySubsetAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 }
 
 PyObject *
-SubsetAttributes_str(PyObject *v)
+PySubsetAttributes_str(PyObject *v)
 {
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)v;
+    PySubsetAttributesObject *obj = (PySubsetAttributesObject *)v;
     return PyString_FromString(PySubsetAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *SubsetAttributes_Purpose = "This class contains the plot attributes for the subset boundary plot.";
-#else
-static char *SubsetAttributes_Purpose = "This class contains the plot attributes for the subset boundary plot.";
-#endif
+static char const *PySubsetAttributes_purpose = "This class contains the plot attributes for the subset boundary plot.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject SubsetAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "SubsetAttributes",
-    .tp_basicsize = sizeof(SubsetAttributesObject),
-    .tp_dealloc = SubsetAttributes_dealloc,
-    .tp_repr = SubsetAttributes_str,
-    .tp_str = SubsetAttributes_str,
-    .tp_getattro = PySubsetAttributes_getattro,
-    .tp_setattro = PySubsetAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = SubsetAttributes_Purpose,
-    .tp_richcompare = SubsetAttributes_richcompare,
-    .tp_methods = PySubsetAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(SubsetAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-SubsetAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PySubsetAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &SubsetAttributesType
-         || Py_TYPE(other) != &SubsetAttributesType)
+    if ( Py_TYPE(self) != &PySubsetAttributesType
+         || Py_TYPE(other) != &PySubsetAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    SubsetAttributes *a = ((SubsetAttributesObject *)self)->data;
-    SubsetAttributes *b = ((SubsetAttributesObject *)other)->data;
+    SubsetAttributes *a = ((PySubsetAttributesObject *)self)->data;
+    SubsetAttributes *b = ((PySubsetAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -1639,8 +1625,8 @@ static SubsetAttributes *currentAtts = 0;
 static PyObject *
 NewSubsetAttributes(int useCurrent)
 {
-    SubsetAttributesObject *newObject;
-    newObject = PyObject_NEW(SubsetAttributesObject, &SubsetAttributesType);
+    PySubsetAttributesObject *newObject;
+    newObject = PyObject_NEW(PySubsetAttributesObject, &PySubsetAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1651,15 +1637,15 @@ NewSubsetAttributes(int useCurrent)
         newObject->data = new SubsetAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&SubsetAttributesType);
+    PyType_Ready(&PySubsetAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapSubsetAttributes(const SubsetAttributes *attr)
 {
-    SubsetAttributesObject *newObject;
-    newObject = PyObject_NEW(SubsetAttributesObject, &SubsetAttributesType);
+    PySubsetAttributesObject *newObject;
+    newObject = PyObject_NEW(PySubsetAttributesObject, &PySubsetAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (SubsetAttributes *)attr;
@@ -1761,13 +1747,13 @@ PySubsetAttributes_GetMethodTable(int *nMethods)
 bool
 PySubsetAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &SubsetAttributesType);
+    return (obj->ob_type == &PySubsetAttributesType);
 }
 
 SubsetAttributes *
 PySubsetAttributes_FromPyObject(PyObject *obj)
 {
-    SubsetAttributesObject *obj2 = (SubsetAttributesObject *)obj;
+    PySubsetAttributesObject *obj2 = (PySubsetAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1786,7 +1772,7 @@ PySubsetAttributes_Wrap(const SubsetAttributes *attr)
 void
 PySubsetAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    SubsetAttributesObject *obj2 = (SubsetAttributesObject *)obj;
+    PySubsetAttributesObject *obj2 = (PySubsetAttributesObject *)obj;
     obj2->parent = parent;
 }
 

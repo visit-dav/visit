@@ -23,7 +23,7 @@
 //
 // This struct contains the Python type information and a MultiresControlAttributes.
 //
-struct MultiresControlAttributesObject
+struct PyMultiresControlAttributesObject
 {
     PyObject_HEAD
     MultiresControlAttributes *data;
@@ -53,7 +53,7 @@ PyMultiresControlAttributes_ToString(const MultiresControlAttributes *atts, cons
 static PyObject *
 MultiresControlAttributes_Notify(PyObject *self, PyObject *args)
 {
-    MultiresControlAttributesObject *obj = (MultiresControlAttributesObject *)self;
+    PyMultiresControlAttributesObject *obj = (PyMultiresControlAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -90,7 +90,7 @@ MultiresControlAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiresControlAttributes_SetResolution(PyObject *self, PyObject *args)
 {
-    MultiresControlAttributesObject *obj = (MultiresControlAttributesObject *)self;
+    PyMultiresControlAttributesObject *obj = (PyMultiresControlAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -142,7 +142,7 @@ MultiresControlAttributes_SetResolution(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiresControlAttributes_GetResolution(PyObject *self, PyObject *args)
 {
-    MultiresControlAttributesObject *obj = (MultiresControlAttributesObject *)self;
+    PyMultiresControlAttributesObject *obj = (PyMultiresControlAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetResolution()));
     return retval;
 }
@@ -150,7 +150,7 @@ MultiresControlAttributes_GetResolution(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiresControlAttributes_SetMaxResolution(PyObject *self, PyObject *args)
 {
-    MultiresControlAttributesObject *obj = (MultiresControlAttributesObject *)self;
+    PyMultiresControlAttributesObject *obj = (PyMultiresControlAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -202,7 +202,7 @@ MultiresControlAttributes_SetMaxResolution(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiresControlAttributes_GetMaxResolution(PyObject *self, PyObject *args)
 {
-    MultiresControlAttributesObject *obj = (MultiresControlAttributesObject *)self;
+    PyMultiresControlAttributesObject *obj = (PyMultiresControlAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMaxResolution()));
     return retval;
 }
@@ -210,7 +210,7 @@ MultiresControlAttributes_GetMaxResolution(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiresControlAttributes_SetInfo(PyObject *self, PyObject *args)
 {
-    MultiresControlAttributesObject *obj = (MultiresControlAttributesObject *)self;
+    PyMultiresControlAttributesObject *obj = (PyMultiresControlAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -251,7 +251,7 @@ MultiresControlAttributes_SetInfo(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiresControlAttributes_GetInfo(PyObject *self, PyObject *args)
 {
-    MultiresControlAttributesObject *obj = (MultiresControlAttributesObject *)self;
+    PyMultiresControlAttributesObject *obj = (PyMultiresControlAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetInfo().c_str());
     return retval;
 }
@@ -275,16 +275,16 @@ PyMethodDef PyMultiresControlAttributes_methods[MULTIRESCONTROLATTRIBUTES_NMETH]
 //
 
 static void
-MultiresControlAttributes_dealloc(PyObject *v)
+PyMultiresControlAttributes_dealloc(PyObject *v)
 {
-   MultiresControlAttributesObject *obj = (MultiresControlAttributesObject *)v;
+   PyMultiresControlAttributesObject *obj = (PyMultiresControlAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *MultiresControlAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyMultiresControlAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyMultiresControlAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -336,56 +336,42 @@ PyMultiresControlAttributes_setattro(PyObject *self, PyObject *attr_name, PyObje
 }
 
 PyObject *
-MultiresControlAttributes_str(PyObject *v)
+PyMultiresControlAttributes_str(PyObject *v)
 {
-    MultiresControlAttributesObject *obj = (MultiresControlAttributesObject *)v;
+    PyMultiresControlAttributesObject *obj = (PyMultiresControlAttributesObject *)v;
     return PyString_FromString(PyMultiresControlAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *MultiresControlAttributes_Purpose = "";
-#else
-static char *MultiresControlAttributes_Purpose = "";
-#endif
+static char const *PyMultiresControlAttributes_purpose = "";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject MultiresControlAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "MultiresControlAttributes",
-    .tp_basicsize = sizeof(MultiresControlAttributesObject),
-    .tp_dealloc = MultiresControlAttributes_dealloc,
-    .tp_repr = MultiresControlAttributes_str,
-    .tp_str = MultiresControlAttributes_str,
-    .tp_getattro = PyMultiresControlAttributes_getattro,
-    .tp_setattro = PyMultiresControlAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = MultiresControlAttributes_Purpose,
-    .tp_richcompare = MultiresControlAttributes_richcompare,
-    .tp_methods = PyMultiresControlAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(MultiresControlAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-MultiresControlAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyMultiresControlAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &MultiresControlAttributesType
-         || Py_TYPE(other) != &MultiresControlAttributesType)
+    if ( Py_TYPE(self) != &PyMultiresControlAttributesType
+         || Py_TYPE(other) != &PyMultiresControlAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    MultiresControlAttributes *a = ((MultiresControlAttributesObject *)self)->data;
-    MultiresControlAttributes *b = ((MultiresControlAttributesObject *)other)->data;
+    MultiresControlAttributes *a = ((PyMultiresControlAttributesObject *)self)->data;
+    MultiresControlAttributes *b = ((PyMultiresControlAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -414,8 +400,8 @@ static MultiresControlAttributes *currentAtts = 0;
 static PyObject *
 NewMultiresControlAttributes(int useCurrent)
 {
-    MultiresControlAttributesObject *newObject;
-    newObject = PyObject_NEW(MultiresControlAttributesObject, &MultiresControlAttributesType);
+    PyMultiresControlAttributesObject *newObject;
+    newObject = PyObject_NEW(PyMultiresControlAttributesObject, &PyMultiresControlAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -426,15 +412,15 @@ NewMultiresControlAttributes(int useCurrent)
         newObject->data = new MultiresControlAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&MultiresControlAttributesType);
+    PyType_Ready(&PyMultiresControlAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapMultiresControlAttributes(const MultiresControlAttributes *attr)
 {
-    MultiresControlAttributesObject *newObject;
-    newObject = PyObject_NEW(MultiresControlAttributesObject, &MultiresControlAttributesType);
+    PyMultiresControlAttributesObject *newObject;
+    newObject = PyObject_NEW(PyMultiresControlAttributesObject, &PyMultiresControlAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (MultiresControlAttributes *)attr;
@@ -536,13 +522,13 @@ PyMultiresControlAttributes_GetMethodTable(int *nMethods)
 bool
 PyMultiresControlAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &MultiresControlAttributesType);
+    return (obj->ob_type == &PyMultiresControlAttributesType);
 }
 
 MultiresControlAttributes *
 PyMultiresControlAttributes_FromPyObject(PyObject *obj)
 {
-    MultiresControlAttributesObject *obj2 = (MultiresControlAttributesObject *)obj;
+    PyMultiresControlAttributesObject *obj2 = (PyMultiresControlAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -561,7 +547,7 @@ PyMultiresControlAttributes_Wrap(const MultiresControlAttributes *attr)
 void
 PyMultiresControlAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    MultiresControlAttributesObject *obj2 = (MultiresControlAttributesObject *)obj;
+    PyMultiresControlAttributesObject *obj2 = (PyMultiresControlAttributesObject *)obj;
     obj2->parent = parent;
 }
 

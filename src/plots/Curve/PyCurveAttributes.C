@@ -30,7 +30,7 @@
 //
 // This struct contains the Python type information and a CurveAttributes.
 //
-struct CurveAttributesObject
+struct PyCurveAttributesObject
 {
     PyObject_HEAD
     CurveAttributes *data;
@@ -244,7 +244,7 @@ PyCurveAttributes_ToString(const CurveAttributes *atts, const char *prefix, cons
 static PyObject *
 CurveAttributes_Notify(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -281,7 +281,7 @@ CurveAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_SetShowLines(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -333,7 +333,7 @@ CurveAttributes_SetShowLines(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_GetShowLines(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowLines()?1L:0L);
     return retval;
 }
@@ -341,7 +341,7 @@ CurveAttributes_GetShowLines(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_SetLineWidth(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -393,7 +393,7 @@ CurveAttributes_SetLineWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_GetLineWidth(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetLineWidth()));
     return retval;
 }
@@ -401,7 +401,7 @@ CurveAttributes_GetLineWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_SetShowPoints(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -453,7 +453,7 @@ CurveAttributes_SetShowPoints(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_GetShowPoints(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowPoints()?1L:0L);
     return retval;
 }
@@ -461,7 +461,7 @@ CurveAttributes_GetShowPoints(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_SetSymbol(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -524,7 +524,7 @@ CurveAttributes_SetSymbol(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_GetSymbol(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetSymbol()));
     return retval;
 }
@@ -532,7 +532,7 @@ CurveAttributes_GetSymbol(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_SetPointSize(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -584,7 +584,7 @@ CurveAttributes_SetPointSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_GetPointSize(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetPointSize());
     return retval;
 }
@@ -592,7 +592,7 @@ CurveAttributes_GetPointSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_SetPointFillMode(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -650,7 +650,7 @@ CurveAttributes_SetPointFillMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_GetPointFillMode(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetPointFillMode()));
     return retval;
 }
@@ -658,7 +658,7 @@ CurveAttributes_GetPointFillMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_SetPointStride(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -710,7 +710,7 @@ CurveAttributes_SetPointStride(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_GetPointStride(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetPointStride()));
     return retval;
 }
@@ -718,7 +718,7 @@ CurveAttributes_GetPointStride(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_SetSymbolDensity(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -770,7 +770,7 @@ CurveAttributes_SetSymbolDensity(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_GetSymbolDensity(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetSymbolDensity()));
     return retval;
 }
@@ -778,7 +778,7 @@ CurveAttributes_GetSymbolDensity(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_SetCurveColorSource(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -836,7 +836,7 @@ CurveAttributes_SetCurveColorSource(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_GetCurveColorSource(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetCurveColorSource()));
     return retval;
 }
@@ -844,7 +844,7 @@ CurveAttributes_GetCurveColorSource(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_SetCurveColor(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -907,7 +907,7 @@ CurveAttributes_SetCurveColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_GetCurveColor(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the curveColor.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *curveColor = obj->data->GetCurveColor().GetColor();
@@ -921,7 +921,7 @@ CurveAttributes_GetCurveColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_SetShowLegend(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -973,7 +973,7 @@ CurveAttributes_SetShowLegend(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_GetShowLegend(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowLegend()?1L:0L);
     return retval;
 }
@@ -981,7 +981,7 @@ CurveAttributes_GetShowLegend(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_SetShowLabels(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1033,7 +1033,7 @@ CurveAttributes_SetShowLabels(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_GetShowLabels(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowLabels()?1L:0L);
     return retval;
 }
@@ -1041,7 +1041,7 @@ CurveAttributes_GetShowLabels(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_SetDesignator(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1082,7 +1082,7 @@ CurveAttributes_SetDesignator(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_GetDesignator(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetDesignator().c_str());
     return retval;
 }
@@ -1090,7 +1090,7 @@ CurveAttributes_GetDesignator(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_SetDoBallTimeCue(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1142,7 +1142,7 @@ CurveAttributes_SetDoBallTimeCue(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_GetDoBallTimeCue(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetDoBallTimeCue()?1L:0L);
     return retval;
 }
@@ -1150,7 +1150,7 @@ CurveAttributes_GetDoBallTimeCue(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_SetBallTimeCueColor(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -1213,7 +1213,7 @@ CurveAttributes_SetBallTimeCueColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_GetBallTimeCueColor(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the ballTimeCueColor.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *ballTimeCueColor = obj->data->GetBallTimeCueColor().GetColor();
@@ -1227,7 +1227,7 @@ CurveAttributes_GetBallTimeCueColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_SetTimeCueBallSize(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1279,7 +1279,7 @@ CurveAttributes_SetTimeCueBallSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_GetTimeCueBallSize(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetTimeCueBallSize());
     return retval;
 }
@@ -1287,7 +1287,7 @@ CurveAttributes_GetTimeCueBallSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_SetDoLineTimeCue(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1339,7 +1339,7 @@ CurveAttributes_SetDoLineTimeCue(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_GetDoLineTimeCue(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetDoLineTimeCue()?1L:0L);
     return retval;
 }
@@ -1347,7 +1347,7 @@ CurveAttributes_GetDoLineTimeCue(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_SetLineTimeCueColor(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -1410,7 +1410,7 @@ CurveAttributes_SetLineTimeCueColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_GetLineTimeCueColor(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the lineTimeCueColor.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *lineTimeCueColor = obj->data->GetLineTimeCueColor().GetColor();
@@ -1424,7 +1424,7 @@ CurveAttributes_GetLineTimeCueColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_SetLineTimeCueWidth(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1476,7 +1476,7 @@ CurveAttributes_SetLineTimeCueWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_GetLineTimeCueWidth(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetLineTimeCueWidth()));
     return retval;
 }
@@ -1484,7 +1484,7 @@ CurveAttributes_GetLineTimeCueWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_SetDoCropTimeCue(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1536,7 +1536,7 @@ CurveAttributes_SetDoCropTimeCue(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_GetDoCropTimeCue(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetDoCropTimeCue()?1L:0L);
     return retval;
 }
@@ -1544,7 +1544,7 @@ CurveAttributes_GetDoCropTimeCue(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_SetTimeForTimeCue(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1596,7 +1596,7 @@ CurveAttributes_SetTimeForTimeCue(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_GetTimeForTimeCue(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetTimeForTimeCue());
     return retval;
 }
@@ -1604,7 +1604,7 @@ CurveAttributes_GetTimeForTimeCue(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_SetFillMode(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1664,7 +1664,7 @@ CurveAttributes_SetFillMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_GetFillMode(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetFillMode()));
     return retval;
 }
@@ -1672,7 +1672,7 @@ CurveAttributes_GetFillMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_SetFillColor1(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -1735,7 +1735,7 @@ CurveAttributes_SetFillColor1(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_GetFillColor1(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the fillColor1.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *fillColor1 = obj->data->GetFillColor1().GetColor();
@@ -1749,7 +1749,7 @@ CurveAttributes_GetFillColor1(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_SetFillColor2(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -1812,7 +1812,7 @@ CurveAttributes_SetFillColor2(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_GetFillColor2(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the fillColor2.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *fillColor2 = obj->data->GetFillColor2().GetColor();
@@ -1826,7 +1826,7 @@ CurveAttributes_GetFillColor2(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_SetPolarToCartesian(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1878,7 +1878,7 @@ CurveAttributes_SetPolarToCartesian(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_GetPolarToCartesian(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetPolarToCartesian()?1L:0L);
     return retval;
 }
@@ -1886,7 +1886,7 @@ CurveAttributes_GetPolarToCartesian(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_SetPolarCoordinateOrder(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1944,7 +1944,7 @@ CurveAttributes_SetPolarCoordinateOrder(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_GetPolarCoordinateOrder(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetPolarCoordinateOrder()));
     return retval;
 }
@@ -1952,7 +1952,7 @@ CurveAttributes_GetPolarCoordinateOrder(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_SetAngleUnits(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2010,7 +2010,7 @@ CurveAttributes_SetAngleUnits(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CurveAttributes_GetAngleUnits(PyObject *self, PyObject *args)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)self;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetAngleUnits()));
     return retval;
 }
@@ -2082,16 +2082,16 @@ PyMethodDef PyCurveAttributes_methods[CURVEATTRIBUTES_NMETH] = {
 //
 
 static void
-CurveAttributes_dealloc(PyObject *v)
+PyCurveAttributes_dealloc(PyObject *v)
 {
-   CurveAttributesObject *obj = (CurveAttributesObject *)v;
+   PyCurveAttributesObject *obj = (PyCurveAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *CurveAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyCurveAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyCurveAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -2283,56 +2283,42 @@ PyCurveAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 }
 
 PyObject *
-CurveAttributes_str(PyObject *v)
+PyCurveAttributes_str(PyObject *v)
 {
-    CurveAttributesObject *obj = (CurveAttributesObject *)v;
+    PyCurveAttributesObject *obj = (PyCurveAttributesObject *)v;
     return PyString_FromString(PyCurveAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *CurveAttributes_Purpose = "Attributes for the xy plot";
-#else
-static char *CurveAttributes_Purpose = "Attributes for the xy plot";
-#endif
+static char const *PyCurveAttributes_purpose = "Attributes for the xy plot";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject CurveAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "CurveAttributes",
-    .tp_basicsize = sizeof(CurveAttributesObject),
-    .tp_dealloc = CurveAttributes_dealloc,
-    .tp_repr = CurveAttributes_str,
-    .tp_str = CurveAttributes_str,
-    .tp_getattro = PyCurveAttributes_getattro,
-    .tp_setattro = PyCurveAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = CurveAttributes_Purpose,
-    .tp_richcompare = CurveAttributes_richcompare,
-    .tp_methods = PyCurveAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(CurveAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-CurveAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyCurveAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &CurveAttributesType
-         || Py_TYPE(other) != &CurveAttributesType)
+    if ( Py_TYPE(self) != &PyCurveAttributesType
+         || Py_TYPE(other) != &PyCurveAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    CurveAttributes *a = ((CurveAttributesObject *)self)->data;
-    CurveAttributes *b = ((CurveAttributesObject *)other)->data;
+    CurveAttributes *a = ((PyCurveAttributesObject *)self)->data;
+    CurveAttributes *b = ((PyCurveAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -2361,8 +2347,8 @@ static CurveAttributes *currentAtts = 0;
 static PyObject *
 NewCurveAttributes(int useCurrent)
 {
-    CurveAttributesObject *newObject;
-    newObject = PyObject_NEW(CurveAttributesObject, &CurveAttributesType);
+    PyCurveAttributesObject *newObject;
+    newObject = PyObject_NEW(PyCurveAttributesObject, &PyCurveAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -2373,15 +2359,15 @@ NewCurveAttributes(int useCurrent)
         newObject->data = new CurveAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&CurveAttributesType);
+    PyType_Ready(&PyCurveAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapCurveAttributes(const CurveAttributes *attr)
 {
-    CurveAttributesObject *newObject;
-    newObject = PyObject_NEW(CurveAttributesObject, &CurveAttributesType);
+    PyCurveAttributesObject *newObject;
+    newObject = PyObject_NEW(PyCurveAttributesObject, &PyCurveAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (CurveAttributes *)attr;
@@ -2483,13 +2469,13 @@ PyCurveAttributes_GetMethodTable(int *nMethods)
 bool
 PyCurveAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &CurveAttributesType);
+    return (obj->ob_type == &PyCurveAttributesType);
 }
 
 CurveAttributes *
 PyCurveAttributes_FromPyObject(PyObject *obj)
 {
-    CurveAttributesObject *obj2 = (CurveAttributesObject *)obj;
+    PyCurveAttributesObject *obj2 = (PyCurveAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -2508,7 +2494,7 @@ PyCurveAttributes_Wrap(const CurveAttributes *attr)
 void
 PyCurveAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    CurveAttributesObject *obj2 = (CurveAttributesObject *)obj;
+    PyCurveAttributesObject *obj2 = (PyCurveAttributesObject *)obj;
     obj2->parent = parent;
 }
 

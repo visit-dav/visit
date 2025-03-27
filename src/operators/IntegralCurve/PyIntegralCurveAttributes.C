@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a IntegralCurveAttributes.
 //
-struct IntegralCurveAttributesObject
+struct PyIntegralCurveAttributesObject
 {
     PyObject_HEAD
     IntegralCurveAttributes *data;
@@ -703,7 +703,7 @@ PyIntegralCurveAttributes_ToString(const IntegralCurveAttributes *atts, const ch
 static PyObject *
 IntegralCurveAttributes_Notify(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -740,7 +740,7 @@ IntegralCurveAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetSourceType(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -805,7 +805,7 @@ IntegralCurveAttributes_SetSourceType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetSourceType(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetSourceType()));
     return retval;
 }
@@ -813,7 +813,7 @@ IntegralCurveAttributes_GetSourceType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetPointSource(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetPointSource();
@@ -880,7 +880,7 @@ IntegralCurveAttributes_SetPointSource(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetPointSource(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the pointSource.
     PyObject *retval = PyTuple_New(3);
     const double *pointSource = obj->data->GetPointSource();
@@ -892,7 +892,7 @@ IntegralCurveAttributes_GetPointSource(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetLineStart(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetLineStart();
@@ -959,7 +959,7 @@ IntegralCurveAttributes_SetLineStart(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetLineStart(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the lineStart.
     PyObject *retval = PyTuple_New(3);
     const double *lineStart = obj->data->GetLineStart();
@@ -971,7 +971,7 @@ IntegralCurveAttributes_GetLineStart(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetLineEnd(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetLineEnd();
@@ -1038,7 +1038,7 @@ IntegralCurveAttributes_SetLineEnd(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetLineEnd(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the lineEnd.
     PyObject *retval = PyTuple_New(3);
     const double *lineEnd = obj->data->GetLineEnd();
@@ -1050,7 +1050,7 @@ IntegralCurveAttributes_GetLineEnd(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetPlaneOrigin(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetPlaneOrigin();
@@ -1117,7 +1117,7 @@ IntegralCurveAttributes_SetPlaneOrigin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetPlaneOrigin(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the planeOrigin.
     PyObject *retval = PyTuple_New(3);
     const double *planeOrigin = obj->data->GetPlaneOrigin();
@@ -1129,7 +1129,7 @@ IntegralCurveAttributes_GetPlaneOrigin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetPlaneNormal(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetPlaneNormal();
@@ -1196,7 +1196,7 @@ IntegralCurveAttributes_SetPlaneNormal(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetPlaneNormal(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the planeNormal.
     PyObject *retval = PyTuple_New(3);
     const double *planeNormal = obj->data->GetPlaneNormal();
@@ -1208,7 +1208,7 @@ IntegralCurveAttributes_GetPlaneNormal(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetPlaneUpAxis(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetPlaneUpAxis();
@@ -1275,7 +1275,7 @@ IntegralCurveAttributes_SetPlaneUpAxis(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetPlaneUpAxis(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the planeUpAxis.
     PyObject *retval = PyTuple_New(3);
     const double *planeUpAxis = obj->data->GetPlaneUpAxis();
@@ -1287,7 +1287,7 @@ IntegralCurveAttributes_GetPlaneUpAxis(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetRadius(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1339,7 +1339,7 @@ IntegralCurveAttributes_SetRadius(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetRadius(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetRadius());
     return retval;
 }
@@ -1347,7 +1347,7 @@ IntegralCurveAttributes_GetRadius(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetSphereOrigin(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetSphereOrigin();
@@ -1414,7 +1414,7 @@ IntegralCurveAttributes_SetSphereOrigin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetSphereOrigin(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the sphereOrigin.
     PyObject *retval = PyTuple_New(3);
     const double *sphereOrigin = obj->data->GetSphereOrigin();
@@ -1426,7 +1426,7 @@ IntegralCurveAttributes_GetSphereOrigin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetBoxExtents(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetBoxExtents();
@@ -1493,7 +1493,7 @@ IntegralCurveAttributes_SetBoxExtents(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetBoxExtents(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the boxExtents.
     PyObject *retval = PyTuple_New(6);
     const double *boxExtents = obj->data->GetBoxExtents();
@@ -1505,7 +1505,7 @@ IntegralCurveAttributes_GetBoxExtents(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetUseWholeBox(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1557,7 +1557,7 @@ IntegralCurveAttributes_SetUseWholeBox(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetUseWholeBox(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetUseWholeBox()?1L:0L);
     return retval;
 }
@@ -1565,7 +1565,7 @@ IntegralCurveAttributes_GetUseWholeBox(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetPointList(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     doubleVector vec;
 
@@ -1629,7 +1629,7 @@ IntegralCurveAttributes_SetPointList(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetPointList(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the pointList.
     const doubleVector &pointList = obj->data->GetPointList();
     PyObject *retval = PyTuple_New(pointList.size());
@@ -1641,7 +1641,7 @@ IntegralCurveAttributes_GetPointList(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetFieldData(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     doubleVector vec;
 
@@ -1705,7 +1705,7 @@ IntegralCurveAttributes_SetFieldData(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetFieldData(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the fieldData.
     const doubleVector &fieldData = obj->data->GetFieldData();
     PyObject *retval = PyTuple_New(fieldData.size());
@@ -1717,7 +1717,7 @@ IntegralCurveAttributes_GetFieldData(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetSampleDensity0(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1769,7 +1769,7 @@ IntegralCurveAttributes_SetSampleDensity0(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetSampleDensity0(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetSampleDensity0()));
     return retval;
 }
@@ -1777,7 +1777,7 @@ IntegralCurveAttributes_GetSampleDensity0(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetSampleDensity1(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1829,7 +1829,7 @@ IntegralCurveAttributes_SetSampleDensity1(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetSampleDensity1(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetSampleDensity1()));
     return retval;
 }
@@ -1837,7 +1837,7 @@ IntegralCurveAttributes_GetSampleDensity1(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetSampleDensity2(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1889,7 +1889,7 @@ IntegralCurveAttributes_SetSampleDensity2(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetSampleDensity2(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetSampleDensity2()));
     return retval;
 }
@@ -1897,7 +1897,7 @@ IntegralCurveAttributes_GetSampleDensity2(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetDataValue(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1967,7 +1967,7 @@ IntegralCurveAttributes_SetDataValue(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetDataValue(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetDataValue()));
     return retval;
 }
@@ -1975,7 +1975,7 @@ IntegralCurveAttributes_GetDataValue(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetDataVariable(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2016,7 +2016,7 @@ IntegralCurveAttributes_SetDataVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetDataVariable(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetDataVariable().c_str());
     return retval;
 }
@@ -2024,7 +2024,7 @@ IntegralCurveAttributes_GetDataVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetIntegrationDirection(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2086,7 +2086,7 @@ IntegralCurveAttributes_SetIntegrationDirection(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetIntegrationDirection(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetIntegrationDirection()));
     return retval;
 }
@@ -2094,7 +2094,7 @@ IntegralCurveAttributes_GetIntegrationDirection(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetMaxSteps(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2146,7 +2146,7 @@ IntegralCurveAttributes_SetMaxSteps(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetMaxSteps(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMaxSteps()));
     return retval;
 }
@@ -2154,7 +2154,7 @@ IntegralCurveAttributes_GetMaxSteps(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetTerminateByDistance(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2206,7 +2206,7 @@ IntegralCurveAttributes_SetTerminateByDistance(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetTerminateByDistance(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetTerminateByDistance()?1L:0L);
     return retval;
 }
@@ -2214,7 +2214,7 @@ IntegralCurveAttributes_GetTerminateByDistance(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetTermDistance(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2266,7 +2266,7 @@ IntegralCurveAttributes_SetTermDistance(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetTermDistance(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetTermDistance());
     return retval;
 }
@@ -2274,7 +2274,7 @@ IntegralCurveAttributes_GetTermDistance(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetTerminateByTime(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2326,7 +2326,7 @@ IntegralCurveAttributes_SetTerminateByTime(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetTerminateByTime(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetTerminateByTime()?1L:0L);
     return retval;
 }
@@ -2334,7 +2334,7 @@ IntegralCurveAttributes_GetTerminateByTime(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetTermTime(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2386,7 +2386,7 @@ IntegralCurveAttributes_SetTermTime(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetTermTime(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetTermTime());
     return retval;
 }
@@ -2394,7 +2394,7 @@ IntegralCurveAttributes_GetTermTime(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetMaxStepLength(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2446,7 +2446,7 @@ IntegralCurveAttributes_SetMaxStepLength(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetMaxStepLength(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMaxStepLength());
     return retval;
 }
@@ -2454,7 +2454,7 @@ IntegralCurveAttributes_GetMaxStepLength(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetLimitMaximumTimestep(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2506,7 +2506,7 @@ IntegralCurveAttributes_SetLimitMaximumTimestep(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetLimitMaximumTimestep(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetLimitMaximumTimestep()?1L:0L);
     return retval;
 }
@@ -2514,7 +2514,7 @@ IntegralCurveAttributes_GetLimitMaximumTimestep(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetMaxTimeStep(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2566,7 +2566,7 @@ IntegralCurveAttributes_SetMaxTimeStep(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetMaxTimeStep(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMaxTimeStep());
     return retval;
 }
@@ -2574,7 +2574,7 @@ IntegralCurveAttributes_GetMaxTimeStep(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetRelTol(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2626,7 +2626,7 @@ IntegralCurveAttributes_SetRelTol(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetRelTol(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetRelTol());
     return retval;
 }
@@ -2634,7 +2634,7 @@ IntegralCurveAttributes_GetRelTol(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetAbsTolSizeType(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2692,7 +2692,7 @@ IntegralCurveAttributes_SetAbsTolSizeType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetAbsTolSizeType(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetAbsTolSizeType()));
     return retval;
 }
@@ -2700,7 +2700,7 @@ IntegralCurveAttributes_GetAbsTolSizeType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetAbsTolAbsolute(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2752,7 +2752,7 @@ IntegralCurveAttributes_SetAbsTolAbsolute(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetAbsTolAbsolute(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetAbsTolAbsolute());
     return retval;
 }
@@ -2760,7 +2760,7 @@ IntegralCurveAttributes_GetAbsTolAbsolute(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetAbsTolBBox(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2812,7 +2812,7 @@ IntegralCurveAttributes_SetAbsTolBBox(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetAbsTolBBox(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetAbsTolBBox());
     return retval;
 }
@@ -2820,7 +2820,7 @@ IntegralCurveAttributes_GetAbsTolBBox(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetFieldType(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2882,7 +2882,7 @@ IntegralCurveAttributes_SetFieldType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetFieldType(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetFieldType()));
     return retval;
 }
@@ -2890,7 +2890,7 @@ IntegralCurveAttributes_GetFieldType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetFieldConstant(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2942,7 +2942,7 @@ IntegralCurveAttributes_SetFieldConstant(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetFieldConstant(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetFieldConstant());
     return retval;
 }
@@ -2950,7 +2950,7 @@ IntegralCurveAttributes_GetFieldConstant(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetVelocitySource(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetVelocitySource();
@@ -3017,7 +3017,7 @@ IntegralCurveAttributes_SetVelocitySource(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetVelocitySource(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the velocitySource.
     PyObject *retval = PyTuple_New(3);
     const double *velocitySource = obj->data->GetVelocitySource();
@@ -3029,7 +3029,7 @@ IntegralCurveAttributes_GetVelocitySource(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetIntegrationType(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3091,7 +3091,7 @@ IntegralCurveAttributes_SetIntegrationType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetIntegrationType(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetIntegrationType()));
     return retval;
 }
@@ -3099,7 +3099,7 @@ IntegralCurveAttributes_GetIntegrationType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetParallelizationAlgorithmType(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3159,7 +3159,7 @@ IntegralCurveAttributes_SetParallelizationAlgorithmType(PyObject *self, PyObject
 /*static*/ PyObject *
 IntegralCurveAttributes_GetParallelizationAlgorithmType(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetParallelizationAlgorithmType()));
     return retval;
 }
@@ -3167,7 +3167,7 @@ IntegralCurveAttributes_GetParallelizationAlgorithmType(PyObject *self, PyObject
 /*static*/ PyObject *
 IntegralCurveAttributes_SetMaxProcessCount(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3219,7 +3219,7 @@ IntegralCurveAttributes_SetMaxProcessCount(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetMaxProcessCount(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMaxProcessCount()));
     return retval;
 }
@@ -3227,7 +3227,7 @@ IntegralCurveAttributes_GetMaxProcessCount(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetMaxDomainCacheSize(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3279,7 +3279,7 @@ IntegralCurveAttributes_SetMaxDomainCacheSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetMaxDomainCacheSize(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMaxDomainCacheSize()));
     return retval;
 }
@@ -3287,7 +3287,7 @@ IntegralCurveAttributes_GetMaxDomainCacheSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetWorkGroupSize(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3339,7 +3339,7 @@ IntegralCurveAttributes_SetWorkGroupSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetWorkGroupSize(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetWorkGroupSize()));
     return retval;
 }
@@ -3347,7 +3347,7 @@ IntegralCurveAttributes_GetWorkGroupSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetPathlines(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3399,7 +3399,7 @@ IntegralCurveAttributes_SetPathlines(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetPathlines(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetPathlines()?1L:0L);
     return retval;
 }
@@ -3407,7 +3407,7 @@ IntegralCurveAttributes_GetPathlines(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetPathlinesOverrideStartingTimeFlag(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3459,7 +3459,7 @@ IntegralCurveAttributes_SetPathlinesOverrideStartingTimeFlag(PyObject *self, PyO
 /*static*/ PyObject *
 IntegralCurveAttributes_GetPathlinesOverrideStartingTimeFlag(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetPathlinesOverrideStartingTimeFlag()?1L:0L);
     return retval;
 }
@@ -3467,7 +3467,7 @@ IntegralCurveAttributes_GetPathlinesOverrideStartingTimeFlag(PyObject *self, PyO
 /*static*/ PyObject *
 IntegralCurveAttributes_SetPathlinesOverrideStartingTime(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3519,7 +3519,7 @@ IntegralCurveAttributes_SetPathlinesOverrideStartingTime(PyObject *self, PyObjec
 /*static*/ PyObject *
 IntegralCurveAttributes_GetPathlinesOverrideStartingTime(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetPathlinesOverrideStartingTime());
     return retval;
 }
@@ -3527,7 +3527,7 @@ IntegralCurveAttributes_GetPathlinesOverrideStartingTime(PyObject *self, PyObjec
 /*static*/ PyObject *
 IntegralCurveAttributes_SetPathlinesPeriod(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3579,7 +3579,7 @@ IntegralCurveAttributes_SetPathlinesPeriod(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetPathlinesPeriod(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetPathlinesPeriod());
     return retval;
 }
@@ -3587,7 +3587,7 @@ IntegralCurveAttributes_GetPathlinesPeriod(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetPathlinesCMFE(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3645,7 +3645,7 @@ IntegralCurveAttributes_SetPathlinesCMFE(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetPathlinesCMFE(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetPathlinesCMFE()));
     return retval;
 }
@@ -3653,7 +3653,7 @@ IntegralCurveAttributes_GetPathlinesCMFE(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetDisplayGeometry(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3712,7 +3712,7 @@ IntegralCurveAttributes_SetDisplayGeometry(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetDisplayGeometry(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetDisplayGeometry()));
     return retval;
 }
@@ -3720,7 +3720,7 @@ IntegralCurveAttributes_GetDisplayGeometry(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetCleanupMethod(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3780,7 +3780,7 @@ IntegralCurveAttributes_SetCleanupMethod(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetCleanupMethod(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetCleanupMethod()));
     return retval;
 }
@@ -3788,7 +3788,7 @@ IntegralCurveAttributes_GetCleanupMethod(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetCleanupThreshold(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3840,7 +3840,7 @@ IntegralCurveAttributes_SetCleanupThreshold(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetCleanupThreshold(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetCleanupThreshold());
     return retval;
 }
@@ -3848,7 +3848,7 @@ IntegralCurveAttributes_GetCleanupThreshold(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetCropBeginFlag(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3900,7 +3900,7 @@ IntegralCurveAttributes_SetCropBeginFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetCropBeginFlag(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetCropBeginFlag()?1L:0L);
     return retval;
 }
@@ -3908,7 +3908,7 @@ IntegralCurveAttributes_GetCropBeginFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetCropBegin(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3960,7 +3960,7 @@ IntegralCurveAttributes_SetCropBegin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetCropBegin(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetCropBegin());
     return retval;
 }
@@ -3968,7 +3968,7 @@ IntegralCurveAttributes_GetCropBegin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetCropEndFlag(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4020,7 +4020,7 @@ IntegralCurveAttributes_SetCropEndFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetCropEndFlag(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetCropEndFlag()?1L:0L);
     return retval;
 }
@@ -4028,7 +4028,7 @@ IntegralCurveAttributes_GetCropEndFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetCropEnd(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4080,7 +4080,7 @@ IntegralCurveAttributes_SetCropEnd(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetCropEnd(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetCropEnd());
     return retval;
 }
@@ -4088,7 +4088,7 @@ IntegralCurveAttributes_GetCropEnd(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetCropValue(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4147,7 +4147,7 @@ IntegralCurveAttributes_SetCropValue(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetCropValue(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetCropValue()));
     return retval;
 }
@@ -4155,7 +4155,7 @@ IntegralCurveAttributes_GetCropValue(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetSampleDistance0(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4207,7 +4207,7 @@ IntegralCurveAttributes_SetSampleDistance0(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetSampleDistance0(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetSampleDistance0());
     return retval;
 }
@@ -4215,7 +4215,7 @@ IntegralCurveAttributes_GetSampleDistance0(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetSampleDistance1(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4267,7 +4267,7 @@ IntegralCurveAttributes_SetSampleDistance1(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetSampleDistance1(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetSampleDistance1());
     return retval;
 }
@@ -4275,7 +4275,7 @@ IntegralCurveAttributes_GetSampleDistance1(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetSampleDistance2(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4327,7 +4327,7 @@ IntegralCurveAttributes_SetSampleDistance2(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetSampleDistance2(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetSampleDistance2());
     return retval;
 }
@@ -4335,7 +4335,7 @@ IntegralCurveAttributes_GetSampleDistance2(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetFillInterior(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4387,7 +4387,7 @@ IntegralCurveAttributes_SetFillInterior(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetFillInterior(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetFillInterior()?1L:0L);
     return retval;
 }
@@ -4395,7 +4395,7 @@ IntegralCurveAttributes_GetFillInterior(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetRandomSamples(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4447,7 +4447,7 @@ IntegralCurveAttributes_SetRandomSamples(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetRandomSamples(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetRandomSamples()?1L:0L);
     return retval;
 }
@@ -4455,7 +4455,7 @@ IntegralCurveAttributes_GetRandomSamples(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetRandomSeed(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4507,7 +4507,7 @@ IntegralCurveAttributes_SetRandomSeed(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetRandomSeed(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetRandomSeed()));
     return retval;
 }
@@ -4515,7 +4515,7 @@ IntegralCurveAttributes_GetRandomSeed(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetNumberOfRandomSamples(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4567,7 +4567,7 @@ IntegralCurveAttributes_SetNumberOfRandomSamples(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetNumberOfRandomSamples(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNumberOfRandomSamples()));
     return retval;
 }
@@ -4575,7 +4575,7 @@ IntegralCurveAttributes_GetNumberOfRandomSamples(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetIssueAdvectionWarnings(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4627,7 +4627,7 @@ IntegralCurveAttributes_SetIssueAdvectionWarnings(PyObject *self, PyObject *args
 /*static*/ PyObject *
 IntegralCurveAttributes_GetIssueAdvectionWarnings(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetIssueAdvectionWarnings()?1L:0L);
     return retval;
 }
@@ -4635,7 +4635,7 @@ IntegralCurveAttributes_GetIssueAdvectionWarnings(PyObject *self, PyObject *args
 /*static*/ PyObject *
 IntegralCurveAttributes_SetIssueBoundaryWarnings(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4687,7 +4687,7 @@ IntegralCurveAttributes_SetIssueBoundaryWarnings(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetIssueBoundaryWarnings(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetIssueBoundaryWarnings()?1L:0L);
     return retval;
 }
@@ -4695,7 +4695,7 @@ IntegralCurveAttributes_GetIssueBoundaryWarnings(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetIssueTerminationWarnings(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4747,7 +4747,7 @@ IntegralCurveAttributes_SetIssueTerminationWarnings(PyObject *self, PyObject *ar
 /*static*/ PyObject *
 IntegralCurveAttributes_GetIssueTerminationWarnings(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetIssueTerminationWarnings()?1L:0L);
     return retval;
 }
@@ -4755,7 +4755,7 @@ IntegralCurveAttributes_GetIssueTerminationWarnings(PyObject *self, PyObject *ar
 /*static*/ PyObject *
 IntegralCurveAttributes_SetIssueStepsizeWarnings(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4807,7 +4807,7 @@ IntegralCurveAttributes_SetIssueStepsizeWarnings(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetIssueStepsizeWarnings(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetIssueStepsizeWarnings()?1L:0L);
     return retval;
 }
@@ -4815,7 +4815,7 @@ IntegralCurveAttributes_GetIssueStepsizeWarnings(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_SetIssueStiffnessWarnings(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4867,7 +4867,7 @@ IntegralCurveAttributes_SetIssueStiffnessWarnings(PyObject *self, PyObject *args
 /*static*/ PyObject *
 IntegralCurveAttributes_GetIssueStiffnessWarnings(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetIssueStiffnessWarnings()?1L:0L);
     return retval;
 }
@@ -4875,7 +4875,7 @@ IntegralCurveAttributes_GetIssueStiffnessWarnings(PyObject *self, PyObject *args
 /*static*/ PyObject *
 IntegralCurveAttributes_SetIssueCriticalPointsWarnings(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4927,7 +4927,7 @@ IntegralCurveAttributes_SetIssueCriticalPointsWarnings(PyObject *self, PyObject 
 /*static*/ PyObject *
 IntegralCurveAttributes_GetIssueCriticalPointsWarnings(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetIssueCriticalPointsWarnings()?1L:0L);
     return retval;
 }
@@ -4935,7 +4935,7 @@ IntegralCurveAttributes_GetIssueCriticalPointsWarnings(PyObject *self, PyObject 
 /*static*/ PyObject *
 IntegralCurveAttributes_SetCriticalPointThreshold(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4987,7 +4987,7 @@ IntegralCurveAttributes_SetCriticalPointThreshold(PyObject *self, PyObject *args
 /*static*/ PyObject *
 IntegralCurveAttributes_GetCriticalPointThreshold(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetCriticalPointThreshold());
     return retval;
 }
@@ -4995,7 +4995,7 @@ IntegralCurveAttributes_GetCriticalPointThreshold(PyObject *self, PyObject *args
 /*static*/ PyObject *
 IntegralCurveAttributes_SetCorrelationDistanceAngTol(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -5047,7 +5047,7 @@ IntegralCurveAttributes_SetCorrelationDistanceAngTol(PyObject *self, PyObject *a
 /*static*/ PyObject *
 IntegralCurveAttributes_GetCorrelationDistanceAngTol(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetCorrelationDistanceAngTol());
     return retval;
 }
@@ -5055,7 +5055,7 @@ IntegralCurveAttributes_GetCorrelationDistanceAngTol(PyObject *self, PyObject *a
 /*static*/ PyObject *
 IntegralCurveAttributes_SetCorrelationDistanceMinDistAbsolute(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -5107,7 +5107,7 @@ IntegralCurveAttributes_SetCorrelationDistanceMinDistAbsolute(PyObject *self, Py
 /*static*/ PyObject *
 IntegralCurveAttributes_GetCorrelationDistanceMinDistAbsolute(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetCorrelationDistanceMinDistAbsolute());
     return retval;
 }
@@ -5115,7 +5115,7 @@ IntegralCurveAttributes_GetCorrelationDistanceMinDistAbsolute(PyObject *self, Py
 /*static*/ PyObject *
 IntegralCurveAttributes_SetCorrelationDistanceMinDistBBox(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -5167,7 +5167,7 @@ IntegralCurveAttributes_SetCorrelationDistanceMinDistBBox(PyObject *self, PyObje
 /*static*/ PyObject *
 IntegralCurveAttributes_GetCorrelationDistanceMinDistBBox(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetCorrelationDistanceMinDistBBox());
     return retval;
 }
@@ -5175,7 +5175,7 @@ IntegralCurveAttributes_GetCorrelationDistanceMinDistBBox(PyObject *self, PyObje
 /*static*/ PyObject *
 IntegralCurveAttributes_SetCorrelationDistanceMinDistType(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -5233,7 +5233,7 @@ IntegralCurveAttributes_SetCorrelationDistanceMinDistType(PyObject *self, PyObje
 /*static*/ PyObject *
 IntegralCurveAttributes_GetCorrelationDistanceMinDistType(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetCorrelationDistanceMinDistType()));
     return retval;
 }
@@ -5241,7 +5241,7 @@ IntegralCurveAttributes_GetCorrelationDistanceMinDistType(PyObject *self, PyObje
 /*static*/ PyObject *
 IntegralCurveAttributes_SetSelection(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -5282,7 +5282,7 @@ IntegralCurveAttributes_SetSelection(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IntegralCurveAttributes_GetSelection(PyObject *self, PyObject *args)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)self;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetSelection().c_str());
     return retval;
 }
@@ -5442,16 +5442,16 @@ PyMethodDef PyIntegralCurveAttributes_methods[INTEGRALCURVEATTRIBUTES_NMETH] = {
 //
 
 static void
-IntegralCurveAttributes_dealloc(PyObject *v)
+PyIntegralCurveAttributes_dealloc(PyObject *v)
 {
-   IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)v;
+   PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *IntegralCurveAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyIntegralCurveAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyIntegralCurveAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -5909,56 +5909,42 @@ PyIntegralCurveAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject
 }
 
 PyObject *
-IntegralCurveAttributes_str(PyObject *v)
+PyIntegralCurveAttributes_str(PyObject *v)
 {
-    IntegralCurveAttributesObject *obj = (IntegralCurveAttributesObject *)v;
+    PyIntegralCurveAttributesObject *obj = (PyIntegralCurveAttributesObject *)v;
     return PyString_FromString(PyIntegralCurveAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *IntegralCurveAttributes_Purpose = "Attributes for the IntegralCurve";
-#else
-static char *IntegralCurveAttributes_Purpose = "Attributes for the IntegralCurve";
-#endif
+static char const *PyIntegralCurveAttributes_purpose = "Attributes for the IntegralCurve";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject IntegralCurveAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "IntegralCurveAttributes",
-    .tp_basicsize = sizeof(IntegralCurveAttributesObject),
-    .tp_dealloc = IntegralCurveAttributes_dealloc,
-    .tp_repr = IntegralCurveAttributes_str,
-    .tp_str = IntegralCurveAttributes_str,
-    .tp_getattro = PyIntegralCurveAttributes_getattro,
-    .tp_setattro = PyIntegralCurveAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = IntegralCurveAttributes_Purpose,
-    .tp_richcompare = IntegralCurveAttributes_richcompare,
-    .tp_methods = PyIntegralCurveAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(IntegralCurveAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-IntegralCurveAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyIntegralCurveAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &IntegralCurveAttributesType
-         || Py_TYPE(other) != &IntegralCurveAttributesType)
+    if ( Py_TYPE(self) != &PyIntegralCurveAttributesType
+         || Py_TYPE(other) != &PyIntegralCurveAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    IntegralCurveAttributes *a = ((IntegralCurveAttributesObject *)self)->data;
-    IntegralCurveAttributes *b = ((IntegralCurveAttributesObject *)other)->data;
+    IntegralCurveAttributes *a = ((PyIntegralCurveAttributesObject *)self)->data;
+    IntegralCurveAttributes *b = ((PyIntegralCurveAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -5987,8 +5973,8 @@ static IntegralCurveAttributes *currentAtts = 0;
 static PyObject *
 NewIntegralCurveAttributes(int useCurrent)
 {
-    IntegralCurveAttributesObject *newObject;
-    newObject = PyObject_NEW(IntegralCurveAttributesObject, &IntegralCurveAttributesType);
+    PyIntegralCurveAttributesObject *newObject;
+    newObject = PyObject_NEW(PyIntegralCurveAttributesObject, &PyIntegralCurveAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -5999,15 +5985,15 @@ NewIntegralCurveAttributes(int useCurrent)
         newObject->data = new IntegralCurveAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&IntegralCurveAttributesType);
+    PyType_Ready(&PyIntegralCurveAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapIntegralCurveAttributes(const IntegralCurveAttributes *attr)
 {
-    IntegralCurveAttributesObject *newObject;
-    newObject = PyObject_NEW(IntegralCurveAttributesObject, &IntegralCurveAttributesType);
+    PyIntegralCurveAttributesObject *newObject;
+    newObject = PyObject_NEW(PyIntegralCurveAttributesObject, &PyIntegralCurveAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (IntegralCurveAttributes *)attr;
@@ -6109,13 +6095,13 @@ PyIntegralCurveAttributes_GetMethodTable(int *nMethods)
 bool
 PyIntegralCurveAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &IntegralCurveAttributesType);
+    return (obj->ob_type == &PyIntegralCurveAttributesType);
 }
 
 IntegralCurveAttributes *
 PyIntegralCurveAttributes_FromPyObject(PyObject *obj)
 {
-    IntegralCurveAttributesObject *obj2 = (IntegralCurveAttributesObject *)obj;
+    PyIntegralCurveAttributesObject *obj2 = (PyIntegralCurveAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -6134,7 +6120,7 @@ PyIntegralCurveAttributes_Wrap(const IntegralCurveAttributes *attr)
 void
 PyIntegralCurveAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    IntegralCurveAttributesObject *obj2 = (IntegralCurveAttributesObject *)obj;
+    PyIntegralCurveAttributesObject *obj2 = (PyIntegralCurveAttributesObject *)obj;
     obj2->parent = parent;
 }
 

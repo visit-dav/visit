@@ -25,7 +25,7 @@
 //
 // This struct contains the Python type information and a AxisLabels.
 //
-struct AxisLabelsObject
+struct PyAxisLabelsObject
 {
     PyObject_HEAD
     AxisLabels *data;
@@ -61,7 +61,7 @@ PyAxisLabels_ToString(const AxisLabels *atts, const char *prefix, const bool for
 static PyObject *
 AxisLabels_Notify(PyObject *self, PyObject *args)
 {
-    AxisLabelsObject *obj = (AxisLabelsObject *)self;
+    PyAxisLabelsObject *obj = (PyAxisLabelsObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -98,7 +98,7 @@ AxisLabels_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisLabels_SetVisible(PyObject *self, PyObject *args)
 {
-    AxisLabelsObject *obj = (AxisLabelsObject *)self;
+    PyAxisLabelsObject *obj = (PyAxisLabelsObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -150,7 +150,7 @@ AxisLabels_SetVisible(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisLabels_GetVisible(PyObject *self, PyObject *args)
 {
-    AxisLabelsObject *obj = (AxisLabelsObject *)self;
+    PyAxisLabelsObject *obj = (PyAxisLabelsObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetVisible()?1L:0L);
     return retval;
 }
@@ -158,7 +158,7 @@ AxisLabels_GetVisible(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisLabels_SetFont(PyObject *self, PyObject *args)
 {
-    AxisLabelsObject *obj = (AxisLabelsObject *)self;
+    PyAxisLabelsObject *obj = (PyAxisLabelsObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -175,7 +175,7 @@ AxisLabels_SetFont(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisLabels_GetFont(PyObject *self, PyObject *args)
 {
-    AxisLabelsObject *obj = (AxisLabelsObject *)self;
+    PyAxisLabelsObject *obj = (PyAxisLabelsObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -191,7 +191,7 @@ AxisLabels_GetFont(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisLabels_SetScaling(PyObject *self, PyObject *args)
 {
-    AxisLabelsObject *obj = (AxisLabelsObject *)self;
+    PyAxisLabelsObject *obj = (PyAxisLabelsObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -243,7 +243,7 @@ AxisLabels_SetScaling(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisLabels_GetScaling(PyObject *self, PyObject *args)
 {
-    AxisLabelsObject *obj = (AxisLabelsObject *)self;
+    PyAxisLabelsObject *obj = (PyAxisLabelsObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetScaling()));
     return retval;
 }
@@ -267,16 +267,16 @@ PyMethodDef PyAxisLabels_methods[AXISLABELS_NMETH] = {
 //
 
 static void
-AxisLabels_dealloc(PyObject *v)
+PyAxisLabels_dealloc(PyObject *v)
 {
-   AxisLabelsObject *obj = (AxisLabelsObject *)v;
+   PyAxisLabelsObject *obj = (PyAxisLabelsObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *AxisLabels_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyAxisLabels_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyAxisLabels_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -328,56 +328,42 @@ PyAxisLabels_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 }
 
 PyObject *
-AxisLabels_str(PyObject *v)
+PyAxisLabels_str(PyObject *v)
 {
-    AxisLabelsObject *obj = (AxisLabelsObject *)v;
+    PyAxisLabelsObject *obj = (PyAxisLabelsObject *)v;
     return PyString_FromString(PyAxisLabels_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *AxisLabels_Purpose = "Contains the label properties for one axis.";
-#else
-static char *AxisLabels_Purpose = "Contains the label properties for one axis.";
-#endif
+static char const *PyAxisLabels_purpose = "Contains the label properties for one axis.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject AxisLabelsType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "AxisLabels",
-    .tp_basicsize = sizeof(AxisLabelsObject),
-    .tp_dealloc = AxisLabels_dealloc,
-    .tp_repr = AxisLabels_str,
-    .tp_str = AxisLabels_str,
-    .tp_getattro = PyAxisLabels_getattro,
-    .tp_setattro = PyAxisLabels_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = AxisLabels_Purpose,
-    .tp_richcompare = AxisLabels_richcompare,
-    .tp_methods = PyAxisLabels_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(AxisLabels);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-AxisLabels_richcompare(PyObject *self, PyObject *other, int op)
+PyAxisLabels_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &AxisLabelsType
-         || Py_TYPE(other) != &AxisLabelsType)
+    if ( Py_TYPE(self) != &PyAxisLabelsType
+         || Py_TYPE(other) != &PyAxisLabelsType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    AxisLabels *a = ((AxisLabelsObject *)self)->data;
-    AxisLabels *b = ((AxisLabelsObject *)other)->data;
+    AxisLabels *a = ((PyAxisLabelsObject *)self)->data;
+    AxisLabels *b = ((PyAxisLabelsObject *)other)->data;
 
     switch (op)
     {
@@ -406,8 +392,8 @@ static AxisLabels *currentAtts = 0;
 static PyObject *
 NewAxisLabels(int useCurrent)
 {
-    AxisLabelsObject *newObject;
-    newObject = PyObject_NEW(AxisLabelsObject, &AxisLabelsType);
+    PyAxisLabelsObject *newObject;
+    newObject = PyObject_NEW(PyAxisLabelsObject, &PyAxisLabelsType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -418,15 +404,15 @@ NewAxisLabels(int useCurrent)
         newObject->data = new AxisLabels;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&AxisLabelsType);
+    PyType_Ready(&PyAxisLabelsType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapAxisLabels(const AxisLabels *attr)
 {
-    AxisLabelsObject *newObject;
-    newObject = PyObject_NEW(AxisLabelsObject, &AxisLabelsType);
+    PyAxisLabelsObject *newObject;
+    newObject = PyObject_NEW(PyAxisLabelsObject, &PyAxisLabelsType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (AxisLabels *)attr;
@@ -528,13 +514,13 @@ PyAxisLabels_GetMethodTable(int *nMethods)
 bool
 PyAxisLabels_Check(PyObject *obj)
 {
-    return (obj->ob_type == &AxisLabelsType);
+    return (obj->ob_type == &PyAxisLabelsType);
 }
 
 AxisLabels *
 PyAxisLabels_FromPyObject(PyObject *obj)
 {
-    AxisLabelsObject *obj2 = (AxisLabelsObject *)obj;
+    PyAxisLabelsObject *obj2 = (PyAxisLabelsObject *)obj;
     return obj2->data;
 }
 
@@ -553,7 +539,7 @@ PyAxisLabels_Wrap(const AxisLabels *attr)
 void
 PyAxisLabels_SetParent(PyObject *obj, PyObject *parent)
 {
-    AxisLabelsObject *obj2 = (AxisLabelsObject *)obj;
+    PyAxisLabelsObject *obj2 = (PyAxisLabelsObject *)obj;
     obj2->parent = parent;
 }
 

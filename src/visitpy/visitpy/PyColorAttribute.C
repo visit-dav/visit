@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a ColorAttribute.
 //
-struct ColorAttributeObject
+struct PyColorAttributeObject
 {
     PyObject_HEAD
     ColorAttribute *data;
@@ -64,7 +64,7 @@ PyColorAttribute_ToString(const ColorAttribute *atts, const char *prefix, const 
 static PyObject *
 ColorAttribute_Notify(PyObject *self, PyObject *args)
 {
-    ColorAttributeObject *obj = (ColorAttributeObject *)self;
+    PyColorAttributeObject *obj = (PyColorAttributeObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -101,7 +101,7 @@ ColorAttribute_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ColorAttribute_SetColor(PyObject *self, PyObject *args)
 {
-    ColorAttributeObject *obj = (ColorAttributeObject *)self;
+    PyColorAttributeObject *obj = (PyColorAttributeObject *)self;
 
     typedef unsigned char uchar;
     PyObject *packaged_args = 0;
@@ -169,7 +169,7 @@ ColorAttribute_SetColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ColorAttribute_GetColor(PyObject *self, PyObject *args)
 {
-    ColorAttributeObject *obj = (ColorAttributeObject *)self;
+    PyColorAttributeObject *obj = (PyColorAttributeObject *)self;
     // Allocate a tuple the with enough entries to hold the color.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *color = obj->data->GetColor();
@@ -193,16 +193,16 @@ PyMethodDef PyColorAttribute_methods[COLORATTRIBUTE_NMETH] = {
 //
 
 static void
-ColorAttribute_dealloc(PyObject *v)
+PyColorAttribute_dealloc(PyObject *v)
 {
-   ColorAttributeObject *obj = (ColorAttributeObject *)v;
+   PyColorAttributeObject *obj = (PyColorAttributeObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *ColorAttribute_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyColorAttribute_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyColorAttribute_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -246,56 +246,42 @@ PyColorAttribute_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 }
 
 PyObject *
-ColorAttribute_str(PyObject *v)
+PyColorAttribute_str(PyObject *v)
 {
-    ColorAttributeObject *obj = (ColorAttributeObject *)v;
+    PyColorAttributeObject *obj = (PyColorAttributeObject *)v;
     return PyString_FromString(PyColorAttribute_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *ColorAttribute_Purpose = "This class contains RGBA color information";
-#else
-static char *ColorAttribute_Purpose = "This class contains RGBA color information";
-#endif
+static char const *PyColorAttribute_purpose = "This class contains RGBA color information";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject ColorAttributeType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "ColorAttribute",
-    .tp_basicsize = sizeof(ColorAttributeObject),
-    .tp_dealloc = ColorAttribute_dealloc,
-    .tp_repr = ColorAttribute_str,
-    .tp_str = ColorAttribute_str,
-    .tp_getattro = PyColorAttribute_getattro,
-    .tp_setattro = PyColorAttribute_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = ColorAttribute_Purpose,
-    .tp_richcompare = ColorAttribute_richcompare,
-    .tp_methods = PyColorAttribute_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(ColorAttribute);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-ColorAttribute_richcompare(PyObject *self, PyObject *other, int op)
+PyColorAttribute_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &ColorAttributeType
-         || Py_TYPE(other) != &ColorAttributeType)
+    if ( Py_TYPE(self) != &PyColorAttributeType
+         || Py_TYPE(other) != &PyColorAttributeType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    ColorAttribute *a = ((ColorAttributeObject *)self)->data;
-    ColorAttribute *b = ((ColorAttributeObject *)other)->data;
+    ColorAttribute *a = ((PyColorAttributeObject *)self)->data;
+    ColorAttribute *b = ((PyColorAttributeObject *)other)->data;
 
     switch (op)
     {
@@ -324,8 +310,8 @@ static ColorAttribute *currentAtts = 0;
 static PyObject *
 NewColorAttribute(int useCurrent)
 {
-    ColorAttributeObject *newObject;
-    newObject = PyObject_NEW(ColorAttributeObject, &ColorAttributeType);
+    PyColorAttributeObject *newObject;
+    newObject = PyObject_NEW(PyColorAttributeObject, &PyColorAttributeType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -336,15 +322,15 @@ NewColorAttribute(int useCurrent)
         newObject->data = new ColorAttribute;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&ColorAttributeType);
+    PyType_Ready(&PyColorAttributeType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapColorAttribute(const ColorAttribute *attr)
 {
-    ColorAttributeObject *newObject;
-    newObject = PyObject_NEW(ColorAttributeObject, &ColorAttributeType);
+    PyColorAttributeObject *newObject;
+    newObject = PyObject_NEW(PyColorAttributeObject, &PyColorAttributeType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (ColorAttribute *)attr;
@@ -446,13 +432,13 @@ PyColorAttribute_GetMethodTable(int *nMethods)
 bool
 PyColorAttribute_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ColorAttributeType);
+    return (obj->ob_type == &PyColorAttributeType);
 }
 
 ColorAttribute *
 PyColorAttribute_FromPyObject(PyObject *obj)
 {
-    ColorAttributeObject *obj2 = (ColorAttributeObject *)obj;
+    PyColorAttributeObject *obj2 = (PyColorAttributeObject *)obj;
     return obj2->data;
 }
 
@@ -471,7 +457,7 @@ PyColorAttribute_Wrap(const ColorAttribute *attr)
 void
 PyColorAttribute_SetParent(PyObject *obj, PyObject *parent)
 {
-    ColorAttributeObject *obj2 = (ColorAttributeObject *)obj;
+    PyColorAttributeObject *obj2 = (PyColorAttributeObject *)obj;
     obj2->parent = parent;
 }
 

@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a SphereSliceAttributes.
 //
-struct SphereSliceAttributesObject
+struct PySphereSliceAttributesObject
 {
     PyObject_HEAD
     SphereSliceAttributes *data;
@@ -66,7 +66,7 @@ PySphereSliceAttributes_ToString(const SphereSliceAttributes *atts, const char *
 static PyObject *
 SphereSliceAttributes_Notify(PyObject *self, PyObject *args)
 {
-    SphereSliceAttributesObject *obj = (SphereSliceAttributesObject *)self;
+    PySphereSliceAttributesObject *obj = (PySphereSliceAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -103,7 +103,7 @@ SphereSliceAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SphereSliceAttributes_SetOrigin(PyObject *self, PyObject *args)
 {
-    SphereSliceAttributesObject *obj = (SphereSliceAttributesObject *)self;
+    PySphereSliceAttributesObject *obj = (PySphereSliceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetOrigin();
@@ -170,7 +170,7 @@ SphereSliceAttributes_SetOrigin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SphereSliceAttributes_GetOrigin(PyObject *self, PyObject *args)
 {
-    SphereSliceAttributesObject *obj = (SphereSliceAttributesObject *)self;
+    PySphereSliceAttributesObject *obj = (PySphereSliceAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the origin.
     PyObject *retval = PyTuple_New(3);
     const double *origin = obj->data->GetOrigin();
@@ -182,7 +182,7 @@ SphereSliceAttributes_GetOrigin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SphereSliceAttributes_SetRadius(PyObject *self, PyObject *args)
 {
-    SphereSliceAttributesObject *obj = (SphereSliceAttributesObject *)self;
+    PySphereSliceAttributesObject *obj = (PySphereSliceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -234,7 +234,7 @@ SphereSliceAttributes_SetRadius(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SphereSliceAttributes_GetRadius(PyObject *self, PyObject *args)
 {
-    SphereSliceAttributesObject *obj = (SphereSliceAttributesObject *)self;
+    PySphereSliceAttributesObject *obj = (PySphereSliceAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetRadius());
     return retval;
 }
@@ -256,16 +256,16 @@ PyMethodDef PySphereSliceAttributes_methods[SPHERESLICEATTRIBUTES_NMETH] = {
 //
 
 static void
-SphereSliceAttributes_dealloc(PyObject *v)
+PySphereSliceAttributes_dealloc(PyObject *v)
 {
-   SphereSliceAttributesObject *obj = (SphereSliceAttributesObject *)v;
+   PySphereSliceAttributesObject *obj = (PySphereSliceAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *SphereSliceAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PySphereSliceAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PySphereSliceAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -313,56 +313,42 @@ PySphereSliceAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *
 }
 
 PyObject *
-SphereSliceAttributes_str(PyObject *v)
+PySphereSliceAttributes_str(PyObject *v)
 {
-    SphereSliceAttributesObject *obj = (SphereSliceAttributesObject *)v;
+    PySphereSliceAttributesObject *obj = (PySphereSliceAttributesObject *)v;
     return PyString_FromString(PySphereSliceAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *SphereSliceAttributes_Purpose = "This class contains attributes for the spherical slice.";
-#else
-static char *SphereSliceAttributes_Purpose = "This class contains attributes for the spherical slice.";
-#endif
+static char const *PySphereSliceAttributes_purpose = "This class contains attributes for the spherical slice.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject SphereSliceAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "SphereSliceAttributes",
-    .tp_basicsize = sizeof(SphereSliceAttributesObject),
-    .tp_dealloc = SphereSliceAttributes_dealloc,
-    .tp_repr = SphereSliceAttributes_str,
-    .tp_str = SphereSliceAttributes_str,
-    .tp_getattro = PySphereSliceAttributes_getattro,
-    .tp_setattro = PySphereSliceAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = SphereSliceAttributes_Purpose,
-    .tp_richcompare = SphereSliceAttributes_richcompare,
-    .tp_methods = PySphereSliceAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(SphereSliceAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-SphereSliceAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PySphereSliceAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &SphereSliceAttributesType
-         || Py_TYPE(other) != &SphereSliceAttributesType)
+    if ( Py_TYPE(self) != &PySphereSliceAttributesType
+         || Py_TYPE(other) != &PySphereSliceAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    SphereSliceAttributes *a = ((SphereSliceAttributesObject *)self)->data;
-    SphereSliceAttributes *b = ((SphereSliceAttributesObject *)other)->data;
+    SphereSliceAttributes *a = ((PySphereSliceAttributesObject *)self)->data;
+    SphereSliceAttributes *b = ((PySphereSliceAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -391,8 +377,8 @@ static SphereSliceAttributes *currentAtts = 0;
 static PyObject *
 NewSphereSliceAttributes(int useCurrent)
 {
-    SphereSliceAttributesObject *newObject;
-    newObject = PyObject_NEW(SphereSliceAttributesObject, &SphereSliceAttributesType);
+    PySphereSliceAttributesObject *newObject;
+    newObject = PyObject_NEW(PySphereSliceAttributesObject, &PySphereSliceAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -403,15 +389,15 @@ NewSphereSliceAttributes(int useCurrent)
         newObject->data = new SphereSliceAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&SphereSliceAttributesType);
+    PyType_Ready(&PySphereSliceAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapSphereSliceAttributes(const SphereSliceAttributes *attr)
 {
-    SphereSliceAttributesObject *newObject;
-    newObject = PyObject_NEW(SphereSliceAttributesObject, &SphereSliceAttributesType);
+    PySphereSliceAttributesObject *newObject;
+    newObject = PyObject_NEW(PySphereSliceAttributesObject, &PySphereSliceAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (SphereSliceAttributes *)attr;
@@ -513,13 +499,13 @@ PySphereSliceAttributes_GetMethodTable(int *nMethods)
 bool
 PySphereSliceAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &SphereSliceAttributesType);
+    return (obj->ob_type == &PySphereSliceAttributesType);
 }
 
 SphereSliceAttributes *
 PySphereSliceAttributes_FromPyObject(PyObject *obj)
 {
-    SphereSliceAttributesObject *obj2 = (SphereSliceAttributesObject *)obj;
+    PySphereSliceAttributesObject *obj2 = (PySphereSliceAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -538,7 +524,7 @@ PySphereSliceAttributes_Wrap(const SphereSliceAttributes *attr)
 void
 PySphereSliceAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    SphereSliceAttributesObject *obj2 = (SphereSliceAttributesObject *)obj;
+    PySphereSliceAttributesObject *obj2 = (PySphereSliceAttributesObject *)obj;
     obj2->parent = parent;
 }
 

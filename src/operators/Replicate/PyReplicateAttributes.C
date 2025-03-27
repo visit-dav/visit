@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a ReplicateAttributes.
 //
-struct ReplicateAttributesObject
+struct PyReplicateAttributesObject
 {
     PyObject_HEAD
     ReplicateAttributes *data;
@@ -138,7 +138,7 @@ PyReplicateAttributes_ToString(const ReplicateAttributes *atts, const char *pref
 static PyObject *
 ReplicateAttributes_Notify(PyObject *self, PyObject *args)
 {
-    ReplicateAttributesObject *obj = (ReplicateAttributesObject *)self;
+    PyReplicateAttributesObject *obj = (PyReplicateAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -175,7 +175,7 @@ ReplicateAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReplicateAttributes_SetUseUnitCellVectors(PyObject *self, PyObject *args)
 {
-    ReplicateAttributesObject *obj = (ReplicateAttributesObject *)self;
+    PyReplicateAttributesObject *obj = (PyReplicateAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -227,7 +227,7 @@ ReplicateAttributes_SetUseUnitCellVectors(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReplicateAttributes_GetUseUnitCellVectors(PyObject *self, PyObject *args)
 {
-    ReplicateAttributesObject *obj = (ReplicateAttributesObject *)self;
+    PyReplicateAttributesObject *obj = (PyReplicateAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetUseUnitCellVectors()?1L:0L);
     return retval;
 }
@@ -235,7 +235,7 @@ ReplicateAttributes_GetUseUnitCellVectors(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReplicateAttributes_SetXVector(PyObject *self, PyObject *args)
 {
-    ReplicateAttributesObject *obj = (ReplicateAttributesObject *)self;
+    PyReplicateAttributesObject *obj = (PyReplicateAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetXVector();
@@ -302,7 +302,7 @@ ReplicateAttributes_SetXVector(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReplicateAttributes_GetXVector(PyObject *self, PyObject *args)
 {
-    ReplicateAttributesObject *obj = (ReplicateAttributesObject *)self;
+    PyReplicateAttributesObject *obj = (PyReplicateAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the xVector.
     PyObject *retval = PyTuple_New(3);
     const double *xVector = obj->data->GetXVector();
@@ -314,7 +314,7 @@ ReplicateAttributes_GetXVector(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReplicateAttributes_SetYVector(PyObject *self, PyObject *args)
 {
-    ReplicateAttributesObject *obj = (ReplicateAttributesObject *)self;
+    PyReplicateAttributesObject *obj = (PyReplicateAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetYVector();
@@ -381,7 +381,7 @@ ReplicateAttributes_SetYVector(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReplicateAttributes_GetYVector(PyObject *self, PyObject *args)
 {
-    ReplicateAttributesObject *obj = (ReplicateAttributesObject *)self;
+    PyReplicateAttributesObject *obj = (PyReplicateAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the yVector.
     PyObject *retval = PyTuple_New(3);
     const double *yVector = obj->data->GetYVector();
@@ -393,7 +393,7 @@ ReplicateAttributes_GetYVector(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReplicateAttributes_SetZVector(PyObject *self, PyObject *args)
 {
-    ReplicateAttributesObject *obj = (ReplicateAttributesObject *)self;
+    PyReplicateAttributesObject *obj = (PyReplicateAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetZVector();
@@ -460,7 +460,7 @@ ReplicateAttributes_SetZVector(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReplicateAttributes_GetZVector(PyObject *self, PyObject *args)
 {
-    ReplicateAttributesObject *obj = (ReplicateAttributesObject *)self;
+    PyReplicateAttributesObject *obj = (PyReplicateAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the zVector.
     PyObject *retval = PyTuple_New(3);
     const double *zVector = obj->data->GetZVector();
@@ -472,7 +472,7 @@ ReplicateAttributes_GetZVector(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReplicateAttributes_SetXReplications(PyObject *self, PyObject *args)
 {
-    ReplicateAttributesObject *obj = (ReplicateAttributesObject *)self;
+    PyReplicateAttributesObject *obj = (PyReplicateAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -524,7 +524,7 @@ ReplicateAttributes_SetXReplications(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReplicateAttributes_GetXReplications(PyObject *self, PyObject *args)
 {
-    ReplicateAttributesObject *obj = (ReplicateAttributesObject *)self;
+    PyReplicateAttributesObject *obj = (PyReplicateAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetXReplications()));
     return retval;
 }
@@ -532,7 +532,7 @@ ReplicateAttributes_GetXReplications(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReplicateAttributes_SetYReplications(PyObject *self, PyObject *args)
 {
-    ReplicateAttributesObject *obj = (ReplicateAttributesObject *)self;
+    PyReplicateAttributesObject *obj = (PyReplicateAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -584,7 +584,7 @@ ReplicateAttributes_SetYReplications(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReplicateAttributes_GetYReplications(PyObject *self, PyObject *args)
 {
-    ReplicateAttributesObject *obj = (ReplicateAttributesObject *)self;
+    PyReplicateAttributesObject *obj = (PyReplicateAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetYReplications()));
     return retval;
 }
@@ -592,7 +592,7 @@ ReplicateAttributes_GetYReplications(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReplicateAttributes_SetZReplications(PyObject *self, PyObject *args)
 {
-    ReplicateAttributesObject *obj = (ReplicateAttributesObject *)self;
+    PyReplicateAttributesObject *obj = (PyReplicateAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -644,7 +644,7 @@ ReplicateAttributes_SetZReplications(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReplicateAttributes_GetZReplications(PyObject *self, PyObject *args)
 {
-    ReplicateAttributesObject *obj = (ReplicateAttributesObject *)self;
+    PyReplicateAttributesObject *obj = (PyReplicateAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetZReplications()));
     return retval;
 }
@@ -652,7 +652,7 @@ ReplicateAttributes_GetZReplications(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReplicateAttributes_SetMergeResults(PyObject *self, PyObject *args)
 {
-    ReplicateAttributesObject *obj = (ReplicateAttributesObject *)self;
+    PyReplicateAttributesObject *obj = (PyReplicateAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -704,7 +704,7 @@ ReplicateAttributes_SetMergeResults(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReplicateAttributes_GetMergeResults(PyObject *self, PyObject *args)
 {
-    ReplicateAttributesObject *obj = (ReplicateAttributesObject *)self;
+    PyReplicateAttributesObject *obj = (PyReplicateAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetMergeResults()?1L:0L);
     return retval;
 }
@@ -712,7 +712,7 @@ ReplicateAttributes_GetMergeResults(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReplicateAttributes_SetReplicateUnitCellAtoms(PyObject *self, PyObject *args)
 {
-    ReplicateAttributesObject *obj = (ReplicateAttributesObject *)self;
+    PyReplicateAttributesObject *obj = (PyReplicateAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -764,7 +764,7 @@ ReplicateAttributes_SetReplicateUnitCellAtoms(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReplicateAttributes_GetReplicateUnitCellAtoms(PyObject *self, PyObject *args)
 {
-    ReplicateAttributesObject *obj = (ReplicateAttributesObject *)self;
+    PyReplicateAttributesObject *obj = (PyReplicateAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetReplicateUnitCellAtoms()?1L:0L);
     return retval;
 }
@@ -772,7 +772,7 @@ ReplicateAttributes_GetReplicateUnitCellAtoms(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReplicateAttributes_SetShiftPeriodicAtomOrigin(PyObject *self, PyObject *args)
 {
-    ReplicateAttributesObject *obj = (ReplicateAttributesObject *)self;
+    PyReplicateAttributesObject *obj = (PyReplicateAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -824,7 +824,7 @@ ReplicateAttributes_SetShiftPeriodicAtomOrigin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReplicateAttributes_GetShiftPeriodicAtomOrigin(PyObject *self, PyObject *args)
 {
-    ReplicateAttributesObject *obj = (ReplicateAttributesObject *)self;
+    PyReplicateAttributesObject *obj = (PyReplicateAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShiftPeriodicAtomOrigin()?1L:0L);
     return retval;
 }
@@ -832,7 +832,7 @@ ReplicateAttributes_GetShiftPeriodicAtomOrigin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReplicateAttributes_SetNewPeriodicOrigin(PyObject *self, PyObject *args)
 {
-    ReplicateAttributesObject *obj = (ReplicateAttributesObject *)self;
+    PyReplicateAttributesObject *obj = (PyReplicateAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetNewPeriodicOrigin();
@@ -899,7 +899,7 @@ ReplicateAttributes_SetNewPeriodicOrigin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReplicateAttributes_GetNewPeriodicOrigin(PyObject *self, PyObject *args)
 {
-    ReplicateAttributesObject *obj = (ReplicateAttributesObject *)self;
+    PyReplicateAttributesObject *obj = (PyReplicateAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the newPeriodicOrigin.
     PyObject *retval = PyTuple_New(3);
     const double *newPeriodicOrigin = obj->data->GetNewPeriodicOrigin();
@@ -943,16 +943,16 @@ PyMethodDef PyReplicateAttributes_methods[REPLICATEATTRIBUTES_NMETH] = {
 //
 
 static void
-ReplicateAttributes_dealloc(PyObject *v)
+PyReplicateAttributes_dealloc(PyObject *v)
 {
-   ReplicateAttributesObject *obj = (ReplicateAttributesObject *)v;
+   PyReplicateAttributesObject *obj = (PyReplicateAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *ReplicateAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyReplicateAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyReplicateAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -1036,56 +1036,42 @@ PyReplicateAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *ar
 }
 
 PyObject *
-ReplicateAttributes_str(PyObject *v)
+PyReplicateAttributes_str(PyObject *v)
 {
-    ReplicateAttributesObject *obj = (ReplicateAttributesObject *)v;
+    PyReplicateAttributesObject *obj = (PyReplicateAttributesObject *)v;
     return PyString_FromString(PyReplicateAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *ReplicateAttributes_Purpose = "This class contains attributes for the replicate operator.";
-#else
-static char *ReplicateAttributes_Purpose = "This class contains attributes for the replicate operator.";
-#endif
+static char const *PyReplicateAttributes_purpose = "This class contains attributes for the replicate operator.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject ReplicateAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "ReplicateAttributes",
-    .tp_basicsize = sizeof(ReplicateAttributesObject),
-    .tp_dealloc = ReplicateAttributes_dealloc,
-    .tp_repr = ReplicateAttributes_str,
-    .tp_str = ReplicateAttributes_str,
-    .tp_getattro = PyReplicateAttributes_getattro,
-    .tp_setattro = PyReplicateAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = ReplicateAttributes_Purpose,
-    .tp_richcompare = ReplicateAttributes_richcompare,
-    .tp_methods = PyReplicateAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(ReplicateAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-ReplicateAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyReplicateAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &ReplicateAttributesType
-         || Py_TYPE(other) != &ReplicateAttributesType)
+    if ( Py_TYPE(self) != &PyReplicateAttributesType
+         || Py_TYPE(other) != &PyReplicateAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    ReplicateAttributes *a = ((ReplicateAttributesObject *)self)->data;
-    ReplicateAttributes *b = ((ReplicateAttributesObject *)other)->data;
+    ReplicateAttributes *a = ((PyReplicateAttributesObject *)self)->data;
+    ReplicateAttributes *b = ((PyReplicateAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -1114,8 +1100,8 @@ static ReplicateAttributes *currentAtts = 0;
 static PyObject *
 NewReplicateAttributes(int useCurrent)
 {
-    ReplicateAttributesObject *newObject;
-    newObject = PyObject_NEW(ReplicateAttributesObject, &ReplicateAttributesType);
+    PyReplicateAttributesObject *newObject;
+    newObject = PyObject_NEW(PyReplicateAttributesObject, &PyReplicateAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1126,15 +1112,15 @@ NewReplicateAttributes(int useCurrent)
         newObject->data = new ReplicateAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&ReplicateAttributesType);
+    PyType_Ready(&PyReplicateAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapReplicateAttributes(const ReplicateAttributes *attr)
 {
-    ReplicateAttributesObject *newObject;
-    newObject = PyObject_NEW(ReplicateAttributesObject, &ReplicateAttributesType);
+    PyReplicateAttributesObject *newObject;
+    newObject = PyObject_NEW(PyReplicateAttributesObject, &PyReplicateAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (ReplicateAttributes *)attr;
@@ -1236,13 +1222,13 @@ PyReplicateAttributes_GetMethodTable(int *nMethods)
 bool
 PyReplicateAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ReplicateAttributesType);
+    return (obj->ob_type == &PyReplicateAttributesType);
 }
 
 ReplicateAttributes *
 PyReplicateAttributes_FromPyObject(PyObject *obj)
 {
-    ReplicateAttributesObject *obj2 = (ReplicateAttributesObject *)obj;
+    PyReplicateAttributesObject *obj2 = (PyReplicateAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1261,7 +1247,7 @@ PyReplicateAttributes_Wrap(const ReplicateAttributes *attr)
 void
 PyReplicateAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    ReplicateAttributesObject *obj2 = (ReplicateAttributesObject *)obj;
+    PyReplicateAttributesObject *obj2 = (PyReplicateAttributesObject *)obj;
     obj2->parent = parent;
 }
 

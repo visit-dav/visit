@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a ExtractPointFunction2DAttributes.
 //
-struct ExtractPointFunction2DAttributesObject
+struct PyExtractPointFunction2DAttributesObject
 {
     PyObject_HEAD
     ExtractPointFunction2DAttributes *data;
@@ -80,7 +80,7 @@ PyExtractPointFunction2DAttributes_ToString(const ExtractPointFunction2DAttribut
 static PyObject *
 ExtractPointFunction2DAttributes_Notify(PyObject *self, PyObject *args)
 {
-    ExtractPointFunction2DAttributesObject *obj = (ExtractPointFunction2DAttributesObject *)self;
+    PyExtractPointFunction2DAttributesObject *obj = (PyExtractPointFunction2DAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -117,7 +117,7 @@ ExtractPointFunction2DAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtractPointFunction2DAttributes_SetI(PyObject *self, PyObject *args)
 {
-    ExtractPointFunction2DAttributesObject *obj = (ExtractPointFunction2DAttributesObject *)self;
+    PyExtractPointFunction2DAttributesObject *obj = (PyExtractPointFunction2DAttributesObject *)self;
 
     intVector vec;
 
@@ -181,7 +181,7 @@ ExtractPointFunction2DAttributes_SetI(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtractPointFunction2DAttributes_GetI(PyObject *self, PyObject *args)
 {
-    ExtractPointFunction2DAttributesObject *obj = (ExtractPointFunction2DAttributesObject *)self;
+    PyExtractPointFunction2DAttributesObject *obj = (PyExtractPointFunction2DAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the I.
     const intVector &I = obj->data->GetI();
     PyObject *retval = PyTuple_New(I.size());
@@ -193,7 +193,7 @@ ExtractPointFunction2DAttributes_GetI(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtractPointFunction2DAttributes_SetJ(PyObject *self, PyObject *args)
 {
-    ExtractPointFunction2DAttributesObject *obj = (ExtractPointFunction2DAttributesObject *)self;
+    PyExtractPointFunction2DAttributesObject *obj = (PyExtractPointFunction2DAttributesObject *)self;
 
     intVector vec;
 
@@ -257,7 +257,7 @@ ExtractPointFunction2DAttributes_SetJ(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtractPointFunction2DAttributes_GetJ(PyObject *self, PyObject *args)
 {
-    ExtractPointFunction2DAttributesObject *obj = (ExtractPointFunction2DAttributesObject *)self;
+    PyExtractPointFunction2DAttributesObject *obj = (PyExtractPointFunction2DAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the J.
     const intVector &J = obj->data->GetJ();
     PyObject *retval = PyTuple_New(J.size());
@@ -283,16 +283,16 @@ PyMethodDef PyExtractPointFunction2DAttributes_methods[EXTRACTPOINTFUNCTION2DATT
 //
 
 static void
-ExtractPointFunction2DAttributes_dealloc(PyObject *v)
+PyExtractPointFunction2DAttributes_dealloc(PyObject *v)
 {
-   ExtractPointFunction2DAttributesObject *obj = (ExtractPointFunction2DAttributesObject *)v;
+   PyExtractPointFunction2DAttributesObject *obj = (PyExtractPointFunction2DAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *ExtractPointFunction2DAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyExtractPointFunction2DAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyExtractPointFunction2DAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -340,56 +340,42 @@ PyExtractPointFunction2DAttributes_setattro(PyObject *self, PyObject *attr_name,
 }
 
 PyObject *
-ExtractPointFunction2DAttributes_str(PyObject *v)
+PyExtractPointFunction2DAttributes_str(PyObject *v)
 {
-    ExtractPointFunction2DAttributesObject *obj = (ExtractPointFunction2DAttributesObject *)v;
+    PyExtractPointFunction2DAttributesObject *obj = (PyExtractPointFunction2DAttributesObject *)v;
     return PyString_FromString(PyExtractPointFunction2DAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *ExtractPointFunction2DAttributes_Purpose = "Attributes for ExtractPointFunction2D";
-#else
-static char *ExtractPointFunction2DAttributes_Purpose = "Attributes for ExtractPointFunction2D";
-#endif
+static char const *PyExtractPointFunction2DAttributes_purpose = "Attributes for ExtractPointFunction2D";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject ExtractPointFunction2DAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "ExtractPointFunction2DAttributes",
-    .tp_basicsize = sizeof(ExtractPointFunction2DAttributesObject),
-    .tp_dealloc = ExtractPointFunction2DAttributes_dealloc,
-    .tp_repr = ExtractPointFunction2DAttributes_str,
-    .tp_str = ExtractPointFunction2DAttributes_str,
-    .tp_getattro = PyExtractPointFunction2DAttributes_getattro,
-    .tp_setattro = PyExtractPointFunction2DAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = ExtractPointFunction2DAttributes_Purpose,
-    .tp_richcompare = ExtractPointFunction2DAttributes_richcompare,
-    .tp_methods = PyExtractPointFunction2DAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(ExtractPointFunction2DAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-ExtractPointFunction2DAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyExtractPointFunction2DAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &ExtractPointFunction2DAttributesType
-         || Py_TYPE(other) != &ExtractPointFunction2DAttributesType)
+    if ( Py_TYPE(self) != &PyExtractPointFunction2DAttributesType
+         || Py_TYPE(other) != &PyExtractPointFunction2DAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    ExtractPointFunction2DAttributes *a = ((ExtractPointFunction2DAttributesObject *)self)->data;
-    ExtractPointFunction2DAttributes *b = ((ExtractPointFunction2DAttributesObject *)other)->data;
+    ExtractPointFunction2DAttributes *a = ((PyExtractPointFunction2DAttributesObject *)self)->data;
+    ExtractPointFunction2DAttributes *b = ((PyExtractPointFunction2DAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -418,8 +404,8 @@ static ExtractPointFunction2DAttributes *currentAtts = 0;
 static PyObject *
 NewExtractPointFunction2DAttributes(int useCurrent)
 {
-    ExtractPointFunction2DAttributesObject *newObject;
-    newObject = PyObject_NEW(ExtractPointFunction2DAttributesObject, &ExtractPointFunction2DAttributesType);
+    PyExtractPointFunction2DAttributesObject *newObject;
+    newObject = PyObject_NEW(PyExtractPointFunction2DAttributesObject, &PyExtractPointFunction2DAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -430,15 +416,15 @@ NewExtractPointFunction2DAttributes(int useCurrent)
         newObject->data = new ExtractPointFunction2DAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&ExtractPointFunction2DAttributesType);
+    PyType_Ready(&PyExtractPointFunction2DAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapExtractPointFunction2DAttributes(const ExtractPointFunction2DAttributes *attr)
 {
-    ExtractPointFunction2DAttributesObject *newObject;
-    newObject = PyObject_NEW(ExtractPointFunction2DAttributesObject, &ExtractPointFunction2DAttributesType);
+    PyExtractPointFunction2DAttributesObject *newObject;
+    newObject = PyObject_NEW(PyExtractPointFunction2DAttributesObject, &PyExtractPointFunction2DAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (ExtractPointFunction2DAttributes *)attr;
@@ -540,13 +526,13 @@ PyExtractPointFunction2DAttributes_GetMethodTable(int *nMethods)
 bool
 PyExtractPointFunction2DAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ExtractPointFunction2DAttributesType);
+    return (obj->ob_type == &PyExtractPointFunction2DAttributesType);
 }
 
 ExtractPointFunction2DAttributes *
 PyExtractPointFunction2DAttributes_FromPyObject(PyObject *obj)
 {
-    ExtractPointFunction2DAttributesObject *obj2 = (ExtractPointFunction2DAttributesObject *)obj;
+    PyExtractPointFunction2DAttributesObject *obj2 = (PyExtractPointFunction2DAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -565,7 +551,7 @@ PyExtractPointFunction2DAttributes_Wrap(const ExtractPointFunction2DAttributes *
 void
 PyExtractPointFunction2DAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    ExtractPointFunction2DAttributesObject *obj2 = (ExtractPointFunction2DAttributesObject *)obj;
+    PyExtractPointFunction2DAttributesObject *obj2 = (PyExtractPointFunction2DAttributesObject *)obj;
     obj2->parent = parent;
 }
 

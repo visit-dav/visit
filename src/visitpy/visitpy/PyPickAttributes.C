@@ -25,7 +25,7 @@
 //
 // This struct contains the Python type information and a PickAttributes.
 //
-struct PickAttributesObject
+struct PyPickAttributesObject
 {
     PyObject_HEAD
     PickAttributes *data;
@@ -242,7 +242,7 @@ PyPickAttributes_ToString(const PickAttributes *atts, const char *prefix, const 
 static PyObject *
 PickAttributes_Notify(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -331,7 +331,7 @@ PickAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_SetVariables(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
 
     stringVector vec;
 
@@ -388,7 +388,7 @@ PickAttributes_SetVariables(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_GetVariables(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the variables.
     const stringVector &variables = obj->data->GetVariables();
     PyObject *retval = PyTuple_New(variables.size());
@@ -400,7 +400,7 @@ PickAttributes_GetVariables(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_SetShowIncidentElements(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -452,7 +452,7 @@ PickAttributes_SetShowIncidentElements(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_GetShowIncidentElements(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowIncidentElements()?1L:0L);
     return retval;
 }
@@ -460,7 +460,7 @@ PickAttributes_GetShowIncidentElements(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_SetShowNodeId(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -512,7 +512,7 @@ PickAttributes_SetShowNodeId(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_GetShowNodeId(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowNodeId()?1L:0L);
     return retval;
 }
@@ -520,7 +520,7 @@ PickAttributes_GetShowNodeId(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_SetShowNodeDomainLogicalCoords(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -572,7 +572,7 @@ PickAttributes_SetShowNodeDomainLogicalCoords(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_GetShowNodeDomainLogicalCoords(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowNodeDomainLogicalCoords()?1L:0L);
     return retval;
 }
@@ -580,7 +580,7 @@ PickAttributes_GetShowNodeDomainLogicalCoords(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_SetShowNodeBlockLogicalCoords(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -632,7 +632,7 @@ PickAttributes_SetShowNodeBlockLogicalCoords(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_GetShowNodeBlockLogicalCoords(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowNodeBlockLogicalCoords()?1L:0L);
     return retval;
 }
@@ -640,7 +640,7 @@ PickAttributes_GetShowNodeBlockLogicalCoords(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_SetShowNodePhysicalCoords(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -692,7 +692,7 @@ PickAttributes_SetShowNodePhysicalCoords(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_GetShowNodePhysicalCoords(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowNodePhysicalCoords()?1L:0L);
     return retval;
 }
@@ -700,7 +700,7 @@ PickAttributes_GetShowNodePhysicalCoords(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_SetShowZoneId(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -752,7 +752,7 @@ PickAttributes_SetShowZoneId(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_GetShowZoneId(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowZoneId()?1L:0L);
     return retval;
 }
@@ -760,7 +760,7 @@ PickAttributes_GetShowZoneId(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_SetShowZoneDomainLogicalCoords(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -812,7 +812,7 @@ PickAttributes_SetShowZoneDomainLogicalCoords(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_GetShowZoneDomainLogicalCoords(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowZoneDomainLogicalCoords()?1L:0L);
     return retval;
 }
@@ -820,7 +820,7 @@ PickAttributes_GetShowZoneDomainLogicalCoords(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_SetShowZoneBlockLogicalCoords(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -872,7 +872,7 @@ PickAttributes_SetShowZoneBlockLogicalCoords(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_GetShowZoneBlockLogicalCoords(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowZoneBlockLogicalCoords()?1L:0L);
     return retval;
 }
@@ -880,7 +880,7 @@ PickAttributes_GetShowZoneBlockLogicalCoords(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_SetDoTimeCurve(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -932,7 +932,7 @@ PickAttributes_SetDoTimeCurve(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_GetDoTimeCurve(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetDoTimeCurve()?1L:0L);
     return retval;
 }
@@ -940,7 +940,7 @@ PickAttributes_GetDoTimeCurve(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_SetConciseOutput(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -992,7 +992,7 @@ PickAttributes_SetConciseOutput(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_GetConciseOutput(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetConciseOutput()?1L:0L);
     return retval;
 }
@@ -1000,7 +1000,7 @@ PickAttributes_GetConciseOutput(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_SetShowTimeStep(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1052,7 +1052,7 @@ PickAttributes_SetShowTimeStep(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_GetShowTimeStep(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowTimeStep()?1L:0L);
     return retval;
 }
@@ -1060,7 +1060,7 @@ PickAttributes_GetShowTimeStep(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_SetShowMeshName(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1112,7 +1112,7 @@ PickAttributes_SetShowMeshName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_GetShowMeshName(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowMeshName()?1L:0L);
     return retval;
 }
@@ -1120,7 +1120,7 @@ PickAttributes_GetShowMeshName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_SetBlockPieceName(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1161,7 +1161,7 @@ PickAttributes_SetBlockPieceName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_GetBlockPieceName(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetBlockPieceName().c_str());
     return retval;
 }
@@ -1169,7 +1169,7 @@ PickAttributes_GetBlockPieceName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_SetGroupPieceName(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1210,7 +1210,7 @@ PickAttributes_SetGroupPieceName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_GetGroupPieceName(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetGroupPieceName().c_str());
     return retval;
 }
@@ -1218,7 +1218,7 @@ PickAttributes_GetGroupPieceName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_SetUseLabelAsPickLetter(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1270,7 +1270,7 @@ PickAttributes_SetUseLabelAsPickLetter(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_GetUseLabelAsPickLetter(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetUseLabelAsPickLetter()?1L:0L);
     return retval;
 }
@@ -1278,7 +1278,7 @@ PickAttributes_GetUseLabelAsPickLetter(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_SetShowGlobalIds(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1330,7 +1330,7 @@ PickAttributes_SetShowGlobalIds(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_GetShowGlobalIds(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowGlobalIds()?1L:0L);
     return retval;
 }
@@ -1338,7 +1338,7 @@ PickAttributes_GetShowGlobalIds(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_SetShowPickLetter(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1390,7 +1390,7 @@ PickAttributes_SetShowPickLetter(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_GetShowPickLetter(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowPickLetter()?1L:0L);
     return retval;
 }
@@ -1398,7 +1398,7 @@ PickAttributes_GetShowPickLetter(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_SetElementLabel(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1439,7 +1439,7 @@ PickAttributes_SetElementLabel(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_GetElementLabel(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetElementLabel().c_str());
     return retval;
 }
@@ -1447,7 +1447,7 @@ PickAttributes_GetElementLabel(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_SetReusePickLetter(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1499,7 +1499,7 @@ PickAttributes_SetReusePickLetter(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_GetReusePickLetter(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetReusePickLetter()?1L:0L);
     return retval;
 }
@@ -1507,7 +1507,7 @@ PickAttributes_GetReusePickLetter(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_SetShowPickHighlight(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1559,7 +1559,7 @@ PickAttributes_SetShowPickHighlight(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_GetShowPickHighlight(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowPickHighlight()?1L:0L);
     return retval;
 }
@@ -1567,7 +1567,7 @@ PickAttributes_GetShowPickHighlight(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_SetNotifyEnabled(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1619,7 +1619,7 @@ PickAttributes_SetNotifyEnabled(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_GetNotifyEnabled(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetNotifyEnabled()?1L:0L);
     return retval;
 }
@@ -1627,7 +1627,7 @@ PickAttributes_GetNotifyEnabled(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_SetMeshCoordType(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1686,7 +1686,7 @@ PickAttributes_SetMeshCoordType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_GetMeshCoordType(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMeshCoordType()));
     return retval;
 }
@@ -1694,7 +1694,7 @@ PickAttributes_GetMeshCoordType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_SetCreateSpreadsheet(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1746,7 +1746,7 @@ PickAttributes_SetCreateSpreadsheet(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_GetCreateSpreadsheet(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetCreateSpreadsheet()?1L:0L);
     return retval;
 }
@@ -1754,7 +1754,7 @@ PickAttributes_GetCreateSpreadsheet(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_SetFloatFormat(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1795,7 +1795,7 @@ PickAttributes_SetFloatFormat(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_GetFloatFormat(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetFloatFormat().c_str());
     return retval;
 }
@@ -1803,7 +1803,7 @@ PickAttributes_GetFloatFormat(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_SetTimePreserveCoord(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1855,7 +1855,7 @@ PickAttributes_SetTimePreserveCoord(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_GetTimePreserveCoord(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetTimePreserveCoord()?1L:0L);
     return retval;
 }
@@ -1863,7 +1863,7 @@ PickAttributes_GetTimePreserveCoord(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_SetTimeCurveType(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1921,7 +1921,7 @@ PickAttributes_SetTimeCurveType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_GetTimeCurveType(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetTimeCurveType()));
     return retval;
 }
@@ -1929,7 +1929,7 @@ PickAttributes_GetTimeCurveType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_SetPickHighlightColor(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     int *vals = obj->data->GetPickHighlightColor();
@@ -1996,7 +1996,7 @@ PickAttributes_SetPickHighlightColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_GetPickHighlightColor(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the pickHighlightColor.
     PyObject *retval = PyTuple_New(3);
     const int *pickHighlightColor = obj->data->GetPickHighlightColor();
@@ -2008,7 +2008,7 @@ PickAttributes_GetPickHighlightColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_SetRemovedPicks(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2049,7 +2049,7 @@ PickAttributes_SetRemovedPicks(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_GetRemovedPicks(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetRemovedPicks().c_str());
     return retval;
 }
@@ -2057,7 +2057,7 @@ PickAttributes_GetRemovedPicks(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_SetSwivelFocusToPick(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2109,7 +2109,7 @@ PickAttributes_SetSwivelFocusToPick(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_GetSwivelFocusToPick(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetSwivelFocusToPick()?1L:0L);
     return retval;
 }
@@ -2117,7 +2117,7 @@ PickAttributes_GetSwivelFocusToPick(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_SetOverridePickLabel(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2169,7 +2169,7 @@ PickAttributes_SetOverridePickLabel(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_GetOverridePickLabel(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetOverridePickLabel()?1L:0L);
     return retval;
 }
@@ -2177,7 +2177,7 @@ PickAttributes_GetOverridePickLabel(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_SetForcedPickLabel(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2218,7 +2218,7 @@ PickAttributes_SetForcedPickLabel(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_GetForcedPickLabel(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetForcedPickLabel().c_str());
     return retval;
 }
@@ -2226,7 +2226,7 @@ PickAttributes_GetForcedPickLabel(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_SetRemoveLabelTwins(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2278,7 +2278,7 @@ PickAttributes_SetRemoveLabelTwins(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickAttributes_GetRemoveLabelTwins(PyObject *self, PyObject *args)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetRemoveLabelTwins()?1L:0L);
     return retval;
 }
@@ -2362,16 +2362,16 @@ PyMethodDef PyPickAttributes_methods[PICKATTRIBUTES_NMETH] = {
 //
 
 static void
-PickAttributes_dealloc(PyObject *v)
+PyPickAttributes_dealloc(PyObject *v)
 {
-   PickAttributesObject *obj = (PickAttributesObject *)v;
+   PyPickAttributesObject *obj = (PyPickAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *PickAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyPickAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyPickAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -2555,56 +2555,42 @@ PyPickAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 }
 
 PyObject *
-PickAttributes_str(PyObject *v)
+PyPickAttributes_str(PyObject *v)
 {
-    PickAttributesObject *obj = (PickAttributesObject *)v;
+    PyPickAttributesObject *obj = (PyPickAttributesObject *)v;
     return PyString_FromString(PyPickAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *PickAttributes_Purpose = "This class contains attributes used for pick.";
-#else
-static char *PickAttributes_Purpose = "This class contains attributes used for pick.";
-#endif
+static char const *PyPickAttributes_purpose = "This class contains attributes used for pick.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject PickAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "PickAttributes",
-    .tp_basicsize = sizeof(PickAttributesObject),
-    .tp_dealloc = PickAttributes_dealloc,
-    .tp_repr = PickAttributes_str,
-    .tp_str = PickAttributes_str,
-    .tp_getattro = PyPickAttributes_getattro,
-    .tp_setattro = PyPickAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = PickAttributes_Purpose,
-    .tp_richcompare = PickAttributes_richcompare,
-    .tp_methods = PyPickAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(PickAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-PickAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyPickAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &PickAttributesType
-         || Py_TYPE(other) != &PickAttributesType)
+    if ( Py_TYPE(self) != &PyPickAttributesType
+         || Py_TYPE(other) != &PyPickAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    PickAttributes *a = ((PickAttributesObject *)self)->data;
-    PickAttributes *b = ((PickAttributesObject *)other)->data;
+    PickAttributes *a = ((PyPickAttributesObject *)self)->data;
+    PickAttributes *b = ((PyPickAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -2633,8 +2619,8 @@ static PickAttributes *currentAtts = 0;
 static PyObject *
 NewPickAttributes(int useCurrent)
 {
-    PickAttributesObject *newObject;
-    newObject = PyObject_NEW(PickAttributesObject, &PickAttributesType);
+    PyPickAttributesObject *newObject;
+    newObject = PyObject_NEW(PyPickAttributesObject, &PyPickAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -2645,15 +2631,15 @@ NewPickAttributes(int useCurrent)
         newObject->data = new PickAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&PickAttributesType);
+    PyType_Ready(&PyPickAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapPickAttributes(const PickAttributes *attr)
 {
-    PickAttributesObject *newObject;
-    newObject = PyObject_NEW(PickAttributesObject, &PickAttributesType);
+    PyPickAttributesObject *newObject;
+    newObject = PyObject_NEW(PyPickAttributesObject, &PyPickAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (PickAttributes *)attr;
@@ -2755,13 +2741,13 @@ PyPickAttributes_GetMethodTable(int *nMethods)
 bool
 PyPickAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &PickAttributesType);
+    return (obj->ob_type == &PyPickAttributesType);
 }
 
 PickAttributes *
 PyPickAttributes_FromPyObject(PyObject *obj)
 {
-    PickAttributesObject *obj2 = (PickAttributesObject *)obj;
+    PyPickAttributesObject *obj2 = (PyPickAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -2780,7 +2766,7 @@ PyPickAttributes_Wrap(const PickAttributes *attr)
 void
 PyPickAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    PickAttributesObject *obj2 = (PickAttributesObject *)obj;
+    PyPickAttributesObject *obj2 = (PyPickAttributesObject *)obj;
     obj2->parent = parent;
 }
 

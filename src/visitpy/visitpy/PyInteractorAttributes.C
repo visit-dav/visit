@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a InteractorAttributes.
 //
-struct InteractorAttributesObject
+struct PyInteractorAttributesObject
 {
     PyObject_HEAD
     InteractorAttributes *data;
@@ -106,7 +106,7 @@ PyInteractorAttributes_ToString(const InteractorAttributes *atts, const char *pr
 static PyObject *
 InteractorAttributes_Notify(PyObject *self, PyObject *args)
 {
-    InteractorAttributesObject *obj = (InteractorAttributesObject *)self;
+    PyInteractorAttributesObject *obj = (PyInteractorAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -143,7 +143,7 @@ InteractorAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 InteractorAttributes_SetShowGuidelines(PyObject *self, PyObject *args)
 {
-    InteractorAttributesObject *obj = (InteractorAttributesObject *)self;
+    PyInteractorAttributesObject *obj = (PyInteractorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -195,7 +195,7 @@ InteractorAttributes_SetShowGuidelines(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 InteractorAttributes_GetShowGuidelines(PyObject *self, PyObject *args)
 {
-    InteractorAttributesObject *obj = (InteractorAttributesObject *)self;
+    PyInteractorAttributesObject *obj = (PyInteractorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowGuidelines()?1L:0L);
     return retval;
 }
@@ -203,7 +203,7 @@ InteractorAttributes_GetShowGuidelines(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 InteractorAttributes_SetClampSquare(PyObject *self, PyObject *args)
 {
-    InteractorAttributesObject *obj = (InteractorAttributesObject *)self;
+    PyInteractorAttributesObject *obj = (PyInteractorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -255,7 +255,7 @@ InteractorAttributes_SetClampSquare(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 InteractorAttributes_GetClampSquare(PyObject *self, PyObject *args)
 {
-    InteractorAttributesObject *obj = (InteractorAttributesObject *)self;
+    PyInteractorAttributesObject *obj = (PyInteractorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetClampSquare()?1L:0L);
     return retval;
 }
@@ -263,7 +263,7 @@ InteractorAttributes_GetClampSquare(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 InteractorAttributes_SetFillViewportOnZoom(PyObject *self, PyObject *args)
 {
-    InteractorAttributesObject *obj = (InteractorAttributesObject *)self;
+    PyInteractorAttributesObject *obj = (PyInteractorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -315,7 +315,7 @@ InteractorAttributes_SetFillViewportOnZoom(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 InteractorAttributes_GetFillViewportOnZoom(PyObject *self, PyObject *args)
 {
-    InteractorAttributesObject *obj = (InteractorAttributesObject *)self;
+    PyInteractorAttributesObject *obj = (PyInteractorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetFillViewportOnZoom()?1L:0L);
     return retval;
 }
@@ -323,7 +323,7 @@ InteractorAttributes_GetFillViewportOnZoom(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 InteractorAttributes_SetNavigationMode(PyObject *self, PyObject *args)
 {
-    InteractorAttributesObject *obj = (InteractorAttributesObject *)self;
+    PyInteractorAttributesObject *obj = (PyInteractorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -382,7 +382,7 @@ InteractorAttributes_SetNavigationMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 InteractorAttributes_GetNavigationMode(PyObject *self, PyObject *args)
 {
-    InteractorAttributesObject *obj = (InteractorAttributesObject *)self;
+    PyInteractorAttributesObject *obj = (PyInteractorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNavigationMode()));
     return retval;
 }
@@ -390,7 +390,7 @@ InteractorAttributes_GetNavigationMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 InteractorAttributes_SetAxisArraySnap(PyObject *self, PyObject *args)
 {
-    InteractorAttributesObject *obj = (InteractorAttributesObject *)self;
+    PyInteractorAttributesObject *obj = (PyInteractorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -442,7 +442,7 @@ InteractorAttributes_SetAxisArraySnap(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 InteractorAttributes_GetAxisArraySnap(PyObject *self, PyObject *args)
 {
-    InteractorAttributesObject *obj = (InteractorAttributesObject *)self;
+    PyInteractorAttributesObject *obj = (PyInteractorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetAxisArraySnap()?1L:0L);
     return retval;
 }
@@ -450,7 +450,7 @@ InteractorAttributes_GetAxisArraySnap(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 InteractorAttributes_SetBoundingBoxMode(PyObject *self, PyObject *args)
 {
-    InteractorAttributesObject *obj = (InteractorAttributesObject *)self;
+    PyInteractorAttributesObject *obj = (PyInteractorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -509,7 +509,7 @@ InteractorAttributes_SetBoundingBoxMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 InteractorAttributes_GetBoundingBoxMode(PyObject *self, PyObject *args)
 {
-    InteractorAttributesObject *obj = (InteractorAttributesObject *)self;
+    PyInteractorAttributesObject *obj = (PyInteractorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetBoundingBoxMode()));
     return retval;
 }
@@ -539,16 +539,16 @@ PyMethodDef PyInteractorAttributes_methods[INTERACTORATTRIBUTES_NMETH] = {
 //
 
 static void
-InteractorAttributes_dealloc(PyObject *v)
+PyInteractorAttributes_dealloc(PyObject *v)
 {
-   InteractorAttributesObject *obj = (InteractorAttributesObject *)v;
+   PyInteractorAttributesObject *obj = (PyInteractorAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *InteractorAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyInteractorAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyInteractorAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -626,56 +626,42 @@ PyInteractorAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *a
 }
 
 PyObject *
-InteractorAttributes_str(PyObject *v)
+PyInteractorAttributes_str(PyObject *v)
 {
-    InteractorAttributesObject *obj = (InteractorAttributesObject *)v;
+    PyInteractorAttributesObject *obj = (PyInteractorAttributesObject *)v;
     return PyString_FromString(PyInteractorAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *InteractorAttributes_Purpose = "This class contains attributes associated with the main window.";
-#else
-static char *InteractorAttributes_Purpose = "This class contains attributes associated with the main window.";
-#endif
+static char const *PyInteractorAttributes_purpose = "This class contains attributes associated with the main window.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject InteractorAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "InteractorAttributes",
-    .tp_basicsize = sizeof(InteractorAttributesObject),
-    .tp_dealloc = InteractorAttributes_dealloc,
-    .tp_repr = InteractorAttributes_str,
-    .tp_str = InteractorAttributes_str,
-    .tp_getattro = PyInteractorAttributes_getattro,
-    .tp_setattro = PyInteractorAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = InteractorAttributes_Purpose,
-    .tp_richcompare = InteractorAttributes_richcompare,
-    .tp_methods = PyInteractorAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(InteractorAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-InteractorAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyInteractorAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &InteractorAttributesType
-         || Py_TYPE(other) != &InteractorAttributesType)
+    if ( Py_TYPE(self) != &PyInteractorAttributesType
+         || Py_TYPE(other) != &PyInteractorAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    InteractorAttributes *a = ((InteractorAttributesObject *)self)->data;
-    InteractorAttributes *b = ((InteractorAttributesObject *)other)->data;
+    InteractorAttributes *a = ((PyInteractorAttributesObject *)self)->data;
+    InteractorAttributes *b = ((PyInteractorAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -704,8 +690,8 @@ static InteractorAttributes *currentAtts = 0;
 static PyObject *
 NewInteractorAttributes(int useCurrent)
 {
-    InteractorAttributesObject *newObject;
-    newObject = PyObject_NEW(InteractorAttributesObject, &InteractorAttributesType);
+    PyInteractorAttributesObject *newObject;
+    newObject = PyObject_NEW(PyInteractorAttributesObject, &PyInteractorAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -716,15 +702,15 @@ NewInteractorAttributes(int useCurrent)
         newObject->data = new InteractorAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&InteractorAttributesType);
+    PyType_Ready(&PyInteractorAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapInteractorAttributes(const InteractorAttributes *attr)
 {
-    InteractorAttributesObject *newObject;
-    newObject = PyObject_NEW(InteractorAttributesObject, &InteractorAttributesType);
+    PyInteractorAttributesObject *newObject;
+    newObject = PyObject_NEW(PyInteractorAttributesObject, &PyInteractorAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (InteractorAttributes *)attr;
@@ -826,13 +812,13 @@ PyInteractorAttributes_GetMethodTable(int *nMethods)
 bool
 PyInteractorAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &InteractorAttributesType);
+    return (obj->ob_type == &PyInteractorAttributesType);
 }
 
 InteractorAttributes *
 PyInteractorAttributes_FromPyObject(PyObject *obj)
 {
-    InteractorAttributesObject *obj2 = (InteractorAttributesObject *)obj;
+    PyInteractorAttributesObject *obj2 = (PyInteractorAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -851,7 +837,7 @@ PyInteractorAttributes_Wrap(const InteractorAttributes *attr)
 void
 PyInteractorAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    InteractorAttributesObject *obj2 = (InteractorAttributesObject *)obj;
+    PyInteractorAttributesObject *obj2 = (PyInteractorAttributesObject *)obj;
     obj2->parent = parent;
 }
 

@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a PersistentParticlesAttributes.
 //
-struct PersistentParticlesAttributesObject
+struct PyPersistentParticlesAttributesObject
 {
     PyObject_HEAD
     PersistentParticlesAttributes *data;
@@ -102,7 +102,7 @@ PyPersistentParticlesAttributes_ToString(const PersistentParticlesAttributes *at
 static PyObject *
 PersistentParticlesAttributes_Notify(PyObject *self, PyObject *args)
 {
-    PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
+    PyPersistentParticlesAttributesObject *obj = (PyPersistentParticlesAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -139,7 +139,7 @@ PersistentParticlesAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PersistentParticlesAttributes_SetStartIndex(PyObject *self, PyObject *args)
 {
-    PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
+    PyPersistentParticlesAttributesObject *obj = (PyPersistentParticlesAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -191,7 +191,7 @@ PersistentParticlesAttributes_SetStartIndex(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PersistentParticlesAttributes_GetStartIndex(PyObject *self, PyObject *args)
 {
-    PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
+    PyPersistentParticlesAttributesObject *obj = (PyPersistentParticlesAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetStartIndex()));
     return retval;
 }
@@ -199,7 +199,7 @@ PersistentParticlesAttributes_GetStartIndex(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PersistentParticlesAttributes_SetStopIndex(PyObject *self, PyObject *args)
 {
-    PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
+    PyPersistentParticlesAttributesObject *obj = (PyPersistentParticlesAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -251,7 +251,7 @@ PersistentParticlesAttributes_SetStopIndex(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PersistentParticlesAttributes_GetStopIndex(PyObject *self, PyObject *args)
 {
-    PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
+    PyPersistentParticlesAttributesObject *obj = (PyPersistentParticlesAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetStopIndex()));
     return retval;
 }
@@ -259,7 +259,7 @@ PersistentParticlesAttributes_GetStopIndex(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PersistentParticlesAttributes_SetStride(PyObject *self, PyObject *args)
 {
-    PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
+    PyPersistentParticlesAttributesObject *obj = (PyPersistentParticlesAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -311,7 +311,7 @@ PersistentParticlesAttributes_SetStride(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PersistentParticlesAttributes_GetStride(PyObject *self, PyObject *args)
 {
-    PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
+    PyPersistentParticlesAttributesObject *obj = (PyPersistentParticlesAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetStride()));
     return retval;
 }
@@ -319,7 +319,7 @@ PersistentParticlesAttributes_GetStride(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PersistentParticlesAttributes_SetStartPathType(PyObject *self, PyObject *args)
 {
-    PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
+    PyPersistentParticlesAttributesObject *obj = (PyPersistentParticlesAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -377,7 +377,7 @@ PersistentParticlesAttributes_SetStartPathType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PersistentParticlesAttributes_GetStartPathType(PyObject *self, PyObject *args)
 {
-    PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
+    PyPersistentParticlesAttributesObject *obj = (PyPersistentParticlesAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetStartPathType()));
     return retval;
 }
@@ -385,7 +385,7 @@ PersistentParticlesAttributes_GetStartPathType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PersistentParticlesAttributes_SetStopPathType(PyObject *self, PyObject *args)
 {
-    PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
+    PyPersistentParticlesAttributesObject *obj = (PyPersistentParticlesAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -443,7 +443,7 @@ PersistentParticlesAttributes_SetStopPathType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PersistentParticlesAttributes_GetStopPathType(PyObject *self, PyObject *args)
 {
-    PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
+    PyPersistentParticlesAttributesObject *obj = (PyPersistentParticlesAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetStopPathType()));
     return retval;
 }
@@ -451,7 +451,7 @@ PersistentParticlesAttributes_GetStopPathType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PersistentParticlesAttributes_SetTraceVariableX(PyObject *self, PyObject *args)
 {
-    PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
+    PyPersistentParticlesAttributesObject *obj = (PyPersistentParticlesAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -492,7 +492,7 @@ PersistentParticlesAttributes_SetTraceVariableX(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PersistentParticlesAttributes_GetTraceVariableX(PyObject *self, PyObject *args)
 {
-    PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
+    PyPersistentParticlesAttributesObject *obj = (PyPersistentParticlesAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetTraceVariableX().c_str());
     return retval;
 }
@@ -500,7 +500,7 @@ PersistentParticlesAttributes_GetTraceVariableX(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PersistentParticlesAttributes_SetTraceVariableY(PyObject *self, PyObject *args)
 {
-    PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
+    PyPersistentParticlesAttributesObject *obj = (PyPersistentParticlesAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -541,7 +541,7 @@ PersistentParticlesAttributes_SetTraceVariableY(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PersistentParticlesAttributes_GetTraceVariableY(PyObject *self, PyObject *args)
 {
-    PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
+    PyPersistentParticlesAttributesObject *obj = (PyPersistentParticlesAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetTraceVariableY().c_str());
     return retval;
 }
@@ -549,7 +549,7 @@ PersistentParticlesAttributes_GetTraceVariableY(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PersistentParticlesAttributes_SetTraceVariableZ(PyObject *self, PyObject *args)
 {
-    PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
+    PyPersistentParticlesAttributesObject *obj = (PyPersistentParticlesAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -590,7 +590,7 @@ PersistentParticlesAttributes_SetTraceVariableZ(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PersistentParticlesAttributes_GetTraceVariableZ(PyObject *self, PyObject *args)
 {
-    PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
+    PyPersistentParticlesAttributesObject *obj = (PyPersistentParticlesAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetTraceVariableZ().c_str());
     return retval;
 }
@@ -598,7 +598,7 @@ PersistentParticlesAttributes_GetTraceVariableZ(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PersistentParticlesAttributes_SetConnectParticles(PyObject *self, PyObject *args)
 {
-    PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
+    PyPersistentParticlesAttributesObject *obj = (PyPersistentParticlesAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -650,7 +650,7 @@ PersistentParticlesAttributes_SetConnectParticles(PyObject *self, PyObject *args
 /*static*/ PyObject *
 PersistentParticlesAttributes_GetConnectParticles(PyObject *self, PyObject *args)
 {
-    PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
+    PyPersistentParticlesAttributesObject *obj = (PyPersistentParticlesAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetConnectParticles()?1L:0L);
     return retval;
 }
@@ -658,7 +658,7 @@ PersistentParticlesAttributes_GetConnectParticles(PyObject *self, PyObject *args
 /*static*/ PyObject *
 PersistentParticlesAttributes_SetShowPoints(PyObject *self, PyObject *args)
 {
-    PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
+    PyPersistentParticlesAttributesObject *obj = (PyPersistentParticlesAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -710,7 +710,7 @@ PersistentParticlesAttributes_SetShowPoints(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PersistentParticlesAttributes_GetShowPoints(PyObject *self, PyObject *args)
 {
-    PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
+    PyPersistentParticlesAttributesObject *obj = (PyPersistentParticlesAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowPoints()?1L:0L);
     return retval;
 }
@@ -718,7 +718,7 @@ PersistentParticlesAttributes_GetShowPoints(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PersistentParticlesAttributes_SetIndexVariable(PyObject *self, PyObject *args)
 {
-    PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
+    PyPersistentParticlesAttributesObject *obj = (PyPersistentParticlesAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -759,7 +759,7 @@ PersistentParticlesAttributes_SetIndexVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PersistentParticlesAttributes_GetIndexVariable(PyObject *self, PyObject *args)
 {
-    PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
+    PyPersistentParticlesAttributesObject *obj = (PyPersistentParticlesAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetIndexVariable().c_str());
     return retval;
 }
@@ -799,16 +799,16 @@ PyMethodDef PyPersistentParticlesAttributes_methods[PERSISTENTPARTICLESATTRIBUTE
 //
 
 static void
-PersistentParticlesAttributes_dealloc(PyObject *v)
+PyPersistentParticlesAttributes_dealloc(PyObject *v)
 {
-   PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)v;
+   PyPersistentParticlesAttributesObject *obj = (PyPersistentParticlesAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *PersistentParticlesAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyPersistentParticlesAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyPersistentParticlesAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -902,56 +902,42 @@ PyPersistentParticlesAttributes_setattro(PyObject *self, PyObject *attr_name, Py
 }
 
 PyObject *
-PersistentParticlesAttributes_str(PyObject *v)
+PyPersistentParticlesAttributes_str(PyObject *v)
 {
-    PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)v;
+    PyPersistentParticlesAttributesObject *obj = (PyPersistentParticlesAttributesObject *)v;
     return PyString_FromString(PyPersistentParticlesAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *PersistentParticlesAttributes_Purpose = "This class contains attributes for the PersistentParticles operator.";
-#else
-static char *PersistentParticlesAttributes_Purpose = "This class contains attributes for the PersistentParticles operator.";
-#endif
+static char const *PyPersistentParticlesAttributes_purpose = "This class contains attributes for the PersistentParticles operator.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject PersistentParticlesAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "PersistentParticlesAttributes",
-    .tp_basicsize = sizeof(PersistentParticlesAttributesObject),
-    .tp_dealloc = PersistentParticlesAttributes_dealloc,
-    .tp_repr = PersistentParticlesAttributes_str,
-    .tp_str = PersistentParticlesAttributes_str,
-    .tp_getattro = PyPersistentParticlesAttributes_getattro,
-    .tp_setattro = PyPersistentParticlesAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = PersistentParticlesAttributes_Purpose,
-    .tp_richcompare = PersistentParticlesAttributes_richcompare,
-    .tp_methods = PyPersistentParticlesAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(PersistentParticlesAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-PersistentParticlesAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyPersistentParticlesAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &PersistentParticlesAttributesType
-         || Py_TYPE(other) != &PersistentParticlesAttributesType)
+    if ( Py_TYPE(self) != &PyPersistentParticlesAttributesType
+         || Py_TYPE(other) != &PyPersistentParticlesAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    PersistentParticlesAttributes *a = ((PersistentParticlesAttributesObject *)self)->data;
-    PersistentParticlesAttributes *b = ((PersistentParticlesAttributesObject *)other)->data;
+    PersistentParticlesAttributes *a = ((PyPersistentParticlesAttributesObject *)self)->data;
+    PersistentParticlesAttributes *b = ((PyPersistentParticlesAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -980,8 +966,8 @@ static PersistentParticlesAttributes *currentAtts = 0;
 static PyObject *
 NewPersistentParticlesAttributes(int useCurrent)
 {
-    PersistentParticlesAttributesObject *newObject;
-    newObject = PyObject_NEW(PersistentParticlesAttributesObject, &PersistentParticlesAttributesType);
+    PyPersistentParticlesAttributesObject *newObject;
+    newObject = PyObject_NEW(PyPersistentParticlesAttributesObject, &PyPersistentParticlesAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -992,15 +978,15 @@ NewPersistentParticlesAttributes(int useCurrent)
         newObject->data = new PersistentParticlesAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&PersistentParticlesAttributesType);
+    PyType_Ready(&PyPersistentParticlesAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapPersistentParticlesAttributes(const PersistentParticlesAttributes *attr)
 {
-    PersistentParticlesAttributesObject *newObject;
-    newObject = PyObject_NEW(PersistentParticlesAttributesObject, &PersistentParticlesAttributesType);
+    PyPersistentParticlesAttributesObject *newObject;
+    newObject = PyObject_NEW(PyPersistentParticlesAttributesObject, &PyPersistentParticlesAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (PersistentParticlesAttributes *)attr;
@@ -1102,13 +1088,13 @@ PyPersistentParticlesAttributes_GetMethodTable(int *nMethods)
 bool
 PyPersistentParticlesAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &PersistentParticlesAttributesType);
+    return (obj->ob_type == &PyPersistentParticlesAttributesType);
 }
 
 PersistentParticlesAttributes *
 PyPersistentParticlesAttributes_FromPyObject(PyObject *obj)
 {
-    PersistentParticlesAttributesObject *obj2 = (PersistentParticlesAttributesObject *)obj;
+    PyPersistentParticlesAttributesObject *obj2 = (PyPersistentParticlesAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1127,7 +1113,7 @@ PyPersistentParticlesAttributes_Wrap(const PersistentParticlesAttributes *attr)
 void
 PyPersistentParticlesAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    PersistentParticlesAttributesObject *obj2 = (PersistentParticlesAttributesObject *)obj;
+    PyPersistentParticlesAttributesObject *obj2 = (PyPersistentParticlesAttributesObject *)obj;
     obj2->parent = parent;
 }
 

@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a FluxAttributes.
 //
-struct FluxAttributesObject
+struct PyFluxAttributesObject
 {
     PyObject_HEAD
     FluxAttributes *data;
@@ -57,7 +57,7 @@ PyFluxAttributes_ToString(const FluxAttributes *atts, const char *prefix, const 
 static PyObject *
 FluxAttributes_Notify(PyObject *self, PyObject *args)
 {
-    FluxAttributesObject *obj = (FluxAttributesObject *)self;
+    PyFluxAttributesObject *obj = (PyFluxAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -94,7 +94,7 @@ FluxAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FluxAttributes_SetFlowField(PyObject *self, PyObject *args)
 {
-    FluxAttributesObject *obj = (FluxAttributesObject *)self;
+    PyFluxAttributesObject *obj = (PyFluxAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -135,7 +135,7 @@ FluxAttributes_SetFlowField(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FluxAttributes_GetFlowField(PyObject *self, PyObject *args)
 {
-    FluxAttributesObject *obj = (FluxAttributesObject *)self;
+    PyFluxAttributesObject *obj = (PyFluxAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetFlowField().c_str());
     return retval;
 }
@@ -143,7 +143,7 @@ FluxAttributes_GetFlowField(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FluxAttributes_SetWeight(PyObject *self, PyObject *args)
 {
-    FluxAttributesObject *obj = (FluxAttributesObject *)self;
+    PyFluxAttributesObject *obj = (PyFluxAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -195,7 +195,7 @@ FluxAttributes_SetWeight(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FluxAttributes_GetWeight(PyObject *self, PyObject *args)
 {
-    FluxAttributesObject *obj = (FluxAttributesObject *)self;
+    PyFluxAttributesObject *obj = (PyFluxAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetWeight()?1L:0L);
     return retval;
 }
@@ -203,7 +203,7 @@ FluxAttributes_GetWeight(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FluxAttributes_SetWeightField(PyObject *self, PyObject *args)
 {
-    FluxAttributesObject *obj = (FluxAttributesObject *)self;
+    PyFluxAttributesObject *obj = (PyFluxAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -244,7 +244,7 @@ FluxAttributes_SetWeightField(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FluxAttributes_GetWeightField(PyObject *self, PyObject *args)
 {
-    FluxAttributesObject *obj = (FluxAttributesObject *)self;
+    PyFluxAttributesObject *obj = (PyFluxAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetWeightField().c_str());
     return retval;
 }
@@ -268,16 +268,16 @@ PyMethodDef PyFluxAttributes_methods[FLUXATTRIBUTES_NMETH] = {
 //
 
 static void
-FluxAttributes_dealloc(PyObject *v)
+PyFluxAttributes_dealloc(PyObject *v)
 {
-   FluxAttributesObject *obj = (FluxAttributesObject *)v;
+   PyFluxAttributesObject *obj = (PyFluxAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *FluxAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyFluxAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyFluxAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -329,56 +329,42 @@ PyFluxAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 }
 
 PyObject *
-FluxAttributes_str(PyObject *v)
+PyFluxAttributes_str(PyObject *v)
 {
-    FluxAttributesObject *obj = (FluxAttributesObject *)v;
+    PyFluxAttributesObject *obj = (PyFluxAttributesObject *)v;
     return PyString_FromString(PyFluxAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *FluxAttributes_Purpose = "Attributes for Flux operator";
-#else
-static char *FluxAttributes_Purpose = "Attributes for Flux operator";
-#endif
+static char const *PyFluxAttributes_purpose = "Attributes for Flux operator";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject FluxAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "FluxAttributes",
-    .tp_basicsize = sizeof(FluxAttributesObject),
-    .tp_dealloc = FluxAttributes_dealloc,
-    .tp_repr = FluxAttributes_str,
-    .tp_str = FluxAttributes_str,
-    .tp_getattro = PyFluxAttributes_getattro,
-    .tp_setattro = PyFluxAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = FluxAttributes_Purpose,
-    .tp_richcompare = FluxAttributes_richcompare,
-    .tp_methods = PyFluxAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(FluxAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-FluxAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyFluxAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &FluxAttributesType
-         || Py_TYPE(other) != &FluxAttributesType)
+    if ( Py_TYPE(self) != &PyFluxAttributesType
+         || Py_TYPE(other) != &PyFluxAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    FluxAttributes *a = ((FluxAttributesObject *)self)->data;
-    FluxAttributes *b = ((FluxAttributesObject *)other)->data;
+    FluxAttributes *a = ((PyFluxAttributesObject *)self)->data;
+    FluxAttributes *b = ((PyFluxAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -407,8 +393,8 @@ static FluxAttributes *currentAtts = 0;
 static PyObject *
 NewFluxAttributes(int useCurrent)
 {
-    FluxAttributesObject *newObject;
-    newObject = PyObject_NEW(FluxAttributesObject, &FluxAttributesType);
+    PyFluxAttributesObject *newObject;
+    newObject = PyObject_NEW(PyFluxAttributesObject, &PyFluxAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -419,15 +405,15 @@ NewFluxAttributes(int useCurrent)
         newObject->data = new FluxAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&FluxAttributesType);
+    PyType_Ready(&PyFluxAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapFluxAttributes(const FluxAttributes *attr)
 {
-    FluxAttributesObject *newObject;
-    newObject = PyObject_NEW(FluxAttributesObject, &FluxAttributesType);
+    PyFluxAttributesObject *newObject;
+    newObject = PyObject_NEW(PyFluxAttributesObject, &PyFluxAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (FluxAttributes *)attr;
@@ -529,13 +515,13 @@ PyFluxAttributes_GetMethodTable(int *nMethods)
 bool
 PyFluxAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &FluxAttributesType);
+    return (obj->ob_type == &PyFluxAttributesType);
 }
 
 FluxAttributes *
 PyFluxAttributes_FromPyObject(PyObject *obj)
 {
-    FluxAttributesObject *obj2 = (FluxAttributesObject *)obj;
+    PyFluxAttributesObject *obj2 = (PyFluxAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -554,7 +540,7 @@ PyFluxAttributes_Wrap(const FluxAttributes *attr)
 void
 PyFluxAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    FluxAttributesObject *obj2 = (FluxAttributesObject *)obj;
+    PyFluxAttributesObject *obj2 = (PyFluxAttributesObject *)obj;
     obj2->parent = parent;
 }
 

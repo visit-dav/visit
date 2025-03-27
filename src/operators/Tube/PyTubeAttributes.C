@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a TubeAttributes.
 //
-struct TubeAttributesObject
+struct PyTubeAttributesObject
 {
     PyObject_HEAD
     TubeAttributes *data;
@@ -81,7 +81,7 @@ PyTubeAttributes_ToString(const TubeAttributes *atts, const char *prefix, const 
 static PyObject *
 TubeAttributes_Notify(PyObject *self, PyObject *args)
 {
-    TubeAttributesObject *obj = (TubeAttributesObject *)self;
+    PyTubeAttributesObject *obj = (PyTubeAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -118,7 +118,7 @@ TubeAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TubeAttributes_SetScaleByVarFlag(PyObject *self, PyObject *args)
 {
-    TubeAttributesObject *obj = (TubeAttributesObject *)self;
+    PyTubeAttributesObject *obj = (PyTubeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -170,7 +170,7 @@ TubeAttributes_SetScaleByVarFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TubeAttributes_GetScaleByVarFlag(PyObject *self, PyObject *args)
 {
-    TubeAttributesObject *obj = (TubeAttributesObject *)self;
+    PyTubeAttributesObject *obj = (PyTubeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetScaleByVarFlag()?1L:0L);
     return retval;
 }
@@ -178,7 +178,7 @@ TubeAttributes_GetScaleByVarFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TubeAttributes_SetTubeRadiusType(PyObject *self, PyObject *args)
 {
-    TubeAttributesObject *obj = (TubeAttributesObject *)self;
+    PyTubeAttributesObject *obj = (PyTubeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -236,7 +236,7 @@ TubeAttributes_SetTubeRadiusType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TubeAttributes_GetTubeRadiusType(PyObject *self, PyObject *args)
 {
-    TubeAttributesObject *obj = (TubeAttributesObject *)self;
+    PyTubeAttributesObject *obj = (PyTubeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetTubeRadiusType()));
     return retval;
 }
@@ -244,7 +244,7 @@ TubeAttributes_GetTubeRadiusType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TubeAttributes_SetRadiusFractionBBox(PyObject *self, PyObject *args)
 {
-    TubeAttributesObject *obj = (TubeAttributesObject *)self;
+    PyTubeAttributesObject *obj = (PyTubeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -296,7 +296,7 @@ TubeAttributes_SetRadiusFractionBBox(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TubeAttributes_GetRadiusFractionBBox(PyObject *self, PyObject *args)
 {
-    TubeAttributesObject *obj = (TubeAttributesObject *)self;
+    PyTubeAttributesObject *obj = (PyTubeAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetRadiusFractionBBox());
     return retval;
 }
@@ -304,7 +304,7 @@ TubeAttributes_GetRadiusFractionBBox(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TubeAttributes_SetRadiusAbsolute(PyObject *self, PyObject *args)
 {
-    TubeAttributesObject *obj = (TubeAttributesObject *)self;
+    PyTubeAttributesObject *obj = (PyTubeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -356,7 +356,7 @@ TubeAttributes_SetRadiusAbsolute(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TubeAttributes_GetRadiusAbsolute(PyObject *self, PyObject *args)
 {
-    TubeAttributesObject *obj = (TubeAttributesObject *)self;
+    PyTubeAttributesObject *obj = (PyTubeAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetRadiusAbsolute());
     return retval;
 }
@@ -364,7 +364,7 @@ TubeAttributes_GetRadiusAbsolute(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TubeAttributes_SetScaleVariable(PyObject *self, PyObject *args)
 {
-    TubeAttributesObject *obj = (TubeAttributesObject *)self;
+    PyTubeAttributesObject *obj = (PyTubeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -405,7 +405,7 @@ TubeAttributes_SetScaleVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TubeAttributes_GetScaleVariable(PyObject *self, PyObject *args)
 {
-    TubeAttributesObject *obj = (TubeAttributesObject *)self;
+    PyTubeAttributesObject *obj = (PyTubeAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetScaleVariable().c_str());
     return retval;
 }
@@ -413,7 +413,7 @@ TubeAttributes_GetScaleVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TubeAttributes_SetFineness(PyObject *self, PyObject *args)
 {
-    TubeAttributesObject *obj = (TubeAttributesObject *)self;
+    PyTubeAttributesObject *obj = (PyTubeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -465,7 +465,7 @@ TubeAttributes_SetFineness(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TubeAttributes_GetFineness(PyObject *self, PyObject *args)
 {
-    TubeAttributesObject *obj = (TubeAttributesObject *)self;
+    PyTubeAttributesObject *obj = (PyTubeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetFineness()));
     return retval;
 }
@@ -473,7 +473,7 @@ TubeAttributes_GetFineness(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TubeAttributes_SetCapping(PyObject *self, PyObject *args)
 {
-    TubeAttributesObject *obj = (TubeAttributesObject *)self;
+    PyTubeAttributesObject *obj = (PyTubeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -525,7 +525,7 @@ TubeAttributes_SetCapping(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TubeAttributes_GetCapping(PyObject *self, PyObject *args)
 {
-    TubeAttributesObject *obj = (TubeAttributesObject *)self;
+    PyTubeAttributesObject *obj = (PyTubeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetCapping()?1L:0L);
     return retval;
 }
@@ -557,16 +557,16 @@ PyMethodDef PyTubeAttributes_methods[TUBEATTRIBUTES_NMETH] = {
 //
 
 static void
-TubeAttributes_dealloc(PyObject *v)
+PyTubeAttributes_dealloc(PyObject *v)
 {
-   TubeAttributesObject *obj = (TubeAttributesObject *)v;
+   PyTubeAttributesObject *obj = (PyTubeAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *TubeAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyTubeAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyTubeAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -639,56 +639,42 @@ PyTubeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 }
 
 PyObject *
-TubeAttributes_str(PyObject *v)
+PyTubeAttributes_str(PyObject *v)
 {
-    TubeAttributesObject *obj = (TubeAttributesObject *)v;
+    PyTubeAttributesObject *obj = (PyTubeAttributesObject *)v;
     return PyString_FromString(PyTubeAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *TubeAttributes_Purpose = "This class contains attributes for the tube operator.";
-#else
-static char *TubeAttributes_Purpose = "This class contains attributes for the tube operator.";
-#endif
+static char const *PyTubeAttributes_purpose = "This class contains attributes for the tube operator.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject TubeAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "TubeAttributes",
-    .tp_basicsize = sizeof(TubeAttributesObject),
-    .tp_dealloc = TubeAttributes_dealloc,
-    .tp_repr = TubeAttributes_str,
-    .tp_str = TubeAttributes_str,
-    .tp_getattro = PyTubeAttributes_getattro,
-    .tp_setattro = PyTubeAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = TubeAttributes_Purpose,
-    .tp_richcompare = TubeAttributes_richcompare,
-    .tp_methods = PyTubeAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(TubeAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-TubeAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyTubeAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &TubeAttributesType
-         || Py_TYPE(other) != &TubeAttributesType)
+    if ( Py_TYPE(self) != &PyTubeAttributesType
+         || Py_TYPE(other) != &PyTubeAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    TubeAttributes *a = ((TubeAttributesObject *)self)->data;
-    TubeAttributes *b = ((TubeAttributesObject *)other)->data;
+    TubeAttributes *a = ((PyTubeAttributesObject *)self)->data;
+    TubeAttributes *b = ((PyTubeAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -717,8 +703,8 @@ static TubeAttributes *currentAtts = 0;
 static PyObject *
 NewTubeAttributes(int useCurrent)
 {
-    TubeAttributesObject *newObject;
-    newObject = PyObject_NEW(TubeAttributesObject, &TubeAttributesType);
+    PyTubeAttributesObject *newObject;
+    newObject = PyObject_NEW(PyTubeAttributesObject, &PyTubeAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -729,15 +715,15 @@ NewTubeAttributes(int useCurrent)
         newObject->data = new TubeAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&TubeAttributesType);
+    PyType_Ready(&PyTubeAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapTubeAttributes(const TubeAttributes *attr)
 {
-    TubeAttributesObject *newObject;
-    newObject = PyObject_NEW(TubeAttributesObject, &TubeAttributesType);
+    PyTubeAttributesObject *newObject;
+    newObject = PyObject_NEW(PyTubeAttributesObject, &PyTubeAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (TubeAttributes *)attr;
@@ -839,13 +825,13 @@ PyTubeAttributes_GetMethodTable(int *nMethods)
 bool
 PyTubeAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &TubeAttributesType);
+    return (obj->ob_type == &PyTubeAttributesType);
 }
 
 TubeAttributes *
 PyTubeAttributes_FromPyObject(PyObject *obj)
 {
-    TubeAttributesObject *obj2 = (TubeAttributesObject *)obj;
+    PyTubeAttributesObject *obj2 = (PyTubeAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -864,7 +850,7 @@ PyTubeAttributes_Wrap(const TubeAttributes *attr)
 void
 PyTubeAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    TubeAttributesObject *obj2 = (TubeAttributesObject *)obj;
+    PyTubeAttributesObject *obj2 = (PyTubeAttributesObject *)obj;
     obj2->parent = parent;
 }
 

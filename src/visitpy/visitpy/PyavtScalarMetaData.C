@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a avtScalarMetaData.
 //
-struct avtScalarMetaDataObject
+struct PyavtScalarMetaDataObject
 {
     PyObject_HEAD
     avtScalarMetaData *data;
@@ -260,7 +260,7 @@ PyavtScalarMetaData_ToString(const avtScalarMetaData *atts, const char *prefix, 
 static PyObject *
 avtScalarMetaData_Notify(PyObject *self, PyObject *args)
 {
-    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+    PyavtScalarMetaDataObject *obj = (PyavtScalarMetaDataObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -297,7 +297,7 @@ avtScalarMetaData_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtScalarMetaData_SetTreatAsASCII(PyObject *self, PyObject *args)
 {
-    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+    PyavtScalarMetaDataObject *obj = (PyavtScalarMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -349,7 +349,7 @@ avtScalarMetaData_SetTreatAsASCII(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtScalarMetaData_GetTreatAsASCII(PyObject *self, PyObject *args)
 {
-    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+    PyavtScalarMetaDataObject *obj = (PyavtScalarMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->treatAsASCII?1L:0L);
     return retval;
 }
@@ -357,7 +357,7 @@ avtScalarMetaData_GetTreatAsASCII(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtScalarMetaData_SetEnumerationType(PyObject *self, PyObject *args)
 {
-    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+    PyavtScalarMetaDataObject *obj = (PyavtScalarMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -418,7 +418,7 @@ avtScalarMetaData_SetEnumerationType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtScalarMetaData_GetEnumerationType(PyObject *self, PyObject *args)
 {
-    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+    PyavtScalarMetaDataObject *obj = (PyavtScalarMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetEnumerationType()));
     return retval;
 }
@@ -426,7 +426,7 @@ avtScalarMetaData_GetEnumerationType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtScalarMetaData_SetEnumNames(PyObject *self, PyObject *args)
 {
-    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+    PyavtScalarMetaDataObject *obj = (PyavtScalarMetaDataObject *)self;
 
     stringVector vec;
 
@@ -483,7 +483,7 @@ avtScalarMetaData_SetEnumNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtScalarMetaData_GetEnumNames(PyObject *self, PyObject *args)
 {
-    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+    PyavtScalarMetaDataObject *obj = (PyavtScalarMetaDataObject *)self;
     // Allocate a tuple the with enough entries to hold the enumNames.
     const stringVector &enumNames = obj->data->enumNames;
     PyObject *retval = PyTuple_New(enumNames.size());
@@ -495,7 +495,7 @@ avtScalarMetaData_GetEnumNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtScalarMetaData_SetEnumRanges(PyObject *self, PyObject *args)
 {
-    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+    PyavtScalarMetaDataObject *obj = (PyavtScalarMetaDataObject *)self;
 
     doubleVector vec;
 
@@ -559,7 +559,7 @@ avtScalarMetaData_SetEnumRanges(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtScalarMetaData_GetEnumRanges(PyObject *self, PyObject *args)
 {
-    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+    PyavtScalarMetaDataObject *obj = (PyavtScalarMetaDataObject *)self;
     // Allocate a tuple the with enough entries to hold the enumRanges.
     const doubleVector &enumRanges = obj->data->enumRanges;
     PyObject *retval = PyTuple_New(enumRanges.size());
@@ -571,7 +571,7 @@ avtScalarMetaData_GetEnumRanges(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtScalarMetaData_SetEnumAlwaysExclude(PyObject *self, PyObject *args)
 {
-    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+    PyavtScalarMetaDataObject *obj = (PyavtScalarMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->enumAlwaysExclude;
@@ -638,7 +638,7 @@ avtScalarMetaData_SetEnumAlwaysExclude(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtScalarMetaData_GetEnumAlwaysExclude(PyObject *self, PyObject *args)
 {
-    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+    PyavtScalarMetaDataObject *obj = (PyavtScalarMetaDataObject *)self;
     // Allocate a tuple the with enough entries to hold the enumAlwaysExclude.
     PyObject *retval = PyTuple_New(2);
     const double *enumAlwaysExclude = obj->data->enumAlwaysExclude;
@@ -650,7 +650,7 @@ avtScalarMetaData_GetEnumAlwaysExclude(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtScalarMetaData_SetEnumAlwaysInclude(PyObject *self, PyObject *args)
 {
-    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+    PyavtScalarMetaDataObject *obj = (PyavtScalarMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->enumAlwaysInclude;
@@ -717,7 +717,7 @@ avtScalarMetaData_SetEnumAlwaysInclude(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtScalarMetaData_GetEnumAlwaysInclude(PyObject *self, PyObject *args)
 {
-    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+    PyavtScalarMetaDataObject *obj = (PyavtScalarMetaDataObject *)self;
     // Allocate a tuple the with enough entries to hold the enumAlwaysInclude.
     PyObject *retval = PyTuple_New(2);
     const double *enumAlwaysInclude = obj->data->enumAlwaysInclude;
@@ -729,7 +729,7 @@ avtScalarMetaData_GetEnumAlwaysInclude(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtScalarMetaData_SetEnumPartialCellMode(PyObject *self, PyObject *args)
 {
-    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+    PyavtScalarMetaDataObject *obj = (PyavtScalarMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -788,7 +788,7 @@ avtScalarMetaData_SetEnumPartialCellMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtScalarMetaData_GetEnumPartialCellMode(PyObject *self, PyObject *args)
 {
-    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+    PyavtScalarMetaDataObject *obj = (PyavtScalarMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetEnumPartialCellMode()));
     return retval;
 }
@@ -796,7 +796,7 @@ avtScalarMetaData_GetEnumPartialCellMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtScalarMetaData_SetEnumGraphEdges(PyObject *self, PyObject *args)
 {
-    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+    PyavtScalarMetaDataObject *obj = (PyavtScalarMetaDataObject *)self;
 
     intVector vec;
 
@@ -860,7 +860,7 @@ avtScalarMetaData_SetEnumGraphEdges(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtScalarMetaData_GetEnumGraphEdges(PyObject *self, PyObject *args)
 {
-    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+    PyavtScalarMetaDataObject *obj = (PyavtScalarMetaDataObject *)self;
     // Allocate a tuple the with enough entries to hold the enumGraphEdges.
     const intVector &enumGraphEdges = obj->data->enumGraphEdges;
     PyObject *retval = PyTuple_New(enumGraphEdges.size());
@@ -872,7 +872,7 @@ avtScalarMetaData_GetEnumGraphEdges(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtScalarMetaData_SetEnumGraphEdgeNames(PyObject *self, PyObject *args)
 {
-    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+    PyavtScalarMetaDataObject *obj = (PyavtScalarMetaDataObject *)self;
 
     stringVector vec;
 
@@ -929,7 +929,7 @@ avtScalarMetaData_SetEnumGraphEdgeNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtScalarMetaData_GetEnumGraphEdgeNames(PyObject *self, PyObject *args)
 {
-    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+    PyavtScalarMetaDataObject *obj = (PyavtScalarMetaDataObject *)self;
     // Allocate a tuple the with enough entries to hold the enumGraphEdgeNames.
     const stringVector &enumGraphEdgeNames = obj->data->enumGraphEdgeNames;
     PyObject *retval = PyTuple_New(enumGraphEdgeNames.size());
@@ -941,7 +941,7 @@ avtScalarMetaData_GetEnumGraphEdgeNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtScalarMetaData_SetEnumGraphEdgeNameIndexs(PyObject *self, PyObject *args)
 {
-    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+    PyavtScalarMetaDataObject *obj = (PyavtScalarMetaDataObject *)self;
 
     intVector vec;
 
@@ -1005,7 +1005,7 @@ avtScalarMetaData_SetEnumGraphEdgeNameIndexs(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtScalarMetaData_GetEnumGraphEdgeNameIndexs(PyObject *self, PyObject *args)
 {
-    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+    PyavtScalarMetaDataObject *obj = (PyavtScalarMetaDataObject *)self;
     // Allocate a tuple the with enough entries to hold the enumGraphEdgeNameIndexs.
     const intVector &enumGraphEdgeNameIndexs = obj->data->enumGraphEdgeNameIndexs;
     PyObject *retval = PyTuple_New(enumGraphEdgeNameIndexs.size());
@@ -1017,7 +1017,7 @@ avtScalarMetaData_GetEnumGraphEdgeNameIndexs(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtScalarMetaData_SetEnumNChooseRN(PyObject *self, PyObject *args)
 {
-    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+    PyavtScalarMetaDataObject *obj = (PyavtScalarMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1069,7 +1069,7 @@ avtScalarMetaData_SetEnumNChooseRN(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtScalarMetaData_GetEnumNChooseRN(PyObject *self, PyObject *args)
 {
-    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+    PyavtScalarMetaDataObject *obj = (PyavtScalarMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetEnumNChooseRN()));
     return retval;
 }
@@ -1077,7 +1077,7 @@ avtScalarMetaData_GetEnumNChooseRN(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtScalarMetaData_SetEnumNChooseRMaxR(PyObject *self, PyObject *args)
 {
-    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+    PyavtScalarMetaDataObject *obj = (PyavtScalarMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1129,7 +1129,7 @@ avtScalarMetaData_SetEnumNChooseRMaxR(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtScalarMetaData_GetEnumNChooseRMaxR(PyObject *self, PyObject *args)
 {
-    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+    PyavtScalarMetaDataObject *obj = (PyavtScalarMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetEnumNChooseRMaxR()));
     return retval;
 }
@@ -1137,7 +1137,7 @@ avtScalarMetaData_GetEnumNChooseRMaxR(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtScalarMetaData_SetMissingDataType(PyObject *self, PyObject *args)
 {
-    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+    PyavtScalarMetaDataObject *obj = (PyavtScalarMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1198,7 +1198,7 @@ avtScalarMetaData_SetMissingDataType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtScalarMetaData_GetMissingDataType(PyObject *self, PyObject *args)
 {
-    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+    PyavtScalarMetaDataObject *obj = (PyavtScalarMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMissingDataType()));
     return retval;
 }
@@ -1206,7 +1206,7 @@ avtScalarMetaData_GetMissingDataType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtScalarMetaData_SetMissingData(PyObject *self, PyObject *args)
 {
-    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+    PyavtScalarMetaDataObject *obj = (PyavtScalarMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetMissingData();
@@ -1273,7 +1273,7 @@ avtScalarMetaData_SetMissingData(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtScalarMetaData_GetMissingData(PyObject *self, PyObject *args)
 {
-    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+    PyavtScalarMetaDataObject *obj = (PyavtScalarMetaDataObject *)self;
     // Allocate a tuple the with enough entries to hold the missingData.
     PyObject *retval = PyTuple_New(2);
     const double *missingData = obj->data->GetMissingData();
@@ -1343,16 +1343,16 @@ static void PyavtScalarMetaData_ExtendSetGetMethodTable()
 //
 
 static void
-avtScalarMetaData_dealloc(PyObject *v)
+PyavtScalarMetaData_dealloc(PyObject *v)
 {
-   avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)v;
+   PyavtScalarMetaDataObject *obj = (PyavtScalarMetaDataObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *avtScalarMetaData_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyavtScalarMetaData_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyavtScalarMetaData_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -1491,56 +1491,42 @@ PyavtScalarMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args
 }
 
 PyObject *
-avtScalarMetaData_str(PyObject *v)
+PyavtScalarMetaData_str(PyObject *v)
 {
-    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)v;
+    PyavtScalarMetaDataObject *obj = (PyavtScalarMetaDataObject *)v;
     return PyString_FromString(PyavtScalarMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *avtScalarMetaData_Purpose = "Contains scalar metadata attributes";
-#else
-static char *avtScalarMetaData_Purpose = "Contains scalar metadata attributes";
-#endif
+static char const *PyavtScalarMetaData_purpose = "Contains scalar metadata attributes";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject avtScalarMetaDataType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "avtScalarMetaData",
-    .tp_basicsize = sizeof(avtScalarMetaDataObject),
-    .tp_dealloc = avtScalarMetaData_dealloc,
-    .tp_repr = avtScalarMetaData_str,
-    .tp_str = avtScalarMetaData_str,
-    .tp_getattro = PyavtScalarMetaData_getattro,
-    .tp_setattro = PyavtScalarMetaData_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = avtScalarMetaData_Purpose,
-    .tp_richcompare = avtScalarMetaData_richcompare,
-    .tp_methods = PyavtScalarMetaData_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(avtScalarMetaData);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-avtScalarMetaData_richcompare(PyObject *self, PyObject *other, int op)
+PyavtScalarMetaData_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &avtScalarMetaDataType
-         || Py_TYPE(other) != &avtScalarMetaDataType)
+    if ( Py_TYPE(self) != &PyavtScalarMetaDataType
+         || Py_TYPE(other) != &PyavtScalarMetaDataType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    avtScalarMetaData *a = ((avtScalarMetaDataObject *)self)->data;
-    avtScalarMetaData *b = ((avtScalarMetaDataObject *)other)->data;
+    avtScalarMetaData *a = ((PyavtScalarMetaDataObject *)self)->data;
+    avtScalarMetaData *b = ((PyavtScalarMetaDataObject *)other)->data;
 
     switch (op)
     {
@@ -1569,8 +1555,8 @@ static avtScalarMetaData *currentAtts = 0;
 static PyObject *
 NewavtScalarMetaData(int useCurrent)
 {
-    avtScalarMetaDataObject *newObject;
-    newObject = PyObject_NEW(avtScalarMetaDataObject, &avtScalarMetaDataType);
+    PyavtScalarMetaDataObject *newObject;
+    newObject = PyObject_NEW(PyavtScalarMetaDataObject, &PyavtScalarMetaDataType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1581,15 +1567,15 @@ NewavtScalarMetaData(int useCurrent)
         newObject->data = new avtScalarMetaData;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&avtScalarMetaDataType);
+    PyType_Ready(&PyavtScalarMetaDataType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapavtScalarMetaData(const avtScalarMetaData *attr)
 {
-    avtScalarMetaDataObject *newObject;
-    newObject = PyObject_NEW(avtScalarMetaDataObject, &avtScalarMetaDataType);
+    PyavtScalarMetaDataObject *newObject;
+    newObject = PyObject_NEW(PyavtScalarMetaDataObject, &PyavtScalarMetaDataType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (avtScalarMetaData *)attr;
@@ -1691,13 +1677,13 @@ PyavtScalarMetaData_GetMethodTable(int *nMethods)
 bool
 PyavtScalarMetaData_Check(PyObject *obj)
 {
-    return (obj->ob_type == &avtScalarMetaDataType);
+    return (obj->ob_type == &PyavtScalarMetaDataType);
 }
 
 avtScalarMetaData *
 PyavtScalarMetaData_FromPyObject(PyObject *obj)
 {
-    avtScalarMetaDataObject *obj2 = (avtScalarMetaDataObject *)obj;
+    PyavtScalarMetaDataObject *obj2 = (PyavtScalarMetaDataObject *)obj;
     return obj2->data;
 }
 
@@ -1716,7 +1702,7 @@ PyavtScalarMetaData_Wrap(const avtScalarMetaData *attr)
 void
 PyavtScalarMetaData_SetParent(PyObject *obj, PyObject *parent)
 {
-    avtScalarMetaDataObject *obj2 = (avtScalarMetaDataObject *)obj;
+    PyavtScalarMetaDataObject *obj2 = (PyavtScalarMetaDataObject *)obj;
     obj2->parent = parent;
 }
 

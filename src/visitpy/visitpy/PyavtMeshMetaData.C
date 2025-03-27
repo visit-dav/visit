@@ -29,7 +29,7 @@
 //
 // This struct contains the Python type information and a avtMeshMetaData.
 //
-struct avtMeshMetaDataObject
+struct PyavtMeshMetaDataObject
 {
     PyObject_HEAD
     avtMeshMetaData *data;
@@ -457,7 +457,7 @@ PyavtMeshMetaData_ToString(const avtMeshMetaData *atts, const char *prefix, cons
 static PyObject *
 avtMeshMetaData_Notify(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -494,7 +494,7 @@ avtMeshMetaData_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetName(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -535,7 +535,7 @@ avtMeshMetaData_SetName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetName(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyString_FromString(obj->data->name.c_str());
     return retval;
 }
@@ -543,7 +543,7 @@ avtMeshMetaData_GetName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetOriginalName(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -584,7 +584,7 @@ avtMeshMetaData_SetOriginalName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetOriginalName(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyString_FromString(obj->data->originalName.c_str());
     return retval;
 }
@@ -592,7 +592,7 @@ avtMeshMetaData_GetOriginalName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetValidVariable(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -644,7 +644,7 @@ avtMeshMetaData_SetValidVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetValidVariable(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->validVariable?1L:0L);
     return retval;
 }
@@ -652,7 +652,7 @@ avtMeshMetaData_GetValidVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetMeshType(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     int ival = -999;
     if (PySequence_Check(args) && !PyArg_ParseTuple(args, "i", &ival))
@@ -671,7 +671,7 @@ avtMeshMetaData_SetMeshType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetMeshType(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->meshType));
     return retval;
 }
@@ -679,7 +679,7 @@ avtMeshMetaData_GetMeshType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetMeshCoordType(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     int ival = -999;
     if (PySequence_Check(args) && !PyArg_ParseTuple(args, "i", &ival))
@@ -698,7 +698,7 @@ avtMeshMetaData_SetMeshCoordType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetMeshCoordType(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->meshCoordType));
     return retval;
 }
@@ -706,7 +706,7 @@ avtMeshMetaData_GetMeshCoordType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetCellOrigin(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -758,7 +758,7 @@ avtMeshMetaData_SetCellOrigin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetCellOrigin(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->cellOrigin));
     return retval;
 }
@@ -766,7 +766,7 @@ avtMeshMetaData_GetCellOrigin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetSpatialDimension(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -818,7 +818,7 @@ avtMeshMetaData_SetSpatialDimension(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetSpatialDimension(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->spatialDimension));
     return retval;
 }
@@ -826,7 +826,7 @@ avtMeshMetaData_GetSpatialDimension(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetHasLogicalBounds(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -878,7 +878,7 @@ avtMeshMetaData_SetHasLogicalBounds(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetHasLogicalBounds(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->hasLogicalBounds?1L:0L);
     return retval;
 }
@@ -886,7 +886,7 @@ avtMeshMetaData_GetHasLogicalBounds(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetLogicalBounds(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
     int *vals = obj->data->logicalBounds;
@@ -953,7 +953,7 @@ avtMeshMetaData_SetLogicalBounds(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetLogicalBounds(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     // Allocate a tuple the with enough entries to hold the logicalBounds.
     PyObject *retval = PyTuple_New(3);
     const int *logicalBounds = obj->data->logicalBounds;
@@ -965,7 +965,7 @@ avtMeshMetaData_GetLogicalBounds(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetHasNumberCells(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1017,7 +1017,7 @@ avtMeshMetaData_SetHasNumberCells(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetHasNumberCells(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->hasNumberCells?1L:0L);
     return retval;
 }
@@ -1025,7 +1025,7 @@ avtMeshMetaData_GetHasNumberCells(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetNumberCells(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1077,7 +1077,7 @@ avtMeshMetaData_SetNumberCells(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetNumberCells(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->numberCells));
     return retval;
 }
@@ -1085,7 +1085,7 @@ avtMeshMetaData_GetNumberCells(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetTopologicalDimension(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1137,7 +1137,7 @@ avtMeshMetaData_SetTopologicalDimension(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetTopologicalDimension(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->topologicalDimension));
     return retval;
 }
@@ -1145,7 +1145,7 @@ avtMeshMetaData_GetTopologicalDimension(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetXUnits(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1186,7 +1186,7 @@ avtMeshMetaData_SetXUnits(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetXUnits(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyString_FromString(obj->data->xUnits.c_str());
     return retval;
 }
@@ -1194,7 +1194,7 @@ avtMeshMetaData_GetXUnits(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetYUnits(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1235,7 +1235,7 @@ avtMeshMetaData_SetYUnits(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetYUnits(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyString_FromString(obj->data->yUnits.c_str());
     return retval;
 }
@@ -1243,7 +1243,7 @@ avtMeshMetaData_GetYUnits(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetZUnits(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1284,7 +1284,7 @@ avtMeshMetaData_SetZUnits(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetZUnits(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyString_FromString(obj->data->zUnits.c_str());
     return retval;
 }
@@ -1292,7 +1292,7 @@ avtMeshMetaData_GetZUnits(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetXLabel(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1333,7 +1333,7 @@ avtMeshMetaData_SetXLabel(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetXLabel(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyString_FromString(obj->data->xLabel.c_str());
     return retval;
 }
@@ -1341,7 +1341,7 @@ avtMeshMetaData_GetXLabel(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetYLabel(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1382,7 +1382,7 @@ avtMeshMetaData_SetYLabel(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetYLabel(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyString_FromString(obj->data->yLabel.c_str());
     return retval;
 }
@@ -1390,7 +1390,7 @@ avtMeshMetaData_GetYLabel(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetZLabel(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1431,7 +1431,7 @@ avtMeshMetaData_SetZLabel(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetZLabel(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyString_FromString(obj->data->zLabel.c_str());
     return retval;
 }
@@ -1439,7 +1439,7 @@ avtMeshMetaData_GetZLabel(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetHasSpatialExtents(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1491,7 +1491,7 @@ avtMeshMetaData_SetHasSpatialExtents(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetHasSpatialExtents(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->hasSpatialExtents?1L:0L);
     return retval;
 }
@@ -1499,7 +1499,7 @@ avtMeshMetaData_GetHasSpatialExtents(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetMinSpatialExtents(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->minSpatialExtents;
@@ -1566,7 +1566,7 @@ avtMeshMetaData_SetMinSpatialExtents(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetMinSpatialExtents(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     // Allocate a tuple the with enough entries to hold the minSpatialExtents.
     PyObject *retval = PyTuple_New(3);
     const double *minSpatialExtents = obj->data->minSpatialExtents;
@@ -1578,7 +1578,7 @@ avtMeshMetaData_GetMinSpatialExtents(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetMaxSpatialExtents(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->maxSpatialExtents;
@@ -1645,7 +1645,7 @@ avtMeshMetaData_SetMaxSpatialExtents(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetMaxSpatialExtents(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     // Allocate a tuple the with enough entries to hold the maxSpatialExtents.
     PyObject *retval = PyTuple_New(3);
     const double *maxSpatialExtents = obj->data->maxSpatialExtents;
@@ -1657,7 +1657,7 @@ avtMeshMetaData_GetMaxSpatialExtents(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetNumBlocks(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1709,7 +1709,7 @@ avtMeshMetaData_SetNumBlocks(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetNumBlocks(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->numBlocks));
     return retval;
 }
@@ -1717,7 +1717,7 @@ avtMeshMetaData_GetNumBlocks(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetBlockOrigin(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1769,7 +1769,7 @@ avtMeshMetaData_SetBlockOrigin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetBlockOrigin(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->blockOrigin));
     return retval;
 }
@@ -1777,7 +1777,7 @@ avtMeshMetaData_GetBlockOrigin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetBlockPieceName(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1818,7 +1818,7 @@ avtMeshMetaData_SetBlockPieceName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetBlockPieceName(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyString_FromString(obj->data->blockPieceName.c_str());
     return retval;
 }
@@ -1826,7 +1826,7 @@ avtMeshMetaData_GetBlockPieceName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetBlockTitle(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1867,7 +1867,7 @@ avtMeshMetaData_SetBlockTitle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetBlockTitle(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyString_FromString(obj->data->blockTitle.c_str());
     return retval;
 }
@@ -1875,7 +1875,7 @@ avtMeshMetaData_GetBlockTitle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetBlockNames(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     stringVector vec;
 
@@ -1932,7 +1932,7 @@ avtMeshMetaData_SetBlockNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetBlockNames(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     // Allocate a tuple the with enough entries to hold the blockNames.
     const stringVector &blockNames = obj->data->blockNames;
     PyObject *retval = PyTuple_New(blockNames.size());
@@ -1944,7 +1944,7 @@ avtMeshMetaData_GetBlockNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetBlockNameScheme(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -1961,7 +1961,7 @@ avtMeshMetaData_SetBlockNameScheme(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetBlockNameScheme(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -1977,7 +1977,7 @@ avtMeshMetaData_GetBlockNameScheme(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetNumGroups(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2029,7 +2029,7 @@ avtMeshMetaData_SetNumGroups(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetNumGroups(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->numGroups));
     return retval;
 }
@@ -2037,7 +2037,7 @@ avtMeshMetaData_GetNumGroups(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetGroupOrigin(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2089,7 +2089,7 @@ avtMeshMetaData_SetGroupOrigin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetGroupOrigin(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->groupOrigin));
     return retval;
 }
@@ -2097,7 +2097,7 @@ avtMeshMetaData_GetGroupOrigin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetGroupPieceName(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2138,7 +2138,7 @@ avtMeshMetaData_SetGroupPieceName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetGroupPieceName(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyString_FromString(obj->data->groupPieceName.c_str());
     return retval;
 }
@@ -2146,7 +2146,7 @@ avtMeshMetaData_GetGroupPieceName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetGroupTitle(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2187,7 +2187,7 @@ avtMeshMetaData_SetGroupTitle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetGroupTitle(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyString_FromString(obj->data->groupTitle.c_str());
     return retval;
 }
@@ -2195,7 +2195,7 @@ avtMeshMetaData_GetGroupTitle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetGroupNames(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     stringVector vec;
 
@@ -2252,7 +2252,7 @@ avtMeshMetaData_SetGroupNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetGroupNames(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     // Allocate a tuple the with enough entries to hold the groupNames.
     const stringVector &groupNames = obj->data->groupNames;
     PyObject *retval = PyTuple_New(groupNames.size());
@@ -2264,7 +2264,7 @@ avtMeshMetaData_GetGroupNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetGroupIds(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     intVector vec;
 
@@ -2328,7 +2328,7 @@ avtMeshMetaData_SetGroupIds(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetGroupIds(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     // Allocate a tuple the with enough entries to hold the groupIds.
     const intVector &groupIds = obj->data->groupIds;
     PyObject *retval = PyTuple_New(groupIds.size());
@@ -2340,7 +2340,7 @@ avtMeshMetaData_GetGroupIds(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetGroupIdsBasedOnRange(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     intVector vec;
 
@@ -2404,7 +2404,7 @@ avtMeshMetaData_SetGroupIdsBasedOnRange(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetGroupIdsBasedOnRange(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     // Allocate a tuple the with enough entries to hold the groupIdsBasedOnRange.
     const intVector &groupIdsBasedOnRange = obj->data->groupIdsBasedOnRange;
     PyObject *retval = PyTuple_New(groupIdsBasedOnRange.size());
@@ -2416,7 +2416,7 @@ avtMeshMetaData_GetGroupIdsBasedOnRange(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetDisjointElements(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2468,7 +2468,7 @@ avtMeshMetaData_SetDisjointElements(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetDisjointElements(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->disjointElements?1L:0L);
     return retval;
 }
@@ -2476,7 +2476,7 @@ avtMeshMetaData_GetDisjointElements(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetContainsGhostZones(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     int ival = -999;
     if (PySequence_Check(args) && !PyArg_ParseTuple(args, "i", &ival))
@@ -2495,7 +2495,7 @@ avtMeshMetaData_SetContainsGhostZones(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetContainsGhostZones(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->containsGhostZones));
     return retval;
 }
@@ -2503,7 +2503,7 @@ avtMeshMetaData_GetContainsGhostZones(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetContainsOriginalCells(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2555,7 +2555,7 @@ avtMeshMetaData_SetContainsOriginalCells(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetContainsOriginalCells(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->containsOriginalCells?1L:0L);
     return retval;
 }
@@ -2563,7 +2563,7 @@ avtMeshMetaData_GetContainsOriginalCells(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetContainsOriginalNodes(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2615,7 +2615,7 @@ avtMeshMetaData_SetContainsOriginalNodes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetContainsOriginalNodes(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->containsOriginalNodes?1L:0L);
     return retval;
 }
@@ -2623,7 +2623,7 @@ avtMeshMetaData_GetContainsOriginalNodes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetContainsGlobalNodeIds(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2675,7 +2675,7 @@ avtMeshMetaData_SetContainsGlobalNodeIds(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetContainsGlobalNodeIds(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->containsGlobalNodeIds?1L:0L);
     return retval;
 }
@@ -2683,7 +2683,7 @@ avtMeshMetaData_GetContainsGlobalNodeIds(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetContainsGlobalZoneIds(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2735,7 +2735,7 @@ avtMeshMetaData_SetContainsGlobalZoneIds(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetContainsGlobalZoneIds(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->containsGlobalZoneIds?1L:0L);
     return retval;
 }
@@ -2743,7 +2743,7 @@ avtMeshMetaData_GetContainsGlobalZoneIds(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetLoadBalanceScheme(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     int ival = -999;
     if (PySequence_Check(args) && !PyArg_ParseTuple(args, "i", &ival))
@@ -2762,7 +2762,7 @@ avtMeshMetaData_SetLoadBalanceScheme(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetLoadBalanceScheme(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->loadBalanceScheme));
     return retval;
 }
@@ -2770,7 +2770,7 @@ avtMeshMetaData_GetLoadBalanceScheme(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetNodesAreCritical(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2822,7 +2822,7 @@ avtMeshMetaData_SetNodesAreCritical(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetNodesAreCritical(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->nodesAreCritical?1L:0L);
     return retval;
 }
@@ -2830,7 +2830,7 @@ avtMeshMetaData_GetNodesAreCritical(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetUnitCellVectors(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
     float *vals = obj->data->unitCellVectors;
@@ -2897,7 +2897,7 @@ avtMeshMetaData_SetUnitCellVectors(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetUnitCellVectors(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     // Allocate a tuple the with enough entries to hold the unitCellVectors.
     PyObject *retval = PyTuple_New(9);
     const float *unitCellVectors = obj->data->unitCellVectors;
@@ -2909,7 +2909,7 @@ avtMeshMetaData_GetUnitCellVectors(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetUnitCellOrigin(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
     float *vals = obj->data->unitCellOrigin;
@@ -2976,7 +2976,7 @@ avtMeshMetaData_SetUnitCellOrigin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetUnitCellOrigin(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     // Allocate a tuple the with enough entries to hold the unitCellOrigin.
     PyObject *retval = PyTuple_New(3);
     const float *unitCellOrigin = obj->data->unitCellOrigin;
@@ -2988,7 +2988,7 @@ avtMeshMetaData_GetUnitCellOrigin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetRectilinearGridHasTransform(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3040,7 +3040,7 @@ avtMeshMetaData_SetRectilinearGridHasTransform(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetRectilinearGridHasTransform(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->rectilinearGridHasTransform?1L:0L);
     return retval;
 }
@@ -3048,7 +3048,7 @@ avtMeshMetaData_GetRectilinearGridHasTransform(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetRectilinearGridTransform(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->rectilinearGridTransform;
@@ -3115,7 +3115,7 @@ avtMeshMetaData_SetRectilinearGridTransform(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetRectilinearGridTransform(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     // Allocate a tuple the with enough entries to hold the rectilinearGridTransform.
     PyObject *retval = PyTuple_New(16);
     const double *rectilinearGridTransform = obj->data->rectilinearGridTransform;
@@ -3127,7 +3127,7 @@ avtMeshMetaData_GetRectilinearGridTransform(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetNodeOrigin(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3179,7 +3179,7 @@ avtMeshMetaData_SetNodeOrigin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetNodeOrigin(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->nodeOrigin));
     return retval;
 }
@@ -3187,7 +3187,7 @@ avtMeshMetaData_GetNodeOrigin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetContainsExteriorBoundaryGhosts(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3239,7 +3239,7 @@ avtMeshMetaData_SetContainsExteriorBoundaryGhosts(PyObject *self, PyObject *args
 /*static*/ PyObject *
 avtMeshMetaData_GetContainsExteriorBoundaryGhosts(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->containsExteriorBoundaryGhosts?1L:0L);
     return retval;
 }
@@ -3247,7 +3247,7 @@ avtMeshMetaData_GetContainsExteriorBoundaryGhosts(PyObject *self, PyObject *args
 /*static*/ PyObject *
 avtMeshMetaData_SetHideFromGUI(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3299,7 +3299,7 @@ avtMeshMetaData_SetHideFromGUI(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetHideFromGUI(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->hideFromGUI?1L:0L);
     return retval;
 }
@@ -3307,7 +3307,7 @@ avtMeshMetaData_GetHideFromGUI(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetLODs(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3359,7 +3359,7 @@ avtMeshMetaData_SetLODs(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetLODs(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->LODs));
     return retval;
 }
@@ -3367,7 +3367,7 @@ avtMeshMetaData_GetLODs(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetPresentGhostZoneTypes(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3419,7 +3419,7 @@ avtMeshMetaData_SetPresentGhostZoneTypes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetPresentGhostZoneTypes(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->presentGhostZoneTypes));
     return retval;
 }
@@ -3427,7 +3427,7 @@ avtMeshMetaData_GetPresentGhostZoneTypes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetZonesWereSplit(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3479,7 +3479,7 @@ avtMeshMetaData_SetZonesWereSplit(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetZonesWereSplit(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->zonesWereSplit?1L:0L);
     return retval;
 }
@@ -3487,7 +3487,7 @@ avtMeshMetaData_GetZonesWereSplit(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_SetHasExtraGhostInfo(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3539,7 +3539,7 @@ avtMeshMetaData_SetHasExtraGhostInfo(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMeshMetaData_GetHasExtraGhostInfo(PyObject *self, PyObject *args)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->hasExtraGhostInfo?1L:0L);
     return retval;
 }
@@ -3663,16 +3663,16 @@ PyMethodDef PyavtMeshMetaData_methods[AVTMESHMETADATA_NMETH] = {
 //
 
 static void
-avtMeshMetaData_dealloc(PyObject *v)
+PyavtMeshMetaData_dealloc(PyObject *v)
 {
-   avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)v;
+   PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *avtMeshMetaData_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyavtMeshMetaData_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyavtMeshMetaData_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -3972,56 +3972,42 @@ PyavtMeshMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 }
 
 PyObject *
-avtMeshMetaData_str(PyObject *v)
+PyavtMeshMetaData_str(PyObject *v)
 {
-    avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)v;
+    PyavtMeshMetaDataObject *obj = (PyavtMeshMetaDataObject *)v;
     return PyString_FromString(PyavtMeshMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *avtMeshMetaData_Purpose = "Contains mesh metadata attributes";
-#else
-static char *avtMeshMetaData_Purpose = "Contains mesh metadata attributes";
-#endif
+static char const *PyavtMeshMetaData_purpose = "Contains mesh metadata attributes";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject avtMeshMetaDataType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "avtMeshMetaData",
-    .tp_basicsize = sizeof(avtMeshMetaDataObject),
-    .tp_dealloc = avtMeshMetaData_dealloc,
-    .tp_repr = avtMeshMetaData_str,
-    .tp_str = avtMeshMetaData_str,
-    .tp_getattro = PyavtMeshMetaData_getattro,
-    .tp_setattro = PyavtMeshMetaData_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = avtMeshMetaData_Purpose,
-    .tp_richcompare = avtMeshMetaData_richcompare,
-    .tp_methods = PyavtMeshMetaData_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(avtMeshMetaData);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-avtMeshMetaData_richcompare(PyObject *self, PyObject *other, int op)
+PyavtMeshMetaData_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &avtMeshMetaDataType
-         || Py_TYPE(other) != &avtMeshMetaDataType)
+    if ( Py_TYPE(self) != &PyavtMeshMetaDataType
+         || Py_TYPE(other) != &PyavtMeshMetaDataType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    avtMeshMetaData *a = ((avtMeshMetaDataObject *)self)->data;
-    avtMeshMetaData *b = ((avtMeshMetaDataObject *)other)->data;
+    avtMeshMetaData *a = ((PyavtMeshMetaDataObject *)self)->data;
+    avtMeshMetaData *b = ((PyavtMeshMetaDataObject *)other)->data;
 
     switch (op)
     {
@@ -4050,8 +4036,8 @@ static avtMeshMetaData *currentAtts = 0;
 static PyObject *
 NewavtMeshMetaData(int useCurrent)
 {
-    avtMeshMetaDataObject *newObject;
-    newObject = PyObject_NEW(avtMeshMetaDataObject, &avtMeshMetaDataType);
+    PyavtMeshMetaDataObject *newObject;
+    newObject = PyObject_NEW(PyavtMeshMetaDataObject, &PyavtMeshMetaDataType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -4062,15 +4048,15 @@ NewavtMeshMetaData(int useCurrent)
         newObject->data = new avtMeshMetaData;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&avtMeshMetaDataType);
+    PyType_Ready(&PyavtMeshMetaDataType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapavtMeshMetaData(const avtMeshMetaData *attr)
 {
-    avtMeshMetaDataObject *newObject;
-    newObject = PyObject_NEW(avtMeshMetaDataObject, &avtMeshMetaDataType);
+    PyavtMeshMetaDataObject *newObject;
+    newObject = PyObject_NEW(PyavtMeshMetaDataObject, &PyavtMeshMetaDataType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (avtMeshMetaData *)attr;
@@ -4172,13 +4158,13 @@ PyavtMeshMetaData_GetMethodTable(int *nMethods)
 bool
 PyavtMeshMetaData_Check(PyObject *obj)
 {
-    return (obj->ob_type == &avtMeshMetaDataType);
+    return (obj->ob_type == &PyavtMeshMetaDataType);
 }
 
 avtMeshMetaData *
 PyavtMeshMetaData_FromPyObject(PyObject *obj)
 {
-    avtMeshMetaDataObject *obj2 = (avtMeshMetaDataObject *)obj;
+    PyavtMeshMetaDataObject *obj2 = (PyavtMeshMetaDataObject *)obj;
     return obj2->data;
 }
 
@@ -4197,7 +4183,7 @@ PyavtMeshMetaData_Wrap(const avtMeshMetaData *attr)
 void
 PyavtMeshMetaData_SetParent(PyObject *obj, PyObject *parent)
 {
-    avtMeshMetaDataObject *obj2 = (avtMeshMetaDataObject *)obj;
+    PyavtMeshMetaDataObject *obj2 = (PyavtMeshMetaDataObject *)obj;
     obj2->parent = parent;
 }
 

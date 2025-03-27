@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a AxisTickMarks.
 //
-struct AxisTickMarksObject
+struct PyAxisTickMarksObject
 {
     PyObject_HEAD
     AxisTickMarks *data;
@@ -61,7 +61,7 @@ PyAxisTickMarks_ToString(const AxisTickMarks *atts, const char *prefix, const bo
 static PyObject *
 AxisTickMarks_Notify(PyObject *self, PyObject *args)
 {
-    AxisTickMarksObject *obj = (AxisTickMarksObject *)self;
+    PyAxisTickMarksObject *obj = (PyAxisTickMarksObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -98,7 +98,7 @@ AxisTickMarks_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisTickMarks_SetVisible(PyObject *self, PyObject *args)
 {
-    AxisTickMarksObject *obj = (AxisTickMarksObject *)self;
+    PyAxisTickMarksObject *obj = (PyAxisTickMarksObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -150,7 +150,7 @@ AxisTickMarks_SetVisible(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisTickMarks_GetVisible(PyObject *self, PyObject *args)
 {
-    AxisTickMarksObject *obj = (AxisTickMarksObject *)self;
+    PyAxisTickMarksObject *obj = (PyAxisTickMarksObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetVisible()?1L:0L);
     return retval;
 }
@@ -158,7 +158,7 @@ AxisTickMarks_GetVisible(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisTickMarks_SetMajorMinimum(PyObject *self, PyObject *args)
 {
-    AxisTickMarksObject *obj = (AxisTickMarksObject *)self;
+    PyAxisTickMarksObject *obj = (PyAxisTickMarksObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -210,7 +210,7 @@ AxisTickMarks_SetMajorMinimum(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisTickMarks_GetMajorMinimum(PyObject *self, PyObject *args)
 {
-    AxisTickMarksObject *obj = (AxisTickMarksObject *)self;
+    PyAxisTickMarksObject *obj = (PyAxisTickMarksObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMajorMinimum());
     return retval;
 }
@@ -218,7 +218,7 @@ AxisTickMarks_GetMajorMinimum(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisTickMarks_SetMajorMaximum(PyObject *self, PyObject *args)
 {
-    AxisTickMarksObject *obj = (AxisTickMarksObject *)self;
+    PyAxisTickMarksObject *obj = (PyAxisTickMarksObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -270,7 +270,7 @@ AxisTickMarks_SetMajorMaximum(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisTickMarks_GetMajorMaximum(PyObject *self, PyObject *args)
 {
-    AxisTickMarksObject *obj = (AxisTickMarksObject *)self;
+    PyAxisTickMarksObject *obj = (PyAxisTickMarksObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMajorMaximum());
     return retval;
 }
@@ -278,7 +278,7 @@ AxisTickMarks_GetMajorMaximum(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisTickMarks_SetMinorSpacing(PyObject *self, PyObject *args)
 {
-    AxisTickMarksObject *obj = (AxisTickMarksObject *)self;
+    PyAxisTickMarksObject *obj = (PyAxisTickMarksObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -330,7 +330,7 @@ AxisTickMarks_SetMinorSpacing(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisTickMarks_GetMinorSpacing(PyObject *self, PyObject *args)
 {
-    AxisTickMarksObject *obj = (AxisTickMarksObject *)self;
+    PyAxisTickMarksObject *obj = (PyAxisTickMarksObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMinorSpacing());
     return retval;
 }
@@ -338,7 +338,7 @@ AxisTickMarks_GetMinorSpacing(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisTickMarks_SetMajorSpacing(PyObject *self, PyObject *args)
 {
-    AxisTickMarksObject *obj = (AxisTickMarksObject *)self;
+    PyAxisTickMarksObject *obj = (PyAxisTickMarksObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -390,7 +390,7 @@ AxisTickMarks_SetMajorSpacing(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisTickMarks_GetMajorSpacing(PyObject *self, PyObject *args)
 {
-    AxisTickMarksObject *obj = (AxisTickMarksObject *)self;
+    PyAxisTickMarksObject *obj = (PyAxisTickMarksObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMajorSpacing());
     return retval;
 }
@@ -418,16 +418,16 @@ PyMethodDef PyAxisTickMarks_methods[AXISTICKMARKS_NMETH] = {
 //
 
 static void
-AxisTickMarks_dealloc(PyObject *v)
+PyAxisTickMarks_dealloc(PyObject *v)
 {
-   AxisTickMarksObject *obj = (AxisTickMarksObject *)v;
+   PyAxisTickMarksObject *obj = (PyAxisTickMarksObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *AxisTickMarks_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyAxisTickMarks_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyAxisTickMarks_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -487,56 +487,42 @@ PyAxisTickMarks_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 }
 
 PyObject *
-AxisTickMarks_str(PyObject *v)
+PyAxisTickMarks_str(PyObject *v)
 {
-    AxisTickMarksObject *obj = (AxisTickMarksObject *)v;
+    PyAxisTickMarksObject *obj = (PyAxisTickMarksObject *)v;
     return PyString_FromString(PyAxisTickMarks_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *AxisTickMarks_Purpose = "Contains the tick mark properties for one axis.";
-#else
-static char *AxisTickMarks_Purpose = "Contains the tick mark properties for one axis.";
-#endif
+static char const *PyAxisTickMarks_purpose = "Contains the tick mark properties for one axis.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject AxisTickMarksType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "AxisTickMarks",
-    .tp_basicsize = sizeof(AxisTickMarksObject),
-    .tp_dealloc = AxisTickMarks_dealloc,
-    .tp_repr = AxisTickMarks_str,
-    .tp_str = AxisTickMarks_str,
-    .tp_getattro = PyAxisTickMarks_getattro,
-    .tp_setattro = PyAxisTickMarks_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = AxisTickMarks_Purpose,
-    .tp_richcompare = AxisTickMarks_richcompare,
-    .tp_methods = PyAxisTickMarks_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(AxisTickMarks);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-AxisTickMarks_richcompare(PyObject *self, PyObject *other, int op)
+PyAxisTickMarks_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &AxisTickMarksType
-         || Py_TYPE(other) != &AxisTickMarksType)
+    if ( Py_TYPE(self) != &PyAxisTickMarksType
+         || Py_TYPE(other) != &PyAxisTickMarksType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    AxisTickMarks *a = ((AxisTickMarksObject *)self)->data;
-    AxisTickMarks *b = ((AxisTickMarksObject *)other)->data;
+    AxisTickMarks *a = ((PyAxisTickMarksObject *)self)->data;
+    AxisTickMarks *b = ((PyAxisTickMarksObject *)other)->data;
 
     switch (op)
     {
@@ -565,8 +551,8 @@ static AxisTickMarks *currentAtts = 0;
 static PyObject *
 NewAxisTickMarks(int useCurrent)
 {
-    AxisTickMarksObject *newObject;
-    newObject = PyObject_NEW(AxisTickMarksObject, &AxisTickMarksType);
+    PyAxisTickMarksObject *newObject;
+    newObject = PyObject_NEW(PyAxisTickMarksObject, &PyAxisTickMarksType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -577,15 +563,15 @@ NewAxisTickMarks(int useCurrent)
         newObject->data = new AxisTickMarks;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&AxisTickMarksType);
+    PyType_Ready(&PyAxisTickMarksType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapAxisTickMarks(const AxisTickMarks *attr)
 {
-    AxisTickMarksObject *newObject;
-    newObject = PyObject_NEW(AxisTickMarksObject, &AxisTickMarksType);
+    PyAxisTickMarksObject *newObject;
+    newObject = PyObject_NEW(PyAxisTickMarksObject, &PyAxisTickMarksType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (AxisTickMarks *)attr;
@@ -687,13 +673,13 @@ PyAxisTickMarks_GetMethodTable(int *nMethods)
 bool
 PyAxisTickMarks_Check(PyObject *obj)
 {
-    return (obj->ob_type == &AxisTickMarksType);
+    return (obj->ob_type == &PyAxisTickMarksType);
 }
 
 AxisTickMarks *
 PyAxisTickMarks_FromPyObject(PyObject *obj)
 {
-    AxisTickMarksObject *obj2 = (AxisTickMarksObject *)obj;
+    PyAxisTickMarksObject *obj2 = (PyAxisTickMarksObject *)obj;
     return obj2->data;
 }
 
@@ -712,7 +698,7 @@ PyAxisTickMarks_Wrap(const AxisTickMarks *attr)
 void
 PyAxisTickMarks_SetParent(PyObject *obj, PyObject *parent)
 {
-    AxisTickMarksObject *obj2 = (AxisTickMarksObject *)obj;
+    PyAxisTickMarksObject *obj2 = (PyAxisTickMarksObject *)obj;
     obj2->parent = parent;
 }
 

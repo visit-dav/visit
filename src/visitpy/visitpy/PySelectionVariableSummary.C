@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a SelectionVariableSummary.
 //
-struct SelectionVariableSummaryObject
+struct PySelectionVariableSummaryObject
 {
     PyObject_HEAD
     SelectionVariableSummary *data;
@@ -70,7 +70,7 @@ PySelectionVariableSummary_ToString(const SelectionVariableSummary *atts, const 
 static PyObject *
 SelectionVariableSummary_Notify(PyObject *self, PyObject *args)
 {
-    SelectionVariableSummaryObject *obj = (SelectionVariableSummaryObject *)self;
+    PySelectionVariableSummaryObject *obj = (PySelectionVariableSummaryObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -107,7 +107,7 @@ SelectionVariableSummary_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionVariableSummary_SetName(PyObject *self, PyObject *args)
 {
-    SelectionVariableSummaryObject *obj = (SelectionVariableSummaryObject *)self;
+    PySelectionVariableSummaryObject *obj = (PySelectionVariableSummaryObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -148,7 +148,7 @@ SelectionVariableSummary_SetName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionVariableSummary_GetName(PyObject *self, PyObject *args)
 {
-    SelectionVariableSummaryObject *obj = (SelectionVariableSummaryObject *)self;
+    PySelectionVariableSummaryObject *obj = (PySelectionVariableSummaryObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetName().c_str());
     return retval;
 }
@@ -156,7 +156,7 @@ SelectionVariableSummary_GetName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionVariableSummary_SetMinimum(PyObject *self, PyObject *args)
 {
-    SelectionVariableSummaryObject *obj = (SelectionVariableSummaryObject *)self;
+    PySelectionVariableSummaryObject *obj = (PySelectionVariableSummaryObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -208,7 +208,7 @@ SelectionVariableSummary_SetMinimum(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionVariableSummary_GetMinimum(PyObject *self, PyObject *args)
 {
-    SelectionVariableSummaryObject *obj = (SelectionVariableSummaryObject *)self;
+    PySelectionVariableSummaryObject *obj = (PySelectionVariableSummaryObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMinimum());
     return retval;
 }
@@ -216,7 +216,7 @@ SelectionVariableSummary_GetMinimum(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionVariableSummary_SetMaximum(PyObject *self, PyObject *args)
 {
-    SelectionVariableSummaryObject *obj = (SelectionVariableSummaryObject *)self;
+    PySelectionVariableSummaryObject *obj = (PySelectionVariableSummaryObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -268,7 +268,7 @@ SelectionVariableSummary_SetMaximum(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionVariableSummary_GetMaximum(PyObject *self, PyObject *args)
 {
-    SelectionVariableSummaryObject *obj = (SelectionVariableSummaryObject *)self;
+    PySelectionVariableSummaryObject *obj = (PySelectionVariableSummaryObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMaximum());
     return retval;
 }
@@ -276,7 +276,7 @@ SelectionVariableSummary_GetMaximum(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionVariableSummary_SetHistogram(PyObject *self, PyObject *args)
 {
-    SelectionVariableSummaryObject *obj = (SelectionVariableSummaryObject *)self;
+    PySelectionVariableSummaryObject *obj = (PySelectionVariableSummaryObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetHistogram();
@@ -343,7 +343,7 @@ SelectionVariableSummary_SetHistogram(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionVariableSummary_GetHistogram(PyObject *self, PyObject *args)
 {
-    SelectionVariableSummaryObject *obj = (SelectionVariableSummaryObject *)self;
+    PySelectionVariableSummaryObject *obj = (PySelectionVariableSummaryObject *)self;
     // Allocate a tuple the with enough entries to hold the histogram.
     PyObject *retval = PyTuple_New(256);
     const double *histogram = obj->data->GetHistogram();
@@ -373,16 +373,16 @@ PyMethodDef PySelectionVariableSummary_methods[SELECTIONVARIABLESUMMARY_NMETH] =
 //
 
 static void
-SelectionVariableSummary_dealloc(PyObject *v)
+PySelectionVariableSummary_dealloc(PyObject *v)
 {
-   SelectionVariableSummaryObject *obj = (SelectionVariableSummaryObject *)v;
+   PySelectionVariableSummaryObject *obj = (PySelectionVariableSummaryObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *SelectionVariableSummary_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PySelectionVariableSummary_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PySelectionVariableSummary_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -438,56 +438,42 @@ PySelectionVariableSummary_setattro(PyObject *self, PyObject *attr_name, PyObjec
 }
 
 PyObject *
-SelectionVariableSummary_str(PyObject *v)
+PySelectionVariableSummary_str(PyObject *v)
 {
-    SelectionVariableSummaryObject *obj = (SelectionVariableSummaryObject *)v;
+    PySelectionVariableSummaryObject *obj = (PySelectionVariableSummaryObject *)v;
     return PyString_FromString(PySelectionVariableSummary_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *SelectionVariableSummary_Purpose = "Contains a summary of a variable used in a selection";
-#else
-static char *SelectionVariableSummary_Purpose = "Contains a summary of a variable used in a selection";
-#endif
+static char const *PySelectionVariableSummary_purpose = "Contains a summary of a variable used in a selection";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject SelectionVariableSummaryType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "SelectionVariableSummary",
-    .tp_basicsize = sizeof(SelectionVariableSummaryObject),
-    .tp_dealloc = SelectionVariableSummary_dealloc,
-    .tp_repr = SelectionVariableSummary_str,
-    .tp_str = SelectionVariableSummary_str,
-    .tp_getattro = PySelectionVariableSummary_getattro,
-    .tp_setattro = PySelectionVariableSummary_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = SelectionVariableSummary_Purpose,
-    .tp_richcompare = SelectionVariableSummary_richcompare,
-    .tp_methods = PySelectionVariableSummary_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(SelectionVariableSummary);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-SelectionVariableSummary_richcompare(PyObject *self, PyObject *other, int op)
+PySelectionVariableSummary_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &SelectionVariableSummaryType
-         || Py_TYPE(other) != &SelectionVariableSummaryType)
+    if ( Py_TYPE(self) != &PySelectionVariableSummaryType
+         || Py_TYPE(other) != &PySelectionVariableSummaryType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    SelectionVariableSummary *a = ((SelectionVariableSummaryObject *)self)->data;
-    SelectionVariableSummary *b = ((SelectionVariableSummaryObject *)other)->data;
+    SelectionVariableSummary *a = ((PySelectionVariableSummaryObject *)self)->data;
+    SelectionVariableSummary *b = ((PySelectionVariableSummaryObject *)other)->data;
 
     switch (op)
     {
@@ -516,8 +502,8 @@ static SelectionVariableSummary *currentAtts = 0;
 static PyObject *
 NewSelectionVariableSummary(int useCurrent)
 {
-    SelectionVariableSummaryObject *newObject;
-    newObject = PyObject_NEW(SelectionVariableSummaryObject, &SelectionVariableSummaryType);
+    PySelectionVariableSummaryObject *newObject;
+    newObject = PyObject_NEW(PySelectionVariableSummaryObject, &PySelectionVariableSummaryType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -528,15 +514,15 @@ NewSelectionVariableSummary(int useCurrent)
         newObject->data = new SelectionVariableSummary;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&SelectionVariableSummaryType);
+    PyType_Ready(&PySelectionVariableSummaryType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapSelectionVariableSummary(const SelectionVariableSummary *attr)
 {
-    SelectionVariableSummaryObject *newObject;
-    newObject = PyObject_NEW(SelectionVariableSummaryObject, &SelectionVariableSummaryType);
+    PySelectionVariableSummaryObject *newObject;
+    newObject = PyObject_NEW(PySelectionVariableSummaryObject, &PySelectionVariableSummaryType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (SelectionVariableSummary *)attr;
@@ -638,13 +624,13 @@ PySelectionVariableSummary_GetMethodTable(int *nMethods)
 bool
 PySelectionVariableSummary_Check(PyObject *obj)
 {
-    return (obj->ob_type == &SelectionVariableSummaryType);
+    return (obj->ob_type == &PySelectionVariableSummaryType);
 }
 
 SelectionVariableSummary *
 PySelectionVariableSummary_FromPyObject(PyObject *obj)
 {
-    SelectionVariableSummaryObject *obj2 = (SelectionVariableSummaryObject *)obj;
+    PySelectionVariableSummaryObject *obj2 = (PySelectionVariableSummaryObject *)obj;
     return obj2->data;
 }
 
@@ -663,7 +649,7 @@ PySelectionVariableSummary_Wrap(const SelectionVariableSummary *attr)
 void
 PySelectionVariableSummary_SetParent(PyObject *obj, PyObject *parent)
 {
-    SelectionVariableSummaryObject *obj2 = (SelectionVariableSummaryObject *)obj;
+    PySelectionVariableSummaryObject *obj2 = (PySelectionVariableSummaryObject *)obj;
     obj2->parent = parent;
 }
 

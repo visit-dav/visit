@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a avtVectorMetaData.
 //
-struct avtVectorMetaDataObject
+struct PyavtVectorMetaDataObject
 {
     PyObject_HEAD
     avtVectorMetaData *data;
@@ -52,7 +52,7 @@ PyavtVectorMetaData_ToString(const avtVectorMetaData *atts, const char *prefix, 
 static PyObject *
 avtVectorMetaData_Notify(PyObject *self, PyObject *args)
 {
-    avtVectorMetaDataObject *obj = (avtVectorMetaDataObject *)self;
+    PyavtVectorMetaDataObject *obj = (PyavtVectorMetaDataObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -89,7 +89,7 @@ avtVectorMetaData_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtVectorMetaData_SetVarDim(PyObject *self, PyObject *args)
 {
-    avtVectorMetaDataObject *obj = (avtVectorMetaDataObject *)self;
+    PyavtVectorMetaDataObject *obj = (PyavtVectorMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -141,7 +141,7 @@ avtVectorMetaData_SetVarDim(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtVectorMetaData_GetVarDim(PyObject *self, PyObject *args)
 {
-    avtVectorMetaDataObject *obj = (avtVectorMetaDataObject *)self;
+    PyavtVectorMetaDataObject *obj = (PyavtVectorMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->varDim));
     return retval;
 }
@@ -181,16 +181,16 @@ static void PyavtVectorMetaData_ExtendSetGetMethodTable()
 //
 
 static void
-avtVectorMetaData_dealloc(PyObject *v)
+PyavtVectorMetaData_dealloc(PyObject *v)
 {
-   avtVectorMetaDataObject *obj = (avtVectorMetaDataObject *)v;
+   PyavtVectorMetaDataObject *obj = (PyavtVectorMetaDataObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *avtVectorMetaData_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyavtVectorMetaData_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyavtVectorMetaData_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -246,56 +246,42 @@ PyavtVectorMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args
 }
 
 PyObject *
-avtVectorMetaData_str(PyObject *v)
+PyavtVectorMetaData_str(PyObject *v)
 {
-    avtVectorMetaDataObject *obj = (avtVectorMetaDataObject *)v;
+    PyavtVectorMetaDataObject *obj = (PyavtVectorMetaDataObject *)v;
     return PyString_FromString(PyavtVectorMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *avtVectorMetaData_Purpose = "Contains vector metadata attributes";
-#else
-static char *avtVectorMetaData_Purpose = "Contains vector metadata attributes";
-#endif
+static char const *PyavtVectorMetaData_purpose = "Contains vector metadata attributes";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject avtVectorMetaDataType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "avtVectorMetaData",
-    .tp_basicsize = sizeof(avtVectorMetaDataObject),
-    .tp_dealloc = avtVectorMetaData_dealloc,
-    .tp_repr = avtVectorMetaData_str,
-    .tp_str = avtVectorMetaData_str,
-    .tp_getattro = PyavtVectorMetaData_getattro,
-    .tp_setattro = PyavtVectorMetaData_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = avtVectorMetaData_Purpose,
-    .tp_richcompare = avtVectorMetaData_richcompare,
-    .tp_methods = PyavtVectorMetaData_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(avtVectorMetaData);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-avtVectorMetaData_richcompare(PyObject *self, PyObject *other, int op)
+PyavtVectorMetaData_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &avtVectorMetaDataType
-         || Py_TYPE(other) != &avtVectorMetaDataType)
+    if ( Py_TYPE(self) != &PyavtVectorMetaDataType
+         || Py_TYPE(other) != &PyavtVectorMetaDataType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    avtVectorMetaData *a = ((avtVectorMetaDataObject *)self)->data;
-    avtVectorMetaData *b = ((avtVectorMetaDataObject *)other)->data;
+    avtVectorMetaData *a = ((PyavtVectorMetaDataObject *)self)->data;
+    avtVectorMetaData *b = ((PyavtVectorMetaDataObject *)other)->data;
 
     switch (op)
     {
@@ -324,8 +310,8 @@ static avtVectorMetaData *currentAtts = 0;
 static PyObject *
 NewavtVectorMetaData(int useCurrent)
 {
-    avtVectorMetaDataObject *newObject;
-    newObject = PyObject_NEW(avtVectorMetaDataObject, &avtVectorMetaDataType);
+    PyavtVectorMetaDataObject *newObject;
+    newObject = PyObject_NEW(PyavtVectorMetaDataObject, &PyavtVectorMetaDataType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -336,15 +322,15 @@ NewavtVectorMetaData(int useCurrent)
         newObject->data = new avtVectorMetaData;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&avtVectorMetaDataType);
+    PyType_Ready(&PyavtVectorMetaDataType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapavtVectorMetaData(const avtVectorMetaData *attr)
 {
-    avtVectorMetaDataObject *newObject;
-    newObject = PyObject_NEW(avtVectorMetaDataObject, &avtVectorMetaDataType);
+    PyavtVectorMetaDataObject *newObject;
+    newObject = PyObject_NEW(PyavtVectorMetaDataObject, &PyavtVectorMetaDataType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (avtVectorMetaData *)attr;
@@ -446,13 +432,13 @@ PyavtVectorMetaData_GetMethodTable(int *nMethods)
 bool
 PyavtVectorMetaData_Check(PyObject *obj)
 {
-    return (obj->ob_type == &avtVectorMetaDataType);
+    return (obj->ob_type == &PyavtVectorMetaDataType);
 }
 
 avtVectorMetaData *
 PyavtVectorMetaData_FromPyObject(PyObject *obj)
 {
-    avtVectorMetaDataObject *obj2 = (avtVectorMetaDataObject *)obj;
+    PyavtVectorMetaDataObject *obj2 = (PyavtVectorMetaDataObject *)obj;
     return obj2->data;
 }
 
@@ -471,7 +457,7 @@ PyavtVectorMetaData_Wrap(const avtVectorMetaData *attr)
 void
 PyavtVectorMetaData_SetParent(PyObject *obj, PyObject *parent)
 {
-    avtVectorMetaDataObject *obj2 = (avtVectorMetaDataObject *)obj;
+    PyavtVectorMetaDataObject *obj2 = (PyavtVectorMetaDataObject *)obj;
     obj2->parent = parent;
 }
 

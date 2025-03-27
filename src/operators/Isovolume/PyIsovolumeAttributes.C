@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a IsovolumeAttributes.
 //
-struct IsovolumeAttributesObject
+struct PyIsovolumeAttributesObject
 {
     PyObject_HEAD
     IsovolumeAttributes *data;
@@ -54,7 +54,7 @@ PyIsovolumeAttributes_ToString(const IsovolumeAttributes *atts, const char *pref
 static PyObject *
 IsovolumeAttributes_Notify(PyObject *self, PyObject *args)
 {
-    IsovolumeAttributesObject *obj = (IsovolumeAttributesObject *)self;
+    PyIsovolumeAttributesObject *obj = (PyIsovolumeAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -91,7 +91,7 @@ IsovolumeAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IsovolumeAttributes_SetLbound(PyObject *self, PyObject *args)
 {
-    IsovolumeAttributesObject *obj = (IsovolumeAttributesObject *)self;
+    PyIsovolumeAttributesObject *obj = (PyIsovolumeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -143,7 +143,7 @@ IsovolumeAttributes_SetLbound(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IsovolumeAttributes_GetLbound(PyObject *self, PyObject *args)
 {
-    IsovolumeAttributesObject *obj = (IsovolumeAttributesObject *)self;
+    PyIsovolumeAttributesObject *obj = (PyIsovolumeAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetLbound());
     return retval;
 }
@@ -151,7 +151,7 @@ IsovolumeAttributes_GetLbound(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IsovolumeAttributes_SetUbound(PyObject *self, PyObject *args)
 {
-    IsovolumeAttributesObject *obj = (IsovolumeAttributesObject *)self;
+    PyIsovolumeAttributesObject *obj = (PyIsovolumeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -203,7 +203,7 @@ IsovolumeAttributes_SetUbound(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IsovolumeAttributes_GetUbound(PyObject *self, PyObject *args)
 {
-    IsovolumeAttributesObject *obj = (IsovolumeAttributesObject *)self;
+    PyIsovolumeAttributesObject *obj = (PyIsovolumeAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetUbound());
     return retval;
 }
@@ -211,7 +211,7 @@ IsovolumeAttributes_GetUbound(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IsovolumeAttributes_SetVariable(PyObject *self, PyObject *args)
 {
-    IsovolumeAttributesObject *obj = (IsovolumeAttributesObject *)self;
+    PyIsovolumeAttributesObject *obj = (PyIsovolumeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -252,7 +252,7 @@ IsovolumeAttributes_SetVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IsovolumeAttributes_GetVariable(PyObject *self, PyObject *args)
 {
-    IsovolumeAttributesObject *obj = (IsovolumeAttributesObject *)self;
+    PyIsovolumeAttributesObject *obj = (PyIsovolumeAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetVariable().c_str());
     return retval;
 }
@@ -276,16 +276,16 @@ PyMethodDef PyIsovolumeAttributes_methods[ISOVOLUMEATTRIBUTES_NMETH] = {
 //
 
 static void
-IsovolumeAttributes_dealloc(PyObject *v)
+PyIsovolumeAttributes_dealloc(PyObject *v)
 {
-   IsovolumeAttributesObject *obj = (IsovolumeAttributesObject *)v;
+   PyIsovolumeAttributesObject *obj = (PyIsovolumeAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *IsovolumeAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyIsovolumeAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyIsovolumeAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -337,56 +337,42 @@ PyIsovolumeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *ar
 }
 
 PyObject *
-IsovolumeAttributes_str(PyObject *v)
+PyIsovolumeAttributes_str(PyObject *v)
 {
-    IsovolumeAttributesObject *obj = (IsovolumeAttributesObject *)v;
+    PyIsovolumeAttributesObject *obj = (PyIsovolumeAttributesObject *)v;
     return PyString_FromString(PyIsovolumeAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *IsovolumeAttributes_Purpose = "This class contains attributes for the isovolume operator.";
-#else
-static char *IsovolumeAttributes_Purpose = "This class contains attributes for the isovolume operator.";
-#endif
+static char const *PyIsovolumeAttributes_purpose = "This class contains attributes for the isovolume operator.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject IsovolumeAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "IsovolumeAttributes",
-    .tp_basicsize = sizeof(IsovolumeAttributesObject),
-    .tp_dealloc = IsovolumeAttributes_dealloc,
-    .tp_repr = IsovolumeAttributes_str,
-    .tp_str = IsovolumeAttributes_str,
-    .tp_getattro = PyIsovolumeAttributes_getattro,
-    .tp_setattro = PyIsovolumeAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = IsovolumeAttributes_Purpose,
-    .tp_richcompare = IsovolumeAttributes_richcompare,
-    .tp_methods = PyIsovolumeAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(IsovolumeAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-IsovolumeAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyIsovolumeAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &IsovolumeAttributesType
-         || Py_TYPE(other) != &IsovolumeAttributesType)
+    if ( Py_TYPE(self) != &PyIsovolumeAttributesType
+         || Py_TYPE(other) != &PyIsovolumeAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    IsovolumeAttributes *a = ((IsovolumeAttributesObject *)self)->data;
-    IsovolumeAttributes *b = ((IsovolumeAttributesObject *)other)->data;
+    IsovolumeAttributes *a = ((PyIsovolumeAttributesObject *)self)->data;
+    IsovolumeAttributes *b = ((PyIsovolumeAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -415,8 +401,8 @@ static IsovolumeAttributes *currentAtts = 0;
 static PyObject *
 NewIsovolumeAttributes(int useCurrent)
 {
-    IsovolumeAttributesObject *newObject;
-    newObject = PyObject_NEW(IsovolumeAttributesObject, &IsovolumeAttributesType);
+    PyIsovolumeAttributesObject *newObject;
+    newObject = PyObject_NEW(PyIsovolumeAttributesObject, &PyIsovolumeAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -427,15 +413,15 @@ NewIsovolumeAttributes(int useCurrent)
         newObject->data = new IsovolumeAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&IsovolumeAttributesType);
+    PyType_Ready(&PyIsovolumeAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapIsovolumeAttributes(const IsovolumeAttributes *attr)
 {
-    IsovolumeAttributesObject *newObject;
-    newObject = PyObject_NEW(IsovolumeAttributesObject, &IsovolumeAttributesType);
+    PyIsovolumeAttributesObject *newObject;
+    newObject = PyObject_NEW(PyIsovolumeAttributesObject, &PyIsovolumeAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (IsovolumeAttributes *)attr;
@@ -537,13 +523,13 @@ PyIsovolumeAttributes_GetMethodTable(int *nMethods)
 bool
 PyIsovolumeAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &IsovolumeAttributesType);
+    return (obj->ob_type == &PyIsovolumeAttributesType);
 }
 
 IsovolumeAttributes *
 PyIsovolumeAttributes_FromPyObject(PyObject *obj)
 {
-    IsovolumeAttributesObject *obj2 = (IsovolumeAttributesObject *)obj;
+    PyIsovolumeAttributesObject *obj2 = (PyIsovolumeAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -562,7 +548,7 @@ PyIsovolumeAttributes_Wrap(const IsovolumeAttributes *attr)
 void
 PyIsovolumeAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    IsovolumeAttributesObject *obj2 = (IsovolumeAttributesObject *)obj;
+    PyIsovolumeAttributesObject *obj2 = (PyIsovolumeAttributesObject *)obj;
     obj2->parent = parent;
 }
 

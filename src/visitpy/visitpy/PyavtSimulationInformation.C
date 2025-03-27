@@ -26,7 +26,7 @@
 //
 // This struct contains the Python type information and a avtSimulationInformation.
 //
-struct avtSimulationInformationObject
+struct PyavtSimulationInformationObject
 {
     PyObject_HEAD
     avtSimulationInformation *data;
@@ -135,7 +135,7 @@ PyavtSimulationInformation_ToString(const avtSimulationInformation *atts, const 
 static PyObject *
 avtSimulationInformation_Notify(PyObject *self, PyObject *args)
 {
-    avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
+    PyavtSimulationInformationObject *obj = (PyavtSimulationInformationObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -172,7 +172,7 @@ avtSimulationInformation_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSimulationInformation_SetHost(PyObject *self, PyObject *args)
 {
-    avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
+    PyavtSimulationInformationObject *obj = (PyavtSimulationInformationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -213,7 +213,7 @@ avtSimulationInformation_SetHost(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSimulationInformation_GetHost(PyObject *self, PyObject *args)
 {
-    avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
+    PyavtSimulationInformationObject *obj = (PyavtSimulationInformationObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetHost().c_str());
     return retval;
 }
@@ -221,7 +221,7 @@ avtSimulationInformation_GetHost(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSimulationInformation_SetPort(PyObject *self, PyObject *args)
 {
-    avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
+    PyavtSimulationInformationObject *obj = (PyavtSimulationInformationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -273,7 +273,7 @@ avtSimulationInformation_SetPort(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSimulationInformation_GetPort(PyObject *self, PyObject *args)
 {
-    avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
+    PyavtSimulationInformationObject *obj = (PyavtSimulationInformationObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetPort()));
     return retval;
 }
@@ -281,7 +281,7 @@ avtSimulationInformation_GetPort(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSimulationInformation_SetSecurityKey(PyObject *self, PyObject *args)
 {
-    avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
+    PyavtSimulationInformationObject *obj = (PyavtSimulationInformationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -322,7 +322,7 @@ avtSimulationInformation_SetSecurityKey(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSimulationInformation_GetSecurityKey(PyObject *self, PyObject *args)
 {
-    avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
+    PyavtSimulationInformationObject *obj = (PyavtSimulationInformationObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetSecurityKey().c_str());
     return retval;
 }
@@ -330,7 +330,7 @@ avtSimulationInformation_GetSecurityKey(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSimulationInformation_SetOtherNames(PyObject *self, PyObject *args)
 {
-    avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
+    PyavtSimulationInformationObject *obj = (PyavtSimulationInformationObject *)self;
 
     stringVector vec;
 
@@ -387,7 +387,7 @@ avtSimulationInformation_SetOtherNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSimulationInformation_GetOtherNames(PyObject *self, PyObject *args)
 {
-    avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
+    PyavtSimulationInformationObject *obj = (PyavtSimulationInformationObject *)self;
     // Allocate a tuple the with enough entries to hold the otherNames.
     const stringVector &otherNames = obj->data->GetOtherNames();
     PyObject *retval = PyTuple_New(otherNames.size());
@@ -399,7 +399,7 @@ avtSimulationInformation_GetOtherNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSimulationInformation_SetOtherValues(PyObject *self, PyObject *args)
 {
-    avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
+    PyavtSimulationInformationObject *obj = (PyavtSimulationInformationObject *)self;
 
     stringVector vec;
 
@@ -456,7 +456,7 @@ avtSimulationInformation_SetOtherValues(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSimulationInformation_GetOtherValues(PyObject *self, PyObject *args)
 {
-    avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
+    PyavtSimulationInformationObject *obj = (PyavtSimulationInformationObject *)self;
     // Allocate a tuple the with enough entries to hold the otherValues.
     const stringVector &otherValues = obj->data->GetOtherValues();
     PyObject *retval = PyTuple_New(otherValues.size());
@@ -468,7 +468,7 @@ avtSimulationInformation_GetOtherValues(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSimulationInformation_GetGenericCommands(PyObject *self, PyObject *args)
 {
-    avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
+    PyavtSimulationInformationObject *obj = (PyavtSimulationInformationObject *)self;
     int index = -1;
     if (args == NULL)
         return PyErr_Format(PyExc_NameError, "Use .GetGenericCommands(int index) to get a single entry");
@@ -492,14 +492,14 @@ avtSimulationInformation_GetGenericCommands(PyObject *self, PyObject *args)
 PyObject *
 avtSimulationInformation_GetNumGenericCommands(PyObject *self, PyObject *args)
 {
-    avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
+    PyavtSimulationInformationObject *obj = (PyavtSimulationInformationObject *)self;
     return PyInt_FromLong((long)obj->data->GetGenericCommands().size());
 }
 
 PyObject *
 avtSimulationInformation_AddGenericCommands(PyObject *self, PyObject *args)
 {
-    avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
+    PyavtSimulationInformationObject *obj = (PyavtSimulationInformationObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
         return NULL;
@@ -515,7 +515,7 @@ avtSimulationInformation_AddGenericCommands(PyObject *self, PyObject *args)
 static PyObject *
 avtSimulationInformation_Remove_One_GenericCommands(PyObject *self, int index)
 {
-    avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
+    PyavtSimulationInformationObject *obj = (PyavtSimulationInformationObject *)self;
     // Remove in the AttributeGroupVector instead of calling RemoveGenericCommands() because we don't want to delete the object; just remove it.
     AttributeGroupVector &atts = obj->data->GetGenericCommands();
     AttributeGroupVector::iterator pos = atts.begin();
@@ -545,7 +545,7 @@ avtSimulationInformation_RemoveGenericCommands(PyObject *self, PyObject *args)
     int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
-    avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
+    PyavtSimulationInformationObject *obj = (PyavtSimulationInformationObject *)self;
     if(index < 0 || index >= obj->data->GetNumGenericCommands())
         return PyErr_Format(PyExc_IndexError, "Index out of range");
 
@@ -555,7 +555,7 @@ avtSimulationInformation_RemoveGenericCommands(PyObject *self, PyObject *args)
 PyObject *
 avtSimulationInformation_ClearGenericCommands(PyObject *self, PyObject *args)
 {
-    avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
+    PyavtSimulationInformationObject *obj = (PyavtSimulationInformationObject *)self;
     int n = obj->data->GetNumGenericCommands();
     for(int i = 0; i < n; ++i)
     {
@@ -569,7 +569,7 @@ avtSimulationInformation_ClearGenericCommands(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSimulationInformation_SetMode(PyObject *self, PyObject *args)
 {
-    avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
+    PyavtSimulationInformationObject *obj = (PyavtSimulationInformationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -628,7 +628,7 @@ avtSimulationInformation_SetMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSimulationInformation_GetMode(PyObject *self, PyObject *args)
 {
-    avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
+    PyavtSimulationInformationObject *obj = (PyavtSimulationInformationObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMode()));
     return retval;
 }
@@ -636,7 +636,7 @@ avtSimulationInformation_GetMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSimulationInformation_GetCustomCommands(PyObject *self, PyObject *args)
 {
-    avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
+    PyavtSimulationInformationObject *obj = (PyavtSimulationInformationObject *)self;
     int index = -1;
     if (args == NULL)
         return PyErr_Format(PyExc_NameError, "Use .GetCustomCommands(int index) to get a single entry");
@@ -660,14 +660,14 @@ avtSimulationInformation_GetCustomCommands(PyObject *self, PyObject *args)
 PyObject *
 avtSimulationInformation_GetNumCustomCommands(PyObject *self, PyObject *args)
 {
-    avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
+    PyavtSimulationInformationObject *obj = (PyavtSimulationInformationObject *)self;
     return PyInt_FromLong((long)obj->data->GetCustomCommands().size());
 }
 
 PyObject *
 avtSimulationInformation_AddCustomCommands(PyObject *self, PyObject *args)
 {
-    avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
+    PyavtSimulationInformationObject *obj = (PyavtSimulationInformationObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
         return NULL;
@@ -683,7 +683,7 @@ avtSimulationInformation_AddCustomCommands(PyObject *self, PyObject *args)
 static PyObject *
 avtSimulationInformation_Remove_One_CustomCommands(PyObject *self, int index)
 {
-    avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
+    PyavtSimulationInformationObject *obj = (PyavtSimulationInformationObject *)self;
     // Remove in the AttributeGroupVector instead of calling RemoveCustomCommands() because we don't want to delete the object; just remove it.
     AttributeGroupVector &atts = obj->data->GetCustomCommands();
     AttributeGroupVector::iterator pos = atts.begin();
@@ -713,7 +713,7 @@ avtSimulationInformation_RemoveCustomCommands(PyObject *self, PyObject *args)
     int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
-    avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
+    PyavtSimulationInformationObject *obj = (PyavtSimulationInformationObject *)self;
     if(index < 0 || index >= obj->data->GetNumCustomCommands())
         return PyErr_Format(PyExc_IndexError, "Index out of range");
 
@@ -723,7 +723,7 @@ avtSimulationInformation_RemoveCustomCommands(PyObject *self, PyObject *args)
 PyObject *
 avtSimulationInformation_ClearCustomCommands(PyObject *self, PyObject *args)
 {
-    avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
+    PyavtSimulationInformationObject *obj = (PyavtSimulationInformationObject *)self;
     int n = obj->data->GetNumCustomCommands();
     for(int i = 0; i < n; ++i)
     {
@@ -737,7 +737,7 @@ avtSimulationInformation_ClearCustomCommands(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSimulationInformation_SetMessage(PyObject *self, PyObject *args)
 {
-    avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
+    PyavtSimulationInformationObject *obj = (PyavtSimulationInformationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -778,7 +778,7 @@ avtSimulationInformation_SetMessage(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSimulationInformation_GetMessage(PyObject *self, PyObject *args)
 {
-    avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
+    PyavtSimulationInformationObject *obj = (PyavtSimulationInformationObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetMessage().c_str());
     return retval;
 }
@@ -820,16 +820,16 @@ PyMethodDef PyavtSimulationInformation_methods[AVTSIMULATIONINFORMATION_NMETH] =
 //
 
 static void
-avtSimulationInformation_dealloc(PyObject *v)
+PyavtSimulationInformation_dealloc(PyObject *v)
 {
-   avtSimulationInformationObject *obj = (avtSimulationInformationObject *)v;
+   PyavtSimulationInformationObject *obj = (PyavtSimulationInformationObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *avtSimulationInformation_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyavtSimulationInformation_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyavtSimulationInformation_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -908,56 +908,42 @@ PyavtSimulationInformation_setattro(PyObject *self, PyObject *attr_name, PyObjec
 }
 
 PyObject *
-avtSimulationInformation_str(PyObject *v)
+PyavtSimulationInformation_str(PyObject *v)
 {
-    avtSimulationInformationObject *obj = (avtSimulationInformationObject *)v;
+    PyavtSimulationInformationObject *obj = (PyavtSimulationInformationObject *)v;
     return PyString_FromString(PyavtSimulationInformation_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *avtSimulationInformation_Purpose = "Contains information about simulation connections";
-#else
-static char *avtSimulationInformation_Purpose = "Contains information about simulation connections";
-#endif
+static char const *PyavtSimulationInformation_purpose = "Contains information about simulation connections";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject avtSimulationInformationType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "avtSimulationInformation",
-    .tp_basicsize = sizeof(avtSimulationInformationObject),
-    .tp_dealloc = avtSimulationInformation_dealloc,
-    .tp_repr = avtSimulationInformation_str,
-    .tp_str = avtSimulationInformation_str,
-    .tp_getattro = PyavtSimulationInformation_getattro,
-    .tp_setattro = PyavtSimulationInformation_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = avtSimulationInformation_Purpose,
-    .tp_richcompare = avtSimulationInformation_richcompare,
-    .tp_methods = PyavtSimulationInformation_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(avtSimulationInformation);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-avtSimulationInformation_richcompare(PyObject *self, PyObject *other, int op)
+PyavtSimulationInformation_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &avtSimulationInformationType
-         || Py_TYPE(other) != &avtSimulationInformationType)
+    if ( Py_TYPE(self) != &PyavtSimulationInformationType
+         || Py_TYPE(other) != &PyavtSimulationInformationType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    avtSimulationInformation *a = ((avtSimulationInformationObject *)self)->data;
-    avtSimulationInformation *b = ((avtSimulationInformationObject *)other)->data;
+    avtSimulationInformation *a = ((PyavtSimulationInformationObject *)self)->data;
+    avtSimulationInformation *b = ((PyavtSimulationInformationObject *)other)->data;
 
     switch (op)
     {
@@ -986,8 +972,8 @@ static avtSimulationInformation *currentAtts = 0;
 static PyObject *
 NewavtSimulationInformation(int useCurrent)
 {
-    avtSimulationInformationObject *newObject;
-    newObject = PyObject_NEW(avtSimulationInformationObject, &avtSimulationInformationType);
+    PyavtSimulationInformationObject *newObject;
+    newObject = PyObject_NEW(PyavtSimulationInformationObject, &PyavtSimulationInformationType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -998,15 +984,15 @@ NewavtSimulationInformation(int useCurrent)
         newObject->data = new avtSimulationInformation;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&avtSimulationInformationType);
+    PyType_Ready(&PyavtSimulationInformationType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapavtSimulationInformation(const avtSimulationInformation *attr)
 {
-    avtSimulationInformationObject *newObject;
-    newObject = PyObject_NEW(avtSimulationInformationObject, &avtSimulationInformationType);
+    PyavtSimulationInformationObject *newObject;
+    newObject = PyObject_NEW(PyavtSimulationInformationObject, &PyavtSimulationInformationType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (avtSimulationInformation *)attr;
@@ -1108,13 +1094,13 @@ PyavtSimulationInformation_GetMethodTable(int *nMethods)
 bool
 PyavtSimulationInformation_Check(PyObject *obj)
 {
-    return (obj->ob_type == &avtSimulationInformationType);
+    return (obj->ob_type == &PyavtSimulationInformationType);
 }
 
 avtSimulationInformation *
 PyavtSimulationInformation_FromPyObject(PyObject *obj)
 {
-    avtSimulationInformationObject *obj2 = (avtSimulationInformationObject *)obj;
+    PyavtSimulationInformationObject *obj2 = (PyavtSimulationInformationObject *)obj;
     return obj2->data;
 }
 
@@ -1133,7 +1119,7 @@ PyavtSimulationInformation_Wrap(const avtSimulationInformation *attr)
 void
 PyavtSimulationInformation_SetParent(PyObject *obj, PyObject *parent)
 {
-    avtSimulationInformationObject *obj2 = (avtSimulationInformationObject *)obj;
+    PyavtSimulationInformationObject *obj2 = (PyavtSimulationInformationObject *)obj;
     obj2->parent = parent;
 }
 

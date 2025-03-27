@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a MergeOperatorAttributes.
 //
-struct MergeOperatorAttributesObject
+struct PyMergeOperatorAttributesObject
 {
     PyObject_HEAD
     MergeOperatorAttributes *data;
@@ -55,7 +55,7 @@ PyMergeOperatorAttributes_ToString(const MergeOperatorAttributes *atts, const ch
 static PyObject *
 MergeOperatorAttributes_Notify(PyObject *self, PyObject *args)
 {
-    MergeOperatorAttributesObject *obj = (MergeOperatorAttributesObject *)self;
+    PyMergeOperatorAttributesObject *obj = (PyMergeOperatorAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -92,7 +92,7 @@ MergeOperatorAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MergeOperatorAttributes_SetParallelMerge(PyObject *self, PyObject *args)
 {
-    MergeOperatorAttributesObject *obj = (MergeOperatorAttributesObject *)self;
+    PyMergeOperatorAttributesObject *obj = (PyMergeOperatorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -144,7 +144,7 @@ MergeOperatorAttributes_SetParallelMerge(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MergeOperatorAttributes_GetParallelMerge(PyObject *self, PyObject *args)
 {
-    MergeOperatorAttributesObject *obj = (MergeOperatorAttributesObject *)self;
+    PyMergeOperatorAttributesObject *obj = (PyMergeOperatorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetParallelMerge()?1L:0L);
     return retval;
 }
@@ -152,7 +152,7 @@ MergeOperatorAttributes_GetParallelMerge(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MergeOperatorAttributes_SetTolerance(PyObject *self, PyObject *args)
 {
-    MergeOperatorAttributesObject *obj = (MergeOperatorAttributesObject *)self;
+    PyMergeOperatorAttributesObject *obj = (PyMergeOperatorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -204,7 +204,7 @@ MergeOperatorAttributes_SetTolerance(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MergeOperatorAttributes_GetTolerance(PyObject *self, PyObject *args)
 {
-    MergeOperatorAttributesObject *obj = (MergeOperatorAttributesObject *)self;
+    PyMergeOperatorAttributesObject *obj = (PyMergeOperatorAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetTolerance());
     return retval;
 }
@@ -226,16 +226,16 @@ PyMethodDef PyMergeOperatorAttributes_methods[MERGEOPERATORATTRIBUTES_NMETH] = {
 //
 
 static void
-MergeOperatorAttributes_dealloc(PyObject *v)
+PyMergeOperatorAttributes_dealloc(PyObject *v)
 {
-   MergeOperatorAttributesObject *obj = (MergeOperatorAttributesObject *)v;
+   PyMergeOperatorAttributesObject *obj = (PyMergeOperatorAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *MergeOperatorAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyMergeOperatorAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyMergeOperatorAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -283,56 +283,42 @@ PyMergeOperatorAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject
 }
 
 PyObject *
-MergeOperatorAttributes_str(PyObject *v)
+PyMergeOperatorAttributes_str(PyObject *v)
 {
-    MergeOperatorAttributesObject *obj = (MergeOperatorAttributesObject *)v;
+    PyMergeOperatorAttributesObject *obj = (PyMergeOperatorAttributesObject *)v;
     return PyString_FromString(PyMergeOperatorAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *MergeOperatorAttributes_Purpose = "Attributes for Merge operaetor";
-#else
-static char *MergeOperatorAttributes_Purpose = "Attributes for Merge operaetor";
-#endif
+static char const *PyMergeOperatorAttributes_purpose = "Attributes for Merge operaetor";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject MergeOperatorAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "MergeOperatorAttributes",
-    .tp_basicsize = sizeof(MergeOperatorAttributesObject),
-    .tp_dealloc = MergeOperatorAttributes_dealloc,
-    .tp_repr = MergeOperatorAttributes_str,
-    .tp_str = MergeOperatorAttributes_str,
-    .tp_getattro = PyMergeOperatorAttributes_getattro,
-    .tp_setattro = PyMergeOperatorAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = MergeOperatorAttributes_Purpose,
-    .tp_richcompare = MergeOperatorAttributes_richcompare,
-    .tp_methods = PyMergeOperatorAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(MergeOperatorAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-MergeOperatorAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyMergeOperatorAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &MergeOperatorAttributesType
-         || Py_TYPE(other) != &MergeOperatorAttributesType)
+    if ( Py_TYPE(self) != &PyMergeOperatorAttributesType
+         || Py_TYPE(other) != &PyMergeOperatorAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    MergeOperatorAttributes *a = ((MergeOperatorAttributesObject *)self)->data;
-    MergeOperatorAttributes *b = ((MergeOperatorAttributesObject *)other)->data;
+    MergeOperatorAttributes *a = ((PyMergeOperatorAttributesObject *)self)->data;
+    MergeOperatorAttributes *b = ((PyMergeOperatorAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -361,8 +347,8 @@ static MergeOperatorAttributes *currentAtts = 0;
 static PyObject *
 NewMergeOperatorAttributes(int useCurrent)
 {
-    MergeOperatorAttributesObject *newObject;
-    newObject = PyObject_NEW(MergeOperatorAttributesObject, &MergeOperatorAttributesType);
+    PyMergeOperatorAttributesObject *newObject;
+    newObject = PyObject_NEW(PyMergeOperatorAttributesObject, &PyMergeOperatorAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -373,15 +359,15 @@ NewMergeOperatorAttributes(int useCurrent)
         newObject->data = new MergeOperatorAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&MergeOperatorAttributesType);
+    PyType_Ready(&PyMergeOperatorAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapMergeOperatorAttributes(const MergeOperatorAttributes *attr)
 {
-    MergeOperatorAttributesObject *newObject;
-    newObject = PyObject_NEW(MergeOperatorAttributesObject, &MergeOperatorAttributesType);
+    PyMergeOperatorAttributesObject *newObject;
+    newObject = PyObject_NEW(PyMergeOperatorAttributesObject, &PyMergeOperatorAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (MergeOperatorAttributes *)attr;
@@ -483,13 +469,13 @@ PyMergeOperatorAttributes_GetMethodTable(int *nMethods)
 bool
 PyMergeOperatorAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &MergeOperatorAttributesType);
+    return (obj->ob_type == &PyMergeOperatorAttributesType);
 }
 
 MergeOperatorAttributes *
 PyMergeOperatorAttributes_FromPyObject(PyObject *obj)
 {
-    MergeOperatorAttributesObject *obj2 = (MergeOperatorAttributesObject *)obj;
+    PyMergeOperatorAttributesObject *obj2 = (PyMergeOperatorAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -508,7 +494,7 @@ PyMergeOperatorAttributes_Wrap(const MergeOperatorAttributes *attr)
 void
 PyMergeOperatorAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    MergeOperatorAttributesObject *obj2 = (MergeOperatorAttributesObject *)obj;
+    PyMergeOperatorAttributesObject *obj2 = (PyMergeOperatorAttributesObject *)obj;
     obj2->parent = parent;
 }
 

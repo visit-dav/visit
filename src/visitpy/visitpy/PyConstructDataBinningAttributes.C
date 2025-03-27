@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a ConstructDataBinningAttributes.
 //
-struct ConstructDataBinningAttributesObject
+struct PyConstructDataBinningAttributesObject
 {
     PyObject_HEAD
     ConstructDataBinningAttributes *data;
@@ -203,7 +203,7 @@ PyConstructDataBinningAttributes_ToString(const ConstructDataBinningAttributes *
 static PyObject *
 ConstructDataBinningAttributes_Notify(PyObject *self, PyObject *args)
 {
-    ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
+    PyConstructDataBinningAttributesObject *obj = (PyConstructDataBinningAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -240,7 +240,7 @@ ConstructDataBinningAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConstructDataBinningAttributes_SetName(PyObject *self, PyObject *args)
 {
-    ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
+    PyConstructDataBinningAttributesObject *obj = (PyConstructDataBinningAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -281,7 +281,7 @@ ConstructDataBinningAttributes_SetName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConstructDataBinningAttributes_GetName(PyObject *self, PyObject *args)
 {
-    ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
+    PyConstructDataBinningAttributesObject *obj = (PyConstructDataBinningAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetName().c_str());
     return retval;
 }
@@ -289,7 +289,7 @@ ConstructDataBinningAttributes_GetName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConstructDataBinningAttributes_SetVarnames(PyObject *self, PyObject *args)
 {
-    ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
+    PyConstructDataBinningAttributesObject *obj = (PyConstructDataBinningAttributesObject *)self;
 
     stringVector vec;
 
@@ -346,7 +346,7 @@ ConstructDataBinningAttributes_SetVarnames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConstructDataBinningAttributes_GetVarnames(PyObject *self, PyObject *args)
 {
-    ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
+    PyConstructDataBinningAttributesObject *obj = (PyConstructDataBinningAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the varnames.
     const stringVector &varnames = obj->data->GetVarnames();
     PyObject *retval = PyTuple_New(varnames.size());
@@ -358,7 +358,7 @@ ConstructDataBinningAttributes_GetVarnames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConstructDataBinningAttributes_SetBinType(PyObject *self, PyObject *args)
 {
-    ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
+    PyConstructDataBinningAttributesObject *obj = (PyConstructDataBinningAttributesObject *)self;
 
     typedef unsigned char uchar;
     ucharVector vec;
@@ -423,7 +423,7 @@ ConstructDataBinningAttributes_SetBinType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConstructDataBinningAttributes_GetBinType(PyObject *self, PyObject *args)
 {
-    ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
+    PyConstructDataBinningAttributesObject *obj = (PyConstructDataBinningAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the binType.
     const unsignedCharVector &binType = obj->data->GetBinType();
     PyObject *retval = PyTuple_New(binType.size());
@@ -435,7 +435,7 @@ ConstructDataBinningAttributes_GetBinType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConstructDataBinningAttributes_SetBinBoundaries(PyObject *self, PyObject *args)
 {
-    ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
+    PyConstructDataBinningAttributesObject *obj = (PyConstructDataBinningAttributesObject *)self;
 
     doubleVector vec;
 
@@ -499,7 +499,7 @@ ConstructDataBinningAttributes_SetBinBoundaries(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConstructDataBinningAttributes_GetBinBoundaries(PyObject *self, PyObject *args)
 {
-    ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
+    PyConstructDataBinningAttributesObject *obj = (PyConstructDataBinningAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the binBoundaries.
     const doubleVector &binBoundaries = obj->data->GetBinBoundaries();
     PyObject *retval = PyTuple_New(binBoundaries.size());
@@ -511,7 +511,7 @@ ConstructDataBinningAttributes_GetBinBoundaries(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConstructDataBinningAttributes_SetReductionOperator(PyObject *self, PyObject *args)
 {
-    ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
+    PyConstructDataBinningAttributesObject *obj = (PyConstructDataBinningAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -576,7 +576,7 @@ ConstructDataBinningAttributes_SetReductionOperator(PyObject *self, PyObject *ar
 /*static*/ PyObject *
 ConstructDataBinningAttributes_GetReductionOperator(PyObject *self, PyObject *args)
 {
-    ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
+    PyConstructDataBinningAttributesObject *obj = (PyConstructDataBinningAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetReductionOperator()));
     return retval;
 }
@@ -584,7 +584,7 @@ ConstructDataBinningAttributes_GetReductionOperator(PyObject *self, PyObject *ar
 /*static*/ PyObject *
 ConstructDataBinningAttributes_SetVarForReductionOperator(PyObject *self, PyObject *args)
 {
-    ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
+    PyConstructDataBinningAttributesObject *obj = (PyConstructDataBinningAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -625,7 +625,7 @@ ConstructDataBinningAttributes_SetVarForReductionOperator(PyObject *self, PyObje
 /*static*/ PyObject *
 ConstructDataBinningAttributes_GetVarForReductionOperator(PyObject *self, PyObject *args)
 {
-    ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
+    PyConstructDataBinningAttributesObject *obj = (PyConstructDataBinningAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetVarForReductionOperator().c_str());
     return retval;
 }
@@ -633,7 +633,7 @@ ConstructDataBinningAttributes_GetVarForReductionOperator(PyObject *self, PyObje
 /*static*/ PyObject *
 ConstructDataBinningAttributes_SetUndefinedValue(PyObject *self, PyObject *args)
 {
-    ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
+    PyConstructDataBinningAttributesObject *obj = (PyConstructDataBinningAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -685,7 +685,7 @@ ConstructDataBinningAttributes_SetUndefinedValue(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConstructDataBinningAttributes_GetUndefinedValue(PyObject *self, PyObject *args)
 {
-    ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
+    PyConstructDataBinningAttributesObject *obj = (PyConstructDataBinningAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetUndefinedValue());
     return retval;
 }
@@ -693,7 +693,7 @@ ConstructDataBinningAttributes_GetUndefinedValue(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConstructDataBinningAttributes_SetBinningScheme(PyObject *self, PyObject *args)
 {
-    ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
+    PyConstructDataBinningAttributesObject *obj = (PyConstructDataBinningAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -751,7 +751,7 @@ ConstructDataBinningAttributes_SetBinningScheme(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConstructDataBinningAttributes_GetBinningScheme(PyObject *self, PyObject *args)
 {
-    ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
+    PyConstructDataBinningAttributesObject *obj = (PyConstructDataBinningAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetBinningScheme()));
     return retval;
 }
@@ -759,7 +759,7 @@ ConstructDataBinningAttributes_GetBinningScheme(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConstructDataBinningAttributes_SetNumBins(PyObject *self, PyObject *args)
 {
-    ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
+    PyConstructDataBinningAttributesObject *obj = (PyConstructDataBinningAttributesObject *)self;
 
     intVector vec;
 
@@ -823,7 +823,7 @@ ConstructDataBinningAttributes_SetNumBins(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConstructDataBinningAttributes_GetNumBins(PyObject *self, PyObject *args)
 {
-    ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
+    PyConstructDataBinningAttributesObject *obj = (PyConstructDataBinningAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the numBins.
     const intVector &numBins = obj->data->GetNumBins();
     PyObject *retval = PyTuple_New(numBins.size());
@@ -835,7 +835,7 @@ ConstructDataBinningAttributes_GetNumBins(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConstructDataBinningAttributes_SetOverTime(PyObject *self, PyObject *args)
 {
-    ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
+    PyConstructDataBinningAttributesObject *obj = (PyConstructDataBinningAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -887,7 +887,7 @@ ConstructDataBinningAttributes_SetOverTime(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConstructDataBinningAttributes_GetOverTime(PyObject *self, PyObject *args)
 {
-    ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
+    PyConstructDataBinningAttributesObject *obj = (PyConstructDataBinningAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetOverTime()?1L:0L);
     return retval;
 }
@@ -895,7 +895,7 @@ ConstructDataBinningAttributes_GetOverTime(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConstructDataBinningAttributes_SetTimeStart(PyObject *self, PyObject *args)
 {
-    ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
+    PyConstructDataBinningAttributesObject *obj = (PyConstructDataBinningAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -947,7 +947,7 @@ ConstructDataBinningAttributes_SetTimeStart(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConstructDataBinningAttributes_GetTimeStart(PyObject *self, PyObject *args)
 {
-    ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
+    PyConstructDataBinningAttributesObject *obj = (PyConstructDataBinningAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetTimeStart()));
     return retval;
 }
@@ -955,7 +955,7 @@ ConstructDataBinningAttributes_GetTimeStart(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConstructDataBinningAttributes_SetTimeEnd(PyObject *self, PyObject *args)
 {
-    ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
+    PyConstructDataBinningAttributesObject *obj = (PyConstructDataBinningAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1007,7 +1007,7 @@ ConstructDataBinningAttributes_SetTimeEnd(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConstructDataBinningAttributes_GetTimeEnd(PyObject *self, PyObject *args)
 {
-    ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
+    PyConstructDataBinningAttributesObject *obj = (PyConstructDataBinningAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetTimeEnd()));
     return retval;
 }
@@ -1015,7 +1015,7 @@ ConstructDataBinningAttributes_GetTimeEnd(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConstructDataBinningAttributes_SetTimeStride(PyObject *self, PyObject *args)
 {
-    ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
+    PyConstructDataBinningAttributesObject *obj = (PyConstructDataBinningAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1067,7 +1067,7 @@ ConstructDataBinningAttributes_SetTimeStride(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConstructDataBinningAttributes_GetTimeStride(PyObject *self, PyObject *args)
 {
-    ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
+    PyConstructDataBinningAttributesObject *obj = (PyConstructDataBinningAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetTimeStride()));
     return retval;
 }
@@ -1075,7 +1075,7 @@ ConstructDataBinningAttributes_GetTimeStride(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConstructDataBinningAttributes_SetOutOfBoundsBehavior(PyObject *self, PyObject *args)
 {
-    ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
+    PyConstructDataBinningAttributesObject *obj = (PyConstructDataBinningAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1133,7 +1133,7 @@ ConstructDataBinningAttributes_SetOutOfBoundsBehavior(PyObject *self, PyObject *
 /*static*/ PyObject *
 ConstructDataBinningAttributes_GetOutOfBoundsBehavior(PyObject *self, PyObject *args)
 {
-    ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)self;
+    PyConstructDataBinningAttributesObject *obj = (PyConstructDataBinningAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetOutOfBoundsBehavior()));
     return retval;
 }
@@ -1179,16 +1179,16 @@ PyMethodDef PyConstructDataBinningAttributes_methods[CONSTRUCTDATABINNINGATTRIBU
 //
 
 static void
-ConstructDataBinningAttributes_dealloc(PyObject *v)
+PyConstructDataBinningAttributes_dealloc(PyObject *v)
 {
-   ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)v;
+   PyConstructDataBinningAttributesObject *obj = (PyConstructDataBinningAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *ConstructDataBinningAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyConstructDataBinningAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyConstructDataBinningAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -1313,56 +1313,42 @@ PyConstructDataBinningAttributes_setattro(PyObject *self, PyObject *attr_name, P
 }
 
 PyObject *
-ConstructDataBinningAttributes_str(PyObject *v)
+PyConstructDataBinningAttributes_str(PyObject *v)
 {
-    ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)v;
+    PyConstructDataBinningAttributesObject *obj = (PyConstructDataBinningAttributesObject *)v;
     return PyString_FromString(PyConstructDataBinningAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *ConstructDataBinningAttributes_Purpose = "Attributes for constructing a data binning";
-#else
-static char *ConstructDataBinningAttributes_Purpose = "Attributes for constructing a data binning";
-#endif
+static char const *PyConstructDataBinningAttributes_purpose = "Attributes for constructing a data binning";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject ConstructDataBinningAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "ConstructDataBinningAttributes",
-    .tp_basicsize = sizeof(ConstructDataBinningAttributesObject),
-    .tp_dealloc = ConstructDataBinningAttributes_dealloc,
-    .tp_repr = ConstructDataBinningAttributes_str,
-    .tp_str = ConstructDataBinningAttributes_str,
-    .tp_getattro = PyConstructDataBinningAttributes_getattro,
-    .tp_setattro = PyConstructDataBinningAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = ConstructDataBinningAttributes_Purpose,
-    .tp_richcompare = ConstructDataBinningAttributes_richcompare,
-    .tp_methods = PyConstructDataBinningAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(ConstructDataBinningAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-ConstructDataBinningAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyConstructDataBinningAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &ConstructDataBinningAttributesType
-         || Py_TYPE(other) != &ConstructDataBinningAttributesType)
+    if ( Py_TYPE(self) != &PyConstructDataBinningAttributesType
+         || Py_TYPE(other) != &PyConstructDataBinningAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    ConstructDataBinningAttributes *a = ((ConstructDataBinningAttributesObject *)self)->data;
-    ConstructDataBinningAttributes *b = ((ConstructDataBinningAttributesObject *)other)->data;
+    ConstructDataBinningAttributes *a = ((PyConstructDataBinningAttributesObject *)self)->data;
+    ConstructDataBinningAttributes *b = ((PyConstructDataBinningAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -1391,8 +1377,8 @@ static ConstructDataBinningAttributes *currentAtts = 0;
 static PyObject *
 NewConstructDataBinningAttributes(int useCurrent)
 {
-    ConstructDataBinningAttributesObject *newObject;
-    newObject = PyObject_NEW(ConstructDataBinningAttributesObject, &ConstructDataBinningAttributesType);
+    PyConstructDataBinningAttributesObject *newObject;
+    newObject = PyObject_NEW(PyConstructDataBinningAttributesObject, &PyConstructDataBinningAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1403,15 +1389,15 @@ NewConstructDataBinningAttributes(int useCurrent)
         newObject->data = new ConstructDataBinningAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&ConstructDataBinningAttributesType);
+    PyType_Ready(&PyConstructDataBinningAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapConstructDataBinningAttributes(const ConstructDataBinningAttributes *attr)
 {
-    ConstructDataBinningAttributesObject *newObject;
-    newObject = PyObject_NEW(ConstructDataBinningAttributesObject, &ConstructDataBinningAttributesType);
+    PyConstructDataBinningAttributesObject *newObject;
+    newObject = PyObject_NEW(PyConstructDataBinningAttributesObject, &PyConstructDataBinningAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (ConstructDataBinningAttributes *)attr;
@@ -1513,13 +1499,13 @@ PyConstructDataBinningAttributes_GetMethodTable(int *nMethods)
 bool
 PyConstructDataBinningAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ConstructDataBinningAttributesType);
+    return (obj->ob_type == &PyConstructDataBinningAttributesType);
 }
 
 ConstructDataBinningAttributes *
 PyConstructDataBinningAttributes_FromPyObject(PyObject *obj)
 {
-    ConstructDataBinningAttributesObject *obj2 = (ConstructDataBinningAttributesObject *)obj;
+    PyConstructDataBinningAttributesObject *obj2 = (PyConstructDataBinningAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1538,7 +1524,7 @@ PyConstructDataBinningAttributes_Wrap(const ConstructDataBinningAttributes *attr
 void
 PyConstructDataBinningAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    ConstructDataBinningAttributesObject *obj2 = (ConstructDataBinningAttributesObject *)obj;
+    PyConstructDataBinningAttributesObject *obj2 = (PyConstructDataBinningAttributesObject *)obj;
     obj2->parent = parent;
 }
 

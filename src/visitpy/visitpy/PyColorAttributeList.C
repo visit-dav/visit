@@ -25,7 +25,7 @@
 //
 // This struct contains the Python type information and a ColorAttributeList.
 //
-struct ColorAttributeListObject
+struct PyColorAttributeListObject
 {
     PyObject_HEAD
     ColorAttributeList *data;
@@ -62,7 +62,7 @@ PyColorAttributeList_ToString(const ColorAttributeList *atts, const char *prefix
 static PyObject *
 ColorAttributeList_Notify(PyObject *self, PyObject *args)
 {
-    ColorAttributeListObject *obj = (ColorAttributeListObject *)self;
+    PyColorAttributeListObject *obj = (PyColorAttributeListObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -99,7 +99,7 @@ ColorAttributeList_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ColorAttributeList_GetColors(PyObject *self, PyObject *args)
 {
-    ColorAttributeListObject *obj = (ColorAttributeListObject *)self;
+    PyColorAttributeListObject *obj = (PyColorAttributeListObject *)self;
     int index = -1;
     if (args == NULL)
         return PyErr_Format(PyExc_NameError, "Use .GetColors(int index) to get a single entry");
@@ -123,14 +123,14 @@ ColorAttributeList_GetColors(PyObject *self, PyObject *args)
 PyObject *
 ColorAttributeList_GetNumColors(PyObject *self, PyObject *args)
 {
-    ColorAttributeListObject *obj = (ColorAttributeListObject *)self;
+    PyColorAttributeListObject *obj = (PyColorAttributeListObject *)self;
     return PyInt_FromLong((long)obj->data->GetColors().size());
 }
 
 PyObject *
 ColorAttributeList_AddColors(PyObject *self, PyObject *args)
 {
-    ColorAttributeListObject *obj = (ColorAttributeListObject *)self;
+    PyColorAttributeListObject *obj = (PyColorAttributeListObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
         return NULL;
@@ -146,7 +146,7 @@ ColorAttributeList_AddColors(PyObject *self, PyObject *args)
 static PyObject *
 ColorAttributeList_Remove_One_Colors(PyObject *self, int index)
 {
-    ColorAttributeListObject *obj = (ColorAttributeListObject *)self;
+    PyColorAttributeListObject *obj = (PyColorAttributeListObject *)self;
     // Remove in the AttributeGroupVector instead of calling RemoveColors() because we don't want to delete the object; just remove it.
     AttributeGroupVector &atts = obj->data->GetColors();
     AttributeGroupVector::iterator pos = atts.begin();
@@ -176,7 +176,7 @@ ColorAttributeList_RemoveColors(PyObject *self, PyObject *args)
     int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
-    ColorAttributeListObject *obj = (ColorAttributeListObject *)self;
+    PyColorAttributeListObject *obj = (PyColorAttributeListObject *)self;
     if(index < 0 || index >= obj->data->GetNumColors())
         return PyErr_Format(PyExc_IndexError, "Index out of range");
 
@@ -186,7 +186,7 @@ ColorAttributeList_RemoveColors(PyObject *self, PyObject *args)
 PyObject *
 ColorAttributeList_ClearColors(PyObject *self, PyObject *args)
 {
-    ColorAttributeListObject *obj = (ColorAttributeListObject *)self;
+    PyColorAttributeListObject *obj = (PyColorAttributeListObject *)self;
     int n = obj->data->GetNumColors();
     for(int i = 0; i < n; ++i)
     {
@@ -215,16 +215,16 @@ PyMethodDef PyColorAttributeList_methods[COLORATTRIBUTELIST_NMETH] = {
 //
 
 static void
-ColorAttributeList_dealloc(PyObject *v)
+PyColorAttributeList_dealloc(PyObject *v)
 {
-   ColorAttributeListObject *obj = (ColorAttributeListObject *)v;
+   PyColorAttributeListObject *obj = (PyColorAttributeListObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *ColorAttributeList_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyColorAttributeList_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyColorAttributeList_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -266,56 +266,42 @@ PyColorAttributeList_setattro(PyObject *self, PyObject *attr_name, PyObject *arg
 }
 
 PyObject *
-ColorAttributeList_str(PyObject *v)
+PyColorAttributeList_str(PyObject *v)
 {
-    ColorAttributeListObject *obj = (ColorAttributeListObject *)v;
+    PyColorAttributeListObject *obj = (PyColorAttributeListObject *)v;
     return PyString_FromString(PyColorAttributeList_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *ColorAttributeList_Purpose = "This class contains a list of ColorAttributes.";
-#else
-static char *ColorAttributeList_Purpose = "This class contains a list of ColorAttributes.";
-#endif
+static char const *PyColorAttributeList_purpose = "This class contains a list of ColorAttributes.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject ColorAttributeListType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "ColorAttributeList",
-    .tp_basicsize = sizeof(ColorAttributeListObject),
-    .tp_dealloc = ColorAttributeList_dealloc,
-    .tp_repr = ColorAttributeList_str,
-    .tp_str = ColorAttributeList_str,
-    .tp_getattro = PyColorAttributeList_getattro,
-    .tp_setattro = PyColorAttributeList_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = ColorAttributeList_Purpose,
-    .tp_richcompare = ColorAttributeList_richcompare,
-    .tp_methods = PyColorAttributeList_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(ColorAttributeList);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-ColorAttributeList_richcompare(PyObject *self, PyObject *other, int op)
+PyColorAttributeList_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &ColorAttributeListType
-         || Py_TYPE(other) != &ColorAttributeListType)
+    if ( Py_TYPE(self) != &PyColorAttributeListType
+         || Py_TYPE(other) != &PyColorAttributeListType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    ColorAttributeList *a = ((ColorAttributeListObject *)self)->data;
-    ColorAttributeList *b = ((ColorAttributeListObject *)other)->data;
+    ColorAttributeList *a = ((PyColorAttributeListObject *)self)->data;
+    ColorAttributeList *b = ((PyColorAttributeListObject *)other)->data;
 
     switch (op)
     {
@@ -344,8 +330,8 @@ static ColorAttributeList *currentAtts = 0;
 static PyObject *
 NewColorAttributeList(int useCurrent)
 {
-    ColorAttributeListObject *newObject;
-    newObject = PyObject_NEW(ColorAttributeListObject, &ColorAttributeListType);
+    PyColorAttributeListObject *newObject;
+    newObject = PyObject_NEW(PyColorAttributeListObject, &PyColorAttributeListType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -356,15 +342,15 @@ NewColorAttributeList(int useCurrent)
         newObject->data = new ColorAttributeList;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&ColorAttributeListType);
+    PyType_Ready(&PyColorAttributeListType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapColorAttributeList(const ColorAttributeList *attr)
 {
-    ColorAttributeListObject *newObject;
-    newObject = PyObject_NEW(ColorAttributeListObject, &ColorAttributeListType);
+    PyColorAttributeListObject *newObject;
+    newObject = PyObject_NEW(PyColorAttributeListObject, &PyColorAttributeListType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (ColorAttributeList *)attr;
@@ -466,13 +452,13 @@ PyColorAttributeList_GetMethodTable(int *nMethods)
 bool
 PyColorAttributeList_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ColorAttributeListType);
+    return (obj->ob_type == &PyColorAttributeListType);
 }
 
 ColorAttributeList *
 PyColorAttributeList_FromPyObject(PyObject *obj)
 {
-    ColorAttributeListObject *obj2 = (ColorAttributeListObject *)obj;
+    PyColorAttributeListObject *obj2 = (PyColorAttributeListObject *)obj;
     return obj2->data;
 }
 
@@ -491,7 +477,7 @@ PyColorAttributeList_Wrap(const ColorAttributeList *attr)
 void
 PyColorAttributeList_SetParent(PyObject *obj, PyObject *parent)
 {
-    ColorAttributeListObject *obj2 = (ColorAttributeListObject *)obj;
+    PyColorAttributeListObject *obj2 = (PyColorAttributeListObject *)obj;
     obj2->parent = parent;
 }
 

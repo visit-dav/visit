@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a ConeAttributes.
 //
-struct ConeAttributesObject
+struct PyConeAttributesObject
 {
     PyObject_HEAD
     ConeAttributes *data;
@@ -124,7 +124,7 @@ PyConeAttributes_ToString(const ConeAttributes *atts, const char *prefix, const 
 static PyObject *
 ConeAttributes_Notify(PyObject *self, PyObject *args)
 {
-    ConeAttributesObject *obj = (ConeAttributesObject *)self;
+    PyConeAttributesObject *obj = (PyConeAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -161,7 +161,7 @@ ConeAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConeAttributes_SetAngle(PyObject *self, PyObject *args)
 {
-    ConeAttributesObject *obj = (ConeAttributesObject *)self;
+    PyConeAttributesObject *obj = (PyConeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -213,7 +213,7 @@ ConeAttributes_SetAngle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConeAttributes_GetAngle(PyObject *self, PyObject *args)
 {
-    ConeAttributesObject *obj = (ConeAttributesObject *)self;
+    PyConeAttributesObject *obj = (PyConeAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetAngle());
     return retval;
 }
@@ -221,7 +221,7 @@ ConeAttributes_GetAngle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConeAttributes_SetOrigin(PyObject *self, PyObject *args)
 {
-    ConeAttributesObject *obj = (ConeAttributesObject *)self;
+    PyConeAttributesObject *obj = (PyConeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetOrigin();
@@ -288,7 +288,7 @@ ConeAttributes_SetOrigin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConeAttributes_GetOrigin(PyObject *self, PyObject *args)
 {
-    ConeAttributesObject *obj = (ConeAttributesObject *)self;
+    PyConeAttributesObject *obj = (PyConeAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the origin.
     PyObject *retval = PyTuple_New(3);
     const double *origin = obj->data->GetOrigin();
@@ -300,7 +300,7 @@ ConeAttributes_GetOrigin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConeAttributes_SetNormal(PyObject *self, PyObject *args)
 {
-    ConeAttributesObject *obj = (ConeAttributesObject *)self;
+    PyConeAttributesObject *obj = (PyConeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetNormal();
@@ -367,7 +367,7 @@ ConeAttributes_SetNormal(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConeAttributes_GetNormal(PyObject *self, PyObject *args)
 {
-    ConeAttributesObject *obj = (ConeAttributesObject *)self;
+    PyConeAttributesObject *obj = (PyConeAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the normal.
     PyObject *retval = PyTuple_New(3);
     const double *normal = obj->data->GetNormal();
@@ -379,7 +379,7 @@ ConeAttributes_GetNormal(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConeAttributes_SetRepresentation(PyObject *self, PyObject *args)
 {
-    ConeAttributesObject *obj = (ConeAttributesObject *)self;
+    PyConeAttributesObject *obj = (PyConeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -438,7 +438,7 @@ ConeAttributes_SetRepresentation(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConeAttributes_GetRepresentation(PyObject *self, PyObject *args)
 {
-    ConeAttributesObject *obj = (ConeAttributesObject *)self;
+    PyConeAttributesObject *obj = (PyConeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetRepresentation()));
     return retval;
 }
@@ -446,7 +446,7 @@ ConeAttributes_GetRepresentation(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConeAttributes_SetUpAxis(PyObject *self, PyObject *args)
 {
-    ConeAttributesObject *obj = (ConeAttributesObject *)self;
+    PyConeAttributesObject *obj = (PyConeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetUpAxis();
@@ -513,7 +513,7 @@ ConeAttributes_SetUpAxis(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConeAttributes_GetUpAxis(PyObject *self, PyObject *args)
 {
-    ConeAttributesObject *obj = (ConeAttributesObject *)self;
+    PyConeAttributesObject *obj = (PyConeAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the upAxis.
     PyObject *retval = PyTuple_New(3);
     const double *upAxis = obj->data->GetUpAxis();
@@ -525,7 +525,7 @@ ConeAttributes_GetUpAxis(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConeAttributes_SetCutByLength(PyObject *self, PyObject *args)
 {
-    ConeAttributesObject *obj = (ConeAttributesObject *)self;
+    PyConeAttributesObject *obj = (PyConeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -577,7 +577,7 @@ ConeAttributes_SetCutByLength(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConeAttributes_GetCutByLength(PyObject *self, PyObject *args)
 {
-    ConeAttributesObject *obj = (ConeAttributesObject *)self;
+    PyConeAttributesObject *obj = (PyConeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetCutByLength()?1L:0L);
     return retval;
 }
@@ -585,7 +585,7 @@ ConeAttributes_GetCutByLength(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConeAttributes_SetLength(PyObject *self, PyObject *args)
 {
-    ConeAttributesObject *obj = (ConeAttributesObject *)self;
+    PyConeAttributesObject *obj = (PyConeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -637,7 +637,7 @@ ConeAttributes_SetLength(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConeAttributes_GetLength(PyObject *self, PyObject *args)
 {
-    ConeAttributesObject *obj = (ConeAttributesObject *)self;
+    PyConeAttributesObject *obj = (PyConeAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetLength());
     return retval;
 }
@@ -669,16 +669,16 @@ PyMethodDef PyConeAttributes_methods[CONEATTRIBUTES_NMETH] = {
 //
 
 static void
-ConeAttributes_dealloc(PyObject *v)
+PyConeAttributes_dealloc(PyObject *v)
 {
-   ConeAttributesObject *obj = (ConeAttributesObject *)v;
+   PyConeAttributesObject *obj = (PyConeAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *ConeAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyConeAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyConeAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -753,56 +753,42 @@ PyConeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 }
 
 PyObject *
-ConeAttributes_str(PyObject *v)
+PyConeAttributes_str(PyObject *v)
 {
-    ConeAttributesObject *obj = (ConeAttributesObject *)v;
+    PyConeAttributesObject *obj = (PyConeAttributesObject *)v;
     return PyString_FromString(PyConeAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *ConeAttributes_Purpose = "This class contains attributes for the cone operator.";
-#else
-static char *ConeAttributes_Purpose = "This class contains attributes for the cone operator.";
-#endif
+static char const *PyConeAttributes_purpose = "This class contains attributes for the cone operator.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject ConeAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "ConeAttributes",
-    .tp_basicsize = sizeof(ConeAttributesObject),
-    .tp_dealloc = ConeAttributes_dealloc,
-    .tp_repr = ConeAttributes_str,
-    .tp_str = ConeAttributes_str,
-    .tp_getattro = PyConeAttributes_getattro,
-    .tp_setattro = PyConeAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = ConeAttributes_Purpose,
-    .tp_richcompare = ConeAttributes_richcompare,
-    .tp_methods = PyConeAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(ConeAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-ConeAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyConeAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &ConeAttributesType
-         || Py_TYPE(other) != &ConeAttributesType)
+    if ( Py_TYPE(self) != &PyConeAttributesType
+         || Py_TYPE(other) != &PyConeAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    ConeAttributes *a = ((ConeAttributesObject *)self)->data;
-    ConeAttributes *b = ((ConeAttributesObject *)other)->data;
+    ConeAttributes *a = ((PyConeAttributesObject *)self)->data;
+    ConeAttributes *b = ((PyConeAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -831,8 +817,8 @@ static ConeAttributes *currentAtts = 0;
 static PyObject *
 NewConeAttributes(int useCurrent)
 {
-    ConeAttributesObject *newObject;
-    newObject = PyObject_NEW(ConeAttributesObject, &ConeAttributesType);
+    PyConeAttributesObject *newObject;
+    newObject = PyObject_NEW(PyConeAttributesObject, &PyConeAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -843,15 +829,15 @@ NewConeAttributes(int useCurrent)
         newObject->data = new ConeAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&ConeAttributesType);
+    PyType_Ready(&PyConeAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapConeAttributes(const ConeAttributes *attr)
 {
-    ConeAttributesObject *newObject;
-    newObject = PyObject_NEW(ConeAttributesObject, &ConeAttributesType);
+    PyConeAttributesObject *newObject;
+    newObject = PyObject_NEW(PyConeAttributesObject, &PyConeAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (ConeAttributes *)attr;
@@ -953,13 +939,13 @@ PyConeAttributes_GetMethodTable(int *nMethods)
 bool
 PyConeAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ConeAttributesType);
+    return (obj->ob_type == &PyConeAttributesType);
 }
 
 ConeAttributes *
 PyConeAttributes_FromPyObject(PyObject *obj)
 {
-    ConeAttributesObject *obj2 = (ConeAttributesObject *)obj;
+    PyConeAttributesObject *obj2 = (PyConeAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -978,7 +964,7 @@ PyConeAttributes_Wrap(const ConeAttributes *attr)
 void
 PyConeAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    ConeAttributesObject *obj2 = (ConeAttributesObject *)obj;
+    PyConeAttributesObject *obj2 = (PyConeAttributesObject *)obj;
     obj2->parent = parent;
 }
 

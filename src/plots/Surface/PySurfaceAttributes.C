@@ -27,7 +27,7 @@
 //
 // This struct contains the Python type information and a SurfaceAttributes.
 //
-struct SurfaceAttributesObject
+struct PySurfaceAttributesObject
 {
     PyObject_HEAD
     SurfaceAttributes *data;
@@ -141,7 +141,7 @@ PySurfaceAttributes_ToString(const SurfaceAttributes *atts, const char *prefix, 
 static PyObject *
 SurfaceAttributes_Notify(PyObject *self, PyObject *args)
 {
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
+    PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -178,7 +178,7 @@ SurfaceAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfaceAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 {
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
+    PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -230,7 +230,7 @@ SurfaceAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfaceAttributes_GetLegendFlag(PyObject *self, PyObject *args)
 {
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
+    PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetLegendFlag()?1L:0L);
     return retval;
 }
@@ -238,7 +238,7 @@ SurfaceAttributes_GetLegendFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfaceAttributes_SetLightingFlag(PyObject *self, PyObject *args)
 {
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
+    PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -290,7 +290,7 @@ SurfaceAttributes_SetLightingFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfaceAttributes_GetLightingFlag(PyObject *self, PyObject *args)
 {
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
+    PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetLightingFlag()?1L:0L);
     return retval;
 }
@@ -298,7 +298,7 @@ SurfaceAttributes_GetLightingFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfaceAttributes_SetSurfaceFlag(PyObject *self, PyObject *args)
 {
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
+    PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -350,7 +350,7 @@ SurfaceAttributes_SetSurfaceFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfaceAttributes_GetSurfaceFlag(PyObject *self, PyObject *args)
 {
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
+    PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetSurfaceFlag()?1L:0L);
     return retval;
 }
@@ -358,7 +358,7 @@ SurfaceAttributes_GetSurfaceFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfaceAttributes_SetWireframeFlag(PyObject *self, PyObject *args)
 {
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
+    PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -410,7 +410,7 @@ SurfaceAttributes_SetWireframeFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfaceAttributes_GetWireframeFlag(PyObject *self, PyObject *args)
 {
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
+    PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetWireframeFlag()?1L:0L);
     return retval;
 }
@@ -418,7 +418,7 @@ SurfaceAttributes_GetWireframeFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfaceAttributes_SetLimitsMode(PyObject *self, PyObject *args)
 {
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
+    PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -476,7 +476,7 @@ SurfaceAttributes_SetLimitsMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfaceAttributes_GetLimitsMode(PyObject *self, PyObject *args)
 {
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
+    PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetLimitsMode()));
     return retval;
 }
@@ -484,7 +484,7 @@ SurfaceAttributes_GetLimitsMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfaceAttributes_SetMinFlag(PyObject *self, PyObject *args)
 {
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
+    PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -536,7 +536,7 @@ SurfaceAttributes_SetMinFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfaceAttributes_GetMinFlag(PyObject *self, PyObject *args)
 {
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
+    PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetMinFlag()?1L:0L);
     return retval;
 }
@@ -544,7 +544,7 @@ SurfaceAttributes_GetMinFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfaceAttributes_SetMaxFlag(PyObject *self, PyObject *args)
 {
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
+    PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -596,7 +596,7 @@ SurfaceAttributes_SetMaxFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfaceAttributes_GetMaxFlag(PyObject *self, PyObject *args)
 {
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
+    PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetMaxFlag()?1L:0L);
     return retval;
 }
@@ -604,7 +604,7 @@ SurfaceAttributes_GetMaxFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfaceAttributes_SetColorByZFlag(PyObject *self, PyObject *args)
 {
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
+    PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -656,7 +656,7 @@ SurfaceAttributes_SetColorByZFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfaceAttributes_GetColorByZFlag(PyObject *self, PyObject *args)
 {
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
+    PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetColorByZFlag()?1L:0L);
     return retval;
 }
@@ -664,7 +664,7 @@ SurfaceAttributes_GetColorByZFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfaceAttributes_SetScaling(PyObject *self, PyObject *args)
 {
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
+    PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -723,7 +723,7 @@ SurfaceAttributes_SetScaling(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfaceAttributes_GetScaling(PyObject *self, PyObject *args)
 {
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
+    PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetScaling()));
     return retval;
 }
@@ -731,7 +731,7 @@ SurfaceAttributes_GetScaling(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfaceAttributes_SetLineWidth(PyObject *self, PyObject *args)
 {
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
+    PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -783,7 +783,7 @@ SurfaceAttributes_SetLineWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfaceAttributes_GetLineWidth(PyObject *self, PyObject *args)
 {
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
+    PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetLineWidth()));
     return retval;
 }
@@ -791,7 +791,7 @@ SurfaceAttributes_GetLineWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfaceAttributes_SetSurfaceColor(PyObject *self, PyObject *args)
 {
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
+    PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -854,7 +854,7 @@ SurfaceAttributes_SetSurfaceColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfaceAttributes_GetSurfaceColor(PyObject *self, PyObject *args)
 {
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
+    PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the surfaceColor.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *surfaceColor = obj->data->GetSurfaceColor().GetColor();
@@ -868,7 +868,7 @@ SurfaceAttributes_GetSurfaceColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfaceAttributes_SetWireframeColor(PyObject *self, PyObject *args)
 {
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
+    PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -931,7 +931,7 @@ SurfaceAttributes_SetWireframeColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfaceAttributes_GetWireframeColor(PyObject *self, PyObject *args)
 {
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
+    PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the wireframeColor.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *wireframeColor = obj->data->GetWireframeColor().GetColor();
@@ -945,7 +945,7 @@ SurfaceAttributes_GetWireframeColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfaceAttributes_SetSkewFactor(PyObject *self, PyObject *args)
 {
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
+    PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -997,7 +997,7 @@ SurfaceAttributes_SetSkewFactor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfaceAttributes_GetSkewFactor(PyObject *self, PyObject *args)
 {
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
+    PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetSkewFactor());
     return retval;
 }
@@ -1005,7 +1005,7 @@ SurfaceAttributes_GetSkewFactor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfaceAttributes_SetMin(PyObject *self, PyObject *args)
 {
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
+    PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1057,7 +1057,7 @@ SurfaceAttributes_SetMin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfaceAttributes_GetMin(PyObject *self, PyObject *args)
 {
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
+    PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMin());
     return retval;
 }
@@ -1065,7 +1065,7 @@ SurfaceAttributes_GetMin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfaceAttributes_SetMax(PyObject *self, PyObject *args)
 {
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
+    PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1117,7 +1117,7 @@ SurfaceAttributes_SetMax(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfaceAttributes_GetMax(PyObject *self, PyObject *args)
 {
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
+    PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMax());
     return retval;
 }
@@ -1125,7 +1125,7 @@ SurfaceAttributes_GetMax(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfaceAttributes_SetColorTableName(PyObject *self, PyObject *args)
 {
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
+    PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1166,7 +1166,7 @@ SurfaceAttributes_SetColorTableName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfaceAttributes_GetColorTableName(PyObject *self, PyObject *args)
 {
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
+    PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetColorTableName().c_str());
     return retval;
 }
@@ -1174,7 +1174,7 @@ SurfaceAttributes_GetColorTableName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfaceAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
 {
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
+    PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1226,7 +1226,7 @@ SurfaceAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfaceAttributes_GetInvertColorTable(PyObject *self, PyObject *args)
 {
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
+    PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetInvertColorTable()?1L:0L);
     return retval;
 }
@@ -1278,16 +1278,16 @@ PyMethodDef PySurfaceAttributes_methods[SURFACEATTRIBUTES_NMETH] = {
 //
 
 static void
-SurfaceAttributes_dealloc(PyObject *v)
+PySurfaceAttributes_dealloc(PyObject *v)
 {
-   SurfaceAttributesObject *obj = (SurfaceAttributesObject *)v;
+   PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *SurfaceAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PySurfaceAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PySurfaceAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -1407,56 +1407,42 @@ PySurfaceAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args
 }
 
 PyObject *
-SurfaceAttributes_str(PyObject *v)
+PySurfaceAttributes_str(PyObject *v)
 {
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)v;
+    PySurfaceAttributesObject *obj = (PySurfaceAttributesObject *)v;
     return PyString_FromString(PySurfaceAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *SurfaceAttributes_Purpose = "Attributes for the surface plot";
-#else
-static char *SurfaceAttributes_Purpose = "Attributes for the surface plot";
-#endif
+static char const *PySurfaceAttributes_purpose = "Attributes for the surface plot";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject SurfaceAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "SurfaceAttributes",
-    .tp_basicsize = sizeof(SurfaceAttributesObject),
-    .tp_dealloc = SurfaceAttributes_dealloc,
-    .tp_repr = SurfaceAttributes_str,
-    .tp_str = SurfaceAttributes_str,
-    .tp_getattro = PySurfaceAttributes_getattro,
-    .tp_setattro = PySurfaceAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = SurfaceAttributes_Purpose,
-    .tp_richcompare = SurfaceAttributes_richcompare,
-    .tp_methods = PySurfaceAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(SurfaceAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-SurfaceAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PySurfaceAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &SurfaceAttributesType
-         || Py_TYPE(other) != &SurfaceAttributesType)
+    if ( Py_TYPE(self) != &PySurfaceAttributesType
+         || Py_TYPE(other) != &PySurfaceAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    SurfaceAttributes *a = ((SurfaceAttributesObject *)self)->data;
-    SurfaceAttributes *b = ((SurfaceAttributesObject *)other)->data;
+    SurfaceAttributes *a = ((PySurfaceAttributesObject *)self)->data;
+    SurfaceAttributes *b = ((PySurfaceAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -1485,8 +1471,8 @@ static SurfaceAttributes *currentAtts = 0;
 static PyObject *
 NewSurfaceAttributes(int useCurrent)
 {
-    SurfaceAttributesObject *newObject;
-    newObject = PyObject_NEW(SurfaceAttributesObject, &SurfaceAttributesType);
+    PySurfaceAttributesObject *newObject;
+    newObject = PyObject_NEW(PySurfaceAttributesObject, &PySurfaceAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1497,15 +1483,15 @@ NewSurfaceAttributes(int useCurrent)
         newObject->data = new SurfaceAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&SurfaceAttributesType);
+    PyType_Ready(&PySurfaceAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapSurfaceAttributes(const SurfaceAttributes *attr)
 {
-    SurfaceAttributesObject *newObject;
-    newObject = PyObject_NEW(SurfaceAttributesObject, &SurfaceAttributesType);
+    PySurfaceAttributesObject *newObject;
+    newObject = PyObject_NEW(PySurfaceAttributesObject, &PySurfaceAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (SurfaceAttributes *)attr;
@@ -1607,13 +1593,13 @@ PySurfaceAttributes_GetMethodTable(int *nMethods)
 bool
 PySurfaceAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &SurfaceAttributesType);
+    return (obj->ob_type == &PySurfaceAttributesType);
 }
 
 SurfaceAttributes *
 PySurfaceAttributes_FromPyObject(PyObject *obj)
 {
-    SurfaceAttributesObject *obj2 = (SurfaceAttributesObject *)obj;
+    PySurfaceAttributesObject *obj2 = (PySurfaceAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1632,7 +1618,7 @@ PySurfaceAttributes_Wrap(const SurfaceAttributes *attr)
 void
 PySurfaceAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    SurfaceAttributesObject *obj2 = (SurfaceAttributesObject *)obj;
+    PySurfaceAttributesObject *obj2 = (PySurfaceAttributesObject *)obj;
     obj2->parent = parent;
 }
 

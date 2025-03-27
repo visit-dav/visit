@@ -226,7 +226,7 @@ class PythonGeneratorField : public virtual Field
         c << "/*static*/ PyObject *" << Endl;
         c << className << "_" << MethodNameSet() << "(PyObject *self, PyObject *args)" << Endl;
         c << "{" << Endl;
-        c << "    " << className << "Object *obj = ("<<className<<"Object *)self;" << Endl;
+        c << "    Py" << className << "Object *obj = (Py"<<className<<"Object *)self;" << Endl;
         c << Endl;
         WriteSetMethodBody(c, className);
         c << Endl;
@@ -241,7 +241,7 @@ class PythonGeneratorField : public virtual Field
         c << "/*static*/ PyObject *" << Endl;
         c << className << "_" << MethodNameGet() << "(PyObject *self, PyObject *args)" << Endl;
         c << "{" << Endl;
-        c << "    " << className << "Object *obj = ("<<className<<"Object *)self;" << Endl;
+        c << "    Py" << className << "Object *obj = (Py"<<className<<"Object *)self;" << Endl;
         WriteGetMethodBody(c, className);
         c << "    return retval;" << Endl;
         c << "}" << Endl;
@@ -2062,7 +2062,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
         c << "PyObject *" << Endl;
         c << className << "_GetNum" << Name << "(PyObject *self, PyObject *args)" << Endl;
         c << "{" << Endl;
-        c << "    " << className << "Object *obj = ("<<className<<"Object *)self;" << Endl;
+        c << "    Py" << className << "Object *obj = (Py"<<className<<"Object *)self;" << Endl;
         c << "    return PyInt_FromLong((long)obj->data->Get" << Name << "().size());" << Endl;
         c << "}" << Endl;
         c << Endl;
@@ -2070,7 +2070,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
         c << "PyObject *" << Endl;
         c << className << "_Add" << Name << "(PyObject *self, PyObject *args)" << Endl;
         c << "{" << Endl;
-        c << "    " << className << "Object *obj = ("<<className<<"Object *)self;" << Endl;
+        c << "    Py" << className << "Object *obj = (Py"<<className<<"Object *)self;" << Endl;
         c << "    PyObject *element = NULL;" << Endl;
         c << "    if(!PyArg_ParseTuple(args, \"O\", &element))" << Endl;
         c << "        return NULL;" << Endl;
@@ -2094,7 +2094,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
         c << "static PyObject *" << Endl;
         c << className << "_Remove_One_" << Name << "(PyObject *self, int index)" << Endl;
         c << "{" << Endl;
-        c << "    " << className << "Object *obj = ("<<className<<"Object *)self;" << Endl;
+        c << "    Py" << className << "Object *obj = (Py"<<className<<"Object *)self;" << Endl;
         c << "    // Remove in the AttributeGroupVector instead of calling Remove" << Name
           << "() because we don't want to delete the object; just remove it." << Endl;
         if(accessType == Field::AccessPublic)
@@ -2130,7 +2130,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
         c << "    int index = -1;" << Endl;
         c << "    if(!PyArg_ParseTuple(args, \"i\", &index))" << Endl;
         c << "        return PyErr_Format(PyExc_TypeError, \"Expecting integer index\");" << Endl;
-        c << "    " << className << "Object *obj = ("<<className<<"Object *)self;" << Endl;
+        c << "    Py" << className << "Object *obj = (Py"<<className<<"Object *)self;" << Endl;
         if(accessType == Field::AccessPublic)
             c << "    if(index < 0 || index >= obj->data->" << name << ".size())" << Endl;
         else
@@ -2144,7 +2144,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
         c << "PyObject *" << Endl;
         c << className << "_Clear" << Name << "(PyObject *self, PyObject *args)" << Endl;
         c << "{" << Endl;
-        c << "    " << className << "Object *obj = ("<<className<<"Object *)self;" << Endl;
+        c << "    Py" << className << "Object *obj = (Py"<<className<<"Object *)self;" << Endl;
         if(accessType == Field::AccessPublic)
             c << "    int n = obj->data->" << name << ".size();" << Endl;
         else
@@ -3010,7 +3010,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "//" << Endl;
         c << "// This struct contains the Python type information and a "<<name<<"." << Endl;
         c << "//" << Endl;
-        c << "struct "<<name<<"Object" << Endl;
+        c << "struct Py"<<name<<"Object" << Endl;
         c << "{" << Endl;
         c << "    PyObject_HEAD" << Endl;
         c << "    "<<name<<" *data;" << Endl;
@@ -3034,7 +3034,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "static PyObject *" << Endl;
         c << name << "_Notify(PyObject *self, PyObject *args)" << Endl;
         c << "{" << Endl;
-        c << "    " << name << "Object *obj = ("<<name<<"Object *)self;" << Endl;
+        c << "    Py" << name << "Object *obj = (Py"<<name<<"Object *)self;" << Endl;
         c << "    obj->data->Notify();" << Endl;
         c << "    Py_INCREF(Py_None);" << Endl;
         c << "    return Py_None;" << Endl;
@@ -3325,7 +3325,7 @@ class PythonGeneratorAttribute : public GeneratorBase
 
     void WriteStringRepresentationFunction(QTextStream &c)
     {
-        QString mName(name + "_str");
+        QString mName("Py" + name + "_str");
         if(HasFunction(mName))
         {
             PrintFunction(c, mName);
@@ -3336,7 +3336,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "PyObject *" << Endl;
         c << mName << "(PyObject *v)" << Endl;
         c << "{" << Endl;
-        c << "    "<<name<<"Object *obj = ("<<name<<"Object *)v;" << Endl;
+        c << "    Py"<<name<<"Object *obj = (Py"<<name<<"Object *)v;" << Endl;
         c << "    return PyString_FromString(Py" << name << "_ToString(obj->data,\"\", false).c_str());" << Endl;
         c << "}" << Endl << Endl;
     }
@@ -3349,9 +3349,9 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << Endl;
 
         c << "static void" << Endl;
-        c << name << "_dealloc(PyObject *v)" << Endl;
+        c << "Py" << name << "_dealloc(PyObject *v)" << Endl;
         c << "{" << Endl;
-        c << "   " << name << "Object *obj = (" << name << "Object *)v;" << Endl;
+        c << "   Py" << name << "Object *obj = (Py" << name << "Object *)v;" << Endl;
         c << "   if(obj->parent != 0)" << Endl;
         c << "       Py_DECREF(obj->parent);" << Endl;
         c << "   if(obj->owns)" << Endl;
@@ -3361,7 +3361,7 @@ class PythonGeneratorAttribute : public GeneratorBase
 
         // chicken and egg
         // rich compare uses the type object, so we forward declare
-        c << "static PyObject *" << name
+        c << "static PyObject *Py" << name
           << "_richcompare(PyObject *self, PyObject *other, int op);" << Endl;
 
         // Write the getattr function
@@ -3376,49 +3376,34 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "//" << Endl;
         c << "// The doc string for the class." << Endl;
         c << "//" << Endl;
-        c << "#if PY_MAJOR_VERSION > 2 || "
-          << "(PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)" << Endl;
-        c << "static const char *" << name << "_Purpose = \"" << purpose << "\";" << Endl;
-        c << "#else" << Endl;
-        c << "static char *" << name << "_Purpose = \"" << purpose << "\";" << Endl;
-        c << "#endif" << Endl;
+        c << "static char const *Py" << name << "_purpose = \"" << purpose << "\";" << Endl;
         c << Endl;
 
         c << "//" << Endl;
-        c << "// The type description structure" << Endl;
-        c << "//" << Endl << Endl;
-        c << "static PyTypeObject "<<name<<"Type = {" << Endl;
-        c << "    PyVarObject_HEAD_INIT(NULL, 0)" << Endl;
-        c << "    .tp_name = \""<<name<<"\"," << Endl;
-        c << "    .tp_basicsize = sizeof("<<name<<"Object)," << Endl;
-        c << "    .tp_dealloc = "<<name<<"_dealloc," << Endl;
-        c << "    .tp_repr = "<<name<<"_str," << Endl;
-        c << "    .tp_str = "<<name<<"_str," << Endl;
-        c << "    .tp_getattro = Py"<<name<<"_getattro," << Endl;
-        c << "    .tp_setattro = Py"<<name<<"_setattro," << Endl;
-        c << "    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE," << Endl;
-        c << "    .tp_doc = "<<name<<"_Purpose," << Endl;
-        c << "    .tp_richcompare = "<<name<<"_richcompare," << Endl;
-        c << "    .tp_methods = Py"<<name<<"_methods};" << Endl;
-        c << Endl;
-
+        c << "// Initialize the python object type structure with default values." << Endl;
+        c << "// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM," << Endl;
+        c << "// that allows for customization of the .tp_xxx slot methods. These" << Endl;
+        c << "// macros are defined in src/visitpy/common/Py2and3Support.h" << Endl;
+        c << "//" << Endl;
+        c << "VISIT_PY_TYPE_OBJ_DEFAULT("<<name<<");" << Endl << Endl;
+ 
         c << "//" << Endl;
         c << "// Helper function for comparing." << Endl;
         c << "//" << Endl;
         c << "static PyObject *" << Endl;
-        c << name << "_richcompare(PyObject *self, PyObject *other, int op)" << Endl;
+        c << "Py" << name << "_richcompare(PyObject *self, PyObject *other, int op)" << Endl;
         c << "{" << Endl;
         c << "    // only compare against the same type " << Endl;
-        c << "    if ( Py_TYPE(self) != &" <<name<< "Type" << Endl;
-        c << "         || Py_TYPE(other) != &" <<name<< "Type)" << Endl;
+        c << "    if ( Py_TYPE(self) != &Py" <<name<< "Type" << Endl;
+        c << "         || Py_TYPE(other) != &Py" <<name<< "Type)" << Endl;
         c << "    {" << Endl;
         c << "        Py_INCREF(Py_NotImplemented);" << Endl;
         c << "        return Py_NotImplemented;" << Endl;
         c << "    }" << Endl;
         c << "" << Endl;
         c << "    PyObject *res = NULL;" << Endl;
-        c << "    "<<name<<" *a = (("<<name<<"Object *)self)->data;" << Endl;
-        c << "    "<<name<<" *b = (("<<name<<"Object *)other)->data;" << Endl;
+        c << "    "<<name<<" *a = ((Py"<<name<<"Object *)self)->data;" << Endl;
+        c << "    "<<name<<" *b = ((Py"<<name<<"Object *)other)->data;" << Endl;
         c << "" << Endl;
         c << "    switch (op)" << Endl;
         c << "    {"  << Endl;
@@ -3448,8 +3433,8 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "static PyObject *" << Endl;
         c << "New"<<name<<"(int useCurrent)" << Endl;
         c << "{" << Endl;
-        c << "    "<<name<<"Object *newObject;" << Endl;
-        c << "    newObject = PyObject_NEW("<<name<<"Object, &"<<name<<"Type);" << Endl;
+        c << "    Py"<<name<<"Object *newObject;" << Endl;
+        c << "    newObject = PyObject_NEW(Py"<<name<<"Object, &Py"<<name<<"Type);" << Endl;
         c << "    if(newObject == NULL)" << Endl;
         c << "        return NULL;" << Endl;
         c << "    if(useCurrent && currentAtts != 0)" << Endl;
@@ -3460,15 +3445,15 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "        newObject->data = new "<<name<<";" << Endl;
         c << "    newObject->owns = true;" << Endl;
         c << "    newObject->parent = 0;" << Endl;
-        c << "    PyType_Ready(&"<<name<<"Type);" << Endl;
+        c << "    PyType_Ready(&Py"<<name<<"Type);" << Endl;
         c << "    return (PyObject *)newObject;" << Endl;
         c << "}" << Endl;
         c << Endl;
         c << "static PyObject *" << Endl;
         c << "Wrap"<<name<<"(const " << name << " *attr)" << Endl;
         c << "{" << Endl;
-        c << "    "<<name<<"Object *newObject;" << Endl;
-        c << "    newObject = PyObject_NEW("<<name<<"Object, &"<<name<<"Type);" << Endl;
+        c << "    Py"<<name<<"Object *newObject;" << Endl;
+        c << "    newObject = PyObject_NEW(Py"<<name<<"Object, &Py"<<name<<"Type);" << Endl;
         c << "    if(newObject == NULL)" << Endl;
         c << "        return NULL;" << Endl;
         c << "    newObject->data = ("<<name<< " *)attr;" << Endl;
@@ -3634,7 +3619,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "bool" << Endl;
         c << "Py"<<name<<"_Check(PyObject *obj)" << Endl;
         c << "{" << Endl;
-        c << "    return (obj->ob_type == &"<<name<<"Type);" << Endl;
+        c << "    return (obj->ob_type == &Py"<<name<<"Type);" << Endl;
         c << "}" << Endl;
         c << Endl;
 
@@ -3646,7 +3631,7 @@ class PythonGeneratorAttribute : public GeneratorBase
             c << name << " *" << Endl;
             c << FromPyObject << "(PyObject *obj)" << Endl;
             c << "{" << Endl;
-            c << "    "<<name<<"Object *obj2 = ("<<name<<"Object *)obj;" << Endl;
+            c << "    Py"<<name<<"Object *obj2 = (Py"<<name<<"Object *)obj;" << Endl;
             c << "    return obj2->data;" << Endl;
             c << "}" << Endl;
         }
@@ -3686,7 +3671,7 @@ class PythonGeneratorAttribute : public GeneratorBase
             c << "void" << Endl;
             c << SetParent << "(PyObject *obj, PyObject *parent)" << Endl;
             c << "{" << Endl;
-            c << "    "<<name<<"Object *obj2 = ("<<name<<"Object *)obj;" << Endl;
+            c << "    Py"<<name<<"Object *obj2 = (Py"<<name<<"Object *)obj;" << Endl;
             if(HasCode(SetParent, 0))
                 PrintCode(c, SetParent, 0);
             c << "    obj2->parent = parent;" << Endl;

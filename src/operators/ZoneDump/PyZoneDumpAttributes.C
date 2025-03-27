@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a ZoneDumpAttributes.
 //
-struct ZoneDumpAttributesObject
+struct PyZoneDumpAttributesObject
 {
     PyObject_HEAD
     ZoneDumpAttributes *data;
@@ -61,7 +61,7 @@ PyZoneDumpAttributes_ToString(const ZoneDumpAttributes *atts, const char *prefix
 static PyObject *
 ZoneDumpAttributes_Notify(PyObject *self, PyObject *args)
 {
-    ZoneDumpAttributesObject *obj = (ZoneDumpAttributesObject *)self;
+    PyZoneDumpAttributesObject *obj = (PyZoneDumpAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -98,7 +98,7 @@ ZoneDumpAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ZoneDumpAttributes_SetVariable(PyObject *self, PyObject *args)
 {
-    ZoneDumpAttributesObject *obj = (ZoneDumpAttributesObject *)self;
+    PyZoneDumpAttributesObject *obj = (PyZoneDumpAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -139,7 +139,7 @@ ZoneDumpAttributes_SetVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ZoneDumpAttributes_GetVariable(PyObject *self, PyObject *args)
 {
-    ZoneDumpAttributesObject *obj = (ZoneDumpAttributesObject *)self;
+    PyZoneDumpAttributesObject *obj = (PyZoneDumpAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetVariable().c_str());
     return retval;
 }
@@ -147,7 +147,7 @@ ZoneDumpAttributes_GetVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ZoneDumpAttributes_SetLowerBound(PyObject *self, PyObject *args)
 {
-    ZoneDumpAttributesObject *obj = (ZoneDumpAttributesObject *)self;
+    PyZoneDumpAttributesObject *obj = (PyZoneDumpAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -199,7 +199,7 @@ ZoneDumpAttributes_SetLowerBound(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ZoneDumpAttributes_GetLowerBound(PyObject *self, PyObject *args)
 {
-    ZoneDumpAttributesObject *obj = (ZoneDumpAttributesObject *)self;
+    PyZoneDumpAttributesObject *obj = (PyZoneDumpAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetLowerBound());
     return retval;
 }
@@ -207,7 +207,7 @@ ZoneDumpAttributes_GetLowerBound(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ZoneDumpAttributes_SetUpperBound(PyObject *self, PyObject *args)
 {
-    ZoneDumpAttributesObject *obj = (ZoneDumpAttributesObject *)self;
+    PyZoneDumpAttributesObject *obj = (PyZoneDumpAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -259,7 +259,7 @@ ZoneDumpAttributes_SetUpperBound(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ZoneDumpAttributes_GetUpperBound(PyObject *self, PyObject *args)
 {
-    ZoneDumpAttributesObject *obj = (ZoneDumpAttributesObject *)self;
+    PyZoneDumpAttributesObject *obj = (PyZoneDumpAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetUpperBound());
     return retval;
 }
@@ -267,7 +267,7 @@ ZoneDumpAttributes_GetUpperBound(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ZoneDumpAttributes_SetOutputFile(PyObject *self, PyObject *args)
 {
-    ZoneDumpAttributesObject *obj = (ZoneDumpAttributesObject *)self;
+    PyZoneDumpAttributesObject *obj = (PyZoneDumpAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -308,7 +308,7 @@ ZoneDumpAttributes_SetOutputFile(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ZoneDumpAttributes_GetOutputFile(PyObject *self, PyObject *args)
 {
-    ZoneDumpAttributesObject *obj = (ZoneDumpAttributesObject *)self;
+    PyZoneDumpAttributesObject *obj = (PyZoneDumpAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetOutputFile().c_str());
     return retval;
 }
@@ -316,7 +316,7 @@ ZoneDumpAttributes_GetOutputFile(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ZoneDumpAttributes_SetEnabled(PyObject *self, PyObject *args)
 {
-    ZoneDumpAttributesObject *obj = (ZoneDumpAttributesObject *)self;
+    PyZoneDumpAttributesObject *obj = (PyZoneDumpAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -368,7 +368,7 @@ ZoneDumpAttributes_SetEnabled(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ZoneDumpAttributes_GetEnabled(PyObject *self, PyObject *args)
 {
-    ZoneDumpAttributesObject *obj = (ZoneDumpAttributesObject *)self;
+    PyZoneDumpAttributesObject *obj = (PyZoneDumpAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetEnabled()?1L:0L);
     return retval;
 }
@@ -396,16 +396,16 @@ PyMethodDef PyZoneDumpAttributes_methods[ZONEDUMPATTRIBUTES_NMETH] = {
 //
 
 static void
-ZoneDumpAttributes_dealloc(PyObject *v)
+PyZoneDumpAttributes_dealloc(PyObject *v)
 {
-   ZoneDumpAttributesObject *obj = (ZoneDumpAttributesObject *)v;
+   PyZoneDumpAttributesObject *obj = (PyZoneDumpAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *ZoneDumpAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyZoneDumpAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyZoneDumpAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -465,56 +465,42 @@ PyZoneDumpAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *arg
 }
 
 PyObject *
-ZoneDumpAttributes_str(PyObject *v)
+PyZoneDumpAttributes_str(PyObject *v)
 {
-    ZoneDumpAttributesObject *obj = (ZoneDumpAttributesObject *)v;
+    PyZoneDumpAttributesObject *obj = (PyZoneDumpAttributesObject *)v;
     return PyString_FromString(PyZoneDumpAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *ZoneDumpAttributes_Purpose = "Zone Dump Control";
-#else
-static char *ZoneDumpAttributes_Purpose = "Zone Dump Control";
-#endif
+static char const *PyZoneDumpAttributes_purpose = "Zone Dump Control";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject ZoneDumpAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "ZoneDumpAttributes",
-    .tp_basicsize = sizeof(ZoneDumpAttributesObject),
-    .tp_dealloc = ZoneDumpAttributes_dealloc,
-    .tp_repr = ZoneDumpAttributes_str,
-    .tp_str = ZoneDumpAttributes_str,
-    .tp_getattro = PyZoneDumpAttributes_getattro,
-    .tp_setattro = PyZoneDumpAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = ZoneDumpAttributes_Purpose,
-    .tp_richcompare = ZoneDumpAttributes_richcompare,
-    .tp_methods = PyZoneDumpAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(ZoneDumpAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-ZoneDumpAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyZoneDumpAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &ZoneDumpAttributesType
-         || Py_TYPE(other) != &ZoneDumpAttributesType)
+    if ( Py_TYPE(self) != &PyZoneDumpAttributesType
+         || Py_TYPE(other) != &PyZoneDumpAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    ZoneDumpAttributes *a = ((ZoneDumpAttributesObject *)self)->data;
-    ZoneDumpAttributes *b = ((ZoneDumpAttributesObject *)other)->data;
+    ZoneDumpAttributes *a = ((PyZoneDumpAttributesObject *)self)->data;
+    ZoneDumpAttributes *b = ((PyZoneDumpAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -543,8 +529,8 @@ static ZoneDumpAttributes *currentAtts = 0;
 static PyObject *
 NewZoneDumpAttributes(int useCurrent)
 {
-    ZoneDumpAttributesObject *newObject;
-    newObject = PyObject_NEW(ZoneDumpAttributesObject, &ZoneDumpAttributesType);
+    PyZoneDumpAttributesObject *newObject;
+    newObject = PyObject_NEW(PyZoneDumpAttributesObject, &PyZoneDumpAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -555,15 +541,15 @@ NewZoneDumpAttributes(int useCurrent)
         newObject->data = new ZoneDumpAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&ZoneDumpAttributesType);
+    PyType_Ready(&PyZoneDumpAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapZoneDumpAttributes(const ZoneDumpAttributes *attr)
 {
-    ZoneDumpAttributesObject *newObject;
-    newObject = PyObject_NEW(ZoneDumpAttributesObject, &ZoneDumpAttributesType);
+    PyZoneDumpAttributesObject *newObject;
+    newObject = PyObject_NEW(PyZoneDumpAttributesObject, &PyZoneDumpAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (ZoneDumpAttributes *)attr;
@@ -665,13 +651,13 @@ PyZoneDumpAttributes_GetMethodTable(int *nMethods)
 bool
 PyZoneDumpAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ZoneDumpAttributesType);
+    return (obj->ob_type == &PyZoneDumpAttributesType);
 }
 
 ZoneDumpAttributes *
 PyZoneDumpAttributes_FromPyObject(PyObject *obj)
 {
-    ZoneDumpAttributesObject *obj2 = (ZoneDumpAttributesObject *)obj;
+    PyZoneDumpAttributesObject *obj2 = (PyZoneDumpAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -690,7 +676,7 @@ PyZoneDumpAttributes_Wrap(const ZoneDumpAttributes *attr)
 void
 PyZoneDumpAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    ZoneDumpAttributesObject *obj2 = (ZoneDumpAttributesObject *)obj;
+    PyZoneDumpAttributesObject *obj2 = (PyZoneDumpAttributesObject *)obj;
     obj2->parent = parent;
 }
 

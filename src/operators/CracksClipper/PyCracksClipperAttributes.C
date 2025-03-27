@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a CracksClipperAttributes.
 //
-struct CracksClipperAttributesObject
+struct PyCracksClipperAttributesObject
 {
     PyObject_HEAD
     CracksClipperAttributes *data;
@@ -73,7 +73,7 @@ PyCracksClipperAttributes_ToString(const CracksClipperAttributes *atts, const ch
 static PyObject *
 CracksClipperAttributes_Notify(PyObject *self, PyObject *args)
 {
-    CracksClipperAttributesObject *obj = (CracksClipperAttributesObject *)self;
+    PyCracksClipperAttributesObject *obj = (PyCracksClipperAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -110,7 +110,7 @@ CracksClipperAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CracksClipperAttributes_SetCrack1Var(PyObject *self, PyObject *args)
 {
-    CracksClipperAttributesObject *obj = (CracksClipperAttributesObject *)self;
+    PyCracksClipperAttributesObject *obj = (PyCracksClipperAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -151,7 +151,7 @@ CracksClipperAttributes_SetCrack1Var(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CracksClipperAttributes_GetCrack1Var(PyObject *self, PyObject *args)
 {
-    CracksClipperAttributesObject *obj = (CracksClipperAttributesObject *)self;
+    PyCracksClipperAttributesObject *obj = (PyCracksClipperAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetCrack1Var().c_str());
     return retval;
 }
@@ -159,7 +159,7 @@ CracksClipperAttributes_GetCrack1Var(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CracksClipperAttributes_SetCrack2Var(PyObject *self, PyObject *args)
 {
-    CracksClipperAttributesObject *obj = (CracksClipperAttributesObject *)self;
+    PyCracksClipperAttributesObject *obj = (PyCracksClipperAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -200,7 +200,7 @@ CracksClipperAttributes_SetCrack2Var(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CracksClipperAttributes_GetCrack2Var(PyObject *self, PyObject *args)
 {
-    CracksClipperAttributesObject *obj = (CracksClipperAttributesObject *)self;
+    PyCracksClipperAttributesObject *obj = (PyCracksClipperAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetCrack2Var().c_str());
     return retval;
 }
@@ -208,7 +208,7 @@ CracksClipperAttributes_GetCrack2Var(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CracksClipperAttributes_SetCrack3Var(PyObject *self, PyObject *args)
 {
-    CracksClipperAttributesObject *obj = (CracksClipperAttributesObject *)self;
+    PyCracksClipperAttributesObject *obj = (PyCracksClipperAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -249,7 +249,7 @@ CracksClipperAttributes_SetCrack3Var(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CracksClipperAttributes_GetCrack3Var(PyObject *self, PyObject *args)
 {
-    CracksClipperAttributesObject *obj = (CracksClipperAttributesObject *)self;
+    PyCracksClipperAttributesObject *obj = (PyCracksClipperAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetCrack3Var().c_str());
     return retval;
 }
@@ -257,7 +257,7 @@ CracksClipperAttributes_GetCrack3Var(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CracksClipperAttributes_SetStrainVar(PyObject *self, PyObject *args)
 {
-    CracksClipperAttributesObject *obj = (CracksClipperAttributesObject *)self;
+    PyCracksClipperAttributesObject *obj = (PyCracksClipperAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -298,7 +298,7 @@ CracksClipperAttributes_SetStrainVar(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CracksClipperAttributes_GetStrainVar(PyObject *self, PyObject *args)
 {
-    CracksClipperAttributesObject *obj = (CracksClipperAttributesObject *)self;
+    PyCracksClipperAttributesObject *obj = (PyCracksClipperAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetStrainVar().c_str());
     return retval;
 }
@@ -306,7 +306,7 @@ CracksClipperAttributes_GetStrainVar(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CracksClipperAttributes_SetShowCrack1(PyObject *self, PyObject *args)
 {
-    CracksClipperAttributesObject *obj = (CracksClipperAttributesObject *)self;
+    PyCracksClipperAttributesObject *obj = (PyCracksClipperAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -358,7 +358,7 @@ CracksClipperAttributes_SetShowCrack1(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CracksClipperAttributes_GetShowCrack1(PyObject *self, PyObject *args)
 {
-    CracksClipperAttributesObject *obj = (CracksClipperAttributesObject *)self;
+    PyCracksClipperAttributesObject *obj = (PyCracksClipperAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowCrack1()?1L:0L);
     return retval;
 }
@@ -366,7 +366,7 @@ CracksClipperAttributes_GetShowCrack1(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CracksClipperAttributes_SetShowCrack2(PyObject *self, PyObject *args)
 {
-    CracksClipperAttributesObject *obj = (CracksClipperAttributesObject *)self;
+    PyCracksClipperAttributesObject *obj = (PyCracksClipperAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -418,7 +418,7 @@ CracksClipperAttributes_SetShowCrack2(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CracksClipperAttributes_GetShowCrack2(PyObject *self, PyObject *args)
 {
-    CracksClipperAttributesObject *obj = (CracksClipperAttributesObject *)self;
+    PyCracksClipperAttributesObject *obj = (PyCracksClipperAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowCrack2()?1L:0L);
     return retval;
 }
@@ -426,7 +426,7 @@ CracksClipperAttributes_GetShowCrack2(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CracksClipperAttributes_SetShowCrack3(PyObject *self, PyObject *args)
 {
-    CracksClipperAttributesObject *obj = (CracksClipperAttributesObject *)self;
+    PyCracksClipperAttributesObject *obj = (PyCracksClipperAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -478,7 +478,7 @@ CracksClipperAttributes_SetShowCrack3(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CracksClipperAttributes_GetShowCrack3(PyObject *self, PyObject *args)
 {
-    CracksClipperAttributesObject *obj = (CracksClipperAttributesObject *)self;
+    PyCracksClipperAttributesObject *obj = (PyCracksClipperAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowCrack3()?1L:0L);
     return retval;
 }
@@ -486,7 +486,7 @@ CracksClipperAttributes_GetShowCrack3(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CracksClipperAttributes_SetInMassVar(PyObject *self, PyObject *args)
 {
-    CracksClipperAttributesObject *obj = (CracksClipperAttributesObject *)self;
+    PyCracksClipperAttributesObject *obj = (PyCracksClipperAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -527,7 +527,7 @@ CracksClipperAttributes_SetInMassVar(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CracksClipperAttributes_GetInMassVar(PyObject *self, PyObject *args)
 {
-    CracksClipperAttributesObject *obj = (CracksClipperAttributesObject *)self;
+    PyCracksClipperAttributesObject *obj = (PyCracksClipperAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetInMassVar().c_str());
     return retval;
 }
@@ -561,16 +561,16 @@ PyMethodDef PyCracksClipperAttributes_methods[CRACKSCLIPPERATTRIBUTES_NMETH] = {
 //
 
 static void
-CracksClipperAttributes_dealloc(PyObject *v)
+PyCracksClipperAttributes_dealloc(PyObject *v)
 {
-   CracksClipperAttributesObject *obj = (CracksClipperAttributesObject *)v;
+   PyCracksClipperAttributesObject *obj = (PyCracksClipperAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *CracksClipperAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyCracksClipperAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyCracksClipperAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -642,56 +642,42 @@ PyCracksClipperAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject
 }
 
 PyObject *
-CracksClipperAttributes_str(PyObject *v)
+PyCracksClipperAttributes_str(PyObject *v)
 {
-    CracksClipperAttributesObject *obj = (CracksClipperAttributesObject *)v;
+    PyCracksClipperAttributesObject *obj = (PyCracksClipperAttributesObject *)v;
     return PyString_FromString(PyCracksClipperAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *CracksClipperAttributes_Purpose = "Attributes for the cracks clipper operator";
-#else
-static char *CracksClipperAttributes_Purpose = "Attributes for the cracks clipper operator";
-#endif
+static char const *PyCracksClipperAttributes_purpose = "Attributes for the cracks clipper operator";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject CracksClipperAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "CracksClipperAttributes",
-    .tp_basicsize = sizeof(CracksClipperAttributesObject),
-    .tp_dealloc = CracksClipperAttributes_dealloc,
-    .tp_repr = CracksClipperAttributes_str,
-    .tp_str = CracksClipperAttributes_str,
-    .tp_getattro = PyCracksClipperAttributes_getattro,
-    .tp_setattro = PyCracksClipperAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = CracksClipperAttributes_Purpose,
-    .tp_richcompare = CracksClipperAttributes_richcompare,
-    .tp_methods = PyCracksClipperAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(CracksClipperAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-CracksClipperAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyCracksClipperAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &CracksClipperAttributesType
-         || Py_TYPE(other) != &CracksClipperAttributesType)
+    if ( Py_TYPE(self) != &PyCracksClipperAttributesType
+         || Py_TYPE(other) != &PyCracksClipperAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    CracksClipperAttributes *a = ((CracksClipperAttributesObject *)self)->data;
-    CracksClipperAttributes *b = ((CracksClipperAttributesObject *)other)->data;
+    CracksClipperAttributes *a = ((PyCracksClipperAttributesObject *)self)->data;
+    CracksClipperAttributes *b = ((PyCracksClipperAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -720,8 +706,8 @@ static CracksClipperAttributes *currentAtts = 0;
 static PyObject *
 NewCracksClipperAttributes(int useCurrent)
 {
-    CracksClipperAttributesObject *newObject;
-    newObject = PyObject_NEW(CracksClipperAttributesObject, &CracksClipperAttributesType);
+    PyCracksClipperAttributesObject *newObject;
+    newObject = PyObject_NEW(PyCracksClipperAttributesObject, &PyCracksClipperAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -732,15 +718,15 @@ NewCracksClipperAttributes(int useCurrent)
         newObject->data = new CracksClipperAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&CracksClipperAttributesType);
+    PyType_Ready(&PyCracksClipperAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapCracksClipperAttributes(const CracksClipperAttributes *attr)
 {
-    CracksClipperAttributesObject *newObject;
-    newObject = PyObject_NEW(CracksClipperAttributesObject, &CracksClipperAttributesType);
+    PyCracksClipperAttributesObject *newObject;
+    newObject = PyObject_NEW(PyCracksClipperAttributesObject, &PyCracksClipperAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (CracksClipperAttributes *)attr;
@@ -842,13 +828,13 @@ PyCracksClipperAttributes_GetMethodTable(int *nMethods)
 bool
 PyCracksClipperAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &CracksClipperAttributesType);
+    return (obj->ob_type == &PyCracksClipperAttributesType);
 }
 
 CracksClipperAttributes *
 PyCracksClipperAttributes_FromPyObject(PyObject *obj)
 {
-    CracksClipperAttributesObject *obj2 = (CracksClipperAttributesObject *)obj;
+    PyCracksClipperAttributesObject *obj2 = (PyCracksClipperAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -867,7 +853,7 @@ PyCracksClipperAttributes_Wrap(const CracksClipperAttributes *attr)
 void
 PyCracksClipperAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    CracksClipperAttributesObject *obj2 = (CracksClipperAttributesObject *)obj;
+    PyCracksClipperAttributesObject *obj2 = (PyCracksClipperAttributesObject *)obj;
     obj2->parent = parent;
 }
 

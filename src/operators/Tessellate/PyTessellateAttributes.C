@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a TessellateAttributes.
 //
-struct TessellateAttributesObject
+struct PyTessellateAttributesObject
 {
     PyObject_HEAD
     TessellateAttributes *data;
@@ -57,7 +57,7 @@ PyTessellateAttributes_ToString(const TessellateAttributes *atts, const char *pr
 static PyObject *
 TessellateAttributes_Notify(PyObject *self, PyObject *args)
 {
-    TessellateAttributesObject *obj = (TessellateAttributesObject *)self;
+    PyTessellateAttributesObject *obj = (PyTessellateAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -94,7 +94,7 @@ TessellateAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TessellateAttributes_SetChordError(PyObject *self, PyObject *args)
 {
-    TessellateAttributesObject *obj = (TessellateAttributesObject *)self;
+    PyTessellateAttributesObject *obj = (PyTessellateAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -146,7 +146,7 @@ TessellateAttributes_SetChordError(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TessellateAttributes_GetChordError(PyObject *self, PyObject *args)
 {
-    TessellateAttributesObject *obj = (TessellateAttributesObject *)self;
+    PyTessellateAttributesObject *obj = (PyTessellateAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetChordError());
     return retval;
 }
@@ -154,7 +154,7 @@ TessellateAttributes_GetChordError(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TessellateAttributes_SetFieldCriterion(PyObject *self, PyObject *args)
 {
-    TessellateAttributesObject *obj = (TessellateAttributesObject *)self;
+    PyTessellateAttributesObject *obj = (PyTessellateAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -206,7 +206,7 @@ TessellateAttributes_SetFieldCriterion(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TessellateAttributes_GetFieldCriterion(PyObject *self, PyObject *args)
 {
-    TessellateAttributesObject *obj = (TessellateAttributesObject *)self;
+    PyTessellateAttributesObject *obj = (PyTessellateAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetFieldCriterion());
     return retval;
 }
@@ -214,7 +214,7 @@ TessellateAttributes_GetFieldCriterion(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TessellateAttributes_SetMergePoints(PyObject *self, PyObject *args)
 {
-    TessellateAttributesObject *obj = (TessellateAttributesObject *)self;
+    PyTessellateAttributesObject *obj = (PyTessellateAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -266,7 +266,7 @@ TessellateAttributes_SetMergePoints(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TessellateAttributes_GetMergePoints(PyObject *self, PyObject *args)
 {
-    TessellateAttributesObject *obj = (TessellateAttributesObject *)self;
+    PyTessellateAttributesObject *obj = (PyTessellateAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetMergePoints()?1L:0L);
     return retval;
 }
@@ -290,16 +290,16 @@ PyMethodDef PyTessellateAttributes_methods[TESSELLATEATTRIBUTES_NMETH] = {
 //
 
 static void
-TessellateAttributes_dealloc(PyObject *v)
+PyTessellateAttributes_dealloc(PyObject *v)
 {
-   TessellateAttributesObject *obj = (TessellateAttributesObject *)v;
+   PyTessellateAttributesObject *obj = (PyTessellateAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *TessellateAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyTessellateAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyTessellateAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -351,56 +351,42 @@ PyTessellateAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *a
 }
 
 PyObject *
-TessellateAttributes_str(PyObject *v)
+PyTessellateAttributes_str(PyObject *v)
 {
-    TessellateAttributesObject *obj = (TessellateAttributesObject *)v;
+    PyTessellateAttributesObject *obj = (PyTessellateAttributesObject *)v;
     return PyString_FromString(PyTessellateAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *TessellateAttributes_Purpose = "Attributes for the Tessellate Operator";
-#else
-static char *TessellateAttributes_Purpose = "Attributes for the Tessellate Operator";
-#endif
+static char const *PyTessellateAttributes_purpose = "Attributes for the Tessellate Operator";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject TessellateAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "TessellateAttributes",
-    .tp_basicsize = sizeof(TessellateAttributesObject),
-    .tp_dealloc = TessellateAttributes_dealloc,
-    .tp_repr = TessellateAttributes_str,
-    .tp_str = TessellateAttributes_str,
-    .tp_getattro = PyTessellateAttributes_getattro,
-    .tp_setattro = PyTessellateAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = TessellateAttributes_Purpose,
-    .tp_richcompare = TessellateAttributes_richcompare,
-    .tp_methods = PyTessellateAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(TessellateAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-TessellateAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyTessellateAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &TessellateAttributesType
-         || Py_TYPE(other) != &TessellateAttributesType)
+    if ( Py_TYPE(self) != &PyTessellateAttributesType
+         || Py_TYPE(other) != &PyTessellateAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    TessellateAttributes *a = ((TessellateAttributesObject *)self)->data;
-    TessellateAttributes *b = ((TessellateAttributesObject *)other)->data;
+    TessellateAttributes *a = ((PyTessellateAttributesObject *)self)->data;
+    TessellateAttributes *b = ((PyTessellateAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -429,8 +415,8 @@ static TessellateAttributes *currentAtts = 0;
 static PyObject *
 NewTessellateAttributes(int useCurrent)
 {
-    TessellateAttributesObject *newObject;
-    newObject = PyObject_NEW(TessellateAttributesObject, &TessellateAttributesType);
+    PyTessellateAttributesObject *newObject;
+    newObject = PyObject_NEW(PyTessellateAttributesObject, &PyTessellateAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -441,15 +427,15 @@ NewTessellateAttributes(int useCurrent)
         newObject->data = new TessellateAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&TessellateAttributesType);
+    PyType_Ready(&PyTessellateAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapTessellateAttributes(const TessellateAttributes *attr)
 {
-    TessellateAttributesObject *newObject;
-    newObject = PyObject_NEW(TessellateAttributesObject, &TessellateAttributesType);
+    PyTessellateAttributesObject *newObject;
+    newObject = PyObject_NEW(PyTessellateAttributesObject, &PyTessellateAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (TessellateAttributes *)attr;
@@ -551,13 +537,13 @@ PyTessellateAttributes_GetMethodTable(int *nMethods)
 bool
 PyTessellateAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &TessellateAttributesType);
+    return (obj->ob_type == &PyTessellateAttributesType);
 }
 
 TessellateAttributes *
 PyTessellateAttributes_FromPyObject(PyObject *obj)
 {
-    TessellateAttributesObject *obj2 = (TessellateAttributesObject *)obj;
+    PyTessellateAttributesObject *obj2 = (PyTessellateAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -576,7 +562,7 @@ PyTessellateAttributes_Wrap(const TessellateAttributes *attr)
 void
 PyTessellateAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    TessellateAttributesObject *obj2 = (TessellateAttributesObject *)obj;
+    PyTessellateAttributesObject *obj2 = (PyTessellateAttributesObject *)obj;
     obj2->parent = parent;
 }
 

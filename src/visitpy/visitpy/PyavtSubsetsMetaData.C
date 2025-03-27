@@ -25,7 +25,7 @@
 //
 // This struct contains the Python type information and a avtSubsetsMetaData.
 //
-struct avtSubsetsMetaDataObject
+struct PyavtSubsetsMetaDataObject
 {
     PyObject_HEAD
     avtSubsetsMetaData *data;
@@ -149,7 +149,7 @@ PyavtSubsetsMetaData_ToString(const avtSubsetsMetaData *atts, const char *prefix
 static PyObject *
 avtSubsetsMetaData_Notify(PyObject *self, PyObject *args)
 {
-    avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)self;
+    PyavtSubsetsMetaDataObject *obj = (PyavtSubsetsMetaDataObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -186,7 +186,7 @@ avtSubsetsMetaData_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSubsetsMetaData_SetCatName(PyObject *self, PyObject *args)
 {
-    avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)self;
+    PyavtSubsetsMetaDataObject *obj = (PyavtSubsetsMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -227,7 +227,7 @@ avtSubsetsMetaData_SetCatName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSubsetsMetaData_GetCatName(PyObject *self, PyObject *args)
 {
-    avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)self;
+    PyavtSubsetsMetaDataObject *obj = (PyavtSubsetsMetaDataObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetCatName().c_str());
     return retval;
 }
@@ -235,7 +235,7 @@ avtSubsetsMetaData_GetCatName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSubsetsMetaData_SetCatCount(PyObject *self, PyObject *args)
 {
-    avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)self;
+    PyavtSubsetsMetaDataObject *obj = (PyavtSubsetsMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -287,7 +287,7 @@ avtSubsetsMetaData_SetCatCount(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSubsetsMetaData_GetCatCount(PyObject *self, PyObject *args)
 {
-    avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)self;
+    PyavtSubsetsMetaDataObject *obj = (PyavtSubsetsMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetCatCount()));
     return retval;
 }
@@ -295,7 +295,7 @@ avtSubsetsMetaData_GetCatCount(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSubsetsMetaData_SetNameScheme(PyObject *self, PyObject *args)
 {
-    avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)self;
+    PyavtSubsetsMetaDataObject *obj = (PyavtSubsetsMetaDataObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -312,7 +312,7 @@ avtSubsetsMetaData_SetNameScheme(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSubsetsMetaData_GetNameScheme(PyObject *self, PyObject *args)
 {
-    avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)self;
+    PyavtSubsetsMetaDataObject *obj = (PyavtSubsetsMetaDataObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -328,7 +328,7 @@ avtSubsetsMetaData_GetNameScheme(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSubsetsMetaData_SetColorScheme(PyObject *self, PyObject *args)
 {
-    avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)self;
+    PyavtSubsetsMetaDataObject *obj = (PyavtSubsetsMetaDataObject *)self;
 
     stringVector vec;
 
@@ -385,7 +385,7 @@ avtSubsetsMetaData_SetColorScheme(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSubsetsMetaData_GetColorScheme(PyObject *self, PyObject *args)
 {
-    avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)self;
+    PyavtSubsetsMetaDataObject *obj = (PyavtSubsetsMetaDataObject *)self;
     // Allocate a tuple the with enough entries to hold the colorScheme.
     const stringVector &colorScheme = obj->data->colorScheme;
     PyObject *retval = PyTuple_New(colorScheme.size());
@@ -397,7 +397,7 @@ avtSubsetsMetaData_GetColorScheme(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSubsetsMetaData_SetSetsToChunksMaps(PyObject *self, PyObject *args)
 {
-    avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)self;
+    PyavtSubsetsMetaDataObject *obj = (PyavtSubsetsMetaDataObject *)self;
 
     intVector vec;
 
@@ -461,7 +461,7 @@ avtSubsetsMetaData_SetSetsToChunksMaps(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSubsetsMetaData_GetSetsToChunksMaps(PyObject *self, PyObject *args)
 {
-    avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)self;
+    PyavtSubsetsMetaDataObject *obj = (PyavtSubsetsMetaDataObject *)self;
     // Allocate a tuple the with enough entries to hold the setsToChunksMaps.
     const intVector &setsToChunksMaps = obj->data->GetSetsToChunksMaps();
     PyObject *retval = PyTuple_New(setsToChunksMaps.size());
@@ -473,7 +473,7 @@ avtSubsetsMetaData_GetSetsToChunksMaps(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSubsetsMetaData_SetGraphEdges(PyObject *self, PyObject *args)
 {
-    avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)self;
+    PyavtSubsetsMetaDataObject *obj = (PyavtSubsetsMetaDataObject *)self;
 
     intVector vec;
 
@@ -537,7 +537,7 @@ avtSubsetsMetaData_SetGraphEdges(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSubsetsMetaData_GetGraphEdges(PyObject *self, PyObject *args)
 {
-    avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)self;
+    PyavtSubsetsMetaDataObject *obj = (PyavtSubsetsMetaDataObject *)self;
     // Allocate a tuple the with enough entries to hold the graphEdges.
     const intVector &graphEdges = obj->data->GetGraphEdges();
     PyObject *retval = PyTuple_New(graphEdges.size());
@@ -549,7 +549,7 @@ avtSubsetsMetaData_GetGraphEdges(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSubsetsMetaData_SetIsChunkCat(PyObject *self, PyObject *args)
 {
-    avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)self;
+    PyavtSubsetsMetaDataObject *obj = (PyavtSubsetsMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -601,7 +601,7 @@ avtSubsetsMetaData_SetIsChunkCat(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSubsetsMetaData_GetIsChunkCat(PyObject *self, PyObject *args)
 {
-    avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)self;
+    PyavtSubsetsMetaDataObject *obj = (PyavtSubsetsMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->isChunkCat?1L:0L);
     return retval;
 }
@@ -609,7 +609,7 @@ avtSubsetsMetaData_GetIsChunkCat(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSubsetsMetaData_SetIsMaterialCat(PyObject *self, PyObject *args)
 {
-    avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)self;
+    PyavtSubsetsMetaDataObject *obj = (PyavtSubsetsMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -661,7 +661,7 @@ avtSubsetsMetaData_SetIsMaterialCat(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSubsetsMetaData_GetIsMaterialCat(PyObject *self, PyObject *args)
 {
-    avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)self;
+    PyavtSubsetsMetaDataObject *obj = (PyavtSubsetsMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->isMaterialCat?1L:0L);
     return retval;
 }
@@ -669,7 +669,7 @@ avtSubsetsMetaData_GetIsMaterialCat(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSubsetsMetaData_SetIsUnionOfChunks(PyObject *self, PyObject *args)
 {
-    avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)self;
+    PyavtSubsetsMetaDataObject *obj = (PyavtSubsetsMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -721,7 +721,7 @@ avtSubsetsMetaData_SetIsUnionOfChunks(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSubsetsMetaData_GetIsUnionOfChunks(PyObject *self, PyObject *args)
 {
-    avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)self;
+    PyavtSubsetsMetaDataObject *obj = (PyavtSubsetsMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->isUnionOfChunks?1L:0L);
     return retval;
 }
@@ -729,7 +729,7 @@ avtSubsetsMetaData_GetIsUnionOfChunks(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSubsetsMetaData_SetHasPartialCells(PyObject *self, PyObject *args)
 {
-    avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)self;
+    PyavtSubsetsMetaDataObject *obj = (PyavtSubsetsMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -781,7 +781,7 @@ avtSubsetsMetaData_SetHasPartialCells(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSubsetsMetaData_GetHasPartialCells(PyObject *self, PyObject *args)
 {
-    avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)self;
+    PyavtSubsetsMetaDataObject *obj = (PyavtSubsetsMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->hasPartialCells?1L:0L);
     return retval;
 }
@@ -789,7 +789,7 @@ avtSubsetsMetaData_GetHasPartialCells(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSubsetsMetaData_SetDecompMode(PyObject *self, PyObject *args)
 {
-    avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)self;
+    PyavtSubsetsMetaDataObject *obj = (PyavtSubsetsMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -848,7 +848,7 @@ avtSubsetsMetaData_SetDecompMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSubsetsMetaData_GetDecompMode(PyObject *self, PyObject *args)
 {
-    avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)self;
+    PyavtSubsetsMetaDataObject *obj = (PyavtSubsetsMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->decompMode));
     return retval;
 }
@@ -856,7 +856,7 @@ avtSubsetsMetaData_GetDecompMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSubsetsMetaData_SetMaxTopoDim(PyObject *self, PyObject *args)
 {
-    avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)self;
+    PyavtSubsetsMetaDataObject *obj = (PyavtSubsetsMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -908,7 +908,7 @@ avtSubsetsMetaData_SetMaxTopoDim(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSubsetsMetaData_GetMaxTopoDim(PyObject *self, PyObject *args)
 {
-    avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)self;
+    PyavtSubsetsMetaDataObject *obj = (PyavtSubsetsMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->maxTopoDim));
     return retval;
 }
@@ -970,16 +970,16 @@ static void PyavtSubsetsMetaData_ExtendSetGetMethodTable()
 //
 
 static void
-avtSubsetsMetaData_dealloc(PyObject *v)
+PyavtSubsetsMetaData_dealloc(PyObject *v)
 {
-   avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)v;
+   PyavtSubsetsMetaDataObject *obj = (PyavtSubsetsMetaDataObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *avtSubsetsMetaData_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyavtSubsetsMetaData_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyavtSubsetsMetaData_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -1088,56 +1088,42 @@ PyavtSubsetsMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *arg
 }
 
 PyObject *
-avtSubsetsMetaData_str(PyObject *v)
+PyavtSubsetsMetaData_str(PyObject *v)
 {
-    avtSubsetsMetaDataObject *obj = (avtSubsetsMetaDataObject *)v;
+    PyavtSubsetsMetaDataObject *obj = (PyavtSubsetsMetaDataObject *)v;
     return PyString_FromString(PyavtSubsetsMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *avtSubsetsMetaData_Purpose = "Information about a particular category of subsets of a mesh (even for material subsets)";
-#else
-static char *avtSubsetsMetaData_Purpose = "Information about a particular category of subsets of a mesh (even for material subsets)";
-#endif
+static char const *PyavtSubsetsMetaData_purpose = "Information about a particular category of subsets of a mesh (even for material subsets)";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject avtSubsetsMetaDataType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "avtSubsetsMetaData",
-    .tp_basicsize = sizeof(avtSubsetsMetaDataObject),
-    .tp_dealloc = avtSubsetsMetaData_dealloc,
-    .tp_repr = avtSubsetsMetaData_str,
-    .tp_str = avtSubsetsMetaData_str,
-    .tp_getattro = PyavtSubsetsMetaData_getattro,
-    .tp_setattro = PyavtSubsetsMetaData_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = avtSubsetsMetaData_Purpose,
-    .tp_richcompare = avtSubsetsMetaData_richcompare,
-    .tp_methods = PyavtSubsetsMetaData_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(avtSubsetsMetaData);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-avtSubsetsMetaData_richcompare(PyObject *self, PyObject *other, int op)
+PyavtSubsetsMetaData_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &avtSubsetsMetaDataType
-         || Py_TYPE(other) != &avtSubsetsMetaDataType)
+    if ( Py_TYPE(self) != &PyavtSubsetsMetaDataType
+         || Py_TYPE(other) != &PyavtSubsetsMetaDataType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    avtSubsetsMetaData *a = ((avtSubsetsMetaDataObject *)self)->data;
-    avtSubsetsMetaData *b = ((avtSubsetsMetaDataObject *)other)->data;
+    avtSubsetsMetaData *a = ((PyavtSubsetsMetaDataObject *)self)->data;
+    avtSubsetsMetaData *b = ((PyavtSubsetsMetaDataObject *)other)->data;
 
     switch (op)
     {
@@ -1166,8 +1152,8 @@ static avtSubsetsMetaData *currentAtts = 0;
 static PyObject *
 NewavtSubsetsMetaData(int useCurrent)
 {
-    avtSubsetsMetaDataObject *newObject;
-    newObject = PyObject_NEW(avtSubsetsMetaDataObject, &avtSubsetsMetaDataType);
+    PyavtSubsetsMetaDataObject *newObject;
+    newObject = PyObject_NEW(PyavtSubsetsMetaDataObject, &PyavtSubsetsMetaDataType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1178,15 +1164,15 @@ NewavtSubsetsMetaData(int useCurrent)
         newObject->data = new avtSubsetsMetaData;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&avtSubsetsMetaDataType);
+    PyType_Ready(&PyavtSubsetsMetaDataType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapavtSubsetsMetaData(const avtSubsetsMetaData *attr)
 {
-    avtSubsetsMetaDataObject *newObject;
-    newObject = PyObject_NEW(avtSubsetsMetaDataObject, &avtSubsetsMetaDataType);
+    PyavtSubsetsMetaDataObject *newObject;
+    newObject = PyObject_NEW(PyavtSubsetsMetaDataObject, &PyavtSubsetsMetaDataType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (avtSubsetsMetaData *)attr;
@@ -1288,13 +1274,13 @@ PyavtSubsetsMetaData_GetMethodTable(int *nMethods)
 bool
 PyavtSubsetsMetaData_Check(PyObject *obj)
 {
-    return (obj->ob_type == &avtSubsetsMetaDataType);
+    return (obj->ob_type == &PyavtSubsetsMetaDataType);
 }
 
 avtSubsetsMetaData *
 PyavtSubsetsMetaData_FromPyObject(PyObject *obj)
 {
-    avtSubsetsMetaDataObject *obj2 = (avtSubsetsMetaDataObject *)obj;
+    PyavtSubsetsMetaDataObject *obj2 = (PyavtSubsetsMetaDataObject *)obj;
     return obj2->data;
 }
 
@@ -1313,7 +1299,7 @@ PyavtSubsetsMetaData_Wrap(const avtSubsetsMetaData *attr)
 void
 PyavtSubsetsMetaData_SetParent(PyObject *obj, PyObject *parent)
 {
-    avtSubsetsMetaDataObject *obj2 = (avtSubsetsMetaDataObject *)obj;
+    PyavtSubsetsMetaDataObject *obj2 = (PyavtSubsetsMetaDataObject *)obj;
     obj2->parent = parent;
 }
 

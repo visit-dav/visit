@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a ThresholdAttributes.
 //
-struct ThresholdAttributesObject
+struct PyThresholdAttributesObject
 {
     PyObject_HEAD
     ThresholdAttributes *data;
@@ -49,7 +49,7 @@ PyThresholdAttributes_ToString(const ThresholdAttributes *atts, const char *pref
 static PyObject *
 ThresholdAttributes_Notify(PyObject *self, PyObject *args)
 {
-    ThresholdAttributesObject *obj = (ThresholdAttributesObject *)self;
+    PyThresholdAttributesObject *obj = (PyThresholdAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -116,16 +116,16 @@ static void PyThresholdAttributes_ExtendSetGetMethodTable()
 //
 
 static void
-ThresholdAttributes_dealloc(PyObject *v)
+PyThresholdAttributes_dealloc(PyObject *v)
 {
-   ThresholdAttributesObject *obj = (ThresholdAttributesObject *)v;
+   PyThresholdAttributesObject *obj = (PyThresholdAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *ThresholdAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyThresholdAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyThresholdAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -177,56 +177,42 @@ PyThresholdAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *ar
 }
 
 PyObject *
-ThresholdAttributes_str(PyObject *v)
+PyThresholdAttributes_str(PyObject *v)
 {
-    ThresholdAttributesObject *obj = (ThresholdAttributesObject *)v;
+    PyThresholdAttributesObject *obj = (PyThresholdAttributesObject *)v;
     return PyString_FromString(PyThresholdAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *ThresholdAttributes_Purpose = "This class contains attributes for the threshold operator.";
-#else
-static char *ThresholdAttributes_Purpose = "This class contains attributes for the threshold operator.";
-#endif
+static char const *PyThresholdAttributes_purpose = "This class contains attributes for the threshold operator.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject ThresholdAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "ThresholdAttributes",
-    .tp_basicsize = sizeof(ThresholdAttributesObject),
-    .tp_dealloc = ThresholdAttributes_dealloc,
-    .tp_repr = ThresholdAttributes_str,
-    .tp_str = ThresholdAttributes_str,
-    .tp_getattro = PyThresholdAttributes_getattro,
-    .tp_setattro = PyThresholdAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = ThresholdAttributes_Purpose,
-    .tp_richcompare = ThresholdAttributes_richcompare,
-    .tp_methods = PyThresholdAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(ThresholdAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-ThresholdAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyThresholdAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &ThresholdAttributesType
-         || Py_TYPE(other) != &ThresholdAttributesType)
+    if ( Py_TYPE(self) != &PyThresholdAttributesType
+         || Py_TYPE(other) != &PyThresholdAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    ThresholdAttributes *a = ((ThresholdAttributesObject *)self)->data;
-    ThresholdAttributes *b = ((ThresholdAttributesObject *)other)->data;
+    ThresholdAttributes *a = ((PyThresholdAttributesObject *)self)->data;
+    ThresholdAttributes *b = ((PyThresholdAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -255,8 +241,8 @@ static ThresholdAttributes *currentAtts = 0;
 static PyObject *
 NewThresholdAttributes(int useCurrent)
 {
-    ThresholdAttributesObject *newObject;
-    newObject = PyObject_NEW(ThresholdAttributesObject, &ThresholdAttributesType);
+    PyThresholdAttributesObject *newObject;
+    newObject = PyObject_NEW(PyThresholdAttributesObject, &PyThresholdAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -267,15 +253,15 @@ NewThresholdAttributes(int useCurrent)
         newObject->data = new ThresholdAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&ThresholdAttributesType);
+    PyType_Ready(&PyThresholdAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapThresholdAttributes(const ThresholdAttributes *attr)
 {
-    ThresholdAttributesObject *newObject;
-    newObject = PyObject_NEW(ThresholdAttributesObject, &ThresholdAttributesType);
+    PyThresholdAttributesObject *newObject;
+    newObject = PyObject_NEW(PyThresholdAttributesObject, &PyThresholdAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (ThresholdAttributes *)attr;
@@ -377,13 +363,13 @@ PyThresholdAttributes_GetMethodTable(int *nMethods)
 bool
 PyThresholdAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ThresholdAttributesType);
+    return (obj->ob_type == &PyThresholdAttributesType);
 }
 
 ThresholdAttributes *
 PyThresholdAttributes_FromPyObject(PyObject *obj)
 {
-    ThresholdAttributesObject *obj2 = (ThresholdAttributesObject *)obj;
+    PyThresholdAttributesObject *obj2 = (PyThresholdAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -402,7 +388,7 @@ PyThresholdAttributes_Wrap(const ThresholdAttributes *attr)
 void
 PyThresholdAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    ThresholdAttributesObject *obj2 = (ThresholdAttributesObject *)obj;
+    PyThresholdAttributesObject *obj2 = (PyThresholdAttributesObject *)obj;
     obj2->parent = parent;
 }
 

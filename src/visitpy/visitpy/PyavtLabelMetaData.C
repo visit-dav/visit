@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a avtLabelMetaData.
 //
-struct avtLabelMetaDataObject
+struct PyavtLabelMetaDataObject
 {
     PyObject_HEAD
     avtLabelMetaData *data;
@@ -49,7 +49,7 @@ PyavtLabelMetaData_ToString(const avtLabelMetaData *atts, const char *prefix, co
 static PyObject *
 avtLabelMetaData_Notify(PyObject *self, PyObject *args)
 {
-    avtLabelMetaDataObject *obj = (avtLabelMetaDataObject *)self;
+    PyavtLabelMetaDataObject *obj = (PyavtLabelMetaDataObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -116,16 +116,16 @@ static void PyavtLabelMetaData_ExtendSetGetMethodTable()
 //
 
 static void
-avtLabelMetaData_dealloc(PyObject *v)
+PyavtLabelMetaData_dealloc(PyObject *v)
 {
-   avtLabelMetaDataObject *obj = (avtLabelMetaDataObject *)v;
+   PyavtLabelMetaDataObject *obj = (PyavtLabelMetaDataObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *avtLabelMetaData_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyavtLabelMetaData_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyavtLabelMetaData_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -177,56 +177,42 @@ PyavtLabelMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 }
 
 PyObject *
-avtLabelMetaData_str(PyObject *v)
+PyavtLabelMetaData_str(PyObject *v)
 {
-    avtLabelMetaDataObject *obj = (avtLabelMetaDataObject *)v;
+    PyavtLabelMetaDataObject *obj = (PyavtLabelMetaDataObject *)v;
     return PyString_FromString(PyavtLabelMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *avtLabelMetaData_Purpose = "Contains label metadata attributes";
-#else
-static char *avtLabelMetaData_Purpose = "Contains label metadata attributes";
-#endif
+static char const *PyavtLabelMetaData_purpose = "Contains label metadata attributes";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject avtLabelMetaDataType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "avtLabelMetaData",
-    .tp_basicsize = sizeof(avtLabelMetaDataObject),
-    .tp_dealloc = avtLabelMetaData_dealloc,
-    .tp_repr = avtLabelMetaData_str,
-    .tp_str = avtLabelMetaData_str,
-    .tp_getattro = PyavtLabelMetaData_getattro,
-    .tp_setattro = PyavtLabelMetaData_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = avtLabelMetaData_Purpose,
-    .tp_richcompare = avtLabelMetaData_richcompare,
-    .tp_methods = PyavtLabelMetaData_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(avtLabelMetaData);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-avtLabelMetaData_richcompare(PyObject *self, PyObject *other, int op)
+PyavtLabelMetaData_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &avtLabelMetaDataType
-         || Py_TYPE(other) != &avtLabelMetaDataType)
+    if ( Py_TYPE(self) != &PyavtLabelMetaDataType
+         || Py_TYPE(other) != &PyavtLabelMetaDataType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    avtLabelMetaData *a = ((avtLabelMetaDataObject *)self)->data;
-    avtLabelMetaData *b = ((avtLabelMetaDataObject *)other)->data;
+    avtLabelMetaData *a = ((PyavtLabelMetaDataObject *)self)->data;
+    avtLabelMetaData *b = ((PyavtLabelMetaDataObject *)other)->data;
 
     switch (op)
     {
@@ -255,8 +241,8 @@ static avtLabelMetaData *currentAtts = 0;
 static PyObject *
 NewavtLabelMetaData(int useCurrent)
 {
-    avtLabelMetaDataObject *newObject;
-    newObject = PyObject_NEW(avtLabelMetaDataObject, &avtLabelMetaDataType);
+    PyavtLabelMetaDataObject *newObject;
+    newObject = PyObject_NEW(PyavtLabelMetaDataObject, &PyavtLabelMetaDataType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -267,15 +253,15 @@ NewavtLabelMetaData(int useCurrent)
         newObject->data = new avtLabelMetaData;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&avtLabelMetaDataType);
+    PyType_Ready(&PyavtLabelMetaDataType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapavtLabelMetaData(const avtLabelMetaData *attr)
 {
-    avtLabelMetaDataObject *newObject;
-    newObject = PyObject_NEW(avtLabelMetaDataObject, &avtLabelMetaDataType);
+    PyavtLabelMetaDataObject *newObject;
+    newObject = PyObject_NEW(PyavtLabelMetaDataObject, &PyavtLabelMetaDataType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (avtLabelMetaData *)attr;
@@ -377,13 +363,13 @@ PyavtLabelMetaData_GetMethodTable(int *nMethods)
 bool
 PyavtLabelMetaData_Check(PyObject *obj)
 {
-    return (obj->ob_type == &avtLabelMetaDataType);
+    return (obj->ob_type == &PyavtLabelMetaDataType);
 }
 
 avtLabelMetaData *
 PyavtLabelMetaData_FromPyObject(PyObject *obj)
 {
-    avtLabelMetaDataObject *obj2 = (avtLabelMetaDataObject *)obj;
+    PyavtLabelMetaDataObject *obj2 = (PyavtLabelMetaDataObject *)obj;
     return obj2->data;
 }
 
@@ -402,7 +388,7 @@ PyavtLabelMetaData_Wrap(const avtLabelMetaData *attr)
 void
 PyavtLabelMetaData_SetParent(PyObject *obj, PyObject *parent)
 {
-    avtLabelMetaDataObject *obj2 = (avtLabelMetaDataObject *)obj;
+    PyavtLabelMetaDataObject *obj2 = (PyavtLabelMetaDataObject *)obj;
     obj2->parent = parent;
 }
 

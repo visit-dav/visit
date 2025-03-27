@@ -25,7 +25,7 @@
 //
 // This struct contains the Python type information and a ColorControlPointList.
 //
-struct ColorControlPointListObject
+struct PyColorControlPointListObject
 {
     PyObject_HEAD
     ColorControlPointList *data;
@@ -115,7 +115,7 @@ PyColorControlPointList_ToString(const ColorControlPointList *atts, const char *
 static PyObject *
 ColorControlPointList_Notify(PyObject *self, PyObject *args)
 {
-    ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
+    PyColorControlPointListObject *obj = (PyColorControlPointListObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -154,7 +154,7 @@ ColorControlPointList_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ColorControlPointList_GetControlPoints(PyObject *self, PyObject *args)
 {
-    ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
+    PyColorControlPointListObject *obj = (PyColorControlPointListObject *)self;
     int index = -1;
     if (args == NULL)
         return PyErr_Format(PyExc_NameError, "Use .GetControlPoints(int index) to get a single entry");
@@ -178,14 +178,14 @@ ColorControlPointList_GetControlPoints(PyObject *self, PyObject *args)
 PyObject *
 ColorControlPointList_GetNumControlPoints(PyObject *self, PyObject *args)
 {
-    ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
+    PyColorControlPointListObject *obj = (PyColorControlPointListObject *)self;
     return PyInt_FromLong((long)obj->data->GetControlPoints().size());
 }
 
 PyObject *
 ColorControlPointList_AddControlPoints(PyObject *self, PyObject *args)
 {
-    ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
+    PyColorControlPointListObject *obj = (PyColorControlPointListObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
         return NULL;
@@ -201,7 +201,7 @@ ColorControlPointList_AddControlPoints(PyObject *self, PyObject *args)
 static PyObject *
 ColorControlPointList_Remove_One_ControlPoints(PyObject *self, int index)
 {
-    ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
+    PyColorControlPointListObject *obj = (PyColorControlPointListObject *)self;
     // Remove in the AttributeGroupVector instead of calling RemoveControlPoints() because we don't want to delete the object; just remove it.
     AttributeGroupVector &atts = obj->data->GetControlPoints();
     AttributeGroupVector::iterator pos = atts.begin();
@@ -231,7 +231,7 @@ ColorControlPointList_RemoveControlPoints(PyObject *self, PyObject *args)
     int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
-    ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
+    PyColorControlPointListObject *obj = (PyColorControlPointListObject *)self;
     if(index < 0 || index >= obj->data->GetNumControlPoints())
         return PyErr_Format(PyExc_IndexError, "Index out of range");
 
@@ -241,7 +241,7 @@ ColorControlPointList_RemoveControlPoints(PyObject *self, PyObject *args)
 PyObject *
 ColorControlPointList_ClearControlPoints(PyObject *self, PyObject *args)
 {
-    ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
+    PyColorControlPointListObject *obj = (PyColorControlPointListObject *)self;
     int n = obj->data->GetNumControlPoints();
     for(int i = 0; i < n; ++i)
     {
@@ -255,7 +255,7 @@ ColorControlPointList_ClearControlPoints(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ColorControlPointList_SetSmoothing(PyObject *self, PyObject *args)
 {
-    ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
+    PyColorControlPointListObject *obj = (PyColorControlPointListObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -314,7 +314,7 @@ ColorControlPointList_SetSmoothing(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ColorControlPointList_GetSmoothing(PyObject *self, PyObject *args)
 {
-    ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
+    PyColorControlPointListObject *obj = (PyColorControlPointListObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetSmoothing()));
     return retval;
 }
@@ -322,7 +322,7 @@ ColorControlPointList_GetSmoothing(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ColorControlPointList_SetEqualSpacingFlag(PyObject *self, PyObject *args)
 {
-    ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
+    PyColorControlPointListObject *obj = (PyColorControlPointListObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -374,7 +374,7 @@ ColorControlPointList_SetEqualSpacingFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ColorControlPointList_GetEqualSpacingFlag(PyObject *self, PyObject *args)
 {
-    ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
+    PyColorControlPointListObject *obj = (PyColorControlPointListObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetEqualSpacingFlag()?1L:0L);
     return retval;
 }
@@ -382,7 +382,7 @@ ColorControlPointList_GetEqualSpacingFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ColorControlPointList_SetDiscreteFlag(PyObject *self, PyObject *args)
 {
-    ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
+    PyColorControlPointListObject *obj = (PyColorControlPointListObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -434,7 +434,7 @@ ColorControlPointList_SetDiscreteFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ColorControlPointList_GetDiscreteFlag(PyObject *self, PyObject *args)
 {
-    ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
+    PyColorControlPointListObject *obj = (PyColorControlPointListObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetDiscreteFlag()?1L:0L);
     return retval;
 }
@@ -442,7 +442,7 @@ ColorControlPointList_GetDiscreteFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ColorControlPointList_SetTagNames(PyObject *self, PyObject *args)
 {
-    ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
+    PyColorControlPointListObject *obj = (PyColorControlPointListObject *)self;
 
     stringVector vec;
 
@@ -499,7 +499,7 @@ ColorControlPointList_SetTagNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ColorControlPointList_GetTagNames(PyObject *self, PyObject *args)
 {
-    ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
+    PyColorControlPointListObject *obj = (PyColorControlPointListObject *)self;
     // Allocate a tuple the with enough entries to hold the tagNames.
     const stringVector &tagNames = obj->data->GetTagNames();
     PyObject *retval = PyTuple_New(tagNames.size());
@@ -547,16 +547,16 @@ PyMethodDef PyColorControlPointList_methods[COLORCONTROLPOINTLIST_NMETH] = {
 //
 
 static void
-ColorControlPointList_dealloc(PyObject *v)
+PyColorControlPointList_dealloc(PyObject *v)
 {
-   ColorControlPointListObject *obj = (ColorControlPointListObject *)v;
+   PyColorControlPointListObject *obj = (PyColorControlPointListObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *ColorControlPointList_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyColorControlPointList_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyColorControlPointList_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -623,56 +623,42 @@ PyColorControlPointList_setattro(PyObject *self, PyObject *attr_name, PyObject *
 }
 
 PyObject *
-ColorControlPointList_str(PyObject *v)
+PyColorControlPointList_str(PyObject *v)
 {
-    ColorControlPointListObject *obj = (ColorControlPointListObject *)v;
+    PyColorControlPointListObject *obj = (PyColorControlPointListObject *)v;
     return PyString_FromString(PyColorControlPointList_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *ColorControlPointList_Purpose = "This class contains a list of ColorControlPoint objects.";
-#else
-static char *ColorControlPointList_Purpose = "This class contains a list of ColorControlPoint objects.";
-#endif
+static char const *PyColorControlPointList_purpose = "This class contains a list of ColorControlPoint objects.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject ColorControlPointListType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "ColorControlPointList",
-    .tp_basicsize = sizeof(ColorControlPointListObject),
-    .tp_dealloc = ColorControlPointList_dealloc,
-    .tp_repr = ColorControlPointList_str,
-    .tp_str = ColorControlPointList_str,
-    .tp_getattro = PyColorControlPointList_getattro,
-    .tp_setattro = PyColorControlPointList_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = ColorControlPointList_Purpose,
-    .tp_richcompare = ColorControlPointList_richcompare,
-    .tp_methods = PyColorControlPointList_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(ColorControlPointList);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-ColorControlPointList_richcompare(PyObject *self, PyObject *other, int op)
+PyColorControlPointList_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &ColorControlPointListType
-         || Py_TYPE(other) != &ColorControlPointListType)
+    if ( Py_TYPE(self) != &PyColorControlPointListType
+         || Py_TYPE(other) != &PyColorControlPointListType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    ColorControlPointList *a = ((ColorControlPointListObject *)self)->data;
-    ColorControlPointList *b = ((ColorControlPointListObject *)other)->data;
+    ColorControlPointList *a = ((PyColorControlPointListObject *)self)->data;
+    ColorControlPointList *b = ((PyColorControlPointListObject *)other)->data;
 
     switch (op)
     {
@@ -701,8 +687,8 @@ static ColorControlPointList *currentAtts = 0;
 static PyObject *
 NewColorControlPointList(int useCurrent)
 {
-    ColorControlPointListObject *newObject;
-    newObject = PyObject_NEW(ColorControlPointListObject, &ColorControlPointListType);
+    PyColorControlPointListObject *newObject;
+    newObject = PyObject_NEW(PyColorControlPointListObject, &PyColorControlPointListType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -713,15 +699,15 @@ NewColorControlPointList(int useCurrent)
         newObject->data = new ColorControlPointList;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&ColorControlPointListType);
+    PyType_Ready(&PyColorControlPointListType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapColorControlPointList(const ColorControlPointList *attr)
 {
-    ColorControlPointListObject *newObject;
-    newObject = PyObject_NEW(ColorControlPointListObject, &ColorControlPointListType);
+    PyColorControlPointListObject *newObject;
+    newObject = PyObject_NEW(PyColorControlPointListObject, &PyColorControlPointListType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (ColorControlPointList *)attr;
@@ -823,13 +809,13 @@ PyColorControlPointList_GetMethodTable(int *nMethods)
 bool
 PyColorControlPointList_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ColorControlPointListType);
+    return (obj->ob_type == &PyColorControlPointListType);
 }
 
 ColorControlPointList *
 PyColorControlPointList_FromPyObject(PyObject *obj)
 {
-    ColorControlPointListObject *obj2 = (ColorControlPointListObject *)obj;
+    PyColorControlPointListObject *obj2 = (PyColorControlPointListObject *)obj;
     return obj2->data;
 }
 
@@ -848,7 +834,7 @@ PyColorControlPointList_Wrap(const ColorControlPointList *attr)
 void
 PyColorControlPointList_SetParent(PyObject *obj, PyObject *parent)
 {
-    ColorControlPointListObject *obj2 = (ColorControlPointListObject *)obj;
+    PyColorControlPointListObject *obj2 = (PyColorControlPointListObject *)obj;
     obj2->parent = parent;
 }
 

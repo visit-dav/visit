@@ -25,7 +25,7 @@
 //
 // This struct contains the Python type information and a FontAttributes.
 //
-struct FontAttributesObject
+struct PyFontAttributesObject
 {
     PyObject_HEAD
     FontAttributes *data;
@@ -88,7 +88,7 @@ PyFontAttributes_ToString(const FontAttributes *atts, const char *prefix, const 
 static PyObject *
 FontAttributes_Notify(PyObject *self, PyObject *args)
 {
-    FontAttributesObject *obj = (FontAttributesObject *)self;
+    PyFontAttributesObject *obj = (PyFontAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -125,7 +125,7 @@ FontAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FontAttributes_SetFont(PyObject *self, PyObject *args)
 {
-    FontAttributesObject *obj = (FontAttributesObject *)self;
+    PyFontAttributesObject *obj = (PyFontAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -184,7 +184,7 @@ FontAttributes_SetFont(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FontAttributes_GetFont(PyObject *self, PyObject *args)
 {
-    FontAttributesObject *obj = (FontAttributesObject *)self;
+    PyFontAttributesObject *obj = (PyFontAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetFont()));
     return retval;
 }
@@ -192,7 +192,7 @@ FontAttributes_GetFont(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FontAttributes_SetScale(PyObject *self, PyObject *args)
 {
-    FontAttributesObject *obj = (FontAttributesObject *)self;
+    PyFontAttributesObject *obj = (PyFontAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -244,7 +244,7 @@ FontAttributes_SetScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FontAttributes_GetScale(PyObject *self, PyObject *args)
 {
-    FontAttributesObject *obj = (FontAttributesObject *)self;
+    PyFontAttributesObject *obj = (PyFontAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetScale());
     return retval;
 }
@@ -252,7 +252,7 @@ FontAttributes_GetScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FontAttributes_SetUseForegroundColor(PyObject *self, PyObject *args)
 {
-    FontAttributesObject *obj = (FontAttributesObject *)self;
+    PyFontAttributesObject *obj = (PyFontAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -304,7 +304,7 @@ FontAttributes_SetUseForegroundColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FontAttributes_GetUseForegroundColor(PyObject *self, PyObject *args)
 {
-    FontAttributesObject *obj = (FontAttributesObject *)self;
+    PyFontAttributesObject *obj = (PyFontAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetUseForegroundColor()?1L:0L);
     return retval;
 }
@@ -312,7 +312,7 @@ FontAttributes_GetUseForegroundColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FontAttributes_SetColor(PyObject *self, PyObject *args)
 {
-    FontAttributesObject *obj = (FontAttributesObject *)self;
+    PyFontAttributesObject *obj = (PyFontAttributesObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -375,7 +375,7 @@ FontAttributes_SetColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FontAttributes_GetColor(PyObject *self, PyObject *args)
 {
-    FontAttributesObject *obj = (FontAttributesObject *)self;
+    PyFontAttributesObject *obj = (PyFontAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the color.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *color = obj->data->GetColor().GetColor();
@@ -389,7 +389,7 @@ FontAttributes_GetColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FontAttributes_SetBold(PyObject *self, PyObject *args)
 {
-    FontAttributesObject *obj = (FontAttributesObject *)self;
+    PyFontAttributesObject *obj = (PyFontAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -441,7 +441,7 @@ FontAttributes_SetBold(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FontAttributes_GetBold(PyObject *self, PyObject *args)
 {
-    FontAttributesObject *obj = (FontAttributesObject *)self;
+    PyFontAttributesObject *obj = (PyFontAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetBold()?1L:0L);
     return retval;
 }
@@ -449,7 +449,7 @@ FontAttributes_GetBold(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FontAttributes_SetItalic(PyObject *self, PyObject *args)
 {
-    FontAttributesObject *obj = (FontAttributesObject *)self;
+    PyFontAttributesObject *obj = (PyFontAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -501,7 +501,7 @@ FontAttributes_SetItalic(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FontAttributes_GetItalic(PyObject *self, PyObject *args)
 {
-    FontAttributesObject *obj = (FontAttributesObject *)self;
+    PyFontAttributesObject *obj = (PyFontAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetItalic()?1L:0L);
     return retval;
 }
@@ -531,16 +531,16 @@ PyMethodDef PyFontAttributes_methods[FONTATTRIBUTES_NMETH] = {
 //
 
 static void
-FontAttributes_dealloc(PyObject *v)
+PyFontAttributes_dealloc(PyObject *v)
 {
-   FontAttributesObject *obj = (FontAttributesObject *)v;
+   PyFontAttributesObject *obj = (PyFontAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *FontAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyFontAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyFontAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -611,56 +611,42 @@ PyFontAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 }
 
 PyObject *
-FontAttributes_str(PyObject *v)
+PyFontAttributes_str(PyObject *v)
 {
-    FontAttributesObject *obj = (FontAttributesObject *)v;
+    PyFontAttributesObject *obj = (PyFontAttributesObject *)v;
     return PyString_FromString(PyFontAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *FontAttributes_Purpose = "Describes font properties that we can set through VTK";
-#else
-static char *FontAttributes_Purpose = "Describes font properties that we can set through VTK";
-#endif
+static char const *PyFontAttributes_purpose = "Describes font properties that we can set through VTK";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject FontAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "FontAttributes",
-    .tp_basicsize = sizeof(FontAttributesObject),
-    .tp_dealloc = FontAttributes_dealloc,
-    .tp_repr = FontAttributes_str,
-    .tp_str = FontAttributes_str,
-    .tp_getattro = PyFontAttributes_getattro,
-    .tp_setattro = PyFontAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = FontAttributes_Purpose,
-    .tp_richcompare = FontAttributes_richcompare,
-    .tp_methods = PyFontAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(FontAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-FontAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyFontAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &FontAttributesType
-         || Py_TYPE(other) != &FontAttributesType)
+    if ( Py_TYPE(self) != &PyFontAttributesType
+         || Py_TYPE(other) != &PyFontAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    FontAttributes *a = ((FontAttributesObject *)self)->data;
-    FontAttributes *b = ((FontAttributesObject *)other)->data;
+    FontAttributes *a = ((PyFontAttributesObject *)self)->data;
+    FontAttributes *b = ((PyFontAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -689,8 +675,8 @@ static FontAttributes *currentAtts = 0;
 static PyObject *
 NewFontAttributes(int useCurrent)
 {
-    FontAttributesObject *newObject;
-    newObject = PyObject_NEW(FontAttributesObject, &FontAttributesType);
+    PyFontAttributesObject *newObject;
+    newObject = PyObject_NEW(PyFontAttributesObject, &PyFontAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -701,15 +687,15 @@ NewFontAttributes(int useCurrent)
         newObject->data = new FontAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&FontAttributesType);
+    PyType_Ready(&PyFontAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapFontAttributes(const FontAttributes *attr)
 {
-    FontAttributesObject *newObject;
-    newObject = PyObject_NEW(FontAttributesObject, &FontAttributesType);
+    PyFontAttributesObject *newObject;
+    newObject = PyObject_NEW(PyFontAttributesObject, &PyFontAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (FontAttributes *)attr;
@@ -811,13 +797,13 @@ PyFontAttributes_GetMethodTable(int *nMethods)
 bool
 PyFontAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &FontAttributesType);
+    return (obj->ob_type == &PyFontAttributesType);
 }
 
 FontAttributes *
 PyFontAttributes_FromPyObject(PyObject *obj)
 {
-    FontAttributesObject *obj2 = (FontAttributesObject *)obj;
+    PyFontAttributesObject *obj2 = (PyFontAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -836,7 +822,7 @@ PyFontAttributes_Wrap(const FontAttributes *attr)
 void
 PyFontAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    FontAttributesObject *obj2 = (FontAttributesObject *)obj;
+    PyFontAttributesObject *obj2 = (PyFontAttributesObject *)obj;
     obj2->parent = parent;
 }
 

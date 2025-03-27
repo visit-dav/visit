@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a ClipAttributes.
 //
-struct ClipAttributesObject
+struct PyClipAttributesObject
 {
     PyObject_HEAD
     ClipAttributes *data;
@@ -245,7 +245,7 @@ PyClipAttributes_ToString(const ClipAttributes *atts, const char *prefix, const 
 static PyObject *
 ClipAttributes_Notify(PyObject *self, PyObject *args)
 {
-    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+    PyClipAttributesObject *obj = (PyClipAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -282,7 +282,7 @@ ClipAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ClipAttributes_SetQuality(PyObject *self, PyObject *args)
 {
-    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+    PyClipAttributesObject *obj = (PyClipAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -340,7 +340,7 @@ ClipAttributes_SetQuality(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ClipAttributes_GetQuality(PyObject *self, PyObject *args)
 {
-    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+    PyClipAttributesObject *obj = (PyClipAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetQuality()));
     return retval;
 }
@@ -348,7 +348,7 @@ ClipAttributes_GetQuality(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ClipAttributes_SetFuncType(PyObject *self, PyObject *args)
 {
-    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+    PyClipAttributesObject *obj = (PyClipAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -406,7 +406,7 @@ ClipAttributes_SetFuncType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ClipAttributes_GetFuncType(PyObject *self, PyObject *args)
 {
-    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+    PyClipAttributesObject *obj = (PyClipAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetFuncType()));
     return retval;
 }
@@ -414,7 +414,7 @@ ClipAttributes_GetFuncType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ClipAttributes_SetPlane1Status(PyObject *self, PyObject *args)
 {
-    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+    PyClipAttributesObject *obj = (PyClipAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -466,7 +466,7 @@ ClipAttributes_SetPlane1Status(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ClipAttributes_GetPlane1Status(PyObject *self, PyObject *args)
 {
-    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+    PyClipAttributesObject *obj = (PyClipAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetPlane1Status()?1L:0L);
     return retval;
 }
@@ -474,7 +474,7 @@ ClipAttributes_GetPlane1Status(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ClipAttributes_SetPlane2Status(PyObject *self, PyObject *args)
 {
-    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+    PyClipAttributesObject *obj = (PyClipAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -526,7 +526,7 @@ ClipAttributes_SetPlane2Status(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ClipAttributes_GetPlane2Status(PyObject *self, PyObject *args)
 {
-    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+    PyClipAttributesObject *obj = (PyClipAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetPlane2Status()?1L:0L);
     return retval;
 }
@@ -534,7 +534,7 @@ ClipAttributes_GetPlane2Status(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ClipAttributes_SetPlane3Status(PyObject *self, PyObject *args)
 {
-    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+    PyClipAttributesObject *obj = (PyClipAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -586,7 +586,7 @@ ClipAttributes_SetPlane3Status(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ClipAttributes_GetPlane3Status(PyObject *self, PyObject *args)
 {
-    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+    PyClipAttributesObject *obj = (PyClipAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetPlane3Status()?1L:0L);
     return retval;
 }
@@ -594,7 +594,7 @@ ClipAttributes_GetPlane3Status(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ClipAttributes_SetPlane1Origin(PyObject *self, PyObject *args)
 {
-    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+    PyClipAttributesObject *obj = (PyClipAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetPlane1Origin();
@@ -661,7 +661,7 @@ ClipAttributes_SetPlane1Origin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ClipAttributes_GetPlane1Origin(PyObject *self, PyObject *args)
 {
-    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+    PyClipAttributesObject *obj = (PyClipAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the plane1Origin.
     PyObject *retval = PyTuple_New(3);
     const double *plane1Origin = obj->data->GetPlane1Origin();
@@ -673,7 +673,7 @@ ClipAttributes_GetPlane1Origin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ClipAttributes_SetPlane2Origin(PyObject *self, PyObject *args)
 {
-    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+    PyClipAttributesObject *obj = (PyClipAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetPlane2Origin();
@@ -740,7 +740,7 @@ ClipAttributes_SetPlane2Origin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ClipAttributes_GetPlane2Origin(PyObject *self, PyObject *args)
 {
-    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+    PyClipAttributesObject *obj = (PyClipAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the plane2Origin.
     PyObject *retval = PyTuple_New(3);
     const double *plane2Origin = obj->data->GetPlane2Origin();
@@ -752,7 +752,7 @@ ClipAttributes_GetPlane2Origin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ClipAttributes_SetPlane3Origin(PyObject *self, PyObject *args)
 {
-    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+    PyClipAttributesObject *obj = (PyClipAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetPlane3Origin();
@@ -819,7 +819,7 @@ ClipAttributes_SetPlane3Origin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ClipAttributes_GetPlane3Origin(PyObject *self, PyObject *args)
 {
-    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+    PyClipAttributesObject *obj = (PyClipAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the plane3Origin.
     PyObject *retval = PyTuple_New(3);
     const double *plane3Origin = obj->data->GetPlane3Origin();
@@ -831,7 +831,7 @@ ClipAttributes_GetPlane3Origin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ClipAttributes_SetPlane1Normal(PyObject *self, PyObject *args)
 {
-    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+    PyClipAttributesObject *obj = (PyClipAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetPlane1Normal();
@@ -898,7 +898,7 @@ ClipAttributes_SetPlane1Normal(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ClipAttributes_GetPlane1Normal(PyObject *self, PyObject *args)
 {
-    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+    PyClipAttributesObject *obj = (PyClipAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the plane1Normal.
     PyObject *retval = PyTuple_New(3);
     const double *plane1Normal = obj->data->GetPlane1Normal();
@@ -910,7 +910,7 @@ ClipAttributes_GetPlane1Normal(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ClipAttributes_SetPlane2Normal(PyObject *self, PyObject *args)
 {
-    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+    PyClipAttributesObject *obj = (PyClipAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetPlane2Normal();
@@ -977,7 +977,7 @@ ClipAttributes_SetPlane2Normal(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ClipAttributes_GetPlane2Normal(PyObject *self, PyObject *args)
 {
-    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+    PyClipAttributesObject *obj = (PyClipAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the plane2Normal.
     PyObject *retval = PyTuple_New(3);
     const double *plane2Normal = obj->data->GetPlane2Normal();
@@ -989,7 +989,7 @@ ClipAttributes_GetPlane2Normal(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ClipAttributes_SetPlane3Normal(PyObject *self, PyObject *args)
 {
-    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+    PyClipAttributesObject *obj = (PyClipAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetPlane3Normal();
@@ -1056,7 +1056,7 @@ ClipAttributes_SetPlane3Normal(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ClipAttributes_GetPlane3Normal(PyObject *self, PyObject *args)
 {
-    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+    PyClipAttributesObject *obj = (PyClipAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the plane3Normal.
     PyObject *retval = PyTuple_New(3);
     const double *plane3Normal = obj->data->GetPlane3Normal();
@@ -1068,7 +1068,7 @@ ClipAttributes_GetPlane3Normal(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ClipAttributes_SetPlaneInverse(PyObject *self, PyObject *args)
 {
-    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+    PyClipAttributesObject *obj = (PyClipAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1120,7 +1120,7 @@ ClipAttributes_SetPlaneInverse(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ClipAttributes_GetPlaneInverse(PyObject *self, PyObject *args)
 {
-    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+    PyClipAttributesObject *obj = (PyClipAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetPlaneInverse()?1L:0L);
     return retval;
 }
@@ -1128,7 +1128,7 @@ ClipAttributes_GetPlaneInverse(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ClipAttributes_SetPlaneToolControlledClipPlane(PyObject *self, PyObject *args)
 {
-    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+    PyClipAttributesObject *obj = (PyClipAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1188,7 +1188,7 @@ ClipAttributes_SetPlaneToolControlledClipPlane(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ClipAttributes_GetPlaneToolControlledClipPlane(PyObject *self, PyObject *args)
 {
-    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+    PyClipAttributesObject *obj = (PyClipAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetPlaneToolControlledClipPlane()));
     return retval;
 }
@@ -1196,7 +1196,7 @@ ClipAttributes_GetPlaneToolControlledClipPlane(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ClipAttributes_SetCenter(PyObject *self, PyObject *args)
 {
-    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+    PyClipAttributesObject *obj = (PyClipAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetCenter();
@@ -1263,7 +1263,7 @@ ClipAttributes_SetCenter(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ClipAttributes_GetCenter(PyObject *self, PyObject *args)
 {
-    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+    PyClipAttributesObject *obj = (PyClipAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the center.
     PyObject *retval = PyTuple_New(3);
     const double *center = obj->data->GetCenter();
@@ -1275,7 +1275,7 @@ ClipAttributes_GetCenter(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ClipAttributes_SetRadius(PyObject *self, PyObject *args)
 {
-    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+    PyClipAttributesObject *obj = (PyClipAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1327,7 +1327,7 @@ ClipAttributes_SetRadius(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ClipAttributes_GetRadius(PyObject *self, PyObject *args)
 {
-    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+    PyClipAttributesObject *obj = (PyClipAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetRadius());
     return retval;
 }
@@ -1335,7 +1335,7 @@ ClipAttributes_GetRadius(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ClipAttributes_SetSphereInverse(PyObject *self, PyObject *args)
 {
-    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+    PyClipAttributesObject *obj = (PyClipAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1387,7 +1387,7 @@ ClipAttributes_SetSphereInverse(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ClipAttributes_GetSphereInverse(PyObject *self, PyObject *args)
 {
-    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+    PyClipAttributesObject *obj = (PyClipAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetSphereInverse()?1L:0L);
     return retval;
 }
@@ -1395,7 +1395,7 @@ ClipAttributes_GetSphereInverse(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ClipAttributes_SetCrinkleClip(PyObject *self, PyObject *args)
 {
-    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+    PyClipAttributesObject *obj = (PyClipAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1447,7 +1447,7 @@ ClipAttributes_SetCrinkleClip(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ClipAttributes_GetCrinkleClip(PyObject *self, PyObject *args)
 {
-    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+    PyClipAttributesObject *obj = (PyClipAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetCrinkleClip()?1L:0L);
     return retval;
 }
@@ -1499,16 +1499,16 @@ PyMethodDef PyClipAttributes_methods[CLIPATTRIBUTES_NMETH] = {
 //
 
 static void
-ClipAttributes_dealloc(PyObject *v)
+PyClipAttributes_dealloc(PyObject *v)
 {
-   ClipAttributesObject *obj = (ClipAttributesObject *)v;
+   PyClipAttributesObject *obj = (PyClipAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *ClipAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyClipAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyClipAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -1637,56 +1637,42 @@ PyClipAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 }
 
 PyObject *
-ClipAttributes_str(PyObject *v)
+PyClipAttributes_str(PyObject *v)
 {
-    ClipAttributesObject *obj = (ClipAttributesObject *)v;
+    PyClipAttributesObject *obj = (PyClipAttributesObject *)v;
     return PyString_FromString(PyClipAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *ClipAttributes_Purpose = "This class contains attributes for the clip operator.";
-#else
-static char *ClipAttributes_Purpose = "This class contains attributes for the clip operator.";
-#endif
+static char const *PyClipAttributes_purpose = "This class contains attributes for the clip operator.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject ClipAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "ClipAttributes",
-    .tp_basicsize = sizeof(ClipAttributesObject),
-    .tp_dealloc = ClipAttributes_dealloc,
-    .tp_repr = ClipAttributes_str,
-    .tp_str = ClipAttributes_str,
-    .tp_getattro = PyClipAttributes_getattro,
-    .tp_setattro = PyClipAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = ClipAttributes_Purpose,
-    .tp_richcompare = ClipAttributes_richcompare,
-    .tp_methods = PyClipAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(ClipAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-ClipAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyClipAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &ClipAttributesType
-         || Py_TYPE(other) != &ClipAttributesType)
+    if ( Py_TYPE(self) != &PyClipAttributesType
+         || Py_TYPE(other) != &PyClipAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    ClipAttributes *a = ((ClipAttributesObject *)self)->data;
-    ClipAttributes *b = ((ClipAttributesObject *)other)->data;
+    ClipAttributes *a = ((PyClipAttributesObject *)self)->data;
+    ClipAttributes *b = ((PyClipAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -1715,8 +1701,8 @@ static ClipAttributes *currentAtts = 0;
 static PyObject *
 NewClipAttributes(int useCurrent)
 {
-    ClipAttributesObject *newObject;
-    newObject = PyObject_NEW(ClipAttributesObject, &ClipAttributesType);
+    PyClipAttributesObject *newObject;
+    newObject = PyObject_NEW(PyClipAttributesObject, &PyClipAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1727,15 +1713,15 @@ NewClipAttributes(int useCurrent)
         newObject->data = new ClipAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&ClipAttributesType);
+    PyType_Ready(&PyClipAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapClipAttributes(const ClipAttributes *attr)
 {
-    ClipAttributesObject *newObject;
-    newObject = PyObject_NEW(ClipAttributesObject, &ClipAttributesType);
+    PyClipAttributesObject *newObject;
+    newObject = PyObject_NEW(PyClipAttributesObject, &PyClipAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (ClipAttributes *)attr;
@@ -1837,13 +1823,13 @@ PyClipAttributes_GetMethodTable(int *nMethods)
 bool
 PyClipAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ClipAttributesType);
+    return (obj->ob_type == &PyClipAttributesType);
 }
 
 ClipAttributes *
 PyClipAttributes_FromPyObject(PyObject *obj)
 {
-    ClipAttributesObject *obj2 = (ClipAttributesObject *)obj;
+    PyClipAttributesObject *obj2 = (PyClipAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1862,7 +1848,7 @@ PyClipAttributes_Wrap(const ClipAttributes *attr)
 void
 PyClipAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    ClipAttributesObject *obj2 = (ClipAttributesObject *)obj;
+    PyClipAttributesObject *obj2 = (PyClipAttributesObject *)obj;
     obj2->parent = parent;
 }
 

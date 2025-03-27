@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a ViewerClientAttributes.
 //
-struct ViewerClientAttributesObject
+struct PyViewerClientAttributesObject
 {
     PyObject_HEAD
     ViewerClientAttributes *data;
@@ -114,7 +114,7 @@ PyViewerClientAttributes_ToString(const ViewerClientAttributes *atts, const char
 static PyObject *
 ViewerClientAttributes_Notify(PyObject *self, PyObject *args)
 {
-    ViewerClientAttributesObject *obj = (ViewerClientAttributesObject *)self;
+    PyViewerClientAttributesObject *obj = (PyViewerClientAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -151,7 +151,7 @@ ViewerClientAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewerClientAttributes_SetRenderingType(PyObject *self, PyObject *args)
 {
-    ViewerClientAttributesObject *obj = (ViewerClientAttributesObject *)self;
+    PyViewerClientAttributesObject *obj = (PyViewerClientAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -210,7 +210,7 @@ ViewerClientAttributes_SetRenderingType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewerClientAttributes_GetRenderingType(PyObject *self, PyObject *args)
 {
-    ViewerClientAttributesObject *obj = (ViewerClientAttributesObject *)self;
+    PyViewerClientAttributesObject *obj = (PyViewerClientAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetRenderingType()));
     return retval;
 }
@@ -218,7 +218,7 @@ ViewerClientAttributes_GetRenderingType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewerClientAttributes_SetId(PyObject *self, PyObject *args)
 {
-    ViewerClientAttributesObject *obj = (ViewerClientAttributesObject *)self;
+    PyViewerClientAttributesObject *obj = (PyViewerClientAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -270,7 +270,7 @@ ViewerClientAttributes_SetId(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewerClientAttributes_GetId(PyObject *self, PyObject *args)
 {
-    ViewerClientAttributesObject *obj = (ViewerClientAttributesObject *)self;
+    PyViewerClientAttributesObject *obj = (PyViewerClientAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetId()));
     return retval;
 }
@@ -278,7 +278,7 @@ ViewerClientAttributes_GetId(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewerClientAttributes_SetTitle(PyObject *self, PyObject *args)
 {
-    ViewerClientAttributesObject *obj = (ViewerClientAttributesObject *)self;
+    PyViewerClientAttributesObject *obj = (PyViewerClientAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -319,7 +319,7 @@ ViewerClientAttributes_SetTitle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewerClientAttributes_GetTitle(PyObject *self, PyObject *args)
 {
-    ViewerClientAttributesObject *obj = (ViewerClientAttributesObject *)self;
+    PyViewerClientAttributesObject *obj = (PyViewerClientAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetTitle().c_str());
     return retval;
 }
@@ -327,7 +327,7 @@ ViewerClientAttributes_GetTitle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewerClientAttributes_SetWindowIds(PyObject *self, PyObject *args)
 {
-    ViewerClientAttributesObject *obj = (ViewerClientAttributesObject *)self;
+    PyViewerClientAttributesObject *obj = (PyViewerClientAttributesObject *)self;
 
     intVector vec;
 
@@ -391,7 +391,7 @@ ViewerClientAttributes_SetWindowIds(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewerClientAttributes_GetWindowIds(PyObject *self, PyObject *args)
 {
-    ViewerClientAttributesObject *obj = (ViewerClientAttributesObject *)self;
+    PyViewerClientAttributesObject *obj = (PyViewerClientAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the windowIds.
     const intVector &windowIds = obj->data->GetWindowIds();
     PyObject *retval = PyTuple_New(windowIds.size());
@@ -403,7 +403,7 @@ ViewerClientAttributes_GetWindowIds(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewerClientAttributes_SetImageWidth(PyObject *self, PyObject *args)
 {
-    ViewerClientAttributesObject *obj = (ViewerClientAttributesObject *)self;
+    PyViewerClientAttributesObject *obj = (PyViewerClientAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -455,7 +455,7 @@ ViewerClientAttributes_SetImageWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewerClientAttributes_GetImageWidth(PyObject *self, PyObject *args)
 {
-    ViewerClientAttributesObject *obj = (ViewerClientAttributesObject *)self;
+    PyViewerClientAttributesObject *obj = (PyViewerClientAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetImageWidth()));
     return retval;
 }
@@ -463,7 +463,7 @@ ViewerClientAttributes_GetImageWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewerClientAttributes_SetImageHeight(PyObject *self, PyObject *args)
 {
-    ViewerClientAttributesObject *obj = (ViewerClientAttributesObject *)self;
+    PyViewerClientAttributesObject *obj = (PyViewerClientAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -515,7 +515,7 @@ ViewerClientAttributes_SetImageHeight(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewerClientAttributes_GetImageHeight(PyObject *self, PyObject *args)
 {
-    ViewerClientAttributesObject *obj = (ViewerClientAttributesObject *)self;
+    PyViewerClientAttributesObject *obj = (PyViewerClientAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetImageHeight()));
     return retval;
 }
@@ -523,7 +523,7 @@ ViewerClientAttributes_GetImageHeight(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewerClientAttributes_SetImageResolutionPcnt(PyObject *self, PyObject *args)
 {
-    ViewerClientAttributesObject *obj = (ViewerClientAttributesObject *)self;
+    PyViewerClientAttributesObject *obj = (PyViewerClientAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -575,7 +575,7 @@ ViewerClientAttributes_SetImageResolutionPcnt(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewerClientAttributes_GetImageResolutionPcnt(PyObject *self, PyObject *args)
 {
-    ViewerClientAttributesObject *obj = (ViewerClientAttributesObject *)self;
+    PyViewerClientAttributesObject *obj = (PyViewerClientAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetImageResolutionPcnt());
     return retval;
 }
@@ -583,7 +583,7 @@ ViewerClientAttributes_GetImageResolutionPcnt(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewerClientAttributes_SetExternalClient(PyObject *self, PyObject *args)
 {
-    ViewerClientAttributesObject *obj = (ViewerClientAttributesObject *)self;
+    PyViewerClientAttributesObject *obj = (PyViewerClientAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -635,7 +635,7 @@ ViewerClientAttributes_SetExternalClient(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewerClientAttributes_GetExternalClient(PyObject *self, PyObject *args)
 {
-    ViewerClientAttributesObject *obj = (ViewerClientAttributesObject *)self;
+    PyViewerClientAttributesObject *obj = (PyViewerClientAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetExternalClient()?1L:0L);
     return retval;
 }
@@ -643,7 +643,7 @@ ViewerClientAttributes_GetExternalClient(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewerClientAttributes_SetRenderingTypes(PyObject *self, PyObject *args)
 {
-    ViewerClientAttributesObject *obj = (ViewerClientAttributesObject *)self;
+    PyViewerClientAttributesObject *obj = (PyViewerClientAttributesObject *)self;
 
     intVector vec;
 
@@ -707,7 +707,7 @@ ViewerClientAttributes_SetRenderingTypes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewerClientAttributes_GetRenderingTypes(PyObject *self, PyObject *args)
 {
-    ViewerClientAttributesObject *obj = (ViewerClientAttributesObject *)self;
+    PyViewerClientAttributesObject *obj = (PyViewerClientAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the renderingTypes.
     const intVector &renderingTypes = obj->data->GetRenderingTypes();
     PyObject *retval = PyTuple_New(renderingTypes.size());
@@ -747,16 +747,16 @@ PyMethodDef PyViewerClientAttributes_methods[VIEWERCLIENTATTRIBUTES_NMETH] = {
 //
 
 static void
-ViewerClientAttributes_dealloc(PyObject *v)
+PyViewerClientAttributes_dealloc(PyObject *v)
 {
-   ViewerClientAttributesObject *obj = (ViewerClientAttributesObject *)v;
+   PyViewerClientAttributesObject *obj = (PyViewerClientAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *ViewerClientAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyViewerClientAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyViewerClientAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -841,56 +841,42 @@ PyViewerClientAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject 
 }
 
 PyObject *
-ViewerClientAttributes_str(PyObject *v)
+PyViewerClientAttributes_str(PyObject *v)
 {
-    ViewerClientAttributesObject *obj = (ViewerClientAttributesObject *)v;
+    PyViewerClientAttributesObject *obj = (PyViewerClientAttributesObject *)v;
     return PyString_FromString(PyViewerClientAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *ViewerClientAttributes_Purpose = "This class contains attributes used for viewer client";
-#else
-static char *ViewerClientAttributes_Purpose = "This class contains attributes used for viewer client";
-#endif
+static char const *PyViewerClientAttributes_purpose = "This class contains attributes used for viewer client";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject ViewerClientAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "ViewerClientAttributes",
-    .tp_basicsize = sizeof(ViewerClientAttributesObject),
-    .tp_dealloc = ViewerClientAttributes_dealloc,
-    .tp_repr = ViewerClientAttributes_str,
-    .tp_str = ViewerClientAttributes_str,
-    .tp_getattro = PyViewerClientAttributes_getattro,
-    .tp_setattro = PyViewerClientAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = ViewerClientAttributes_Purpose,
-    .tp_richcompare = ViewerClientAttributes_richcompare,
-    .tp_methods = PyViewerClientAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(ViewerClientAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-ViewerClientAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyViewerClientAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &ViewerClientAttributesType
-         || Py_TYPE(other) != &ViewerClientAttributesType)
+    if ( Py_TYPE(self) != &PyViewerClientAttributesType
+         || Py_TYPE(other) != &PyViewerClientAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    ViewerClientAttributes *a = ((ViewerClientAttributesObject *)self)->data;
-    ViewerClientAttributes *b = ((ViewerClientAttributesObject *)other)->data;
+    ViewerClientAttributes *a = ((PyViewerClientAttributesObject *)self)->data;
+    ViewerClientAttributes *b = ((PyViewerClientAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -919,8 +905,8 @@ static ViewerClientAttributes *currentAtts = 0;
 static PyObject *
 NewViewerClientAttributes(int useCurrent)
 {
-    ViewerClientAttributesObject *newObject;
-    newObject = PyObject_NEW(ViewerClientAttributesObject, &ViewerClientAttributesType);
+    PyViewerClientAttributesObject *newObject;
+    newObject = PyObject_NEW(PyViewerClientAttributesObject, &PyViewerClientAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -931,15 +917,15 @@ NewViewerClientAttributes(int useCurrent)
         newObject->data = new ViewerClientAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&ViewerClientAttributesType);
+    PyType_Ready(&PyViewerClientAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapViewerClientAttributes(const ViewerClientAttributes *attr)
 {
-    ViewerClientAttributesObject *newObject;
-    newObject = PyObject_NEW(ViewerClientAttributesObject, &ViewerClientAttributesType);
+    PyViewerClientAttributesObject *newObject;
+    newObject = PyObject_NEW(PyViewerClientAttributesObject, &PyViewerClientAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (ViewerClientAttributes *)attr;
@@ -1041,13 +1027,13 @@ PyViewerClientAttributes_GetMethodTable(int *nMethods)
 bool
 PyViewerClientAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ViewerClientAttributesType);
+    return (obj->ob_type == &PyViewerClientAttributesType);
 }
 
 ViewerClientAttributes *
 PyViewerClientAttributes_FromPyObject(PyObject *obj)
 {
-    ViewerClientAttributesObject *obj2 = (ViewerClientAttributesObject *)obj;
+    PyViewerClientAttributesObject *obj2 = (PyViewerClientAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1066,7 +1052,7 @@ PyViewerClientAttributes_Wrap(const ViewerClientAttributes *attr)
 void
 PyViewerClientAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    ViewerClientAttributesObject *obj2 = (ViewerClientAttributesObject *)obj;
+    PyViewerClientAttributesObject *obj2 = (PyViewerClientAttributesObject *)obj;
     obj2->parent = parent;
 }
 

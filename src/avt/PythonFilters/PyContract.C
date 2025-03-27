@@ -484,11 +484,7 @@ Contract_print(PyObject *v, FILE *fp, int flags)
     return 0;
 }
 
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *Contract_Doc = "This class provides access to the avt pipeline contract.";
-#else
-static char *Contract_Doc = "This class provides access to the avt pipeline contract";
-#endif
+static char const *PyContract_purpose = "This class provides access to the avt pipeline contract";
 
 //
 // Python Type Struct Def Macro from Py2and3Support.h
@@ -513,7 +509,7 @@ VISIT_PY_TYPE_OBJ(PyContractType,      \
                   Contract_getattr,    \
                   0,                   \
                   0,                   \
-                  Contract_Doc,        \
+                  PyContract_purpose,    \
                   0,                   \
                   0, /* as_number*/    \
                   Contract_methods);

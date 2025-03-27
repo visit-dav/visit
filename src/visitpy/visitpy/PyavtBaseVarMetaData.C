@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a avtBaseVarMetaData.
 //
-struct avtBaseVarMetaDataObject
+struct PyavtBaseVarMetaDataObject
 {
     PyObject_HEAD
     avtBaseVarMetaData *data;
@@ -64,7 +64,7 @@ PyavtBaseVarMetaData_ToString(const avtBaseVarMetaData *atts, const char *prefix
 static PyObject *
 avtBaseVarMetaData_Notify(PyObject *self, PyObject *args)
 {
-    avtBaseVarMetaDataObject *obj = (avtBaseVarMetaDataObject *)self;
+    PyavtBaseVarMetaDataObject *obj = (PyavtBaseVarMetaDataObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -101,7 +101,7 @@ avtBaseVarMetaData_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtBaseVarMetaData_SetName(PyObject *self, PyObject *args)
 {
-    avtBaseVarMetaDataObject *obj = (avtBaseVarMetaDataObject *)self;
+    PyavtBaseVarMetaDataObject *obj = (PyavtBaseVarMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -142,7 +142,7 @@ avtBaseVarMetaData_SetName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtBaseVarMetaData_GetName(PyObject *self, PyObject *args)
 {
-    avtBaseVarMetaDataObject *obj = (avtBaseVarMetaDataObject *)self;
+    PyavtBaseVarMetaDataObject *obj = (PyavtBaseVarMetaDataObject *)self;
     PyObject *retval = PyString_FromString(obj->data->name.c_str());
     return retval;
 }
@@ -150,7 +150,7 @@ avtBaseVarMetaData_GetName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtBaseVarMetaData_SetOriginalName(PyObject *self, PyObject *args)
 {
-    avtBaseVarMetaDataObject *obj = (avtBaseVarMetaDataObject *)self;
+    PyavtBaseVarMetaDataObject *obj = (PyavtBaseVarMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -191,7 +191,7 @@ avtBaseVarMetaData_SetOriginalName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtBaseVarMetaData_GetOriginalName(PyObject *self, PyObject *args)
 {
-    avtBaseVarMetaDataObject *obj = (avtBaseVarMetaDataObject *)self;
+    PyavtBaseVarMetaDataObject *obj = (PyavtBaseVarMetaDataObject *)self;
     PyObject *retval = PyString_FromString(obj->data->originalName.c_str());
     return retval;
 }
@@ -199,7 +199,7 @@ avtBaseVarMetaData_GetOriginalName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtBaseVarMetaData_SetMeshName(PyObject *self, PyObject *args)
 {
-    avtBaseVarMetaDataObject *obj = (avtBaseVarMetaDataObject *)self;
+    PyavtBaseVarMetaDataObject *obj = (PyavtBaseVarMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -240,7 +240,7 @@ avtBaseVarMetaData_SetMeshName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtBaseVarMetaData_GetMeshName(PyObject *self, PyObject *args)
 {
-    avtBaseVarMetaDataObject *obj = (avtBaseVarMetaDataObject *)self;
+    PyavtBaseVarMetaDataObject *obj = (PyavtBaseVarMetaDataObject *)self;
     PyObject *retval = PyString_FromString(obj->data->meshName.c_str());
     return retval;
 }
@@ -248,7 +248,7 @@ avtBaseVarMetaData_GetMeshName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtBaseVarMetaData_SetValidVariable(PyObject *self, PyObject *args)
 {
-    avtBaseVarMetaDataObject *obj = (avtBaseVarMetaDataObject *)self;
+    PyavtBaseVarMetaDataObject *obj = (PyavtBaseVarMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -300,7 +300,7 @@ avtBaseVarMetaData_SetValidVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtBaseVarMetaData_GetValidVariable(PyObject *self, PyObject *args)
 {
-    avtBaseVarMetaDataObject *obj = (avtBaseVarMetaDataObject *)self;
+    PyavtBaseVarMetaDataObject *obj = (PyavtBaseVarMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->validVariable?1L:0L);
     return retval;
 }
@@ -308,7 +308,7 @@ avtBaseVarMetaData_GetValidVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtBaseVarMetaData_SetHideFromGUI(PyObject *self, PyObject *args)
 {
-    avtBaseVarMetaDataObject *obj = (avtBaseVarMetaDataObject *)self;
+    PyavtBaseVarMetaDataObject *obj = (PyavtBaseVarMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -360,7 +360,7 @@ avtBaseVarMetaData_SetHideFromGUI(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtBaseVarMetaData_GetHideFromGUI(PyObject *self, PyObject *args)
 {
-    avtBaseVarMetaDataObject *obj = (avtBaseVarMetaDataObject *)self;
+    PyavtBaseVarMetaDataObject *obj = (PyavtBaseVarMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->hideFromGUI?1L:0L);
     return retval;
 }
@@ -388,16 +388,16 @@ PyMethodDef PyavtBaseVarMetaData_methods[AVTBASEVARMETADATA_NMETH] = {
 //
 
 static void
-avtBaseVarMetaData_dealloc(PyObject *v)
+PyavtBaseVarMetaData_dealloc(PyObject *v)
 {
-   avtBaseVarMetaDataObject *obj = (avtBaseVarMetaDataObject *)v;
+   PyavtBaseVarMetaDataObject *obj = (PyavtBaseVarMetaDataObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *avtBaseVarMetaData_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyavtBaseVarMetaData_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyavtBaseVarMetaData_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -457,56 +457,42 @@ PyavtBaseVarMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *arg
 }
 
 PyObject *
-avtBaseVarMetaData_str(PyObject *v)
+PyavtBaseVarMetaData_str(PyObject *v)
 {
-    avtBaseVarMetaDataObject *obj = (avtBaseVarMetaDataObject *)v;
+    PyavtBaseVarMetaDataObject *obj = (PyavtBaseVarMetaDataObject *)v;
     return PyString_FromString(PyavtBaseVarMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *avtBaseVarMetaData_Purpose = "Contains metadata attributes associated with all mesh variables";
-#else
-static char *avtBaseVarMetaData_Purpose = "Contains metadata attributes associated with all mesh variables";
-#endif
+static char const *PyavtBaseVarMetaData_purpose = "Contains metadata attributes associated with all mesh variables";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject avtBaseVarMetaDataType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "avtBaseVarMetaData",
-    .tp_basicsize = sizeof(avtBaseVarMetaDataObject),
-    .tp_dealloc = avtBaseVarMetaData_dealloc,
-    .tp_repr = avtBaseVarMetaData_str,
-    .tp_str = avtBaseVarMetaData_str,
-    .tp_getattro = PyavtBaseVarMetaData_getattro,
-    .tp_setattro = PyavtBaseVarMetaData_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = avtBaseVarMetaData_Purpose,
-    .tp_richcompare = avtBaseVarMetaData_richcompare,
-    .tp_methods = PyavtBaseVarMetaData_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(avtBaseVarMetaData);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-avtBaseVarMetaData_richcompare(PyObject *self, PyObject *other, int op)
+PyavtBaseVarMetaData_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &avtBaseVarMetaDataType
-         || Py_TYPE(other) != &avtBaseVarMetaDataType)
+    if ( Py_TYPE(self) != &PyavtBaseVarMetaDataType
+         || Py_TYPE(other) != &PyavtBaseVarMetaDataType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    avtBaseVarMetaData *a = ((avtBaseVarMetaDataObject *)self)->data;
-    avtBaseVarMetaData *b = ((avtBaseVarMetaDataObject *)other)->data;
+    avtBaseVarMetaData *a = ((PyavtBaseVarMetaDataObject *)self)->data;
+    avtBaseVarMetaData *b = ((PyavtBaseVarMetaDataObject *)other)->data;
 
     switch (op)
     {
@@ -535,8 +521,8 @@ static avtBaseVarMetaData *currentAtts = 0;
 static PyObject *
 NewavtBaseVarMetaData(int useCurrent)
 {
-    avtBaseVarMetaDataObject *newObject;
-    newObject = PyObject_NEW(avtBaseVarMetaDataObject, &avtBaseVarMetaDataType);
+    PyavtBaseVarMetaDataObject *newObject;
+    newObject = PyObject_NEW(PyavtBaseVarMetaDataObject, &PyavtBaseVarMetaDataType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -547,15 +533,15 @@ NewavtBaseVarMetaData(int useCurrent)
         newObject->data = new avtBaseVarMetaData;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&avtBaseVarMetaDataType);
+    PyType_Ready(&PyavtBaseVarMetaDataType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapavtBaseVarMetaData(const avtBaseVarMetaData *attr)
 {
-    avtBaseVarMetaDataObject *newObject;
-    newObject = PyObject_NEW(avtBaseVarMetaDataObject, &avtBaseVarMetaDataType);
+    PyavtBaseVarMetaDataObject *newObject;
+    newObject = PyObject_NEW(PyavtBaseVarMetaDataObject, &PyavtBaseVarMetaDataType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (avtBaseVarMetaData *)attr;
@@ -657,13 +643,13 @@ PyavtBaseVarMetaData_GetMethodTable(int *nMethods)
 bool
 PyavtBaseVarMetaData_Check(PyObject *obj)
 {
-    return (obj->ob_type == &avtBaseVarMetaDataType);
+    return (obj->ob_type == &PyavtBaseVarMetaDataType);
 }
 
 avtBaseVarMetaData *
 PyavtBaseVarMetaData_FromPyObject(PyObject *obj)
 {
-    avtBaseVarMetaDataObject *obj2 = (avtBaseVarMetaDataObject *)obj;
+    PyavtBaseVarMetaDataObject *obj2 = (PyavtBaseVarMetaDataObject *)obj;
     return obj2->data;
 }
 
@@ -682,7 +668,7 @@ PyavtBaseVarMetaData_Wrap(const avtBaseVarMetaData *attr)
 void
 PyavtBaseVarMetaData_SetParent(PyObject *obj, PyObject *parent)
 {
-    avtBaseVarMetaDataObject *obj2 = (avtBaseVarMetaDataObject *)obj;
+    PyavtBaseVarMetaDataObject *obj2 = (PyavtBaseVarMetaDataObject *)obj;
     obj2->parent = parent;
 }
 

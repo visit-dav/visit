@@ -25,7 +25,7 @@
 //
 // This struct contains the Python type information and a PoincareAttributes.
 //
-struct PoincareAttributesObject
+struct PyPoincareAttributesObject
 {
     PyObject_HEAD
     PoincareAttributes *data;
@@ -644,7 +644,7 @@ PyPoincareAttributes_ToString(const PoincareAttributes *atts, const char *prefix
 static PyObject *
 PoincareAttributes_Notify(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -681,7 +681,7 @@ PoincareAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetOpacityType(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -739,7 +739,7 @@ PoincareAttributes_SetOpacityType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetOpacityType(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetOpacityType()));
     return retval;
 }
@@ -747,7 +747,7 @@ PoincareAttributes_GetOpacityType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetOpacity(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -799,7 +799,7 @@ PoincareAttributes_SetOpacity(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetOpacity(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetOpacity());
     return retval;
 }
@@ -807,7 +807,7 @@ PoincareAttributes_GetOpacity(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetMinPunctures(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -859,7 +859,7 @@ PoincareAttributes_SetMinPunctures(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetMinPunctures(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMinPunctures()));
     return retval;
 }
@@ -867,7 +867,7 @@ PoincareAttributes_GetMinPunctures(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetMaxPunctures(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -919,7 +919,7 @@ PoincareAttributes_SetMaxPunctures(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetMaxPunctures(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMaxPunctures()));
     return retval;
 }
@@ -927,7 +927,7 @@ PoincareAttributes_GetMaxPunctures(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetPuncturePlotType(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -985,7 +985,7 @@ PoincareAttributes_SetPuncturePlotType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetPuncturePlotType(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetPuncturePlotType()));
     return retval;
 }
@@ -993,7 +993,7 @@ PoincareAttributes_GetPuncturePlotType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetMaxSteps(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1045,7 +1045,7 @@ PoincareAttributes_SetMaxSteps(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetMaxSteps(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMaxSteps()));
     return retval;
 }
@@ -1053,7 +1053,7 @@ PoincareAttributes_GetMaxSteps(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetTerminateByTime(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1105,7 +1105,7 @@ PoincareAttributes_SetTerminateByTime(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetTerminateByTime(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetTerminateByTime()?1L:0L);
     return retval;
 }
@@ -1113,7 +1113,7 @@ PoincareAttributes_GetTerminateByTime(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetTermTime(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1165,7 +1165,7 @@ PoincareAttributes_SetTermTime(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetTermTime(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetTermTime());
     return retval;
 }
@@ -1173,7 +1173,7 @@ PoincareAttributes_GetTermTime(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetPuncturePeriodTolerance(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1225,7 +1225,7 @@ PoincareAttributes_SetPuncturePeriodTolerance(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetPuncturePeriodTolerance(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetPuncturePeriodTolerance());
     return retval;
 }
@@ -1233,7 +1233,7 @@ PoincareAttributes_GetPuncturePeriodTolerance(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetPuncturePlane(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1292,7 +1292,7 @@ PoincareAttributes_SetPuncturePlane(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetPuncturePlane(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetPuncturePlane()));
     return retval;
 }
@@ -1300,7 +1300,7 @@ PoincareAttributes_GetPuncturePlane(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetSourceType(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1359,7 +1359,7 @@ PoincareAttributes_SetSourceType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetSourceType(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetSourceType()));
     return retval;
 }
@@ -1367,7 +1367,7 @@ PoincareAttributes_GetSourceType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetPointSource(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetPointSource();
@@ -1434,7 +1434,7 @@ PoincareAttributes_SetPointSource(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetPointSource(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the pointSource.
     PyObject *retval = PyTuple_New(3);
     const double *pointSource = obj->data->GetPointSource();
@@ -1446,7 +1446,7 @@ PoincareAttributes_GetPointSource(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetPointList(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     doubleVector vec;
 
@@ -1510,7 +1510,7 @@ PoincareAttributes_SetPointList(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetPointList(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the pointList.
     const doubleVector &pointList = obj->data->GetPointList();
     PyObject *retval = PyTuple_New(pointList.size());
@@ -1522,7 +1522,7 @@ PoincareAttributes_GetPointList(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetLineStart(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetLineStart();
@@ -1589,7 +1589,7 @@ PoincareAttributes_SetLineStart(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetLineStart(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the lineStart.
     PyObject *retval = PyTuple_New(3);
     const double *lineStart = obj->data->GetLineStart();
@@ -1601,7 +1601,7 @@ PoincareAttributes_GetLineStart(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetLineEnd(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetLineEnd();
@@ -1668,7 +1668,7 @@ PoincareAttributes_SetLineEnd(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetLineEnd(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the lineEnd.
     PyObject *retval = PyTuple_New(3);
     const double *lineEnd = obj->data->GetLineEnd();
@@ -1680,7 +1680,7 @@ PoincareAttributes_GetLineEnd(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetPointDensity(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1732,7 +1732,7 @@ PoincareAttributes_SetPointDensity(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetPointDensity(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetPointDensity()));
     return retval;
 }
@@ -1740,7 +1740,7 @@ PoincareAttributes_GetPointDensity(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetFieldType(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1802,7 +1802,7 @@ PoincareAttributes_SetFieldType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetFieldType(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetFieldType()));
     return retval;
 }
@@ -1810,7 +1810,7 @@ PoincareAttributes_GetFieldType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetForceNodeCenteredData(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1862,7 +1862,7 @@ PoincareAttributes_SetForceNodeCenteredData(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetForceNodeCenteredData(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetForceNodeCenteredData()?1L:0L);
     return retval;
 }
@@ -1870,7 +1870,7 @@ PoincareAttributes_GetForceNodeCenteredData(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetFieldConstant(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1922,7 +1922,7 @@ PoincareAttributes_SetFieldConstant(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetFieldConstant(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetFieldConstant());
     return retval;
 }
@@ -1930,7 +1930,7 @@ PoincareAttributes_GetFieldConstant(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetVelocitySource(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetVelocitySource();
@@ -1997,7 +1997,7 @@ PoincareAttributes_SetVelocitySource(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetVelocitySource(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the velocitySource.
     PyObject *retval = PyTuple_New(3);
     const double *velocitySource = obj->data->GetVelocitySource();
@@ -2009,7 +2009,7 @@ PoincareAttributes_GetVelocitySource(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetIntegrationType(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2071,7 +2071,7 @@ PoincareAttributes_SetIntegrationType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetIntegrationType(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetIntegrationType()));
     return retval;
 }
@@ -2079,7 +2079,7 @@ PoincareAttributes_GetIntegrationType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetCoordinateSystem(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2137,7 +2137,7 @@ PoincareAttributes_SetCoordinateSystem(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetCoordinateSystem(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetCoordinateSystem()));
     return retval;
 }
@@ -2145,7 +2145,7 @@ PoincareAttributes_GetCoordinateSystem(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetMaxStepLength(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2197,7 +2197,7 @@ PoincareAttributes_SetMaxStepLength(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetMaxStepLength(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMaxStepLength());
     return retval;
 }
@@ -2205,7 +2205,7 @@ PoincareAttributes_GetMaxStepLength(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetLimitMaximumTimestep(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2257,7 +2257,7 @@ PoincareAttributes_SetLimitMaximumTimestep(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetLimitMaximumTimestep(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetLimitMaximumTimestep()?1L:0L);
     return retval;
 }
@@ -2265,7 +2265,7 @@ PoincareAttributes_GetLimitMaximumTimestep(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetMaxTimeStep(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2317,7 +2317,7 @@ PoincareAttributes_SetMaxTimeStep(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetMaxTimeStep(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMaxTimeStep());
     return retval;
 }
@@ -2325,7 +2325,7 @@ PoincareAttributes_GetMaxTimeStep(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetRelTol(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2377,7 +2377,7 @@ PoincareAttributes_SetRelTol(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetRelTol(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetRelTol());
     return retval;
 }
@@ -2385,7 +2385,7 @@ PoincareAttributes_GetRelTol(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetAbsTolSizeType(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2443,7 +2443,7 @@ PoincareAttributes_SetAbsTolSizeType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetAbsTolSizeType(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetAbsTolSizeType()));
     return retval;
 }
@@ -2451,7 +2451,7 @@ PoincareAttributes_GetAbsTolSizeType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetAbsTolAbsolute(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2503,7 +2503,7 @@ PoincareAttributes_SetAbsTolAbsolute(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetAbsTolAbsolute(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetAbsTolAbsolute());
     return retval;
 }
@@ -2511,7 +2511,7 @@ PoincareAttributes_GetAbsTolAbsolute(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetAbsTolBBox(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2563,7 +2563,7 @@ PoincareAttributes_SetAbsTolBBox(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetAbsTolBBox(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetAbsTolBBox());
     return retval;
 }
@@ -2571,7 +2571,7 @@ PoincareAttributes_GetAbsTolBBox(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetAnalysis(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2629,7 +2629,7 @@ PoincareAttributes_SetAnalysis(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetAnalysis(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetAnalysis()));
     return retval;
 }
@@ -2637,7 +2637,7 @@ PoincareAttributes_GetAnalysis(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetMaximumToroidalWinding(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2689,7 +2689,7 @@ PoincareAttributes_SetMaximumToroidalWinding(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetMaximumToroidalWinding(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMaximumToroidalWinding()));
     return retval;
 }
@@ -2697,7 +2697,7 @@ PoincareAttributes_GetMaximumToroidalWinding(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetOverrideToroidalWinding(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2749,7 +2749,7 @@ PoincareAttributes_SetOverrideToroidalWinding(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetOverrideToroidalWinding(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetOverrideToroidalWinding()));
     return retval;
 }
@@ -2757,7 +2757,7 @@ PoincareAttributes_GetOverrideToroidalWinding(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetOverridePoloidalWinding(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2809,7 +2809,7 @@ PoincareAttributes_SetOverridePoloidalWinding(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetOverridePoloidalWinding(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetOverridePoloidalWinding()));
     return retval;
 }
@@ -2817,7 +2817,7 @@ PoincareAttributes_GetOverridePoloidalWinding(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetWindingPairConfidence(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2869,7 +2869,7 @@ PoincareAttributes_SetWindingPairConfidence(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetWindingPairConfidence(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetWindingPairConfidence());
     return retval;
 }
@@ -2877,7 +2877,7 @@ PoincareAttributes_GetWindingPairConfidence(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetRationalSurfaceFactor(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2929,7 +2929,7 @@ PoincareAttributes_SetRationalSurfaceFactor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetRationalSurfaceFactor(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetRationalSurfaceFactor());
     return retval;
 }
@@ -2937,7 +2937,7 @@ PoincareAttributes_GetRationalSurfaceFactor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetOverlaps(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2997,7 +2997,7 @@ PoincareAttributes_SetOverlaps(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetOverlaps(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetOverlaps()));
     return retval;
 }
@@ -3005,7 +3005,7 @@ PoincareAttributes_GetOverlaps(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetMeshType(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3063,7 +3063,7 @@ PoincareAttributes_SetMeshType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetMeshType(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMeshType()));
     return retval;
 }
@@ -3071,7 +3071,7 @@ PoincareAttributes_GetMeshType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetNumberPlanes(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3123,7 +3123,7 @@ PoincareAttributes_SetNumberPlanes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetNumberPlanes(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNumberPlanes()));
     return retval;
 }
@@ -3131,7 +3131,7 @@ PoincareAttributes_GetNumberPlanes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetSinglePlane(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3183,7 +3183,7 @@ PoincareAttributes_SetSinglePlane(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetSinglePlane(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetSinglePlane());
     return retval;
 }
@@ -3191,7 +3191,7 @@ PoincareAttributes_GetSinglePlane(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetMin(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3243,7 +3243,7 @@ PoincareAttributes_SetMin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetMin(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMin());
     return retval;
 }
@@ -3251,7 +3251,7 @@ PoincareAttributes_GetMin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetMax(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3303,7 +3303,7 @@ PoincareAttributes_SetMax(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetMax(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMax());
     return retval;
 }
@@ -3311,7 +3311,7 @@ PoincareAttributes_GetMax(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetMinFlag(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3363,7 +3363,7 @@ PoincareAttributes_SetMinFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetMinFlag(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetMinFlag()?1L:0L);
     return retval;
 }
@@ -3371,7 +3371,7 @@ PoincareAttributes_GetMinFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetMaxFlag(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3423,7 +3423,7 @@ PoincareAttributes_SetMaxFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetMaxFlag(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetMaxFlag()?1L:0L);
     return retval;
 }
@@ -3431,7 +3431,7 @@ PoincareAttributes_GetMaxFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetColorType(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3489,7 +3489,7 @@ PoincareAttributes_SetColorType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetColorType(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetColorType()));
     return retval;
 }
@@ -3497,7 +3497,7 @@ PoincareAttributes_GetColorType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetSingleColor(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -3560,7 +3560,7 @@ PoincareAttributes_SetSingleColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetSingleColor(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the singleColor.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *singleColor = obj->data->GetSingleColor().GetColor();
@@ -3574,7 +3574,7 @@ PoincareAttributes_GetSingleColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetColorTableName(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3615,7 +3615,7 @@ PoincareAttributes_SetColorTableName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetColorTableName(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetColorTableName().c_str());
     return retval;
 }
@@ -3623,7 +3623,7 @@ PoincareAttributes_GetColorTableName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetDataValue(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3693,7 +3693,7 @@ PoincareAttributes_SetDataValue(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetDataValue(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetDataValue()));
     return retval;
 }
@@ -3701,7 +3701,7 @@ PoincareAttributes_GetDataValue(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetShowRationalSurfaces(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3753,7 +3753,7 @@ PoincareAttributes_SetShowRationalSurfaces(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetShowRationalSurfaces(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowRationalSurfaces()?1L:0L);
     return retval;
 }
@@ -3761,7 +3761,7 @@ PoincareAttributes_GetShowRationalSurfaces(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetRationalSurfaceMaxIterations(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3813,7 +3813,7 @@ PoincareAttributes_SetRationalSurfaceMaxIterations(PyObject *self, PyObject *arg
 /*static*/ PyObject *
 PoincareAttributes_GetRationalSurfaceMaxIterations(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetRationalSurfaceMaxIterations()));
     return retval;
 }
@@ -3821,7 +3821,7 @@ PoincareAttributes_GetRationalSurfaceMaxIterations(PyObject *self, PyObject *arg
 /*static*/ PyObject *
 PoincareAttributes_SetShowOPoints(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3873,7 +3873,7 @@ PoincareAttributes_SetShowOPoints(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetShowOPoints(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowOPoints()?1L:0L);
     return retval;
 }
@@ -3881,7 +3881,7 @@ PoincareAttributes_GetShowOPoints(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetOPointMaxIterations(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3933,7 +3933,7 @@ PoincareAttributes_SetOPointMaxIterations(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetOPointMaxIterations(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetOPointMaxIterations()));
     return retval;
 }
@@ -3941,7 +3941,7 @@ PoincareAttributes_GetOPointMaxIterations(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetShowXPoints(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3993,7 +3993,7 @@ PoincareAttributes_SetShowXPoints(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetShowXPoints(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowXPoints()?1L:0L);
     return retval;
 }
@@ -4001,7 +4001,7 @@ PoincareAttributes_GetShowXPoints(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetXPointMaxIterations(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4053,7 +4053,7 @@ PoincareAttributes_SetXPointMaxIterations(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetXPointMaxIterations(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetXPointMaxIterations()));
     return retval;
 }
@@ -4061,7 +4061,7 @@ PoincareAttributes_GetXPointMaxIterations(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetPerformOLineAnalysis(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4113,7 +4113,7 @@ PoincareAttributes_SetPerformOLineAnalysis(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetPerformOLineAnalysis(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetPerformOLineAnalysis()?1L:0L);
     return retval;
 }
@@ -4121,7 +4121,7 @@ PoincareAttributes_GetPerformOLineAnalysis(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetOLineToroidalWinding(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4173,7 +4173,7 @@ PoincareAttributes_SetOLineToroidalWinding(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetOLineToroidalWinding(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetOLineToroidalWinding()));
     return retval;
 }
@@ -4181,7 +4181,7 @@ PoincareAttributes_GetOLineToroidalWinding(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetOLineAxisFileName(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4222,7 +4222,7 @@ PoincareAttributes_SetOLineAxisFileName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetOLineAxisFileName(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetOLineAxisFileName().c_str());
     return retval;
 }
@@ -4230,7 +4230,7 @@ PoincareAttributes_GetOLineAxisFileName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetShowChaotic(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4282,7 +4282,7 @@ PoincareAttributes_SetShowChaotic(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetShowChaotic(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowChaotic()?1L:0L);
     return retval;
 }
@@ -4290,7 +4290,7 @@ PoincareAttributes_GetShowChaotic(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetShowIslands(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4342,7 +4342,7 @@ PoincareAttributes_SetShowIslands(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetShowIslands(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowIslands()?1L:0L);
     return retval;
 }
@@ -4350,7 +4350,7 @@ PoincareAttributes_GetShowIslands(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetSummaryFlag(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4402,7 +4402,7 @@ PoincareAttributes_SetSummaryFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetSummaryFlag(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetSummaryFlag()?1L:0L);
     return retval;
 }
@@ -4410,7 +4410,7 @@ PoincareAttributes_GetSummaryFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetVerboseFlag(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4462,7 +4462,7 @@ PoincareAttributes_SetVerboseFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetVerboseFlag(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetVerboseFlag()?1L:0L);
     return retval;
 }
@@ -4470,7 +4470,7 @@ PoincareAttributes_GetVerboseFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetShow1DPlots(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4522,7 +4522,7 @@ PoincareAttributes_SetShow1DPlots(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetShow1DPlots(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShow1DPlots()?1L:0L);
     return retval;
 }
@@ -4530,7 +4530,7 @@ PoincareAttributes_GetShow1DPlots(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetShowLines(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4582,7 +4582,7 @@ PoincareAttributes_SetShowLines(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetShowLines(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowLines()?1L:0L);
     return retval;
 }
@@ -4590,7 +4590,7 @@ PoincareAttributes_GetShowLines(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetShowPoints(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4642,7 +4642,7 @@ PoincareAttributes_SetShowPoints(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetShowPoints(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowPoints()?1L:0L);
     return retval;
 }
@@ -4650,7 +4650,7 @@ PoincareAttributes_GetShowPoints(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetParallelizationAlgorithmType(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4710,7 +4710,7 @@ PoincareAttributes_SetParallelizationAlgorithmType(PyObject *self, PyObject *arg
 /*static*/ PyObject *
 PoincareAttributes_GetParallelizationAlgorithmType(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetParallelizationAlgorithmType()));
     return retval;
 }
@@ -4718,7 +4718,7 @@ PoincareAttributes_GetParallelizationAlgorithmType(PyObject *self, PyObject *arg
 /*static*/ PyObject *
 PoincareAttributes_SetMaxProcessCount(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4770,7 +4770,7 @@ PoincareAttributes_SetMaxProcessCount(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetMaxProcessCount(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMaxProcessCount()));
     return retval;
 }
@@ -4778,7 +4778,7 @@ PoincareAttributes_GetMaxProcessCount(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetMaxDomainCacheSize(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4830,7 +4830,7 @@ PoincareAttributes_SetMaxDomainCacheSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetMaxDomainCacheSize(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMaxDomainCacheSize()));
     return retval;
 }
@@ -4838,7 +4838,7 @@ PoincareAttributes_GetMaxDomainCacheSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetWorkGroupSize(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4890,7 +4890,7 @@ PoincareAttributes_SetWorkGroupSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetWorkGroupSize(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetWorkGroupSize()));
     return retval;
 }
@@ -4898,7 +4898,7 @@ PoincareAttributes_GetWorkGroupSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetPathlines(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4950,7 +4950,7 @@ PoincareAttributes_SetPathlines(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetPathlines(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetPathlines()?1L:0L);
     return retval;
 }
@@ -4958,7 +4958,7 @@ PoincareAttributes_GetPathlines(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetPathlinesOverrideStartingTimeFlag(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -5010,7 +5010,7 @@ PoincareAttributes_SetPathlinesOverrideStartingTimeFlag(PyObject *self, PyObject
 /*static*/ PyObject *
 PoincareAttributes_GetPathlinesOverrideStartingTimeFlag(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetPathlinesOverrideStartingTimeFlag()?1L:0L);
     return retval;
 }
@@ -5018,7 +5018,7 @@ PoincareAttributes_GetPathlinesOverrideStartingTimeFlag(PyObject *self, PyObject
 /*static*/ PyObject *
 PoincareAttributes_SetPathlinesOverrideStartingTime(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -5070,7 +5070,7 @@ PoincareAttributes_SetPathlinesOverrideStartingTime(PyObject *self, PyObject *ar
 /*static*/ PyObject *
 PoincareAttributes_GetPathlinesOverrideStartingTime(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetPathlinesOverrideStartingTime());
     return retval;
 }
@@ -5078,7 +5078,7 @@ PoincareAttributes_GetPathlinesOverrideStartingTime(PyObject *self, PyObject *ar
 /*static*/ PyObject *
 PoincareAttributes_SetPathlinesPeriod(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -5130,7 +5130,7 @@ PoincareAttributes_SetPathlinesPeriod(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetPathlinesPeriod(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetPathlinesPeriod());
     return retval;
 }
@@ -5138,7 +5138,7 @@ PoincareAttributes_GetPathlinesPeriod(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetPathlinesCMFE(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -5196,7 +5196,7 @@ PoincareAttributes_SetPathlinesCMFE(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetPathlinesCMFE(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetPathlinesCMFE()));
     return retval;
 }
@@ -5204,7 +5204,7 @@ PoincareAttributes_GetPathlinesCMFE(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetIssueTerminationWarnings(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -5256,7 +5256,7 @@ PoincareAttributes_SetIssueTerminationWarnings(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetIssueTerminationWarnings(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetIssueTerminationWarnings()?1L:0L);
     return retval;
 }
@@ -5264,7 +5264,7 @@ PoincareAttributes_GetIssueTerminationWarnings(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetIssueStepsizeWarnings(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -5316,7 +5316,7 @@ PoincareAttributes_SetIssueStepsizeWarnings(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetIssueStepsizeWarnings(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetIssueStepsizeWarnings()?1L:0L);
     return retval;
 }
@@ -5324,7 +5324,7 @@ PoincareAttributes_GetIssueStepsizeWarnings(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetIssueStiffnessWarnings(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -5376,7 +5376,7 @@ PoincareAttributes_SetIssueStiffnessWarnings(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetIssueStiffnessWarnings(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetIssueStiffnessWarnings()?1L:0L);
     return retval;
 }
@@ -5384,7 +5384,7 @@ PoincareAttributes_GetIssueStiffnessWarnings(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_SetIssueCriticalPointsWarnings(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -5436,7 +5436,7 @@ PoincareAttributes_SetIssueCriticalPointsWarnings(PyObject *self, PyObject *args
 /*static*/ PyObject *
 PoincareAttributes_GetIssueCriticalPointsWarnings(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetIssueCriticalPointsWarnings()?1L:0L);
     return retval;
 }
@@ -5444,7 +5444,7 @@ PoincareAttributes_GetIssueCriticalPointsWarnings(PyObject *self, PyObject *args
 /*static*/ PyObject *
 PoincareAttributes_SetCriticalPointThreshold(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -5496,7 +5496,7 @@ PoincareAttributes_SetCriticalPointThreshold(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PoincareAttributes_GetCriticalPointThreshold(PyObject *self, PyObject *args)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)self;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetCriticalPointThreshold());
     return retval;
 }
@@ -5668,16 +5668,16 @@ PyMethodDef PyPoincareAttributes_methods[POINCAREATTRIBUTES_NMETH] = {
 //
 
 static void
-PoincareAttributes_dealloc(PyObject *v)
+PyPoincareAttributes_dealloc(PyObject *v)
 {
-   PoincareAttributesObject *obj = (PoincareAttributesObject *)v;
+   PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *PoincareAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyPoincareAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyPoincareAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -6154,56 +6154,42 @@ PyPoincareAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *arg
 }
 
 PyObject *
-PoincareAttributes_str(PyObject *v)
+PyPoincareAttributes_str(PyObject *v)
 {
-    PoincareAttributesObject *obj = (PoincareAttributesObject *)v;
+    PyPoincareAttributesObject *obj = (PyPoincareAttributesObject *)v;
     return PyString_FromString(PyPoincareAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *PoincareAttributes_Purpose = "Attributes for the Poincare";
-#else
-static char *PoincareAttributes_Purpose = "Attributes for the Poincare";
-#endif
+static char const *PyPoincareAttributes_purpose = "Attributes for the Poincare";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject PoincareAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "PoincareAttributes",
-    .tp_basicsize = sizeof(PoincareAttributesObject),
-    .tp_dealloc = PoincareAttributes_dealloc,
-    .tp_repr = PoincareAttributes_str,
-    .tp_str = PoincareAttributes_str,
-    .tp_getattro = PyPoincareAttributes_getattro,
-    .tp_setattro = PyPoincareAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = PoincareAttributes_Purpose,
-    .tp_richcompare = PoincareAttributes_richcompare,
-    .tp_methods = PyPoincareAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(PoincareAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-PoincareAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyPoincareAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &PoincareAttributesType
-         || Py_TYPE(other) != &PoincareAttributesType)
+    if ( Py_TYPE(self) != &PyPoincareAttributesType
+         || Py_TYPE(other) != &PyPoincareAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    PoincareAttributes *a = ((PoincareAttributesObject *)self)->data;
-    PoincareAttributes *b = ((PoincareAttributesObject *)other)->data;
+    PoincareAttributes *a = ((PyPoincareAttributesObject *)self)->data;
+    PoincareAttributes *b = ((PyPoincareAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -6232,8 +6218,8 @@ static PoincareAttributes *currentAtts = 0;
 static PyObject *
 NewPoincareAttributes(int useCurrent)
 {
-    PoincareAttributesObject *newObject;
-    newObject = PyObject_NEW(PoincareAttributesObject, &PoincareAttributesType);
+    PyPoincareAttributesObject *newObject;
+    newObject = PyObject_NEW(PyPoincareAttributesObject, &PyPoincareAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -6244,15 +6230,15 @@ NewPoincareAttributes(int useCurrent)
         newObject->data = new PoincareAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&PoincareAttributesType);
+    PyType_Ready(&PyPoincareAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapPoincareAttributes(const PoincareAttributes *attr)
 {
-    PoincareAttributesObject *newObject;
-    newObject = PyObject_NEW(PoincareAttributesObject, &PoincareAttributesType);
+    PyPoincareAttributesObject *newObject;
+    newObject = PyObject_NEW(PyPoincareAttributesObject, &PyPoincareAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (PoincareAttributes *)attr;
@@ -6354,13 +6340,13 @@ PyPoincareAttributes_GetMethodTable(int *nMethods)
 bool
 PyPoincareAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &PoincareAttributesType);
+    return (obj->ob_type == &PyPoincareAttributesType);
 }
 
 PoincareAttributes *
 PyPoincareAttributes_FromPyObject(PyObject *obj)
 {
-    PoincareAttributesObject *obj2 = (PoincareAttributesObject *)obj;
+    PyPoincareAttributesObject *obj2 = (PyPoincareAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -6379,7 +6365,7 @@ PyPoincareAttributes_Wrap(const PoincareAttributes *attr)
 void
 PyPoincareAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    PoincareAttributesObject *obj2 = (PoincareAttributesObject *)obj;
+    PyPoincareAttributesObject *obj2 = (PyPoincareAttributesObject *)obj;
     obj2->parent = parent;
 }
 

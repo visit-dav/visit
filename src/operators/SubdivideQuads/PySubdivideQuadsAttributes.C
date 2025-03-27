@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a SubdivideQuadsAttributes.
 //
-struct SubdivideQuadsAttributesObject
+struct PySubdivideQuadsAttributesObject
 {
     PyObject_HEAD
     SubdivideQuadsAttributes *data;
@@ -64,7 +64,7 @@ PySubdivideQuadsAttributes_ToString(const SubdivideQuadsAttributes *atts, const 
 static PyObject *
 SubdivideQuadsAttributes_Notify(PyObject *self, PyObject *args)
 {
-    SubdivideQuadsAttributesObject *obj = (SubdivideQuadsAttributesObject *)self;
+    PySubdivideQuadsAttributesObject *obj = (PySubdivideQuadsAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -101,7 +101,7 @@ SubdivideQuadsAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubdivideQuadsAttributes_SetThreshold(PyObject *self, PyObject *args)
 {
-    SubdivideQuadsAttributesObject *obj = (SubdivideQuadsAttributesObject *)self;
+    PySubdivideQuadsAttributesObject *obj = (PySubdivideQuadsAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -153,7 +153,7 @@ SubdivideQuadsAttributes_SetThreshold(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubdivideQuadsAttributes_GetThreshold(PyObject *self, PyObject *args)
 {
-    SubdivideQuadsAttributesObject *obj = (SubdivideQuadsAttributesObject *)self;
+    PySubdivideQuadsAttributesObject *obj = (PySubdivideQuadsAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetThreshold());
     return retval;
 }
@@ -161,7 +161,7 @@ SubdivideQuadsAttributes_GetThreshold(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubdivideQuadsAttributes_SetMaxSubdivs(PyObject *self, PyObject *args)
 {
-    SubdivideQuadsAttributesObject *obj = (SubdivideQuadsAttributesObject *)self;
+    PySubdivideQuadsAttributesObject *obj = (PySubdivideQuadsAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -213,7 +213,7 @@ SubdivideQuadsAttributes_SetMaxSubdivs(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubdivideQuadsAttributes_GetMaxSubdivs(PyObject *self, PyObject *args)
 {
-    SubdivideQuadsAttributesObject *obj = (SubdivideQuadsAttributesObject *)self;
+    PySubdivideQuadsAttributesObject *obj = (PySubdivideQuadsAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMaxSubdivs()));
     return retval;
 }
@@ -221,7 +221,7 @@ SubdivideQuadsAttributes_GetMaxSubdivs(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubdivideQuadsAttributes_SetFanOutPoints(PyObject *self, PyObject *args)
 {
-    SubdivideQuadsAttributesObject *obj = (SubdivideQuadsAttributesObject *)self;
+    PySubdivideQuadsAttributesObject *obj = (PySubdivideQuadsAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -273,7 +273,7 @@ SubdivideQuadsAttributes_SetFanOutPoints(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubdivideQuadsAttributes_GetFanOutPoints(PyObject *self, PyObject *args)
 {
-    SubdivideQuadsAttributesObject *obj = (SubdivideQuadsAttributesObject *)self;
+    PySubdivideQuadsAttributesObject *obj = (PySubdivideQuadsAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetFanOutPoints()?1L:0L);
     return retval;
 }
@@ -281,7 +281,7 @@ SubdivideQuadsAttributes_GetFanOutPoints(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubdivideQuadsAttributes_SetDoTriangles(PyObject *self, PyObject *args)
 {
-    SubdivideQuadsAttributesObject *obj = (SubdivideQuadsAttributesObject *)self;
+    PySubdivideQuadsAttributesObject *obj = (PySubdivideQuadsAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -333,7 +333,7 @@ SubdivideQuadsAttributes_SetDoTriangles(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubdivideQuadsAttributes_GetDoTriangles(PyObject *self, PyObject *args)
 {
-    SubdivideQuadsAttributesObject *obj = (SubdivideQuadsAttributesObject *)self;
+    PySubdivideQuadsAttributesObject *obj = (PySubdivideQuadsAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetDoTriangles()?1L:0L);
     return retval;
 }
@@ -341,7 +341,7 @@ SubdivideQuadsAttributes_GetDoTriangles(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubdivideQuadsAttributes_SetVariable(PyObject *self, PyObject *args)
 {
-    SubdivideQuadsAttributesObject *obj = (SubdivideQuadsAttributesObject *)self;
+    PySubdivideQuadsAttributesObject *obj = (PySubdivideQuadsAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -382,7 +382,7 @@ SubdivideQuadsAttributes_SetVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SubdivideQuadsAttributes_GetVariable(PyObject *self, PyObject *args)
 {
-    SubdivideQuadsAttributesObject *obj = (SubdivideQuadsAttributesObject *)self;
+    PySubdivideQuadsAttributesObject *obj = (PySubdivideQuadsAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetVariable().c_str());
     return retval;
 }
@@ -410,16 +410,16 @@ PyMethodDef PySubdivideQuadsAttributes_methods[SUBDIVIDEQUADSATTRIBUTES_NMETH] =
 //
 
 static void
-SubdivideQuadsAttributes_dealloc(PyObject *v)
+PySubdivideQuadsAttributes_dealloc(PyObject *v)
 {
-   SubdivideQuadsAttributesObject *obj = (SubdivideQuadsAttributesObject *)v;
+   PySubdivideQuadsAttributesObject *obj = (PySubdivideQuadsAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *SubdivideQuadsAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PySubdivideQuadsAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PySubdivideQuadsAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -479,56 +479,42 @@ PySubdivideQuadsAttributes_setattro(PyObject *self, PyObject *attr_name, PyObjec
 }
 
 PyObject *
-SubdivideQuadsAttributes_str(PyObject *v)
+PySubdivideQuadsAttributes_str(PyObject *v)
 {
-    SubdivideQuadsAttributesObject *obj = (SubdivideQuadsAttributesObject *)v;
+    PySubdivideQuadsAttributesObject *obj = (PySubdivideQuadsAttributesObject *)v;
     return PyString_FromString(PySubdivideQuadsAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *SubdivideQuadsAttributes_Purpose = "Attributes for SubdivideQuads operator";
-#else
-static char *SubdivideQuadsAttributes_Purpose = "Attributes for SubdivideQuads operator";
-#endif
+static char const *PySubdivideQuadsAttributes_purpose = "Attributes for SubdivideQuads operator";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject SubdivideQuadsAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "SubdivideQuadsAttributes",
-    .tp_basicsize = sizeof(SubdivideQuadsAttributesObject),
-    .tp_dealloc = SubdivideQuadsAttributes_dealloc,
-    .tp_repr = SubdivideQuadsAttributes_str,
-    .tp_str = SubdivideQuadsAttributes_str,
-    .tp_getattro = PySubdivideQuadsAttributes_getattro,
-    .tp_setattro = PySubdivideQuadsAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = SubdivideQuadsAttributes_Purpose,
-    .tp_richcompare = SubdivideQuadsAttributes_richcompare,
-    .tp_methods = PySubdivideQuadsAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(SubdivideQuadsAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-SubdivideQuadsAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PySubdivideQuadsAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &SubdivideQuadsAttributesType
-         || Py_TYPE(other) != &SubdivideQuadsAttributesType)
+    if ( Py_TYPE(self) != &PySubdivideQuadsAttributesType
+         || Py_TYPE(other) != &PySubdivideQuadsAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    SubdivideQuadsAttributes *a = ((SubdivideQuadsAttributesObject *)self)->data;
-    SubdivideQuadsAttributes *b = ((SubdivideQuadsAttributesObject *)other)->data;
+    SubdivideQuadsAttributes *a = ((PySubdivideQuadsAttributesObject *)self)->data;
+    SubdivideQuadsAttributes *b = ((PySubdivideQuadsAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -557,8 +543,8 @@ static SubdivideQuadsAttributes *currentAtts = 0;
 static PyObject *
 NewSubdivideQuadsAttributes(int useCurrent)
 {
-    SubdivideQuadsAttributesObject *newObject;
-    newObject = PyObject_NEW(SubdivideQuadsAttributesObject, &SubdivideQuadsAttributesType);
+    PySubdivideQuadsAttributesObject *newObject;
+    newObject = PyObject_NEW(PySubdivideQuadsAttributesObject, &PySubdivideQuadsAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -569,15 +555,15 @@ NewSubdivideQuadsAttributes(int useCurrent)
         newObject->data = new SubdivideQuadsAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&SubdivideQuadsAttributesType);
+    PyType_Ready(&PySubdivideQuadsAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapSubdivideQuadsAttributes(const SubdivideQuadsAttributes *attr)
 {
-    SubdivideQuadsAttributesObject *newObject;
-    newObject = PyObject_NEW(SubdivideQuadsAttributesObject, &SubdivideQuadsAttributesType);
+    PySubdivideQuadsAttributesObject *newObject;
+    newObject = PyObject_NEW(PySubdivideQuadsAttributesObject, &PySubdivideQuadsAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (SubdivideQuadsAttributes *)attr;
@@ -679,13 +665,13 @@ PySubdivideQuadsAttributes_GetMethodTable(int *nMethods)
 bool
 PySubdivideQuadsAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &SubdivideQuadsAttributesType);
+    return (obj->ob_type == &PySubdivideQuadsAttributesType);
 }
 
 SubdivideQuadsAttributes *
 PySubdivideQuadsAttributes_FromPyObject(PyObject *obj)
 {
-    SubdivideQuadsAttributesObject *obj2 = (SubdivideQuadsAttributesObject *)obj;
+    PySubdivideQuadsAttributesObject *obj2 = (PySubdivideQuadsAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -704,7 +690,7 @@ PySubdivideQuadsAttributes_Wrap(const SubdivideQuadsAttributes *attr)
 void
 PySubdivideQuadsAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    SubdivideQuadsAttributesObject *obj2 = (SubdivideQuadsAttributesObject *)obj;
+    PySubdivideQuadsAttributesObject *obj2 = (PySubdivideQuadsAttributesObject *)obj;
     obj2->parent = parent;
 }
 

@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a LCSAttributes.
 //
-struct LCSAttributesObject
+struct PyLCSAttributesObject
 {
     PyObject_HEAD
     LCSAttributes *data;
@@ -538,7 +538,7 @@ PyLCSAttributes_ToString(const LCSAttributes *atts, const char *prefix, const bo
 static PyObject *
 LCSAttributes_Notify(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -575,7 +575,7 @@ LCSAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetSourceType(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -633,7 +633,7 @@ LCSAttributes_SetSourceType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetSourceType(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetSourceType()));
     return retval;
 }
@@ -641,7 +641,7 @@ LCSAttributes_GetSourceType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetResolution(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     int *vals = obj->data->GetResolution();
@@ -708,7 +708,7 @@ LCSAttributes_SetResolution(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetResolution(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the Resolution.
     PyObject *retval = PyTuple_New(3);
     const int *Resolution = obj->data->GetResolution();
@@ -720,7 +720,7 @@ LCSAttributes_GetResolution(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetUseDataSetStart(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -778,7 +778,7 @@ LCSAttributes_SetUseDataSetStart(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetUseDataSetStart(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetUseDataSetStart()));
     return retval;
 }
@@ -786,7 +786,7 @@ LCSAttributes_GetUseDataSetStart(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetStartPosition(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetStartPosition();
@@ -853,7 +853,7 @@ LCSAttributes_SetStartPosition(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetStartPosition(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the StartPosition.
     PyObject *retval = PyTuple_New(3);
     const double *StartPosition = obj->data->GetStartPosition();
@@ -865,7 +865,7 @@ LCSAttributes_GetStartPosition(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetUseDataSetEnd(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -923,7 +923,7 @@ LCSAttributes_SetUseDataSetEnd(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetUseDataSetEnd(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetUseDataSetEnd()));
     return retval;
 }
@@ -931,7 +931,7 @@ LCSAttributes_GetUseDataSetEnd(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetEndPosition(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetEndPosition();
@@ -998,7 +998,7 @@ LCSAttributes_SetEndPosition(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetEndPosition(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the EndPosition.
     PyObject *retval = PyTuple_New(3);
     const double *EndPosition = obj->data->GetEndPosition();
@@ -1010,7 +1010,7 @@ LCSAttributes_GetEndPosition(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetIntegrationDirection(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1069,7 +1069,7 @@ LCSAttributes_SetIntegrationDirection(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetIntegrationDirection(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetIntegrationDirection()));
     return retval;
 }
@@ -1077,7 +1077,7 @@ LCSAttributes_GetIntegrationDirection(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetAuxiliaryGrid(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1136,7 +1136,7 @@ LCSAttributes_SetAuxiliaryGrid(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetAuxiliaryGrid(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetAuxiliaryGrid()));
     return retval;
 }
@@ -1144,7 +1144,7 @@ LCSAttributes_GetAuxiliaryGrid(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetAuxiliaryGridSpacing(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1196,7 +1196,7 @@ LCSAttributes_SetAuxiliaryGridSpacing(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetAuxiliaryGridSpacing(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetAuxiliaryGridSpacing());
     return retval;
 }
@@ -1204,7 +1204,7 @@ LCSAttributes_GetAuxiliaryGridSpacing(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetMaxSteps(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1256,7 +1256,7 @@ LCSAttributes_SetMaxSteps(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetMaxSteps(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMaxSteps()));
     return retval;
 }
@@ -1264,7 +1264,7 @@ LCSAttributes_GetMaxSteps(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetOperationType(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1326,7 +1326,7 @@ LCSAttributes_SetOperationType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetOperationType(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetOperationType()));
     return retval;
 }
@@ -1334,7 +1334,7 @@ LCSAttributes_GetOperationType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetCauchyGreenTensor(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1392,7 +1392,7 @@ LCSAttributes_SetCauchyGreenTensor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetCauchyGreenTensor(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetCauchyGreenTensor()));
     return retval;
 }
@@ -1400,7 +1400,7 @@ LCSAttributes_GetCauchyGreenTensor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetEigenComponent(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1463,7 +1463,7 @@ LCSAttributes_SetEigenComponent(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetEigenComponent(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetEigenComponent()));
     return retval;
 }
@@ -1471,7 +1471,7 @@ LCSAttributes_GetEigenComponent(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetEigenWeight(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1523,7 +1523,7 @@ LCSAttributes_SetEigenWeight(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetEigenWeight(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetEigenWeight());
     return retval;
 }
@@ -1531,7 +1531,7 @@ LCSAttributes_GetEigenWeight(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetOperatorType(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1589,7 +1589,7 @@ LCSAttributes_SetOperatorType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetOperatorType(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetOperatorType()));
     return retval;
 }
@@ -1597,7 +1597,7 @@ LCSAttributes_GetOperatorType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetTerminationType(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1656,7 +1656,7 @@ LCSAttributes_SetTerminationType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetTerminationType(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetTerminationType()));
     return retval;
 }
@@ -1664,7 +1664,7 @@ LCSAttributes_GetTerminationType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetTerminateBySize(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1716,7 +1716,7 @@ LCSAttributes_SetTerminateBySize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetTerminateBySize(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetTerminateBySize()?1L:0L);
     return retval;
 }
@@ -1724,7 +1724,7 @@ LCSAttributes_GetTerminateBySize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetTermSize(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1776,7 +1776,7 @@ LCSAttributes_SetTermSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetTermSize(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetTermSize());
     return retval;
 }
@@ -1784,7 +1784,7 @@ LCSAttributes_GetTermSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetTerminateByDistance(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1836,7 +1836,7 @@ LCSAttributes_SetTerminateByDistance(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetTerminateByDistance(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetTerminateByDistance()?1L:0L);
     return retval;
 }
@@ -1844,7 +1844,7 @@ LCSAttributes_GetTerminateByDistance(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetTermDistance(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1896,7 +1896,7 @@ LCSAttributes_SetTermDistance(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetTermDistance(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetTermDistance());
     return retval;
 }
@@ -1904,7 +1904,7 @@ LCSAttributes_GetTermDistance(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetTerminateByTime(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1956,7 +1956,7 @@ LCSAttributes_SetTerminateByTime(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetTerminateByTime(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetTerminateByTime()?1L:0L);
     return retval;
 }
@@ -1964,7 +1964,7 @@ LCSAttributes_GetTerminateByTime(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetTermTime(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2016,7 +2016,7 @@ LCSAttributes_SetTermTime(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetTermTime(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetTermTime());
     return retval;
 }
@@ -2024,7 +2024,7 @@ LCSAttributes_GetTermTime(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetMaxStepLength(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2076,7 +2076,7 @@ LCSAttributes_SetMaxStepLength(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetMaxStepLength(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMaxStepLength());
     return retval;
 }
@@ -2084,7 +2084,7 @@ LCSAttributes_GetMaxStepLength(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetLimitMaximumTimestep(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2136,7 +2136,7 @@ LCSAttributes_SetLimitMaximumTimestep(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetLimitMaximumTimestep(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetLimitMaximumTimestep()?1L:0L);
     return retval;
 }
@@ -2144,7 +2144,7 @@ LCSAttributes_GetLimitMaximumTimestep(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetMaxTimeStep(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2196,7 +2196,7 @@ LCSAttributes_SetMaxTimeStep(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetMaxTimeStep(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMaxTimeStep());
     return retval;
 }
@@ -2204,7 +2204,7 @@ LCSAttributes_GetMaxTimeStep(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetRelTol(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2256,7 +2256,7 @@ LCSAttributes_SetRelTol(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetRelTol(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetRelTol());
     return retval;
 }
@@ -2264,7 +2264,7 @@ LCSAttributes_GetRelTol(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetAbsTolSizeType(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2322,7 +2322,7 @@ LCSAttributes_SetAbsTolSizeType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetAbsTolSizeType(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetAbsTolSizeType()));
     return retval;
 }
@@ -2330,7 +2330,7 @@ LCSAttributes_GetAbsTolSizeType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetAbsTolAbsolute(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2382,7 +2382,7 @@ LCSAttributes_SetAbsTolAbsolute(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetAbsTolAbsolute(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetAbsTolAbsolute());
     return retval;
 }
@@ -2390,7 +2390,7 @@ LCSAttributes_GetAbsTolAbsolute(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetAbsTolBBox(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2442,7 +2442,7 @@ LCSAttributes_SetAbsTolBBox(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetAbsTolBBox(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetAbsTolBBox());
     return retval;
 }
@@ -2450,7 +2450,7 @@ LCSAttributes_GetAbsTolBBox(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetFieldType(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2512,7 +2512,7 @@ LCSAttributes_SetFieldType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetFieldType(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetFieldType()));
     return retval;
 }
@@ -2520,7 +2520,7 @@ LCSAttributes_GetFieldType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetFieldConstant(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2572,7 +2572,7 @@ LCSAttributes_SetFieldConstant(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetFieldConstant(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetFieldConstant());
     return retval;
 }
@@ -2580,7 +2580,7 @@ LCSAttributes_GetFieldConstant(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetVelocitySource(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetVelocitySource();
@@ -2647,7 +2647,7 @@ LCSAttributes_SetVelocitySource(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetVelocitySource(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the velocitySource.
     PyObject *retval = PyTuple_New(3);
     const double *velocitySource = obj->data->GetVelocitySource();
@@ -2659,7 +2659,7 @@ LCSAttributes_GetVelocitySource(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetIntegrationType(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2721,7 +2721,7 @@ LCSAttributes_SetIntegrationType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetIntegrationType(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetIntegrationType()));
     return retval;
 }
@@ -2729,7 +2729,7 @@ LCSAttributes_GetIntegrationType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetClampLogValues(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2781,7 +2781,7 @@ LCSAttributes_SetClampLogValues(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetClampLogValues(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetClampLogValues()?1L:0L);
     return retval;
 }
@@ -2789,7 +2789,7 @@ LCSAttributes_GetClampLogValues(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetParallelizationAlgorithmType(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2849,7 +2849,7 @@ LCSAttributes_SetParallelizationAlgorithmType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetParallelizationAlgorithmType(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetParallelizationAlgorithmType()));
     return retval;
 }
@@ -2857,7 +2857,7 @@ LCSAttributes_GetParallelizationAlgorithmType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetMaxProcessCount(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2909,7 +2909,7 @@ LCSAttributes_SetMaxProcessCount(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetMaxProcessCount(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMaxProcessCount()));
     return retval;
 }
@@ -2917,7 +2917,7 @@ LCSAttributes_GetMaxProcessCount(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetMaxDomainCacheSize(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2969,7 +2969,7 @@ LCSAttributes_SetMaxDomainCacheSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetMaxDomainCacheSize(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMaxDomainCacheSize()));
     return retval;
 }
@@ -2977,7 +2977,7 @@ LCSAttributes_GetMaxDomainCacheSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetWorkGroupSize(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3029,7 +3029,7 @@ LCSAttributes_SetWorkGroupSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetWorkGroupSize(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetWorkGroupSize()));
     return retval;
 }
@@ -3037,7 +3037,7 @@ LCSAttributes_GetWorkGroupSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetPathlines(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3089,7 +3089,7 @@ LCSAttributes_SetPathlines(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetPathlines(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetPathlines()?1L:0L);
     return retval;
 }
@@ -3097,7 +3097,7 @@ LCSAttributes_GetPathlines(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetPathlinesOverrideStartingTimeFlag(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3149,7 +3149,7 @@ LCSAttributes_SetPathlinesOverrideStartingTimeFlag(PyObject *self, PyObject *arg
 /*static*/ PyObject *
 LCSAttributes_GetPathlinesOverrideStartingTimeFlag(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetPathlinesOverrideStartingTimeFlag()?1L:0L);
     return retval;
 }
@@ -3157,7 +3157,7 @@ LCSAttributes_GetPathlinesOverrideStartingTimeFlag(PyObject *self, PyObject *arg
 /*static*/ PyObject *
 LCSAttributes_SetPathlinesOverrideStartingTime(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3209,7 +3209,7 @@ LCSAttributes_SetPathlinesOverrideStartingTime(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetPathlinesOverrideStartingTime(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetPathlinesOverrideStartingTime());
     return retval;
 }
@@ -3217,7 +3217,7 @@ LCSAttributes_GetPathlinesOverrideStartingTime(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetPathlinesPeriod(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3269,7 +3269,7 @@ LCSAttributes_SetPathlinesPeriod(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetPathlinesPeriod(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetPathlinesPeriod());
     return retval;
 }
@@ -3277,7 +3277,7 @@ LCSAttributes_GetPathlinesPeriod(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetPathlinesCMFE(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3335,7 +3335,7 @@ LCSAttributes_SetPathlinesCMFE(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetPathlinesCMFE(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetPathlinesCMFE()));
     return retval;
 }
@@ -3343,7 +3343,7 @@ LCSAttributes_GetPathlinesCMFE(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetThresholdLimit(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3395,7 +3395,7 @@ LCSAttributes_SetThresholdLimit(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetThresholdLimit(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetThresholdLimit());
     return retval;
 }
@@ -3403,7 +3403,7 @@ LCSAttributes_GetThresholdLimit(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetRadialLimit(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3455,7 +3455,7 @@ LCSAttributes_SetRadialLimit(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetRadialLimit(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetRadialLimit());
     return retval;
 }
@@ -3463,7 +3463,7 @@ LCSAttributes_GetRadialLimit(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetBoundaryLimit(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3515,7 +3515,7 @@ LCSAttributes_SetBoundaryLimit(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetBoundaryLimit(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetBoundaryLimit());
     return retval;
 }
@@ -3523,7 +3523,7 @@ LCSAttributes_GetBoundaryLimit(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetSeedLimit(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3575,7 +3575,7 @@ LCSAttributes_SetSeedLimit(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetSeedLimit(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetSeedLimit()));
     return retval;
 }
@@ -3583,7 +3583,7 @@ LCSAttributes_GetSeedLimit(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetIssueAdvectionWarnings(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3635,7 +3635,7 @@ LCSAttributes_SetIssueAdvectionWarnings(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetIssueAdvectionWarnings(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetIssueAdvectionWarnings()?1L:0L);
     return retval;
 }
@@ -3643,7 +3643,7 @@ LCSAttributes_GetIssueAdvectionWarnings(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetIssueBoundaryWarnings(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3695,7 +3695,7 @@ LCSAttributes_SetIssueBoundaryWarnings(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetIssueBoundaryWarnings(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetIssueBoundaryWarnings()?1L:0L);
     return retval;
 }
@@ -3703,7 +3703,7 @@ LCSAttributes_GetIssueBoundaryWarnings(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetIssueTerminationWarnings(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3755,7 +3755,7 @@ LCSAttributes_SetIssueTerminationWarnings(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetIssueTerminationWarnings(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetIssueTerminationWarnings()?1L:0L);
     return retval;
 }
@@ -3763,7 +3763,7 @@ LCSAttributes_GetIssueTerminationWarnings(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetIssueStepsizeWarnings(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3815,7 +3815,7 @@ LCSAttributes_SetIssueStepsizeWarnings(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetIssueStepsizeWarnings(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetIssueStepsizeWarnings()?1L:0L);
     return retval;
 }
@@ -3823,7 +3823,7 @@ LCSAttributes_GetIssueStepsizeWarnings(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetIssueStiffnessWarnings(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3875,7 +3875,7 @@ LCSAttributes_SetIssueStiffnessWarnings(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetIssueStiffnessWarnings(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetIssueStiffnessWarnings()?1L:0L);
     return retval;
 }
@@ -3883,7 +3883,7 @@ LCSAttributes_GetIssueStiffnessWarnings(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetIssueCriticalPointsWarnings(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3935,7 +3935,7 @@ LCSAttributes_SetIssueCriticalPointsWarnings(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetIssueCriticalPointsWarnings(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetIssueCriticalPointsWarnings()?1L:0L);
     return retval;
 }
@@ -3943,7 +3943,7 @@ LCSAttributes_GetIssueCriticalPointsWarnings(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_SetCriticalPointThreshold(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3995,7 +3995,7 @@ LCSAttributes_SetCriticalPointThreshold(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LCSAttributes_GetCriticalPointThreshold(PyObject *self, PyObject *args)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)self;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetCriticalPointThreshold());
     return retval;
 }
@@ -4121,16 +4121,16 @@ PyMethodDef PyLCSAttributes_methods[LCSATTRIBUTES_NMETH] = {
 //
 
 static void
-LCSAttributes_dealloc(PyObject *v)
+PyLCSAttributes_dealloc(PyObject *v)
 {
-   LCSAttributesObject *obj = (LCSAttributesObject *)v;
+   PyLCSAttributesObject *obj = (PyLCSAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *LCSAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyLCSAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyLCSAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -4507,56 +4507,42 @@ PyLCSAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 }
 
 PyObject *
-LCSAttributes_str(PyObject *v)
+PyLCSAttributes_str(PyObject *v)
 {
-    LCSAttributesObject *obj = (LCSAttributesObject *)v;
+    PyLCSAttributesObject *obj = (PyLCSAttributesObject *)v;
     return PyString_FromString(PyLCSAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *LCSAttributes_Purpose = "Attributes for LCS";
-#else
-static char *LCSAttributes_Purpose = "Attributes for LCS";
-#endif
+static char const *PyLCSAttributes_purpose = "Attributes for LCS";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject LCSAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "LCSAttributes",
-    .tp_basicsize = sizeof(LCSAttributesObject),
-    .tp_dealloc = LCSAttributes_dealloc,
-    .tp_repr = LCSAttributes_str,
-    .tp_str = LCSAttributes_str,
-    .tp_getattro = PyLCSAttributes_getattro,
-    .tp_setattro = PyLCSAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = LCSAttributes_Purpose,
-    .tp_richcompare = LCSAttributes_richcompare,
-    .tp_methods = PyLCSAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(LCSAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-LCSAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyLCSAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &LCSAttributesType
-         || Py_TYPE(other) != &LCSAttributesType)
+    if ( Py_TYPE(self) != &PyLCSAttributesType
+         || Py_TYPE(other) != &PyLCSAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    LCSAttributes *a = ((LCSAttributesObject *)self)->data;
-    LCSAttributes *b = ((LCSAttributesObject *)other)->data;
+    LCSAttributes *a = ((PyLCSAttributesObject *)self)->data;
+    LCSAttributes *b = ((PyLCSAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -4585,8 +4571,8 @@ static LCSAttributes *currentAtts = 0;
 static PyObject *
 NewLCSAttributes(int useCurrent)
 {
-    LCSAttributesObject *newObject;
-    newObject = PyObject_NEW(LCSAttributesObject, &LCSAttributesType);
+    PyLCSAttributesObject *newObject;
+    newObject = PyObject_NEW(PyLCSAttributesObject, &PyLCSAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -4597,15 +4583,15 @@ NewLCSAttributes(int useCurrent)
         newObject->data = new LCSAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&LCSAttributesType);
+    PyType_Ready(&PyLCSAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapLCSAttributes(const LCSAttributes *attr)
 {
-    LCSAttributesObject *newObject;
-    newObject = PyObject_NEW(LCSAttributesObject, &LCSAttributesType);
+    PyLCSAttributesObject *newObject;
+    newObject = PyObject_NEW(PyLCSAttributesObject, &PyLCSAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (LCSAttributes *)attr;
@@ -4707,13 +4693,13 @@ PyLCSAttributes_GetMethodTable(int *nMethods)
 bool
 PyLCSAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &LCSAttributesType);
+    return (obj->ob_type == &PyLCSAttributesType);
 }
 
 LCSAttributes *
 PyLCSAttributes_FromPyObject(PyObject *obj)
 {
-    LCSAttributesObject *obj2 = (LCSAttributesObject *)obj;
+    PyLCSAttributesObject *obj2 = (PyLCSAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -4732,7 +4718,7 @@ PyLCSAttributes_Wrap(const LCSAttributes *attr)
 void
 PyLCSAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    LCSAttributesObject *obj2 = (LCSAttributesObject *)obj;
+    PyLCSAttributesObject *obj2 = (PyLCSAttributesObject *)obj;
     obj2->parent = parent;
 }
 

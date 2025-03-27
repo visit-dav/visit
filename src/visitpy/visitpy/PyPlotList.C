@@ -25,7 +25,7 @@
 //
 // This struct contains the Python type information and a PlotList.
 //
-struct PlotListObject
+struct PyPlotListObject
 {
     PyObject_HEAD
     PlotList *data;
@@ -62,7 +62,7 @@ PyPlotList_ToString(const PlotList *atts, const char *prefix, const bool forLogg
 static PyObject *
 PlotList_Notify(PyObject *self, PyObject *args)
 {
-    PlotListObject *obj = (PlotListObject *)self;
+    PyPlotListObject *obj = (PyPlotListObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -99,7 +99,7 @@ PlotList_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PlotList_GetPlots(PyObject *self, PyObject *args)
 {
-    PlotListObject *obj = (PlotListObject *)self;
+    PyPlotListObject *obj = (PyPlotListObject *)self;
     int index = -1;
     if (args == NULL)
         return PyErr_Format(PyExc_NameError, "Use .GetPlots(int index) to get a single entry");
@@ -123,14 +123,14 @@ PlotList_GetPlots(PyObject *self, PyObject *args)
 PyObject *
 PlotList_GetNumPlots(PyObject *self, PyObject *args)
 {
-    PlotListObject *obj = (PlotListObject *)self;
+    PyPlotListObject *obj = (PyPlotListObject *)self;
     return PyInt_FromLong((long)obj->data->GetPlots().size());
 }
 
 PyObject *
 PlotList_AddPlots(PyObject *self, PyObject *args)
 {
-    PlotListObject *obj = (PlotListObject *)self;
+    PyPlotListObject *obj = (PyPlotListObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
         return NULL;
@@ -146,7 +146,7 @@ PlotList_AddPlots(PyObject *self, PyObject *args)
 static PyObject *
 PlotList_Remove_One_Plots(PyObject *self, int index)
 {
-    PlotListObject *obj = (PlotListObject *)self;
+    PyPlotListObject *obj = (PyPlotListObject *)self;
     // Remove in the AttributeGroupVector instead of calling RemovePlots() because we don't want to delete the object; just remove it.
     AttributeGroupVector &atts = obj->data->GetPlots();
     AttributeGroupVector::iterator pos = atts.begin();
@@ -176,7 +176,7 @@ PlotList_RemovePlots(PyObject *self, PyObject *args)
     int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
-    PlotListObject *obj = (PlotListObject *)self;
+    PyPlotListObject *obj = (PyPlotListObject *)self;
     if(index < 0 || index >= obj->data->GetNumPlots())
         return PyErr_Format(PyExc_IndexError, "Index out of range");
 
@@ -186,7 +186,7 @@ PlotList_RemovePlots(PyObject *self, PyObject *args)
 PyObject *
 PlotList_ClearPlots(PyObject *self, PyObject *args)
 {
-    PlotListObject *obj = (PlotListObject *)self;
+    PyPlotListObject *obj = (PyPlotListObject *)self;
     int n = obj->data->GetNumPlots();
     for(int i = 0; i < n; ++i)
     {
@@ -215,16 +215,16 @@ PyMethodDef PyPlotList_methods[PLOTLIST_NMETH] = {
 //
 
 static void
-PlotList_dealloc(PyObject *v)
+PyPlotList_dealloc(PyObject *v)
 {
-   PlotListObject *obj = (PlotListObject *)v;
+   PyPlotListObject *obj = (PyPlotListObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *PlotList_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyPlotList_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyPlotList_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -266,56 +266,42 @@ PyPlotList_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 }
 
 PyObject *
-PlotList_str(PyObject *v)
+PyPlotList_str(PyObject *v)
 {
-    PlotListObject *obj = (PlotListObject *)v;
+    PyPlotListObject *obj = (PyPlotListObject *)v;
     return PyString_FromString(PyPlotList_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *PlotList_Purpose = "This class contains a list of plots.";
-#else
-static char *PlotList_Purpose = "This class contains a list of plots.";
-#endif
+static char const *PyPlotList_purpose = "This class contains a list of plots.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject PlotListType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "PlotList",
-    .tp_basicsize = sizeof(PlotListObject),
-    .tp_dealloc = PlotList_dealloc,
-    .tp_repr = PlotList_str,
-    .tp_str = PlotList_str,
-    .tp_getattro = PyPlotList_getattro,
-    .tp_setattro = PyPlotList_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = PlotList_Purpose,
-    .tp_richcompare = PlotList_richcompare,
-    .tp_methods = PyPlotList_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(PlotList);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-PlotList_richcompare(PyObject *self, PyObject *other, int op)
+PyPlotList_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &PlotListType
-         || Py_TYPE(other) != &PlotListType)
+    if ( Py_TYPE(self) != &PyPlotListType
+         || Py_TYPE(other) != &PyPlotListType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    PlotList *a = ((PlotListObject *)self)->data;
-    PlotList *b = ((PlotListObject *)other)->data;
+    PlotList *a = ((PyPlotListObject *)self)->data;
+    PlotList *b = ((PyPlotListObject *)other)->data;
 
     switch (op)
     {
@@ -344,8 +330,8 @@ static PlotList *currentAtts = 0;
 static PyObject *
 NewPlotList(int useCurrent)
 {
-    PlotListObject *newObject;
-    newObject = PyObject_NEW(PlotListObject, &PlotListType);
+    PyPlotListObject *newObject;
+    newObject = PyObject_NEW(PyPlotListObject, &PyPlotListType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -356,15 +342,15 @@ NewPlotList(int useCurrent)
         newObject->data = new PlotList;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&PlotListType);
+    PyType_Ready(&PyPlotListType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapPlotList(const PlotList *attr)
 {
-    PlotListObject *newObject;
-    newObject = PyObject_NEW(PlotListObject, &PlotListType);
+    PyPlotListObject *newObject;
+    newObject = PyObject_NEW(PyPlotListObject, &PyPlotListType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (PlotList *)attr;
@@ -466,13 +452,13 @@ PyPlotList_GetMethodTable(int *nMethods)
 bool
 PyPlotList_Check(PyObject *obj)
 {
-    return (obj->ob_type == &PlotListType);
+    return (obj->ob_type == &PyPlotListType);
 }
 
 PlotList *
 PyPlotList_FromPyObject(PyObject *obj)
 {
-    PlotListObject *obj2 = (PlotListObject *)obj;
+    PyPlotListObject *obj2 = (PyPlotListObject *)obj;
     return obj2->data;
 }
 
@@ -491,7 +477,7 @@ PyPlotList_Wrap(const PlotList *attr)
 void
 PyPlotList_SetParent(PyObject *obj, PyObject *parent)
 {
-    PlotListObject *obj2 = (PlotListObject *)obj;
+    PyPlotListObject *obj2 = (PyPlotListObject *)obj;
     obj2->parent = parent;
 }
 

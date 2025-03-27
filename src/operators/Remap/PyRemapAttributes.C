@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a RemapAttributes.
 //
-struct RemapAttributesObject
+struct PyRemapAttributesObject
 {
     PyObject_HEAD
     RemapAttributes *data;
@@ -91,7 +91,7 @@ PyRemapAttributes_ToString(const RemapAttributes *atts, const char *prefix, cons
 static PyObject *
 RemapAttributes_Notify(PyObject *self, PyObject *args)
 {
-    RemapAttributesObject *obj = (RemapAttributesObject *)self;
+    PyRemapAttributesObject *obj = (PyRemapAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -128,7 +128,7 @@ RemapAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RemapAttributes_SetUseExtents(PyObject *self, PyObject *args)
 {
-    RemapAttributesObject *obj = (RemapAttributesObject *)self;
+    PyRemapAttributesObject *obj = (PyRemapAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -180,7 +180,7 @@ RemapAttributes_SetUseExtents(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RemapAttributes_GetUseExtents(PyObject *self, PyObject *args)
 {
-    RemapAttributesObject *obj = (RemapAttributesObject *)self;
+    PyRemapAttributesObject *obj = (PyRemapAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetUseExtents()?1L:0L);
     return retval;
 }
@@ -188,7 +188,7 @@ RemapAttributes_GetUseExtents(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RemapAttributes_SetStartX(PyObject *self, PyObject *args)
 {
-    RemapAttributesObject *obj = (RemapAttributesObject *)self;
+    PyRemapAttributesObject *obj = (PyRemapAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -240,7 +240,7 @@ RemapAttributes_SetStartX(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RemapAttributes_GetStartX(PyObject *self, PyObject *args)
 {
-    RemapAttributesObject *obj = (RemapAttributesObject *)self;
+    PyRemapAttributesObject *obj = (PyRemapAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetStartX());
     return retval;
 }
@@ -248,7 +248,7 @@ RemapAttributes_GetStartX(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RemapAttributes_SetEndX(PyObject *self, PyObject *args)
 {
-    RemapAttributesObject *obj = (RemapAttributesObject *)self;
+    PyRemapAttributesObject *obj = (PyRemapAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -300,7 +300,7 @@ RemapAttributes_SetEndX(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RemapAttributes_GetEndX(PyObject *self, PyObject *args)
 {
-    RemapAttributesObject *obj = (RemapAttributesObject *)self;
+    PyRemapAttributesObject *obj = (PyRemapAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetEndX());
     return retval;
 }
@@ -308,7 +308,7 @@ RemapAttributes_GetEndX(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RemapAttributes_SetCellsX(PyObject *self, PyObject *args)
 {
-    RemapAttributesObject *obj = (RemapAttributesObject *)self;
+    PyRemapAttributesObject *obj = (PyRemapAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -360,7 +360,7 @@ RemapAttributes_SetCellsX(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RemapAttributes_GetCellsX(PyObject *self, PyObject *args)
 {
-    RemapAttributesObject *obj = (RemapAttributesObject *)self;
+    PyRemapAttributesObject *obj = (PyRemapAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetCellsX()));
     return retval;
 }
@@ -368,7 +368,7 @@ RemapAttributes_GetCellsX(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RemapAttributes_SetStartY(PyObject *self, PyObject *args)
 {
-    RemapAttributesObject *obj = (RemapAttributesObject *)self;
+    PyRemapAttributesObject *obj = (PyRemapAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -420,7 +420,7 @@ RemapAttributes_SetStartY(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RemapAttributes_GetStartY(PyObject *self, PyObject *args)
 {
-    RemapAttributesObject *obj = (RemapAttributesObject *)self;
+    PyRemapAttributesObject *obj = (PyRemapAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetStartY());
     return retval;
 }
@@ -428,7 +428,7 @@ RemapAttributes_GetStartY(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RemapAttributes_SetEndY(PyObject *self, PyObject *args)
 {
-    RemapAttributesObject *obj = (RemapAttributesObject *)self;
+    PyRemapAttributesObject *obj = (PyRemapAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -480,7 +480,7 @@ RemapAttributes_SetEndY(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RemapAttributes_GetEndY(PyObject *self, PyObject *args)
 {
-    RemapAttributesObject *obj = (RemapAttributesObject *)self;
+    PyRemapAttributesObject *obj = (PyRemapAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetEndY());
     return retval;
 }
@@ -488,7 +488,7 @@ RemapAttributes_GetEndY(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RemapAttributes_SetCellsY(PyObject *self, PyObject *args)
 {
-    RemapAttributesObject *obj = (RemapAttributesObject *)self;
+    PyRemapAttributesObject *obj = (PyRemapAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -540,7 +540,7 @@ RemapAttributes_SetCellsY(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RemapAttributes_GetCellsY(PyObject *self, PyObject *args)
 {
-    RemapAttributesObject *obj = (RemapAttributesObject *)self;
+    PyRemapAttributesObject *obj = (PyRemapAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetCellsY()));
     return retval;
 }
@@ -548,7 +548,7 @@ RemapAttributes_GetCellsY(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RemapAttributes_SetIs3D(PyObject *self, PyObject *args)
 {
-    RemapAttributesObject *obj = (RemapAttributesObject *)self;
+    PyRemapAttributesObject *obj = (PyRemapAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -600,7 +600,7 @@ RemapAttributes_SetIs3D(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RemapAttributes_GetIs3D(PyObject *self, PyObject *args)
 {
-    RemapAttributesObject *obj = (RemapAttributesObject *)self;
+    PyRemapAttributesObject *obj = (PyRemapAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetIs3D()?1L:0L);
     return retval;
 }
@@ -608,7 +608,7 @@ RemapAttributes_GetIs3D(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RemapAttributes_SetStartZ(PyObject *self, PyObject *args)
 {
-    RemapAttributesObject *obj = (RemapAttributesObject *)self;
+    PyRemapAttributesObject *obj = (PyRemapAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -660,7 +660,7 @@ RemapAttributes_SetStartZ(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RemapAttributes_GetStartZ(PyObject *self, PyObject *args)
 {
-    RemapAttributesObject *obj = (RemapAttributesObject *)self;
+    PyRemapAttributesObject *obj = (PyRemapAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetStartZ());
     return retval;
 }
@@ -668,7 +668,7 @@ RemapAttributes_GetStartZ(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RemapAttributes_SetEndZ(PyObject *self, PyObject *args)
 {
-    RemapAttributesObject *obj = (RemapAttributesObject *)self;
+    PyRemapAttributesObject *obj = (PyRemapAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -720,7 +720,7 @@ RemapAttributes_SetEndZ(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RemapAttributes_GetEndZ(PyObject *self, PyObject *args)
 {
-    RemapAttributesObject *obj = (RemapAttributesObject *)self;
+    PyRemapAttributesObject *obj = (PyRemapAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetEndZ());
     return retval;
 }
@@ -728,7 +728,7 @@ RemapAttributes_GetEndZ(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RemapAttributes_SetCellsZ(PyObject *self, PyObject *args)
 {
-    RemapAttributesObject *obj = (RemapAttributesObject *)self;
+    PyRemapAttributesObject *obj = (PyRemapAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -780,7 +780,7 @@ RemapAttributes_SetCellsZ(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RemapAttributes_GetCellsZ(PyObject *self, PyObject *args)
 {
-    RemapAttributesObject *obj = (RemapAttributesObject *)self;
+    PyRemapAttributesObject *obj = (PyRemapAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetCellsZ()));
     return retval;
 }
@@ -788,7 +788,7 @@ RemapAttributes_GetCellsZ(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RemapAttributes_SetVariableType(PyObject *self, PyObject *args)
 {
-    RemapAttributesObject *obj = (RemapAttributesObject *)self;
+    PyRemapAttributesObject *obj = (PyRemapAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -846,7 +846,7 @@ RemapAttributes_SetVariableType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RemapAttributes_GetVariableType(PyObject *self, PyObject *args)
 {
-    RemapAttributesObject *obj = (RemapAttributesObject *)self;
+    PyRemapAttributesObject *obj = (PyRemapAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetVariableType()));
     return retval;
 }
@@ -888,16 +888,16 @@ PyMethodDef PyRemapAttributes_methods[REMAPATTRIBUTES_NMETH] = {
 //
 
 static void
-RemapAttributes_dealloc(PyObject *v)
+PyRemapAttributes_dealloc(PyObject *v)
 {
-   RemapAttributesObject *obj = (RemapAttributesObject *)v;
+   PyRemapAttributesObject *obj = (PyRemapAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *RemapAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyRemapAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyRemapAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -990,56 +990,42 @@ PyRemapAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 }
 
 PyObject *
-RemapAttributes_str(PyObject *v)
+PyRemapAttributes_str(PyObject *v)
 {
-    RemapAttributesObject *obj = (RemapAttributesObject *)v;
+    PyRemapAttributesObject *obj = (PyRemapAttributesObject *)v;
     return PyString_FromString(PyRemapAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *RemapAttributes_Purpose = "Atts for Remap operator";
-#else
-static char *RemapAttributes_Purpose = "Atts for Remap operator";
-#endif
+static char const *PyRemapAttributes_purpose = "Atts for Remap operator";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject RemapAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "RemapAttributes",
-    .tp_basicsize = sizeof(RemapAttributesObject),
-    .tp_dealloc = RemapAttributes_dealloc,
-    .tp_repr = RemapAttributes_str,
-    .tp_str = RemapAttributes_str,
-    .tp_getattro = PyRemapAttributes_getattro,
-    .tp_setattro = PyRemapAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = RemapAttributes_Purpose,
-    .tp_richcompare = RemapAttributes_richcompare,
-    .tp_methods = PyRemapAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(RemapAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-RemapAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyRemapAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &RemapAttributesType
-         || Py_TYPE(other) != &RemapAttributesType)
+    if ( Py_TYPE(self) != &PyRemapAttributesType
+         || Py_TYPE(other) != &PyRemapAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    RemapAttributes *a = ((RemapAttributesObject *)self)->data;
-    RemapAttributes *b = ((RemapAttributesObject *)other)->data;
+    RemapAttributes *a = ((PyRemapAttributesObject *)self)->data;
+    RemapAttributes *b = ((PyRemapAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -1068,8 +1054,8 @@ static RemapAttributes *currentAtts = 0;
 static PyObject *
 NewRemapAttributes(int useCurrent)
 {
-    RemapAttributesObject *newObject;
-    newObject = PyObject_NEW(RemapAttributesObject, &RemapAttributesType);
+    PyRemapAttributesObject *newObject;
+    newObject = PyObject_NEW(PyRemapAttributesObject, &PyRemapAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1080,15 +1066,15 @@ NewRemapAttributes(int useCurrent)
         newObject->data = new RemapAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&RemapAttributesType);
+    PyType_Ready(&PyRemapAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapRemapAttributes(const RemapAttributes *attr)
 {
-    RemapAttributesObject *newObject;
-    newObject = PyObject_NEW(RemapAttributesObject, &RemapAttributesType);
+    PyRemapAttributesObject *newObject;
+    newObject = PyObject_NEW(PyRemapAttributesObject, &PyRemapAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (RemapAttributes *)attr;
@@ -1190,13 +1176,13 @@ PyRemapAttributes_GetMethodTable(int *nMethods)
 bool
 PyRemapAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &RemapAttributesType);
+    return (obj->ob_type == &PyRemapAttributesType);
 }
 
 RemapAttributes *
 PyRemapAttributes_FromPyObject(PyObject *obj)
 {
-    RemapAttributesObject *obj2 = (RemapAttributesObject *)obj;
+    PyRemapAttributesObject *obj2 = (PyRemapAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1215,7 +1201,7 @@ PyRemapAttributes_Wrap(const RemapAttributes *attr)
 void
 PyRemapAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    RemapAttributesObject *obj2 = (RemapAttributesObject *)obj;
+    PyRemapAttributesObject *obj2 = (PyRemapAttributesObject *)obj;
     obj2->parent = parent;
 }
 

@@ -25,7 +25,7 @@
 //
 // This struct contains the Python type information and a SpreadsheetAttributes.
 //
-struct SpreadsheetAttributesObject
+struct PySpreadsheetAttributesObject
 {
     PyObject_HEAD
     SpreadsheetAttributes *data;
@@ -121,7 +121,7 @@ PySpreadsheetAttributes_ToString(const SpreadsheetAttributes *atts, const char *
 static PyObject *
 SpreadsheetAttributes_Notify(PyObject *self, PyObject *args)
 {
-    SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
+    PySpreadsheetAttributesObject *obj = (PySpreadsheetAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -161,7 +161,7 @@ SpreadsheetAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SpreadsheetAttributes_SetSubsetName(PyObject *self, PyObject *args)
 {
-    SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
+    PySpreadsheetAttributesObject *obj = (PySpreadsheetAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -202,7 +202,7 @@ SpreadsheetAttributes_SetSubsetName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SpreadsheetAttributes_GetSubsetName(PyObject *self, PyObject *args)
 {
-    SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
+    PySpreadsheetAttributesObject *obj = (PySpreadsheetAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetSubsetName().c_str());
     return retval;
 }
@@ -210,7 +210,7 @@ SpreadsheetAttributes_GetSubsetName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SpreadsheetAttributes_SetFormatString(PyObject *self, PyObject *args)
 {
-    SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
+    PySpreadsheetAttributesObject *obj = (PySpreadsheetAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -251,7 +251,7 @@ SpreadsheetAttributes_SetFormatString(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SpreadsheetAttributes_GetFormatString(PyObject *self, PyObject *args)
 {
-    SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
+    PySpreadsheetAttributesObject *obj = (PySpreadsheetAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetFormatString().c_str());
     return retval;
 }
@@ -259,7 +259,7 @@ SpreadsheetAttributes_GetFormatString(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SpreadsheetAttributes_SetUseColorTable(PyObject *self, PyObject *args)
 {
-    SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
+    PySpreadsheetAttributesObject *obj = (PySpreadsheetAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -311,7 +311,7 @@ SpreadsheetAttributes_SetUseColorTable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SpreadsheetAttributes_GetUseColorTable(PyObject *self, PyObject *args)
 {
-    SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
+    PySpreadsheetAttributesObject *obj = (PySpreadsheetAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetUseColorTable()?1L:0L);
     return retval;
 }
@@ -319,7 +319,7 @@ SpreadsheetAttributes_GetUseColorTable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SpreadsheetAttributes_SetColorTableName(PyObject *self, PyObject *args)
 {
-    SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
+    PySpreadsheetAttributesObject *obj = (PySpreadsheetAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -360,7 +360,7 @@ SpreadsheetAttributes_SetColorTableName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SpreadsheetAttributes_GetColorTableName(PyObject *self, PyObject *args)
 {
-    SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
+    PySpreadsheetAttributesObject *obj = (PySpreadsheetAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetColorTableName().c_str());
     return retval;
 }
@@ -368,7 +368,7 @@ SpreadsheetAttributes_GetColorTableName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SpreadsheetAttributes_SetShowTracerPlane(PyObject *self, PyObject *args)
 {
-    SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
+    PySpreadsheetAttributesObject *obj = (PySpreadsheetAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -420,7 +420,7 @@ SpreadsheetAttributes_SetShowTracerPlane(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SpreadsheetAttributes_GetShowTracerPlane(PyObject *self, PyObject *args)
 {
-    SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
+    PySpreadsheetAttributesObject *obj = (PySpreadsheetAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowTracerPlane()?1L:0L);
     return retval;
 }
@@ -428,7 +428,7 @@ SpreadsheetAttributes_GetShowTracerPlane(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SpreadsheetAttributes_SetTracerColor(PyObject *self, PyObject *args)
 {
-    SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
+    PySpreadsheetAttributesObject *obj = (PySpreadsheetAttributesObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -491,7 +491,7 @@ SpreadsheetAttributes_SetTracerColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SpreadsheetAttributes_GetTracerColor(PyObject *self, PyObject *args)
 {
-    SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
+    PySpreadsheetAttributesObject *obj = (PySpreadsheetAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the tracerColor.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *tracerColor = obj->data->GetTracerColor().GetColor();
@@ -505,7 +505,7 @@ SpreadsheetAttributes_GetTracerColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SpreadsheetAttributes_SetNormal(PyObject *self, PyObject *args)
 {
-    SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
+    PySpreadsheetAttributesObject *obj = (PySpreadsheetAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -564,7 +564,7 @@ SpreadsheetAttributes_SetNormal(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SpreadsheetAttributes_GetNormal(PyObject *self, PyObject *args)
 {
-    SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
+    PySpreadsheetAttributesObject *obj = (PySpreadsheetAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNormal()));
     return retval;
 }
@@ -572,7 +572,7 @@ SpreadsheetAttributes_GetNormal(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SpreadsheetAttributes_SetSliceIndex(PyObject *self, PyObject *args)
 {
-    SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
+    PySpreadsheetAttributesObject *obj = (PySpreadsheetAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -624,7 +624,7 @@ SpreadsheetAttributes_SetSliceIndex(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SpreadsheetAttributes_GetSliceIndex(PyObject *self, PyObject *args)
 {
-    SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
+    PySpreadsheetAttributesObject *obj = (PySpreadsheetAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetSliceIndex()));
     return retval;
 }
@@ -632,7 +632,7 @@ SpreadsheetAttributes_GetSliceIndex(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SpreadsheetAttributes_SetSpreadsheetFont(PyObject *self, PyObject *args)
 {
-    SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
+    PySpreadsheetAttributesObject *obj = (PySpreadsheetAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -673,7 +673,7 @@ SpreadsheetAttributes_SetSpreadsheetFont(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SpreadsheetAttributes_GetSpreadsheetFont(PyObject *self, PyObject *args)
 {
-    SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
+    PySpreadsheetAttributesObject *obj = (PySpreadsheetAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetSpreadsheetFont().c_str());
     return retval;
 }
@@ -681,7 +681,7 @@ SpreadsheetAttributes_GetSpreadsheetFont(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SpreadsheetAttributes_SetShowPatchOutline(PyObject *self, PyObject *args)
 {
-    SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
+    PySpreadsheetAttributesObject *obj = (PySpreadsheetAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -733,7 +733,7 @@ SpreadsheetAttributes_SetShowPatchOutline(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SpreadsheetAttributes_GetShowPatchOutline(PyObject *self, PyObject *args)
 {
-    SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
+    PySpreadsheetAttributesObject *obj = (PySpreadsheetAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowPatchOutline()?1L:0L);
     return retval;
 }
@@ -741,7 +741,7 @@ SpreadsheetAttributes_GetShowPatchOutline(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SpreadsheetAttributes_SetShowCurrentCellOutline(PyObject *self, PyObject *args)
 {
-    SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
+    PySpreadsheetAttributesObject *obj = (PySpreadsheetAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -793,7 +793,7 @@ SpreadsheetAttributes_SetShowCurrentCellOutline(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SpreadsheetAttributes_GetShowCurrentCellOutline(PyObject *self, PyObject *args)
 {
-    SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
+    PySpreadsheetAttributesObject *obj = (PySpreadsheetAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowCurrentCellOutline()?1L:0L);
     return retval;
 }
@@ -801,7 +801,7 @@ SpreadsheetAttributes_GetShowCurrentCellOutline(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SpreadsheetAttributes_SetCurrentPickType(PyObject *self, PyObject *args)
 {
-    SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
+    PySpreadsheetAttributesObject *obj = (PySpreadsheetAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -853,7 +853,7 @@ SpreadsheetAttributes_SetCurrentPickType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SpreadsheetAttributes_GetCurrentPickType(PyObject *self, PyObject *args)
 {
-    SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
+    PySpreadsheetAttributesObject *obj = (PySpreadsheetAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetCurrentPickType()));
     return retval;
 }
@@ -861,7 +861,7 @@ SpreadsheetAttributes_GetCurrentPickType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SpreadsheetAttributes_SetCurrentPickLetter(PyObject *self, PyObject *args)
 {
-    SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
+    PySpreadsheetAttributesObject *obj = (PySpreadsheetAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -902,7 +902,7 @@ SpreadsheetAttributes_SetCurrentPickLetter(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SpreadsheetAttributes_GetCurrentPickLetter(PyObject *self, PyObject *args)
 {
-    SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
+    PySpreadsheetAttributesObject *obj = (PySpreadsheetAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetCurrentPickLetter().c_str());
     return retval;
 }
@@ -910,7 +910,7 @@ SpreadsheetAttributes_GetCurrentPickLetter(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SpreadsheetAttributes_SetPastPickLetters(PyObject *self, PyObject *args)
 {
-    SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
+    PySpreadsheetAttributesObject *obj = (PySpreadsheetAttributesObject *)self;
 
     stringVector vec;
 
@@ -967,7 +967,7 @@ SpreadsheetAttributes_SetPastPickLetters(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SpreadsheetAttributes_GetPastPickLetters(PyObject *self, PyObject *args)
 {
-    SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)self;
+    PySpreadsheetAttributesObject *obj = (PySpreadsheetAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the pastPickLetters.
     const stringVector &pastPickLetters = obj->data->GetPastPickLetters();
     PyObject *retval = PyTuple_New(pastPickLetters.size());
@@ -1017,16 +1017,16 @@ PyMethodDef PySpreadsheetAttributes_methods[SPREADSHEETATTRIBUTES_NMETH] = {
 //
 
 static void
-SpreadsheetAttributes_dealloc(PyObject *v)
+PySpreadsheetAttributes_dealloc(PyObject *v)
 {
-   SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)v;
+   PySpreadsheetAttributesObject *obj = (PySpreadsheetAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *SpreadsheetAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PySpreadsheetAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PySpreadsheetAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -1129,56 +1129,42 @@ PySpreadsheetAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *
 }
 
 PyObject *
-SpreadsheetAttributes_str(PyObject *v)
+PySpreadsheetAttributes_str(PyObject *v)
 {
-    SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)v;
+    PySpreadsheetAttributesObject *obj = (PySpreadsheetAttributesObject *)v;
     return PyString_FromString(PySpreadsheetAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *SpreadsheetAttributes_Purpose = "Contains the attributes for the visual spreadsheet.";
-#else
-static char *SpreadsheetAttributes_Purpose = "Contains the attributes for the visual spreadsheet.";
-#endif
+static char const *PySpreadsheetAttributes_purpose = "Contains the attributes for the visual spreadsheet.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject SpreadsheetAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "SpreadsheetAttributes",
-    .tp_basicsize = sizeof(SpreadsheetAttributesObject),
-    .tp_dealloc = SpreadsheetAttributes_dealloc,
-    .tp_repr = SpreadsheetAttributes_str,
-    .tp_str = SpreadsheetAttributes_str,
-    .tp_getattro = PySpreadsheetAttributes_getattro,
-    .tp_setattro = PySpreadsheetAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = SpreadsheetAttributes_Purpose,
-    .tp_richcompare = SpreadsheetAttributes_richcompare,
-    .tp_methods = PySpreadsheetAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(SpreadsheetAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-SpreadsheetAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PySpreadsheetAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &SpreadsheetAttributesType
-         || Py_TYPE(other) != &SpreadsheetAttributesType)
+    if ( Py_TYPE(self) != &PySpreadsheetAttributesType
+         || Py_TYPE(other) != &PySpreadsheetAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    SpreadsheetAttributes *a = ((SpreadsheetAttributesObject *)self)->data;
-    SpreadsheetAttributes *b = ((SpreadsheetAttributesObject *)other)->data;
+    SpreadsheetAttributes *a = ((PySpreadsheetAttributesObject *)self)->data;
+    SpreadsheetAttributes *b = ((PySpreadsheetAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -1207,8 +1193,8 @@ static SpreadsheetAttributes *currentAtts = 0;
 static PyObject *
 NewSpreadsheetAttributes(int useCurrent)
 {
-    SpreadsheetAttributesObject *newObject;
-    newObject = PyObject_NEW(SpreadsheetAttributesObject, &SpreadsheetAttributesType);
+    PySpreadsheetAttributesObject *newObject;
+    newObject = PyObject_NEW(PySpreadsheetAttributesObject, &PySpreadsheetAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1219,15 +1205,15 @@ NewSpreadsheetAttributes(int useCurrent)
         newObject->data = new SpreadsheetAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&SpreadsheetAttributesType);
+    PyType_Ready(&PySpreadsheetAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapSpreadsheetAttributes(const SpreadsheetAttributes *attr)
 {
-    SpreadsheetAttributesObject *newObject;
-    newObject = PyObject_NEW(SpreadsheetAttributesObject, &SpreadsheetAttributesType);
+    PySpreadsheetAttributesObject *newObject;
+    newObject = PyObject_NEW(PySpreadsheetAttributesObject, &PySpreadsheetAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (SpreadsheetAttributes *)attr;
@@ -1329,13 +1315,13 @@ PySpreadsheetAttributes_GetMethodTable(int *nMethods)
 bool
 PySpreadsheetAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &SpreadsheetAttributesType);
+    return (obj->ob_type == &PySpreadsheetAttributesType);
 }
 
 SpreadsheetAttributes *
 PySpreadsheetAttributes_FromPyObject(PyObject *obj)
 {
-    SpreadsheetAttributesObject *obj2 = (SpreadsheetAttributesObject *)obj;
+    PySpreadsheetAttributesObject *obj2 = (PySpreadsheetAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1354,7 +1340,7 @@ PySpreadsheetAttributes_Wrap(const SpreadsheetAttributes *attr)
 void
 PySpreadsheetAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    SpreadsheetAttributesObject *obj2 = (SpreadsheetAttributesObject *)obj;
+    PySpreadsheetAttributesObject *obj2 = (PySpreadsheetAttributesObject *)obj;
     obj2->parent = parent;
 }
 

@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a SurfaceNormalAttributes.
 //
-struct SurfaceNormalAttributesObject
+struct PySurfaceNormalAttributesObject
 {
     PyObject_HEAD
     SurfaceNormalAttributes *data;
@@ -63,7 +63,7 @@ PySurfaceNormalAttributes_ToString(const SurfaceNormalAttributes *atts, const ch
 static PyObject *
 SurfaceNormalAttributes_Notify(PyObject *self, PyObject *args)
 {
-    SurfaceNormalAttributesObject *obj = (SurfaceNormalAttributesObject *)self;
+    PySurfaceNormalAttributesObject *obj = (PySurfaceNormalAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -100,7 +100,7 @@ SurfaceNormalAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfaceNormalAttributes_SetCentering(PyObject *self, PyObject *args)
 {
-    SurfaceNormalAttributesObject *obj = (SurfaceNormalAttributesObject *)self;
+    PySurfaceNormalAttributesObject *obj = (PySurfaceNormalAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -158,7 +158,7 @@ SurfaceNormalAttributes_SetCentering(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfaceNormalAttributes_GetCentering(PyObject *self, PyObject *args)
 {
-    SurfaceNormalAttributesObject *obj = (SurfaceNormalAttributesObject *)self;
+    PySurfaceNormalAttributesObject *obj = (PySurfaceNormalAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetCentering()));
     return retval;
 }
@@ -178,16 +178,16 @@ PyMethodDef PySurfaceNormalAttributes_methods[SURFACENORMALATTRIBUTES_NMETH] = {
 //
 
 static void
-SurfaceNormalAttributes_dealloc(PyObject *v)
+PySurfaceNormalAttributes_dealloc(PyObject *v)
 {
-   SurfaceNormalAttributesObject *obj = (SurfaceNormalAttributesObject *)v;
+   PySurfaceNormalAttributesObject *obj = (PySurfaceNormalAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *SurfaceNormalAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PySurfaceNormalAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PySurfaceNormalAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -236,56 +236,42 @@ PySurfaceNormalAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject
 }
 
 PyObject *
-SurfaceNormalAttributes_str(PyObject *v)
+PySurfaceNormalAttributes_str(PyObject *v)
 {
-    SurfaceNormalAttributesObject *obj = (SurfaceNormalAttributesObject *)v;
+    PySurfaceNormalAttributesObject *obj = (PySurfaceNormalAttributesObject *)v;
     return PyString_FromString(PySurfaceNormalAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *SurfaceNormalAttributes_Purpose = "Attributes for SurfaceNormal operator";
-#else
-static char *SurfaceNormalAttributes_Purpose = "Attributes for SurfaceNormal operator";
-#endif
+static char const *PySurfaceNormalAttributes_purpose = "Attributes for SurfaceNormal operator";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject SurfaceNormalAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "SurfaceNormalAttributes",
-    .tp_basicsize = sizeof(SurfaceNormalAttributesObject),
-    .tp_dealloc = SurfaceNormalAttributes_dealloc,
-    .tp_repr = SurfaceNormalAttributes_str,
-    .tp_str = SurfaceNormalAttributes_str,
-    .tp_getattro = PySurfaceNormalAttributes_getattro,
-    .tp_setattro = PySurfaceNormalAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = SurfaceNormalAttributes_Purpose,
-    .tp_richcompare = SurfaceNormalAttributes_richcompare,
-    .tp_methods = PySurfaceNormalAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(SurfaceNormalAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-SurfaceNormalAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PySurfaceNormalAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &SurfaceNormalAttributesType
-         || Py_TYPE(other) != &SurfaceNormalAttributesType)
+    if ( Py_TYPE(self) != &PySurfaceNormalAttributesType
+         || Py_TYPE(other) != &PySurfaceNormalAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    SurfaceNormalAttributes *a = ((SurfaceNormalAttributesObject *)self)->data;
-    SurfaceNormalAttributes *b = ((SurfaceNormalAttributesObject *)other)->data;
+    SurfaceNormalAttributes *a = ((PySurfaceNormalAttributesObject *)self)->data;
+    SurfaceNormalAttributes *b = ((PySurfaceNormalAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -314,8 +300,8 @@ static SurfaceNormalAttributes *currentAtts = 0;
 static PyObject *
 NewSurfaceNormalAttributes(int useCurrent)
 {
-    SurfaceNormalAttributesObject *newObject;
-    newObject = PyObject_NEW(SurfaceNormalAttributesObject, &SurfaceNormalAttributesType);
+    PySurfaceNormalAttributesObject *newObject;
+    newObject = PyObject_NEW(PySurfaceNormalAttributesObject, &PySurfaceNormalAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -326,15 +312,15 @@ NewSurfaceNormalAttributes(int useCurrent)
         newObject->data = new SurfaceNormalAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&SurfaceNormalAttributesType);
+    PyType_Ready(&PySurfaceNormalAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapSurfaceNormalAttributes(const SurfaceNormalAttributes *attr)
 {
-    SurfaceNormalAttributesObject *newObject;
-    newObject = PyObject_NEW(SurfaceNormalAttributesObject, &SurfaceNormalAttributesType);
+    PySurfaceNormalAttributesObject *newObject;
+    newObject = PyObject_NEW(PySurfaceNormalAttributesObject, &PySurfaceNormalAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (SurfaceNormalAttributes *)attr;
@@ -436,13 +422,13 @@ PySurfaceNormalAttributes_GetMethodTable(int *nMethods)
 bool
 PySurfaceNormalAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &SurfaceNormalAttributesType);
+    return (obj->ob_type == &PySurfaceNormalAttributesType);
 }
 
 SurfaceNormalAttributes *
 PySurfaceNormalAttributes_FromPyObject(PyObject *obj)
 {
-    SurfaceNormalAttributesObject *obj2 = (SurfaceNormalAttributesObject *)obj;
+    PySurfaceNormalAttributesObject *obj2 = (PySurfaceNormalAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -461,7 +447,7 @@ PySurfaceNormalAttributes_Wrap(const SurfaceNormalAttributes *attr)
 void
 PySurfaceNormalAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    SurfaceNormalAttributesObject *obj2 = (SurfaceNormalAttributesObject *)obj;
+    PySurfaceNormalAttributesObject *obj2 = (PySurfaceNormalAttributesObject *)obj;
     obj2->parent = parent;
 }
 

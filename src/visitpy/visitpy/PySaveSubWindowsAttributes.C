@@ -39,7 +39,7 @@
 //
 // This struct contains the Python type information and a SaveSubWindowsAttributes.
 //
-struct SaveSubWindowsAttributesObject
+struct PySaveSubWindowsAttributesObject
 {
     PyObject_HEAD
     SaveSubWindowsAttributes *data;
@@ -145,7 +145,7 @@ PySaveSubWindowsAttributes_ToString(const SaveSubWindowsAttributes *atts, const 
 static PyObject *
 SaveSubWindowsAttributes_Notify(PyObject *self, PyObject *args)
 {
-    SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)self;
+    PySaveSubWindowsAttributesObject *obj = (PySaveSubWindowsAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -182,7 +182,7 @@ SaveSubWindowsAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowsAttributes_SetWin1(PyObject *self, PyObject *args)
 {
-    SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)self;
+    PySaveSubWindowsAttributesObject *obj = (PySaveSubWindowsAttributesObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -199,7 +199,7 @@ SaveSubWindowsAttributes_SetWin1(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowsAttributes_GetWin1(PyObject *self, PyObject *args)
 {
-    SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)self;
+    PySaveSubWindowsAttributesObject *obj = (PySaveSubWindowsAttributesObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -215,7 +215,7 @@ SaveSubWindowsAttributes_GetWin1(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowsAttributes_SetWin2(PyObject *self, PyObject *args)
 {
-    SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)self;
+    PySaveSubWindowsAttributesObject *obj = (PySaveSubWindowsAttributesObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -232,7 +232,7 @@ SaveSubWindowsAttributes_SetWin2(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowsAttributes_GetWin2(PyObject *self, PyObject *args)
 {
-    SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)self;
+    PySaveSubWindowsAttributesObject *obj = (PySaveSubWindowsAttributesObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -248,7 +248,7 @@ SaveSubWindowsAttributes_GetWin2(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowsAttributes_SetWin3(PyObject *self, PyObject *args)
 {
-    SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)self;
+    PySaveSubWindowsAttributesObject *obj = (PySaveSubWindowsAttributesObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -265,7 +265,7 @@ SaveSubWindowsAttributes_SetWin3(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowsAttributes_GetWin3(PyObject *self, PyObject *args)
 {
-    SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)self;
+    PySaveSubWindowsAttributesObject *obj = (PySaveSubWindowsAttributesObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -281,7 +281,7 @@ SaveSubWindowsAttributes_GetWin3(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowsAttributes_SetWin4(PyObject *self, PyObject *args)
 {
-    SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)self;
+    PySaveSubWindowsAttributesObject *obj = (PySaveSubWindowsAttributesObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -298,7 +298,7 @@ SaveSubWindowsAttributes_SetWin4(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowsAttributes_GetWin4(PyObject *self, PyObject *args)
 {
-    SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)self;
+    PySaveSubWindowsAttributesObject *obj = (PySaveSubWindowsAttributesObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -314,7 +314,7 @@ SaveSubWindowsAttributes_GetWin4(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowsAttributes_SetWin5(PyObject *self, PyObject *args)
 {
-    SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)self;
+    PySaveSubWindowsAttributesObject *obj = (PySaveSubWindowsAttributesObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -331,7 +331,7 @@ SaveSubWindowsAttributes_SetWin5(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowsAttributes_GetWin5(PyObject *self, PyObject *args)
 {
-    SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)self;
+    PySaveSubWindowsAttributesObject *obj = (PySaveSubWindowsAttributesObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -347,7 +347,7 @@ SaveSubWindowsAttributes_GetWin5(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowsAttributes_SetWin6(PyObject *self, PyObject *args)
 {
-    SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)self;
+    PySaveSubWindowsAttributesObject *obj = (PySaveSubWindowsAttributesObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -364,7 +364,7 @@ SaveSubWindowsAttributes_SetWin6(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowsAttributes_GetWin6(PyObject *self, PyObject *args)
 {
-    SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)self;
+    PySaveSubWindowsAttributesObject *obj = (PySaveSubWindowsAttributesObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -380,7 +380,7 @@ SaveSubWindowsAttributes_GetWin6(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowsAttributes_SetWin7(PyObject *self, PyObject *args)
 {
-    SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)self;
+    PySaveSubWindowsAttributesObject *obj = (PySaveSubWindowsAttributesObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -397,7 +397,7 @@ SaveSubWindowsAttributes_SetWin7(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowsAttributes_GetWin7(PyObject *self, PyObject *args)
 {
-    SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)self;
+    PySaveSubWindowsAttributesObject *obj = (PySaveSubWindowsAttributesObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -413,7 +413,7 @@ SaveSubWindowsAttributes_GetWin7(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowsAttributes_SetWin8(PyObject *self, PyObject *args)
 {
-    SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)self;
+    PySaveSubWindowsAttributesObject *obj = (PySaveSubWindowsAttributesObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -430,7 +430,7 @@ SaveSubWindowsAttributes_SetWin8(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowsAttributes_GetWin8(PyObject *self, PyObject *args)
 {
-    SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)self;
+    PySaveSubWindowsAttributesObject *obj = (PySaveSubWindowsAttributesObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -446,7 +446,7 @@ SaveSubWindowsAttributes_GetWin8(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowsAttributes_SetWin9(PyObject *self, PyObject *args)
 {
-    SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)self;
+    PySaveSubWindowsAttributesObject *obj = (PySaveSubWindowsAttributesObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -463,7 +463,7 @@ SaveSubWindowsAttributes_SetWin9(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowsAttributes_GetWin9(PyObject *self, PyObject *args)
 {
-    SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)self;
+    PySaveSubWindowsAttributesObject *obj = (PySaveSubWindowsAttributesObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -479,7 +479,7 @@ SaveSubWindowsAttributes_GetWin9(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowsAttributes_SetWin10(PyObject *self, PyObject *args)
 {
-    SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)self;
+    PySaveSubWindowsAttributesObject *obj = (PySaveSubWindowsAttributesObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -496,7 +496,7 @@ SaveSubWindowsAttributes_SetWin10(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowsAttributes_GetWin10(PyObject *self, PyObject *args)
 {
-    SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)self;
+    PySaveSubWindowsAttributesObject *obj = (PySaveSubWindowsAttributesObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -512,7 +512,7 @@ SaveSubWindowsAttributes_GetWin10(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowsAttributes_SetWin11(PyObject *self, PyObject *args)
 {
-    SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)self;
+    PySaveSubWindowsAttributesObject *obj = (PySaveSubWindowsAttributesObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -529,7 +529,7 @@ SaveSubWindowsAttributes_SetWin11(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowsAttributes_GetWin11(PyObject *self, PyObject *args)
 {
-    SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)self;
+    PySaveSubWindowsAttributesObject *obj = (PySaveSubWindowsAttributesObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -545,7 +545,7 @@ SaveSubWindowsAttributes_GetWin11(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowsAttributes_SetWin12(PyObject *self, PyObject *args)
 {
-    SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)self;
+    PySaveSubWindowsAttributesObject *obj = (PySaveSubWindowsAttributesObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -562,7 +562,7 @@ SaveSubWindowsAttributes_SetWin12(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowsAttributes_GetWin12(PyObject *self, PyObject *args)
 {
-    SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)self;
+    PySaveSubWindowsAttributesObject *obj = (PySaveSubWindowsAttributesObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -578,7 +578,7 @@ SaveSubWindowsAttributes_GetWin12(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowsAttributes_SetWin13(PyObject *self, PyObject *args)
 {
-    SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)self;
+    PySaveSubWindowsAttributesObject *obj = (PySaveSubWindowsAttributesObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -595,7 +595,7 @@ SaveSubWindowsAttributes_SetWin13(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowsAttributes_GetWin13(PyObject *self, PyObject *args)
 {
-    SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)self;
+    PySaveSubWindowsAttributesObject *obj = (PySaveSubWindowsAttributesObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -611,7 +611,7 @@ SaveSubWindowsAttributes_GetWin13(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowsAttributes_SetWin14(PyObject *self, PyObject *args)
 {
-    SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)self;
+    PySaveSubWindowsAttributesObject *obj = (PySaveSubWindowsAttributesObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -628,7 +628,7 @@ SaveSubWindowsAttributes_SetWin14(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowsAttributes_GetWin14(PyObject *self, PyObject *args)
 {
-    SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)self;
+    PySaveSubWindowsAttributesObject *obj = (PySaveSubWindowsAttributesObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -644,7 +644,7 @@ SaveSubWindowsAttributes_GetWin14(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowsAttributes_SetWin15(PyObject *self, PyObject *args)
 {
-    SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)self;
+    PySaveSubWindowsAttributesObject *obj = (PySaveSubWindowsAttributesObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -661,7 +661,7 @@ SaveSubWindowsAttributes_SetWin15(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowsAttributes_GetWin15(PyObject *self, PyObject *args)
 {
-    SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)self;
+    PySaveSubWindowsAttributesObject *obj = (PySaveSubWindowsAttributesObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -677,7 +677,7 @@ SaveSubWindowsAttributes_GetWin15(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowsAttributes_SetWin16(PyObject *self, PyObject *args)
 {
-    SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)self;
+    PySaveSubWindowsAttributesObject *obj = (PySaveSubWindowsAttributesObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -694,7 +694,7 @@ SaveSubWindowsAttributes_SetWin16(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowsAttributes_GetWin16(PyObject *self, PyObject *args)
 {
-    SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)self;
+    PySaveSubWindowsAttributesObject *obj = (PySaveSubWindowsAttributesObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -752,16 +752,16 @@ PyMethodDef PySaveSubWindowsAttributes_methods[SAVESUBWINDOWSATTRIBUTES_NMETH] =
 //
 
 static void
-SaveSubWindowsAttributes_dealloc(PyObject *v)
+PySaveSubWindowsAttributes_dealloc(PyObject *v)
 {
-   SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)v;
+   PySaveSubWindowsAttributesObject *obj = (PySaveSubWindowsAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *SaveSubWindowsAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PySaveSubWindowsAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PySaveSubWindowsAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -865,56 +865,42 @@ PySaveSubWindowsAttributes_setattro(PyObject *self, PyObject *attr_name, PyObjec
 }
 
 PyObject *
-SaveSubWindowsAttributes_str(PyObject *v)
+PySaveSubWindowsAttributes_str(PyObject *v)
 {
-    SaveSubWindowsAttributesObject *obj = (SaveSubWindowsAttributesObject *)v;
+    PySaveSubWindowsAttributesObject *obj = (PySaveSubWindowsAttributesObject *)v;
     return PyString_FromString(PySaveSubWindowsAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *SaveSubWindowsAttributes_Purpose = "";
-#else
-static char *SaveSubWindowsAttributes_Purpose = "";
-#endif
+static char const *PySaveSubWindowsAttributes_purpose = "";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject SaveSubWindowsAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "SaveSubWindowsAttributes",
-    .tp_basicsize = sizeof(SaveSubWindowsAttributesObject),
-    .tp_dealloc = SaveSubWindowsAttributes_dealloc,
-    .tp_repr = SaveSubWindowsAttributes_str,
-    .tp_str = SaveSubWindowsAttributes_str,
-    .tp_getattro = PySaveSubWindowsAttributes_getattro,
-    .tp_setattro = PySaveSubWindowsAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = SaveSubWindowsAttributes_Purpose,
-    .tp_richcompare = SaveSubWindowsAttributes_richcompare,
-    .tp_methods = PySaveSubWindowsAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(SaveSubWindowsAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-SaveSubWindowsAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PySaveSubWindowsAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &SaveSubWindowsAttributesType
-         || Py_TYPE(other) != &SaveSubWindowsAttributesType)
+    if ( Py_TYPE(self) != &PySaveSubWindowsAttributesType
+         || Py_TYPE(other) != &PySaveSubWindowsAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    SaveSubWindowsAttributes *a = ((SaveSubWindowsAttributesObject *)self)->data;
-    SaveSubWindowsAttributes *b = ((SaveSubWindowsAttributesObject *)other)->data;
+    SaveSubWindowsAttributes *a = ((PySaveSubWindowsAttributesObject *)self)->data;
+    SaveSubWindowsAttributes *b = ((PySaveSubWindowsAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -943,8 +929,8 @@ static SaveSubWindowsAttributes *currentAtts = 0;
 static PyObject *
 NewSaveSubWindowsAttributes(int useCurrent)
 {
-    SaveSubWindowsAttributesObject *newObject;
-    newObject = PyObject_NEW(SaveSubWindowsAttributesObject, &SaveSubWindowsAttributesType);
+    PySaveSubWindowsAttributesObject *newObject;
+    newObject = PyObject_NEW(PySaveSubWindowsAttributesObject, &PySaveSubWindowsAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -955,15 +941,15 @@ NewSaveSubWindowsAttributes(int useCurrent)
         newObject->data = new SaveSubWindowsAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&SaveSubWindowsAttributesType);
+    PyType_Ready(&PySaveSubWindowsAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapSaveSubWindowsAttributes(const SaveSubWindowsAttributes *attr)
 {
-    SaveSubWindowsAttributesObject *newObject;
-    newObject = PyObject_NEW(SaveSubWindowsAttributesObject, &SaveSubWindowsAttributesType);
+    PySaveSubWindowsAttributesObject *newObject;
+    newObject = PyObject_NEW(PySaveSubWindowsAttributesObject, &PySaveSubWindowsAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (SaveSubWindowsAttributes *)attr;
@@ -1065,13 +1051,13 @@ PySaveSubWindowsAttributes_GetMethodTable(int *nMethods)
 bool
 PySaveSubWindowsAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &SaveSubWindowsAttributesType);
+    return (obj->ob_type == &PySaveSubWindowsAttributesType);
 }
 
 SaveSubWindowsAttributes *
 PySaveSubWindowsAttributes_FromPyObject(PyObject *obj)
 {
-    SaveSubWindowsAttributesObject *obj2 = (SaveSubWindowsAttributesObject *)obj;
+    PySaveSubWindowsAttributesObject *obj2 = (PySaveSubWindowsAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1090,7 +1076,7 @@ PySaveSubWindowsAttributes_Wrap(const SaveSubWindowsAttributes *attr)
 void
 PySaveSubWindowsAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    SaveSubWindowsAttributesObject *obj2 = (SaveSubWindowsAttributesObject *)obj;
+    PySaveSubWindowsAttributesObject *obj2 = (PySaveSubWindowsAttributesObject *)obj;
     obj2->parent = parent;
 }
 

@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a ThreeSliceAttributes.
 //
-struct ThreeSliceAttributesObject
+struct PyThreeSliceAttributesObject
 {
     PyObject_HEAD
     ThreeSliceAttributes *data;
@@ -59,7 +59,7 @@ PyThreeSliceAttributes_ToString(const ThreeSliceAttributes *atts, const char *pr
 static PyObject *
 ThreeSliceAttributes_Notify(PyObject *self, PyObject *args)
 {
-    ThreeSliceAttributesObject *obj = (ThreeSliceAttributesObject *)self;
+    PyThreeSliceAttributesObject *obj = (PyThreeSliceAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -96,7 +96,7 @@ ThreeSliceAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ThreeSliceAttributes_SetX(PyObject *self, PyObject *args)
 {
-    ThreeSliceAttributesObject *obj = (ThreeSliceAttributesObject *)self;
+    PyThreeSliceAttributesObject *obj = (PyThreeSliceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -148,7 +148,7 @@ ThreeSliceAttributes_SetX(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ThreeSliceAttributes_GetX(PyObject *self, PyObject *args)
 {
-    ThreeSliceAttributesObject *obj = (ThreeSliceAttributesObject *)self;
+    PyThreeSliceAttributesObject *obj = (PyThreeSliceAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetX());
     return retval;
 }
@@ -156,7 +156,7 @@ ThreeSliceAttributes_GetX(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ThreeSliceAttributes_SetY(PyObject *self, PyObject *args)
 {
-    ThreeSliceAttributesObject *obj = (ThreeSliceAttributesObject *)self;
+    PyThreeSliceAttributesObject *obj = (PyThreeSliceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -208,7 +208,7 @@ ThreeSliceAttributes_SetY(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ThreeSliceAttributes_GetY(PyObject *self, PyObject *args)
 {
-    ThreeSliceAttributesObject *obj = (ThreeSliceAttributesObject *)self;
+    PyThreeSliceAttributesObject *obj = (PyThreeSliceAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetY());
     return retval;
 }
@@ -216,7 +216,7 @@ ThreeSliceAttributes_GetY(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ThreeSliceAttributes_SetZ(PyObject *self, PyObject *args)
 {
-    ThreeSliceAttributesObject *obj = (ThreeSliceAttributesObject *)self;
+    PyThreeSliceAttributesObject *obj = (PyThreeSliceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -268,7 +268,7 @@ ThreeSliceAttributes_SetZ(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ThreeSliceAttributes_GetZ(PyObject *self, PyObject *args)
 {
-    ThreeSliceAttributesObject *obj = (ThreeSliceAttributesObject *)self;
+    PyThreeSliceAttributesObject *obj = (PyThreeSliceAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetZ());
     return retval;
 }
@@ -276,7 +276,7 @@ ThreeSliceAttributes_GetZ(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ThreeSliceAttributes_SetInteractive(PyObject *self, PyObject *args)
 {
-    ThreeSliceAttributesObject *obj = (ThreeSliceAttributesObject *)self;
+    PyThreeSliceAttributesObject *obj = (PyThreeSliceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -328,7 +328,7 @@ ThreeSliceAttributes_SetInteractive(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ThreeSliceAttributes_GetInteractive(PyObject *self, PyObject *args)
 {
-    ThreeSliceAttributesObject *obj = (ThreeSliceAttributesObject *)self;
+    PyThreeSliceAttributesObject *obj = (PyThreeSliceAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetInteractive()?1L:0L);
     return retval;
 }
@@ -354,16 +354,16 @@ PyMethodDef PyThreeSliceAttributes_methods[THREESLICEATTRIBUTES_NMETH] = {
 //
 
 static void
-ThreeSliceAttributes_dealloc(PyObject *v)
+PyThreeSliceAttributes_dealloc(PyObject *v)
 {
-   ThreeSliceAttributesObject *obj = (ThreeSliceAttributesObject *)v;
+   PyThreeSliceAttributesObject *obj = (PyThreeSliceAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *ThreeSliceAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyThreeSliceAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyThreeSliceAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -419,56 +419,42 @@ PyThreeSliceAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *a
 }
 
 PyObject *
-ThreeSliceAttributes_str(PyObject *v)
+PyThreeSliceAttributes_str(PyObject *v)
 {
-    ThreeSliceAttributesObject *obj = (ThreeSliceAttributesObject *)v;
+    PyThreeSliceAttributesObject *obj = (PyThreeSliceAttributesObject *)v;
     return PyString_FromString(PyThreeSliceAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *ThreeSliceAttributes_Purpose = "This class contains attributes for the threeslice operator.";
-#else
-static char *ThreeSliceAttributes_Purpose = "This class contains attributes for the threeslice operator.";
-#endif
+static char const *PyThreeSliceAttributes_purpose = "This class contains attributes for the threeslice operator.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject ThreeSliceAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "ThreeSliceAttributes",
-    .tp_basicsize = sizeof(ThreeSliceAttributesObject),
-    .tp_dealloc = ThreeSliceAttributes_dealloc,
-    .tp_repr = ThreeSliceAttributes_str,
-    .tp_str = ThreeSliceAttributes_str,
-    .tp_getattro = PyThreeSliceAttributes_getattro,
-    .tp_setattro = PyThreeSliceAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = ThreeSliceAttributes_Purpose,
-    .tp_richcompare = ThreeSliceAttributes_richcompare,
-    .tp_methods = PyThreeSliceAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(ThreeSliceAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-ThreeSliceAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyThreeSliceAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &ThreeSliceAttributesType
-         || Py_TYPE(other) != &ThreeSliceAttributesType)
+    if ( Py_TYPE(self) != &PyThreeSliceAttributesType
+         || Py_TYPE(other) != &PyThreeSliceAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    ThreeSliceAttributes *a = ((ThreeSliceAttributesObject *)self)->data;
-    ThreeSliceAttributes *b = ((ThreeSliceAttributesObject *)other)->data;
+    ThreeSliceAttributes *a = ((PyThreeSliceAttributesObject *)self)->data;
+    ThreeSliceAttributes *b = ((PyThreeSliceAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -497,8 +483,8 @@ static ThreeSliceAttributes *currentAtts = 0;
 static PyObject *
 NewThreeSliceAttributes(int useCurrent)
 {
-    ThreeSliceAttributesObject *newObject;
-    newObject = PyObject_NEW(ThreeSliceAttributesObject, &ThreeSliceAttributesType);
+    PyThreeSliceAttributesObject *newObject;
+    newObject = PyObject_NEW(PyThreeSliceAttributesObject, &PyThreeSliceAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -509,15 +495,15 @@ NewThreeSliceAttributes(int useCurrent)
         newObject->data = new ThreeSliceAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&ThreeSliceAttributesType);
+    PyType_Ready(&PyThreeSliceAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapThreeSliceAttributes(const ThreeSliceAttributes *attr)
 {
-    ThreeSliceAttributesObject *newObject;
-    newObject = PyObject_NEW(ThreeSliceAttributesObject, &ThreeSliceAttributesType);
+    PyThreeSliceAttributesObject *newObject;
+    newObject = PyObject_NEW(PyThreeSliceAttributesObject, &PyThreeSliceAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (ThreeSliceAttributes *)attr;
@@ -619,13 +605,13 @@ PyThreeSliceAttributes_GetMethodTable(int *nMethods)
 bool
 PyThreeSliceAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ThreeSliceAttributesType);
+    return (obj->ob_type == &PyThreeSliceAttributesType);
 }
 
 ThreeSliceAttributes *
 PyThreeSliceAttributes_FromPyObject(PyObject *obj)
 {
-    ThreeSliceAttributesObject *obj2 = (ThreeSliceAttributesObject *)obj;
+    PyThreeSliceAttributesObject *obj2 = (PyThreeSliceAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -644,7 +630,7 @@ PyThreeSliceAttributes_Wrap(const ThreeSliceAttributes *attr)
 void
 PyThreeSliceAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    ThreeSliceAttributesObject *obj2 = (ThreeSliceAttributesObject *)obj;
+    PyThreeSliceAttributesObject *obj2 = (PyThreeSliceAttributesObject *)obj;
     obj2->parent = parent;
 }
 

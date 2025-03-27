@@ -25,7 +25,7 @@
 //
 // This struct contains the Python type information and a ColorTableAttributes.
 //
-struct ColorTableAttributesObject
+struct PyColorTableAttributesObject
 {
     PyObject_HEAD
     ColorTableAttributes *data;
@@ -98,7 +98,7 @@ PyColorTableAttributes_ToString(const ColorTableAttributes *atts, const char *pr
 static PyObject *
 ColorTableAttributes_Notify(PyObject *self, PyObject *args)
 {
-    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+    PyColorTableAttributesObject *obj = (PyColorTableAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -146,7 +146,7 @@ ColorTableAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ColorTableAttributes_SetColorTableNames(PyObject *self, PyObject *args)
 {
-    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+    PyColorTableAttributesObject *obj = (PyColorTableAttributesObject *)self;
 
     stringVector vec;
 
@@ -203,7 +203,7 @@ ColorTableAttributes_SetColorTableNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ColorTableAttributes_GetColorTableNames(PyObject *self, PyObject *args)
 {
-    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+    PyColorTableAttributesObject *obj = (PyColorTableAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the colorTableNames.
     const stringVector &colorTableNames = obj->data->GetColorTableNames();
     PyObject *retval = PyTuple_New(colorTableNames.size());
@@ -215,7 +215,7 @@ ColorTableAttributes_GetColorTableNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ColorTableAttributes_SetColorTableActiveFlags(PyObject *self, PyObject *args)
 {
-    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+    PyColorTableAttributesObject *obj = (PyColorTableAttributesObject *)self;
 
     intVector vec;
 
@@ -279,7 +279,7 @@ ColorTableAttributes_SetColorTableActiveFlags(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ColorTableAttributes_GetColorTableActiveFlags(PyObject *self, PyObject *args)
 {
-    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+    PyColorTableAttributesObject *obj = (PyColorTableAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the colorTableActiveFlags.
     const intVector &colorTableActiveFlags = obj->data->GetColorTableActiveFlags();
     PyObject *retval = PyTuple_New(colorTableActiveFlags.size());
@@ -291,7 +291,7 @@ ColorTableAttributes_GetColorTableActiveFlags(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ColorTableAttributes_GetColorTables(PyObject *self, PyObject *args)
 {
-    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+    PyColorTableAttributesObject *obj = (PyColorTableAttributesObject *)self;
     int index = -1;
     if (args == NULL)
         return PyErr_Format(PyExc_NameError, "Use .GetColorTables(int index) to get a single entry");
@@ -315,14 +315,14 @@ ColorTableAttributes_GetColorTables(PyObject *self, PyObject *args)
 PyObject *
 ColorTableAttributes_GetNumColorTables(PyObject *self, PyObject *args)
 {
-    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+    PyColorTableAttributesObject *obj = (PyColorTableAttributesObject *)self;
     return PyInt_FromLong((long)obj->data->GetColorTables().size());
 }
 
 PyObject *
 ColorTableAttributes_AddColorTables(PyObject *self, PyObject *args)
 {
-    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+    PyColorTableAttributesObject *obj = (PyColorTableAttributesObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
         return NULL;
@@ -338,7 +338,7 @@ ColorTableAttributes_AddColorTables(PyObject *self, PyObject *args)
 static PyObject *
 ColorTableAttributes_Remove_One_ColorTables(PyObject *self, int index)
 {
-    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+    PyColorTableAttributesObject *obj = (PyColorTableAttributesObject *)self;
     // Remove in the AttributeGroupVector instead of calling RemoveColorTables() because we don't want to delete the object; just remove it.
     AttributeGroupVector &atts = obj->data->GetColorTables();
     AttributeGroupVector::iterator pos = atts.begin();
@@ -368,7 +368,7 @@ ColorTableAttributes_RemoveColorTables(PyObject *self, PyObject *args)
     int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
-    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+    PyColorTableAttributesObject *obj = (PyColorTableAttributesObject *)self;
     if(index < 0 || index >= obj->data->GetNumColorTables())
         return PyErr_Format(PyExc_IndexError, "Index out of range");
 
@@ -378,7 +378,7 @@ ColorTableAttributes_RemoveColorTables(PyObject *self, PyObject *args)
 PyObject *
 ColorTableAttributes_ClearColorTables(PyObject *self, PyObject *args)
 {
-    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+    PyColorTableAttributesObject *obj = (PyColorTableAttributesObject *)self;
     int n = obj->data->GetNumColorTables();
     for(int i = 0; i < n; ++i)
     {
@@ -392,7 +392,7 @@ ColorTableAttributes_ClearColorTables(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ColorTableAttributes_SetDefaultContinuous(PyObject *self, PyObject *args)
 {
-    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+    PyColorTableAttributesObject *obj = (PyColorTableAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -433,7 +433,7 @@ ColorTableAttributes_SetDefaultContinuous(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ColorTableAttributes_GetDefaultContinuous(PyObject *self, PyObject *args)
 {
-    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+    PyColorTableAttributesObject *obj = (PyColorTableAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetDefaultContinuous().c_str());
     return retval;
 }
@@ -441,7 +441,7 @@ ColorTableAttributes_GetDefaultContinuous(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ColorTableAttributes_SetDefaultDiscrete(PyObject *self, PyObject *args)
 {
-    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+    PyColorTableAttributesObject *obj = (PyColorTableAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -482,7 +482,7 @@ ColorTableAttributes_SetDefaultDiscrete(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ColorTableAttributes_GetDefaultDiscrete(PyObject *self, PyObject *args)
 {
-    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+    PyColorTableAttributesObject *obj = (PyColorTableAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetDefaultDiscrete().c_str());
     return retval;
 }
@@ -513,16 +513,16 @@ PyMethodDef PyColorTableAttributes_methods[COLORTABLEATTRIBUTES_NMETH] = {
 //
 
 static void
-ColorTableAttributes_dealloc(PyObject *v)
+PyColorTableAttributes_dealloc(PyObject *v)
 {
-   ColorTableAttributesObject *obj = (ColorTableAttributesObject *)v;
+   PyColorTableAttributesObject *obj = (PyColorTableAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *ColorTableAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyColorTableAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyColorTableAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -580,56 +580,42 @@ PyColorTableAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *a
 }
 
 PyObject *
-ColorTableAttributes_str(PyObject *v)
+PyColorTableAttributes_str(PyObject *v)
 {
-    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)v;
+    PyColorTableAttributesObject *obj = (PyColorTableAttributesObject *)v;
     return PyString_FromString(PyColorTableAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *ColorTableAttributes_Purpose = "This class contains the list of colortables.";
-#else
-static char *ColorTableAttributes_Purpose = "This class contains the list of colortables.";
-#endif
+static char const *PyColorTableAttributes_purpose = "This class contains the list of colortables.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject ColorTableAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "ColorTableAttributes",
-    .tp_basicsize = sizeof(ColorTableAttributesObject),
-    .tp_dealloc = ColorTableAttributes_dealloc,
-    .tp_repr = ColorTableAttributes_str,
-    .tp_str = ColorTableAttributes_str,
-    .tp_getattro = PyColorTableAttributes_getattro,
-    .tp_setattro = PyColorTableAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = ColorTableAttributes_Purpose,
-    .tp_richcompare = ColorTableAttributes_richcompare,
-    .tp_methods = PyColorTableAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(ColorTableAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-ColorTableAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyColorTableAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &ColorTableAttributesType
-         || Py_TYPE(other) != &ColorTableAttributesType)
+    if ( Py_TYPE(self) != &PyColorTableAttributesType
+         || Py_TYPE(other) != &PyColorTableAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    ColorTableAttributes *a = ((ColorTableAttributesObject *)self)->data;
-    ColorTableAttributes *b = ((ColorTableAttributesObject *)other)->data;
+    ColorTableAttributes *a = ((PyColorTableAttributesObject *)self)->data;
+    ColorTableAttributes *b = ((PyColorTableAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -658,8 +644,8 @@ static ColorTableAttributes *currentAtts = 0;
 static PyObject *
 NewColorTableAttributes(int useCurrent)
 {
-    ColorTableAttributesObject *newObject;
-    newObject = PyObject_NEW(ColorTableAttributesObject, &ColorTableAttributesType);
+    PyColorTableAttributesObject *newObject;
+    newObject = PyObject_NEW(PyColorTableAttributesObject, &PyColorTableAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -670,15 +656,15 @@ NewColorTableAttributes(int useCurrent)
         newObject->data = new ColorTableAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&ColorTableAttributesType);
+    PyType_Ready(&PyColorTableAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapColorTableAttributes(const ColorTableAttributes *attr)
 {
-    ColorTableAttributesObject *newObject;
-    newObject = PyObject_NEW(ColorTableAttributesObject, &ColorTableAttributesType);
+    PyColorTableAttributesObject *newObject;
+    newObject = PyObject_NEW(PyColorTableAttributesObject, &PyColorTableAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (ColorTableAttributes *)attr;
@@ -780,13 +766,13 @@ PyColorTableAttributes_GetMethodTable(int *nMethods)
 bool
 PyColorTableAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ColorTableAttributesType);
+    return (obj->ob_type == &PyColorTableAttributesType);
 }
 
 ColorTableAttributes *
 PyColorTableAttributes_FromPyObject(PyObject *obj)
 {
-    ColorTableAttributesObject *obj2 = (ColorTableAttributesObject *)obj;
+    PyColorTableAttributesObject *obj2 = (PyColorTableAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -805,7 +791,7 @@ PyColorTableAttributes_Wrap(const ColorTableAttributes *attr)
 void
 PyColorTableAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    ColorTableAttributesObject *obj2 = (ColorTableAttributesObject *)obj;
+    PyColorTableAttributesObject *obj2 = (PyColorTableAttributesObject *)obj;
     obj2->parent = parent;
 }
 

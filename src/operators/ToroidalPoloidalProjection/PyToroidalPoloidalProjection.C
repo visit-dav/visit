@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a ToroidalPoloidalProjection.
 //
-struct ToroidalPoloidalProjectionObject
+struct PyToroidalPoloidalProjectionObject
 {
     PyObject_HEAD
     ToroidalPoloidalProjection *data;
@@ -88,7 +88,7 @@ PyToroidalPoloidalProjection_ToString(const ToroidalPoloidalProjection *atts, co
 static PyObject *
 ToroidalPoloidalProjection_Notify(PyObject *self, PyObject *args)
 {
-    ToroidalPoloidalProjectionObject *obj = (ToroidalPoloidalProjectionObject *)self;
+    PyToroidalPoloidalProjectionObject *obj = (PyToroidalPoloidalProjectionObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -125,7 +125,7 @@ ToroidalPoloidalProjection_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ToroidalPoloidalProjection_SetR0(PyObject *self, PyObject *args)
 {
-    ToroidalPoloidalProjectionObject *obj = (ToroidalPoloidalProjectionObject *)self;
+    PyToroidalPoloidalProjectionObject *obj = (PyToroidalPoloidalProjectionObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -177,7 +177,7 @@ ToroidalPoloidalProjection_SetR0(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ToroidalPoloidalProjection_GetR0(PyObject *self, PyObject *args)
 {
-    ToroidalPoloidalProjectionObject *obj = (ToroidalPoloidalProjectionObject *)self;
+    PyToroidalPoloidalProjectionObject *obj = (PyToroidalPoloidalProjectionObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetR0());
     return retval;
 }
@@ -185,7 +185,7 @@ ToroidalPoloidalProjection_GetR0(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ToroidalPoloidalProjection_SetR(PyObject *self, PyObject *args)
 {
-    ToroidalPoloidalProjectionObject *obj = (ToroidalPoloidalProjectionObject *)self;
+    PyToroidalPoloidalProjectionObject *obj = (PyToroidalPoloidalProjectionObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -237,7 +237,7 @@ ToroidalPoloidalProjection_SetR(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ToroidalPoloidalProjection_GetR(PyObject *self, PyObject *args)
 {
-    ToroidalPoloidalProjectionObject *obj = (ToroidalPoloidalProjectionObject *)self;
+    PyToroidalPoloidalProjectionObject *obj = (PyToroidalPoloidalProjectionObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetR());
     return retval;
 }
@@ -245,7 +245,7 @@ ToroidalPoloidalProjection_GetR(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ToroidalPoloidalProjection_SetCentroidSource(PyObject *self, PyObject *args)
 {
-    ToroidalPoloidalProjectionObject *obj = (ToroidalPoloidalProjectionObject *)self;
+    PyToroidalPoloidalProjectionObject *obj = (PyToroidalPoloidalProjectionObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -303,7 +303,7 @@ ToroidalPoloidalProjection_SetCentroidSource(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ToroidalPoloidalProjection_GetCentroidSource(PyObject *self, PyObject *args)
 {
-    ToroidalPoloidalProjectionObject *obj = (ToroidalPoloidalProjectionObject *)self;
+    PyToroidalPoloidalProjectionObject *obj = (PyToroidalPoloidalProjectionObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetCentroidSource()));
     return retval;
 }
@@ -311,7 +311,7 @@ ToroidalPoloidalProjection_GetCentroidSource(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ToroidalPoloidalProjection_SetCentroid(PyObject *self, PyObject *args)
 {
-    ToroidalPoloidalProjectionObject *obj = (ToroidalPoloidalProjectionObject *)self;
+    PyToroidalPoloidalProjectionObject *obj = (PyToroidalPoloidalProjectionObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetCentroid();
@@ -378,7 +378,7 @@ ToroidalPoloidalProjection_SetCentroid(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ToroidalPoloidalProjection_GetCentroid(PyObject *self, PyObject *args)
 {
-    ToroidalPoloidalProjectionObject *obj = (ToroidalPoloidalProjectionObject *)self;
+    PyToroidalPoloidalProjectionObject *obj = (PyToroidalPoloidalProjectionObject *)self;
     // Allocate a tuple the with enough entries to hold the centroid.
     PyObject *retval = PyTuple_New(3);
     const double *centroid = obj->data->GetCentroid();
@@ -390,7 +390,7 @@ ToroidalPoloidalProjection_GetCentroid(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ToroidalPoloidalProjection_SetProject2D(PyObject *self, PyObject *args)
 {
-    ToroidalPoloidalProjectionObject *obj = (ToroidalPoloidalProjectionObject *)self;
+    PyToroidalPoloidalProjectionObject *obj = (PyToroidalPoloidalProjectionObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -442,7 +442,7 @@ ToroidalPoloidalProjection_SetProject2D(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ToroidalPoloidalProjection_GetProject2D(PyObject *self, PyObject *args)
 {
-    ToroidalPoloidalProjectionObject *obj = (ToroidalPoloidalProjectionObject *)self;
+    PyToroidalPoloidalProjectionObject *obj = (PyToroidalPoloidalProjectionObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetProject2D()?1L:0L);
     return retval;
 }
@@ -470,16 +470,16 @@ PyMethodDef PyToroidalPoloidalProjection_methods[TOROIDALPOLOIDALPROJECTION_NMET
 //
 
 static void
-ToroidalPoloidalProjection_dealloc(PyObject *v)
+PyToroidalPoloidalProjection_dealloc(PyObject *v)
 {
-   ToroidalPoloidalProjectionObject *obj = (ToroidalPoloidalProjectionObject *)v;
+   PyToroidalPoloidalProjectionObject *obj = (PyToroidalPoloidalProjectionObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *ToroidalPoloidalProjection_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyToroidalPoloidalProjection_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyToroidalPoloidalProjection_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -544,56 +544,42 @@ PyToroidalPoloidalProjection_setattro(PyObject *self, PyObject *attr_name, PyObj
 }
 
 PyObject *
-ToroidalPoloidalProjection_str(PyObject *v)
+PyToroidalPoloidalProjection_str(PyObject *v)
 {
-    ToroidalPoloidalProjectionObject *obj = (ToroidalPoloidalProjectionObject *)v;
+    PyToroidalPoloidalProjectionObject *obj = (PyToroidalPoloidalProjectionObject *)v;
     return PyString_FromString(PyToroidalPoloidalProjection_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *ToroidalPoloidalProjection_Purpose = "Projects Exterior of Torus from 3D to ToroidalPoloidal mapping in 2D";
-#else
-static char *ToroidalPoloidalProjection_Purpose = "Projects Exterior of Torus from 3D to ToroidalPoloidal mapping in 2D";
-#endif
+static char const *PyToroidalPoloidalProjection_purpose = "Projects Exterior of Torus from 3D to ToroidalPoloidal mapping in 2D";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject ToroidalPoloidalProjectionType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "ToroidalPoloidalProjection",
-    .tp_basicsize = sizeof(ToroidalPoloidalProjectionObject),
-    .tp_dealloc = ToroidalPoloidalProjection_dealloc,
-    .tp_repr = ToroidalPoloidalProjection_str,
-    .tp_str = ToroidalPoloidalProjection_str,
-    .tp_getattro = PyToroidalPoloidalProjection_getattro,
-    .tp_setattro = PyToroidalPoloidalProjection_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = ToroidalPoloidalProjection_Purpose,
-    .tp_richcompare = ToroidalPoloidalProjection_richcompare,
-    .tp_methods = PyToroidalPoloidalProjection_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(ToroidalPoloidalProjection);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-ToroidalPoloidalProjection_richcompare(PyObject *self, PyObject *other, int op)
+PyToroidalPoloidalProjection_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &ToroidalPoloidalProjectionType
-         || Py_TYPE(other) != &ToroidalPoloidalProjectionType)
+    if ( Py_TYPE(self) != &PyToroidalPoloidalProjectionType
+         || Py_TYPE(other) != &PyToroidalPoloidalProjectionType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    ToroidalPoloidalProjection *a = ((ToroidalPoloidalProjectionObject *)self)->data;
-    ToroidalPoloidalProjection *b = ((ToroidalPoloidalProjectionObject *)other)->data;
+    ToroidalPoloidalProjection *a = ((PyToroidalPoloidalProjectionObject *)self)->data;
+    ToroidalPoloidalProjection *b = ((PyToroidalPoloidalProjectionObject *)other)->data;
 
     switch (op)
     {
@@ -622,8 +608,8 @@ static ToroidalPoloidalProjection *currentAtts = 0;
 static PyObject *
 NewToroidalPoloidalProjection(int useCurrent)
 {
-    ToroidalPoloidalProjectionObject *newObject;
-    newObject = PyObject_NEW(ToroidalPoloidalProjectionObject, &ToroidalPoloidalProjectionType);
+    PyToroidalPoloidalProjectionObject *newObject;
+    newObject = PyObject_NEW(PyToroidalPoloidalProjectionObject, &PyToroidalPoloidalProjectionType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -634,15 +620,15 @@ NewToroidalPoloidalProjection(int useCurrent)
         newObject->data = new ToroidalPoloidalProjection;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&ToroidalPoloidalProjectionType);
+    PyType_Ready(&PyToroidalPoloidalProjectionType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapToroidalPoloidalProjection(const ToroidalPoloidalProjection *attr)
 {
-    ToroidalPoloidalProjectionObject *newObject;
-    newObject = PyObject_NEW(ToroidalPoloidalProjectionObject, &ToroidalPoloidalProjectionType);
+    PyToroidalPoloidalProjectionObject *newObject;
+    newObject = PyObject_NEW(PyToroidalPoloidalProjectionObject, &PyToroidalPoloidalProjectionType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (ToroidalPoloidalProjection *)attr;
@@ -744,13 +730,13 @@ PyToroidalPoloidalProjection_GetMethodTable(int *nMethods)
 bool
 PyToroidalPoloidalProjection_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ToroidalPoloidalProjectionType);
+    return (obj->ob_type == &PyToroidalPoloidalProjectionType);
 }
 
 ToroidalPoloidalProjection *
 PyToroidalPoloidalProjection_FromPyObject(PyObject *obj)
 {
-    ToroidalPoloidalProjectionObject *obj2 = (ToroidalPoloidalProjectionObject *)obj;
+    PyToroidalPoloidalProjectionObject *obj2 = (PyToroidalPoloidalProjectionObject *)obj;
     return obj2->data;
 }
 
@@ -769,7 +755,7 @@ PyToroidalPoloidalProjection_Wrap(const ToroidalPoloidalProjection *attr)
 void
 PyToroidalPoloidalProjection_SetParent(PyObject *obj, PyObject *parent)
 {
-    ToroidalPoloidalProjectionObject *obj2 = (ToroidalPoloidalProjectionObject *)obj;
+    PyToroidalPoloidalProjectionObject *obj2 = (PyToroidalPoloidalProjectionObject *)obj;
     obj2->parent = parent;
 }
 

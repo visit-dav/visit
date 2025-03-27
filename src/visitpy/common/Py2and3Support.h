@@ -294,19 +294,116 @@ PyUnicode_From_UTF32_Unicode_Buffer(const char *unicode_buffer,
 // Also we use VPY_STR to implement both str() and repr(), as this
 // preserves the Python 2 cli behavior to echo object contents via repr()
 //
+// Mark C. Miller, Mon Mar 24 16:07:55 PDT 2025
+// Split VISIT_PY_TYPE_OBJ macro into two macros.
+//
+// The work-horse is VISIT_PY_TYPE_OBJ_CUSTOM which sets up only very basic
+// parts of a python object, name, size, flags, doc string, and which permits
+// customization of the remaining .tp_xxx slot functions to be initialized.
+//
+// The initialization occurs as static initialization (e.g. when the program
+// is loaded) in two steps.  The first is an *assignment* of the PyTypeObject
+// struct with mostly zero entries. The second is the assignment to a dummy
+// static variable of the result of calling an initialization function for the
+// type. It is in that second step where the remaining "custom" .tp_xxx slots
+// are set up.
+//
+// The second macro, VISIT_PY_TYPE_OBJ_DEFAULT, simply invokes the CUSTOM macro
+// with the standard .tp_xxx slot entries. In addition, it makes use of the CPP
+// paste operator (##) to enforce unity of names of functions assigned to
+// .tp_xxx slots.
+//
+// An entire list of .tp_xxx slot assignments to be set is past as the second
+// argument to the VISIT_PY_TYPE_OBJ_CUSTOM macro by seperating them by commas
+// and surrounding all by parens.
+// 
+// If you need to create a CUSTOM Python object, as several of our non-generated
+// python objects do, use VISIT_PY_TYPE_OBJ_CUSTOM directly.
+//
 
-#define VISIT_PY_TYPE_OBJ(VPY_TYPE,      \
+#define VISIT_PY_TYPE_OBJ_CUSTOM(VSObjName, VPY_TP_SLOTS) \
+static PyTypeObject Py##VSObjName##Type = \
+{ \
+    PyVarObject_HEAD_INIT(&PyType_Type, 0) \
+    #VSObjName,                 /* tp_name */ \
+    sizeof(Py##VSObjName##Object),/* tp_basicsize */ \
+    0,                          /* tp_itemsize */ \
+    0,                          /* tp_dealloc */ \
+    0,                          /* tp_print (python 2) or tp_vectorcall_offset (python3.8 > ) */ \
+    0,                          /* tp_getattr */ \
+    0,                          /* tp_setattr */ \
+    0,                          /* tp_reserved */ \
+    0,                          /* tp_repr */ \
+    0,                          /* tp_as_number */ \
+    0,                          /* tp_as_sequence */ \
+    0,                          /* tp_as_mapping */ \
+    0,                          /* tp_hash  */ \
+    0,                          /* tp_call */ \
+    0,                          /* tp_str */ \
+    0,                          /* tp_getattro */ \
+    0,                          /* tp_setattro */ \
+    0,                          /* tp_as_buffer */ \
+    PY_VISIT_TPFLAGS_DEFAULT,   /* tp_flags */ \
+    Py##VSObjName##_purpose,    /* tp_doc */ \
+    0,                          /* tp_traverse */ \
+    0,                          /* tp_clear */ \
+    0,                          /* tp_richcompare */ \
+    0,                          /* tp_weaklistoffset */ \
+    0,                          /* tp_iter */ \
+    0,                          /* tp_iternext */ \
+    0,                          /* tp_methods */ \
+    0,                          /* tp_members */ \
+    0,                          /* tp_getset */ \
+    0,                          /* tp_base */ \
+    0,                          /* tp_dict */ \
+    0,                          /* tp_descr_get */ \
+    0,                          /* tp_descr_set */  \
+    0,                          /* tp_dictoffset */ \
+    0,                          /* tp_init */  \
+    0,                          /* tp_alloc */  \
+    0,                          /* tp_new */  \
+    0,                          /* tp_free */ \
+    0,                          /* tp_is_gc */ \
+    0,                          /* tp_bases */ \
+    0,                          /* tp_mro */ \
+    0,                          /* tp_cache */ \
+    0,                          /* tp_subclasses */ \
+    0,                          /* tp_weaklist */ \
+    0,                          /* tp_del */ \
+    0                           /* tp_version_tag */ \
+    PyVarObject_TAIL                                \
+}; \
+static int VSObjName##_init(void) { \
+    static void *dummy = (void*) VPY_TP_SLOTS; \
+    return dummy != (void*)0; \
+} \
+static int VSObjName##_initialized = VSObjName##_init()
+
+//
+// Sets up the standard/default python object tp slot functions
+//
+#define VISIT_PY_TYPE_OBJ_DEFAULT(VSObjName) \
+     VISIT_PY_TYPE_OBJ_CUSTOM(VSObjName, (\
+         Py##VSObjName##Type.tp_dealloc = Py##VSObjName##_dealloc, \
+         Py##VSObjName##Type.tp_repr = Py##VSObjName##_str, \
+         Py##VSObjName##Type.tp_str = Py##VSObjName##_str, \
+         Py##VSObjName##Type.tp_getattro = Py##VSObjName##_getattro, \
+         Py##VSObjName##Type.tp_setattro = Py##VSObjName##_setattro, \
+         Py##VSObjName##Type.tp_richcompare = Py##VSObjName##_richcompare, \
+         Py##VSObjName##Type.tp_methods = Py##VSObjName##_methods))
+
+#define VISIT_PY_TYPE_OBJ( VPY_TYPE,      \
                            VPY_NAME,      \
                            VPY_OBJECT,    \
                            VPY_DEALLOC,   \
                            VPY_PRINT,     \
-                           VPY_GETATTRO,  \
-                           VPY_SETATTRO,  \
+                           VPY_GETATTRO,   \
+                           VPY_SETATTRO,   \
                            VPY_STR,       \
                            VPY_PURPOSE,   \
                            VPY_RICHCOMP,  \
                            VPY_AS_NUMBER, \
-                           VPY_METHODS)   \
+                           VPY_METHODS) \
 static PyTypeObject VPY_TYPE = \
 { \
     PyVarObject_HEAD_INIT(&PyType_Type, 0) \
@@ -325,8 +422,8 @@ static PyTypeObject VPY_TYPE = \
     0,                         /* tp_hash  */ \
     0,                         /* tp_call */ \
     (reprfunc)VPY_STR,         /* tp_str */ \
-    (getattrofunc)VPY_GETATTRO,/* tp_getattro */ \
-    (setattrofunc)VPY_SETATTRO,/* tp_setattro */ \
+    VPY_GETATTRO,              /* tp_getattro */ \
+    VPY_SETATTRO,              /* tp_setattro */ \
     0,                         /* tp_as_buffer */ \
     PY_VISIT_TPFLAGS_DEFAULT,  /* tp_flags */ \
     VPY_PURPOSE,               /* tp_doc */ \
@@ -358,6 +455,7 @@ static PyTypeObject VPY_TYPE = \
     0                          /* tp_version_tag */ \
     PyVarObject_TAIL                                \
 };
+
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------

@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a LagrangianAttributes.
 //
-struct LagrangianAttributesObject
+struct PyLagrangianAttributesObject
 {
     PyObject_HEAD
     LagrangianAttributes *data;
@@ -132,7 +132,7 @@ PyLagrangianAttributes_ToString(const LagrangianAttributes *atts, const char *pr
 static PyObject *
 LagrangianAttributes_Notify(PyObject *self, PyObject *args)
 {
-    LagrangianAttributesObject *obj = (LagrangianAttributesObject *)self;
+    PyLagrangianAttributesObject *obj = (PyLagrangianAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -169,7 +169,7 @@ LagrangianAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LagrangianAttributes_SetSeedPoint(PyObject *self, PyObject *args)
 {
-    LagrangianAttributesObject *obj = (LagrangianAttributesObject *)self;
+    PyLagrangianAttributesObject *obj = (PyLagrangianAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetSeedPoint();
@@ -236,7 +236,7 @@ LagrangianAttributes_SetSeedPoint(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LagrangianAttributes_GetSeedPoint(PyObject *self, PyObject *args)
 {
-    LagrangianAttributesObject *obj = (LagrangianAttributesObject *)self;
+    PyLagrangianAttributesObject *obj = (PyLagrangianAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the seedPoint.
     PyObject *retval = PyTuple_New(3);
     const double *seedPoint = obj->data->GetSeedPoint();
@@ -248,7 +248,7 @@ LagrangianAttributes_GetSeedPoint(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LagrangianAttributes_SetNumSteps(PyObject *self, PyObject *args)
 {
-    LagrangianAttributesObject *obj = (LagrangianAttributesObject *)self;
+    PyLagrangianAttributesObject *obj = (PyLagrangianAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -300,7 +300,7 @@ LagrangianAttributes_SetNumSteps(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LagrangianAttributes_GetNumSteps(PyObject *self, PyObject *args)
 {
-    LagrangianAttributesObject *obj = (LagrangianAttributesObject *)self;
+    PyLagrangianAttributesObject *obj = (PyLagrangianAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNumSteps()));
     return retval;
 }
@@ -308,7 +308,7 @@ LagrangianAttributes_GetNumSteps(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LagrangianAttributes_SetXAxisSample(PyObject *self, PyObject *args)
 {
-    LagrangianAttributesObject *obj = (LagrangianAttributesObject *)self;
+    PyLagrangianAttributesObject *obj = (PyLagrangianAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -370,7 +370,7 @@ LagrangianAttributes_SetXAxisSample(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LagrangianAttributes_GetXAxisSample(PyObject *self, PyObject *args)
 {
-    LagrangianAttributesObject *obj = (LagrangianAttributesObject *)self;
+    PyLagrangianAttributesObject *obj = (PyLagrangianAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetXAxisSample()));
     return retval;
 }
@@ -378,7 +378,7 @@ LagrangianAttributes_GetXAxisSample(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LagrangianAttributes_SetYAxisSample(PyObject *self, PyObject *args)
 {
-    LagrangianAttributesObject *obj = (LagrangianAttributesObject *)self;
+    PyLagrangianAttributesObject *obj = (PyLagrangianAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -440,7 +440,7 @@ LagrangianAttributes_SetYAxisSample(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LagrangianAttributes_GetYAxisSample(PyObject *self, PyObject *args)
 {
-    LagrangianAttributesObject *obj = (LagrangianAttributesObject *)self;
+    PyLagrangianAttributesObject *obj = (PyLagrangianAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetYAxisSample()));
     return retval;
 }
@@ -448,7 +448,7 @@ LagrangianAttributes_GetYAxisSample(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LagrangianAttributes_SetVariable(PyObject *self, PyObject *args)
 {
-    LagrangianAttributesObject *obj = (LagrangianAttributesObject *)self;
+    PyLagrangianAttributesObject *obj = (PyLagrangianAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -489,7 +489,7 @@ LagrangianAttributes_SetVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LagrangianAttributes_GetVariable(PyObject *self, PyObject *args)
 {
-    LagrangianAttributesObject *obj = (LagrangianAttributesObject *)self;
+    PyLagrangianAttributesObject *obj = (PyLagrangianAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetVariable().c_str());
     return retval;
 }
@@ -517,16 +517,16 @@ PyMethodDef PyLagrangianAttributes_methods[LAGRANGIANATTRIBUTES_NMETH] = {
 //
 
 static void
-LagrangianAttributes_dealloc(PyObject *v)
+PyLagrangianAttributes_dealloc(PyObject *v)
 {
-   LagrangianAttributesObject *obj = (LagrangianAttributesObject *)v;
+   PyLagrangianAttributesObject *obj = (PyLagrangianAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *LagrangianAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyLagrangianAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyLagrangianAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -612,56 +612,42 @@ PyLagrangianAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *a
 }
 
 PyObject *
-LagrangianAttributes_str(PyObject *v)
+PyLagrangianAttributes_str(PyObject *v)
 {
-    LagrangianAttributesObject *obj = (LagrangianAttributesObject *)v;
+    PyLagrangianAttributesObject *obj = (PyLagrangianAttributesObject *)v;
     return PyString_FromString(PyLagrangianAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *LagrangianAttributes_Purpose = "Attributes for Lagrangian operator";
-#else
-static char *LagrangianAttributes_Purpose = "Attributes for Lagrangian operator";
-#endif
+static char const *PyLagrangianAttributes_purpose = "Attributes for Lagrangian operator";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject LagrangianAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "LagrangianAttributes",
-    .tp_basicsize = sizeof(LagrangianAttributesObject),
-    .tp_dealloc = LagrangianAttributes_dealloc,
-    .tp_repr = LagrangianAttributes_str,
-    .tp_str = LagrangianAttributes_str,
-    .tp_getattro = PyLagrangianAttributes_getattro,
-    .tp_setattro = PyLagrangianAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = LagrangianAttributes_Purpose,
-    .tp_richcompare = LagrangianAttributes_richcompare,
-    .tp_methods = PyLagrangianAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(LagrangianAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-LagrangianAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyLagrangianAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &LagrangianAttributesType
-         || Py_TYPE(other) != &LagrangianAttributesType)
+    if ( Py_TYPE(self) != &PyLagrangianAttributesType
+         || Py_TYPE(other) != &PyLagrangianAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    LagrangianAttributes *a = ((LagrangianAttributesObject *)self)->data;
-    LagrangianAttributes *b = ((LagrangianAttributesObject *)other)->data;
+    LagrangianAttributes *a = ((PyLagrangianAttributesObject *)self)->data;
+    LagrangianAttributes *b = ((PyLagrangianAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -690,8 +676,8 @@ static LagrangianAttributes *currentAtts = 0;
 static PyObject *
 NewLagrangianAttributes(int useCurrent)
 {
-    LagrangianAttributesObject *newObject;
-    newObject = PyObject_NEW(LagrangianAttributesObject, &LagrangianAttributesType);
+    PyLagrangianAttributesObject *newObject;
+    newObject = PyObject_NEW(PyLagrangianAttributesObject, &PyLagrangianAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -702,15 +688,15 @@ NewLagrangianAttributes(int useCurrent)
         newObject->data = new LagrangianAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&LagrangianAttributesType);
+    PyType_Ready(&PyLagrangianAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapLagrangianAttributes(const LagrangianAttributes *attr)
 {
-    LagrangianAttributesObject *newObject;
-    newObject = PyObject_NEW(LagrangianAttributesObject, &LagrangianAttributesType);
+    PyLagrangianAttributesObject *newObject;
+    newObject = PyObject_NEW(PyLagrangianAttributesObject, &PyLagrangianAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (LagrangianAttributes *)attr;
@@ -812,13 +798,13 @@ PyLagrangianAttributes_GetMethodTable(int *nMethods)
 bool
 PyLagrangianAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &LagrangianAttributesType);
+    return (obj->ob_type == &PyLagrangianAttributesType);
 }
 
 LagrangianAttributes *
 PyLagrangianAttributes_FromPyObject(PyObject *obj)
 {
-    LagrangianAttributesObject *obj2 = (LagrangianAttributesObject *)obj;
+    PyLagrangianAttributesObject *obj2 = (PyLagrangianAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -837,7 +823,7 @@ PyLagrangianAttributes_Wrap(const LagrangianAttributes *attr)
 void
 PyLagrangianAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    LagrangianAttributesObject *obj2 = (LagrangianAttributesObject *)obj;
+    PyLagrangianAttributesObject *obj2 = (PyLagrangianAttributesObject *)obj;
     obj2->parent = parent;
 }
 

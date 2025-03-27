@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a MeshManagementAttributes.
 //
-struct MeshManagementAttributesObject
+struct PyMeshManagementAttributesObject
 {
     PyObject_HEAD
     MeshManagementAttributes *data;
@@ -141,7 +141,7 @@ PyMeshManagementAttributes_ToString(const MeshManagementAttributes *atts, const 
 static PyObject *
 MeshManagementAttributes_Notify(PyObject *self, PyObject *args)
 {
-    MeshManagementAttributesObject *obj = (MeshManagementAttributesObject *)self;
+    PyMeshManagementAttributesObject *obj = (PyMeshManagementAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -178,7 +178,7 @@ MeshManagementAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MeshManagementAttributes_SetDiscretizationTolerance(PyObject *self, PyObject *args)
 {
-    MeshManagementAttributesObject *obj = (MeshManagementAttributesObject *)self;
+    PyMeshManagementAttributesObject *obj = (PyMeshManagementAttributesObject *)self;
 
     doubleVector vec;
 
@@ -242,7 +242,7 @@ MeshManagementAttributes_SetDiscretizationTolerance(PyObject *self, PyObject *ar
 /*static*/ PyObject *
 MeshManagementAttributes_GetDiscretizationTolerance(PyObject *self, PyObject *args)
 {
-    MeshManagementAttributesObject *obj = (MeshManagementAttributesObject *)self;
+    PyMeshManagementAttributesObject *obj = (PyMeshManagementAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the discretizationTolerance.
     const doubleVector &discretizationTolerance = obj->data->GetDiscretizationTolerance();
     PyObject *retval = PyTuple_New(discretizationTolerance.size());
@@ -254,7 +254,7 @@ MeshManagementAttributes_GetDiscretizationTolerance(PyObject *self, PyObject *ar
 /*static*/ PyObject *
 MeshManagementAttributes_SetDiscretizationToleranceX(PyObject *self, PyObject *args)
 {
-    MeshManagementAttributesObject *obj = (MeshManagementAttributesObject *)self;
+    PyMeshManagementAttributesObject *obj = (PyMeshManagementAttributesObject *)self;
 
     doubleVector vec;
 
@@ -318,7 +318,7 @@ MeshManagementAttributes_SetDiscretizationToleranceX(PyObject *self, PyObject *a
 /*static*/ PyObject *
 MeshManagementAttributes_GetDiscretizationToleranceX(PyObject *self, PyObject *args)
 {
-    MeshManagementAttributesObject *obj = (MeshManagementAttributesObject *)self;
+    PyMeshManagementAttributesObject *obj = (PyMeshManagementAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the discretizationToleranceX.
     const doubleVector &discretizationToleranceX = obj->data->GetDiscretizationToleranceX();
     PyObject *retval = PyTuple_New(discretizationToleranceX.size());
@@ -330,7 +330,7 @@ MeshManagementAttributes_GetDiscretizationToleranceX(PyObject *self, PyObject *a
 /*static*/ PyObject *
 MeshManagementAttributes_SetDiscretizationToleranceY(PyObject *self, PyObject *args)
 {
-    MeshManagementAttributesObject *obj = (MeshManagementAttributesObject *)self;
+    PyMeshManagementAttributesObject *obj = (PyMeshManagementAttributesObject *)self;
 
     doubleVector vec;
 
@@ -394,7 +394,7 @@ MeshManagementAttributes_SetDiscretizationToleranceY(PyObject *self, PyObject *a
 /*static*/ PyObject *
 MeshManagementAttributes_GetDiscretizationToleranceY(PyObject *self, PyObject *args)
 {
-    MeshManagementAttributesObject *obj = (MeshManagementAttributesObject *)self;
+    PyMeshManagementAttributesObject *obj = (PyMeshManagementAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the discretizationToleranceY.
     const doubleVector &discretizationToleranceY = obj->data->GetDiscretizationToleranceY();
     PyObject *retval = PyTuple_New(discretizationToleranceY.size());
@@ -406,7 +406,7 @@ MeshManagementAttributes_GetDiscretizationToleranceY(PyObject *self, PyObject *a
 /*static*/ PyObject *
 MeshManagementAttributes_SetDiscretizationToleranceZ(PyObject *self, PyObject *args)
 {
-    MeshManagementAttributesObject *obj = (MeshManagementAttributesObject *)self;
+    PyMeshManagementAttributesObject *obj = (PyMeshManagementAttributesObject *)self;
 
     doubleVector vec;
 
@@ -470,7 +470,7 @@ MeshManagementAttributes_SetDiscretizationToleranceZ(PyObject *self, PyObject *a
 /*static*/ PyObject *
 MeshManagementAttributes_GetDiscretizationToleranceZ(PyObject *self, PyObject *args)
 {
-    MeshManagementAttributesObject *obj = (MeshManagementAttributesObject *)self;
+    PyMeshManagementAttributesObject *obj = (PyMeshManagementAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the discretizationToleranceZ.
     const doubleVector &discretizationToleranceZ = obj->data->GetDiscretizationToleranceZ();
     PyObject *retval = PyTuple_New(discretizationToleranceZ.size());
@@ -482,7 +482,7 @@ MeshManagementAttributes_GetDiscretizationToleranceZ(PyObject *self, PyObject *a
 /*static*/ PyObject *
 MeshManagementAttributes_SetDiscretizationMode(PyObject *self, PyObject *args)
 {
-    MeshManagementAttributesObject *obj = (MeshManagementAttributesObject *)self;
+    PyMeshManagementAttributesObject *obj = (PyMeshManagementAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -541,7 +541,7 @@ MeshManagementAttributes_SetDiscretizationMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MeshManagementAttributes_GetDiscretizationMode(PyObject *self, PyObject *args)
 {
-    MeshManagementAttributesObject *obj = (MeshManagementAttributesObject *)self;
+    PyMeshManagementAttributesObject *obj = (PyMeshManagementAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetDiscretizationMode()));
     return retval;
 }
@@ -549,7 +549,7 @@ MeshManagementAttributes_GetDiscretizationMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MeshManagementAttributes_SetDiscretizeBoundaryOnly(PyObject *self, PyObject *args)
 {
-    MeshManagementAttributesObject *obj = (MeshManagementAttributesObject *)self;
+    PyMeshManagementAttributesObject *obj = (PyMeshManagementAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -601,7 +601,7 @@ MeshManagementAttributes_SetDiscretizeBoundaryOnly(PyObject *self, PyObject *arg
 /*static*/ PyObject *
 MeshManagementAttributes_GetDiscretizeBoundaryOnly(PyObject *self, PyObject *args)
 {
-    MeshManagementAttributesObject *obj = (MeshManagementAttributesObject *)self;
+    PyMeshManagementAttributesObject *obj = (PyMeshManagementAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetDiscretizeBoundaryOnly()?1L:0L);
     return retval;
 }
@@ -609,7 +609,7 @@ MeshManagementAttributes_GetDiscretizeBoundaryOnly(PyObject *self, PyObject *arg
 /*static*/ PyObject *
 MeshManagementAttributes_SetPassNativeCSG(PyObject *self, PyObject *args)
 {
-    MeshManagementAttributesObject *obj = (MeshManagementAttributesObject *)self;
+    PyMeshManagementAttributesObject *obj = (PyMeshManagementAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -661,7 +661,7 @@ MeshManagementAttributes_SetPassNativeCSG(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MeshManagementAttributes_GetPassNativeCSG(PyObject *self, PyObject *args)
 {
-    MeshManagementAttributesObject *obj = (MeshManagementAttributesObject *)self;
+    PyMeshManagementAttributesObject *obj = (PyMeshManagementAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetPassNativeCSG()?1L:0L);
     return retval;
 }
@@ -693,16 +693,16 @@ PyMethodDef PyMeshManagementAttributes_methods[MESHMANAGEMENTATTRIBUTES_NMETH] =
 //
 
 static void
-MeshManagementAttributes_dealloc(PyObject *v)
+PyMeshManagementAttributes_dealloc(PyObject *v)
 {
-   MeshManagementAttributesObject *obj = (MeshManagementAttributesObject *)v;
+   PyMeshManagementAttributesObject *obj = (PyMeshManagementAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *MeshManagementAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyMeshManagementAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyMeshManagementAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -777,56 +777,42 @@ PyMeshManagementAttributes_setattro(PyObject *self, PyObject *attr_name, PyObjec
 }
 
 PyObject *
-MeshManagementAttributes_str(PyObject *v)
+PyMeshManagementAttributes_str(PyObject *v)
 {
-    MeshManagementAttributesObject *obj = (MeshManagementAttributesObject *)v;
+    PyMeshManagementAttributesObject *obj = (PyMeshManagementAttributesObject *)v;
     return PyString_FromString(PyMeshManagementAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *MeshManagementAttributes_Purpose = "Global variables controlling reading and conversion of non-standard meshes";
-#else
-static char *MeshManagementAttributes_Purpose = "Global variables controlling reading and conversion of non-standard meshes";
-#endif
+static char const *PyMeshManagementAttributes_purpose = "Global variables controlling reading and conversion of non-standard meshes";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject MeshManagementAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "MeshManagementAttributes",
-    .tp_basicsize = sizeof(MeshManagementAttributesObject),
-    .tp_dealloc = MeshManagementAttributes_dealloc,
-    .tp_repr = MeshManagementAttributes_str,
-    .tp_str = MeshManagementAttributes_str,
-    .tp_getattro = PyMeshManagementAttributes_getattro,
-    .tp_setattro = PyMeshManagementAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = MeshManagementAttributes_Purpose,
-    .tp_richcompare = MeshManagementAttributes_richcompare,
-    .tp_methods = PyMeshManagementAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(MeshManagementAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-MeshManagementAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyMeshManagementAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &MeshManagementAttributesType
-         || Py_TYPE(other) != &MeshManagementAttributesType)
+    if ( Py_TYPE(self) != &PyMeshManagementAttributesType
+         || Py_TYPE(other) != &PyMeshManagementAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    MeshManagementAttributes *a = ((MeshManagementAttributesObject *)self)->data;
-    MeshManagementAttributes *b = ((MeshManagementAttributesObject *)other)->data;
+    MeshManagementAttributes *a = ((PyMeshManagementAttributesObject *)self)->data;
+    MeshManagementAttributes *b = ((PyMeshManagementAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -855,8 +841,8 @@ static MeshManagementAttributes *currentAtts = 0;
 static PyObject *
 NewMeshManagementAttributes(int useCurrent)
 {
-    MeshManagementAttributesObject *newObject;
-    newObject = PyObject_NEW(MeshManagementAttributesObject, &MeshManagementAttributesType);
+    PyMeshManagementAttributesObject *newObject;
+    newObject = PyObject_NEW(PyMeshManagementAttributesObject, &PyMeshManagementAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -867,15 +853,15 @@ NewMeshManagementAttributes(int useCurrent)
         newObject->data = new MeshManagementAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&MeshManagementAttributesType);
+    PyType_Ready(&PyMeshManagementAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapMeshManagementAttributes(const MeshManagementAttributes *attr)
 {
-    MeshManagementAttributesObject *newObject;
-    newObject = PyObject_NEW(MeshManagementAttributesObject, &MeshManagementAttributesType);
+    PyMeshManagementAttributesObject *newObject;
+    newObject = PyObject_NEW(PyMeshManagementAttributesObject, &PyMeshManagementAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (MeshManagementAttributes *)attr;
@@ -977,13 +963,13 @@ PyMeshManagementAttributes_GetMethodTable(int *nMethods)
 bool
 PyMeshManagementAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &MeshManagementAttributesType);
+    return (obj->ob_type == &PyMeshManagementAttributesType);
 }
 
 MeshManagementAttributes *
 PyMeshManagementAttributes_FromPyObject(PyObject *obj)
 {
-    MeshManagementAttributesObject *obj2 = (MeshManagementAttributesObject *)obj;
+    PyMeshManagementAttributesObject *obj2 = (PyMeshManagementAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1002,7 +988,7 @@ PyMeshManagementAttributes_Wrap(const MeshManagementAttributes *attr)
 void
 PyMeshManagementAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    MeshManagementAttributesObject *obj2 = (MeshManagementAttributesObject *)obj;
+    PyMeshManagementAttributesObject *obj2 = (PyMeshManagementAttributesObject *)obj;
     obj2->parent = parent;
 }
 

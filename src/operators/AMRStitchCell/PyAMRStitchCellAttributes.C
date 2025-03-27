@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a AMRStitchCellAttributes.
 //
-struct AMRStitchCellAttributesObject
+struct PyAMRStitchCellAttributesObject
 {
     PyObject_HEAD
     AMRStitchCellAttributes *data;
@@ -67,7 +67,7 @@ PyAMRStitchCellAttributes_ToString(const AMRStitchCellAttributes *atts, const ch
 static PyObject *
 AMRStitchCellAttributes_Notify(PyObject *self, PyObject *args)
 {
-    AMRStitchCellAttributesObject *obj = (AMRStitchCellAttributesObject *)self;
+    PyAMRStitchCellAttributesObject *obj = (PyAMRStitchCellAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -104,7 +104,7 @@ AMRStitchCellAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AMRStitchCellAttributes_SetCreateCellsOfType(PyObject *self, PyObject *args)
 {
-    AMRStitchCellAttributesObject *obj = (AMRStitchCellAttributesObject *)self;
+    PyAMRStitchCellAttributesObject *obj = (PyAMRStitchCellAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -163,7 +163,7 @@ AMRStitchCellAttributes_SetCreateCellsOfType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AMRStitchCellAttributes_GetCreateCellsOfType(PyObject *self, PyObject *args)
 {
-    AMRStitchCellAttributesObject *obj = (AMRStitchCellAttributesObject *)self;
+    PyAMRStitchCellAttributesObject *obj = (PyAMRStitchCellAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetCreateCellsOfType()));
     return retval;
 }
@@ -183,16 +183,16 @@ PyMethodDef PyAMRStitchCellAttributes_methods[AMRSTITCHCELLATTRIBUTES_NMETH] = {
 //
 
 static void
-AMRStitchCellAttributes_dealloc(PyObject *v)
+PyAMRStitchCellAttributes_dealloc(PyObject *v)
 {
-   AMRStitchCellAttributesObject *obj = (AMRStitchCellAttributesObject *)v;
+   PyAMRStitchCellAttributesObject *obj = (PyAMRStitchCellAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *AMRStitchCellAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyAMRStitchCellAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyAMRStitchCellAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -243,56 +243,42 @@ PyAMRStitchCellAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject
 }
 
 PyObject *
-AMRStitchCellAttributes_str(PyObject *v)
+PyAMRStitchCellAttributes_str(PyObject *v)
 {
-    AMRStitchCellAttributesObject *obj = (AMRStitchCellAttributesObject *)v;
+    PyAMRStitchCellAttributesObject *obj = (PyAMRStitchCellAttributesObject *)v;
     return PyString_FromString(PyAMRStitchCellAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *AMRStitchCellAttributes_Purpose = "Attributes for Stitch Cell Operator";
-#else
-static char *AMRStitchCellAttributes_Purpose = "Attributes for Stitch Cell Operator";
-#endif
+static char const *PyAMRStitchCellAttributes_purpose = "Attributes for Stitch Cell Operator";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject AMRStitchCellAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "AMRStitchCellAttributes",
-    .tp_basicsize = sizeof(AMRStitchCellAttributesObject),
-    .tp_dealloc = AMRStitchCellAttributes_dealloc,
-    .tp_repr = AMRStitchCellAttributes_str,
-    .tp_str = AMRStitchCellAttributes_str,
-    .tp_getattro = PyAMRStitchCellAttributes_getattro,
-    .tp_setattro = PyAMRStitchCellAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = AMRStitchCellAttributes_Purpose,
-    .tp_richcompare = AMRStitchCellAttributes_richcompare,
-    .tp_methods = PyAMRStitchCellAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(AMRStitchCellAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-AMRStitchCellAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyAMRStitchCellAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &AMRStitchCellAttributesType
-         || Py_TYPE(other) != &AMRStitchCellAttributesType)
+    if ( Py_TYPE(self) != &PyAMRStitchCellAttributesType
+         || Py_TYPE(other) != &PyAMRStitchCellAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    AMRStitchCellAttributes *a = ((AMRStitchCellAttributesObject *)self)->data;
-    AMRStitchCellAttributes *b = ((AMRStitchCellAttributesObject *)other)->data;
+    AMRStitchCellAttributes *a = ((PyAMRStitchCellAttributesObject *)self)->data;
+    AMRStitchCellAttributes *b = ((PyAMRStitchCellAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -321,8 +307,8 @@ static AMRStitchCellAttributes *currentAtts = 0;
 static PyObject *
 NewAMRStitchCellAttributes(int useCurrent)
 {
-    AMRStitchCellAttributesObject *newObject;
-    newObject = PyObject_NEW(AMRStitchCellAttributesObject, &AMRStitchCellAttributesType);
+    PyAMRStitchCellAttributesObject *newObject;
+    newObject = PyObject_NEW(PyAMRStitchCellAttributesObject, &PyAMRStitchCellAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -333,15 +319,15 @@ NewAMRStitchCellAttributes(int useCurrent)
         newObject->data = new AMRStitchCellAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&AMRStitchCellAttributesType);
+    PyType_Ready(&PyAMRStitchCellAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapAMRStitchCellAttributes(const AMRStitchCellAttributes *attr)
 {
-    AMRStitchCellAttributesObject *newObject;
-    newObject = PyObject_NEW(AMRStitchCellAttributesObject, &AMRStitchCellAttributesType);
+    PyAMRStitchCellAttributesObject *newObject;
+    newObject = PyObject_NEW(PyAMRStitchCellAttributesObject, &PyAMRStitchCellAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (AMRStitchCellAttributes *)attr;
@@ -443,13 +429,13 @@ PyAMRStitchCellAttributes_GetMethodTable(int *nMethods)
 bool
 PyAMRStitchCellAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &AMRStitchCellAttributesType);
+    return (obj->ob_type == &PyAMRStitchCellAttributesType);
 }
 
 AMRStitchCellAttributes *
 PyAMRStitchCellAttributes_FromPyObject(PyObject *obj)
 {
-    AMRStitchCellAttributesObject *obj2 = (AMRStitchCellAttributesObject *)obj;
+    PyAMRStitchCellAttributesObject *obj2 = (PyAMRStitchCellAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -468,7 +454,7 @@ PyAMRStitchCellAttributes_Wrap(const AMRStitchCellAttributes *attr)
 void
 PyAMRStitchCellAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    AMRStitchCellAttributesObject *obj2 = (AMRStitchCellAttributesObject *)obj;
+    PyAMRStitchCellAttributesObject *obj2 = (PyAMRStitchCellAttributesObject *)obj;
     obj2->parent = parent;
 }
 

@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a DBOptionsAttributes.
 //
-struct DBOptionsAttributesObject
+struct PyDBOptionsAttributesObject
 {
     PyObject_HEAD
     DBOptionsAttributes *data;
@@ -66,7 +66,7 @@ PyDBOptionsAttributes_ToString(const DBOptionsAttributes *atts, const char *pref
 static PyObject *
 DBOptionsAttributes_Notify(PyObject *self, PyObject *args)
 {
-    DBOptionsAttributesObject *obj = (DBOptionsAttributesObject *)self;
+    PyDBOptionsAttributesObject *obj = (PyDBOptionsAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -114,7 +114,7 @@ DBOptionsAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DBOptionsAttributes_SetTypes(PyObject *self, PyObject *args)
 {
-    DBOptionsAttributesObject *obj = (DBOptionsAttributesObject *)self;
+    PyDBOptionsAttributesObject *obj = (PyDBOptionsAttributesObject *)self;
 
     intVector vec;
 
@@ -178,7 +178,7 @@ DBOptionsAttributes_SetTypes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DBOptionsAttributes_GetTypes(PyObject *self, PyObject *args)
 {
-    DBOptionsAttributesObject *obj = (DBOptionsAttributesObject *)self;
+    PyDBOptionsAttributesObject *obj = (PyDBOptionsAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the types.
     const intVector &types = obj->data->GetTypes();
     PyObject *retval = PyTuple_New(types.size());
@@ -190,7 +190,7 @@ DBOptionsAttributes_GetTypes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DBOptionsAttributes_SetHelp(PyObject *self, PyObject *args)
 {
-    DBOptionsAttributesObject *obj = (DBOptionsAttributesObject *)self;
+    PyDBOptionsAttributesObject *obj = (PyDBOptionsAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -231,7 +231,7 @@ DBOptionsAttributes_SetHelp(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DBOptionsAttributes_GetHelp(PyObject *self, PyObject *args)
 {
-    DBOptionsAttributesObject *obj = (DBOptionsAttributesObject *)self;
+    PyDBOptionsAttributesObject *obj = (PyDBOptionsAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetHelp().c_str());
     return retval;
 }
@@ -253,16 +253,16 @@ PyMethodDef PyDBOptionsAttributes_methods[DBOPTIONSATTRIBUTES_NMETH] = {
 //
 
 static void
-DBOptionsAttributes_dealloc(PyObject *v)
+PyDBOptionsAttributes_dealloc(PyObject *v)
 {
-   DBOptionsAttributesObject *obj = (DBOptionsAttributesObject *)v;
+   PyDBOptionsAttributesObject *obj = (PyDBOptionsAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *DBOptionsAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyDBOptionsAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyDBOptionsAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -310,56 +310,42 @@ PyDBOptionsAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *ar
 }
 
 PyObject *
-DBOptionsAttributes_str(PyObject *v)
+PyDBOptionsAttributes_str(PyObject *v)
 {
-    DBOptionsAttributesObject *obj = (DBOptionsAttributesObject *)v;
+    PyDBOptionsAttributesObject *obj = (PyDBOptionsAttributesObject *)v;
     return PyString_FromString(PyDBOptionsAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *DBOptionsAttributes_Purpose = "Attributes of database options";
-#else
-static char *DBOptionsAttributes_Purpose = "Attributes of database options";
-#endif
+static char const *PyDBOptionsAttributes_purpose = "Attributes of database options";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject DBOptionsAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "DBOptionsAttributes",
-    .tp_basicsize = sizeof(DBOptionsAttributesObject),
-    .tp_dealloc = DBOptionsAttributes_dealloc,
-    .tp_repr = DBOptionsAttributes_str,
-    .tp_str = DBOptionsAttributes_str,
-    .tp_getattro = PyDBOptionsAttributes_getattro,
-    .tp_setattro = PyDBOptionsAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = DBOptionsAttributes_Purpose,
-    .tp_richcompare = DBOptionsAttributes_richcompare,
-    .tp_methods = PyDBOptionsAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(DBOptionsAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-DBOptionsAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyDBOptionsAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &DBOptionsAttributesType
-         || Py_TYPE(other) != &DBOptionsAttributesType)
+    if ( Py_TYPE(self) != &PyDBOptionsAttributesType
+         || Py_TYPE(other) != &PyDBOptionsAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    DBOptionsAttributes *a = ((DBOptionsAttributesObject *)self)->data;
-    DBOptionsAttributes *b = ((DBOptionsAttributesObject *)other)->data;
+    DBOptionsAttributes *a = ((PyDBOptionsAttributesObject *)self)->data;
+    DBOptionsAttributes *b = ((PyDBOptionsAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -388,8 +374,8 @@ static DBOptionsAttributes *currentAtts = 0;
 static PyObject *
 NewDBOptionsAttributes(int useCurrent)
 {
-    DBOptionsAttributesObject *newObject;
-    newObject = PyObject_NEW(DBOptionsAttributesObject, &DBOptionsAttributesType);
+    PyDBOptionsAttributesObject *newObject;
+    newObject = PyObject_NEW(PyDBOptionsAttributesObject, &PyDBOptionsAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -400,15 +386,15 @@ NewDBOptionsAttributes(int useCurrent)
         newObject->data = new DBOptionsAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&DBOptionsAttributesType);
+    PyType_Ready(&PyDBOptionsAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapDBOptionsAttributes(const DBOptionsAttributes *attr)
 {
-    DBOptionsAttributesObject *newObject;
-    newObject = PyObject_NEW(DBOptionsAttributesObject, &DBOptionsAttributesType);
+    PyDBOptionsAttributesObject *newObject;
+    newObject = PyObject_NEW(PyDBOptionsAttributesObject, &PyDBOptionsAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (DBOptionsAttributes *)attr;
@@ -510,13 +496,13 @@ PyDBOptionsAttributes_GetMethodTable(int *nMethods)
 bool
 PyDBOptionsAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &DBOptionsAttributesType);
+    return (obj->ob_type == &PyDBOptionsAttributesType);
 }
 
 DBOptionsAttributes *
 PyDBOptionsAttributes_FromPyObject(PyObject *obj)
 {
-    DBOptionsAttributesObject *obj2 = (DBOptionsAttributesObject *)obj;
+    PyDBOptionsAttributesObject *obj2 = (PyDBOptionsAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -535,7 +521,7 @@ PyDBOptionsAttributes_Wrap(const DBOptionsAttributes *attr)
 void
 PyDBOptionsAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    DBOptionsAttributesObject *obj2 = (DBOptionsAttributesObject *)obj;
+    PyDBOptionsAttributesObject *obj2 = (PyDBOptionsAttributesObject *)obj;
     obj2->parent = parent;
 }
 

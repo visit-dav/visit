@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a ResampleAttributes.
 //
-struct ResampleAttributesObject
+struct PyResampleAttributesObject
 {
     PyObject_HEAD
     ResampleAttributes *data;
@@ -109,7 +109,7 @@ PyResampleAttributes_ToString(const ResampleAttributes *atts, const char *prefix
 static PyObject *
 ResampleAttributes_Notify(PyObject *self, PyObject *args)
 {
-    ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
+    PyResampleAttributesObject *obj = (PyResampleAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -146,7 +146,7 @@ ResampleAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ResampleAttributes_SetUseExtents(PyObject *self, PyObject *args)
 {
-    ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
+    PyResampleAttributesObject *obj = (PyResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -198,7 +198,7 @@ ResampleAttributes_SetUseExtents(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ResampleAttributes_GetUseExtents(PyObject *self, PyObject *args)
 {
-    ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
+    PyResampleAttributesObject *obj = (PyResampleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetUseExtents()?1L:0L);
     return retval;
 }
@@ -206,7 +206,7 @@ ResampleAttributes_GetUseExtents(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ResampleAttributes_SetStartX(PyObject *self, PyObject *args)
 {
-    ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
+    PyResampleAttributesObject *obj = (PyResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -258,7 +258,7 @@ ResampleAttributes_SetStartX(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ResampleAttributes_GetStartX(PyObject *self, PyObject *args)
 {
-    ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
+    PyResampleAttributesObject *obj = (PyResampleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetStartX());
     return retval;
 }
@@ -266,7 +266,7 @@ ResampleAttributes_GetStartX(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ResampleAttributes_SetEndX(PyObject *self, PyObject *args)
 {
-    ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
+    PyResampleAttributesObject *obj = (PyResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -318,7 +318,7 @@ ResampleAttributes_SetEndX(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ResampleAttributes_GetEndX(PyObject *self, PyObject *args)
 {
-    ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
+    PyResampleAttributesObject *obj = (PyResampleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetEndX());
     return retval;
 }
@@ -326,7 +326,7 @@ ResampleAttributes_GetEndX(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ResampleAttributes_SetSamplesX(PyObject *self, PyObject *args)
 {
-    ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
+    PyResampleAttributesObject *obj = (PyResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -378,7 +378,7 @@ ResampleAttributes_SetSamplesX(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ResampleAttributes_GetSamplesX(PyObject *self, PyObject *args)
 {
-    ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
+    PyResampleAttributesObject *obj = (PyResampleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetSamplesX()));
     return retval;
 }
@@ -386,7 +386,7 @@ ResampleAttributes_GetSamplesX(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ResampleAttributes_SetStartY(PyObject *self, PyObject *args)
 {
-    ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
+    PyResampleAttributesObject *obj = (PyResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -438,7 +438,7 @@ ResampleAttributes_SetStartY(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ResampleAttributes_GetStartY(PyObject *self, PyObject *args)
 {
-    ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
+    PyResampleAttributesObject *obj = (PyResampleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetStartY());
     return retval;
 }
@@ -446,7 +446,7 @@ ResampleAttributes_GetStartY(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ResampleAttributes_SetEndY(PyObject *self, PyObject *args)
 {
-    ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
+    PyResampleAttributesObject *obj = (PyResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -498,7 +498,7 @@ ResampleAttributes_SetEndY(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ResampleAttributes_GetEndY(PyObject *self, PyObject *args)
 {
-    ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
+    PyResampleAttributesObject *obj = (PyResampleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetEndY());
     return retval;
 }
@@ -506,7 +506,7 @@ ResampleAttributes_GetEndY(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ResampleAttributes_SetSamplesY(PyObject *self, PyObject *args)
 {
-    ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
+    PyResampleAttributesObject *obj = (PyResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -558,7 +558,7 @@ ResampleAttributes_SetSamplesY(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ResampleAttributes_GetSamplesY(PyObject *self, PyObject *args)
 {
-    ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
+    PyResampleAttributesObject *obj = (PyResampleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetSamplesY()));
     return retval;
 }
@@ -566,7 +566,7 @@ ResampleAttributes_GetSamplesY(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ResampleAttributes_SetIs3D(PyObject *self, PyObject *args)
 {
-    ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
+    PyResampleAttributesObject *obj = (PyResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -618,7 +618,7 @@ ResampleAttributes_SetIs3D(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ResampleAttributes_GetIs3D(PyObject *self, PyObject *args)
 {
-    ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
+    PyResampleAttributesObject *obj = (PyResampleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetIs3D()?1L:0L);
     return retval;
 }
@@ -626,7 +626,7 @@ ResampleAttributes_GetIs3D(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ResampleAttributes_SetStartZ(PyObject *self, PyObject *args)
 {
-    ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
+    PyResampleAttributesObject *obj = (PyResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -678,7 +678,7 @@ ResampleAttributes_SetStartZ(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ResampleAttributes_GetStartZ(PyObject *self, PyObject *args)
 {
-    ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
+    PyResampleAttributesObject *obj = (PyResampleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetStartZ());
     return retval;
 }
@@ -686,7 +686,7 @@ ResampleAttributes_GetStartZ(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ResampleAttributes_SetEndZ(PyObject *self, PyObject *args)
 {
-    ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
+    PyResampleAttributesObject *obj = (PyResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -738,7 +738,7 @@ ResampleAttributes_SetEndZ(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ResampleAttributes_GetEndZ(PyObject *self, PyObject *args)
 {
-    ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
+    PyResampleAttributesObject *obj = (PyResampleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetEndZ());
     return retval;
 }
@@ -746,7 +746,7 @@ ResampleAttributes_GetEndZ(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ResampleAttributes_SetSamplesZ(PyObject *self, PyObject *args)
 {
-    ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
+    PyResampleAttributesObject *obj = (PyResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -798,7 +798,7 @@ ResampleAttributes_SetSamplesZ(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ResampleAttributes_GetSamplesZ(PyObject *self, PyObject *args)
 {
-    ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
+    PyResampleAttributesObject *obj = (PyResampleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetSamplesZ()));
     return retval;
 }
@@ -806,7 +806,7 @@ ResampleAttributes_GetSamplesZ(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ResampleAttributes_SetTieResolver(PyObject *self, PyObject *args)
 {
-    ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
+    PyResampleAttributesObject *obj = (PyResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -865,7 +865,7 @@ ResampleAttributes_SetTieResolver(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ResampleAttributes_GetTieResolver(PyObject *self, PyObject *args)
 {
-    ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
+    PyResampleAttributesObject *obj = (PyResampleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetTieResolver()));
     return retval;
 }
@@ -873,7 +873,7 @@ ResampleAttributes_GetTieResolver(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ResampleAttributes_SetTieResolverVariable(PyObject *self, PyObject *args)
 {
-    ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
+    PyResampleAttributesObject *obj = (PyResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -914,7 +914,7 @@ ResampleAttributes_SetTieResolverVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ResampleAttributes_GetTieResolverVariable(PyObject *self, PyObject *args)
 {
-    ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
+    PyResampleAttributesObject *obj = (PyResampleAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetTieResolverVariable().c_str());
     return retval;
 }
@@ -922,7 +922,7 @@ ResampleAttributes_GetTieResolverVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ResampleAttributes_SetDefaultValue(PyObject *self, PyObject *args)
 {
-    ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
+    PyResampleAttributesObject *obj = (PyResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -974,7 +974,7 @@ ResampleAttributes_SetDefaultValue(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ResampleAttributes_GetDefaultValue(PyObject *self, PyObject *args)
 {
-    ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
+    PyResampleAttributesObject *obj = (PyResampleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetDefaultValue());
     return retval;
 }
@@ -982,7 +982,7 @@ ResampleAttributes_GetDefaultValue(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ResampleAttributes_SetDistributedResample(PyObject *self, PyObject *args)
 {
-    ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
+    PyResampleAttributesObject *obj = (PyResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1034,7 +1034,7 @@ ResampleAttributes_SetDistributedResample(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ResampleAttributes_GetDistributedResample(PyObject *self, PyObject *args)
 {
-    ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
+    PyResampleAttributesObject *obj = (PyResampleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetDistributedResample()?1L:0L);
     return retval;
 }
@@ -1042,7 +1042,7 @@ ResampleAttributes_GetDistributedResample(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ResampleAttributes_SetCellCenteredOutput(PyObject *self, PyObject *args)
 {
-    ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
+    PyResampleAttributesObject *obj = (PyResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1094,7 +1094,7 @@ ResampleAttributes_SetCellCenteredOutput(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ResampleAttributes_GetCellCenteredOutput(PyObject *self, PyObject *args)
 {
-    ResampleAttributesObject *obj = (ResampleAttributesObject *)self;
+    PyResampleAttributesObject *obj = (PyResampleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetCellCenteredOutput()?1L:0L);
     return retval;
 }
@@ -1144,16 +1144,16 @@ PyMethodDef PyResampleAttributes_methods[RESAMPLEATTRIBUTES_NMETH] = {
 //
 
 static void
-ResampleAttributes_dealloc(PyObject *v)
+PyResampleAttributes_dealloc(PyObject *v)
 {
-   ResampleAttributesObject *obj = (ResampleAttributesObject *)v;
+   PyResampleAttributesObject *obj = (PyResampleAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *ResampleAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyResampleAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyResampleAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -1264,56 +1264,42 @@ PyResampleAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *arg
 }
 
 PyObject *
-ResampleAttributes_str(PyObject *v)
+PyResampleAttributes_str(PyObject *v)
 {
-    ResampleAttributesObject *obj = (ResampleAttributesObject *)v;
+    PyResampleAttributesObject *obj = (PyResampleAttributesObject *)v;
     return PyString_FromString(PyResampleAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *ResampleAttributes_Purpose = "Atts for Resample operator";
-#else
-static char *ResampleAttributes_Purpose = "Atts for Resample operator";
-#endif
+static char const *PyResampleAttributes_purpose = "Atts for Resample operator";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject ResampleAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "ResampleAttributes",
-    .tp_basicsize = sizeof(ResampleAttributesObject),
-    .tp_dealloc = ResampleAttributes_dealloc,
-    .tp_repr = ResampleAttributes_str,
-    .tp_str = ResampleAttributes_str,
-    .tp_getattro = PyResampleAttributes_getattro,
-    .tp_setattro = PyResampleAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = ResampleAttributes_Purpose,
-    .tp_richcompare = ResampleAttributes_richcompare,
-    .tp_methods = PyResampleAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(ResampleAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-ResampleAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyResampleAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &ResampleAttributesType
-         || Py_TYPE(other) != &ResampleAttributesType)
+    if ( Py_TYPE(self) != &PyResampleAttributesType
+         || Py_TYPE(other) != &PyResampleAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    ResampleAttributes *a = ((ResampleAttributesObject *)self)->data;
-    ResampleAttributes *b = ((ResampleAttributesObject *)other)->data;
+    ResampleAttributes *a = ((PyResampleAttributesObject *)self)->data;
+    ResampleAttributes *b = ((PyResampleAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -1342,8 +1328,8 @@ static ResampleAttributes *currentAtts = 0;
 static PyObject *
 NewResampleAttributes(int useCurrent)
 {
-    ResampleAttributesObject *newObject;
-    newObject = PyObject_NEW(ResampleAttributesObject, &ResampleAttributesType);
+    PyResampleAttributesObject *newObject;
+    newObject = PyObject_NEW(PyResampleAttributesObject, &PyResampleAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1354,15 +1340,15 @@ NewResampleAttributes(int useCurrent)
         newObject->data = new ResampleAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&ResampleAttributesType);
+    PyType_Ready(&PyResampleAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapResampleAttributes(const ResampleAttributes *attr)
 {
-    ResampleAttributesObject *newObject;
-    newObject = PyObject_NEW(ResampleAttributesObject, &ResampleAttributesType);
+    PyResampleAttributesObject *newObject;
+    newObject = PyObject_NEW(PyResampleAttributesObject, &PyResampleAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (ResampleAttributes *)attr;
@@ -1464,13 +1450,13 @@ PyResampleAttributes_GetMethodTable(int *nMethods)
 bool
 PyResampleAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ResampleAttributesType);
+    return (obj->ob_type == &PyResampleAttributesType);
 }
 
 ResampleAttributes *
 PyResampleAttributes_FromPyObject(PyObject *obj)
 {
-    ResampleAttributesObject *obj2 = (ResampleAttributesObject *)obj;
+    PyResampleAttributesObject *obj2 = (PyResampleAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1489,7 +1475,7 @@ PyResampleAttributes_Wrap(const ResampleAttributes *attr)
 void
 PyResampleAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    ResampleAttributesObject *obj2 = (ResampleAttributesObject *)obj;
+    PyResampleAttributesObject *obj2 = (PyResampleAttributesObject *)obj;
     obj2->parent = parent;
 }
 

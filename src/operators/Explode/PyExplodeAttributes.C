@@ -25,7 +25,7 @@
 //
 // This struct contains the Python type information and a ExplodeAttributes.
 //
-struct ExplodeAttributesObject
+struct PyExplodeAttributesObject
 {
     PyObject_HEAD
     ExplodeAttributes *data;
@@ -210,7 +210,7 @@ PyExplodeAttributes_ToString(const ExplodeAttributes *atts, const char *prefix, 
 static PyObject *
 ExplodeAttributes_Notify(PyObject *self, PyObject *args)
 {
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -248,7 +248,7 @@ ExplodeAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExplodeAttributes_SetExplosionType(PyObject *self, PyObject *args)
 {
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -307,7 +307,7 @@ ExplodeAttributes_SetExplosionType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExplodeAttributes_GetExplosionType(PyObject *self, PyObject *args)
 {
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetExplosionType()));
     return retval;
 }
@@ -315,7 +315,7 @@ ExplodeAttributes_GetExplosionType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExplodeAttributes_SetExplosionPoint(PyObject *self, PyObject *args)
 {
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetExplosionPoint();
@@ -382,7 +382,7 @@ ExplodeAttributes_SetExplosionPoint(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExplodeAttributes_GetExplosionPoint(PyObject *self, PyObject *args)
 {
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the explosionPoint.
     PyObject *retval = PyTuple_New(3);
     const double *explosionPoint = obj->data->GetExplosionPoint();
@@ -394,7 +394,7 @@ ExplodeAttributes_GetExplosionPoint(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExplodeAttributes_SetPlanePoint(PyObject *self, PyObject *args)
 {
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetPlanePoint();
@@ -461,7 +461,7 @@ ExplodeAttributes_SetPlanePoint(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExplodeAttributes_GetPlanePoint(PyObject *self, PyObject *args)
 {
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the planePoint.
     PyObject *retval = PyTuple_New(3);
     const double *planePoint = obj->data->GetPlanePoint();
@@ -473,7 +473,7 @@ ExplodeAttributes_GetPlanePoint(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExplodeAttributes_SetPlaneNorm(PyObject *self, PyObject *args)
 {
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetPlaneNorm();
@@ -540,7 +540,7 @@ ExplodeAttributes_SetPlaneNorm(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExplodeAttributes_GetPlaneNorm(PyObject *self, PyObject *args)
 {
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the planeNorm.
     PyObject *retval = PyTuple_New(3);
     const double *planeNorm = obj->data->GetPlaneNorm();
@@ -552,7 +552,7 @@ ExplodeAttributes_GetPlaneNorm(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExplodeAttributes_SetCylinderPoint1(PyObject *self, PyObject *args)
 {
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetCylinderPoint1();
@@ -619,7 +619,7 @@ ExplodeAttributes_SetCylinderPoint1(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExplodeAttributes_GetCylinderPoint1(PyObject *self, PyObject *args)
 {
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the cylinderPoint1.
     PyObject *retval = PyTuple_New(3);
     const double *cylinderPoint1 = obj->data->GetCylinderPoint1();
@@ -631,7 +631,7 @@ ExplodeAttributes_GetCylinderPoint1(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExplodeAttributes_SetCylinderPoint2(PyObject *self, PyObject *args)
 {
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetCylinderPoint2();
@@ -698,7 +698,7 @@ ExplodeAttributes_SetCylinderPoint2(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExplodeAttributes_GetCylinderPoint2(PyObject *self, PyObject *args)
 {
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the cylinderPoint2.
     PyObject *retval = PyTuple_New(3);
     const double *cylinderPoint2 = obj->data->GetCylinderPoint2();
@@ -710,7 +710,7 @@ ExplodeAttributes_GetCylinderPoint2(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExplodeAttributes_SetMaterialExplosionFactor(PyObject *self, PyObject *args)
 {
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -762,7 +762,7 @@ ExplodeAttributes_SetMaterialExplosionFactor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExplodeAttributes_GetMaterialExplosionFactor(PyObject *self, PyObject *args)
 {
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMaterialExplosionFactor());
     return retval;
 }
@@ -770,7 +770,7 @@ ExplodeAttributes_GetMaterialExplosionFactor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExplodeAttributes_SetMaterial(PyObject *self, PyObject *args)
 {
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -811,7 +811,7 @@ ExplodeAttributes_SetMaterial(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExplodeAttributes_GetMaterial(PyObject *self, PyObject *args)
 {
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetMaterial().c_str());
     return retval;
 }
@@ -819,7 +819,7 @@ ExplodeAttributes_GetMaterial(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExplodeAttributes_SetCylinderRadius(PyObject *self, PyObject *args)
 {
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -871,7 +871,7 @@ ExplodeAttributes_SetCylinderRadius(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExplodeAttributes_GetCylinderRadius(PyObject *self, PyObject *args)
 {
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetCylinderRadius());
     return retval;
 }
@@ -879,7 +879,7 @@ ExplodeAttributes_GetCylinderRadius(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExplodeAttributes_SetExplodeMaterialCells(PyObject *self, PyObject *args)
 {
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -931,7 +931,7 @@ ExplodeAttributes_SetExplodeMaterialCells(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExplodeAttributes_GetExplodeMaterialCells(PyObject *self, PyObject *args)
 {
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetExplodeMaterialCells()?1L:0L);
     return retval;
 }
@@ -939,7 +939,7 @@ ExplodeAttributes_GetExplodeMaterialCells(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExplodeAttributes_SetCellExplosionFactor(PyObject *self, PyObject *args)
 {
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -991,7 +991,7 @@ ExplodeAttributes_SetCellExplosionFactor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExplodeAttributes_GetCellExplosionFactor(PyObject *self, PyObject *args)
 {
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetCellExplosionFactor());
     return retval;
 }
@@ -999,7 +999,7 @@ ExplodeAttributes_GetCellExplosionFactor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExplodeAttributes_SetExplosionPattern(PyObject *self, PyObject *args)
 {
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1057,7 +1057,7 @@ ExplodeAttributes_SetExplosionPattern(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExplodeAttributes_GetExplosionPattern(PyObject *self, PyObject *args)
 {
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetExplosionPattern()));
     return retval;
 }
@@ -1065,7 +1065,7 @@ ExplodeAttributes_GetExplosionPattern(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExplodeAttributes_SetExplodeAllCells(PyObject *self, PyObject *args)
 {
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1117,7 +1117,7 @@ ExplodeAttributes_SetExplodeAllCells(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExplodeAttributes_GetExplodeAllCells(PyObject *self, PyObject *args)
 {
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetExplodeAllCells()?1L:0L);
     return retval;
 }
@@ -1125,7 +1125,7 @@ ExplodeAttributes_GetExplodeAllCells(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExplodeAttributes_SetBoundaryNames(PyObject *self, PyObject *args)
 {
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)self;
 
     stringVector vec;
 
@@ -1182,7 +1182,7 @@ ExplodeAttributes_SetBoundaryNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExplodeAttributes_GetBoundaryNames(PyObject *self, PyObject *args)
 {
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the boundaryNames.
     const stringVector &boundaryNames = obj->data->GetBoundaryNames();
     PyObject *retval = PyTuple_New(boundaryNames.size());
@@ -1194,7 +1194,7 @@ ExplodeAttributes_GetBoundaryNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExplodeAttributes_GetExplosions(PyObject *self, PyObject *args)
 {
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)self;
     int index = -1;
     if (args == NULL)
         return PyErr_Format(PyExc_NameError, "Use .GetExplosions(int index) to get a single entry");
@@ -1218,14 +1218,14 @@ ExplodeAttributes_GetExplosions(PyObject *self, PyObject *args)
 PyObject *
 ExplodeAttributes_GetNumExplosions(PyObject *self, PyObject *args)
 {
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)self;
     return PyInt_FromLong((long)obj->data->GetExplosions().size());
 }
 
 PyObject *
 ExplodeAttributes_AddExplosions(PyObject *self, PyObject *args)
 {
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
         return NULL;
@@ -1241,7 +1241,7 @@ ExplodeAttributes_AddExplosions(PyObject *self, PyObject *args)
 static PyObject *
 ExplodeAttributes_Remove_One_Explosions(PyObject *self, int index)
 {
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)self;
     // Remove in the AttributeGroupVector instead of calling RemoveExplosions() because we don't want to delete the object; just remove it.
     AttributeGroupVector &atts = obj->data->GetExplosions();
     AttributeGroupVector::iterator pos = atts.begin();
@@ -1271,7 +1271,7 @@ ExplodeAttributes_RemoveExplosions(PyObject *self, PyObject *args)
     int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)self;
     if(index < 0 || index >= obj->data->GetNumExplosions())
         return PyErr_Format(PyExc_IndexError, "Index out of range");
 
@@ -1281,7 +1281,7 @@ ExplodeAttributes_RemoveExplosions(PyObject *self, PyObject *args)
 PyObject *
 ExplodeAttributes_ClearExplosions(PyObject *self, PyObject *args)
 {
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)self;
     int n = obj->data->GetNumExplosions();
     for(int i = 0; i < n; ++i)
     {
@@ -1338,16 +1338,16 @@ PyMethodDef PyExplodeAttributes_methods[EXPLODEATTRIBUTES_NMETH] = {
 //
 
 static void
-ExplodeAttributes_dealloc(PyObject *v)
+PyExplodeAttributes_dealloc(PyObject *v)
 {
-   ExplodeAttributesObject *obj = (ExplodeAttributesObject *)v;
+   PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *ExplodeAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyExplodeAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyExplodeAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -1457,56 +1457,42 @@ PyExplodeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args
 }
 
 PyObject *
-ExplodeAttributes_str(PyObject *v)
+PyExplodeAttributes_str(PyObject *v)
 {
-    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)v;
+    PyExplodeAttributesObject *obj = (PyExplodeAttributesObject *)v;
     return PyString_FromString(PyExplodeAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *ExplodeAttributes_Purpose = "This class contains attributes for the explode operator.";
-#else
-static char *ExplodeAttributes_Purpose = "This class contains attributes for the explode operator.";
-#endif
+static char const *PyExplodeAttributes_purpose = "This class contains attributes for the explode operator.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject ExplodeAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "ExplodeAttributes",
-    .tp_basicsize = sizeof(ExplodeAttributesObject),
-    .tp_dealloc = ExplodeAttributes_dealloc,
-    .tp_repr = ExplodeAttributes_str,
-    .tp_str = ExplodeAttributes_str,
-    .tp_getattro = PyExplodeAttributes_getattro,
-    .tp_setattro = PyExplodeAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = ExplodeAttributes_Purpose,
-    .tp_richcompare = ExplodeAttributes_richcompare,
-    .tp_methods = PyExplodeAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(ExplodeAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-ExplodeAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyExplodeAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &ExplodeAttributesType
-         || Py_TYPE(other) != &ExplodeAttributesType)
+    if ( Py_TYPE(self) != &PyExplodeAttributesType
+         || Py_TYPE(other) != &PyExplodeAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    ExplodeAttributes *a = ((ExplodeAttributesObject *)self)->data;
-    ExplodeAttributes *b = ((ExplodeAttributesObject *)other)->data;
+    ExplodeAttributes *a = ((PyExplodeAttributesObject *)self)->data;
+    ExplodeAttributes *b = ((PyExplodeAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -1535,8 +1521,8 @@ static ExplodeAttributes *currentAtts = 0;
 static PyObject *
 NewExplodeAttributes(int useCurrent)
 {
-    ExplodeAttributesObject *newObject;
-    newObject = PyObject_NEW(ExplodeAttributesObject, &ExplodeAttributesType);
+    PyExplodeAttributesObject *newObject;
+    newObject = PyObject_NEW(PyExplodeAttributesObject, &PyExplodeAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1547,15 +1533,15 @@ NewExplodeAttributes(int useCurrent)
         newObject->data = new ExplodeAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&ExplodeAttributesType);
+    PyType_Ready(&PyExplodeAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapExplodeAttributes(const ExplodeAttributes *attr)
 {
-    ExplodeAttributesObject *newObject;
-    newObject = PyObject_NEW(ExplodeAttributesObject, &ExplodeAttributesType);
+    PyExplodeAttributesObject *newObject;
+    newObject = PyObject_NEW(PyExplodeAttributesObject, &PyExplodeAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (ExplodeAttributes *)attr;
@@ -1657,13 +1643,13 @@ PyExplodeAttributes_GetMethodTable(int *nMethods)
 bool
 PyExplodeAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ExplodeAttributesType);
+    return (obj->ob_type == &PyExplodeAttributesType);
 }
 
 ExplodeAttributes *
 PyExplodeAttributes_FromPyObject(PyObject *obj)
 {
-    ExplodeAttributesObject *obj2 = (ExplodeAttributesObject *)obj;
+    PyExplodeAttributesObject *obj2 = (PyExplodeAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1682,7 +1668,7 @@ PyExplodeAttributes_Wrap(const ExplodeAttributes *attr)
 void
 PyExplodeAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    ExplodeAttributesObject *obj2 = (ExplodeAttributesObject *)obj;
+    PyExplodeAttributesObject *obj2 = (PyExplodeAttributesObject *)obj;
     obj2->parent = parent;
 }
 

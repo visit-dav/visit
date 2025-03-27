@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a DualMeshAttributes.
 //
-struct DualMeshAttributesObject
+struct PyDualMeshAttributesObject
 {
     PyObject_HEAD
     DualMeshAttributes *data;
@@ -67,7 +67,7 @@ PyDualMeshAttributes_ToString(const DualMeshAttributes *atts, const char *prefix
 static PyObject *
 DualMeshAttributes_Notify(PyObject *self, PyObject *args)
 {
-    DualMeshAttributesObject *obj = (DualMeshAttributesObject *)self;
+    PyDualMeshAttributesObject *obj = (PyDualMeshAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -104,7 +104,7 @@ DualMeshAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DualMeshAttributes_SetMode(PyObject *self, PyObject *args)
 {
-    DualMeshAttributesObject *obj = (DualMeshAttributesObject *)self;
+    PyDualMeshAttributesObject *obj = (PyDualMeshAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -163,7 +163,7 @@ DualMeshAttributes_SetMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DualMeshAttributes_GetMode(PyObject *self, PyObject *args)
 {
-    DualMeshAttributesObject *obj = (DualMeshAttributesObject *)self;
+    PyDualMeshAttributesObject *obj = (PyDualMeshAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMode()));
     return retval;
 }
@@ -183,16 +183,16 @@ PyMethodDef PyDualMeshAttributes_methods[DUALMESHATTRIBUTES_NMETH] = {
 //
 
 static void
-DualMeshAttributes_dealloc(PyObject *v)
+PyDualMeshAttributes_dealloc(PyObject *v)
 {
-   DualMeshAttributesObject *obj = (DualMeshAttributesObject *)v;
+   PyDualMeshAttributesObject *obj = (PyDualMeshAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *DualMeshAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyDualMeshAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyDualMeshAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -243,56 +243,42 @@ PyDualMeshAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *arg
 }
 
 PyObject *
-DualMeshAttributes_str(PyObject *v)
+PyDualMeshAttributes_str(PyObject *v)
 {
-    DualMeshAttributesObject *obj = (DualMeshAttributesObject *)v;
+    PyDualMeshAttributesObject *obj = (PyDualMeshAttributesObject *)v;
     return PyString_FromString(PyDualMeshAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *DualMeshAttributes_Purpose = "Atts for Dual Mesh Operator";
-#else
-static char *DualMeshAttributes_Purpose = "Atts for Dual Mesh Operator";
-#endif
+static char const *PyDualMeshAttributes_purpose = "Atts for Dual Mesh Operator";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject DualMeshAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "DualMeshAttributes",
-    .tp_basicsize = sizeof(DualMeshAttributesObject),
-    .tp_dealloc = DualMeshAttributes_dealloc,
-    .tp_repr = DualMeshAttributes_str,
-    .tp_str = DualMeshAttributes_str,
-    .tp_getattro = PyDualMeshAttributes_getattro,
-    .tp_setattro = PyDualMeshAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = DualMeshAttributes_Purpose,
-    .tp_richcompare = DualMeshAttributes_richcompare,
-    .tp_methods = PyDualMeshAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(DualMeshAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-DualMeshAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyDualMeshAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &DualMeshAttributesType
-         || Py_TYPE(other) != &DualMeshAttributesType)
+    if ( Py_TYPE(self) != &PyDualMeshAttributesType
+         || Py_TYPE(other) != &PyDualMeshAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    DualMeshAttributes *a = ((DualMeshAttributesObject *)self)->data;
-    DualMeshAttributes *b = ((DualMeshAttributesObject *)other)->data;
+    DualMeshAttributes *a = ((PyDualMeshAttributesObject *)self)->data;
+    DualMeshAttributes *b = ((PyDualMeshAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -321,8 +307,8 @@ static DualMeshAttributes *currentAtts = 0;
 static PyObject *
 NewDualMeshAttributes(int useCurrent)
 {
-    DualMeshAttributesObject *newObject;
-    newObject = PyObject_NEW(DualMeshAttributesObject, &DualMeshAttributesType);
+    PyDualMeshAttributesObject *newObject;
+    newObject = PyObject_NEW(PyDualMeshAttributesObject, &PyDualMeshAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -333,15 +319,15 @@ NewDualMeshAttributes(int useCurrent)
         newObject->data = new DualMeshAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&DualMeshAttributesType);
+    PyType_Ready(&PyDualMeshAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapDualMeshAttributes(const DualMeshAttributes *attr)
 {
-    DualMeshAttributesObject *newObject;
-    newObject = PyObject_NEW(DualMeshAttributesObject, &DualMeshAttributesType);
+    PyDualMeshAttributesObject *newObject;
+    newObject = PyObject_NEW(PyDualMeshAttributesObject, &PyDualMeshAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (DualMeshAttributes *)attr;
@@ -443,13 +429,13 @@ PyDualMeshAttributes_GetMethodTable(int *nMethods)
 bool
 PyDualMeshAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &DualMeshAttributesType);
+    return (obj->ob_type == &PyDualMeshAttributesType);
 }
 
 DualMeshAttributes *
 PyDualMeshAttributes_FromPyObject(PyObject *obj)
 {
-    DualMeshAttributesObject *obj2 = (DualMeshAttributesObject *)obj;
+    PyDualMeshAttributesObject *obj2 = (PyDualMeshAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -468,7 +454,7 @@ PyDualMeshAttributes_Wrap(const DualMeshAttributes *attr)
 void
 PyDualMeshAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    DualMeshAttributesObject *obj2 = (DualMeshAttributesObject *)obj;
+    PyDualMeshAttributesObject *obj2 = (PyDualMeshAttributesObject *)obj;
     obj2->parent = parent;
 }
 

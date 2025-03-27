@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a QueryAttributes.
 //
-struct QueryAttributesObject
+struct PyQueryAttributesObject
 {
     PyObject_HEAD
     QueryAttributes *data;
@@ -93,7 +93,7 @@ PyQueryAttributes_ToString(const QueryAttributes *atts, const char *prefix, cons
 static PyObject *
 QueryAttributes_Notify(PyObject *self, PyObject *args)
 {
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
+    PyQueryAttributesObject *obj = (PyQueryAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -135,7 +135,7 @@ QueryAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryAttributes_SetResultsMessage(PyObject *self, PyObject *args)
 {
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
+    PyQueryAttributesObject *obj = (PyQueryAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -176,7 +176,7 @@ QueryAttributes_SetResultsMessage(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryAttributes_GetResultsMessage(PyObject *self, PyObject *args)
 {
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
+    PyQueryAttributesObject *obj = (PyQueryAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetResultsMessage().c_str());
     return retval;
 }
@@ -184,7 +184,7 @@ QueryAttributes_GetResultsMessage(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryAttributes_SetResultsValue(PyObject *self, PyObject *args)
 {
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
+    PyQueryAttributesObject *obj = (PyQueryAttributesObject *)self;
 
     doubleVector vec;
 
@@ -248,7 +248,7 @@ QueryAttributes_SetResultsValue(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryAttributes_GetResultsValue(PyObject *self, PyObject *args)
 {
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
+    PyQueryAttributesObject *obj = (PyQueryAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the resultsValue.
     const doubleVector &resultsValue = obj->data->GetResultsValue();
     PyObject *retval = PyTuple_New(resultsValue.size());
@@ -260,7 +260,7 @@ QueryAttributes_GetResultsValue(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryAttributes_SetFloatResultsValue(PyObject *self, PyObject *args)
 {
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
+    PyQueryAttributesObject *obj = (PyQueryAttributesObject *)self;
 
     floatVector vec;
 
@@ -324,7 +324,7 @@ QueryAttributes_SetFloatResultsValue(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryAttributes_GetFloatResultsValue(PyObject *self, PyObject *args)
 {
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
+    PyQueryAttributesObject *obj = (PyQueryAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the floatResultsValue.
     const floatVector &floatResultsValue = obj->data->GetFloatResultsValue();
     PyObject *retval = PyTuple_New(floatResultsValue.size());
@@ -336,7 +336,7 @@ QueryAttributes_GetFloatResultsValue(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryAttributes_SetTimeStep(PyObject *self, PyObject *args)
 {
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
+    PyQueryAttributesObject *obj = (PyQueryAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -388,7 +388,7 @@ QueryAttributes_SetTimeStep(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryAttributes_GetTimeStep(PyObject *self, PyObject *args)
 {
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
+    PyQueryAttributesObject *obj = (PyQueryAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetTimeStep()));
     return retval;
 }
@@ -396,7 +396,7 @@ QueryAttributes_GetTimeStep(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryAttributes_SetXUnits(PyObject *self, PyObject *args)
 {
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
+    PyQueryAttributesObject *obj = (PyQueryAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -437,7 +437,7 @@ QueryAttributes_SetXUnits(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryAttributes_GetXUnits(PyObject *self, PyObject *args)
 {
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
+    PyQueryAttributesObject *obj = (PyQueryAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetXUnits().c_str());
     return retval;
 }
@@ -445,7 +445,7 @@ QueryAttributes_GetXUnits(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryAttributes_SetYUnits(PyObject *self, PyObject *args)
 {
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
+    PyQueryAttributesObject *obj = (PyQueryAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -486,7 +486,7 @@ QueryAttributes_SetYUnits(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryAttributes_GetYUnits(PyObject *self, PyObject *args)
 {
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
+    PyQueryAttributesObject *obj = (PyQueryAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetYUnits().c_str());
     return retval;
 }
@@ -494,7 +494,7 @@ QueryAttributes_GetYUnits(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryAttributes_SetFloatFormat(PyObject *self, PyObject *args)
 {
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
+    PyQueryAttributesObject *obj = (PyQueryAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -535,7 +535,7 @@ QueryAttributes_SetFloatFormat(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryAttributes_GetFloatFormat(PyObject *self, PyObject *args)
 {
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
+    PyQueryAttributesObject *obj = (PyQueryAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetFloatFormat().c_str());
     return retval;
 }
@@ -543,7 +543,7 @@ QueryAttributes_GetFloatFormat(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryAttributes_SetXmlResult(PyObject *self, PyObject *args)
 {
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
+    PyQueryAttributesObject *obj = (PyQueryAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -584,7 +584,7 @@ QueryAttributes_SetXmlResult(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryAttributes_GetXmlResult(PyObject *self, PyObject *args)
 {
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
+    PyQueryAttributesObject *obj = (PyQueryAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetXmlResult().c_str());
     return retval;
 }
@@ -592,7 +592,7 @@ QueryAttributes_GetXmlResult(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryAttributes_SetQueryInputParams(PyObject *self, PyObject *args)
 {
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
+    PyQueryAttributesObject *obj = (PyQueryAttributesObject *)self;
 
     (void) obj;
     // NOT IMPLEMENTED!!!
@@ -605,7 +605,7 @@ QueryAttributes_SetQueryInputParams(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryAttributes_GetQueryInputParams(PyObject *self, PyObject *args)
 {
-    QueryAttributesObject *obj = (QueryAttributesObject *)self;
+    PyQueryAttributesObject *obj = (PyQueryAttributesObject *)self;
     (void) obj;
     // NOT IMPLEMENTED!!!
     // name=queryInputParams, type=MapNode
@@ -644,16 +644,16 @@ PyMethodDef PyQueryAttributes_methods[QUERYATTRIBUTES_NMETH] = {
 //
 
 static void
-QueryAttributes_dealloc(PyObject *v)
+PyQueryAttributes_dealloc(PyObject *v)
 {
-   QueryAttributesObject *obj = (QueryAttributesObject *)v;
+   PyQueryAttributesObject *obj = (PyQueryAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *QueryAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyQueryAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyQueryAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -727,56 +727,42 @@ PyQueryAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 }
 
 PyObject *
-QueryAttributes_str(PyObject *v)
+PyQueryAttributes_str(PyObject *v)
 {
-    QueryAttributesObject *obj = (QueryAttributesObject *)v;
+    PyQueryAttributesObject *obj = (PyQueryAttributesObject *)v;
     return PyString_FromString(PyQueryAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *QueryAttributes_Purpose = "This class contains attributes used for query.";
-#else
-static char *QueryAttributes_Purpose = "This class contains attributes used for query.";
-#endif
+static char const *PyQueryAttributes_purpose = "This class contains attributes used for query.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject QueryAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "QueryAttributes",
-    .tp_basicsize = sizeof(QueryAttributesObject),
-    .tp_dealloc = QueryAttributes_dealloc,
-    .tp_repr = QueryAttributes_str,
-    .tp_str = QueryAttributes_str,
-    .tp_getattro = PyQueryAttributes_getattro,
-    .tp_setattro = PyQueryAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = QueryAttributes_Purpose,
-    .tp_richcompare = QueryAttributes_richcompare,
-    .tp_methods = PyQueryAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(QueryAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-QueryAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyQueryAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &QueryAttributesType
-         || Py_TYPE(other) != &QueryAttributesType)
+    if ( Py_TYPE(self) != &PyQueryAttributesType
+         || Py_TYPE(other) != &PyQueryAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    QueryAttributes *a = ((QueryAttributesObject *)self)->data;
-    QueryAttributes *b = ((QueryAttributesObject *)other)->data;
+    QueryAttributes *a = ((PyQueryAttributesObject *)self)->data;
+    QueryAttributes *b = ((PyQueryAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -805,8 +791,8 @@ static QueryAttributes *currentAtts = 0;
 static PyObject *
 NewQueryAttributes(int useCurrent)
 {
-    QueryAttributesObject *newObject;
-    newObject = PyObject_NEW(QueryAttributesObject, &QueryAttributesType);
+    PyQueryAttributesObject *newObject;
+    newObject = PyObject_NEW(PyQueryAttributesObject, &PyQueryAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -817,15 +803,15 @@ NewQueryAttributes(int useCurrent)
         newObject->data = new QueryAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&QueryAttributesType);
+    PyType_Ready(&PyQueryAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapQueryAttributes(const QueryAttributes *attr)
 {
-    QueryAttributesObject *newObject;
-    newObject = PyObject_NEW(QueryAttributesObject, &QueryAttributesType);
+    PyQueryAttributesObject *newObject;
+    newObject = PyObject_NEW(PyQueryAttributesObject, &PyQueryAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (QueryAttributes *)attr;
@@ -927,13 +913,13 @@ PyQueryAttributes_GetMethodTable(int *nMethods)
 bool
 PyQueryAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &QueryAttributesType);
+    return (obj->ob_type == &PyQueryAttributesType);
 }
 
 QueryAttributes *
 PyQueryAttributes_FromPyObject(PyObject *obj)
 {
-    QueryAttributesObject *obj2 = (QueryAttributesObject *)obj;
+    PyQueryAttributesObject *obj2 = (PyQueryAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -952,7 +938,7 @@ PyQueryAttributes_Wrap(const QueryAttributes *attr)
 void
 PyQueryAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    QueryAttributesObject *obj2 = (QueryAttributesObject *)obj;
+    PyQueryAttributesObject *obj2 = (PyQueryAttributesObject *)obj;
     obj2->parent = parent;
 }
 

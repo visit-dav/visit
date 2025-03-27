@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a IndexSelectAttributes.
 //
-struct IndexSelectAttributesObject
+struct PyIndexSelectAttributesObject
 {
     PyObject_HEAD
     IndexSelectAttributes *data;
@@ -134,7 +134,7 @@ PyIndexSelectAttributes_ToString(const IndexSelectAttributes *atts, const char *
 static PyObject *
 IndexSelectAttributes_Notify(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -171,7 +171,7 @@ IndexSelectAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_SetMaxDim(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -230,7 +230,7 @@ IndexSelectAttributes_SetMaxDim(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_GetMaxDim(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMaxDim()));
     return retval;
 }
@@ -238,7 +238,7 @@ IndexSelectAttributes_GetMaxDim(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_SetDim(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -297,7 +297,7 @@ IndexSelectAttributes_SetDim(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_GetDim(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetDim()));
     return retval;
 }
@@ -305,7 +305,7 @@ IndexSelectAttributes_GetDim(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_SetXAbsMax(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -357,7 +357,7 @@ IndexSelectAttributes_SetXAbsMax(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_GetXAbsMax(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetXAbsMax()));
     return retval;
 }
@@ -365,7 +365,7 @@ IndexSelectAttributes_GetXAbsMax(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_SetXMin(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -417,7 +417,7 @@ IndexSelectAttributes_SetXMin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_GetXMin(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetXMin()));
     return retval;
 }
@@ -425,7 +425,7 @@ IndexSelectAttributes_GetXMin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_SetXMax(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -477,7 +477,7 @@ IndexSelectAttributes_SetXMax(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_GetXMax(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetXMax()));
     return retval;
 }
@@ -485,7 +485,7 @@ IndexSelectAttributes_GetXMax(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_SetXIncr(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -537,7 +537,7 @@ IndexSelectAttributes_SetXIncr(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_GetXIncr(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetXIncr()));
     return retval;
 }
@@ -545,7 +545,7 @@ IndexSelectAttributes_GetXIncr(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_SetXWrap(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -597,7 +597,7 @@ IndexSelectAttributes_SetXWrap(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_GetXWrap(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetXWrap()?1L:0L);
     return retval;
 }
@@ -605,7 +605,7 @@ IndexSelectAttributes_GetXWrap(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_SetYAbsMax(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -657,7 +657,7 @@ IndexSelectAttributes_SetYAbsMax(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_GetYAbsMax(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetYAbsMax()));
     return retval;
 }
@@ -665,7 +665,7 @@ IndexSelectAttributes_GetYAbsMax(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_SetYMin(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -717,7 +717,7 @@ IndexSelectAttributes_SetYMin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_GetYMin(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetYMin()));
     return retval;
 }
@@ -725,7 +725,7 @@ IndexSelectAttributes_GetYMin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_SetYMax(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -777,7 +777,7 @@ IndexSelectAttributes_SetYMax(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_GetYMax(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetYMax()));
     return retval;
 }
@@ -785,7 +785,7 @@ IndexSelectAttributes_GetYMax(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_SetYIncr(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -837,7 +837,7 @@ IndexSelectAttributes_SetYIncr(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_GetYIncr(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetYIncr()));
     return retval;
 }
@@ -845,7 +845,7 @@ IndexSelectAttributes_GetYIncr(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_SetYWrap(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -897,7 +897,7 @@ IndexSelectAttributes_SetYWrap(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_GetYWrap(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetYWrap()?1L:0L);
     return retval;
 }
@@ -905,7 +905,7 @@ IndexSelectAttributes_GetYWrap(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_SetZAbsMax(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -957,7 +957,7 @@ IndexSelectAttributes_SetZAbsMax(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_GetZAbsMax(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetZAbsMax()));
     return retval;
 }
@@ -965,7 +965,7 @@ IndexSelectAttributes_GetZAbsMax(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_SetZMin(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1017,7 +1017,7 @@ IndexSelectAttributes_SetZMin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_GetZMin(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetZMin()));
     return retval;
 }
@@ -1025,7 +1025,7 @@ IndexSelectAttributes_GetZMin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_SetZMax(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1077,7 +1077,7 @@ IndexSelectAttributes_SetZMax(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_GetZMax(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetZMax()));
     return retval;
 }
@@ -1085,7 +1085,7 @@ IndexSelectAttributes_GetZMax(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_SetZIncr(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1137,7 +1137,7 @@ IndexSelectAttributes_SetZIncr(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_GetZIncr(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetZIncr()));
     return retval;
 }
@@ -1145,7 +1145,7 @@ IndexSelectAttributes_GetZIncr(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_SetZWrap(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1197,7 +1197,7 @@ IndexSelectAttributes_SetZWrap(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_GetZWrap(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetZWrap()?1L:0L);
     return retval;
 }
@@ -1205,7 +1205,7 @@ IndexSelectAttributes_GetZWrap(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_SetUseWholeCollection(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1257,7 +1257,7 @@ IndexSelectAttributes_SetUseWholeCollection(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_GetUseWholeCollection(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetUseWholeCollection()?1L:0L);
     return retval;
 }
@@ -1265,7 +1265,7 @@ IndexSelectAttributes_GetUseWholeCollection(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_SetCategoryName(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1306,7 +1306,7 @@ IndexSelectAttributes_SetCategoryName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_GetCategoryName(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetCategoryName().c_str());
     return retval;
 }
@@ -1314,7 +1314,7 @@ IndexSelectAttributes_GetCategoryName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_SetSubsetName(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1355,7 +1355,7 @@ IndexSelectAttributes_SetSubsetName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IndexSelectAttributes_GetSubsetName(PyObject *self, PyObject *args)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)self;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetSubsetName().c_str());
     return retval;
 }
@@ -1413,16 +1413,16 @@ PyMethodDef PyIndexSelectAttributes_methods[INDEXSELECTATTRIBUTES_NMETH] = {
 //
 
 static void
-IndexSelectAttributes_dealloc(PyObject *v)
+PyIndexSelectAttributes_dealloc(PyObject *v)
 {
-   IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)v;
+   PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *IndexSelectAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyIndexSelectAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyIndexSelectAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -1556,56 +1556,42 @@ PyIndexSelectAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *
 }
 
 PyObject *
-IndexSelectAttributes_str(PyObject *v)
+PyIndexSelectAttributes_str(PyObject *v)
 {
-    IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)v;
+    PyIndexSelectAttributesObject *obj = (PyIndexSelectAttributesObject *)v;
     return PyString_FromString(PyIndexSelectAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *IndexSelectAttributes_Purpose = "This class contains attributes for the index select operator.";
-#else
-static char *IndexSelectAttributes_Purpose = "This class contains attributes for the index select operator.";
-#endif
+static char const *PyIndexSelectAttributes_purpose = "This class contains attributes for the index select operator.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject IndexSelectAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "IndexSelectAttributes",
-    .tp_basicsize = sizeof(IndexSelectAttributesObject),
-    .tp_dealloc = IndexSelectAttributes_dealloc,
-    .tp_repr = IndexSelectAttributes_str,
-    .tp_str = IndexSelectAttributes_str,
-    .tp_getattro = PyIndexSelectAttributes_getattro,
-    .tp_setattro = PyIndexSelectAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = IndexSelectAttributes_Purpose,
-    .tp_richcompare = IndexSelectAttributes_richcompare,
-    .tp_methods = PyIndexSelectAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(IndexSelectAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-IndexSelectAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyIndexSelectAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &IndexSelectAttributesType
-         || Py_TYPE(other) != &IndexSelectAttributesType)
+    if ( Py_TYPE(self) != &PyIndexSelectAttributesType
+         || Py_TYPE(other) != &PyIndexSelectAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    IndexSelectAttributes *a = ((IndexSelectAttributesObject *)self)->data;
-    IndexSelectAttributes *b = ((IndexSelectAttributesObject *)other)->data;
+    IndexSelectAttributes *a = ((PyIndexSelectAttributesObject *)self)->data;
+    IndexSelectAttributes *b = ((PyIndexSelectAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -1634,8 +1620,8 @@ static IndexSelectAttributes *currentAtts = 0;
 static PyObject *
 NewIndexSelectAttributes(int useCurrent)
 {
-    IndexSelectAttributesObject *newObject;
-    newObject = PyObject_NEW(IndexSelectAttributesObject, &IndexSelectAttributesType);
+    PyIndexSelectAttributesObject *newObject;
+    newObject = PyObject_NEW(PyIndexSelectAttributesObject, &PyIndexSelectAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1646,15 +1632,15 @@ NewIndexSelectAttributes(int useCurrent)
         newObject->data = new IndexSelectAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&IndexSelectAttributesType);
+    PyType_Ready(&PyIndexSelectAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapIndexSelectAttributes(const IndexSelectAttributes *attr)
 {
-    IndexSelectAttributesObject *newObject;
-    newObject = PyObject_NEW(IndexSelectAttributesObject, &IndexSelectAttributesType);
+    PyIndexSelectAttributesObject *newObject;
+    newObject = PyObject_NEW(PyIndexSelectAttributesObject, &PyIndexSelectAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (IndexSelectAttributes *)attr;
@@ -1756,13 +1742,13 @@ PyIndexSelectAttributes_GetMethodTable(int *nMethods)
 bool
 PyIndexSelectAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &IndexSelectAttributesType);
+    return (obj->ob_type == &PyIndexSelectAttributesType);
 }
 
 IndexSelectAttributes *
 PyIndexSelectAttributes_FromPyObject(PyObject *obj)
 {
-    IndexSelectAttributesObject *obj2 = (IndexSelectAttributesObject *)obj;
+    PyIndexSelectAttributesObject *obj2 = (PyIndexSelectAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1781,7 +1767,7 @@ PyIndexSelectAttributes_Wrap(const IndexSelectAttributes *attr)
 void
 PyIndexSelectAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    IndexSelectAttributesObject *obj2 = (IndexSelectAttributesObject *)obj;
+    PyIndexSelectAttributesObject *obj2 = (PyIndexSelectAttributesObject *)obj;
     obj2->parent = parent;
 }
 

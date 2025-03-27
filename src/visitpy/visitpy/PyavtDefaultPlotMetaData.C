@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a avtDefaultPlotMetaData.
 //
-struct avtDefaultPlotMetaDataObject
+struct PyavtDefaultPlotMetaDataObject
 {
     PyObject_HEAD
     avtDefaultPlotMetaData *data;
@@ -68,7 +68,7 @@ PyavtDefaultPlotMetaData_ToString(const avtDefaultPlotMetaData *atts, const char
 static PyObject *
 avtDefaultPlotMetaData_Notify(PyObject *self, PyObject *args)
 {
-    avtDefaultPlotMetaDataObject *obj = (avtDefaultPlotMetaDataObject *)self;
+    PyavtDefaultPlotMetaDataObject *obj = (PyavtDefaultPlotMetaDataObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -105,7 +105,7 @@ avtDefaultPlotMetaData_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDefaultPlotMetaData_SetPluginID(PyObject *self, PyObject *args)
 {
-    avtDefaultPlotMetaDataObject *obj = (avtDefaultPlotMetaDataObject *)self;
+    PyavtDefaultPlotMetaDataObject *obj = (PyavtDefaultPlotMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -146,7 +146,7 @@ avtDefaultPlotMetaData_SetPluginID(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDefaultPlotMetaData_GetPluginID(PyObject *self, PyObject *args)
 {
-    avtDefaultPlotMetaDataObject *obj = (avtDefaultPlotMetaDataObject *)self;
+    PyavtDefaultPlotMetaDataObject *obj = (PyavtDefaultPlotMetaDataObject *)self;
     PyObject *retval = PyString_FromString(obj->data->pluginID.c_str());
     return retval;
 }
@@ -154,7 +154,7 @@ avtDefaultPlotMetaData_GetPluginID(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDefaultPlotMetaData_SetPlotVar(PyObject *self, PyObject *args)
 {
-    avtDefaultPlotMetaDataObject *obj = (avtDefaultPlotMetaDataObject *)self;
+    PyavtDefaultPlotMetaDataObject *obj = (PyavtDefaultPlotMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -195,7 +195,7 @@ avtDefaultPlotMetaData_SetPlotVar(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDefaultPlotMetaData_GetPlotVar(PyObject *self, PyObject *args)
 {
-    avtDefaultPlotMetaDataObject *obj = (avtDefaultPlotMetaDataObject *)self;
+    PyavtDefaultPlotMetaDataObject *obj = (PyavtDefaultPlotMetaDataObject *)self;
     PyObject *retval = PyString_FromString(obj->data->plotVar.c_str());
     return retval;
 }
@@ -203,7 +203,7 @@ avtDefaultPlotMetaData_GetPlotVar(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDefaultPlotMetaData_SetPlotAttributes(PyObject *self, PyObject *args)
 {
-    avtDefaultPlotMetaDataObject *obj = (avtDefaultPlotMetaDataObject *)self;
+    PyavtDefaultPlotMetaDataObject *obj = (PyavtDefaultPlotMetaDataObject *)self;
 
     stringVector vec;
 
@@ -260,7 +260,7 @@ avtDefaultPlotMetaData_SetPlotAttributes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDefaultPlotMetaData_GetPlotAttributes(PyObject *self, PyObject *args)
 {
-    avtDefaultPlotMetaDataObject *obj = (avtDefaultPlotMetaDataObject *)self;
+    PyavtDefaultPlotMetaDataObject *obj = (PyavtDefaultPlotMetaDataObject *)self;
     // Allocate a tuple the with enough entries to hold the plotAttributes.
     const stringVector &plotAttributes = obj->data->plotAttributes;
     PyObject *retval = PyTuple_New(plotAttributes.size());
@@ -288,16 +288,16 @@ PyMethodDef PyavtDefaultPlotMetaData_methods[AVTDEFAULTPLOTMETADATA_NMETH] = {
 //
 
 static void
-avtDefaultPlotMetaData_dealloc(PyObject *v)
+PyavtDefaultPlotMetaData_dealloc(PyObject *v)
 {
-   avtDefaultPlotMetaDataObject *obj = (avtDefaultPlotMetaDataObject *)v;
+   PyavtDefaultPlotMetaDataObject *obj = (PyavtDefaultPlotMetaDataObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *avtDefaultPlotMetaData_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyavtDefaultPlotMetaData_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyavtDefaultPlotMetaData_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -349,56 +349,42 @@ PyavtDefaultPlotMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject 
 }
 
 PyObject *
-avtDefaultPlotMetaData_str(PyObject *v)
+PyavtDefaultPlotMetaData_str(PyObject *v)
 {
-    avtDefaultPlotMetaDataObject *obj = (avtDefaultPlotMetaDataObject *)v;
+    PyavtDefaultPlotMetaDataObject *obj = (PyavtDefaultPlotMetaDataObject *)v;
     return PyString_FromString(PyavtDefaultPlotMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *avtDefaultPlotMetaData_Purpose = "Contains default plot metadata attributes";
-#else
-static char *avtDefaultPlotMetaData_Purpose = "Contains default plot metadata attributes";
-#endif
+static char const *PyavtDefaultPlotMetaData_purpose = "Contains default plot metadata attributes";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject avtDefaultPlotMetaDataType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "avtDefaultPlotMetaData",
-    .tp_basicsize = sizeof(avtDefaultPlotMetaDataObject),
-    .tp_dealloc = avtDefaultPlotMetaData_dealloc,
-    .tp_repr = avtDefaultPlotMetaData_str,
-    .tp_str = avtDefaultPlotMetaData_str,
-    .tp_getattro = PyavtDefaultPlotMetaData_getattro,
-    .tp_setattro = PyavtDefaultPlotMetaData_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = avtDefaultPlotMetaData_Purpose,
-    .tp_richcompare = avtDefaultPlotMetaData_richcompare,
-    .tp_methods = PyavtDefaultPlotMetaData_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(avtDefaultPlotMetaData);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-avtDefaultPlotMetaData_richcompare(PyObject *self, PyObject *other, int op)
+PyavtDefaultPlotMetaData_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &avtDefaultPlotMetaDataType
-         || Py_TYPE(other) != &avtDefaultPlotMetaDataType)
+    if ( Py_TYPE(self) != &PyavtDefaultPlotMetaDataType
+         || Py_TYPE(other) != &PyavtDefaultPlotMetaDataType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    avtDefaultPlotMetaData *a = ((avtDefaultPlotMetaDataObject *)self)->data;
-    avtDefaultPlotMetaData *b = ((avtDefaultPlotMetaDataObject *)other)->data;
+    avtDefaultPlotMetaData *a = ((PyavtDefaultPlotMetaDataObject *)self)->data;
+    avtDefaultPlotMetaData *b = ((PyavtDefaultPlotMetaDataObject *)other)->data;
 
     switch (op)
     {
@@ -427,8 +413,8 @@ static avtDefaultPlotMetaData *currentAtts = 0;
 static PyObject *
 NewavtDefaultPlotMetaData(int useCurrent)
 {
-    avtDefaultPlotMetaDataObject *newObject;
-    newObject = PyObject_NEW(avtDefaultPlotMetaDataObject, &avtDefaultPlotMetaDataType);
+    PyavtDefaultPlotMetaDataObject *newObject;
+    newObject = PyObject_NEW(PyavtDefaultPlotMetaDataObject, &PyavtDefaultPlotMetaDataType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -439,15 +425,15 @@ NewavtDefaultPlotMetaData(int useCurrent)
         newObject->data = new avtDefaultPlotMetaData;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&avtDefaultPlotMetaDataType);
+    PyType_Ready(&PyavtDefaultPlotMetaDataType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapavtDefaultPlotMetaData(const avtDefaultPlotMetaData *attr)
 {
-    avtDefaultPlotMetaDataObject *newObject;
-    newObject = PyObject_NEW(avtDefaultPlotMetaDataObject, &avtDefaultPlotMetaDataType);
+    PyavtDefaultPlotMetaDataObject *newObject;
+    newObject = PyObject_NEW(PyavtDefaultPlotMetaDataObject, &PyavtDefaultPlotMetaDataType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (avtDefaultPlotMetaData *)attr;
@@ -549,13 +535,13 @@ PyavtDefaultPlotMetaData_GetMethodTable(int *nMethods)
 bool
 PyavtDefaultPlotMetaData_Check(PyObject *obj)
 {
-    return (obj->ob_type == &avtDefaultPlotMetaDataType);
+    return (obj->ob_type == &PyavtDefaultPlotMetaDataType);
 }
 
 avtDefaultPlotMetaData *
 PyavtDefaultPlotMetaData_FromPyObject(PyObject *obj)
 {
-    avtDefaultPlotMetaDataObject *obj2 = (avtDefaultPlotMetaDataObject *)obj;
+    PyavtDefaultPlotMetaDataObject *obj2 = (PyavtDefaultPlotMetaDataObject *)obj;
     return obj2->data;
 }
 
@@ -574,7 +560,7 @@ PyavtDefaultPlotMetaData_Wrap(const avtDefaultPlotMetaData *attr)
 void
 PyavtDefaultPlotMetaData_SetParent(PyObject *obj, PyObject *parent)
 {
-    avtDefaultPlotMetaDataObject *obj2 = (avtDefaultPlotMetaDataObject *)obj;
+    PyavtDefaultPlotMetaDataObject *obj2 = (PyavtDefaultPlotMetaDataObject *)obj;
     obj2->parent = parent;
 }
 

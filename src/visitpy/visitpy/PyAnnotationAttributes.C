@@ -33,7 +33,7 @@
 //
 // This struct contains the Python type information and a AnnotationAttributes.
 //
-struct AnnotationAttributesObject
+struct PyAnnotationAttributesObject
 {
     PyObject_HEAD
     AnnotationAttributes *data;
@@ -201,7 +201,7 @@ PyAnnotationAttributes_ToString(const AnnotationAttributes *atts, const char *pr
 static PyObject *
 AnnotationAttributes_Notify(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -238,7 +238,7 @@ AnnotationAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_SetAxes2D(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -255,7 +255,7 @@ AnnotationAttributes_SetAxes2D(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_GetAxes2D(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -271,7 +271,7 @@ AnnotationAttributes_GetAxes2D(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_SetAxes3D(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -288,7 +288,7 @@ AnnotationAttributes_SetAxes3D(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_GetAxes3D(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -304,7 +304,7 @@ AnnotationAttributes_GetAxes3D(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_SetUserInfoFlag(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -356,7 +356,7 @@ AnnotationAttributes_SetUserInfoFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_GetUserInfoFlag(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetUserInfoFlag()?1L:0L);
     return retval;
 }
@@ -364,7 +364,7 @@ AnnotationAttributes_GetUserInfoFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_SetUserInfoFont(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -381,7 +381,7 @@ AnnotationAttributes_SetUserInfoFont(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_GetUserInfoFont(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -397,7 +397,7 @@ AnnotationAttributes_GetUserInfoFont(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_SetDatabaseInfoFlag(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -449,7 +449,7 @@ AnnotationAttributes_SetDatabaseInfoFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_GetDatabaseInfoFlag(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetDatabaseInfoFlag()?1L:0L);
     return retval;
 }
@@ -457,7 +457,7 @@ AnnotationAttributes_GetDatabaseInfoFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_SetTimeInfoFlag(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -509,7 +509,7 @@ AnnotationAttributes_SetTimeInfoFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_GetTimeInfoFlag(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetTimeInfoFlag()?1L:0L);
     return retval;
 }
@@ -517,7 +517,7 @@ AnnotationAttributes_GetTimeInfoFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_SetDatabaseInfoFont(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -534,7 +534,7 @@ AnnotationAttributes_SetDatabaseInfoFont(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_GetDatabaseInfoFont(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -550,7 +550,7 @@ AnnotationAttributes_GetDatabaseInfoFont(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_SetDatabaseInfoExpansionMode(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -611,7 +611,7 @@ AnnotationAttributes_SetDatabaseInfoExpansionMode(PyObject *self, PyObject *args
 /*static*/ PyObject *
 AnnotationAttributes_GetDatabaseInfoExpansionMode(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetDatabaseInfoExpansionMode()));
     return retval;
 }
@@ -619,7 +619,7 @@ AnnotationAttributes_GetDatabaseInfoExpansionMode(PyObject *self, PyObject *args
 /*static*/ PyObject *
 AnnotationAttributes_SetDatabaseInfoTimeScale(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -671,7 +671,7 @@ AnnotationAttributes_SetDatabaseInfoTimeScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_GetDatabaseInfoTimeScale(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetDatabaseInfoTimeScale());
     return retval;
 }
@@ -679,7 +679,7 @@ AnnotationAttributes_GetDatabaseInfoTimeScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_SetDatabaseInfoTimeOffset(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -731,7 +731,7 @@ AnnotationAttributes_SetDatabaseInfoTimeOffset(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_GetDatabaseInfoTimeOffset(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetDatabaseInfoTimeOffset());
     return retval;
 }
@@ -739,7 +739,7 @@ AnnotationAttributes_GetDatabaseInfoTimeOffset(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_SetLegendInfoFlag(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -791,7 +791,7 @@ AnnotationAttributes_SetLegendInfoFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_GetLegendInfoFlag(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetLegendInfoFlag()?1L:0L);
     return retval;
 }
@@ -799,7 +799,7 @@ AnnotationAttributes_GetLegendInfoFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_SetBackgroundColor(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -862,7 +862,7 @@ AnnotationAttributes_SetBackgroundColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_GetBackgroundColor(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the backgroundColor.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *backgroundColor = obj->data->GetBackgroundColor().GetColor();
@@ -876,7 +876,7 @@ AnnotationAttributes_GetBackgroundColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_SetForegroundColor(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -939,7 +939,7 @@ AnnotationAttributes_SetForegroundColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_GetForegroundColor(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the foregroundColor.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *foregroundColor = obj->data->GetForegroundColor().GetColor();
@@ -953,7 +953,7 @@ AnnotationAttributes_GetForegroundColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_SetGradientBackgroundStyle(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1014,7 +1014,7 @@ AnnotationAttributes_SetGradientBackgroundStyle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_GetGradientBackgroundStyle(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetGradientBackgroundStyle()));
     return retval;
 }
@@ -1022,7 +1022,7 @@ AnnotationAttributes_GetGradientBackgroundStyle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_SetGradientColor1(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -1085,7 +1085,7 @@ AnnotationAttributes_SetGradientColor1(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_GetGradientColor1(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the gradientColor1.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *gradientColor1 = obj->data->GetGradientColor1().GetColor();
@@ -1099,7 +1099,7 @@ AnnotationAttributes_GetGradientColor1(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_SetGradientColor2(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -1162,7 +1162,7 @@ AnnotationAttributes_SetGradientColor2(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_GetGradientColor2(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the gradientColor2.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *gradientColor2 = obj->data->GetGradientColor2().GetColor();
@@ -1176,7 +1176,7 @@ AnnotationAttributes_GetGradientColor2(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_SetBackgroundMode(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1236,7 +1236,7 @@ AnnotationAttributes_SetBackgroundMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_GetBackgroundMode(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetBackgroundMode()));
     return retval;
 }
@@ -1244,7 +1244,7 @@ AnnotationAttributes_GetBackgroundMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_SetBackgroundImage(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1285,7 +1285,7 @@ AnnotationAttributes_SetBackgroundImage(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_GetBackgroundImage(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetBackgroundImage().c_str());
     return retval;
 }
@@ -1293,7 +1293,7 @@ AnnotationAttributes_GetBackgroundImage(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_SetImageRepeatX(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1345,7 +1345,7 @@ AnnotationAttributes_SetImageRepeatX(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_GetImageRepeatX(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetImageRepeatX()));
     return retval;
 }
@@ -1353,7 +1353,7 @@ AnnotationAttributes_GetImageRepeatX(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_SetImageRepeatY(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1405,7 +1405,7 @@ AnnotationAttributes_SetImageRepeatY(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_GetImageRepeatY(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetImageRepeatY()));
     return retval;
 }
@@ -1413,7 +1413,7 @@ AnnotationAttributes_GetImageRepeatY(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_SetAxesArray(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -1430,7 +1430,7 @@ AnnotationAttributes_SetAxesArray(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnnotationAttributes_GetAxesArray(PyObject *self, PyObject *args)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -1498,16 +1498,16 @@ PyMethodDef PyAnnotationAttributes_methods[ANNOTATIONATTRIBUTES_NMETH] = {
 //
 
 static void
-AnnotationAttributes_dealloc(PyObject *v)
+PyAnnotationAttributes_dealloc(PyObject *v)
 {
-   AnnotationAttributesObject *obj = (AnnotationAttributesObject *)v;
+   PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *AnnotationAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyAnnotationAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyAnnotationAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -1662,56 +1662,42 @@ PyAnnotationAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *a
 }
 
 PyObject *
-AnnotationAttributes_str(PyObject *v)
+PyAnnotationAttributes_str(PyObject *v)
 {
-    AnnotationAttributesObject *obj = (AnnotationAttributesObject *)v;
+    PyAnnotationAttributesObject *obj = (PyAnnotationAttributesObject *)v;
     return PyString_FromString(PyAnnotationAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *AnnotationAttributes_Purpose = "This class contains the attributes controlling annotations.";
-#else
-static char *AnnotationAttributes_Purpose = "This class contains the attributes controlling annotations.";
-#endif
+static char const *PyAnnotationAttributes_purpose = "This class contains the attributes controlling annotations.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject AnnotationAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "AnnotationAttributes",
-    .tp_basicsize = sizeof(AnnotationAttributesObject),
-    .tp_dealloc = AnnotationAttributes_dealloc,
-    .tp_repr = AnnotationAttributes_str,
-    .tp_str = AnnotationAttributes_str,
-    .tp_getattro = PyAnnotationAttributes_getattro,
-    .tp_setattro = PyAnnotationAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = AnnotationAttributes_Purpose,
-    .tp_richcompare = AnnotationAttributes_richcompare,
-    .tp_methods = PyAnnotationAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(AnnotationAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-AnnotationAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyAnnotationAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &AnnotationAttributesType
-         || Py_TYPE(other) != &AnnotationAttributesType)
+    if ( Py_TYPE(self) != &PyAnnotationAttributesType
+         || Py_TYPE(other) != &PyAnnotationAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    AnnotationAttributes *a = ((AnnotationAttributesObject *)self)->data;
-    AnnotationAttributes *b = ((AnnotationAttributesObject *)other)->data;
+    AnnotationAttributes *a = ((PyAnnotationAttributesObject *)self)->data;
+    AnnotationAttributes *b = ((PyAnnotationAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -1740,8 +1726,8 @@ static AnnotationAttributes *currentAtts = 0;
 static PyObject *
 NewAnnotationAttributes(int useCurrent)
 {
-    AnnotationAttributesObject *newObject;
-    newObject = PyObject_NEW(AnnotationAttributesObject, &AnnotationAttributesType);
+    PyAnnotationAttributesObject *newObject;
+    newObject = PyObject_NEW(PyAnnotationAttributesObject, &PyAnnotationAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1752,15 +1738,15 @@ NewAnnotationAttributes(int useCurrent)
         newObject->data = new AnnotationAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&AnnotationAttributesType);
+    PyType_Ready(&PyAnnotationAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapAnnotationAttributes(const AnnotationAttributes *attr)
 {
-    AnnotationAttributesObject *newObject;
-    newObject = PyObject_NEW(AnnotationAttributesObject, &AnnotationAttributesType);
+    PyAnnotationAttributesObject *newObject;
+    newObject = PyObject_NEW(PyAnnotationAttributesObject, &PyAnnotationAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (AnnotationAttributes *)attr;
@@ -1862,13 +1848,13 @@ PyAnnotationAttributes_GetMethodTable(int *nMethods)
 bool
 PyAnnotationAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &AnnotationAttributesType);
+    return (obj->ob_type == &PyAnnotationAttributesType);
 }
 
 AnnotationAttributes *
 PyAnnotationAttributes_FromPyObject(PyObject *obj)
 {
-    AnnotationAttributesObject *obj2 = (AnnotationAttributesObject *)obj;
+    PyAnnotationAttributesObject *obj2 = (PyAnnotationAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1887,7 +1873,7 @@ PyAnnotationAttributes_Wrap(const AnnotationAttributes *attr)
 void
 PyAnnotationAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    AnnotationAttributesObject *obj2 = (AnnotationAttributesObject *)obj;
+    PyAnnotationAttributesObject *obj2 = (PyAnnotationAttributesObject *)obj;
     obj2->parent = parent;
 }
 

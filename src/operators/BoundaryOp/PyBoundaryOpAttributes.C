@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a BoundaryOpAttributes.
 //
-struct BoundaryOpAttributesObject
+struct PyBoundaryOpAttributesObject
 {
     PyObject_HEAD
     BoundaryOpAttributes *data;
@@ -50,7 +50,7 @@ PyBoundaryOpAttributes_ToString(const BoundaryOpAttributes *atts, const char *pr
 static PyObject *
 BoundaryOpAttributes_Notify(PyObject *self, PyObject *args)
 {
-    BoundaryOpAttributesObject *obj = (BoundaryOpAttributesObject *)self;
+    PyBoundaryOpAttributesObject *obj = (PyBoundaryOpAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -87,7 +87,7 @@ BoundaryOpAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 BoundaryOpAttributes_SetSmoothingLevel(PyObject *self, PyObject *args)
 {
-    BoundaryOpAttributesObject *obj = (BoundaryOpAttributesObject *)self;
+    PyBoundaryOpAttributesObject *obj = (PyBoundaryOpAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -139,7 +139,7 @@ BoundaryOpAttributes_SetSmoothingLevel(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 BoundaryOpAttributes_GetSmoothingLevel(PyObject *self, PyObject *args)
 {
-    BoundaryOpAttributesObject *obj = (BoundaryOpAttributesObject *)self;
+    PyBoundaryOpAttributesObject *obj = (PyBoundaryOpAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetSmoothingLevel()));
     return retval;
 }
@@ -159,16 +159,16 @@ PyMethodDef PyBoundaryOpAttributes_methods[BOUNDARYOPATTRIBUTES_NMETH] = {
 //
 
 static void
-BoundaryOpAttributes_dealloc(PyObject *v)
+PyBoundaryOpAttributes_dealloc(PyObject *v)
 {
-   BoundaryOpAttributesObject *obj = (BoundaryOpAttributesObject *)v;
+   PyBoundaryOpAttributesObject *obj = (PyBoundaryOpAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *BoundaryOpAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyBoundaryOpAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyBoundaryOpAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -212,56 +212,42 @@ PyBoundaryOpAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *a
 }
 
 PyObject *
-BoundaryOpAttributes_str(PyObject *v)
+PyBoundaryOpAttributes_str(PyObject *v)
 {
-    BoundaryOpAttributesObject *obj = (BoundaryOpAttributesObject *)v;
+    PyBoundaryOpAttributesObject *obj = (PyBoundaryOpAttributesObject *)v;
     return PyString_FromString(PyBoundaryOpAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *BoundaryOpAttributes_Purpose = "Attributes for Boundary Operator";
-#else
-static char *BoundaryOpAttributes_Purpose = "Attributes for Boundary Operator";
-#endif
+static char const *PyBoundaryOpAttributes_purpose = "Attributes for Boundary Operator";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject BoundaryOpAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "BoundaryOpAttributes",
-    .tp_basicsize = sizeof(BoundaryOpAttributesObject),
-    .tp_dealloc = BoundaryOpAttributes_dealloc,
-    .tp_repr = BoundaryOpAttributes_str,
-    .tp_str = BoundaryOpAttributes_str,
-    .tp_getattro = PyBoundaryOpAttributes_getattro,
-    .tp_setattro = PyBoundaryOpAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = BoundaryOpAttributes_Purpose,
-    .tp_richcompare = BoundaryOpAttributes_richcompare,
-    .tp_methods = PyBoundaryOpAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(BoundaryOpAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-BoundaryOpAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyBoundaryOpAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &BoundaryOpAttributesType
-         || Py_TYPE(other) != &BoundaryOpAttributesType)
+    if ( Py_TYPE(self) != &PyBoundaryOpAttributesType
+         || Py_TYPE(other) != &PyBoundaryOpAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    BoundaryOpAttributes *a = ((BoundaryOpAttributesObject *)self)->data;
-    BoundaryOpAttributes *b = ((BoundaryOpAttributesObject *)other)->data;
+    BoundaryOpAttributes *a = ((PyBoundaryOpAttributesObject *)self)->data;
+    BoundaryOpAttributes *b = ((PyBoundaryOpAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -290,8 +276,8 @@ static BoundaryOpAttributes *currentAtts = 0;
 static PyObject *
 NewBoundaryOpAttributes(int useCurrent)
 {
-    BoundaryOpAttributesObject *newObject;
-    newObject = PyObject_NEW(BoundaryOpAttributesObject, &BoundaryOpAttributesType);
+    PyBoundaryOpAttributesObject *newObject;
+    newObject = PyObject_NEW(PyBoundaryOpAttributesObject, &PyBoundaryOpAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -302,15 +288,15 @@ NewBoundaryOpAttributes(int useCurrent)
         newObject->data = new BoundaryOpAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&BoundaryOpAttributesType);
+    PyType_Ready(&PyBoundaryOpAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapBoundaryOpAttributes(const BoundaryOpAttributes *attr)
 {
-    BoundaryOpAttributesObject *newObject;
-    newObject = PyObject_NEW(BoundaryOpAttributesObject, &BoundaryOpAttributesType);
+    PyBoundaryOpAttributesObject *newObject;
+    newObject = PyObject_NEW(PyBoundaryOpAttributesObject, &PyBoundaryOpAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (BoundaryOpAttributes *)attr;
@@ -412,13 +398,13 @@ PyBoundaryOpAttributes_GetMethodTable(int *nMethods)
 bool
 PyBoundaryOpAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &BoundaryOpAttributesType);
+    return (obj->ob_type == &PyBoundaryOpAttributesType);
 }
 
 BoundaryOpAttributes *
 PyBoundaryOpAttributes_FromPyObject(PyObject *obj)
 {
-    BoundaryOpAttributesObject *obj2 = (BoundaryOpAttributesObject *)obj;
+    PyBoundaryOpAttributesObject *obj2 = (PyBoundaryOpAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -437,7 +423,7 @@ PyBoundaryOpAttributes_Wrap(const BoundaryOpAttributes *attr)
 void
 PyBoundaryOpAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    BoundaryOpAttributesObject *obj2 = (BoundaryOpAttributesObject *)obj;
+    PyBoundaryOpAttributesObject *obj2 = (PyBoundaryOpAttributesObject *)obj;
     obj2->parent = parent;
 }
 

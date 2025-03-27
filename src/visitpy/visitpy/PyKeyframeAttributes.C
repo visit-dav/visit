@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a KeyframeAttributes.
 //
-struct KeyframeAttributesObject
+struct PyKeyframeAttributesObject
 {
     PyObject_HEAD
     KeyframeAttributes *data;
@@ -60,7 +60,7 @@ PyKeyframeAttributes_ToString(const KeyframeAttributes *atts, const char *prefix
 static PyObject *
 KeyframeAttributes_Notify(PyObject *self, PyObject *args)
 {
-    KeyframeAttributesObject *obj = (KeyframeAttributesObject *)self;
+    PyKeyframeAttributesObject *obj = (PyKeyframeAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -97,7 +97,7 @@ KeyframeAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 KeyframeAttributes_SetEnabled(PyObject *self, PyObject *args)
 {
-    KeyframeAttributesObject *obj = (KeyframeAttributesObject *)self;
+    PyKeyframeAttributesObject *obj = (PyKeyframeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -149,7 +149,7 @@ KeyframeAttributes_SetEnabled(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 KeyframeAttributes_GetEnabled(PyObject *self, PyObject *args)
 {
-    KeyframeAttributesObject *obj = (KeyframeAttributesObject *)self;
+    PyKeyframeAttributesObject *obj = (PyKeyframeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetEnabled()?1L:0L);
     return retval;
 }
@@ -157,7 +157,7 @@ KeyframeAttributes_GetEnabled(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 KeyframeAttributes_SetNFrames(PyObject *self, PyObject *args)
 {
-    KeyframeAttributesObject *obj = (KeyframeAttributesObject *)self;
+    PyKeyframeAttributesObject *obj = (PyKeyframeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -209,7 +209,7 @@ KeyframeAttributes_SetNFrames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 KeyframeAttributes_GetNFrames(PyObject *self, PyObject *args)
 {
-    KeyframeAttributesObject *obj = (KeyframeAttributesObject *)self;
+    PyKeyframeAttributesObject *obj = (PyKeyframeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNFrames()));
     return retval;
 }
@@ -217,7 +217,7 @@ KeyframeAttributes_GetNFrames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 KeyframeAttributes_SetNFramesWasUserSet(PyObject *self, PyObject *args)
 {
-    KeyframeAttributesObject *obj = (KeyframeAttributesObject *)self;
+    PyKeyframeAttributesObject *obj = (PyKeyframeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -269,7 +269,7 @@ KeyframeAttributes_SetNFramesWasUserSet(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 KeyframeAttributes_GetNFramesWasUserSet(PyObject *self, PyObject *args)
 {
-    KeyframeAttributesObject *obj = (KeyframeAttributesObject *)self;
+    PyKeyframeAttributesObject *obj = (PyKeyframeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetNFramesWasUserSet()?1L:0L);
     return retval;
 }
@@ -293,16 +293,16 @@ PyMethodDef PyKeyframeAttributes_methods[KEYFRAMEATTRIBUTES_NMETH] = {
 //
 
 static void
-KeyframeAttributes_dealloc(PyObject *v)
+PyKeyframeAttributes_dealloc(PyObject *v)
 {
-   KeyframeAttributesObject *obj = (KeyframeAttributesObject *)v;
+   PyKeyframeAttributesObject *obj = (PyKeyframeAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *KeyframeAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyKeyframeAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyKeyframeAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -354,56 +354,42 @@ PyKeyframeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *arg
 }
 
 PyObject *
-KeyframeAttributes_str(PyObject *v)
+PyKeyframeAttributes_str(PyObject *v)
 {
-    KeyframeAttributesObject *obj = (KeyframeAttributesObject *)v;
+    PyKeyframeAttributesObject *obj = (PyKeyframeAttributesObject *)v;
     return PyString_FromString(PyKeyframeAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *KeyframeAttributes_Purpose = "This class contains the attributes used for keyframing.";
-#else
-static char *KeyframeAttributes_Purpose = "This class contains the attributes used for keyframing.";
-#endif
+static char const *PyKeyframeAttributes_purpose = "This class contains the attributes used for keyframing.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject KeyframeAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "KeyframeAttributes",
-    .tp_basicsize = sizeof(KeyframeAttributesObject),
-    .tp_dealloc = KeyframeAttributes_dealloc,
-    .tp_repr = KeyframeAttributes_str,
-    .tp_str = KeyframeAttributes_str,
-    .tp_getattro = PyKeyframeAttributes_getattro,
-    .tp_setattro = PyKeyframeAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = KeyframeAttributes_Purpose,
-    .tp_richcompare = KeyframeAttributes_richcompare,
-    .tp_methods = PyKeyframeAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(KeyframeAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-KeyframeAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyKeyframeAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &KeyframeAttributesType
-         || Py_TYPE(other) != &KeyframeAttributesType)
+    if ( Py_TYPE(self) != &PyKeyframeAttributesType
+         || Py_TYPE(other) != &PyKeyframeAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    KeyframeAttributes *a = ((KeyframeAttributesObject *)self)->data;
-    KeyframeAttributes *b = ((KeyframeAttributesObject *)other)->data;
+    KeyframeAttributes *a = ((PyKeyframeAttributesObject *)self)->data;
+    KeyframeAttributes *b = ((PyKeyframeAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -432,8 +418,8 @@ static KeyframeAttributes *currentAtts = 0;
 static PyObject *
 NewKeyframeAttributes(int useCurrent)
 {
-    KeyframeAttributesObject *newObject;
-    newObject = PyObject_NEW(KeyframeAttributesObject, &KeyframeAttributesType);
+    PyKeyframeAttributesObject *newObject;
+    newObject = PyObject_NEW(PyKeyframeAttributesObject, &PyKeyframeAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -444,15 +430,15 @@ NewKeyframeAttributes(int useCurrent)
         newObject->data = new KeyframeAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&KeyframeAttributesType);
+    PyType_Ready(&PyKeyframeAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapKeyframeAttributes(const KeyframeAttributes *attr)
 {
-    KeyframeAttributesObject *newObject;
-    newObject = PyObject_NEW(KeyframeAttributesObject, &KeyframeAttributesType);
+    PyKeyframeAttributesObject *newObject;
+    newObject = PyObject_NEW(PyKeyframeAttributesObject, &PyKeyframeAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (KeyframeAttributes *)attr;
@@ -554,13 +540,13 @@ PyKeyframeAttributes_GetMethodTable(int *nMethods)
 bool
 PyKeyframeAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &KeyframeAttributesType);
+    return (obj->ob_type == &PyKeyframeAttributesType);
 }
 
 KeyframeAttributes *
 PyKeyframeAttributes_FromPyObject(PyObject *obj)
 {
-    KeyframeAttributesObject *obj2 = (KeyframeAttributesObject *)obj;
+    PyKeyframeAttributesObject *obj2 = (PyKeyframeAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -579,7 +565,7 @@ PyKeyframeAttributes_Wrap(const KeyframeAttributes *attr)
 void
 PyKeyframeAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    KeyframeAttributesObject *obj2 = (KeyframeAttributesObject *)obj;
+    PyKeyframeAttributesObject *obj2 = (PyKeyframeAttributesObject *)obj;
     obj2->parent = parent;
 }
 

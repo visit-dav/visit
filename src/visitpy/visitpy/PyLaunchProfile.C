@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a LaunchProfile.
 //
-struct LaunchProfileObject
+struct PyLaunchProfileObject
 {
     PyObject_HEAD
     LaunchProfile *data;
@@ -220,7 +220,7 @@ PyLaunchProfile_ToString(const LaunchProfile *atts, const char *prefix, const bo
 static PyObject *
 LaunchProfile_Notify(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -257,7 +257,7 @@ LaunchProfile_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetProfileName(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -298,7 +298,7 @@ LaunchProfile_SetProfileName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetProfileName(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetProfileName().c_str());
     return retval;
 }
@@ -306,7 +306,7 @@ LaunchProfile_GetProfileName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetTimeout(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -358,7 +358,7 @@ LaunchProfile_SetTimeout(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetTimeout(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetTimeout()));
     return retval;
 }
@@ -366,7 +366,7 @@ LaunchProfile_GetTimeout(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetNumProcessors(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -418,7 +418,7 @@ LaunchProfile_SetNumProcessors(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetNumProcessors(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNumProcessors()));
     return retval;
 }
@@ -426,7 +426,7 @@ LaunchProfile_GetNumProcessors(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetNumNodesSet(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -478,7 +478,7 @@ LaunchProfile_SetNumNodesSet(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetNumNodesSet(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetNumNodesSet()?1L:0L);
     return retval;
 }
@@ -486,7 +486,7 @@ LaunchProfile_GetNumNodesSet(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetNumNodes(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -538,7 +538,7 @@ LaunchProfile_SetNumNodes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetNumNodes(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNumNodes()));
     return retval;
 }
@@ -546,7 +546,7 @@ LaunchProfile_GetNumNodes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetPartitionSet(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -598,7 +598,7 @@ LaunchProfile_SetPartitionSet(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetPartitionSet(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetPartitionSet()?1L:0L);
     return retval;
 }
@@ -606,7 +606,7 @@ LaunchProfile_GetPartitionSet(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetPartition(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -647,7 +647,7 @@ LaunchProfile_SetPartition(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetPartition(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetPartition().c_str());
     return retval;
 }
@@ -655,7 +655,7 @@ LaunchProfile_GetPartition(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetBankSet(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -707,7 +707,7 @@ LaunchProfile_SetBankSet(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetBankSet(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetBankSet()?1L:0L);
     return retval;
 }
@@ -715,7 +715,7 @@ LaunchProfile_GetBankSet(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetBank(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -756,7 +756,7 @@ LaunchProfile_SetBank(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetBank(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetBank().c_str());
     return retval;
 }
@@ -764,7 +764,7 @@ LaunchProfile_GetBank(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetTimeLimitSet(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -816,7 +816,7 @@ LaunchProfile_SetTimeLimitSet(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetTimeLimitSet(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetTimeLimitSet()?1L:0L);
     return retval;
 }
@@ -824,7 +824,7 @@ LaunchProfile_GetTimeLimitSet(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetTimeLimit(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -865,7 +865,7 @@ LaunchProfile_SetTimeLimit(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetTimeLimit(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetTimeLimit().c_str());
     return retval;
 }
@@ -873,7 +873,7 @@ LaunchProfile_GetTimeLimit(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetLaunchMethodSet(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -925,7 +925,7 @@ LaunchProfile_SetLaunchMethodSet(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetLaunchMethodSet(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetLaunchMethodSet()?1L:0L);
     return retval;
 }
@@ -933,7 +933,7 @@ LaunchProfile_GetLaunchMethodSet(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetLaunchMethod(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -974,7 +974,7 @@ LaunchProfile_SetLaunchMethod(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetLaunchMethod(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetLaunchMethod().c_str());
     return retval;
 }
@@ -982,7 +982,7 @@ LaunchProfile_GetLaunchMethod(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetForceStatic(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1034,7 +1034,7 @@ LaunchProfile_SetForceStatic(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetForceStatic(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetForceStatic()?1L:0L);
     return retval;
 }
@@ -1042,7 +1042,7 @@ LaunchProfile_GetForceStatic(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetForceDynamic(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1094,7 +1094,7 @@ LaunchProfile_SetForceDynamic(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetForceDynamic(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetForceDynamic()?1L:0L);
     return retval;
 }
@@ -1102,7 +1102,7 @@ LaunchProfile_GetForceDynamic(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetActive(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1154,7 +1154,7 @@ LaunchProfile_SetActive(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetActive(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetActive()?1L:0L);
     return retval;
 }
@@ -1162,7 +1162,7 @@ LaunchProfile_GetActive(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetArguments(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     stringVector vec;
 
@@ -1219,7 +1219,7 @@ LaunchProfile_SetArguments(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetArguments(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     // Allocate a tuple the with enough entries to hold the arguments.
     const stringVector &arguments = obj->data->GetArguments();
     PyObject *retval = PyTuple_New(arguments.size());
@@ -1231,7 +1231,7 @@ LaunchProfile_GetArguments(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetParallel(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1283,7 +1283,7 @@ LaunchProfile_SetParallel(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetParallel(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetParallel()?1L:0L);
     return retval;
 }
@@ -1291,7 +1291,7 @@ LaunchProfile_GetParallel(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetLaunchArgsSet(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1343,7 +1343,7 @@ LaunchProfile_SetLaunchArgsSet(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetLaunchArgsSet(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetLaunchArgsSet()?1L:0L);
     return retval;
 }
@@ -1351,7 +1351,7 @@ LaunchProfile_GetLaunchArgsSet(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetLaunchArgs(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1392,7 +1392,7 @@ LaunchProfile_SetLaunchArgs(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetLaunchArgs(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetLaunchArgs().c_str());
     return retval;
 }
@@ -1400,7 +1400,7 @@ LaunchProfile_GetLaunchArgs(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetSublaunchArgsSet(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1452,7 +1452,7 @@ LaunchProfile_SetSublaunchArgsSet(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetSublaunchArgsSet(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetSublaunchArgsSet()?1L:0L);
     return retval;
 }
@@ -1460,7 +1460,7 @@ LaunchProfile_GetSublaunchArgsSet(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetSublaunchArgs(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1501,7 +1501,7 @@ LaunchProfile_SetSublaunchArgs(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetSublaunchArgs(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetSublaunchArgs().c_str());
     return retval;
 }
@@ -1509,7 +1509,7 @@ LaunchProfile_GetSublaunchArgs(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetSublaunchPreCmdSet(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1561,7 +1561,7 @@ LaunchProfile_SetSublaunchPreCmdSet(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetSublaunchPreCmdSet(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetSublaunchPreCmdSet()?1L:0L);
     return retval;
 }
@@ -1569,7 +1569,7 @@ LaunchProfile_GetSublaunchPreCmdSet(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetSublaunchPreCmd(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1610,7 +1610,7 @@ LaunchProfile_SetSublaunchPreCmd(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetSublaunchPreCmd(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetSublaunchPreCmd().c_str());
     return retval;
 }
@@ -1618,7 +1618,7 @@ LaunchProfile_GetSublaunchPreCmd(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetSublaunchPostCmdSet(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1670,7 +1670,7 @@ LaunchProfile_SetSublaunchPostCmdSet(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetSublaunchPostCmdSet(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetSublaunchPostCmdSet()?1L:0L);
     return retval;
 }
@@ -1678,7 +1678,7 @@ LaunchProfile_GetSublaunchPostCmdSet(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetSublaunchPostCmd(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1719,7 +1719,7 @@ LaunchProfile_SetSublaunchPostCmd(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetSublaunchPostCmd(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetSublaunchPostCmd().c_str());
     return retval;
 }
@@ -1727,7 +1727,7 @@ LaunchProfile_GetSublaunchPostCmd(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetMachinefileSet(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1779,7 +1779,7 @@ LaunchProfile_SetMachinefileSet(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetMachinefileSet(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetMachinefileSet()?1L:0L);
     return retval;
 }
@@ -1787,7 +1787,7 @@ LaunchProfile_GetMachinefileSet(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetMachinefile(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1828,7 +1828,7 @@ LaunchProfile_SetMachinefile(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetMachinefile(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetMachinefile().c_str());
     return retval;
 }
@@ -1836,7 +1836,7 @@ LaunchProfile_GetMachinefile(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetVisitSetsUpEnv(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1888,7 +1888,7 @@ LaunchProfile_SetVisitSetsUpEnv(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetVisitSetsUpEnv(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetVisitSetsUpEnv()?1L:0L);
     return retval;
 }
@@ -1896,7 +1896,7 @@ LaunchProfile_GetVisitSetsUpEnv(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetCanDoHWAccel(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1948,7 +1948,7 @@ LaunchProfile_SetCanDoHWAccel(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetCanDoHWAccel(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetCanDoHWAccel()?1L:0L);
     return retval;
 }
@@ -1956,7 +1956,7 @@ LaunchProfile_GetCanDoHWAccel(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetGPUsPerNode(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2008,7 +2008,7 @@ LaunchProfile_SetGPUsPerNode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetGPUsPerNode(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetGPUsPerNode()));
     return retval;
 }
@@ -2016,7 +2016,7 @@ LaunchProfile_GetGPUsPerNode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetXArguments(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2057,7 +2057,7 @@ LaunchProfile_SetXArguments(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetXArguments(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetXArguments().c_str());
     return retval;
 }
@@ -2065,7 +2065,7 @@ LaunchProfile_GetXArguments(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetLaunchXServers(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2117,7 +2117,7 @@ LaunchProfile_SetLaunchXServers(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetLaunchXServers(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetLaunchXServers()?1L:0L);
     return retval;
 }
@@ -2125,7 +2125,7 @@ LaunchProfile_GetLaunchXServers(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetXDisplay(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2166,7 +2166,7 @@ LaunchProfile_SetXDisplay(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetXDisplay(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetXDisplay().c_str());
     return retval;
 }
@@ -2174,7 +2174,7 @@ LaunchProfile_GetXDisplay(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetNumThreads(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2226,7 +2226,7 @@ LaunchProfile_SetNumThreads(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetNumThreads(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNumThreads()));
     return retval;
 }
@@ -2234,7 +2234,7 @@ LaunchProfile_GetNumThreads(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetConstrainNodeProcs(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2286,7 +2286,7 @@ LaunchProfile_SetConstrainNodeProcs(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetConstrainNodeProcs(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetConstrainNodeProcs()?1L:0L);
     return retval;
 }
@@ -2294,7 +2294,7 @@ LaunchProfile_GetConstrainNodeProcs(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetAllowableNodes(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     intVector vec;
 
@@ -2358,7 +2358,7 @@ LaunchProfile_SetAllowableNodes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetAllowableNodes(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     // Allocate a tuple the with enough entries to hold the allowableNodes.
     const intVector &allowableNodes = obj->data->GetAllowableNodes();
     PyObject *retval = PyTuple_New(allowableNodes.size());
@@ -2370,7 +2370,7 @@ LaunchProfile_GetAllowableNodes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_SetAllowableProcs(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
 
     intVector vec;
 
@@ -2434,7 +2434,7 @@ LaunchProfile_SetAllowableProcs(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LaunchProfile_GetAllowableProcs(PyObject *self, PyObject *args)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)self;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)self;
     // Allocate a tuple the with enough entries to hold the allowableProcs.
     const intVector &allowableProcs = obj->data->GetAllowableProcs();
     PyObject *retval = PyTuple_New(allowableProcs.size());
@@ -2532,16 +2532,16 @@ PyMethodDef PyLaunchProfile_methods[LAUNCHPROFILE_NMETH] = {
 //
 
 static void
-LaunchProfile_dealloc(PyObject *v)
+PyLaunchProfile_dealloc(PyObject *v)
 {
-   LaunchProfileObject *obj = (LaunchProfileObject *)v;
+   PyLaunchProfileObject *obj = (PyLaunchProfileObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *LaunchProfile_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyLaunchProfile_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyLaunchProfile_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -2733,56 +2733,42 @@ PyLaunchProfile_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 }
 
 PyObject *
-LaunchProfile_str(PyObject *v)
+PyLaunchProfile_str(PyObject *v)
 {
-    LaunchProfileObject *obj = (LaunchProfileObject *)v;
+    PyLaunchProfileObject *obj = (PyLaunchProfileObject *)v;
     return PyString_FromString(PyLaunchProfile_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *LaunchProfile_Purpose = "This class contains information needed to launch a VisIt engine.";
-#else
-static char *LaunchProfile_Purpose = "This class contains information needed to launch a VisIt engine.";
-#endif
+static char const *PyLaunchProfile_purpose = "This class contains information needed to launch a VisIt engine.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject LaunchProfileType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "LaunchProfile",
-    .tp_basicsize = sizeof(LaunchProfileObject),
-    .tp_dealloc = LaunchProfile_dealloc,
-    .tp_repr = LaunchProfile_str,
-    .tp_str = LaunchProfile_str,
-    .tp_getattro = PyLaunchProfile_getattro,
-    .tp_setattro = PyLaunchProfile_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = LaunchProfile_Purpose,
-    .tp_richcompare = LaunchProfile_richcompare,
-    .tp_methods = PyLaunchProfile_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(LaunchProfile);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-LaunchProfile_richcompare(PyObject *self, PyObject *other, int op)
+PyLaunchProfile_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &LaunchProfileType
-         || Py_TYPE(other) != &LaunchProfileType)
+    if ( Py_TYPE(self) != &PyLaunchProfileType
+         || Py_TYPE(other) != &PyLaunchProfileType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    LaunchProfile *a = ((LaunchProfileObject *)self)->data;
-    LaunchProfile *b = ((LaunchProfileObject *)other)->data;
+    LaunchProfile *a = ((PyLaunchProfileObject *)self)->data;
+    LaunchProfile *b = ((PyLaunchProfileObject *)other)->data;
 
     switch (op)
     {
@@ -2811,8 +2797,8 @@ static LaunchProfile *currentAtts = 0;
 static PyObject *
 NewLaunchProfile(int useCurrent)
 {
-    LaunchProfileObject *newObject;
-    newObject = PyObject_NEW(LaunchProfileObject, &LaunchProfileType);
+    PyLaunchProfileObject *newObject;
+    newObject = PyObject_NEW(PyLaunchProfileObject, &PyLaunchProfileType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -2823,15 +2809,15 @@ NewLaunchProfile(int useCurrent)
         newObject->data = new LaunchProfile;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&LaunchProfileType);
+    PyType_Ready(&PyLaunchProfileType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapLaunchProfile(const LaunchProfile *attr)
 {
-    LaunchProfileObject *newObject;
-    newObject = PyObject_NEW(LaunchProfileObject, &LaunchProfileType);
+    PyLaunchProfileObject *newObject;
+    newObject = PyObject_NEW(PyLaunchProfileObject, &PyLaunchProfileType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (LaunchProfile *)attr;
@@ -2933,13 +2919,13 @@ PyLaunchProfile_GetMethodTable(int *nMethods)
 bool
 PyLaunchProfile_Check(PyObject *obj)
 {
-    return (obj->ob_type == &LaunchProfileType);
+    return (obj->ob_type == &PyLaunchProfileType);
 }
 
 LaunchProfile *
 PyLaunchProfile_FromPyObject(PyObject *obj)
 {
-    LaunchProfileObject *obj2 = (LaunchProfileObject *)obj;
+    PyLaunchProfileObject *obj2 = (PyLaunchProfileObject *)obj;
     return obj2->data;
 }
 
@@ -2958,7 +2944,7 @@ PyLaunchProfile_Wrap(const LaunchProfile *attr)
 void
 PyLaunchProfile_SetParent(PyObject *obj, PyObject *parent)
 {
-    LaunchProfileObject *obj2 = (LaunchProfileObject *)obj;
+    PyLaunchProfileObject *obj2 = (PyLaunchProfileObject *)obj;
     obj2->parent = parent;
 }
 

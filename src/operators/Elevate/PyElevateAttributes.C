@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a ElevateAttributes.
 //
-struct ElevateAttributesObject
+struct PyElevateAttributesObject
 {
     PyObject_HEAD
     ElevateAttributes *data;
@@ -124,7 +124,7 @@ PyElevateAttributes_ToString(const ElevateAttributes *atts, const char *prefix, 
 static PyObject *
 ElevateAttributes_Notify(PyObject *self, PyObject *args)
 {
-    ElevateAttributesObject *obj = (ElevateAttributesObject *)self;
+    PyElevateAttributesObject *obj = (PyElevateAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -161,7 +161,7 @@ ElevateAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ElevateAttributes_SetUseXYLimits(PyObject *self, PyObject *args)
 {
-    ElevateAttributesObject *obj = (ElevateAttributesObject *)self;
+    PyElevateAttributesObject *obj = (PyElevateAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -220,7 +220,7 @@ ElevateAttributes_SetUseXYLimits(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ElevateAttributes_GetUseXYLimits(PyObject *self, PyObject *args)
 {
-    ElevateAttributesObject *obj = (ElevateAttributesObject *)self;
+    PyElevateAttributesObject *obj = (PyElevateAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetUseXYLimits()));
     return retval;
 }
@@ -228,7 +228,7 @@ ElevateAttributes_GetUseXYLimits(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ElevateAttributes_SetLimitsMode(PyObject *self, PyObject *args)
 {
-    ElevateAttributesObject *obj = (ElevateAttributesObject *)self;
+    PyElevateAttributesObject *obj = (PyElevateAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -286,7 +286,7 @@ ElevateAttributes_SetLimitsMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ElevateAttributes_GetLimitsMode(PyObject *self, PyObject *args)
 {
-    ElevateAttributesObject *obj = (ElevateAttributesObject *)self;
+    PyElevateAttributesObject *obj = (PyElevateAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetLimitsMode()));
     return retval;
 }
@@ -294,7 +294,7 @@ ElevateAttributes_GetLimitsMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ElevateAttributes_SetScaling(PyObject *self, PyObject *args)
 {
-    ElevateAttributesObject *obj = (ElevateAttributesObject *)self;
+    PyElevateAttributesObject *obj = (PyElevateAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -353,7 +353,7 @@ ElevateAttributes_SetScaling(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ElevateAttributes_GetScaling(PyObject *self, PyObject *args)
 {
-    ElevateAttributesObject *obj = (ElevateAttributesObject *)self;
+    PyElevateAttributesObject *obj = (PyElevateAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetScaling()));
     return retval;
 }
@@ -361,7 +361,7 @@ ElevateAttributes_GetScaling(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ElevateAttributes_SetSkewFactor(PyObject *self, PyObject *args)
 {
-    ElevateAttributesObject *obj = (ElevateAttributesObject *)self;
+    PyElevateAttributesObject *obj = (PyElevateAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -413,7 +413,7 @@ ElevateAttributes_SetSkewFactor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ElevateAttributes_GetSkewFactor(PyObject *self, PyObject *args)
 {
-    ElevateAttributesObject *obj = (ElevateAttributesObject *)self;
+    PyElevateAttributesObject *obj = (PyElevateAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetSkewFactor());
     return retval;
 }
@@ -421,7 +421,7 @@ ElevateAttributes_GetSkewFactor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ElevateAttributes_SetMinFlag(PyObject *self, PyObject *args)
 {
-    ElevateAttributesObject *obj = (ElevateAttributesObject *)self;
+    PyElevateAttributesObject *obj = (PyElevateAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -473,7 +473,7 @@ ElevateAttributes_SetMinFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ElevateAttributes_GetMinFlag(PyObject *self, PyObject *args)
 {
-    ElevateAttributesObject *obj = (ElevateAttributesObject *)self;
+    PyElevateAttributesObject *obj = (PyElevateAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetMinFlag()?1L:0L);
     return retval;
 }
@@ -481,7 +481,7 @@ ElevateAttributes_GetMinFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ElevateAttributes_SetMin(PyObject *self, PyObject *args)
 {
-    ElevateAttributesObject *obj = (ElevateAttributesObject *)self;
+    PyElevateAttributesObject *obj = (PyElevateAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -533,7 +533,7 @@ ElevateAttributes_SetMin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ElevateAttributes_GetMin(PyObject *self, PyObject *args)
 {
-    ElevateAttributesObject *obj = (ElevateAttributesObject *)self;
+    PyElevateAttributesObject *obj = (PyElevateAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMin());
     return retval;
 }
@@ -541,7 +541,7 @@ ElevateAttributes_GetMin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ElevateAttributes_SetMaxFlag(PyObject *self, PyObject *args)
 {
-    ElevateAttributesObject *obj = (ElevateAttributesObject *)self;
+    PyElevateAttributesObject *obj = (PyElevateAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -593,7 +593,7 @@ ElevateAttributes_SetMaxFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ElevateAttributes_GetMaxFlag(PyObject *self, PyObject *args)
 {
-    ElevateAttributesObject *obj = (ElevateAttributesObject *)self;
+    PyElevateAttributesObject *obj = (PyElevateAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetMaxFlag()?1L:0L);
     return retval;
 }
@@ -601,7 +601,7 @@ ElevateAttributes_GetMaxFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ElevateAttributes_SetMax(PyObject *self, PyObject *args)
 {
-    ElevateAttributesObject *obj = (ElevateAttributesObject *)self;
+    PyElevateAttributesObject *obj = (PyElevateAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -653,7 +653,7 @@ ElevateAttributes_SetMax(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ElevateAttributes_GetMax(PyObject *self, PyObject *args)
 {
-    ElevateAttributesObject *obj = (ElevateAttributesObject *)self;
+    PyElevateAttributesObject *obj = (PyElevateAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMax());
     return retval;
 }
@@ -661,7 +661,7 @@ ElevateAttributes_GetMax(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ElevateAttributes_SetZeroFlag(PyObject *self, PyObject *args)
 {
-    ElevateAttributesObject *obj = (ElevateAttributesObject *)self;
+    PyElevateAttributesObject *obj = (PyElevateAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -713,7 +713,7 @@ ElevateAttributes_SetZeroFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ElevateAttributes_GetZeroFlag(PyObject *self, PyObject *args)
 {
-    ElevateAttributesObject *obj = (ElevateAttributesObject *)self;
+    PyElevateAttributesObject *obj = (PyElevateAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetZeroFlag()?1L:0L);
     return retval;
 }
@@ -721,7 +721,7 @@ ElevateAttributes_GetZeroFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ElevateAttributes_SetVariable(PyObject *self, PyObject *args)
 {
-    ElevateAttributesObject *obj = (ElevateAttributesObject *)self;
+    PyElevateAttributesObject *obj = (PyElevateAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -762,7 +762,7 @@ ElevateAttributes_SetVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ElevateAttributes_GetVariable(PyObject *self, PyObject *args)
 {
-    ElevateAttributesObject *obj = (ElevateAttributesObject *)self;
+    PyElevateAttributesObject *obj = (PyElevateAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetVariable().c_str());
     return retval;
 }
@@ -800,16 +800,16 @@ PyMethodDef PyElevateAttributes_methods[ELEVATEATTRIBUTES_NMETH] = {
 //
 
 static void
-ElevateAttributes_dealloc(PyObject *v)
+PyElevateAttributes_dealloc(PyObject *v)
 {
-   ElevateAttributesObject *obj = (ElevateAttributesObject *)v;
+   PyElevateAttributesObject *obj = (PyElevateAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *ElevateAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyElevateAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyElevateAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -908,56 +908,42 @@ PyElevateAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args
 }
 
 PyObject *
-ElevateAttributes_str(PyObject *v)
+PyElevateAttributes_str(PyObject *v)
 {
-    ElevateAttributesObject *obj = (ElevateAttributesObject *)v;
+    PyElevateAttributesObject *obj = (PyElevateAttributesObject *)v;
     return PyString_FromString(PyElevateAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *ElevateAttributes_Purpose = "Attributes for the elevate operator";
-#else
-static char *ElevateAttributes_Purpose = "Attributes for the elevate operator";
-#endif
+static char const *PyElevateAttributes_purpose = "Attributes for the elevate operator";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject ElevateAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "ElevateAttributes",
-    .tp_basicsize = sizeof(ElevateAttributesObject),
-    .tp_dealloc = ElevateAttributes_dealloc,
-    .tp_repr = ElevateAttributes_str,
-    .tp_str = ElevateAttributes_str,
-    .tp_getattro = PyElevateAttributes_getattro,
-    .tp_setattro = PyElevateAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = ElevateAttributes_Purpose,
-    .tp_richcompare = ElevateAttributes_richcompare,
-    .tp_methods = PyElevateAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(ElevateAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-ElevateAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyElevateAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &ElevateAttributesType
-         || Py_TYPE(other) != &ElevateAttributesType)
+    if ( Py_TYPE(self) != &PyElevateAttributesType
+         || Py_TYPE(other) != &PyElevateAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    ElevateAttributes *a = ((ElevateAttributesObject *)self)->data;
-    ElevateAttributes *b = ((ElevateAttributesObject *)other)->data;
+    ElevateAttributes *a = ((PyElevateAttributesObject *)self)->data;
+    ElevateAttributes *b = ((PyElevateAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -986,8 +972,8 @@ static ElevateAttributes *currentAtts = 0;
 static PyObject *
 NewElevateAttributes(int useCurrent)
 {
-    ElevateAttributesObject *newObject;
-    newObject = PyObject_NEW(ElevateAttributesObject, &ElevateAttributesType);
+    PyElevateAttributesObject *newObject;
+    newObject = PyObject_NEW(PyElevateAttributesObject, &PyElevateAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -998,15 +984,15 @@ NewElevateAttributes(int useCurrent)
         newObject->data = new ElevateAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&ElevateAttributesType);
+    PyType_Ready(&PyElevateAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapElevateAttributes(const ElevateAttributes *attr)
 {
-    ElevateAttributesObject *newObject;
-    newObject = PyObject_NEW(ElevateAttributesObject, &ElevateAttributesType);
+    PyElevateAttributesObject *newObject;
+    newObject = PyObject_NEW(PyElevateAttributesObject, &PyElevateAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (ElevateAttributes *)attr;
@@ -1108,13 +1094,13 @@ PyElevateAttributes_GetMethodTable(int *nMethods)
 bool
 PyElevateAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ElevateAttributesType);
+    return (obj->ob_type == &PyElevateAttributesType);
 }
 
 ElevateAttributes *
 PyElevateAttributes_FromPyObject(PyObject *obj)
 {
-    ElevateAttributesObject *obj2 = (ElevateAttributesObject *)obj;
+    PyElevateAttributesObject *obj2 = (PyElevateAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1133,7 +1119,7 @@ PyElevateAttributes_Wrap(const ElevateAttributes *attr)
 void
 PyElevateAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    ElevateAttributesObject *obj2 = (ElevateAttributesObject *)obj;
+    PyElevateAttributesObject *obj2 = (PyElevateAttributesObject *)obj;
     obj2->parent = parent;
 }
 

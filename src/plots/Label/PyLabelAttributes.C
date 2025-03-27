@@ -27,7 +27,7 @@
 //
 // This struct contains the Python type information and a LabelAttributes.
 //
-struct LabelAttributesObject
+struct PyLabelAttributesObject
 {
     PyObject_HEAD
     LabelAttributes *data;
@@ -180,7 +180,7 @@ PyLabelAttributes_ToString(const LabelAttributes *atts, const char *prefix, cons
 static PyObject *
 LabelAttributes_Notify(PyObject *self, PyObject *args)
 {
-    LabelAttributesObject *obj = (LabelAttributesObject *)self;
+    PyLabelAttributesObject *obj = (PyLabelAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -218,7 +218,7 @@ LabelAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LabelAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 {
-    LabelAttributesObject *obj = (LabelAttributesObject *)self;
+    PyLabelAttributesObject *obj = (PyLabelAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -270,7 +270,7 @@ LabelAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LabelAttributes_GetLegendFlag(PyObject *self, PyObject *args)
 {
-    LabelAttributesObject *obj = (LabelAttributesObject *)self;
+    PyLabelAttributesObject *obj = (PyLabelAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetLegendFlag()?1L:0L);
     return retval;
 }
@@ -278,7 +278,7 @@ LabelAttributes_GetLegendFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LabelAttributes_SetShowNodes(PyObject *self, PyObject *args)
 {
-    LabelAttributesObject *obj = (LabelAttributesObject *)self;
+    PyLabelAttributesObject *obj = (PyLabelAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -330,7 +330,7 @@ LabelAttributes_SetShowNodes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LabelAttributes_GetShowNodes(PyObject *self, PyObject *args)
 {
-    LabelAttributesObject *obj = (LabelAttributesObject *)self;
+    PyLabelAttributesObject *obj = (PyLabelAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowNodes()?1L:0L);
     return retval;
 }
@@ -338,7 +338,7 @@ LabelAttributes_GetShowNodes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LabelAttributes_SetShowCells(PyObject *self, PyObject *args)
 {
-    LabelAttributesObject *obj = (LabelAttributesObject *)self;
+    PyLabelAttributesObject *obj = (PyLabelAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -390,7 +390,7 @@ LabelAttributes_SetShowCells(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LabelAttributes_GetShowCells(PyObject *self, PyObject *args)
 {
-    LabelAttributesObject *obj = (LabelAttributesObject *)self;
+    PyLabelAttributesObject *obj = (PyLabelAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowCells()?1L:0L);
     return retval;
 }
@@ -398,7 +398,7 @@ LabelAttributes_GetShowCells(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LabelAttributes_SetRestrictNumberOfLabels(PyObject *self, PyObject *args)
 {
-    LabelAttributesObject *obj = (LabelAttributesObject *)self;
+    PyLabelAttributesObject *obj = (PyLabelAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -450,7 +450,7 @@ LabelAttributes_SetRestrictNumberOfLabels(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LabelAttributes_GetRestrictNumberOfLabels(PyObject *self, PyObject *args)
 {
-    LabelAttributesObject *obj = (LabelAttributesObject *)self;
+    PyLabelAttributesObject *obj = (PyLabelAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetRestrictNumberOfLabels()?1L:0L);
     return retval;
 }
@@ -458,7 +458,7 @@ LabelAttributes_GetRestrictNumberOfLabels(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LabelAttributes_SetDrawLabelsFacing(PyObject *self, PyObject *args)
 {
-    LabelAttributesObject *obj = (LabelAttributesObject *)self;
+    PyLabelAttributesObject *obj = (PyLabelAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -517,7 +517,7 @@ LabelAttributes_SetDrawLabelsFacing(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LabelAttributes_GetDrawLabelsFacing(PyObject *self, PyObject *args)
 {
-    LabelAttributesObject *obj = (LabelAttributesObject *)self;
+    PyLabelAttributesObject *obj = (PyLabelAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetDrawLabelsFacing()));
     return retval;
 }
@@ -525,7 +525,7 @@ LabelAttributes_GetDrawLabelsFacing(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LabelAttributes_SetLabelDisplayFormat(PyObject *self, PyObject *args)
 {
-    LabelAttributesObject *obj = (LabelAttributesObject *)self;
+    PyLabelAttributesObject *obj = (PyLabelAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -584,7 +584,7 @@ LabelAttributes_SetLabelDisplayFormat(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LabelAttributes_GetLabelDisplayFormat(PyObject *self, PyObject *args)
 {
-    LabelAttributesObject *obj = (LabelAttributesObject *)self;
+    PyLabelAttributesObject *obj = (PyLabelAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetLabelDisplayFormat()));
     return retval;
 }
@@ -592,7 +592,7 @@ LabelAttributes_GetLabelDisplayFormat(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LabelAttributes_SetNumberOfLabels(PyObject *self, PyObject *args)
 {
-    LabelAttributesObject *obj = (LabelAttributesObject *)self;
+    PyLabelAttributesObject *obj = (PyLabelAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -644,7 +644,7 @@ LabelAttributes_SetNumberOfLabels(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LabelAttributes_GetNumberOfLabels(PyObject *self, PyObject *args)
 {
-    LabelAttributesObject *obj = (LabelAttributesObject *)self;
+    PyLabelAttributesObject *obj = (PyLabelAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNumberOfLabels()));
     return retval;
 }
@@ -652,7 +652,7 @@ LabelAttributes_GetNumberOfLabels(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LabelAttributes_SetTextFont1(PyObject *self, PyObject *args)
 {
-    LabelAttributesObject *obj = (LabelAttributesObject *)self;
+    PyLabelAttributesObject *obj = (PyLabelAttributesObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -669,7 +669,7 @@ LabelAttributes_SetTextFont1(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LabelAttributes_GetTextFont1(PyObject *self, PyObject *args)
 {
-    LabelAttributesObject *obj = (LabelAttributesObject *)self;
+    PyLabelAttributesObject *obj = (PyLabelAttributesObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -685,7 +685,7 @@ LabelAttributes_GetTextFont1(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LabelAttributes_SetTextFont2(PyObject *self, PyObject *args)
 {
-    LabelAttributesObject *obj = (LabelAttributesObject *)self;
+    PyLabelAttributesObject *obj = (PyLabelAttributesObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -702,7 +702,7 @@ LabelAttributes_SetTextFont2(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LabelAttributes_GetTextFont2(PyObject *self, PyObject *args)
 {
-    LabelAttributesObject *obj = (LabelAttributesObject *)self;
+    PyLabelAttributesObject *obj = (PyLabelAttributesObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -718,7 +718,7 @@ LabelAttributes_GetTextFont2(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LabelAttributes_SetHorizontalJustification(PyObject *self, PyObject *args)
 {
-    LabelAttributesObject *obj = (LabelAttributesObject *)self;
+    PyLabelAttributesObject *obj = (PyLabelAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -777,7 +777,7 @@ LabelAttributes_SetHorizontalJustification(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LabelAttributes_GetHorizontalJustification(PyObject *self, PyObject *args)
 {
-    LabelAttributesObject *obj = (LabelAttributesObject *)self;
+    PyLabelAttributesObject *obj = (PyLabelAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetHorizontalJustification()));
     return retval;
 }
@@ -785,7 +785,7 @@ LabelAttributes_GetHorizontalJustification(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LabelAttributes_SetVerticalJustification(PyObject *self, PyObject *args)
 {
-    LabelAttributesObject *obj = (LabelAttributesObject *)self;
+    PyLabelAttributesObject *obj = (PyLabelAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -844,7 +844,7 @@ LabelAttributes_SetVerticalJustification(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LabelAttributes_GetVerticalJustification(PyObject *self, PyObject *args)
 {
-    LabelAttributesObject *obj = (LabelAttributesObject *)self;
+    PyLabelAttributesObject *obj = (PyLabelAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetVerticalJustification()));
     return retval;
 }
@@ -852,7 +852,7 @@ LabelAttributes_GetVerticalJustification(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LabelAttributes_SetDepthTestMode(PyObject *self, PyObject *args)
 {
-    LabelAttributesObject *obj = (LabelAttributesObject *)self;
+    PyLabelAttributesObject *obj = (PyLabelAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -911,7 +911,7 @@ LabelAttributes_SetDepthTestMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LabelAttributes_GetDepthTestMode(PyObject *self, PyObject *args)
 {
-    LabelAttributesObject *obj = (LabelAttributesObject *)self;
+    PyLabelAttributesObject *obj = (PyLabelAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetDepthTestMode()));
     return retval;
 }
@@ -919,7 +919,7 @@ LabelAttributes_GetDepthTestMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LabelAttributes_SetFormatTemplate(PyObject *self, PyObject *args)
 {
-    LabelAttributesObject *obj = (LabelAttributesObject *)self;
+    PyLabelAttributesObject *obj = (PyLabelAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -960,7 +960,7 @@ LabelAttributes_SetFormatTemplate(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LabelAttributes_GetFormatTemplate(PyObject *self, PyObject *args)
 {
-    LabelAttributesObject *obj = (LabelAttributesObject *)self;
+    PyLabelAttributesObject *obj = (PyLabelAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetFormatTemplate().c_str());
     return retval;
 }
@@ -1004,16 +1004,16 @@ PyMethodDef PyLabelAttributes_methods[LABELATTRIBUTES_NMETH] = {
 //
 
 static void
-LabelAttributes_dealloc(PyObject *v)
+PyLabelAttributes_dealloc(PyObject *v)
 {
-   LabelAttributesObject *obj = (LabelAttributesObject *)v;
+   PyLabelAttributesObject *obj = (PyLabelAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *LabelAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyLabelAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyLabelAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -1140,56 +1140,42 @@ PyLabelAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 }
 
 PyObject *
-LabelAttributes_str(PyObject *v)
+PyLabelAttributes_str(PyObject *v)
 {
-    LabelAttributesObject *obj = (LabelAttributesObject *)v;
+    PyLabelAttributesObject *obj = (PyLabelAttributesObject *)v;
     return PyString_FromString(PyLabelAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *LabelAttributes_Purpose = "This class contains the fields that we need to set the attributes for the Label plot.";
-#else
-static char *LabelAttributes_Purpose = "This class contains the fields that we need to set the attributes for the Label plot.";
-#endif
+static char const *PyLabelAttributes_purpose = "This class contains the fields that we need to set the attributes for the Label plot.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject LabelAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "LabelAttributes",
-    .tp_basicsize = sizeof(LabelAttributesObject),
-    .tp_dealloc = LabelAttributes_dealloc,
-    .tp_repr = LabelAttributes_str,
-    .tp_str = LabelAttributes_str,
-    .tp_getattro = PyLabelAttributes_getattro,
-    .tp_setattro = PyLabelAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = LabelAttributes_Purpose,
-    .tp_richcompare = LabelAttributes_richcompare,
-    .tp_methods = PyLabelAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(LabelAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-LabelAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyLabelAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &LabelAttributesType
-         || Py_TYPE(other) != &LabelAttributesType)
+    if ( Py_TYPE(self) != &PyLabelAttributesType
+         || Py_TYPE(other) != &PyLabelAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    LabelAttributes *a = ((LabelAttributesObject *)self)->data;
-    LabelAttributes *b = ((LabelAttributesObject *)other)->data;
+    LabelAttributes *a = ((PyLabelAttributesObject *)self)->data;
+    LabelAttributes *b = ((PyLabelAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -1218,8 +1204,8 @@ static LabelAttributes *currentAtts = 0;
 static PyObject *
 NewLabelAttributes(int useCurrent)
 {
-    LabelAttributesObject *newObject;
-    newObject = PyObject_NEW(LabelAttributesObject, &LabelAttributesType);
+    PyLabelAttributesObject *newObject;
+    newObject = PyObject_NEW(PyLabelAttributesObject, &PyLabelAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1230,15 +1216,15 @@ NewLabelAttributes(int useCurrent)
         newObject->data = new LabelAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&LabelAttributesType);
+    PyType_Ready(&PyLabelAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapLabelAttributes(const LabelAttributes *attr)
 {
-    LabelAttributesObject *newObject;
-    newObject = PyObject_NEW(LabelAttributesObject, &LabelAttributesType);
+    PyLabelAttributesObject *newObject;
+    newObject = PyObject_NEW(PyLabelAttributesObject, &PyLabelAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (LabelAttributes *)attr;
@@ -1340,13 +1326,13 @@ PyLabelAttributes_GetMethodTable(int *nMethods)
 bool
 PyLabelAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &LabelAttributesType);
+    return (obj->ob_type == &PyLabelAttributesType);
 }
 
 LabelAttributes *
 PyLabelAttributes_FromPyObject(PyObject *obj)
 {
-    LabelAttributesObject *obj2 = (LabelAttributesObject *)obj;
+    PyLabelAttributesObject *obj2 = (PyLabelAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1365,7 +1351,7 @@ PyLabelAttributes_Wrap(const LabelAttributes *attr)
 void
 PyLabelAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    LabelAttributesObject *obj2 = (LabelAttributesObject *)obj;
+    PyLabelAttributesObject *obj2 = (PyLabelAttributesObject *)obj;
     obj2->parent = parent;
 }
 

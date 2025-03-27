@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a PickVarInfo.
 //
-struct PickVarInfoObject
+struct PyPickVarInfoObject
 {
     PyObject_HEAD
     PickVarInfo *data;
@@ -192,7 +192,7 @@ PyPickVarInfo_ToString(const PickVarInfo *atts, const char *prefix, const bool f
 static PyObject *
 PickVarInfo_Notify(PyObject *self, PyObject *args)
 {
-    PickVarInfoObject *obj = (PickVarInfoObject *)self;
+    PyPickVarInfoObject *obj = (PyPickVarInfoObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -230,7 +230,7 @@ PickVarInfo_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickVarInfo_SetVariableName(PyObject *self, PyObject *args)
 {
-    PickVarInfoObject *obj = (PickVarInfoObject *)self;
+    PyPickVarInfoObject *obj = (PyPickVarInfoObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -271,7 +271,7 @@ PickVarInfo_SetVariableName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickVarInfo_GetVariableName(PyObject *self, PyObject *args)
 {
-    PickVarInfoObject *obj = (PickVarInfoObject *)self;
+    PyPickVarInfoObject *obj = (PyPickVarInfoObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetVariableName().c_str());
     return retval;
 }
@@ -279,7 +279,7 @@ PickVarInfo_GetVariableName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickVarInfo_SetVariableType(PyObject *self, PyObject *args)
 {
-    PickVarInfoObject *obj = (PickVarInfoObject *)self;
+    PyPickVarInfoObject *obj = (PyPickVarInfoObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -320,7 +320,7 @@ PickVarInfo_SetVariableType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickVarInfo_GetVariableType(PyObject *self, PyObject *args)
 {
-    PickVarInfoObject *obj = (PickVarInfoObject *)self;
+    PyPickVarInfoObject *obj = (PyPickVarInfoObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetVariableType().c_str());
     return retval;
 }
@@ -328,7 +328,7 @@ PickVarInfo_GetVariableType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickVarInfo_SetNames(PyObject *self, PyObject *args)
 {
-    PickVarInfoObject *obj = (PickVarInfoObject *)self;
+    PyPickVarInfoObject *obj = (PyPickVarInfoObject *)self;
 
     stringVector vec;
 
@@ -385,7 +385,7 @@ PickVarInfo_SetNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickVarInfo_GetNames(PyObject *self, PyObject *args)
 {
-    PickVarInfoObject *obj = (PickVarInfoObject *)self;
+    PyPickVarInfoObject *obj = (PyPickVarInfoObject *)self;
     // Allocate a tuple the with enough entries to hold the names.
     const stringVector &names = obj->data->GetNames();
     PyObject *retval = PyTuple_New(names.size());
@@ -397,7 +397,7 @@ PickVarInfo_GetNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickVarInfo_SetValues(PyObject *self, PyObject *args)
 {
-    PickVarInfoObject *obj = (PickVarInfoObject *)self;
+    PyPickVarInfoObject *obj = (PyPickVarInfoObject *)self;
 
     doubleVector vec;
 
@@ -461,7 +461,7 @@ PickVarInfo_SetValues(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickVarInfo_GetValues(PyObject *self, PyObject *args)
 {
-    PickVarInfoObject *obj = (PickVarInfoObject *)self;
+    PyPickVarInfoObject *obj = (PyPickVarInfoObject *)self;
     // Allocate a tuple the with enough entries to hold the values.
     const doubleVector &values = obj->data->GetValues();
     PyObject *retval = PyTuple_New(values.size());
@@ -473,7 +473,7 @@ PickVarInfo_GetValues(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickVarInfo_SetMixNames(PyObject *self, PyObject *args)
 {
-    PickVarInfoObject *obj = (PickVarInfoObject *)self;
+    PyPickVarInfoObject *obj = (PyPickVarInfoObject *)self;
 
     stringVector vec;
 
@@ -530,7 +530,7 @@ PickVarInfo_SetMixNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickVarInfo_GetMixNames(PyObject *self, PyObject *args)
 {
-    PickVarInfoObject *obj = (PickVarInfoObject *)self;
+    PyPickVarInfoObject *obj = (PyPickVarInfoObject *)self;
     // Allocate a tuple the with enough entries to hold the mixNames.
     const stringVector &mixNames = obj->data->GetMixNames();
     PyObject *retval = PyTuple_New(mixNames.size());
@@ -542,7 +542,7 @@ PickVarInfo_GetMixNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickVarInfo_SetMixValues(PyObject *self, PyObject *args)
 {
-    PickVarInfoObject *obj = (PickVarInfoObject *)self;
+    PyPickVarInfoObject *obj = (PyPickVarInfoObject *)self;
 
     doubleVector vec;
 
@@ -606,7 +606,7 @@ PickVarInfo_SetMixValues(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickVarInfo_GetMixValues(PyObject *self, PyObject *args)
 {
-    PickVarInfoObject *obj = (PickVarInfoObject *)self;
+    PyPickVarInfoObject *obj = (PyPickVarInfoObject *)self;
     // Allocate a tuple the with enough entries to hold the mixValues.
     const doubleVector &mixValues = obj->data->GetMixValues();
     PyObject *retval = PyTuple_New(mixValues.size());
@@ -618,7 +618,7 @@ PickVarInfo_GetMixValues(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickVarInfo_SetMixVar(PyObject *self, PyObject *args)
 {
-    PickVarInfoObject *obj = (PickVarInfoObject *)self;
+    PyPickVarInfoObject *obj = (PyPickVarInfoObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -670,7 +670,7 @@ PickVarInfo_SetMixVar(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickVarInfo_GetMixVar(PyObject *self, PyObject *args)
 {
-    PickVarInfoObject *obj = (PickVarInfoObject *)self;
+    PyPickVarInfoObject *obj = (PyPickVarInfoObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetMixVar()?1L:0L);
     return retval;
 }
@@ -678,7 +678,7 @@ PickVarInfo_GetMixVar(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickVarInfo_SetCentering(PyObject *self, PyObject *args)
 {
-    PickVarInfoObject *obj = (PickVarInfoObject *)self;
+    PyPickVarInfoObject *obj = (PyPickVarInfoObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -737,7 +737,7 @@ PickVarInfo_SetCentering(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickVarInfo_GetCentering(PyObject *self, PyObject *args)
 {
-    PickVarInfoObject *obj = (PickVarInfoObject *)self;
+    PyPickVarInfoObject *obj = (PyPickVarInfoObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetCentering()));
     return retval;
 }
@@ -745,7 +745,7 @@ PickVarInfo_GetCentering(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickVarInfo_SetMiscMessage(PyObject *self, PyObject *args)
 {
-    PickVarInfoObject *obj = (PickVarInfoObject *)self;
+    PyPickVarInfoObject *obj = (PyPickVarInfoObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -786,7 +786,7 @@ PickVarInfo_SetMiscMessage(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickVarInfo_GetMiscMessage(PyObject *self, PyObject *args)
 {
-    PickVarInfoObject *obj = (PickVarInfoObject *)self;
+    PyPickVarInfoObject *obj = (PyPickVarInfoObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetMiscMessage().c_str());
     return retval;
 }
@@ -794,7 +794,7 @@ PickVarInfo_GetMiscMessage(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickVarInfo_SetNumMatsPerZone(PyObject *self, PyObject *args)
 {
-    PickVarInfoObject *obj = (PickVarInfoObject *)self;
+    PyPickVarInfoObject *obj = (PyPickVarInfoObject *)self;
 
     intVector vec;
 
@@ -858,7 +858,7 @@ PickVarInfo_SetNumMatsPerZone(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickVarInfo_GetNumMatsPerZone(PyObject *self, PyObject *args)
 {
-    PickVarInfoObject *obj = (PickVarInfoObject *)self;
+    PyPickVarInfoObject *obj = (PyPickVarInfoObject *)self;
     // Allocate a tuple the with enough entries to hold the numMatsPerZone.
     const intVector &numMatsPerZone = obj->data->GetNumMatsPerZone();
     PyObject *retval = PyTuple_New(numMatsPerZone.size());
@@ -870,7 +870,7 @@ PickVarInfo_GetNumMatsPerZone(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickVarInfo_SetMatNames(PyObject *self, PyObject *args)
 {
-    PickVarInfoObject *obj = (PickVarInfoObject *)self;
+    PyPickVarInfoObject *obj = (PyPickVarInfoObject *)self;
 
     stringVector vec;
 
@@ -927,7 +927,7 @@ PickVarInfo_SetMatNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickVarInfo_GetMatNames(PyObject *self, PyObject *args)
 {
-    PickVarInfoObject *obj = (PickVarInfoObject *)self;
+    PyPickVarInfoObject *obj = (PyPickVarInfoObject *)self;
     // Allocate a tuple the with enough entries to hold the matNames.
     const stringVector &matNames = obj->data->GetMatNames();
     PyObject *retval = PyTuple_New(matNames.size());
@@ -939,7 +939,7 @@ PickVarInfo_GetMatNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickVarInfo_SetNumSpecsPerMat(PyObject *self, PyObject *args)
 {
-    PickVarInfoObject *obj = (PickVarInfoObject *)self;
+    PyPickVarInfoObject *obj = (PyPickVarInfoObject *)self;
 
     intVector vec;
 
@@ -1003,7 +1003,7 @@ PickVarInfo_SetNumSpecsPerMat(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickVarInfo_GetNumSpecsPerMat(PyObject *self, PyObject *args)
 {
-    PickVarInfoObject *obj = (PickVarInfoObject *)self;
+    PyPickVarInfoObject *obj = (PyPickVarInfoObject *)self;
     // Allocate a tuple the with enough entries to hold the numSpecsPerMat.
     const intVector &numSpecsPerMat = obj->data->GetNumSpecsPerMat();
     PyObject *retval = PyTuple_New(numSpecsPerMat.size());
@@ -1015,7 +1015,7 @@ PickVarInfo_GetNumSpecsPerMat(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickVarInfo_SetFloatFormat(PyObject *self, PyObject *args)
 {
-    PickVarInfoObject *obj = (PickVarInfoObject *)self;
+    PyPickVarInfoObject *obj = (PyPickVarInfoObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1056,7 +1056,7 @@ PickVarInfo_SetFloatFormat(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PickVarInfo_GetFloatFormat(PyObject *self, PyObject *args)
 {
-    PickVarInfoObject *obj = (PickVarInfoObject *)self;
+    PyPickVarInfoObject *obj = (PyPickVarInfoObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetFloatFormat().c_str());
     return retval;
 }
@@ -1100,16 +1100,16 @@ PyMethodDef PyPickVarInfo_methods[PICKVARINFO_NMETH] = {
 //
 
 static void
-PickVarInfo_dealloc(PyObject *v)
+PyPickVarInfo_dealloc(PyObject *v)
 {
-   PickVarInfoObject *obj = (PickVarInfoObject *)v;
+   PyPickVarInfoObject *obj = (PyPickVarInfoObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *PickVarInfo_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyPickVarInfo_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyPickVarInfo_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -1210,56 +1210,42 @@ PyPickVarInfo_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 }
 
 PyObject *
-PickVarInfo_str(PyObject *v)
+PyPickVarInfo_str(PyObject *v)
 {
-    PickVarInfoObject *obj = (PickVarInfoObject *)v;
+    PyPickVarInfoObject *obj = (PyPickVarInfoObject *)v;
     return PyString_FromString(PyPickVarInfo_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *PickVarInfo_Purpose = "This class contains PickVarInfo.";
-#else
-static char *PickVarInfo_Purpose = "This class contains PickVarInfo.";
-#endif
+static char const *PyPickVarInfo_purpose = "This class contains PickVarInfo.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject PickVarInfoType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "PickVarInfo",
-    .tp_basicsize = sizeof(PickVarInfoObject),
-    .tp_dealloc = PickVarInfo_dealloc,
-    .tp_repr = PickVarInfo_str,
-    .tp_str = PickVarInfo_str,
-    .tp_getattro = PyPickVarInfo_getattro,
-    .tp_setattro = PyPickVarInfo_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = PickVarInfo_Purpose,
-    .tp_richcompare = PickVarInfo_richcompare,
-    .tp_methods = PyPickVarInfo_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(PickVarInfo);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-PickVarInfo_richcompare(PyObject *self, PyObject *other, int op)
+PyPickVarInfo_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &PickVarInfoType
-         || Py_TYPE(other) != &PickVarInfoType)
+    if ( Py_TYPE(self) != &PyPickVarInfoType
+         || Py_TYPE(other) != &PyPickVarInfoType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    PickVarInfo *a = ((PickVarInfoObject *)self)->data;
-    PickVarInfo *b = ((PickVarInfoObject *)other)->data;
+    PickVarInfo *a = ((PyPickVarInfoObject *)self)->data;
+    PickVarInfo *b = ((PyPickVarInfoObject *)other)->data;
 
     switch (op)
     {
@@ -1288,8 +1274,8 @@ static PickVarInfo *currentAtts = 0;
 static PyObject *
 NewPickVarInfo(int useCurrent)
 {
-    PickVarInfoObject *newObject;
-    newObject = PyObject_NEW(PickVarInfoObject, &PickVarInfoType);
+    PyPickVarInfoObject *newObject;
+    newObject = PyObject_NEW(PyPickVarInfoObject, &PyPickVarInfoType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1300,15 +1286,15 @@ NewPickVarInfo(int useCurrent)
         newObject->data = new PickVarInfo;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&PickVarInfoType);
+    PyType_Ready(&PyPickVarInfoType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapPickVarInfo(const PickVarInfo *attr)
 {
-    PickVarInfoObject *newObject;
-    newObject = PyObject_NEW(PickVarInfoObject, &PickVarInfoType);
+    PyPickVarInfoObject *newObject;
+    newObject = PyObject_NEW(PyPickVarInfoObject, &PyPickVarInfoType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (PickVarInfo *)attr;
@@ -1410,13 +1396,13 @@ PyPickVarInfo_GetMethodTable(int *nMethods)
 bool
 PyPickVarInfo_Check(PyObject *obj)
 {
-    return (obj->ob_type == &PickVarInfoType);
+    return (obj->ob_type == &PyPickVarInfoType);
 }
 
 PickVarInfo *
 PyPickVarInfo_FromPyObject(PyObject *obj)
 {
-    PickVarInfoObject *obj2 = (PickVarInfoObject *)obj;
+    PyPickVarInfoObject *obj2 = (PyPickVarInfoObject *)obj;
     return obj2->data;
 }
 
@@ -1435,7 +1421,7 @@ PyPickVarInfo_Wrap(const PickVarInfo *attr)
 void
 PyPickVarInfo_SetParent(PyObject *obj, PyObject *parent)
 {
-    PickVarInfoObject *obj2 = (PickVarInfoObject *)obj;
+    PyPickVarInfoObject *obj2 = (PyPickVarInfoObject *)obj;
     obj2->parent = parent;
 }
 

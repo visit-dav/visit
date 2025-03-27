@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a ExternalSurfaceAttributes.
 //
-struct ExternalSurfaceAttributesObject
+struct PyExternalSurfaceAttributesObject
 {
     PyObject_HEAD
     ExternalSurfaceAttributes *data;
@@ -58,7 +58,7 @@ PyExternalSurfaceAttributes_ToString(const ExternalSurfaceAttributes *atts, cons
 static PyObject *
 ExternalSurfaceAttributes_Notify(PyObject *self, PyObject *args)
 {
-    ExternalSurfaceAttributesObject *obj = (ExternalSurfaceAttributesObject *)self;
+    PyExternalSurfaceAttributesObject *obj = (PyExternalSurfaceAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -95,7 +95,7 @@ ExternalSurfaceAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExternalSurfaceAttributes_SetRemoveGhosts(PyObject *self, PyObject *args)
 {
-    ExternalSurfaceAttributesObject *obj = (ExternalSurfaceAttributesObject *)self;
+    PyExternalSurfaceAttributesObject *obj = (PyExternalSurfaceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -147,7 +147,7 @@ ExternalSurfaceAttributes_SetRemoveGhosts(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExternalSurfaceAttributes_GetRemoveGhosts(PyObject *self, PyObject *args)
 {
-    ExternalSurfaceAttributesObject *obj = (ExternalSurfaceAttributesObject *)self;
+    PyExternalSurfaceAttributesObject *obj = (PyExternalSurfaceAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetRemoveGhosts()?1L:0L);
     return retval;
 }
@@ -155,7 +155,7 @@ ExternalSurfaceAttributes_GetRemoveGhosts(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExternalSurfaceAttributes_SetEdgesIn2D(PyObject *self, PyObject *args)
 {
-    ExternalSurfaceAttributesObject *obj = (ExternalSurfaceAttributesObject *)self;
+    PyExternalSurfaceAttributesObject *obj = (PyExternalSurfaceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -207,7 +207,7 @@ ExternalSurfaceAttributes_SetEdgesIn2D(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExternalSurfaceAttributes_GetEdgesIn2D(PyObject *self, PyObject *args)
 {
-    ExternalSurfaceAttributesObject *obj = (ExternalSurfaceAttributesObject *)self;
+    PyExternalSurfaceAttributesObject *obj = (PyExternalSurfaceAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetEdgesIn2D()?1L:0L);
     return retval;
 }
@@ -229,16 +229,16 @@ PyMethodDef PyExternalSurfaceAttributes_methods[EXTERNALSURFACEATTRIBUTES_NMETH]
 //
 
 static void
-ExternalSurfaceAttributes_dealloc(PyObject *v)
+PyExternalSurfaceAttributes_dealloc(PyObject *v)
 {
-   ExternalSurfaceAttributesObject *obj = (ExternalSurfaceAttributesObject *)v;
+   PyExternalSurfaceAttributesObject *obj = (PyExternalSurfaceAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *ExternalSurfaceAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyExternalSurfaceAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyExternalSurfaceAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -286,56 +286,42 @@ PyExternalSurfaceAttributes_setattro(PyObject *self, PyObject *attr_name, PyObje
 }
 
 PyObject *
-ExternalSurfaceAttributes_str(PyObject *v)
+PyExternalSurfaceAttributes_str(PyObject *v)
 {
-    ExternalSurfaceAttributesObject *obj = (ExternalSurfaceAttributesObject *)v;
+    PyExternalSurfaceAttributesObject *obj = (PyExternalSurfaceAttributesObject *)v;
     return PyString_FromString(PyExternalSurfaceAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *ExternalSurfaceAttributes_Purpose = "This class contains attributes for the external surface operator.";
-#else
-static char *ExternalSurfaceAttributes_Purpose = "This class contains attributes for the external surface operator.";
-#endif
+static char const *PyExternalSurfaceAttributes_purpose = "This class contains attributes for the external surface operator.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject ExternalSurfaceAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "ExternalSurfaceAttributes",
-    .tp_basicsize = sizeof(ExternalSurfaceAttributesObject),
-    .tp_dealloc = ExternalSurfaceAttributes_dealloc,
-    .tp_repr = ExternalSurfaceAttributes_str,
-    .tp_str = ExternalSurfaceAttributes_str,
-    .tp_getattro = PyExternalSurfaceAttributes_getattro,
-    .tp_setattro = PyExternalSurfaceAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = ExternalSurfaceAttributes_Purpose,
-    .tp_richcompare = ExternalSurfaceAttributes_richcompare,
-    .tp_methods = PyExternalSurfaceAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(ExternalSurfaceAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-ExternalSurfaceAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyExternalSurfaceAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &ExternalSurfaceAttributesType
-         || Py_TYPE(other) != &ExternalSurfaceAttributesType)
+    if ( Py_TYPE(self) != &PyExternalSurfaceAttributesType
+         || Py_TYPE(other) != &PyExternalSurfaceAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    ExternalSurfaceAttributes *a = ((ExternalSurfaceAttributesObject *)self)->data;
-    ExternalSurfaceAttributes *b = ((ExternalSurfaceAttributesObject *)other)->data;
+    ExternalSurfaceAttributes *a = ((PyExternalSurfaceAttributesObject *)self)->data;
+    ExternalSurfaceAttributes *b = ((PyExternalSurfaceAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -364,8 +350,8 @@ static ExternalSurfaceAttributes *currentAtts = 0;
 static PyObject *
 NewExternalSurfaceAttributes(int useCurrent)
 {
-    ExternalSurfaceAttributesObject *newObject;
-    newObject = PyObject_NEW(ExternalSurfaceAttributesObject, &ExternalSurfaceAttributesType);
+    PyExternalSurfaceAttributesObject *newObject;
+    newObject = PyObject_NEW(PyExternalSurfaceAttributesObject, &PyExternalSurfaceAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -376,15 +362,15 @@ NewExternalSurfaceAttributes(int useCurrent)
         newObject->data = new ExternalSurfaceAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&ExternalSurfaceAttributesType);
+    PyType_Ready(&PyExternalSurfaceAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapExternalSurfaceAttributes(const ExternalSurfaceAttributes *attr)
 {
-    ExternalSurfaceAttributesObject *newObject;
-    newObject = PyObject_NEW(ExternalSurfaceAttributesObject, &ExternalSurfaceAttributesType);
+    PyExternalSurfaceAttributesObject *newObject;
+    newObject = PyObject_NEW(PyExternalSurfaceAttributesObject, &PyExternalSurfaceAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (ExternalSurfaceAttributes *)attr;
@@ -486,13 +472,13 @@ PyExternalSurfaceAttributes_GetMethodTable(int *nMethods)
 bool
 PyExternalSurfaceAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ExternalSurfaceAttributesType);
+    return (obj->ob_type == &PyExternalSurfaceAttributesType);
 }
 
 ExternalSurfaceAttributes *
 PyExternalSurfaceAttributes_FromPyObject(PyObject *obj)
 {
-    ExternalSurfaceAttributesObject *obj2 = (ExternalSurfaceAttributesObject *)obj;
+    PyExternalSurfaceAttributesObject *obj2 = (PyExternalSurfaceAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -511,7 +497,7 @@ PyExternalSurfaceAttributes_Wrap(const ExternalSurfaceAttributes *attr)
 void
 PyExternalSurfaceAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    ExternalSurfaceAttributesObject *obj2 = (ExternalSurfaceAttributesObject *)obj;
+    PyExternalSurfaceAttributesObject *obj2 = (PyExternalSurfaceAttributesObject *)obj;
     obj2->parent = parent;
 }
 

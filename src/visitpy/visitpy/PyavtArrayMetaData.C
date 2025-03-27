@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a avtArrayMetaData.
 //
-struct avtArrayMetaDataObject
+struct PyavtArrayMetaDataObject
 {
     PyObject_HEAD
     avtArrayMetaData *data;
@@ -68,7 +68,7 @@ PyavtArrayMetaData_ToString(const avtArrayMetaData *atts, const char *prefix, co
 static PyObject *
 avtArrayMetaData_Notify(PyObject *self, PyObject *args)
 {
-    avtArrayMetaDataObject *obj = (avtArrayMetaDataObject *)self;
+    PyavtArrayMetaDataObject *obj = (PyavtArrayMetaDataObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -105,7 +105,7 @@ avtArrayMetaData_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtArrayMetaData_SetNVars(PyObject *self, PyObject *args)
 {
-    avtArrayMetaDataObject *obj = (avtArrayMetaDataObject *)self;
+    PyavtArrayMetaDataObject *obj = (PyavtArrayMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -157,7 +157,7 @@ avtArrayMetaData_SetNVars(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtArrayMetaData_GetNVars(PyObject *self, PyObject *args)
 {
-    avtArrayMetaDataObject *obj = (avtArrayMetaDataObject *)self;
+    PyavtArrayMetaDataObject *obj = (PyavtArrayMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->nVars));
     return retval;
 }
@@ -165,7 +165,7 @@ avtArrayMetaData_GetNVars(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtArrayMetaData_SetCompNames(PyObject *self, PyObject *args)
 {
-    avtArrayMetaDataObject *obj = (avtArrayMetaDataObject *)self;
+    PyavtArrayMetaDataObject *obj = (PyavtArrayMetaDataObject *)self;
 
     stringVector vec;
 
@@ -222,7 +222,7 @@ avtArrayMetaData_SetCompNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtArrayMetaData_GetCompNames(PyObject *self, PyObject *args)
 {
-    avtArrayMetaDataObject *obj = (avtArrayMetaDataObject *)self;
+    PyavtArrayMetaDataObject *obj = (PyavtArrayMetaDataObject *)self;
     // Allocate a tuple the with enough entries to hold the compNames.
     const stringVector &compNames = obj->data->compNames;
     PyObject *retval = PyTuple_New(compNames.size());
@@ -268,16 +268,16 @@ static void PyavtArrayMetaData_ExtendSetGetMethodTable()
 //
 
 static void
-avtArrayMetaData_dealloc(PyObject *v)
+PyavtArrayMetaData_dealloc(PyObject *v)
 {
-   avtArrayMetaDataObject *obj = (avtArrayMetaDataObject *)v;
+   PyavtArrayMetaDataObject *obj = (PyavtArrayMetaDataObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *avtArrayMetaData_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyavtArrayMetaData_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyavtArrayMetaData_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -337,56 +337,42 @@ PyavtArrayMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 }
 
 PyObject *
-avtArrayMetaData_str(PyObject *v)
+PyavtArrayMetaData_str(PyObject *v)
 {
-    avtArrayMetaDataObject *obj = (avtArrayMetaDataObject *)v;
+    PyavtArrayMetaDataObject *obj = (PyavtArrayMetaDataObject *)v;
     return PyString_FromString(PyavtArrayMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *avtArrayMetaData_Purpose = "Contains array metadata attributes";
-#else
-static char *avtArrayMetaData_Purpose = "Contains array metadata attributes";
-#endif
+static char const *PyavtArrayMetaData_purpose = "Contains array metadata attributes";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject avtArrayMetaDataType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "avtArrayMetaData",
-    .tp_basicsize = sizeof(avtArrayMetaDataObject),
-    .tp_dealloc = avtArrayMetaData_dealloc,
-    .tp_repr = avtArrayMetaData_str,
-    .tp_str = avtArrayMetaData_str,
-    .tp_getattro = PyavtArrayMetaData_getattro,
-    .tp_setattro = PyavtArrayMetaData_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = avtArrayMetaData_Purpose,
-    .tp_richcompare = avtArrayMetaData_richcompare,
-    .tp_methods = PyavtArrayMetaData_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(avtArrayMetaData);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-avtArrayMetaData_richcompare(PyObject *self, PyObject *other, int op)
+PyavtArrayMetaData_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &avtArrayMetaDataType
-         || Py_TYPE(other) != &avtArrayMetaDataType)
+    if ( Py_TYPE(self) != &PyavtArrayMetaDataType
+         || Py_TYPE(other) != &PyavtArrayMetaDataType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    avtArrayMetaData *a = ((avtArrayMetaDataObject *)self)->data;
-    avtArrayMetaData *b = ((avtArrayMetaDataObject *)other)->data;
+    avtArrayMetaData *a = ((PyavtArrayMetaDataObject *)self)->data;
+    avtArrayMetaData *b = ((PyavtArrayMetaDataObject *)other)->data;
 
     switch (op)
     {
@@ -415,8 +401,8 @@ static avtArrayMetaData *currentAtts = 0;
 static PyObject *
 NewavtArrayMetaData(int useCurrent)
 {
-    avtArrayMetaDataObject *newObject;
-    newObject = PyObject_NEW(avtArrayMetaDataObject, &avtArrayMetaDataType);
+    PyavtArrayMetaDataObject *newObject;
+    newObject = PyObject_NEW(PyavtArrayMetaDataObject, &PyavtArrayMetaDataType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -427,15 +413,15 @@ NewavtArrayMetaData(int useCurrent)
         newObject->data = new avtArrayMetaData;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&avtArrayMetaDataType);
+    PyType_Ready(&PyavtArrayMetaDataType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapavtArrayMetaData(const avtArrayMetaData *attr)
 {
-    avtArrayMetaDataObject *newObject;
-    newObject = PyObject_NEW(avtArrayMetaDataObject, &avtArrayMetaDataType);
+    PyavtArrayMetaDataObject *newObject;
+    newObject = PyObject_NEW(PyavtArrayMetaDataObject, &PyavtArrayMetaDataType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (avtArrayMetaData *)attr;
@@ -537,13 +523,13 @@ PyavtArrayMetaData_GetMethodTable(int *nMethods)
 bool
 PyavtArrayMetaData_Check(PyObject *obj)
 {
-    return (obj->ob_type == &avtArrayMetaDataType);
+    return (obj->ob_type == &PyavtArrayMetaDataType);
 }
 
 avtArrayMetaData *
 PyavtArrayMetaData_FromPyObject(PyObject *obj)
 {
-    avtArrayMetaDataObject *obj2 = (avtArrayMetaDataObject *)obj;
+    PyavtArrayMetaDataObject *obj2 = (PyavtArrayMetaDataObject *)obj;
     return obj2->data;
 }
 
@@ -562,7 +548,7 @@ PyavtArrayMetaData_Wrap(const avtArrayMetaData *attr)
 void
 PyavtArrayMetaData_SetParent(PyObject *obj, PyObject *parent)
 {
-    avtArrayMetaDataObject *obj2 = (avtArrayMetaDataObject *)obj;
+    PyavtArrayMetaDataObject *obj2 = (PyavtArrayMetaDataObject *)obj;
     obj2->parent = parent;
 }
 

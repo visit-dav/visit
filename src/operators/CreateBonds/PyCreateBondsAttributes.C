@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a CreateBondsAttributes.
 //
-struct CreateBondsAttributesObject
+struct PyCreateBondsAttributesObject
 {
     PyObject_HEAD
     CreateBondsAttributes *data;
@@ -189,7 +189,7 @@ PyCreateBondsAttributes_ToString(const CreateBondsAttributes *atts, const char *
 static PyObject *
 CreateBondsAttributes_Notify(PyObject *self, PyObject *args)
 {
-    CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)self;
+    PyCreateBondsAttributesObject *obj = (PyCreateBondsAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -226,7 +226,7 @@ CreateBondsAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CreateBondsAttributes_SetElementVariable(PyObject *self, PyObject *args)
 {
-    CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)self;
+    PyCreateBondsAttributesObject *obj = (PyCreateBondsAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -267,7 +267,7 @@ CreateBondsAttributes_SetElementVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CreateBondsAttributes_GetElementVariable(PyObject *self, PyObject *args)
 {
-    CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)self;
+    PyCreateBondsAttributesObject *obj = (PyCreateBondsAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetElementVariable().c_str());
     return retval;
 }
@@ -275,7 +275,7 @@ CreateBondsAttributes_GetElementVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CreateBondsAttributes_SetAtomicNumber1(PyObject *self, PyObject *args)
 {
-    CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)self;
+    PyCreateBondsAttributesObject *obj = (PyCreateBondsAttributesObject *)self;
 
     intVector vec;
 
@@ -339,7 +339,7 @@ CreateBondsAttributes_SetAtomicNumber1(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CreateBondsAttributes_GetAtomicNumber1(PyObject *self, PyObject *args)
 {
-    CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)self;
+    PyCreateBondsAttributesObject *obj = (PyCreateBondsAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the atomicNumber1.
     const intVector &atomicNumber1 = obj->data->GetAtomicNumber1();
     PyObject *retval = PyTuple_New(atomicNumber1.size());
@@ -351,7 +351,7 @@ CreateBondsAttributes_GetAtomicNumber1(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CreateBondsAttributes_SetAtomicNumber2(PyObject *self, PyObject *args)
 {
-    CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)self;
+    PyCreateBondsAttributesObject *obj = (PyCreateBondsAttributesObject *)self;
 
     intVector vec;
 
@@ -415,7 +415,7 @@ CreateBondsAttributes_SetAtomicNumber2(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CreateBondsAttributes_GetAtomicNumber2(PyObject *self, PyObject *args)
 {
-    CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)self;
+    PyCreateBondsAttributesObject *obj = (PyCreateBondsAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the atomicNumber2.
     const intVector &atomicNumber2 = obj->data->GetAtomicNumber2();
     PyObject *retval = PyTuple_New(atomicNumber2.size());
@@ -427,7 +427,7 @@ CreateBondsAttributes_GetAtomicNumber2(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CreateBondsAttributes_SetMinDist(PyObject *self, PyObject *args)
 {
-    CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)self;
+    PyCreateBondsAttributesObject *obj = (PyCreateBondsAttributesObject *)self;
 
     doubleVector vec;
 
@@ -491,7 +491,7 @@ CreateBondsAttributes_SetMinDist(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CreateBondsAttributes_GetMinDist(PyObject *self, PyObject *args)
 {
-    CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)self;
+    PyCreateBondsAttributesObject *obj = (PyCreateBondsAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the minDist.
     const doubleVector &minDist = obj->data->GetMinDist();
     PyObject *retval = PyTuple_New(minDist.size());
@@ -503,7 +503,7 @@ CreateBondsAttributes_GetMinDist(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CreateBondsAttributes_SetMaxDist(PyObject *self, PyObject *args)
 {
-    CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)self;
+    PyCreateBondsAttributesObject *obj = (PyCreateBondsAttributesObject *)self;
 
     doubleVector vec;
 
@@ -567,7 +567,7 @@ CreateBondsAttributes_SetMaxDist(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CreateBondsAttributes_GetMaxDist(PyObject *self, PyObject *args)
 {
-    CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)self;
+    PyCreateBondsAttributesObject *obj = (PyCreateBondsAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the maxDist.
     const doubleVector &maxDist = obj->data->GetMaxDist();
     PyObject *retval = PyTuple_New(maxDist.size());
@@ -579,7 +579,7 @@ CreateBondsAttributes_GetMaxDist(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CreateBondsAttributes_SetMaxBondsClamp(PyObject *self, PyObject *args)
 {
-    CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)self;
+    PyCreateBondsAttributesObject *obj = (PyCreateBondsAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -631,7 +631,7 @@ CreateBondsAttributes_SetMaxBondsClamp(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CreateBondsAttributes_GetMaxBondsClamp(PyObject *self, PyObject *args)
 {
-    CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)self;
+    PyCreateBondsAttributesObject *obj = (PyCreateBondsAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMaxBondsClamp()));
     return retval;
 }
@@ -639,7 +639,7 @@ CreateBondsAttributes_GetMaxBondsClamp(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CreateBondsAttributes_SetAddPeriodicBonds(PyObject *self, PyObject *args)
 {
-    CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)self;
+    PyCreateBondsAttributesObject *obj = (PyCreateBondsAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -691,7 +691,7 @@ CreateBondsAttributes_SetAddPeriodicBonds(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CreateBondsAttributes_GetAddPeriodicBonds(PyObject *self, PyObject *args)
 {
-    CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)self;
+    PyCreateBondsAttributesObject *obj = (PyCreateBondsAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetAddPeriodicBonds()?1L:0L);
     return retval;
 }
@@ -699,7 +699,7 @@ CreateBondsAttributes_GetAddPeriodicBonds(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CreateBondsAttributes_SetUseUnitCellVectors(PyObject *self, PyObject *args)
 {
-    CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)self;
+    PyCreateBondsAttributesObject *obj = (PyCreateBondsAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -751,7 +751,7 @@ CreateBondsAttributes_SetUseUnitCellVectors(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CreateBondsAttributes_GetUseUnitCellVectors(PyObject *self, PyObject *args)
 {
-    CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)self;
+    PyCreateBondsAttributesObject *obj = (PyCreateBondsAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetUseUnitCellVectors()?1L:0L);
     return retval;
 }
@@ -759,7 +759,7 @@ CreateBondsAttributes_GetUseUnitCellVectors(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CreateBondsAttributes_SetPeriodicInX(PyObject *self, PyObject *args)
 {
-    CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)self;
+    PyCreateBondsAttributesObject *obj = (PyCreateBondsAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -811,7 +811,7 @@ CreateBondsAttributes_SetPeriodicInX(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CreateBondsAttributes_GetPeriodicInX(PyObject *self, PyObject *args)
 {
-    CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)self;
+    PyCreateBondsAttributesObject *obj = (PyCreateBondsAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetPeriodicInX()?1L:0L);
     return retval;
 }
@@ -819,7 +819,7 @@ CreateBondsAttributes_GetPeriodicInX(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CreateBondsAttributes_SetPeriodicInY(PyObject *self, PyObject *args)
 {
-    CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)self;
+    PyCreateBondsAttributesObject *obj = (PyCreateBondsAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -871,7 +871,7 @@ CreateBondsAttributes_SetPeriodicInY(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CreateBondsAttributes_GetPeriodicInY(PyObject *self, PyObject *args)
 {
-    CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)self;
+    PyCreateBondsAttributesObject *obj = (PyCreateBondsAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetPeriodicInY()?1L:0L);
     return retval;
 }
@@ -879,7 +879,7 @@ CreateBondsAttributes_GetPeriodicInY(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CreateBondsAttributes_SetPeriodicInZ(PyObject *self, PyObject *args)
 {
-    CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)self;
+    PyCreateBondsAttributesObject *obj = (PyCreateBondsAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -931,7 +931,7 @@ CreateBondsAttributes_SetPeriodicInZ(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CreateBondsAttributes_GetPeriodicInZ(PyObject *self, PyObject *args)
 {
-    CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)self;
+    PyCreateBondsAttributesObject *obj = (PyCreateBondsAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetPeriodicInZ()?1L:0L);
     return retval;
 }
@@ -939,7 +939,7 @@ CreateBondsAttributes_GetPeriodicInZ(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CreateBondsAttributes_SetXVector(PyObject *self, PyObject *args)
 {
-    CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)self;
+    PyCreateBondsAttributesObject *obj = (PyCreateBondsAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetXVector();
@@ -1006,7 +1006,7 @@ CreateBondsAttributes_SetXVector(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CreateBondsAttributes_GetXVector(PyObject *self, PyObject *args)
 {
-    CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)self;
+    PyCreateBondsAttributesObject *obj = (PyCreateBondsAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the xVector.
     PyObject *retval = PyTuple_New(3);
     const double *xVector = obj->data->GetXVector();
@@ -1018,7 +1018,7 @@ CreateBondsAttributes_GetXVector(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CreateBondsAttributes_SetYVector(PyObject *self, PyObject *args)
 {
-    CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)self;
+    PyCreateBondsAttributesObject *obj = (PyCreateBondsAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetYVector();
@@ -1085,7 +1085,7 @@ CreateBondsAttributes_SetYVector(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CreateBondsAttributes_GetYVector(PyObject *self, PyObject *args)
 {
-    CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)self;
+    PyCreateBondsAttributesObject *obj = (PyCreateBondsAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the yVector.
     PyObject *retval = PyTuple_New(3);
     const double *yVector = obj->data->GetYVector();
@@ -1097,7 +1097,7 @@ CreateBondsAttributes_GetYVector(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CreateBondsAttributes_SetZVector(PyObject *self, PyObject *args)
 {
-    CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)self;
+    PyCreateBondsAttributesObject *obj = (PyCreateBondsAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetZVector();
@@ -1164,7 +1164,7 @@ CreateBondsAttributes_SetZVector(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CreateBondsAttributes_GetZVector(PyObject *self, PyObject *args)
 {
-    CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)self;
+    PyCreateBondsAttributesObject *obj = (PyCreateBondsAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the zVector.
     PyObject *retval = PyTuple_New(3);
     const double *zVector = obj->data->GetZVector();
@@ -1214,16 +1214,16 @@ PyMethodDef PyCreateBondsAttributes_methods[CREATEBONDSATTRIBUTES_NMETH] = {
 //
 
 static void
-CreateBondsAttributes_dealloc(PyObject *v)
+PyCreateBondsAttributes_dealloc(PyObject *v)
 {
-   CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)v;
+   PyCreateBondsAttributesObject *obj = (PyCreateBondsAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *CreateBondsAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyCreateBondsAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyCreateBondsAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -1319,56 +1319,42 @@ PyCreateBondsAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *
 }
 
 PyObject *
-CreateBondsAttributes_str(PyObject *v)
+PyCreateBondsAttributes_str(PyObject *v)
 {
-    CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)v;
+    PyCreateBondsAttributesObject *obj = (PyCreateBondsAttributesObject *)v;
     return PyString_FromString(PyCreateBondsAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *CreateBondsAttributes_Purpose = "Attributes for the CreateBondsOperator";
-#else
-static char *CreateBondsAttributes_Purpose = "Attributes for the CreateBondsOperator";
-#endif
+static char const *PyCreateBondsAttributes_purpose = "Attributes for the CreateBondsOperator";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject CreateBondsAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "CreateBondsAttributes",
-    .tp_basicsize = sizeof(CreateBondsAttributesObject),
-    .tp_dealloc = CreateBondsAttributes_dealloc,
-    .tp_repr = CreateBondsAttributes_str,
-    .tp_str = CreateBondsAttributes_str,
-    .tp_getattro = PyCreateBondsAttributes_getattro,
-    .tp_setattro = PyCreateBondsAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = CreateBondsAttributes_Purpose,
-    .tp_richcompare = CreateBondsAttributes_richcompare,
-    .tp_methods = PyCreateBondsAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(CreateBondsAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-CreateBondsAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyCreateBondsAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &CreateBondsAttributesType
-         || Py_TYPE(other) != &CreateBondsAttributesType)
+    if ( Py_TYPE(self) != &PyCreateBondsAttributesType
+         || Py_TYPE(other) != &PyCreateBondsAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    CreateBondsAttributes *a = ((CreateBondsAttributesObject *)self)->data;
-    CreateBondsAttributes *b = ((CreateBondsAttributesObject *)other)->data;
+    CreateBondsAttributes *a = ((PyCreateBondsAttributesObject *)self)->data;
+    CreateBondsAttributes *b = ((PyCreateBondsAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -1397,8 +1383,8 @@ static CreateBondsAttributes *currentAtts = 0;
 static PyObject *
 NewCreateBondsAttributes(int useCurrent)
 {
-    CreateBondsAttributesObject *newObject;
-    newObject = PyObject_NEW(CreateBondsAttributesObject, &CreateBondsAttributesType);
+    PyCreateBondsAttributesObject *newObject;
+    newObject = PyObject_NEW(PyCreateBondsAttributesObject, &PyCreateBondsAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1409,15 +1395,15 @@ NewCreateBondsAttributes(int useCurrent)
         newObject->data = new CreateBondsAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&CreateBondsAttributesType);
+    PyType_Ready(&PyCreateBondsAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapCreateBondsAttributes(const CreateBondsAttributes *attr)
 {
-    CreateBondsAttributesObject *newObject;
-    newObject = PyObject_NEW(CreateBondsAttributesObject, &CreateBondsAttributesType);
+    PyCreateBondsAttributesObject *newObject;
+    newObject = PyObject_NEW(PyCreateBondsAttributesObject, &PyCreateBondsAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (CreateBondsAttributes *)attr;
@@ -1519,13 +1505,13 @@ PyCreateBondsAttributes_GetMethodTable(int *nMethods)
 bool
 PyCreateBondsAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &CreateBondsAttributesType);
+    return (obj->ob_type == &PyCreateBondsAttributesType);
 }
 
 CreateBondsAttributes *
 PyCreateBondsAttributes_FromPyObject(PyObject *obj)
 {
-    CreateBondsAttributesObject *obj2 = (CreateBondsAttributesObject *)obj;
+    PyCreateBondsAttributesObject *obj2 = (PyCreateBondsAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1544,7 +1530,7 @@ PyCreateBondsAttributes_Wrap(const CreateBondsAttributes *attr)
 void
 PyCreateBondsAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    CreateBondsAttributesObject *obj2 = (CreateBondsAttributesObject *)obj;
+    PyCreateBondsAttributesObject *obj2 = (PyCreateBondsAttributesObject *)obj;
     obj2->parent = parent;
 }
 

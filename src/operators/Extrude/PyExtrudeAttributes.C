@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a ExtrudeAttributes.
 //
-struct ExtrudeAttributesObject
+struct PyExtrudeAttributesObject
 {
     PyObject_HEAD
     ExtrudeAttributes *data;
@@ -80,7 +80,7 @@ PyExtrudeAttributes_ToString(const ExtrudeAttributes *atts, const char *prefix, 
 static PyObject *
 ExtrudeAttributes_Notify(PyObject *self, PyObject *args)
 {
-    ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
+    PyExtrudeAttributesObject *obj = (PyExtrudeAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -117,7 +117,7 @@ ExtrudeAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtrudeAttributes_SetAxis(PyObject *self, PyObject *args)
 {
-    ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
+    PyExtrudeAttributesObject *obj = (PyExtrudeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetAxis();
@@ -184,7 +184,7 @@ ExtrudeAttributes_SetAxis(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtrudeAttributes_GetAxis(PyObject *self, PyObject *args)
 {
-    ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
+    PyExtrudeAttributesObject *obj = (PyExtrudeAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the axis.
     PyObject *retval = PyTuple_New(3);
     const double *axis = obj->data->GetAxis();
@@ -196,7 +196,7 @@ ExtrudeAttributes_GetAxis(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtrudeAttributes_SetByVariable(PyObject *self, PyObject *args)
 {
-    ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
+    PyExtrudeAttributesObject *obj = (PyExtrudeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -248,7 +248,7 @@ ExtrudeAttributes_SetByVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtrudeAttributes_GetByVariable(PyObject *self, PyObject *args)
 {
-    ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
+    PyExtrudeAttributesObject *obj = (PyExtrudeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetByVariable()?1L:0L);
     return retval;
 }
@@ -256,7 +256,7 @@ ExtrudeAttributes_GetByVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtrudeAttributes_SetVariable(PyObject *self, PyObject *args)
 {
-    ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
+    PyExtrudeAttributesObject *obj = (PyExtrudeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -297,7 +297,7 @@ ExtrudeAttributes_SetVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtrudeAttributes_GetVariable(PyObject *self, PyObject *args)
 {
-    ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
+    PyExtrudeAttributesObject *obj = (PyExtrudeAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetVariable().c_str());
     return retval;
 }
@@ -305,7 +305,7 @@ ExtrudeAttributes_GetVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtrudeAttributes_SetLength(PyObject *self, PyObject *args)
 {
-    ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
+    PyExtrudeAttributesObject *obj = (PyExtrudeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -357,7 +357,7 @@ ExtrudeAttributes_SetLength(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtrudeAttributes_GetLength(PyObject *self, PyObject *args)
 {
-    ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
+    PyExtrudeAttributesObject *obj = (PyExtrudeAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetLength());
     return retval;
 }
@@ -365,7 +365,7 @@ ExtrudeAttributes_GetLength(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtrudeAttributes_SetSteps(PyObject *self, PyObject *args)
 {
-    ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
+    PyExtrudeAttributesObject *obj = (PyExtrudeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -417,7 +417,7 @@ ExtrudeAttributes_SetSteps(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtrudeAttributes_GetSteps(PyObject *self, PyObject *args)
 {
-    ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
+    PyExtrudeAttributesObject *obj = (PyExtrudeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetSteps()));
     return retval;
 }
@@ -425,7 +425,7 @@ ExtrudeAttributes_GetSteps(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtrudeAttributes_SetPreserveOriginalCellNumbers(PyObject *self, PyObject *args)
 {
-    ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
+    PyExtrudeAttributesObject *obj = (PyExtrudeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -477,7 +477,7 @@ ExtrudeAttributes_SetPreserveOriginalCellNumbers(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtrudeAttributes_GetPreserveOriginalCellNumbers(PyObject *self, PyObject *args)
 {
-    ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
+    PyExtrudeAttributesObject *obj = (PyExtrudeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetPreserveOriginalCellNumbers()?1L:0L);
     return retval;
 }
@@ -507,16 +507,16 @@ PyMethodDef PyExtrudeAttributes_methods[EXTRUDEATTRIBUTES_NMETH] = {
 //
 
 static void
-ExtrudeAttributes_dealloc(PyObject *v)
+PyExtrudeAttributes_dealloc(PyObject *v)
 {
-   ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)v;
+   PyExtrudeAttributesObject *obj = (PyExtrudeAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *ExtrudeAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyExtrudeAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyExtrudeAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -580,56 +580,42 @@ PyExtrudeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args
 }
 
 PyObject *
-ExtrudeAttributes_str(PyObject *v)
+PyExtrudeAttributes_str(PyObject *v)
 {
-    ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)v;
+    PyExtrudeAttributesObject *obj = (PyExtrudeAttributesObject *)v;
     return PyString_FromString(PyExtrudeAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *ExtrudeAttributes_Purpose = "This class contains attributes for the extrude operator.";
-#else
-static char *ExtrudeAttributes_Purpose = "This class contains attributes for the extrude operator.";
-#endif
+static char const *PyExtrudeAttributes_purpose = "This class contains attributes for the extrude operator.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject ExtrudeAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "ExtrudeAttributes",
-    .tp_basicsize = sizeof(ExtrudeAttributesObject),
-    .tp_dealloc = ExtrudeAttributes_dealloc,
-    .tp_repr = ExtrudeAttributes_str,
-    .tp_str = ExtrudeAttributes_str,
-    .tp_getattro = PyExtrudeAttributes_getattro,
-    .tp_setattro = PyExtrudeAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = ExtrudeAttributes_Purpose,
-    .tp_richcompare = ExtrudeAttributes_richcompare,
-    .tp_methods = PyExtrudeAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(ExtrudeAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-ExtrudeAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyExtrudeAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &ExtrudeAttributesType
-         || Py_TYPE(other) != &ExtrudeAttributesType)
+    if ( Py_TYPE(self) != &PyExtrudeAttributesType
+         || Py_TYPE(other) != &PyExtrudeAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    ExtrudeAttributes *a = ((ExtrudeAttributesObject *)self)->data;
-    ExtrudeAttributes *b = ((ExtrudeAttributesObject *)other)->data;
+    ExtrudeAttributes *a = ((PyExtrudeAttributesObject *)self)->data;
+    ExtrudeAttributes *b = ((PyExtrudeAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -658,8 +644,8 @@ static ExtrudeAttributes *currentAtts = 0;
 static PyObject *
 NewExtrudeAttributes(int useCurrent)
 {
-    ExtrudeAttributesObject *newObject;
-    newObject = PyObject_NEW(ExtrudeAttributesObject, &ExtrudeAttributesType);
+    PyExtrudeAttributesObject *newObject;
+    newObject = PyObject_NEW(PyExtrudeAttributesObject, &PyExtrudeAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -670,15 +656,15 @@ NewExtrudeAttributes(int useCurrent)
         newObject->data = new ExtrudeAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&ExtrudeAttributesType);
+    PyType_Ready(&PyExtrudeAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapExtrudeAttributes(const ExtrudeAttributes *attr)
 {
-    ExtrudeAttributesObject *newObject;
-    newObject = PyObject_NEW(ExtrudeAttributesObject, &ExtrudeAttributesType);
+    PyExtrudeAttributesObject *newObject;
+    newObject = PyObject_NEW(PyExtrudeAttributesObject, &PyExtrudeAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (ExtrudeAttributes *)attr;
@@ -780,13 +766,13 @@ PyExtrudeAttributes_GetMethodTable(int *nMethods)
 bool
 PyExtrudeAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ExtrudeAttributesType);
+    return (obj->ob_type == &PyExtrudeAttributesType);
 }
 
 ExtrudeAttributes *
 PyExtrudeAttributes_FromPyObject(PyObject *obj)
 {
-    ExtrudeAttributesObject *obj2 = (ExtrudeAttributesObject *)obj;
+    PyExtrudeAttributesObject *obj2 = (PyExtrudeAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -805,7 +791,7 @@ PyExtrudeAttributes_Wrap(const ExtrudeAttributes *attr)
 void
 PyExtrudeAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    ExtrudeAttributesObject *obj2 = (ExtrudeAttributesObject *)obj;
+    PyExtrudeAttributesObject *obj2 = (PyExtrudeAttributesObject *)obj;
     obj2->parent = parent;
 }
 

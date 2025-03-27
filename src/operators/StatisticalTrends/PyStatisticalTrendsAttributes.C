@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a StatisticalTrendsAttributes.
 //
-struct StatisticalTrendsAttributesObject
+struct PyStatisticalTrendsAttributesObject
 {
     PyObject_HEAD
     StatisticalTrendsAttributes *data;
@@ -150,7 +150,7 @@ PyStatisticalTrendsAttributes_ToString(const StatisticalTrendsAttributes *atts, 
 static PyObject *
 StatisticalTrendsAttributes_Notify(PyObject *self, PyObject *args)
 {
-    StatisticalTrendsAttributesObject *obj = (StatisticalTrendsAttributesObject *)self;
+    PyStatisticalTrendsAttributesObject *obj = (PyStatisticalTrendsAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -187,7 +187,7 @@ StatisticalTrendsAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 StatisticalTrendsAttributes_SetStartIndex(PyObject *self, PyObject *args)
 {
-    StatisticalTrendsAttributesObject *obj = (StatisticalTrendsAttributesObject *)self;
+    PyStatisticalTrendsAttributesObject *obj = (PyStatisticalTrendsAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -239,7 +239,7 @@ StatisticalTrendsAttributes_SetStartIndex(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 StatisticalTrendsAttributes_GetStartIndex(PyObject *self, PyObject *args)
 {
-    StatisticalTrendsAttributesObject *obj = (StatisticalTrendsAttributesObject *)self;
+    PyStatisticalTrendsAttributesObject *obj = (PyStatisticalTrendsAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetStartIndex()));
     return retval;
 }
@@ -247,7 +247,7 @@ StatisticalTrendsAttributes_GetStartIndex(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 StatisticalTrendsAttributes_SetStopIndex(PyObject *self, PyObject *args)
 {
-    StatisticalTrendsAttributesObject *obj = (StatisticalTrendsAttributesObject *)self;
+    PyStatisticalTrendsAttributesObject *obj = (PyStatisticalTrendsAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -299,7 +299,7 @@ StatisticalTrendsAttributes_SetStopIndex(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 StatisticalTrendsAttributes_GetStopIndex(PyObject *self, PyObject *args)
 {
-    StatisticalTrendsAttributesObject *obj = (StatisticalTrendsAttributesObject *)self;
+    PyStatisticalTrendsAttributesObject *obj = (PyStatisticalTrendsAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetStopIndex()));
     return retval;
 }
@@ -307,7 +307,7 @@ StatisticalTrendsAttributes_GetStopIndex(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 StatisticalTrendsAttributes_SetStride(PyObject *self, PyObject *args)
 {
-    StatisticalTrendsAttributesObject *obj = (StatisticalTrendsAttributesObject *)self;
+    PyStatisticalTrendsAttributesObject *obj = (PyStatisticalTrendsAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -359,7 +359,7 @@ StatisticalTrendsAttributes_SetStride(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 StatisticalTrendsAttributes_GetStride(PyObject *self, PyObject *args)
 {
-    StatisticalTrendsAttributesObject *obj = (StatisticalTrendsAttributesObject *)self;
+    PyStatisticalTrendsAttributesObject *obj = (PyStatisticalTrendsAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetStride()));
     return retval;
 }
@@ -367,7 +367,7 @@ StatisticalTrendsAttributes_GetStride(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 StatisticalTrendsAttributes_SetStartTrendType(PyObject *self, PyObject *args)
 {
-    StatisticalTrendsAttributesObject *obj = (StatisticalTrendsAttributesObject *)self;
+    PyStatisticalTrendsAttributesObject *obj = (PyStatisticalTrendsAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -425,7 +425,7 @@ StatisticalTrendsAttributes_SetStartTrendType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 StatisticalTrendsAttributes_GetStartTrendType(PyObject *self, PyObject *args)
 {
-    StatisticalTrendsAttributesObject *obj = (StatisticalTrendsAttributesObject *)self;
+    PyStatisticalTrendsAttributesObject *obj = (PyStatisticalTrendsAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetStartTrendType()));
     return retval;
 }
@@ -433,7 +433,7 @@ StatisticalTrendsAttributes_GetStartTrendType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 StatisticalTrendsAttributes_SetStopTrendType(PyObject *self, PyObject *args)
 {
-    StatisticalTrendsAttributesObject *obj = (StatisticalTrendsAttributesObject *)self;
+    PyStatisticalTrendsAttributesObject *obj = (PyStatisticalTrendsAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -491,7 +491,7 @@ StatisticalTrendsAttributes_SetStopTrendType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 StatisticalTrendsAttributes_GetStopTrendType(PyObject *self, PyObject *args)
 {
-    StatisticalTrendsAttributesObject *obj = (StatisticalTrendsAttributesObject *)self;
+    PyStatisticalTrendsAttributesObject *obj = (PyStatisticalTrendsAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetStopTrendType()));
     return retval;
 }
@@ -499,7 +499,7 @@ StatisticalTrendsAttributes_GetStopTrendType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 StatisticalTrendsAttributes_SetStatisticType(PyObject *self, PyObject *args)
 {
-    StatisticalTrendsAttributesObject *obj = (StatisticalTrendsAttributesObject *)self;
+    PyStatisticalTrendsAttributesObject *obj = (PyStatisticalTrendsAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -561,7 +561,7 @@ StatisticalTrendsAttributes_SetStatisticType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 StatisticalTrendsAttributes_GetStatisticType(PyObject *self, PyObject *args)
 {
-    StatisticalTrendsAttributesObject *obj = (StatisticalTrendsAttributesObject *)self;
+    PyStatisticalTrendsAttributesObject *obj = (PyStatisticalTrendsAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetStatisticType()));
     return retval;
 }
@@ -569,7 +569,7 @@ StatisticalTrendsAttributes_GetStatisticType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 StatisticalTrendsAttributes_SetTrendAxis(PyObject *self, PyObject *args)
 {
-    StatisticalTrendsAttributesObject *obj = (StatisticalTrendsAttributesObject *)self;
+    PyStatisticalTrendsAttributesObject *obj = (PyStatisticalTrendsAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -628,7 +628,7 @@ StatisticalTrendsAttributes_SetTrendAxis(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 StatisticalTrendsAttributes_GetTrendAxis(PyObject *self, PyObject *args)
 {
-    StatisticalTrendsAttributesObject *obj = (StatisticalTrendsAttributesObject *)self;
+    PyStatisticalTrendsAttributesObject *obj = (PyStatisticalTrendsAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetTrendAxis()));
     return retval;
 }
@@ -636,7 +636,7 @@ StatisticalTrendsAttributes_GetTrendAxis(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 StatisticalTrendsAttributes_SetVariableSource(PyObject *self, PyObject *args)
 {
-    StatisticalTrendsAttributesObject *obj = (StatisticalTrendsAttributesObject *)self;
+    PyStatisticalTrendsAttributesObject *obj = (PyStatisticalTrendsAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -694,7 +694,7 @@ StatisticalTrendsAttributes_SetVariableSource(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 StatisticalTrendsAttributes_GetVariableSource(PyObject *self, PyObject *args)
 {
-    StatisticalTrendsAttributesObject *obj = (StatisticalTrendsAttributesObject *)self;
+    PyStatisticalTrendsAttributesObject *obj = (PyStatisticalTrendsAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetVariableSource()));
     return retval;
 }
@@ -728,16 +728,16 @@ PyMethodDef PyStatisticalTrendsAttributes_methods[STATISTICALTRENDSATTRIBUTES_NM
 //
 
 static void
-StatisticalTrendsAttributes_dealloc(PyObject *v)
+PyStatisticalTrendsAttributes_dealloc(PyObject *v)
 {
-   StatisticalTrendsAttributesObject *obj = (StatisticalTrendsAttributesObject *)v;
+   PyStatisticalTrendsAttributesObject *obj = (PyStatisticalTrendsAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *StatisticalTrendsAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyStatisticalTrendsAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyStatisticalTrendsAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -844,56 +844,42 @@ PyStatisticalTrendsAttributes_setattro(PyObject *self, PyObject *attr_name, PyOb
 }
 
 PyObject *
-StatisticalTrendsAttributes_str(PyObject *v)
+PyStatisticalTrendsAttributes_str(PyObject *v)
 {
-    StatisticalTrendsAttributesObject *obj = (StatisticalTrendsAttributesObject *)v;
+    PyStatisticalTrendsAttributesObject *obj = (PyStatisticalTrendsAttributesObject *)v;
     return PyString_FromString(PyStatisticalTrendsAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *StatisticalTrendsAttributes_Purpose = "This class contains attributes for the StatisticalTrends operator.";
-#else
-static char *StatisticalTrendsAttributes_Purpose = "This class contains attributes for the StatisticalTrends operator.";
-#endif
+static char const *PyStatisticalTrendsAttributes_purpose = "This class contains attributes for the StatisticalTrends operator.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject StatisticalTrendsAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "StatisticalTrendsAttributes",
-    .tp_basicsize = sizeof(StatisticalTrendsAttributesObject),
-    .tp_dealloc = StatisticalTrendsAttributes_dealloc,
-    .tp_repr = StatisticalTrendsAttributes_str,
-    .tp_str = StatisticalTrendsAttributes_str,
-    .tp_getattro = PyStatisticalTrendsAttributes_getattro,
-    .tp_setattro = PyStatisticalTrendsAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = StatisticalTrendsAttributes_Purpose,
-    .tp_richcompare = StatisticalTrendsAttributes_richcompare,
-    .tp_methods = PyStatisticalTrendsAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(StatisticalTrendsAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-StatisticalTrendsAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyStatisticalTrendsAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &StatisticalTrendsAttributesType
-         || Py_TYPE(other) != &StatisticalTrendsAttributesType)
+    if ( Py_TYPE(self) != &PyStatisticalTrendsAttributesType
+         || Py_TYPE(other) != &PyStatisticalTrendsAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    StatisticalTrendsAttributes *a = ((StatisticalTrendsAttributesObject *)self)->data;
-    StatisticalTrendsAttributes *b = ((StatisticalTrendsAttributesObject *)other)->data;
+    StatisticalTrendsAttributes *a = ((PyStatisticalTrendsAttributesObject *)self)->data;
+    StatisticalTrendsAttributes *b = ((PyStatisticalTrendsAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -922,8 +908,8 @@ static StatisticalTrendsAttributes *currentAtts = 0;
 static PyObject *
 NewStatisticalTrendsAttributes(int useCurrent)
 {
-    StatisticalTrendsAttributesObject *newObject;
-    newObject = PyObject_NEW(StatisticalTrendsAttributesObject, &StatisticalTrendsAttributesType);
+    PyStatisticalTrendsAttributesObject *newObject;
+    newObject = PyObject_NEW(PyStatisticalTrendsAttributesObject, &PyStatisticalTrendsAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -934,15 +920,15 @@ NewStatisticalTrendsAttributes(int useCurrent)
         newObject->data = new StatisticalTrendsAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&StatisticalTrendsAttributesType);
+    PyType_Ready(&PyStatisticalTrendsAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapStatisticalTrendsAttributes(const StatisticalTrendsAttributes *attr)
 {
-    StatisticalTrendsAttributesObject *newObject;
-    newObject = PyObject_NEW(StatisticalTrendsAttributesObject, &StatisticalTrendsAttributesType);
+    PyStatisticalTrendsAttributesObject *newObject;
+    newObject = PyObject_NEW(PyStatisticalTrendsAttributesObject, &PyStatisticalTrendsAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (StatisticalTrendsAttributes *)attr;
@@ -1044,13 +1030,13 @@ PyStatisticalTrendsAttributes_GetMethodTable(int *nMethods)
 bool
 PyStatisticalTrendsAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &StatisticalTrendsAttributesType);
+    return (obj->ob_type == &PyStatisticalTrendsAttributesType);
 }
 
 StatisticalTrendsAttributes *
 PyStatisticalTrendsAttributes_FromPyObject(PyObject *obj)
 {
-    StatisticalTrendsAttributesObject *obj2 = (StatisticalTrendsAttributesObject *)obj;
+    PyStatisticalTrendsAttributesObject *obj2 = (PyStatisticalTrendsAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1069,7 +1055,7 @@ PyStatisticalTrendsAttributes_Wrap(const StatisticalTrendsAttributes *attr)
 void
 PyStatisticalTrendsAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    StatisticalTrendsAttributesObject *obj2 = (StatisticalTrendsAttributesObject *)obj;
+    PyStatisticalTrendsAttributesObject *obj2 = (PyStatisticalTrendsAttributesObject *)obj;
     obj2->parent = parent;
 }
 

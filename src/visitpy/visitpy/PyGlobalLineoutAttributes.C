@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a GlobalLineoutAttributes.
 //
-struct GlobalLineoutAttributesObject
+struct PyGlobalLineoutAttributesObject
 {
     PyObject_HEAD
     GlobalLineoutAttributes *data;
@@ -107,7 +107,7 @@ PyGlobalLineoutAttributes_ToString(const GlobalLineoutAttributes *atts, const ch
 static PyObject *
 GlobalLineoutAttributes_Notify(PyObject *self, PyObject *args)
 {
-    GlobalLineoutAttributesObject *obj = (GlobalLineoutAttributesObject *)self;
+    PyGlobalLineoutAttributesObject *obj = (PyGlobalLineoutAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -144,7 +144,7 @@ GlobalLineoutAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalLineoutAttributes_SetDynamic(PyObject *self, PyObject *args)
 {
-    GlobalLineoutAttributesObject *obj = (GlobalLineoutAttributesObject *)self;
+    PyGlobalLineoutAttributesObject *obj = (PyGlobalLineoutAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -196,7 +196,7 @@ GlobalLineoutAttributes_SetDynamic(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalLineoutAttributes_GetDynamic(PyObject *self, PyObject *args)
 {
-    GlobalLineoutAttributesObject *obj = (GlobalLineoutAttributesObject *)self;
+    PyGlobalLineoutAttributesObject *obj = (PyGlobalLineoutAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetDynamic()?1L:0L);
     return retval;
 }
@@ -204,7 +204,7 @@ GlobalLineoutAttributes_GetDynamic(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalLineoutAttributes_SetCreateWindow(PyObject *self, PyObject *args)
 {
-    GlobalLineoutAttributesObject *obj = (GlobalLineoutAttributesObject *)self;
+    PyGlobalLineoutAttributesObject *obj = (PyGlobalLineoutAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -256,7 +256,7 @@ GlobalLineoutAttributes_SetCreateWindow(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalLineoutAttributes_GetCreateWindow(PyObject *self, PyObject *args)
 {
-    GlobalLineoutAttributesObject *obj = (GlobalLineoutAttributesObject *)self;
+    PyGlobalLineoutAttributesObject *obj = (PyGlobalLineoutAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetCreateWindow()?1L:0L);
     return retval;
 }
@@ -264,7 +264,7 @@ GlobalLineoutAttributes_GetCreateWindow(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalLineoutAttributes_SetWindowId(PyObject *self, PyObject *args)
 {
-    GlobalLineoutAttributesObject *obj = (GlobalLineoutAttributesObject *)self;
+    PyGlobalLineoutAttributesObject *obj = (PyGlobalLineoutAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -316,7 +316,7 @@ GlobalLineoutAttributes_SetWindowId(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalLineoutAttributes_GetWindowId(PyObject *self, PyObject *args)
 {
-    GlobalLineoutAttributesObject *obj = (GlobalLineoutAttributesObject *)self;
+    PyGlobalLineoutAttributesObject *obj = (PyGlobalLineoutAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetWindowId()));
     return retval;
 }
@@ -324,7 +324,7 @@ GlobalLineoutAttributes_GetWindowId(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalLineoutAttributes_SetSamplingOn(PyObject *self, PyObject *args)
 {
-    GlobalLineoutAttributesObject *obj = (GlobalLineoutAttributesObject *)self;
+    PyGlobalLineoutAttributesObject *obj = (PyGlobalLineoutAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -376,7 +376,7 @@ GlobalLineoutAttributes_SetSamplingOn(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalLineoutAttributes_GetSamplingOn(PyObject *self, PyObject *args)
 {
-    GlobalLineoutAttributesObject *obj = (GlobalLineoutAttributesObject *)self;
+    PyGlobalLineoutAttributesObject *obj = (PyGlobalLineoutAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetSamplingOn()?1L:0L);
     return retval;
 }
@@ -384,7 +384,7 @@ GlobalLineoutAttributes_GetSamplingOn(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalLineoutAttributes_SetNumSamples(PyObject *self, PyObject *args)
 {
-    GlobalLineoutAttributesObject *obj = (GlobalLineoutAttributesObject *)self;
+    PyGlobalLineoutAttributesObject *obj = (PyGlobalLineoutAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -436,7 +436,7 @@ GlobalLineoutAttributes_SetNumSamples(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalLineoutAttributes_GetNumSamples(PyObject *self, PyObject *args)
 {
-    GlobalLineoutAttributesObject *obj = (GlobalLineoutAttributesObject *)self;
+    PyGlobalLineoutAttributesObject *obj = (PyGlobalLineoutAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNumSamples()));
     return retval;
 }
@@ -444,7 +444,7 @@ GlobalLineoutAttributes_GetNumSamples(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalLineoutAttributes_SetCreateReflineLabels(PyObject *self, PyObject *args)
 {
-    GlobalLineoutAttributesObject *obj = (GlobalLineoutAttributesObject *)self;
+    PyGlobalLineoutAttributesObject *obj = (PyGlobalLineoutAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -496,7 +496,7 @@ GlobalLineoutAttributes_SetCreateReflineLabels(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalLineoutAttributes_GetCreateReflineLabels(PyObject *self, PyObject *args)
 {
-    GlobalLineoutAttributesObject *obj = (GlobalLineoutAttributesObject *)self;
+    PyGlobalLineoutAttributesObject *obj = (PyGlobalLineoutAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetCreateReflineLabels()?1L:0L);
     return retval;
 }
@@ -504,7 +504,7 @@ GlobalLineoutAttributes_GetCreateReflineLabels(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalLineoutAttributes_SetCurveOption(PyObject *self, PyObject *args)
 {
-    GlobalLineoutAttributesObject *obj = (GlobalLineoutAttributesObject *)self;
+    PyGlobalLineoutAttributesObject *obj = (PyGlobalLineoutAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -562,7 +562,7 @@ GlobalLineoutAttributes_SetCurveOption(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalLineoutAttributes_GetCurveOption(PyObject *self, PyObject *args)
 {
-    GlobalLineoutAttributesObject *obj = (GlobalLineoutAttributesObject *)self;
+    PyGlobalLineoutAttributesObject *obj = (PyGlobalLineoutAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetCurveOption()));
     return retval;
 }
@@ -570,7 +570,7 @@ GlobalLineoutAttributes_GetCurveOption(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalLineoutAttributes_SetColorOption(PyObject *self, PyObject *args)
 {
-    GlobalLineoutAttributesObject *obj = (GlobalLineoutAttributesObject *)self;
+    PyGlobalLineoutAttributesObject *obj = (PyGlobalLineoutAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -628,7 +628,7 @@ GlobalLineoutAttributes_SetColorOption(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalLineoutAttributes_GetColorOption(PyObject *self, PyObject *args)
 {
-    GlobalLineoutAttributesObject *obj = (GlobalLineoutAttributesObject *)self;
+    PyGlobalLineoutAttributesObject *obj = (PyGlobalLineoutAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetColorOption()));
     return retval;
 }
@@ -636,7 +636,7 @@ GlobalLineoutAttributes_GetColorOption(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalLineoutAttributes_SetFreezeInTime(PyObject *self, PyObject *args)
 {
-    GlobalLineoutAttributesObject *obj = (GlobalLineoutAttributesObject *)self;
+    PyGlobalLineoutAttributesObject *obj = (PyGlobalLineoutAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -688,7 +688,7 @@ GlobalLineoutAttributes_SetFreezeInTime(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalLineoutAttributes_GetFreezeInTime(PyObject *self, PyObject *args)
 {
-    GlobalLineoutAttributesObject *obj = (GlobalLineoutAttributesObject *)self;
+    PyGlobalLineoutAttributesObject *obj = (PyGlobalLineoutAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetFreezeInTime()?1L:0L);
     return retval;
 }
@@ -724,16 +724,16 @@ PyMethodDef PyGlobalLineoutAttributes_methods[GLOBALLINEOUTATTRIBUTES_NMETH] = {
 //
 
 static void
-GlobalLineoutAttributes_dealloc(PyObject *v)
+PyGlobalLineoutAttributes_dealloc(PyObject *v)
 {
-   GlobalLineoutAttributesObject *obj = (GlobalLineoutAttributesObject *)v;
+   PyGlobalLineoutAttributesObject *obj = (PyGlobalLineoutAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *GlobalLineoutAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyGlobalLineoutAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyGlobalLineoutAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -819,56 +819,42 @@ PyGlobalLineoutAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject
 }
 
 PyObject *
-GlobalLineoutAttributes_str(PyObject *v)
+PyGlobalLineoutAttributes_str(PyObject *v)
 {
-    GlobalLineoutAttributesObject *obj = (GlobalLineoutAttributesObject *)v;
+    PyGlobalLineoutAttributesObject *obj = (PyGlobalLineoutAttributesObject *)v;
     return PyString_FromString(PyGlobalLineoutAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *GlobalLineoutAttributes_Purpose = "This file contains global attributes controlling Lineouts.";
-#else
-static char *GlobalLineoutAttributes_Purpose = "This file contains global attributes controlling Lineouts.";
-#endif
+static char const *PyGlobalLineoutAttributes_purpose = "This file contains global attributes controlling Lineouts.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject GlobalLineoutAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "GlobalLineoutAttributes",
-    .tp_basicsize = sizeof(GlobalLineoutAttributesObject),
-    .tp_dealloc = GlobalLineoutAttributes_dealloc,
-    .tp_repr = GlobalLineoutAttributes_str,
-    .tp_str = GlobalLineoutAttributes_str,
-    .tp_getattro = PyGlobalLineoutAttributes_getattro,
-    .tp_setattro = PyGlobalLineoutAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = GlobalLineoutAttributes_Purpose,
-    .tp_richcompare = GlobalLineoutAttributes_richcompare,
-    .tp_methods = PyGlobalLineoutAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(GlobalLineoutAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-GlobalLineoutAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyGlobalLineoutAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &GlobalLineoutAttributesType
-         || Py_TYPE(other) != &GlobalLineoutAttributesType)
+    if ( Py_TYPE(self) != &PyGlobalLineoutAttributesType
+         || Py_TYPE(other) != &PyGlobalLineoutAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    GlobalLineoutAttributes *a = ((GlobalLineoutAttributesObject *)self)->data;
-    GlobalLineoutAttributes *b = ((GlobalLineoutAttributesObject *)other)->data;
+    GlobalLineoutAttributes *a = ((PyGlobalLineoutAttributesObject *)self)->data;
+    GlobalLineoutAttributes *b = ((PyGlobalLineoutAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -897,8 +883,8 @@ static GlobalLineoutAttributes *currentAtts = 0;
 static PyObject *
 NewGlobalLineoutAttributes(int useCurrent)
 {
-    GlobalLineoutAttributesObject *newObject;
-    newObject = PyObject_NEW(GlobalLineoutAttributesObject, &GlobalLineoutAttributesType);
+    PyGlobalLineoutAttributesObject *newObject;
+    newObject = PyObject_NEW(PyGlobalLineoutAttributesObject, &PyGlobalLineoutAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -909,15 +895,15 @@ NewGlobalLineoutAttributes(int useCurrent)
         newObject->data = new GlobalLineoutAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&GlobalLineoutAttributesType);
+    PyType_Ready(&PyGlobalLineoutAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapGlobalLineoutAttributes(const GlobalLineoutAttributes *attr)
 {
-    GlobalLineoutAttributesObject *newObject;
-    newObject = PyObject_NEW(GlobalLineoutAttributesObject, &GlobalLineoutAttributesType);
+    PyGlobalLineoutAttributesObject *newObject;
+    newObject = PyObject_NEW(PyGlobalLineoutAttributesObject, &PyGlobalLineoutAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (GlobalLineoutAttributes *)attr;
@@ -1019,13 +1005,13 @@ PyGlobalLineoutAttributes_GetMethodTable(int *nMethods)
 bool
 PyGlobalLineoutAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &GlobalLineoutAttributesType);
+    return (obj->ob_type == &PyGlobalLineoutAttributesType);
 }
 
 GlobalLineoutAttributes *
 PyGlobalLineoutAttributes_FromPyObject(PyObject *obj)
 {
-    GlobalLineoutAttributesObject *obj2 = (GlobalLineoutAttributesObject *)obj;
+    PyGlobalLineoutAttributesObject *obj2 = (PyGlobalLineoutAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1044,7 +1030,7 @@ PyGlobalLineoutAttributes_Wrap(const GlobalLineoutAttributes *attr)
 void
 PyGlobalLineoutAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    GlobalLineoutAttributesObject *obj2 = (GlobalLineoutAttributesObject *)obj;
+    PyGlobalLineoutAttributesObject *obj2 = (PyGlobalLineoutAttributesObject *)obj;
     obj2->parent = parent;
 }
 

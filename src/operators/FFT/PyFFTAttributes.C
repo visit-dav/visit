@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a FFTAttributes.
 //
-struct FFTAttributesObject
+struct PyFFTAttributesObject
 {
     PyObject_HEAD
     FFTAttributes *data;
@@ -50,7 +50,7 @@ PyFFTAttributes_ToString(const FFTAttributes *atts, const char *prefix, const bo
 static PyObject *
 FFTAttributes_Notify(PyObject *self, PyObject *args)
 {
-    FFTAttributesObject *obj = (FFTAttributesObject *)self;
+    PyFFTAttributesObject *obj = (PyFFTAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -87,7 +87,7 @@ FFTAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FFTAttributes_SetDummy(PyObject *self, PyObject *args)
 {
-    FFTAttributesObject *obj = (FFTAttributesObject *)self;
+    PyFFTAttributesObject *obj = (PyFFTAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -139,7 +139,7 @@ FFTAttributes_SetDummy(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FFTAttributes_GetDummy(PyObject *self, PyObject *args)
 {
-    FFTAttributesObject *obj = (FFTAttributesObject *)self;
+    PyFFTAttributesObject *obj = (PyFFTAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetDummy()));
     return retval;
 }
@@ -159,16 +159,16 @@ PyMethodDef PyFFTAttributes_methods[FFTATTRIBUTES_NMETH] = {
 //
 
 static void
-FFTAttributes_dealloc(PyObject *v)
+PyFFTAttributes_dealloc(PyObject *v)
 {
-   FFTAttributesObject *obj = (FFTAttributesObject *)v;
+   PyFFTAttributesObject *obj = (PyFFTAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *FFTAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyFFTAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyFFTAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -212,56 +212,42 @@ PyFFTAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 }
 
 PyObject *
-FFTAttributes_str(PyObject *v)
+PyFFTAttributes_str(PyObject *v)
 {
-    FFTAttributesObject *obj = (FFTAttributesObject *)v;
+    PyFFTAttributesObject *obj = (PyFFTAttributesObject *)v;
     return PyString_FromString(PyFFTAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *FFTAttributes_Purpose = "This class contains attributes for the FFT operator.";
-#else
-static char *FFTAttributes_Purpose = "This class contains attributes for the FFT operator.";
-#endif
+static char const *PyFFTAttributes_purpose = "This class contains attributes for the FFT operator.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject FFTAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "FFTAttributes",
-    .tp_basicsize = sizeof(FFTAttributesObject),
-    .tp_dealloc = FFTAttributes_dealloc,
-    .tp_repr = FFTAttributes_str,
-    .tp_str = FFTAttributes_str,
-    .tp_getattro = PyFFTAttributes_getattro,
-    .tp_setattro = PyFFTAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = FFTAttributes_Purpose,
-    .tp_richcompare = FFTAttributes_richcompare,
-    .tp_methods = PyFFTAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(FFTAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-FFTAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyFFTAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &FFTAttributesType
-         || Py_TYPE(other) != &FFTAttributesType)
+    if ( Py_TYPE(self) != &PyFFTAttributesType
+         || Py_TYPE(other) != &PyFFTAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    FFTAttributes *a = ((FFTAttributesObject *)self)->data;
-    FFTAttributes *b = ((FFTAttributesObject *)other)->data;
+    FFTAttributes *a = ((PyFFTAttributesObject *)self)->data;
+    FFTAttributes *b = ((PyFFTAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -290,8 +276,8 @@ static FFTAttributes *currentAtts = 0;
 static PyObject *
 NewFFTAttributes(int useCurrent)
 {
-    FFTAttributesObject *newObject;
-    newObject = PyObject_NEW(FFTAttributesObject, &FFTAttributesType);
+    PyFFTAttributesObject *newObject;
+    newObject = PyObject_NEW(PyFFTAttributesObject, &PyFFTAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -302,15 +288,15 @@ NewFFTAttributes(int useCurrent)
         newObject->data = new FFTAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&FFTAttributesType);
+    PyType_Ready(&PyFFTAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapFFTAttributes(const FFTAttributes *attr)
 {
-    FFTAttributesObject *newObject;
-    newObject = PyObject_NEW(FFTAttributesObject, &FFTAttributesType);
+    PyFFTAttributesObject *newObject;
+    newObject = PyObject_NEW(PyFFTAttributesObject, &PyFFTAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (FFTAttributes *)attr;
@@ -412,13 +398,13 @@ PyFFTAttributes_GetMethodTable(int *nMethods)
 bool
 PyFFTAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &FFTAttributesType);
+    return (obj->ob_type == &PyFFTAttributesType);
 }
 
 FFTAttributes *
 PyFFTAttributes_FromPyObject(PyObject *obj)
 {
-    FFTAttributesObject *obj2 = (FFTAttributesObject *)obj;
+    PyFFTAttributesObject *obj2 = (PyFFTAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -437,7 +423,7 @@ PyFFTAttributes_Wrap(const FFTAttributes *attr)
 void
 PyFFTAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    FFTAttributesObject *obj2 = (FFTAttributesObject *)obj;
+    PyFFTAttributesObject *obj2 = (PyFFTAttributesObject *)obj;
     obj2->parent = parent;
 }
 

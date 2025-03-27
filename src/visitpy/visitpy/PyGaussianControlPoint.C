@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a GaussianControlPoint.
 //
-struct GaussianControlPointObject
+struct PyGaussianControlPointObject
 {
     PyObject_HEAD
     GaussianControlPoint *data;
@@ -58,7 +58,7 @@ PyGaussianControlPoint_ToString(const GaussianControlPoint *atts, const char *pr
 static PyObject *
 GaussianControlPoint_Notify(PyObject *self, PyObject *args)
 {
-    GaussianControlPointObject *obj = (GaussianControlPointObject *)self;
+    PyGaussianControlPointObject *obj = (PyGaussianControlPointObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -95,7 +95,7 @@ GaussianControlPoint_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GaussianControlPoint_SetX(PyObject *self, PyObject *args)
 {
-    GaussianControlPointObject *obj = (GaussianControlPointObject *)self;
+    PyGaussianControlPointObject *obj = (PyGaussianControlPointObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -147,7 +147,7 @@ GaussianControlPoint_SetX(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GaussianControlPoint_GetX(PyObject *self, PyObject *args)
 {
-    GaussianControlPointObject *obj = (GaussianControlPointObject *)self;
+    PyGaussianControlPointObject *obj = (PyGaussianControlPointObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetX()));
     return retval;
 }
@@ -155,7 +155,7 @@ GaussianControlPoint_GetX(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GaussianControlPoint_SetHeight(PyObject *self, PyObject *args)
 {
-    GaussianControlPointObject *obj = (GaussianControlPointObject *)self;
+    PyGaussianControlPointObject *obj = (PyGaussianControlPointObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -207,7 +207,7 @@ GaussianControlPoint_SetHeight(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GaussianControlPoint_GetHeight(PyObject *self, PyObject *args)
 {
-    GaussianControlPointObject *obj = (GaussianControlPointObject *)self;
+    PyGaussianControlPointObject *obj = (PyGaussianControlPointObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetHeight()));
     return retval;
 }
@@ -215,7 +215,7 @@ GaussianControlPoint_GetHeight(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GaussianControlPoint_SetWidth(PyObject *self, PyObject *args)
 {
-    GaussianControlPointObject *obj = (GaussianControlPointObject *)self;
+    PyGaussianControlPointObject *obj = (PyGaussianControlPointObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -267,7 +267,7 @@ GaussianControlPoint_SetWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GaussianControlPoint_GetWidth(PyObject *self, PyObject *args)
 {
-    GaussianControlPointObject *obj = (GaussianControlPointObject *)self;
+    PyGaussianControlPointObject *obj = (PyGaussianControlPointObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetWidth()));
     return retval;
 }
@@ -275,7 +275,7 @@ GaussianControlPoint_GetWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GaussianControlPoint_SetXBias(PyObject *self, PyObject *args)
 {
-    GaussianControlPointObject *obj = (GaussianControlPointObject *)self;
+    PyGaussianControlPointObject *obj = (PyGaussianControlPointObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -327,7 +327,7 @@ GaussianControlPoint_SetXBias(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GaussianControlPoint_GetXBias(PyObject *self, PyObject *args)
 {
-    GaussianControlPointObject *obj = (GaussianControlPointObject *)self;
+    PyGaussianControlPointObject *obj = (PyGaussianControlPointObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetXBias()));
     return retval;
 }
@@ -335,7 +335,7 @@ GaussianControlPoint_GetXBias(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GaussianControlPoint_SetYBias(PyObject *self, PyObject *args)
 {
-    GaussianControlPointObject *obj = (GaussianControlPointObject *)self;
+    PyGaussianControlPointObject *obj = (PyGaussianControlPointObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -387,7 +387,7 @@ GaussianControlPoint_SetYBias(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GaussianControlPoint_GetYBias(PyObject *self, PyObject *args)
 {
-    GaussianControlPointObject *obj = (GaussianControlPointObject *)self;
+    PyGaussianControlPointObject *obj = (PyGaussianControlPointObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetYBias()));
     return retval;
 }
@@ -415,16 +415,16 @@ PyMethodDef PyGaussianControlPoint_methods[GAUSSIANCONTROLPOINT_NMETH] = {
 //
 
 static void
-GaussianControlPoint_dealloc(PyObject *v)
+PyGaussianControlPoint_dealloc(PyObject *v)
 {
-   GaussianControlPointObject *obj = (GaussianControlPointObject *)v;
+   PyGaussianControlPointObject *obj = (PyGaussianControlPointObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *GaussianControlPoint_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyGaussianControlPoint_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyGaussianControlPoint_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -484,56 +484,42 @@ PyGaussianControlPoint_setattro(PyObject *self, PyObject *attr_name, PyObject *a
 }
 
 PyObject *
-GaussianControlPoint_str(PyObject *v)
+PyGaussianControlPoint_str(PyObject *v)
 {
-    GaussianControlPointObject *obj = (GaussianControlPointObject *)v;
+    PyGaussianControlPointObject *obj = (PyGaussianControlPointObject *)v;
     return PyString_FromString(PyGaussianControlPoint_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *GaussianControlPoint_Purpose = "This class contains the information for a gaussian in the opacity bar.";
-#else
-static char *GaussianControlPoint_Purpose = "This class contains the information for a gaussian in the opacity bar.";
-#endif
+static char const *PyGaussianControlPoint_purpose = "This class contains the information for a gaussian in the opacity bar.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject GaussianControlPointType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "GaussianControlPoint",
-    .tp_basicsize = sizeof(GaussianControlPointObject),
-    .tp_dealloc = GaussianControlPoint_dealloc,
-    .tp_repr = GaussianControlPoint_str,
-    .tp_str = GaussianControlPoint_str,
-    .tp_getattro = PyGaussianControlPoint_getattro,
-    .tp_setattro = PyGaussianControlPoint_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = GaussianControlPoint_Purpose,
-    .tp_richcompare = GaussianControlPoint_richcompare,
-    .tp_methods = PyGaussianControlPoint_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(GaussianControlPoint);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-GaussianControlPoint_richcompare(PyObject *self, PyObject *other, int op)
+PyGaussianControlPoint_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &GaussianControlPointType
-         || Py_TYPE(other) != &GaussianControlPointType)
+    if ( Py_TYPE(self) != &PyGaussianControlPointType
+         || Py_TYPE(other) != &PyGaussianControlPointType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    GaussianControlPoint *a = ((GaussianControlPointObject *)self)->data;
-    GaussianControlPoint *b = ((GaussianControlPointObject *)other)->data;
+    GaussianControlPoint *a = ((PyGaussianControlPointObject *)self)->data;
+    GaussianControlPoint *b = ((PyGaussianControlPointObject *)other)->data;
 
     switch (op)
     {
@@ -562,8 +548,8 @@ static GaussianControlPoint *currentAtts = 0;
 static PyObject *
 NewGaussianControlPoint(int useCurrent)
 {
-    GaussianControlPointObject *newObject;
-    newObject = PyObject_NEW(GaussianControlPointObject, &GaussianControlPointType);
+    PyGaussianControlPointObject *newObject;
+    newObject = PyObject_NEW(PyGaussianControlPointObject, &PyGaussianControlPointType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -574,15 +560,15 @@ NewGaussianControlPoint(int useCurrent)
         newObject->data = new GaussianControlPoint;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&GaussianControlPointType);
+    PyType_Ready(&PyGaussianControlPointType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapGaussianControlPoint(const GaussianControlPoint *attr)
 {
-    GaussianControlPointObject *newObject;
-    newObject = PyObject_NEW(GaussianControlPointObject, &GaussianControlPointType);
+    PyGaussianControlPointObject *newObject;
+    newObject = PyObject_NEW(PyGaussianControlPointObject, &PyGaussianControlPointType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (GaussianControlPoint *)attr;
@@ -684,13 +670,13 @@ PyGaussianControlPoint_GetMethodTable(int *nMethods)
 bool
 PyGaussianControlPoint_Check(PyObject *obj)
 {
-    return (obj->ob_type == &GaussianControlPointType);
+    return (obj->ob_type == &PyGaussianControlPointType);
 }
 
 GaussianControlPoint *
 PyGaussianControlPoint_FromPyObject(PyObject *obj)
 {
-    GaussianControlPointObject *obj2 = (GaussianControlPointObject *)obj;
+    PyGaussianControlPointObject *obj2 = (PyGaussianControlPointObject *)obj;
     return obj2->data;
 }
 
@@ -709,7 +695,7 @@ PyGaussianControlPoint_Wrap(const GaussianControlPoint *attr)
 void
 PyGaussianControlPoint_SetParent(PyObject *obj, PyObject *parent)
 {
-    GaussianControlPointObject *obj2 = (GaussianControlPointObject *)obj;
+    PyGaussianControlPointObject *obj2 = (PyGaussianControlPointObject *)obj;
     obj2->parent = parent;
 }
 

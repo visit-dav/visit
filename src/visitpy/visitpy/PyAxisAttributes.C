@@ -27,7 +27,7 @@
 //
 // This struct contains the Python type information and a AxisAttributes.
 //
-struct AxisAttributesObject
+struct PyAxisAttributesObject
 {
     PyObject_HEAD
     AxisAttributes *data;
@@ -71,7 +71,7 @@ PyAxisAttributes_ToString(const AxisAttributes *atts, const char *prefix, const 
 static PyObject *
 AxisAttributes_Notify(PyObject *self, PyObject *args)
 {
-    AxisAttributesObject *obj = (AxisAttributesObject *)self;
+    PyAxisAttributesObject *obj = (PyAxisAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -108,7 +108,7 @@ AxisAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisAttributes_SetTitle(PyObject *self, PyObject *args)
 {
-    AxisAttributesObject *obj = (AxisAttributesObject *)self;
+    PyAxisAttributesObject *obj = (PyAxisAttributesObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -125,7 +125,7 @@ AxisAttributes_SetTitle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisAttributes_GetTitle(PyObject *self, PyObject *args)
 {
-    AxisAttributesObject *obj = (AxisAttributesObject *)self;
+    PyAxisAttributesObject *obj = (PyAxisAttributesObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -141,7 +141,7 @@ AxisAttributes_GetTitle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisAttributes_SetLabel(PyObject *self, PyObject *args)
 {
-    AxisAttributesObject *obj = (AxisAttributesObject *)self;
+    PyAxisAttributesObject *obj = (PyAxisAttributesObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -158,7 +158,7 @@ AxisAttributes_SetLabel(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisAttributes_GetLabel(PyObject *self, PyObject *args)
 {
-    AxisAttributesObject *obj = (AxisAttributesObject *)self;
+    PyAxisAttributesObject *obj = (PyAxisAttributesObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -174,7 +174,7 @@ AxisAttributes_GetLabel(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisAttributes_SetTickMarks(PyObject *self, PyObject *args)
 {
-    AxisAttributesObject *obj = (AxisAttributesObject *)self;
+    PyAxisAttributesObject *obj = (PyAxisAttributesObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -191,7 +191,7 @@ AxisAttributes_SetTickMarks(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisAttributes_GetTickMarks(PyObject *self, PyObject *args)
 {
-    AxisAttributesObject *obj = (AxisAttributesObject *)self;
+    PyAxisAttributesObject *obj = (PyAxisAttributesObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -207,7 +207,7 @@ AxisAttributes_GetTickMarks(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisAttributes_SetGrid(PyObject *self, PyObject *args)
 {
-    AxisAttributesObject *obj = (AxisAttributesObject *)self;
+    PyAxisAttributesObject *obj = (PyAxisAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -259,7 +259,7 @@ AxisAttributes_SetGrid(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisAttributes_GetGrid(PyObject *self, PyObject *args)
 {
-    AxisAttributesObject *obj = (AxisAttributesObject *)self;
+    PyAxisAttributesObject *obj = (PyAxisAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetGrid()?1L:0L);
     return retval;
 }
@@ -285,16 +285,16 @@ PyMethodDef PyAxisAttributes_methods[AXISATTRIBUTES_NMETH] = {
 //
 
 static void
-AxisAttributes_dealloc(PyObject *v)
+PyAxisAttributes_dealloc(PyObject *v)
 {
-   AxisAttributesObject *obj = (AxisAttributesObject *)v;
+   PyAxisAttributesObject *obj = (PyAxisAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *AxisAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyAxisAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyAxisAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -350,56 +350,42 @@ PyAxisAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 }
 
 PyObject *
-AxisAttributes_str(PyObject *v)
+PyAxisAttributes_str(PyObject *v)
 {
-    AxisAttributesObject *obj = (AxisAttributesObject *)v;
+    PyAxisAttributesObject *obj = (PyAxisAttributesObject *)v;
     return PyString_FromString(PyAxisAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *AxisAttributes_Purpose = "Contains the properties for one axis.";
-#else
-static char *AxisAttributes_Purpose = "Contains the properties for one axis.";
-#endif
+static char const *PyAxisAttributes_purpose = "Contains the properties for one axis.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject AxisAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "AxisAttributes",
-    .tp_basicsize = sizeof(AxisAttributesObject),
-    .tp_dealloc = AxisAttributes_dealloc,
-    .tp_repr = AxisAttributes_str,
-    .tp_str = AxisAttributes_str,
-    .tp_getattro = PyAxisAttributes_getattro,
-    .tp_setattro = PyAxisAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = AxisAttributes_Purpose,
-    .tp_richcompare = AxisAttributes_richcompare,
-    .tp_methods = PyAxisAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(AxisAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-AxisAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyAxisAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &AxisAttributesType
-         || Py_TYPE(other) != &AxisAttributesType)
+    if ( Py_TYPE(self) != &PyAxisAttributesType
+         || Py_TYPE(other) != &PyAxisAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    AxisAttributes *a = ((AxisAttributesObject *)self)->data;
-    AxisAttributes *b = ((AxisAttributesObject *)other)->data;
+    AxisAttributes *a = ((PyAxisAttributesObject *)self)->data;
+    AxisAttributes *b = ((PyAxisAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -428,8 +414,8 @@ static AxisAttributes *currentAtts = 0;
 static PyObject *
 NewAxisAttributes(int useCurrent)
 {
-    AxisAttributesObject *newObject;
-    newObject = PyObject_NEW(AxisAttributesObject, &AxisAttributesType);
+    PyAxisAttributesObject *newObject;
+    newObject = PyObject_NEW(PyAxisAttributesObject, &PyAxisAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -440,15 +426,15 @@ NewAxisAttributes(int useCurrent)
         newObject->data = new AxisAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&AxisAttributesType);
+    PyType_Ready(&PyAxisAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapAxisAttributes(const AxisAttributes *attr)
 {
-    AxisAttributesObject *newObject;
-    newObject = PyObject_NEW(AxisAttributesObject, &AxisAttributesType);
+    PyAxisAttributesObject *newObject;
+    newObject = PyObject_NEW(PyAxisAttributesObject, &PyAxisAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (AxisAttributes *)attr;
@@ -550,13 +536,13 @@ PyAxisAttributes_GetMethodTable(int *nMethods)
 bool
 PyAxisAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &AxisAttributesType);
+    return (obj->ob_type == &PyAxisAttributesType);
 }
 
 AxisAttributes *
 PyAxisAttributes_FromPyObject(PyObject *obj)
 {
-    AxisAttributesObject *obj2 = (AxisAttributesObject *)obj;
+    PyAxisAttributesObject *obj2 = (PyAxisAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -575,7 +561,7 @@ PyAxisAttributes_Wrap(const AxisAttributes *attr)
 void
 PyAxisAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    AxisAttributesObject *obj2 = (AxisAttributesObject *)obj;
+    PyAxisAttributesObject *obj2 = (PyAxisAttributesObject *)obj;
     obj2->parent = parent;
 }
 

@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a ExtrudeStackedAttributes.
 //
-struct ExtrudeStackedAttributesObject
+struct PyExtrudeStackedAttributesObject
 {
     PyObject_HEAD
     ExtrudeStackedAttributes *data;
@@ -183,7 +183,7 @@ PyExtrudeStackedAttributes_ToString(const ExtrudeStackedAttributes *atts, const 
 static PyObject *
 ExtrudeStackedAttributes_Notify(PyObject *self, PyObject *args)
 {
-    ExtrudeStackedAttributesObject *obj = (ExtrudeStackedAttributesObject *)self;
+    PyExtrudeStackedAttributesObject *obj = (PyExtrudeStackedAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -220,7 +220,7 @@ ExtrudeStackedAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtrudeStackedAttributes_SetAxis(PyObject *self, PyObject *args)
 {
-    ExtrudeStackedAttributesObject *obj = (ExtrudeStackedAttributesObject *)self;
+    PyExtrudeStackedAttributesObject *obj = (PyExtrudeStackedAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetAxis();
@@ -287,7 +287,7 @@ ExtrudeStackedAttributes_SetAxis(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtrudeStackedAttributes_GetAxis(PyObject *self, PyObject *args)
 {
-    ExtrudeStackedAttributesObject *obj = (ExtrudeStackedAttributesObject *)self;
+    PyExtrudeStackedAttributesObject *obj = (PyExtrudeStackedAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the axis.
     PyObject *retval = PyTuple_New(3);
     const double *axis = obj->data->GetAxis();
@@ -299,7 +299,7 @@ ExtrudeStackedAttributes_GetAxis(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtrudeStackedAttributes_SetByVariable(PyObject *self, PyObject *args)
 {
-    ExtrudeStackedAttributesObject *obj = (ExtrudeStackedAttributesObject *)self;
+    PyExtrudeStackedAttributesObject *obj = (PyExtrudeStackedAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -351,7 +351,7 @@ ExtrudeStackedAttributes_SetByVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtrudeStackedAttributes_GetByVariable(PyObject *self, PyObject *args)
 {
-    ExtrudeStackedAttributesObject *obj = (ExtrudeStackedAttributesObject *)self;
+    PyExtrudeStackedAttributesObject *obj = (PyExtrudeStackedAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetByVariable()?1L:0L);
     return retval;
 }
@@ -359,7 +359,7 @@ ExtrudeStackedAttributes_GetByVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtrudeStackedAttributes_SetDefaultVariable(PyObject *self, PyObject *args)
 {
-    ExtrudeStackedAttributesObject *obj = (ExtrudeStackedAttributesObject *)self;
+    PyExtrudeStackedAttributesObject *obj = (PyExtrudeStackedAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -400,7 +400,7 @@ ExtrudeStackedAttributes_SetDefaultVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtrudeStackedAttributes_GetDefaultVariable(PyObject *self, PyObject *args)
 {
-    ExtrudeStackedAttributesObject *obj = (ExtrudeStackedAttributesObject *)self;
+    PyExtrudeStackedAttributesObject *obj = (PyExtrudeStackedAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetDefaultVariable().c_str());
     return retval;
 }
@@ -408,7 +408,7 @@ ExtrudeStackedAttributes_GetDefaultVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtrudeStackedAttributes_SetScalarVariableNames(PyObject *self, PyObject *args)
 {
-    ExtrudeStackedAttributesObject *obj = (ExtrudeStackedAttributesObject *)self;
+    PyExtrudeStackedAttributesObject *obj = (PyExtrudeStackedAttributesObject *)self;
 
     stringVector vec;
 
@@ -465,7 +465,7 @@ ExtrudeStackedAttributes_SetScalarVariableNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtrudeStackedAttributes_GetScalarVariableNames(PyObject *self, PyObject *args)
 {
-    ExtrudeStackedAttributesObject *obj = (ExtrudeStackedAttributesObject *)self;
+    PyExtrudeStackedAttributesObject *obj = (PyExtrudeStackedAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the scalarVariableNames.
     const stringVector &scalarVariableNames = obj->data->GetScalarVariableNames();
     PyObject *retval = PyTuple_New(scalarVariableNames.size());
@@ -477,7 +477,7 @@ ExtrudeStackedAttributes_GetScalarVariableNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtrudeStackedAttributes_SetVisualVariableNames(PyObject *self, PyObject *args)
 {
-    ExtrudeStackedAttributesObject *obj = (ExtrudeStackedAttributesObject *)self;
+    PyExtrudeStackedAttributesObject *obj = (PyExtrudeStackedAttributesObject *)self;
 
     stringVector vec;
 
@@ -534,7 +534,7 @@ ExtrudeStackedAttributes_SetVisualVariableNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtrudeStackedAttributes_GetVisualVariableNames(PyObject *self, PyObject *args)
 {
-    ExtrudeStackedAttributesObject *obj = (ExtrudeStackedAttributesObject *)self;
+    PyExtrudeStackedAttributesObject *obj = (PyExtrudeStackedAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the visualVariableNames.
     const stringVector &visualVariableNames = obj->data->GetVisualVariableNames();
     PyObject *retval = PyTuple_New(visualVariableNames.size());
@@ -546,7 +546,7 @@ ExtrudeStackedAttributes_GetVisualVariableNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtrudeStackedAttributes_SetExtentMinima(PyObject *self, PyObject *args)
 {
-    ExtrudeStackedAttributesObject *obj = (ExtrudeStackedAttributesObject *)self;
+    PyExtrudeStackedAttributesObject *obj = (PyExtrudeStackedAttributesObject *)self;
 
     doubleVector vec;
 
@@ -610,7 +610,7 @@ ExtrudeStackedAttributes_SetExtentMinima(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtrudeStackedAttributes_GetExtentMinima(PyObject *self, PyObject *args)
 {
-    ExtrudeStackedAttributesObject *obj = (ExtrudeStackedAttributesObject *)self;
+    PyExtrudeStackedAttributesObject *obj = (PyExtrudeStackedAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the extentMinima.
     const doubleVector &extentMinima = obj->data->GetExtentMinima();
     PyObject *retval = PyTuple_New(extentMinima.size());
@@ -622,7 +622,7 @@ ExtrudeStackedAttributes_GetExtentMinima(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtrudeStackedAttributes_SetExtentMaxima(PyObject *self, PyObject *args)
 {
-    ExtrudeStackedAttributesObject *obj = (ExtrudeStackedAttributesObject *)self;
+    PyExtrudeStackedAttributesObject *obj = (PyExtrudeStackedAttributesObject *)self;
 
     doubleVector vec;
 
@@ -686,7 +686,7 @@ ExtrudeStackedAttributes_SetExtentMaxima(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtrudeStackedAttributes_GetExtentMaxima(PyObject *self, PyObject *args)
 {
-    ExtrudeStackedAttributesObject *obj = (ExtrudeStackedAttributesObject *)self;
+    PyExtrudeStackedAttributesObject *obj = (PyExtrudeStackedAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the extentMaxima.
     const doubleVector &extentMaxima = obj->data->GetExtentMaxima();
     PyObject *retval = PyTuple_New(extentMaxima.size());
@@ -698,7 +698,7 @@ ExtrudeStackedAttributes_GetExtentMaxima(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtrudeStackedAttributes_SetExtentScale(PyObject *self, PyObject *args)
 {
-    ExtrudeStackedAttributesObject *obj = (ExtrudeStackedAttributesObject *)self;
+    PyExtrudeStackedAttributesObject *obj = (PyExtrudeStackedAttributesObject *)self;
 
     doubleVector vec;
 
@@ -762,7 +762,7 @@ ExtrudeStackedAttributes_SetExtentScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtrudeStackedAttributes_GetExtentScale(PyObject *self, PyObject *args)
 {
-    ExtrudeStackedAttributesObject *obj = (ExtrudeStackedAttributesObject *)self;
+    PyExtrudeStackedAttributesObject *obj = (PyExtrudeStackedAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the extentScale.
     const doubleVector &extentScale = obj->data->GetExtentScale();
     PyObject *retval = PyTuple_New(extentScale.size());
@@ -774,7 +774,7 @@ ExtrudeStackedAttributes_GetExtentScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtrudeStackedAttributes_SetVariableDisplay(PyObject *self, PyObject *args)
 {
-    ExtrudeStackedAttributesObject *obj = (ExtrudeStackedAttributesObject *)self;
+    PyExtrudeStackedAttributesObject *obj = (PyExtrudeStackedAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -834,7 +834,7 @@ ExtrudeStackedAttributes_SetVariableDisplay(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtrudeStackedAttributes_GetVariableDisplay(PyObject *self, PyObject *args)
 {
-    ExtrudeStackedAttributesObject *obj = (ExtrudeStackedAttributesObject *)self;
+    PyExtrudeStackedAttributesObject *obj = (PyExtrudeStackedAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetVariableDisplay()));
     return retval;
 }
@@ -842,7 +842,7 @@ ExtrudeStackedAttributes_GetVariableDisplay(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtrudeStackedAttributes_SetLength(PyObject *self, PyObject *args)
 {
-    ExtrudeStackedAttributesObject *obj = (ExtrudeStackedAttributesObject *)self;
+    PyExtrudeStackedAttributesObject *obj = (PyExtrudeStackedAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -894,7 +894,7 @@ ExtrudeStackedAttributes_SetLength(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtrudeStackedAttributes_GetLength(PyObject *self, PyObject *args)
 {
-    ExtrudeStackedAttributesObject *obj = (ExtrudeStackedAttributesObject *)self;
+    PyExtrudeStackedAttributesObject *obj = (PyExtrudeStackedAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetLength());
     return retval;
 }
@@ -902,7 +902,7 @@ ExtrudeStackedAttributes_GetLength(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtrudeStackedAttributes_SetSteps(PyObject *self, PyObject *args)
 {
-    ExtrudeStackedAttributesObject *obj = (ExtrudeStackedAttributesObject *)self;
+    PyExtrudeStackedAttributesObject *obj = (PyExtrudeStackedAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -954,7 +954,7 @@ ExtrudeStackedAttributes_SetSteps(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtrudeStackedAttributes_GetSteps(PyObject *self, PyObject *args)
 {
-    ExtrudeStackedAttributesObject *obj = (ExtrudeStackedAttributesObject *)self;
+    PyExtrudeStackedAttributesObject *obj = (PyExtrudeStackedAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetSteps()));
     return retval;
 }
@@ -962,7 +962,7 @@ ExtrudeStackedAttributes_GetSteps(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExtrudeStackedAttributes_SetPreserveOriginalCellNumbers(PyObject *self, PyObject *args)
 {
-    ExtrudeStackedAttributesObject *obj = (ExtrudeStackedAttributesObject *)self;
+    PyExtrudeStackedAttributesObject *obj = (PyExtrudeStackedAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1014,7 +1014,7 @@ ExtrudeStackedAttributes_SetPreserveOriginalCellNumbers(PyObject *self, PyObject
 /*static*/ PyObject *
 ExtrudeStackedAttributes_GetPreserveOriginalCellNumbers(PyObject *self, PyObject *args)
 {
-    ExtrudeStackedAttributesObject *obj = (ExtrudeStackedAttributesObject *)self;
+    PyExtrudeStackedAttributesObject *obj = (PyExtrudeStackedAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetPreserveOriginalCellNumbers()?1L:0L);
     return retval;
 }
@@ -1056,16 +1056,16 @@ PyMethodDef PyExtrudeStackedAttributes_methods[EXTRUDESTACKEDATTRIBUTES_NMETH] =
 //
 
 static void
-ExtrudeStackedAttributes_dealloc(PyObject *v)
+PyExtrudeStackedAttributes_dealloc(PyObject *v)
 {
-   ExtrudeStackedAttributesObject *obj = (ExtrudeStackedAttributesObject *)v;
+   PyExtrudeStackedAttributesObject *obj = (PyExtrudeStackedAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *ExtrudeStackedAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyExtrudeStackedAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyExtrudeStackedAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -1162,56 +1162,42 @@ PyExtrudeStackedAttributes_setattro(PyObject *self, PyObject *attr_name, PyObjec
 }
 
 PyObject *
-ExtrudeStackedAttributes_str(PyObject *v)
+PyExtrudeStackedAttributes_str(PyObject *v)
 {
-    ExtrudeStackedAttributesObject *obj = (ExtrudeStackedAttributesObject *)v;
+    PyExtrudeStackedAttributesObject *obj = (PyExtrudeStackedAttributesObject *)v;
     return PyString_FromString(PyExtrudeStackedAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *ExtrudeStackedAttributes_Purpose = "This class contains attributes for the extrude operator.";
-#else
-static char *ExtrudeStackedAttributes_Purpose = "This class contains attributes for the extrude operator.";
-#endif
+static char const *PyExtrudeStackedAttributes_purpose = "This class contains attributes for the extrude operator.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject ExtrudeStackedAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "ExtrudeStackedAttributes",
-    .tp_basicsize = sizeof(ExtrudeStackedAttributesObject),
-    .tp_dealloc = ExtrudeStackedAttributes_dealloc,
-    .tp_repr = ExtrudeStackedAttributes_str,
-    .tp_str = ExtrudeStackedAttributes_str,
-    .tp_getattro = PyExtrudeStackedAttributes_getattro,
-    .tp_setattro = PyExtrudeStackedAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = ExtrudeStackedAttributes_Purpose,
-    .tp_richcompare = ExtrudeStackedAttributes_richcompare,
-    .tp_methods = PyExtrudeStackedAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(ExtrudeStackedAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-ExtrudeStackedAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyExtrudeStackedAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &ExtrudeStackedAttributesType
-         || Py_TYPE(other) != &ExtrudeStackedAttributesType)
+    if ( Py_TYPE(self) != &PyExtrudeStackedAttributesType
+         || Py_TYPE(other) != &PyExtrudeStackedAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    ExtrudeStackedAttributes *a = ((ExtrudeStackedAttributesObject *)self)->data;
-    ExtrudeStackedAttributes *b = ((ExtrudeStackedAttributesObject *)other)->data;
+    ExtrudeStackedAttributes *a = ((PyExtrudeStackedAttributesObject *)self)->data;
+    ExtrudeStackedAttributes *b = ((PyExtrudeStackedAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -1240,8 +1226,8 @@ static ExtrudeStackedAttributes *currentAtts = 0;
 static PyObject *
 NewExtrudeStackedAttributes(int useCurrent)
 {
-    ExtrudeStackedAttributesObject *newObject;
-    newObject = PyObject_NEW(ExtrudeStackedAttributesObject, &ExtrudeStackedAttributesType);
+    PyExtrudeStackedAttributesObject *newObject;
+    newObject = PyObject_NEW(PyExtrudeStackedAttributesObject, &PyExtrudeStackedAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1252,15 +1238,15 @@ NewExtrudeStackedAttributes(int useCurrent)
         newObject->data = new ExtrudeStackedAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&ExtrudeStackedAttributesType);
+    PyType_Ready(&PyExtrudeStackedAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapExtrudeStackedAttributes(const ExtrudeStackedAttributes *attr)
 {
-    ExtrudeStackedAttributesObject *newObject;
-    newObject = PyObject_NEW(ExtrudeStackedAttributesObject, &ExtrudeStackedAttributesType);
+    PyExtrudeStackedAttributesObject *newObject;
+    newObject = PyObject_NEW(PyExtrudeStackedAttributesObject, &PyExtrudeStackedAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (ExtrudeStackedAttributes *)attr;
@@ -1362,13 +1348,13 @@ PyExtrudeStackedAttributes_GetMethodTable(int *nMethods)
 bool
 PyExtrudeStackedAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ExtrudeStackedAttributesType);
+    return (obj->ob_type == &PyExtrudeStackedAttributesType);
 }
 
 ExtrudeStackedAttributes *
 PyExtrudeStackedAttributes_FromPyObject(PyObject *obj)
 {
-    ExtrudeStackedAttributesObject *obj2 = (ExtrudeStackedAttributesObject *)obj;
+    PyExtrudeStackedAttributesObject *obj2 = (PyExtrudeStackedAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1387,7 +1373,7 @@ PyExtrudeStackedAttributes_Wrap(const ExtrudeStackedAttributes *attr)
 void
 PyExtrudeStackedAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    ExtrudeStackedAttributesObject *obj2 = (ExtrudeStackedAttributesObject *)obj;
+    PyExtrudeStackedAttributesObject *obj2 = (PyExtrudeStackedAttributesObject *)obj;
     obj2->parent = parent;
 }
 

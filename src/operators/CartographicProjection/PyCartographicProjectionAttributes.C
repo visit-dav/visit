@@ -23,7 +23,7 @@
 //
 // This struct contains the Python type information and a CartographicProjectionAttributes.
 //
-struct CartographicProjectionAttributesObject
+struct PyCartographicProjectionAttributesObject
 {
     PyObject_HEAD
     CartographicProjectionAttributes *data;
@@ -102,7 +102,7 @@ PyCartographicProjectionAttributes_ToString(const CartographicProjectionAttribut
 static PyObject *
 CartographicProjectionAttributes_Notify(PyObject *self, PyObject *args)
 {
-    CartographicProjectionAttributesObject *obj = (CartographicProjectionAttributesObject *)self;
+    PyCartographicProjectionAttributesObject *obj = (PyCartographicProjectionAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -139,7 +139,7 @@ CartographicProjectionAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CartographicProjectionAttributes_SetProjectionID(PyObject *self, PyObject *args)
 {
-    CartographicProjectionAttributesObject *obj = (CartographicProjectionAttributesObject *)self;
+    PyCartographicProjectionAttributesObject *obj = (PyCartographicProjectionAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -206,7 +206,7 @@ CartographicProjectionAttributes_SetProjectionID(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CartographicProjectionAttributes_GetProjectionID(PyObject *self, PyObject *args)
 {
-    CartographicProjectionAttributesObject *obj = (CartographicProjectionAttributesObject *)self;
+    PyCartographicProjectionAttributesObject *obj = (PyCartographicProjectionAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetProjectionID()));
     return retval;
 }
@@ -214,7 +214,7 @@ CartographicProjectionAttributes_GetProjectionID(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CartographicProjectionAttributes_SetCentralMeridian(PyObject *self, PyObject *args)
 {
-    CartographicProjectionAttributesObject *obj = (CartographicProjectionAttributesObject *)self;
+    PyCartographicProjectionAttributesObject *obj = (PyCartographicProjectionAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -266,7 +266,7 @@ CartographicProjectionAttributes_SetCentralMeridian(PyObject *self, PyObject *ar
 /*static*/ PyObject *
 CartographicProjectionAttributes_GetCentralMeridian(PyObject *self, PyObject *args)
 {
-    CartographicProjectionAttributesObject *obj = (CartographicProjectionAttributesObject *)self;
+    PyCartographicProjectionAttributesObject *obj = (PyCartographicProjectionAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetCentralMeridian());
     return retval;
 }
@@ -288,16 +288,16 @@ PyMethodDef PyCartographicProjectionAttributes_methods[CARTOGRAPHICPROJECTIONATT
 //
 
 static void
-CartographicProjectionAttributes_dealloc(PyObject *v)
+PyCartographicProjectionAttributes_dealloc(PyObject *v)
 {
-   CartographicProjectionAttributesObject *obj = (CartographicProjectionAttributesObject *)v;
+   PyCartographicProjectionAttributesObject *obj = (PyCartographicProjectionAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *CartographicProjectionAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyCartographicProjectionAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyCartographicProjectionAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -368,56 +368,42 @@ PyCartographicProjectionAttributes_setattro(PyObject *self, PyObject *attr_name,
 }
 
 PyObject *
-CartographicProjectionAttributes_str(PyObject *v)
+PyCartographicProjectionAttributes_str(PyObject *v)
 {
-    CartographicProjectionAttributesObject *obj = (CartographicProjectionAttributesObject *)v;
+    PyCartographicProjectionAttributesObject *obj = (PyCartographicProjectionAttributesObject *)v;
     return PyString_FromString(PyCartographicProjectionAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *CartographicProjectionAttributes_Purpose = "";
-#else
-static char *CartographicProjectionAttributes_Purpose = "";
-#endif
+static char const *PyCartographicProjectionAttributes_purpose = "";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject CartographicProjectionAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "CartographicProjectionAttributes",
-    .tp_basicsize = sizeof(CartographicProjectionAttributesObject),
-    .tp_dealloc = CartographicProjectionAttributes_dealloc,
-    .tp_repr = CartographicProjectionAttributes_str,
-    .tp_str = CartographicProjectionAttributes_str,
-    .tp_getattro = PyCartographicProjectionAttributes_getattro,
-    .tp_setattro = PyCartographicProjectionAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = CartographicProjectionAttributes_Purpose,
-    .tp_richcompare = CartographicProjectionAttributes_richcompare,
-    .tp_methods = PyCartographicProjectionAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(CartographicProjectionAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-CartographicProjectionAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyCartographicProjectionAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &CartographicProjectionAttributesType
-         || Py_TYPE(other) != &CartographicProjectionAttributesType)
+    if ( Py_TYPE(self) != &PyCartographicProjectionAttributesType
+         || Py_TYPE(other) != &PyCartographicProjectionAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    CartographicProjectionAttributes *a = ((CartographicProjectionAttributesObject *)self)->data;
-    CartographicProjectionAttributes *b = ((CartographicProjectionAttributesObject *)other)->data;
+    CartographicProjectionAttributes *a = ((PyCartographicProjectionAttributesObject *)self)->data;
+    CartographicProjectionAttributes *b = ((PyCartographicProjectionAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -446,8 +432,8 @@ static CartographicProjectionAttributes *currentAtts = 0;
 static PyObject *
 NewCartographicProjectionAttributes(int useCurrent)
 {
-    CartographicProjectionAttributesObject *newObject;
-    newObject = PyObject_NEW(CartographicProjectionAttributesObject, &CartographicProjectionAttributesType);
+    PyCartographicProjectionAttributesObject *newObject;
+    newObject = PyObject_NEW(PyCartographicProjectionAttributesObject, &PyCartographicProjectionAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -458,15 +444,15 @@ NewCartographicProjectionAttributes(int useCurrent)
         newObject->data = new CartographicProjectionAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&CartographicProjectionAttributesType);
+    PyType_Ready(&PyCartographicProjectionAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapCartographicProjectionAttributes(const CartographicProjectionAttributes *attr)
 {
-    CartographicProjectionAttributesObject *newObject;
-    newObject = PyObject_NEW(CartographicProjectionAttributesObject, &CartographicProjectionAttributesType);
+    PyCartographicProjectionAttributesObject *newObject;
+    newObject = PyObject_NEW(PyCartographicProjectionAttributesObject, &PyCartographicProjectionAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (CartographicProjectionAttributes *)attr;
@@ -568,13 +554,13 @@ PyCartographicProjectionAttributes_GetMethodTable(int *nMethods)
 bool
 PyCartographicProjectionAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &CartographicProjectionAttributesType);
+    return (obj->ob_type == &PyCartographicProjectionAttributesType);
 }
 
 CartographicProjectionAttributes *
 PyCartographicProjectionAttributes_FromPyObject(PyObject *obj)
 {
-    CartographicProjectionAttributesObject *obj2 = (CartographicProjectionAttributesObject *)obj;
+    PyCartographicProjectionAttributesObject *obj2 = (PyCartographicProjectionAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -593,7 +579,7 @@ PyCartographicProjectionAttributes_Wrap(const CartographicProjectionAttributes *
 void
 PyCartographicProjectionAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    CartographicProjectionAttributesObject *obj2 = (CartographicProjectionAttributesObject *)obj;
+    PyCartographicProjectionAttributesObject *obj2 = (PyCartographicProjectionAttributesObject *)obj;
     obj2->parent = parent;
 }
 

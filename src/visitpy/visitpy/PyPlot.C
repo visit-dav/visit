@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a Plot.
 //
-struct PlotObject
+struct PyPlotObject
 {
     PyObject_HEAD
     Plot *data;
@@ -219,7 +219,7 @@ PyPlot_ToString(const Plot *atts, const char *prefix, const bool forLogging)
 static PyObject *
 Plot_Notify(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -256,7 +256,7 @@ Plot_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_SetStateType(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -316,7 +316,7 @@ Plot_SetStateType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_GetStateType(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetStateType()));
     return retval;
 }
@@ -324,7 +324,7 @@ Plot_GetStateType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_SetPlotType(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -376,7 +376,7 @@ Plot_SetPlotType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_GetPlotType(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetPlotType()));
     return retval;
 }
@@ -384,7 +384,7 @@ Plot_GetPlotType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_SetPlotName(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -425,7 +425,7 @@ Plot_SetPlotName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_GetPlotName(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetPlotName().c_str());
     return retval;
 }
@@ -433,7 +433,7 @@ Plot_GetPlotName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_SetActiveFlag(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -485,7 +485,7 @@ Plot_SetActiveFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_GetActiveFlag(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetActiveFlag()?1L:0L);
     return retval;
 }
@@ -493,7 +493,7 @@ Plot_GetActiveFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_SetHiddenFlag(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -545,7 +545,7 @@ Plot_SetHiddenFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_GetHiddenFlag(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetHiddenFlag()?1L:0L);
     return retval;
 }
@@ -553,7 +553,7 @@ Plot_GetHiddenFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_SetExpandedFlag(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -605,7 +605,7 @@ Plot_SetExpandedFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_GetExpandedFlag(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetExpandedFlag()?1L:0L);
     return retval;
 }
@@ -613,7 +613,7 @@ Plot_GetExpandedFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_SetPlotVar(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -654,7 +654,7 @@ Plot_SetPlotVar(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_GetPlotVar(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetPlotVar().c_str());
     return retval;
 }
@@ -662,7 +662,7 @@ Plot_GetPlotVar(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_SetDatabaseName(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -703,7 +703,7 @@ Plot_SetDatabaseName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_GetDatabaseName(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetDatabaseName().c_str());
     return retval;
 }
@@ -711,7 +711,7 @@ Plot_GetDatabaseName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_SetOperators(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
 
     intVector vec;
 
@@ -775,7 +775,7 @@ Plot_SetOperators(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_GetOperators(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
     // Allocate a tuple the with enough entries to hold the operators.
     const intVector &operators = obj->data->GetOperators();
     PyObject *retval = PyTuple_New(operators.size());
@@ -787,7 +787,7 @@ Plot_GetOperators(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_SetOperatorNames(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
 
     stringVector vec;
 
@@ -844,7 +844,7 @@ Plot_SetOperatorNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_GetOperatorNames(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
     // Allocate a tuple the with enough entries to hold the operatorNames.
     const stringVector &operatorNames = obj->data->GetOperatorNames();
     PyObject *retval = PyTuple_New(operatorNames.size());
@@ -856,7 +856,7 @@ Plot_GetOperatorNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_SetActiveOperator(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -908,7 +908,7 @@ Plot_SetActiveOperator(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_GetActiveOperator(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetActiveOperator()));
     return retval;
 }
@@ -916,7 +916,7 @@ Plot_GetActiveOperator(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_SetId(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -968,7 +968,7 @@ Plot_SetId(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_GetId(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetId()));
     return retval;
 }
@@ -976,7 +976,7 @@ Plot_GetId(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_SetEmbeddedPlotId(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1028,7 +1028,7 @@ Plot_SetEmbeddedPlotId(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_GetEmbeddedPlotId(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetEmbeddedPlotId()));
     return retval;
 }
@@ -1036,7 +1036,7 @@ Plot_GetEmbeddedPlotId(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_SetBeginFrame(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1088,7 +1088,7 @@ Plot_SetBeginFrame(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_GetBeginFrame(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetBeginFrame()));
     return retval;
 }
@@ -1096,7 +1096,7 @@ Plot_GetBeginFrame(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_SetEndFrame(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1148,7 +1148,7 @@ Plot_SetEndFrame(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_GetEndFrame(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetEndFrame()));
     return retval;
 }
@@ -1156,7 +1156,7 @@ Plot_GetEndFrame(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_SetKeyframes(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
 
     intVector vec;
 
@@ -1220,7 +1220,7 @@ Plot_SetKeyframes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_GetKeyframes(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
     // Allocate a tuple the with enough entries to hold the keyframes.
     const intVector &keyframes = obj->data->GetKeyframes();
     PyObject *retval = PyTuple_New(keyframes.size());
@@ -1232,7 +1232,7 @@ Plot_GetKeyframes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_SetNumKeyframesPerOperator(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
 
     intVector vec;
 
@@ -1296,7 +1296,7 @@ Plot_SetNumKeyframesPerOperator(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_GetNumKeyframesPerOperator(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
     // Allocate a tuple the with enough entries to hold the numKeyframesPerOperator.
     const intVector &numKeyframesPerOperator = obj->data->GetNumKeyframesPerOperator();
     PyObject *retval = PyTuple_New(numKeyframesPerOperator.size());
@@ -1308,7 +1308,7 @@ Plot_GetNumKeyframesPerOperator(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_SetOperatorKeyframes(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
 
     intVector vec;
 
@@ -1372,7 +1372,7 @@ Plot_SetOperatorKeyframes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_GetOperatorKeyframes(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
     // Allocate a tuple the with enough entries to hold the operatorKeyframes.
     const intVector &operatorKeyframes = obj->data->GetOperatorKeyframes();
     PyObject *retval = PyTuple_New(operatorKeyframes.size());
@@ -1384,7 +1384,7 @@ Plot_GetOperatorKeyframes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_SetDatabaseKeyframes(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
 
     intVector vec;
 
@@ -1448,7 +1448,7 @@ Plot_SetDatabaseKeyframes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_GetDatabaseKeyframes(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
     // Allocate a tuple the with enough entries to hold the databaseKeyframes.
     const intVector &databaseKeyframes = obj->data->GetDatabaseKeyframes();
     PyObject *retval = PyTuple_New(databaseKeyframes.size());
@@ -1460,7 +1460,7 @@ Plot_GetDatabaseKeyframes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_SetIsFromSimulation(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1512,7 +1512,7 @@ Plot_SetIsFromSimulation(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_GetIsFromSimulation(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetIsFromSimulation()?1L:0L);
     return retval;
 }
@@ -1520,7 +1520,7 @@ Plot_GetIsFromSimulation(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_SetFollowsTime(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1572,7 +1572,7 @@ Plot_SetFollowsTime(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_GetFollowsTime(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetFollowsTime()?1L:0L);
     return retval;
 }
@@ -1580,7 +1580,7 @@ Plot_GetFollowsTime(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_SetDescription(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1621,7 +1621,7 @@ Plot_SetDescription(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_GetDescription(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetDescription().c_str());
     return retval;
 }
@@ -1629,7 +1629,7 @@ Plot_GetDescription(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_SetSelection(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1670,7 +1670,7 @@ Plot_SetSelection(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_GetSelection(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetSelection().c_str());
     return retval;
 }
@@ -1678,7 +1678,7 @@ Plot_GetSelection(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_SetAnimatingFlag(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1730,7 +1730,7 @@ Plot_SetAnimatingFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Plot_GetAnimatingFlag(PyObject *self, PyObject *args)
 {
-    PlotObject *obj = (PlotObject *)self;
+    PyPlotObject *obj = (PyPlotObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetAnimatingFlag()?1L:0L);
     return retval;
 }
@@ -1796,16 +1796,16 @@ PyMethodDef PyPlot_methods[PLOT_NMETH] = {
 //
 
 static void
-Plot_dealloc(PyObject *v)
+PyPlot_dealloc(PyObject *v)
 {
-   PlotObject *obj = (PlotObject *)v;
+   PyPlotObject *obj = (PyPlotObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *Plot_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyPlot_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyPlot_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -1950,56 +1950,42 @@ PyPlot_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 }
 
 PyObject *
-Plot_str(PyObject *v)
+PyPlot_str(PyObject *v)
 {
-    PlotObject *obj = (PlotObject *)v;
+    PyPlotObject *obj = (PyPlotObject *)v;
     return PyString_FromString(PyPlot_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *Plot_Purpose = "This class is a plot element in a plot list.";
-#else
-static char *Plot_Purpose = "This class is a plot element in a plot list.";
-#endif
+static char const *PyPlot_purpose = "This class is a plot element in a plot list.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject PlotType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "Plot",
-    .tp_basicsize = sizeof(PlotObject),
-    .tp_dealloc = Plot_dealloc,
-    .tp_repr = Plot_str,
-    .tp_str = Plot_str,
-    .tp_getattro = PyPlot_getattro,
-    .tp_setattro = PyPlot_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = Plot_Purpose,
-    .tp_richcompare = Plot_richcompare,
-    .tp_methods = PyPlot_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(Plot);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-Plot_richcompare(PyObject *self, PyObject *other, int op)
+PyPlot_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &PlotType
-         || Py_TYPE(other) != &PlotType)
+    if ( Py_TYPE(self) != &PyPlotType
+         || Py_TYPE(other) != &PyPlotType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    Plot *a = ((PlotObject *)self)->data;
-    Plot *b = ((PlotObject *)other)->data;
+    Plot *a = ((PyPlotObject *)self)->data;
+    Plot *b = ((PyPlotObject *)other)->data;
 
     switch (op)
     {
@@ -2028,8 +2014,8 @@ static Plot *currentAtts = 0;
 static PyObject *
 NewPlot(int useCurrent)
 {
-    PlotObject *newObject;
-    newObject = PyObject_NEW(PlotObject, &PlotType);
+    PyPlotObject *newObject;
+    newObject = PyObject_NEW(PyPlotObject, &PyPlotType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -2040,15 +2026,15 @@ NewPlot(int useCurrent)
         newObject->data = new Plot;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&PlotType);
+    PyType_Ready(&PyPlotType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapPlot(const Plot *attr)
 {
-    PlotObject *newObject;
-    newObject = PyObject_NEW(PlotObject, &PlotType);
+    PyPlotObject *newObject;
+    newObject = PyObject_NEW(PyPlotObject, &PyPlotType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (Plot *)attr;
@@ -2150,13 +2136,13 @@ PyPlot_GetMethodTable(int *nMethods)
 bool
 PyPlot_Check(PyObject *obj)
 {
-    return (obj->ob_type == &PlotType);
+    return (obj->ob_type == &PyPlotType);
 }
 
 Plot *
 PyPlot_FromPyObject(PyObject *obj)
 {
-    PlotObject *obj2 = (PlotObject *)obj;
+    PyPlotObject *obj2 = (PyPlotObject *)obj;
     return obj2->data;
 }
 
@@ -2175,7 +2161,7 @@ PyPlot_Wrap(const Plot *attr)
 void
 PyPlot_SetParent(PyObject *obj, PyObject *parent)
 {
-    PlotObject *obj2 = (PlotObject *)obj;
+    PyPlotObject *obj2 = (PyPlotObject *)obj;
     obj2->parent = parent;
 }
 

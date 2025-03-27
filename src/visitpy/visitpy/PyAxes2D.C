@@ -26,7 +26,7 @@
 //
 // This struct contains the Python type information and a Axes2D.
 //
-struct Axes2DObject
+struct PyAxes2DObject
 {
     PyObject_HEAD
     Axes2D *data;
@@ -123,7 +123,7 @@ PyAxes2D_ToString(const Axes2D *atts, const char *prefix, const bool forLogging)
 static PyObject *
 Axes2D_Notify(PyObject *self, PyObject *args)
 {
-    Axes2DObject *obj = (Axes2DObject *)self;
+    PyAxes2DObject *obj = (PyAxes2DObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -160,7 +160,7 @@ Axes2D_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes2D_SetVisible(PyObject *self, PyObject *args)
 {
-    Axes2DObject *obj = (Axes2DObject *)self;
+    PyAxes2DObject *obj = (PyAxes2DObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -212,7 +212,7 @@ Axes2D_SetVisible(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes2D_GetVisible(PyObject *self, PyObject *args)
 {
-    Axes2DObject *obj = (Axes2DObject *)self;
+    PyAxes2DObject *obj = (PyAxes2DObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetVisible()?1L:0L);
     return retval;
 }
@@ -220,7 +220,7 @@ Axes2D_GetVisible(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes2D_SetAutoSetTicks(PyObject *self, PyObject *args)
 {
-    Axes2DObject *obj = (Axes2DObject *)self;
+    PyAxes2DObject *obj = (PyAxes2DObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -272,7 +272,7 @@ Axes2D_SetAutoSetTicks(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes2D_GetAutoSetTicks(PyObject *self, PyObject *args)
 {
-    Axes2DObject *obj = (Axes2DObject *)self;
+    PyAxes2DObject *obj = (PyAxes2DObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetAutoSetTicks()?1L:0L);
     return retval;
 }
@@ -280,7 +280,7 @@ Axes2D_GetAutoSetTicks(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes2D_SetAutoSetScaling(PyObject *self, PyObject *args)
 {
-    Axes2DObject *obj = (Axes2DObject *)self;
+    PyAxes2DObject *obj = (PyAxes2DObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -332,7 +332,7 @@ Axes2D_SetAutoSetScaling(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes2D_GetAutoSetScaling(PyObject *self, PyObject *args)
 {
-    Axes2DObject *obj = (Axes2DObject *)self;
+    PyAxes2DObject *obj = (PyAxes2DObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetAutoSetScaling()?1L:0L);
     return retval;
 }
@@ -340,7 +340,7 @@ Axes2D_GetAutoSetScaling(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes2D_SetLineWidth(PyObject *self, PyObject *args)
 {
-    Axes2DObject *obj = (Axes2DObject *)self;
+    PyAxes2DObject *obj = (PyAxes2DObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -392,7 +392,7 @@ Axes2D_SetLineWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes2D_GetLineWidth(PyObject *self, PyObject *args)
 {
-    Axes2DObject *obj = (Axes2DObject *)self;
+    PyAxes2DObject *obj = (PyAxes2DObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetLineWidth()));
     return retval;
 }
@@ -400,7 +400,7 @@ Axes2D_GetLineWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes2D_SetTickLocation(PyObject *self, PyObject *args)
 {
-    Axes2DObject *obj = (Axes2DObject *)self;
+    PyAxes2DObject *obj = (PyAxes2DObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -459,7 +459,7 @@ Axes2D_SetTickLocation(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes2D_GetTickLocation(PyObject *self, PyObject *args)
 {
-    Axes2DObject *obj = (Axes2DObject *)self;
+    PyAxes2DObject *obj = (PyAxes2DObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetTickLocation()));
     return retval;
 }
@@ -467,7 +467,7 @@ Axes2D_GetTickLocation(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes2D_SetTickAxes(PyObject *self, PyObject *args)
 {
-    Axes2DObject *obj = (Axes2DObject *)self;
+    PyAxes2DObject *obj = (PyAxes2DObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -528,7 +528,7 @@ Axes2D_SetTickAxes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes2D_GetTickAxes(PyObject *self, PyObject *args)
 {
-    Axes2DObject *obj = (Axes2DObject *)self;
+    PyAxes2DObject *obj = (PyAxes2DObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetTickAxes()));
     return retval;
 }
@@ -536,7 +536,7 @@ Axes2D_GetTickAxes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes2D_SetXAxis(PyObject *self, PyObject *args)
 {
-    Axes2DObject *obj = (Axes2DObject *)self;
+    PyAxes2DObject *obj = (PyAxes2DObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -553,7 +553,7 @@ Axes2D_SetXAxis(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes2D_GetXAxis(PyObject *self, PyObject *args)
 {
-    Axes2DObject *obj = (Axes2DObject *)self;
+    PyAxes2DObject *obj = (PyAxes2DObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -569,7 +569,7 @@ Axes2D_GetXAxis(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes2D_SetYAxis(PyObject *self, PyObject *args)
 {
-    Axes2DObject *obj = (Axes2DObject *)self;
+    PyAxes2DObject *obj = (PyAxes2DObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -586,7 +586,7 @@ Axes2D_SetYAxis(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes2D_GetYAxis(PyObject *self, PyObject *args)
 {
-    Axes2DObject *obj = (Axes2DObject *)self;
+    PyAxes2DObject *obj = (PyAxes2DObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -628,16 +628,16 @@ PyMethodDef PyAxes2D_methods[AXES2D_NMETH] = {
 //
 
 static void
-Axes2D_dealloc(PyObject *v)
+PyAxes2D_dealloc(PyObject *v)
 {
-   Axes2DObject *obj = (Axes2DObject *)v;
+   PyAxes2DObject *obj = (PyAxes2DObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *Axes2D_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyAxes2D_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyAxes2D_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -727,56 +727,42 @@ PyAxes2D_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 }
 
 PyObject *
-Axes2D_str(PyObject *v)
+PyAxes2D_str(PyObject *v)
 {
-    Axes2DObject *obj = (Axes2DObject *)v;
+    PyAxes2DObject *obj = (PyAxes2DObject *)v;
     return PyString_FromString(PyAxes2D_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *Axes2D_Purpose = "Contains the properties for the 2D axes.";
-#else
-static char *Axes2D_Purpose = "Contains the properties for the 2D axes.";
-#endif
+static char const *PyAxes2D_purpose = "Contains the properties for the 2D axes.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject Axes2DType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "Axes2D",
-    .tp_basicsize = sizeof(Axes2DObject),
-    .tp_dealloc = Axes2D_dealloc,
-    .tp_repr = Axes2D_str,
-    .tp_str = Axes2D_str,
-    .tp_getattro = PyAxes2D_getattro,
-    .tp_setattro = PyAxes2D_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = Axes2D_Purpose,
-    .tp_richcompare = Axes2D_richcompare,
-    .tp_methods = PyAxes2D_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(Axes2D);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-Axes2D_richcompare(PyObject *self, PyObject *other, int op)
+PyAxes2D_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &Axes2DType
-         || Py_TYPE(other) != &Axes2DType)
+    if ( Py_TYPE(self) != &PyAxes2DType
+         || Py_TYPE(other) != &PyAxes2DType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    Axes2D *a = ((Axes2DObject *)self)->data;
-    Axes2D *b = ((Axes2DObject *)other)->data;
+    Axes2D *a = ((PyAxes2DObject *)self)->data;
+    Axes2D *b = ((PyAxes2DObject *)other)->data;
 
     switch (op)
     {
@@ -805,8 +791,8 @@ static Axes2D *currentAtts = 0;
 static PyObject *
 NewAxes2D(int useCurrent)
 {
-    Axes2DObject *newObject;
-    newObject = PyObject_NEW(Axes2DObject, &Axes2DType);
+    PyAxes2DObject *newObject;
+    newObject = PyObject_NEW(PyAxes2DObject, &PyAxes2DType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -817,15 +803,15 @@ NewAxes2D(int useCurrent)
         newObject->data = new Axes2D;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&Axes2DType);
+    PyType_Ready(&PyAxes2DType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapAxes2D(const Axes2D *attr)
 {
-    Axes2DObject *newObject;
-    newObject = PyObject_NEW(Axes2DObject, &Axes2DType);
+    PyAxes2DObject *newObject;
+    newObject = PyObject_NEW(PyAxes2DObject, &PyAxes2DType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (Axes2D *)attr;
@@ -927,13 +913,13 @@ PyAxes2D_GetMethodTable(int *nMethods)
 bool
 PyAxes2D_Check(PyObject *obj)
 {
-    return (obj->ob_type == &Axes2DType);
+    return (obj->ob_type == &PyAxes2DType);
 }
 
 Axes2D *
 PyAxes2D_FromPyObject(PyObject *obj)
 {
-    Axes2DObject *obj2 = (Axes2DObject *)obj;
+    PyAxes2DObject *obj2 = (PyAxes2DObject *)obj;
     return obj2->data;
 }
 
@@ -952,7 +938,7 @@ PyAxes2D_Wrap(const Axes2D *attr)
 void
 PyAxes2D_SetParent(PyObject *obj, PyObject *parent)
 {
-    Axes2DObject *obj2 = (Axes2DObject *)obj;
+    PyAxes2DObject *obj2 = (PyAxes2DObject *)obj;
     obj2->parent = parent;
 }
 

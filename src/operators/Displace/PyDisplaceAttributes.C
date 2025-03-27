@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a DisplaceAttributes.
 //
-struct DisplaceAttributesObject
+struct PyDisplaceAttributesObject
 {
     PyObject_HEAD
     DisplaceAttributes *data;
@@ -52,7 +52,7 @@ PyDisplaceAttributes_ToString(const DisplaceAttributes *atts, const char *prefix
 static PyObject *
 DisplaceAttributes_Notify(PyObject *self, PyObject *args)
 {
-    DisplaceAttributesObject *obj = (DisplaceAttributesObject *)self;
+    PyDisplaceAttributesObject *obj = (PyDisplaceAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -89,7 +89,7 @@ DisplaceAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DisplaceAttributes_SetFactor(PyObject *self, PyObject *args)
 {
-    DisplaceAttributesObject *obj = (DisplaceAttributesObject *)self;
+    PyDisplaceAttributesObject *obj = (PyDisplaceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -141,7 +141,7 @@ DisplaceAttributes_SetFactor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DisplaceAttributes_GetFactor(PyObject *self, PyObject *args)
 {
-    DisplaceAttributesObject *obj = (DisplaceAttributesObject *)self;
+    PyDisplaceAttributesObject *obj = (PyDisplaceAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetFactor());
     return retval;
 }
@@ -149,7 +149,7 @@ DisplaceAttributes_GetFactor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DisplaceAttributes_SetVariable(PyObject *self, PyObject *args)
 {
-    DisplaceAttributesObject *obj = (DisplaceAttributesObject *)self;
+    PyDisplaceAttributesObject *obj = (PyDisplaceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -190,7 +190,7 @@ DisplaceAttributes_SetVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DisplaceAttributes_GetVariable(PyObject *self, PyObject *args)
 {
-    DisplaceAttributesObject *obj = (DisplaceAttributesObject *)self;
+    PyDisplaceAttributesObject *obj = (PyDisplaceAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetVariable().c_str());
     return retval;
 }
@@ -212,16 +212,16 @@ PyMethodDef PyDisplaceAttributes_methods[DISPLACEATTRIBUTES_NMETH] = {
 //
 
 static void
-DisplaceAttributes_dealloc(PyObject *v)
+PyDisplaceAttributes_dealloc(PyObject *v)
 {
-   DisplaceAttributesObject *obj = (DisplaceAttributesObject *)v;
+   PyDisplaceAttributesObject *obj = (PyDisplaceAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *DisplaceAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyDisplaceAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyDisplaceAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -269,56 +269,42 @@ PyDisplaceAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *arg
 }
 
 PyObject *
-DisplaceAttributes_str(PyObject *v)
+PyDisplaceAttributes_str(PyObject *v)
 {
-    DisplaceAttributesObject *obj = (DisplaceAttributesObject *)v;
+    PyDisplaceAttributesObject *obj = (PyDisplaceAttributesObject *)v;
     return PyString_FromString(PyDisplaceAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *DisplaceAttributes_Purpose = "This class contains attributes for the displace operator.";
-#else
-static char *DisplaceAttributes_Purpose = "This class contains attributes for the displace operator.";
-#endif
+static char const *PyDisplaceAttributes_purpose = "This class contains attributes for the displace operator.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject DisplaceAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "DisplaceAttributes",
-    .tp_basicsize = sizeof(DisplaceAttributesObject),
-    .tp_dealloc = DisplaceAttributes_dealloc,
-    .tp_repr = DisplaceAttributes_str,
-    .tp_str = DisplaceAttributes_str,
-    .tp_getattro = PyDisplaceAttributes_getattro,
-    .tp_setattro = PyDisplaceAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = DisplaceAttributes_Purpose,
-    .tp_richcompare = DisplaceAttributes_richcompare,
-    .tp_methods = PyDisplaceAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(DisplaceAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-DisplaceAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyDisplaceAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &DisplaceAttributesType
-         || Py_TYPE(other) != &DisplaceAttributesType)
+    if ( Py_TYPE(self) != &PyDisplaceAttributesType
+         || Py_TYPE(other) != &PyDisplaceAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    DisplaceAttributes *a = ((DisplaceAttributesObject *)self)->data;
-    DisplaceAttributes *b = ((DisplaceAttributesObject *)other)->data;
+    DisplaceAttributes *a = ((PyDisplaceAttributesObject *)self)->data;
+    DisplaceAttributes *b = ((PyDisplaceAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -347,8 +333,8 @@ static DisplaceAttributes *currentAtts = 0;
 static PyObject *
 NewDisplaceAttributes(int useCurrent)
 {
-    DisplaceAttributesObject *newObject;
-    newObject = PyObject_NEW(DisplaceAttributesObject, &DisplaceAttributesType);
+    PyDisplaceAttributesObject *newObject;
+    newObject = PyObject_NEW(PyDisplaceAttributesObject, &PyDisplaceAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -359,15 +345,15 @@ NewDisplaceAttributes(int useCurrent)
         newObject->data = new DisplaceAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&DisplaceAttributesType);
+    PyType_Ready(&PyDisplaceAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapDisplaceAttributes(const DisplaceAttributes *attr)
 {
-    DisplaceAttributesObject *newObject;
-    newObject = PyObject_NEW(DisplaceAttributesObject, &DisplaceAttributesType);
+    PyDisplaceAttributesObject *newObject;
+    newObject = PyObject_NEW(PyDisplaceAttributesObject, &PyDisplaceAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (DisplaceAttributes *)attr;
@@ -469,13 +455,13 @@ PyDisplaceAttributes_GetMethodTable(int *nMethods)
 bool
 PyDisplaceAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &DisplaceAttributesType);
+    return (obj->ob_type == &PyDisplaceAttributesType);
 }
 
 DisplaceAttributes *
 PyDisplaceAttributes_FromPyObject(PyObject *obj)
 {
-    DisplaceAttributesObject *obj2 = (DisplaceAttributesObject *)obj;
+    PyDisplaceAttributesObject *obj2 = (PyDisplaceAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -494,7 +480,7 @@ PyDisplaceAttributes_Wrap(const DisplaceAttributes *attr)
 void
 PyDisplaceAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    DisplaceAttributesObject *obj2 = (DisplaceAttributesObject *)obj;
+    PyDisplaceAttributesObject *obj2 = (PyDisplaceAttributesObject *)obj;
     obj2->parent = parent;
 }
 

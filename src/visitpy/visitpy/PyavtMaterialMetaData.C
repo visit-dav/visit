@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a avtMaterialMetaData.
 //
-struct avtMaterialMetaDataObject
+struct PyavtMaterialMetaDataObject
 {
     PyObject_HEAD
     avtMaterialMetaData *data;
@@ -84,7 +84,7 @@ PyavtMaterialMetaData_ToString(const avtMaterialMetaData *atts, const char *pref
 static PyObject *
 avtMaterialMetaData_Notify(PyObject *self, PyObject *args)
 {
-    avtMaterialMetaDataObject *obj = (avtMaterialMetaDataObject *)self;
+    PyavtMaterialMetaDataObject *obj = (PyavtMaterialMetaDataObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -121,7 +121,7 @@ avtMaterialMetaData_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMaterialMetaData_SetNumMaterials(PyObject *self, PyObject *args)
 {
-    avtMaterialMetaDataObject *obj = (avtMaterialMetaDataObject *)self;
+    PyavtMaterialMetaDataObject *obj = (PyavtMaterialMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -173,7 +173,7 @@ avtMaterialMetaData_SetNumMaterials(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMaterialMetaData_GetNumMaterials(PyObject *self, PyObject *args)
 {
-    avtMaterialMetaDataObject *obj = (avtMaterialMetaDataObject *)self;
+    PyavtMaterialMetaDataObject *obj = (PyavtMaterialMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->numMaterials));
     return retval;
 }
@@ -181,7 +181,7 @@ avtMaterialMetaData_GetNumMaterials(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMaterialMetaData_SetMaterialNames(PyObject *self, PyObject *args)
 {
-    avtMaterialMetaDataObject *obj = (avtMaterialMetaDataObject *)self;
+    PyavtMaterialMetaDataObject *obj = (PyavtMaterialMetaDataObject *)self;
 
     stringVector vec;
 
@@ -238,7 +238,7 @@ avtMaterialMetaData_SetMaterialNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMaterialMetaData_GetMaterialNames(PyObject *self, PyObject *args)
 {
-    avtMaterialMetaDataObject *obj = (avtMaterialMetaDataObject *)self;
+    PyavtMaterialMetaDataObject *obj = (PyavtMaterialMetaDataObject *)self;
     // Allocate a tuple the with enough entries to hold the materialNames.
     const stringVector &materialNames = obj->data->materialNames;
     PyObject *retval = PyTuple_New(materialNames.size());
@@ -250,7 +250,7 @@ avtMaterialMetaData_GetMaterialNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMaterialMetaData_SetColorNames(PyObject *self, PyObject *args)
 {
-    avtMaterialMetaDataObject *obj = (avtMaterialMetaDataObject *)self;
+    PyavtMaterialMetaDataObject *obj = (PyavtMaterialMetaDataObject *)self;
 
     stringVector vec;
 
@@ -307,7 +307,7 @@ avtMaterialMetaData_SetColorNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtMaterialMetaData_GetColorNames(PyObject *self, PyObject *args)
 {
-    avtMaterialMetaDataObject *obj = (avtMaterialMetaDataObject *)self;
+    PyavtMaterialMetaDataObject *obj = (PyavtMaterialMetaDataObject *)self;
     // Allocate a tuple the with enough entries to hold the colorNames.
     const stringVector &colorNames = obj->data->colorNames;
     PyObject *retval = PyTuple_New(colorNames.size());
@@ -355,16 +355,16 @@ static void PyavtMaterialMetaData_ExtendSetGetMethodTable()
 //
 
 static void
-avtMaterialMetaData_dealloc(PyObject *v)
+PyavtMaterialMetaData_dealloc(PyObject *v)
 {
-   avtMaterialMetaDataObject *obj = (avtMaterialMetaDataObject *)v;
+   PyavtMaterialMetaDataObject *obj = (PyavtMaterialMetaDataObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *avtMaterialMetaData_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyavtMaterialMetaData_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyavtMaterialMetaData_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -428,56 +428,42 @@ PyavtMaterialMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *ar
 }
 
 PyObject *
-avtMaterialMetaData_str(PyObject *v)
+PyavtMaterialMetaData_str(PyObject *v)
 {
-    avtMaterialMetaDataObject *obj = (avtMaterialMetaDataObject *)v;
+    PyavtMaterialMetaDataObject *obj = (PyavtMaterialMetaDataObject *)v;
     return PyString_FromString(PyavtMaterialMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *avtMaterialMetaData_Purpose = "Contains material metadata attributes";
-#else
-static char *avtMaterialMetaData_Purpose = "Contains material metadata attributes";
-#endif
+static char const *PyavtMaterialMetaData_purpose = "Contains material metadata attributes";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject avtMaterialMetaDataType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "avtMaterialMetaData",
-    .tp_basicsize = sizeof(avtMaterialMetaDataObject),
-    .tp_dealloc = avtMaterialMetaData_dealloc,
-    .tp_repr = avtMaterialMetaData_str,
-    .tp_str = avtMaterialMetaData_str,
-    .tp_getattro = PyavtMaterialMetaData_getattro,
-    .tp_setattro = PyavtMaterialMetaData_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = avtMaterialMetaData_Purpose,
-    .tp_richcompare = avtMaterialMetaData_richcompare,
-    .tp_methods = PyavtMaterialMetaData_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(avtMaterialMetaData);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-avtMaterialMetaData_richcompare(PyObject *self, PyObject *other, int op)
+PyavtMaterialMetaData_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &avtMaterialMetaDataType
-         || Py_TYPE(other) != &avtMaterialMetaDataType)
+    if ( Py_TYPE(self) != &PyavtMaterialMetaDataType
+         || Py_TYPE(other) != &PyavtMaterialMetaDataType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    avtMaterialMetaData *a = ((avtMaterialMetaDataObject *)self)->data;
-    avtMaterialMetaData *b = ((avtMaterialMetaDataObject *)other)->data;
+    avtMaterialMetaData *a = ((PyavtMaterialMetaDataObject *)self)->data;
+    avtMaterialMetaData *b = ((PyavtMaterialMetaDataObject *)other)->data;
 
     switch (op)
     {
@@ -506,8 +492,8 @@ static avtMaterialMetaData *currentAtts = 0;
 static PyObject *
 NewavtMaterialMetaData(int useCurrent)
 {
-    avtMaterialMetaDataObject *newObject;
-    newObject = PyObject_NEW(avtMaterialMetaDataObject, &avtMaterialMetaDataType);
+    PyavtMaterialMetaDataObject *newObject;
+    newObject = PyObject_NEW(PyavtMaterialMetaDataObject, &PyavtMaterialMetaDataType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -518,15 +504,15 @@ NewavtMaterialMetaData(int useCurrent)
         newObject->data = new avtMaterialMetaData;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&avtMaterialMetaDataType);
+    PyType_Ready(&PyavtMaterialMetaDataType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapavtMaterialMetaData(const avtMaterialMetaData *attr)
 {
-    avtMaterialMetaDataObject *newObject;
-    newObject = PyObject_NEW(avtMaterialMetaDataObject, &avtMaterialMetaDataType);
+    PyavtMaterialMetaDataObject *newObject;
+    newObject = PyObject_NEW(PyavtMaterialMetaDataObject, &PyavtMaterialMetaDataType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (avtMaterialMetaData *)attr;
@@ -628,13 +614,13 @@ PyavtMaterialMetaData_GetMethodTable(int *nMethods)
 bool
 PyavtMaterialMetaData_Check(PyObject *obj)
 {
-    return (obj->ob_type == &avtMaterialMetaDataType);
+    return (obj->ob_type == &PyavtMaterialMetaDataType);
 }
 
 avtMaterialMetaData *
 PyavtMaterialMetaData_FromPyObject(PyObject *obj)
 {
-    avtMaterialMetaDataObject *obj2 = (avtMaterialMetaDataObject *)obj;
+    PyavtMaterialMetaDataObject *obj2 = (PyavtMaterialMetaDataObject *)obj;
     return obj2->data;
 }
 
@@ -653,7 +639,7 @@ PyavtMaterialMetaData_Wrap(const avtMaterialMetaData *attr)
 void
 PyavtMaterialMetaData_SetParent(PyObject *obj, PyObject *parent)
 {
-    avtMaterialMetaDataObject *obj2 = (avtMaterialMetaDataObject *)obj;
+    PyavtMaterialMetaDataObject *obj2 = (PyavtMaterialMetaDataObject *)obj;
     obj2->parent = parent;
 }
 

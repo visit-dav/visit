@@ -24,7 +24,7 @@
 //
 // This struct contains the Python type information and a BoxAttributes.
 //
-struct BoxAttributesObject
+struct PyBoxAttributesObject
 {
     PyObject_HEAD
     BoxAttributes *data;
@@ -80,7 +80,7 @@ PyBoxAttributes_ToString(const BoxAttributes *atts, const char *prefix, const bo
 static PyObject *
 BoxAttributes_Notify(PyObject *self, PyObject *args)
 {
-    BoxAttributesObject *obj = (BoxAttributesObject *)self;
+    PyBoxAttributesObject *obj = (PyBoxAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -117,7 +117,7 @@ BoxAttributes_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 BoxAttributes_SetAmount(PyObject *self, PyObject *args)
 {
-    BoxAttributesObject *obj = (BoxAttributesObject *)self;
+    PyBoxAttributesObject *obj = (PyBoxAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -175,7 +175,7 @@ BoxAttributes_SetAmount(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 BoxAttributes_GetAmount(PyObject *self, PyObject *args)
 {
-    BoxAttributesObject *obj = (BoxAttributesObject *)self;
+    PyBoxAttributesObject *obj = (PyBoxAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetAmount()));
     return retval;
 }
@@ -183,7 +183,7 @@ BoxAttributes_GetAmount(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 BoxAttributes_SetMinx(PyObject *self, PyObject *args)
 {
-    BoxAttributesObject *obj = (BoxAttributesObject *)self;
+    PyBoxAttributesObject *obj = (PyBoxAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -235,7 +235,7 @@ BoxAttributes_SetMinx(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 BoxAttributes_GetMinx(PyObject *self, PyObject *args)
 {
-    BoxAttributesObject *obj = (BoxAttributesObject *)self;
+    PyBoxAttributesObject *obj = (PyBoxAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMinx());
     return retval;
 }
@@ -243,7 +243,7 @@ BoxAttributes_GetMinx(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 BoxAttributes_SetMaxx(PyObject *self, PyObject *args)
 {
-    BoxAttributesObject *obj = (BoxAttributesObject *)self;
+    PyBoxAttributesObject *obj = (PyBoxAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -295,7 +295,7 @@ BoxAttributes_SetMaxx(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 BoxAttributes_GetMaxx(PyObject *self, PyObject *args)
 {
-    BoxAttributesObject *obj = (BoxAttributesObject *)self;
+    PyBoxAttributesObject *obj = (PyBoxAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMaxx());
     return retval;
 }
@@ -303,7 +303,7 @@ BoxAttributes_GetMaxx(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 BoxAttributes_SetMiny(PyObject *self, PyObject *args)
 {
-    BoxAttributesObject *obj = (BoxAttributesObject *)self;
+    PyBoxAttributesObject *obj = (PyBoxAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -355,7 +355,7 @@ BoxAttributes_SetMiny(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 BoxAttributes_GetMiny(PyObject *self, PyObject *args)
 {
-    BoxAttributesObject *obj = (BoxAttributesObject *)self;
+    PyBoxAttributesObject *obj = (PyBoxAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMiny());
     return retval;
 }
@@ -363,7 +363,7 @@ BoxAttributes_GetMiny(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 BoxAttributes_SetMaxy(PyObject *self, PyObject *args)
 {
-    BoxAttributesObject *obj = (BoxAttributesObject *)self;
+    PyBoxAttributesObject *obj = (PyBoxAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -415,7 +415,7 @@ BoxAttributes_SetMaxy(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 BoxAttributes_GetMaxy(PyObject *self, PyObject *args)
 {
-    BoxAttributesObject *obj = (BoxAttributesObject *)self;
+    PyBoxAttributesObject *obj = (PyBoxAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMaxy());
     return retval;
 }
@@ -423,7 +423,7 @@ BoxAttributes_GetMaxy(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 BoxAttributes_SetMinz(PyObject *self, PyObject *args)
 {
-    BoxAttributesObject *obj = (BoxAttributesObject *)self;
+    PyBoxAttributesObject *obj = (PyBoxAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -475,7 +475,7 @@ BoxAttributes_SetMinz(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 BoxAttributes_GetMinz(PyObject *self, PyObject *args)
 {
-    BoxAttributesObject *obj = (BoxAttributesObject *)self;
+    PyBoxAttributesObject *obj = (PyBoxAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMinz());
     return retval;
 }
@@ -483,7 +483,7 @@ BoxAttributes_GetMinz(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 BoxAttributes_SetMaxz(PyObject *self, PyObject *args)
 {
-    BoxAttributesObject *obj = (BoxAttributesObject *)self;
+    PyBoxAttributesObject *obj = (PyBoxAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -535,7 +535,7 @@ BoxAttributes_SetMaxz(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 BoxAttributes_GetMaxz(PyObject *self, PyObject *args)
 {
-    BoxAttributesObject *obj = (BoxAttributesObject *)self;
+    PyBoxAttributesObject *obj = (PyBoxAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMaxz());
     return retval;
 }
@@ -543,7 +543,7 @@ BoxAttributes_GetMaxz(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 BoxAttributes_SetInverse(PyObject *self, PyObject *args)
 {
-    BoxAttributesObject *obj = (BoxAttributesObject *)self;
+    PyBoxAttributesObject *obj = (PyBoxAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -595,7 +595,7 @@ BoxAttributes_SetInverse(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 BoxAttributes_GetInverse(PyObject *self, PyObject *args)
 {
-    BoxAttributesObject *obj = (BoxAttributesObject *)self;
+    PyBoxAttributesObject *obj = (PyBoxAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetInverse()?1L:0L);
     return retval;
 }
@@ -629,16 +629,16 @@ PyMethodDef PyBoxAttributes_methods[BOXATTRIBUTES_NMETH] = {
 //
 
 static void
-BoxAttributes_dealloc(PyObject *v)
+PyBoxAttributes_dealloc(PyObject *v)
 {
-   BoxAttributesObject *obj = (BoxAttributesObject *)v;
+   PyBoxAttributesObject *obj = (PyBoxAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *BoxAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyBoxAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyBoxAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -715,56 +715,42 @@ PyBoxAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 }
 
 PyObject *
-BoxAttributes_str(PyObject *v)
+PyBoxAttributes_str(PyObject *v)
 {
-    BoxAttributesObject *obj = (BoxAttributesObject *)v;
+    PyBoxAttributesObject *obj = (PyBoxAttributesObject *)v;
     return PyString_FromString(PyBoxAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *BoxAttributes_Purpose = "This class contains attributes for the box operator.";
-#else
-static char *BoxAttributes_Purpose = "This class contains attributes for the box operator.";
-#endif
+static char const *PyBoxAttributes_purpose = "This class contains attributes for the box operator.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject BoxAttributesType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "BoxAttributes",
-    .tp_basicsize = sizeof(BoxAttributesObject),
-    .tp_dealloc = BoxAttributes_dealloc,
-    .tp_repr = BoxAttributes_str,
-    .tp_str = BoxAttributes_str,
-    .tp_getattro = PyBoxAttributes_getattro,
-    .tp_setattro = PyBoxAttributes_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = BoxAttributes_Purpose,
-    .tp_richcompare = BoxAttributes_richcompare,
-    .tp_methods = PyBoxAttributes_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(BoxAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-BoxAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyBoxAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &BoxAttributesType
-         || Py_TYPE(other) != &BoxAttributesType)
+    if ( Py_TYPE(self) != &PyBoxAttributesType
+         || Py_TYPE(other) != &PyBoxAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    BoxAttributes *a = ((BoxAttributesObject *)self)->data;
-    BoxAttributes *b = ((BoxAttributesObject *)other)->data;
+    BoxAttributes *a = ((PyBoxAttributesObject *)self)->data;
+    BoxAttributes *b = ((PyBoxAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -793,8 +779,8 @@ static BoxAttributes *currentAtts = 0;
 static PyObject *
 NewBoxAttributes(int useCurrent)
 {
-    BoxAttributesObject *newObject;
-    newObject = PyObject_NEW(BoxAttributesObject, &BoxAttributesType);
+    PyBoxAttributesObject *newObject;
+    newObject = PyObject_NEW(PyBoxAttributesObject, &PyBoxAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -805,15 +791,15 @@ NewBoxAttributes(int useCurrent)
         newObject->data = new BoxAttributes;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&BoxAttributesType);
+    PyType_Ready(&PyBoxAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapBoxAttributes(const BoxAttributes *attr)
 {
-    BoxAttributesObject *newObject;
-    newObject = PyObject_NEW(BoxAttributesObject, &BoxAttributesType);
+    PyBoxAttributesObject *newObject;
+    newObject = PyObject_NEW(PyBoxAttributesObject, &PyBoxAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (BoxAttributes *)attr;
@@ -915,13 +901,13 @@ PyBoxAttributes_GetMethodTable(int *nMethods)
 bool
 PyBoxAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &BoxAttributesType);
+    return (obj->ob_type == &PyBoxAttributesType);
 }
 
 BoxAttributes *
 PyBoxAttributes_FromPyObject(PyObject *obj)
 {
-    BoxAttributesObject *obj2 = (BoxAttributesObject *)obj;
+    PyBoxAttributesObject *obj2 = (PyBoxAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -940,7 +926,7 @@ PyBoxAttributes_Wrap(const BoxAttributes *attr)
 void
 PyBoxAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    BoxAttributesObject *obj2 = (BoxAttributesObject *)obj;
+    PyBoxAttributesObject *obj2 = (PyBoxAttributesObject *)obj;
     obj2->parent = parent;
 }
 

@@ -25,7 +25,7 @@
 //
 // This struct contains the Python type information and a avtSpeciesMetaData.
 //
-struct avtSpeciesMetaDataObject
+struct PyavtSpeciesMetaDataObject
 {
     PyObject_HEAD
     avtSpeciesMetaData *data;
@@ -77,7 +77,7 @@ PyavtSpeciesMetaData_ToString(const avtSpeciesMetaData *atts, const char *prefix
 static PyObject *
 avtSpeciesMetaData_Notify(PyObject *self, PyObject *args)
 {
-    avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)self;
+    PyavtSpeciesMetaDataObject *obj = (PyavtSpeciesMetaDataObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -114,7 +114,7 @@ avtSpeciesMetaData_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSpeciesMetaData_SetName(PyObject *self, PyObject *args)
 {
-    avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)self;
+    PyavtSpeciesMetaDataObject *obj = (PyavtSpeciesMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -155,7 +155,7 @@ avtSpeciesMetaData_SetName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSpeciesMetaData_GetName(PyObject *self, PyObject *args)
 {
-    avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)self;
+    PyavtSpeciesMetaDataObject *obj = (PyavtSpeciesMetaDataObject *)self;
     PyObject *retval = PyString_FromString(obj->data->name.c_str());
     return retval;
 }
@@ -163,7 +163,7 @@ avtSpeciesMetaData_GetName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSpeciesMetaData_SetOriginalName(PyObject *self, PyObject *args)
 {
-    avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)self;
+    PyavtSpeciesMetaDataObject *obj = (PyavtSpeciesMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -204,7 +204,7 @@ avtSpeciesMetaData_SetOriginalName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSpeciesMetaData_GetOriginalName(PyObject *self, PyObject *args)
 {
-    avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)self;
+    PyavtSpeciesMetaDataObject *obj = (PyavtSpeciesMetaDataObject *)self;
     PyObject *retval = PyString_FromString(obj->data->originalName.c_str());
     return retval;
 }
@@ -212,7 +212,7 @@ avtSpeciesMetaData_GetOriginalName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSpeciesMetaData_SetValidVariable(PyObject *self, PyObject *args)
 {
-    avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)self;
+    PyavtSpeciesMetaDataObject *obj = (PyavtSpeciesMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -264,7 +264,7 @@ avtSpeciesMetaData_SetValidVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSpeciesMetaData_GetValidVariable(PyObject *self, PyObject *args)
 {
-    avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)self;
+    PyavtSpeciesMetaDataObject *obj = (PyavtSpeciesMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->validVariable?1L:0L);
     return retval;
 }
@@ -272,7 +272,7 @@ avtSpeciesMetaData_GetValidVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSpeciesMetaData_SetMeshName(PyObject *self, PyObject *args)
 {
-    avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)self;
+    PyavtSpeciesMetaDataObject *obj = (PyavtSpeciesMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -313,7 +313,7 @@ avtSpeciesMetaData_SetMeshName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSpeciesMetaData_GetMeshName(PyObject *self, PyObject *args)
 {
-    avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)self;
+    PyavtSpeciesMetaDataObject *obj = (PyavtSpeciesMetaDataObject *)self;
     PyObject *retval = PyString_FromString(obj->data->meshName.c_str());
     return retval;
 }
@@ -321,7 +321,7 @@ avtSpeciesMetaData_GetMeshName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSpeciesMetaData_SetMaterialName(PyObject *self, PyObject *args)
 {
-    avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)self;
+    PyavtSpeciesMetaDataObject *obj = (PyavtSpeciesMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -362,7 +362,7 @@ avtSpeciesMetaData_SetMaterialName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSpeciesMetaData_GetMaterialName(PyObject *self, PyObject *args)
 {
-    avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)self;
+    PyavtSpeciesMetaDataObject *obj = (PyavtSpeciesMetaDataObject *)self;
     PyObject *retval = PyString_FromString(obj->data->materialName.c_str());
     return retval;
 }
@@ -370,7 +370,7 @@ avtSpeciesMetaData_GetMaterialName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSpeciesMetaData_SetNumMaterials(PyObject *self, PyObject *args)
 {
-    avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)self;
+    PyavtSpeciesMetaDataObject *obj = (PyavtSpeciesMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -422,7 +422,7 @@ avtSpeciesMetaData_SetNumMaterials(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSpeciesMetaData_GetNumMaterials(PyObject *self, PyObject *args)
 {
-    avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)self;
+    PyavtSpeciesMetaDataObject *obj = (PyavtSpeciesMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->numMaterials));
     return retval;
 }
@@ -430,7 +430,7 @@ avtSpeciesMetaData_GetNumMaterials(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSpeciesMetaData_GetSpecies(PyObject *self, PyObject *args)
 {
-    avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)self;
+    PyavtSpeciesMetaDataObject *obj = (PyavtSpeciesMetaDataObject *)self;
     int index = -1;
     if (args == NULL)
         return PyErr_Format(PyExc_NameError, "Use .GetSpecies(int index) to get a single entry");
@@ -454,14 +454,14 @@ avtSpeciesMetaData_GetSpecies(PyObject *self, PyObject *args)
 PyObject *
 avtSpeciesMetaData_GetNumSpecies(PyObject *self, PyObject *args)
 {
-    avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)self;
+    PyavtSpeciesMetaDataObject *obj = (PyavtSpeciesMetaDataObject *)self;
     return PyInt_FromLong((long)obj->data->GetSpecies().size());
 }
 
 PyObject *
 avtSpeciesMetaData_AddSpecies(PyObject *self, PyObject *args)
 {
-    avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)self;
+    PyavtSpeciesMetaDataObject *obj = (PyavtSpeciesMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
         return NULL;
@@ -477,7 +477,7 @@ avtSpeciesMetaData_AddSpecies(PyObject *self, PyObject *args)
 static PyObject *
 avtSpeciesMetaData_Remove_One_Species(PyObject *self, int index)
 {
-    avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)self;
+    PyavtSpeciesMetaDataObject *obj = (PyavtSpeciesMetaDataObject *)self;
     // Remove in the AttributeGroupVector instead of calling RemoveSpecies() because we don't want to delete the object; just remove it.
     AttributeGroupVector &atts = obj->data->GetSpecies();
     AttributeGroupVector::iterator pos = atts.begin();
@@ -507,7 +507,7 @@ avtSpeciesMetaData_RemoveSpecies(PyObject *self, PyObject *args)
     int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
-    avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)self;
+    PyavtSpeciesMetaDataObject *obj = (PyavtSpeciesMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumSpecies())
         return PyErr_Format(PyExc_IndexError, "Index out of range");
 
@@ -517,7 +517,7 @@ avtSpeciesMetaData_RemoveSpecies(PyObject *self, PyObject *args)
 PyObject *
 avtSpeciesMetaData_ClearSpecies(PyObject *self, PyObject *args)
 {
-    avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)self;
+    PyavtSpeciesMetaDataObject *obj = (PyavtSpeciesMetaDataObject *)self;
     int n = obj->data->GetNumSpecies();
     for(int i = 0; i < n; ++i)
     {
@@ -558,16 +558,16 @@ PyMethodDef PyavtSpeciesMetaData_methods[AVTSPECIESMETADATA_NMETH] = {
 //
 
 static void
-avtSpeciesMetaData_dealloc(PyObject *v)
+PyavtSpeciesMetaData_dealloc(PyObject *v)
 {
-   avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)v;
+   PyavtSpeciesMetaDataObject *obj = (PyavtSpeciesMetaDataObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *avtSpeciesMetaData_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyavtSpeciesMetaData_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyavtSpeciesMetaData_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -633,56 +633,42 @@ PyavtSpeciesMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *arg
 }
 
 PyObject *
-avtSpeciesMetaData_str(PyObject *v)
+PyavtSpeciesMetaData_str(PyObject *v)
 {
-    avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)v;
+    PyavtSpeciesMetaDataObject *obj = (PyavtSpeciesMetaDataObject *)v;
     return PyString_FromString(PyavtSpeciesMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *avtSpeciesMetaData_Purpose = "Contains species metadata attributes";
-#else
-static char *avtSpeciesMetaData_Purpose = "Contains species metadata attributes";
-#endif
+static char const *PyavtSpeciesMetaData_purpose = "Contains species metadata attributes";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject avtSpeciesMetaDataType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "avtSpeciesMetaData",
-    .tp_basicsize = sizeof(avtSpeciesMetaDataObject),
-    .tp_dealloc = avtSpeciesMetaData_dealloc,
-    .tp_repr = avtSpeciesMetaData_str,
-    .tp_str = avtSpeciesMetaData_str,
-    .tp_getattro = PyavtSpeciesMetaData_getattro,
-    .tp_setattro = PyavtSpeciesMetaData_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = avtSpeciesMetaData_Purpose,
-    .tp_richcompare = avtSpeciesMetaData_richcompare,
-    .tp_methods = PyavtSpeciesMetaData_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(avtSpeciesMetaData);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-avtSpeciesMetaData_richcompare(PyObject *self, PyObject *other, int op)
+PyavtSpeciesMetaData_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &avtSpeciesMetaDataType
-         || Py_TYPE(other) != &avtSpeciesMetaDataType)
+    if ( Py_TYPE(self) != &PyavtSpeciesMetaDataType
+         || Py_TYPE(other) != &PyavtSpeciesMetaDataType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    avtSpeciesMetaData *a = ((avtSpeciesMetaDataObject *)self)->data;
-    avtSpeciesMetaData *b = ((avtSpeciesMetaDataObject *)other)->data;
+    avtSpeciesMetaData *a = ((PyavtSpeciesMetaDataObject *)self)->data;
+    avtSpeciesMetaData *b = ((PyavtSpeciesMetaDataObject *)other)->data;
 
     switch (op)
     {
@@ -711,8 +697,8 @@ static avtSpeciesMetaData *currentAtts = 0;
 static PyObject *
 NewavtSpeciesMetaData(int useCurrent)
 {
-    avtSpeciesMetaDataObject *newObject;
-    newObject = PyObject_NEW(avtSpeciesMetaDataObject, &avtSpeciesMetaDataType);
+    PyavtSpeciesMetaDataObject *newObject;
+    newObject = PyObject_NEW(PyavtSpeciesMetaDataObject, &PyavtSpeciesMetaDataType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -723,15 +709,15 @@ NewavtSpeciesMetaData(int useCurrent)
         newObject->data = new avtSpeciesMetaData;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&avtSpeciesMetaDataType);
+    PyType_Ready(&PyavtSpeciesMetaDataType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapavtSpeciesMetaData(const avtSpeciesMetaData *attr)
 {
-    avtSpeciesMetaDataObject *newObject;
-    newObject = PyObject_NEW(avtSpeciesMetaDataObject, &avtSpeciesMetaDataType);
+    PyavtSpeciesMetaDataObject *newObject;
+    newObject = PyObject_NEW(PyavtSpeciesMetaDataObject, &PyavtSpeciesMetaDataType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (avtSpeciesMetaData *)attr;
@@ -833,13 +819,13 @@ PyavtSpeciesMetaData_GetMethodTable(int *nMethods)
 bool
 PyavtSpeciesMetaData_Check(PyObject *obj)
 {
-    return (obj->ob_type == &avtSpeciesMetaDataType);
+    return (obj->ob_type == &PyavtSpeciesMetaDataType);
 }
 
 avtSpeciesMetaData *
 PyavtSpeciesMetaData_FromPyObject(PyObject *obj)
 {
-    avtSpeciesMetaDataObject *obj2 = (avtSpeciesMetaDataObject *)obj;
+    PyavtSpeciesMetaDataObject *obj2 = (PyavtSpeciesMetaDataObject *)obj;
     return obj2->data;
 }
 
@@ -858,7 +844,7 @@ PyavtSpeciesMetaData_Wrap(const avtSpeciesMetaData *attr)
 void
 PyavtSpeciesMetaData_SetParent(PyObject *obj, PyObject *parent)
 {
-    avtSpeciesMetaDataObject *obj2 = (avtSpeciesMetaDataObject *)obj;
+    PyavtSpeciesMetaDataObject *obj2 = (PyavtSpeciesMetaDataObject *)obj;
     obj2->parent = parent;
 }
 

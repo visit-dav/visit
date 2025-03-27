@@ -25,7 +25,7 @@
 //
 // This struct contains the Python type information and a FileOpenOptions.
 //
-struct FileOpenOptionsObject
+struct PyFileOpenOptionsObject
 {
     PyObject_HEAD
     FileOpenOptions *data;
@@ -126,7 +126,7 @@ PyFileOpenOptions_ToString(const FileOpenOptions *atts, const char *prefix, cons
 static PyObject *
 FileOpenOptions_Notify(PyObject *self, PyObject *args)
 {
-    FileOpenOptionsObject *obj = (FileOpenOptionsObject *)self;
+    PyFileOpenOptionsObject *obj = (PyFileOpenOptionsObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -163,7 +163,7 @@ FileOpenOptions_dir(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FileOpenOptions_SetTypeNames(PyObject *self, PyObject *args)
 {
-    FileOpenOptionsObject *obj = (FileOpenOptionsObject *)self;
+    PyFileOpenOptionsObject *obj = (PyFileOpenOptionsObject *)self;
 
     stringVector vec;
 
@@ -220,7 +220,7 @@ FileOpenOptions_SetTypeNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FileOpenOptions_GetTypeNames(PyObject *self, PyObject *args)
 {
-    FileOpenOptionsObject *obj = (FileOpenOptionsObject *)self;
+    PyFileOpenOptionsObject *obj = (PyFileOpenOptionsObject *)self;
     // Allocate a tuple the with enough entries to hold the typeNames.
     const stringVector &typeNames = obj->data->GetTypeNames();
     PyObject *retval = PyTuple_New(typeNames.size());
@@ -232,7 +232,7 @@ FileOpenOptions_GetTypeNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FileOpenOptions_SetTypeIDs(PyObject *self, PyObject *args)
 {
-    FileOpenOptionsObject *obj = (FileOpenOptionsObject *)self;
+    PyFileOpenOptionsObject *obj = (PyFileOpenOptionsObject *)self;
 
     stringVector vec;
 
@@ -289,7 +289,7 @@ FileOpenOptions_SetTypeIDs(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FileOpenOptions_GetTypeIDs(PyObject *self, PyObject *args)
 {
-    FileOpenOptionsObject *obj = (FileOpenOptionsObject *)self;
+    PyFileOpenOptionsObject *obj = (PyFileOpenOptionsObject *)self;
     // Allocate a tuple the with enough entries to hold the typeIDs.
     const stringVector &typeIDs = obj->data->GetTypeIDs();
     PyObject *retval = PyTuple_New(typeIDs.size());
@@ -301,7 +301,7 @@ FileOpenOptions_GetTypeIDs(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FileOpenOptions_GetOpenOptions(PyObject *self, PyObject *args)
 {
-    FileOpenOptionsObject *obj = (FileOpenOptionsObject *)self;
+    PyFileOpenOptionsObject *obj = (PyFileOpenOptionsObject *)self;
     int index = -1;
     if (args == NULL)
         return PyErr_Format(PyExc_NameError, "Use .GetOpenOptions(int index) to get a single entry");
@@ -325,14 +325,14 @@ FileOpenOptions_GetOpenOptions(PyObject *self, PyObject *args)
 PyObject *
 FileOpenOptions_GetNumOpenOptions(PyObject *self, PyObject *args)
 {
-    FileOpenOptionsObject *obj = (FileOpenOptionsObject *)self;
+    PyFileOpenOptionsObject *obj = (PyFileOpenOptionsObject *)self;
     return PyInt_FromLong((long)obj->data->GetOpenOptions().size());
 }
 
 PyObject *
 FileOpenOptions_AddOpenOptions(PyObject *self, PyObject *args)
 {
-    FileOpenOptionsObject *obj = (FileOpenOptionsObject *)self;
+    PyFileOpenOptionsObject *obj = (PyFileOpenOptionsObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
         return NULL;
@@ -348,7 +348,7 @@ FileOpenOptions_AddOpenOptions(PyObject *self, PyObject *args)
 static PyObject *
 FileOpenOptions_Remove_One_OpenOptions(PyObject *self, int index)
 {
-    FileOpenOptionsObject *obj = (FileOpenOptionsObject *)self;
+    PyFileOpenOptionsObject *obj = (PyFileOpenOptionsObject *)self;
     // Remove in the AttributeGroupVector instead of calling RemoveOpenOptions() because we don't want to delete the object; just remove it.
     AttributeGroupVector &atts = obj->data->GetOpenOptions();
     AttributeGroupVector::iterator pos = atts.begin();
@@ -378,7 +378,7 @@ FileOpenOptions_RemoveOpenOptions(PyObject *self, PyObject *args)
     int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
-    FileOpenOptionsObject *obj = (FileOpenOptionsObject *)self;
+    PyFileOpenOptionsObject *obj = (PyFileOpenOptionsObject *)self;
     if(index < 0 || index >= obj->data->GetNumOpenOptions())
         return PyErr_Format(PyExc_IndexError, "Index out of range");
 
@@ -388,7 +388,7 @@ FileOpenOptions_RemoveOpenOptions(PyObject *self, PyObject *args)
 PyObject *
 FileOpenOptions_ClearOpenOptions(PyObject *self, PyObject *args)
 {
-    FileOpenOptionsObject *obj = (FileOpenOptionsObject *)self;
+    PyFileOpenOptionsObject *obj = (PyFileOpenOptionsObject *)self;
     int n = obj->data->GetNumOpenOptions();
     for(int i = 0; i < n; ++i)
     {
@@ -402,7 +402,7 @@ FileOpenOptions_ClearOpenOptions(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FileOpenOptions_SetEnabled(PyObject *self, PyObject *args)
 {
-    FileOpenOptionsObject *obj = (FileOpenOptionsObject *)self;
+    PyFileOpenOptionsObject *obj = (PyFileOpenOptionsObject *)self;
 
     intVector vec;
 
@@ -466,7 +466,7 @@ FileOpenOptions_SetEnabled(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FileOpenOptions_GetEnabled(PyObject *self, PyObject *args)
 {
-    FileOpenOptionsObject *obj = (FileOpenOptionsObject *)self;
+    PyFileOpenOptionsObject *obj = (PyFileOpenOptionsObject *)self;
     // Allocate a tuple the with enough entries to hold the Enabled.
     const intVector &Enabled = obj->data->GetEnabled();
     PyObject *retval = PyTuple_New(Enabled.size());
@@ -478,7 +478,7 @@ FileOpenOptions_GetEnabled(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FileOpenOptions_SetPreferredIDs(PyObject *self, PyObject *args)
 {
-    FileOpenOptionsObject *obj = (FileOpenOptionsObject *)self;
+    PyFileOpenOptionsObject *obj = (PyFileOpenOptionsObject *)self;
 
     stringVector vec;
 
@@ -535,7 +535,7 @@ FileOpenOptions_SetPreferredIDs(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FileOpenOptions_GetPreferredIDs(PyObject *self, PyObject *args)
 {
-    FileOpenOptionsObject *obj = (FileOpenOptionsObject *)self;
+    PyFileOpenOptionsObject *obj = (PyFileOpenOptionsObject *)self;
     // Allocate a tuple the with enough entries to hold the preferredIDs.
     const stringVector &preferredIDs = obj->data->GetPreferredIDs();
     PyObject *retval = PyTuple_New(preferredIDs.size());
@@ -570,16 +570,16 @@ PyMethodDef PyFileOpenOptions_methods[FILEOPENOPTIONS_NMETH] = {
 //
 
 static void
-FileOpenOptions_dealloc(PyObject *v)
+PyFileOpenOptions_dealloc(PyObject *v)
 {
-   FileOpenOptionsObject *obj = (FileOpenOptionsObject *)v;
+   PyFileOpenOptionsObject *obj = (PyFileOpenOptionsObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *FileOpenOptions_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyFileOpenOptions_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
 PyFileOpenOptions_getattro(PyObject *self, PyObject *attr_name)
 {
@@ -637,56 +637,42 @@ PyFileOpenOptions_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 }
 
 PyObject *
-FileOpenOptions_str(PyObject *v)
+PyFileOpenOptions_str(PyObject *v)
 {
-    FileOpenOptionsObject *obj = (FileOpenOptionsObject *)v;
+    PyFileOpenOptionsObject *obj = (PyFileOpenOptionsObject *)v;
     return PyString_FromString(PyFileOpenOptions_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *FileOpenOptions_Purpose = "This class contains the file opening options for all the database plugins.";
-#else
-static char *FileOpenOptions_Purpose = "This class contains the file opening options for all the database plugins.";
-#endif
+static char const *PyFileOpenOptions_purpose = "This class contains the file opening options for all the database plugins.";
 
 //
-// The type description structure
+// Initialize the python object type structure with default values.
+// There is another version of this macro, VISIT_PY_TYPE_OBJ_CUSTOM,
+// that allows for customization of the .tp_xxx slot methods. These
+// macros are defined in src/visitpy/common/Py2and3Support.h
 //
-
-static PyTypeObject FileOpenOptionsType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "FileOpenOptions",
-    .tp_basicsize = sizeof(FileOpenOptionsObject),
-    .tp_dealloc = FileOpenOptions_dealloc,
-    .tp_repr = FileOpenOptions_str,
-    .tp_str = FileOpenOptions_str,
-    .tp_getattro = PyFileOpenOptions_getattro,
-    .tp_setattro = PyFileOpenOptions_setattro,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = FileOpenOptions_Purpose,
-    .tp_richcompare = FileOpenOptions_richcompare,
-    .tp_methods = PyFileOpenOptions_methods};
+VISIT_PY_TYPE_OBJ_DEFAULT(FileOpenOptions);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-FileOpenOptions_richcompare(PyObject *self, PyObject *other, int op)
+PyFileOpenOptions_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &FileOpenOptionsType
-         || Py_TYPE(other) != &FileOpenOptionsType)
+    if ( Py_TYPE(self) != &PyFileOpenOptionsType
+         || Py_TYPE(other) != &PyFileOpenOptionsType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    FileOpenOptions *a = ((FileOpenOptionsObject *)self)->data;
-    FileOpenOptions *b = ((FileOpenOptionsObject *)other)->data;
+    FileOpenOptions *a = ((PyFileOpenOptionsObject *)self)->data;
+    FileOpenOptions *b = ((PyFileOpenOptionsObject *)other)->data;
 
     switch (op)
     {
@@ -715,8 +701,8 @@ static FileOpenOptions *currentAtts = 0;
 static PyObject *
 NewFileOpenOptions(int useCurrent)
 {
-    FileOpenOptionsObject *newObject;
-    newObject = PyObject_NEW(FileOpenOptionsObject, &FileOpenOptionsType);
+    PyFileOpenOptionsObject *newObject;
+    newObject = PyObject_NEW(PyFileOpenOptionsObject, &PyFileOpenOptionsType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -727,15 +713,15 @@ NewFileOpenOptions(int useCurrent)
         newObject->data = new FileOpenOptions;
     newObject->owns = true;
     newObject->parent = 0;
-    PyType_Ready(&FileOpenOptionsType);
+    PyType_Ready(&PyFileOpenOptionsType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapFileOpenOptions(const FileOpenOptions *attr)
 {
-    FileOpenOptionsObject *newObject;
-    newObject = PyObject_NEW(FileOpenOptionsObject, &FileOpenOptionsType);
+    PyFileOpenOptionsObject *newObject;
+    newObject = PyObject_NEW(PyFileOpenOptionsObject, &PyFileOpenOptionsType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (FileOpenOptions *)attr;
@@ -837,13 +823,13 @@ PyFileOpenOptions_GetMethodTable(int *nMethods)
 bool
 PyFileOpenOptions_Check(PyObject *obj)
 {
-    return (obj->ob_type == &FileOpenOptionsType);
+    return (obj->ob_type == &PyFileOpenOptionsType);
 }
 
 FileOpenOptions *
 PyFileOpenOptions_FromPyObject(PyObject *obj)
 {
-    FileOpenOptionsObject *obj2 = (FileOpenOptionsObject *)obj;
+    PyFileOpenOptionsObject *obj2 = (PyFileOpenOptionsObject *)obj;
     return obj2->data;
 }
 
@@ -862,7 +848,7 @@ PyFileOpenOptions_Wrap(const FileOpenOptions *attr)
 void
 PyFileOpenOptions_SetParent(PyObject *obj, PyObject *parent)
 {
-    FileOpenOptionsObject *obj2 = (FileOpenOptionsObject *)obj;
+    PyFileOpenOptionsObject *obj2 = (PyFileOpenOptionsObject *)obj;
     obj2->parent = parent;
 }
 
