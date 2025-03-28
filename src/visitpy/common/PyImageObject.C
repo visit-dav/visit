@@ -38,7 +38,7 @@ extern bool DeleteAnnotationObjectHelper(AnnotationObject *);
 //
 // This struct contains the Python type information and a ImageObject.
 //
-struct ImageObjectObject
+struct PyImageObjectObject
 {
     PyObject_HEAD
     AnnotationObject *data;
@@ -53,7 +53,7 @@ static PyObject *NewImageObject();
 static PyObject *
 ImageObject_Notify(PyObject *self, PyObject *args)
 {
-    ImageObjectObject *obj = (ImageObjectObject *)self;
+    PyImageObjectObject *obj = (PyImageObjectObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -62,7 +62,7 @@ ImageObject_Notify(PyObject *self, PyObject *args)
 static PyObject *
 ImageObject_SetVisible(PyObject *self, PyObject *args)
 {
-    ImageObjectObject *obj = (ImageObjectObject *)self;
+    PyImageObjectObject *obj = (PyImageObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -80,7 +80,7 @@ ImageObject_SetVisible(PyObject *self, PyObject *args)
 static PyObject *
 ImageObject_GetVisible(PyObject *self, PyObject *args)
 {
-    ImageObjectObject *obj = (ImageObjectObject *)self;
+    PyImageObjectObject *obj = (PyImageObjectObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetVisible()?1L:0L);
     return retval;
 }
@@ -88,7 +88,7 @@ ImageObject_GetVisible(PyObject *self, PyObject *args)
 static PyObject *
 ImageObject_SetActive(PyObject *self, PyObject *args)
 {
-    ImageObjectObject *obj = (ImageObjectObject *)self;
+    PyImageObjectObject *obj = (PyImageObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -106,7 +106,7 @@ ImageObject_SetActive(PyObject *self, PyObject *args)
 static PyObject *
 ImageObject_GetActive(PyObject *self, PyObject *args)
 {
-    ImageObjectObject *obj = (ImageObjectObject *)self;
+    PyImageObjectObject *obj = (PyImageObjectObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetActive()?1L:0L);
     return retval;
 }
@@ -114,7 +114,7 @@ ImageObject_GetActive(PyObject *self, PyObject *args)
 static PyObject *
 ImageObject_SetPosition(PyObject *self, PyObject *args)
 {
-    ImageObjectObject *obj = (ImageObjectObject *)self;
+    PyImageObjectObject *obj = (PyImageObjectObject *)self;
 
     double *dvals = obj->data->GetPosition();
 /* CUSTOM - Had to make position dd, not ddd. */
@@ -159,7 +159,7 @@ ImageObject_SetPosition(PyObject *self, PyObject *args)
 static PyObject *
 ImageObject_GetPosition(PyObject *self, PyObject *args)
 {
-    ImageObjectObject *obj = (ImageObjectObject *)self;
+    PyImageObjectObject *obj = (PyImageObjectObject *)self;
     // Allocate a tuple the with enough entries to hold the position.
     PyObject *retval = PyTuple_New(3);
     const double *position = obj->data->GetPosition();
@@ -171,7 +171,7 @@ ImageObject_GetPosition(PyObject *self, PyObject *args)
 static PyObject *
 ImageObject_SetTransparencyColor(PyObject *self, PyObject *args)
 {
-    ImageObjectObject *obj = (ImageObjectObject *)self;
+    PyImageObjectObject *obj = (PyImageObjectObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -238,7 +238,7 @@ ImageObject_SetTransparencyColor(PyObject *self, PyObject *args)
 static PyObject *
 ImageObject_GetTransparencyColor(PyObject *self, PyObject *args)
 {
-    ImageObjectObject *obj = (ImageObjectObject *)self;
+    PyImageObjectObject *obj = (PyImageObjectObject *)self;
     // Allocate a tuple the with enough entries to hold the transparencyColor.
     PyObject *retval = PyTuple_New(4);
 /* CUSTOM */
@@ -254,7 +254,7 @@ ImageObject_GetTransparencyColor(PyObject *self, PyObject *args)
 static PyObject *
 ImageObject_SetUseTransparencyColor(PyObject *self, PyObject *args)
 {
-    ImageObjectObject *obj = (ImageObjectObject *)self;
+    PyImageObjectObject *obj = (PyImageObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -274,7 +274,7 @@ ImageObject_SetUseTransparencyColor(PyObject *self, PyObject *args)
 static PyObject *
 ImageObject_GetUseTransparencyColor(PyObject *self, PyObject *args)
 {
-    ImageObjectObject *obj = (ImageObjectObject *)self;
+    PyImageObjectObject *obj = (PyImageObjectObject *)self;
 /* CUSTOM */
     PyObject *retval = PyInt_FromLong(obj->data->GetIntAttribute1()?1L:0L);
     //PyObject *retval = PyInt_FromLong(obj->data->GetUseTransparencyColor()?1L:0L);
@@ -284,7 +284,7 @@ ImageObject_GetUseTransparencyColor(PyObject *self, PyObject *args)
 static PyObject *
 ImageObject_SetWidth(PyObject *self, PyObject *args)
 {
-    ImageObjectObject *obj = (ImageObjectObject *)self;
+    PyImageObjectObject *obj = (PyImageObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -306,7 +306,7 @@ ImageObject_SetWidth(PyObject *self, PyObject *args)
 static PyObject *
 ImageObject_GetWidth(PyObject *self, PyObject *args)
 {
-    ImageObjectObject *obj = (ImageObjectObject *)self;
+    PyImageObjectObject *obj = (PyImageObjectObject *)self;
 /* CUSTOM */
     PyObject *retval = PyInt_FromLong(long(obj->data->GetPosition2()[0]));
     //PyObject *retval = PyInt_FromLong(long(obj->data->GetWidth()));
@@ -316,7 +316,7 @@ ImageObject_GetWidth(PyObject *self, PyObject *args)
 static PyObject *
 ImageObject_SetHeight(PyObject *self, PyObject *args)
 {
-    ImageObjectObject *obj = (ImageObjectObject *)self;
+    PyImageObjectObject *obj = (PyImageObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -338,7 +338,7 @@ ImageObject_SetHeight(PyObject *self, PyObject *args)
 static PyObject *
 ImageObject_GetHeight(PyObject *self, PyObject *args)
 {
-    ImageObjectObject *obj = (ImageObjectObject *)self;
+    PyImageObjectObject *obj = (PyImageObjectObject *)self;
 /* CUSTOM */
     PyObject *retval = PyInt_FromLong(long(obj->data->GetPosition2()[1]));
     //PyObject *retval = PyInt_FromLong(long(obj->data->GetHeight()));
@@ -348,7 +348,7 @@ ImageObject_GetHeight(PyObject *self, PyObject *args)
 static PyObject *
 ImageObject_SetMaintainAspectRatio(PyObject *self, PyObject *args)
 {
-    ImageObjectObject *obj = (ImageObjectObject *)self;
+    PyImageObjectObject *obj = (PyImageObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -368,7 +368,7 @@ ImageObject_SetMaintainAspectRatio(PyObject *self, PyObject *args)
 static PyObject *
 ImageObject_GetMaintainAspectRatio(PyObject *self, PyObject *args)
 {
-    ImageObjectObject *obj = (ImageObjectObject *)self;
+    PyImageObjectObject *obj = (PyImageObjectObject *)self;
 /* CUSTOM */
     PyObject *retval = PyInt_FromLong(obj->data->GetFontShadow()?1L:0L);
     //PyObject *retval = PyInt_FromLong(obj->data->GetMaintainAspectRatio()?1L:0L);
@@ -379,7 +379,7 @@ static PyObject *
 ImageObject_SetImage(PyObject *self, PyObject *args)
 {
 /* CUSTOM - Taken from PyText2DObject.C */
-    ImageObjectObject *obj = (ImageObjectObject *)self;
+    PyImageObjectObject *obj = (PyImageObjectObject *)self;
 
     stringVector  &vec = obj->data->GetText();
     PyObject     *tuple;
@@ -425,7 +425,7 @@ static PyObject *
 ImageObject_GetImage(PyObject *self, PyObject *args)
 {
 /* CUSTOM - Taken from PyText2DObject.C */
-    ImageObjectObject *obj = (ImageObjectObject *)self;
+    PyImageObjectObject *obj = (PyImageObjectObject *)self;
     // Allocate a tuple the with enough entries to hold the text.
     const stringVector &text = obj->data->GetText();
     PyObject *retval = PyTuple_New(text.size());
@@ -438,7 +438,7 @@ ImageObject_GetImage(PyObject *self, PyObject *args)
 static PyObject *
 ImageObject_Delete(PyObject *self, PyObject *args)
 {
-    ImageObjectObject *obj = (ImageObjectObject *)self;
+    PyImageObjectObject *obj = (PyImageObjectObject *)self;
 
     // Tell the VisIt module to decrement the reference count for the
     // AnnotationObject pointed to by obj->data. If there are no more
@@ -449,8 +449,12 @@ ImageObject_Delete(PyObject *self, PyObject *args)
     return Py_None;
 }
 
-static struct PyMethodDef ImageObject_methods[] = {
-    {"Notify", ImageObject_Notify, METH_VARARGS},
+// Forward declaration for methods table
+static PyObject * ImageObject_dir(PyObject *self, PyObject *args);
+
+static struct PyMethodDef PyImageObject_methods[] = {
+    {"__dir__", ImageObject_dir, METH_NOARGS},
+    {"Notify", ImageObject_Notify, METH_NOARGS},
     {"SetVisible", ImageObject_SetVisible, METH_VARARGS},
     {"GetVisible", ImageObject_GetVisible, METH_VARARGS},
     {"SetActive", ImageObject_SetActive, METH_VARARGS},
@@ -474,14 +478,43 @@ static struct PyMethodDef ImageObject_methods[] = {
     {NULL, NULL}
 };
 
+static PyObject *
+ImageObject_dir(PyObject *self, PyObject *args)
+{
+    static AnnotationObject atts; // dummy to access field names
+    
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL; 
+    }
+    
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyImageObject_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+    
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}   
+
 //
 // Type functions
 //
 
 static void
-ImageObject_dealloc(PyObject *v)
+PyImageObject_dealloc(PyObject *v)
 {
-   ImageObjectObject *obj = (ImageObjectObject *)v;
+   PyImageObjectObject *obj = (PyImageObjectObject *)v;
    if(obj->owns)
        delete obj->data;
 }
@@ -490,14 +523,14 @@ ImageObject_dealloc(PyObject *v)
 // static int
 // ImageObject_compare(PyObject *v, PyObject *w)
 // {
-//     AnnotationObject *a = ((ImageObjectObject *)v)->data;
-//     AnnotationObject *b = ((ImageObjectObject *)w)->data;
+//     AnnotationObject *a = ((PyImageObjectObject *)v)->data;
+//     AnnotationObject *b = ((PyImageObjectObject *)w)->data;
 //     return (*a == *b) ? 0 : -1;
 // }
 /// OLD REMOVET HTIS
 
 static PyObject *
-ImageObject_getattro(PyObject *self, PyObject *attr_name)
+PyImageObject_getattro(PyObject *self, PyObject *attr_name)
 {
     const char *name = PyUnicode_AsUTF8(attr_name);
     if (!name) return NULL;
@@ -521,14 +554,14 @@ ImageObject_getattro(PyObject *self, PyObject *attr_name)
     if(strcmp(name, "image") == 0)
         return ImageObject_GetImage(self, NULL);
 
-    PyObject *meth = Py_FindMethod(ImageObject_methods, self, (char*)name);
+    PyObject *meth = Py_FindMethod(PyImageObject_methods, self, (char*)name);
     if (meth) return meth;
 
     return PyObject_GenericGetAttr(self, attr_name);
 }
 
 static int
-ImageObject_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
+PyImageObject_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     // Create a tuple to contain the arguments since all of the Set
     // functions expect a tuple.
@@ -623,18 +656,10 @@ PyImageObject_ToString(const AnnotationObject *atts, const char *prefix)
     return str;
 }
 
-static int
-ImageObject_print(PyObject *v, FILE *fp, int flags)
-{
-    ImageObjectObject *obj = (ImageObjectObject *)v;
-    fprintf(fp, "%s", PyImageObject_ToString(obj->data, "").c_str());
-    return 0;
-}
-
 static PyObject *
-ImageObject_str(PyObject *v)
+PyImageObject_str(PyObject *v)
 {
-    ImageObjectObject *obj = (ImageObjectObject *)v;
+    PyImageObjectObject *obj = (PyImageObjectObject *)v;
     return PyString_FromString(PyImageObject_ToString(obj->data,"").c_str());
 }
 
@@ -642,63 +667,43 @@ ImageObject_str(PyObject *v)
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *ImageObject_Purpose = "Image Annotation Object";
-#else
-static char *ImageObject_Purpose = "Image Annotation Object";
-#endif
+static char const *PyImageObject_purpose = "Image Annotation Object";
 
 // CUSTOM
-static PyObject *ImageObject_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyImageObject_richcompare(PyObject *self, PyObject *other, int op);
 
 // CUSTOM
-
-//
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
 
 //
 // The type description structure
 //
-VISIT_PY_TYPE_OBJ(ImageObjectType,
-                  "ImageObject",
-                  ImageObjectObject,
-                  ImageObject_dealloc,
-                  ImageObject_print,
-                  ImageObject_getattro,
-                  ImageObject_setattro,
-                  ImageObject_str,
-                  ImageObject_Purpose,
-                  ImageObject_richcompare,
-                  0, /* as_number */
-                  ImageObject_methods);
+// Re-define tp slots for this custom object
+#undef VISIT_PY_TYPE_OBJ_TP_SLOTS
+#define VISIT_PY_TYPE_OBJ_TP_SLOTS(VSObjName)                          \
+    VISIT_PY_TYPE_OBJ_SLOT2(VSObjName, doc, purpose);                  \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, dealloc);                       \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, getattro);                      \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, setattro);                      \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, str);                           \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, richcompare);                   \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, methods)
+VISIT_PY_TYPE_OBJ(ImageObject);
 
 // CUSTOM
 static PyObject *
-ImageObject_richcompare(PyObject *self, PyObject *other, int op)
+PyImageObject_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type
     if ( Py_TYPE(self) != Py_TYPE(other)
-         || Py_TYPE(self) != &ImageObjectType)
+         || Py_TYPE(self) != &PyImageObjectType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    AnnotationObject *a = ((ImageObjectObject *)self)->data;
-    AnnotationObject *b = ((ImageObjectObject *)other)->data;
+    AnnotationObject *a = ((PyImageObjectObject *)self)->data;
+    AnnotationObject *b = ((PyImageObjectObject *)other)->data;
 
     switch (op)
     {
@@ -727,8 +732,8 @@ static AnnotationObject *defaultAtts = 0;
 static PyObject *
 NewImageObject()
 {
-    ImageObjectObject *newObject;
-    newObject = PyObject_NEW(ImageObjectObject, &ImageObjectType);
+    PyImageObjectObject *newObject;
+    newObject = PyObject_NEW(PyImageObjectObject, &PyImageObjectType);
     if(newObject == NULL)
         return NULL;
     if(defaultAtts)
@@ -742,8 +747,8 @@ NewImageObject()
 static PyObject *
 WrapImageObject(const AnnotationObject *attr)
 {
-    ImageObjectObject *newObject;
-    newObject = PyObject_NEW(ImageObjectObject, &ImageObjectType);
+    PyImageObjectObject *newObject;
+    newObject = PyObject_NEW(PyImageObjectObject, &PyImageObjectType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (AnnotationObject *)attr;
@@ -827,13 +832,13 @@ PyImageObject_GetMethodTable(int *nMethods)
 bool
 PyImageObject_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ImageObjectType);
+    return (obj->ob_type == &PyImageObjectType);
 }
 
 AnnotationObject *
 PyImageObject_FromPyObject(PyObject *obj)
 {
-    ImageObjectObject *obj2 = (ImageObjectObject *)obj;
+    PyImageObjectObject *obj2 = (PyImageObjectObject *)obj;
     return obj2->data;
 }
 

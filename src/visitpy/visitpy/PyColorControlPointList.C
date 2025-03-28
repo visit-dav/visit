@@ -512,7 +512,7 @@ ColorControlPointList_GetTagNames(PyObject *self, PyObject *args)
 PyObject *
 ColorControlPointList_SetNumControlPoints(PyObject *self, PyObject *args)
 {
-    ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
+    PyColorControlPointListObject *obj = (PyColorControlPointListObject *)self;
     int numItems = -1;
     if(!PyArg_ParseTuple(args, "i", &numItems))
         return PyErr_Format(PyExc_TypeError, "Expecting integer argument");

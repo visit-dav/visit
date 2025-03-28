@@ -39,7 +39,7 @@ SetBool(AnnotationObject *annot, int bit, bool val)
 static PyObject *\
 LegendAttributesObject_Set##NAME(PyObject *self, PyObject *args)\
 {\
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;\
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;\
     int ival;\
     if(!PyArg_ParseTuple(args, "i", &ival))\
         return NULL;\
@@ -52,7 +52,7 @@ LegendAttributesObject_Set##NAME(PyObject *self, PyObject *args)\
 static PyObject *\
 LegendAttributesObject_Get##NAME(PyObject *self, PyObject *args)\
 {\
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;\
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;\
     PyObject *retval = PyInt_FromLong(GetBool(obj->data,BIT)?1L:0L);\
     return retval;\
 }
@@ -74,7 +74,7 @@ LegendAttributesObject_Get##NAME(PyObject *self, PyObject *args)\
 //
 // This struct contains the Python type information and a LegendAttributesObject.
 //
-struct LegendAttributesObjectObject
+struct PyLegendAttributesObjectObject
 {
     PyObject_HEAD
     AnnotationObject *data;
@@ -89,7 +89,7 @@ static PyObject *NewLegendAttributesObject();
 static PyObject *
 LegendAttributesObject_SetActive(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -107,7 +107,7 @@ LegendAttributesObject_SetActive(PyObject *self, PyObject *args)
 static PyObject *
 LegendAttributesObject_GetActive(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetActive()?1L:0L);
     return retval;
 }
@@ -115,7 +115,7 @@ LegendAttributesObject_GetActive(PyObject *self, PyObject *args)
 static PyObject *
 LegendAttributesObject_SetPosition(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
 
     double *dvals = obj->data->GetPosition();
     if(!PyArg_ParseTuple(args, "dd", &dvals[0], &dvals[1]))
@@ -159,7 +159,7 @@ LegendAttributesObject_SetPosition(PyObject *self, PyObject *args)
 static PyObject *
 LegendAttributesObject_GetPosition(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
     // Allocate a tuple the with enough entries to hold the position.
     PyObject *retval = PyTuple_New(2);
     const double *position = obj->data->GetPosition();
@@ -171,7 +171,7 @@ LegendAttributesObject_GetPosition(PyObject *self, PyObject *args)
 static PyObject *
 LegendAttributesObject_SetXScale(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
@@ -191,7 +191,7 @@ LegendAttributesObject_SetXScale(PyObject *self, PyObject *args)
 static PyObject *
 LegendAttributesObject_GetXScale(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
 /*CUSTOM*/
     double *pos2 = obj->data->GetPosition2();
     PyObject *retval = PyFloat_FromDouble(double(pos2[0]));
@@ -201,7 +201,7 @@ LegendAttributesObject_GetXScale(PyObject *self, PyObject *args)
 static PyObject *
 LegendAttributesObject_SetYScale(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
@@ -221,7 +221,7 @@ LegendAttributesObject_SetYScale(PyObject *self, PyObject *args)
 static PyObject *
 LegendAttributesObject_GetYScale(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
 /*CUSTOM*/
     double *pos2 = obj->data->GetPosition2();
     PyObject *retval = PyFloat_FromDouble(double(pos2[1]));
@@ -231,7 +231,7 @@ LegendAttributesObject_GetYScale(PyObject *self, PyObject *args)
 static PyObject *
 LegendAttributesObject_SetTextColor(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -296,7 +296,7 @@ LegendAttributesObject_SetTextColor(PyObject *self, PyObject *args)
 static PyObject *
 LegendAttributesObject_GetTextColor(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
     // Allocate a tuple the with enough entries to hold the textColor.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *textColor = obj->data->GetTextColor().GetColor();
@@ -310,7 +310,7 @@ LegendAttributesObject_GetTextColor(PyObject *self, PyObject *args)
 static PyObject *
 LegendAttributesObject_SetBoundingBoxColor(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -375,7 +375,7 @@ LegendAttributesObject_SetBoundingBoxColor(PyObject *self, PyObject *args)
 static PyObject *
 LegendAttributesObject_GetBoundingBoxColor(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
     // Allocate a tuple the with enough entries to hold the Color1.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *Color1 = obj->data->GetColor1().GetColor();
@@ -389,7 +389,7 @@ LegendAttributesObject_GetBoundingBoxColor(PyObject *self, PyObject *args)
 static PyObject *
 LegendAttributesObject_SetUseForegroundForTextColor(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -407,7 +407,7 @@ LegendAttributesObject_SetUseForegroundForTextColor(PyObject *self, PyObject *ar
 static PyObject *
 LegendAttributesObject_GetUseForegroundForTextColor(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetUseForegroundForTextColor()?1L:0L);
     return retval;
 }
@@ -415,7 +415,7 @@ LegendAttributesObject_GetUseForegroundForTextColor(PyObject *self, PyObject *ar
 static PyObject *
 LegendAttributesObject_SetNumberFormat(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
@@ -434,7 +434,7 @@ LegendAttributesObject_SetNumberFormat(PyObject *self, PyObject *args)
 static PyObject *
 LegendAttributesObject_GetNumberFormat(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
 /*CUSTOM*/
     const stringVector &s = obj->data->GetText();
     PyObject *retval = PyString_FromString(s.size() > 0 ? s[0].c_str(): "");
@@ -444,7 +444,7 @@ LegendAttributesObject_GetNumberFormat(PyObject *self, PyObject *args)
 static PyObject *
 LegendAttributesObject_SetFontFamily(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -473,7 +473,7 @@ LegendAttributesObject_SetFontFamily(PyObject *self, PyObject *args)
 static PyObject *
 LegendAttributesObject_GetFontFamily(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetFontFamily()));
     return retval;
 }
@@ -481,7 +481,7 @@ LegendAttributesObject_GetFontFamily(PyObject *self, PyObject *args)
 static PyObject *
 LegendAttributesObject_SetFontBold(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -499,7 +499,7 @@ LegendAttributesObject_SetFontBold(PyObject *self, PyObject *args)
 static PyObject *
 LegendAttributesObject_GetFontBold(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetFontBold()?1L:0L);
     return retval;
 }
@@ -507,7 +507,7 @@ LegendAttributesObject_GetFontBold(PyObject *self, PyObject *args)
 static PyObject *
 LegendAttributesObject_SetFontItalic(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -525,7 +525,7 @@ LegendAttributesObject_SetFontItalic(PyObject *self, PyObject *args)
 static PyObject *
 LegendAttributesObject_GetFontItalic(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetFontItalic()?1L:0L);
     return retval;
 }
@@ -533,7 +533,7 @@ LegendAttributesObject_GetFontItalic(PyObject *self, PyObject *args)
 static PyObject *
 LegendAttributesObject_SetFontShadow(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -551,7 +551,7 @@ LegendAttributesObject_SetFontShadow(PyObject *self, PyObject *args)
 static PyObject *
 LegendAttributesObject_GetFontShadow(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetFontShadow()?1L:0L);
     return retval;
 }
@@ -559,7 +559,7 @@ LegendAttributesObject_GetFontShadow(PyObject *self, PyObject *args)
 static PyObject *
 LegendAttributesObject_SetFontHeight(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
@@ -577,7 +577,7 @@ LegendAttributesObject_SetFontHeight(PyObject *self, PyObject *args)
 static PyObject *
 LegendAttributesObject_GetFontHeight(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
 /*CUSTOM*/
     return PyFloat_FromDouble(obj->data->GetOptions().GetEntry("fontHeight")->AsDouble());
 }
@@ -585,7 +585,7 @@ LegendAttributesObject_GetFontHeight(PyObject *self, PyObject *args)
 static PyObject *
 LegendAttributesObject_SetCustomTitle(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
 
     char *sval;
     int oIndex = -1;
@@ -604,7 +604,7 @@ LegendAttributesObject_SetCustomTitle(PyObject *self, PyObject *args)
 static PyObject *
 LegendAttributesObject_GetCustomTitle(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
 /*CUSTOM*/
     return PyString_FromString(obj->data->GetOptions().GetEntry("customTitle")->AsString().c_str());
 }
@@ -622,7 +622,7 @@ SETGET_FLAG(UseCustomTitle,  LEGEND_CUSTOM_TITLE)
 static PyObject *
 LegendAttributesObject_SetOrientation(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
 
     char *str;
     int oIndex = -1;
@@ -677,7 +677,7 @@ LegendAttributesObject_SetOrientation(PyObject *self, PyObject *args)
 static PyObject *
 LegendAttributesObject_GetOrientation(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
 
     PyObject *retval = NULL;
     int or0 = GetBool(obj->data, LEGEND_ORIENTATION0);
@@ -698,7 +698,7 @@ LegendAttributesObject_GetOrientation(PyObject *self, PyObject *args)
 static PyObject *
 LegendAttributesObject_SetDrawLabels(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
 
     char *str;
     int oIndex = -1;
@@ -753,7 +753,7 @@ LegendAttributesObject_SetDrawLabels(PyObject *self, PyObject *args)
 static PyObject *
 LegendAttributesObject_GetDrawLabels(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
 
     PyObject *retval = NULL;
     int dv = GetBool(obj->data, LEGEND_DRAW_VALUES);
@@ -774,7 +774,7 @@ LegendAttributesObject_GetDrawLabels(PyObject *self, PyObject *args)
 static PyObject *
 LegendAttributesObject_SetNumTicks(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -792,7 +792,7 @@ LegendAttributesObject_SetNumTicks(PyObject *self, PyObject *args)
 static PyObject *
 LegendAttributesObject_GetNumTicks(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
 /*CUSTOM*/
     return PyInt_FromLong(obj->data->GetOptions().GetEntry("numTicks")->AsInt());
 }
@@ -801,7 +801,7 @@ LegendAttributesObject_GetNumTicks(PyObject *self, PyObject *args)
 static PyObject *
 LegendAttributesObject_SetSuppliedValues(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
 
     PyObject     *tuple;
     if (obj->data->GetOptions().GetEntry("legendType")->AsInt() != LEGEND_TYPE_VARIABLE)
@@ -859,7 +859,7 @@ LegendAttributesObject_SetSuppliedValues(PyObject *self, PyObject *args)
 static PyObject *
 LegendAttributesObject_GetSuppliedValues(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
     // Allocate a tuple the with enough entries to hold the suppliedValues.
     const doubleVector &suppliedValues = obj->data->GetOptions().GetEntry("suppliedValues")->AsDoubleVector();
     PyObject *retval = PyTuple_New(suppliedValues.size());
@@ -871,7 +871,7 @@ LegendAttributesObject_GetSuppliedValues(PyObject *self, PyObject *args)
 static PyObject *
 LegendAttributesObject_SetSuppliedLabels(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
 
     PyObject     *tuple;
 
@@ -915,7 +915,7 @@ LegendAttributesObject_SetSuppliedLabels(PyObject *self, PyObject *args)
 static PyObject *
 LegendAttributesObject_GetSuppliedLabels(PyObject *self, PyObject *args)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)self;
     // Allocate a tuple the with enough entries to hold the suppliedLabels.
     const stringVector &suppliedLabels = obj->data->GetOptions().GetEntry("suppliedLabels")->AsStringVector();
     PyObject *retval = PyTuple_New(suppliedLabels.size());
@@ -936,7 +936,11 @@ LegendAttributesObject_Delete(PyObject *self, PyObject *args)
 }
 
 
-static struct PyMethodDef LegendAttributesObject_methods[] = {
+// Forward declaration for methods table
+static PyObject * LegendAttributesObject_dir(PyObject *self, PyObject *args);
+
+static struct PyMethodDef PyLegendAttributesObject_methods[] = {
+    {"__dir__", LegendAttributesObject_dir, METH_NOARGS},
     {"SetActive", LegendAttributesObject_SetActive, METH_VARARGS},
     {"GetActive", LegendAttributesObject_GetActive, METH_VARARGS},
     {"SetPosition", LegendAttributesObject_SetPosition, METH_VARARGS},
@@ -991,20 +995,49 @@ static struct PyMethodDef LegendAttributesObject_methods[] = {
     {NULL, NULL}
 };
 
+static PyObject *
+LegendAttributesObject_dir(PyObject *self, PyObject *args)
+{
+    static AnnotationObject atts; // dummy to access field names
+    
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL; 
+    }
+    
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyLegendAttributesObject_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+    
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}   
+
 //
 // Type functions
 //
 
 static void
-LegendAttributesObject_dealloc(PyObject *v)
+PyLegendAttributesObject_dealloc(PyObject *v)
 {
-   LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)v;
+   PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)v;
    if(obj->owns)
        delete obj->data;
 }
 
 static PyObject *
-LegendAttributesObject_getattro(PyObject *self, PyObject *attr_name)
+PyLegendAttributesObject_getattro(PyObject *self, PyObject *attr_name)
 {
     const char *name = PyUnicode_AsUTF8(attr_name);
     if (!name) return NULL;
@@ -1089,14 +1122,14 @@ LegendAttributesObject_getattro(PyObject *self, PyObject *attr_name)
     if(strcmp(name, "suppliedLabels") == 0)
         return LegendAttributesObject_GetSuppliedLabels(self, NULL);
 
-    PyObject *meth = Py_FindMethod(LegendAttributesObject_methods, self, (char*)name);
+    PyObject *meth = Py_FindMethod(PyLegendAttributesObject_methods, self, (char*)name);
     if (meth) return meth;
 
     return PyObject_GenericGetAttr(self, attr_name);
 }
 
 static int
-LegendAttributesObject_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
+PyLegendAttributesObject_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     // Create a tuple to contain the arguments since all of the Set
     // functions expect a tuple.
@@ -1352,83 +1385,53 @@ PyLegendAttributesObject_ToString(const AnnotationObject *atts, const char *pref
     return str;
 }
 
-static int
-LegendAttributesObject_print(PyObject *v, FILE *fp, int flags)
-{
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)v;
-    fprintf(fp, "%s", PyLegendAttributesObject_ToString(obj->data, "").c_str());
-    return 0;
-}
-
 static PyObject *
-LegendAttributesObject_str(PyObject *v)
+PyLegendAttributesObject_str(PyObject *v)
 {
-    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)v;
+    PyLegendAttributesObjectObject *obj = (PyLegendAttributesObjectObject *)v;
     return PyString_FromString(PyLegendAttributesObject_ToString(obj->data, "").c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *LegendAttributesObject_Purpose = "This class defines defines an interface to a legend annotation object.";
-#else
-static char *LegendAttributesObject_Purpose = "This class defines defines an interface to a legend annotation object.";
-#endif
+static char const *PyLegendAttributesObject_purpose = "This class defines defines an interface to a legend annotation object.";
 
 
 // CUSTOM
-static PyObject *LegendAttributesObject_richcompare(PyObject *self, PyObject *other, int op);
-
+static PyObject *PyLegendAttributesObject_richcompare(PyObject *self, PyObject *other, int op);
 
 // CUSTOM
-
-//
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
 //
 // The type description structure
 //
-VISIT_PY_TYPE_OBJ(LegendAttributesObjectType,
-                  "LegendAttributesObject",
-                  LegendAttributesObjectObject,
-                  LegendAttributesObject_dealloc,
-                  LegendAttributesObject_print,
-                  LegendAttributesObject_getattro,
-                  LegendAttributesObject_setattro,
-                  LegendAttributesObject_str,
-                  LegendAttributesObject_Purpose,
-                  LegendAttributesObject_richcompare,
-                  0, /* as_number */
-                  LegendAttributesObject_methods);
+// Re-define tp slots for this custom object
+#undef VISIT_PY_TYPE_OBJ_TP_SLOTS
+#define VISIT_PY_TYPE_OBJ_TP_SLOTS(VSObjName)                          \
+    VISIT_PY_TYPE_OBJ_SLOT2(VSObjName, doc, purpose);                  \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, dealloc);                       \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, getattro);                      \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, setattro);                      \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, str);                           \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, richcompare);                   \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, methods)
+VISIT_PY_TYPE_OBJ(LegendAttributesObject);
 
 // CUSTOM
 static PyObject *
-LegendAttributesObject_richcompare(PyObject *self, PyObject *other, int op)
+PyLegendAttributesObject_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type
     if ( Py_TYPE(self) != Py_TYPE(other)
-         || Py_TYPE(self) != &LegendAttributesObjectType)
+         || Py_TYPE(self) != &PyLegendAttributesObjectType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    AnnotationObject *a = ((LegendAttributesObjectObject *)self)->data;
-    AnnotationObject *b = ((LegendAttributesObjectObject *)other)->data;
+    AnnotationObject *a = ((PyLegendAttributesObjectObject *)self)->data;
+    AnnotationObject *b = ((PyLegendAttributesObjectObject *)other)->data;
 
     switch (op)
     {
@@ -1455,8 +1458,8 @@ LegendAttributesObject_richcompare(PyObject *self, PyObject *other, int op)
 static PyObject *
 NewLegendAttributesObject()
 {
-    LegendAttributesObjectObject *newObject;
-    newObject = PyObject_NEW(LegendAttributesObjectObject, &LegendAttributesObjectType);
+    PyLegendAttributesObjectObject *newObject;
+    newObject = PyObject_NEW(PyLegendAttributesObjectObject, &PyLegendAttributesObjectType);
     if(newObject == NULL)
         return NULL;
     newObject->data = new AnnotationObject;
@@ -1469,8 +1472,8 @@ NewLegendAttributesObject()
 static PyObject *
 WrapLegendAttributesObject(AnnotationObject *annot)
 {
-    LegendAttributesObjectObject *newObject;
-    newObject = PyObject_NEW(LegendAttributesObjectObject, &LegendAttributesObjectType);
+    PyLegendAttributesObjectObject *newObject;
+    newObject = PyObject_NEW(PyLegendAttributesObjectObject, &PyLegendAttributesObjectType);
     if(newObject == NULL)
         return NULL;
     newObject->data = annot;
@@ -1488,13 +1491,13 @@ WrapLegendAttributesObject(AnnotationObject *annot)
 bool
 PyLegendAttributesObject_Check(PyObject *obj)
 {
-    return (obj->ob_type == &LegendAttributesObjectType);
+    return (obj->ob_type == &PyLegendAttributesObjectType);
 }
 
 AnnotationObject *
 PyLegendAttributesObject_FromPyObject(PyObject *obj)
 {
-    LegendAttributesObjectObject *obj2 = (LegendAttributesObjectObject *)obj;
+    PyLegendAttributesObjectObject *obj2 = (PyLegendAttributesObjectObject *)obj;
     return obj2->data;
 }
 
