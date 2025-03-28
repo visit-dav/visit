@@ -49,7 +49,7 @@ extern bool DeleteAnnotationObjectHelper(AnnotationObject *);
 //
 // This struct contains the Python type information and a Text3DObject.
 //
-struct Text3DObjectObject
+struct PyText3DObjectObject
 {
     PyObject_HEAD
     AnnotationObject *data;
@@ -160,7 +160,7 @@ PyText3DObject_ToString(const AnnotationObject *atts, const char *prefix)
 static PyObject *
 Text3DObject_Notify(PyObject *self, PyObject *args)
 {
-    Text3DObjectObject *obj = (Text3DObjectObject *)self;
+    PyText3DObjectObject *obj = (PyText3DObjectObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
@@ -169,7 +169,7 @@ Text3DObject_Notify(PyObject *self, PyObject *args)
 static PyObject *
 Text3DObject_SetVisible(PyObject *self, PyObject *args)
 {
-    Text3DObjectObject *obj = (Text3DObjectObject *)self;
+    PyText3DObjectObject *obj = (PyText3DObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -187,7 +187,7 @@ Text3DObject_SetVisible(PyObject *self, PyObject *args)
 static PyObject *
 Text3DObject_GetVisible(PyObject *self, PyObject *args)
 {
-    Text3DObjectObject *obj = (Text3DObjectObject *)self;
+    PyText3DObjectObject *obj = (PyText3DObjectObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetVisible()?1L:0L);
     return retval;
 }
@@ -195,7 +195,7 @@ Text3DObject_GetVisible(PyObject *self, PyObject *args)
 static PyObject *
 Text3DObject_SetActive(PyObject *self, PyObject *args)
 {
-    Text3DObjectObject *obj = (Text3DObjectObject *)self;
+    PyText3DObjectObject *obj = (PyText3DObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -213,7 +213,7 @@ Text3DObject_SetActive(PyObject *self, PyObject *args)
 static PyObject *
 Text3DObject_GetActive(PyObject *self, PyObject *args)
 {
-    Text3DObjectObject *obj = (Text3DObjectObject *)self;
+    PyText3DObjectObject *obj = (PyText3DObjectObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetActive()?1L:0L);
     return retval;
 }
@@ -221,7 +221,7 @@ Text3DObject_GetActive(PyObject *self, PyObject *args)
 static PyObject *
 Text3DObject_SetPosition(PyObject *self, PyObject *args)
 {
-    Text3DObjectObject *obj = (Text3DObjectObject *)self;
+    PyText3DObjectObject *obj = (PyText3DObjectObject *)self;
 
     double *dvals = obj->data->GetPosition();
     if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
@@ -266,7 +266,7 @@ Text3DObject_SetPosition(PyObject *self, PyObject *args)
 static PyObject *
 Text3DObject_GetPosition(PyObject *self, PyObject *args)
 {
-    Text3DObjectObject *obj = (Text3DObjectObject *)self;
+    PyText3DObjectObject *obj = (PyText3DObjectObject *)self;
     // Allocate a tuple the with enough entries to hold the position.
     PyObject *retval = PyTuple_New(3);
     const double *position = obj->data->GetPosition();
@@ -278,7 +278,7 @@ Text3DObject_GetPosition(PyObject *self, PyObject *args)
 static PyObject *
 Text3DObject_SetText(PyObject *self, PyObject *args)
 {
-    Text3DObjectObject *obj = (Text3DObjectObject *)self;
+    PyText3DObjectObject *obj = (PyText3DObjectObject *)self;
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
@@ -297,7 +297,7 @@ Text3DObject_SetText(PyObject *self, PyObject *args)
 static PyObject *
 Text3DObject_GetText(PyObject *self, PyObject *args)
 {
-    Text3DObjectObject *obj = (Text3DObjectObject *)self;
+    PyText3DObjectObject *obj = (PyText3DObjectObject *)self;
 /*CUSTOM*/
     const stringVector &s = obj->data->GetText();
     PyObject *retval = PyString_FromString(s.size() > 0 ? s[0].c_str(): "");
@@ -307,7 +307,7 @@ Text3DObject_GetText(PyObject *self, PyObject *args)
 static PyObject *
 Text3DObject_SetTextColor(PyObject *self, PyObject *args)
 {
-    Text3DObjectObject *obj = (Text3DObjectObject *)self;
+    PyText3DObjectObject *obj = (PyText3DObjectObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -373,7 +373,7 @@ Text3DObject_SetTextColor(PyObject *self, PyObject *args)
 static PyObject *
 Text3DObject_GetTextColor(PyObject *self, PyObject *args)
 {
-    Text3DObjectObject *obj = (Text3DObjectObject *)self;
+    PyText3DObjectObject *obj = (PyText3DObjectObject *)self;
     // Allocate a tuple the with enough entries to hold the textColor.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *textColor = obj->data->GetTextColor().GetColor();
@@ -387,7 +387,7 @@ Text3DObject_GetTextColor(PyObject *self, PyObject *args)
 static PyObject *
 Text3DObject_SetUseForegroundForTextColor(PyObject *self, PyObject *args)
 {
-    Text3DObjectObject *obj = (Text3DObjectObject *)self;
+    PyText3DObjectObject *obj = (PyText3DObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -406,7 +406,7 @@ Text3DObject_SetUseForegroundForTextColor(PyObject *self, PyObject *args)
 static PyObject *
 Text3DObject_GetUseForegroundForTextColor(PyObject *self, PyObject *args)
 {
-    Text3DObjectObject *obj = (Text3DObjectObject *)self;
+    PyText3DObjectObject *obj = (PyText3DObjectObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetUseForegroundForTextColor()?1L:0L);
     return retval;
 }
@@ -414,7 +414,7 @@ Text3DObject_GetUseForegroundForTextColor(PyObject *self, PyObject *args)
 static PyObject *
 Text3DObject_SetPreserveOrientation(PyObject *self, PyObject *args)
 {
-    Text3DObjectObject *obj = (Text3DObjectObject *)self;
+    PyText3DObjectObject *obj = (PyText3DObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -433,7 +433,7 @@ Text3DObject_SetPreserveOrientation(PyObject *self, PyObject *args)
 static PyObject *
 Text3DObject_GetPreserveOrientation(PyObject *self, PyObject *args)
 {
-    Text3DObjectObject *obj = (Text3DObjectObject *)self;
+    PyText3DObjectObject *obj = (PyText3DObjectObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetPreserveOrientation()?1L:0L);
     return retval;
 }
@@ -441,7 +441,7 @@ Text3DObject_GetPreserveOrientation(PyObject *self, PyObject *args)
 static PyObject *
 Text3DObject_SetRotations(PyObject *self, PyObject *args)
 {
-    Text3DObjectObject *obj = (Text3DObjectObject *)self;
+    PyText3DObjectObject *obj = (PyText3DObjectObject *)self;
 
     double dvals[3];
     dvals[0] = obj->data->GetRotations()[0];
@@ -489,7 +489,7 @@ Text3DObject_SetRotations(PyObject *self, PyObject *args)
 static PyObject *
 Text3DObject_GetRotations(PyObject *self, PyObject *args)
 {
-    Text3DObjectObject *obj = (Text3DObjectObject *)self;
+    PyText3DObjectObject *obj = (PyText3DObjectObject *)self;
     // Allocate a tuple the with enough entries to hold the rotations.
     PyObject *retval = PyTuple_New(3);
     const double *rotations = obj->data->GetRotations();
@@ -501,7 +501,7 @@ Text3DObject_GetRotations(PyObject *self, PyObject *args)
 static PyObject *
 Text3DObject_SetHeightMode(PyObject *self, PyObject *args)
 {
-    Text3DObjectObject *obj = (Text3DObjectObject *)self;
+    PyText3DObjectObject *obj = (PyText3DObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -528,7 +528,7 @@ Text3DObject_SetHeightMode(PyObject *self, PyObject *args)
 static PyObject *
 Text3DObject_GetHeightMode(PyObject *self, PyObject *args)
 {
-    Text3DObjectObject *obj = (Text3DObjectObject *)self;
+    PyText3DObjectObject *obj = (PyText3DObjectObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetHeightMode()));
     return retval;
 }
@@ -536,7 +536,7 @@ Text3DObject_GetHeightMode(PyObject *self, PyObject *args)
 static PyObject *
 Text3DObject_SetRelativeHeight(PyObject *self, PyObject *args)
 {
-    Text3DObjectObject *obj = (Text3DObjectObject *)self;
+    PyText3DObjectObject *obj = (PyText3DObjectObject *)self;
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
@@ -555,7 +555,7 @@ Text3DObject_SetRelativeHeight(PyObject *self, PyObject *args)
 static PyObject *
 Text3DObject_GetRelativeHeight(PyObject *self, PyObject *args)
 {
-    Text3DObjectObject *obj = (Text3DObjectObject *)self;
+    PyText3DObjectObject *obj = (PyText3DObjectObject *)self;
     PyObject *retval = PyFloat_FromDouble(
          double(obj->data->GetRelativeHeight())/100.);
     return retval;
@@ -564,7 +564,7 @@ Text3DObject_GetRelativeHeight(PyObject *self, PyObject *args)
 static PyObject *
 Text3DObject_SetFixedHeight(PyObject *self, PyObject *args)
 {
-    Text3DObjectObject *obj = (Text3DObjectObject *)self;
+    PyText3DObjectObject *obj = (PyText3DObjectObject *)self;
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
@@ -583,7 +583,7 @@ Text3DObject_SetFixedHeight(PyObject *self, PyObject *args)
 static PyObject *
 Text3DObject_GetFixedHeight(PyObject *self, PyObject *args)
 {
-    Text3DObjectObject *obj = (Text3DObjectObject *)self;
+    PyText3DObjectObject *obj = (PyText3DObjectObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetFixedHeight());
     return retval;
 }
@@ -592,7 +592,7 @@ Text3DObject_GetFixedHeight(PyObject *self, PyObject *args)
 static PyObject *
 Text3DObject_Delete(PyObject *self, PyObject *args)
 {
-    Text3DObjectObject *obj = (Text3DObjectObject *)self;
+    PyText3DObjectObject *obj = (PyText3DObjectObject *)self;
 
     // Tell the VisIt module to decrement the reference count for the
     // AnnotationObject pointed to by obj->data. If there are no more
@@ -603,8 +603,12 @@ Text3DObject_Delete(PyObject *self, PyObject *args)
     return Py_None;
 }
 
-static struct PyMethodDef Text3DObject_methods[] = {
-    {"Notify", Text3DObject_Notify, METH_VARARGS},
+// Forward declaration for methods table
+static PyObject * Text3DObject_dir(PyObject *self, PyObject *args);
+
+static struct PyMethodDef PyText3DObject_methods[] = {
+    {"__dir__", Text3DObject_dir, METH_NOARGS},
+    {"Notify", Text3DObject_Notify, METH_NOARGS},
     {"SetVisible", Text3DObject_SetVisible, METH_VARARGS},
     {"GetVisible", Text3DObject_GetVisible, METH_VARARGS},
     {"SetActive", Text3DObject_SetActive, METH_VARARGS},
@@ -631,28 +635,49 @@ static struct PyMethodDef Text3DObject_methods[] = {
     {NULL, NULL}
 };
 
+static PyObject *
+Text3DObject_dir(PyObject *self, PyObject *args)
+{
+    static AnnotationObject atts; // dummy to access field names
+    
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL; 
+    }
+    
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyText3DObject_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+    
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}   
+
 //
 // Type functions
 //
 
 static void
-Text3DObject_dealloc(PyObject *v)
+PyText3DObject_dealloc(PyObject *v)
 {
-   Text3DObjectObject *obj = (Text3DObjectObject *)v;
+   PyText3DObjectObject *obj = (PyText3DObjectObject *)v;
    if(obj->owns)
        delete obj->data;
 }
 
-// static int
-// Text3DObject_compare(PyObject *v, PyObject *w)
-// {
-//     AnnotationObject *a = ((Text3DObjectObject *)v)->data;
-//     AnnotationObject *b = ((Text3DObjectObject *)w)->data;
-//     return (*a == *b) ? 0 : -1;
-// }
-
 static PyObject *
-Text3DObject_getattro(PyObject *self, PyObject *attr_name)
+PyText3DObject_getattro(PyObject *self, PyObject *attr_name)
 {
     const char *name = PyUnicode_AsUTF8(attr_name);
     if (!name) return NULL;
@@ -685,14 +710,14 @@ Text3DObject_getattro(PyObject *self, PyObject *attr_name)
     if(strcmp(name, "fixedHeight") == 0)
         return Text3DObject_GetFixedHeight(self, NULL);
 
-    PyObject *meth = Py_FindMethod(Text3DObject_methods, self, (char*)name);
+    PyObject *meth = Py_FindMethod(PyText3DObject_methods, self, (char*)name);
     if (meth) return meth;
 
     return PyObject_GenericGetAttr(self, attr_name);
 }
 
 static int
-Text3DObject_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
+PyText3DObject_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     // Create a tuple to contain the arguments since all of the Set
     // functions expect a tuple.
@@ -732,81 +757,50 @@ Text3DObject_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
     return retval ? 0 : -1;
 }
 
-static int
-Text3DObject_print(PyObject *v, FILE *fp, int flags)
-{
-    Text3DObjectObject *obj = (Text3DObjectObject *)v;
-    fprintf(fp, "%s", PyText3DObject_ToString(obj->data, "").c_str());
-    return 0;
-}
-
 PyObject *
-Text3DObject_str(PyObject *v)
+PyText3DObject_str(PyObject *v)
 {
-    Text3DObjectObject *obj = (Text3DObjectObject *)v;
+    PyText3DObjectObject *obj = (PyText3DObjectObject *)v;
     return PyString_FromString(PyText3DObject_ToString(obj->data,"").c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *Text3DObject_Purpose = "This class defines an interface for controlling Text3D annotation objects.";
-#else
-static char *Text3DObject_Purpose = "This class defines an interface for controlling Text3D annotation objects.";
-#endif
+static char const *PyText3DObject_purpose = "This class defines an interface for controlling Text3D annotation objects.";
 
 // CUSTOM
-static PyObject *Text3DObject_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyText3DObject_richcompare(PyObject *self, PyObject *other, int op);
 
 // CUSTOM
 
-//
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTRO,
-//                            VPY_SETATTRO,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-VISIT_PY_TYPE_OBJ( Text3DObjectType,         \
-                   "Text3DObject",           \
-                   Text3DObjectObject,       \
-                   Text3DObject_dealloc,     \
-                   Text3DObject_print,       \
-                   Text3DObject_getattro,    \
-                   Text3DObject_setattro,    \
-                   Text3DObject_str,         \
-                   Text3DObject_Purpose,     \
-                   Text3DObject_richcompare, \
-                   0, /* as_number*/
-                   Text3DObject_methods);
+// Re-define tp slots for this custom object
+#undef VISIT_PY_TYPE_OBJ_TP_SLOTS
+#define VISIT_PY_TYPE_OBJ_TP_SLOTS(VSObjName)                          \
+    VISIT_PY_TYPE_OBJ_SLOT2(VSObjName, doc, purpose);                  \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, dealloc);                       \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, getattro);                      \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, setattro);                      \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, str);                           \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, richcompare);                   \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, methods)
+VISIT_PY_TYPE_OBJ(Text3DObject);
 
 // CUSTOM
 static PyObject *
-Text3DObject_richcompare(PyObject *self, PyObject *other, int op)
+PyText3DObject_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type
     if ( Py_TYPE(self) != Py_TYPE(other)
-         || Py_TYPE(self) != &Text3DObjectType)
+         || Py_TYPE(self) != &PyText3DObjectType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    AnnotationObject *a = ((Text3DObjectObject *)self)->data;
-    AnnotationObject *b = ((Text3DObjectObject *)other)->data;
+    AnnotationObject *a = ((PyText3DObjectObject *)self)->data;
+    AnnotationObject *b = ((PyText3DObjectObject *)other)->data;
 
     switch (op)
     {
@@ -833,8 +827,8 @@ Text3DObject_richcompare(PyObject *self, PyObject *other, int op)
 static PyObject *
 NewText3DObject()
 {
-    Text3DObjectObject *newObject;
-    newObject = PyObject_NEW(Text3DObjectObject, &Text3DObjectType);
+    PyText3DObjectObject *newObject;
+    newObject = PyObject_NEW(PyText3DObjectObject, &PyText3DObjectType);
     if(newObject == NULL)
         return NULL;
     newObject->data = new AnnotationObject;
@@ -846,8 +840,8 @@ NewText3DObject()
 static PyObject *
 WrapText3DObject(AnnotationObject *annot)
 {
-    Text3DObjectObject *newObject;
-    newObject = PyObject_NEW(Text3DObjectObject, &Text3DObjectType);
+    PyText3DObjectObject *newObject;
+    newObject = PyObject_NEW(PyText3DObjectObject, &PyText3DObjectType);
     if(newObject == NULL)
         return NULL;
     newObject->data = annot;
@@ -864,13 +858,13 @@ WrapText3DObject(AnnotationObject *annot)
 bool
 PyText3DObject_Check(PyObject *obj)
 {
-    return (obj->ob_type == &Text3DObjectType);
+    return (obj->ob_type == &PyText3DObjectType);
 }
 
 AnnotationObject *
 PyText3DObject_FromPyObject(PyObject *obj)
 {
-    Text3DObjectObject *obj2 = (Text3DObjectObject *)obj;
+    PyText3DObjectObject *obj2 = (PyText3DObjectObject *)obj;
     return obj2->data;
 }
 
