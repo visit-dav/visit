@@ -776,7 +776,7 @@ VolumeAttributes_SetFreeformOpacity(PyObject *self, PyObject *args)
 //
 // THIS METHOD IS CUSTOM CODED!!!!!!.
 //
-    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
+    PyVolumeAttributesObject *obj = (PyVolumeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     unsigned char *cvals = obj->data->GetFreeformOpacity();
@@ -935,7 +935,7 @@ Definition:
 /*static*/ PyObject *
 VolumeAttributes_SetMaterialProperties(PyObject *self, PyObject *args)
 {
-    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
+    PyVolumeAttributesObject *obj = (PyVolumeAttributesObject *)self;
 
     double *dvals = obj->data->GetMaterialProperties();
     if(!PyArg_ParseTuple(args, "dddd", &dvals[0], &dvals[1], &dvals[2], &dvals[3]))

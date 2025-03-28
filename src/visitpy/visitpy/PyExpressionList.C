@@ -280,8 +280,10 @@ static char const *PyExpressionList_purpose = "This class contains a list of exp
 //
 // Initialize the python object type structure with default values.
 // If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
-// and then re-define it here AHEAD of VISIT_PY_TYPE_OBJ. For examples, look
-// in src/avt/PythonFilters and in src/visitpy/common/Py2and3Support.h
+// which is defined with default values for our standard pythong objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples in
+// src/avt/PythonFilters.
 //
 VISIT_PY_TYPE_OBJ(ExpressionList);
 

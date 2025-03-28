@@ -209,7 +209,7 @@ GaussianControlPointList_ClearControlPoints(PyObject *self, PyObject *args)
 PyObject *
 GaussianControlPointList_SetNumControlPoints(PyObject *self, PyObject *args)
 {
-    GaussianControlPointListObject *obj = (GaussianControlPointListObject *)self;
+    PyGaussianControlPointListObject *obj = (PyGaussianControlPointListObject *)self;
     int numItems = -1;
     if(!PyArg_ParseTuple(args, "i", &numItems))
         return PyErr_Format(PyExc_TypeError, "Expecting integer numItems");
@@ -301,8 +301,10 @@ static char const *PyGaussianControlPointList_purpose = "This class contains a l
 //
 // Initialize the python object type structure with default values.
 // If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
-// and then re-define it here AHEAD of VISIT_PY_TYPE_OBJ. For examples, look
-// in src/avt/PythonFilters and in src/visitpy/common/Py2and3Support.h
+// which is defined with default values for our standard pythong objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples in
+// src/avt/PythonFilters.
 //
 VISIT_PY_TYPE_OBJ(GaussianControlPointList);
 

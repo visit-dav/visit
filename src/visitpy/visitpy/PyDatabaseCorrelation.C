@@ -656,7 +656,7 @@ DatabaseCorrelation_GetCondensedTimeForState(PyObject *self, PyObject *args)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-static struct PyMethodDef DatabaseCorrelation_methods[] = {
+struct PyMethodDef PyDatabaseCorrelation_methods[] = {
     {"__dir__", DatabaseCorrelation_dir, METH_NOARGS},
     {"GetName", DatabaseCorrelation_GetName, METH_VARARGS},
     {"GetNumStates", DatabaseCorrelation_GetNumStates, METH_VARARGS},
@@ -728,7 +728,7 @@ PyDatabaseCorrelation_getattro(PyObject *self, PyObject *attr_name)
     if(strcmp(name, "databaseNStates") == 0)
         return DatabaseCorrelation_GetDatabaseNStates(self, NULL);
 
-    PyObject *meth = Py_FindMethod(DatabaseCorrelation_methods, self, (char*)name);
+    PyObject *meth = Py_FindMethod(PyDatabaseCorrelation_methods, self, (char*)name);
     if (meth) return meth;
 
     return PyObject_GenericGetAttr(self, attr_name);
