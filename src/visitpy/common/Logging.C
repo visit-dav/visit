@@ -1422,15 +1422,29 @@ static std::string log_QueryRPC(ViewerRPC *rpc)
                 numPrinted++;
             }
         }
-        std::vector<std::string> vars;
         if (queryParams.HasEntry("vars"))
-            vars = queryParams.GetEntry("vars")->AsStringVector();
-        if (!vars.empty() && !(vars.size() == 1 && vars[0] == "default"))
         {
-            if (numPrinted > 0)
-                s += ", ";
-            s += "vars=";
-            s += queryParams.GetEntry("vars")->ConvertToPythonTupleString();
+            std::vector<std::string> vars;
+            vars = queryParams.GetEntry("vars")->AsStringVector();
+            if (vars.empty())
+            {
+                std::string v(queryParams.GetEntry("vars")->AsString());
+                if (!v.empty() && v != "default")
+                {
+                    if (numPrinted > 0)
+                        s += ", ";
+                    s += "vars=\"";
+                    s += v;
+                    s += "\"";
+                }
+            }
+            else if (!(vars.size() == 1 && vars[0] == "default"))
+            {
+                if (numPrinted > 0)
+                    s += ", ";
+                s += "vars=";
+                s += queryParams.GetEntry("vars")->ConvertToPythonTupleString();
+            }
         }
         s += ")\n";
     }
@@ -1468,13 +1482,25 @@ static std::string log_QueryRPC(ViewerRPC *rpc)
                     s += queryParams.GetEntry(paramNames[i])->ConvertToString();
             }
         }
-        std::vector<std::string> vars;
         if (queryParams.HasEntry("vars"))
-            vars = queryParams.GetEntry("vars")->AsStringVector();
-        if (!vars.empty() && !(vars.size() == 1 && vars[0] == "default"))
         {
-            s += ", vars=";
-            s += queryParams.GetEntry("vars")->ConvertToPythonTupleString();
+            std::vector<std::string> vars;
+            vars = queryParams.GetEntry("vars")->AsStringVector();
+            if (vars.empty())
+            {
+                std::string v(queryParams.GetEntry("vars")->AsString());
+                if (!v.empty() && v != "default")
+                {
+                    s += ", vars=\"";
+                    s += v;
+                    s += "\"";
+                }
+            }
+            else if (!(vars.size() == 1 && vars[0] == "default"))
+            {
+                s += ", vars=";
+                s += queryParams.GetEntry("vars")->ConvertToPythonTupleString();
+            }
         }
 
         s += ")\n";
