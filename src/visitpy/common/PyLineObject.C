@@ -749,6 +749,7 @@ NewLineObject()
     newObject->data = new AnnotationObject;
     newObject->data->SetObjectType(AnnotationObject::Line2D);
     newObject->owns = true;
+    PyType_Ready(&PyLineObjectType);
     return (PyObject *)newObject;
 }
 
@@ -761,6 +762,7 @@ WrapLineObject(AnnotationObject *annot)
         return NULL;
     newObject->data = annot;
     newObject->owns = false;
+    PyType_Ready(&PyLineObjectType);
     return (PyObject *)newObject;
 }
 

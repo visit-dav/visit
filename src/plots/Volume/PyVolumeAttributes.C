@@ -3528,7 +3528,6 @@ PyVolumeAttributes_getattro(PyObject *self, PyObject *attr_name)
     }
     // end Renderer types
 #endif
-
     PyObject *meth = Py_FindMethod(PyVolumeAttributes_methods, self, (char*)name);
     if (meth) return meth;
 
@@ -3712,8 +3711,11 @@ PyVolumeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
     }
 #endif
 
-    if(obj == &NULL_PY_OBJ)
-        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);

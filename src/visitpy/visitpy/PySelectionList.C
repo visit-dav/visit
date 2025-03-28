@@ -441,8 +441,12 @@ PySelectionList_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 
     if(strcmp(name, "autoApplyUpdates") == 0)
         obj = SelectionList_SetAutoApplyUpdates(self, args);
-    else
-        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);

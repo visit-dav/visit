@@ -562,8 +562,12 @@ PyExtrudeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args
         obj = ExtrudeAttributes_SetSteps(self, args);
     else if(strcmp(name, "preserveOriginalCellNumbers") == 0)
         obj = ExtrudeAttributes_SetPreserveOriginalCellNumbers(self, args);
-    else
-        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);

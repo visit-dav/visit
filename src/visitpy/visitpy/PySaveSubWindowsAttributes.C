@@ -847,8 +847,12 @@ PySaveSubWindowsAttributes_setattro(PyObject *self, PyObject *attr_name, PyObjec
         obj = SaveSubWindowsAttributes_SetWin15(self, args);
     else if(strcmp(name, "win16") == 0)
         obj = SaveSubWindowsAttributes_SetWin16(self, args);
-    else
-        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);

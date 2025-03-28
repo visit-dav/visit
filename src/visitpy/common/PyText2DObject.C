@@ -737,6 +737,7 @@ NewText2DObject()
     newObject->data = new AnnotationObject;
     newObject->data->SetObjectType(AnnotationObject::Text2D);
     newObject->owns = true;
+    PyType_Ready(&PyText2DObjectType);
     return (PyObject *)newObject;
 }
 
@@ -749,6 +750,7 @@ WrapText2DObject(AnnotationObject *annot)
         return NULL;
     newObject->data = annot;
     newObject->owns = false;
+    PyType_Ready(&PyText2DObjectType);
     return (PyObject *)newObject;
 }
 

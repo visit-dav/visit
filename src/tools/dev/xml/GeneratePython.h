@@ -3265,13 +3265,20 @@ class PythonGeneratorAttribute : public GeneratorBase
 
         for(i = index; i < fields.size(); ++i)
             fields[i]->WriteSetAttr(c, name, i == index);
-        c << "    else" << Endl;
-        c << "        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));" << Endl;
         c << Endl;
 
         if(HasCode(mName, 1))
+        {
             PrintCode(c, mName, 1);
+            c << Endl;
+        }
 
+        c << "    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)" << Endl;
+        c << "    {" << Endl;
+        c << "        Py_INCREF(Py_None);" << Endl;
+        c << "        obj = Py_None;" << Endl;
+        c << "    }" << Endl;
+        c << Endl;
         c << "    if (obj != NULL && obj != &NULL_PY_OBJ)" << Endl;
         c << "        Py_DECREF(obj);" << Endl;
         c << Endl;

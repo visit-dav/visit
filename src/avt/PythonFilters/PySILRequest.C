@@ -318,6 +318,7 @@ PySILRequest_Wrap(avtSILSpecification *request)
     if(res  == NULL)
         return NULL;
     res->request = request;
+    PyType_Ready(&PySILRequestType);
     return (PyObject *)res;
 }
 

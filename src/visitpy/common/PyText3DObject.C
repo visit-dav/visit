@@ -834,6 +834,7 @@ NewText3DObject()
     newObject->data = new AnnotationObject;
     newObject->data->SetObjectType(AnnotationObject::Text3D);
     newObject->owns = true;
+    PyType_Ready(&PyText3DObjectType);
     return (PyObject *)newObject;
 }
 
@@ -846,6 +847,7 @@ WrapText3DObject(AnnotationObject *annot)
         return NULL;
     newObject->data = annot;
     newObject->owns = false;
+    PyType_Ready(&PyText3DObjectType);
     return (PyObject *)newObject;
 }
 

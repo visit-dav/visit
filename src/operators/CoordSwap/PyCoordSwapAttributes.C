@@ -423,8 +423,12 @@ PyCoordSwapAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *ar
         obj = CoordSwapAttributes_SetNewCoord2(self, args);
     else if(strcmp(name, "newCoord3") == 0)
         obj = CoordSwapAttributes_SetNewCoord3(self, args);
-    else
-        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);

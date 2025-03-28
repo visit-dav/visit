@@ -823,8 +823,12 @@ PyViewerClientAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject 
         obj = ViewerClientAttributes_SetExternalClient(self, args);
     else if(strcmp(name, "renderingTypes") == 0)
         obj = ViewerClientAttributes_SetRenderingTypes(self, args);
-    else
-        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);

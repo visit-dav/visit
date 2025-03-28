@@ -330,8 +330,12 @@ PyStaggerAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args
         obj = StaggerAttributes_SetOffsetY(self, args);
     else if(strcmp(name, "offsetZ") == 0)
         obj = StaggerAttributes_SetOffsetZ(self, args);
-    else
-        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);

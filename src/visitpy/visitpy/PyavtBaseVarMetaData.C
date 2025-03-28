@@ -439,8 +439,12 @@ PyavtBaseVarMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *arg
         obj = avtBaseVarMetaData_SetValidVariable(self, args);
     else if(strcmp(name, "hideFromGUI") == 0)
         obj = avtBaseVarMetaData_SetHideFromGUI(self, args);
-    else
-        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);

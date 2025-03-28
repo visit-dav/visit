@@ -1466,6 +1466,7 @@ NewLegendAttributesObject()
     newObject->data->SetObjectType(AnnotationObject::LegendAttributes);
     newObject->owns = true;
 
+    PyType_Ready(&PyLegendAttributesObjectType);
     return (PyObject *)newObject;
 }
 
@@ -1479,6 +1480,7 @@ WrapLegendAttributesObject(AnnotationObject *annot)
     newObject->data = annot;
     newObject->owns = false;
 
+    PyType_Ready(&PyLegendAttributesObjectType);
     return (PyObject *)newObject;
 }
 

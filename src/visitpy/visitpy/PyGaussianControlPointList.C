@@ -269,8 +269,12 @@ PyGaussianControlPointList_setattro(PyObject *self, PyObject *attr_name, PyObjec
     const char *name = PyUnicode_AsUTF8(attr_name);
     if (!name) return -1;
 
-    else
-        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);

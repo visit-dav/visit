@@ -2916,8 +2916,12 @@ PyTransformAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *ar
         obj = TransformAttributes_SetVectorTransformMethod(self, args);
     else if(strcmp(name, "transformVectors") == 0)
         obj = TransformAttributes_SetTransformVectors(self, args);
-    else
-        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);

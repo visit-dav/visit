@@ -4098,8 +4098,12 @@ PyPseudocolorAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *
         obj = PseudocolorAttributes_SetWireframeColor(self, args);
     else if(strcmp(name, "pointColor") == 0)
         obj = PseudocolorAttributes_SetPointColor(self, args);
-    else
-        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);

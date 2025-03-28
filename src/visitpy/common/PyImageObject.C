@@ -741,6 +741,7 @@ NewImageObject()
     else
         newObject->data = new AnnotationObject;
     newObject->owns = true;
+    PyType_Ready(&PyImageObjectType);
     return (PyObject *)newObject;
 }
 
@@ -753,6 +754,7 @@ WrapImageObject(const AnnotationObject *attr)
         return NULL;
     newObject->data = (AnnotationObject *)attr;
     newObject->owns = false;
+    PyType_Ready(&PyImageObjectType);
     return (PyObject *)newObject;
 }
 

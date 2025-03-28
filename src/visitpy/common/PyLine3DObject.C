@@ -1046,6 +1046,7 @@ NewLine3DObject()
     newObject->data = new AnnotationObject;
     newObject->data->SetObjectType(AnnotationObject::Line3D);
     newObject->owns = true;
+    PyType_Ready(&PyLine3DObjectType);
     return (PyObject *)newObject;
 }
 
@@ -1058,6 +1059,7 @@ WrapLine3DObject(AnnotationObject *annot)
         return NULL;
     newObject->data = annot;
     newObject->owns = false;
+    PyType_Ready(&PyLine3DObjectType);
     return (PyObject *)newObject;
 }
 

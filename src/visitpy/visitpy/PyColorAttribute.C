@@ -228,8 +228,12 @@ PyColorAttribute_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 
     if(strcmp(name, "color") == 0)
         obj = ColorAttribute_SetColor(self, args);
-    else
-        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);

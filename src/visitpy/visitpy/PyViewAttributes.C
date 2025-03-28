@@ -1282,8 +1282,12 @@ PyViewAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
         obj = ViewAttributes_SetViewportCoords(self, args);
     else if(strcmp(name, "eyeAngle") == 0)
         obj = ViewAttributes_SetEyeAngle(self, args);
-    else
-        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);

@@ -1344,8 +1344,12 @@ PyMeshAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
         obj = MeshAttributes_SetPointSizePixels(self, args);
     else if(strcmp(name, "opacity") == 0)
         obj = MeshAttributes_SetOpacity(self, args);
-    else
-        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);

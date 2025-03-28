@@ -759,8 +759,12 @@ PyMeshManagementAttributes_setattro(PyObject *self, PyObject *attr_name, PyObjec
         obj = MeshManagementAttributes_SetDiscretizeBoundaryOnly(self, args);
     else if(strcmp(name, "passNativeCSG") == 0)
         obj = MeshManagementAttributes_SetPassNativeCSG(self, args);
-    else
-        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);

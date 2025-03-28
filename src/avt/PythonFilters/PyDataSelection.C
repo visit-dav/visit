@@ -148,6 +148,7 @@ PyDataSelection_Wrap(avtDataSelection_p sel)
     if(res  == NULL)
         return NULL;
     res->selections.push_back(sel);
+    PyType_Ready(&PyDataSelectionType);
     return (PyObject *)res;
 }
 

@@ -526,8 +526,12 @@ PyToroidalPoloidalProjection_setattro(PyObject *self, PyObject *attr_name, PyObj
         obj = ToroidalPoloidalProjection_SetCentroid(self, args);
     else if(strcmp(name, "project2D") == 0)
         obj = ToroidalPoloidalProjection_SetProject2D(self, args);
-    else
-        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);

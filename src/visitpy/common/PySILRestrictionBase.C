@@ -998,6 +998,7 @@ PySILRestriction_Wrap(avtSILRestriction_p restriction)
     res->silr = new avtSILRestriction_p;
     // set the restriction
     *(res->silr) = restriction;
+    PyType_Ready(&PySILRestrictionType);
     return (PyObject *)res;
 }
 

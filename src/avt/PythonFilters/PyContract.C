@@ -558,6 +558,7 @@ PyContract_Wrap(avtContract_p contract)
     res->contract = new avtContract_p;
     // set the contract
     *(res->contract) = contract;
+    PyType_Ready(&PyContractType);
     return (PyObject *)res;
 }
 

@@ -1063,6 +1063,7 @@ NewTimeSliderObject()
     newObject->data = new AnnotationObject;
     newObject->data->SetObjectType(AnnotationObject::TimeSlider);
     newObject->owns = true;
+    PyType_Ready(&PyTimeSliderObjectType);
     return (PyObject *)newObject;
 }
 
@@ -1075,6 +1076,7 @@ WrapTimeSliderObject(AnnotationObject *annot)
         return NULL;
     newObject->data = annot;
     newObject->owns = false;
+    PyType_Ready(&PyTimeSliderObjectType);
     return (PyObject *)newObject;
 }
 

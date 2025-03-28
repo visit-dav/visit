@@ -3171,6 +3171,7 @@ PyDataRequest_Wrap(avtDataRequest_p request)
     res->request = new avtDataRequest_p;
     // set the contract
     *(res->request) = request;
+    PyType_Ready(&PyDataRequestType);
     return (PyObject *)res;
 }
 

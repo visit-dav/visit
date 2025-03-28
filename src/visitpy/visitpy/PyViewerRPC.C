@@ -3960,8 +3960,12 @@ PyViewerRPC_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
         obj = ViewerRPC_SetStringArg2(self, args);
     else if(strcmp(name, "toolUpdateMode") == 0)
         obj = ViewerRPC_SetToolUpdateMode(self, args);
-    else
-        obj = PyInt_FromLong(PyObject_GenericSetAttr(self, attr_name, args));
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
