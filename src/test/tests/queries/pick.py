@@ -1694,31 +1694,31 @@ def PickBoundary():
 
     Pick(128, 140)
     s = s + GetPickOutput()
+
     PickByZone(1269)
     s = s + GetPickOutput()
 
     NodePick(128, 140)
     s = s + GetPickOutput()
+
     PickByNode(1356)
     s = s + GetPickOutput()
 
-    Pick(120, 89)
+    PickByZone(6230)
     s = s + GetPickOutput()
+
     PickByZone(10438)
     s = s + GetPickOutput()
 
-    NodePick(120, 89)
-    s = s + GetPickOutput()
     PickByNode(12836)
     s = s + GetPickOutput()
 
-    Pick(154, 50)
-    s = s + GetPickOutput()
     PickByZone(10455)
     s = s + GetPickOutput()
 
-    NodePick(154, 50)
+    PickByNode(12413)
     s = s + GetPickOutput()
+
     PickByNode(12842)
     s = s + GetPickOutput()
 
