@@ -77,7 +77,7 @@ QvisText2DInterface::QvisText2DInterface(QWidget *parent) :
 
     // Add controls for entering the text
     textLineEdit = new QLineEdit(this);
-    connect(textLineEdit, SIGNAL(returnPressed()),
+    connect(textLineEdit, SIGNAL(editingFinished()),
             this, SLOT(textChanged()));
     cLayout->addWidget(textLineEdit, 2, 1, 1, 3);
     cLayout->addWidget(new QLabel(tr("Text"), this), 2, 0);

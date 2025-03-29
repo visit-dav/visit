@@ -213,8 +213,8 @@ QvisKeyframeWindow::CreateWindowContents()
     nFrames = new QLineEdit(central);
     connect(nFrames, SIGNAL(returnPressed()),
             this, SLOT(nFramesProcessText()));
-    connect(nFrames, SIGNAL(textChanged(const QString &)),
-            this, SLOT(userSetNFrames(const QString &)));
+    connect(nFrames, SIGNAL(editingFinished()),
+            this, SLOT(userSetNFrames()));
     mainLayout->addWidget(nFrames, row,1);
     row++;
 
@@ -646,7 +646,7 @@ QvisKeyframeWindow::apply()
 // ****************************************************************************
 
 void
-QvisKeyframeWindow::userSetNFrames(const QString &)
+QvisKeyframeWindow::userSetNFrames()
 {
     kfAtts->SetNFramesWasUserSet(true);
 }

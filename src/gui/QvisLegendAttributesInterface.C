@@ -298,13 +298,13 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent) :
 
     // Add controls for text format string.
     formatString = new QNarrowLineEdit(this);
-    connect(formatString, SIGNAL(returnPressed()),
+    connect(formatString, SIGNAL(editingFinished()),
             this, SLOT(textChanged()));
     aLayout->addWidget(formatString, row, 3);
     aLayout->addWidget(new QLabel(tr("Number format"), this), row, 2);
     // Add control for text font height
     fontHeight = new QNarrowLineEdit(this);
-    connect(fontHeight, SIGNAL(returnPressed()),
+    connect(fontHeight, SIGNAL(editingFinished()),
             this, SLOT(fontHeightChanged()));
     aLayout->addWidget(fontHeight, row, 1);
     aLayout->addWidget(new QLabel(tr("Font height"), this), row, 0);

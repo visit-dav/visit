@@ -37,6 +37,11 @@ class QPushButton;
 //    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
 //    First pass at porting to Qt 4.4.0
 //
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg from xxxTextChanged slots as they are now connected
+//    to 'editingFinished' signal. nameTextChanged retains its arg as it
+//    can be called with the arg from another function.
+//
 // ****************************************************************************
 class XMLEditFunctions : public QFrame
 {
@@ -53,8 +58,8 @@ class XMLEditFunctions : public QFrame
     void typeGroupChanged(int);
     void accessChanged(int);
     void memberChanged();
-    void targetTextChanged(const QString&);
-    void declarationTextChanged(const QString&);
+    void targetTextChanged();
+    void declarationTextChanged();
     void definitionChanged();
     void functionlistNew();
     void functionlistDel();

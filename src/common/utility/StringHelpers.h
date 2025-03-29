@@ -38,7 +38,7 @@ namespace StringHelpers
     void UTILITY_API GroupStrings(std::vector<std::string> stringList,
                        std::vector<std::vector<std::string> > &stringGroups,
                        std::vector<std::string> &groupNames,
-                       int numLeadingVals = 3,
+                       unsigned int numLeadingVals = 3,
                        std::string nonRelevantChars = NON_RELEVANT_CHARS);
     void UTILITY_API GroupStringsAsPaths(std::vector<std::string> stringList,
                        std::vector<std::vector<std::string> > &stringGroups,

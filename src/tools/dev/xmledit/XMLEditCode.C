@@ -32,6 +32,9 @@
 //    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
 //    First pass at porting to Qt 4.4.0
 //
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Change QLineEdit connections from 'textChanged' to 'editingFinished.'
+//
 // ****************************************************************************
 XMLEditCode::XMLEditCode(QWidget *p)
     : QFrame(p)
@@ -91,10 +94,10 @@ XMLEditCode::XMLEditCode(QWidget *p)
 
     connect(codelist, SIGNAL(currentRowChanged(int)),
             this, SLOT(UpdateWindowSingleItem()));
-    connect(target, SIGNAL(textChanged(const QString&)),
-            this, SLOT(targetTextChanged(const QString&)));
-    connect(name, SIGNAL(textChanged(const QString&)),
-            this, SLOT(nameTextChanged(const QString&)));
+    connect(target, SIGNAL(editingFinished()),
+            this, SLOT(targetTextChanged()));
+    connect(name, SIGNAL(editingFinished()),
+            this, SLOT(nameTextChanged()));
     connect(prefix, SIGNAL(textChanged()),
             this, SLOT(prefixChanged()));
     connect(postfix, SIGNAL(textChanged()),
@@ -291,6 +294,14 @@ XMLEditCode::BlockAllSignals(bool block)
 //    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
 //    First pass at porting to Qt 4.4.0
 //
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    If passed 'text' arg is empty as would be the case when triggered by
+//    'editingFinished' signal, grab contents of file widget.
+//    Arg is only non-empty when this function called from targetTextChanged.
+//
+//    Also modified setText for codelist to use newname as I believe that
+//    was the original intent.
+//
 // ****************************************************************************
 void
 XMLEditCode::nameTextChanged(const QString &text)
@@ -301,7 +312,8 @@ XMLEditCode::nameTextChanged(const QString &text)
         return;
     Code *c = a->codes[index];
 
-    QString newname = text.trimmed();
+    QString newname = text.isEmpty() ? name->text().trimmed() : text.trimmed();
+
     c->name = newname;
     if(CountCodes(newname) > 1)
     {
@@ -310,7 +322,7 @@ XMLEditCode::nameTextChanged(const QString &text)
         newname += "]";
     }
     BlockAllSignals(true);
-    codelist->item(index)->setText(text);
+    codelist->item(index)->setText(newname);
     BlockAllSignals(false);
 }
 
@@ -324,10 +336,12 @@ XMLEditCode::nameTextChanged(const QString &text)
 //    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
 //    First pass at porting to Qt 4.4.0
 //
-
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditCode::targetTextChanged(const QString &text)
+XMLEditCode::targetTextChanged()
 {
     Attribute *a = xmldoc->attribute;
     int index = codelist->currentRow();
@@ -335,7 +349,7 @@ XMLEditCode::targetTextChanged(const QString &text)
         return;
     Code *c = a->codes[index];
 
-    c->target = text;
+    c->target = target->text();
     nameTextChanged(c->name);
 }
 

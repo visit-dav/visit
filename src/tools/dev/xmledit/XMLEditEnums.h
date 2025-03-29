@@ -29,6 +29,10 @@ class QPushButton;
 //   Cyrus Harrison, Thu May 15 15:04:20 PDT 2008
 //   Ported to Qt 4.4
 //
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg from nameTextChanged slots as it is now connected
+//    to 'editingFinished' signal.
+//
 // ****************************************************************************
 class XMLEditEnums : public QFrame
 {
@@ -43,7 +47,7 @@ class XMLEditEnums : public QFrame
     void UpdateWindowContents();
     void UpdateWindowSensitivity();
     void UpdateWindowSingleItem();
-    void nameTextChanged(const QString&);
+    void nameTextChanged();
     void valuelistChanged();
     void enumlistNew();
     void enumlistDel();
