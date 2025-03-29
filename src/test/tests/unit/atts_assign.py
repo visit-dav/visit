@@ -67,7 +67,7 @@ def TestAssignmentToTuple():
     try:
         ca.SetPoint(1,2,3)
         TestFOA('ca.SetPoint(1,2,3)', LINE())
-    except ValueError:
+    except AttributeError:
         TestPOA('ca.SetPoint(1,2,3)')
         pass
     except:
