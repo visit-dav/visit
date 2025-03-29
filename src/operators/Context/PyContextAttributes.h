@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define CONTEXTATTRIBUTES_NMETH 16
+#define CONTEXTATTRIBUTES_NMETH 17
 void           PyContextAttributes_StartUp(ContextAttributes *subj, void *data);
 void           PyContextAttributes_CloseDown();
 PyMethodDef *  PyContextAttributes_GetMethodTable(int *nMethods);
@@ -23,8 +23,8 @@ void           PyContextAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyContextAttributes_SetDefaults(const ContextAttributes *atts);
 std::string    PyContextAttributes_GetLogString();
 std::string    PyContextAttributes_ToString(const ContextAttributes *, const char *, const bool=false);
-PyObject *     PyContextAttributes_getattr(PyObject *self, char *name);
-int            PyContextAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PyContextAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyContextAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PyContextAttributes_methods[CONTEXTATTRIBUTES_NMETH];
 
 #endif

@@ -3389,10 +3389,10 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "//" << Endl;
         c << "// Initialize the python object type structure with default values." << Endl;
         c << "// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS," << Endl;
-        c << "// which is defined with default values for our standard pythong objects" << Endl;
+        c << "// which is defined with default values for our standard python objects" << Endl;
         c << "// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of" << Endl;
-        c << "// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples in" << Endl;
-        c << "// src/avt/PythonFilters." << Endl;
+        c << "// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of" << Endl;
+        c << "// such customization in src/avt/PythonFilters or src/visitpy/common." << Endl;
         c << "//" << Endl;
         c << "VISIT_PY_TYPE_OBJ("<<name<<");" << Endl << Endl;
  

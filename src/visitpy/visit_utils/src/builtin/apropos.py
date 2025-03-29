@@ -33,9 +33,12 @@ def visit_help(thing):
             thingstr = str(thing)
     except:
         thingstr = str(thing)
-    apresult = apropos(key=thingstr,trunc=50)
+    trunc = 50
+    apresult = set(apropos(key=thingstr,trunc=trunc))
+    apresult = apresult - set([thingstr]) 
+    apresult = sorted(list(apresult))
     if apresult:
-        sys.stdout.write("Using apropos(), here are some VisIt items that also mention '%s'...\n"%thingstr)
+        sys.stdout.write("Using apropos(), here are first %d VisIt items that also mention '%s'...\n"%(trunc,thingstr))
         sys.stdout.write("%s\n"%apresult)
 
 #
@@ -45,7 +48,7 @@ help = visit_help
 
 #
 #
-def apropos(key, match='all', trunc=30):
+def apropos(key, match='all', trunc=50):
     """Search function, object names and/or doc strings for matching text
 
        - key: is search text (can be a regex; help(re) for more info)
@@ -105,8 +108,8 @@ def apropos(key, match='all', trunc=30):
         if not thing:
             continue
 
-        if search_attrs and hasattr(thing, '__dict__'): 
-            members = [m for m in getattr(thing, '__dict__') \
+        if search_attrs:
+            members = [m for m in dir(thing) \
                        if not (m.startswith('__') and m.endswith('__'))]
             if re.search(key, str(members), reflags):
                 result.add(v)

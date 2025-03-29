@@ -745,10 +745,10 @@ static char const *PyAxes2D_purpose = "Contains the properties for the 2D axes."
 //
 // Initialize the python object type structure with default values.
 // If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
-// which is defined with default values for our standard pythong objects
+// which is defined with default values for our standard python objects
 // in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
-// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples in
-// src/avt/PythonFilters.
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
 VISIT_PY_TYPE_OBJ(Axes2D);
 
