@@ -3132,13 +3132,11 @@ static char const *PyDataRequest_purpose = "This class provides access to the av
 
 // Re-define tp slots for this custom object
 #undef VISIT_PY_TYPE_OBJ_TP_SLOTS
-#define VISIT_PY_TYPE_OBJ_TP_SLOTS(VSObjName)                                \
-    Py##VSObjName##Type.tp_doc = Py##VSObjName##_purpose;                    \
-    retval += ((void*) Py##VSObjName##Type.tp_doc != (void*)0);              \
-    Py##VSObjName##Type.tp_getattro = Py##VSObjName##_getattro;              \
-    retval += ((void*) Py##VSObjName##Type.tp_getattro != (void*)0);         \
-    Py##VSObjName##Type.tp_methods = Py##VSObjName##_methods;                \
-    retval += ((void*) Py##VSObjName##Type.tp_methods != (void*)0)
+#define VISIT_PY_TYPE_OBJ_TP_SLOTS(VSObjName)         \
+    VISIT_PY_TYPE_OBJ_SLOT2(VSObjName, doc, purpose); \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, getattro);     \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, methods)
+
 VISIT_PY_TYPE_OBJ(DataRequest);
 
 ///////////////////////////////////////////////////////////////////////////////
