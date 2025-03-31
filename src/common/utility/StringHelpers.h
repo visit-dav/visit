@@ -168,18 +168,16 @@ namespace StringHelpers
     template<typename T> inline T _vstrtonum(char const *numstr, char **eptr, int /* unused */) { return static_cast<T>(strtold(numstr, eptr)); }
 
     // Specialize int/long cases to use int conversion strtol which with base of 0 can handle octal and hex also
-    #define _VSTRTONUMI(T,F) template<> inline T _vstrtonum<T>(char const *numstr, char **eptr, int base) { return static_cast<T>(F(numstr, eptr, base)); }
-    _VSTRTONUMI(int,std::strtol)
-    _VSTRTONUMI(long,std::strtol)
-    _VSTRTONUMI(long long,std::strtoll)
+    template<> inline int _vstrtonum<int>(char const *numstr, char **eptr, int base) { return static_cast<int>(strtol(numstr, eptr, base)); }
+    template<> inline long _vstrtonum<long>(char const *numstr, char **eptr, int base) { return static_cast<long>(strtol(numstr, eptr, base)); }
+    template<> inline long long _vstrtonum<long long>(char const *numstr, char **eptr, int base) { return static_cast<long long>(strtoll(numstr, eptr, base)); }
 
     // Specialize unsigned cases to use unsigned conversion strtoul and error checking passing negated arg
-    // Note that size_t is an alias almost certainly to one of these types and so we do not have to
+    // Note that size_t almost certainly an alias to one of these types and so we should not have to
     // explicitly handle it here but any caller can still use it as in vstrtonum<size_t>().
-    #define _VSTRTONUMU(T,F) template<> inline T _vstrtonum<T>(char const *numstr, char **eptr, int base) { char const *s=numstr; while (isspace(*s)) s++; T retval = static_cast<T>(F(numstr, eptr, base)); if (*s=='-') errno = EDOM; return retval;}
-    _VSTRTONUMU(unsigned int,std::strtoul)
-    _VSTRTONUMU(unsigned long,std::strtoul)
-    _VSTRTONUMU(unsigned long long,std::strtoull)
+    template<> inline unsigned int _vstrtonum<unsigned int>(char const *numstr, char **eptr, int base) { char const *s=numstr; while (isspace(*s)) s++; unsigned int retval = static_cast<unsigned int>(strtoul(numstr, eptr, base)); if (*s=='-') errno = EDOM; return retval;}
+    template<> inline unsigned long _vstrtonum<unsigned long>(char const *numstr, char **eptr, int base) { char const *s=numstr; while (isspace(*s)) s++; unsigned long retval = static_cast<unsigned long>(strtoul(numstr, eptr, base)); if (*s=='-') errno = EDOM; return retval;}
+    template<> inline unsigned long long _vstrtonum<unsigned long long>(char const *numstr, char **eptr, int base) { char const *s=numstr; while (isspace(*s)) s++; unsigned long long retval = static_cast<unsigned long long>(strtoull(numstr, eptr, base)); if (*s=='-') errno = EDOM; return retval;}
 
     // dummy ostream for default (no ostream) cases 
     static std::ostream NO_OSTREAM(std::cerr.rdbuf());
