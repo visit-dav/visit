@@ -291,7 +291,7 @@ PyUnicode_From_UTF32_Unicode_Buffer(const char *unicode_buffer,
 // These macros are used within the definition of VISIT_PY_TYPE_OBJ to help
 // build a block of code representing the default set of .tp_xxx slot methods
 // our standard objects need to define. Its likely overly cautious but the reason
-// for the funky retval incrimenting here is to ensure there is no way any compiler
+// for the funky retval incrementing here is to ensure there is no way any compiler
 // optimizations could maybe decide the function in which this code block appears
 // could ever be optimized away because its return value could maybe be computed at
 // compile time.
