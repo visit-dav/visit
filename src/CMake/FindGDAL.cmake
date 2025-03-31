@@ -14,27 +14,27 @@
 #   Brad Whitlock, Fri Oct 14 10:56:28 PDT 2011
 #   GDAL changed again on Mac.
 #
+#   Kathleen Biagas, Mon Mar 24, 2025
+#   Utilize visit_import_third_party
+#
 #****************************************************************************/
 
-# Use the GDAL_DIR hint from the config-site .cmake file
+# Uses the GDAL_DIR hint from the config-site .cmake file
 
-IF (WIN32)
-    SET_UP_THIRD_PARTY(GDAL LIBS gdal_i)
-    # normally handled in InstallThirdParty.cmake, but gdal has a weird
+visit_import_third_party(GDAL LIBNAMES gdal gdal_i)
+
+if(WIN32)
+    # normally handled in INSTALL_THIRD_PARTY_LIBRARY, but gdal has a weird
     # naming convention on windows
-    FOREACH(VER 17 19 110 111 222 224)
-        IF(EXISTS ${GDAL_LIBRARY_DIR}/gdal${VER}.dll)
-            EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy
+    foreach(VER 17 19 110 111 222 224)
+        if(EXISTS ${GDAL_LIBRARY_DIR}/gdal${VER}.dll)
+            execute_process(COMMAND ${CMAKE_COMMAND} -E copy
                 ${GDAL_LIBRARY_DIR}/gdal${VER}.dll
                 ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
-            INSTALL(FILES ${GDAL_LIBRARY_DIR}/gdal${VER}.dll
+            install(FILES ${GDAL_LIBRARY_DIR}/gdal${VER}.dll
                 DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
-                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-                CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
-                )
-        ENDIF(EXISTS ${GDAL_LIBRARY_DIR}/gdal${VER}.dll)
-    ENDFOREACH(VER)
-ELSE (WIN32)
-    SET_UP_THIRD_PARTY(GDAL LIBS gdal)
-ENDIF (WIN32)
+                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+        endif()
+    endforeach()
+endif()
 

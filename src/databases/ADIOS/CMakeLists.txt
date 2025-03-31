@@ -40,13 +40,12 @@ ADIOSFileObject.C
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
-${ADIOS_INCLUDE_DIR}
 ${VISIT_DATABASE_INCLUDES}
 )
 
 set(vtk_libs VTK::FiltersHybrid )
 
-LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${ADIOS_LIBRARY_DIR} )
+LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 
 ADD_LIBRARY(IADIOSDatabase ${LIBI_SOURCES})
 TARGET_LINK_LIBRARIES(IADIOSDatabase visitcommon)
@@ -54,19 +53,19 @@ SET(INSTALLTARGETS IADIOSDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MADIOSDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MADIOSDatabase visitcommon avtdbatts avtdatabase_ser -ladiosread_nompi ${vtk_libs} )
+    TARGET_LINK_LIBRARIES(MADIOSDatabase visitcommon avtdbatts avtdatabase_ser adios ${vtk_libs} )
     ADD_TARGET_DEFINITIONS(MADIOSDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MADIOSDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EADIOSDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EADIOSDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser -ladiosread_nompi ${vtk_libs} )
+TARGET_LINK_LIBRARIES(EADIOSDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser adios ${vtk_libs} )
 ADD_TARGET_DEFINITIONS(EADIOSDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EADIOSDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EADIOSDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EADIOSDatabase_par visitcommon avtpipeline_par avtdatabase_par -ladiosread ${vtk_libs} )
+    TARGET_LINK_LIBRARIES(EADIOSDatabase_par visitcommon avtpipeline_par avtdatabase_par adios_mpi ${vtk_libs} )
     ADD_TARGET_DEFINITIONS(EADIOSDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EADIOSDatabase_par)
 ENDIF(VISIT_PARALLEL)

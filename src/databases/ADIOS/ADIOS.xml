@@ -1,11 +1,5 @@
 <?xml version="1.0"?>
   <Plugin name="ADIOS" type="database" label="ADIOS" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="true" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false" filePatternsStrict="false" opensWholeDirectory="false">
-    <CXXFLAGS>
-      $(ADIOS_INCLUDE_DIR)
-    </CXXFLAGS>
-    <LDFLAGS>
-      $(ADIOS_LIBRARY_DIR)
-    </LDFLAGS>
     <FilePatterns>
       *.bp
     </FilePatterns>
@@ -23,7 +17,7 @@
       ADIOSFileObject.C
     </Files>
     <LIBS components="M">
-      -ladiosread_nompi
+      adios
     </LIBS>
     <Files components="E">
       avtADIOSFileFormat.C
@@ -36,10 +30,10 @@
       ADIOSFileObject.C
     </Files>
     <LIBS components="ESer">
-      -ladiosread_nompi
+      adios
     </LIBS>
     <LIBS components="EPar">
-      -ladiosread
+      adios_mpi
     </LIBS>
     <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="" codefile="ADIOS.code">
       <Function name="ADIOSCommonPluginInfo::SetupDatabase" user="false" member="true">

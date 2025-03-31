@@ -30,12 +30,11 @@ avtMiliOptions.C
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
-${MILI_INCLUDE_DIR}
 ${VISIT_INCLUDE_DIR}/third_party_builtin
 ${VISIT_DATABASE_INCLUDES}
 )
 
-LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${MILI_LIBRARY_DIR} )
+LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 
 ADD_LIBRARY(IMiliDatabase ${LIBI_SOURCES})
 TARGET_LINK_LIBRARIES(IMiliDatabase visitcommon)
@@ -43,19 +42,19 @@ SET(INSTALLTARGETS IMiliDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MMiliDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MMiliDatabase visitcommon avtdbatts avtdatabase_ser ${MILI_LIB} )
+    TARGET_LINK_LIBRARIES(MMiliDatabase visitcommon avtdbatts avtdatabase_ser mili )
     ADD_TARGET_DEFINITIONS(MMiliDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MMiliDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EMiliDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EMiliDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${MILI_LIB} )
+TARGET_LINK_LIBRARIES(EMiliDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser mili )
 ADD_TARGET_DEFINITIONS(EMiliDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EMiliDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EMiliDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EMiliDatabase_par visitcommon avtpipeline_par avtdatabase_par ${MILI_LIB} )
+    TARGET_LINK_LIBRARIES(EMiliDatabase_par visitcommon avtpipeline_par avtdatabase_par mili )
     ADD_TARGET_DEFINITIONS(EMiliDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EMiliDatabase_par)
 ENDIF(VISIT_PARALLEL)
