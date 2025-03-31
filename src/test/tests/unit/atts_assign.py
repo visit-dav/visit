@@ -65,7 +65,7 @@ class my_redirect_stdout(list):
 #
 # Class to facilitate stderr redirect while already in a redirected state.
 # There are potentially better ways to do this in python 3 but the test
-# harness complicates things because there is already some rediction going on.
+# harness complicates things because there is already some redirection going on.
 #
 class my_redirect_stderr(list):
     def __enter__(self):
