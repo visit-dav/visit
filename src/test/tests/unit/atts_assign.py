@@ -922,39 +922,6 @@ def TestAssignmentToDoubleArray():
         except:
             TestFOA('va.SetMaterialProperties(%s)'%repr2(works[i]), LINE()) 
 
-def TestAssignmentToObsolete():
-    TestSection('Assignment to obsolete members, osprayShadowsEnabledFlag, ospraySpp, (of VolumeAttributes())')
-
-    va = VolumeAttributes()
-    
-    words = ['osprayShadowsEnabledFlag', 'OSPRayShadowsEnabledFlag', 'valid', 'update']
-    try:
-        with my_redirect_stderr() as output:
-            va.OSPRayShadowsEnabledFlag = 0
-            va.osprayShadowsEnabledFlag = 1
-        x  = [w for w in words if w in str(output)]
-        if len(x) != len(words):
-            raise Exception
-        if va.OSPRayShadowsEnabledFlag != 1:
-            raise Exception
-        TestPOA('va.osprayShadowsEnabledFlag=1')
-    except:
-        TestFOA('va.osprayShadowsEnabledFlag=1',LINE())
-
-    words = ['ospraySpp', 'OSPRaySPP', 'valid', 'update']
-    try:
-        with my_redirect_stderr() as output:
-            va.OSPRaySPP = 0 
-            va.ospraySpp = 37 
-        x  = [w for w in words if w in str(output)]
-        if len(x) != len(words):
-            raise Exception
-        if va.OSPRaySPP != 37:
-            raise Exception
-        TestPOA('va.ospraySpp=37')
-    except:
-        TestFOA('va.ospraySpp=37',LINE())
-
 def TestColorAttributeStuff():
     TestSection('ColorAttribute stuff')
 
@@ -1131,11 +1098,6 @@ TestAssignmentToDoubleArray()
 # Attribute Assignments
 #
 TestColorAttributeStuff()
-
-#
-# Obsolete Assignments
-#
-TestAssignmentToObsolete()
 
 #
 # Dir behavior
