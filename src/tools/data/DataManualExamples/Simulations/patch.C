@@ -394,18 +394,16 @@ patches_abut(const score_patch_info &p0, const score_patch_info &p1)
 // Modifications:
 //   
 // ****************************************************************************
-#define MIN(A,B) (((A)<(B)) ? (A) : (B))
-#define MAX(A,B) (((A)>(B)) ? (A) : (B))
 
 static score_patch_info
 patch_add(const score_patch_info &p0, const score_patch_info &p1)
 {
     score_patch_info s;
 
-    s.startx = MIN(p0.startx, p1.startx);
-    s.endx = MAX(p0.endx, p1.endx);
-    s.starty = MIN(p0.starty, p1.starty);
-    s.endy = MAX(p0.endy, p1.endy);
+    s.startx = std::min(p0.startx, p1.startx);
+    s.endx = std::max(p0.endx, p1.endx);
+    s.starty = std::min(p0.starty, p1.starty);
+    s.endy = std::max(p0.endy, p1.endy);
 
     return s;
 }

@@ -168,7 +168,7 @@ char *fname;
   int h,m,s,f;
   FILE *fd;
   char line[256];
-#ifdef WIN32
+#ifdef _WIN32
   char *commentBegin = NULL;
   int len = 0;
 #endif
@@ -185,7 +185,7 @@ char *fname;
   }
 
   result = fgets(id_string,254,fd);
-#ifndef WIN32
+#ifndef _WIN32
   result = fgets(line,254,fd); sscanf(line,"%s",tplorg);
 #else
   result = fgets(line,254,fd); 
@@ -199,7 +199,7 @@ char *fname;
   result = fgets(line,254,fd); sscanf(line,"%s",tplref);
   result = fgets(line,254,fd); sscanf(line,"%s",iqname);
   result = fgets(line,254,fd); sscanf(line,"%s",niqname);
-#ifndef WIN32
+#ifndef _WIN32
   result = fgets(line,254,fd); sscanf(line,"%s",statname);
 #else
   result = fgets(line,254,fd); 

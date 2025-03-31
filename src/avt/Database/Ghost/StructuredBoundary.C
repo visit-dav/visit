@@ -6,10 +6,8 @@
 #include <VisItException.h>
 #include <vtkStructuredGrid.h>
 
+#include <algorithm>
 #include <vector>
-
-#define BNDMIN(A,B) (((A) < (B)) ? (A) : (B))
-#define BNDMAX(A,B) (((A) > (B)) ? (A) : (B))
 
 // ****************************************************************************
 //  Function:  CalculateIndex
@@ -28,9 +26,9 @@
 inline static int
 CalculateIndex(int *e, int *d, int i, int j, int k)
 {
-    i = BNDMIN(BNDMAX(i, e[0]), e[1]);
-    j = BNDMIN(BNDMAX(j, e[2]), e[3]);
-    k = BNDMIN(BNDMAX(k, e[4]), e[5]);
+    i = std::min(std::max(i, e[0]), e[1]);
+    j = std::min(std::max(j, e[2]), e[3]);
+    k = std::min(std::max(k, e[4]), e[5]);
     if (d[2] == 1)
         return                  (j-e[2]) *d[0] + (i-e[0]);
     else
@@ -56,9 +54,9 @@ Boundary::SetExtents(int e[6])
     oldndims[0]    = e[1] - e[0] + 1;
     oldndims[1]    = e[3] - e[2] + 1;
     oldndims[2]    = e[5] - e[4] + 1;
-    oldzdims[0]    = BNDMAX(e[1] - e[0], 1);
-    oldzdims[1]    = BNDMAX(e[3] - e[2], 1);
-    oldzdims[2]    = BNDMAX(e[5] - e[4], 1);
+    oldzdims[0]    = std::max(e[1] - e[0], 1);
+    oldzdims[1]    = std::max(e[3] - e[2], 1);
+    oldzdims[2]    = std::max(e[5] - e[4], 1);
 
     oldnpts        = oldndims[0] * oldndims[1] * oldndims[2];
     oldncells      = oldzdims[0] * oldzdims[1] * oldzdims[2];
@@ -71,11 +69,11 @@ Boundary::SetExtents(int e[6])
     oldnextents[5] = e[5];
 
     oldzextents[0] = e[0];
-    oldzextents[1] = BNDMAX(e[1]-1, e[0]);
+    oldzextents[1] = std::max(e[1]-1, e[0]);
     oldzextents[2] = e[2];
-    oldzextents[3] = BNDMAX(e[3]-1, e[2]);
+    oldzextents[3] = std::max(e[3]-1, e[2]);
     oldzextents[4] = e[4];
-    oldzextents[5] = BNDMAX(e[5]-1, e[4]);
+    oldzextents[5] = std::max(e[5]-1, e[4]);
 
     expand[0]      = 0;
     expand[1]      = 0;
@@ -134,9 +132,9 @@ Boundary::AddNeighbor(int d, int mi, int o[3], int e[6],
     n.ndims[0]   = e[1] - e[0] + 1;
     n.ndims[1]   = e[3] - e[2] + 1;
     n.ndims[2]   = e[5] - e[4] + 1;
-    n.zdims[0]   = BNDMAX(e[1] - e[0], 1);
-    n.zdims[1]   = BNDMAX(e[3] - e[2], 1);
-    n.zdims[2]   = BNDMAX(e[5] - e[4], 1);
+    n.zdims[0]   = std::max(e[1] - e[0], 1);
+    n.zdims[1]   = std::max(e[3] - e[2], 1);
+    n.zdims[2]   = std::max(e[5] - e[4], 1);
     n.npts       = n.ndims[0] * n.ndims[1] * n.ndims[2];
     n.ncells     = n.zdims[0] * n.zdims[1] * n.zdims[2];
 
@@ -148,11 +146,11 @@ Boundary::AddNeighbor(int d, int mi, int o[3], int e[6],
     n.nextents[5] = e[5];
 
     n.zextents[0] = e[0];
-    n.zextents[1] = BNDMAX(e[1]-1, e[0]);
+    n.zextents[1] = std::max(e[1]-1, e[0]);
     n.zextents[2] = e[2];
-    n.zextents[3] = BNDMAX(e[3]-1, e[2]);
+    n.zextents[3] = std::max(e[3]-1, e[2]);
     n.zextents[4] = e[4];
-    n.zextents[5] = BNDMAX(e[5]-1, e[4]);
+    n.zextents[5] = std::max(e[5]-1, e[4]);
 
     n.type = NONE;
     // ---- I ----

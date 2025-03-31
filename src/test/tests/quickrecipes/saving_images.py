@@ -19,6 +19,7 @@ def setting_output_image_characteristics():
     s.fileName = 'mybmpfile' 
     s.width, s.height = 1024,768 
     s.screenCapture = 0 
+    s.outputToCurrentDirectory = 1
     SetSaveWindowAttributes(s) 
     # Subsequent calls to SaveWindow() will use these settings
     # setting output image characteristics }

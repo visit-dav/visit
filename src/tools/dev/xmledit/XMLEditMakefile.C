@@ -50,6 +50,9 @@
 //    Kathleen Biagas, Wed May 4, 2022
 //    Added support for component-specific DEFINES, CXXFLAGS, and LDFLAGS.
 //
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Change QLineEdit connections from 'textChanged' to 'editingFinished.'
+//
 // ****************************************************************************
 
 XMLEditMakefile::XMLEditMakefile(QWidget *p)
@@ -209,38 +212,38 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p)
     topLayout->setRowStretch(row, 100);
     row++;
 
-    connect(CXXFLAGS, SIGNAL(textChanged(const QString&)),
-            this, SLOT(cxxflagsTextChanged(const QString&)));
-    connect(LDFLAGS, SIGNAL(textChanged(const QString&)),
-            this, SLOT(ldflagsTextChanged(const QString&)));
-    connect(LIBS, SIGNAL(textChanged(const QString&)),
-            this, SLOT(libsTextChanged(const QString&)));
-    connect(DEFINES, SIGNAL(textChanged(const QString&)),
-            this, SLOT(defsTextChanged(const QString&)));
-    connect(GFiles, SIGNAL(textChanged(const QString&)),
-            this, SLOT(gfilesTextChanged(const QString&)));
-    connect(GLibs, SIGNAL(textChanged(const QString&)),
-            this, SLOT(glibsTextChanged(const QString&)));
-    connect(SFiles, SIGNAL(textChanged(const QString&)),
-            this, SLOT(sfilesTextChanged(const QString&)));
-    connect(VFiles, SIGNAL(textChanged(const QString&)),
-            this, SLOT(vfilesTextChanged(const QString&)));
-    connect(VLibs, SIGNAL(textChanged(const QString&)),
-            this, SLOT(vlibsTextChanged(const QString&)));
-    connect(MFiles, SIGNAL(textChanged(const QString&)),
-            this, SLOT(mfilesTextChanged(const QString&)));
-    connect(MLibs, SIGNAL(textChanged(const QString&)),
-            this, SLOT(mlibsTextChanged(const QString&)));
-    connect(EFiles, SIGNAL(textChanged(const QString&)),
-            this, SLOT(efilesTextChanged(const QString&)));
-    connect(ELibsSer, SIGNAL(textChanged(const QString&)),
-            this, SLOT(elibsSerTextChanged(const QString&)));
-    connect(ELibsPar, SIGNAL(textChanged(const QString&)),
-            this, SLOT(elibsParTextChanged(const QString&)));
-    connect(WFiles, SIGNAL(textChanged(const QString&)),
-            this, SLOT(wfilesTextChanged(const QString&)));
-    connect(VWFiles, SIGNAL(textChanged(const QString&)),
-            this, SLOT(vwfilesTextChanged(const QString&)));
+    connect(CXXFLAGS, SIGNAL(editingFinished()),
+            this, SLOT(cxxflagsTextChanged()));
+    connect(LDFLAGS, SIGNAL(editingFinished()),
+            this, SLOT(ldflagsTextChanged()));
+    connect(LIBS, SIGNAL(editingFinished()),
+            this, SLOT(libsTextChanged()));
+    connect(DEFINES, SIGNAL(editingFinished()),
+            this, SLOT(defsTextChanged()));
+    connect(GFiles, SIGNAL(editingFinished()),
+            this, SLOT(gfilesTextChanged()));
+    connect(GLibs, SIGNAL(editingFinished()),
+            this, SLOT(glibsTextChanged()));
+    connect(SFiles, SIGNAL(editingFinished()),
+            this, SLOT(sfilesTextChanged()));
+    connect(VFiles, SIGNAL(editingFinished()),
+            this, SLOT(vfilesTextChanged()));
+    connect(VLibs, SIGNAL(editingFinished()),
+            this, SLOT(vlibsTextChanged()));
+    connect(MFiles, SIGNAL(editingFinished()),
+            this, SLOT(mfilesTextChanged()));
+    connect(MLibs, SIGNAL(editingFinished()),
+            this, SLOT(mlibsTextChanged()));
+    connect(EFiles, SIGNAL(editingFinished()),
+            this, SLOT(efilesTextChanged()));
+    connect(ELibsSer, SIGNAL(editingFinished()),
+            this, SLOT(elibsSerTextChanged()));
+    connect(ELibsPar, SIGNAL(editingFinished()),
+            this, SLOT(elibsParTextChanged()));
+    connect(WFiles, SIGNAL(editingFinished()),
+            this, SLOT(wfilesTextChanged()));
+    connect(VWFiles, SIGNAL(editingFinished()),
+            this, SLOT(vwfilesTextChanged()));
     connect(customGFiles, SIGNAL(clicked()),
             this, SLOT(customgfilesChanged()));
     connect(customGLibs, SIGNAL(clicked()),
@@ -270,26 +273,26 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p)
     connect(engSpecificCode, SIGNAL(clicked()),
             this, SLOT(engSpecificCodeChanged()));
 
-    connect(MDefines, SIGNAL(textChanged(const QString&)),
-            this, SLOT(mdefsTextChanged(const QString&)));
-    connect(MCXXFlags, SIGNAL(textChanged(const QString&)),
-            this, SLOT(mcxxflagsTextChanged(const QString&)));
-    connect(MLDFlags, SIGNAL(textChanged(const QString&)),
-            this, SLOT(mldflagsTextChanged(const QString&)));
+    connect(MDefines, SIGNAL(editingFinished()),
+            this, SLOT(mdefsTextChanged()));
+    connect(MCXXFlags, SIGNAL(editingFinished()),
+            this, SLOT(mcxxflagsTextChanged()));
+    connect(MLDFlags, SIGNAL(editingFinished()),
+            this, SLOT(mldflagsTextChanged()));
 
-    connect(EDefinesSer, SIGNAL(textChanged(const QString&)),
-            this, SLOT(edefsSerTextChanged(const QString&)));
-    connect(ECXXFlagsSer, SIGNAL(textChanged(const QString&)),
-            this, SLOT(ecxxflagsSerTextChanged(const QString&)));
-    connect(ELDFlagsSer, SIGNAL(textChanged(const QString&)),
-            this, SLOT(eldflagsSerTextChanged(const QString&)));
+    connect(EDefinesSer, SIGNAL(editingFinished()),
+            this, SLOT(edefsSerTextChanged()));
+    connect(ECXXFlagsSer, SIGNAL(editingFinished()),
+            this, SLOT(ecxxflagsSerTextChanged()));
+    connect(ELDFlagsSer, SIGNAL(editingFinished()),
+            this, SLOT(eldflagsSerTextChanged()));
 
-    connect(EDefinesPar, SIGNAL(textChanged(const QString&)),
-            this, SLOT(edefsParTextChanged(const QString&)));
-    connect(ECXXFlagsPar, SIGNAL(textChanged(const QString&)),
-            this, SLOT(ecxxflagsParTextChanged(const QString&)));
-    connect(ELDFlagsPar, SIGNAL(textChanged(const QString&)),
-            this, SLOT(eldflagsParTextChanged(const QString&)));
+    connect(EDefinesPar, SIGNAL(editingFinished()),
+            this, SLOT(edefsParTextChanged()));
+    connect(ECXXFlagsPar, SIGNAL(editingFinished()),
+            this, SLOT(ecxxflagsParTextChanged()));
+    connect(ELDFlagsPar, SIGNAL(editingFinished()),
+            this, SLOT(eldflagsParTextChanged()));
 
 }
 
@@ -601,11 +604,15 @@ XMLEditMakefile::BlockAllSignals(bool block)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditMakefile::cxxflagsTextChanged(const QString &text)
+XMLEditMakefile::cxxflagsTextChanged()
 {
-    xmldoc->plugin->cxxflags = SplitValues(text);
+    xmldoc->plugin->cxxflags = SplitValues(CXXFLAGS->text());
 }
 
 // ****************************************************************************
@@ -614,11 +621,15 @@ XMLEditMakefile::cxxflagsTextChanged(const QString &text)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditMakefile::ldflagsTextChanged(const QString &text)
+XMLEditMakefile::ldflagsTextChanged()
 {
-    xmldoc->plugin->ldflags = SplitValues(text);
+    xmldoc->plugin->ldflags = SplitValues(LDFLAGS->text());
 }
 
 // ****************************************************************************
@@ -627,11 +638,15 @@ XMLEditMakefile::ldflagsTextChanged(const QString &text)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditMakefile::libsTextChanged(const QString &text)
+XMLEditMakefile::libsTextChanged()
 {
-    xmldoc->plugin->libs = SplitValues(text);
+    xmldoc->plugin->libs = SplitValues(LIBS->text());
 }
 
 // ****************************************************************************
@@ -640,11 +655,15 @@ XMLEditMakefile::libsTextChanged(const QString &text)
 //  Programmer:  Kathleen Biagas
 //  Creation:    November 6, 2014
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditMakefile::defsTextChanged(const QString &text)
+XMLEditMakefile::defsTextChanged()
 {
-    xmldoc->plugin->defs = SplitValues(text);
+    xmldoc->plugin->defs = SplitValues(DEFINES->text());
 }
 
 // ****************************************************************************
@@ -653,11 +672,15 @@ XMLEditMakefile::defsTextChanged(const QString &text)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditMakefile::gfilesTextChanged(const QString &text)
+XMLEditMakefile::gfilesTextChanged()
 {
-    xmldoc->plugin->gfiles = SplitValues(text);
+    xmldoc->plugin->gfiles = SplitValues(GFiles->text());
 }
 
 // ****************************************************************************
@@ -666,11 +689,15 @@ XMLEditMakefile::gfilesTextChanged(const QString &text)
 //  Programmer:  Cyrus Harrison
 //  Creation:    September 19, 2008
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditMakefile::glibsTextChanged(const QString &text)
+XMLEditMakefile::glibsTextChanged()
 {
-    xmldoc->plugin->glibs = SplitValues(text);
+    xmldoc->plugin->glibs = SplitValues(GLibs->text());
 }
 
 
@@ -680,11 +707,15 @@ XMLEditMakefile::glibsTextChanged(const QString &text)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditMakefile::sfilesTextChanged(const QString &text)
+XMLEditMakefile::sfilesTextChanged()
 {
-    xmldoc->plugin->sfiles = SplitValues(text);
+    xmldoc->plugin->sfiles = SplitValues(SFiles->text());
 }
 
 // ****************************************************************************
@@ -693,11 +724,15 @@ XMLEditMakefile::sfilesTextChanged(const QString &text)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditMakefile::vfilesTextChanged(const QString &text)
+XMLEditMakefile::vfilesTextChanged()
 {
-    xmldoc->plugin->vfiles = SplitValues(text);
+    xmldoc->plugin->vfiles = SplitValues(VFiles->text());
 }
 
 // ****************************************************************************
@@ -706,11 +741,15 @@ XMLEditMakefile::vfilesTextChanged(const QString &text)
 //  Programmer:  Cyrus Harrison
 //  Creation:    September 19, 2008
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditMakefile::vlibsTextChanged(const QString &text)
+XMLEditMakefile::vlibsTextChanged()
 {
-    xmldoc->plugin->vlibs = SplitValues(text);
+    xmldoc->plugin->vlibs = SplitValues(VLibs->text());
 }
 
 // ****************************************************************************
@@ -719,11 +758,15 @@ XMLEditMakefile::vlibsTextChanged(const QString &text)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditMakefile::mfilesTextChanged(const QString &text)
+XMLEditMakefile::mfilesTextChanged()
 {
-    xmldoc->plugin->mfiles = SplitValues(text);
+    xmldoc->plugin->mfiles = SplitValues(MFiles->text());
 }
 
 // ****************************************************************************
@@ -732,11 +775,15 @@ XMLEditMakefile::mfilesTextChanged(const QString &text)
 //  Programmer:  Cyrus Harrison
 //  Creation:    September 19, 2008
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditMakefile::mlibsTextChanged(const QString &text)
+XMLEditMakefile::mlibsTextChanged()
 {
-    xmldoc->plugin->mlibs = SplitValues(text);
+    xmldoc->plugin->mlibs = SplitValues(MLibs->text());
 }
 
 // ****************************************************************************
@@ -745,11 +792,15 @@ XMLEditMakefile::mlibsTextChanged(const QString &text)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditMakefile::efilesTextChanged(const QString &text)
+XMLEditMakefile::efilesTextChanged()
 {
-    xmldoc->plugin->efiles = SplitValues(text);
+    xmldoc->plugin->efiles = SplitValues(EFiles->text());
 }
 
 // ****************************************************************************
@@ -762,11 +813,15 @@ XMLEditMakefile::efilesTextChanged(const QString &text)
 //    Jeremy Meredith, Tue Sep  8 14:57:13 EDT 2009
 //    Split into ser/par versions.
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditMakefile::elibsSerTextChanged(const QString &text)
+XMLEditMakefile::elibsSerTextChanged()
 {
-    xmldoc->plugin->elibsSer = SplitValues(text);
+    xmldoc->plugin->elibsSer = SplitValues(ELibsSer->text());
 }
 
 // ****************************************************************************
@@ -779,11 +834,15 @@ XMLEditMakefile::elibsSerTextChanged(const QString &text)
 //    Jeremy Meredith, Tue Sep  8 14:57:13 EDT 2009
 //    Split into ser/par versions.
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditMakefile::elibsParTextChanged(const QString &text)
+XMLEditMakefile::elibsParTextChanged()
 {
-    xmldoc->plugin->elibsPar = SplitValues(text);
+    xmldoc->plugin->elibsPar = SplitValues(ELibsPar->text());
 }
 
 // ****************************************************************************
@@ -792,11 +851,15 @@ XMLEditMakefile::elibsParTextChanged(const QString &text)
 //  Programmer:  Sean Ahern
 //  Creation:    Mon Nov 18 13:55:18 PST 2002
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditMakefile::wfilesTextChanged(const QString &text)
+XMLEditMakefile::wfilesTextChanged()
 {
-    xmldoc->plugin->wfiles = SplitValues(text);
+    xmldoc->plugin->wfiles = SplitValues(WFiles->text());
 }
 
 // ****************************************************************************
@@ -805,11 +868,15 @@ XMLEditMakefile::wfilesTextChanged(const QString &text)
 //  Programmer:  Brad Whitlock
 //  Creation:    Fri Feb 23 17:53:33 PST 2007
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditMakefile::vwfilesTextChanged(const QString &text)
+XMLEditMakefile::vwfilesTextChanged()
 {
-    xmldoc->plugin->vwfiles = SplitValues(text);
+    xmldoc->plugin->vwfiles = SplitValues(VWFiles->text());
 }
 
 // ****************************************************************************
@@ -1024,11 +1091,15 @@ XMLEditMakefile::engSpecificCodeChanged()
 //  Programmer:  Kathleen Biagas
 //  Creation:    May 4, 2022
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditMakefile::mcxxflagsTextChanged(const QString &text)
+XMLEditMakefile::mcxxflagsTextChanged()
 {
-    xmldoc->plugin->mcxxflags = SplitValues(text);
+    xmldoc->plugin->mcxxflags = SplitValues(MCXXFlags->text());
 }
 
 // ****************************************************************************
@@ -1037,11 +1108,15 @@ XMLEditMakefile::mcxxflagsTextChanged(const QString &text)
 //  Programmer:  Kathleen Biagas
 //  Creation:    May 4, 2022
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditMakefile::mldflagsTextChanged(const QString &text)
+XMLEditMakefile::mldflagsTextChanged()
 {
-    xmldoc->plugin->mldflags = SplitValues(text);
+    xmldoc->plugin->mldflags = SplitValues(MLDFlags->text());
 }
 
 // ****************************************************************************
@@ -1050,11 +1125,15 @@ XMLEditMakefile::mldflagsTextChanged(const QString &text)
 //  Programmer:  Kathleen Biagas
 //  Creation:    May 4, 2022
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditMakefile::mdefsTextChanged(const QString &text)
+XMLEditMakefile::mdefsTextChanged()
 {
-    xmldoc->plugin->mdefs = SplitValues(text);
+    xmldoc->plugin->mdefs = SplitValues(MDefines->text());
 }
 
 // ****************************************************************************
@@ -1063,11 +1142,15 @@ XMLEditMakefile::mdefsTextChanged(const QString &text)
 //  Programmer:  Kathleen Biagas
 //  Creation:    May 4, 2022
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditMakefile::ecxxflagsSerTextChanged(const QString &text)
+XMLEditMakefile::ecxxflagsSerTextChanged()
 {
-    xmldoc->plugin->ecxxflagsSer = SplitValues(text);
+    xmldoc->plugin->ecxxflagsSer = SplitValues(ECXXFlagsSer->text());
 }
 
 // ****************************************************************************
@@ -1076,11 +1159,15 @@ XMLEditMakefile::ecxxflagsSerTextChanged(const QString &text)
 //  Programmer:  Kathleen Biagas
 //  Creation:    May 4, 2022
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditMakefile::eldflagsSerTextChanged(const QString &text)
+XMLEditMakefile::eldflagsSerTextChanged()
 {
-    xmldoc->plugin->eldflagsSer = SplitValues(text);
+    xmldoc->plugin->eldflagsSer = SplitValues(ELDFlagsSer->text());
 }
 
 // ****************************************************************************
@@ -1089,11 +1176,15 @@ XMLEditMakefile::eldflagsSerTextChanged(const QString &text)
 //  Programmer:  Kathleen Biagas
 //  Creation:    May 4, 2022
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditMakefile::edefsSerTextChanged(const QString &text)
+XMLEditMakefile::edefsSerTextChanged()
 {
-    xmldoc->plugin->edefsSer = SplitValues(text);
+    xmldoc->plugin->edefsSer = SplitValues(EDefinesSer->text());
 }
 
 // ****************************************************************************
@@ -1102,11 +1193,15 @@ XMLEditMakefile::edefsSerTextChanged(const QString &text)
 //  Programmer:  Kathleen Biagas
 //  Creation:    May 4, 2022
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditMakefile::ecxxflagsParTextChanged(const QString &text)
+XMLEditMakefile::ecxxflagsParTextChanged()
 {
-    xmldoc->plugin->ecxxflagsPar = SplitValues(text);
+    xmldoc->plugin->ecxxflagsPar = SplitValues(ECXXFlagsPar->text());
 }
 
 // ****************************************************************************
@@ -1115,11 +1210,15 @@ XMLEditMakefile::ecxxflagsParTextChanged(const QString &text)
 //  Programmer:  Kathleen Biagas
 //  Creation:    May 4, 2022
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditMakefile::eldflagsParTextChanged(const QString &text)
+XMLEditMakefile::eldflagsParTextChanged()
 {
-    xmldoc->plugin->eldflagsPar = SplitValues(text);
+    xmldoc->plugin->eldflagsPar = SplitValues(ELDFlagsPar->text());
 }
 
 // ****************************************************************************
@@ -1128,9 +1227,13 @@ XMLEditMakefile::eldflagsParTextChanged(const QString &text)
 //  Programmer:  Kathleen Biagas
 //  Creation:    May 4, 2022
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Mar 21, 2025
+//    Removed QString arg as this slot is now connected to 'editingFinished'.
+//
 // ****************************************************************************
 void
-XMLEditMakefile::edefsParTextChanged(const QString &text)
+XMLEditMakefile::edefsParTextChanged()
 {
-    xmldoc->plugin->edefsPar = SplitValues(text);
+    xmldoc->plugin->edefsPar = SplitValues(EDefinesPar->text());
 }

@@ -5,8 +5,6 @@
 #endif
 
 #define MAXKEYWORDS 4096
-#define MAX(A, B) ((A) > (B) ? (A) : (B))
-#define MIN(A, B) ((A) < (B) ? (A) : (B))
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -14,10 +12,12 @@
 #include <ctype.h>
 #include "object.h"
 #include "error.h"
+#include <algorithm>
+
+#include <StringHelpers.h>
 
 #ifdef WIN32
 #define strtok_r(s,sep,lasts) (*(lasts)=strtok((s),(sep)))
-#define strcasecmp stricmp
 #endif
 
 static const char *filenames[] = { "object.data", NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
@@ -79,7 +79,7 @@ int object_get(OBJECT*object, char *name, void *ptr, int type, int length, char 
     FIELD f;
     f = object_parse(object, name, type, dvalue);
     if (f.n == 0 || length <= 0) return 0;
-    l = MIN(f.n, length);
+    l = std::min(f.n, length);
     memmove(ptr, f.v, l*f.element_size);
     return f.n;
 }
@@ -1008,10 +1008,10 @@ int object_register(char *name, char *type, int itype, void *address)
 
 int modeindex(char *mode)
 {
-    if (!strcasecmp(mode, "FORMATTED")) return ASCII;
-    if (!strcasecmp(mode, "ASCII")) return ASCII;
-    if (!strcasecmp(mode, "BINARY")) return BINARY;
-    if (!strcasecmp(mode, "UNFORMATTED")) return BINARY;
+    if (StringHelpers::CaseInsensitiveEqual(mode, "FORMATTED")) return ASCII;
+    if (StringHelpers::CaseInsensitiveEqual(mode, "ASCII")) return ASCII;
+    if (StringHelpers::CaseInsensitiveEqual(mode, "BINARY")) return BINARY;
+    if (StringHelpers::CaseInsensitiveEqual(mode, "UNFORMATTED")) return BINARY;
     return ASCII;
 }
 void object_pack(PACKBUF *buf)

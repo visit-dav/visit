@@ -28,6 +28,7 @@
 #include "VerdictVector.h"
 #include "V_GaussIntegration.h"
 #include <memory.h>
+#include <algorithm>
 
 //! the average volume of a tet
 VERDICT_REAL verdict_tet_size = 0;
@@ -186,8 +187,8 @@ C_FUNC_DEF VERDICT_REAL v_tet_aspect_beta( int /*num_nodes*/, VERDICT_REAL coord
     aspect_ratio = numerator.length() * area_sum / (108*volume*volume); 
     
     if( aspect_ratio > 0 )
-      return (VERDICT_REAL) VERDICT_MIN( aspect_ratio, VERDICT_DBL_MAX );
-    return (VERDICT_REAL) VERDICT_MAX( aspect_ratio, -VERDICT_DBL_MAX );
+      return (VERDICT_REAL) std::min( aspect_ratio, VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::max( aspect_ratio, -VERDICT_DBL_MAX );
   }
 
 }
@@ -378,7 +379,7 @@ C_FUNC_DEF VERDICT_REAL v_tet_shape( int /*num_nodes*/, VERDICT_REAL coordinates
   if ( den < VERDICT_DBL_MIN ) 
     return (VERDICT_REAL)0.0;
     
-  return (VERDICT_REAL)VERDICT_MAX( num/den, 0 );
+  return (VERDICT_REAL)std::max( num/den, 0.0 );
 }
 
 
@@ -660,7 +661,7 @@ C_FUNC_DEF void v_tet_quality( int num_nodes, VERDICT_REAL coordinates[][3],
     if( den < VERDICT_DBL_MIN )
       metric_vals->shape = (VERDICT_REAL)0.0;
     else
-      metric_vals->shape = (VERDICT_REAL)VERDICT_MAX( num/den, 0 );
+      metric_vals->shape = (VERDICT_REAL)std::max( num/den, 0.0 );
   }
   
   // calculate the relative size of the tet
@@ -680,7 +681,7 @@ C_FUNC_DEF void v_tet_quality( int num_nodes, VERDICT_REAL coordinates[][3],
       else
       {
         tmp *= tmp;
-        metric_vals->relative_size_squared = (VERDICT_REAL)VERDICT_MIN(tmp, 1/tmp);
+        metric_vals->relative_size_squared = (VERDICT_REAL)std::min(tmp, 1/tmp);
       }
     }
   }
@@ -757,71 +758,71 @@ C_FUNC_DEF void v_tet_quality( int num_nodes, VERDICT_REAL coordinates[][3],
   if(metrics_request_flag & V_TET_ASPECT_BETA )
   {
     if( metric_vals->aspect_beta > 0 ) 
-      metric_vals->aspect_beta = (VERDICT_REAL) VERDICT_MIN( metric_vals->aspect_beta, VERDICT_DBL_MAX );
-    metric_vals->aspect_beta = (VERDICT_REAL) VERDICT_MAX( metric_vals->aspect_beta, -VERDICT_DBL_MAX );
+      metric_vals->aspect_beta = (VERDICT_REAL) std::min( metric_vals->aspect_beta, VERDICT_DBL_MAX );
+    metric_vals->aspect_beta = (VERDICT_REAL) std::max( metric_vals->aspect_beta, -VERDICT_DBL_MAX );
   }
 
   if(metrics_request_flag & V_TET_ASPECT_GAMMA)
   {
     if( metric_vals->aspect_gamma > 0 ) 
-      metric_vals->aspect_gamma = (VERDICT_REAL) VERDICT_MIN( metric_vals->aspect_gamma, VERDICT_DBL_MAX );
-    metric_vals->aspect_gamma = (VERDICT_REAL) VERDICT_MAX( metric_vals->aspect_gamma, -VERDICT_DBL_MAX );
+      metric_vals->aspect_gamma = (VERDICT_REAL) std::min( metric_vals->aspect_gamma, VERDICT_DBL_MAX );
+    metric_vals->aspect_gamma = (VERDICT_REAL) std::max( metric_vals->aspect_gamma, -VERDICT_DBL_MAX );
   }
 
   if(metrics_request_flag & V_TET_VOLUME)
   {
     if( metric_vals->volume > 0 ) 
-      metric_vals->volume = (VERDICT_REAL) VERDICT_MIN( metric_vals->volume, VERDICT_DBL_MAX );
-    metric_vals->volume = (VERDICT_REAL) VERDICT_MAX( metric_vals->volume, -VERDICT_DBL_MAX );
+      metric_vals->volume = (VERDICT_REAL) std::min( metric_vals->volume, VERDICT_DBL_MAX );
+    metric_vals->volume = (VERDICT_REAL) std::max( metric_vals->volume, -VERDICT_DBL_MAX );
   }
 
   if(metrics_request_flag & V_TET_CONDITION)
   {
     if( metric_vals->condition > 0 ) 
-      metric_vals->condition = (VERDICT_REAL) VERDICT_MIN( metric_vals->condition, VERDICT_DBL_MAX );
-    metric_vals->condition = (VERDICT_REAL) VERDICT_MAX( metric_vals->condition, -VERDICT_DBL_MAX );
+      metric_vals->condition = (VERDICT_REAL) std::min( metric_vals->condition, VERDICT_DBL_MAX );
+    metric_vals->condition = (VERDICT_REAL) std::max( metric_vals->condition, -VERDICT_DBL_MAX );
   }
 
   if(metrics_request_flag & V_TET_JACOBIAN)
   {
     if( metric_vals->jacobian > 0 ) 
-      metric_vals->jacobian = (VERDICT_REAL) VERDICT_MIN( metric_vals->jacobian, VERDICT_DBL_MAX );
-    metric_vals->jacobian = (VERDICT_REAL) VERDICT_MAX( metric_vals->jacobian, -VERDICT_DBL_MAX );
+      metric_vals->jacobian = (VERDICT_REAL) std::min( metric_vals->jacobian, VERDICT_DBL_MAX );
+    metric_vals->jacobian = (VERDICT_REAL) std::max( metric_vals->jacobian, -VERDICT_DBL_MAX );
   }
 
   if(metrics_request_flag & V_TET_SCALED_JACOBIAN)
   {
     if( metric_vals->scaled_jacobian > 0 ) 
-      metric_vals->scaled_jacobian = (VERDICT_REAL) VERDICT_MIN( metric_vals->scaled_jacobian, VERDICT_DBL_MAX );
-    metric_vals->scaled_jacobian = (VERDICT_REAL) VERDICT_MAX( metric_vals->scaled_jacobian, -VERDICT_DBL_MAX );
+      metric_vals->scaled_jacobian = (VERDICT_REAL) std::min( metric_vals->scaled_jacobian, VERDICT_DBL_MAX );
+    metric_vals->scaled_jacobian = (VERDICT_REAL) std::max( metric_vals->scaled_jacobian, -VERDICT_DBL_MAX );
   }
 
   if(metrics_request_flag & V_TET_SHAPE)
   {
     if( metric_vals->shape > 0 ) 
-      metric_vals->shape = (VERDICT_REAL) VERDICT_MIN( metric_vals->shape, VERDICT_DBL_MAX );
-    metric_vals->shape = (VERDICT_REAL) VERDICT_MAX( metric_vals->shape, -VERDICT_DBL_MAX );
+      metric_vals->shape = (VERDICT_REAL) std::min( metric_vals->shape, VERDICT_DBL_MAX );
+    metric_vals->shape = (VERDICT_REAL) std::max( metric_vals->shape, -VERDICT_DBL_MAX );
   }
 
   if(metrics_request_flag & V_TET_RELATIVE_SIZE_SQUARED)
   {
     if( metric_vals->relative_size_squared > 0 ) 
-      metric_vals->relative_size_squared = (VERDICT_REAL) VERDICT_MIN( metric_vals->relative_size_squared, VERDICT_DBL_MAX );
-    metric_vals->relative_size_squared = (VERDICT_REAL) VERDICT_MAX( metric_vals->relative_size_squared, -VERDICT_DBL_MAX );
+      metric_vals->relative_size_squared = (VERDICT_REAL) std::min( metric_vals->relative_size_squared, VERDICT_DBL_MAX );
+    metric_vals->relative_size_squared = (VERDICT_REAL) std::max( metric_vals->relative_size_squared, -VERDICT_DBL_MAX );
   }
 
   if(metrics_request_flag & V_TET_SHAPE_AND_SIZE)
   {
     if( metric_vals->shape_and_size > 0 ) 
-      metric_vals->shape_and_size = (VERDICT_REAL) VERDICT_MIN( metric_vals->shape_and_size, VERDICT_DBL_MAX );
-    metric_vals->shape_and_size = (VERDICT_REAL) VERDICT_MAX( metric_vals->shape_and_size, -VERDICT_DBL_MAX );
+      metric_vals->shape_and_size = (VERDICT_REAL) std::min( metric_vals->shape_and_size, VERDICT_DBL_MAX );
+    metric_vals->shape_and_size = (VERDICT_REAL) std::max( metric_vals->shape_and_size, -VERDICT_DBL_MAX );
   }
 
   if(metrics_request_flag & V_TET_DISTORTION)
   {
     if( metric_vals->distortion > 0 ) 
-      metric_vals->distortion = (VERDICT_REAL) VERDICT_MIN( metric_vals->distortion, VERDICT_DBL_MAX );
-    metric_vals->distortion = (VERDICT_REAL) VERDICT_MAX( metric_vals->distortion, -VERDICT_DBL_MAX );
+      metric_vals->distortion = (VERDICT_REAL) std::min( metric_vals->distortion, VERDICT_DBL_MAX );
+    metric_vals->distortion = (VERDICT_REAL) std::max( metric_vals->distortion, -VERDICT_DBL_MAX );
   }
 
 

@@ -88,7 +88,7 @@ class timer
   }
 
   static double GetExactSeconds(void) {
-#ifndef WIN32
+#ifndef _WIN32
     struct timeval t; 
     gettimeofday(&t, NULL); 
     return t.tv_sec + (double)t.tv_usec/1000000.0; 

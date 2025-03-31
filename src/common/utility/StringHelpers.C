@@ -138,7 +138,7 @@ void
 StringHelpers::GroupStrings(vector<string> stringList,
                             vector<vector<string> > &stringGroups,
                             vector<string> &groupNames,
-                            int numLeadingVals,
+                            unsigned int numLeadingVals,
                             string nonRelevantChars)
 {
 
@@ -163,34 +163,17 @@ StringHelpers::GroupStrings(vector<string> stringList,
 
    // adjust numLeadingVals if its too big
    int len = strlen(stringPtrs[0]);
-   if (numLeadingVals < 0)
-   {
-       if (-numLeadingVals > len)
-           numLeadingVals  = -len;
-   }
-   else
-   {
-       if (numLeadingVals > len)
-           numLeadingVals  = len;
-   }
-
+   if (numLeadingVals > len)
+       numLeadingVals  = len;
 
    // initialize the 'lastVal' for the loop below
    string lastVal;
-   if (numLeadingVals < 0)
-   {
-       for (i = len+numLeadingVals; i < len; i++)
-           lastVal += stringPtrs[0][i];
-   }
+   if (numLeadingVals == 0)
+       lastVal = stringPtrs[0];
    else
    {
-       if (numLeadingVals == 0)
-           lastVal = stringPtrs[0];
-       else
-       {
-           for (i = 0; i < numLeadingVals; i++)
-               lastVal += stringPtrs[0][i];
-       }
+       for (i = 0; i < numLeadingVals; i++)
+           lastVal += stringPtrs[0][i];
    }
 
    //
@@ -206,21 +189,12 @@ StringHelpers::GroupStrings(vector<string> stringList,
        string thisVal;
        int j;
 
-       if (numLeadingVals < 0)
-       {
-           int len = stringList[i].size()-1;
-           for (j = len+numLeadingVals; j < len; j++)
-               lastVal += stringPtrs[i][j];
-       }
+       if (numLeadingVals == 0)
+           thisVal = stringPtrs[i];
        else
        {
-           if (numLeadingVals == 0)
-               thisVal = stringPtrs[i];
-           else
-           {
-               for (j = 0; j < numLeadingVals; j++)
-                   thisVal += stringPtrs[i][j];
-           }
+           for (j = 0; j < numLeadingVals && j < strlen(stringPtrs[i]); j++)
+               thisVal += stringPtrs[i][j];
        }
 
        if (thisVal != lastVal)
@@ -868,6 +842,8 @@ StringHelpers::cdr(const std::string s, const char separator)
 //  Creation:   August 20, 2008
 //
 //  Modifications:
+//     Justin Privitera, Wed Mar 12 09:31:48 PDT 2025
+//     Increment iter to avoid infinite loop.
 //
 //****************************************************************************
 bool
@@ -881,6 +857,7 @@ has_nonspace_chars(const std::string &s)
         {
             return true;
         }
+        iter++;
     }
     return false;
 }
@@ -1130,7 +1107,7 @@ StringHelpers::IsPureASCII(const char *const txt, size_t length)
 }
 
 // ****************************************************************************
-// Method:  StringHelpers::CaseInsenstiveEqual
+// Method:  StringHelpers::CaseInsensitiveEqual
 //
 // Purpose:
 //   Check to see two strings compare as equal, after result of ::tolower.
@@ -1141,16 +1118,35 @@ StringHelpers::IsPureASCII(const char *const txt, size_t length)
 // Programmer:  Cyrus Harrison
 // Creation:    Mon Sep 19 16:23:05 PDT 2011
 //
+//    Mark C. Miller, Mon Oct 14 21:24:39 PDT 2024
+//    Modified to use stdlib's strcasecmp and friends for WIN32 and Linux
 // ****************************************************************************
 bool
-StringHelpers::CaseInsenstiveEqual(const std::string &str_a,
-                                   const std::string &str_b)
+StringHelpers::CaseInsensitiveEqual(const char *str_a, const char *str_b, size_t n)
 {
-    std::string sa_l = str_a;
-    std::string sb_l = str_b;
-    std::transform(sa_l.begin(),sa_l.end(),sa_l.begin(),::tolower);
-    std::transform(sb_l.begin(),sb_l.end(),sb_l.begin(),::tolower);
-    return sa_l == sb_l;
+    if (n == 0)
+    {
+#if defined(_WIN32)
+        return _stricmp(str_a, str_b) == 0;
+#else
+        return strcasecmp(str_a, str_b) == 0;
+#endif
+    }
+    else
+    {
+#if defined(_WIN32)
+        return _strnicmp(str_a, str_b, n) == 0;
+#else
+        return strncasecmp(str_a, str_b, n) == 0;
+#endif
+    }
+}
+bool
+StringHelpers::CaseInsensitiveEqual(const std::string &str_a,
+                                   const std::string &str_b,
+                                   size_t n)
+{
+    return StringHelpers::CaseInsensitiveEqual(str_a.c_str(), str_b.c_str(), n);
 }
 
 // ****************************************************************************

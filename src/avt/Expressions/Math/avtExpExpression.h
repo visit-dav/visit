@@ -24,6 +24,8 @@ class     vtkDataArray;
 //  Creation:   Tue May 27 15:13:05 EDT 2008
 //
 //  Modifications:
+//    Justin Privitera, Mon Oct 28 10:15:57 PDT 2024
+//    Pass in_ds to DoOperation().
 //
 // ****************************************************************************
 
@@ -39,7 +41,7 @@ class EXPRESSION_API avtExpExpression : public avtUnaryMathExpression
 
   protected:
     virtual void              DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                          int ncomponents, int ntuples);
+                                          int ncomponents, int ntuples, vtkDataSet *in_ds);
 };
 
 #endif

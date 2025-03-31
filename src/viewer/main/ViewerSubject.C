@@ -166,8 +166,10 @@ static int nConfigArgs = 1;
 #include <sstream>
 
 #include <visit-config.h>
+#if LIB_VERSION_LE(VTK,9,2,6)
 #ifdef HAVE_OSMESA
 #  include <vtkOffScreenRenderingFactory.h>
+#endif
 #endif
 
 // We do this so that the strings command on the .o file
@@ -2174,7 +2176,7 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
                  !GetViewerProperties()->GetNoConfig())
         {
             specifiedConfig = true;
-#ifndef WIN32
+#ifndef _WIN32
             GetViewerProperties()->SetConfigurationFileName(argv[i+1]);
 #else
             string tmp = argv[i+1];
@@ -2500,7 +2502,7 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
         {
             // Make sure the -config flag and the filename that follows it is
             // not passed along to other components.
-#ifndef WIN32
+#ifndef _WIN32
             ++i;
 #else
             i+=nConfigArgs;
@@ -2607,8 +2609,10 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
         }
         else if (strcmp(argv[i], "-nowin") == 0)
         {
+#if LIB_VERSION_LE(VTK,9,2,6)
 #ifdef HAVE_OSMESA
             vtkOffScreenRenderingFactory::ForceOffScreen();
+#endif
 #endif
             RemoteProcess::DisablePTY();
             SetNowinMode(true);

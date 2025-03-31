@@ -6,11 +6,6 @@
 //                       avtValueImageCompositer.C                           //
 // ************************************************************************* //
 
-// Just to be sure, on Windows.
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-
 #include <algorithm>
 #include <cmath>
 #ifdef PARALLEL

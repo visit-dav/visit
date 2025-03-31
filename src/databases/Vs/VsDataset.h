@@ -16,7 +16,7 @@
 
 #include <string>
 #include "VsObject.h"
-#include <hdf5.h>
+#include <vshdf5.h>
 #include <vector>
 #include <map>
 

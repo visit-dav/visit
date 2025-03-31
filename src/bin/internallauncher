@@ -3,6 +3,7 @@ import os
 import math
 import socket
 import stat
+import subprocess
 import time
 
 ###############################################################################
@@ -230,6 +231,43 @@ class JobSubmitter_mpiexec(JobSubmitter):
         parcmd = parcmd + ["-visithome", GETENV("VISITHOME")]
         parcmd = parcmd + ["-visitarchhome", GETENV("VISITARCHHOME")]
         parcmd = debugger.CreateCommand(parcmd + args)
+        return parcmd
+
+###############################################################################
+# Class: JobSubmitter_jsrun
+#
+# Purpose:    Launch an MPI job with jsrun
+#
+# Programmer: Eric Brugger
+# Date:       Mon Aug 26 10:54:18 PDT 2024
+#
+# Modifications:
+#
+###############################################################################
+
+class JobSubmitter_jsrun(JobSubmitter):
+    def __init__(self, launcher):
+        super(JobSubmitter_jsrun,self).__init__(launcher)
+
+    def Executable(self):
+        return ["jsrun"]
+
+    def CreateCommand(self, args, debugger):
+        nodes = self.parallel.nn
+        if nodes == None:
+            nodes = self.parallel.np
+        ppn = str(int(math.ceil(float(self.parallel.np) / float(nodes))))
+        parcmd = self.Executable()
+        parcmd = parcmd + ["--np", self.parallel.np]
+        parcmd = parcmd + ["--nrs", nodes]
+        parcmd = parcmd + ["-c", "ALL_CPUS", "-g", "ALL_GPUS"]
+        parcmd = parcmd + ["-d", "plane:%s" % ppn]
+        parcmd = parcmd + ["-b", "none", "-X", "1"]
+        if self.parallel.sublaunchargs != None:
+            parcmd = parcmd + self.parallel.sublaunchargs
+        parcmd = parcmd + self.VisItExecutable()
+        parcmd = parcmd + args
+        parcmd = debugger.CreateCommand(parcmd)
         return parcmd
 
 ###############################################################################
@@ -2389,6 +2427,9 @@ class DebugArguments(object):
 #   Cyrus Harrison, Mon Jun  7 09:53:53 PDT 2021
 #   Python 3 universal_newlines for Popen
 #
+#   Kathleen Biagas, Tue Mar 18, 2025
+#   Removed support for ultrawrapper.
+#
 ###############################################################################
 
 class MainLauncher(object):
@@ -2411,7 +2452,6 @@ class MainLauncher(object):
         self.visitlauncher = ""
         self.visitlibdir = ""
         self.visitresourcedir = ""
-        self.visitultradir = ""
         self.visitplugins = ""
         self.publicversion = 0
         self.logging = 0
@@ -2667,6 +2707,47 @@ class MainLauncher(object):
             
 
     ############################################################################
+    # Method: GetGPUArchitecture
+    #
+    # Purpose: Returns a string represening the GPU architecture. This only
+    #          works for relatively new AMD GPUs.
+    #
+    # Programmer: Eric Brugger
+    # Date: Tue Oct  8 10:56:56 PDT 2024
+    #
+    ############################################################################
+
+    def GetGPUArchitecture(self):
+        files = ["/opt/rocm-6.2.2/lib/llvm/bin/offload-arch",
+                 "/opt/rocm-6.2.1/lib/llvm/bin/offload-arch",
+                 "/opt/rocm-6.2.0/lib/llvm/bin/offload-arch",
+                 "/opt/rocm-6.1.3/lib/llvm/bin/offload-arch",
+                 "/opt/rocm-6.1.2/lib/llvm/bin/offload-arch",
+                 "/opt/rocm-6.1.1/lib/llvm/bin/offload-arch",
+                 "/opt/rocm-6.1.0/lib/llvm/bin/offload-arch"]
+
+        gpu_arch = None
+
+        # Assume we are on an AMD system if lspci displays any AMD devices.
+        have_amd = False
+        if os.path.exists("/usr/sbin/lspci"):
+            p = subprocess.run("/usr/sbin/lspci", capture_output=True, text=True)
+            if "amd" in p.stdout.lower():
+                have_amd =  True
+
+        # If we are on an AMD system, use offload-arch to determine the
+        # GPU architecture.
+        if have_amd:
+            for file in files:
+                if os.path.exists(file):
+                    p = subprocess.run(file, capture_output=True, text=True)
+                    if p.stdout != "":
+                        gpu_arch = p.stdout.rstrip()
+                    break
+
+        return gpu_arch
+
+    ############################################################################
     # Method: DetermineArchitecture
     #
     # Purpose: Determine a list of supported VisIt architecture strings.
@@ -2682,6 +2763,11 @@ class MainLauncher(object):
     #   Cyrus Harrison, Mon Jun  7 09:53:53 PDT 2021
     #   Python 3 universal_newlines for Popen
     #
+    #   Eric Brugger, Tue Oct  8 10:56:56 PDT 2024
+    #   I added support for gpu architectures on x86_64 systems. I removed
+    #   support for obsolete architectures. I changed the default linux
+    #   architecture to be x86_64 and added support for ppc64le.
+    #
     ############################################################################
 
     def DetermineArchitecture(self):
@@ -2695,18 +2781,15 @@ class MainLauncher(object):
         if self.os == "linux":
             mach = self.uname("-m")
             if mach == "x86_64": 
-                arch = "linux-x86_64"
-            elif mach == "ia64": 
-                arch = "linux-ia64"
-            elif mach == "ppc64": 
-                arch = "linux-ppc64"
-                # Tack on the BlueGene compiler for the engine.
-                if exe_name[:6] == "engine" and compiler != None:
-                    arch = arch + "-" + compiler
-            elif mach == "alpha": 
-                arch = "linux-alpha"
+                gpu = launcher.GetGPUArchitecture()
+                if (gpu == None):
+                    arch = "linux-x86_64"
+                else:
+                    arch = "linux-x86_64-" + gpu
+            elif mach == "ppc64le":
+                arch = "linux-ppc64le"
             else:
-                arch = "linux-intel"
+                arch = "linux-x86_64"
                 if compiler != None:
                     arch = arch + "-" + compiler
             supportedarches.append(arch)
@@ -2719,6 +2802,8 @@ class MainLauncher(object):
                 if mach == "x86_64":
                     supportedarches.append("darwin-x86_64")
                     supportedarches.append("darwin-i386")
+                elif mach == "arm64":
+                    supportedarches.append("darwin-arm64")
                 else:
                     supportedarches.append("darwin-i386")
             else:
@@ -2751,12 +2836,14 @@ class MainLauncher(object):
                             supportedarches.append("darwin-x86_64")
                             supportedarches.append("darwin-i386")
                         break
-        elif self.os == "aix":
-            arch = "ibm-aix-pwr"
-            arch = arch + objectmode
-            if compiler != None:
-                arch = arch + "-" + compiler
-            supportedarches.append(arch)
+                    procname = line.find("Chip:")
+                    if procname != -1:
+                        if "Apple M" in line:
+                            supportedarches.append("darwin-arm64")
+                        else:
+                            supportedarches.append("darwin-x86_64")
+                            supportedarches.append("darwin-i386")
+                        break
         elif self.os == "freebsd":
             mach = uname("-m")
             version = uname("-r")
@@ -2779,6 +2866,9 @@ class MainLauncher(object):
     #   I modified the method to leave the visitarch field unchanged if it is
     #   already set, which could happen in a custom launcher.
     #
+    #   Kathleen Biagas, Tue Mar 18, 2025
+    #   Removed support for ultrawrapper.
+    #
     ############################################################################
 
     def SetupDirectoryNames(self, supportedarches):
@@ -2794,7 +2884,6 @@ class MainLauncher(object):
                 self.visitbindir = os.path.join(self.visitbindir, self.generalArgs.exe_name + ".app/Contents/MacOS")
             self.visitlibdir = self.visitdir + "lib"
             self.visitresourcedir = self.visitdir + "resources"
-            self.visitultradir = self.visitdir + "ultrawrapper"
             self.visitplugins = self.visitdir + "plugins"
             self.publicversion = 0
             if not os.path.exists(os.path.join(self.visitbindir, self.generalArgs.exe_name)):
@@ -2834,7 +2923,6 @@ class MainLauncher(object):
                 self.visitbindir = os.path.join(self.visitbindir, self.generalArgs.exe_name + ".app/Contents/MacOS")
             self.visitlibdir = self.visitdir + archdir + "/lib"
             self.visitresourcedir = self.visitdir + archdir + "/resources"
-            self.visitultradir = self.visitdir + archdir + "/ultrawrapper"
             self.visitplugins = self.visitdir + archdir + "/plugins"
             self.publicversion = 1
 
@@ -2843,7 +2931,6 @@ class MainLauncher(object):
             #print "visitscriptdir=", self.visitscriptdir
             #print "visitlauncher =", self.visitlauncher
             #print "visitlibdir   =", self.visitlibdir
-            #print "visitultradir =", self.visitultradir
             #print "visitplugins  =", self.visitplugins
             #print "publicversion =", self.publicversion
 
@@ -3113,6 +3200,9 @@ class MainLauncher(object):
     #   Justin Privitera, Wed Nov  1 13:55:47 PDT 2023
     #   Unset QT_SCALE_FACTOR.
     #
+    #   Kathleen Biagas, Tue Mar 18, 2025
+    #   Removed support for ultrawrapper.
+    #
     ############################################################################
 
     def SetupEnvironment(self):
@@ -3177,7 +3267,6 @@ class MainLauncher(object):
         # Set required environment variables
         SETENV("VISITHOME",     self.visithome)
         SETENV("VISITARCHHOME", self.visitarchdir)
-        SETENV("VISITULTRAHOME", self.visitultradir)
 
         # If we're using VisIt's Python, set PYTHONHOME
         visitlibdir_python = os.path.join(self.visitlibdir, "python")
@@ -3275,6 +3364,9 @@ class MainLauncher(object):
     #
     # Modifications:
     #
+    #   Kathleen Biagas, Tue Mar 18, 2025
+    #   Removed support for ultrawrapper.
+    #
     ############################################################################
 
     def PrintEnvironment(self, file, set, eq, allowempty):
@@ -3284,7 +3376,7 @@ class MainLauncher(object):
 
         # The environment variables whose values we're printing.
         vars = ["LIBPATH", "VISITHOME", "VISITARCHHOME", 
-                "VISITULTRAHOME", "VISITPLUGINDIR","TRAP_FPE",
+                "VISITPLUGINDIR","TRAP_FPE",
                 "MESA_GLX_FX","VISIT_MESA_LIB"]
         # vars = vars + ["PYTHONHOME"] # don't set PYTHONHOME
         # A dictionary of extra vars whose source is different 
@@ -3856,6 +3948,9 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
     #    Eric Brugger, Wed May 15 11:11:11 PDT 2024
     #    Added flux as a new job submitter.
     #
+    #    Eric Brugger, Mon Aug 26 10:54:18 PDT 2024
+    #    Added jsrun as a new job submitter.
+    #
     ############################################################################
 
     def JobSubmitterFactory(self, launch):
@@ -3877,6 +3972,8 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
             return JobSubmitter_poe(self)
         elif launch == "ibrun":
             return JobSubmitter_ibrun(self)
+        elif launch == "jsrun":
+            return JobSubmitter_jsrun(self)
         elif launch == "lrun":
             return JobSubmitter_lrun(self)
         elif launch == "prun":

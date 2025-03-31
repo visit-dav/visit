@@ -10,9 +10,27 @@
 
 #####
 # TO USE A NEW CONTAINER, UPDATE TAG NAME HERE AS PART OF YOUR PR!
+# Be sure to keep the list of files in python_test_files variable
+# consistent with those same files listed in the paths trigger
 #####
 variables:
-  container_tag: visitdav/visit-ci-develop:2024-02-21-shaa67324
+  container_tag: visitdav/visit-ci-develop:2024-10-15-shac4fd59
+  python_test_files: >
+    ../../src/test/tests/databases/silo.py
+    ../../src/test/tests/databases/blueprint.py
+    ../../src/test/tests/databases/blueprint_export.py
+    ../../src/test/tests/hybrid/ddf.py
+    ../../src/test/tests/unit/default_methods.py
+    ../../src/test/tests/unit/convert2to3.py
+    ../../src/test/tests/unit/atts_assign.py
+    ../../src/test/tests/unit/test_value_simple.py
+    ../../src/test/tests/unit/annotation_objects.py
+    ../../src/test/tests/unit/protocol.py
+    ../../src/test/tests/unit/utility.py
+    ../../src/test/tests/expressions/ghost_zoneid_expr.py
+    ../../src/test/tests/expressions/global_stats.py
+    ../../src/test/tests/expressions/math_expr.py
+    ../../src/test/tests/expressions/tensor_expr.py
 
 # only build merge target pr to develop
 trigger: none
@@ -20,11 +38,38 @@ pr:
   branches:
     include:
     - develop
-    - 3.4RC
+    - '[0-9].[0-9]RC'
+    - '[0-9].[0-9][0-9]RC'
+  paths:
+    include:
+    - 'azure-pipelines.yml'
+    - '**/CMakeLists.txt'
+    - '**/*.cmake'
+    - '**/*.in'
+    - '**/*.C'
+    - '**/*.h'
+    - 'data/silo*'
+    - 'data/blueprint*'
+    - 'src/test/py_src/*.py'
+    - 'src/test/tests/databases/silo.py'
+    - 'src/test/tests/databases/blueprint.py'
+    - 'src/test/tests/databases/blueprint_export.py'
+    - 'src/test/tests/hybrid/ddf.py'
+    - 'src/test/tests/unit/default_methods.py'
+    - 'src/test/tests/unit/convert2to3.py'
+    - 'src/test/tests/unit/atts_assign.py'
+    - 'src/test/tests/unit/test_value_simple.py'
+    - 'src/test/tests/unit/annotation_objects.py'
+    - 'src/test/tests/unit/protocol.py'
+    - 'src/test/tests/unit/utility.py'
+    - 'src/test/tests/expressions/ghost_zoneid_expr.py'
+    - 'src/test/tests/expressions/global_stats.py'
+    - 'src/test/tests/expressions/math_expr.py'
+    - 'src/test/tests/expressions/tensor_expr.py'
 
-# fast fail sanity checks
+# fast fail consistency checks
 stages:
-- stage: Sanity
+- stage: Consistency
   jobs:
   - job: BLT_Time_Travel_Check
     pool:
@@ -36,7 +81,7 @@ stages:
 
       - script: |
           #######################################
-          # run our sanity check script
+          # run our consistency check script
           #######################################
           git fetch
           python scripts/ci/check_blt_time_travel.py
@@ -87,46 +132,17 @@ stages:
            # fetch subset of test data (silo + blueprint)
            #################################
            cd data
-           git lfs pull --include silo_amr_test_data.tar.xz
-           git lfs pull --include silo_ghost_test_data.tar.xz
-           git lfs pull --include silo_hdf5_test_data.tar.xz
-           git lfs pull --include silo_pdb_test_data.tar.xz
-           git lfs pull --include silo_sph_test_data.tar.xz
-           git lfs pull --include blueprint_v0.3.1_test_data.tar.xz
-           git lfs pull --include blueprint_v0.3.1_mfem_test_data.tar.xz
-           git lfs pull --include blueprint_v0.7.0_venn_test_data.tar.xz
-           git lfs pull --include blueprint_v0.8.2_braid_examples_test_data.tar.xz
-           git lfs pull --include blueprint_v0.8.2_polytess_test_data.tar.xz
-           git lfs pull --include blueprint_v0.8.3_devilray_mfem_test_data
-           git lfs pull --include blueprint_v0.8.4_part_map_examples.tar.xz
-           git lfs pull --include blueprint_v0.8.4_strided_structured_examples.tar.xz
-           git lfs pull --include blueprint_v0.8.4_strided_structured_examples.tar.xz
-           git lfs pull --include blueprint_v0.8.6_rz_examples.tar.xz
-           git lfs pull --include blueprint_v0.8.6_1d_curve_examples.tar.xz
-           git lfs pull --include blueprint_v0.8.7_venn_modded_matnos_example.tar.xz
-           git lfs pull --include blueprint_v0.8.7_polytopal_mesh_no_offsets.tar.xz
+           git lfs pull --include "**/silo*.tar.xz"
+           git lfs pull --include "**/blueprint*.tar.xz"
            cd ../
            git lfs pull  --include test/baseline/databases/silo
            git lfs pull  --include test/baseline/databases/blueprint
+           git lfs pull  --include test/baseline/databases/blueprint_export
+           git lfs pull  --include test/baseline/hybrid/ddf
            cd build/testdata/
-           tar xvf ../../data/silo_amr_test_data.tar.xz
-           tar xvf ../../data/silo_ghost_test_data.tar.xz
-           tar xvf ../../data/silo_hdf5_test_data.tar.xz
-           tar xvf ../../data/silo_pdb_test_data.tar.xz
-           tar xvf ../../data/silo_sph_test_data.tar.xz
-           tar xvf ../../data/blueprint_v0.3.1_test_data.tar.xz
-           tar xvf ../../data/blueprint_v0.3.1_mfem_test_data.tar.xz
-           tar xvf ../../data/blueprint_v0.7.0_venn_test_data.tar.xz
-           tar xvf ../../data/blueprint_v0.8.2_braid_examples_test_data.tar.xz
-           tar xvf ../../data/blueprint_v0.8.2_polytess_test_data.tar.xz
-           tar xvf ../../data/blueprint_v0.8.3_devilray_mfem_test_data
-           tar xvf ../../data/blueprint_v0.8.4_part_map_examples.tar.xz
-           tar xvf ../../data/blueprint_v0.8.4_strided_structured_examples.tar.xz
-           tar xvf ../../data/blueprint_v0.8.4_strided_structured_examples.tar.xz
-           tar xvf ../../data/blueprint_v0.8.6_rz_examples.tar.xz
-           tar xvf ../../data/blueprint_v0.8.6_1d_curve_examples.tar.xz
-           tar xvf ../../data/blueprint_v0.8.7_venn_modded_matnos_example.tar.xz
-           tar xvf ../../data/blueprint_v0.8.7_polytopal_mesh_no_offsets.tar.xz
+           for f in ../../data/silo*.tar.xz ../../data/blueprint*.tar.xz; do
+             tar xvf "$f"
+           done
         displayName: 'Prep Test Data'
 
       - script: |
@@ -142,22 +158,21 @@ stages:
            # add to ld_lib path (rpaths are missing?)
            export LD_LIBRARY_PATH=${VTK_LIB_DIR}:${OSPRAY_LIB_DIR}:${QT_LIB_DIR}
            # run test suite on silo + blueprint tests
-           export TESTS=../../src/test/tests/databases/silo.py
-           export TESTS="${TESTS} ../../src/test/tests/databases/blueprint.py"
-           export TESTS="${TESTS} ../../src/test/tests/databases/blueprint_export.py"
-           export TESTS="${TESTS} ../../src/test/tests/hybrid/ddf.py"
-           # also run a few of our unit tests
-           export TESTS="${TESTS} ../../src/test/tests/unit/assert_simple.py"
-           export TESTS="${TESTS} ../../src/test/tests/unit/default_methods.py"
-           export TESTS="${TESTS} ../../src/test/tests/unit/convert2to3.py"
-           ./run_visit_test_suite.sh  -v ${TESTS}
+           export TESTS="$(python_test_files)"
+           ./run_visit_test_suite.sh --fuzzy --pixdiff 10 --avgdiff 10 --numdiff 0.1 -v ${TESTS}
+           hasFailed="$(grep Failed\\\|Unacceptable\\\|OS-Killed output/html/index.html)"
+           if [[ -n "$hasFailed" ]]; then
+             exit 1 # tests failed
+           else
+             exit 0 # tests passed
+           fi
         displayName: 'Run Tests'
 
       - task: CopyFiles@2
         inputs:
           contents: 'build/test/output/html/**'
           targetFolder: $(Build.ArtifactStagingDirectory)
-        condition: always()
+        condition: succeededOrFailed()
 
       - script: |
            #################################
@@ -172,13 +187,13 @@ stages:
         inputs:
           contents: 'build/resources/help/en_US/manual/**'
           targetFolder: $(Build.ArtifactStagingDirectory)
-        condition: always()
+        condition: succeededOrFailed()
 
       - task: PublishBuildArtifacts@1
         inputs:
           pathToPublish: $(Build.ArtifactStagingDirectory)
           artifactName: VisIt_Test_Outputs
-        condition: always()
+        condition: succeededOrFailed()
 
       # - script: |
       #      #################################

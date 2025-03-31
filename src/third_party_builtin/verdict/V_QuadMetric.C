@@ -29,7 +29,7 @@
 #include "verdict_defines.h"
 #include "V_GaussIntegration.h"
 #include <memory.h>
-
+#include <algorithm>
 
 //! the average area of a quad
 VERDICT_REAL verdict_quad_size = 0;
@@ -320,11 +320,11 @@ C_FUNC_DEF VERDICT_REAL v_quad_aspect( int /*num_nodes*/, VERDICT_REAL coordinat
   if( len1 < VERDICT_DBL_MIN || len2 < VERDICT_DBL_MIN )
     return (VERDICT_REAL)VERDICT_DBL_MAX;
 
-  double aspect = VERDICT_MAX( len1 / len2, len2 / len1 );
+  double aspect = std::max( len1 / len2, len2 / len1 );
 
   if( aspect > 0 )
-    return (VERDICT_REAL) VERDICT_MIN( aspect, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( aspect, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( aspect, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( aspect, -VERDICT_DBL_MAX );
 }
 
 /*!
@@ -349,7 +349,7 @@ C_FUNC_DEF VERDICT_REAL v_quad_skew( int /*num_nodes*/, VERDICT_REAL coordinates
 
   double skew = fabs( principle_axes[0] % principle_axes[1] );
 
-  return (VERDICT_REAL) VERDICT_MIN( skew, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::min( skew, VERDICT_DBL_MAX );
 }
 
 /*! 
@@ -374,13 +374,13 @@ C_FUNC_DEF VERDICT_REAL v_quad_taper( int /*num_nodes*/, VERDICT_REAL coordinate
   lengths[1] = principle_axes[1].length();
 
   //get min length
-  lengths[0] = VERDICT_MIN( lengths[0], lengths[1] );
+  lengths[0] = std::min( lengths[0], lengths[1] );
 
   if( lengths[0] < VERDICT_DBL_MIN )
     return VERDICT_DBL_MAX;
 
   double taper = cross_derivative.length()/ lengths[0];
-  return (VERDICT_REAL) VERDICT_MIN( taper, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::min( taper, VERDICT_DBL_MAX );
 
 }
 
@@ -408,12 +408,12 @@ C_FUNC_DEF VERDICT_REAL v_quad_warpage( int /*num_nodes*/, VERDICT_REAL coordina
     return (VERDICT_REAL) VERDICT_DBL_MIN;
 
   double warpage = pow( 
-    VERDICT_MIN( corner_normals[0]%corner_normals[2],
+    std::min( corner_normals[0]%corner_normals[2],
                  corner_normals[1]%corner_normals[3]), 3 );
 
   if( warpage > 0 )
-    return (VERDICT_REAL) VERDICT_MIN( warpage, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( warpage, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( warpage, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( warpage, -VERDICT_DBL_MAX );
 
 }
 
@@ -431,8 +431,8 @@ C_FUNC_DEF VERDICT_REAL v_quad_area( int /*num_nodes*/, VERDICT_REAL coordinates
   double area = 0.25 * (corner_areas[0] + corner_areas[1] + corner_areas[2] + corner_areas[3]);
 
   if( area  > 0 )
-    return (VERDICT_REAL) VERDICT_MIN( area, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( area, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( area, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( area, -VERDICT_DBL_MAX );
 
 }
 
@@ -465,19 +465,19 @@ C_FUNC_DEF VERDICT_REAL v_quad_stretch( int /*num_nodes*/, VERDICT_REAL coordina
   static const double QUAD_STRETCH_FACTOR = sqrt(2.0);
 
   // 'diag02' is now the max diagonal of the quad
-  diag02 = VERDICT_MAX( diag02, diag13 );
+  diag02 = std::max( diag02, diag13 );
 
   if( diag02 < VERDICT_DBL_MIN )
     return (VERDICT_REAL) VERDICT_DBL_MAX;
   else
   {
     double stretch = (VERDICT_REAL) ( QUAD_STRETCH_FACTOR *
-                           sqrt( VERDICT_MIN(
-                                  VERDICT_MIN( lengths_squared[0], lengths_squared[1] ),
-                                  VERDICT_MIN( lengths_squared[2], lengths_squared[3] ) ) /
+                           sqrt( std::min(
+                                  std::min( lengths_squared[0], lengths_squared[1] ),
+                                  std::min( lengths_squared[2], lengths_squared[3] ) ) /
                                 diag02 ));
 
-    return (VERDICT_REAL) VERDICT_MIN( stretch, VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( stretch, VERDICT_DBL_MAX );
   }
 }
 
@@ -534,16 +534,16 @@ C_FUNC_DEF VERDICT_REAL v_quad_maximum_angle( int /*num_nodes*/, VERDICT_REAL co
     return 0.0;  
 
   angle = acos( -(edges[0] % edges[1])/(length[0]*length[1]) );
-  max_angle = VERDICT_MAX(angle, max_angle);
+  max_angle = std::max(angle, max_angle);
 
   angle = acos( -(edges[1] % edges[2])/(length[1]*length[2]) );
-  max_angle = VERDICT_MAX(angle, max_angle);
+  max_angle = std::max(angle, max_angle);
 
   angle = acos( -(edges[2] % edges[3])/(length[2]*length[3]) );
-  max_angle = VERDICT_MAX(angle, max_angle);
+  max_angle = std::max(angle, max_angle);
 
   angle = acos( -(edges[3] % edges[0])/(length[3]*length[0]) );
-  max_angle = VERDICT_MAX(angle, max_angle);
+  max_angle = std::max(angle, max_angle);
 
   max_angle = max_angle *180.0/VERDICT_PI;
 
@@ -558,8 +558,8 @@ C_FUNC_DEF VERDICT_REAL v_quad_maximum_angle( int /*num_nodes*/, VERDICT_REAL co
   } 
 
   if( max_angle  > 0 )
-    return (VERDICT_REAL) VERDICT_MIN( max_angle, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( max_angle, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( max_angle, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( max_angle, -VERDICT_DBL_MAX );
 }
 
 /*!
@@ -614,22 +614,22 @@ C_FUNC_DEF VERDICT_REAL v_quad_minimum_angle( int /*num_nodes*/, VERDICT_REAL co
     return 360.0;  
 
   angle = acos( -(edges[0] % edges[1])/(length[0]*length[1]) );
-  min_angle = VERDICT_MIN(angle, min_angle);
+  min_angle = std::min(angle, min_angle);
 
   angle = acos( -(edges[1] % edges[2])/(length[1]*length[2]) );
-  min_angle = VERDICT_MIN(angle, min_angle);
+  min_angle = std::min(angle, min_angle);
 
   angle = acos( -(edges[2] % edges[3])/(length[2]*length[3]) );
-  min_angle = VERDICT_MIN(angle, min_angle);
+  min_angle = std::min(angle, min_angle);
 
   angle = acos( -(edges[3] % edges[0])/(length[3]*length[0]) );
-  min_angle = VERDICT_MIN(angle, min_angle);
+  min_angle = std::min(angle, min_angle);
 
   min_angle = min_angle *180.0/VERDICT_PI;
 
   if( min_angle  > 0 )
-    return (VERDICT_REAL) VERDICT_MIN( min_angle, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( min_angle, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( min_angle, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( min_angle, -VERDICT_DBL_MAX );
 }
 
 /*!
@@ -666,12 +666,12 @@ C_FUNC_DEF VERDICT_REAL v_quad_oddy( int /*num_nodes*/, VERDICT_REAL coordinates
     else 
       cur_oddy = ( (g11-g22)*(g11-g22) + 4.*g12*g12 ) / 2. / g;
   
-    max_oddy = VERDICT_MAX(max_oddy, cur_oddy);
+    max_oddy = std::max(max_oddy, cur_oddy);
   }
   
   if( max_oddy  > 0 )
-    return (VERDICT_REAL) VERDICT_MIN( max_oddy, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( max_oddy, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( max_oddy, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( max_oddy, -VERDICT_DBL_MAX );
 }
 
 
@@ -711,14 +711,14 @@ C_FUNC_DEF VERDICT_REAL v_quad_condition( int /*num_nodes*/, VERDICT_REAL coordi
     else 
       condition = ( xxi % xxi + xet % xet ) / areas[i];
     
-    max_condition = VERDICT_MAX(max_condition, condition);
+    max_condition = std::max(max_condition, condition);
   }
   
   max_condition /= 2;
 
   if( max_condition > 0 )
-    return (VERDICT_REAL) VERDICT_MIN( max_condition, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( max_condition, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( max_condition, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( max_condition, -VERDICT_DBL_MAX );
 }
 
 /*!
@@ -735,11 +735,11 @@ C_FUNC_DEF VERDICT_REAL v_quad_jacobian( int /*num_nodes*/, VERDICT_REAL coordin
   double areas[4]; 
   signed_corner_areas( areas, coordinates );
 
-  double jacobian = VERDICT_MIN( VERDICT_MIN( areas[0], areas[1] ), 
-                                 VERDICT_MIN( areas[2], areas[3] ) );
+  double jacobian = std::min( std::min( areas[0], areas[1] ), 
+                                 std::min( areas[2], areas[3] ) );
   if( jacobian > 0 )
-    return (VERDICT_REAL) VERDICT_MIN( jacobian, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( jacobian, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( jacobian, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( jacobian, -VERDICT_DBL_MAX );
 
 }
 
@@ -774,20 +774,20 @@ C_FUNC_DEF VERDICT_REAL v_quad_scaled_jacobian( int /*num_nodes*/, VERDICT_REAL 
 
 
   scaled_jac = corner_areas[0] / (length[0] * length[3]);
-  min_scaled_jac = VERDICT_MIN( scaled_jac, min_scaled_jac );
+  min_scaled_jac = std::min( scaled_jac, min_scaled_jac );
 
   scaled_jac = corner_areas[1] / (length[1] * length[0]);
-  min_scaled_jac = VERDICT_MIN( scaled_jac, min_scaled_jac );
+  min_scaled_jac = std::min( scaled_jac, min_scaled_jac );
 
   scaled_jac = corner_areas[2] / (length[2] * length[1]);
-  min_scaled_jac = VERDICT_MIN( scaled_jac, min_scaled_jac );
+  min_scaled_jac = std::min( scaled_jac, min_scaled_jac );
 
   scaled_jac = corner_areas[3] / (length[3] * length[2]);
-  min_scaled_jac = VERDICT_MIN( scaled_jac, min_scaled_jac );
+  min_scaled_jac = std::min( scaled_jac, min_scaled_jac );
 
   if( min_scaled_jac > 0 )
-    return (VERDICT_REAL) VERDICT_MIN( min_scaled_jac, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( min_scaled_jac, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( min_scaled_jac, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( min_scaled_jac, -VERDICT_DBL_MAX );
 
 }
 
@@ -803,7 +803,7 @@ C_FUNC_DEF VERDICT_REAL v_quad_shear( int /*num_nodes*/, VERDICT_REAL coordinate
   if( scaled_jacobian <= VERDICT_DBL_MIN )
     return 0.0;
   else
-    return (VERDICT_REAL) VERDICT_MIN( scaled_jacobian, VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( scaled_jacobian, VERDICT_DBL_MAX );
 }
 
 /*!
@@ -833,16 +833,16 @@ C_FUNC_DEF VERDICT_REAL v_quad_shape( int /*num_nodes*/, VERDICT_REAL coordinate
     return 0.0;  
 
   shape = corner_areas[0] / (length_squared[0] + length_squared[3]);
-  min_shape = VERDICT_MIN( shape, min_shape );
+  min_shape = std::min( shape, min_shape );
 
   shape = corner_areas[1] / (length_squared[1] + length_squared[0]);
-  min_shape = VERDICT_MIN( shape, min_shape );
+  min_shape = std::min( shape, min_shape );
 
   shape = corner_areas[2] / (length_squared[2] + length_squared[1]);
-  min_shape = VERDICT_MIN( shape, min_shape );
+  min_shape = std::min( shape, min_shape );
 
   shape = corner_areas[3] / (length_squared[3] + length_squared[2]);
-  min_shape = VERDICT_MIN( shape, min_shape );
+  min_shape = std::min( shape, min_shape );
 
   min_shape *= 2;
 
@@ -850,8 +850,8 @@ C_FUNC_DEF VERDICT_REAL v_quad_shape( int /*num_nodes*/, VERDICT_REAL coordinate
     min_shape = 0;
 
   if( min_shape > 0 )
-    return (VERDICT_REAL) VERDICT_MIN( min_shape, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( min_shape, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( min_shape, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( min_shape, -VERDICT_DBL_MAX );
 
 }
 
@@ -878,14 +878,14 @@ C_FUNC_DEF VERDICT_REAL v_quad_relative_size_squared( int /*num_nodes*/, VERDICT
       
     if ( w11 > VERDICT_DBL_MIN )
     {
-      rel_size = VERDICT_MIN( w11, 1/w11 );
+      rel_size = std::min( w11, 1/w11 );
       rel_size *= rel_size;
     }
   }
   
   if( rel_size  > 0 )
-    return (VERDICT_REAL) VERDICT_MIN( rel_size, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( rel_size, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( rel_size, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( rel_size, -VERDICT_DBL_MAX );
 
 }
 
@@ -903,8 +903,8 @@ C_FUNC_DEF VERDICT_REAL v_quad_shape_and_size( int num_nodes, VERDICT_REAL coord
   double shape_and_size = shape * size;
   
   if( shape_and_size > 0 )
-    return (VERDICT_REAL) VERDICT_MIN( shape_and_size, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( shape_and_size, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( shape_and_size, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( shape_and_size, -VERDICT_DBL_MAX );
 
 }
 
@@ -922,8 +922,8 @@ C_FUNC_DEF VERDICT_REAL v_quad_shear_and_size( int num_nodes, VERDICT_REAL coord
   double shear_and_size = shear * size;
 
   if( shear_and_size > 0 )
-    return (VERDICT_REAL) VERDICT_MIN( shear_and_size, VERDICT_DBL_MAX );
-  return (VERDICT_REAL) VERDICT_MAX( shear_and_size, -VERDICT_DBL_MAX );
+    return (VERDICT_REAL) std::min( shear_and_size, VERDICT_DBL_MAX );
+  return (VERDICT_REAL) std::max( shear_and_size, -VERDICT_DBL_MAX );
 
 }
 
@@ -978,7 +978,7 @@ C_FUNC_DEF VERDICT_REAL v_quad_distortion( int num_nodes, VERDICT_REAL coordinat
 
          sign_jacobian = (face_normal % ( first * second )) > 0? 1.:-1.;
          cur_jacobian = sign_jacobian*(first * second).length();
-         distortion = VERDICT_MIN(distortion, cur_jacobian);
+         distortion = std::min(distortion, cur_jacobian);
       }
       element_area = (first*second).length()/2.0;
       distortion /= element_area;
@@ -1218,7 +1218,7 @@ C_FUNC_DEF void v_quad_quality( int num_nodes, VERDICT_REAL coordinates[][3],
       {
         metric_vals->minimum_angle = VERDICT_DBL_MAX;
         for(int i = 0; i<4; i++)
-          metric_vals->minimum_angle = VERDICT_MIN(angles[i], metric_vals->minimum_angle);
+          metric_vals->minimum_angle = std::min(angles[i], metric_vals->minimum_angle);
         metric_vals->minimum_angle *= 180.0 / VERDICT_PI;
       }
       // if largest angle, find the largest angle
@@ -1226,7 +1226,7 @@ C_FUNC_DEF void v_quad_quality( int num_nodes, VERDICT_REAL coordinates[][3],
       {
         metric_vals->maximum_angle = 0.0;
         for(int i = 0; i<4; i++)
-          metric_vals->maximum_angle = VERDICT_MAX(angles[i], metric_vals->maximum_angle);
+          metric_vals->maximum_angle = std::max(angles[i], metric_vals->maximum_angle);
         metric_vals->maximum_angle *= 180.0 / VERDICT_PI;
 
         if( areas[0] < 0 || areas[1] < 0 || 
@@ -1255,13 +1255,13 @@ C_FUNC_DEF void v_quad_quality( int num_nodes, VERDICT_REAL coordinates[][3],
         if( len1 < VERDICT_DBL_MIN || len2 < VERDICT_DBL_MIN )
           metric_vals->aspect = VERDICT_DBL_MAX;
         else
-          metric_vals->aspect = VERDICT_MAX( len1 / len2, len2 / len1 );
+          metric_vals->aspect = std::max( len1 / len2, len2 / len1 );
       }
     
       // calculate the taper
       if(metrics_request_flag & V_QUAD_TAPER)
       {
-        double min_length = VERDICT_MIN( len1, len2 );
+        double min_length = std::min( len1, len2 );
 
         VerdictVector cross_derivative = edges[1] + edges[3]; 
 
@@ -1302,7 +1302,7 @@ C_FUNC_DEF void v_quad_quality( int num_nodes, VERDICT_REAL coordinates[][3],
     if( avg_area < VERDICT_DBL_MIN )
       metric_vals->relative_size_squared = 0.0;
     else
-      metric_vals->relative_size_squared =  pow( VERDICT_MIN( 
+      metric_vals->relative_size_squared =  pow( std::min( 
                                               metric_vals->area/avg_area,  
                                               avg_area/metric_vals->area ), 2 );
   }
@@ -1310,9 +1310,9 @@ C_FUNC_DEF void v_quad_quality( int num_nodes, VERDICT_REAL coordinates[][3],
   // calculate the jacobian
   if(metrics_request_flag & V_QUAD_JACOBIAN)
   {
-    metric_vals->jacobian = VERDICT_MIN(
-                              VERDICT_MIN( areas[0], areas[1] ),
-                              VERDICT_MIN( areas[2], areas[3] ) );
+    metric_vals->jacobian = std::min(
+                              std::min( areas[0], areas[1] ),
+                              std::min( areas[2], areas[3] ) );
   }
 
   if( metrics_request_flag & ( V_QUAD_SCALED_JACOBIAN | V_QUAD_SHEAR | V_QUAD_SHEAR_AND_SIZE ) )
@@ -1330,16 +1330,16 @@ C_FUNC_DEF void v_quad_quality( int num_nodes, VERDICT_REAL coordinates[][3],
     else
     {
       scaled_jac = areas[0] / (lengths[0] * lengths[3]);
-      min_scaled_jac = VERDICT_MIN( scaled_jac, min_scaled_jac );
+      min_scaled_jac = std::min( scaled_jac, min_scaled_jac );
 
       scaled_jac = areas[1] / (lengths[1] * lengths[0]);
-      min_scaled_jac = VERDICT_MIN( scaled_jac, min_scaled_jac );
+      min_scaled_jac = std::min( scaled_jac, min_scaled_jac );
 
       scaled_jac = areas[2] / (lengths[2] * lengths[1]);
-      min_scaled_jac = VERDICT_MIN( scaled_jac, min_scaled_jac );
+      min_scaled_jac = std::min( scaled_jac, min_scaled_jac );
 
       scaled_jac = areas[3] / (lengths[3] * lengths[2]);
-      min_scaled_jac = VERDICT_MIN( scaled_jac, min_scaled_jac );
+      min_scaled_jac = std::min( scaled_jac, min_scaled_jac );
 
       metric_vals->scaled_jacobian = min_scaled_jac;
      
@@ -1381,22 +1381,22 @@ C_FUNC_DEF void v_quad_quality( int num_nodes, VERDICT_REAL coordinates[][3],
         diff = (lengths[0]*lengths[0]) - (lengths[1]*lengths[1]);
         dot_prod = edges[0]%edges[1];
         oddy = ((diff*diff) + 4*dot_prod*dot_prod ) / (2*length_squared[1]);
-        max_oddy = VERDICT_MAX( oddy, max_oddy );
+        max_oddy = std::max( oddy, max_oddy );
 
         diff = (lengths[1]*lengths[1]) - (lengths[2]*lengths[2]);
         dot_prod = edges[1]%edges[2];
         oddy = ((diff*diff) + 4*dot_prod*dot_prod ) / (2*length_squared[2]);
-        max_oddy = VERDICT_MAX( oddy, max_oddy );
+        max_oddy = std::max( oddy, max_oddy );
 
         diff = (lengths[2]*lengths[2]) - (lengths[3]*lengths[3]);
         dot_prod = edges[2]%edges[3];
         oddy = ((diff*diff) + 4*dot_prod*dot_prod ) / (2*length_squared[3]);
-        max_oddy = VERDICT_MAX( oddy, max_oddy );
+        max_oddy = std::max( oddy, max_oddy );
 
         diff = (lengths[3]*lengths[3]) - (lengths[0]*lengths[0]);
         dot_prod = edges[3]%edges[0];
         oddy = ((diff*diff) + 4*dot_prod*dot_prod ) / (2*length_squared[0]);
-        max_oddy = VERDICT_MAX( oddy, max_oddy );
+        max_oddy = std::max( oddy, max_oddy );
 
         metric_vals->oddy = max_oddy;
       }
@@ -1412,7 +1412,7 @@ C_FUNC_DEF void v_quad_quality( int num_nodes, VERDICT_REAL coordinates[][3],
       else 
       {
         metric_vals->warpage = pow( 
-                             VERDICT_MIN( corner_normals[0]%corner_normals[2],
+                             std::min( corner_normals[0]%corner_normals[2],
                                           corner_normals[1]%corner_normals[3]), 3 ); 
       }
     }
@@ -1435,15 +1435,15 @@ C_FUNC_DEF void v_quad_quality( int num_nodes, VERDICT_REAL coordinates[][3],
     static const double QUAD_STRETCH_FACTOR = sqrt(2.0);
 
     // 'diag02' is now the max diagonal of the quad
-    diag02 = VERDICT_MAX( diag02, diag13 );
+    diag02 = std::max( diag02, diag13 );
 
     if( diag02 < VERDICT_DBL_MIN )
       metric_vals->stretch = VERDICT_DBL_MAX; 
     else
       metric_vals->stretch =  QUAD_STRETCH_FACTOR *
-                              VERDICT_MIN(
-                                VERDICT_MIN( lengths[0], lengths[1] ),
-                                VERDICT_MIN( lengths[2], lengths[3] ) ) /
+                              std::min(
+                                std::min( lengths[0], lengths[1] ),
+                                std::min( lengths[2], lengths[3] ) ) /
                               sqrt(diag02);
   }
 
@@ -1468,16 +1468,16 @@ C_FUNC_DEF void v_quad_quality( int num_nodes, VERDICT_REAL coordinates[][3],
       double max_condition = 0.0, condition;
 
       condition = (lengths_squared[0] + lengths_squared[3])/areas[0];
-      max_condition = VERDICT_MAX( max_condition, condition ); 
+      max_condition = std::max( max_condition, condition ); 
 
       condition = (lengths_squared[1] + lengths_squared[0])/areas[1];
-      max_condition = VERDICT_MAX( max_condition, condition ); 
+      max_condition = std::max( max_condition, condition ); 
      
       condition = (lengths_squared[2] + lengths_squared[1])/areas[2];
-      max_condition = VERDICT_MAX( max_condition, condition ); 
+      max_condition = std::max( max_condition, condition ); 
 
       condition = (lengths_squared[3] + lengths_squared[2])/areas[3];
-      max_condition = VERDICT_MAX( max_condition, condition ); 
+      max_condition = std::max( max_condition, condition ); 
 
       metric_vals->condition = 0.5*max_condition;
       metric_vals->shape =  2/max_condition;
@@ -1487,22 +1487,22 @@ C_FUNC_DEF void v_quad_quality( int num_nodes, VERDICT_REAL coordinates[][3],
   if(metrics_request_flag & V_QUAD_AREA )
   {
     if( metric_vals->area > 0 ) 
-      metric_vals->area = (VERDICT_REAL) VERDICT_MIN( metric_vals->area, VERDICT_DBL_MAX );
-    metric_vals->area = (VERDICT_REAL) VERDICT_MAX( metric_vals->area, -VERDICT_DBL_MAX );
+      metric_vals->area = (VERDICT_REAL) std::min( metric_vals->area, VERDICT_DBL_MAX );
+    metric_vals->area = (VERDICT_REAL) std::max( metric_vals->area, -VERDICT_DBL_MAX );
   }
 
   if(metrics_request_flag & V_QUAD_ASPECT )
   {
     if( metric_vals->aspect > 0 ) 
-      metric_vals->aspect = (VERDICT_REAL) VERDICT_MIN( metric_vals->aspect, VERDICT_DBL_MAX );
-    metric_vals->aspect = (VERDICT_REAL) VERDICT_MAX( metric_vals->aspect, -VERDICT_DBL_MAX );
+      metric_vals->aspect = (VERDICT_REAL) std::min( metric_vals->aspect, VERDICT_DBL_MAX );
+    metric_vals->aspect = (VERDICT_REAL) std::max( metric_vals->aspect, -VERDICT_DBL_MAX );
   }
 
   if(metrics_request_flag & V_QUAD_CONDITION )
   {
     if( metric_vals->condition > 0 ) 
-      metric_vals->condition = (VERDICT_REAL) VERDICT_MIN( metric_vals->condition, VERDICT_DBL_MAX );
-    metric_vals->condition = (VERDICT_REAL) VERDICT_MAX( metric_vals->condition, -VERDICT_DBL_MAX );
+      metric_vals->condition = (VERDICT_REAL) std::min( metric_vals->condition, VERDICT_DBL_MAX );
+    metric_vals->condition = (VERDICT_REAL) std::max( metric_vals->condition, -VERDICT_DBL_MAX );
   }
 
   // calculate distortion
@@ -1511,57 +1511,57 @@ C_FUNC_DEF void v_quad_quality( int num_nodes, VERDICT_REAL coordinates[][3],
     metric_vals->distortion = v_quad_distortion(num_nodes, coordinates);
 
     if( metric_vals->distortion > 0 ) 
-      metric_vals->distortion = (VERDICT_REAL) VERDICT_MIN( metric_vals->distortion, VERDICT_DBL_MAX );
-    metric_vals->distortion = (VERDICT_REAL) VERDICT_MAX( metric_vals->distortion, -VERDICT_DBL_MAX );
+      metric_vals->distortion = (VERDICT_REAL) std::min( metric_vals->distortion, VERDICT_DBL_MAX );
+    metric_vals->distortion = (VERDICT_REAL) std::max( metric_vals->distortion, -VERDICT_DBL_MAX );
   }
 
   if(metrics_request_flag & V_QUAD_JACOBIAN )
   {
     if( metric_vals->jacobian > 0 ) 
-      metric_vals->jacobian = (VERDICT_REAL) VERDICT_MIN( metric_vals->jacobian, VERDICT_DBL_MAX );
-    metric_vals->jacobian = (VERDICT_REAL) VERDICT_MAX( metric_vals->jacobian, -VERDICT_DBL_MAX );
+      metric_vals->jacobian = (VERDICT_REAL) std::min( metric_vals->jacobian, VERDICT_DBL_MAX );
+    metric_vals->jacobian = (VERDICT_REAL) std::max( metric_vals->jacobian, -VERDICT_DBL_MAX );
   }
 
   if(metrics_request_flag & V_QUAD_MAXIMUM_ANGLE )
   {
     if( metric_vals->maximum_angle > 0 ) 
-      metric_vals->maximum_angle = (VERDICT_REAL) VERDICT_MIN( metric_vals->maximum_angle, VERDICT_DBL_MAX );
-    metric_vals->maximum_angle = (VERDICT_REAL) VERDICT_MAX( metric_vals->maximum_angle, -VERDICT_DBL_MAX );
+      metric_vals->maximum_angle = (VERDICT_REAL) std::min( metric_vals->maximum_angle, VERDICT_DBL_MAX );
+    metric_vals->maximum_angle = (VERDICT_REAL) std::max( metric_vals->maximum_angle, -VERDICT_DBL_MAX );
   }
 
   if(metrics_request_flag & V_QUAD_MINIMUM_ANGLE )
   {
     if( metric_vals->minimum_angle > 0 ) 
-      metric_vals->minimum_angle = (VERDICT_REAL) VERDICT_MIN( metric_vals->minimum_angle, VERDICT_DBL_MAX );
-    metric_vals->minimum_angle = (VERDICT_REAL) VERDICT_MAX( metric_vals->minimum_angle, -VERDICT_DBL_MAX );
+      metric_vals->minimum_angle = (VERDICT_REAL) std::min( metric_vals->minimum_angle, VERDICT_DBL_MAX );
+    metric_vals->minimum_angle = (VERDICT_REAL) std::max( metric_vals->minimum_angle, -VERDICT_DBL_MAX );
   }
 
   if(metrics_request_flag & V_QUAD_ODDY )
   {
     if( metric_vals->oddy > 0 ) 
-      metric_vals->oddy = (VERDICT_REAL) VERDICT_MIN( metric_vals->oddy, VERDICT_DBL_MAX );
-    metric_vals->oddy = (VERDICT_REAL) VERDICT_MAX( metric_vals->oddy, -VERDICT_DBL_MAX );
+      metric_vals->oddy = (VERDICT_REAL) std::min( metric_vals->oddy, VERDICT_DBL_MAX );
+    metric_vals->oddy = (VERDICT_REAL) std::max( metric_vals->oddy, -VERDICT_DBL_MAX );
   }
 
   if(metrics_request_flag & V_QUAD_RELATIVE_SIZE_SQUARED )
   {
     if( metric_vals->relative_size_squared> 0 ) 
-      metric_vals->relative_size_squared = (VERDICT_REAL) VERDICT_MIN( metric_vals->relative_size_squared, VERDICT_DBL_MAX );
-    metric_vals->relative_size_squared = (VERDICT_REAL) VERDICT_MAX( metric_vals->relative_size_squared, -VERDICT_DBL_MAX );
+      metric_vals->relative_size_squared = (VERDICT_REAL) std::min( metric_vals->relative_size_squared, VERDICT_DBL_MAX );
+    metric_vals->relative_size_squared = (VERDICT_REAL) std::max( metric_vals->relative_size_squared, -VERDICT_DBL_MAX );
   }
 
   if(metrics_request_flag & V_QUAD_SCALED_JACOBIAN )
   {
     if( metric_vals->scaled_jacobian> 0 ) 
-      metric_vals->scaled_jacobian = (VERDICT_REAL) VERDICT_MIN( metric_vals->scaled_jacobian, VERDICT_DBL_MAX );
-    metric_vals->scaled_jacobian = (VERDICT_REAL) VERDICT_MAX( metric_vals->scaled_jacobian, -VERDICT_DBL_MAX );
+      metric_vals->scaled_jacobian = (VERDICT_REAL) std::min( metric_vals->scaled_jacobian, VERDICT_DBL_MAX );
+    metric_vals->scaled_jacobian = (VERDICT_REAL) std::max( metric_vals->scaled_jacobian, -VERDICT_DBL_MAX );
   }
 
   if(metrics_request_flag & V_QUAD_SHEAR )
   {
     if( metric_vals->shear > 0 ) 
-      metric_vals->shear = (VERDICT_REAL) VERDICT_MIN( metric_vals->shear, VERDICT_DBL_MAX );
-    metric_vals->shear = (VERDICT_REAL) VERDICT_MAX( metric_vals->shear, -VERDICT_DBL_MAX );
+      metric_vals->shear = (VERDICT_REAL) std::min( metric_vals->shear, VERDICT_DBL_MAX );
+    metric_vals->shear = (VERDICT_REAL) std::max( metric_vals->shear, -VERDICT_DBL_MAX );
   }
 
   // calculate shear and size
@@ -1571,15 +1571,15 @@ C_FUNC_DEF void v_quad_quality( int num_nodes, VERDICT_REAL coordinates[][3],
     metric_vals->shear_and_size = metric_vals->shear * metric_vals->relative_size_squared;
 
     if( metric_vals->shear_and_size > 0 ) 
-      metric_vals->shear_and_size = (VERDICT_REAL) VERDICT_MIN( metric_vals->shear_and_size, VERDICT_DBL_MAX );
-    metric_vals->shear_and_size = (VERDICT_REAL) VERDICT_MAX( metric_vals->shear_and_size, -VERDICT_DBL_MAX );
+      metric_vals->shear_and_size = (VERDICT_REAL) std::min( metric_vals->shear_and_size, VERDICT_DBL_MAX );
+    metric_vals->shear_and_size = (VERDICT_REAL) std::max( metric_vals->shear_and_size, -VERDICT_DBL_MAX );
   }
 
   if(metrics_request_flag & V_QUAD_SHAPE )
   {
     if( metric_vals->shape > 0 ) 
-      metric_vals->shape = (VERDICT_REAL) VERDICT_MIN( metric_vals->shape, VERDICT_DBL_MAX );
-    metric_vals->shape = (VERDICT_REAL) VERDICT_MAX( metric_vals->shape, -VERDICT_DBL_MAX );
+      metric_vals->shape = (VERDICT_REAL) std::min( metric_vals->shape, VERDICT_DBL_MAX );
+    metric_vals->shape = (VERDICT_REAL) std::max( metric_vals->shape, -VERDICT_DBL_MAX );
   }
 
   // calculate shape and size
@@ -1589,36 +1589,36 @@ C_FUNC_DEF void v_quad_quality( int num_nodes, VERDICT_REAL coordinates[][3],
     metric_vals->shape_and_size = metric_vals->shape * metric_vals->relative_size_squared;
 
     if( metric_vals->shape_and_size > 0 ) 
-      metric_vals->shape_and_size = (VERDICT_REAL) VERDICT_MIN( metric_vals->shape_and_size, VERDICT_DBL_MAX );
-    metric_vals->shape_and_size = (VERDICT_REAL) VERDICT_MAX( metric_vals->shape_and_size, -VERDICT_DBL_MAX );
+      metric_vals->shape_and_size = (VERDICT_REAL) std::min( metric_vals->shape_and_size, VERDICT_DBL_MAX );
+    metric_vals->shape_and_size = (VERDICT_REAL) std::max( metric_vals->shape_and_size, -VERDICT_DBL_MAX );
   }
 
   if(metrics_request_flag & V_QUAD_SKEW )
   {
     if( metric_vals->skew > 0 ) 
-      metric_vals->skew = (VERDICT_REAL) VERDICT_MIN( metric_vals->skew, VERDICT_DBL_MAX );
-    metric_vals->skew = (VERDICT_REAL) VERDICT_MAX( metric_vals->skew, -VERDICT_DBL_MAX );
+      metric_vals->skew = (VERDICT_REAL) std::min( metric_vals->skew, VERDICT_DBL_MAX );
+    metric_vals->skew = (VERDICT_REAL) std::max( metric_vals->skew, -VERDICT_DBL_MAX );
   }
 
   if(metrics_request_flag & V_QUAD_STRETCH )
   {
     if( metric_vals->stretch > 0 ) 
-      metric_vals->stretch = (VERDICT_REAL) VERDICT_MIN( metric_vals->stretch, VERDICT_DBL_MAX );
-    metric_vals->stretch = (VERDICT_REAL) VERDICT_MAX( metric_vals->stretch, -VERDICT_DBL_MAX );
+      metric_vals->stretch = (VERDICT_REAL) std::min( metric_vals->stretch, VERDICT_DBL_MAX );
+    metric_vals->stretch = (VERDICT_REAL) std::max( metric_vals->stretch, -VERDICT_DBL_MAX );
   }
 
   if(metrics_request_flag & V_QUAD_TAPER )
   {
     if( metric_vals->taper > 0 ) 
-      metric_vals->taper = (VERDICT_REAL) VERDICT_MIN( metric_vals->taper, VERDICT_DBL_MAX );
-    metric_vals->taper = (VERDICT_REAL) VERDICT_MAX( metric_vals->taper, -VERDICT_DBL_MAX );
+      metric_vals->taper = (VERDICT_REAL) std::min( metric_vals->taper, VERDICT_DBL_MAX );
+    metric_vals->taper = (VERDICT_REAL) std::max( metric_vals->taper, -VERDICT_DBL_MAX );
   }
 
   if(metrics_request_flag & V_QUAD_WARPAGE )
   {
     if( metric_vals->warpage > 0 ) 
-      metric_vals->warpage = (VERDICT_REAL) VERDICT_MIN( metric_vals->warpage, VERDICT_DBL_MAX );
-    metric_vals->warpage = (VERDICT_REAL) VERDICT_MAX( metric_vals->warpage, -VERDICT_DBL_MAX );
+      metric_vals->warpage = (VERDICT_REAL) std::min( metric_vals->warpage, VERDICT_DBL_MAX );
+    metric_vals->warpage = (VERDICT_REAL) std::max( metric_vals->warpage, -VERDICT_DBL_MAX );
   }
 
 }

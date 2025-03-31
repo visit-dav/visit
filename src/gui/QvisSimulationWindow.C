@@ -17,8 +17,8 @@
 #include <QvisSimulationCommandWindow.h>
 #include <QvisSimulationMessageWindow.h>
 #include <QvisStripChartMgr.h>
-#include <QvisStripChartTabWidget.h>
-#include <QvisStripChart.h>
+#include <QvisStripChart.h> // for MAX_STRIP_CHART_VARS
+#include <QvisStripChartTabWidget.h> // for MAX_STRIP_CHARTS
 #include <QvisNotepadArea.h>
 #include <QvisUiLoader.h>
 #include <SimCommandSlots.h>
@@ -483,7 +483,6 @@ QvisSimulationWindow::CreateCustomUIWindow()
         }
 
         simCommands->setCustomButtonEnabled(false);
-
         clearStripCharts();
 
         return;

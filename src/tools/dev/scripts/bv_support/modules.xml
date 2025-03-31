@@ -7,7 +7,6 @@
             <lib name="vtk"/> <!-- <lib name="vtk" reqdeps="cmake vtk" optdeps="qt mesagl"/> -->
             <lib name="qt6"/>
             <lib name="qt"/>
-            <lib name="qwt"/>
             <lib name="zlib"/>
         </required>
 
@@ -31,23 +30,29 @@
             <lib name="llvm"/>
             <lib name="mdsplus"/>
             <lib name="mesagl"/>
+            <lib name="meson"/>
             <lib name="mfem"/>
             <lib name="mili"/>
             <lib name="moab"/>
             <lib name="mpich"/>
             <lib name="nektarpp"/>
             <lib name="netcdf"/>
+            <lib name="ninja"/>
             <lib name="openexr"/>
             <lib name="osmesa"/>
             <lib name="ospray"/>
+            <lib name="anari"/>
             <lib name="pidx"/>
             <lib name="pyside"/>
+            <lib name="qwt"/>
             <lib name="silo"/>
             <lib name="stripack"/>
             <lib name="szip"/>
             <lib name="uintah"/>
             <lib name="vtkm"/>
+            <lib name="xcb"/>
             <lib name="xdmf"/>
+            <lib name="xkbcommon"/>
         </optional>
 
         <!-- thirdparty flag -->
@@ -57,7 +62,6 @@
             <lib name="vtk"/> <!-- <lib name="vtk" reqdeps="cmake vtk" optdeps="qt mesagl"/> -->
             <lib name="qt6"/>
             <lib name="qt"/>
-            <lib name="qwt"/>
             <lib name="zlib"/>
         </group>
 
@@ -78,18 +82,24 @@
             <lib name="hdf5"/>
             <lib name="icet"/>
             <lib name="llvm"/>
+            <lib name="meson"/>
             <lib name="mfem"/>
             <lib name="mili"/>
             <lib name="moab"/>
             <lib name="netcdf"/>
+            <lib name="ninja"/>
             <lib name="openexr"/>
             <lib name="ospray"/>
+            <lib name="anari"/>
             <lib name="pidx"/>
             <lib name="pyside"/>
+            <lib name="qwt"/>
             <lib name="silo"/>
             <lib name="szip"/>
             <lib name="vtkm"/>
+            <lib name="xcb"/>
             <lib name="xdmf"/>
+            <lib name="xkbcommon"/>
         </group>
 
         <group name="no-thirdparty" comment="Do not build required 3rd party libraries" enabled="no">
@@ -97,7 +107,6 @@
             <lib name="no-python"/>
             <lib name="no-qt6" />
             <lib name="no-qt" />
-            <lib name="no-qwt" />
             <lib name="no-vtk"/>
             <lib name="no-zlib"/>
         </group>
@@ -163,6 +172,7 @@
         <group name="nonio" comment="Build non I/O libraries" enabled="no">
             <lib name="icet"/>
             <lib name="ospray"/>
+            <lib name="anari"/>
         </group>
 
         <!--
@@ -186,7 +196,6 @@
             <lib name="vtk"/>
             <lib name="qt6"/>
             <lib name="qt"/>
-            <lib name="qwt"/>
             <lib name="zlib"/>
         </required>
 
@@ -203,6 +212,7 @@
             <lib name="mpich"/>
             <lib name="osmesa"/>
             <lib name="pyqt"/>
+            <lib name="qwt"/>
             <lib name="uintah"/>
             <lib name="damaris"/>
             <lib name="xercesc"/>
@@ -216,7 +226,6 @@
             <lib name="vtk"/>
             <lib name="qt6"/>
             <lib name="qt"/>
-            <lib name="qwt"/>
             <lib name="zlib"/>
         </group>
 
@@ -225,6 +234,7 @@
             <lib name="hdf5"/>
             <lib name="netcdf"/>
             <lib name="mpich"/>
+            <lib name="qwt"/>
             <lib name="szip"/>
             <lib name="uintah"/>
             <lib name="damaris"/>
@@ -238,7 +248,6 @@
             <lib name="no-python"/>
             <lib name="no-qt6" />
             <lib name="no-qt" />
-            <lib name="no-qwt" />
             <lib name="no-vtk"/>
             <lib name="no-zlib"/>
         </group>

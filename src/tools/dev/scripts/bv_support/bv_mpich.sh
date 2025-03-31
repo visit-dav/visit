@@ -26,7 +26,6 @@ function bv_mpich_info
     export MPICH_FILE=${MPICH_FILE:-"mpich-${MPICH_VERSION}.tar.gz"}
     export MPICH_COMPATIBILITY_VERSION=${MPICH_COMPATIBILITY_VERSION:-"3.3"}
     export MPICH_BUILD_DIR=${MPICH_BUILD_DIR:-"mpich-${MPICH_VERSION}"}
-    export MPICH_URL=${MPICH_URL:-http://www.mpich.org/static/tarballs/${MPICH_VERSION}}
     export MPICH_SHA256_CHECKSUM="fe551ef29c8eea8978f679484441ed8bb1d943f6ad25b63c235d4b9243d551e5"
 }
 
@@ -74,10 +73,77 @@ function bv_mpich_ensure
     fi
 }
 
+function apply_mpich_slurm_patch
+{
+    #
+    # Patch for building on a system with slurm. The type of hostlist_t
+    # was changed from a pointer to an opaque structure between 23.2.8
+    # and 23.11.0. This was determined by comparing releases from the
+    # site https://download.schedmd.com/slurm/.
+    # 
+   patch -p0 << \EOF
+diff -c src/pm/hydra/tools/bootstrap/external/slurm_query_node_list.c.orig src/pm/hydra/tools/bootstrap/external/slurm_query_node_list.c
+*** src/pm/hydra/tools/bootstrap/external/slurm_query_node_list.c.orig	2025-02-18 09:23:02.009141000 -0800
+--- src/pm/hydra/tools/bootstrap/external/slurm_query_node_list.c	2025-02-18 09:24:54.077110000 -0800
+***************
+*** 10,16 ****
+  #include "slurm.h"
+  
+  #if defined(HAVE_SLURM_SLURM_H)
+! #include <slurm/slurm.h>        /* for slurm_hostlist_create */
+  #elif defined(HAVE_POSIX_REGCOMP)
+  #include <regex.h>      /* for POSIX regular expressions */
+  
+--- 10,17 ----
+  #include "slurm.h"
+  
+  #if defined(HAVE_SLURM_SLURM_H)
+! #include <slurm/slurm.h>         /* for slurm_hostlist_create */
+! #include <slurm/slurm_version.h> /* for slurm version macros */
+  #elif defined(HAVE_POSIX_REGCOMP)
+  #include <regex.h>      /* for POSIX regular expressions */
+  
+***************
+*** 26,32 ****
+--- 27,37 ----
+  #if defined(HAVE_LIBSLURM)
+  static HYD_status list_to_nodes(char *str)
+  {
++ #if SLURM_VERSION_NUMBER > SLURM_VERSION_NUM(23,2,8)
++     hostlist_t *hostlist;
++ #else
+      hostlist_t hostlist;
++ #endif
+      char *host;
+      int k = 0;
+      HYD_status status = HYD_SUCCESS;
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "mpich slurm patch failed."
+      return 1
+    fi
+    return 0;
+}
+
+function apply_mpich_patch
+{
+    info "Patching MPICH . . ."
+
+    apply_mpich_slurm_patch
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    return 0
+}
+
 # *************************************************************************** #
 #                            Function 8, build_mpich
 #
 # Modfications:
+#   Eric Brugger, Tue Feb 18 09:40:26 PST 2025
+#   I added a patch for building on a system with a newer slurm.
 #
 # *************************************************************************** #
 
@@ -94,6 +160,22 @@ function build_mpich
     fi
     
     cd $MPICH_BUILD_DIR || error "Can't cd to MPICH build dir."
+
+    #
+    # Apply patches
+    #
+    apply_mpich_patch
+    if [[ $? != 0 ]] ; then
+        if [[ $untarred_mpich == 1 ]] ; then
+            warn "Giving up on MPICH build because the patch failed."
+            return 1
+        else
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, the patch is\n" \
+                 "failing harmlessly on a second application."
+        fi
+    fi
 
     #
     # Call configure

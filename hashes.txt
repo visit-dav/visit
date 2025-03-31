@@ -1,1 +1,1 @@
-blt  branch='develop' commit='97ea54d892b4b1d56736830575c3db62e3d7674d'
+blt  branch='v0.6.2-rc' commit='9ff77344f0b2a6ee345e452bddd6bfd46cbbfa35'

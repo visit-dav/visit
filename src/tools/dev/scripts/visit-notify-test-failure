@@ -40,6 +40,7 @@ if test "$status" = "pass" ; then
    # Create the list to send the e-mail to.
    #
    emailList=`echo $logRecipients | tr ' ' '\n' | sort | uniq`
+   emailList=`echo $emailList | tr '\n' ' '`
 
    #
    # Create the email.
@@ -118,6 +119,7 @@ rm -f modifiers
 #
 emailList="`echo $logRecipients` `echo $modifiersEmails`"
 emailList=`echo $emailList | tr ' ' '\n' | sort | uniq`
+emailList=`echo $emailList | tr '\n' ' '`
 
 #
 # Create the email and send it.

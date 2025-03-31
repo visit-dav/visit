@@ -36,7 +36,7 @@
 #include <string>
 #include <vector>
 
-#ifdef WIN32
+#ifdef _WIN32
   #define VISITCLI_API __declspec(dllimport)
 
   #define BEGINSWITHQUOTE(A) (A[0] == '\'' || A[0] == '\"')
@@ -182,6 +182,8 @@ extern "C" void cli_runscript(const char *);
 //    as '-s' is a viable option that could be passed to srun via -sla or -la
 //    and we don't that option to be proccessed as a cli '-s' option.
 //
+//    Mark C. Miller, Tue Jan 28 11:01:53 PST 2025
+//    Fix CATCH macro usage. 
 // ****************************************************************************
 
 int
@@ -216,7 +218,7 @@ main(int argc, char *argv[])
     bool sleep_mode = false;
     std::string run_code = "";
 
-#ifdef WIN32
+#ifdef _WIN32
     char tmpArg[512];
 #endif
 
@@ -249,7 +251,7 @@ main(int argc, char *argv[])
                 fprintf(stderr,"Warning: clamping debug level to 5\n");
             }
         }
-#ifdef WIN32
+#ifdef _WIN32
         else if((strcmp(argv[i], "-s") == 0 && (i+1 < argc)) ||
                 (strcmp(argv[i], "-o") == 0 && (i+1 < argc)) ||
                 (strcmp(argv[i], "-runcode") == 0 && (i+1 < argc)))
@@ -426,7 +428,7 @@ main(int argc, char *argv[])
 
         else if(strcmp(argv[i], "-minimized") == 0)
         {
-#ifdef WIN32
+#ifdef _WIN32
             HWND console = GetConsoleWindow();
             if(console != NULL)
                 ShowWindow(console, SW_MINIMIZE);
@@ -434,7 +436,7 @@ main(int argc, char *argv[])
         }
         else if(strcmp(argv[i], "-hide_window") == 0)
         {
-#ifdef WIN32
+#ifdef _WIN32
             HWND console = GetConsoleWindow();
             if(console != NULL)
                 ShowWindow(console, SW_HIDE);
@@ -726,7 +728,7 @@ main(int argc, char *argv[])
             }
             PyRun_SimpleString(command.str().c_str());
             
-#ifdef WIN32
+#ifdef _WIN32
              delete [] loadFile;
 #endif
         }
@@ -746,7 +748,7 @@ main(int argc, char *argv[])
             
             cli_runscript(runFile);
 
-#ifdef WIN32
+#ifdef _WIN32
              delete [] runFile;
 #endif
         }
@@ -772,7 +774,7 @@ main(int argc, char *argv[])
 
     }
 
-    CATCH(VisItException &e)
+    CATCH2(VisItException,e)
     {
         cerr << "A fatal exception occurred when trying to launch the CLI." << endl;
         cerr << "The following information may help a VisIt developer debug the problem: " << endl;
@@ -788,7 +790,7 @@ main(int argc, char *argv[])
     }
     ENDTRY
 
-#ifdef WIN32
+#ifdef _WIN32
     // cleanup allocs that were necessary for windows (runFile may be used in argv_py_style)
     if(runFile !=0)
         delete [] runFile;

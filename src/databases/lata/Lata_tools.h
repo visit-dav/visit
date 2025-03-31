@@ -36,7 +36,7 @@
 
 
 
-#ifdef WIN32
+#ifdef _WIN32
 #define __BIG_ENDIAN    111
 #define __LITTLE_ENDIAN 121
 #define __BYTE_ORDER __LITTLE_ENDIAN

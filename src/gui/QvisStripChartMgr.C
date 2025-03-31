@@ -94,6 +94,9 @@ QvisStripChartMgr::CreateEntireWindow()
 // Creation:   Wed Sep 26 16:16:23 PDT 2007
 //
 // Modifications:
+//   Kathleen Biagas, Tue Sep 17, 2024
+//   Add message about StripChart unavailability when VisIt not built with Qwt
+//   support, and hide other StripChart widgets.
 //
 // ****************************************************************************
 void 
@@ -101,7 +104,13 @@ QvisStripChartMgr::CreateWindowContents()
 {
     stripChartTabWidget = new QvisStripChartTabWidget(central, this, 2000, 100);
     topLayout->addWidget( stripChartTabWidget);
-    
+
+#ifndef HAVE_QWT
+    QGroupBox *noStripChartsGroup = new QGroupBox(central);
+    noStripChartsGroup->setTitle(tr("VisIt was not compiled with QWT, StripChart functionality is not available"));
+    topLayout->addWidget(noStripChartsGroup);
+#endif
+
     // Create the group box 
     QGroupBox *stripChartGroup = new QGroupBox(central);
     stripChartGroup->setTitle(tr("Strip Chart Information and Controls"));
@@ -170,6 +179,10 @@ QvisStripChartMgr::CreateWindowContents()
     connect(stripChartVarButton4,SIGNAL(pressed()), this,
             SLOT(clickedStripChartVarButton4()));
     menuLayout->addWidget(stripChartVarButton4,0,4);
+
+#ifndef HAVE_QWT
+   stripChartGroup->hide();
+#endif
 
     // With Qt 5 and a C++11 compiler, the idiomatic to pass a value:    
     // connect(stripChartVar0Button, &QAction::triggered, this, [this]{ clickedStripChartVar(0); });

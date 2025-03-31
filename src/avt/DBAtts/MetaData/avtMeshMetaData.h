@@ -128,6 +128,7 @@ public:
         ID_LODs,
         ID_presentGhostZoneTypes,
         ID_zonesWereSplit,
+        ID_hasExtraGhostInfo,
         ID__LAST
     };
 
@@ -184,12 +185,13 @@ public:
     int                  LODs;
     int                  presentGhostZoneTypes;
     bool                 zonesWereSplit;
+    bool                 hasExtraGhostInfo;
 
 private:
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define AVTMESHMETADATA_TMFS "ssbiiiibIbiissssssbDDiisss*aiisss*i*i*bibbbbibFFbDibbiib"
+#define AVTMESHMETADATA_TMFS "ssbiiiibIbiissssssbDDiisss*aiisss*i*i*bibbbbibFFbDibbiibb"
 
 #endif

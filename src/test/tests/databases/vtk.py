@@ -38,6 +38,9 @@
 #
 #    Kathleen Biagas, Tue Aug 24, 2021
 #    Added a test for PVD files.
+# 
+#    Justin Privitera, Mon Aug 19 16:42:10 PDT 2024
+#    Added a test for export file version.
 #
 # ----------------------------------------------------------------------------
 
@@ -456,6 +459,22 @@ def TestPVD():
     DeleteAllPlots()
     CloseDatabase(data_path("vtk_xml_test_data/earth_multiTime/earth_time.pvd"))
 
+def TestExportFileVersion():
+    dbname = silo_data_path("ucd3d.silo")
+    OpenDatabase(dbname)
+    AddPlot("Pseudocolor", "d")
+    DrawPlots()
+    export_name = "test_vtk_file_version"
+    e = ExportDBAttributes()
+    e.db_type = "VTK"
+    e.filename = export_name
+    e.variables = ("d",)
+    ExportDatabase(e)
+    time.sleep(1)
+    CloseDatabase(dbname)
+    filename = export_name + ".vtk"
+    with open(filename) as input_file:
+        TestValueEQ("export_file_version", "# vtk DataFile Version 4.2\n", next(input_file))
 
 TestMaterials()
 TestXML()
@@ -469,5 +488,6 @@ TestPVTK()
 TestVTKGhostType()
 TestDBExpressions()
 TestPVD()
+TestExportFileVersion()
 
 Exit()

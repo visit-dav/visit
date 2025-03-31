@@ -14,12 +14,12 @@ Running regression tests
 
 Where nightly regression tests are run
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The regression suite is run on `LLNL's Pascal Cluster <https://hpc.llnl.gov/hardware/platforms/pascal>`_.
-Pascal runs the TOSS operating system, which is a flavor of Linux.
+The regression suite is run on `LLNL's Poodle Cluster <https://hpc.llnl.gov/hardware/compute-platforms/poodle>`_.
+Poodle runs the TOSS operating system, which is a flavor of Linux.
 If you are going to run the regression suite yourself you should run on a similar system or there will be differences due to numeric precision issues.
 If you do have to run the test suite on a different system there are options for doing :ref:`fuzzy matching <Fuzzy Matching Thresholds>`.
 
-The regression suite is run on Pascal using a cron job that checks out VisIt_ source code, builds it, and then runs the tests.
+The regression suite is run on Poodle using a cron job that checks out VisIt_ source code, builds it, and then runs the tests.
 
 .. _git_lfs_note:
 

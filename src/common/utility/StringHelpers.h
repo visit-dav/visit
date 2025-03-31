@@ -31,7 +31,7 @@ namespace StringHelpers
     void UTILITY_API GroupStrings(std::vector<std::string> stringList,
                        std::vector<std::vector<std::string> > &stringGroups,
                        std::vector<std::string> &groupNames,
-                       int numLeadingVals = 3,
+                       unsigned int numLeadingVals = 3,
                        std::string nonRelevantChars = NON_RELEVANT_CHARS);
     void UTILITY_API GroupStringsAsPaths(std::vector<std::string> stringList,
                        std::vector<std::vector<std::string> > &stringGroups,
@@ -81,8 +81,12 @@ namespace StringHelpers
     std::string UTILITY_API HumanReadableList(const std::vector<std::string>&);
     bool UTILITY_API IsPureASCII(const std::string &txt);
     bool UTILITY_API IsPureASCII(const char *const txt, size_t length);
-    bool UTILITY_API CaseInsenstiveEqual(const std::string &str_a,
-                                         const std::string &str_b);
+    bool UTILITY_API CaseInsensitiveEqual(char const *str_a,
+                                         char const *str_b,
+                                         size_t n = 0);
+    bool UTILITY_API CaseInsensitiveEqual(const std::string &str_a,
+                                         const std::string &str_b,
+                                         size_t n = 0);
     std::string UTILITY_API UpperCase(const std::string &src);
 
     bool UTILITY_API StringToInt(const std::string &, int &);

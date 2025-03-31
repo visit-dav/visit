@@ -745,24 +745,24 @@ QvisHostProfileWindow::CreateMachineSettingsGroup()
     mLayout->setSpacing(HOST_PROFILE_SPACING);
 
     hostNickname = new QLineEdit(machineGroup);
-    connect(hostNickname, SIGNAL(textChanged(const QString &)),
-            this, SLOT(hostNicknameChanged(const QString &)));
+    connect(hostNickname, SIGNAL(editingFinished()),
+            this, SLOT(hostNicknameChanged()));
     hostNicknameLabel = new QLabel(tr("Host nickname"), machineGroup);
     mLayout->addWidget(hostNicknameLabel, mRow, 0);
     mLayout->addWidget(hostNickname, mRow, 1);
     mRow++;
 
     hostName = new QLineEdit(machineGroup);
-    connect(hostName, SIGNAL(textChanged(const QString &)),
-            this, SLOT(hostNameChanged(const QString &)));
+    connect(hostName, SIGNAL(editingFinished()),
+            this, SLOT(hostNameChanged()));
     hostNameLabel = new QLabel(tr("Remote host name"), machineGroup);
     mLayout->addWidget(hostNameLabel, mRow, 0);
     mLayout->addWidget(hostName, mRow, 1);
     mRow++;
 
     hostAliases = new QLineEdit(machineGroup);
-    connect(hostAliases, SIGNAL(textChanged(const QString &)),
-            this, SLOT(hostAliasesChanged(const QString &)));
+    connect(hostAliases, SIGNAL(editingFinished()),
+            this, SLOT(hostAliasesChanged()));
     hostAliasesLabel = new QLabel(tr("Host name aliases"), machineGroup);
     mLayout->addWidget(hostAliasesLabel, mRow, 0);
     mLayout->addWidget(hostAliases, mRow, 1);
@@ -803,8 +803,8 @@ QvisHostProfileWindow::CreateMachineSettingsGroup()
     mRow++;
 
     directory = new QLineEdit(machineGroup);
-    connect(directory, SIGNAL(textChanged(const QString &)),
-            this, SLOT(processDirectoryText(const QString &)));
+    connect(directory, SIGNAL(editingFinished()),
+            this, SLOT(processDirectoryText()));
     directoryLabel = new QLabel(tr("Path to VisIt installation"),
                                       machineGroup);
     mLayout->addWidget(directoryLabel, mRow, 0);
@@ -822,8 +822,8 @@ QvisHostProfileWindow::CreateMachineSettingsGroup()
     aLayout->setSpacing(HOST_PROFILE_SPACING);
 
     userName = new QLineEdit(accountGroup);
-    connect(userName, SIGNAL(textChanged(const QString &)),
-            this, SLOT(userNameChanged(const QString &)));
+    connect(userName, SIGNAL(editingFinished()),
+            this, SLOT(userNameChanged()));
     userNameLabel = new QLabel(tr("Username"), accountGroup);
     aLayout->addWidget(userNameLabel, aRow, 0);
     aLayout->addWidget(userName, aRow, 1);
@@ -888,15 +888,13 @@ QvisHostProfileWindow::CreateMachineSettingsGroup()
     cLayout->addWidget(chnSpecifyManually, cRow, 1, 1, 1);
 
     clientHostName = new QLineEdit(connectionGroup);
-    connect(clientHostName, SIGNAL(textChanged(const QString &)),
-            this, SLOT(clientHostNameChanged(const QString &)));
+    connect(clientHostName, SIGNAL(editingFinished()),
+            this, SLOT(clientHostNameChanged()));
     cLayout->addWidget(clientHostName, cRow, 2, 1,2);
     cRow++;
 
     sshCommand = new QLineEdit(connectionGroup);
     sshCommandCheckBox = new QCheckBox(tr("SSH command"), connectionGroup);
-    connect(sshCommand, SIGNAL(returnPressed()),
-            this, SLOT(sshCommandRetPressed()));
     connect(sshCommand, SIGNAL(editingFinished()),
             this, SLOT(sshCommandRetPressed()));
     connect(sshCommandCheckBox, SIGNAL(toggled(bool)),
@@ -907,8 +905,8 @@ QvisHostProfileWindow::CreateMachineSettingsGroup()
 
     sshPort = new QLineEdit(connectionGroup);
     sshPortCheckBox = new QCheckBox(tr("SSH port"), connectionGroup);
-    connect(sshPort, SIGNAL(textChanged(const QString &)),
-            this, SLOT(sshPortChanged(const QString &)));
+    connect(sshPort, SIGNAL(editingFinished()),
+            this, SLOT(sshPortChanged()));
     connect(sshPortCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleSSHPort(bool)));
     cLayout->addWidget(sshPortCheckBox, cRow, 0, 1, 2);
@@ -917,8 +915,8 @@ QvisHostProfileWindow::CreateMachineSettingsGroup()
 
     gatewayHost = new QLineEdit(connectionGroup);
     useGatewayCheckBox = new QCheckBox(tr("Use gateway"), connectionGroup);
-    connect(gatewayHost, SIGNAL(textChanged(const QString &)),
-            this, SLOT(gatewayHostChanged(const QString &)));
+    connect(gatewayHost, SIGNAL(editingFinished()),
+            this, SLOT(gatewayHostChanged()));
     connect(useGatewayCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleUseGateway(bool)));
     cLayout->addWidget(useGatewayCheckBox, cRow, 0, 1, 2);
@@ -1039,8 +1037,8 @@ QvisHostProfileWindow::CreateBasicSettingsGroup()
     tmpLayout->addStretch(5);
 
     profileName = new QLineEdit(currentGroup);
-    connect(profileName, SIGNAL(textChanged(const QString&)),
-            this, SLOT(processProfileNameText(const QString&)));
+    connect(profileName, SIGNAL(editingFinished()),
+            this, SLOT(processProfileNameText()));
     profileNameLabel = new QLabel(tr("Profile name"),currentGroup);
     layout->addWidget(profileNameLabel, row, 0);
     layout->addWidget(profileName, row, 1, 1,3);
@@ -1069,8 +1067,8 @@ QvisHostProfileWindow::CreateBasicSettingsGroup()
     row++;
 
     engineArguments = new QLineEdit(currentGroup);
-    connect(engineArguments, SIGNAL(textChanged(const QString &)),
-            this, SLOT(processEngineArgumentsText(const QString &)));
+    connect(engineArguments, SIGNAL(editingFinished()),
+            this, SLOT(processEngineArgumentsText()));
     engineArgumentsLabel = new QLabel(tr("Additional arguments"),
                                       currentGroup);
     layout->addWidget(engineArgumentsLabel, row, 0, 1,1);
@@ -1164,6 +1162,10 @@ QvisHostProfileWindow::CreateParallelSettingsGroup()
 //   Eric Brugger, Tue May 21 13:35:51 PDT 2024
 //   Add flux.
 //
+//   Eric Brugger, Mon Aug 26 10:54:18 PDT 2024
+//   Add jsrun, bsub/jsrun. Moved "bsub/mpirun", "flux/batch" and "flux/run"
+//   in the list, since they were in the wrong location.
+//
 // ****************************************************************************
 
 QWidget *
@@ -1184,9 +1186,9 @@ QvisHostProfileWindow::CreateLaunchSettingsGroup()
     launchMethod->addItem(tr("(default)"));
     launchMethod->addItem("aprun");
     launchMethod->addItem("bsub");
-    launchMethod->addItem("bsub/mpirun");
     launchMethod->addItem("dmpirun");
     launchMethod->addItem("ibrun");
+    launchMethod->addItem("jsrun");
     launchMethod->addItem("mpiexec");
     launchMethod->addItem("mpirun");
     launchMethod->addItem("msub");
@@ -1198,6 +1200,10 @@ QvisHostProfileWindow::CreateLaunchSettingsGroup()
     launchMethod->addItem("WindowsHPC");
     launchMethod->addItem("yod");
     launchMethod->addItem("lrun");
+    launchMethod->addItem("bsub/jsrun");
+    launchMethod->addItem("bsub/mpirun");
+    launchMethod->addItem("flux/batch");
+    launchMethod->addItem("flux/run");
     launchMethod->addItem("msub/aprun");
     launchMethod->addItem("msub/srun");
     launchMethod->addItem("psub/mpirun");
@@ -1213,8 +1219,6 @@ QvisHostProfileWindow::CreateLaunchSettingsGroup()
     launchMethod->addItem("sbatch/mpiexec");
     launchMethod->addItem("sbatch/mpirun");
     launchMethod->addItem("sbatch/srun");
-    launchMethod->addItem("flux/batch");
-    launchMethod->addItem("flux/run");
     connect(launchMethod, SIGNAL(currentTextChanged(const QString &)),
             this, SLOT(launchMethodChanged(const QString &)));
     launchCheckBox = new QCheckBox(tr("Parallel launch method"), currentGroup);
@@ -1225,8 +1229,8 @@ QvisHostProfileWindow::CreateLaunchSettingsGroup()
     row++;
 
     partitionName = new QLineEdit(currentGroup);
-    connect(partitionName, SIGNAL(textChanged(const QString &)),
-            this, SLOT(processPartitionNameText(const QString &)));
+    connect(partitionName, SIGNAL(editingFinished()),
+            this, SLOT(processPartitionNameText()));
     partitionCheckBox = new QCheckBox(tr("Partition / Pool / Queue"),currentGroup);
     connect(partitionCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(togglePartitionName(bool)));
@@ -1274,8 +1278,8 @@ QvisHostProfileWindow::CreateLaunchSettingsGroup()
     row++;
 
     bankName = new QLineEdit(defaultGroup);
-    connect(bankName, SIGNAL(textChanged(const QString &)),
-            this, SLOT(processBankNameText(const QString &)));
+    connect(bankName, SIGNAL(editingFinished()),
+            this, SLOT(processBankNameText()));
     bankCheckBox = new QCheckBox(tr("Bank / Account"),defaultGroup);
     connect(bankCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleBankName(bool)));
@@ -1284,8 +1288,8 @@ QvisHostProfileWindow::CreateLaunchSettingsGroup()
     row++;
 
     timeLimit = new QLineEdit(defaultGroup);
-    connect(timeLimit, SIGNAL(textChanged(const QString &)),
-            this, SLOT(processTimeLimitText(const QString &)));
+    connect(timeLimit, SIGNAL(editingFinished()),
+            this, SLOT(processTimeLimitText()));
     timeLimitCheckBox = new QCheckBox(tr("Time Limit"), defaultGroup);
     connect(timeLimitCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleTimeLimit(bool)));
@@ -1294,8 +1298,8 @@ QvisHostProfileWindow::CreateLaunchSettingsGroup()
     row++;
 
     machinefile = new QLineEdit(defaultGroup);
-    connect(machinefile, SIGNAL(textChanged(const QString &)),
-            this, SLOT(processMachinefileText(const QString &)));
+    connect(machinefile, SIGNAL(editingFinished()),
+            this, SLOT(processMachinefileText()));
     machinefileCheckBox = new QCheckBox(tr("Machine File"), defaultGroup);
     connect(machinefileCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleMachinefile(bool)));
@@ -1396,8 +1400,8 @@ QvisHostProfileWindow::CreateAdvancedSettingsGroup()
     row++;
 
     launchArgs = new QLineEdit(currentGroup);
-    connect(launchArgs, SIGNAL(textChanged(const QString &)),
-            this, SLOT(processLaunchArgsText(const QString &)));
+    connect(launchArgs, SIGNAL(editingFinished()),
+            this, SLOT(processLaunchArgsText()));
     launchArgsCheckBox = new QCheckBox(tr("Launcher arguments"),currentGroup);
     connect(launchArgsCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleLaunchArgs(bool)));
@@ -1406,8 +1410,8 @@ QvisHostProfileWindow::CreateAdvancedSettingsGroup()
     row++;
 
     sublaunchArgs = new QLineEdit(currentGroup);
-    connect(sublaunchArgs, SIGNAL(textChanged(const QString &)),
-            this, SLOT(processSublaunchArgsText(const QString &)));
+    connect(sublaunchArgs, SIGNAL(editingFinished()),
+            this, SLOT(processSublaunchArgsText()));
     sublaunchArgsCheckBox = new QCheckBox(tr("Sublauncher arguments"),currentGroup);
     connect(sublaunchArgsCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleSublaunchArgs(bool)));
@@ -1416,8 +1420,8 @@ QvisHostProfileWindow::CreateAdvancedSettingsGroup()
     row++;
 
     sublaunchPreCmd = new QLineEdit(currentGroup);
-    connect(sublaunchPreCmd, SIGNAL(textChanged(const QString &)),
-            this, SLOT(processSublaunchPreCmdText(const QString &)));
+    connect(sublaunchPreCmd, SIGNAL(editingFinished()),
+            this, SLOT(processSublaunchPreCmdText()));
     sublaunchPreCmdCheckBox = new QCheckBox(tr("Sublauncher pre-mpi command"), currentGroup);
     connect(sublaunchPreCmdCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleSublaunchPreCmd(bool)));
@@ -1426,8 +1430,8 @@ QvisHostProfileWindow::CreateAdvancedSettingsGroup()
     row++;
 
     sublaunchPostCmd = new QLineEdit(currentGroup);
-    connect(sublaunchPostCmd, SIGNAL(textChanged(const QString &)),
-            this, SLOT(processSublaunchPostCmdText(const QString &)));
+    connect(sublaunchPostCmd, SIGNAL(editingFinished()),
+            this, SLOT(processSublaunchPostCmdText()));
     sublaunchPostCmdCheckBox = new QCheckBox(tr("Sublauncher post-mpi command"), currentGroup);
     connect(sublaunchPostCmdCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleSublaunchPostCmd(bool)));
@@ -1503,8 +1507,8 @@ QvisHostProfileWindow::CreateHWAccelSettingsGroup()
     QLabel* lblXDisplay = new QLabel(tr("DISPLAY:"), hardwareGroup);
     txtXDisplay = new QLineEdit(hardwareGroup);
     txtXDisplay->setText(":%l");
-    connect(txtXDisplay, SIGNAL(textChanged(const QString&)), this,
-            SLOT(xDisplayChanged(const QString&)));
+    connect(txtXDisplay, SIGNAL(editingFinished()), this,
+            SLOT(xDisplayChanged()));
     hLayout->addWidget(lblXDisplay, hRow,0, 1,1);
     hLayout->addWidget(txtXDisplay, hRow,1, 1,1);
     hRow++;
@@ -1528,8 +1532,8 @@ QvisHostProfileWindow::CreateHWAccelSettingsGroup()
     cbXArgs = new QCheckBox(tr("X server arguments"), hardwareGroup);
     txtXArgs = new QLineEdit(hardwareGroup);
     connect(cbXArgs, SIGNAL(toggled(bool)), this, SLOT(toggleXArgs(bool)));
-    connect(txtXArgs, SIGNAL(textChanged(const QString&)), this,
-            SLOT(xArgsChanged(const QString&)));
+    connect(txtXArgs, SIGNAL(editingFinished()), this,
+            SLOT(xArgsChanged()));
     hLayout->addWidget(cbXArgs, hRow,0, 1,1);
     hLayout->addWidget(txtXArgs, hRow,1, 1,1);
     hRow++;
@@ -2933,11 +2937,12 @@ QvisHostProfileWindow::apply()
 // ****************************************************************************
 
 void
-QvisHostProfileWindow::userNameChanged(const QString &u)
+QvisHostProfileWindow::userNameChanged()
 {
     if (currentMachine == NULL)
         return;
 
+    QString u(userName->text());
     if (u.isEmpty())
         return;
 
@@ -2958,11 +2963,12 @@ QvisHostProfileWindow::userNameChanged(const QString &u)
 // ****************************************************************************
 
 void
-QvisHostProfileWindow::processDirectoryText(const QString &d)
+QvisHostProfileWindow::processDirectoryText()
 {
     if (currentMachine == NULL)
         return;
 
+    QString d(directory->text());
     if (d.isEmpty())
         return;
 
@@ -3227,12 +3233,12 @@ QvisHostProfileWindow::togglePartitionName(bool state)
 // ****************************************************************************
 
 void
-QvisHostProfileWindow::processPartitionNameText(const QString &tmp)
+QvisHostProfileWindow::processPartitionNameText()
 {
     if (currentLaunch == NULL)
         return;
 
-    currentLaunch->SetPartition(tmp.toStdString());
+    currentLaunch->SetPartition(partitionName->text().toStdString());
     SetUpdate(false);
     Apply();
 }
@@ -3281,12 +3287,12 @@ QvisHostProfileWindow::toggleBankName(bool state)
 // ****************************************************************************
 
 void
-QvisHostProfileWindow::processBankNameText(const QString &tmp)
+QvisHostProfileWindow::processBankNameText()
 {
     if (currentLaunch == NULL)
         return;
 
-    currentLaunch->SetBank(tmp.toStdString());
+    currentLaunch->SetBank(bankName->text().toStdString());
     SetUpdate(false);
     Apply();
 }
@@ -3335,12 +3341,12 @@ QvisHostProfileWindow::toggleTimeLimit(bool state)
 // ****************************************************************************
 
 void
-QvisHostProfileWindow::processTimeLimitText(const QString &tmp)
+QvisHostProfileWindow::processTimeLimitText()
 {
     if (currentLaunch == NULL)
         return;
 
-    currentLaunch->SetTimeLimit(tmp.toStdString());
+    currentLaunch->SetTimeLimit(timeLimit->text().toStdString());
     SetUpdate(false);
     Apply();
 }
@@ -3389,12 +3395,12 @@ QvisHostProfileWindow::toggleMachinefile(bool state)
 // ****************************************************************************
 
 void
-QvisHostProfileWindow::processMachinefileText(const QString &tmp)
+QvisHostProfileWindow::processMachinefileText()
 {
     if (currentLaunch == NULL)
         return;
 
-    currentLaunch->SetMachinefile(tmp.toStdString());
+    currentLaunch->SetMachinefile(machinefile->text().toStdString());
     SetUpdate(false);
     Apply();
 }
@@ -3443,12 +3449,12 @@ QvisHostProfileWindow::toggleLaunchArgs(bool state)
 // ****************************************************************************
 
 void
-QvisHostProfileWindow::processLaunchArgsText(const QString &tmp)
+QvisHostProfileWindow::processLaunchArgsText()
 {
     if (currentLaunch == NULL)
         return;
 
-    currentLaunch->SetLaunchArgs(tmp.toStdString());
+    currentLaunch->SetLaunchArgs(launchArgs->text().toStdString());
     SetUpdate(false);
     Apply();
 }
@@ -3497,12 +3503,12 @@ QvisHostProfileWindow::toggleSublaunchArgs(bool state)
 // ****************************************************************************
 
 void
-QvisHostProfileWindow::processSublaunchArgsText(const QString &tmp)
+QvisHostProfileWindow::processSublaunchArgsText()
 {
     if (currentLaunch == NULL)
         return;
 
-    currentLaunch->SetSublaunchArgs(tmp.toStdString());
+    currentLaunch->SetSublaunchArgs(sublaunchArgs->text().toStdString());
     SetUpdate(false);
     Apply();
 }
@@ -3551,12 +3557,12 @@ QvisHostProfileWindow::toggleSublaunchPreCmd(bool state)
 // ****************************************************************************
 
 void
-QvisHostProfileWindow::processSublaunchPreCmdText(const QString &tmp)
+QvisHostProfileWindow::processSublaunchPreCmdText()
 {
     if (currentLaunch == NULL)
         return;
 
-    currentLaunch->SetSublaunchPreCmd(tmp.toStdString());
+    currentLaunch->SetSublaunchPreCmd(sublaunchPreCmd->text().toStdString());
     SetUpdate(false);
     Apply();
 }
@@ -3605,12 +3611,12 @@ QvisHostProfileWindow::toggleSublaunchPostCmd(bool state)
 // ****************************************************************************
 
 void
-QvisHostProfileWindow::processSublaunchPostCmdText(const QString &tmp)
+QvisHostProfileWindow::processSublaunchPostCmdText()
 {
     if (currentLaunch == NULL)
         return;
 
-    currentLaunch->SetSublaunchPostCmd(tmp.toStdString());
+    currentLaunch->SetSublaunchPostCmd(sublaunchPostCmd->text().toStdString());
     SetUpdate(false);
     Apply();
 }
@@ -3714,11 +3720,12 @@ QvisHostProfileWindow::loadBalancingChanged(int val)
 // ****************************************************************************
 
 void
-QvisHostProfileWindow::hostNameChanged(const QString &n)
+QvisHostProfileWindow::hostNameChanged()
 {
     if (currentMachine == NULL)
         return;
 
+    QString n(hostName->text());
     currentMachine->SetHost(n.toStdString());
 
     HostProfileList *profiles = (HostProfileList *)subject;
@@ -3762,11 +3769,12 @@ QvisHostProfileWindow::hostNameChanged(const QString &n)
 // ****************************************************************************
 
 void
-QvisHostProfileWindow::hostAliasesChanged(const QString &aliases)
+QvisHostProfileWindow::hostAliasesChanged()
 {
     if (currentMachine == NULL)
         return;
 
+    QString aliases(hostAliases->text());
     currentMachine->SetHostAliases(aliases.toStdString());
 }
 
@@ -3791,11 +3799,12 @@ QvisHostProfileWindow::hostAliasesChanged(const QString &aliases)
 // ****************************************************************************
 
 void
-QvisHostProfileWindow::hostNicknameChanged(const QString &nickname)
+QvisHostProfileWindow::hostNicknameChanged()
 {
     if (currentMachine == NULL)
         return;
 
+    QString nickname(hostNickname->text());
     currentMachine->SetHostNickname(nickname.toStdString());
 
     HostProfileList *profiles = (HostProfileList *)subject;
@@ -3842,11 +3851,12 @@ QvisHostProfileWindow::hostNicknameChanged(const QString &nickname)
 // ****************************************************************************
 
 void
-QvisHostProfileWindow::processEngineArgumentsText(const QString &tmp)
+QvisHostProfileWindow::processEngineArgumentsText()
 {
     if (currentLaunch == NULL)
         return;
 
+    QString tmp(engineArguments->text());
     currentLaunch->SetArguments(
         StringHelpers::split(tmp.simplified().toStdString(),' '));
     SetUpdate(false);
@@ -3954,7 +3964,7 @@ QvisHostProfileWindow::toggleUseVisItScriptForEnv(bool state)
 //
 // ****************************************************************************
 void
-QvisHostProfileWindow::processProfileNameText(const QString &name)
+QvisHostProfileWindow::processProfileNameText()
 {
     if (currentMachine == NULL || currentLaunch == NULL)
         return;
@@ -4027,11 +4037,12 @@ QvisHostProfileWindow::toggleSSHPort(bool state)
 //
 // ****************************************************************************
 void
-QvisHostProfileWindow::sshPortChanged(const QString &portStr)
+QvisHostProfileWindow::sshPortChanged()
 {
     if (currentMachine == NULL)
         return;
 
+    QString portStr(sshPort->text());
     if (portStr.isEmpty())
         return;
 
@@ -4169,11 +4180,12 @@ QvisHostProfileWindow::toggleUseGateway(bool state)
 //
 // ****************************************************************************
 void
-QvisHostProfileWindow::gatewayHostChanged(const QString &hostStr)
+QvisHostProfileWindow::gatewayHostChanged()
 {
     if (currentMachine == NULL)
         return;
 
+    QString hostStr(gatewayHost->text());
     if (hostStr.isEmpty())
         return;
 
@@ -4242,11 +4254,12 @@ QvisHostProfileWindow::clientHostNameMethodChanged(int m)
 //
 // ****************************************************************************
 void
-QvisHostProfileWindow::clientHostNameChanged(const QString &h)
+QvisHostProfileWindow::clientHostNameChanged()
 {
     if (currentMachine == NULL)
         return;
 
+    QString h(clientHostName->text());
     if (h.isEmpty())
         return;
 
@@ -4361,8 +4374,9 @@ void QvisHostProfileWindow::toggleXArgs(bool on)
 //
 //  Modifications:
 // ****************************************************************************
-void QvisHostProfileWindow::xArgsChanged(const QString& args)
+void QvisHostProfileWindow::xArgsChanged()
 {
+    QString args(txtXArgs->text());
     if(NULL == currentLaunch || args.isEmpty()) { return; }
 
     currentLaunch->SetXArguments(args.toStdString());
@@ -4414,11 +4428,11 @@ void QvisHostProfileWindow::toggleLaunchX(bool on)
 //
 //  Modifications:
 // ****************************************************************************
-void QvisHostProfileWindow::xDisplayChanged(const QString& display)
+void QvisHostProfileWindow::xDisplayChanged()
 {
     if(NULL == currentLaunch) { return; }
 
-    currentLaunch->SetXDisplay(display.toStdString());
+    currentLaunch->SetXDisplay(txtXDisplay->text().toStdString());
     SetUpdate(false);
     Apply();
 }

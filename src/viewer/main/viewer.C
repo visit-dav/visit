@@ -10,6 +10,9 @@
 #include <cstdlib>
 
 #include <qapplication.h>
+#include <QEvent>
+#include <QMetaEnum>
+#include <QObject>
 #include <QStringList>
 #include <QSurfaceFormat>
 
@@ -17,6 +20,7 @@
 #include <AppearanceAttributes.h>
 #include <DebugStream.h>
 #include <LostConnectionException.h>
+#include <StringHelpers.h>
 #include <ViewerMethods.h>
 #include <ViewerState.h>
 #include <VisItException.h>
@@ -64,6 +68,32 @@ Viewer_LogQtMessages(QtMsgType type, const QMessageLogContext &context, const QS
     }
 }
 
+// ****************************************************************************
+//  Method: getEventTypeName and EventFilter::eventFilter
+//
+//  Purpose: Functionality to filter all events whose stringified name begins
+//  with "touch". This ensures we do not attempt to process touch events.
+//  In general, VisIt's interface is designed around the concept of a 3-button
+//  mouse and in that context touch events can just wind up causing issues.
+//
+//  Programmer:  Mark C. Miller, Mon Oct 28 10:28:00 PDT 2024
+// ****************************************************************************
+static QString getEventTypeName(QEvent::Type type) {
+    const QMetaObject &mo = QEvent::staticMetaObject;
+    int index = mo.indexOfEnumerator("Type");
+    QMetaEnum metaEnum = mo.enumerator(index);
+    return metaEnum.valueToKey(type);
+}
+
+class EventFilter : public QObject {
+protected:
+    bool eventFilter(QObject *obj, QEvent *event) override {
+        if (StringHelpers::CaseInsensitiveEqual(
+                getEventTypeName(event->type()).toStdString(), "touch", 5))
+            return true;
+        return QObject::eventFilter(obj, event);
+    }
+};
 
 // ****************************************************************************
 //  Method: ViewerMain
@@ -127,8 +157,9 @@ Viewer_LogQtMessages(QtMsgType type, const QMessageLogContext &context, const QS
 //    Eric Brugger, Wed Nov 27 14:35:58 PST 2019
 //    Added delete of argv2 and mainApp to clean up memory before exiting.
 //
+//    Mark C. Miller, Mon Oct 28 12:11:33 PDT 2024
+//    Install an event filter to ignore touch events.
 // ****************************************************************************
-
 int
 ViewerMain(int argc, char *argv[])
 {
@@ -221,6 +252,8 @@ ViewerMain(int argc, char *argv[])
         {
             mainApp = new QApplication(argc2, argv2);
         }
+        EventFilter *filter = new EventFilter();
+        mainApp->installEventFilter(filter);
 
         //
         // Now that we've created the QApplication, let's call the viewer's

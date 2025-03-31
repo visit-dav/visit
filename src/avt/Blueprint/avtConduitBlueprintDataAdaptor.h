@@ -43,6 +43,9 @@ class vtkDataArray;
 // 
 //      Justin Privitera, Wed Mar 22 16:09:52 PDT 2023
 //      Added Curve1DToVTK to handle the 1d curve case.
+// 
+//      Justin Privitera, Sat Jun 29 14:22:21 PDT 2024
+//      Added helpers for transforming mixed meshes.
 //
 // ****************************************************************************
 
@@ -71,6 +74,15 @@ public:
         /// support 1D meshes
         static vtkDataSet*    Curve1DToVTK(const conduit::Node &coords,
                                            const conduit::Node &field);
+
+        /// Helpers for transforming mixed meshes
+        static int            CreatePolytopalMeshFromMixedMesh(const conduit::Node &n_coords,
+                                                               const conduit::Node &n_topo,
+                                                               conduit::Node &polytopal_mesh);
+
+        static void           CreateMixedMeshFromSideAndMixedMeshes(const conduit::Node &n_topo,
+                                                                    const conduit::Node &side_topo,
+                                                                    conduit::Node &new_mixed_topo);
     };
 
     class AVTBLUEPRINT_API VTKToBlueprint

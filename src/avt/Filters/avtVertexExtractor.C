@@ -137,6 +137,11 @@ avtVertexExtractor::SetConvertAllPoints(const bool convert)
 //  Programmer: Kathleen Biagas
 //  Creation:   June 4, 2020
 //
+//  Modifications:
+//  Kathleen Biagas, Tue Aug 27, 2024
+//  Process data of topo dim 0, may contain VTK_POLYVERTEX cells which need
+//  to be converted, due to a bug with vtkOpenGLSphereMapper.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -149,12 +154,6 @@ avtVertexExtractor::ExecuteDataTree(avtDataRepresentation *inDR)
     int domain       = inDR->GetDomain();
     string domString = std::to_string(domain);
     string label     = inDR->GetLabel();
-
-    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
-    {
-        // nothing to do here, input is all points
-        return new avtDataTree(inDS, domain, label);
-    }
 
     if (inDS->GetDataObjectType() != VTK_POLY_DATA &&
         inDS->GetDataObjectType() != VTK_UNSTRUCTURED_GRID)
@@ -296,6 +295,10 @@ avtVertexExtractor::PostExecute(void)
 //  Creation:   June 4, 2020
 //
 //  Modifications:
+//    Kathleen Biagas, Tue Aug 27, 2024
+//    Check if PolyData Verts cell array is homogeneous when determining
+//    if it is allVerts or not.  We need to process if VTK_POLYVERTEX is
+//    present.
 //
 // ****************************************************************************
 
@@ -314,7 +317,10 @@ avtVertexExtractor::ProcessPoints(
     {
         // Check for verts only
         vtkPolyData *pd  = vtkPolyData::SafeDownCast(inDS);
-        if (pd->GetNumberOfVerts() == pd->GetNumberOfCells())
+        // value of 1 means that all the 'Vertices' have only 1 point id
+        // so are truly simple VTK_VERTEX cells and there are no
+        // VTK_POLYVERTEX cells (which we would need to convert)
+        if(pd->GetVerts()->IsHomogeneous() == 1)
         {
             allVerts = true;
         }

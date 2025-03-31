@@ -203,7 +203,7 @@ static string oldCompressionParams;
 // DBCreate from working with PDB driver because that driver is
 // designed to detect attempts to apply compression and fail if so.
 //
-#if !defined(WIN32) && defined(SILO_VERSION_GE)
+#if !defined(_WIN32) && defined(SILO_VERSION_GE)
 #if SILO_VERSION_GE(4,7,0) && !SILO_VERSION_GE(4,7,1)
 typedef struct SILO_Globals_copy_t {
     long dataReadMask;
@@ -247,7 +247,7 @@ SaveAndSetSiloLibState(int driver, bool checkSums, string compressionParams)
         if (compressionParams != "" && !myRank)
             cerr << "Compression supported only on HDF5 driver" << endl;
         oldFriendlyHDFNames = DBSetFriendlyHDF5Names(0);
-#if !defined(WIN32) && !SILO_VERSION_GE(4,7,1)
+#if !defined(_WIN32) && !SILO_VERSION_GE(4,7,1)
         DBSetCompression("");
         // Hack to work-around bug in Silo lib
         SILO_Globals.enableCompression = 0;
@@ -269,7 +269,7 @@ RestoreSiloLibState()
 #if defined(SILO_VERSION_GE)
 #if SILO_VERSION_GE(4,7,0)
     DBSetFriendlyHDF5Names(oldFriendlyHDFNames);
-#if !defined (WIN32) && !SILO_VERSION_GE(4,7,1)
+#if !defined (_WIN32) && !SILO_VERSION_GE(4,7,1)
     DBSetCompression(oldCompressionParams.c_str());
     // Hack to work-around bug in Silo lib
     SILO_Globals.enableCompression = 0;

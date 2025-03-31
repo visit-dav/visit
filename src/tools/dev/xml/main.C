@@ -108,7 +108,7 @@ Open(const QString &name_withoutpath)
     bool alreadyexists = false;
     QFile *file = new QFile(name);
     if (clobber)
-#ifdef WIN32
+#ifdef _WIN32
         file->open(QIODevice::WriteOnly);
 #else
         file->open(QIODevice::WriteOnly | QIODevice::Text);
@@ -117,7 +117,7 @@ Open(const QString &name_withoutpath)
     {
         if (!file->exists())
         {
-#ifdef WIN32
+#ifdef _WIN32
             file->open(QIODevice::WriteOnly);
 #else
             file->open(QIODevice::WriteOnly | QIODevice::Text);

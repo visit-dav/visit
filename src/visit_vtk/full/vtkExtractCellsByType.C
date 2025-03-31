@@ -209,6 +209,9 @@ ExtractUnstructuredData(vtkDataSet *inDS, vtkDataSet *outDS)
 // Kathleen Biagas, Thu Aug 11, 2022
 // Support VTK9: use vtkCellArrayIterator.
 //
+// Kathleen Biagas, Wed Aug 28, 2024
+// When processing Verts, convert Poly-vertex cells into single vertex cells.
+//
 
 void
 vtkExtractCellsByType::ExtractPolyDataCells(vtkDataSet *inDS,
@@ -242,17 +245,17 @@ vtkExtractCellsByType::ExtractPolyDataCells(vtkDataSet *inDS,
       inVerts->GetCurrentCell(npts,pts);
       if ( this->ExtractCellType(input->GetCellType(currentInputCellId)) )
       {
-        ptIds->Reset();
+        ptIds->SetNumberOfIds(1);
         for (vtkIdType i=0; i<npts; ++i)
         {
           if ( ptMap[pts[i]] < 0 )
           {
             ptMap[pts[i]] = numNewPts++;
           }
-          ptIds->InsertId(i,ptMap[pts[i]]);
+          ptIds->SetId(0,ptMap[pts[i]]);
+          cellId = verts->InsertNextCell(ptIds);
+          outCD->CopyData(inCD,currentInputCellId,currentOutputCellId++);
         }
-        cellId = verts->InsertNextCell(ptIds);
-        outCD->CopyData(inCD,currentInputCellId,currentOutputCellId++);
       }
     }
     output->SetVerts(verts);
@@ -273,14 +276,14 @@ vtkExtractCellsByType::ExtractPolyDataCells(vtkDataSet *inDS,
       inLines->GetCurrentCell(npts,pts);
       if ( this->ExtractCellType(input->GetCellType(currentInputCellId)) )
       {
-        ptIds->Reset();
+        ptIds->SetNumberOfIds(npts);
         for (vtkIdType i=0; i<npts; ++i)
         {
           if ( ptMap[pts[i]] < 0 )
           {
             ptMap[pts[i]] = numNewPts++;
           }
-          ptIds->InsertId(i,ptMap[pts[i]]);
+          ptIds->SetId(i,ptMap[pts[i]]);
         }
         cellId = lines->InsertNextCell(ptIds);
         outCD->CopyData(inCD,currentInputCellId,currentOutputCellId++);
@@ -305,14 +308,14 @@ vtkExtractCellsByType::ExtractPolyDataCells(vtkDataSet *inDS,
       inPolys->GetCurrentCell(npts,pts);
       if ( this->ExtractCellType(input->GetCellType(currentInputCellId)) )
       {
-        ptIds->Reset();
+        ptIds->SetNumberOfIds(npts);
         for (vtkIdType i=0; i<npts; ++i)
         {
           if ( ptMap[pts[i]] < 0 )
           {
             ptMap[pts[i]] = numNewPts++;
           }
-          ptIds->InsertId(i,ptMap[pts[i]]);
+          ptIds->SetId(i,ptMap[pts[i]]);
         }
         cellId = polys->InsertNextCell(ptIds);
         outCD->CopyData(inCD,currentInputCellId,currentOutputCellId++);
@@ -335,14 +338,14 @@ vtkExtractCellsByType::ExtractPolyDataCells(vtkDataSet *inDS,
     for ( inStrips->GoToFirstCell(); !inStrips->IsDoneWithTraversal(); inStrips->GoToNextCell(), ++currentInputCellId )
     {
       inStrips->GetCurrentCell(npts,pts);
-      ptIds->Reset();
+      ptIds->SetNumberOfIds(npts);
       for (vtkIdType i=0; i<npts; ++i)
       {
         if ( ptMap[pts[i]] < 0 )
         {
           ptMap[pts[i]] = numNewPts++;
         }
-        ptIds->InsertId(i,ptMap[pts[i]]);
+        ptIds->SetId(i,ptMap[pts[i]]);
       }
       cellId = strips->InsertNextCell(ptIds);
       outCD->CopyData(inCD,currentInputCellId,cellId);
@@ -356,6 +359,10 @@ vtkExtractCellsByType::ExtractPolyDataCells(vtkDataSet *inDS,
 }
 
 //----------------------------------------------------------------------------
+// Modifications;
+//   Kathleen Biagas, Wed Aug 28, 2024
+//   Convert Poly-vertex cells into single vertex cells.
+//
 void
 vtkExtractCellsByType::ExtractUnstructuredGridCells(vtkDataSet *inDS,
      vtkDataSet *outDS, vtkIdType *ptMap, vtkIdType &numNewPts)
@@ -385,6 +392,7 @@ vtkExtractCellsByType::ExtractUnstructuredGridCells(vtkDataSet *inDS,
   // that are used.
   vtkIdType i, cellId, newCellId, npts, ptId;
   vtkIdList *ptIds = vtkIdList::New();
+  vtkIdList *newPtIds = vtkIdList::New();
   int cellType;
   output->Allocate(numCells);
   outCD->CopyAllocate(inCD);
@@ -395,17 +403,38 @@ vtkExtractCellsByType::ExtractUnstructuredGridCells(vtkDataSet *inDS,
     {
       input->GetCellPoints(cellId, ptIds);
       npts = ptIds->GetNumberOfIds();
-      for (i=0; i<npts; ++i)
+      if (cellType == VTK_POLY_VERTEX)
       {
-        ptId = ptIds->GetId(i);
-        if ( ptMap[ptId] < 0 )
+        newPtIds->SetNumberOfIds(1);
+        // Restructure to single-vertex cells
+        for (i=0; i<npts; ++i)
         {
-          ptMap[ptId] = numNewPts++;
+          ptId = ptIds->GetId(i);
+          if ( ptMap[ptId] < 0 )
+          {
+            ptMap[ptId] = numNewPts++;
+          }
+          newPtIds->SetId(0,ptMap[ptId]);
+          newCellId = output->InsertNextCell(VTK_VERTEX,newPtIds);
+          outCD->CopyData(inCD,cellId,newCellId);
         }
-        ptIds->InsertId(i,ptMap[ptId]);
       }
-      newCellId = output->InsertNextCell(cellType,ptIds);
-      outCD->CopyData(inCD,cellId,newCellId);
+      else
+      {
+        newPtIds->SetNumberOfIds(npts);
+        for (i=0; i<npts; ++i)
+        {
+          ptId = ptIds->GetId(i);
+          if ( ptMap[ptId] < 0 )
+          {
+            ptMap[ptId] = numNewPts++;
+          }
+
+          newPtIds->SetId(i,ptMap[ptId]);
+        }
+        newCellId = output->InsertNextCell(cellType,newPtIds);
+        outCD->CopyData(inCD,cellId,newCellId);
+      }
     }
   }
 

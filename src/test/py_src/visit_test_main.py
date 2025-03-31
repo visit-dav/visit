@@ -721,11 +721,14 @@ def HTMLValueTestResult(case_name,status,value_op,result,details,skip):
 #   * added an option to display the current, baseline and diff in
 #     a popup window during the test
 #
+#   Mark C. Miller, Thu Nov 14 18:50:14 PST 2024
+#   Pass pixdiff and avgdiff to HTMLImageTestResult
 # ----------------------------------------------------------------------------
 def LogImageTestResult(case_name,
                        diffState,modeSpecific,
                        tPixs, pPixs, dPixs, dpix, davg,
-                       cur, diff, base, thrErr):
+                       cur, diff, base, thrErr,
+                       pixdiff, avgdiff):
     """
     Log the result of an image based test.
     """
@@ -766,7 +769,8 @@ def LogImageTestResult(case_name,
     # write html result
     HTMLImageTestResult(case_name, status,
                         diffState,modeSpecific,
-                        tPixs, pPixs,dPixs, dpix, davg)
+                        tPixs, pPixs,dPixs, dpix, davg,
+                        pixdiff, avgdiff)
 
 # ----------------------------------------------------------------------------
 #  Method: JSONImageTestResult
@@ -818,9 +822,17 @@ def JSONImageTestResult(case_name, status,
 # ----------------------------------------------------------------------------
 def Save_Validate_Perturb_Restore_Session(cur):
     retval = 0
-    trans = string.maketrans("():; #","______")
-    sfile = "%s.session"%string.translate(string.rstrip(cur,".png"),trans)
-    ofile = "%s.xmlized.session"%string.translate(string.rstrip(cur,".png"),trans)
+    if (sys.version_info > (3, 0)):
+        trans = str.maketrans("():; #","______")
+    else:
+        trans = string.maketrans("():; #","______")
+    if (sys.version_info > (3, 0)):
+        tmp = string.rstrip(cur,".png")
+        sfile = "%s.session"%tmp.translate(trans)
+        ofile = "%s.xmlized.session"%tmp.translate(trans)
+    else:
+        sfile = "%s.session"%string.translate(string.rstrip(cur,".png"),trans)
+        ofile = "%s.xmlized.session"%string.translate(string.rstrip(cur,".png"),trans)
     RemoveFile(sfile)
     SaveSession(sfile)
 
@@ -938,6 +950,9 @@ def Save_Validate_Perturb_Restore_Session(cur):
 #
 #   Mark C. Miller, Fri Sep 11 19:26:34 PDT 2020
 #   Added pixdiff, avgdiff optional args
+#
+#   Mark C. Miller, Thu Nov 14 18:52:30 PST 2024
+#   Pass pixdiff and avgdiff on to LogImageTestResult
 # ----------------------------------------------------------------------------
 def Test(case_name, altSWA=0, alreadySaved=0, pixdiff=None, avgdiff=None):
     CheckInteractive(case_name)
@@ -1012,7 +1027,8 @@ def Test(case_name, altSWA=0, alreadySaved=0, pixdiff=None, avgdiff=None):
 
     LogImageTestResult(case_name, diffState, modeSpecific,
                        tPixs, pPixs, dPixs, dpix, davg,
-                       cur, diff, base, thrErr)
+                       cur, diff, base, thrErr,
+                       pixdiff, avgdiff)
 
     # update maxmimum diff state
     diffVals = {
@@ -1104,11 +1120,15 @@ def TestTextAutoName(inText, baseText=None, numdifftol=None):
 #   relative to the where it was when it was called. This caused it
 #   and several other arguments to be incorrect.
 #
+#   Mark C. Miller, Thu Nov 14 18:50:56 PST 2024
+#   Add pixdiff, avgdiff args. Adjust output of diff metrics to vary color
+#   based on status and indicate the thresholds in the output.
 # ----------------------------------------------------------------------------
 
 def HTMLImageTestResult(case_name,status,
                         diffState, modeSpecific,
-                        tPixs, pPixs, dPixs, dpix, davg):
+                        tPixs, pPixs, dPixs, dpix, davg,
+                        pixdiff, avgdiff):
     """
     Writes HTML entry for a single test image.
     """
@@ -1188,14 +1208,19 @@ def HTMLImageTestResult(case_name,status,
         testcase.write("    <td rowspan=7>Skipped</td>\n")
     else:
         testcase.write("""    <td><a href="" onMouseOver="document.d.src='b_%s.png'" onMouseOut="document.d.src='d_%s.png'"><img name="d" border=0 src="d_%s.png"></img></a></td>\n"""%(case_name,case_name,case_name))
-    testcase.write("    <td align=center><i>Error Metric</i></td>\n")
-    testcase.write("    <td align=center><i>Value</i></td>\n")
     testcase.write("  </tr>\n")
+    testcase.write("      <tr><td align=center><i>Error Metric</i></td><td align=center><i>Value</i></td></tr>\n")
     testcase.write("      <tr><td>Total Pixels</td>  <td align=right>%06d</td></tr>\n"%tPixs)
     testcase.write("      <tr><td>Non-Background</td><td align=right>%06d</td></tr>\n"%pPixs)
     testcase.write("      <tr><td>Different</td>     <td align=right>%06d</td></tr>\n"%dPixs)
-    testcase.write("      <tr><td>%% Diff. Pixels</td><td align=right>%f</td></tr>\n"%dpix)
-    testcase.write("      <tr><td>Avg. Diff</td><td align=right>%f</td></tr>\n"%davg)
+    if dpix > pixdiff:
+        testcase.write("      <tr bgcolor=#ff0000><td>%% Diff. Pixels exceeds %f</td><td align=right>%f</td></tr>\n"%(pixdiff,dpix))
+    else:
+        testcase.write("      <tr bgcolor=#ffff00><td>%% Diff. Pixels within %f</td><td align=right>%f</td></tr>\n"%(pixdiff,dpix))
+    if davg > avgdiff:
+        testcase.write("      <tr bgcolor=#ff0000><td>Avg. Diff exceeds %f</td><td align=right>%f</td></tr>\n"%(avgdiff,davg))
+    else:
+        testcase.write("      <tr bgcolor=#ffff00><td>Avg. Diff within %f</td><td align=right>%f</td></tr>\n"%(avgdiff,davg))
     testcase.write("      <tr></tr>\n")
     testcase.write("  </tr>\n")
     testcase.write("</table>\n")
@@ -1724,24 +1749,38 @@ def FilterTestText(inText, baseText, numdifftol):
         baseWords = baseText.split()
         inWords = tmpText.split()
         outText=""
-        transTab = string.maketrans(string.digits, string.digits)
+        if (sys.version_info > (3, 0)):
+            transTab = str.maketrans(string.digits, string.digits, '><,()')
+        else:
+            transTab = string.maketrans(string.digits, string.digits)
         inStart = 0
         for w in range(len(baseWords)):
             try:
-                inWordT = string.translate(inWords[w], transTab, '><,()')
-                baseWordT = string.translate(baseWords[w], transTab, '><,()')
+                if (sys.version_info > (3, 0)):
+                    inWordT = inWords[w].translate(transTab)
+                    baseWordT = baseWords[w].translate(transTab)
+                else:
+                    inWordT = string.translate(inWords[w], transTab, '><,()')
+                    baseWordT = string.translate(baseWords[w], transTab, '><,()')
                 if inWordT.count(".") == 2 and inWordT.endswith(".") or \
                    baseWordT.count(".") == 2 and baseWordT.endswith("."):
                     inWordT = inWordT.rstrip(".")
                     baseWordT = baseWordT.rstrip(".")
-                inStart = string.find(tmpText, inWords[w], inStart)
+                if (sys.version_info > (3, 0)):
+                    inStart = tmpText.find(inWords[w], inStart)
+                else:
+                    inStart = string.find(tmpText, inWords[w], inStart)
 
                 #
                 # Attempt to convert this word to a number. Exception indicates
                 # it wasn't a number and we can move on to next word
                 #
-                inVal = string.atof(inWordT)
-                baseVal = string.atof(baseWordT)
+                if (sys.version_info > (3, 0)):
+                    inVal = float(inWordT)
+                    baseVal = float(baseWordT)
+                else:
+                    inVal = string.atof(inWordT)
+                    baseVal = string.atof(baseWordT)
 
                 #
                 # Compute a relative difference measure for these two numbers
@@ -2420,6 +2459,9 @@ def TestBatchSimulation(sim):
 #    Add --overlap option to srun, to work around recent changes to slurm,
 #    which prevented movie-generation processes from running.
 #
+#    Kathleen Biagas, Tuesday Oct 22, 2024
+#    Replaced pascal with poodle.
+#
 # ----------------------------------------------------------------------------
 class Simulation(object):
     def __init__(self, vdir, s, sim2, np=1, batch=False):
@@ -2459,7 +2501,7 @@ class Simulation(object):
 
             # For now...
             import socket
-            if "pascal" in socket.gethostname() or \
+            if "poodle" in socket.gethostname() or \
                "quartz" in socket.gethostname() or \
                "ruby" in socket.gethostname() or \
                "syrah" in socket.gethostname():

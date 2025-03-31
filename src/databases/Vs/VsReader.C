@@ -1,4 +1,4 @@
-#include <hdf5.h>
+#include <vshdf5.h>
 
 /**
  *
@@ -39,7 +39,7 @@
 
 int VsReader::numInstances = 0;
 
-VsReader::VsReader(const std::string& nm, VsRegistry* r) {
+VsReader::VsReader(const std::string& nm) {
 
   numInstances++;
   VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
@@ -58,7 +58,7 @@ VsReader::VsReader(const std::string& nm, VsRegistry* r) {
       << "Warning!  Debug messages may be interleaved." << std::endl;
   }
 
-  registry = r;
+  registry = new VsRegistry();
   
   // Read raw hdf5 metadata
   fileData = VsFilter::readFile(registry, nm);
@@ -122,6 +122,11 @@ VsReader::~VsReader() {
   if (fileData) {
     delete (fileData);
     fileData = NULL;
+  }
+
+  if (registry) {
+    delete (registry);
+    registry = NULL;
   }
   
   VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "

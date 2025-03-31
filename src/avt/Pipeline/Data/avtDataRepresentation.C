@@ -60,6 +60,7 @@ vtkDataSet     *avtDataRepresentation::nullVTKDataset          = NULL;
 avtVtkmDataSet *avtDataRepresentation::nullVTKmDataset         = NULL;
 
 #include <vtkCellArray.h>
+#include <vtkCellArrayIterator.h>
 #include <vtkCellData.h>
 #include <vtkCellType.h>
 #include <vtkDataArray.h>
@@ -320,8 +321,6 @@ ConvertVTKToVTKm(vtkDataSet *data)
 
         vtkIdType nCells = cells->GetNumberOfCells();
         vtkIdType nConnectivity = cells->GetNumberOfConnectivityEntries();
-        vtkIdType *nl = cells->GetPointer();
-        unsigned char *ct = cellTypes->GetPointer(0);
 
         // Add the unstructured cell set.
         vtkm::cont::ArrayHandle<vtkm::Id> connectivity;
@@ -343,10 +342,21 @@ ConvertVTKToVTKm(vtkDataSet *data)
         vtkm::cont::ArrayHandle<vtkm::Id>::WritePortalType offsetsPortal =
             offsets.WritePortal();
         vtkm::Id nCellsActual = 0, connInd = 0;
-        for (vtkm::Id i = 0; i < nCells; ++i)
+
+        auto connPtr = vtk::TakeSmartPointer(cells->NewIterator());
+        for (connPtr->GoToFirstCell(); !connPtr->IsDoneWithTraversal(); connPtr->GoToNextCell())
         {
-            vtkm::IdComponent nInds = static_cast<vtkm::IdComponent>(*nl++);
-            switch (*ct)
+	    vtkIdType cellId;
+            int cellType;
+            vtkIdType npts;
+            const vtkIdType *pts;
+
+	    cellId = connPtr->GetCurrentCellId();
+	    cellType = ugrid->GetCellType(cellId);
+	    connPtr->GetCurrentCell(npts, pts);
+
+            vtkm::IdComponent nInds = static_cast<vtkm::IdComponent>(npts);
+            switch (cellType)
             {
               case vtkm::CELL_SHAPE_VERTEX:
               case vtkm::CELL_SHAPE_LINE:
@@ -360,15 +370,13 @@ ConvertVTKToVTKm(vtkDataSet *data)
                 offsetsPortal.Set(nCellsActual, connInd);
                 for (vtkm::IdComponent j = 0; j < nInds; ++j, ++connInd)
                 {
-                    connectivityPortal.Set(connInd, static_cast<vtkm::Id>(*nl++));
+                    connectivityPortal.Set(connInd, static_cast<vtkm::Id>(pts[j]));
                 }
-                shapesPortal.Set(nCellsActual, static_cast<vtkm::UInt8>(*ct++));
+                shapesPortal.Set(nCellsActual, static_cast<vtkm::UInt8>(cellType));
                 nCellsActual++;
                 break;
               default:
                 // Unsupported type, skipping.
-                ct++;
-                nl += static_cast<vtkIdType>(nInds);
                 break;
             }
         }

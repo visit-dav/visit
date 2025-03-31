@@ -41,6 +41,15 @@
 #   Kathleen Biagas, Tue May 5, 2023
 #   Disable qt6 forcing of defines for UNICODE.
 #
+#   Kathleen Biagas, Thu Jul 18, 2024
+#   QWT is now optional, so make StripChart classes dependent upon
+#   it being found.
+#
+#   Kathleen Biagas, Tue Sep 17, 2024
+#   Add QvisStripChartMgr.C QvisStripChartTabWidget.C back to the build
+#   even if QWT isn't found. This will preserve the ability for simulations
+#   to use the StripChart callbacks and not crash.
+#
 #****************************************************************************
 
 SET(GUILIB_SOURCES
@@ -181,7 +190,6 @@ QvisSimulationMessageWindow.C
 QvisSimulationWindow.C
 QvisSourceManagerWidget.C
 QvisSpectrumBar.C
-QvisStripChart.C
 QvisStripChartMgr.C
 QvisStripChartTabWidget.C
 QvisSubsetPanelItem.C
@@ -208,6 +216,11 @@ WidgetDataNode.C
 mini3D.C
 )
 
+if(QWT_FOUND)
+    list(APPEND GUILIB_SOURCES
+        QvisStripChart.C)
+endif()
+
 IF (NOT WIN32)
     # This keeps comm's exceptions visible when using -fvisibility=hidden
     ADD_DEFINITIONS(-DCOMM_EXPORTS)
@@ -225,9 +238,7 @@ ${VISIT_SOURCE_DIR}/viewer/proxy
 ${VISIT_SOURCE_DIR}/viewer/rpc
 ${VISIT_SOURCE_DIR}/winutil
 ${VISIT_SOURCE_DIR}/third_party_builtin
-${QWT_INCLUDE_DIR}
 )
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} )
 
 SET(GUI_QT_LIBS
 ${QT_QTUITOOLS_LIBRARY}
@@ -261,8 +272,11 @@ set_target_properties(gui PROPERTIES AUTOMOC ON)
 
 IF (WIN32)
     SET_TARGET_PROPERTIES(gui PROPERTIES OUTPUT_NAME guilib)
-    SET_TARGET_PROPERTIES(gui PROPERTIES COMPILE_DEFINITIONS QWT_DLL)
+    if(QWT_FOUND)
+        SET_TARGET_PROPERTIES(gui PROPERTIES COMPILE_DEFINITIONS QWT_DLL)
+    endif()
 ENDIF (WIN32)
+
 TARGET_LINK_LIBRARIES(gui 
 viewerrpc
 viewerproxy
@@ -272,8 +286,13 @@ mdserverproxy
 avtdbatts
 winutil
 ${GUI_QT_LIBS}
-${QWT_LIBRARY}
 )
+
+if(QWT_FOUND)
+    target_compile_definitions(gui PUBLIC HAVE_QWT)
+    target_include_directories(gui PUBLIC ${QWT_INCLUDE_DIR})
+    target_link_libraries(gui ${QWT_LIBRARY})
+endif()
 
 IF(APPLE)
     SET_TARGET_PROPERTIES(gui 

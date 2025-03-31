@@ -12,7 +12,7 @@
  *
  * Copyright &copy; 2008 by Tech-X Corporation
  */
-#include <hdf5.h>
+#include <vshdf5.h>
 
 #ifndef VS_FILTER
 #define VS_FILTER
@@ -23,7 +23,7 @@
 
 // metadata
 #include "VsFile.h"
-#include <hdf5.h>
+#include <vshdf5.h>
 
 class VsRegistry;
 

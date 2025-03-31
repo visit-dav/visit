@@ -5,9 +5,7 @@
 #include "avtMatrix.h"
 #include <avtVector.h>
 #include <math.h>
-
-#define MAX(a,b) ((a)>(b) ? (a) : (b))
-#define MIN(a,b) ((a)>(b) ? (b) : (a))
+#include <algorithm>
 
 avtMatrix::avtMatrix()
 {
@@ -403,7 +401,7 @@ avtMatrix::MakeTrackball(double p1x,double p1y,  double p2x, double p2y,
 
     // Figure how much to rotate around that axis.
     t = (p2 - p1).norm();
-    t = MIN(MAX(t, -1.0), 1.0);
+    t = std::min(std::max(t, -1.0), 1.0);
     phi = -2.0*asin(t/(2.0*RADIUS));
 
     axis *= sin(phi/2.0);

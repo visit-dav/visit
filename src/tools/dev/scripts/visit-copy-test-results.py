@@ -1,13 +1,14 @@
 import os
 import hashlib
 import shutil
+import fnmatch
 
 out_dir = "/usr/workspace/wsa/visit/dashboard/dashboard"
 
 base_dirs = []
 
 imode = 0
-mode_dirs = ["pascal_trunk_serial", "pascal_trunk_parallel", "pascal_trunk_scalable_parallel_icet"]
+mode_dirs = ["poodle_trunk_serial", "poodle_trunk_parallel", "poodle_trunk_scalable_parallel_icet"]
 
 ##############################################################################
 #
@@ -313,6 +314,12 @@ def copy_results(cur_dir):
             # This is a current or difference image.
             #
             shutil.copy(os.path.join(mode_dir, file), out_mode_dir)
+        elif (file.startswith("c_") and file.endswith(".txt")):
+            #
+            # This is a current text file. This isn't needed for the
+            # web pages, but is there for use with the rebaseline script.
+            #
+            shutil.copy(os.path.join(mode_dir, file), out_mode_dir)
         elif (file.endswith(".html")):
             #
             # This is a generic html file. Unfortunately, we have to open it
@@ -355,7 +362,7 @@ def copy_results(cur_dir):
 def main():
     dirs = []
     for dir in os.listdir("."):
-        if (dir.endswith("22:00")):
+        if (fnmatch.fnmatch(dir, "????-??-??-??:??")):
             dirs.append(dir)
 
     dirs.sort()

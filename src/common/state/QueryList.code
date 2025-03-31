@@ -68,7 +68,7 @@ QueryList::QueryExists(const std::string &name, QueryType t)
     bool match = false;
     for (size_t i = 0; i < names.size(); i++)
     {
-        if (StringHelpers::CaseInsenstiveEqual(name,names[i]))
+        if (StringHelpers::CaseInsensitiveEqual(name,names[i]))
         {
             if (t == types[i])
             {
@@ -103,7 +103,7 @@ QueryList::NumberOfInputsForQuery(const std::string &name)
 {
     for (size_t i = 0; i < names.size(); i++)
     {
-        if (StringHelpers::CaseInsenstiveEqual(name,names[i]))
+        if (StringHelpers::CaseInsensitiveEqual(name,names[i]))
         {
             return numInputs[i];
         }
@@ -134,7 +134,7 @@ QueryList::AllowedVarsForQuery(const std::string &name)
 {
     for (size_t i = 0; i < names.size(); i++)
     {
-        if (StringHelpers::CaseInsenstiveEqual(name,names[i]))
+        if (StringHelpers::CaseInsensitiveEqual(name,names[i]))
         {
             return allowedVarTypes[i];
         }
@@ -166,7 +166,7 @@ QueryList::TimeQueryAvailable(const std::string &name)
     bool canDoTime = false;
     for (size_t i = 0; i < names.size(); i++)
     {
-        if (StringHelpers::CaseInsenstiveEqual(name,names[i]))
+        if (StringHelpers::CaseInsensitiveEqual(name,names[i]))
         {
             canDoTime = (queryMode[i] != QueryList::QueryOnly);
             break;
@@ -199,7 +199,7 @@ QueryList::GetWindowType(const std::string &name)
     int wt = -1;
     for (size_t i = 0; i < names.size(); i++)
     {
-        if (StringHelpers::CaseInsenstiveEqual(name,names[i]))
+        if (StringHelpers::CaseInsensitiveEqual(name,names[i]))
         {
             wt = winType[i];
             break;
@@ -231,7 +231,7 @@ QueryList::NumberOfVarsForQuery(const std::string &name)
 {
     for (size_t i = 0; i < names.size(); i++)
     {
-        if (StringHelpers::CaseInsenstiveEqual(name,names[i]))
+        if (StringHelpers::CaseInsensitiveEqual(name,names[i]))
         {
             return numVars[i];
         }
@@ -263,7 +263,7 @@ QueryList::RegularQueryAvailable(const std::string &name)
     bool canDoRegular = false;
     for (size_t i = 0; i < names.size(); i++)
     {
-        if (StringHelpers::CaseInsenstiveEqual(name,names[i]))
+        if (StringHelpers::CaseInsensitiveEqual(name,names[i]))
         {
             canDoRegular = (queryMode[i] != QueryList::TimeOnly);
             break;
@@ -296,7 +296,7 @@ QueryList::GetQueryType(const std::string &name)
     int qt = -1;
     for (size_t i = 0; i < names.size(); i++)
     {
-        if (StringHelpers::CaseInsenstiveEqual(name,names[i]))
+        if (StringHelpers::CaseInsensitiveEqual(name,names[i]))
         {
             qt = types[i];
             break;

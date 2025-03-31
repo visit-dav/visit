@@ -56,7 +56,7 @@ int FileFormatToMenuIndex(const std::string &ext)
 {
     for(size_t i = 0; i < sizeof(fileFormats)/sizeof(const char *); ++i)
     {
-        if(StringHelpers::CaseInsenstiveEqual(fileFormats[i], ext))
+        if(StringHelpers::CaseInsensitiveEqual(fileFormats[i], ext))
             return i;
     }
     return FileFormatToMenuIndex("png");

@@ -1644,6 +1644,10 @@ ViewerWindowManager::ChooseCenterOfRotation(int windowIndex,
 //    Kathleen Biagas, Fri Aug 31 13:15:56 PDT 2018
 //    Send Options from SaveWindowAttributes to fileWriter if non-image.
 //
+//    Eric Brugger, Wed Nov 13 15:40:54 PST 2024
+//    I added logic so that the maximum image size is limited to 536,756,224
+//    pixels.
+//
 // ****************************************************************************
 
 void
@@ -1692,7 +1696,7 @@ ViewerWindowManager::SaveWindow(int windowIndex)
                        "use the name \"visit\" as the base for the files "
                        "to be saved."));
             }
-#ifdef WIN32
+#ifdef _WIN32
             else
             {
                 // need to check if our filename contains a path:
@@ -1885,6 +1889,17 @@ ViewerWindowManager::SaveWindow(int windowIndex)
             {
                 w = (int)((double)w * (double)VISIT_RENDERING_SIZE_LIMIT / (double)h);
                 h = VISIT_RENDERING_SIZE_LIMIT;
+                GetViewerMessaging()->Message(
+                    TR("The window was too large to save at the requested resolution.  "
+                       "The resolution has been automatically reduced."));
+            }
+	    // if the total image size is too large, reduce them
+	    // proportionally.
+	    if (w * h > 536756224)
+            {
+                double image_size = (double)(w * h);
+                w = (int)((double)w * std::sqrt(536756224. / image_size));
+                h = (int)((double)h * std::sqrt(536756224. / image_size));
                 GetViewerMessaging()->Message(
                     TR("The window was too large to save at the requested resolution.  "
                        "The resolution has been automatically reduced."));
@@ -4501,24 +4516,24 @@ ViewerWindowManager::UpdateColorTable(const std::string &ctName)
 void
 ViewerWindowManager::SetWindowLayout(const int windowLayout)
 {
-
-    // Stop gap to avert blank viewer windows (#18090)
-    // There is associated logic in rpc/ViewerMethods::DrawPlots which will
-    // trigger this logic twice upon **FIRST** draw. This causes window to
-    // repaint and not be blank. Attempts to use SetWindowSize() also fixed
-    // the blank window issue but due to internal inconsistency in what
-    // VisIt thinks the window size actually is failed to return the window
-    // to its original size.
+    // Stop gap to avert blank viewer windows (#18090). There is associated
+    // logic in rpc/ViewerMethods::DrawPlots which will trigger this logic upon
+    // **FIRST** draw. The goal is to cause all windows to repaint and not be
+    // blank.
 #if defined(__APPLE__)
-    static size_t count = 0;
-    if (windowLayout == -5 && count < 2)
+    int const DiddleSizeToFixBlankStartup = -5;
+    if (windowLayout == DiddleSizeToFixBlankStartup)
     {
-        static int origlo = layout;
-        if (count == 0)
-            SetWindowLayout(2);
-        else if (count == 1)
-            SetWindowLayout(origlo);
-        count++;
+        for (int iWindow = 0; iWindow < maxWindows; iWindow++)
+        {
+            if (windows[iWindow] == 0)
+                continue;
+
+            int origWidth, origHeight;
+            windows[iWindow]->GetWindowSize(origWidth, origHeight);
+            windows[iWindow]->SetSize(origWidth-1, origHeight);
+            windows[iWindow]->SetSize(origWidth, origHeight);
+        }
         return;
     }
 #endif
@@ -4972,6 +4987,10 @@ ViewerWindowManager::UpdateGlobalAtts() const
 //    Jeremy Meredith, Mon Feb  4 13:33:29 EST 2008
 //    Added remaining support for axis array window modality.
 //
+//    Kathleen Biagas, Thu Aug 15, 2024
+//    Ensure perspective (if changed) is set in WindowInformation by adding
+//    WINDOWINFO_WINDOWFLAGS to the flags sent to UpdateWindowInformation.
+//
 // ****************************************************************************
 
 void
@@ -4987,6 +5006,7 @@ ViewerWindowManager::UpdateViewAtts(int windowIndex, bool updateCurve,
     if(index == activeWindow || windows[index]->GetViewIsLocked())
     {
         bool haveNotified = false;
+        int flags = WINDOWINFO_WINMODEONLY;
 
         //
         // Set the curve attributes from the window's view.
@@ -5013,6 +5033,14 @@ ViewerWindowManager::UpdateViewAtts(int windowIndex, bool updateCurve,
         //
         if(update3d)
         {
+            // ensure that if perspective has changed, the perspective flag
+            // in WindowInformation will be updated as well.  This ensures the
+            // toggle button on the toolbar will reflect the current state and
+            // that the setting will get save/restored correctly in configs.
+            if(GetViewerState()->GetWindowInformation()->GetPerspective() !=
+                view3d.perspective)
+                flags |= WINDOWINFO_WINDOWFLAGS;
+
             view3d.SetToView3DAttributes(GetViewerState()->GetView3DAttributes());
             GetViewerState()->GetView3DAttributes()->Notify();
             haveNotified = true;
@@ -5029,7 +5057,7 @@ ViewerWindowManager::UpdateViewAtts(int windowIndex, bool updateCurve,
         }
 
         if(haveNotified)
-            UpdateWindowInformation(WINDOWINFO_WINMODEONLY, index);
+            UpdateWindowInformation(flags, index);
     }
 
     //

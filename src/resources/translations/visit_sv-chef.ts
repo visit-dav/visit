@@ -5779,14 +5779,6 @@ by the Lineout operator</source>
         <source>Add bookmark</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <source>VisIt UltraWrapper</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Ultra wrapper</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>QvisHistogram</name>

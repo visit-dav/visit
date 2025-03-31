@@ -7,7 +7,7 @@
  * Copyright &copy; 2008 by Tech-X Corporation
  */
 
-#include <hdf5.h>
+#include <vshdf5.h>
 
 #ifndef VS_UTILS_H
 #define VS_UTILS_H

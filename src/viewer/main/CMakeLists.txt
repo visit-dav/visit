@@ -158,8 +158,10 @@ ${VTK_INCLUDE_DIRS}
 )
 
 
+if(VTK_VERSION VERSION_LESS "9.4.0")
 if(HAVE_OSMESA)
     include_directories(${VISIT_SOURCE_DIR}/visit_vtk/offscreen)
+endif()
 endif()
 
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
@@ -222,8 +224,10 @@ Threads::Threads
 ${vtkqtlib}
 )
 
+if(VTK_VERSION VERSION_LESS "9.4.0")
 if(HAVE_OSMESA)
     target_link_libraries(viewer visit_vtk_offscreen)
+endif()
 endif()
 
 #*************************** The viewer executable ***************************
@@ -245,7 +249,7 @@ ELSE(NOT APPLE)
     SET(MACOSX_BUNDLE_LONG_VERSION_STRING  "VisIt version ${VISIT_VERSION}")
     SET(MACOSX_BUNDLE_SHORT_VERSION_STRING "VisIt ${VISIT_VERSION}")
     SET(MACOSX_BUNDLE_BUNDLE_VERSION       ${VISIT_VERSION})
-    SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2024, Lawrence Livermore National Security, LLC")
+    SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2025, Lawrence Livermore National Security, LLC")
     
     IF(VISIT_STATIC)
         MAC_NIB_INSTALL(viewer)

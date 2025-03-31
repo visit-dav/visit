@@ -18,7 +18,7 @@
 #include <avtBinaryDivideExpression.h>
 #include <avtExpExpression.h>
 #include <avtFloorExpression.h>
-#include <avtModuloExpression.h>
+#include <avtBinaryModuloExpression.h>
 #include <avtNaturalLogExpression.h>
 #include <avtRadianToDegreeExpression.h>
 #include <avtRandomExpression.h>
@@ -30,6 +30,15 @@
 #include <avtSquareRootExpression.h>
 #include <avtTanExpression.h>
 #include <avtTanhExpression.h>
+
+// global expressions
+#include <avtGlobalAvgExpression.h>
+#include <avtGlobalMaxExpression.h>
+#include <avtGlobalMinExpression.h>
+#include <avtGlobalRMSExpression.h>
+#include <avtGlobalStdDevExpression.h>
+#include <avtGlobalSumExpression.h>
+#include <avtGlobalVarianceExpression.h>
 
 #include <DebugStream.h>
 
@@ -60,6 +69,10 @@
 //   Eddie Rusu, Wed Sep 11 08:59:52 PDT 2019
 //   Alphabetically ordered by functionName for easier reading.
 //   Added "divide" filter.
+// 
+//   Justin Privitera, Mon Oct 28 15:26:44 PDT 2024
+//   Added global_avg, global_max, global_min, global_rms, global_std_dev, 
+//   global_sum, and global_variance.
 //
 // ****************************************************************************
 
@@ -93,6 +106,20 @@ avtFunctionExpr::CreateMathFilters(const std::string &functionName) const
         f = new avtExpExpression();
     else if (functionName == "floor")
         f = new avtFloorExpression();
+    else if (functionName == "global_avg")
+        f = new avtGlobalAvgExpression();
+    else if (functionName == "global_max")
+        f = new avtGlobalMaxExpression();
+    else if (functionName == "global_min")
+        f = new avtGlobalMinExpression();
+    else if (functionName == "global_rms")
+        f = new avtGlobalRMSExpression();
+    else if (functionName == "global_std_dev")
+        f = new avtGlobalStdDevExpression();
+    else if (functionName == "global_sum")
+        f = new avtGlobalSumExpression();
+    else if (functionName == "global_variance")
+        f = new avtGlobalVarianceExpression();
     else if (functionName == "ln")
         f = new avtNaturalLogExpression();
     else if ((functionName == "log") || (functionName == "log10"))
@@ -100,7 +127,7 @@ avtFunctionExpr::CreateMathFilters(const std::string &functionName) const
     else if (functionName == "log10withmin") 
         f = new avtBase10LogWithMinExpression();
     else if (functionName == "mod" || functionName == "modulo")
-        f = new avtModuloExpression();
+        f = new avtBinaryModuloExpression();
     else if (functionName == "rad2deg")
         f = new avtRadianToDegreeExpression();
     else if ((functionName == "random") || (functionName == "rand"))

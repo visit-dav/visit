@@ -53,8 +53,9 @@ def open(**kwargs):
 
       engine.open(method="slurm")
 
-    This reads the SLURM_JOB_NUM_NODES and SLURM_CPUS_ON_NODE 
-    env vars and uses these values to launch with srun.
+    This reads the SLURM_NPROCS or (SLURM_JOB_NUM_NODES and
+    SLURM_CPUS_ON_NODE) env vars and uses these values to launch
+    with srun.
 
     If you already have a lsf batch allocation, you can use:
 
@@ -83,15 +84,17 @@ def open(**kwargs):
         args["method"] = host.launch_method(args["part"])
     elif kwargs["method"] == "slurm":
         args["host"] = hostname(False)
-        if "SLURM_JOB_NUM_NODES" in os.environ:
+        if "SLURM_NPROCS" in os.environ:
+            nprocs = int(os.environ["SLURM_NPROCS"])
+        elif "SLURM_JOB_NUM_NODES" in os.environ:
             nnodes = int(os.environ["SLURM_JOB_NUM_NODES"])
             ppn    = int(os.environ["SLURM_CPUS_ON_NODE"])
+            args["ppn"]      = ppn
             nprocs = ppn * nnodes
         else:
             raise VisItException("engine.open(method='slurm') requires "
-                                 "SLURM_JOB_NUM_NODES and SLURM_CPUS_ON_NODE env vars")
+                                 "SLURM_NPROCS OR (SLURM_JOB_NUM_NODES and SLURM_CPUS_ON_NODE) env vars")
         args["nprocs"]   = nprocs
-        args["ppn"]      = ppn
         kwargs["method"] = "srun"
     elif kwargs["method"] == "lsf":
         args["host"] = hostname(False)

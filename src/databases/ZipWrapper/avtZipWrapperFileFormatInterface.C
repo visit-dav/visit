@@ -14,7 +14,7 @@
 #include <vector>
 
 #include <sys/stat.h>
-#ifdef WIN32
+#ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
@@ -307,7 +307,7 @@ avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
     // Decide on root temporary directory
     if (tmpDir == "$TMPDIR" && procNum == 0)
     {
-#ifdef WIN32
+#ifdef _WIN32
         if (!Environment::get("TMP").empty())
             tmpDir = Environment::get("TMP");
         else if (!Environment::get("TEMP").empty())
@@ -392,7 +392,7 @@ avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount,
     // Make the temporary directory
     // (will have different name on mdserver and engine)
     errno = 0;
-#ifdef WIN32
+#ifdef _WIN32
     if(_mkdir(tmpDir.c_str()) != 0 && errno != EEXIST)
 #else
     if (mkdir(tmpDir.c_str(), 0777) != 0 && errno != EEXIST)
@@ -424,7 +424,7 @@ void
 avtZipWrapperFileFormatInterface::Finalize()
 {
     errno = 0;
-#ifdef WIN32
+#ifdef _WIN32
     if (_rmdir(tmpDir.c_str()) != 0 && errno != ENOENT)
 #else
     if (rmdir(tmpDir.c_str()) != 0 && errno != ENOENT)
@@ -716,7 +716,7 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
     string dcmd = decompCmd;
     if (dcmd == "")
     {
-#ifdef WIN32
+#ifdef _WIN32
         if(PathFileExists("C:\\Program Files\\7-zip\\7z.exe"))
         {
             dcmd = "\"C:\\Program Files\\7-zip\\7z.exe\" x -y";
@@ -769,7 +769,7 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
     while (ntries>0)
     {
         // Wait a bit.
-#ifdef WIN32
+#ifdef _WIN32
         Sleep(1);
 #else
         struct timespec ts = {0, 1000000000/2}; // 1/2-second
@@ -804,7 +804,7 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
         debug5 << "It looks like an existing decompression attempt has hung. But, proceeding anyway." << endl;
     }
 
-#ifdef WIN32
+#ifdef _WIN32
     // no 'touch' command on Windows, so create the empty .lck file first
     char tmpcmd[1024];
     // Create full path

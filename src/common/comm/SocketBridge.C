@@ -658,7 +658,7 @@ ForwardData(FILE *log, int read_fd, int write_fd, char *buff, int buffSize)
     DEBUG_SOCKETS_CODE(const char *mName = "ForwardData: ";)
     DEBUG_SOCKETS(fprintf(log, "%s begin\n", mName);
             fprintf(log, "%sread(%d): buffSize=%d\n", mName, read_fd, buffSize);)
-#ifndef WIN32
+#ifndef _WIN32
     int nread = read(read_fd, buff, buffSize);
 #else
     int nread = _read(read_fd, buff, buffSize);

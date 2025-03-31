@@ -28,6 +28,9 @@ class     vtkDataArray;
 //    Gunther H. Weber, Thu Mar  5 13:13:49 PST 2009
 //    Added ability to specify filter width as argument (adding private
 //    variable width[3] and the method ProcessArguments())
+// 
+//    Justin Privitera, Mon Oct 28 10:15:57 PDT 2024
+//    Pass in_ds to DoOperation().
 //    
 //
 // ****************************************************************************
@@ -49,7 +52,7 @@ class EXPRESSION_API avtMeanFilterExpression : public avtUnaryMathExpression
 
     virtual void     PreExecute(void);
     virtual void     DoOperation(vtkDataArray *in1, vtkDataArray *out, 
-                                 int ncomps, int ntuples);
+                                 int ncomps, int ntuples, vtkDataSet *in_ds);
 
   private:
     int              width[3];

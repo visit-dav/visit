@@ -73,6 +73,8 @@
 //    Tom Fogal, Sat Jun 14 18:44:35 EDT 2008
 //    Added const qualifications to avoid warnings (and bugs too I guess :)
 //
+//    Mark C. Miller, Tue Jan 28 11:00:01 PST 2025
+//    Make caught exception objects const ref.
 // ****************************************************************************
 
 class MISC_API2 VisItException
@@ -154,8 +156,8 @@ class MISC_API2 VisItException
 }
 
 #define TRY                 try {
-#define CATCH(T)            } catch(T)   { VisItException::LogCatch(#T, __FILE__,  __LINE__);
-#define CATCH2(T, A)        } catch(T &A) { VisItException::LogCatch(#T, __FILE__,  __LINE__);
+#define CATCH(T)            } catch(const T& __visit__exception__)   { VisItException::LogCatch(#T, __FILE__,  __LINE__);
+#define CATCH2(T, A)        } catch(const T& A) { VisItException::LogCatch(#T, __FILE__,  __LINE__);
 #define CATCHALL            } catch(...) { VisItException::LogCatch("VisItException", __FILE__,  __LINE__);
 #define ENDTRY              }
 #define RETHROW             throw

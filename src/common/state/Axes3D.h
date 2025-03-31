@@ -89,7 +89,7 @@ public:
     void SetSetBBoxLocation(bool setBBoxLocation_);
     void SetBboxLocation(const double *bboxLocation_);
     void SetTriadColor(const int *triadColor_);
-    void SetTriadLineWidth(float triadLineWidth_);
+    void SetTriadLineWidth(int triadLineWidth_);
     void SetTriadFont(int triadFont_);
     void SetTriadBold(bool triadBold_);
     void SetTriadItalic(bool triadItalic_);
@@ -115,7 +115,7 @@ public:
           double         *GetBboxLocation();
     const int            *GetTriadColor() const;
           int            *GetTriadColor();
-    float                GetTriadLineWidth() const;
+    int                  GetTriadLineWidth() const;
     int                  GetTriadFont() const;
     bool                 GetTriadBold() const;
     bool                 GetTriadItalic() const;
@@ -184,7 +184,7 @@ private:
     AxisAttributes zAxis;
     bool           setBBoxLocation;
     double         bboxLocation[6];
-    float          triadLineWidth;
+    int            triadLineWidth;
     int            triadFont;
     bool           triadBold;
     bool           triadItalic;
@@ -194,6 +194,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define AXES3D_TMFS "bbbiiibbaaabDIfibbb"
+#define AXES3D_TMFS "bbbiiibbaaabDIiibbb"
 
 #endif

@@ -7,6 +7,7 @@
 // ************************************************************************* //
 
 #include <avtMOABFileFormat.h>
+#include <avtMOABOptions.h>
 
 #include <string>
 
@@ -42,6 +43,7 @@
 using     std::string;
 
 //using namespace moab;
+using namespace MoabDBOptions;
 
 #define MBVIS_CHK_ERR(err_code) \
   do { \
@@ -61,20 +63,45 @@ using     std::string;
 //
 // ****************************************************************************
 
+string meshnameArr[5] = { "Vertices", "Edges", "Faces", "Solids", "Mesh"}; // all names have different length
+//string meshnameAll = "4_Meshs";
+
 avtMOABFileFormat::avtMOABFileFormat(const char *filename, const DBOptionsAttributes *readOpts)
-    : avtSTMDFileFormat(&filename, 1), readOptions(readOpts),  file_descriptor(NULL), pcomm(NULL), mbCore(NULL)
+    : avtSTMDFileFormat(&filename, 1),  file_descriptor(NULL), pcomm(NULL), mbCore(NULL)
 {
-    // INITIALIZE DATA MEMBERS
+    //
+    // Initialize class variables BEFORE processing read options
+    //
 
 	debug1<< " constructor called, file " << filename << "\n";
     fileName = strdup(filename);
-    opt1d = false;
-    opt2d = true;
-    opt3d = true;
+
     edges = new moab::Range;
     faces = new moab::Range;
     solids = new moab::Range;
     select = new moab::Range;
+    meshd[0] = true;
+    meshd[1] = meshd[2] = meshd[3] = false;
+    showAllSets = false;
+    showDefaultTags = false;
+    if (readOpts)
+    {
+        //showAllSets = readOpts->GetBool("Show Entity Sets");
+        //showDefaultTags = readOpts->GetBool("Show Default Tags");
+
+    //
+        // Process any read options, potentially overriding default behaviors
+        //
+        for (int i = 0; readOpts != 0 && i < readOpts->GetNumberOfOptions(); ++i)
+        {
+            if (readOpts->GetName(i) == MOAB_SHOW_ENTITY_SETS)
+                showAllSets = readOpts->GetBool(MOAB_SHOW_ENTITY_SETS) ;
+            else if (readOpts->GetName(i) == MOAB_SHOW_DEFAULT_TAGS)
+                showDefaultTags = readOpts->GetBool(MOAB_SHOW_DEFAULT_TAGS);
+            else
+                debug1 << "Ignoring unknown option \"" << readOpts->GetName(i) << "\"" << endl;
+        }
+    }
 }
 
 
@@ -197,7 +224,7 @@ avtMOABFileFormat::gatherMhdfInformation()
             tag1.defValue = tagStr.default_value;
             tag1.type = tagStr.type;
         }
-
+        tag1.dim = 0;
         debug2 << "  node     tag "<< i << " "  << tag_name <<" size:" << sizeTag << "\n";
         nodeTags.push_back(tag1);
     }
@@ -207,10 +234,39 @@ avtMOABFileFormat::gatherMhdfInformation()
     for (int i=0; i< file_descriptor->num_elem_desc; i++)
     {
         const char * etype = file_descriptor->elems[i].type;
+        const char * ehandle = file_descriptor->elems[i].handle;
+        int local_dim = 0;
+        if ( strcmp(etype, mhdf_EDGE_TYPE_NAME) == 0 )
+        {
+            meshd[1] = true;
+            local_dim = 1;
+        }
+        else if ( strcmp(etype, mhdf_TRI_TYPE_NAME) == 0
+              || strcmp(etype, mhdf_QUAD_TYPE_NAME) == 0
+              || strcmp(etype, mhdf_POLYGON_TYPE_NAME) == 0 )
+        {
+            meshd[2] = true;
+            local_dim = 2;
+        }
+        else if ( strcmp(etype, mhdf_TET_TYPE_NAME) == 0
+                || strcmp(etype, mhdf_PYRAMID_TYPE_NAME) == 0
+                || strcmp(etype, mhdf_PRISM_TYPE_NAME) == 0
+                || strcmp(etype, mdhf_KNIFE_TYPE_NAME) == 0
+                || strcmp(etype, mdhf_HEX_TYPE_NAME) == 0
+                || strcmp(etype, mhdf_POLYHEDRON_TYPE_NAME) == 0
+                || strcmp(etype, mhdf_SEPTAHEDRON_TYPE_NAME) == 0 )
+        {
+            meshd[3] = true;
+            local_dim = 3;
+        }
+        else
+            debug2 << " etype: " << etype << "\n";
+
+
 
         MHDF_EntDesc & edesc = file_descriptor->elems[i].desc;
         int number_elem_tags = edesc.num_dense_tags;
-        debug2 << "   elem type  "<< i << " "  << etype << " num dense tags: "
+        debug2 << "   elem type  "<< i << " type:"  << etype << " handle:" << ehandle << " num dense tags: "
             << number_elem_tags <<"\n";
         for (int j=0; j<number_elem_tags; j++)
         {
@@ -221,18 +277,26 @@ avtMOABFileFormat::gatherMhdfInformation()
 
             tag1.nameTag=string(tag_name);
             tag1.size=sizeTag;
+            tag1.dim = local_dim;
+            tag1.type = tagStr.type;
             if (tagStr.default_value && ( sizeTag == 1 ) &&
                             ( (tagStr.type == mhdf_INTEGER) || (tagStr.type == mhdf_FLOAT )) )
             {
                 tag1.defValue = tagStr.default_value;
-                tag1.type = tagStr.type;
             }
 
-            debug2 << " elem   tag "<< j << " "  << tag_name <<" size:" << sizeTag << "\n";
             elemTags.insert(tag1);
+            debug2 << " elem   tag "<< j << " "  << tag_name <<" size:" << sizeTag;
+            debug2 << "  num tags so far:  " << elemTags.size() << "\n";
+
         }
+        MHDF_EntDesc & setsDesc = file_descriptor->sets;
+        debug2 << " num sets in file:" << setsDesc.count << " start id in file:" << setsDesc.start_id << "\n";
+        num_sets = setsDesc.count;
+        start_set_id = setsDesc.start_id;
     }
 
+    debug2 << "  mesh1d: "<< meshd[1] << "  mesh2d:"<< meshd[2] << "  mesh3d:" << meshd[3] << "\n";
     num_parts = file_descriptor->numEntSets[0];
     num_mats  = file_descriptor->numEntSets[1];
     num_neumann = file_descriptor->numEntSets[2];
@@ -282,6 +346,11 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         // we find a lot of info about the mesh, without actually loading it
         gatherMhdfInformation();
 
+        //
+        // Hack to provide feedback we're running correct plugin
+        //
+        md->SetDatabaseComment("This is the New MOAB Plugin");
+        md->SetMustAlphabetizeVariables(false);
         moab::ErrorCode merr;
         std::string domainSetClassName;
 
@@ -290,9 +359,9 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         //
         // Define the mesh
         //
-        string meshname = "mesh";
+
         avtMeshMetaData *mesh = new avtMeshMetaData;
-        mesh->name = meshname;
+        mesh->name = meshnameArr[4];
         mesh->meshType = AVT_UNSTRUCTURED_MESH;
         // we are calling later md->SetFormatCanDoDomainDecomposition(true)
         //  because of that,
@@ -304,24 +373,68 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         mesh->blockPieceName = domainSetClassName; // "Block%012d";
         mesh->hasSpatialExtents = false;
 
-        //
-        // Hack to provide feedback we're running correct plugin
-        //
-        md->SetDatabaseComment("This is the New MOAB Plugin");
-
         if (md != NULL)
             md->Add(mesh);
 
+        // add vertex mesh always
+
+        for (int iDim = 0; iDim < 4; iDim++)
+        {
+            if(meshd[iDim])
+            {
+                avtMeshMetaData *mesh0 = new avtMeshMetaData;
+                mesh0->name = meshnameArr[iDim];
+                mesh0->meshType = AVT_UNSTRUCTURED_MESH;
+                // we are calling later md->SetFormatCanDoDomainDecomposition(true)
+                //  because of that,
+                mesh0->numBlocks = 1; // nProcs;
+                mesh0->blockOrigin = 1;
+                mesh0->spatialDimension = file_descriptor->nodes.vals_per_ent; // usually 3, but some files might have 2
+                mesh0->topologicalDimension = iDim; // we need to look at element types
+                mesh0->blockTitle = "Blocks";
+                mesh0->blockPieceName = domainSetClassName; // "Block%012d";
+                mesh0->hasSpatialExtents = false;
+                if (md != NULL)
+                    md->Add(mesh0);
+            }
+        }
+        // add MoabMeshSets look for stored id in the file, and search for that mesh set
+        // kind of hard
+        if (num_sets > 0 && showAllSets)
+        {
+            for (int setId = 1; setId <= num_sets; setId++ )
+            {
+                avtMeshMetaData *mesh0 = new avtMeshMetaData;
+                char str[20];
+                sprintf(str, "%d", setId);
+                mesh0->name = string("MeshSet")+"/"+string(str);
+                mesh0->meshType = AVT_UNSTRUCTURED_MESH;
+                // we are calling later md->SetFormatCanDoDomainDecomposition(true)
+                //  because of that,
+                mesh0->numBlocks = 1; // nProcs;
+                mesh0->blockOrigin = 1;
+                mesh0->spatialDimension = 3; // usually 3, but some files might have 2
+                mesh0->topologicalDimension = 3; // we need to look at element types
+                mesh0->blockTitle = "Blocks";
+                mesh0->blockPieceName = domainSetClassName; // "Block%012d";
+                mesh0->hasSpatialExtents = false;
+                if (md != NULL)
+                    md->Add(mesh0);
+            }
+        }
+
         for (std::set<struct tagBasic>::iterator setIter = elemTags.begin(); setIter!=elemTags.end(); setIter++)
         {
-            string nameDisplay("ELEM_");
             struct tagBasic tag = *setIter;
-            nameDisplay += tag.nameTag;
+            string nameDisplay;
+
+            nameDisplay = meshnameArr[tag.dim] + "/" + tag.nameTag ;
             if (tag.size == 1)
             {
                 avtScalarMetaData *smd = new avtScalarMetaData;
+
+                smd->meshName = meshnameArr[tag.dim];
                 smd->name = nameDisplay.c_str();
-                smd->meshName = meshname;
                 smd->centering = AVT_ZONECENT;
                 double defValDouble = 0;
                 if (tag.defValue && tag.type == 1) // integer
@@ -333,25 +446,35 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                     defValDouble = *((double*)(tag.defValue));
                 }
                 double values[2] = {defValDouble, defValDouble};
-                smd->SetMissingData(values);
-                smd->SetMissingDataType(avtScalarMetaData::MissingData_Value);
+                if (!showDefaultTags)
+                {
+                    smd->SetMissingData(values);
+                    smd->SetMissingDataType(avtScalarMetaData::MissingData_Value);
+                }
                 md->Add(smd);
             }
             else if (tag.size == 2 || tag.size == 3)
-              AddVectorVarToMetaData(md, nameDisplay.c_str(), meshname, AVT_ZONECENT, tag.size);
+            {
+                AddVectorVarToMetaData(md, nameDisplay.c_str(), meshnameArr[tag.dim], AVT_ZONECENT, tag.size);
+            }
             else
-              AddArrayVarToMetaData(md, nameDisplay.c_str(), tag.size, meshname, AVT_ZONECENT);
+            {
+                AddArrayVarToMetaData(md, nameDisplay.c_str(), tag.size, meshnameArr[tag.dim], AVT_ZONECENT);
+            }
         }
         for (int i=0; i<nodeTags.size(); i++)
         {
-            string nameDisplay("NODE_");
+            string nameDisplay;
             struct tagBasic tag = nodeTags[i];
-            nameDisplay +=tag.nameTag;
+            nameDisplay =meshnameArr[0] + "/" + tag.nameTag + "/" + "Cloud";
+            // add also to whole mesh, for fringe plots
+            string nameDisplayExtra;
+            nameDisplayExtra = meshnameArr[0] +  "/" + tag.nameTag + "/" + "Fringe";
             if (tag.size == 1)
             {
                 avtScalarMetaData *smd = new avtScalarMetaData;
                 smd->name = nameDisplay.c_str();
-                smd->meshName = meshname;
+                smd->meshName = meshnameArr[0];
                 smd->centering = AVT_NODECENT;
                 double defValDouble = 0;
                 if (tag.defValue && tag.type == 1) // integer
@@ -363,15 +486,37 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                     defValDouble = *((double*)(tag.defValue));
                 }
                 double values[2] = {defValDouble, defValDouble};
-                smd->SetMissingData(values);
-                smd->SetMissingDataType(avtScalarMetaData::MissingData_Value);
+                if (!showDefaultTags)
+                {
+                    smd->SetMissingData(values);
+                    smd->SetMissingDataType(avtScalarMetaData::MissingData_Value);
+                }
                 md->Add(smd);
+
+                avtScalarMetaData *smd2 = new avtScalarMetaData;
+                smd2->name = nameDisplayExtra.c_str();
+                smd2->meshName = meshnameArr[4];
+                smd2->centering = AVT_NODECENT;
+
+                if (!showDefaultTags)
+                {
+                    smd2->SetMissingData(values);
+                    smd2->SetMissingDataType(avtScalarMetaData::MissingData_Value);
+                }
+                md->Add(smd2);
+
             }
               // AddScalarVarToMetaData(md, nameDisplay.c_str(), meshname, AVT_NODECENT);
             else if (tag.size == 2 || tag.size == 3)
-              AddVectorVarToMetaData(md, nameDisplay.c_str(), meshname, AVT_NODECENT, tag.size);
+            {
+              AddVectorVarToMetaData(md, nameDisplay.c_str(), meshnameArr[0], AVT_NODECENT, tag.size);
+              AddVectorVarToMetaData(md, nameDisplayExtra.c_str(), meshnameArr[4], AVT_NODECENT, tag.size);
+            }
             else
-              AddArrayVarToMetaData(md, nameDisplay.c_str(), tag.size, meshname, AVT_NODECENT);
+            {
+              AddArrayVarToMetaData(md, nameDisplay.c_str(), tag.size, meshnameArr[0], AVT_NODECENT);
+              AddArrayVarToMetaData(md, nameDisplayExtra.c_str(), tag.size, meshnameArr[4], AVT_NODECENT);
+            }
         }
 
         //  So, here, we handle the parallel partition
@@ -379,7 +524,7 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         //  assume that parallel partitions numbers start at 0 and end at num_parts -1
         if (num_parts>0)
         {
-            avtScalarMetaData *ppsmd = new avtScalarMetaData("ParallelPartition", meshname, AVT_ZONECENT);
+            avtScalarMetaData *ppsmd = new avtScalarMetaData("ParallelPartition", meshnameArr[4], AVT_ZONECENT);
             ppsmd->SetEnumerationType(avtScalarMetaData::ByValue);
             for (int i = 0 ; i < num_parts ; i++)
             {
@@ -393,7 +538,7 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         }
         if (materials.size()>0)
         {
-            avtScalarMetaData *msmd = new avtScalarMetaData("Materials", meshname, AVT_ZONECENT);
+            avtScalarMetaData *msmd = new avtScalarMetaData("Materials", meshnameArr[4], AVT_ZONECENT);
             msmd->SetEnumerationType(avtScalarMetaData::ByValue);
             int i=1;
             msmd->AddEnumNameValue("NOT_SPECIFIED", 0);
@@ -409,7 +554,7 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         }
         if (num_neumann>0)
         {
-            avtScalarMetaData *nsmd = new avtScalarMetaData("NeumannSets", meshname, AVT_ZONECENT);
+            avtScalarMetaData *nsmd = new avtScalarMetaData("NeumannSets", meshnameArr[4], AVT_ZONECENT);
             nsmd->SetEnumerationType(avtScalarMetaData::ByBitMask);
             for(int j=0; j<num_neumann; j++)
                 neumannsets.insert(file_descriptor->defTagsVals[2][j] );
@@ -430,7 +575,7 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         }
         if (num_diri>0)
         {
-            avtScalarMetaData *dsmd = new avtScalarMetaData("DirichletSets", meshname, AVT_NODECENT);
+            avtScalarMetaData *dsmd = new avtScalarMetaData("DirichletSets", meshnameArr[4], AVT_NODECENT);
             dsmd->SetEnumerationType(avtScalarMetaData::ByBitMask);
             for(int j=0; j<num_diri; j++)
                 dirichsets.insert(file_descriptor->defTagsVals[3][j] );
@@ -452,7 +597,7 @@ avtMOABFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
         if (num_geom>0)
         {
-            avtScalarMetaData *dsmd = new avtScalarMetaData("GeometrySets", meshname, AVT_ZONECENT);
+            avtScalarMetaData *dsmd = new avtScalarMetaData("GeometrySets", meshnameArr[4], AVT_ZONECENT);
             dsmd->SetEnumerationType(avtScalarMetaData::ByBitMask);
             for(int i=0; i<num_geom; i++)
 
@@ -633,30 +778,20 @@ avtMOABFileFormat::GetMesh(int domain, const char *meshname)
         if (NULL==mbCore)
         {
             mbCore = new moab::Core();
-            if (readOptions->FindIndex("edge") >= 0)
-            {
-                opt1d = readOptions->GetBool("edge");
-            }
-            if (readOptions->FindIndex("face") >= 0)
-            {
-                opt2d = readOptions->GetBool("face");
-            }
-            if (readOptions->FindIndex("solid") >= 0)
-            {
-                opt3d = readOptions->GetBool("solid");
-            }
-            debug1 << "avtMOABFileFormat dim options: 1d:" << (int)opt1d << " 2d:" << (int)opt2d
-                    << " 3d:" << (int)opt3d <<"\n";
+
 #ifdef PARALLEL
-            string partitionMethod = readOptions->GetString("Partition:");
-            string ropts="STORE_SETS_FILEIDS;PARALLEL=READ_PART;PARTITION="+partitionMethod+";";
+            string ropts="PARALLEL=READ_PART;PARTITION=PARALLEL_PARTITION;";
             moab::Interface * mb = (moab::Interface *) mbCore;
             pcomm = new moab::ParallelComm(mb, VISIT_MPI_COMM);
             debug1 << "avtMOABFileFormat pcomm->comm() == VISIT_MPI_COMM " << (pcomm->comm() == VISIT_MPI_COMM) << "\n";
 #else
-            string ropts("STORE_SETS_FILEIDS;");
+            string ropts;
             debug1 << "avtMOABFileFormat serial MOAB\n";
 #endif
+
+
+            debug1 << "avtMOABFileFormat options: showAllSets: " << showAllSets << " showDefaultTags: "<< showDefaultTags << "\n";
+            ropts=ropts+string("STORE_SETS_FILEIDS;");
             merr = mbCore->load_file(fileName, 0,ropts.c_str() );MBVIS_CHK_ERR(merr);
 #ifdef PARALLEL
             // some debugging info
@@ -664,15 +799,101 @@ avtMOABFileFormat::GetMesh(int domain, const char *meshname)
             pcomm->get_part_entities(localEnts);
             debug1 << " part entities : "<< localEnts.size() << "\n";
 #endif
+            // get local number of sets
+            // construct the map from file set id to the actual sets
+            // get all sets from root, then the __tag_get_handle( "__FILE_ID_FOR_SETS",
+            if (showAllSets)
+            {
+                moab::Tag setIdTag;
+                merr = mbCore->tag_get_handle( "__FILE_ID_FOR_SETS",setIdTag);MBVIS_CHK_ERR(merr);
+                moab::Range allLocalSets;
+                merr = mbCore->get_entities_by_type(0, moab::MBENTITYSET, allLocalSets);MBVIS_CHK_ERR(merr);
+                // get their id tag
+                std::vector<long> setIds(allLocalSets.size());
+                merr = mbCore->tag_get_data(setIdTag, allLocalSets, &setIds[0]);MBVIS_CHK_ERR(merr);
+                // construct the map from id to entityhandle
+                for (size_t i=0; i<allLocalSets.size(); i++)
+                {
+                    setIdMap[setIds[i]] = (long)allLocalSets[i];
+                }
+            }
+
+        }
+
+        // select only the vertices in the actual mesh part we selected
+        int dim = -1;
+        string meshnameStr(meshname);
+        for ( dim = 0; dim <= 4; dim ++)
+        {
+            if (meshnameStr == meshnameArr[dim] )
+                break;
+        }
+        debug1 << " dimension of mesh: " << dim << "\n"; // dim 4 is for all mesh; -if 5, we need to search for
+
+        if(5 == dim && showAllSets)
+        {
+            // MeshSet
+            char slash = '/';//character to search in what is left of the tag name
+            const char *foundSlash = strchr(meshname, slash);
+            if (foundSlash)
+            {
+                string numberStr(foundSlash+1);
+                int nb = atoi(numberStr.c_str());
+
+                long setIdLong = nb + start_set_id;
+                debug1 << " for meshname: " << meshname << " number: " << numberStr << " atoi: " << nb <<
+                        " file set id:" << setIdLong << "\n";
+                moab::EntityHandle selectedSet =  (moab::EntityHandle) setIdMap[setIdLong];
+                // recursive
+                merr = mbCore->get_entities_by_handle(selectedSet, ents, true);MBVIS_CHK_ERR(merr);
+                debug1 << "ents.size():" << ents.size() << "\n";
+                moab::Range sets = ents.subset_by_type(moab::MBENTITYSET);
+                ents = subtract(ents, sets);
+                debug1 << "after removing sets: ents.size():" << ents.size() << "\n";
+                verts = ents.subset_by_type(moab::MBVERTEX);
+                ents = subtract(ents, verts);
+                if (!ents.empty())
+                {
+                    moab::Range connVerts;
+                    merr = mbCore->get_connectivity(ents, connVerts);MBVIS_CHK_ERR(merr);
+                    verts.merge(connVerts);
+                }
+
+                verts = verts.subset_by_type(moab::MBVERTEX);
+                debug1 << " remaining vertices:" << verts.size() << "\n";
+
+            }
+        }
+        else // dim is between 0 and 4
+        {
+            // select verts and ents from dim
+            if (0 <= dim && dim <=3 )
+            {
+                merr = mbCore->get_entities_by_dimension(0, dim, ents);MBVIS_CHK_ERR(merr);
+                // get all verts from connectivity of ents
+                merr = mbCore->get_connectivity(ents, verts);MBVIS_CHK_ERR(merr);
+                ents = subtract(ents, verts);
+            }
+            else // dim is 4, get all ents and verts, except sets
+            {
+
+                merr = mbCore->get_entities_by_handle(0, ents, false);MBVIS_CHK_ERR(merr);
+                debug1 << "avtMOABFileFormat::GetMesh: ents:" <<  ents.size() << "\n";
+
+                // remove the vertices and the entity sets
+                verts = ents.subset_by_type(moab::MBVERTEX);
+                ents = subtract(ents, verts);
+                moab::Range sets = ents.subset_by_type(moab::MBENTITYSET);
+                ents = subtract(ents, sets);
+            }
         }
         //
         // Create the unstructured mesh
         //
         vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
 
+        *select = ents;
         {
-            // Get the list of vertices
-            merr = mbCore->get_entities_by_dimension(0, 0, verts, true);MBVIS_CHK_ERR(merr);
             debug1 << "avtMOABFileFormat::GetMesh: verts.size()=" << verts.size() << "\n";
             //
             // Get the coordinates for the vertex elements.
@@ -682,7 +903,7 @@ avtMOABFileFormat::GetMesh(int domain, const char *meshname)
             merr = mbCore->get_coords(verts, &coords[0]);MBVIS_CHK_ERR(merr);
 
             //
-            // Populate the coordinates.  Put in 3D points with z=0 if the mesh is 2D.
+            // Populate the coordinates.  Put in 3D points with z=0 if the mesh is 2D.?
             //
             vtkPoints *points  = vtkPoints::New();
             points->SetNumberOfPoints(verts.size());
@@ -700,27 +921,12 @@ avtMOABFileFormat::GetMesh(int domain, const char *meshname)
 
         // TODO: Do we want all entities recursively ? If we are not working on the root set
         // think about how to handle it here
-        merr = mbCore->get_entities_by_handle(0, ents, false);MBVIS_CHK_ERR(merr);
         debug1 << "avtMOABFileFormat::GetMesh: ents:" <<  ents.size() << "\n";
         const moab::EntityHandle* connect;
-
         std::vector<vtkIdType> conn_data; // might need reordering because moab and vtk have
                                           // different order for quadratic elements
         vtkIdType vertIds[27];
 
-        // remove the vertices and the entity sets
-        moab::Range vts = ents.subset_by_type(moab::MBVERTEX);
-        ents = subtract(ents, vts);
-        vts = ents.subset_by_type(moab::MBENTITYSET);
-        ents = subtract(ents, vts);
-        debug1 << "avtMOABFileFormat::GetMesh: strip: ents:" <<  ents.size() << "\n";
-        // filter by dimension
-        if (opt1d) *edges = ents.subset_by_dimension(1); // edges
-        if (opt2d) *faces = ents.subset_by_dimension(2); // faces
-        if (opt3d) *solids = ents.subset_by_dimension(3); // solids
-        *select = *edges;
-        select->merge(*faces);
-        select->merge(*solids);
         debug1 << "avtMOABFileFormat::GetMesh: strip: selected ents:" <<  select->size() << " psize:" << select->psize() << "\n";
         for (size_t  i = 0; i < select->size(); i++)
         {
@@ -804,6 +1010,7 @@ avtMOABFileFormat::GetMesh(int domain, const char *meshname)
             }
 
         }
+        //if (dim == 0) *select = verts; // it will be used to set var on vertices ?
 
         return ugrid;
     }
@@ -865,21 +1072,60 @@ avtMOABFileFormat::GetVar(int domain, const char *varname)
         if (string(varname) == "GeometrySets")
             return GetGeometrySetsVar();
 
-        bool nodeTag = (strncmp("NODE_", varname, 5 )==0);
-        bool elemTag = (strncmp("ELEM_", varname, 5 )==0);
+        // change in plans, we use the varname to decide the mesh part it is on
+        // we are not using anymore the meshname to decide if node tag or element tag
+        // basically, use the first / to decide the tag type
+        // for vertex tags, strip after the slash,
 
-        debug1 << "avtMOABFileFormat::GetVar varname: " << varname << " is elem tag? : " << elemTag << "\n";
-        string tagName;
+        const char* slash = strchr( varname, '/' );
+        string tagName(varname);
+        string meshFromVarName(varname);
+        if (nullptr != slash )
+        {
+            tagName=string(slash+1);
+            meshFromVarName = meshFromVarName.substr(0, (int)(slash-varname));
+        }
+
+        // we know the length of the mesh part in name is 5
+
+
+        int dimMesh = -1;
+        for (dimMesh = 0; dimMesh < 4; dimMesh++)
+            if (strcmp(meshFromVarName.c_str(), meshnameArr[dimMesh].c_str()) == 0)
+                break;
+        assert(dimMesh != -1);
+        // could be a nodeTag if meshnameArr[4] is the mesh at this level
+        bool nodeTag = (dimMesh == 0);
+        //if ( strcmp(meshName.c_str(), meshnameAll.c_str()) == 0 ) nodeTag = true;
+        bool elemTag = !nodeTag;
+
         if (nodeTag)
         {
-            tagName = string(varname+5);
+            // we may need to process further, fringe or cloud mesh
+            const char * currName = tagName.c_str();
+            const char* foundSlash  = strchr( currName, '/' );
+            if (nullptr != foundSlash)
+                tagName=tagName.substr(0, (int)(foundSlash-currName));
+
         }
-        else if (elemTag)
+        debug1 << "avtMOABFileFormat::GetVar meshFromVarName: " << meshFromVarName << "\n";
+        debug1 << "avtMOABFileFormat::GetVar tagName: " << tagName << "\n";
+        debug1 << "avtMOABFileFormat::GetVar dimMesh: " << dimMesh << "\n";
+        debug1 << "avtMOABFileFormat::GetVar varname: " << varname << " elem_tag "
+                << elemTag << " node_tag: " << nodeTag << "\n";
+        /*string tagNameTmp;
+        tagNameTmp = string( varname + 8) ; // meshName length + 1 for "/"
+        // for vertex tags, strip after the slash,
+        char slash = '/';//character to search in what is left of the tag name
+        const char *foundSlash = strchr(tagNameTmp.c_str(), slash);
+        string tagName = tagNameTmp;
+        if (foundSlash)
         {
-            tagName = string(varname+5);
+            debug1 << "tagNameTmp= " <<tagNameTmp << "\n";
+            tagName = tagNameTmp.substr( 0, (int)( foundSlash-tagNameTmp.c_str() ) );
         }
 
-        debug1 << "moab tag name:" <<tagName << "\n";
+        debug1 << "moab tag name:" <<tagName << "\n";*/
         vtkDataArray * result = 0;
 
         moab::Range ents;
@@ -888,9 +1134,10 @@ avtMOABFileFormat::GetVar(int domain, const char *varname)
         {
             merr = mbCore->get_entities_by_type(0, moab::MBVERTEX, ents);MBVIS_CHK_ERR(merr);
         }
-        else if (elemTag)
+        else if (elemTag) // 1, 2, or 3
         {
-            ents = *select;
+            merr = mbCore->get_entities_by_dimension(0, dimMesh, ents);MBVIS_CHK_ERR(merr);
+            //ents = *select;
         }
 
         debug1 << "avtMOABFileFormat::GetVar: ents.size()=" <<  ents.size() <<  "  psize :" << ents.psize() << "\n";
@@ -983,8 +1230,9 @@ avtMOABFileFormat::GetPartitionTagAsEnumScalar(){
         // remove the vertices and the entity sets
         moab::Range vts = ents.subset_by_type(moab::MBVERTEX);
         ents = *select;
-	if (ents.empty())
-          ents = vts; 
+	    if (ents.empty())
+            ents = vts;
+	    debug1 << "avtMOABFileFormat::GetPartitionTagAsEnumScalar():  ents.size()=" << ents.size() << "\n";
         vtkIntArray *pparr = vtkIntArray::New();
         pparr->SetNumberOfComponents(1);
         pparr->SetNumberOfTuples(ents.size());

@@ -9,11 +9,9 @@
 #include <avtVolumeResampleFilter.h>
 #include <avtCallback.h>
 #include <avtParallel.h>
-#include <avtResampleFilter.h>
-#include <InvalidDimensionsException.h>
 #include <vtkDataSet.h>
 
-enum ResampleReason // Must match avtVolumePLot.h
+enum ResampleReason
 {
     NoResampling       = 0x0,
     MultipleDatasets   = 0x1,
@@ -30,13 +28,16 @@ enum ResampleReason // Must match avtVolumePLot.h
 //  Creation:   July 11, 2023
 //
 //  Modifications:
+//    Kathleen Biagas, Monday July 8, 2024
+//    Inherit from avtResampleFilter.
 //
 // ****************************************************************************
 
-avtVolumeResampleFilter::avtVolumeResampleFilter(const VolumeAttributes &a)
+avtVolumeResampleFilter::avtVolumeResampleFilter(
+    const InternalResampleAttributes *a,
+   const VolumeAttributes & va) : avtResampleFilter(a)
 {
-    atts = a;
-    resampleFilter = nullptr;
+    volAtts = va;
 }
 
 
@@ -52,8 +53,6 @@ avtVolumeResampleFilter::avtVolumeResampleFilter(const VolumeAttributes &a)
 
 avtVolumeResampleFilter::~avtVolumeResampleFilter()
 {
-    if(resampleFilter)
-        delete resampleFilter;
 }
 
 // ****************************************************************************
@@ -80,32 +79,33 @@ avtVolumeResampleFilter::Execute(void)
     // in case resampling isn't needed
     GetOutput()->Copy(*input);
 
-    if (atts.GetRendererType() == VolumeAttributes::Serial ||
-        atts.GetRendererType() == VolumeAttributes::Parallel)
+
+    if (volAtts.GetRendererType() == VolumeAttributes::Serial ||
+        volAtts.GetRendererType() == VolumeAttributes::Parallel)
     {
         const avtDataAttributes &datts = input->GetInfo().GetAttributes();
         std::string activeVariable = datts.GetVariableName();
         // Only check for required resampling if there is no user
         // resampling.
         int userResample =
-          (atts.GetResampleType() == VolumeAttributes::SingleDomain ||
-           atts.GetResampleType() == VolumeAttributes::ParallelRedistribute ||
-           atts.GetResampleType() == VolumeAttributes::ParallelPerRank);
+          (volAtts.GetResampleType() == VolumeAttributes::SingleDomain ||
+           volAtts.GetResampleType() == VolumeAttributes::ParallelRedistribute ||
+           volAtts.GetResampleType() == VolumeAttributes::ParallelPerRank);
 
         int mustResample =
           userResample ? NoResampling : DataMustBeResampled(input);
-        if (atts.GetRendererType() == VolumeAttributes::Serial &&
-            (atts.GetResampleType() == VolumeAttributes::ParallelRedistribute ||
-             atts.GetResampleType() == VolumeAttributes::ParallelPerRank))
+        if (volAtts.GetRendererType() == VolumeAttributes::Serial &&
+            (volAtts.GetResampleType() == VolumeAttributes::ParallelRedistribute ||
+             volAtts.GetResampleType() == VolumeAttributes::ParallelPerRank))
         {
             avtCallback::IssueWarning("Performing 'Serial Rendering' but a "
                 "parallel resampling was selected.  "
                 "Single domain sampling will be performed.");
         }
 
-        else if(atts.GetRendererType() == VolumeAttributes::Parallel &&
+        else if(volAtts.GetRendererType() == VolumeAttributes::Parallel &&
                 PAR_Size() > 1 &&
-                atts.GetResampleType() == VolumeAttributes::SingleDomain)
+                volAtts.GetResampleType() == VolumeAttributes::SingleDomain)
         {
             avtCallback::IssueWarning("Performing 'Parallel Rendering' but "
                 "single domain resampling was selected.  "
@@ -113,8 +113,8 @@ avtVolumeResampleFilter::Execute(void)
         }
 
         else if(PAR_Size() == 1 &&
-                (atts.GetResampleType() == VolumeAttributes::ParallelRedistribute ||
-                 atts.GetResampleType() == VolumeAttributes::ParallelPerRank))
+                (volAtts.GetResampleType() == VolumeAttributes::ParallelRedistribute ||
+                 volAtts.GetResampleType() == VolumeAttributes::ParallelPerRank))
         {
             avtCallback::IssueWarning("Running in serial but parallel "
                 "resampling was selected. 'Single domain' sampling will"
@@ -124,7 +124,7 @@ avtVolumeResampleFilter::Execute(void)
         // If the data must be resampled and user did not request
         // resampling report a warning so the user knows the data has
         // been resampled.
-        if( atts.GetResampleType() != VolumeAttributes::NoResampling &&
+        if( volAtts.GetResampleType() != VolumeAttributes::NoResampling &&
             (mustResample && !userResample) )
         {
             std::string msg("The data was resampled because ");
@@ -168,7 +168,7 @@ avtVolumeResampleFilter::Execute(void)
             avtCallback::IssueWarning(msg.c_str());
         }
 
-        if( atts.GetResampleType() == VolumeAttributes::NoResampling &&
+        if( volAtts.GetResampleType() == VolumeAttributes::NoResampling &&
             mustResample )
         {
             avtCallback::IssueWarning("'No resampling' was selected but the plot 'thinks' resampling needs to occur. This need may or may not be correct. As such, the rendered results may or may not be correct.");
@@ -176,17 +176,17 @@ avtVolumeResampleFilter::Execute(void)
 
         // User can force resampling - for the serial renderer
         // everything is sampled on to a single grid.
-        if( atts.GetResampleType() != VolumeAttributes::NoResampling &&
+        if( volAtts.GetResampleType() != VolumeAttributes::NoResampling &&
             (mustResample || userResample) )
         {
             // If the user selected a specific centering use it.
             // Otherwise use the centering from the color data.
             bool dataCellCentering = false;
 
-            if( atts.GetResampleCentering() != VolumeAttributes::NativeCentering)
+            if( volAtts.GetResampleCentering() != VolumeAttributes::NativeCentering)
             {
                 dataCellCentering =
-                    atts.GetResampleCentering() == VolumeAttributes::ZonalCentering;
+                    volAtts.GetResampleCentering() == VolumeAttributes::ZonalCentering;
             }
             else
             {
@@ -200,39 +200,32 @@ avtVolumeResampleFilter::Execute(void)
             //
             // Resample the data
             //
-            InternalResampleAttributes resampleAtts;
 
             // User requested resampling. If the type is 1 then resample
             // on to a single domain. Otherwise resample in parallel
             // (ignored if running in serial).
-            if (atts.GetRendererType() == VolumeAttributes::Parallel && PAR_Size() > 1)
+            if (volAtts.GetRendererType() == VolumeAttributes::Parallel && PAR_Size() > 1)
             {
                 if( userResample )
                 {
-                    if( atts.GetResampleType() == VolumeAttributes::ParallelRedistribute )
-                        resampleAtts.SetDistributedResample(true);
-                    else if( atts.GetResampleType() == VolumeAttributes::ParallelPerRank )
-                        resampleAtts.SetPerRankResample(true);
+                    if( volAtts.GetResampleType() == VolumeAttributes::ParallelRedistribute )
+                        atts.SetDistributedResample(true);
+                    else if( volAtts.GetResampleType() == VolumeAttributes::ParallelPerRank )
+                        atts.SetPerRankResample(true);
                 }
                 // Must resample but the user selected 'only if required' so
                 // do a distributed resample.
                 else //if( mustResample )
                 {
-                    resampleAtts.SetDistributedResample(true);
+                    atts.SetDistributedResample(true);
                 }
             }
 
-            resampleAtts.SetTargetVal(atts.GetResampleTarget());
-            resampleAtts.SetPrefersPowersOfTwo(true);
-            resampleAtts.SetUseTargetVal(true);
-
-            resampleFilter = new avtResampleFilter(&resampleAtts);
-            resampleFilter->SetInput(input);
-            resampleFilter->MakeOutputCellCentered( dataCellCentering );
-            resampleFilter->GetOutput()->SetTransientStatus(false);
-            resampleFilter->Update(GetGeneralContract());
-            avtDataObject_p dob = resampleFilter->GetOutput();
-            GetOutput()->Copy(*dob);
+            atts.SetTargetVal(volAtts.GetResampleTarget());
+            atts.SetPrefersPowersOfTwo(true);
+            atts.SetUseTargetVal(true);
+            MakeOutputCellCentered( dataCellCentering );
+            ResampleInput();
         }
     }
 }
@@ -262,6 +255,11 @@ avtVolumeResampleFilter::Execute(void)
 //    Retreive value returned by UnifyBitwiseOrValue, and moved the call to
 //    the end of the method.
 //
+//    Kathleen Biagas, Moday July 8, 2024
+//    Test individual datasets in the input for RectilinearGrid, don't rely
+//    solely on MeshType, as some operators may change their mesh type
+//    without actually updating the MeshType in avtDataAttributes.
+//
 // ****************************************************************************
 
 int
@@ -284,29 +282,32 @@ avtVolumeResampleFilter::DataMustBeResampled(avtDataObject_p input)
     {
         resampling |= NonRectilinearGrid;
     }
-
-    avtDataset_p ds = GetTypedInput();
-
-    avtDataTree_p tree = ds->GetDataTree();
-    // Get the input data.
-    int nsets = 0;
-    vtkDataSet **leaves = tree->GetAllLeaves(nsets);
-    if( nsets > 1 )
-        resampling |= MultipleDatasets;
-
-    for (int i = 0; i < nsets; ++i)
+    else
     {
-        if(leaves[i] != nullptr &&
-           leaves[i]->GetDataObjectType() != VTK_RECTILINEAR_GRID)
+        avtDataTree_p tree = GetTypedInput()->GetDataTree();
+        // Get the input data.
+        int nsets = 0;
+        vtkDataSet **leaves = tree->GetAllLeaves(nsets);
+        if( nsets > 1 )
+            resampling |= MultipleDatasets;
+
+        // Operators may not set their output mesh types correctly
+        for (int i = 0; i < nsets; ++i)
         {
-            resampling |= NonRectilinearGrid;
+            if(leaves[i] != nullptr &&
+               leaves[i]->GetDataObjectType() != VTK_RECTILINEAR_GRID)
+            {
+                resampling |= NonRectilinearGrid;
+                break;
+            }
         }
+        delete [] leaves;
     }
 
     // If the opacity variable is different from the active variable
     // check the centering.
     std::string activeVariable = datts.GetVariableName();
-    std::string opacityVariable = atts.GetOpacityVariable();
+    std::string opacityVariable = volAtts.GetOpacityVariable();
 
     if (opacityVariable != "default" && opacityVariable != activeVariable)
     {
@@ -319,7 +320,7 @@ avtVolumeResampleFilter::DataMustBeResampled(avtDataObject_p input)
         }
         else
         {
-            if (atts.GetResampleType() != VolumeAttributes::NoResampling)
+            if (volAtts.GetResampleType() != VolumeAttributes::NoResampling)
             {
                 std::string msg("Could not determine the variable centering for ");
 
@@ -342,44 +343,4 @@ avtVolumeResampleFilter::DataMustBeResampled(avtDataObject_p input)
     return resampling;
 }
 
-
-// ****************************************************************************
-//  Method: avtVolumeResampleFilter::ModifyContract
-//
-//  Purpose:
-//    No-op.
-//
-//  Programmer: Kathleen Biagas
-//  Creation:   July 11, 2023
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-avtContract_p
-avtVolumeResampleFilter::ModifyContract(avtContract_p contract)
-{
-    return contract;
-}
-
-
-// ****************************************************************************
-//  Method: avtVolumeResampleFilter::VerifyInput
-//
-//  Purpose:
-//      Verifies that the input is 3D data, throws an exception if not.
-//
-//  Programmer: Kathleen Biagas
-//  Creation:   July 11, 2023
-//
-// ****************************************************************************
-
-void
-avtVolumeResampleFilter::VerifyInput(void)
-{
-    if (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() != 3)
-    {
-        EXCEPTION2(InvalidDimensionsException, "Volume", "3D");
-    }
-}
 

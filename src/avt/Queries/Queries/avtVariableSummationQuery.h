@@ -29,6 +29,9 @@ class avtCondenseDatasetFilter;
 //    Kathleen Bonnell, Thu Mar  2 15:05:17 PST 2006
 //    Add ApplyFilters() and condense filter.
 //
+//    Kathleen Biagas, Wed Sep 11, 2024
+//    Added GetTimeCurveSpecs.
+//
 // ****************************************************************************
 
 class QUERY_API avtVariableSummationQuery : public avtSummationQuery
@@ -37,8 +40,10 @@ class QUERY_API avtVariableSummationQuery : public avtSummationQuery
                          avtVariableSummationQuery();
     virtual             ~avtVariableSummationQuery();
 
-    virtual const char  *GetType(void)  
-                             { return "avtVariableSummationQuery"; };
+    virtual const char  *GetType(void)
+                             { return "avtVariableSummationQuery"; }
+
+    const MapNode       &GetTimeCurveSpecs(const QueryAttributes *) override;
 
   protected:
     avtCondenseDatasetFilter   *condense;

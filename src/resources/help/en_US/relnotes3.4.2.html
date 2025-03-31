@@ -28,23 +28,82 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Windows build issues for custom plugins against an installed version of VisIt was fixed.</li>
   <li>Fixed a bug in OpenPMD reader that subverted its ability to read chunked, as opposed to contiguous datasets.</li>
   <li>Enabled "Tunnel data connections through SSH" in the LLNL RZ host profiles where it was missing.</li>
-  <li>Removed the obsolete LLNL host profiles for RZTopaz, Surface and Vulcan.</li>
+  <li>Removed the obsolete LLNL host profiles for RZTopaz, Pascal, Surface and Vulcan.</li>
   <li>Fixed a bug where the LLNL host profiles for Boraxo, Dane and Ruby didn't get installed in some situations.</li>
+  <li>Fixed a bug with rendering transparent surfaces with scalable rendering resulting in images with black horizontal bars or missing surface fragments.</li>
+  <li>Fixed issues with build_visit when using gcc-13 and when Qt6 is present on the system.</li>
+  <li>Fixed bug with Volume plot when SILRestriction applied, and when Composite rendering caused problem when a different RendererType used directly afterwards.</li>
+  <li>The Blueprint writer no longer writes the wrong path to root files when specifying a directory to export files to.</li>
+  <li>The Blueprint writer now correctly puts the right cycle number in file names.</li>
+  <li>Fixed a bug in zonetype-label expression where unknown zone types would render a weird symbol, <code>&quot;?</code>.</li>
+  <li>Disabled warning message regarding skipping of speculative expression generation for databases with many variables. For more information, read our documentation about <a href="https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/using_visit/Quantitative/Expressions.html#automatic-expressions">automatic expressions</a>.</li>
+  <li>Forced VTK file exports to use VTK data file format 4.2 instead of the new, not backwards compatible 5.1.</li>
+  <li>Fixed a bug where the opaque geometry in an image containing both opaque and transparent geometry wouldn't be rendered poperly when rendered using scalable rendering.</li>
+  <li>Fixed a bug where saving an image with transparent geometry would hang when using scalable rendering.</li>
+  <li>Fixed a bug where perspective mode set to `off` in config files would not be restored correctly.</li>
+  <li>Fixed an issue in the Mili plugin where requesting OriginalZoneLabels and OriginalNodeLabels did not work as intended.</li>
+  <li>Fixed a bug in the Blueprint reader so it will use <i>elements/offsets</i>  for unstructured topologies, when present.</li>
+  <li>Fixed a bug with transparent rendering where the transparent portions of the image were rendered with a white cast when in scalable rendering mode and all the geometry was on the first processor.</li>
+  <li>Fixed a bug with point glyphing where points would be 'lost' and other miscolered if poly-vertex cells were present in the dataset.</li>
+  <li>Fixed bug where hdf5_hl library wouldn't always be installed with VisIt.</li>
+  <li>Fixed bug with Pseudocolor plots of datasets with very large or small extents being rendered black.</li>
+  <li>ChooseCenter with a mouse on Scatter plot now works.</li>
+  <li>The triad lines no longer disappear.</li>
+  <li>Fixed an issue causing species set selection to only work on fields that were represented as floating point data.</li>
+  <li>Fixed a bug in the Plaintext Reader causing reading variable names that were single-characters to fail.</li>
+  <li>Fixed a bug where the operator attribute windows will show the default attributes when displaying the attributes for an operator applied to a plot after restoring a session. The plots displayed in the visualization windows will be correct, just the attributes displayed in the attribute window will be incorrect. This happens with session files saved with releases 3.4 and 3.4.1. To fix the issue you will need to save a new session file using a newer version of VisIt. If you restored a session with a bad session file, you will need to change the attributes of any affected operators before saving the new session file.</li>
+  <li>Fixed a bug where the rubber band lines are either broken or missing when you click and move the mouse when zooming an image using zoom mode on Linux systems.</li>
+  <li>Fixed a bug causing material edge lines to appear on Mili problems produced by parallel runs.</li>
+  <li>Fixed a bug where trackpad on macOS laptops would get "sticky" never ending/releasing a rotation gesture.</li>
+  <li>Fixed an issue causing L2 MFEM meshes stored as Conduit Blueprint data to render incorrectly when new Low-Order-Refinement was enabled.</li>
+  <li>Fixed time slider annotation handling of printf-style format string.</li>
+  <li>Fixed an issue with the displace operator where it would not accept vector mesh variables defined as expressions if the expressions had not been used in a plot already.</li>
+  <li>Fixed an issue where the GUI panel's timeslider would display incorrect numerical values for cycle.</li>
+  <li>Fixed a longstanding issue with Ghost Zone communication in parallel.</li>
 </ul>
-
 <a name="Enhancements"></a>
 <p><b><font size="4">Enhancements in version 3.4.2</font></b></p>
 <ul>
   <li>Qt6 is now the default version of Qt that is built with VisIt.</li>
   <li>The color table button (available in plot/operator windows), has a new option 'More Color Tables ...' which will open the Color Table Windows to easier find more options.</li>
   <li>A host profile has been added for running on LLNL's RZVernal system.</li>
+  <li>The Blueprint reader and writer now supports mixed element topologies.</li>
+  <li>The <code>VISIT_VERSION_GE()</code> macro useful in detecting the VisIt version being used at compile time has been made public in its own header file, <code>visit-version.h</code>, which is found in <code>VISIT_INSTALL/include/visit/include</code>.</li>
+  <li>The Blueprint writer lets users specify Blueprint write options.</li>
+  <li>The expression system now supports the <code>%</code> binary modulo operator. The <code>mod()</code> expression function is still supported but has been generalized to use the <code>fmod()</code> function from the C/C++ math library as does the new <code>%</code> binary operator.</li>
+  <li>Host profiles for KAUST have been updated.</li>
+  <li>The function <code>GetDefaultFileOpenOptions</code> in the Python scripting interface was enhanced to open a metadata server if one wasn't already open.</li>
+  <li>The function <code>GetExportOptions</code> in the Python scripting interface was enhanced to open a metadata server if one wasn't already open.</li>
+  <li>Re-enabled support for using VTKm, which was removed in the 3.4.0 release.</li>
+  <li>Added species set support to the Blueprint Reader.</li>
+  <li>Saving results of time queries to curve files now uses query name and/or variable names as curve names instead of just 'Curve'.</li>
+  <li>Curves are now supported in Xdmf files. They are handled as 2DRectMesh objects with >1 points in X and 1 point in Y.</li>
+  <li>The Silo plugin properly removes periodic boundary domain neighbors which can wholly enshroud a mesh rendering it invisible. This capability is restricted to rectangular arrangements of rectangular domains using the combination of a DBmultimeshadj object and auxiliary data structures to identify periodic domain neighbors.</li>
+  <li>The OnionPeel and IndexSelect operator Windows now allow typing into the 'Set' option as well as selecting from the dropwdown box. Typing will filter the available entries to match what has been typed so far, allowing easier selection than the pulldown if there is a large number of sets. If typing is completed with text that doesn't match an available entry a Warning message will pop up.<li>
+  <li>Support has been added for using the <code>jsrun</code> parallel job launcher.</li>
+  <li>Added the ability to skip the remote host validity check when using a gateway. This allows VisIt to work with gateways that are transparently handled by <code>ssh</code>. The check can now be bypassed by checking "Use gateway" and leaving the gateway name blank in the host profile for the remote system.</li>
+  <li>Added support for MFEM Wedge (aka Prism) Meshes.</li>
+  <li>Added new global mesh expressions: global_avg(), global_max(), global_min(), global_rms(), global_std_dev(), global_sum(), and global_variance(). These are expressions that calculate statistics across the mesh and the result is a constant variable that contains the result. So, global_max(d) produces a new variable that is the maximum of d at every zone or node across the mesh.</li>
+  <li>The maximum image size that can be saved has been increased to a maximum of 32,768 for either the width or height with a total pixel count not to exceed 536,756,224 pixels. For a square image that corresponds to an image size of 23,170 by 23,168 or less. For a rectangular image that corresponds to an image size of 32,768 by 16,380 or less.</li>
+  <li>Added host profiles for Crossroads.</li>
 </ul>
 
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 3.4.2</font></b></p>
 <ul>
   <li>Updated Conduit to 0.9.2.</li>
-  <li>Developer Changes 2</li>
+  <li>Docker containers were added for RockyLinux (RHEL compatible).</li>
+  <li>Qwt is now optional, but built by default. If you encounter issues with Qwt when running build_visit, add <code>--no-qwt</code> to the build_visit command line to disable Qwt. Historically, it has only ever been needed for advanced GUI features of LibSimV2 interface. Add <code>--system-qwt</code> to have VisIt attempt to find and use a system version of Qwt.  Add <code>--alt-qwt-dir /path/to/qwt/install</code> to use a pre-built version of Qwt installed somewhere else.</li>
+  <li>Added ICE-T support for Windows builds.</li>
+  <li>Fixed bug where printing the build_visit log file location prepended extra paths.</li>
+  <li>Fixed glitch that prevented VISIT_CXX_FLAGS defined in config-site file from being applied.</li>
+  <li>Removed the config site files for rztopaz and quartz since those machines have been retired.</li>
+  <li>Updated Uintah to 2.6.3.</li>
+  <li>Documented the -norun option in visit --fullhelp.</li>
+  <li>Added support for GPU architectures in <code>CMake</code> and the <code>internallauncher</code>. When a <code>make package</code> comnand is executed, the GPU architecture will be added to the operating system and CPU identifier in the tar file name. For example, on a Linux system with an x86_64 CPU and an AMD MI250X GPU the tar file name will be <code>visit3_4_2.linux-x86_64-gfx90a.tar.gz</code>. Likewise, the operating system and CPU identiefier identifier in a VisIt installation will include the GPU architecture in the same manner. As part of this change, the CPU identifier for a 64 bit, little endian, PowerPC processor will now be <code>ppc64le</code> instead of <code>intel</code>. The default CPU identifier for an unidentified CPU will now be <code>x86_64</code> instead of <code>intel</code>. Currently, only relatively new AMD GPUs are supported.</li>
+  <li>When CMakeing VisIt, if <code>-C <cachefile></code> is used or a slew of <code>-DVISIT_CMAKE_VARIABLE=VALUE</code> options are specified in lieu of a config-site file, the option <code>-DVISIT_CONFIG_SITE=NONE</code> is also required.</li>
+  <li>The regression suite has been modified to copy current text results for failed tests to the dashboard repository. This allows the <code>test/baseline/rebase.py</code> script to rebaseline text results as well as image results.</li>
+  <li>Enhanced <code>build_visit</code> so that it pre-installs the OSPRay third party dependenices so that it can build OSPRay on a system without an internet connnection if the tar file with the OSPRay third party libraries is present.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version

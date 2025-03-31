@@ -1777,7 +1777,7 @@ QvisFileWindowBase::changeDirectory(QListWidgetItem *item)
                     if(newPath.size() == 0)
                         newPath = separator;
                 }
-#ifdef WIN32
+#ifdef _WIN32
                 if (newPath.substr(0,2) == "\\\\")
                 {
                     // need to determine if we are attempting to access root

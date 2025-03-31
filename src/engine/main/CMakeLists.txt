@@ -127,8 +127,10 @@ ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
 ${VTK_INCLUDE_DIRS}
 )
 
+if(VTK_VERSION VERSION_LESS "9.4.0")
 if(HAVE_OSMESA)
   include_directories(${VISIT_SOURCE_DIR}/visit_vtk/offscreen)
+endif()
 endif()
 
 # Add link directories
@@ -168,8 +170,10 @@ if(CONDUIT_FOUND AND MFEM_FOUND)
 endif()
 
 
+if(VTK_VERSION VERSION_LESS "9.4.0")
 if(HAVE_OSMESA)
     target_link_libraries(engine_ser visit_vtk_offscreen)
+endif()
 endif()
 
 
@@ -270,9 +274,11 @@ if(VISIT_PARALLEL)
             )
     endif()
 
+if(VTK_VERSION VERSION_LESS "9.4.0")
     if(HAVE_OSMESA)
         target_link_libraries(engine_par visit_vtk_offscreen)
     endif()
+endif()
 
     if(VISIT_NOLINK_MPI_WITH_LIBRARIES)
         add_library(link_mpi_libs STATIC empty.c)

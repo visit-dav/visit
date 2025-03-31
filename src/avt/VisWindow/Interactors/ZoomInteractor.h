@@ -55,6 +55,9 @@ class VisWindowInteractorProxy;
 //    Added two flags for when InteractorAtts 'ClampToSquare' and 
 //    'ShowGuidelines' are set. 
 //
+//    Eric Brugger, Wed Oct  2 16:54:48 PDT 2024
+//    I modified the class to use the APPLE path in all cases.
+//
 // ****************************************************************************
 
 class VISWINDOW_API ZoomInteractor : public VisitInteractor
@@ -86,7 +89,6 @@ class VISWINDOW_API ZoomInteractor : public VisitInteractor
     virtual void           StartRubberBand(int, int);
     virtual void           EndRubberBand();
     virtual void           UpdateRubberBand(int, int, int, int, int, int);
-    virtual void           DrawRubberBandLine(int, int, int, int);
 
     void                   SetCanvasViewport(void);
     void                   ForceCoordsToViewport(int &, int &);

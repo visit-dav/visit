@@ -239,6 +239,12 @@ USAGE: visit [options]::
                              this overrides values set in the host profiles.
         -noint               Disable interruption capability.
         -nopty               Run without PTYs.
+        -norun <compname>    Don't run the specified component, but instead
+                             print the environment variables to set and the 
+                             command to run when launching a specific 
+                             component. For example, '-norun engine_par' will
+                             show the full launch command for the parallel 
+                             engine without executing it.
         -verbose             Prints status information during pipeline
                              execution.
         -dir <directory>     Run a version of VisIt in the specified directory.

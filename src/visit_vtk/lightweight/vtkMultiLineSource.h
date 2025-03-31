@@ -42,7 +42,7 @@ class VISIT_VTK_LIGHT_API vtkMultiLineSource : public vtkPolyDataAlgorithm
 {
 public:
   static vtkMultiLineSource *New();
-  vtkTypeMacro(vtkMultiLineSource,vtkPolyDataAlgorithm);
+  vtkTypeMacro(vtkMultiLineSource,vtkPolyDataAlgorithm)
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
   void AddLine(double[3],double[3]);

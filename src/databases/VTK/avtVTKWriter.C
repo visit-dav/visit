@@ -31,7 +31,7 @@
 #include <FileFunctions.h>
 
 #include <DBOptionsAttributes.h>
-#ifdef WIN32
+#ifdef _WIN32
 #include <direct.h>
 #endif
 
@@ -122,7 +122,7 @@ avtVTKWriter::OpenFile(const string &stemname, int nb)
     {
        // we want the basename without the extension to use as a sub-dir name
        mbDirName = FileFunctions::Basename(stem);
-#ifdef WIN32
+#ifdef _WIN32
        _mkdir(stem.c_str());
 #else
        mkdir(stem.c_str(), 0777);
@@ -220,6 +220,9 @@ avtVTKWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //    Justin Privitera, Mon Apr 25 15:57:29 PDT 2022
 //    Removed the expression output.
 //
+//    Kathleen Biagas, Jan 10, 2025
+//    Set file version to 4.2 for legacy versions.
+//
 // ****************************************************************************
 
 void
@@ -290,6 +293,7 @@ avtVTKWriter::WriteChunk(vtkDataSet *ds, int chunk)
             wrtr->SetFileTypeToBinary();
         wrtr->SetInputData(ds);
         wrtr->SetFileName(chunkname);
+        wrtr->SetFileVersion(42);
         wrtr->Write();
 
         wrtr->Delete();

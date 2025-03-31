@@ -10,12 +10,12 @@
   Date:      $Date: 2002/02/22 21:16:54 $
   Version:   $Revision: 1.66 $
 
-  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen 
+  Copyright (c) 1993-2002 Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 
 =========================================================================*/
@@ -26,7 +26,6 @@
 
 #include <vtkAppendPolyData.h>
 #include <vtkCellData.h>
-#include <vtkCutter.h>
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
 #include <vtkInformation.h>
@@ -43,6 +42,12 @@
 
 #include <vtkCreateTriangleHelpers.h>
 #include <vtkVisItCutter.h>
+
+#include <visit-config.h>
+
+#if LIB_VERSION_LE(VTK,9,2,6)
+  #include <vtkCutter.h>
+#endif
 
 vtkStandardNewMacro(vtkSlicer);
 
@@ -133,7 +138,7 @@ vtkSlicer::FillInputPortInformation(int, vtkInformation *info)
 //  Purpose:
 //    Slice functor that accesses points directly as array.
 //
-//  Notes:      
+//  Notes:
 //
 //  Programmer: Brad Whitlock
 //  Creation:   Tue Mar 13 10:53:27 PDT 2012
@@ -171,7 +176,7 @@ public:
         return pt[0]*Normal[0] + pt[1]*Normal[1] + pt[2]*Normal[2] - D;
     }
 private:
-    vtkIdType ptstrideY, ptstrideZ; 
+    vtkIdType ptstrideY, ptstrideZ;
     const T *pts_ptr;
     double   Normal[3];
     double   Origin[3];
@@ -184,7 +189,7 @@ private:
 //  Purpose:
 //    Slice functor that uses GetPoint to access points.
 //
-//  Notes:      
+//  Notes:
 //
 //  Programmer: Brad Whitlock
 //  Creation:   Tue Mar 13 10:53:27 PDT 2012
@@ -221,7 +226,7 @@ public:
         return pt[0]*Normal[0] + pt[1]*Normal[1] + pt[2]*Normal[2] - D;
     }
 private:
-    vtkIdType  ptstrideY, ptstrideZ; 
+    vtkIdType  ptstrideY, ptstrideZ;
     vtkPoints *pts;
     double     Normal[3];
     double     Origin[3];
@@ -313,7 +318,7 @@ vtkSlicer::StructuredGridExecute(void)
 //  Purpose:
 //    Rectilinear slice function that accesses the coordinate arrays directly.
 //
-//  Notes:      
+//  Notes:
 //
 //  Programmer: Brad Whitlock
 //  Creation:   Tue Mar 13 10:50:45 PDT 2012
@@ -326,7 +331,7 @@ template <typename T>
 class RectSliceFunction
 {
 public:
-    RectSliceFunction(vtkDataArray *Xc, vtkDataArray *Yc, 
+    RectSliceFunction(vtkDataArray *Xc, vtkDataArray *Yc,
         vtkDataArray *Zc, const double O[3], const double N[3])
     {
         X = NULL;
@@ -369,7 +374,7 @@ private:
 //    Rectilinear slice function that uses GetTuple to access the coordinate
 //     arrays.
 //
-//  Notes:      
+//  Notes:
 //
 //  Programmer: Brad Whitlock
 //  Creation:   Tue Mar 13 10:50:19 PDT 2012
@@ -381,7 +386,7 @@ private:
 class GeneralRectSliceFunction
 {
 public:
-    GeneralRectSliceFunction(vtkDataArray *Xc, vtkDataArray *Yc, 
+    GeneralRectSliceFunction(vtkDataArray *Xc, vtkDataArray *Yc,
         vtkDataArray *Zc, const double O[3], const double N[3])
     {
         X = Xc;
@@ -493,7 +498,7 @@ vtkSlicer::RectilinearGridExecute(void)
         );
     }
 
-    sfv.ConstructPolyData(inPD, inCD, output, pt_dims, 
+    sfv.ConstructPolyData(inPD, inCD, output, pt_dims,
         rg->GetXCoordinates(), rg->GetYCoordinates(), rg->GetZCoordinates());
 }
 
@@ -584,28 +589,28 @@ vtkSlicer::UnstructuredGridExecute(void)
             tt_step = 7;
             canSlice = true;
             break;
- 
+
           case VTK_PYRAMID:
             triangulation_table = (const int *) pyramidTriangulationTable;
             vertices_from_edges = (const int *) pyramidVerticesFromEdges;
             tt_step = 13;
             canSlice = true;
             break;
- 
+
           case VTK_WEDGE:
             triangulation_table = (const int *) wedgeTriangulationTable;
             vertices_from_edges = (const int *) wedgeVerticesFromEdges;
             tt_step = 13;
             canSlice = true;
             break;
- 
+
           case VTK_HEXAHEDRON:
             triangulation_table = (const int *) hexTriangulationTable;
             vertices_from_edges = (const int *) hexVerticesFromEdges;
             tt_step = 16;
             canSlice = true;
             break;
- 
+
           case VTK_VERTEX:
             isVertex = true;
             break;
@@ -614,7 +619,7 @@ vtkSlicer::UnstructuredGridExecute(void)
             canSlice = false;
             break;
         }
- 
+
         if (canSlice)
         {
             int tmp[3] = {0,0,0};
@@ -685,7 +690,7 @@ vtkSlicer::UnstructuredGridExecute(void)
                 vtkIdType nFaces;
                 const vtkIdType *facePtIds;
                 ug->GetFaceStream(cellId, nFaces, facePtIds);
-                stuff_I_cant_slice->InsertNextCell(cellType, npts, pts, 
+                stuff_I_cant_slice->InsertNextCell(cellType, npts, pts,
                     nFaces, facePtIds);
             }
             else
@@ -748,11 +753,17 @@ vtkSlicer::GeneralExecute(void)
 // ****************************************************************************
 //  Modifications:
 //    Kathleen Bonnell, Wed Apr 27 18:47:18 PDT 2005
-//    Use vtkVisItCutter, which has modifications to correctly handle CellData. 
+//    Use vtkVisItCutter, which has modifications to correctly handle CellData.
 //
 //    Brad Whitlock, Wed Apr 11 11:34:16 PDT 2012
 //    Use vtkCutter when we're taking this path so we can slice general VTK
 //    datasets containing cells that vtkVisItCutter can't slice.
+//
+//    Kathleen Biagas, Wed Feb 26 14:28:26 PST 2025
+//    For VTK 9.4.1, use vtkVisItCutter always, passing the 'useVTKFilter' to
+//    'SetUnstructuredGridBypass' method.  vtkVisItCutter has been updated for
+//    VTK 9.4.1 to be a subclass of vtkCutter with special logic to handle an
+//    UnstructuredGrid.
 //
 // ****************************************************************************
 
@@ -764,6 +775,22 @@ vtkSlicer::SliceDataset(vtkDataSet *in_ds, vtkPolyData *out_pd,
     plane->SetOrigin(Origin[0], Origin[1], Origin[2]);
     plane->SetNormal(Normal[0], Normal[1], Normal[2]);
 
+#if LIB_VERSION_GE(VTK,9,4,1)
+    vtkVisItCutter *cutter = vtkVisItCutter::New();
+    // the flag 'useVTKFilter' doesn't really make sense here
+    // We want to tell the cutter to use an unstructured-grid specific
+    // cutting method instead of passing along to vtkPlaneCutter which
+    // garbles CellData when polygonal/polyhedral cells are present.
+    // The flag should be renamed when we strip support for VTK 9.2.6
+    cutter->SetUnstructuredGridBypass(useVTKFilter);
+    cutter->SetCutFunction(plane);
+    cutter->SetInputData(in_ds);
+    cutter->Update();
+
+    out_pd->ShallowCopy(cutter->GetOutput());
+    cutter->Delete();
+
+#else
     if(useVTKFilter)
     {
         vtkCutter *cutter = vtkCutter::New();
@@ -784,7 +811,7 @@ vtkSlicer::SliceDataset(vtkDataSet *in_ds, vtkPolyData *out_pd,
         out_pd->ShallowCopy(cutter->GetOutput());
         cutter->Delete();
     }
-
+#endif
     plane->Delete();
 }
 

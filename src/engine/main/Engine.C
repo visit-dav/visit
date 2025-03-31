@@ -91,8 +91,10 @@
 #endif
 
 #include <visit-config.h>
+#if LIB_VERSION_LE(VTK,9,2,6)
 #ifdef HAVE_OSMESA
 #  include <vtkOffScreenRenderingFactory.h>
+#endif
 #endif
 
 #include <string>
@@ -806,11 +808,13 @@ Engine::InitializeCompute()
     if (avtCallback::GetSoftwareRendering())
     {
         // Install factory for  VisIt's OffScreen Render Window overrides
+#if LIB_VERSION_LE(VTK,9,2,6)
 #ifdef HAVE_OSMESA
         debug1 << mName << "Offscreen rendering will use offscreen factory." << endl;
         vtkOffScreenRenderingFactory::ForceOffScreen();
 #else
         debug1 << mName << "Offscreen rendering will use GL." << endl;
+#endif
 #endif
     }
     else

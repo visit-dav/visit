@@ -22,7 +22,8 @@
 
 #define CLASSFUNCLINE __CLASS__ << "  " << __FUNCTION__ << "  " << __LINE__
 
-HighOrderUnstructuredData::HighOrderUnstructuredData() {
+HighOrderUnstructuredData::HighOrderUnstructuredData(VsReader* tReader,
+    VsRegistry* tRegistry) {
 
   VsLog::initialize(DebugStream::Stream3(), DebugStream::Stream4(),
       DebugStream::Stream5());
@@ -32,10 +33,9 @@ HighOrderUnstructuredData::HighOrderUnstructuredData() {
   delny2d = NULL;
   delny3d = NULL;
 
-  registry = NULL;
-  reader = NULL;
+  registry = tRegistry;
+  reader = tReader;
   cellArray = NULL;
-
 }
 
 HighOrderUnstructuredData::~HighOrderUnstructuredData() {

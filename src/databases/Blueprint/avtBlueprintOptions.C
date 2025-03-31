@@ -82,6 +82,9 @@ GetBlueprintReadOptions(void)
 // 
 //    Justin Privitera, Tue Aug 23 14:40:24 PDT 2022
 //    Removed `CONDUIT_HAVE_PARTITION_FLATTEN` check.
+// 
+//    Justin Privitera, Tue Jul  9 10:47:29 PDT 2024
+//    Added Blueprint Relay I/O extra options.
 //
 // ****************************************************************************
 
@@ -98,9 +101,19 @@ GetBlueprintWriteOptions(void)
     ops.push_back("Partition");
     rv->SetEnumStrings("Operation", ops);
 
+    // TODO add in later once https://github.com/LLNL/conduit/issues/1291 is fixed
+    // rv->SetEnum("Output type", 0);
+    // std::vector<std::string> output_types;
+    // output_types.push_back("HDF5");
+    // output_types.push_back("YAML");
+    // output_types.push_back("JSON");
+    // rv->SetEnumStrings("Output type", output_types);
+
     rv->SetInt("Partition target number of domains", 0);
 
     rv->SetMultiLineString("Flatten / Partition extra options", "");
+
+    rv->SetMultiLineString("Blueprint Relay I/O extra options", "");
 
     return rv;
 }

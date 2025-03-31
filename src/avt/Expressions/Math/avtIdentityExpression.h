@@ -31,6 +31,9 @@ class     vtkDataArray;
 //
 //    Hank Childs and Kathleen Bonnell, Fri Apr 24 17:18:47 PDT 2009
 //    Fix problem with identity variables of meshes.
+// 
+//    Justin Privitera, Mon Oct 28 10:15:57 PDT 2024
+//    Pass in_ds to DoOperation().
 //
 // ****************************************************************************
 
@@ -49,7 +52,7 @@ class EXPRESSION_API avtIdentityExpression : public avtUnaryMathExpression
 
   protected:
     virtual void              DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                          int ncomponents, int ntuples);
+                                          int ncomponents, int ntuples, vtkDataSet *in_ds);
 };
 
 

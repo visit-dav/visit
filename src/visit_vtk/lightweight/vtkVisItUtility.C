@@ -39,26 +39,26 @@ static std::list<vtkObject*> vtkobjects;
 // ****************************************************************************
 // Method: vtkVisItUtility_GetPointsRectilinear
 //
-// Purpose: 
+// Purpose:
 //   Create a vtkPoints from a rectilinear grid's points.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Mar 19 11:59:09 PDT 2012
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 template <typename T>
 vtkPoints *
 vtkVisItUtility_GetPointsRectilinear(int dt, vtkDataArray *xc, vtkDataArray *yc, vtkDataArray *zc)
-{ 
+{
     vtkIdType i,j,k;
     vtkIdType nx = xc->GetNumberOfTuples();
     vtkIdType ny = yc->GetNumberOfTuples();
@@ -66,22 +66,22 @@ vtkVisItUtility_GetPointsRectilinear(int dt, vtkDataArray *xc, vtkDataArray *yc,
     T *x = new T[nx];
     for (i = 0 ; i < nx ; i++)
     {
-        x[i] = xc->GetComponent(i, 0);
+        x[i] = static_cast<T>(xc->GetComponent(i, 0));
     }
     T *y = new T[ny];
     for (i = 0 ; i < ny ; i++)
     {
-        y[i] = yc->GetComponent(i, 0);
+        y[i] = static_cast<T>(yc->GetComponent(i, 0));
     }
     T *z = new T[nz];
     for (i = 0 ; i < nz ; i++)
     {
-        z[i] = zc->GetComponent(i, 0);
+        z[i] = static_cast<T>(zc->GetComponent(i, 0));
     }
- 
+
     vtkPoints *pts = vtkPoints::New(dt);
     pts->SetNumberOfPoints(nx*ny*nz);
-    T *p = (T *) pts->GetVoidPointer(0);
+    T *p = static_cast<T *>(pts->GetVoidPointer(0));
     for (k = 0 ; k < nz ; k++)
     {
         for (j = 0 ; j < ny ; j++)
@@ -95,7 +95,7 @@ vtkVisItUtility_GetPointsRectilinear(int dt, vtkDataArray *xc, vtkDataArray *yc,
             }
         }
     }
- 
+
     delete [] x;
     delete [] y;
     delete [] z;
@@ -127,12 +127,12 @@ vtkVisItUtility_GetPointsRectilinear(int dt, vtkDataArray *xc, vtkDataArray *yc,
 //    I moved code into vtkVisItUtility_GetPointsRectilinear.
 //
 // ****************************************************************************
- 
+
 vtkPoints *
 vtkVisItUtility::GetPoints(vtkDataSet *inDS)
 {
     vtkPoints *pts = NULL;
- 
+
     int type = inDS->GetDataObjectType();
     if (type == VTK_POLY_DATA || type == VTK_UNSTRUCTURED_GRID ||
         type == VTK_STRUCTURED_GRID)
@@ -140,7 +140,7 @@ vtkVisItUtility::GetPoints(vtkDataSet *inDS)
         //
         // This dataset already has a vtkPoints object we can use.
         //
-        vtkPointSet *pt_ds = (vtkPointSet *) inDS;
+        vtkPointSet *pt_ds = static_cast<vtkPointSet *>(inDS);
         pts = pt_ds->GetPoints();
         if (pts != NULL)
             pts->Register(NULL); // We are going to remove this later.
@@ -152,7 +152,7 @@ vtkVisItUtility::GetPoints(vtkDataSet *inDS)
         //
         // We will need to construct a vtkPoints object.
         //
-        vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) inDS;
+        vtkRectilinearGrid *rgrid = static_cast<vtkRectilinearGrid *>(inDS);
         vtkDataArray *xc = rgrid->GetXCoordinates();
         vtkDataArray *yc = rgrid->GetYCoordinates();
         vtkDataArray *zc = rgrid->GetZCoordinates();
@@ -171,7 +171,7 @@ vtkVisItUtility::GetPoints(vtkDataSet *inDS)
 // ****************************************************************************
 // Method: vtkVisItUtility::NewPoints
 //
-// Purpose: 
+// Purpose:
 //   Create vtkPoints with the same precision as the input dataset's points.
 //
 // Arguments:
@@ -179,26 +179,26 @@ vtkVisItUtility::GetPoints(vtkDataSet *inDS)
 //
 // Returns:    A new vtkPoints that has just been allocated; not populated.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Mar 21 11:58:09 PDT 2012
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 vtkPoints *
 vtkVisItUtility::NewPoints(vtkDataSet *inDS)
 {
     vtkPoints *pts = NULL;
- 
+
     int type = inDS->GetDataObjectType();
     if (type == VTK_POLY_DATA || type == VTK_UNSTRUCTURED_GRID ||
         type == VTK_STRUCTURED_GRID)
     {
         // Allocate points with the same precision.
-        vtkPointSet *pt_ds = (vtkPointSet *) inDS;
+        vtkPointSet *pt_ds = static_cast<vtkPointSet *>(inDS);
         pts = vtkPoints::New(pt_ds->GetPoints()->GetDataType());
     }
     else if (type == VTK_RECTILINEAR_GRID)
@@ -206,7 +206,7 @@ vtkVisItUtility::NewPoints(vtkDataSet *inDS)
         //
         // We will need to construct a vtkPoints object.
         //
-        vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) inDS;
+        vtkRectilinearGrid *rgrid = static_cast<vtkRectilinearGrid *>(inDS);
         vtkDataArray *xc = rgrid->GetXCoordinates();
         vtkDataArray *yc = rgrid->GetYCoordinates();
         vtkDataArray *zc = rgrid->GetZCoordinates();
@@ -229,42 +229,42 @@ vtkVisItUtility::NewPoints(vtkDataSet *inDS)
 //
 //  Purpose:
 //      A routine that returns the logical indices for a given point or cell id
-//      within a structured dataset.   
+//      within a structured dataset.
 //
 //  Arguments:
 //      ds      The dataset.
-//      forCell Indicates whether the ID is for a cell (true) or a point (false). 
-//      ID      The id of the point or the cell. 
+//      forCell Indicates whether the ID is for a cell (true) or a point (false).
+//      ID      The id of the point or the cell.
 //      ijk     A place to store the logical indices (all -1 if ds is not
-//              a rectilinear or structured grid). 
+//              a rectilinear or structured grid).
 //      global  An optional flag indicating that the global indices should be
-//              returned. 
+//              returned.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   December 27, 2002 
+//  Programmer: Kathleen Bonnell
+//  Creation:   December 27, 2002
 //
 //  Modifications:
-//    Kathleen Bonnell, Wed Apr 16 16:25:18 PDT 2003  
+//    Kathleen Bonnell, Wed Apr 16 16:25:18 PDT 2003
 //    Improved logic to make it work correctly for cells and points.
 //
-//    Kathleen Bonnell, Wed Jun 25 13:27:59 PDT 2003 
-//    Fixed logic for determining 'base' for points. 
+//    Kathleen Bonnell, Wed Jun 25 13:27:59 PDT 2003
+//    Fixed logic for determining 'base' for points.
 //
-//    Kathleen Bonnell, Tue Sep 16 13:33:30 PDT 2003 
+//    Kathleen Bonnell, Tue Sep 16 13:33:30 PDT 2003
 //    Once again, redo logic for determining indices for a node, and allow
 //    this method to work on a non-structured dataset if the array inidicating
 //    original dimensions is present.
 //
-//    Kathleen Bonnell, Tue Dec  9 09:27:20 PST 2003 
+//    Kathleen Bonnell, Tue Dec  9 09:27:20 PST 2003
 //    If 'global' flag is set, use the "base_index" array to determine the
-//    global 'ijk'. 
+//    global 'ijk'.
 //
-//    Kathleen Bonnell, Fri May 28 10:31:25 PDT 2004 
+//    Kathleen Bonnell, Fri May 28 10:31:25 PDT 2004
 //    Added flag allowing adjustment for GhostZones.  Moved code that retrieves
 //    dimensions to its own method. Account for 2D data differently than 3d.
-// 
+//
 //    Kathleen Bonnell, Fri May 28 17:27:05 PDT 2004
-//    Forgot return for bad dims, and test for invalid ijk (< 0). 
+//    Forgot return for bad dims, and test for invalid ijk (< 0).
 //
 //    Gunther H. Weber, Thu Aug 22 10:16:34 PDT 2013
 //    Added option to allow negative indices (false by default).
@@ -288,7 +288,8 @@ vtkVisItUtility::GetLogicalIndices(vtkDataSet *ds, const bool forCell, const int
 
     if (global)
     {
-        vtkIntArray *bi = (vtkIntArray*)ds->GetFieldData()->GetArray("base_index");
+        vtkIntArray *bi = static_cast<vtkIntArray*>
+            (ds->GetFieldData()->GetArray("base_index"));
         if (bi)
         {
             base[0] = bi->GetValue(0);
@@ -299,8 +300,8 @@ vtkVisItUtility::GetLogicalIndices(vtkDataSet *ds, const bool forCell, const int
 
     if (adjustForGhosts)
     {
-        vtkIntArray *realDims = 
-            (vtkIntArray*)ds->GetFieldData()->GetArray("avtRealDims");
+        vtkIntArray *realDims = static_cast<vtkIntArray*>
+            (ds->GetFieldData()->GetArray("avtRealDims"));
         if (realDims)
         {
             base[0] -= realDims->GetValue(0);
@@ -326,7 +327,7 @@ vtkVisItUtility::GetLogicalIndices(vtkDataSet *ds, const bool forCell, const int
         ijk[1] = (ID / dimX) + base[1];
         ijk[2] = 0;
     }
-    else 
+    else
     {
         ijk[0] = (ID % dimX)          + base[0];
         ijk[1] = ((ID / dimX) % dimY) + base[1];
@@ -347,31 +348,31 @@ vtkVisItUtility::GetLogicalIndices(vtkDataSet *ds, const bool forCell, const int
 //
 //  Purpose:
 //      A routine that calculates a 'real' cellId from structured data.
-//      That is, the cell ID in the original non-ghost-zone data, which 
-//      corresponds to the given cellId. 
+//      That is, the cell ID in the original non-ghost-zone data, which
+//      corresponds to the given cellId.
 //
 //  Arguments:
 //      cellId  The cellId in the ds.
-//      forCell True if a cell Id should be returned, false if  for point id. 
+//      forCell True if a cell Id should be returned, false if  for point id.
 //      ds      The dataset.
 //
 //  Returns:
-//      If the passed dataset is structured, the "realcellId" calculated from 
+//      If the passed dataset is structured, the "realcellId" calculated from
 //      non-ghost dimensions.  Otherwise, simply returns the passed cellId.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   April 16, 2003 
+//  Programmer: Kathleen Bonnell
+//  Creation:   April 16, 2003
 //
 //  Modifications:
-//    Kathleen Bonnell, Fri Apr 18 14:01:41 PDT 2003 
+//    Kathleen Bonnell, Fri Apr 18 14:01:41 PDT 2003
 //    Fix calculation of c.
 //
-//    Kathleen Bonnell, Wed Jun 25 13:27:59 PDT 2003 
+//    Kathleen Bonnell, Wed Jun 25 13:27:59 PDT 2003
 //    Renamed to reflect that this method can return node id or cell id, based
 //    on the value of 'forCell' argument.
 //
-//    Kathleen Bonnell, Thu Sep 18 11:35:25 PDT 2003 
-//    Allow this method to work on a non-structured dataset if the array 
+//    Kathleen Bonnell, Thu Sep 18 11:35:25 PDT 2003
+//    Allow this method to work on a non-structured dataset if the array
 //    inidicating original dimensions is present.
 //
 // ****************************************************************************
@@ -382,18 +383,18 @@ vtkVisItUtility::CalculateRealID(const int cellId, const bool forCell, vtkDataSe
     int retVal = cellId;
     int type = ds->GetDataObjectType();
 
-    
+
     if (type == VTK_STRUCTURED_GRID ||
         type == VTK_RECTILINEAR_GRID ||
-        ds->GetFieldData()->GetArray("vtkOriginalDimensions") != NULL) 
+        ds->GetFieldData()->GetArray("vtkOriginalDimensions") != NULL)
     {
-        vtkIntArray *realDims = 
-            (vtkIntArray*)ds->GetFieldData()->GetArray("avtRealDims");
+        vtkIntArray *realDims = static_cast<vtkIntArray*>
+            (ds->GetFieldData()->GetArray("avtRealDims"));
         if (realDims != NULL)
         {
             int IJK[3] = { -1, -1, -1};
             GetLogicalIndices(ds, forCell, cellId, IJK);
-            int nElsI, nElsJ; 
+            int nElsI, nElsJ;
             nElsI = realDims->GetValue(1)- realDims->GetValue(0);
             nElsJ = realDims->GetValue(3)- realDims->GetValue(2);
             if (!forCell)
@@ -402,7 +403,7 @@ vtkVisItUtility::CalculateRealID(const int cellId, const bool forCell, vtkDataSe
                 nElsJ += 1;
             }
             retVal = IJK[0] +
-                     IJK[1] * nElsI +  
+                     IJK[1] * nElsI +
                      IJK[2] * nElsI * nElsJ;
         }
     }
@@ -414,29 +415,29 @@ vtkVisItUtility::CalculateRealID(const int cellId, const bool forCell, vtkDataSe
 //  Function: ComputeStructuredCoordinates
 //
 //  Purpose:
-//    Computes the structured coordinates in a rectilinear grid for a point 
-//    x[3]. The cell is specified by the array ijk[3]. 
+//    Computes the structured coordinates in a rectilinear grid for a point
+//    x[3]. The cell is specified by the array ijk[3].
 //
 //  Arguments:
-//    rgrid  The rectilinear grid. 
+//    rgrid  The rectilinear grid.
 //    x      The poit.
-//    ijk    A place to store the structured coordinates. 
+//    ijk    A place to store the structured coordinates.
 //
 //  Returns:
-//    0 if the point x is outside of the grid, and a 1 if inside the grid. 
+//    0 if the point x is outside of the grid, and a 1 if inside the grid.
 //
 //  Notes:  This method is taken from vtkRectilinearGrid.  It is modified
 //          to allow x to line on the boundary of the grid, and does not
-//          compute paramatric coordinates which are not necessary for our 
+//          compute paramatric coordinates which are not necessary for our
 //          purposes.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   May 7, 2003 
+//  Programmer: Kathleen Bonnell
+//  Creation:   May 7, 2003
 //
 // ****************************************************************************
 
 int
-vtkVisItUtility::ComputeStructuredCoordinates(vtkRectilinearGrid *rgrid, 
+vtkVisItUtility::ComputeStructuredCoordinates(vtkRectilinearGrid *rgrid,
                                               double x[3], int ijk[3])
 {
   int i, j;
@@ -449,7 +450,7 @@ vtkVisItUtility::ComputeStructuredCoordinates(vtkRectilinearGrid *rgrid,
   // Find locations in x-y-z direction
   //
   ijk[0] = ijk[1] = ijk[2] = 0;
- 
+
   for ( j=0; j < 3; j++ )
     {
     xPrev = scalars[j]->GetComponent(0, 0);
@@ -464,7 +465,7 @@ vtkVisItUtility::ComputeStructuredCoordinates(vtkRectilinearGrid *rgrid,
       {
       return 0;
       }
- 
+
     for (i=1; i < scalars[j]->GetNumberOfTuples(); i++)
       {
       xNext = scalars[j]->GetComponent(i, 0);
@@ -473,7 +474,7 @@ vtkVisItUtility::ComputeStructuredCoordinates(vtkRectilinearGrid *rgrid,
         ijk[j] = i - 1;
         break;
         }
- 
+
       else if ( x[j] == xNext )
         {
         ijk[j] = i - 1;
@@ -482,7 +483,7 @@ vtkVisItUtility::ComputeStructuredCoordinates(vtkRectilinearGrid *rgrid,
       xPrev = xNext;
       }
     }
- 
+
   return 1;
 }
 
@@ -494,27 +495,27 @@ vtkVisItUtility::ComputeStructuredCoordinates(vtkRectilinearGrid *rgrid,
 //    Searches the dataset for a cell containing the given point.
 //
 //  Arguments:
-//    ds     The dataset to search. 
+//    ds     The dataset to search.
 //    pt     The point.
 //
 //  Returns:
 //    -1 if the point pt is outside of the ds, and the cell Id of the cell
-//     containing the point otherwise. 
+//     containing the point otherwise.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   November 13, 2003 
+//  Programmer: Kathleen Bonnell
+//  Creation:   November 13, 2003
 //
 //  Modifications:
 //    Kathleen Bonnell, Wed Feb 18 10:03:21 PST 2004
 //    Pulled code from vtkPointSet::FindCell, so that could be modified and
 //    made more useful.
 //
-//    Kathleen Bonnell, Fri Apr 16 11:48:28 PDT 2004 
+//    Kathleen Bonnell, Fri Apr 16 11:48:28 PDT 2004
 //    Use VisIt version of the point locator so that disconnected points can
 //    be ignored.  In case there are physically adjacent but non-logically-
 //    connected cells, find 8 closest points instead of 1.
 //
-//    Kathleen Bonnell, Wed Jul  7 15:02:03 PDT 2004 
+//    Kathleen Bonnell, Wed Jul  7 15:02:03 PDT 2004
 //    Delete objects before early return, to prevent memory leaks.
 //
 // ****************************************************************************
@@ -525,16 +526,16 @@ vtkVisItUtility::FindCell(vtkDataSet *ds, double x[3])
     if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
     {
         int ijk[3];
-        vtkRectilinearGrid *rgrid = (vtkRectilinearGrid*)ds;
+        vtkRectilinearGrid *rgrid = static_cast<vtkRectilinearGrid*>(ds);
         if (ComputeStructuredCoordinates(rgrid, x, ijk) == 0)
             return -1;
-        return rgrid->ComputeCellId(ijk);
+        return static_cast<int>(rgrid->ComputeCellId(ijk));
     }
     else
     {
         // Pulled this from vtkPointSet::FindCell, because for
         // some of our data, their default 'MAXWALK' is too small.
-        int nCells = ds->GetNumberOfCells();
+        vtkIdType nCells = ds->GetNumberOfCells();
         if (nCells == 0)
         {
             return -1;
@@ -542,28 +543,28 @@ vtkVisItUtility::FindCell(vtkDataSet *ds, double x[3])
 
         vtkIdType ptId = 0, cellId = 0;
         vtkCell *cell = NULL;
-        int walk, found = -1, subId;
+        int walk, found = -1, subId=-1;
         double pcoords[3], *weights = new double[8], diagLen, tol;
         double closestPoint[3], dist2;
         vtkIdList *cellIds, *ptIds;
-   
+
         vtkVisItPointLocator *locator = vtkVisItPointLocator::New();
         locator->SetDataSet(ds);
         locator->SetIgnoreDisconnectedPoints(1);
         locator->BuildLocator();
- 
+
         diagLen = ds->GetLength();
         if (nCells != 0)
-            tol = diagLen / (double) nCells;
+            tol = diagLen / static_cast<double>(nCells);
         else
             tol = 1e-6;
 
         //
-        // Finding ONLY the single closest point won't work for this use-case 
-        // if any adjacent cells share identical point coordinates with 
+        // Finding ONLY the single closest point won't work for this use-case
+        // if any adjacent cells share identical point coordinates with
         // different point Ids.  (E.g. physically adjacent cells which are not
         // logically connected.) So find 8 closest-points and work from there.
-        // 
+        //
         vtkIdList *closestPoints = vtkIdList::New();
         locator->FindClosestNPoints(8, x, closestPoints);
         if (closestPoints->GetNumberOfIds() == 0)
@@ -573,7 +574,7 @@ vtkVisItUtility::FindCell(vtkDataSet *ds, double x[3])
             delete [] weights;
             return -1;
         }
-       
+
         double minDist2 = FLT_MAX;
         cellIds = vtkIdList::New();
         cellIds->Allocate(8, 100);
@@ -593,7 +594,7 @@ vtkVisItUtility::FindCell(vtkDataSet *ds, double x[3])
 
                 if (evaluate == 1 && dist2 <= tol && dist2 < minDist2)
                 {
-                    found = cellId;
+                    found = static_cast<int>(cellId);
                     minDist2 = dist2;
                 }
             }
@@ -609,18 +610,18 @@ vtkVisItUtility::FindCell(vtkDataSet *ds, double x[3])
                         cellId = cellIds->GetId(0);
                         cell = ds->GetCell(cellId);
                     }
-                    else 
+                    else
                     {
                         break; // outside of data
                     }
                     if (cell)
                     {
                         int eval = cell->EvaluatePosition
-                            (x, closestPoint, subId, pcoords, dist2, weights); 
+                            (x, closestPoint, subId, pcoords, dist2, weights);
                         if (eval == 1 && dist2 <= tol && dist2 < minDist2)
                         {
                             minDist2 = dist2;
-                            found = cellId; 
+                            found = static_cast<int>(cellId);
                         }
                     }
 
@@ -642,36 +643,36 @@ vtkVisItUtility::FindCell(vtkDataSet *ds, double x[3])
 //  Function: GetDimensions
 //
 //  Purpose:
-//      A routine that will return the dimensions of a structured dataset. 
+//      A routine that will return the dimensions of a structured dataset.
 //
 //  Arguments:
 //      ds      The dataset.
 //      dims    A place to hold the dimensions.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   May 27, 2004 
+//  Programmer: Kathleen Bonnell
+//  Creation:   May 27, 2004
 //
 //  Modifications:
 //
 // ****************************************************************************
- 
+
 void
 vtkVisItUtility::GetDimensions(vtkDataSet *ds, int dims[3])
-{ 
+{
     dims[0] = dims[1] = dims[2] = -1;
     int type = ds->GetDataObjectType();
     if (type == VTK_STRUCTURED_GRID)
     {
-        ((vtkStructuredGrid*)ds)->GetDimensions(dims);
+        static_cast<vtkStructuredGrid*>(ds)->GetDimensions(dims);
     }
     else if (type == VTK_RECTILINEAR_GRID)
     {
-        ((vtkRectilinearGrid*)ds)->GetDimensions(dims);
+        static_cast<vtkRectilinearGrid*>(ds)->GetDimensions(dims);
     }
-    else 
+    else
     {
-        vtkIntArray *vtkDims = 
-           (vtkIntArray*)ds->GetFieldData()->GetArray("vtkOriginalDimensions");
+        vtkIntArray *vtkDims = static_cast<vtkIntArray*>
+           (ds->GetFieldData()->GetArray("vtkOriginalDimensions"));
         if (vtkDims != NULL)
         {
             dims[0] = vtkDims->GetValue(0);
@@ -686,21 +687,21 @@ vtkVisItUtility::GetDimensions(vtkDataSet *ds, int dims[3])
 //  Function: CalculateGhostIdFromNonGhost
 //
 //  Purpose:
-//    A routine that calculates a node or cell id in relation to the 
+//    A routine that calculates a node or cell id in relation to the
 //    with-ghost-zone dataset, from an id that corresponds to the same
 //    dataset without ghost-zones.
 //
 //  Arguments:
 //    id    The cellId in the ds.
-//      forCell True if a cell Id should be returned, false if  for point id. 
+//      forCell True if a cell Id should be returned, false if  for point id.
 //      ds      The dataset.
 //
 //  Returns:
 //    If the passed dataset is not structured, simply returns the passed id.
 //    Otherwise returns the id corresponding to with-ghost-zone data.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   July 8, 2004 
+//  Programmer: Kathleen Bonnell
+//  Creation:   July 8, 2004
 //
 //  Modifications:
 //
@@ -715,17 +716,17 @@ vtkVisItUtility::CalculateGhostIdFromNonGhost(vtkDataSet *ds, const int id,
 
     if (type == VTK_STRUCTURED_GRID ||
         type == VTK_RECTILINEAR_GRID ||
-        ds->GetFieldData()->GetArray("vtkOriginalDimensions") != NULL) 
+        ds->GetFieldData()->GetArray("vtkOriginalDimensions") != NULL)
     {
-        int dimX, dimY, dims[3]; 
+        int dimX, dimY, dims[3];
         int ijk[3] = { -1, -1, -1};
         GetDimensions(ds, dims);
         if (dims[0] == -1 || dims[1] == -1 || dims[2] == -1)
         {
             return id;
         }
-        vtkIntArray *realDims = 
-            (vtkIntArray*)ds->GetFieldData()->GetArray("avtRealDims");
+        vtkIntArray *realDims = static_cast<vtkIntArray*>
+            (ds->GetFieldData()->GetArray("avtRealDims"));
         if (realDims != NULL)
         {
             dimX = realDims->GetValue(1) - realDims->GetValue(0);
@@ -736,7 +737,7 @@ vtkVisItUtility::CalculateGhostIdFromNonGhost(vtkDataSet *ds, const int id,
                 dimY++;
             }
         }
-        else 
+        else
         {
             if (forCell)
             {
@@ -755,9 +756,9 @@ vtkVisItUtility::CalculateGhostIdFromNonGhost(vtkDataSet *ds, const int id,
             ijk[1] = (id / dimX);
             ijk[2] = 0;
         }
-        else 
+        else
         {
-            ijk[0] = (id % dimX);          
+            ijk[0] = (id % dimX);
             ijk[1] = ((id / dimX) % dimY);
             ijk[2] = (id / (dimX * dimY));
         }
@@ -781,7 +782,7 @@ vtkVisItUtility::CalculateGhostIdFromNonGhost(vtkDataSet *ds, const int id,
             nElsJ -= 1;
         }
         retVal = ijk[0] +
-                 ijk[1] * nElsI +  
+                 ijk[1] * nElsI +
                  ijk[2] * nElsI * nElsJ;
     }
     return retVal;
@@ -841,38 +842,38 @@ vtkVisItUtility::GetCellCenter(vtkCell* cell, double center[3])
     center[2] = coord[2];
 }
 
- 
+
 // ****************************************************************************
 //  Function: GetLocalElementForGlobal
 //
 //  Purpose:
 //    Given a globalElement id (zonal or nodal), determine the local element
-//    id whose global id matches. 
+//    id whose global id matches.
 //
 //  Arguments:
 //    ds             The dataset to be queried.
 //    globalElement  Storage for the coordinates.
-//    forCell        True if this query is for zonal ids, false otherwise. 
+//    forCell        True if this query is for zonal ids, false otherwise.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   December 13, 2004 
+//  Creation:   December 13, 2004
 //
 //  Modifications:
 //
 // ****************************************************************************
 
 int
-vtkVisItUtility::GetLocalElementForGlobal(vtkDataSet* ds, 
+vtkVisItUtility::GetLocalElementForGlobal(vtkDataSet* ds,
     const int globalElement, const bool forCell)
 {
     int retVal = -1;
-    vtkIntArray *globalIds = NULL; 
+    vtkIntArray *globalIds = NULL;
     if (forCell)
     {
         globalIds = vtkIntArray::SafeDownCast(
                 ds->GetCellData()->GetArray("avtGlobalZoneNumbers"));
     }
-    else 
+    else
     {
         globalIds = vtkIntArray::SafeDownCast(
                 ds->GetPointData()->GetArray("avtGlobalNodeNumbers"));
@@ -880,14 +881,14 @@ vtkVisItUtility::GetLocalElementForGlobal(vtkDataSet* ds,
 
     if (globalIds)
     {
-        int n = globalIds->GetNumberOfTuples();
+        vtkIdType n = globalIds->GetNumberOfTuples();
         int *g = globalIds->GetPointer(0);
-        for (int i = 0; i < n && retVal == -1; i++)
+        for (vtkIdType i = 0; i < n && retVal == -1; i++)
         {
-            retVal = (g[i] == globalElement ? i : -1);
+            retVal = (g[i] == globalElement ? static_cast<int>(i) : -1);
         }
     }
-    return retVal; 
+    return retVal;
 }
 
 
@@ -898,28 +899,28 @@ vtkVisItUtility::GetLocalElementForGlobal(vtkDataSet* ds,
 //    Searches the dataset for a cell containing the given point.
 //
 //  Arguments:
-//    ds     The dataset to search. 
+//    ds     The dataset to search.
 //
 //  Returns:
-//    false if the dataset contains no ghosts, or only AMR type ghosts, 
+//    false if the dataset contains no ghosts, or only AMR type ghosts,
 //    true otherwise
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   July 8, 2005 
+//  Programmer: Kathleen Bonnell
+//  Creation:   July 8, 2005
 //
 // ****************************************************************************
 
-bool       
+bool
 vtkVisItUtility::ContainsMixedGhostZoneTypes(vtkDataSet *ds)
 {
     bool mixed = false;
     vtkDataArray *ghosts = ds->GetCellData()->GetArray("avtGhostZones");
     if (ghosts)
     {
-        unsigned char *gz = (unsigned char*)ghosts->GetVoidPointer(0); 
+        unsigned char *gz = static_cast<unsigned char*>(ghosts->GetVoidPointer(0));
         for (int i = 0; i < ghosts->GetNumberOfTuples() && !mixed; i++)
         {
-            mixed = !((int)gz[i] == 0 || (int)gz[i] == 8);
+            mixed = !(gz[i] == 0 || gz[i] == 8);
         }
     }
     return mixed;
@@ -965,10 +966,10 @@ vtkVisItUtility::CellContainsPoint(vtkCell *cell, const double *pt)
     int cellType = cell->GetCellType();
     if (cellType == VTK_HEXAHEDRON)
     {
-        vtkHexahedron *hex = (vtkHexahedron *) cell;
+        vtkHexahedron *hex = static_cast<vtkHexahedron *>(cell);
         vtkPoints *pts = hex->GetPoints();
-        // vtkCell sets its points object data type to double. 
-        double *pts_ptr = (double *) pts->GetVoidPointer(0);
+        // vtkCell sets its points object data type to double.
+        double *pts_ptr = static_cast<double *>(pts->GetVoidPointer(0));
 
         double center[3] = { 0., 0., 0. };
         for (i = 0 ; i < 8 ; i++)
@@ -1028,7 +1029,7 @@ vtkVisItUtility::CellContainsPoint(vtkCell *cell, const double *pt)
                         + cross[1]*(center[1] - origin[1])
                         + cross[2]*(center[2] - origin[2]);
 
-            // 
+            //
             // If the point in question (pt) and the center are on opposite
             // sides of the cell, then declare the point outside the cell.
             //
@@ -1039,10 +1040,10 @@ vtkVisItUtility::CellContainsPoint(vtkCell *cell, const double *pt)
     }
     else if (cellType == VTK_PYRAMID)
     {
-        vtkPyramid *pyramid = (vtkPyramid *) cell;
+        vtkPyramid *pyramid = static_cast<vtkPyramid *>(cell);
         vtkPoints *pts = pyramid->GetPoints();
-        // vtkCell sets its points object data type to double. 
-        double *pts_ptr = (double *) pts->GetVoidPointer(0);
+        // vtkCell sets its points object data type to double.
+        double *pts_ptr = static_cast<double *>(pts->GetVoidPointer(0));
 
         // Add an additional point that is the center of the base.
         double pts2[6*3];
@@ -1127,7 +1128,7 @@ vtkVisItUtility::CellContainsPoint(vtkCell *cell, const double *pt)
                             + cross[1]*(center[1] - origin[1])
                             + cross[2]*(center[2] - origin[2]);
 
-                // 
+                //
                 // If the point in question (pt) and the center are on opposite
                 // sides of the cell, then declare the point outside the cell.
                 //
@@ -1141,10 +1142,10 @@ vtkVisItUtility::CellContainsPoint(vtkCell *cell, const double *pt)
     }
     else if (cellType == VTK_WEDGE)
     {
-        vtkWedge *wedge = (vtkWedge *) cell;
+        vtkWedge *wedge = static_cast<vtkWedge *>(cell);
         vtkPoints *pts = wedge->GetPoints();
-        // vtkCell sets its points object data type to double. 
-        double *pts_ptr = (double *) pts->GetVoidPointer(0);
+        // vtkCell sets its points object data type to double.
+        double *pts_ptr = static_cast<double *>(pts->GetVoidPointer(0));
 
         // Add three additional points that are the center of each
         // quad face edge.
@@ -1234,7 +1235,7 @@ vtkVisItUtility::CellContainsPoint(vtkCell *cell, const double *pt)
                             + cross[1]*(center[1] - origin[1])
                             + cross[2]*(center[2] - origin[2]);
 
-                // 
+                //
                 // If the point in question (pt) and the center are on opposite
                 // sides of the cell, then declare the point outside the cell.
                 //
@@ -1271,7 +1272,7 @@ vtkVisItUtility::CellContainsPoint(vtkCell *cell, const double *pt)
 //      ds      The dataset to write.
 //      fname   The name of the output file.
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   July 12, 2006
 //
 // ****************************************************************************
@@ -1296,12 +1297,12 @@ vtkVisItUtility::WriteDataSet(vtkDataSet *ds, const char *fname)
 //
 //  Arguments:
 //    nXCoords  The number of X coordinates in the grid.
-//    type      The data type for the coordinate arrays. 
+//    type      The data type for the coordinate arrays.
 //
 //  Returns:
 //    A 1-dimensional vtkRectilinearGrid
-// 
-//  Programmer: Kathleen Bonnell 
+//
+//  Programmer: Kathleen Bonnell
 //  Creation:   July 12, 2006
 //
 //  Modifications:
@@ -1313,7 +1314,7 @@ vtkVisItUtility::WriteDataSet(vtkDataSet *ds, const char *fname)
 //
 // ****************************************************************************
 
-vtkRectilinearGrid * 
+vtkRectilinearGrid *
 vtkVisItUtility::Create1DRGrid(int nXCoords, int type)
 {
     return CreateEmptyRGrid(nXCoords, 1, 1, type);
@@ -1330,12 +1331,12 @@ vtkVisItUtility::Create1DRGrid(int nXCoords, int type)
 //    nXCoords  The number of X coordinates in the grid.
 //    nYCoords  The number of Y coordinates in the grid.
 //    nZCoords  The number of Z coordinates in the grid.
-//    type      The data type for the coordinate arrays. 
+//    type      The data type for the coordinate arrays.
 //
 //  Returns:
 //    A vtkRectilinearGrid
-// 
-//  Programmer: Kathleen Bonnell 
+//
+//  Programmer: Kathleen Bonnell
 //  Creation:   July 12, 2006
 //
 //  Modifications:
@@ -1347,8 +1348,8 @@ vtkVisItUtility::Create1DRGrid(int nXCoords, int type)
 //
 // ****************************************************************************
 
-vtkRectilinearGrid * 
-vtkVisItUtility::CreateEmptyRGrid(int nXCoords, int nYCoords, 
+vtkRectilinearGrid *
+vtkVisItUtility::CreateEmptyRGrid(int nXCoords, int nYCoords,
                                   int nZCoords, int type)
 {
     vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
@@ -1386,6 +1387,13 @@ vtkVisItUtility::CreateEmptyRGrid(int nXCoords, int nYCoords,
         yc = vtkCharArray::New();
         zc = vtkCharArray::New();
     }
+    else // default to double
+    {
+        xc = vtkDoubleArray::New();
+        yc = vtkDoubleArray::New();
+        zc = vtkDoubleArray::New();
+    }
+
     xc->SetNumberOfComponents(1);
     xc->SetNumberOfTuples(nXCoords);
     if (nXCoords == 1)
@@ -1398,12 +1406,12 @@ vtkVisItUtility::CreateEmptyRGrid(int nXCoords, int nYCoords,
     zc->SetNumberOfTuples(nZCoords);
     if (nZCoords == 1)
       zc->SetTuple1(0, 0.);
-    rgrid->SetXCoordinates(xc); 
-    rgrid->SetYCoordinates(yc); 
-    rgrid->SetZCoordinates(zc); 
-    xc->Delete(); 
-    yc->Delete(); 
-    zc->Delete(); 
+    rgrid->SetXCoordinates(xc);
+    rgrid->SetYCoordinates(yc);
+    rgrid->SetZCoordinates(zc);
+    xc->Delete();
+    yc->Delete();
+    zc->Delete();
     return rgrid;
 }
 
@@ -1419,9 +1427,9 @@ vtkVisItUtility::CreateEmptyRGrid(int nXCoords, int nYCoords,
 //    pt2       The second point.
 //
 //  Returns:
-//    True if points are equal, false otherwise. 
-// 
-//  Programmer: Kathleen Bonnell 
+//    True if points are equal, false otherwise.
+//
+//  Programmer: Kathleen Bonnell
 //  Creation:   August 14, 2006
 //
 //  Modifications:
@@ -1429,7 +1437,7 @@ vtkVisItUtility::CreateEmptyRGrid(int nXCoords, int nYCoords,
 //    Added optional tolerance argument.
 // ****************************************************************************
 
-bool 
+bool
 vtkVisItUtility::PointsEqual(double pt1[3], double pt2[3], const double *_eps)
 {
     double eps = 1e-6;
@@ -1515,13 +1523,14 @@ void vtkVisItUtility::CleanupStaticVTKObjects()
 // ****************************************************************************
 float vtkVisItUtility::SafeDoubleToFloat(double v)
 {
-    if (std::abs(v) < (double) std::numeric_limits<float>::min()) return 0;
-    if (std::abs(v) > (double) std::numeric_limits<float>::max())
+    if (std::abs(v) < static_cast<double>(std::numeric_limits<float>::min()))
+        return 0;
+    if (std::abs(v) > static_cast<double>(std::numeric_limits<float>::max()))
     {
         if (v < 0) return -std::numeric_limits<float>::max();
         if (v > 0) return  std::numeric_limits<float>::min();
     }
-    return (float) v;
+    return static_cast<float>(v);
 }
 
 // ****************************************************************************
@@ -1544,9 +1553,9 @@ bool
 vtkVisItUtility::IntersectBox(double bounds[6], double origin[3],
                               double dir[3], double coord[3], double& t)
 {
-    int VTK_RIGHT  = 0;
-    int VTK_LEFT   = 1;
-    int VTK_MIDDLE = 2;
+    char VTK_RIGHT  = 0;
+    char VTK_LEFT   = 1;
+    char VTK_MIDDLE = 2;
     bool    inside=true;
     char    quadrant[3];
     int     i, whichPlane=0;

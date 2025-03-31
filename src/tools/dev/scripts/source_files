@@ -37,6 +37,9 @@ exec perl -x $0 ${1+"$@"};
 #   Eric Brugger, Wed Feb 12 16:10:16 PST 2020
 #   I removed the exe directory.
 #
+#   Kathleen Biagas, Mon Sep 30, 2024
+#   Added build files from scripts dir.
+#
 # ----------------------------------------------------------------------------
 
 if  (! -d "src")
@@ -140,6 +143,11 @@ if ($ARGV[0] eq "-dbio-only")
     push @files, get_git_norecursive  "./src/third_party_builtin";
     push @files, get_git_recursive    "./src/third_party_builtin/bow";
     push @files, get_git_recursive    "./src/tools/dev/osfixup";
+    push @files, get_norecursive      "./scripts/run-build-visit";
+    push @files, get_norecursive      "./scripts/visit-build";
+    push @files, get_norecursive      "./scripts/visit-dist";
+    push @files, get_norecursive      "./scripts/visit-install";
+    push @files, get_norecursive      "./scripts/visit-install-run";
 }
 else
 {
@@ -173,6 +181,11 @@ else
     push @files, get_git_recursive    "./src/resources";
     push @files, get_git_recursive    "./src/test";
     push @files, get_norecursive      "./src/GIT_VERSION";
+    push @files, get_norecursive      "./scripts/run-build-visit";
+    push @files, get_norecursive      "./scripts/visit-build";
+    push @files, get_norecursive      "./scripts/visit-dist";
+    push @files, get_norecursive      "./scripts/visit-install";
+    push @files, get_norecursive      "./scripts/visit-install-run";
 }
 
 foreach (sort @files)

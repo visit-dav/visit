@@ -24,6 +24,10 @@
 //
 //  Programmer: Eric Brugger
 //  Creation:   August 17, 2012
+// 
+//  Modifications:
+//    Justin Privitera, Mon Oct 28 10:15:57 PDT 2024
+//    Pass in_ds to DoOperation().
 //
 // ****************************************************************************
 
@@ -40,7 +44,7 @@ class EXPRESSION_API avtCurveIntegrateExpression
 
   protected:
     virtual void              DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                          int ncomponents, int ntuples);
+                                          int ncomponents, int ntuples, vtkDataSet *in_ds);
     virtual avtVarType       GetVariableType(void) { return AVT_CURVE; };
 };
 

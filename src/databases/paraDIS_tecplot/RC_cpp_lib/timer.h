@@ -68,7 +68,7 @@
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #endif
-#ifdef WIN32
+#ifdef _WIN32
 #include <sys/timeb.h>
 #include <Winsock2.h>
 #endif
@@ -91,7 +91,7 @@ class timer
   double acc_time;
   double time_per_tick; 
   bool mUseWallTime; 
-#ifndef WIN32
+#ifndef _WIN32
   double getExactSeconds(void) {
     struct timeval t; 
     gettimeofday(&t, NULL); 

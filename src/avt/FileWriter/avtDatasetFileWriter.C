@@ -19,6 +19,7 @@
 #include <vtkCellArrayIterator.h>
 #include <vtkCellData.h>
 #include <vtkCellDataToPointData.h>
+#include <vtkDataSet.h>
 #include <vtkDataSetWriter.h>
 #include <vtkInformation.h>
 #include <vtkFloatArray.h>
@@ -369,11 +370,11 @@ avtDatasetFileWriter::WriteOBJTree(avtDataTree_p dt, int idx,
 //
 //    Kathleen Biagas, Fri Feb 22 15:39:02 PST 2013
 //    If using cd2pd, use it's ouput port as input to the geometry filter.
-// 
+//
 //    Justin Privitera, Fri Nov  3 15:25:32 PDT 2023
 //    The new arguments (writeMTL, MTLHasTex, and texFilename) are used to
 //    setup needed parameters for the upgraded vtkOBJWriter.
-// 
+//
 //    Justin Privitera, Mon Nov 27 14:57:17 PST 2023
 //    Most downstream tools expect to *wrap* textures. This means that texture
 //    coordinate 0.0 is treated identically to texture coordinate 1.0 (e.g. circular
@@ -381,7 +382,7 @@ avtDatasetFileWriter::WriteOBJTree(avtDataTree_p dt, int idx,
 //    the colors associated with these two texture coordinates, producing a color
 //    that may not be in the table. To work-around this behavior, we *pad* the color
 //    texture duplicating the minimum and maximum color pixels on each end.
-// 
+//
 //    Justin Privitera, Mon Feb 12 15:20:31 PST 2024
 //    I moved the extents calculation to the beginning to get around the bugged
 //    vtkCellDataToPointData.
@@ -392,7 +393,7 @@ void
 avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds,
                                    const char *fname,
                                    const char *label,
-                                   bool writeMTL, 
+                                   bool writeMTL,
                                    bool MTLHasTex,
                                    std::string texFilename)
 {
@@ -401,9 +402,6 @@ avtDatasetFileWriter::WriteOBJFile(vtkDataSet *ds,
     // Make sure that we have polydata.
     vtkGeometryFilter *geom = vtkGeometryFilter::New();
 
-    // Compute the range here since VTK cannot be trusted to get the extents
-    // right after transforming from cell data to point data.
-    // See https://github.com/visit-dav/visit/issues/19028
     double range[2];
     activeDS->GetScalarRange(range);
 
@@ -579,12 +577,17 @@ avtDatasetFileWriter::WriteVTKFamily(const char *filename, bool binary)
 //  Programmer: Hank Childs
 //  Creation:   May 27, 2002
 //
+//  Modifications:
+//    Kathleen Biagas, Mon Dec 23, 2024
+//    Set file version to 4.2.
+//
 // ****************************************************************************
 
 void
 avtDatasetFileWriter::WriteVTKFile(vtkDataSet *ds, const char *fname, bool bin)
 {
     vtkDataSetWriter *writer = vtkDataSetWriter::New();
+    writer->SetFileVersion(42);
     writer->SetInputData(ds);
     if (bin)
     {
@@ -789,11 +792,18 @@ avtDatasetFileWriter::WritePLYFile(const char *filename, bool binary)
 //    Kathleen Biagas, Fri Aug 31 13:23:19 PDT 2018
 //    Use DBOptionsAttributes to determine comment style.
 //
+//    Kathleen Biagas, Wed Spe 11, 2024
+//    Use label(s), if provided, for curve name(s) in output file.
+//
 // ****************************************************************************
 
 void
 avtDatasetFileWriter::WriteCurveFile(const char *filename, int quality, int compression)
 {
+    // Get possible labels to use for curve names
+    stringVector labels;
+    GetInputDataTree()->GetAllLabels(labels);
+
     // We want it all in a single output file
     vtkDataSet *ds = GetSingleDataset();
 
@@ -829,12 +839,18 @@ avtDatasetFileWriter::WriteCurveFile(const char *filename, int quality, int comp
     }
 
     vtkPoints *pts = pd->GetPoints();
+    bool useLabels = !labels.empty();
+    bool numberedCurves = line_segments.size() > 1;
     for (size_t i = 0 ; i < line_segments.size() ; i++)
     {
-        if (line_segments.size() <= 1)
-            ofile() << varTag << " curve" << endl;
-        else
+        // Prefer labels if present
+        if (useLabels)
+            ofile() << varTag << " " << labels[i] << endl;
+        // Default to generic 'curve'
+        else if (numberedCurves)
             ofile() << varTag << " curve" << i << endl;
+        else
+            ofile() << varTag << " curve" << endl;
 
         ofile() << std::setprecision(16);
         for (size_t j = 0 ; j < line_segments[i].size() ; j++)
@@ -1313,7 +1329,7 @@ TakeOffPolyLine(int *seg_list,int start_pt,std::vector< std::vector<int> > &ls)
 //    Removed the sprintfs for color table control point positions.  A user
 //    reported that other locales will insert commas instead of periods,
 //    causing problems for POV-Ray attempts to parse them.
-// 
+//
 //    Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
 //    Changed ColorTableAttributes `names` to `colorTableNames`.
 //
@@ -2486,7 +2502,7 @@ avtDatasetFileWriter::WritePOVRayDF3File(vtkRectilinearGrid *rgrid,
 //
 // Programmer:  Dave Pugmire
 // Creation:    March  2, 2011
-// 
+//
 // Modifications:
 //    Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
 //    Changed ColorTableAttributes `names` to `colorTableNames`.

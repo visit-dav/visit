@@ -1007,7 +1007,7 @@ QvisCommandWindow::macroUpdateClicked()
            // Tell the CLI to source the file so we get our macros back with
            // the changes that have been put into place.
            QString command("ClearMacros()\nSource(\"%1\")\n");
-#ifdef WIN32
+#ifdef _WIN32
            // On windows, the path-string passed to the python commands needs
            // to have it's back-slash's converted.
            rcFileName.replace("\\", "/");

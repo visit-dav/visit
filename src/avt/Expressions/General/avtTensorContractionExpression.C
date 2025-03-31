@@ -59,12 +59,16 @@ avtTensorContractionExpression::~avtTensorContractionExpression()
 //
 //  Programmer: Cyrus Harrison
 //  Creation:   June 1, 2007
+// 
+//  Modifications:
+//    Justin Privitera, Mon Oct 28 10:15:57 PDT 2024
+//    Pass in the input dataset.
 //
 // ****************************************************************************
 
 void
 avtTensorContractionExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
-                                        int ncomps, int ntuples)
+                                        int ncomps, int ntuples, vtkDataSet *in_ds)
 {
     if (ncomps == 9)
     {

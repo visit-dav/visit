@@ -108,7 +108,7 @@ avtBinaryDivideExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
             else if (val2 == 0. && val1 != 0.)
             {
                 EXCEPTION2(ExpressionException, outputVariableName, 
-                           "You can't divide by zero");
+                           "FPE: Divide by zero");
             }
             else
                 out->SetTuple1(i, val1 / val2);
@@ -124,7 +124,7 @@ avtBinaryDivideExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
             if (val2 == 0)
             {
                 EXCEPTION2(ExpressionException, outputVariableName, 
-                           "You can't divide by zero");
+                           "FPE: Divide by zero");
             }
             for (int j = 0 ; j < in1ncomps ; j++)
             {
@@ -146,7 +146,7 @@ avtBinaryDivideExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
                 if (val2 == 0)
                 {
                     EXCEPTION2(ExpressionException, outputVariableName, 
-                               "You can't divide by zero");
+                               "FPE: divide by zero");
                 }
                 out->SetComponent(i, j, val1/val2);
             }

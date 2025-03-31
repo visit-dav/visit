@@ -12,14 +12,14 @@ class VISIT_VTK_LIGHT_API vtkUnstructuredGridBoundaryFilter :
     public vtkPolyDataAlgorithm
 {
   public:
-    vtkTypeMacro(vtkUnstructuredGridBoundaryFilter, vtkPolyDataAlgorithm);
+    vtkTypeMacro(vtkUnstructuredGridBoundaryFilter, vtkPolyDataAlgorithm)
     void PrintSelf(ostream& os, vtkIndent indent) override;
 
     static vtkUnstructuredGridBoundaryFilter *New();
 
   protected:
-    vtkUnstructuredGridBoundaryFilter() {;};
-    ~vtkUnstructuredGridBoundaryFilter() {;};
+    vtkUnstructuredGridBoundaryFilter() {;}
+    ~vtkUnstructuredGridBoundaryFilter() {;}
  
     virtual int RequestData(vtkInformation *,
                             vtkInformationVector **,

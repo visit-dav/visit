@@ -117,6 +117,11 @@ avtPickByNodeQuery::~avtPickByNodeQuery()
 //    Alister Maguire, Thu Jul 15 14:38:13 PDT 2021
 //    If we were unable to retrieve variable information from the database,
 //    query the current dataset.
+// 
+//    Justin Privitera, Thu Oct 31 17:26:42 PDT 2024
+//    Allow pickByLabel to be a get out of jail free card if you have created
+//    ghosts. Mili now creates ghosts so we need another way for pick to 
+//    pass through the same logic as before.
 //
 // ****************************************************************************
 
@@ -191,7 +196,7 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
     } 
 
     bool DBsuppliedNodeId = true;
-    if (!pickAtts.GetMatSelected() && ghostType != AVT_CREATED_GHOSTS)
+    if (!pickAtts.GetMatSelected() && (ghostType != AVT_CREATED_GHOSTS || pickByLabel))
     {
         if (pickAtts.GetElementIsGlobal() && !pickByLabel)
         {

@@ -34,7 +34,7 @@ vtkStandardNewMacro(vtkVisItStreamLine);
 #define VTK_START_FROM_POSITION 0
 #define VTK_START_FROM_LOCATION 1
 
-#ifdef WIN32
+#ifdef _WIN32
 // JRC 21Jul2010: this hack no longer needed, as vtk patch
 // now export StreamArray
 #ifndef VTK_STREAM_ARRAY_EXPORTED

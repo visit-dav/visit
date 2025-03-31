@@ -4,6 +4,11 @@
 
 #*****************************************************************************
 # Modifications:
+#    Justin Privitera, Mon Oct 28 15:26:44 PDT 2024
+#    Added avtGlobalAvgExpression.C,     avtGlobalMaxExpression.C, 
+#          avtGlobalMinExpression.C,     avtGlobalRMSExpression.C, 
+#          avtGlobalStdDevExpression.C,  avtGlobalSumExpression.C, 
+#      and avtGlobalVarianceExpression.C
 #
 #*****************************************************************************
 
@@ -18,6 +23,7 @@ set(MATH_SOURCES
     avtBinaryAddExpression.C
     avtBinaryAndExpression.C
     avtBinaryDivideExpression.C
+    avtBinaryModuloExpression.C
     avtBinaryMultiplyExpression.C
     avtBinaryPowerExpression.C
     avtBinarySubtractExpression.C
@@ -34,7 +40,13 @@ set(MATH_SOURCES
     avtFloorExpression.C
     avtIdentityExpression.C
     avtInverseExpression.C
-    avtModuloExpression.C
+    avtGlobalAvgExpression.C
+    avtGlobalMaxExpression.C
+    avtGlobalMinExpression.C
+    avtGlobalRMSExpression.C
+    avtGlobalStdDevExpression.C
+    avtGlobalSumExpression.C
+    avtGlobalVarianceExpression.C
     avtNaturalLogExpression.C
     avtPolarCoordinatesExpression.C
     avtRadianToDegreeExpression.C

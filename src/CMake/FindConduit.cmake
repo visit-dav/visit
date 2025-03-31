@@ -7,6 +7,9 @@
 #   Kathleen Biagas, Wed Feb 28, 2024
 #   Removed install logic for conduit python.  Now handled in
 #   lib/CMakeLists.txt with build/lib/site-packages/ directory install.
+# 
+#   Justin Privitera, Thu Aug 15 12:02:44 PDT 2024
+#   Added conduit_relay_mpi_io to parallel deps.
 #
 #-----------------------------------------------------------------------------
 
@@ -24,7 +27,7 @@ if(VISIT_PARALLEL)
     set(CONDUIT_MPI_DIR ${CONDUIT_DIR})
     SET_UP_THIRD_PARTY(CONDUIT_MPI
         INCDIR include/conduit
-        LIBS conduit_relay_mpi conduit_blueprint_mpi)
+        LIBS conduit_relay_mpi conduit_relay_mpi_io conduit_blueprint_mpi)
 endif()
 
 if(CONDUIT_FOUND)

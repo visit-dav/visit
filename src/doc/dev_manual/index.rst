@@ -21,7 +21,7 @@ VisIt_ Developer Manual
     UpdatingPythonDocStrings
     MemoryLeaks
     Docker
-    SiteReliabilityEngineering
+    SoftwareReliabilityEngineering
     OpenGL
     CI
     ContributingHostProfiles

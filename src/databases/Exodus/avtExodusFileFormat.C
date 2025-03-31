@@ -45,6 +45,7 @@
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
 #include <Namescheme.h>
+#include <StringHelpers.h>
 #include <UnexpectedValueException.h>
 #include <Utility.h>
 
@@ -54,15 +55,10 @@
 #include <cstdlib> // for qsort
 #include <cstdarg>
 
+#include <algorithm>
 #include <map>
 #include <string>
 #include <vector>
-
-#if defined(_WIN32)
-#define STRNCASECMP _strnicmp
-#else
-#define STRNCASECMP strncasecmp
-#endif
 
 using     std::map;
 using     std::string;
@@ -230,10 +226,6 @@ static void fill_tmp_suffixes(int n, ...)
     va_end(ap);
 }
 
-#ifdef WIN32
-#define strcasecmp stricmp
-#endif
-
 #define BEGIN_CASES                                                    \
 {   bool found_match = false
 
@@ -250,7 +242,7 @@ static void fill_tmp_suffixes(int n, ...)
             char ex_var_name[256];                                     \
             snprintf(ex_var_name, sizeof(ex_var_name),                 \
                 "%s%s%s", prefix.c_str(), &sepStr[0], tmp_suffixes[q]);\
-            if (strcasecmp(ex_var_name, list[i+q]))                    \
+            if (!StringHelpers::CaseInsensitiveEqual(ex_var_name, list[i+q]))\
                 things_match = false;                                  \
             q++;                                                       \
         }                                                              \
@@ -2113,11 +2105,6 @@ avtExodusFileFormat::AddVar(avtDatabaseMetaData *md, char const *vname,
 //    instead of just variables the plugin is responsible for serving up.
 // ****************************************************************************
 
-#ifdef MAX
-#undef MAX
-#endif
-#define MAX(A,B) ((A)>(B)?(A):(B))
-
 void
 avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     int timeState)
@@ -2167,7 +2154,7 @@ avtExodusFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             continue;
         }
 
-        topologicalDimension = MAX(topologicalDimension,
+        topologicalDimension = std::max(topologicalDimension,
             ExodusElemTypeAtt2TopoDim(connect_elem_type_attval, spatialDimension));
         delete [] connect_elem_type_attval;
     }

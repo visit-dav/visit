@@ -58,8 +58,8 @@
       0
       0
     </Field>
-    <Field name="triadLineWidth" label="Triad Line Width" type="float">
-      1.000000
+    <Field name="triadLineWidth" label="Triad Line Width" type="linewidth">
+      0
     </Field>
     <Field name="triadFont" label="Triad Font" type="int">
       0

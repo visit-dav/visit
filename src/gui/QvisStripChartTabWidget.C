@@ -3,7 +3,9 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include <QvisStripChartTabWidget.h>
+#ifdef HAVE_QWT
 #include <QvisStripChart.h>
+#endif
 
 #include <QScrollArea>
 #include <QInputDialog>
@@ -54,6 +56,8 @@ void QvisTabBar::mouseDoubleClickEvent(QMouseEvent *e)
 // Creation:   Friday Oct. 27, 2006
 //
 // Modifications:
+//   Kathleen Biagas, Tue Sep 17, 2024
+//   Added conditional compilation block around QvisStripChart usage.
 //
 // ****************************************************************************
 QvisStripChartTabWidget::QvisStripChartTabWidget( QWidget *parent,
@@ -70,6 +74,7 @@ QvisStripChartTabWidget::QvisStripChartTabWidget( QWidget *parent,
     SC_Info.resize(MAX_STRIP_CHARTS);
 
     // create the strip charts
+#ifdef HAVE_QWT
     for( unsigned int i=0; i<SC_Info.size(); ++i )
     {
         std::stringstream str;
@@ -94,6 +99,7 @@ QvisStripChartTabWidget::QvisStripChartTabWidget( QWidget *parent,
 
         addTab(sc, SC_Info[i].getName());
     }
+#endif
 
     // default to the first strip chart as current
     currentStripChart = 0;
@@ -225,12 +231,16 @@ QvisStripChartTabWidget::nameToIndex(const QString &SC_Name) const
 // Creation:   Mon Oct 15 14:27:29 PDT 2007
 //
 // Modifications:
+//   Kathleen Biagas, Tue Sep 17, 2024
+//   Added conditional compilation block around QvisStripChart usage.
 //
 // ****************************************************************************
 void
 QvisStripChartTabWidget::pick()
 {
+#ifdef HAVE_QWT
     stripCharts[currentStripChart]->toggleDisplayMode(false);
+#endif
 }
 
 // ****************************************************************************
@@ -244,12 +254,16 @@ QvisStripChartTabWidget::pick()
 // Creation:   Mon Oct 15 14:27:29 PDT 2007
 //
 // Modifications:
+//   Kathleen Biagas, Tue Sep 17, 2024
+//   Added conditional compilation block around QvisStripChart usage.
 //
 // ****************************************************************************
 void
 QvisStripChartTabWidget::zoom()
 {
+#ifdef HAVE_QWT
     stripCharts[currentStripChart]->toggleDisplayMode(true);
+#endif
 }
 
 // ****************************************************************************
@@ -263,12 +277,16 @@ QvisStripChartTabWidget::zoom()
 // Creation:   Mon Oct 15 14:27:29 PDT 2007
 //
 // Modifications:
+//   Kathleen Biagas, Tue Sep 17, 2024
+//   Added conditional compilation block around QvisStripChart usage.
 //
 // ****************************************************************************
 void
 QvisStripChartTabWidget::reset()
 {
+#ifdef HAVE_QWT
     stripCharts[currentStripChart]->reset();
+#endif
 }
 
 // ****************************************************************************
@@ -282,12 +300,16 @@ QvisStripChartTabWidget::reset()
 // Creation:   Mon Oct 15 14:27:29 PDT 2007
 //
 // Modifications:
+//   Kathleen Biagas, Tue Sep 17, 2024
+//   Added conditional compilation block around QvisStripChart usage.
 //
 // ****************************************************************************
 void
 QvisStripChartTabWidget::clear()
 {
+#ifdef HAVE_QWT
     stripCharts[currentStripChart]->clear();
+#endif
 }
 
 // ****************************************************************************
@@ -301,12 +323,16 @@ QvisStripChartTabWidget::clear()
 // Creation:   Mon Oct 15 14:27:29 PDT 2007
 //
 // Modifications:
+//   Kathleen Biagas, Tue Sep 17, 2024
+//   Added conditional compilation block around QvisStripChart usage.
 //
 // ****************************************************************************
 void
 QvisStripChartTabWidget::clear( const unsigned int index )
 {
+#ifdef HAVE_QWT
     stripCharts[index]->clear();
+#endif
 }
 
 // ****************************************************************************
@@ -323,13 +349,17 @@ QvisStripChartTabWidget::clear( const unsigned int index )
 // Creation:   Mon Oct 15 14:27:29 PDT 2007
 //
 // Modifications:
+//   Kathleen Biagas, Tue Sep 17, 2024
+//   Added conditional compilation block around QvisStripChart usage.
 //
 // ****************************************************************************
 void
 QvisStripChartTabWidget::setCurveTitle(const unsigned int curveIndex,
                                        const QString &newTitle)
 {
+#ifdef HAVE_QWT
     stripCharts[currentStripChart]->setCurveTitle(curveIndex, newTitle);
+#endif
 }
 
 // ****************************************************************************
@@ -346,23 +376,31 @@ QvisStripChartTabWidget::setCurveTitle(const unsigned int curveIndex,
 // Creation:   Mon Oct 15 14:27:29 PDT 2007
 //
 // Modifications:
+//   Kathleen Biagas, Tue Sep 17, 2024
+//   Added conditional compilation blocks around QvisStripChart usage.
 //
 // ****************************************************************************
 void
 QvisStripChartTabWidget::clearAll(const unsigned int tabIndex)
 {
     // Clear the plot
+#ifdef HAVE_QWT
     stripCharts[tabIndex]->clear();
+#endif
 
     // Reset the plot name
     std::ostringstream label;
     label << "StripChart_" << tabIndex;
     setTabText(tabIndex, label.str().c_str());
+#ifdef HAVE_QWT
     stripCharts[tabIndex]->setTitle( "History" );
+#endif
 
+#ifdef HAVE_QWT
     // Clear the curves.
     for( unsigned int i=0; i<MAX_STRIP_CHART_VARS; ++i )
       stripCharts[tabIndex]->setCurveTitle( i, "" );
+#endif
 }
 
 // ****************************************************************************
@@ -379,6 +417,8 @@ QvisStripChartTabWidget::clearAll(const unsigned int tabIndex)
 // Creation:   Mon Oct 15 14:27:29 PDT 2007
 //
 // Modifications:
+//   Kathleen Biagas, Tue Sep 17, 2024
+//   Added conditional compilation blocks around QvisStripChart usage.
 //
 // ****************************************************************************
 void
@@ -391,12 +431,16 @@ QvisStripChartTabWidget::setTabLabel(const unsigned int tabIndex,
         std::ostringstream label;
         label << "StripChart_" << tabIndex;
         setTabText(tabIndex, label.str().c_str());
+#ifdef HAVE_QWT
         stripCharts[tabIndex]->setTitle( "History" );
+#endif
     }
     else
     {
         setTabText(tabIndex, newLabel);
+#ifdef HAVE_QWT
         stripCharts[tabIndex]->setTitle( newLabel );
+#endif
     }
 }
 
@@ -415,6 +459,8 @@ QvisStripChartTabWidget::setTabLabel(const unsigned int tabIndex,
 // Creation:   Mon Oct 15 14:27:29 PDT 2007
 //
 // Modifications:
+//   Kathleen Biagas, Tue Sep 17, 2024
+//   Added conditional compilation block around QvisStripChart usage.
 //
 // ****************************************************************************
 void
@@ -422,7 +468,9 @@ QvisStripChartTabWidget::setCurveTitle(const unsigned int tabIndex,
                                        const unsigned int curveIndex,
                                        const QString &newTitle)
 {
+#ifdef HAVE_QWT
     stripCharts[tabIndex]->setCurveTitle(curveIndex, newTitle);
+#endif
 }
 
 // ****************************************************************************
@@ -442,6 +490,8 @@ QvisStripChartTabWidget::setCurveTitle(const unsigned int tabIndex,
 // Creation:   Mon Oct 15 14:27:29 PDT 2007
 //
 // Modifications:
+//   Kathleen Biagas, Tue Sep 17, 2024
+//   Added conditional compilation block around QvisStripChart usage.
 //
 // ****************************************************************************
 void
@@ -449,7 +499,9 @@ QvisStripChartTabWidget::addDataPoint( const unsigned int tabIndex,
                                        const unsigned int curveIndex,
                                        const double x, const double y )
 {
+#ifdef HAVE_QWT
     stripCharts[tabIndex]->addDataPoint(curveIndex, x, y);
+#endif
 }
 
 // ****************************************************************************
@@ -470,6 +522,8 @@ QvisStripChartTabWidget::addDataPoint( const unsigned int tabIndex,
 // Creation:   29 May 2020
 //
 // Modifications:
+//   Kathleen Biagas, Tue Sep 17, 2024
+//   Added conditional compilation block around QvisStripChart usage.
 //
 // ****************************************************************************
 void
@@ -478,5 +532,7 @@ QvisStripChartTabWidget::addDataPoints( const unsigned int tabIndex,
                                         const unsigned int npts,
                                         const double *x, const double *y )
 {
+#ifdef HAVE_QWT
     stripCharts[tabIndex]->addDataPoints(curveIndex, npts, x, y);
+#endif
 }

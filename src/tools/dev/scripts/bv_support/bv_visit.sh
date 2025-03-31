@@ -368,7 +368,7 @@ function build_visit
     # Build VisIt
     #
     info "Building VisIt . . . (~50 minutes)"
-    if [[ "${BUILD_SPHINX}" == "yes" ]] ; then
+    if [[ "${PY_BUILD_SPHINX}" == "yes" ]] ; then
         $MAKE $MAKE_OPT_FLAGS manuals
         if [[ $? != 0 ]] ; then
             warn "Building the VisIt manuals failed.  Continuing"
@@ -391,7 +391,7 @@ function build_visit
         return 1
     fi
     mv visit*.*.tar.gz ../..
-    cp ../src/tools/dev/scripts/visit-install ../..
+    cp ../scripts/visit-install ../..
     warn "All indications are that VisIt was successfully packaged."
 
     #

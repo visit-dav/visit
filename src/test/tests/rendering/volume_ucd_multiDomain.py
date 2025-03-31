@@ -84,7 +84,7 @@ def ucd_multiDomain():
     SetPlotOptions(volAtts)
     Test("volume_32")
 
-    TestSection("UCD MultiDomain, Serial, ParallelPerRank")
+    TestSection("UCD MultiDomain, Parallel, ParallelPerRank")
     volAtts = VolumeAttributes()
     volAtts.rendererType = volAtts.Parallel
     volAtts.resampleType = volAtts.ParallelPerRank
@@ -92,7 +92,7 @@ def ucd_multiDomain():
     SetPlotOptions(volAtts)
     Test("volume_33")
 
-    TestSection("UCD MultiDomain, Serial, ParallelPerRank, ospray")
+    TestSection("UCD MultiDomain, Parallel, ParallelPerRank, ospray")
     volAtts = VolumeAttributes()
     volAtts.rendererType = volAtts.Parallel
     volAtts.resampleType = volAtts.ParallelPerRank

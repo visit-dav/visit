@@ -178,19 +178,15 @@ QvisMeshManagementWindow::CreateWindowContents()
     smallestZoneLabel = new QLabel(tr("Smallest zone (% bbox diag)"), pageCSGGroup);
     layoutCSGGroup->addWidget(smallestZoneLabel, 3, 0);
     smallestZoneLineEdit = new QLineEdit(pageCSGGroup);
-    connect(smallestZoneLineEdit, SIGNAL(returnPressed()),
+    connect(smallestZoneLineEdit, SIGNAL(editingFinished()),
             this, SLOT(processSmallestZoneText()));
-    connect(smallestZoneLineEdit, SIGNAL(textChanged(const QString &)),
-            this, SLOT(processSmallestZoneText(const QString &)));
     layoutCSGGroup->addWidget(smallestZoneLineEdit, 3, 1, 1, 3);
 
     flatEnoughLabel = new QLabel(tr("Flat enough (recip. curvature)"), pageCSGGroup);
     layoutCSGGroup->addWidget(flatEnoughLabel, 4, 0);
     flatEnoughLineEdit = new QLineEdit(pageCSGGroup);
-    connect(flatEnoughLineEdit, SIGNAL(returnPressed()),
+    connect(flatEnoughLineEdit, SIGNAL(editingFinished()),
             this, SLOT(processFlatEnoughText()));
-    connect(flatEnoughLineEdit, SIGNAL(textChanged(const QString &)),
-            this, SLOT(processFlatEnoughText(const QString &)));
     layoutCSGGroup->addWidget(flatEnoughLineEdit, 4, 1, 1, 3);
 }
 
@@ -526,21 +522,6 @@ QvisMeshManagementWindow::processSmallestZoneText()
 }
 
 void
-QvisMeshManagementWindow::processSmallestZoneText(const QString &tols)
-{
-    double temp = -1.0;
-    bool okay = sscanf(smallestZoneLineEdit->displayText().toStdString().c_str(),
-                       "%lg", &temp) == 1;
-
-    if (okay && temp >= 0.0)
-    {
-        vector<double> temp1 = mmAtts->GetDiscretizationTolerance();
-        temp1[0] = temp;
-        mmAtts->SetDiscretizationTolerance(temp1);
-    }
-}
-
-void
 QvisMeshManagementWindow::processFlatEnoughText()
 {
     double temp = -1.0;
@@ -555,17 +536,3 @@ QvisMeshManagementWindow::processFlatEnoughText()
     }
 }
 
-void
-QvisMeshManagementWindow::processFlatEnoughText(const QString &tols)
-{
-    double temp = -1.0;
-    bool okay = sscanf(flatEnoughLineEdit->displayText().toStdString().c_str(),
-                       "%lg", &temp) == 1;
-
-    if (okay && temp >= 0.0)
-    {
-        vector<double> temp1 = mmAtts->GetDiscretizationTolerance();
-        temp1[1] = temp;
-        mmAtts->SetDiscretizationTolerance(temp1);
-    }
-}

@@ -24,7 +24,6 @@ function bv_xsd_info
     export XSD_VERSION=${XSD_VERSION:-"4.0.0"}
     export XSD_COMPATIBILITY_VERSION=${XSD_COMPATIBILITY_VERSION:-"4.0"}
     export XSD_BUILD_DIR=${XSD_BUILD_DIR:-"xsd-${XSD_VERSION}+dep"}
-    export XSD_URL=${XSD_URL:-"http://www.codesynthesis.com/download/xsd/4.0"}
     export XSD_SHA256_CHECKSUM="eca52a9c8f52cdbe2ae4e364e4a909503493a0d51ea388fc6c9734565a859817"
 }
 

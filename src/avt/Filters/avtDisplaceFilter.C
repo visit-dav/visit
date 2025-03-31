@@ -133,6 +133,9 @@ avtDisplaceFilter::SetVariable(const std::string &v)
 //
 //    Eric Brugger, Mon Jul 21 10:38:19 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
+// 
+//    Justin Privitera, Thu Nov  7 11:16:13 PST 2024
+//    Added dimension check from preexecute to this function instead.
 //
 // ****************************************************************************
 
@@ -183,6 +186,15 @@ avtDisplaceFilter::ExecuteData(avtDataRepresentation *in_dr)
         in_ds = tmp_ds;
         cd2pd->Delete();
         one_var_ds->Delete();
+    }
+
+    const int num_comps = vecs->GetNumberOfComponents();
+    if (num_comps != 3 && 
+        !(num_comps == 2 &&
+          GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 2))
+    {
+        EXCEPTION2(InvalidDimensionsException, "The displace operator",
+                   "vector");
     }
 
     vtkDataSet *rv = NULL;
@@ -272,6 +284,10 @@ avtDisplaceFilter::ExecuteData(avtDataRepresentation *in_dr)
 //
 //    Hank Childs, Fri Sep 28 07:14:14 PDT 2007
 //    Allow for 2D vectors.
+// 
+//    Justin Privitera, Wed Nov  6 16:41:21 PST 2024
+//    Remove the requirement variable dimension requirement since we cannot
+//    know the dimension of expressions until we have used them.
 //
 // ****************************************************************************
 
@@ -285,21 +301,7 @@ avtDisplaceFilter::PreExecute(void)
         displace_var = pipelineVariable;
 
     avtDataAttributes &inAtts = GetInput()->GetInfo().GetAttributes();
-    if (inAtts.ValidVariable(displace_var))
-    {
-        if (inAtts.GetVariableDimension(displace_var) != 3)
-        {
-            bool valid2D = false;
-            if (inAtts.GetVariableDimension(displace_var) == 2 &&
-                inAtts.GetSpatialDimension() == 2)
-                valid2D = true;
-
-            if (!valid2D)
-                EXCEPTION2(InvalidDimensionsException, "The displace operator",
-                        "vector");
-        }
-    }
-    else
+    if (! inAtts.ValidVariable(displace_var))
     {
         // let it pass through and see what happens
         debug1 << "The displace operator was checking to see if the input "

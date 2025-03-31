@@ -477,9 +477,9 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                 // The options aren't in the default options.  Maybe defaults
                 // have been added to the plugin since they saved their settings.
                 // Try to get it from the plugin.
-                DBOptionsAttributes *opts = info->GetReadOptions();
-                if (opts)
-                    info->SetReadOptions(opts);
+                DBOptionsAttributes *rdopts = info->GetReadOptions();
+                if (rdopts)
+                    info->SetReadOptions(rdopts);
             }
             else
             {
@@ -561,9 +561,9 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                 // The options aren't in the default options.  Maybe
                 // defaults have been added to the plugin since they saved 
                 // their settings. Try to get it from the plugin.
-                DBOptionsAttributes *opts = info->GetReadOptions();
-                if (opts)
-                    info->SetReadOptions(opts);
+                DBOptionsAttributes *rdopts = info->GetReadOptions();
+                if (rdopts)
+                    info->SetReadOptions(rdopts);
             }
             else
             {
@@ -651,9 +651,9 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                     // The options aren't in the default options.  Maybe
                     // defaults have been added to the plugin since they saved 
                     // their settings. Try to get it from the plugin.
-                    DBOptionsAttributes *opts = info->GetReadOptions();
-                    if (opts)
-                        info->SetReadOptions(opts);
+                    DBOptionsAttributes *rdopts = info->GetReadOptions();
+                    if (rdopts)
+                        info->SetReadOptions(rdopts);
                 }
                 else
                 {
@@ -789,9 +789,9 @@ avtDatabaseFactory::FileList(DatabasePluginManager *dbmgr,
                 // The options aren't in the default options.  Maybe
                 // defaults have been added to the plugin since they saved 
                 // their settings. Try to get it from the plugin.
-                DBOptionsAttributes *opts = info->GetReadOptions();
-                if (opts)
-                    info->SetReadOptions(opts);
+                DBOptionsAttributes *rdopts = info->GetReadOptions();
+                if (rdopts)
+                    info->SetReadOptions(rdopts);
             }
             else
             {
