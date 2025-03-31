@@ -1882,6 +1882,27 @@ Variant::IsNumericVector() const
     return res;
 }
 
+// ****************************************************************************
+// Method: Variant::IsVector
+//
+// Purpose:
+// Returns true if the variant is a vector type.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   March 25, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+Variant::IsVector() const
+{
+    bool res = (IsNumericVector() || 
+               dataType == STRING_VECTOR_TYPE);
+    return res;
+}
+
 
 // ****************************************************************************
 //  Method:  Variant::SetValue
@@ -3819,6 +3840,120 @@ Variant::ConvertToString()
             tmp += "\"" + vec[i] + "\"";
         }
     }
+    return tmp;
+}
+
+// ****************************************************************************
+// Method: Variant::ConvertToPythonTupleString
+//
+// Purpose:
+//   Converts this object's data to a python tuple string representation.
+//
+// Programmer: Kathleen Biagas
+// Creation:   March 25, 2025 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+string &
+Variant::ConvertToPythonTupleString()
+{
+    tmp.clear();
+    if(!IsVector())
+    {
+        return tmp;    
+    }
+    char retval[5000];
+    tmp += "(";
+    if (dataType == BOOL_VECTOR_TYPE)
+    {
+        const boolVector &vec = AsBoolVector();
+        for(size_t i=0;i<vec.size();i++)
+        {
+            if (i != 0)
+                tmp += ", ";
+            snprintf(retval, 5000, "%s",vec[i] ? "true" : "false");
+            tmp += retval;
+        }
+    }
+    else if (dataType == CHAR_VECTOR_TYPE)
+    {
+        const charVector &vec = AsCharVector();
+        for(size_t i=0;i<vec.size();i++)
+        {
+            if (i != 0)
+                tmp += ", ";
+            snprintf(retval, 5000, "\'%c\'",vec[i]);
+            tmp += retval;
+        }
+    }
+    else if (dataType == UNSIGNED_CHAR_VECTOR_TYPE)
+    {
+        const unsignedCharVector &vec = AsUnsignedCharVector();
+        for(size_t i=0;i<vec.size();i++)
+        {
+            if (i != 0)
+                tmp += ", ";
+            snprintf(retval, 5000, "%d",vec[i]);
+            tmp += retval;
+        }
+    }
+    else if (dataType == INT_VECTOR_TYPE)
+    {
+        const intVector &vec = AsIntVector();
+        for(size_t i=0;i<vec.size();i++)
+        {
+            if (i != 0)
+                tmp += ", ";
+            snprintf(retval, 5000, "%d",vec[i]);
+            tmp += retval;
+        }
+    }
+    else if (dataType == LONG_VECTOR_TYPE)
+    {
+        const longVector &vec = AsLongVector();
+        for(size_t i=0;i<vec.size();i++)
+        {
+            if (i != 0)
+                tmp += ", ";
+            snprintf(retval, 5000, "%ld",vec[i]);
+            tmp += retval;
+        }
+    }
+    else if (dataType == FLOAT_VECTOR_TYPE)
+    {
+        const floatVector &vec = AsFloatVector();
+        for(size_t i=0;i<vec.size();i++)
+        {
+            if (i != 0)
+                tmp += ", ";
+            snprintf(retval, 5000, "%g",vec[i]);
+            tmp += retval;
+        }
+    }
+    else if (dataType == DOUBLE_VECTOR_TYPE)
+    {
+        const doubleVector &vec = AsDoubleVector();
+        for(size_t i=0;i<vec.size();i++)
+        {
+            if (i != 0)
+                tmp += ", ";
+            snprintf(retval, 5000, "%g",vec[i]);
+            tmp += retval;
+        }
+    }
+    else if (dataType == STRING_VECTOR_TYPE)
+    {
+        const stringVector &vec = AsStringVector();
+        for(size_t i=0;i<vec.size();i++)
+        {
+            if (i != 0)
+                tmp += ", ";
+            tmp += "\"" + vec[i] + "\"";
+        }
+    }
+    tmp += ")";
     return tmp;
 }
 
