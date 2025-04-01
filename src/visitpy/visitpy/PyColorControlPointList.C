@@ -563,6 +563,7 @@ PyColorControlPointList_getattro(PyObject *self, PyObject *attr_name)
     const char *name = PyUnicode_AsUTF8(attr_name);
     if (!name) return NULL;
 
+#include <visit-config.h>
     if(strcmp(name, "controlPoints") == 0)
         return ColorControlPointList_GetControlPoints(self, NULL);
     if(strcmp(name, "smoothing") == 0)
@@ -583,6 +584,23 @@ PyColorControlPointList_getattro(PyObject *self, PyObject *attr_name)
     if(strcmp(name, "tagNames") == 0)
         return ColorControlPointList_GetTagNames(self, NULL);
 
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+    // Try and handle legacy fields in ColorControlPointList
+
+    //
+    // Removed in 3.3.0
+    //
+    if(strcmp(name, "categoryName") == 0)
+    {
+        PyErr_WarnEx(NULL,
+                    "categoryName is no longer a valid ColorControlPointList "
+                    "attribute.\nIt's value is being ignored, please remove "
+                    "it from your script.\n", 3);
+        return PyString_FromString("");
+    }
+#endif
     PyObject *meth = Py_FindMethod(PyColorControlPointList_methods, self, (char*)name);
     if (meth) return meth;
 
@@ -592,6 +610,7 @@ PyColorControlPointList_getattro(PyObject *self, PyObject *attr_name)
 int
 PyColorControlPointList_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
+#include <visit-config.h>
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
     const char *name = PyUnicode_AsUTF8(attr_name);
@@ -605,6 +624,24 @@ PyColorControlPointList_setattro(PyObject *self, PyObject *attr_name, PyObject *
         obj = ColorControlPointList_SetDiscreteFlag(self, args);
     else if(strcmp(name, "tagNames") == 0)
         obj = ColorControlPointList_SetTagNames(self, args);
+
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+    // Try and handle legacy fields in ColorControlPointList
+    if(obj == &NULL_PY_OBJ)
+    {
+        //
+        // Removed in 3.3.0
+        //
+        if(strcmp(name, "categoryName") == 0)
+        {
+            PyErr_WarnEx(NULL, "'categoryName' is obsolete. It is being ignored.", 3);
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+    }
+#endif
 
     if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
     {

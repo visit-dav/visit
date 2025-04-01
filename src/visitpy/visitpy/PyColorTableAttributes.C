@@ -529,6 +529,7 @@ PyColorTableAttributes_getattro(PyObject *self, PyObject *attr_name)
     const char *name = PyUnicode_AsUTF8(attr_name);
     if (!name) return NULL;
 
+#include <visit-config.h>
     if(strcmp(name, "colorTableNames") == 0)
         return ColorTableAttributes_GetColorTableNames(self, NULL);
     if(strcmp(name, "colorTableActiveFlags") == 0)
@@ -540,6 +541,44 @@ PyColorTableAttributes_getattro(PyObject *self, PyObject *attr_name)
     if(strcmp(name, "defaultDiscrete") == 0)
         return ColorTableAttributes_GetDefaultDiscrete(self, NULL);
 
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+    // Try and handle legacy fields in ColorTableAttributes
+
+    //
+    // Removed in 3.3.0
+    //
+    if(strcmp(name, "activeContinuous") == 0)
+    {
+        PyColorTableAttributesObject *ColorTableObj = (PyColorTableAttributesObject *)self;
+        std::string defaultContinuous = ColorTableObj->data->GetDefaultContinuous();
+        return PyString_FromString(defaultContinuous.c_str());
+    }
+    if(strcmp(name, "activeDiscrete") == 0)
+    {
+        PyColorTableAttributesObject *ColorTableObj = (PyColorTableAttributesObject *)self;
+        std::string defaultDiscrete = ColorTableObj->data->GetDefaultDiscrete();
+        return PyString_FromString(defaultDiscrete.c_str());
+    }
+#endif
+#if VISIT_OBSOLETE_AT_VERSION(3,6,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+    // Try and handle legacy fields in ColorTableAttributes
+
+    //
+    // Removed in 3.4.0
+    //
+    if(strcmp(name, "taggingFlag") == 0)
+    {
+        PyErr_WarnEx(NULL,
+                    "taggingFlag is no longer a valid Color Table "
+                    "attribute.\nIt's value is being ignored, please remove "
+                    "it from your script.\n", 3);
+        return PyInt_FromLong(0L);
+    }
+#endif
     PyObject *meth = Py_FindMethod(PyColorTableAttributes_methods, self, (char*)name);
     if (meth) return meth;
 
@@ -549,6 +588,7 @@ PyColorTableAttributes_getattro(PyObject *self, PyObject *attr_name)
 int
 PyColorTableAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
+#include <visit-config.h>
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
     const char *name = PyUnicode_AsUTF8(attr_name);
@@ -562,6 +602,53 @@ PyColorTableAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *a
         obj = ColorTableAttributes_SetDefaultContinuous(self, args);
     else if(strcmp(name, "defaultDiscrete") == 0)
         obj = ColorTableAttributes_SetDefaultDiscrete(self, args);
+
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+   // Try and handle legacy fields in ColorTableAttributes
+    if(obj == &NULL_PY_OBJ)
+    {
+        PyColorTableAttributesObject *ColorTableObj = (PyColorTableAttributesObject *)self;
+
+        //
+        // Removed in 3.3.0
+        //
+        if(strcmp(name, "activeContinuous") == 0)
+        {
+            const std::string defaultCont = PyString_AsString(args);
+            PyErr_WarnEx(NULL, "'activeContinuous' is obsolete. Use 'defaultContinuous'.", 3);
+            ColorTableObj->data->SetDefaultContinuous(defaultCont);
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+        if(strcmp(name, "activeDiscrete") == 0)
+        {
+            const std::string defaultDisc = PyString_AsString(args);
+            PyErr_WarnEx(NULL, "'activeDiscrete' is obsolete. Use 'defaultDiscrete'.", 3);
+            ColorTableObj->data->SetDefaultDiscrete(defaultDisc);
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+    }
+#endif
+#if VISIT_OBSOLETE_AT_VERSION(3,6,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+   // Try and handle legacy fields in ColorTableAttributes
+    if(obj == &NULL_PY_OBJ)
+    {
+        //
+        // Removed in 3.4.0
+        //
+        if(strcmp(name, "taggingFlag") == 0)
+        {
+            PyErr_WarnEx(NULL, "'taggingFlag' is obsolete. Tags are always enabled now.", 3);
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+    }
+#endif
 
     if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
     {

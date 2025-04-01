@@ -1,5 +1,5 @@
 Target: xml2python
-Code: PyColorControlPointList_getattr
+Code: PyColorControlPointList_getattro
 Prefix:
 #include <visit-config.h>
 Postfix:
@@ -22,7 +22,7 @@ Postfix:
 #endif
 
 
-Code: PyColorControlPointList_setattr
+Code: PyColorControlPointList_setattro
 Prefix:
 #include <visit-config.h>
 Postfix:
