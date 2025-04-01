@@ -5,6 +5,7 @@
 #include <PySliceAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a SliceAttributes.
 //
-struct SliceAttributesObject
+struct PySliceAttributesObject
 {
     PyObject_HEAD
     SliceAttributes *data;
@@ -182,16 +183,44 @@ PySliceAttributes_ToString(const SliceAttributes *atts, const char *prefix, cons
 static PyObject *
 SliceAttributes_Notify(PyObject *self, PyObject *args)
 {
-    SliceAttributesObject *obj = (SliceAttributesObject *)self;
+    PySliceAttributesObject *obj = (PySliceAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+SliceAttributes_dir(PyObject *self, PyObject *args)
+{
+    static SliceAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PySliceAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 SliceAttributes_SetOriginType(PyObject *self, PyObject *args)
 {
-    SliceAttributesObject *obj = (SliceAttributesObject *)self;
+    PySliceAttributesObject *obj = (PySliceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -252,7 +281,7 @@ SliceAttributes_SetOriginType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SliceAttributes_GetOriginType(PyObject *self, PyObject *args)
 {
-    SliceAttributesObject *obj = (SliceAttributesObject *)self;
+    PySliceAttributesObject *obj = (PySliceAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetOriginType()));
     return retval;
 }
@@ -260,7 +289,7 @@ SliceAttributes_GetOriginType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SliceAttributes_SetOriginPoint(PyObject *self, PyObject *args)
 {
-    SliceAttributesObject *obj = (SliceAttributesObject *)self;
+    PySliceAttributesObject *obj = (PySliceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetOriginPoint();
@@ -327,7 +356,7 @@ SliceAttributes_SetOriginPoint(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SliceAttributes_GetOriginPoint(PyObject *self, PyObject *args)
 {
-    SliceAttributesObject *obj = (SliceAttributesObject *)self;
+    PySliceAttributesObject *obj = (PySliceAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the originPoint.
     PyObject *retval = PyTuple_New(3);
     const double *originPoint = obj->data->GetOriginPoint();
@@ -339,7 +368,7 @@ SliceAttributes_GetOriginPoint(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SliceAttributes_SetOriginIntercept(PyObject *self, PyObject *args)
 {
-    SliceAttributesObject *obj = (SliceAttributesObject *)self;
+    PySliceAttributesObject *obj = (PySliceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -391,7 +420,7 @@ SliceAttributes_SetOriginIntercept(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SliceAttributes_GetOriginIntercept(PyObject *self, PyObject *args)
 {
-    SliceAttributesObject *obj = (SliceAttributesObject *)self;
+    PySliceAttributesObject *obj = (PySliceAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetOriginIntercept());
     return retval;
 }
@@ -399,7 +428,7 @@ SliceAttributes_GetOriginIntercept(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SliceAttributes_SetOriginPercent(PyObject *self, PyObject *args)
 {
-    SliceAttributesObject *obj = (SliceAttributesObject *)self;
+    PySliceAttributesObject *obj = (PySliceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -451,7 +480,7 @@ SliceAttributes_SetOriginPercent(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SliceAttributes_GetOriginPercent(PyObject *self, PyObject *args)
 {
-    SliceAttributesObject *obj = (SliceAttributesObject *)self;
+    PySliceAttributesObject *obj = (PySliceAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetOriginPercent());
     return retval;
 }
@@ -459,7 +488,7 @@ SliceAttributes_GetOriginPercent(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SliceAttributes_SetOriginZone(PyObject *self, PyObject *args)
 {
-    SliceAttributesObject *obj = (SliceAttributesObject *)self;
+    PySliceAttributesObject *obj = (PySliceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -511,7 +540,7 @@ SliceAttributes_SetOriginZone(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SliceAttributes_GetOriginZone(PyObject *self, PyObject *args)
 {
-    SliceAttributesObject *obj = (SliceAttributesObject *)self;
+    PySliceAttributesObject *obj = (PySliceAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetOriginZone()));
     return retval;
 }
@@ -519,7 +548,7 @@ SliceAttributes_GetOriginZone(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SliceAttributes_SetOriginNode(PyObject *self, PyObject *args)
 {
-    SliceAttributesObject *obj = (SliceAttributesObject *)self;
+    PySliceAttributesObject *obj = (PySliceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -571,7 +600,7 @@ SliceAttributes_SetOriginNode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SliceAttributes_GetOriginNode(PyObject *self, PyObject *args)
 {
-    SliceAttributesObject *obj = (SliceAttributesObject *)self;
+    PySliceAttributesObject *obj = (PySliceAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetOriginNode()));
     return retval;
 }
@@ -579,7 +608,7 @@ SliceAttributes_GetOriginNode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SliceAttributes_SetNormal(PyObject *self, PyObject *args)
 {
-    SliceAttributesObject *obj = (SliceAttributesObject *)self;
+    PySliceAttributesObject *obj = (PySliceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetNormal();
@@ -646,7 +675,7 @@ SliceAttributes_SetNormal(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SliceAttributes_GetNormal(PyObject *self, PyObject *args)
 {
-    SliceAttributesObject *obj = (SliceAttributesObject *)self;
+    PySliceAttributesObject *obj = (PySliceAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the normal.
     PyObject *retval = PyTuple_New(3);
     const double *normal = obj->data->GetNormal();
@@ -658,7 +687,7 @@ SliceAttributes_GetNormal(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SliceAttributes_SetAxisType(PyObject *self, PyObject *args)
 {
-    SliceAttributesObject *obj = (SliceAttributesObject *)self;
+    PySliceAttributesObject *obj = (PySliceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -719,7 +748,7 @@ SliceAttributes_SetAxisType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SliceAttributes_GetAxisType(PyObject *self, PyObject *args)
 {
-    SliceAttributesObject *obj = (SliceAttributesObject *)self;
+    PySliceAttributesObject *obj = (PySliceAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetAxisType()));
     return retval;
 }
@@ -727,7 +756,7 @@ SliceAttributes_GetAxisType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SliceAttributes_SetUpAxis(PyObject *self, PyObject *args)
 {
-    SliceAttributesObject *obj = (SliceAttributesObject *)self;
+    PySliceAttributesObject *obj = (PySliceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetUpAxis();
@@ -794,7 +823,7 @@ SliceAttributes_SetUpAxis(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SliceAttributes_GetUpAxis(PyObject *self, PyObject *args)
 {
-    SliceAttributesObject *obj = (SliceAttributesObject *)self;
+    PySliceAttributesObject *obj = (PySliceAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the upAxis.
     PyObject *retval = PyTuple_New(3);
     const double *upAxis = obj->data->GetUpAxis();
@@ -806,7 +835,7 @@ SliceAttributes_GetUpAxis(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SliceAttributes_SetProject2d(PyObject *self, PyObject *args)
 {
-    SliceAttributesObject *obj = (SliceAttributesObject *)self;
+    PySliceAttributesObject *obj = (PySliceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -858,7 +887,7 @@ SliceAttributes_SetProject2d(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SliceAttributes_GetProject2d(PyObject *self, PyObject *args)
 {
-    SliceAttributesObject *obj = (SliceAttributesObject *)self;
+    PySliceAttributesObject *obj = (PySliceAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetProject2d()?1L:0L);
     return retval;
 }
@@ -866,7 +895,7 @@ SliceAttributes_GetProject2d(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SliceAttributes_SetInteractive(PyObject *self, PyObject *args)
 {
-    SliceAttributesObject *obj = (SliceAttributesObject *)self;
+    PySliceAttributesObject *obj = (PySliceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -918,7 +947,7 @@ SliceAttributes_SetInteractive(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SliceAttributes_GetInteractive(PyObject *self, PyObject *args)
 {
-    SliceAttributesObject *obj = (SliceAttributesObject *)self;
+    PySliceAttributesObject *obj = (PySliceAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetInteractive()?1L:0L);
     return retval;
 }
@@ -926,7 +955,7 @@ SliceAttributes_GetInteractive(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SliceAttributes_SetFlip(PyObject *self, PyObject *args)
 {
-    SliceAttributesObject *obj = (SliceAttributesObject *)self;
+    PySliceAttributesObject *obj = (PySliceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -978,7 +1007,7 @@ SliceAttributes_SetFlip(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SliceAttributes_GetFlip(PyObject *self, PyObject *args)
 {
-    SliceAttributesObject *obj = (SliceAttributesObject *)self;
+    PySliceAttributesObject *obj = (PySliceAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetFlip()?1L:0L);
     return retval;
 }
@@ -986,7 +1015,7 @@ SliceAttributes_GetFlip(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SliceAttributes_SetOriginZoneDomain(PyObject *self, PyObject *args)
 {
-    SliceAttributesObject *obj = (SliceAttributesObject *)self;
+    PySliceAttributesObject *obj = (PySliceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1038,7 +1067,7 @@ SliceAttributes_SetOriginZoneDomain(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SliceAttributes_GetOriginZoneDomain(PyObject *self, PyObject *args)
 {
-    SliceAttributesObject *obj = (SliceAttributesObject *)self;
+    PySliceAttributesObject *obj = (PySliceAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetOriginZoneDomain()));
     return retval;
 }
@@ -1046,7 +1075,7 @@ SliceAttributes_GetOriginZoneDomain(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SliceAttributes_SetOriginNodeDomain(PyObject *self, PyObject *args)
 {
-    SliceAttributesObject *obj = (SliceAttributesObject *)self;
+    PySliceAttributesObject *obj = (PySliceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1098,7 +1127,7 @@ SliceAttributes_SetOriginNodeDomain(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SliceAttributes_GetOriginNodeDomain(PyObject *self, PyObject *args)
 {
-    SliceAttributesObject *obj = (SliceAttributesObject *)self;
+    PySliceAttributesObject *obj = (PySliceAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetOriginNodeDomain()));
     return retval;
 }
@@ -1106,7 +1135,7 @@ SliceAttributes_GetOriginNodeDomain(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SliceAttributes_SetMeshName(PyObject *self, PyObject *args)
 {
-    SliceAttributesObject *obj = (SliceAttributesObject *)self;
+    PySliceAttributesObject *obj = (PySliceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1147,7 +1176,7 @@ SliceAttributes_SetMeshName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SliceAttributes_GetMeshName(PyObject *self, PyObject *args)
 {
-    SliceAttributesObject *obj = (SliceAttributesObject *)self;
+    PySliceAttributesObject *obj = (PySliceAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetMeshName().c_str());
     return retval;
 }
@@ -1155,7 +1184,7 @@ SliceAttributes_GetMeshName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SliceAttributes_SetTheta(PyObject *self, PyObject *args)
 {
-    SliceAttributesObject *obj = (SliceAttributesObject *)self;
+    PySliceAttributesObject *obj = (PySliceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1207,7 +1236,7 @@ SliceAttributes_SetTheta(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SliceAttributes_GetTheta(PyObject *self, PyObject *args)
 {
-    SliceAttributesObject *obj = (SliceAttributesObject *)self;
+    PySliceAttributesObject *obj = (PySliceAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetTheta());
     return retval;
 }
@@ -1215,7 +1244,7 @@ SliceAttributes_GetTheta(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SliceAttributes_SetPhi(PyObject *self, PyObject *args)
 {
-    SliceAttributesObject *obj = (SliceAttributesObject *)self;
+    PySliceAttributesObject *obj = (PySliceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1267,7 +1296,7 @@ SliceAttributes_SetPhi(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SliceAttributes_GetPhi(PyObject *self, PyObject *args)
 {
-    SliceAttributesObject *obj = (SliceAttributesObject *)self;
+    PySliceAttributesObject *obj = (PySliceAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetPhi());
     return retval;
 }
@@ -1275,7 +1304,8 @@ SliceAttributes_GetPhi(PyObject *self, PyObject *args)
 
 
 PyMethodDef PySliceAttributes_methods[SLICEATTRIBUTES_NMETH] = {
-    {"Notify", SliceAttributes_Notify, METH_VARARGS},
+    {"__dir__", SliceAttributes_dir, METH_NOARGS},
+    {"Notify", SliceAttributes_Notify, METH_NOARGS},
     {"SetOriginType", SliceAttributes_SetOriginType, METH_VARARGS},
     {"GetOriginType", SliceAttributes_GetOriginType, METH_VARARGS},
     {"SetOriginPoint", SliceAttributes_SetOriginPoint, METH_VARARGS},
@@ -1318,19 +1348,22 @@ PyMethodDef PySliceAttributes_methods[SLICEATTRIBUTES_NMETH] = {
 //
 
 static void
-SliceAttributes_dealloc(PyObject *v)
+PySliceAttributes_dealloc(PyObject *v)
 {
-   SliceAttributesObject *obj = (SliceAttributesObject *)v;
+   PySliceAttributesObject *obj = (PySliceAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *SliceAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PySliceAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PySliceAttributes_getattr(PyObject *self, char *name)
+PySliceAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "originType") == 0)
         return SliceAttributes_GetOriginType(self, NULL);
     if(strcmp(name, "Point") == 0)
@@ -1388,26 +1421,19 @@ PySliceAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "phi") == 0)
         return SliceAttributes_GetPhi(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PySliceAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PySliceAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PySliceAttributes_methods[i].ml_name),
-                PyString_FromString(PySliceAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PySliceAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PySliceAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PySliceAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "originType") == 0)
         obj = SliceAttributes_SetOriginType(self, args);
@@ -1444,6 +1470,12 @@ PySliceAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "phi") == 0)
         obj = SliceAttributes_SetPhi(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -1458,78 +1490,45 @@ PySliceAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-SliceAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    SliceAttributesObject *obj = (SliceAttributesObject *)v;
-    fprintf(fp, "%s", PySliceAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-SliceAttributes_str(PyObject *v)
+PySliceAttributes_str(PyObject *v)
 {
-    SliceAttributesObject *obj = (SliceAttributesObject *)v;
+    PySliceAttributesObject *obj = (PySliceAttributesObject *)v;
     return PyString_FromString(PySliceAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *SliceAttributes_Purpose = "This class contains attributes for the arbitrary slice.";
-#else
-static char *SliceAttributes_Purpose = "This class contains attributes for the arbitrary slice.";
-#endif
+static char const *PySliceAttributes_purpose = "This class contains attributes for the arbitrary slice.";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(SliceAttributesType,         \
-                  "SliceAttributes",           \
-                  SliceAttributesObject,       \
-                  SliceAttributes_dealloc,     \
-                  SliceAttributes_print,       \
-                  PySliceAttributes_getattr,   \
-                  PySliceAttributes_setattr,   \
-                  SliceAttributes_str,         \
-                  SliceAttributes_Purpose,     \
-                  SliceAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(SliceAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-SliceAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PySliceAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &SliceAttributesType
-         || Py_TYPE(other) != &SliceAttributesType)
+    if ( Py_TYPE(self) != &PySliceAttributesType
+         || Py_TYPE(other) != &PySliceAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    SliceAttributes *a = ((SliceAttributesObject *)self)->data;
-    SliceAttributes *b = ((SliceAttributesObject *)other)->data;
+    SliceAttributes *a = ((PySliceAttributesObject *)self)->data;
+    SliceAttributes *b = ((PySliceAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -1558,8 +1557,8 @@ static SliceAttributes *currentAtts = 0;
 static PyObject *
 NewSliceAttributes(int useCurrent)
 {
-    SliceAttributesObject *newObject;
-    newObject = PyObject_NEW(SliceAttributesObject, &SliceAttributesType);
+    PySliceAttributesObject *newObject;
+    newObject = PyObject_NEW(PySliceAttributesObject, &PySliceAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1570,14 +1569,15 @@ NewSliceAttributes(int useCurrent)
         newObject->data = new SliceAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PySliceAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapSliceAttributes(const SliceAttributes *attr)
 {
-    SliceAttributesObject *newObject;
-    newObject = PyObject_NEW(SliceAttributesObject, &SliceAttributesType);
+    PySliceAttributesObject *newObject;
+    newObject = PyObject_NEW(PySliceAttributesObject, &PySliceAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (SliceAttributes *)attr;
@@ -1679,13 +1679,13 @@ PySliceAttributes_GetMethodTable(int *nMethods)
 bool
 PySliceAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &SliceAttributesType);
+    return (obj->ob_type == &PySliceAttributesType);
 }
 
 SliceAttributes *
 PySliceAttributes_FromPyObject(PyObject *obj)
 {
-    SliceAttributesObject *obj2 = (SliceAttributesObject *)obj;
+    PySliceAttributesObject *obj2 = (PySliceAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1704,7 +1704,7 @@ PySliceAttributes_Wrap(const SliceAttributes *attr)
 void
 PySliceAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    SliceAttributesObject *obj2 = (SliceAttributesObject *)obj;
+    PySliceAttributesObject *obj2 = (PySliceAttributesObject *)obj;
     obj2->parent = parent;
 }
 

@@ -5,6 +5,7 @@
 #include <PyLineSamplerAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a LineSamplerAttributes.
 //
-struct LineSamplerAttributesObject
+struct PyLineSamplerAttributesObject
 {
     PyObject_HEAD
     LineSamplerAttributes *data;
@@ -426,16 +427,44 @@ PyLineSamplerAttributes_ToString(const LineSamplerAttributes *atts, const char *
 static PyObject *
 LineSamplerAttributes_Notify(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+LineSamplerAttributes_dir(PyObject *self, PyObject *args)
+{
+    static LineSamplerAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyLineSamplerAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 LineSamplerAttributes_SetMeshGeometry(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -494,7 +523,7 @@ LineSamplerAttributes_SetMeshGeometry(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetMeshGeometry(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMeshGeometry()));
     return retval;
 }
@@ -502,7 +531,7 @@ LineSamplerAttributes_GetMeshGeometry(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetArrayConfiguration(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -560,7 +589,7 @@ LineSamplerAttributes_SetArrayConfiguration(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetArrayConfiguration(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetArrayConfiguration()));
     return retval;
 }
@@ -568,7 +597,7 @@ LineSamplerAttributes_GetArrayConfiguration(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetBoundary(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -626,7 +655,7 @@ LineSamplerAttributes_SetBoundary(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetBoundary(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetBoundary()));
     return retval;
 }
@@ -634,7 +663,7 @@ LineSamplerAttributes_GetBoundary(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetInstanceId(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -686,7 +715,7 @@ LineSamplerAttributes_SetInstanceId(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetInstanceId(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetInstanceId()));
     return retval;
 }
@@ -694,7 +723,7 @@ LineSamplerAttributes_GetInstanceId(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetNArrays(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -746,7 +775,7 @@ LineSamplerAttributes_SetNArrays(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetNArrays(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNArrays()));
     return retval;
 }
@@ -754,7 +783,7 @@ LineSamplerAttributes_GetNArrays(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetToroidalArrayAngle(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -806,7 +835,7 @@ LineSamplerAttributes_SetToroidalArrayAngle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetToroidalArrayAngle(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetToroidalArrayAngle());
     return retval;
 }
@@ -814,7 +843,7 @@ LineSamplerAttributes_GetToroidalArrayAngle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetNChannels(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -866,7 +895,7 @@ LineSamplerAttributes_SetNChannels(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetNChannels(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNChannels()));
     return retval;
 }
@@ -874,7 +903,7 @@ LineSamplerAttributes_GetNChannels(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetChannelProjection(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -933,7 +962,7 @@ LineSamplerAttributes_SetChannelProjection(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetChannelProjection(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetChannelProjection()));
     return retval;
 }
@@ -941,7 +970,7 @@ LineSamplerAttributes_GetChannelProjection(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetChannelLayoutType(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -999,7 +1028,7 @@ LineSamplerAttributes_SetChannelLayoutType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetChannelLayoutType(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetChannelLayoutType()));
     return retval;
 }
@@ -1007,7 +1036,7 @@ LineSamplerAttributes_GetChannelLayoutType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetChannelOffset(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1059,7 +1088,7 @@ LineSamplerAttributes_SetChannelOffset(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetChannelOffset(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetChannelOffset());
     return retval;
 }
@@ -1067,7 +1096,7 @@ LineSamplerAttributes_GetChannelOffset(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetChannelAngle(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1119,7 +1148,7 @@ LineSamplerAttributes_SetChannelAngle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetChannelAngle(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetChannelAngle());
     return retval;
 }
@@ -1127,7 +1156,7 @@ LineSamplerAttributes_GetChannelAngle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetNRows(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1179,7 +1208,7 @@ LineSamplerAttributes_SetNRows(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetNRows(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNRows()));
     return retval;
 }
@@ -1187,7 +1216,7 @@ LineSamplerAttributes_GetNRows(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetRowOffset(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1239,7 +1268,7 @@ LineSamplerAttributes_SetRowOffset(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetRowOffset(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetRowOffset());
     return retval;
 }
@@ -1247,7 +1276,7 @@ LineSamplerAttributes_GetRowOffset(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetArrayOrigin(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetArrayOrigin();
@@ -1314,7 +1343,7 @@ LineSamplerAttributes_SetArrayOrigin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetArrayOrigin(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the arrayOrigin.
     PyObject *retval = PyTuple_New(3);
     const double *arrayOrigin = obj->data->GetArrayOrigin();
@@ -1326,7 +1355,7 @@ LineSamplerAttributes_GetArrayOrigin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetArrayAxis(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1384,7 +1413,7 @@ LineSamplerAttributes_SetArrayAxis(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetArrayAxis(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetArrayAxis()));
     return retval;
 }
@@ -1392,7 +1421,7 @@ LineSamplerAttributes_GetArrayAxis(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetPoloidalAngleStart(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1444,7 +1473,7 @@ LineSamplerAttributes_SetPoloidalAngleStart(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetPoloidalAngleStart(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetPoloidalAngleStart());
     return retval;
 }
@@ -1452,7 +1481,7 @@ LineSamplerAttributes_GetPoloidalAngleStart(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetPoloidalAngleStop(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1504,7 +1533,7 @@ LineSamplerAttributes_SetPoloidalAngleStop(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetPoloidalAngleStop(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetPoloidalAngleStop());
     return retval;
 }
@@ -1512,7 +1541,7 @@ LineSamplerAttributes_GetPoloidalAngleStop(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetPoloialAngle(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1564,7 +1593,7 @@ LineSamplerAttributes_SetPoloialAngle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetPoloialAngle(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetPoloialAngle());
     return retval;
 }
@@ -1572,7 +1601,7 @@ LineSamplerAttributes_GetPoloialAngle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetPoloialRTilt(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1624,7 +1653,7 @@ LineSamplerAttributes_SetPoloialRTilt(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetPoloialRTilt(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetPoloialRTilt());
     return retval;
 }
@@ -1632,7 +1661,7 @@ LineSamplerAttributes_GetPoloialRTilt(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetPoloialZTilt(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1684,7 +1713,7 @@ LineSamplerAttributes_SetPoloialZTilt(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetPoloialZTilt(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetPoloialZTilt());
     return retval;
 }
@@ -1692,7 +1721,7 @@ LineSamplerAttributes_GetPoloialZTilt(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetToroidalAngle(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1744,7 +1773,7 @@ LineSamplerAttributes_SetToroidalAngle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetToroidalAngle(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetToroidalAngle());
     return retval;
 }
@@ -1752,7 +1781,7 @@ LineSamplerAttributes_GetToroidalAngle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetFlipToroidalAngle(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1804,7 +1833,7 @@ LineSamplerAttributes_SetFlipToroidalAngle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetFlipToroidalAngle(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetFlipToroidalAngle()?1L:0L);
     return retval;
 }
@@ -1812,7 +1841,7 @@ LineSamplerAttributes_GetFlipToroidalAngle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetViewGeometry(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1871,7 +1900,7 @@ LineSamplerAttributes_SetViewGeometry(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetViewGeometry(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetViewGeometry()));
     return retval;
 }
@@ -1879,7 +1908,7 @@ LineSamplerAttributes_GetViewGeometry(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetViewDimension(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1938,7 +1967,7 @@ LineSamplerAttributes_SetViewDimension(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetViewDimension(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetViewDimension()));
     return retval;
 }
@@ -1946,7 +1975,7 @@ LineSamplerAttributes_GetViewDimension(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetDonotApplyToAll(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1998,7 +2027,7 @@ LineSamplerAttributes_SetDonotApplyToAll(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetDonotApplyToAll(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetDonotApplyToAll()?1L:0L);
     return retval;
 }
@@ -2006,7 +2035,7 @@ LineSamplerAttributes_GetDonotApplyToAll(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetHeightPlotScale(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2058,7 +2087,7 @@ LineSamplerAttributes_SetHeightPlotScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetHeightPlotScale(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetHeightPlotScale());
     return retval;
 }
@@ -2066,7 +2095,7 @@ LineSamplerAttributes_GetHeightPlotScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetChannelPlotOffset(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2118,7 +2147,7 @@ LineSamplerAttributes_SetChannelPlotOffset(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetChannelPlotOffset(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetChannelPlotOffset());
     return retval;
 }
@@ -2126,7 +2155,7 @@ LineSamplerAttributes_GetChannelPlotOffset(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetArrayPlotOffset(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2178,7 +2207,7 @@ LineSamplerAttributes_SetArrayPlotOffset(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetArrayPlotOffset(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetArrayPlotOffset());
     return retval;
 }
@@ -2186,7 +2215,7 @@ LineSamplerAttributes_GetArrayPlotOffset(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetDisplayTime(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2245,7 +2274,7 @@ LineSamplerAttributes_SetDisplayTime(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetDisplayTime(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetDisplayTime()));
     return retval;
 }
@@ -2253,7 +2282,7 @@ LineSamplerAttributes_GetDisplayTime(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetChannelGeometry(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2313,7 +2342,7 @@ LineSamplerAttributes_SetChannelGeometry(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetChannelGeometry(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetChannelGeometry()));
     return retval;
 }
@@ -2321,7 +2350,7 @@ LineSamplerAttributes_GetChannelGeometry(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetRadius(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2373,7 +2402,7 @@ LineSamplerAttributes_SetRadius(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetRadius(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetRadius());
     return retval;
 }
@@ -2381,7 +2410,7 @@ LineSamplerAttributes_GetRadius(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetDivergence(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2433,7 +2462,7 @@ LineSamplerAttributes_SetDivergence(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetDivergence(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetDivergence());
     return retval;
 }
@@ -2441,7 +2470,7 @@ LineSamplerAttributes_GetDivergence(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetChannelProfile(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2499,7 +2528,7 @@ LineSamplerAttributes_SetChannelProfile(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetChannelProfile(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetChannelProfile()));
     return retval;
 }
@@ -2507,7 +2536,7 @@ LineSamplerAttributes_GetChannelProfile(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetStandardDeviation(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2559,7 +2588,7 @@ LineSamplerAttributes_SetStandardDeviation(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetStandardDeviation(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetStandardDeviation());
     return retval;
 }
@@ -2567,7 +2596,7 @@ LineSamplerAttributes_GetStandardDeviation(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetSampleDistance(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2619,7 +2648,7 @@ LineSamplerAttributes_SetSampleDistance(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetSampleDistance(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetSampleDistance());
     return retval;
 }
@@ -2627,7 +2656,7 @@ LineSamplerAttributes_GetSampleDistance(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetSampleVolume(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2679,7 +2708,7 @@ LineSamplerAttributes_SetSampleVolume(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetSampleVolume(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetSampleVolume());
     return retval;
 }
@@ -2687,7 +2716,7 @@ LineSamplerAttributes_GetSampleVolume(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetSampleArc(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2739,7 +2768,7 @@ LineSamplerAttributes_SetSampleArc(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetSampleArc(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetSampleArc());
     return retval;
 }
@@ -2747,7 +2776,7 @@ LineSamplerAttributes_GetSampleArc(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetChannelIntegration(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2805,7 +2834,7 @@ LineSamplerAttributes_SetChannelIntegration(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetChannelIntegration(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetChannelIntegration()));
     return retval;
 }
@@ -2813,7 +2842,7 @@ LineSamplerAttributes_GetChannelIntegration(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetToroidalIntegration(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2872,7 +2901,7 @@ LineSamplerAttributes_SetToroidalIntegration(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetToroidalIntegration(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetToroidalIntegration()));
     return retval;
 }
@@ -2880,7 +2909,7 @@ LineSamplerAttributes_GetToroidalIntegration(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetToroidalAngleSampling(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2938,7 +2967,7 @@ LineSamplerAttributes_SetToroidalAngleSampling(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetToroidalAngleSampling(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetToroidalAngleSampling()));
     return retval;
 }
@@ -2946,7 +2975,7 @@ LineSamplerAttributes_GetToroidalAngleSampling(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetToroidalAngleStart(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2998,7 +3027,7 @@ LineSamplerAttributes_SetToroidalAngleStart(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetToroidalAngleStart(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetToroidalAngleStart());
     return retval;
 }
@@ -3006,7 +3035,7 @@ LineSamplerAttributes_GetToroidalAngleStart(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetToroidalAngleStop(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3058,7 +3087,7 @@ LineSamplerAttributes_SetToroidalAngleStop(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetToroidalAngleStop(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetToroidalAngleStop());
     return retval;
 }
@@ -3066,7 +3095,7 @@ LineSamplerAttributes_GetToroidalAngleStop(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetToroidalAngleStride(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3118,7 +3147,7 @@ LineSamplerAttributes_SetToroidalAngleStride(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetToroidalAngleStride(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetToroidalAngleStride());
     return retval;
 }
@@ -3126,7 +3155,7 @@ LineSamplerAttributes_GetToroidalAngleStride(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetTimeSampling(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3184,7 +3213,7 @@ LineSamplerAttributes_SetTimeSampling(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetTimeSampling(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetTimeSampling()));
     return retval;
 }
@@ -3192,7 +3221,7 @@ LineSamplerAttributes_GetTimeSampling(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetTimeStepStart(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3244,7 +3273,7 @@ LineSamplerAttributes_SetTimeStepStart(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetTimeStepStart(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetTimeStepStart()));
     return retval;
 }
@@ -3252,7 +3281,7 @@ LineSamplerAttributes_GetTimeStepStart(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetTimeStepStop(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3304,7 +3333,7 @@ LineSamplerAttributes_SetTimeStepStop(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetTimeStepStop(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetTimeStepStop()));
     return retval;
 }
@@ -3312,7 +3341,7 @@ LineSamplerAttributes_GetTimeStepStop(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetTimeStepStride(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3364,7 +3393,7 @@ LineSamplerAttributes_SetTimeStepStride(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetTimeStepStride(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetTimeStepStride()));
     return retval;
 }
@@ -3372,7 +3401,7 @@ LineSamplerAttributes_GetTimeStepStride(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetChannelList(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     doubleVector vec;
 
@@ -3436,7 +3465,7 @@ LineSamplerAttributes_SetChannelList(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetChannelList(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the channelList.
     const doubleVector &channelList = obj->data->GetChannelList();
     PyObject *retval = PyTuple_New(channelList.size());
@@ -3448,7 +3477,7 @@ LineSamplerAttributes_GetChannelList(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetWallList(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     doubleVector vec;
 
@@ -3512,7 +3541,7 @@ LineSamplerAttributes_SetWallList(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetWallList(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the wallList.
     const doubleVector &wallList = obj->data->GetWallList();
     PyObject *retval = PyTuple_New(wallList.size());
@@ -3524,7 +3553,7 @@ LineSamplerAttributes_GetWallList(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetNChannelListArrays(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3576,7 +3605,7 @@ LineSamplerAttributes_SetNChannelListArrays(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_GetNChannelListArrays(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNChannelListArrays()));
     return retval;
 }
@@ -3584,7 +3613,7 @@ LineSamplerAttributes_GetNChannelListArrays(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineSamplerAttributes_SetChannelListToroidalArrayAngle(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3636,7 +3665,7 @@ LineSamplerAttributes_SetChannelListToroidalArrayAngle(PyObject *self, PyObject 
 /*static*/ PyObject *
 LineSamplerAttributes_GetChannelListToroidalArrayAngle(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetChannelListToroidalArrayAngle());
     return retval;
 }
@@ -3644,7 +3673,7 @@ LineSamplerAttributes_GetChannelListToroidalArrayAngle(PyObject *self, PyObject 
 /*static*/ PyObject *
 LineSamplerAttributes_SetChannelListToroidalAngle(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3696,7 +3725,7 @@ LineSamplerAttributes_SetChannelListToroidalAngle(PyObject *self, PyObject *args
 /*static*/ PyObject *
 LineSamplerAttributes_GetChannelListToroidalAngle(PyObject *self, PyObject *args)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetChannelListToroidalAngle());
     return retval;
 }
@@ -3704,7 +3733,8 @@ LineSamplerAttributes_GetChannelListToroidalAngle(PyObject *self, PyObject *args
 
 
 PyMethodDef PyLineSamplerAttributes_methods[LINESAMPLERATTRIBUTES_NMETH] = {
-    {"Notify", LineSamplerAttributes_Notify, METH_VARARGS},
+    {"__dir__", LineSamplerAttributes_dir, METH_NOARGS},
+    {"Notify", LineSamplerAttributes_Notify, METH_NOARGS},
     {"SetMeshGeometry", LineSamplerAttributes_SetMeshGeometry, METH_VARARGS},
     {"GetMeshGeometry", LineSamplerAttributes_GetMeshGeometry, METH_VARARGS},
     {"SetArrayConfiguration", LineSamplerAttributes_SetArrayConfiguration, METH_VARARGS},
@@ -3817,19 +3847,22 @@ PyMethodDef PyLineSamplerAttributes_methods[LINESAMPLERATTRIBUTES_NMETH] = {
 //
 
 static void
-LineSamplerAttributes_dealloc(PyObject *v)
+PyLineSamplerAttributes_dealloc(PyObject *v)
 {
-   LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)v;
+   PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *LineSamplerAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyLineSamplerAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyLineSamplerAttributes_getattr(PyObject *self, char *name)
+PyLineSamplerAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "meshGeometry") == 0)
         return LineSamplerAttributes_GetMeshGeometry(self, NULL);
     if(strcmp(name, "Cartesian") == 0)
@@ -4026,26 +4059,19 @@ PyLineSamplerAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "channelListToroidalAngle") == 0)
         return LineSamplerAttributes_GetChannelListToroidalAngle(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyLineSamplerAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyLineSamplerAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyLineSamplerAttributes_methods[i].ml_name),
-                PyString_FromString(PyLineSamplerAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyLineSamplerAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyLineSamplerAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyLineSamplerAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "meshGeometry") == 0)
         obj = LineSamplerAttributes_SetMeshGeometry(self, args);
@@ -4152,6 +4178,12 @@ PyLineSamplerAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "channelListToroidalAngle") == 0)
         obj = LineSamplerAttributes_SetChannelListToroidalAngle(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -4166,78 +4198,45 @@ PyLineSamplerAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-LineSamplerAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)v;
-    fprintf(fp, "%s", PyLineSamplerAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-LineSamplerAttributes_str(PyObject *v)
+PyLineSamplerAttributes_str(PyObject *v)
 {
-    LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)v;
+    PyLineSamplerAttributesObject *obj = (PyLineSamplerAttributesObject *)v;
     return PyString_FromString(PyLineSamplerAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *LineSamplerAttributes_Purpose = "This class contains attributes for the line sampler operator.";
-#else
-static char *LineSamplerAttributes_Purpose = "This class contains attributes for the line sampler operator.";
-#endif
+static char const *PyLineSamplerAttributes_purpose = "This class contains attributes for the line sampler operator.";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(LineSamplerAttributesType,         \
-                  "LineSamplerAttributes",           \
-                  LineSamplerAttributesObject,       \
-                  LineSamplerAttributes_dealloc,     \
-                  LineSamplerAttributes_print,       \
-                  PyLineSamplerAttributes_getattr,   \
-                  PyLineSamplerAttributes_setattr,   \
-                  LineSamplerAttributes_str,         \
-                  LineSamplerAttributes_Purpose,     \
-                  LineSamplerAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(LineSamplerAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-LineSamplerAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyLineSamplerAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &LineSamplerAttributesType
-         || Py_TYPE(other) != &LineSamplerAttributesType)
+    if ( Py_TYPE(self) != &PyLineSamplerAttributesType
+         || Py_TYPE(other) != &PyLineSamplerAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    LineSamplerAttributes *a = ((LineSamplerAttributesObject *)self)->data;
-    LineSamplerAttributes *b = ((LineSamplerAttributesObject *)other)->data;
+    LineSamplerAttributes *a = ((PyLineSamplerAttributesObject *)self)->data;
+    LineSamplerAttributes *b = ((PyLineSamplerAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -4266,8 +4265,8 @@ static LineSamplerAttributes *currentAtts = 0;
 static PyObject *
 NewLineSamplerAttributes(int useCurrent)
 {
-    LineSamplerAttributesObject *newObject;
-    newObject = PyObject_NEW(LineSamplerAttributesObject, &LineSamplerAttributesType);
+    PyLineSamplerAttributesObject *newObject;
+    newObject = PyObject_NEW(PyLineSamplerAttributesObject, &PyLineSamplerAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -4278,14 +4277,15 @@ NewLineSamplerAttributes(int useCurrent)
         newObject->data = new LineSamplerAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyLineSamplerAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapLineSamplerAttributes(const LineSamplerAttributes *attr)
 {
-    LineSamplerAttributesObject *newObject;
-    newObject = PyObject_NEW(LineSamplerAttributesObject, &LineSamplerAttributesType);
+    PyLineSamplerAttributesObject *newObject;
+    newObject = PyObject_NEW(PyLineSamplerAttributesObject, &PyLineSamplerAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (LineSamplerAttributes *)attr;
@@ -4387,13 +4387,13 @@ PyLineSamplerAttributes_GetMethodTable(int *nMethods)
 bool
 PyLineSamplerAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &LineSamplerAttributesType);
+    return (obj->ob_type == &PyLineSamplerAttributesType);
 }
 
 LineSamplerAttributes *
 PyLineSamplerAttributes_FromPyObject(PyObject *obj)
 {
-    LineSamplerAttributesObject *obj2 = (LineSamplerAttributesObject *)obj;
+    PyLineSamplerAttributesObject *obj2 = (PyLineSamplerAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -4412,7 +4412,7 @@ PyLineSamplerAttributes_Wrap(const LineSamplerAttributes *attr)
 void
 PyLineSamplerAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    LineSamplerAttributesObject *obj2 = (LineSamplerAttributesObject *)obj;
+    PyLineSamplerAttributesObject *obj2 = (PyLineSamplerAttributesObject *)obj;
     obj2->parent = parent;
 }
 

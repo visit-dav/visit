@@ -5,6 +5,7 @@
 #include <PyExpression.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a Expression.
 //
-struct ExpressionObject
+struct PyExpressionObject
 {
     PyObject_HEAD
     Expression *data;
@@ -126,16 +127,44 @@ PyExpression_ToString(const Expression *atts, const char *prefix, const bool for
 static PyObject *
 Expression_Notify(PyObject *self, PyObject *args)
 {
-    ExpressionObject *obj = (ExpressionObject *)self;
+    PyExpressionObject *obj = (PyExpressionObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+Expression_dir(PyObject *self, PyObject *args)
+{
+    static Expression atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyExpression_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 Expression_SetName(PyObject *self, PyObject *args)
 {
-    ExpressionObject *obj = (ExpressionObject *)self;
+    PyExpressionObject *obj = (PyExpressionObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -176,7 +205,7 @@ Expression_SetName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Expression_GetName(PyObject *self, PyObject *args)
 {
-    ExpressionObject *obj = (ExpressionObject *)self;
+    PyExpressionObject *obj = (PyExpressionObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetName().c_str());
     return retval;
 }
@@ -184,7 +213,7 @@ Expression_GetName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Expression_SetDefinition(PyObject *self, PyObject *args)
 {
-    ExpressionObject *obj = (ExpressionObject *)self;
+    PyExpressionObject *obj = (PyExpressionObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -225,7 +254,7 @@ Expression_SetDefinition(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Expression_GetDefinition(PyObject *self, PyObject *args)
 {
-    ExpressionObject *obj = (ExpressionObject *)self;
+    PyExpressionObject *obj = (PyExpressionObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetDefinition().c_str());
     return retval;
 }
@@ -233,7 +262,7 @@ Expression_GetDefinition(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Expression_SetHidden(PyObject *self, PyObject *args)
 {
-    ExpressionObject *obj = (ExpressionObject *)self;
+    PyExpressionObject *obj = (PyExpressionObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -285,7 +314,7 @@ Expression_SetHidden(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Expression_GetHidden(PyObject *self, PyObject *args)
 {
-    ExpressionObject *obj = (ExpressionObject *)self;
+    PyExpressionObject *obj = (PyExpressionObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetHidden()?1L:0L);
     return retval;
 }
@@ -293,7 +322,7 @@ Expression_GetHidden(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Expression_SetType(PyObject *self, PyObject *args)
 {
-    ExpressionObject *obj = (ExpressionObject *)self;
+    PyExpressionObject *obj = (PyExpressionObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -359,7 +388,7 @@ Expression_SetType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Expression_GetType(PyObject *self, PyObject *args)
 {
-    ExpressionObject *obj = (ExpressionObject *)self;
+    PyExpressionObject *obj = (PyExpressionObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetType()));
     return retval;
 }
@@ -367,7 +396,7 @@ Expression_GetType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Expression_SetFromDB(PyObject *self, PyObject *args)
 {
-    ExpressionObject *obj = (ExpressionObject *)self;
+    PyExpressionObject *obj = (PyExpressionObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -419,7 +448,7 @@ Expression_SetFromDB(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Expression_GetFromDB(PyObject *self, PyObject *args)
 {
-    ExpressionObject *obj = (ExpressionObject *)self;
+    PyExpressionObject *obj = (PyExpressionObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetFromDB()?1L:0L);
     return retval;
 }
@@ -427,7 +456,7 @@ Expression_GetFromDB(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Expression_SetFromOperator(PyObject *self, PyObject *args)
 {
-    ExpressionObject *obj = (ExpressionObject *)self;
+    PyExpressionObject *obj = (PyExpressionObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -479,7 +508,7 @@ Expression_SetFromOperator(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Expression_GetFromOperator(PyObject *self, PyObject *args)
 {
-    ExpressionObject *obj = (ExpressionObject *)self;
+    PyExpressionObject *obj = (PyExpressionObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetFromOperator()?1L:0L);
     return retval;
 }
@@ -487,7 +516,7 @@ Expression_GetFromOperator(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Expression_SetOperatorName(PyObject *self, PyObject *args)
 {
-    ExpressionObject *obj = (ExpressionObject *)self;
+    PyExpressionObject *obj = (PyExpressionObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -528,7 +557,7 @@ Expression_SetOperatorName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Expression_GetOperatorName(PyObject *self, PyObject *args)
 {
-    ExpressionObject *obj = (ExpressionObject *)self;
+    PyExpressionObject *obj = (PyExpressionObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetOperatorName().c_str());
     return retval;
 }
@@ -536,7 +565,7 @@ Expression_GetOperatorName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Expression_SetMeshName(PyObject *self, PyObject *args)
 {
-    ExpressionObject *obj = (ExpressionObject *)self;
+    PyExpressionObject *obj = (PyExpressionObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -577,7 +606,7 @@ Expression_SetMeshName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Expression_GetMeshName(PyObject *self, PyObject *args)
 {
-    ExpressionObject *obj = (ExpressionObject *)self;
+    PyExpressionObject *obj = (PyExpressionObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetMeshName().c_str());
     return retval;
 }
@@ -585,7 +614,7 @@ Expression_GetMeshName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Expression_SetDbName(PyObject *self, PyObject *args)
 {
-    ExpressionObject *obj = (ExpressionObject *)self;
+    PyExpressionObject *obj = (PyExpressionObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -626,7 +655,7 @@ Expression_SetDbName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Expression_GetDbName(PyObject *self, PyObject *args)
 {
-    ExpressionObject *obj = (ExpressionObject *)self;
+    PyExpressionObject *obj = (PyExpressionObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetDbName().c_str());
     return retval;
 }
@@ -634,7 +663,7 @@ Expression_GetDbName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Expression_SetAutoExpression(PyObject *self, PyObject *args)
 {
-    ExpressionObject *obj = (ExpressionObject *)self;
+    PyExpressionObject *obj = (PyExpressionObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -686,7 +715,7 @@ Expression_SetAutoExpression(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Expression_GetAutoExpression(PyObject *self, PyObject *args)
 {
-    ExpressionObject *obj = (ExpressionObject *)self;
+    PyExpressionObject *obj = (PyExpressionObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetAutoExpression()?1L:0L);
     return retval;
 }
@@ -694,7 +723,8 @@ Expression_GetAutoExpression(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyExpression_methods[EXPRESSION_NMETH] = {
-    {"Notify", Expression_Notify, METH_VARARGS},
+    {"__dir__", Expression_dir, METH_NOARGS},
+    {"Notify", Expression_Notify, METH_NOARGS},
     {"SetName", Expression_SetName, METH_VARARGS},
     {"GetName", Expression_GetName, METH_VARARGS},
     {"SetDefinition", Expression_SetDefinition, METH_VARARGS},
@@ -723,19 +753,22 @@ PyMethodDef PyExpression_methods[EXPRESSION_NMETH] = {
 //
 
 static void
-Expression_dealloc(PyObject *v)
+PyExpression_dealloc(PyObject *v)
 {
-   ExpressionObject *obj = (ExpressionObject *)v;
+   PyExpressionObject *obj = (PyExpressionObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *Expression_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyExpression_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyExpression_getattr(PyObject *self, char *name)
+PyExpression_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "name") == 0)
         return Expression_GetName(self, NULL);
     if(strcmp(name, "definition") == 0)
@@ -778,26 +811,19 @@ PyExpression_getattr(PyObject *self, char *name)
     if(strcmp(name, "autoExpression") == 0)
         return Expression_GetAutoExpression(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyExpression_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyExpression_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyExpression_methods[i].ml_name),
-                PyString_FromString(PyExpression_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyExpression_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyExpression_setattr(PyObject *self, char *name, PyObject *args)
+PyExpression_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "name") == 0)
         obj = Expression_SetName(self, args);
@@ -820,6 +846,12 @@ PyExpression_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "autoExpression") == 0)
         obj = Expression_SetAutoExpression(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -834,78 +866,45 @@ PyExpression_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-Expression_print(PyObject *v, FILE *fp, int flags)
-{
-    ExpressionObject *obj = (ExpressionObject *)v;
-    fprintf(fp, "%s", PyExpression_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-Expression_str(PyObject *v)
+PyExpression_str(PyObject *v)
 {
-    ExpressionObject *obj = (ExpressionObject *)v;
+    PyExpressionObject *obj = (PyExpressionObject *)v;
     return PyString_FromString(PyExpression_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *Expression_Purpose = "This class contains an expression.";
-#else
-static char *Expression_Purpose = "This class contains an expression.";
-#endif
+static char const *PyExpression_purpose = "This class contains an expression.";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(ExpressionType,         \
-                  "Expression",           \
-                  ExpressionObject,       \
-                  Expression_dealloc,     \
-                  Expression_print,       \
-                  PyExpression_getattr,   \
-                  PyExpression_setattr,   \
-                  Expression_str,         \
-                  Expression_Purpose,     \
-                  Expression_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(Expression);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-Expression_richcompare(PyObject *self, PyObject *other, int op)
+PyExpression_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &ExpressionType
-         || Py_TYPE(other) != &ExpressionType)
+    if ( Py_TYPE(self) != &PyExpressionType
+         || Py_TYPE(other) != &PyExpressionType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    Expression *a = ((ExpressionObject *)self)->data;
-    Expression *b = ((ExpressionObject *)other)->data;
+    Expression *a = ((PyExpressionObject *)self)->data;
+    Expression *b = ((PyExpressionObject *)other)->data;
 
     switch (op)
     {
@@ -934,8 +933,8 @@ static Expression *currentAtts = 0;
 static PyObject *
 NewExpression(int useCurrent)
 {
-    ExpressionObject *newObject;
-    newObject = PyObject_NEW(ExpressionObject, &ExpressionType);
+    PyExpressionObject *newObject;
+    newObject = PyObject_NEW(PyExpressionObject, &PyExpressionType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -946,14 +945,15 @@ NewExpression(int useCurrent)
         newObject->data = new Expression;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyExpressionType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapExpression(const Expression *attr)
 {
-    ExpressionObject *newObject;
-    newObject = PyObject_NEW(ExpressionObject, &ExpressionType);
+    PyExpressionObject *newObject;
+    newObject = PyObject_NEW(PyExpressionObject, &PyExpressionType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (Expression *)attr;
@@ -1055,13 +1055,13 @@ PyExpression_GetMethodTable(int *nMethods)
 bool
 PyExpression_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ExpressionType);
+    return (obj->ob_type == &PyExpressionType);
 }
 
 Expression *
 PyExpression_FromPyObject(PyObject *obj)
 {
-    ExpressionObject *obj2 = (ExpressionObject *)obj;
+    PyExpressionObject *obj2 = (PyExpressionObject *)obj;
     return obj2->data;
 }
 
@@ -1080,7 +1080,7 @@ PyExpression_Wrap(const Expression *attr)
 void
 PyExpression_SetParent(PyObject *obj, PyObject *parent)
 {
-    ExpressionObject *obj2 = (ExpressionObject *)obj;
+    PyExpressionObject *obj2 = (PyExpressionObject *)obj;
     obj2->parent = parent;
 }
 

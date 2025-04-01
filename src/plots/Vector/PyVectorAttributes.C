@@ -5,6 +5,7 @@
 #include <PyVectorAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 #include <visit-config.h>
 #include <ColorAttribute.h>
@@ -25,7 +26,7 @@
 //
 // This struct contains the Python type information and a VectorAttributes.
 //
-struct VectorAttributesObject
+struct PyVectorAttributesObject
 {
     PyObject_HEAD
     VectorAttributes *data;
@@ -216,16 +217,44 @@ PyVectorAttributes_ToString(const VectorAttributes *atts, const char *prefix, co
 static PyObject *
 VectorAttributes_Notify(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+VectorAttributes_dir(PyObject *self, PyObject *args)
+{
+    static VectorAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyVectorAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 VectorAttributes_SetGlyphLocation(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -283,7 +312,7 @@ VectorAttributes_SetGlyphLocation(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_GetGlyphLocation(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetGlyphLocation()));
     return retval;
 }
@@ -291,7 +320,7 @@ VectorAttributes_GetGlyphLocation(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_SetUseStride(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -343,7 +372,7 @@ VectorAttributes_SetUseStride(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_GetUseStride(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetUseStride()?1L:0L);
     return retval;
 }
@@ -351,7 +380,7 @@ VectorAttributes_GetUseStride(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_SetNVectors(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -403,7 +432,7 @@ VectorAttributes_SetNVectors(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_GetNVectors(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNVectors()));
     return retval;
 }
@@ -411,7 +440,7 @@ VectorAttributes_GetNVectors(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_SetStride(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -463,7 +492,7 @@ VectorAttributes_SetStride(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_GetStride(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetStride()));
     return retval;
 }
@@ -471,7 +500,7 @@ VectorAttributes_GetStride(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_SetOrigOnly(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -523,7 +552,7 @@ VectorAttributes_SetOrigOnly(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_GetOrigOnly(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetOrigOnly()?1L:0L);
     return retval;
 }
@@ -531,7 +560,7 @@ VectorAttributes_GetOrigOnly(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_SetLimitsMode(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -589,7 +618,7 @@ VectorAttributes_SetLimitsMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_GetLimitsMode(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetLimitsMode()));
     return retval;
 }
@@ -597,7 +626,7 @@ VectorAttributes_GetLimitsMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_SetMinFlag(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -649,7 +678,7 @@ VectorAttributes_SetMinFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_GetMinFlag(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetMinFlag()?1L:0L);
     return retval;
 }
@@ -657,7 +686,7 @@ VectorAttributes_GetMinFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_SetMin(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -709,7 +738,7 @@ VectorAttributes_SetMin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_GetMin(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMin());
     return retval;
 }
@@ -717,7 +746,7 @@ VectorAttributes_GetMin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_SetMaxFlag(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -769,7 +798,7 @@ VectorAttributes_SetMaxFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_GetMaxFlag(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetMaxFlag()?1L:0L);
     return retval;
 }
@@ -777,7 +806,7 @@ VectorAttributes_GetMaxFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_SetMax(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -829,7 +858,7 @@ VectorAttributes_SetMax(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_GetMax(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMax());
     return retval;
 }
@@ -837,7 +866,7 @@ VectorAttributes_GetMax(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_SetColorByMagnitude(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -889,7 +918,7 @@ VectorAttributes_SetColorByMagnitude(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_GetColorByMagnitude(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetColorByMagnitude()?1L:0L);
     return retval;
 }
@@ -897,7 +926,7 @@ VectorAttributes_GetColorByMagnitude(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_SetColorTableName(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -938,7 +967,7 @@ VectorAttributes_SetColorTableName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_GetColorTableName(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetColorTableName().c_str());
     return retval;
 }
@@ -946,7 +975,7 @@ VectorAttributes_GetColorTableName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -998,7 +1027,7 @@ VectorAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_GetInvertColorTable(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetInvertColorTable()?1L:0L);
     return retval;
 }
@@ -1006,7 +1035,7 @@ VectorAttributes_GetInvertColorTable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_SetVectorColor(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -1069,7 +1098,7 @@ VectorAttributes_SetVectorColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_GetVectorColor(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the vectorColor.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *vectorColor = obj->data->GetVectorColor().GetColor();
@@ -1083,7 +1112,7 @@ VectorAttributes_GetVectorColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_SetUseLegend(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1135,7 +1164,7 @@ VectorAttributes_SetUseLegend(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_GetUseLegend(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetUseLegend()?1L:0L);
     return retval;
 }
@@ -1143,7 +1172,7 @@ VectorAttributes_GetUseLegend(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_SetScale(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1195,7 +1224,7 @@ VectorAttributes_SetScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_GetScale(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetScale());
     return retval;
 }
@@ -1203,7 +1232,7 @@ VectorAttributes_GetScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_SetScaleByMagnitude(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1255,7 +1284,7 @@ VectorAttributes_SetScaleByMagnitude(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_GetScaleByMagnitude(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetScaleByMagnitude()?1L:0L);
     return retval;
 }
@@ -1263,7 +1292,7 @@ VectorAttributes_GetScaleByMagnitude(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_SetAutoScale(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1315,7 +1344,7 @@ VectorAttributes_SetAutoScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_GetAutoScale(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetAutoScale()?1L:0L);
     return retval;
 }
@@ -1323,7 +1352,7 @@ VectorAttributes_GetAutoScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_SetGlyphType(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1381,7 +1410,7 @@ VectorAttributes_SetGlyphType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_GetGlyphType(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetGlyphType()));
     return retval;
 }
@@ -1389,7 +1418,7 @@ VectorAttributes_GetGlyphType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_SetHeadOn(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1441,7 +1470,7 @@ VectorAttributes_SetHeadOn(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_GetHeadOn(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetHeadOn()?1L:0L);
     return retval;
 }
@@ -1449,7 +1478,7 @@ VectorAttributes_GetHeadOn(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_SetHeadSize(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1501,7 +1530,7 @@ VectorAttributes_SetHeadSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_GetHeadSize(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetHeadSize());
     return retval;
 }
@@ -1509,7 +1538,7 @@ VectorAttributes_GetHeadSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_SetLineStem(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1567,7 +1596,7 @@ VectorAttributes_SetLineStem(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_GetLineStem(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetLineStem()));
     return retval;
 }
@@ -1575,7 +1604,7 @@ VectorAttributes_GetLineStem(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_SetLineWidth(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1627,7 +1656,7 @@ VectorAttributes_SetLineWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_GetLineWidth(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetLineWidth()));
     return retval;
 }
@@ -1635,7 +1664,7 @@ VectorAttributes_GetLineWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_SetStemWidth(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1687,7 +1716,7 @@ VectorAttributes_SetStemWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_GetStemWidth(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetStemWidth());
     return retval;
 }
@@ -1695,7 +1724,7 @@ VectorAttributes_GetStemWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_SetVectorOrigin(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1754,7 +1783,7 @@ VectorAttributes_SetVectorOrigin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_GetVectorOrigin(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetVectorOrigin()));
     return retval;
 }
@@ -1762,7 +1791,7 @@ VectorAttributes_GetVectorOrigin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_SetGeometryQuality(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1820,7 +1849,7 @@ VectorAttributes_SetGeometryQuality(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_GetGeometryQuality(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetGeometryQuality()));
     return retval;
 }
@@ -1828,7 +1857,7 @@ VectorAttributes_GetGeometryQuality(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_SetAnimationStep(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1880,7 +1909,7 @@ VectorAttributes_SetAnimationStep(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 VectorAttributes_GetAnimationStep(PyObject *self, PyObject *args)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetAnimationStep()));
     return retval;
 }
@@ -1888,7 +1917,8 @@ VectorAttributes_GetAnimationStep(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyVectorAttributes_methods[VECTORATTRIBUTES_NMETH] = {
-    {"Notify", VectorAttributes_Notify, METH_VARARGS},
+    {"__dir__", VectorAttributes_dir, METH_NOARGS},
+    {"Notify", VectorAttributes_Notify, METH_NOARGS},
     {"SetGlyphLocation", VectorAttributes_SetGlyphLocation, METH_VARARGS},
     {"GetGlyphLocation", VectorAttributes_GetGlyphLocation, METH_VARARGS},
     {"SetUseStride", VectorAttributes_SetUseStride, METH_VARARGS},
@@ -1951,19 +1981,22 @@ PyMethodDef PyVectorAttributes_methods[VECTORATTRIBUTES_NMETH] = {
 //
 
 static void
-VectorAttributes_dealloc(PyObject *v)
+PyVectorAttributes_dealloc(PyObject *v)
 {
-   VectorAttributesObject *obj = (VectorAttributesObject *)v;
+   PyVectorAttributesObject *obj = (PyVectorAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *VectorAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyVectorAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyVectorAttributes_getattr(PyObject *self, char *name)
+PyVectorAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "glyphLocation") == 0)
         return VectorAttributes_GetGlyphLocation(self, NULL);
     if(strcmp(name, "AdaptsToMeshResolution") == 0)
@@ -2051,26 +2084,19 @@ PyVectorAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "animationStep") == 0)
         return VectorAttributes_GetAnimationStep(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyVectorAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyVectorAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyVectorAttributes_methods[i].ml_name),
-                PyString_FromString(PyVectorAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyVectorAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyVectorAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyVectorAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "glyphLocation") == 0)
         obj = VectorAttributes_SetGlyphLocation(self, args);
@@ -2127,6 +2153,12 @@ PyVectorAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "animationStep") == 0)
         obj = VectorAttributes_SetAnimationStep(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -2141,78 +2173,45 @@ PyVectorAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-VectorAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    VectorAttributesObject *obj = (VectorAttributesObject *)v;
-    fprintf(fp, "%s", PyVectorAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-VectorAttributes_str(PyObject *v)
+PyVectorAttributes_str(PyObject *v)
 {
-    VectorAttributesObject *obj = (VectorAttributesObject *)v;
+    PyVectorAttributesObject *obj = (PyVectorAttributesObject *)v;
     return PyString_FromString(PyVectorAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *VectorAttributes_Purpose = "Attributes for the vector plot";
-#else
-static char *VectorAttributes_Purpose = "Attributes for the vector plot";
-#endif
+static char const *PyVectorAttributes_purpose = "Attributes for the vector plot";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(VectorAttributesType,         \
-                  "VectorAttributes",           \
-                  VectorAttributesObject,       \
-                  VectorAttributes_dealloc,     \
-                  VectorAttributes_print,       \
-                  PyVectorAttributes_getattr,   \
-                  PyVectorAttributes_setattr,   \
-                  VectorAttributes_str,         \
-                  VectorAttributes_Purpose,     \
-                  VectorAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(VectorAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-VectorAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyVectorAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &VectorAttributesType
-         || Py_TYPE(other) != &VectorAttributesType)
+    if ( Py_TYPE(self) != &PyVectorAttributesType
+         || Py_TYPE(other) != &PyVectorAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    VectorAttributes *a = ((VectorAttributesObject *)self)->data;
-    VectorAttributes *b = ((VectorAttributesObject *)other)->data;
+    VectorAttributes *a = ((PyVectorAttributesObject *)self)->data;
+    VectorAttributes *b = ((PyVectorAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -2241,8 +2240,8 @@ static VectorAttributes *currentAtts = 0;
 static PyObject *
 NewVectorAttributes(int useCurrent)
 {
-    VectorAttributesObject *newObject;
-    newObject = PyObject_NEW(VectorAttributesObject, &VectorAttributesType);
+    PyVectorAttributesObject *newObject;
+    newObject = PyObject_NEW(PyVectorAttributesObject, &PyVectorAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -2253,14 +2252,15 @@ NewVectorAttributes(int useCurrent)
         newObject->data = new VectorAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyVectorAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapVectorAttributes(const VectorAttributes *attr)
 {
-    VectorAttributesObject *newObject;
-    newObject = PyObject_NEW(VectorAttributesObject, &VectorAttributesType);
+    PyVectorAttributesObject *newObject;
+    newObject = PyObject_NEW(PyVectorAttributesObject, &PyVectorAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (VectorAttributes *)attr;
@@ -2362,13 +2362,13 @@ PyVectorAttributes_GetMethodTable(int *nMethods)
 bool
 PyVectorAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &VectorAttributesType);
+    return (obj->ob_type == &PyVectorAttributesType);
 }
 
 VectorAttributes *
 PyVectorAttributes_FromPyObject(PyObject *obj)
 {
-    VectorAttributesObject *obj2 = (VectorAttributesObject *)obj;
+    PyVectorAttributesObject *obj2 = (PyVectorAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -2387,7 +2387,7 @@ PyVectorAttributes_Wrap(const VectorAttributes *attr)
 void
 PyVectorAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    VectorAttributesObject *obj2 = (VectorAttributesObject *)obj;
+    PyVectorAttributesObject *obj2 = (PyVectorAttributesObject *)obj;
     obj2->parent = parent;
 }
 

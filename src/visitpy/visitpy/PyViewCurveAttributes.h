@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define VIEWCURVEATTRIBUTES_NMETH 12
+#define VIEWCURVEATTRIBUTES_NMETH 13
 void VISITPY_API           PyViewCurveAttributes_StartUp(ViewCurveAttributes *subj, void *data);
 void VISITPY_API           PyViewCurveAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyViewCurveAttributes_GetMethodTable(int *nMethods);
@@ -24,8 +24,8 @@ void VISITPY_API           PyViewCurveAttributes_SetParent(PyObject *obj, PyObje
 void VISITPY_API           PyViewCurveAttributes_SetDefaults(const ViewCurveAttributes *atts);
 std::string VISITPY_API    PyViewCurveAttributes_GetLogString();
 std::string VISITPY_API    PyViewCurveAttributes_ToString(const ViewCurveAttributes *, const char *, const bool=false);
-VISITPY_API PyObject *     PyViewCurveAttributes_getattr(PyObject *self, char *name);
-int VISITPY_API            PyViewCurveAttributes_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyViewCurveAttributes_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyViewCurveAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyViewCurveAttributes_methods[VIEWCURVEATTRIBUTES_NMETH];
 
 #endif

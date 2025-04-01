@@ -5,6 +5,7 @@
 #include <PyConnCompReduceAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a ConnCompReduceAttributes.
 //
-struct ConnCompReduceAttributesObject
+struct PyConnCompReduceAttributesObject
 {
     PyObject_HEAD
     ConnCompReduceAttributes *data;
@@ -49,16 +50,44 @@ PyConnCompReduceAttributes_ToString(const ConnCompReduceAttributes *atts, const 
 static PyObject *
 ConnCompReduceAttributes_Notify(PyObject *self, PyObject *args)
 {
-    ConnCompReduceAttributesObject *obj = (ConnCompReduceAttributesObject *)self;
+    PyConnCompReduceAttributesObject *obj = (PyConnCompReduceAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+ConnCompReduceAttributes_dir(PyObject *self, PyObject *args)
+{
+    static ConnCompReduceAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyConnCompReduceAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 ConnCompReduceAttributes_SetTarget(PyObject *self, PyObject *args)
 {
-    ConnCompReduceAttributesObject *obj = (ConnCompReduceAttributesObject *)self;
+    PyConnCompReduceAttributesObject *obj = (PyConnCompReduceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -110,7 +139,7 @@ ConnCompReduceAttributes_SetTarget(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ConnCompReduceAttributes_GetTarget(PyObject *self, PyObject *args)
 {
-    ConnCompReduceAttributesObject *obj = (ConnCompReduceAttributesObject *)self;
+    PyConnCompReduceAttributesObject *obj = (PyConnCompReduceAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetTarget());
     return retval;
 }
@@ -118,7 +147,8 @@ ConnCompReduceAttributes_GetTarget(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyConnCompReduceAttributes_methods[CONNCOMPREDUCEATTRIBUTES_NMETH] = {
-    {"Notify", ConnCompReduceAttributes_Notify, METH_VARARGS},
+    {"__dir__", ConnCompReduceAttributes_dir, METH_NOARGS},
+    {"Notify", ConnCompReduceAttributes_Notify, METH_NOARGS},
     {"SetTarget", ConnCompReduceAttributes_SetTarget, METH_VARARGS},
     {"GetTarget", ConnCompReduceAttributes_GetTarget, METH_VARARGS},
     {NULL, NULL}
@@ -129,45 +159,47 @@ PyMethodDef PyConnCompReduceAttributes_methods[CONNCOMPREDUCEATTRIBUTES_NMETH] =
 //
 
 static void
-ConnCompReduceAttributes_dealloc(PyObject *v)
+PyConnCompReduceAttributes_dealloc(PyObject *v)
 {
-   ConnCompReduceAttributesObject *obj = (ConnCompReduceAttributesObject *)v;
+   PyConnCompReduceAttributesObject *obj = (PyConnCompReduceAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *ConnCompReduceAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyConnCompReduceAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyConnCompReduceAttributes_getattr(PyObject *self, char *name)
+PyConnCompReduceAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "target") == 0)
         return ConnCompReduceAttributes_GetTarget(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyConnCompReduceAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyConnCompReduceAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyConnCompReduceAttributes_methods[i].ml_name),
-                PyString_FromString(PyConnCompReduceAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyConnCompReduceAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyConnCompReduceAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyConnCompReduceAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "target") == 0)
         obj = ConnCompReduceAttributes_SetTarget(self, args);
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -183,78 +215,45 @@ PyConnCompReduceAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ConnCompReduceAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    ConnCompReduceAttributesObject *obj = (ConnCompReduceAttributesObject *)v;
-    fprintf(fp, "%s", PyConnCompReduceAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-ConnCompReduceAttributes_str(PyObject *v)
+PyConnCompReduceAttributes_str(PyObject *v)
 {
-    ConnCompReduceAttributesObject *obj = (ConnCompReduceAttributesObject *)v;
+    PyConnCompReduceAttributesObject *obj = (PyConnCompReduceAttributesObject *)v;
     return PyString_FromString(PyConnCompReduceAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *ConnCompReduceAttributes_Purpose = "This class contains attributes for the reduce connected components operator.";
-#else
-static char *ConnCompReduceAttributes_Purpose = "This class contains attributes for the reduce connected components operator.";
-#endif
+static char const *PyConnCompReduceAttributes_purpose = "This class contains attributes for the reduce connected components operator.";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(ConnCompReduceAttributesType,         \
-                  "ConnCompReduceAttributes",           \
-                  ConnCompReduceAttributesObject,       \
-                  ConnCompReduceAttributes_dealloc,     \
-                  ConnCompReduceAttributes_print,       \
-                  PyConnCompReduceAttributes_getattr,   \
-                  PyConnCompReduceAttributes_setattr,   \
-                  ConnCompReduceAttributes_str,         \
-                  ConnCompReduceAttributes_Purpose,     \
-                  ConnCompReduceAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(ConnCompReduceAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-ConnCompReduceAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyConnCompReduceAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &ConnCompReduceAttributesType
-         || Py_TYPE(other) != &ConnCompReduceAttributesType)
+    if ( Py_TYPE(self) != &PyConnCompReduceAttributesType
+         || Py_TYPE(other) != &PyConnCompReduceAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    ConnCompReduceAttributes *a = ((ConnCompReduceAttributesObject *)self)->data;
-    ConnCompReduceAttributes *b = ((ConnCompReduceAttributesObject *)other)->data;
+    ConnCompReduceAttributes *a = ((PyConnCompReduceAttributesObject *)self)->data;
+    ConnCompReduceAttributes *b = ((PyConnCompReduceAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -283,8 +282,8 @@ static ConnCompReduceAttributes *currentAtts = 0;
 static PyObject *
 NewConnCompReduceAttributes(int useCurrent)
 {
-    ConnCompReduceAttributesObject *newObject;
-    newObject = PyObject_NEW(ConnCompReduceAttributesObject, &ConnCompReduceAttributesType);
+    PyConnCompReduceAttributesObject *newObject;
+    newObject = PyObject_NEW(PyConnCompReduceAttributesObject, &PyConnCompReduceAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -295,14 +294,15 @@ NewConnCompReduceAttributes(int useCurrent)
         newObject->data = new ConnCompReduceAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyConnCompReduceAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapConnCompReduceAttributes(const ConnCompReduceAttributes *attr)
 {
-    ConnCompReduceAttributesObject *newObject;
-    newObject = PyObject_NEW(ConnCompReduceAttributesObject, &ConnCompReduceAttributesType);
+    PyConnCompReduceAttributesObject *newObject;
+    newObject = PyObject_NEW(PyConnCompReduceAttributesObject, &PyConnCompReduceAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (ConnCompReduceAttributes *)attr;
@@ -404,13 +404,13 @@ PyConnCompReduceAttributes_GetMethodTable(int *nMethods)
 bool
 PyConnCompReduceAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ConnCompReduceAttributesType);
+    return (obj->ob_type == &PyConnCompReduceAttributesType);
 }
 
 ConnCompReduceAttributes *
 PyConnCompReduceAttributes_FromPyObject(PyObject *obj)
 {
-    ConnCompReduceAttributesObject *obj2 = (ConnCompReduceAttributesObject *)obj;
+    PyConnCompReduceAttributesObject *obj2 = (PyConnCompReduceAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -429,7 +429,7 @@ PyConnCompReduceAttributes_Wrap(const ConnCompReduceAttributes *attr)
 void
 PyConnCompReduceAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    ConnCompReduceAttributesObject *obj2 = (ConnCompReduceAttributesObject *)obj;
+    PyConnCompReduceAttributesObject *obj2 = (PyConnCompReduceAttributesObject *)obj;
     obj2->parent = parent;
 }
 

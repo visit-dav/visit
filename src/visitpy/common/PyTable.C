@@ -30,7 +30,7 @@
 #include <errno.h>
 #endif
 
-static const char *visit_PyTable_doc =
+static const char *PyTable_purpose =
 "PyTable\n"
 "\n"
 "\n"
@@ -193,7 +193,7 @@ PyTableData_dealloc(PyTableData *table)
 }
 
 // ****************************************************************************
-//  Method: PyTableObject_dealloc
+//  Method: PyTable_dealloc
 //
 //  Purpose:
 //      To be called by Python when the reference count on a PyTableObject
@@ -206,8 +206,9 @@ PyTableData_dealloc(PyTableData *table)
 //
 // ****************************************************************************
 static void
-PyTableObject_dealloc(PyTableObject *self)
+PyTable_dealloc(PyObject *v)
 {
+    PyTableObject *self = (PyTableObject *)v;
     if(!self)
     {
         return;
@@ -261,52 +262,19 @@ PyTableObject_getbuffer(PyObject *obj, Py_buffer *view, int)
 }
 
 // This definition is only compatible with Python 3.3 and above
-static PyBufferProcs PyTableObject_as_buffer = {
+static PyBufferProcs _PyTable_as_buffer = {
   (getbufferproc)PyTableObject_getbuffer,
   (releasebufferproc)0,
 };
+static PyBufferProcs *PyTable_as_buffer = &_PyTable_as_buffer;
 
-// NOTE: Need to use the tp_as_buffer field so not using the VISIT_PY_TYPE_OBJ
-//  macro.
-static PyTypeObject PyTableObjectType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    "PyTable",                          /* tp_name */
-    sizeof(PyTableObject),              /* tp_basicsize */
-    0,                                  /* tp_itemsize */
-    (destructor)PyTableObject_dealloc,  /* tp_dealloc */
-    0,                                  /* tp_print */
-    0,                                  /* tp_getattr */
-    0,                                  /* tp_setattr */
-    0,                                  /* tp_reserved */
-    0,                                  /* tp_repr */
-    0,                                  /* tp_as_number */
-    0,                                  /* tp_as_sequence */
-    0,                                  /* tp_as_mapping */
-    0,                                  /* tp_hash  */
-    0,                                  /* tp_call */
-    0,                                  /* tp_str */
-    0,                                  /* tp_getattro */
-    0,                                  /* tp_setattro */
-    &PyTableObject_as_buffer,           /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT,                 /* tp_flags */
-    visit_PyTable_doc,                  /* tp_doc */
-    0,                                  /* tp_traverse */
-    0,                                  /* tp_clear */
-    0,                                  /* tp_richcompare */
-    0,                                  /* tp_weaklistoffset */
-    0,                                  /* tp_iter */
-    0,                                  /* tp_iternext */
-    0,                                  /* tp_methods */
-    0,                                  /* tp_members */
-    0,                                  /* tp_getset */
-    0,                                  /* tp_base */
-    0,                                  /* tp_dict */
-    0,                                  /* tp_descr_get */
-    0,                                  /* tp_descr_set */
-    0,                                  /* tp_dictoffset */
-    0                                   /* tp_init */
-    PyVarObject_TAIL
-};
+// Re-define tp slots for this custom object
+#undef VISIT_PY_TYPE_OBJ_TP_SLOTS
+#define VISIT_PY_TYPE_OBJ_TP_SLOTS(VSObjName)         \
+    VISIT_PY_TYPE_OBJ_SLOT2(VSObjName, doc, purpose); \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, dealloc);      \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, as_buffer)
+VISIT_PY_TYPE_OBJ(Table);
 
 // ****************************************************************************
 //  Method: PyTable_Check
@@ -323,7 +291,7 @@ static PyTypeObject PyTableObjectType = {
 bool
 PyTable_Check(const PyObject *obj)
 {
-    return (obj && (obj->ob_type == &PyTableObjectType));
+    return (obj && (obj->ob_type == &PyTableType));
 }
 
 // ****************************************************************************
@@ -392,7 +360,7 @@ PyTable_CreateImpl(T *data,
                    const unsigned long *shape,
                    const std::shared_ptr<PyTableDataWrapper> &dataWrap)
 {
-    PyTableObject *obj = PyObject_New(PyTableObject, &PyTableObjectType);
+    PyTableObject *obj = PyObject_New(PyTableObject, &PyTableType);
     if(!obj)
     {
         return NULL;

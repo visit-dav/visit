@@ -5,6 +5,7 @@
 #include <PyParallelCoordinatesAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 #include <ColorAttribute.h>
 #include <ColorAttribute.h>
@@ -25,7 +26,7 @@
 //
 // This struct contains the Python type information and a ParallelCoordinatesAttributes.
 //
-struct ParallelCoordinatesAttributesObject
+struct PyParallelCoordinatesAttributesObject
 {
     PyObject_HEAD
     ParallelCoordinatesAttributes *data;
@@ -166,16 +167,44 @@ PyParallelCoordinatesAttributes_ToString(const ParallelCoordinatesAttributes *at
 static PyObject *
 ParallelCoordinatesAttributes_Notify(PyObject *self, PyObject *args)
 {
-    ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
+    PyParallelCoordinatesAttributesObject *obj = (PyParallelCoordinatesAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+ParallelCoordinatesAttributes_dir(PyObject *self, PyObject *args)
+{
+    static ParallelCoordinatesAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyParallelCoordinatesAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 ParallelCoordinatesAttributes_SetScalarAxisNames(PyObject *self, PyObject *args)
 {
-    ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
+    PyParallelCoordinatesAttributesObject *obj = (PyParallelCoordinatesAttributesObject *)self;
 
     stringVector vec;
 
@@ -232,7 +261,7 @@ ParallelCoordinatesAttributes_SetScalarAxisNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ParallelCoordinatesAttributes_GetScalarAxisNames(PyObject *self, PyObject *args)
 {
-    ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
+    PyParallelCoordinatesAttributesObject *obj = (PyParallelCoordinatesAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the scalarAxisNames.
     const stringVector &scalarAxisNames = obj->data->GetScalarAxisNames();
     PyObject *retval = PyTuple_New(scalarAxisNames.size());
@@ -244,7 +273,7 @@ ParallelCoordinatesAttributes_GetScalarAxisNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ParallelCoordinatesAttributes_SetVisualAxisNames(PyObject *self, PyObject *args)
 {
-    ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
+    PyParallelCoordinatesAttributesObject *obj = (PyParallelCoordinatesAttributesObject *)self;
 
     stringVector vec;
 
@@ -301,7 +330,7 @@ ParallelCoordinatesAttributes_SetVisualAxisNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ParallelCoordinatesAttributes_GetVisualAxisNames(PyObject *self, PyObject *args)
 {
-    ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
+    PyParallelCoordinatesAttributesObject *obj = (PyParallelCoordinatesAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the visualAxisNames.
     const stringVector &visualAxisNames = obj->data->GetVisualAxisNames();
     PyObject *retval = PyTuple_New(visualAxisNames.size());
@@ -313,7 +342,7 @@ ParallelCoordinatesAttributes_GetVisualAxisNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ParallelCoordinatesAttributes_SetExtentMinima(PyObject *self, PyObject *args)
 {
-    ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
+    PyParallelCoordinatesAttributesObject *obj = (PyParallelCoordinatesAttributesObject *)self;
 
     doubleVector vec;
 
@@ -377,7 +406,7 @@ ParallelCoordinatesAttributes_SetExtentMinima(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ParallelCoordinatesAttributes_GetExtentMinima(PyObject *self, PyObject *args)
 {
-    ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
+    PyParallelCoordinatesAttributesObject *obj = (PyParallelCoordinatesAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the extentMinima.
     const doubleVector &extentMinima = obj->data->GetExtentMinima();
     PyObject *retval = PyTuple_New(extentMinima.size());
@@ -389,7 +418,7 @@ ParallelCoordinatesAttributes_GetExtentMinima(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ParallelCoordinatesAttributes_SetExtentMaxima(PyObject *self, PyObject *args)
 {
-    ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
+    PyParallelCoordinatesAttributesObject *obj = (PyParallelCoordinatesAttributesObject *)self;
 
     doubleVector vec;
 
@@ -453,7 +482,7 @@ ParallelCoordinatesAttributes_SetExtentMaxima(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ParallelCoordinatesAttributes_GetExtentMaxima(PyObject *self, PyObject *args)
 {
-    ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
+    PyParallelCoordinatesAttributesObject *obj = (PyParallelCoordinatesAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the extentMaxima.
     const doubleVector &extentMaxima = obj->data->GetExtentMaxima();
     PyObject *retval = PyTuple_New(extentMaxima.size());
@@ -465,7 +494,7 @@ ParallelCoordinatesAttributes_GetExtentMaxima(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ParallelCoordinatesAttributes_SetDrawLines(PyObject *self, PyObject *args)
 {
-    ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
+    PyParallelCoordinatesAttributesObject *obj = (PyParallelCoordinatesAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -517,7 +546,7 @@ ParallelCoordinatesAttributes_SetDrawLines(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ParallelCoordinatesAttributes_GetDrawLines(PyObject *self, PyObject *args)
 {
-    ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
+    PyParallelCoordinatesAttributesObject *obj = (PyParallelCoordinatesAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetDrawLines()?1L:0L);
     return retval;
 }
@@ -525,7 +554,7 @@ ParallelCoordinatesAttributes_GetDrawLines(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ParallelCoordinatesAttributes_SetLinesColor(PyObject *self, PyObject *args)
 {
-    ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
+    PyParallelCoordinatesAttributesObject *obj = (PyParallelCoordinatesAttributesObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -588,7 +617,7 @@ ParallelCoordinatesAttributes_SetLinesColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ParallelCoordinatesAttributes_GetLinesColor(PyObject *self, PyObject *args)
 {
-    ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
+    PyParallelCoordinatesAttributesObject *obj = (PyParallelCoordinatesAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the linesColor.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *linesColor = obj->data->GetLinesColor().GetColor();
@@ -602,7 +631,7 @@ ParallelCoordinatesAttributes_GetLinesColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ParallelCoordinatesAttributes_SetDrawContext(PyObject *self, PyObject *args)
 {
-    ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
+    PyParallelCoordinatesAttributesObject *obj = (PyParallelCoordinatesAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -654,7 +683,7 @@ ParallelCoordinatesAttributes_SetDrawContext(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ParallelCoordinatesAttributes_GetDrawContext(PyObject *self, PyObject *args)
 {
-    ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
+    PyParallelCoordinatesAttributesObject *obj = (PyParallelCoordinatesAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetDrawContext()?1L:0L);
     return retval;
 }
@@ -662,7 +691,7 @@ ParallelCoordinatesAttributes_GetDrawContext(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ParallelCoordinatesAttributes_SetContextGamma(PyObject *self, PyObject *args)
 {
-    ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
+    PyParallelCoordinatesAttributesObject *obj = (PyParallelCoordinatesAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -714,7 +743,7 @@ ParallelCoordinatesAttributes_SetContextGamma(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ParallelCoordinatesAttributes_GetContextGamma(PyObject *self, PyObject *args)
 {
-    ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
+    PyParallelCoordinatesAttributesObject *obj = (PyParallelCoordinatesAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetContextGamma()));
     return retval;
 }
@@ -722,7 +751,7 @@ ParallelCoordinatesAttributes_GetContextGamma(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ParallelCoordinatesAttributes_SetContextNumPartitions(PyObject *self, PyObject *args)
 {
-    ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
+    PyParallelCoordinatesAttributesObject *obj = (PyParallelCoordinatesAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -774,7 +803,7 @@ ParallelCoordinatesAttributes_SetContextNumPartitions(PyObject *self, PyObject *
 /*static*/ PyObject *
 ParallelCoordinatesAttributes_GetContextNumPartitions(PyObject *self, PyObject *args)
 {
-    ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
+    PyParallelCoordinatesAttributesObject *obj = (PyParallelCoordinatesAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetContextNumPartitions()));
     return retval;
 }
@@ -782,7 +811,7 @@ ParallelCoordinatesAttributes_GetContextNumPartitions(PyObject *self, PyObject *
 /*static*/ PyObject *
 ParallelCoordinatesAttributes_SetContextColor(PyObject *self, PyObject *args)
 {
-    ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
+    PyParallelCoordinatesAttributesObject *obj = (PyParallelCoordinatesAttributesObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -845,7 +874,7 @@ ParallelCoordinatesAttributes_SetContextColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ParallelCoordinatesAttributes_GetContextColor(PyObject *self, PyObject *args)
 {
-    ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
+    PyParallelCoordinatesAttributesObject *obj = (PyParallelCoordinatesAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the contextColor.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *contextColor = obj->data->GetContextColor().GetColor();
@@ -859,7 +888,7 @@ ParallelCoordinatesAttributes_GetContextColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ParallelCoordinatesAttributes_SetDrawLinesOnlyIfExtentsOn(PyObject *self, PyObject *args)
 {
-    ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
+    PyParallelCoordinatesAttributesObject *obj = (PyParallelCoordinatesAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -911,7 +940,7 @@ ParallelCoordinatesAttributes_SetDrawLinesOnlyIfExtentsOn(PyObject *self, PyObje
 /*static*/ PyObject *
 ParallelCoordinatesAttributes_GetDrawLinesOnlyIfExtentsOn(PyObject *self, PyObject *args)
 {
-    ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
+    PyParallelCoordinatesAttributesObject *obj = (PyParallelCoordinatesAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetDrawLinesOnlyIfExtentsOn()?1L:0L);
     return retval;
 }
@@ -919,7 +948,7 @@ ParallelCoordinatesAttributes_GetDrawLinesOnlyIfExtentsOn(PyObject *self, PyObje
 /*static*/ PyObject *
 ParallelCoordinatesAttributes_SetUnifyAxisExtents(PyObject *self, PyObject *args)
 {
-    ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
+    PyParallelCoordinatesAttributesObject *obj = (PyParallelCoordinatesAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -971,7 +1000,7 @@ ParallelCoordinatesAttributes_SetUnifyAxisExtents(PyObject *self, PyObject *args
 /*static*/ PyObject *
 ParallelCoordinatesAttributes_GetUnifyAxisExtents(PyObject *self, PyObject *args)
 {
-    ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
+    PyParallelCoordinatesAttributesObject *obj = (PyParallelCoordinatesAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetUnifyAxisExtents()?1L:0L);
     return retval;
 }
@@ -979,7 +1008,7 @@ ParallelCoordinatesAttributes_GetUnifyAxisExtents(PyObject *self, PyObject *args
 /*static*/ PyObject *
 ParallelCoordinatesAttributes_SetLinesNumPartitions(PyObject *self, PyObject *args)
 {
-    ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
+    PyParallelCoordinatesAttributesObject *obj = (PyParallelCoordinatesAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1031,7 +1060,7 @@ ParallelCoordinatesAttributes_SetLinesNumPartitions(PyObject *self, PyObject *ar
 /*static*/ PyObject *
 ParallelCoordinatesAttributes_GetLinesNumPartitions(PyObject *self, PyObject *args)
 {
-    ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
+    PyParallelCoordinatesAttributesObject *obj = (PyParallelCoordinatesAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetLinesNumPartitions()));
     return retval;
 }
@@ -1039,7 +1068,7 @@ ParallelCoordinatesAttributes_GetLinesNumPartitions(PyObject *self, PyObject *ar
 /*static*/ PyObject *
 ParallelCoordinatesAttributes_SetFocusGamma(PyObject *self, PyObject *args)
 {
-    ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
+    PyParallelCoordinatesAttributesObject *obj = (PyParallelCoordinatesAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1091,7 +1120,7 @@ ParallelCoordinatesAttributes_SetFocusGamma(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ParallelCoordinatesAttributes_GetFocusGamma(PyObject *self, PyObject *args)
 {
-    ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
+    PyParallelCoordinatesAttributesObject *obj = (PyParallelCoordinatesAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetFocusGamma()));
     return retval;
 }
@@ -1099,7 +1128,7 @@ ParallelCoordinatesAttributes_GetFocusGamma(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ParallelCoordinatesAttributes_SetDrawFocusAs(PyObject *self, PyObject *args)
 {
-    ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
+    PyParallelCoordinatesAttributesObject *obj = (PyParallelCoordinatesAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1158,7 +1187,7 @@ ParallelCoordinatesAttributes_SetDrawFocusAs(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ParallelCoordinatesAttributes_GetDrawFocusAs(PyObject *self, PyObject *args)
 {
-    ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)self;
+    PyParallelCoordinatesAttributesObject *obj = (PyParallelCoordinatesAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetDrawFocusAs()));
     return retval;
 }
@@ -1166,7 +1195,8 @@ ParallelCoordinatesAttributes_GetDrawFocusAs(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyParallelCoordinatesAttributes_methods[PARALLELCOORDINATESATTRIBUTES_NMETH] = {
-    {"Notify", ParallelCoordinatesAttributes_Notify, METH_VARARGS},
+    {"__dir__", ParallelCoordinatesAttributes_dir, METH_NOARGS},
+    {"Notify", ParallelCoordinatesAttributes_Notify, METH_NOARGS},
     {"SetScalarAxisNames", ParallelCoordinatesAttributes_SetScalarAxisNames, METH_VARARGS},
     {"GetScalarAxisNames", ParallelCoordinatesAttributes_GetScalarAxisNames, METH_VARARGS},
     {"SetVisualAxisNames", ParallelCoordinatesAttributes_SetVisualAxisNames, METH_VARARGS},
@@ -1205,19 +1235,22 @@ PyMethodDef PyParallelCoordinatesAttributes_methods[PARALLELCOORDINATESATTRIBUTE
 //
 
 static void
-ParallelCoordinatesAttributes_dealloc(PyObject *v)
+PyParallelCoordinatesAttributes_dealloc(PyObject *v)
 {
-   ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)v;
+   PyParallelCoordinatesAttributesObject *obj = (PyParallelCoordinatesAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *ParallelCoordinatesAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyParallelCoordinatesAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyParallelCoordinatesAttributes_getattr(PyObject *self, char *name)
+PyParallelCoordinatesAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "scalarAxisNames") == 0)
         return ParallelCoordinatesAttributes_GetScalarAxisNames(self, NULL);
     if(strcmp(name, "visualAxisNames") == 0)
@@ -1256,26 +1289,19 @@ PyParallelCoordinatesAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(ParallelCoordinatesAttributes::BinsColoredByPopulation));
 
 
+    PyObject *meth = Py_FindMethod(PyParallelCoordinatesAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyParallelCoordinatesAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyParallelCoordinatesAttributes_methods[i].ml_name),
-                PyString_FromString(PyParallelCoordinatesAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyParallelCoordinatesAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyParallelCoordinatesAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyParallelCoordinatesAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "scalarAxisNames") == 0)
         obj = ParallelCoordinatesAttributes_SetScalarAxisNames(self, args);
@@ -1308,6 +1334,12 @@ PyParallelCoordinatesAttributes_setattr(PyObject *self, char *name, PyObject *ar
     else if(strcmp(name, "drawFocusAs") == 0)
         obj = ParallelCoordinatesAttributes_SetDrawFocusAs(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -1322,78 +1354,45 @@ PyParallelCoordinatesAttributes_setattr(PyObject *self, char *name, PyObject *ar
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ParallelCoordinatesAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)v;
-    fprintf(fp, "%s", PyParallelCoordinatesAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-ParallelCoordinatesAttributes_str(PyObject *v)
+PyParallelCoordinatesAttributes_str(PyObject *v)
 {
-    ParallelCoordinatesAttributesObject *obj = (ParallelCoordinatesAttributesObject *)v;
+    PyParallelCoordinatesAttributesObject *obj = (PyParallelCoordinatesAttributesObject *)v;
     return PyString_FromString(PyParallelCoordinatesAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *ParallelCoordinatesAttributes_Purpose = "This class contains the plot attributes for the ParallelCoordinates plot.";
-#else
-static char *ParallelCoordinatesAttributes_Purpose = "This class contains the plot attributes for the ParallelCoordinates plot.";
-#endif
+static char const *PyParallelCoordinatesAttributes_purpose = "This class contains the plot attributes for the ParallelCoordinates plot.";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(ParallelCoordinatesAttributesType,         \
-                  "ParallelCoordinatesAttributes",           \
-                  ParallelCoordinatesAttributesObject,       \
-                  ParallelCoordinatesAttributes_dealloc,     \
-                  ParallelCoordinatesAttributes_print,       \
-                  PyParallelCoordinatesAttributes_getattr,   \
-                  PyParallelCoordinatesAttributes_setattr,   \
-                  ParallelCoordinatesAttributes_str,         \
-                  ParallelCoordinatesAttributes_Purpose,     \
-                  ParallelCoordinatesAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(ParallelCoordinatesAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-ParallelCoordinatesAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyParallelCoordinatesAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &ParallelCoordinatesAttributesType
-         || Py_TYPE(other) != &ParallelCoordinatesAttributesType)
+    if ( Py_TYPE(self) != &PyParallelCoordinatesAttributesType
+         || Py_TYPE(other) != &PyParallelCoordinatesAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    ParallelCoordinatesAttributes *a = ((ParallelCoordinatesAttributesObject *)self)->data;
-    ParallelCoordinatesAttributes *b = ((ParallelCoordinatesAttributesObject *)other)->data;
+    ParallelCoordinatesAttributes *a = ((PyParallelCoordinatesAttributesObject *)self)->data;
+    ParallelCoordinatesAttributes *b = ((PyParallelCoordinatesAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -1422,8 +1421,8 @@ static ParallelCoordinatesAttributes *currentAtts = 0;
 static PyObject *
 NewParallelCoordinatesAttributes(int useCurrent)
 {
-    ParallelCoordinatesAttributesObject *newObject;
-    newObject = PyObject_NEW(ParallelCoordinatesAttributesObject, &ParallelCoordinatesAttributesType);
+    PyParallelCoordinatesAttributesObject *newObject;
+    newObject = PyObject_NEW(PyParallelCoordinatesAttributesObject, &PyParallelCoordinatesAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1434,14 +1433,15 @@ NewParallelCoordinatesAttributes(int useCurrent)
         newObject->data = new ParallelCoordinatesAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyParallelCoordinatesAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapParallelCoordinatesAttributes(const ParallelCoordinatesAttributes *attr)
 {
-    ParallelCoordinatesAttributesObject *newObject;
-    newObject = PyObject_NEW(ParallelCoordinatesAttributesObject, &ParallelCoordinatesAttributesType);
+    PyParallelCoordinatesAttributesObject *newObject;
+    newObject = PyObject_NEW(PyParallelCoordinatesAttributesObject, &PyParallelCoordinatesAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (ParallelCoordinatesAttributes *)attr;
@@ -1543,13 +1543,13 @@ PyParallelCoordinatesAttributes_GetMethodTable(int *nMethods)
 bool
 PyParallelCoordinatesAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ParallelCoordinatesAttributesType);
+    return (obj->ob_type == &PyParallelCoordinatesAttributesType);
 }
 
 ParallelCoordinatesAttributes *
 PyParallelCoordinatesAttributes_FromPyObject(PyObject *obj)
 {
-    ParallelCoordinatesAttributesObject *obj2 = (ParallelCoordinatesAttributesObject *)obj;
+    PyParallelCoordinatesAttributesObject *obj2 = (PyParallelCoordinatesAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1568,7 +1568,7 @@ PyParallelCoordinatesAttributes_Wrap(const ParallelCoordinatesAttributes *attr)
 void
 PyParallelCoordinatesAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    ParallelCoordinatesAttributesObject *obj2 = (ParallelCoordinatesAttributesObject *)obj;
+    PyParallelCoordinatesAttributesObject *obj2 = (PyParallelCoordinatesAttributesObject *)obj;
     obj2->parent = parent;
 }
 

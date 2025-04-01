@@ -5,6 +5,7 @@
 #include <PyProjectAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a ProjectAttributes.
 //
-struct ProjectAttributesObject
+struct PyProjectAttributesObject
 {
     PyObject_HEAD
     ProjectAttributes *data;
@@ -102,16 +103,44 @@ PyProjectAttributes_ToString(const ProjectAttributes *atts, const char *prefix, 
 static PyObject *
 ProjectAttributes_Notify(PyObject *self, PyObject *args)
 {
-    ProjectAttributesObject *obj = (ProjectAttributesObject *)self;
+    PyProjectAttributesObject *obj = (PyProjectAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+ProjectAttributes_dir(PyObject *self, PyObject *args)
+{
+    static ProjectAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyProjectAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 ProjectAttributes_SetProjectionType(PyObject *self, PyObject *args)
 {
-    ProjectAttributesObject *obj = (ProjectAttributesObject *)self;
+    PyProjectAttributesObject *obj = (PyProjectAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -173,7 +202,7 @@ ProjectAttributes_SetProjectionType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ProjectAttributes_GetProjectionType(PyObject *self, PyObject *args)
 {
-    ProjectAttributesObject *obj = (ProjectAttributesObject *)self;
+    PyProjectAttributesObject *obj = (PyProjectAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetProjectionType()));
     return retval;
 }
@@ -181,7 +210,7 @@ ProjectAttributes_GetProjectionType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ProjectAttributes_SetVectorTransformMethod(PyObject *self, PyObject *args)
 {
-    ProjectAttributesObject *obj = (ProjectAttributesObject *)self;
+    PyProjectAttributesObject *obj = (PyProjectAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -241,7 +270,7 @@ ProjectAttributes_SetVectorTransformMethod(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ProjectAttributes_GetVectorTransformMethod(PyObject *self, PyObject *args)
 {
-    ProjectAttributesObject *obj = (ProjectAttributesObject *)self;
+    PyProjectAttributesObject *obj = (PyProjectAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetVectorTransformMethod()));
     return retval;
 }
@@ -249,7 +278,8 @@ ProjectAttributes_GetVectorTransformMethod(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyProjectAttributes_methods[PROJECTATTRIBUTES_NMETH] = {
-    {"Notify", ProjectAttributes_Notify, METH_VARARGS},
+    {"__dir__", ProjectAttributes_dir, METH_NOARGS},
+    {"Notify", ProjectAttributes_Notify, METH_NOARGS},
     {"SetProjectionType", ProjectAttributes_SetProjectionType, METH_VARARGS},
     {"GetProjectionType", ProjectAttributes_GetProjectionType, METH_VARARGS},
     {"SetVectorTransformMethod", ProjectAttributes_SetVectorTransformMethod, METH_VARARGS},
@@ -262,19 +292,22 @@ PyMethodDef PyProjectAttributes_methods[PROJECTATTRIBUTES_NMETH] = {
 //
 
 static void
-ProjectAttributes_dealloc(PyObject *v)
+PyProjectAttributes_dealloc(PyObject *v)
 {
-   ProjectAttributesObject *obj = (ProjectAttributesObject *)v;
+   PyProjectAttributesObject *obj = (PyProjectAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *ProjectAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyProjectAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyProjectAttributes_getattr(PyObject *self, char *name)
+PyProjectAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "projectionType") == 0)
         return ProjectAttributes_GetProjectionType(self, NULL);
     if(strcmp(name, "ZYCartesian") == 0)
@@ -304,31 +337,30 @@ PyProjectAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(ProjectAttributes::AsDirection));
 
 
+    PyObject *meth = Py_FindMethod(PyProjectAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyProjectAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyProjectAttributes_methods[i].ml_name),
-                PyString_FromString(PyProjectAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyProjectAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyProjectAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyProjectAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "projectionType") == 0)
         obj = ProjectAttributes_SetProjectionType(self, args);
     else if(strcmp(name, "vectorTransformMethod") == 0)
         obj = ProjectAttributes_SetVectorTransformMethod(self, args);
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -344,78 +376,45 @@ PyProjectAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ProjectAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    ProjectAttributesObject *obj = (ProjectAttributesObject *)v;
-    fprintf(fp, "%s", PyProjectAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-ProjectAttributes_str(PyObject *v)
+PyProjectAttributes_str(PyObject *v)
 {
-    ProjectAttributesObject *obj = (ProjectAttributesObject *)v;
+    PyProjectAttributesObject *obj = (PyProjectAttributesObject *)v;
     return PyString_FromString(PyProjectAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *ProjectAttributes_Purpose = "Project data from three to two dimensions";
-#else
-static char *ProjectAttributes_Purpose = "Project data from three to two dimensions";
-#endif
+static char const *PyProjectAttributes_purpose = "Project data from three to two dimensions";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(ProjectAttributesType,         \
-                  "ProjectAttributes",           \
-                  ProjectAttributesObject,       \
-                  ProjectAttributes_dealloc,     \
-                  ProjectAttributes_print,       \
-                  PyProjectAttributes_getattr,   \
-                  PyProjectAttributes_setattr,   \
-                  ProjectAttributes_str,         \
-                  ProjectAttributes_Purpose,     \
-                  ProjectAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(ProjectAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-ProjectAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyProjectAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &ProjectAttributesType
-         || Py_TYPE(other) != &ProjectAttributesType)
+    if ( Py_TYPE(self) != &PyProjectAttributesType
+         || Py_TYPE(other) != &PyProjectAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    ProjectAttributes *a = ((ProjectAttributesObject *)self)->data;
-    ProjectAttributes *b = ((ProjectAttributesObject *)other)->data;
+    ProjectAttributes *a = ((PyProjectAttributesObject *)self)->data;
+    ProjectAttributes *b = ((PyProjectAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -444,8 +443,8 @@ static ProjectAttributes *currentAtts = 0;
 static PyObject *
 NewProjectAttributes(int useCurrent)
 {
-    ProjectAttributesObject *newObject;
-    newObject = PyObject_NEW(ProjectAttributesObject, &ProjectAttributesType);
+    PyProjectAttributesObject *newObject;
+    newObject = PyObject_NEW(PyProjectAttributesObject, &PyProjectAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -456,14 +455,15 @@ NewProjectAttributes(int useCurrent)
         newObject->data = new ProjectAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyProjectAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapProjectAttributes(const ProjectAttributes *attr)
 {
-    ProjectAttributesObject *newObject;
-    newObject = PyObject_NEW(ProjectAttributesObject, &ProjectAttributesType);
+    PyProjectAttributesObject *newObject;
+    newObject = PyObject_NEW(PyProjectAttributesObject, &PyProjectAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (ProjectAttributes *)attr;
@@ -565,13 +565,13 @@ PyProjectAttributes_GetMethodTable(int *nMethods)
 bool
 PyProjectAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ProjectAttributesType);
+    return (obj->ob_type == &PyProjectAttributesType);
 }
 
 ProjectAttributes *
 PyProjectAttributes_FromPyObject(PyObject *obj)
 {
-    ProjectAttributesObject *obj2 = (ProjectAttributesObject *)obj;
+    PyProjectAttributesObject *obj2 = (PyProjectAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -590,7 +590,7 @@ PyProjectAttributes_Wrap(const ProjectAttributes *attr)
 void
 PyProjectAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    ProjectAttributesObject *obj2 = (ProjectAttributesObject *)obj;
+    PyProjectAttributesObject *obj2 = (PyProjectAttributesObject *)obj;
     obj2->parent = parent;
 }
 

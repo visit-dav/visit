@@ -5,6 +5,7 @@
 #include <PyMaterialAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a MaterialAttributes.
 //
-struct MaterialAttributesObject
+struct PyMaterialAttributesObject
 {
     PyObject_HEAD
     MaterialAttributes *data;
@@ -114,16 +115,44 @@ PyMaterialAttributes_ToString(const MaterialAttributes *atts, const char *prefix
 static PyObject *
 MaterialAttributes_Notify(PyObject *self, PyObject *args)
 {
-    MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
+    PyMaterialAttributesObject *obj = (PyMaterialAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+MaterialAttributes_dir(PyObject *self, PyObject *args)
+{
+    static MaterialAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyMaterialAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 MaterialAttributes_SetSmoothing(PyObject *self, PyObject *args)
 {
-    MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
+    PyMaterialAttributesObject *obj = (PyMaterialAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -175,7 +204,7 @@ MaterialAttributes_SetSmoothing(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MaterialAttributes_GetSmoothing(PyObject *self, PyObject *args)
 {
-    MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
+    PyMaterialAttributesObject *obj = (PyMaterialAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetSmoothing()?1L:0L);
     return retval;
 }
@@ -183,7 +212,7 @@ MaterialAttributes_GetSmoothing(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MaterialAttributes_SetForceMIR(PyObject *self, PyObject *args)
 {
-    MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
+    PyMaterialAttributesObject *obj = (PyMaterialAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -235,7 +264,7 @@ MaterialAttributes_SetForceMIR(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MaterialAttributes_GetForceMIR(PyObject *self, PyObject *args)
 {
-    MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
+    PyMaterialAttributesObject *obj = (PyMaterialAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetForceMIR()?1L:0L);
     return retval;
 }
@@ -243,7 +272,7 @@ MaterialAttributes_GetForceMIR(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MaterialAttributes_SetCleanZonesOnly(PyObject *self, PyObject *args)
 {
-    MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
+    PyMaterialAttributesObject *obj = (PyMaterialAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -295,7 +324,7 @@ MaterialAttributes_SetCleanZonesOnly(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MaterialAttributes_GetCleanZonesOnly(PyObject *self, PyObject *args)
 {
-    MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
+    PyMaterialAttributesObject *obj = (PyMaterialAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetCleanZonesOnly()?1L:0L);
     return retval;
 }
@@ -303,7 +332,7 @@ MaterialAttributes_GetCleanZonesOnly(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MaterialAttributes_SetNeedValidConnectivity(PyObject *self, PyObject *args)
 {
-    MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
+    PyMaterialAttributesObject *obj = (PyMaterialAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -355,7 +384,7 @@ MaterialAttributes_SetNeedValidConnectivity(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MaterialAttributes_GetNeedValidConnectivity(PyObject *self, PyObject *args)
 {
-    MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
+    PyMaterialAttributesObject *obj = (PyMaterialAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetNeedValidConnectivity()?1L:0L);
     return retval;
 }
@@ -363,7 +392,7 @@ MaterialAttributes_GetNeedValidConnectivity(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MaterialAttributes_SetAlgorithm(PyObject *self, PyObject *args)
 {
-    MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
+    PyMaterialAttributesObject *obj = (PyMaterialAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -424,7 +453,7 @@ MaterialAttributes_SetAlgorithm(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MaterialAttributes_GetAlgorithm(PyObject *self, PyObject *args)
 {
-    MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
+    PyMaterialAttributesObject *obj = (PyMaterialAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetAlgorithm()));
     return retval;
 }
@@ -432,7 +461,7 @@ MaterialAttributes_GetAlgorithm(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MaterialAttributes_SetIterationEnabled(PyObject *self, PyObject *args)
 {
-    MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
+    PyMaterialAttributesObject *obj = (PyMaterialAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -484,7 +513,7 @@ MaterialAttributes_SetIterationEnabled(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MaterialAttributes_GetIterationEnabled(PyObject *self, PyObject *args)
 {
-    MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
+    PyMaterialAttributesObject *obj = (PyMaterialAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetIterationEnabled()?1L:0L);
     return retval;
 }
@@ -492,7 +521,7 @@ MaterialAttributes_GetIterationEnabled(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MaterialAttributes_SetNumIterations(PyObject *self, PyObject *args)
 {
-    MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
+    PyMaterialAttributesObject *obj = (PyMaterialAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -544,7 +573,7 @@ MaterialAttributes_SetNumIterations(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MaterialAttributes_GetNumIterations(PyObject *self, PyObject *args)
 {
-    MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
+    PyMaterialAttributesObject *obj = (PyMaterialAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNumIterations()));
     return retval;
 }
@@ -552,7 +581,7 @@ MaterialAttributes_GetNumIterations(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MaterialAttributes_SetIterationDamping(PyObject *self, PyObject *args)
 {
-    MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
+    PyMaterialAttributesObject *obj = (PyMaterialAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -604,7 +633,7 @@ MaterialAttributes_SetIterationDamping(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MaterialAttributes_GetIterationDamping(PyObject *self, PyObject *args)
 {
-    MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
+    PyMaterialAttributesObject *obj = (PyMaterialAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetIterationDamping()));
     return retval;
 }
@@ -612,7 +641,7 @@ MaterialAttributes_GetIterationDamping(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MaterialAttributes_SetSimplifyHeavilyMixedZones(PyObject *self, PyObject *args)
 {
-    MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
+    PyMaterialAttributesObject *obj = (PyMaterialAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -664,7 +693,7 @@ MaterialAttributes_SetSimplifyHeavilyMixedZones(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MaterialAttributes_GetSimplifyHeavilyMixedZones(PyObject *self, PyObject *args)
 {
-    MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
+    PyMaterialAttributesObject *obj = (PyMaterialAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetSimplifyHeavilyMixedZones()?1L:0L);
     return retval;
 }
@@ -672,7 +701,7 @@ MaterialAttributes_GetSimplifyHeavilyMixedZones(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MaterialAttributes_SetMaxMaterialsPerZone(PyObject *self, PyObject *args)
 {
-    MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
+    PyMaterialAttributesObject *obj = (PyMaterialAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -724,7 +753,7 @@ MaterialAttributes_SetMaxMaterialsPerZone(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MaterialAttributes_GetMaxMaterialsPerZone(PyObject *self, PyObject *args)
 {
-    MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
+    PyMaterialAttributesObject *obj = (PyMaterialAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMaxMaterialsPerZone()));
     return retval;
 }
@@ -732,7 +761,7 @@ MaterialAttributes_GetMaxMaterialsPerZone(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MaterialAttributes_SetIsoVolumeFraction(PyObject *self, PyObject *args)
 {
-    MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
+    PyMaterialAttributesObject *obj = (PyMaterialAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -784,7 +813,7 @@ MaterialAttributes_SetIsoVolumeFraction(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MaterialAttributes_GetIsoVolumeFraction(PyObject *self, PyObject *args)
 {
-    MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
+    PyMaterialAttributesObject *obj = (PyMaterialAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetIsoVolumeFraction()));
     return retval;
 }
@@ -792,7 +821,7 @@ MaterialAttributes_GetIsoVolumeFraction(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MaterialAttributes_SetAnnealingTime(PyObject *self, PyObject *args)
 {
-    MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
+    PyMaterialAttributesObject *obj = (PyMaterialAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -844,7 +873,7 @@ MaterialAttributes_SetAnnealingTime(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MaterialAttributes_GetAnnealingTime(PyObject *self, PyObject *args)
 {
-    MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
+    PyMaterialAttributesObject *obj = (PyMaterialAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetAnnealingTime()));
     return retval;
 }
@@ -852,7 +881,8 @@ MaterialAttributes_GetAnnealingTime(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyMaterialAttributes_methods[MATERIALATTRIBUTES_NMETH] = {
-    {"Notify", MaterialAttributes_Notify, METH_VARARGS},
+    {"__dir__", MaterialAttributes_dir, METH_NOARGS},
+    {"Notify", MaterialAttributes_Notify, METH_NOARGS},
     {"SetSmoothing", MaterialAttributes_SetSmoothing, METH_VARARGS},
     {"GetSmoothing", MaterialAttributes_GetSmoothing, METH_VARARGS},
     {"SetForceMIR", MaterialAttributes_SetForceMIR, METH_VARARGS},
@@ -885,19 +915,22 @@ PyMethodDef PyMaterialAttributes_methods[MATERIALATTRIBUTES_NMETH] = {
 //
 
 static void
-MaterialAttributes_dealloc(PyObject *v)
+PyMaterialAttributes_dealloc(PyObject *v)
 {
-   MaterialAttributesObject *obj = (MaterialAttributesObject *)v;
+   PyMaterialAttributesObject *obj = (PyMaterialAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *MaterialAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyMaterialAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyMaterialAttributes_getattr(PyObject *self, char *name)
+PyMaterialAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "smoothing") == 0)
         return MaterialAttributes_GetSmoothing(self, NULL);
     if(strcmp(name, "forceMIR") == 0)
@@ -934,26 +967,19 @@ PyMaterialAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "annealingTime") == 0)
         return MaterialAttributes_GetAnnealingTime(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyMaterialAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyMaterialAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyMaterialAttributes_methods[i].ml_name),
-                PyString_FromString(PyMaterialAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyMaterialAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyMaterialAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyMaterialAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "smoothing") == 0)
         obj = MaterialAttributes_SetSmoothing(self, args);
@@ -980,6 +1006,12 @@ PyMaterialAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "annealingTime") == 0)
         obj = MaterialAttributes_SetAnnealingTime(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -994,78 +1026,45 @@ PyMaterialAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-MaterialAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    MaterialAttributesObject *obj = (MaterialAttributesObject *)v;
-    fprintf(fp, "%s", PyMaterialAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-MaterialAttributes_str(PyObject *v)
+PyMaterialAttributes_str(PyObject *v)
 {
-    MaterialAttributesObject *obj = (MaterialAttributesObject *)v;
+    PyMaterialAttributesObject *obj = (PyMaterialAttributesObject *)v;
     return PyString_FromString(PyMaterialAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *MaterialAttributes_Purpose = "Attributes to control material interface reconstruction";
-#else
-static char *MaterialAttributes_Purpose = "Attributes to control material interface reconstruction";
-#endif
+static char const *PyMaterialAttributes_purpose = "Attributes to control material interface reconstruction";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(MaterialAttributesType,         \
-                  "MaterialAttributes",           \
-                  MaterialAttributesObject,       \
-                  MaterialAttributes_dealloc,     \
-                  MaterialAttributes_print,       \
-                  PyMaterialAttributes_getattr,   \
-                  PyMaterialAttributes_setattr,   \
-                  MaterialAttributes_str,         \
-                  MaterialAttributes_Purpose,     \
-                  MaterialAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(MaterialAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-MaterialAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyMaterialAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &MaterialAttributesType
-         || Py_TYPE(other) != &MaterialAttributesType)
+    if ( Py_TYPE(self) != &PyMaterialAttributesType
+         || Py_TYPE(other) != &PyMaterialAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    MaterialAttributes *a = ((MaterialAttributesObject *)self)->data;
-    MaterialAttributes *b = ((MaterialAttributesObject *)other)->data;
+    MaterialAttributes *a = ((PyMaterialAttributesObject *)self)->data;
+    MaterialAttributes *b = ((PyMaterialAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -1094,8 +1093,8 @@ static MaterialAttributes *currentAtts = 0;
 static PyObject *
 NewMaterialAttributes(int useCurrent)
 {
-    MaterialAttributesObject *newObject;
-    newObject = PyObject_NEW(MaterialAttributesObject, &MaterialAttributesType);
+    PyMaterialAttributesObject *newObject;
+    newObject = PyObject_NEW(PyMaterialAttributesObject, &PyMaterialAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1106,14 +1105,15 @@ NewMaterialAttributes(int useCurrent)
         newObject->data = new MaterialAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyMaterialAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapMaterialAttributes(const MaterialAttributes *attr)
 {
-    MaterialAttributesObject *newObject;
-    newObject = PyObject_NEW(MaterialAttributesObject, &MaterialAttributesType);
+    PyMaterialAttributesObject *newObject;
+    newObject = PyObject_NEW(PyMaterialAttributesObject, &PyMaterialAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (MaterialAttributes *)attr;
@@ -1215,13 +1215,13 @@ PyMaterialAttributes_GetMethodTable(int *nMethods)
 bool
 PyMaterialAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &MaterialAttributesType);
+    return (obj->ob_type == &PyMaterialAttributesType);
 }
 
 MaterialAttributes *
 PyMaterialAttributes_FromPyObject(PyObject *obj)
 {
-    MaterialAttributesObject *obj2 = (MaterialAttributesObject *)obj;
+    PyMaterialAttributesObject *obj2 = (PyMaterialAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1240,7 +1240,7 @@ PyMaterialAttributes_Wrap(const MaterialAttributes *attr)
 void
 PyMaterialAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    MaterialAttributesObject *obj2 = (MaterialAttributesObject *)obj;
+    PyMaterialAttributesObject *obj2 = (PyMaterialAttributesObject *)obj;
     obj2->parent = parent;
 }
 

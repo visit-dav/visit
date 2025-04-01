@@ -13,7 +13,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define AVTSUBSETSMETADATA_NMETH (AVTVARMETADATA_NMETH+26)
+#define AVTSUBSETSMETADATA_NMETH (AVTVARMETADATA_NMETH+27)
 void VISITPY_API           PyavtSubsetsMetaData_StartUp(avtSubsetsMetaData *subj, void *data);
 void VISITPY_API           PyavtSubsetsMetaData_CloseDown();
 VISITPY_API PyMethodDef *  PyavtSubsetsMetaData_GetMethodTable(int *nMethods);
@@ -25,8 +25,8 @@ void VISITPY_API           PyavtSubsetsMetaData_SetParent(PyObject *obj, PyObjec
 void VISITPY_API           PyavtSubsetsMetaData_SetDefaults(const avtSubsetsMetaData *atts);
 std::string VISITPY_API    PyavtSubsetsMetaData_GetLogString();
 std::string VISITPY_API    PyavtSubsetsMetaData_ToString(const avtSubsetsMetaData *, const char *, const bool=false);
-VISITPY_API PyObject *     PyavtSubsetsMetaData_getattr(PyObject *self, char *name);
-int VISITPY_API            PyavtSubsetsMetaData_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyavtSubsetsMetaData_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyavtSubsetsMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyavtSubsetsMetaData_methods[AVTSUBSETSMETADATA_NMETH];
 
 #endif

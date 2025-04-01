@@ -286,6 +286,40 @@ PyUnicode_From_UTF32_Unicode_Buffer(const char *unicode_buffer,
 #define PyVarObject_TAIL
 #endif
 
+//
+// Mark C. Miller, Wed Mar 26 18:58:25 PDT 2025
+// These macros are used within the definition of VISIT_PY_TYPE_OBJ to help
+// build a block of code representing the default set of .tp_xxx slot methods
+// our standard objects need to define. Its likely overly cautious but the reason
+// for the funky retval incrementing here is to ensure there is no way any compiler
+// optimizations could maybe decide the function in which this code block appears
+// could ever be optimized away because its return value could maybe be computed at
+// compile time.
+//
+// We make prolific use of the CPP paste operator (##) here to enforce naming
+// consistency.
+//
+#define VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, SLOT)                   \
+    Py##VSObjName##Type.tp_##SLOT = Py##VSObjName##_##SLOT;        \
+    retval += ((void*) Py##VSObjName##Type.tp_##SLOT != (void*)0)
+
+#define VISIT_PY_TYPE_OBJ_SLOT2(VSObjName, SLOT, FUNC)             \
+    Py##VSObjName##Type.tp_##SLOT = Py##VSObjName##_##FUNC;        \
+    retval += ((void*) Py##VSObjName##Type.tp_##SLOT != (void*)0)
+
+//
+// For non-standard objects, the correct approach is to #undef this macro and
+// then re-define it to what is needed AHEAD of invoking VISIT_PY_TYPE_OBJ().
+//
+#define VISIT_PY_TYPE_OBJ_TP_SLOTS(VSObjName)              \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, dealloc);           \
+    VISIT_PY_TYPE_OBJ_SLOT2(VSObjName, repr, str);         \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, str);               \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, getattro);          \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, setattro);          \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, richcompare);       \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, methods)
+
 // 2023/01/27 CYRUSH Note:
 // tp_print / tp_vectorcall_offset slot is not used by python 3.0 - 3.7
 // it should not be used for python 3.8 > unless Py_TPFLAGS_HAVE_VECTORCALL
@@ -294,70 +328,78 @@ PyUnicode_From_UTF32_Unicode_Buffer(const char *unicode_buffer,
 // Also we use VPY_STR to implement both str() and repr(), as this
 // preserves the Python 2 cli behavior to echo object contents via repr()
 //
-
-#define VISIT_PY_TYPE_OBJ( VPY_TYPE,      \
-                           VPY_NAME,      \
-                           VPY_OBJECT,    \
-                           VPY_DEALLOC,   \
-                           VPY_PRINT,     \
-                           VPY_GETATTR,   \
-                           VPY_SETATTR,   \
-                           VPY_STR,       \
-                           VPY_PURPOSE,   \
-                           VPY_RICHCOMP,  \
-                           VPY_AS_NUMBER) \
-static PyTypeObject VPY_TYPE = \
-{ \
-    PyVarObject_HEAD_INIT(&PyType_Type, 0) \
-    VPY_NAME,                  /* tp_name */ \
-    sizeof(VPY_OBJECT),        /* tp_basicsize */ \
-    0,                         /* tp_itemsize */ \
-    (destructor)VPY_DEALLOC,   /* tp_dealloc */ \
-    0,                         /* tp_print (python 2) or tp_vectorcall_offset (python3.8 > ) */ \
-    (getattrfunc)VPY_GETATTR,  /* tp_getattr */ \
-    (setattrfunc)VPY_SETATTR,  /* tp_setattr */ \
-    0,                         /* tp_reserved */ \
-    (reprfunc)VPY_STR,         /* tp_repr */ \
-    VPY_AS_NUMBER,             /* tp_as_number */ \
-    0,                         /* tp_as_sequence */ \
-    0,                         /* tp_as_mapping */ \
-    0,                         /* tp_hash  */ \
-    0,                         /* tp_call */ \
-    (reprfunc)VPY_STR,         /* tp_str */ \
-    0,                         /* tp_getattro */ \
-    0,                         /* tp_setattro */ \
-    0,                         /* tp_as_buffer */ \
-    PY_VISIT_TPFLAGS_DEFAULT,  /* tp_flags */ \
-    VPY_PURPOSE,               /* tp_doc */ \
-    0,                         /* tp_traverse */ \
-    0,                         /* tp_clear */ \
-    (richcmpfunc)VPY_RICHCOMP, /* tp_richcompare */ \
-    0,                         /* tp_weaklistoffset */ \
-    0,                         /* tp_iter */ \
-    0,                         /* tp_iternext */ \
-    0,                         /* tp_methods */ \
-    0,                         /* tp_members */ \
-    0,                         /* tp_getset */ \
-    0,                         /* tp_base */ \
-    0,                         /* tp_dict */ \
-    0,                         /* tp_descr_get */ \
-    0,                         /* tp_descr_set */  \
-    0,                         /* tp_dictoffset */ \
-    0,                         /* tp_init */  \
-    0,                         /* tp_alloc */  \
-    0,                         /* tp_new */  \
-    0,                         /* tp_free */ \
-    0,                         /* tp_is_gc */ \
-    0,                         /* tp_bases */ \
-    0,                         /* tp_mro */ \
-    0,                         /* tp_cache */ \
-    0,                         /* tp_subclasses */ \
-    0,                         /* tp_weaklist */ \
-    0,                         /* tp_del */ \
-    0                          /* tp_version_tag */ \
-    PyVarObject_TAIL                                \
-};
-
+// Mark C. Miller, Mon Mar 24 16:07:55 PDT 2025
+// Adjust VISIT_PY_TYPE_OBJ to initialize our python objects in two steps.
+// The first is an *assignment* of the PyTypeObject struct with mostly zero
+// entries and other critical boilerplate stuff. The second is the assignment
+// to a dummy static variable of the result of calling a static initialization
+// function for the type. It is in that function where the remaining .tp_xxx
+// slots are set up according to the (above) VISIT_PY_TYPE_OBJ_TP_SLOTS macro. 
+// To override the default behavior, simply #undef VISIT_PY_TYPE_OBJ_TP_SLOTS
+// and then re-define it to what is needed before invoking VISIT_PY_TYPE_OBJ.
+//
+// We make prolific use of the CPP paste operator (##) here to enforce naming
+// consistency.
+//
+#define VISIT_PY_TYPE_OBJ(VSObjName)                                         \
+static PyTypeObject Py##VSObjName##Type =                                    \
+{                                                                            \
+    PyVarObject_HEAD_INIT(&PyType_Type, 0)                                   \
+    #VSObjName,                 /* tp_name */                                \
+    sizeof(Py##VSObjName##Object),/* tp_basicsize */                         \
+    0,                          /* tp_itemsize */                            \
+    0,                          /* tp_dealloc */                             \
+    0,                          /* tp_print (py2 and < py3.8)... */          \
+                                /* ...or tp_vectorcall_offset (>py3.8 */     \
+    0,                          /* tp_getattr */                             \
+    0,                          /* tp_setattr */                             \
+    0,                          /* tp_reserved */                            \
+    0,                          /* tp_repr */                                \
+    0,                          /* tp_as_number */                           \
+    0,                          /* tp_as_sequence */                         \
+    0,                          /* tp_as_mapping */                          \
+    0,                          /* tp_hash  */                               \
+    0,                          /* tp_call */                                \
+    0,                          /* tp_str */                                 \
+    0,                          /* tp_getattro */                            \
+    0,                          /* tp_setattro */                            \
+    0,                          /* tp_as_buffer */                           \
+    PY_VISIT_TPFLAGS_DEFAULT,   /* tp_flags */                               \
+    Py##VSObjName##_purpose,    /* tp_doc */                                 \
+    0,                          /* tp_traverse */                            \
+    0,                          /* tp_clear */                               \
+    0,                          /* tp_richcompare */                         \
+    0,                          /* tp_weaklistoffset */                      \
+    0,                          /* tp_iter */                                \
+    0,                          /* tp_iternext */                            \
+    0,                          /* tp_methods */                             \
+    0,                          /* tp_members */                             \
+    0,                          /* tp_getset */                              \
+    0,                          /* tp_base */                                \
+    0,                          /* tp_dict */                                \
+    0,                          /* tp_descr_get */                           \
+    0,                          /* tp_descr_set */                           \
+    0,                          /* tp_dictoffset */                          \
+    0,                          /* tp_init */                                \
+    0,                          /* tp_alloc */                               \
+    0,                          /* tp_new */                                 \
+    0,                          /* tp_free */                                \
+    0,                          /* tp_is_gc */                               \
+    0,                          /* tp_bases */                               \
+    0,                          /* tp_mro */                                 \
+    0,                          /* tp_cache */                               \
+    0,                          /* tp_subclasses */                          \
+    0,                          /* tp_weaklist */                            \
+    0,                          /* tp_del */                                 \
+    0                           /* tp_version_tag */                         \
+    PyVarObject_TAIL                                                         \
+};                                                                           \
+static int VSObjName##_init(void) {                                          \
+    static int retval = 0;                                                   \
+    VISIT_PY_TYPE_OBJ_TP_SLOTS(VSObjName);                                   \
+    return retval;                                                           \
+}                                                                            \
+static int VSObjName##_initialized = VSObjName##_init()
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -366,4 +408,3 @@ static PyTypeObject VPY_TYPE = \
 //-----------------------------------------------------------------------------
 
 #endif
-

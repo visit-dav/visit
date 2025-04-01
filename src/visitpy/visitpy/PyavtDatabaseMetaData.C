@@ -5,6 +5,7 @@
 #include <PyavtDatabaseMetaData.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 #include <PyExpressionList.h>
 #include <PyavtMeshMetaData.h>
@@ -37,7 +38,7 @@
 //
 // This struct contains the Python type information and a avtDatabaseMetaData.
 //
-struct avtDatabaseMetaDataObject
+struct PyavtDatabaseMetaDataObject
 {
     PyObject_HEAD
     avtDatabaseMetaData *data;
@@ -379,16 +380,44 @@ PyavtDatabaseMetaData_ToString(const avtDatabaseMetaData *atts, const char *pref
 static PyObject *
 avtDatabaseMetaData_Notify(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+avtDatabaseMetaData_dir(PyObject *self, PyObject *args)
+{
+    static avtDatabaseMetaData atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyavtDatabaseMetaData_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 avtDatabaseMetaData_SetHasTemporalExtents(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -440,7 +469,7 @@ avtDatabaseMetaData_SetHasTemporalExtents(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_GetHasTemporalExtents(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetHasTemporalExtents()?1L:0L);
     return retval;
 }
@@ -448,7 +477,7 @@ avtDatabaseMetaData_GetHasTemporalExtents(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_SetMinTemporalExtents(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -500,7 +529,7 @@ avtDatabaseMetaData_SetMinTemporalExtents(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_GetMinTemporalExtents(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMinTemporalExtents());
     return retval;
 }
@@ -508,7 +537,7 @@ avtDatabaseMetaData_GetMinTemporalExtents(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_SetMaxTemporalExtents(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -560,7 +589,7 @@ avtDatabaseMetaData_SetMaxTemporalExtents(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_GetMaxTemporalExtents(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMaxTemporalExtents());
     return retval;
 }
@@ -568,7 +597,7 @@ avtDatabaseMetaData_GetMaxTemporalExtents(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_SetNumStates(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -620,7 +649,7 @@ avtDatabaseMetaData_SetNumStates(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_GetNumStates(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNumStates()));
     return retval;
 }
@@ -628,7 +657,7 @@ avtDatabaseMetaData_GetNumStates(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_SetIsVirtualDatabase(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -680,7 +709,7 @@ avtDatabaseMetaData_SetIsVirtualDatabase(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_GetIsVirtualDatabase(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetIsVirtualDatabase()?1L:0L);
     return retval;
 }
@@ -688,7 +717,7 @@ avtDatabaseMetaData_GetIsVirtualDatabase(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_SetMustRepopulateOnStateChange(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -740,7 +769,7 @@ avtDatabaseMetaData_SetMustRepopulateOnStateChange(PyObject *self, PyObject *arg
 /*static*/ PyObject *
 avtDatabaseMetaData_GetMustRepopulateOnStateChange(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetMustRepopulateOnStateChange()?1L:0L);
     return retval;
 }
@@ -748,7 +777,7 @@ avtDatabaseMetaData_GetMustRepopulateOnStateChange(PyObject *self, PyObject *arg
 /*static*/ PyObject *
 avtDatabaseMetaData_SetMustAlphabetizeVariables(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -800,7 +829,7 @@ avtDatabaseMetaData_SetMustAlphabetizeVariables(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_GetMustAlphabetizeVariables(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetMustAlphabetizeVariables()?1L:0L);
     return retval;
 }
@@ -808,7 +837,7 @@ avtDatabaseMetaData_GetMustAlphabetizeVariables(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_SetFormatCanDoDomainDecomposition(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -860,7 +889,7 @@ avtDatabaseMetaData_SetFormatCanDoDomainDecomposition(PyObject *self, PyObject *
 /*static*/ PyObject *
 avtDatabaseMetaData_GetFormatCanDoDomainDecomposition(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetFormatCanDoDomainDecomposition()?1L:0L);
     return retval;
 }
@@ -868,7 +897,7 @@ avtDatabaseMetaData_GetFormatCanDoDomainDecomposition(PyObject *self, PyObject *
 /*static*/ PyObject *
 avtDatabaseMetaData_SetFormatCanDoMultires(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -920,7 +949,7 @@ avtDatabaseMetaData_SetFormatCanDoMultires(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_GetFormatCanDoMultires(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetFormatCanDoMultires()?1L:0L);
     return retval;
 }
@@ -928,7 +957,7 @@ avtDatabaseMetaData_GetFormatCanDoMultires(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_SetUseCatchAllMesh(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -980,7 +1009,7 @@ avtDatabaseMetaData_SetUseCatchAllMesh(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_GetUseCatchAllMesh(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetUseCatchAllMesh()?1L:0L);
     return retval;
 }
@@ -988,7 +1017,7 @@ avtDatabaseMetaData_GetUseCatchAllMesh(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_SetTimeStepPath(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1029,7 +1058,7 @@ avtDatabaseMetaData_SetTimeStepPath(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_GetTimeStepPath(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetTimeStepPath().c_str());
     return retval;
 }
@@ -1037,7 +1066,7 @@ avtDatabaseMetaData_GetTimeStepPath(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_SetTimeStepNames(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
 
     stringVector vec;
 
@@ -1094,7 +1123,7 @@ avtDatabaseMetaData_SetTimeStepNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_GetTimeStepNames(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     // Allocate a tuple the with enough entries to hold the timeStepNames.
     const stringVector &timeStepNames = obj->data->GetTimeStepNames();
     PyObject *retval = PyTuple_New(timeStepNames.size());
@@ -1106,7 +1135,7 @@ avtDatabaseMetaData_GetTimeStepNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_SetCycles(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
 
     intVector vec;
 
@@ -1170,7 +1199,7 @@ avtDatabaseMetaData_SetCycles(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_GetCycles(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     // Allocate a tuple the with enough entries to hold the cycles.
     const intVector &cycles = obj->data->GetCycles();
     PyObject *retval = PyTuple_New(cycles.size());
@@ -1182,7 +1211,7 @@ avtDatabaseMetaData_GetCycles(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_SetCyclesAreAccurate(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
 
     intVector vec;
 
@@ -1246,7 +1275,7 @@ avtDatabaseMetaData_SetCyclesAreAccurate(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_GetCyclesAreAccurate(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     // Allocate a tuple the with enough entries to hold the cyclesAreAccurate.
     const intVector &cyclesAreAccurate = obj->data->GetCyclesAreAccurate();
     PyObject *retval = PyTuple_New(cyclesAreAccurate.size());
@@ -1258,7 +1287,7 @@ avtDatabaseMetaData_GetCyclesAreAccurate(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_SetTimes(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
 
     doubleVector vec;
 
@@ -1322,7 +1351,7 @@ avtDatabaseMetaData_SetTimes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_GetTimes(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     // Allocate a tuple the with enough entries to hold the times.
     const doubleVector &times = obj->data->GetTimes();
     PyObject *retval = PyTuple_New(times.size());
@@ -1334,7 +1363,7 @@ avtDatabaseMetaData_GetTimes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_SetTimesAreAccurate(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
 
     intVector vec;
 
@@ -1398,7 +1427,7 @@ avtDatabaseMetaData_SetTimesAreAccurate(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_GetTimesAreAccurate(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     // Allocate a tuple the with enough entries to hold the timesAreAccurate.
     const intVector &timesAreAccurate = obj->data->GetTimesAreAccurate();
     PyObject *retval = PyTuple_New(timesAreAccurate.size());
@@ -1410,7 +1439,7 @@ avtDatabaseMetaData_GetTimesAreAccurate(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_SetDatabaseName(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1451,7 +1480,7 @@ avtDatabaseMetaData_SetDatabaseName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_GetDatabaseName(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetDatabaseName().c_str());
     return retval;
 }
@@ -1459,7 +1488,7 @@ avtDatabaseMetaData_GetDatabaseName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_SetFileFormat(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1500,7 +1529,7 @@ avtDatabaseMetaData_SetFileFormat(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_GetFileFormat(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetFileFormat().c_str());
     return retval;
 }
@@ -1508,7 +1537,7 @@ avtDatabaseMetaData_GetFileFormat(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_SetDatabaseComment(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1549,7 +1578,7 @@ avtDatabaseMetaData_SetDatabaseComment(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_GetDatabaseComment(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetDatabaseComment().c_str());
     return retval;
 }
@@ -1557,7 +1586,7 @@ avtDatabaseMetaData_GetDatabaseComment(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_SetExprList(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -1574,7 +1603,7 @@ avtDatabaseMetaData_SetExprList(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_GetExprList(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -1590,7 +1619,7 @@ avtDatabaseMetaData_GetExprList(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_GetMeshes(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     int index = -1;
     if (args == NULL)
         return PyErr_Format(PyExc_NameError, "Use .GetMeshes(int index) to get a single entry");
@@ -1614,14 +1643,14 @@ avtDatabaseMetaData_GetMeshes(PyObject *self, PyObject *args)
 PyObject *
 avtDatabaseMetaData_GetNumMeshes(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     return PyInt_FromLong((long)obj->data->GetMeshes().size());
 }
 
 PyObject *
 avtDatabaseMetaData_AddMeshes(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
         return NULL;
@@ -1637,7 +1666,7 @@ avtDatabaseMetaData_AddMeshes(PyObject *self, PyObject *args)
 static PyObject *
 avtDatabaseMetaData_Remove_One_Meshes(PyObject *self, int index)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     // Remove in the AttributeGroupVector instead of calling RemoveMeshes() because we don't want to delete the object; just remove it.
     AttributeGroupVector &atts = obj->data->GetMeshes();
     AttributeGroupVector::iterator pos = atts.begin();
@@ -1667,7 +1696,7 @@ avtDatabaseMetaData_RemoveMeshes(PyObject *self, PyObject *args)
     int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumMeshes())
         return PyErr_Format(PyExc_IndexError, "Index out of range");
 
@@ -1677,7 +1706,7 @@ avtDatabaseMetaData_RemoveMeshes(PyObject *self, PyObject *args)
 PyObject *
 avtDatabaseMetaData_ClearMeshes(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     int n = obj->data->GetNumMeshes();
     for(int i = 0; i < n; ++i)
     {
@@ -1691,7 +1720,7 @@ avtDatabaseMetaData_ClearMeshes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_GetSubsets(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     int index = -1;
     if (args == NULL)
         return PyErr_Format(PyExc_NameError, "Use .GetSubsets(int index) to get a single entry");
@@ -1715,14 +1744,14 @@ avtDatabaseMetaData_GetSubsets(PyObject *self, PyObject *args)
 PyObject *
 avtDatabaseMetaData_GetNumSubsets(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     return PyInt_FromLong((long)obj->data->GetSubsets().size());
 }
 
 PyObject *
 avtDatabaseMetaData_AddSubsets(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
         return NULL;
@@ -1738,7 +1767,7 @@ avtDatabaseMetaData_AddSubsets(PyObject *self, PyObject *args)
 static PyObject *
 avtDatabaseMetaData_Remove_One_Subsets(PyObject *self, int index)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     // Remove in the AttributeGroupVector instead of calling RemoveSubsets() because we don't want to delete the object; just remove it.
     AttributeGroupVector &atts = obj->data->GetSubsets();
     AttributeGroupVector::iterator pos = atts.begin();
@@ -1768,7 +1797,7 @@ avtDatabaseMetaData_RemoveSubsets(PyObject *self, PyObject *args)
     int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumSubsets())
         return PyErr_Format(PyExc_IndexError, "Index out of range");
 
@@ -1778,7 +1807,7 @@ avtDatabaseMetaData_RemoveSubsets(PyObject *self, PyObject *args)
 PyObject *
 avtDatabaseMetaData_ClearSubsets(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     int n = obj->data->GetNumSubsets();
     for(int i = 0; i < n; ++i)
     {
@@ -1792,7 +1821,7 @@ avtDatabaseMetaData_ClearSubsets(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_GetScalars(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     int index = -1;
     if (args == NULL)
         return PyErr_Format(PyExc_NameError, "Use .GetScalars(int index) to get a single entry");
@@ -1816,14 +1845,14 @@ avtDatabaseMetaData_GetScalars(PyObject *self, PyObject *args)
 PyObject *
 avtDatabaseMetaData_GetNumScalars(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     return PyInt_FromLong((long)obj->data->GetScalars().size());
 }
 
 PyObject *
 avtDatabaseMetaData_AddScalars(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
         return NULL;
@@ -1839,7 +1868,7 @@ avtDatabaseMetaData_AddScalars(PyObject *self, PyObject *args)
 static PyObject *
 avtDatabaseMetaData_Remove_One_Scalars(PyObject *self, int index)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     // Remove in the AttributeGroupVector instead of calling RemoveScalars() because we don't want to delete the object; just remove it.
     AttributeGroupVector &atts = obj->data->GetScalars();
     AttributeGroupVector::iterator pos = atts.begin();
@@ -1869,7 +1898,7 @@ avtDatabaseMetaData_RemoveScalars(PyObject *self, PyObject *args)
     int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumScalars())
         return PyErr_Format(PyExc_IndexError, "Index out of range");
 
@@ -1879,7 +1908,7 @@ avtDatabaseMetaData_RemoveScalars(PyObject *self, PyObject *args)
 PyObject *
 avtDatabaseMetaData_ClearScalars(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     int n = obj->data->GetNumScalars();
     for(int i = 0; i < n; ++i)
     {
@@ -1893,7 +1922,7 @@ avtDatabaseMetaData_ClearScalars(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_GetVectors(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     int index = -1;
     if (args == NULL)
         return PyErr_Format(PyExc_NameError, "Use .GetVectors(int index) to get a single entry");
@@ -1917,14 +1946,14 @@ avtDatabaseMetaData_GetVectors(PyObject *self, PyObject *args)
 PyObject *
 avtDatabaseMetaData_GetNumVectors(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     return PyInt_FromLong((long)obj->data->GetVectors().size());
 }
 
 PyObject *
 avtDatabaseMetaData_AddVectors(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
         return NULL;
@@ -1940,7 +1969,7 @@ avtDatabaseMetaData_AddVectors(PyObject *self, PyObject *args)
 static PyObject *
 avtDatabaseMetaData_Remove_One_Vectors(PyObject *self, int index)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     // Remove in the AttributeGroupVector instead of calling RemoveVectors() because we don't want to delete the object; just remove it.
     AttributeGroupVector &atts = obj->data->GetVectors();
     AttributeGroupVector::iterator pos = atts.begin();
@@ -1970,7 +1999,7 @@ avtDatabaseMetaData_RemoveVectors(PyObject *self, PyObject *args)
     int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumVectors())
         return PyErr_Format(PyExc_IndexError, "Index out of range");
 
@@ -1980,7 +2009,7 @@ avtDatabaseMetaData_RemoveVectors(PyObject *self, PyObject *args)
 PyObject *
 avtDatabaseMetaData_ClearVectors(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     int n = obj->data->GetNumVectors();
     for(int i = 0; i < n; ++i)
     {
@@ -1994,7 +2023,7 @@ avtDatabaseMetaData_ClearVectors(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_GetTensors(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     int index = -1;
     if (args == NULL)
         return PyErr_Format(PyExc_NameError, "Use .GetTensors(int index) to get a single entry");
@@ -2018,14 +2047,14 @@ avtDatabaseMetaData_GetTensors(PyObject *self, PyObject *args)
 PyObject *
 avtDatabaseMetaData_GetNumTensors(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     return PyInt_FromLong((long)obj->data->GetTensors().size());
 }
 
 PyObject *
 avtDatabaseMetaData_AddTensors(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
         return NULL;
@@ -2041,7 +2070,7 @@ avtDatabaseMetaData_AddTensors(PyObject *self, PyObject *args)
 static PyObject *
 avtDatabaseMetaData_Remove_One_Tensors(PyObject *self, int index)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     // Remove in the AttributeGroupVector instead of calling RemoveTensors() because we don't want to delete the object; just remove it.
     AttributeGroupVector &atts = obj->data->GetTensors();
     AttributeGroupVector::iterator pos = atts.begin();
@@ -2071,7 +2100,7 @@ avtDatabaseMetaData_RemoveTensors(PyObject *self, PyObject *args)
     int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumTensors())
         return PyErr_Format(PyExc_IndexError, "Index out of range");
 
@@ -2081,7 +2110,7 @@ avtDatabaseMetaData_RemoveTensors(PyObject *self, PyObject *args)
 PyObject *
 avtDatabaseMetaData_ClearTensors(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     int n = obj->data->GetNumTensors();
     for(int i = 0; i < n; ++i)
     {
@@ -2095,7 +2124,7 @@ avtDatabaseMetaData_ClearTensors(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_GetSymmTensors(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     int index = -1;
     if (args == NULL)
         return PyErr_Format(PyExc_NameError, "Use .GetSymmTensors(int index) to get a single entry");
@@ -2119,14 +2148,14 @@ avtDatabaseMetaData_GetSymmTensors(PyObject *self, PyObject *args)
 PyObject *
 avtDatabaseMetaData_GetNumSymmTensors(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     return PyInt_FromLong((long)obj->data->GetSymmTensors().size());
 }
 
 PyObject *
 avtDatabaseMetaData_AddSymmTensors(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
         return NULL;
@@ -2142,7 +2171,7 @@ avtDatabaseMetaData_AddSymmTensors(PyObject *self, PyObject *args)
 static PyObject *
 avtDatabaseMetaData_Remove_One_SymmTensors(PyObject *self, int index)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     // Remove in the AttributeGroupVector instead of calling RemoveSymmTensors() because we don't want to delete the object; just remove it.
     AttributeGroupVector &atts = obj->data->GetSymmTensors();
     AttributeGroupVector::iterator pos = atts.begin();
@@ -2172,7 +2201,7 @@ avtDatabaseMetaData_RemoveSymmTensors(PyObject *self, PyObject *args)
     int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumSymmTensors())
         return PyErr_Format(PyExc_IndexError, "Index out of range");
 
@@ -2182,7 +2211,7 @@ avtDatabaseMetaData_RemoveSymmTensors(PyObject *self, PyObject *args)
 PyObject *
 avtDatabaseMetaData_ClearSymmTensors(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     int n = obj->data->GetNumSymmTensors();
     for(int i = 0; i < n; ++i)
     {
@@ -2196,7 +2225,7 @@ avtDatabaseMetaData_ClearSymmTensors(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_GetArrays(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     int index = -1;
     if (args == NULL)
         return PyErr_Format(PyExc_NameError, "Use .GetArrays(int index) to get a single entry");
@@ -2220,14 +2249,14 @@ avtDatabaseMetaData_GetArrays(PyObject *self, PyObject *args)
 PyObject *
 avtDatabaseMetaData_GetNumArrays(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     return PyInt_FromLong((long)obj->data->GetArrays().size());
 }
 
 PyObject *
 avtDatabaseMetaData_AddArrays(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
         return NULL;
@@ -2243,7 +2272,7 @@ avtDatabaseMetaData_AddArrays(PyObject *self, PyObject *args)
 static PyObject *
 avtDatabaseMetaData_Remove_One_Arrays(PyObject *self, int index)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     // Remove in the AttributeGroupVector instead of calling RemoveArrays() because we don't want to delete the object; just remove it.
     AttributeGroupVector &atts = obj->data->GetArrays();
     AttributeGroupVector::iterator pos = atts.begin();
@@ -2273,7 +2302,7 @@ avtDatabaseMetaData_RemoveArrays(PyObject *self, PyObject *args)
     int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumArrays())
         return PyErr_Format(PyExc_IndexError, "Index out of range");
 
@@ -2283,7 +2312,7 @@ avtDatabaseMetaData_RemoveArrays(PyObject *self, PyObject *args)
 PyObject *
 avtDatabaseMetaData_ClearArrays(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     int n = obj->data->GetNumArrays();
     for(int i = 0; i < n; ++i)
     {
@@ -2297,7 +2326,7 @@ avtDatabaseMetaData_ClearArrays(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_GetMaterials(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     int index = -1;
     if (args == NULL)
         return PyErr_Format(PyExc_NameError, "Use .GetMaterials(int index) to get a single entry");
@@ -2321,14 +2350,14 @@ avtDatabaseMetaData_GetMaterials(PyObject *self, PyObject *args)
 PyObject *
 avtDatabaseMetaData_GetNumMaterials(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     return PyInt_FromLong((long)obj->data->GetMaterials().size());
 }
 
 PyObject *
 avtDatabaseMetaData_AddMaterials(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
         return NULL;
@@ -2344,7 +2373,7 @@ avtDatabaseMetaData_AddMaterials(PyObject *self, PyObject *args)
 static PyObject *
 avtDatabaseMetaData_Remove_One_Materials(PyObject *self, int index)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     // Remove in the AttributeGroupVector instead of calling RemoveMaterials() because we don't want to delete the object; just remove it.
     AttributeGroupVector &atts = obj->data->GetMaterials();
     AttributeGroupVector::iterator pos = atts.begin();
@@ -2374,7 +2403,7 @@ avtDatabaseMetaData_RemoveMaterials(PyObject *self, PyObject *args)
     int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumMaterials())
         return PyErr_Format(PyExc_IndexError, "Index out of range");
 
@@ -2384,7 +2413,7 @@ avtDatabaseMetaData_RemoveMaterials(PyObject *self, PyObject *args)
 PyObject *
 avtDatabaseMetaData_ClearMaterials(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     int n = obj->data->GetNumMaterials();
     for(int i = 0; i < n; ++i)
     {
@@ -2398,7 +2427,7 @@ avtDatabaseMetaData_ClearMaterials(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_GetSpecies(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     int index = -1;
     if (args == NULL)
         return PyErr_Format(PyExc_NameError, "Use .GetSpecies(int index) to get a single entry");
@@ -2422,14 +2451,14 @@ avtDatabaseMetaData_GetSpecies(PyObject *self, PyObject *args)
 PyObject *
 avtDatabaseMetaData_GetNumSpecies(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     return PyInt_FromLong((long)obj->data->GetSpecies().size());
 }
 
 PyObject *
 avtDatabaseMetaData_AddSpecies(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
         return NULL;
@@ -2445,7 +2474,7 @@ avtDatabaseMetaData_AddSpecies(PyObject *self, PyObject *args)
 static PyObject *
 avtDatabaseMetaData_Remove_One_Species(PyObject *self, int index)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     // Remove in the AttributeGroupVector instead of calling RemoveSpecies() because we don't want to delete the object; just remove it.
     AttributeGroupVector &atts = obj->data->GetSpecies();
     AttributeGroupVector::iterator pos = atts.begin();
@@ -2475,7 +2504,7 @@ avtDatabaseMetaData_RemoveSpecies(PyObject *self, PyObject *args)
     int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumSpecies())
         return PyErr_Format(PyExc_IndexError, "Index out of range");
 
@@ -2485,7 +2514,7 @@ avtDatabaseMetaData_RemoveSpecies(PyObject *self, PyObject *args)
 PyObject *
 avtDatabaseMetaData_ClearSpecies(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     int n = obj->data->GetNumSpecies();
     for(int i = 0; i < n; ++i)
     {
@@ -2499,7 +2528,7 @@ avtDatabaseMetaData_ClearSpecies(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_GetCurves(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     int index = -1;
     if (args == NULL)
         return PyErr_Format(PyExc_NameError, "Use .GetCurves(int index) to get a single entry");
@@ -2523,14 +2552,14 @@ avtDatabaseMetaData_GetCurves(PyObject *self, PyObject *args)
 PyObject *
 avtDatabaseMetaData_GetNumCurves(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     return PyInt_FromLong((long)obj->data->GetCurves().size());
 }
 
 PyObject *
 avtDatabaseMetaData_AddCurves(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
         return NULL;
@@ -2546,7 +2575,7 @@ avtDatabaseMetaData_AddCurves(PyObject *self, PyObject *args)
 static PyObject *
 avtDatabaseMetaData_Remove_One_Curves(PyObject *self, int index)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     // Remove in the AttributeGroupVector instead of calling RemoveCurves() because we don't want to delete the object; just remove it.
     AttributeGroupVector &atts = obj->data->GetCurves();
     AttributeGroupVector::iterator pos = atts.begin();
@@ -2576,7 +2605,7 @@ avtDatabaseMetaData_RemoveCurves(PyObject *self, PyObject *args)
     int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumCurves())
         return PyErr_Format(PyExc_IndexError, "Index out of range");
 
@@ -2586,7 +2615,7 @@ avtDatabaseMetaData_RemoveCurves(PyObject *self, PyObject *args)
 PyObject *
 avtDatabaseMetaData_ClearCurves(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     int n = obj->data->GetNumCurves();
     for(int i = 0; i < n; ++i)
     {
@@ -2600,7 +2629,7 @@ avtDatabaseMetaData_ClearCurves(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_GetLabels(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     int index = -1;
     if (args == NULL)
         return PyErr_Format(PyExc_NameError, "Use .GetLabels(int index) to get a single entry");
@@ -2624,14 +2653,14 @@ avtDatabaseMetaData_GetLabels(PyObject *self, PyObject *args)
 PyObject *
 avtDatabaseMetaData_GetNumLabels(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     return PyInt_FromLong((long)obj->data->GetLabels().size());
 }
 
 PyObject *
 avtDatabaseMetaData_AddLabels(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
         return NULL;
@@ -2647,7 +2676,7 @@ avtDatabaseMetaData_AddLabels(PyObject *self, PyObject *args)
 static PyObject *
 avtDatabaseMetaData_Remove_One_Labels(PyObject *self, int index)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     // Remove in the AttributeGroupVector instead of calling RemoveLabels() because we don't want to delete the object; just remove it.
     AttributeGroupVector &atts = obj->data->GetLabels();
     AttributeGroupVector::iterator pos = atts.begin();
@@ -2677,7 +2706,7 @@ avtDatabaseMetaData_RemoveLabels(PyObject *self, PyObject *args)
     int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumLabels())
         return PyErr_Format(PyExc_IndexError, "Index out of range");
 
@@ -2687,7 +2716,7 @@ avtDatabaseMetaData_RemoveLabels(PyObject *self, PyObject *args)
 PyObject *
 avtDatabaseMetaData_ClearLabels(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     int n = obj->data->GetNumLabels();
     for(int i = 0; i < n; ++i)
     {
@@ -2701,7 +2730,7 @@ avtDatabaseMetaData_ClearLabels(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_GetDefaultPlots(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     int index = -1;
     if (args == NULL)
         return PyErr_Format(PyExc_NameError, "Use .GetDefaultPlots(int index) to get a single entry");
@@ -2725,14 +2754,14 @@ avtDatabaseMetaData_GetDefaultPlots(PyObject *self, PyObject *args)
 PyObject *
 avtDatabaseMetaData_GetNumDefaultPlots(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     return PyInt_FromLong((long)obj->data->GetDefaultPlots().size());
 }
 
 PyObject *
 avtDatabaseMetaData_AddDefaultPlots(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
         return NULL;
@@ -2748,7 +2777,7 @@ avtDatabaseMetaData_AddDefaultPlots(PyObject *self, PyObject *args)
 static PyObject *
 avtDatabaseMetaData_Remove_One_DefaultPlots(PyObject *self, int index)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     // Remove in the AttributeGroupVector instead of calling RemoveDefaultPlots() because we don't want to delete the object; just remove it.
     AttributeGroupVector &atts = obj->data->GetDefaultPlots();
     AttributeGroupVector::iterator pos = atts.begin();
@@ -2778,7 +2807,7 @@ avtDatabaseMetaData_RemoveDefaultPlots(PyObject *self, PyObject *args)
     int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumDefaultPlots())
         return PyErr_Format(PyExc_IndexError, "Index out of range");
 
@@ -2788,7 +2817,7 @@ avtDatabaseMetaData_RemoveDefaultPlots(PyObject *self, PyObject *args)
 PyObject *
 avtDatabaseMetaData_ClearDefaultPlots(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     int n = obj->data->GetNumDefaultPlots();
     for(int i = 0; i < n; ++i)
     {
@@ -2802,7 +2831,7 @@ avtDatabaseMetaData_ClearDefaultPlots(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_SetIsSimulation(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2854,7 +2883,7 @@ avtDatabaseMetaData_SetIsSimulation(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_GetIsSimulation(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetIsSimulation()?1L:0L);
     return retval;
 }
@@ -2862,7 +2891,7 @@ avtDatabaseMetaData_GetIsSimulation(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_SetSimInfo(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -2879,7 +2908,7 @@ avtDatabaseMetaData_SetSimInfo(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_GetSimInfo(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -2895,7 +2924,7 @@ avtDatabaseMetaData_GetSimInfo(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_SetSuggestedDefaultSILRestriction(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
 
     stringVector vec;
 
@@ -2952,7 +2981,7 @@ avtDatabaseMetaData_SetSuggestedDefaultSILRestriction(PyObject *self, PyObject *
 /*static*/ PyObject *
 avtDatabaseMetaData_GetSuggestedDefaultSILRestriction(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     // Allocate a tuple the with enough entries to hold the suggestedDefaultSILRestriction.
     const stringVector &suggestedDefaultSILRestriction = obj->data->GetSuggestedDefaultSILRestriction();
     PyObject *retval = PyTuple_New(suggestedDefaultSILRestriction.size());
@@ -2964,7 +2993,7 @@ avtDatabaseMetaData_GetSuggestedDefaultSILRestriction(PyObject *self, PyObject *
 /*static*/ PyObject *
 avtDatabaseMetaData_SetReplacementMask(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3016,7 +3045,7 @@ avtDatabaseMetaData_SetReplacementMask(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtDatabaseMetaData_GetReplacementMask(PyObject *self, PyObject *args)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetReplacementMask()));
     return retval;
 }
@@ -3024,7 +3053,8 @@ avtDatabaseMetaData_GetReplacementMask(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyavtDatabaseMetaData_methods[AVTDATABASEMETADATA_NMETH] = {
-    {"Notify", avtDatabaseMetaData_Notify, METH_VARARGS},
+    {"__dir__", avtDatabaseMetaData_dir, METH_NOARGS},
+    {"Notify", avtDatabaseMetaData_Notify, METH_NOARGS},
     {"SetHasTemporalExtents", avtDatabaseMetaData_SetHasTemporalExtents, METH_VARARGS},
     {"GetHasTemporalExtents", avtDatabaseMetaData_GetHasTemporalExtents, METH_VARARGS},
     {"SetMinTemporalExtents", avtDatabaseMetaData_SetMinTemporalExtents, METH_VARARGS},
@@ -3141,19 +3171,22 @@ PyMethodDef PyavtDatabaseMetaData_methods[AVTDATABASEMETADATA_NMETH] = {
 //
 
 static void
-avtDatabaseMetaData_dealloc(PyObject *v)
+PyavtDatabaseMetaData_dealloc(PyObject *v)
 {
-   avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)v;
+   PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *avtDatabaseMetaData_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyavtDatabaseMetaData_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyavtDatabaseMetaData_getattr(PyObject *self, char *name)
+PyavtDatabaseMetaData_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "hasTemporalExtents") == 0)
         return avtDatabaseMetaData_GetHasTemporalExtents(self, NULL);
     if(strcmp(name, "minTemporalExtents") == 0)
@@ -3227,26 +3260,19 @@ PyavtDatabaseMetaData_getattr(PyObject *self, char *name)
     if(strcmp(name, "replacementMask") == 0)
         return avtDatabaseMetaData_GetReplacementMask(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyavtDatabaseMetaData_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyavtDatabaseMetaData_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyavtDatabaseMetaData_methods[i].ml_name),
-                PyString_FromString(PyavtDatabaseMetaData_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyavtDatabaseMetaData_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyavtDatabaseMetaData_setattr(PyObject *self, char *name, PyObject *args)
+PyavtDatabaseMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "hasTemporalExtents") == 0)
         obj = avtDatabaseMetaData_SetHasTemporalExtents(self, args);
@@ -3297,6 +3323,12 @@ PyavtDatabaseMetaData_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "replacementMask") == 0)
         obj = avtDatabaseMetaData_SetReplacementMask(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -3311,78 +3343,45 @@ PyavtDatabaseMetaData_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-avtDatabaseMetaData_print(PyObject *v, FILE *fp, int flags)
-{
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtDatabaseMetaData_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-avtDatabaseMetaData_str(PyObject *v)
+PyavtDatabaseMetaData_str(PyObject *v)
 {
-    avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)v;
+    PyavtDatabaseMetaDataObject *obj = (PyavtDatabaseMetaDataObject *)v;
     return PyString_FromString(PyavtDatabaseMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *avtDatabaseMetaData_Purpose = "Contains database metadata attributes";
-#else
-static char *avtDatabaseMetaData_Purpose = "Contains database metadata attributes";
-#endif
+static char const *PyavtDatabaseMetaData_purpose = "Contains database metadata attributes";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(avtDatabaseMetaDataType,         \
-                  "avtDatabaseMetaData",           \
-                  avtDatabaseMetaDataObject,       \
-                  avtDatabaseMetaData_dealloc,     \
-                  avtDatabaseMetaData_print,       \
-                  PyavtDatabaseMetaData_getattr,   \
-                  PyavtDatabaseMetaData_setattr,   \
-                  avtDatabaseMetaData_str,         \
-                  avtDatabaseMetaData_Purpose,     \
-                  avtDatabaseMetaData_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(avtDatabaseMetaData);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-avtDatabaseMetaData_richcompare(PyObject *self, PyObject *other, int op)
+PyavtDatabaseMetaData_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &avtDatabaseMetaDataType
-         || Py_TYPE(other) != &avtDatabaseMetaDataType)
+    if ( Py_TYPE(self) != &PyavtDatabaseMetaDataType
+         || Py_TYPE(other) != &PyavtDatabaseMetaDataType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    avtDatabaseMetaData *a = ((avtDatabaseMetaDataObject *)self)->data;
-    avtDatabaseMetaData *b = ((avtDatabaseMetaDataObject *)other)->data;
+    avtDatabaseMetaData *a = ((PyavtDatabaseMetaDataObject *)self)->data;
+    avtDatabaseMetaData *b = ((PyavtDatabaseMetaDataObject *)other)->data;
 
     switch (op)
     {
@@ -3411,8 +3410,8 @@ static avtDatabaseMetaData *currentAtts = 0;
 static PyObject *
 NewavtDatabaseMetaData(int useCurrent)
 {
-    avtDatabaseMetaDataObject *newObject;
-    newObject = PyObject_NEW(avtDatabaseMetaDataObject, &avtDatabaseMetaDataType);
+    PyavtDatabaseMetaDataObject *newObject;
+    newObject = PyObject_NEW(PyavtDatabaseMetaDataObject, &PyavtDatabaseMetaDataType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -3423,14 +3422,15 @@ NewavtDatabaseMetaData(int useCurrent)
         newObject->data = new avtDatabaseMetaData;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyavtDatabaseMetaDataType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapavtDatabaseMetaData(const avtDatabaseMetaData *attr)
 {
-    avtDatabaseMetaDataObject *newObject;
-    newObject = PyObject_NEW(avtDatabaseMetaDataObject, &avtDatabaseMetaDataType);
+    PyavtDatabaseMetaDataObject *newObject;
+    newObject = PyObject_NEW(PyavtDatabaseMetaDataObject, &PyavtDatabaseMetaDataType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (avtDatabaseMetaData *)attr;
@@ -3532,13 +3532,13 @@ PyavtDatabaseMetaData_GetMethodTable(int *nMethods)
 bool
 PyavtDatabaseMetaData_Check(PyObject *obj)
 {
-    return (obj->ob_type == &avtDatabaseMetaDataType);
+    return (obj->ob_type == &PyavtDatabaseMetaDataType);
 }
 
 avtDatabaseMetaData *
 PyavtDatabaseMetaData_FromPyObject(PyObject *obj)
 {
-    avtDatabaseMetaDataObject *obj2 = (avtDatabaseMetaDataObject *)obj;
+    PyavtDatabaseMetaDataObject *obj2 = (PyavtDatabaseMetaDataObject *)obj;
     return obj2->data;
 }
 
@@ -3557,7 +3557,7 @@ PyavtDatabaseMetaData_Wrap(const avtDatabaseMetaData *attr)
 void
 PyavtDatabaseMetaData_SetParent(PyObject *obj, PyObject *parent)
 {
-    avtDatabaseMetaDataObject *obj2 = (avtDatabaseMetaDataObject *)obj;
+    PyavtDatabaseMetaDataObject *obj2 = (PyavtDatabaseMetaDataObject *)obj;
     obj2->parent = parent;
 }
 

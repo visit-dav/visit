@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define CARTOGRAPHICPROJECTIONATTRIBUTES_NMETH 6
+#define CARTOGRAPHICPROJECTIONATTRIBUTES_NMETH 7
 void           PyCartographicProjectionAttributes_StartUp(CartographicProjectionAttributes *subj, void *data);
 void           PyCartographicProjectionAttributes_CloseDown();
 PyMethodDef *  PyCartographicProjectionAttributes_GetMethodTable(int *nMethods);
@@ -23,8 +23,8 @@ void           PyCartographicProjectionAttributes_SetParent(PyObject *obj, PyObj
 void           PyCartographicProjectionAttributes_SetDefaults(const CartographicProjectionAttributes *atts);
 std::string    PyCartographicProjectionAttributes_GetLogString();
 std::string    PyCartographicProjectionAttributes_ToString(const CartographicProjectionAttributes *, const char *, const bool=false);
-PyObject *     PyCartographicProjectionAttributes_getattr(PyObject *self, char *name);
-int            PyCartographicProjectionAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PyCartographicProjectionAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyCartographicProjectionAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PyCartographicProjectionAttributes_methods[CARTOGRAPHICPROJECTIONATTRIBUTES_NMETH];
 
 #endif

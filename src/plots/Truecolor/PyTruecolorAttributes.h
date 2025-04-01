@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define TRUECOLORATTRIBUTES_NMETH 6
+#define TRUECOLORATTRIBUTES_NMETH 7
 void           PyTruecolorAttributes_StartUp(TruecolorAttributes *subj, void *data);
 void           PyTruecolorAttributes_CloseDown();
 PyMethodDef *  PyTruecolorAttributes_GetMethodTable(int *nMethods);
@@ -23,8 +23,8 @@ void           PyTruecolorAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyTruecolorAttributes_SetDefaults(const TruecolorAttributes *atts);
 std::string    PyTruecolorAttributes_GetLogString();
 std::string    PyTruecolorAttributes_ToString(const TruecolorAttributes *, const char *, const bool=false);
-PyObject *     PyTruecolorAttributes_getattr(PyObject *self, char *name);
-int            PyTruecolorAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PyTruecolorAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyTruecolorAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PyTruecolorAttributes_methods[TRUECOLORATTRIBUTES_NMETH];
 
 #endif

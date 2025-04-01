@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define STATISTICALTRENDSATTRIBUTES_NMETH 18
+#define STATISTICALTRENDSATTRIBUTES_NMETH 19
 void           PyStatisticalTrendsAttributes_StartUp(StatisticalTrendsAttributes *subj, void *data);
 void           PyStatisticalTrendsAttributes_CloseDown();
 PyMethodDef *  PyStatisticalTrendsAttributes_GetMethodTable(int *nMethods);
@@ -23,8 +23,8 @@ void           PyStatisticalTrendsAttributes_SetParent(PyObject *obj, PyObject *
 void           PyStatisticalTrendsAttributes_SetDefaults(const StatisticalTrendsAttributes *atts);
 std::string    PyStatisticalTrendsAttributes_GetLogString();
 std::string    PyStatisticalTrendsAttributes_ToString(const StatisticalTrendsAttributes *, const char *, const bool=false);
-PyObject *     PyStatisticalTrendsAttributes_getattr(PyObject *self, char *name);
-int            PyStatisticalTrendsAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PyStatisticalTrendsAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyStatisticalTrendsAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PyStatisticalTrendsAttributes_methods[STATISTICALTRENDSATTRIBUTES_NMETH];
 
 #endif

@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define MESHMANAGEMENTATTRIBUTES_NMETH 16
+#define MESHMANAGEMENTATTRIBUTES_NMETH 17
 void VISITPY_API           PyMeshManagementAttributes_StartUp(MeshManagementAttributes *subj, void *data);
 void VISITPY_API           PyMeshManagementAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyMeshManagementAttributes_GetMethodTable(int *nMethods);
@@ -24,8 +24,8 @@ void VISITPY_API           PyMeshManagementAttributes_SetParent(PyObject *obj, P
 void VISITPY_API           PyMeshManagementAttributes_SetDefaults(const MeshManagementAttributes *atts);
 std::string VISITPY_API    PyMeshManagementAttributes_GetLogString();
 std::string VISITPY_API    PyMeshManagementAttributes_ToString(const MeshManagementAttributes *, const char *, const bool=false);
-VISITPY_API PyObject *     PyMeshManagementAttributes_getattr(PyObject *self, char *name);
-int VISITPY_API            PyMeshManagementAttributes_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyMeshManagementAttributes_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyMeshManagementAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyMeshManagementAttributes_methods[MESHMANAGEMENTATTRIBUTES_NMETH];
 
 #endif

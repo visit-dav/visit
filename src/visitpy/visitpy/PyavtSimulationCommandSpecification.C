@@ -5,6 +5,7 @@
 #include <PyavtSimulationCommandSpecification.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a avtSimulationCommandSpecification.
 //
-struct avtSimulationCommandSpecificationObject
+struct PyavtSimulationCommandSpecificationObject
 {
     PyObject_HEAD
     avtSimulationCommandSpecification *data;
@@ -94,16 +95,44 @@ PyavtSimulationCommandSpecification_ToString(const avtSimulationCommandSpecifica
 static PyObject *
 avtSimulationCommandSpecification_Notify(PyObject *self, PyObject *args)
 {
-    avtSimulationCommandSpecificationObject *obj = (avtSimulationCommandSpecificationObject *)self;
+    PyavtSimulationCommandSpecificationObject *obj = (PyavtSimulationCommandSpecificationObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+avtSimulationCommandSpecification_dir(PyObject *self, PyObject *args)
+{
+    static avtSimulationCommandSpecification atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyavtSimulationCommandSpecification_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 avtSimulationCommandSpecification_SetName(PyObject *self, PyObject *args)
 {
-    avtSimulationCommandSpecificationObject *obj = (avtSimulationCommandSpecificationObject *)self;
+    PyavtSimulationCommandSpecificationObject *obj = (PyavtSimulationCommandSpecificationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -144,7 +173,7 @@ avtSimulationCommandSpecification_SetName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSimulationCommandSpecification_GetName(PyObject *self, PyObject *args)
 {
-    avtSimulationCommandSpecificationObject *obj = (avtSimulationCommandSpecificationObject *)self;
+    PyavtSimulationCommandSpecificationObject *obj = (PyavtSimulationCommandSpecificationObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetName().c_str());
     return retval;
 }
@@ -152,7 +181,7 @@ avtSimulationCommandSpecification_GetName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSimulationCommandSpecification_SetArgumentType(PyObject *self, PyObject *args)
 {
-    avtSimulationCommandSpecificationObject *obj = (avtSimulationCommandSpecificationObject *)self;
+    PyavtSimulationCommandSpecificationObject *obj = (PyavtSimulationCommandSpecificationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -212,7 +241,7 @@ avtSimulationCommandSpecification_SetArgumentType(PyObject *self, PyObject *args
 /*static*/ PyObject *
 avtSimulationCommandSpecification_GetArgumentType(PyObject *self, PyObject *args)
 {
-    avtSimulationCommandSpecificationObject *obj = (avtSimulationCommandSpecificationObject *)self;
+    PyavtSimulationCommandSpecificationObject *obj = (PyavtSimulationCommandSpecificationObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetArgumentType()));
     return retval;
 }
@@ -220,7 +249,7 @@ avtSimulationCommandSpecification_GetArgumentType(PyObject *self, PyObject *args
 /*static*/ PyObject *
 avtSimulationCommandSpecification_SetClassName(PyObject *self, PyObject *args)
 {
-    avtSimulationCommandSpecificationObject *obj = (avtSimulationCommandSpecificationObject *)self;
+    PyavtSimulationCommandSpecificationObject *obj = (PyavtSimulationCommandSpecificationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -261,7 +290,7 @@ avtSimulationCommandSpecification_SetClassName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSimulationCommandSpecification_GetClassName(PyObject *self, PyObject *args)
 {
-    avtSimulationCommandSpecificationObject *obj = (avtSimulationCommandSpecificationObject *)self;
+    PyavtSimulationCommandSpecificationObject *obj = (PyavtSimulationCommandSpecificationObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetClassName().c_str());
     return retval;
 }
@@ -269,7 +298,7 @@ avtSimulationCommandSpecification_GetClassName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSimulationCommandSpecification_SetEnabled(PyObject *self, PyObject *args)
 {
-    avtSimulationCommandSpecificationObject *obj = (avtSimulationCommandSpecificationObject *)self;
+    PyavtSimulationCommandSpecificationObject *obj = (PyavtSimulationCommandSpecificationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -321,7 +350,7 @@ avtSimulationCommandSpecification_SetEnabled(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSimulationCommandSpecification_GetEnabled(PyObject *self, PyObject *args)
 {
-    avtSimulationCommandSpecificationObject *obj = (avtSimulationCommandSpecificationObject *)self;
+    PyavtSimulationCommandSpecificationObject *obj = (PyavtSimulationCommandSpecificationObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetEnabled()?1L:0L);
     return retval;
 }
@@ -329,7 +358,7 @@ avtSimulationCommandSpecification_GetEnabled(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSimulationCommandSpecification_SetParent(PyObject *self, PyObject *args)
 {
-    avtSimulationCommandSpecificationObject *obj = (avtSimulationCommandSpecificationObject *)self;
+    PyavtSimulationCommandSpecificationObject *obj = (PyavtSimulationCommandSpecificationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -370,7 +399,7 @@ avtSimulationCommandSpecification_SetParent(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSimulationCommandSpecification_GetParent(PyObject *self, PyObject *args)
 {
-    avtSimulationCommandSpecificationObject *obj = (avtSimulationCommandSpecificationObject *)self;
+    PyavtSimulationCommandSpecificationObject *obj = (PyavtSimulationCommandSpecificationObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetParent().c_str());
     return retval;
 }
@@ -378,7 +407,7 @@ avtSimulationCommandSpecification_GetParent(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSimulationCommandSpecification_SetIsOn(PyObject *self, PyObject *args)
 {
-    avtSimulationCommandSpecificationObject *obj = (avtSimulationCommandSpecificationObject *)self;
+    PyavtSimulationCommandSpecificationObject *obj = (PyavtSimulationCommandSpecificationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -430,7 +459,7 @@ avtSimulationCommandSpecification_SetIsOn(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSimulationCommandSpecification_GetIsOn(PyObject *self, PyObject *args)
 {
-    avtSimulationCommandSpecificationObject *obj = (avtSimulationCommandSpecificationObject *)self;
+    PyavtSimulationCommandSpecificationObject *obj = (PyavtSimulationCommandSpecificationObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetIsOn()?1L:0L);
     return retval;
 }
@@ -438,7 +467,7 @@ avtSimulationCommandSpecification_GetIsOn(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSimulationCommandSpecification_SetSignal(PyObject *self, PyObject *args)
 {
-    avtSimulationCommandSpecificationObject *obj = (avtSimulationCommandSpecificationObject *)self;
+    PyavtSimulationCommandSpecificationObject *obj = (PyavtSimulationCommandSpecificationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -479,7 +508,7 @@ avtSimulationCommandSpecification_SetSignal(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSimulationCommandSpecification_GetSignal(PyObject *self, PyObject *args)
 {
-    avtSimulationCommandSpecificationObject *obj = (avtSimulationCommandSpecificationObject *)self;
+    PyavtSimulationCommandSpecificationObject *obj = (PyavtSimulationCommandSpecificationObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetSignal().c_str());
     return retval;
 }
@@ -487,7 +516,7 @@ avtSimulationCommandSpecification_GetSignal(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSimulationCommandSpecification_SetText(PyObject *self, PyObject *args)
 {
-    avtSimulationCommandSpecificationObject *obj = (avtSimulationCommandSpecificationObject *)self;
+    PyavtSimulationCommandSpecificationObject *obj = (PyavtSimulationCommandSpecificationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -528,7 +557,7 @@ avtSimulationCommandSpecification_SetText(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSimulationCommandSpecification_GetText(PyObject *self, PyObject *args)
 {
-    avtSimulationCommandSpecificationObject *obj = (avtSimulationCommandSpecificationObject *)self;
+    PyavtSimulationCommandSpecificationObject *obj = (PyavtSimulationCommandSpecificationObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetText().c_str());
     return retval;
 }
@@ -536,7 +565,7 @@ avtSimulationCommandSpecification_GetText(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSimulationCommandSpecification_SetUiType(PyObject *self, PyObject *args)
 {
-    avtSimulationCommandSpecificationObject *obj = (avtSimulationCommandSpecificationObject *)self;
+    PyavtSimulationCommandSpecificationObject *obj = (PyavtSimulationCommandSpecificationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -577,7 +606,7 @@ avtSimulationCommandSpecification_SetUiType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSimulationCommandSpecification_GetUiType(PyObject *self, PyObject *args)
 {
-    avtSimulationCommandSpecificationObject *obj = (avtSimulationCommandSpecificationObject *)self;
+    PyavtSimulationCommandSpecificationObject *obj = (PyavtSimulationCommandSpecificationObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetUiType().c_str());
     return retval;
 }
@@ -585,7 +614,7 @@ avtSimulationCommandSpecification_GetUiType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSimulationCommandSpecification_SetValue(PyObject *self, PyObject *args)
 {
-    avtSimulationCommandSpecificationObject *obj = (avtSimulationCommandSpecificationObject *)self;
+    PyavtSimulationCommandSpecificationObject *obj = (PyavtSimulationCommandSpecificationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -626,7 +655,7 @@ avtSimulationCommandSpecification_SetValue(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtSimulationCommandSpecification_GetValue(PyObject *self, PyObject *args)
 {
-    avtSimulationCommandSpecificationObject *obj = (avtSimulationCommandSpecificationObject *)self;
+    PyavtSimulationCommandSpecificationObject *obj = (PyavtSimulationCommandSpecificationObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetValue().c_str());
     return retval;
 }
@@ -634,7 +663,8 @@ avtSimulationCommandSpecification_GetValue(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyavtSimulationCommandSpecification_methods[AVTSIMULATIONCOMMANDSPECIFICATION_NMETH] = {
-    {"Notify", avtSimulationCommandSpecification_Notify, METH_VARARGS},
+    {"__dir__", avtSimulationCommandSpecification_dir, METH_NOARGS},
+    {"Notify", avtSimulationCommandSpecification_Notify, METH_NOARGS},
     {"SetName", avtSimulationCommandSpecification_SetName, METH_VARARGS},
     {"GetName", avtSimulationCommandSpecification_GetName, METH_VARARGS},
     {"SetArgumentType", avtSimulationCommandSpecification_SetArgumentType, METH_VARARGS},
@@ -663,19 +693,22 @@ PyMethodDef PyavtSimulationCommandSpecification_methods[AVTSIMULATIONCOMMANDSPEC
 //
 
 static void
-avtSimulationCommandSpecification_dealloc(PyObject *v)
+PyavtSimulationCommandSpecification_dealloc(PyObject *v)
 {
-   avtSimulationCommandSpecificationObject *obj = (avtSimulationCommandSpecificationObject *)v;
+   PyavtSimulationCommandSpecificationObject *obj = (PyavtSimulationCommandSpecificationObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *avtSimulationCommandSpecification_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyavtSimulationCommandSpecification_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyavtSimulationCommandSpecification_getattr(PyObject *self, char *name)
+PyavtSimulationCommandSpecification_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "name") == 0)
         return avtSimulationCommandSpecification_GetName(self, NULL);
     if(strcmp(name, "argumentType") == 0)
@@ -706,26 +739,19 @@ PyavtSimulationCommandSpecification_getattr(PyObject *self, char *name)
     if(strcmp(name, "value") == 0)
         return avtSimulationCommandSpecification_GetValue(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyavtSimulationCommandSpecification_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyavtSimulationCommandSpecification_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyavtSimulationCommandSpecification_methods[i].ml_name),
-                PyString_FromString(PyavtSimulationCommandSpecification_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyavtSimulationCommandSpecification_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyavtSimulationCommandSpecification_setattr(PyObject *self, char *name, PyObject *args)
+PyavtSimulationCommandSpecification_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "name") == 0)
         obj = avtSimulationCommandSpecification_SetName(self, args);
@@ -748,6 +774,12 @@ PyavtSimulationCommandSpecification_setattr(PyObject *self, char *name, PyObject
     else if(strcmp(name, "value") == 0)
         obj = avtSimulationCommandSpecification_SetValue(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -762,78 +794,45 @@ PyavtSimulationCommandSpecification_setattr(PyObject *self, char *name, PyObject
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-avtSimulationCommandSpecification_print(PyObject *v, FILE *fp, int flags)
-{
-    avtSimulationCommandSpecificationObject *obj = (avtSimulationCommandSpecificationObject *)v;
-    fprintf(fp, "%s", PyavtSimulationCommandSpecification_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-avtSimulationCommandSpecification_str(PyObject *v)
+PyavtSimulationCommandSpecification_str(PyObject *v)
 {
-    avtSimulationCommandSpecificationObject *obj = (avtSimulationCommandSpecificationObject *)v;
+    PyavtSimulationCommandSpecificationObject *obj = (PyavtSimulationCommandSpecificationObject *)v;
     return PyString_FromString(PyavtSimulationCommandSpecification_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *avtSimulationCommandSpecification_Purpose = "Contains the specification for one command";
-#else
-static char *avtSimulationCommandSpecification_Purpose = "Contains the specification for one command";
-#endif
+static char const *PyavtSimulationCommandSpecification_purpose = "Contains the specification for one command";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(avtSimulationCommandSpecificationType,         \
-                  "avtSimulationCommandSpecification",           \
-                  avtSimulationCommandSpecificationObject,       \
-                  avtSimulationCommandSpecification_dealloc,     \
-                  avtSimulationCommandSpecification_print,       \
-                  PyavtSimulationCommandSpecification_getattr,   \
-                  PyavtSimulationCommandSpecification_setattr,   \
-                  avtSimulationCommandSpecification_str,         \
-                  avtSimulationCommandSpecification_Purpose,     \
-                  avtSimulationCommandSpecification_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(avtSimulationCommandSpecification);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-avtSimulationCommandSpecification_richcompare(PyObject *self, PyObject *other, int op)
+PyavtSimulationCommandSpecification_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &avtSimulationCommandSpecificationType
-         || Py_TYPE(other) != &avtSimulationCommandSpecificationType)
+    if ( Py_TYPE(self) != &PyavtSimulationCommandSpecificationType
+         || Py_TYPE(other) != &PyavtSimulationCommandSpecificationType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    avtSimulationCommandSpecification *a = ((avtSimulationCommandSpecificationObject *)self)->data;
-    avtSimulationCommandSpecification *b = ((avtSimulationCommandSpecificationObject *)other)->data;
+    avtSimulationCommandSpecification *a = ((PyavtSimulationCommandSpecificationObject *)self)->data;
+    avtSimulationCommandSpecification *b = ((PyavtSimulationCommandSpecificationObject *)other)->data;
 
     switch (op)
     {
@@ -862,8 +861,8 @@ static avtSimulationCommandSpecification *currentAtts = 0;
 static PyObject *
 NewavtSimulationCommandSpecification(int useCurrent)
 {
-    avtSimulationCommandSpecificationObject *newObject;
-    newObject = PyObject_NEW(avtSimulationCommandSpecificationObject, &avtSimulationCommandSpecificationType);
+    PyavtSimulationCommandSpecificationObject *newObject;
+    newObject = PyObject_NEW(PyavtSimulationCommandSpecificationObject, &PyavtSimulationCommandSpecificationType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -874,14 +873,15 @@ NewavtSimulationCommandSpecification(int useCurrent)
         newObject->data = new avtSimulationCommandSpecification;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyavtSimulationCommandSpecificationType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapavtSimulationCommandSpecification(const avtSimulationCommandSpecification *attr)
 {
-    avtSimulationCommandSpecificationObject *newObject;
-    newObject = PyObject_NEW(avtSimulationCommandSpecificationObject, &avtSimulationCommandSpecificationType);
+    PyavtSimulationCommandSpecificationObject *newObject;
+    newObject = PyObject_NEW(PyavtSimulationCommandSpecificationObject, &PyavtSimulationCommandSpecificationType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (avtSimulationCommandSpecification *)attr;
@@ -983,13 +983,13 @@ PyavtSimulationCommandSpecification_GetMethodTable(int *nMethods)
 bool
 PyavtSimulationCommandSpecification_Check(PyObject *obj)
 {
-    return (obj->ob_type == &avtSimulationCommandSpecificationType);
+    return (obj->ob_type == &PyavtSimulationCommandSpecificationType);
 }
 
 avtSimulationCommandSpecification *
 PyavtSimulationCommandSpecification_FromPyObject(PyObject *obj)
 {
-    avtSimulationCommandSpecificationObject *obj2 = (avtSimulationCommandSpecificationObject *)obj;
+    PyavtSimulationCommandSpecificationObject *obj2 = (PyavtSimulationCommandSpecificationObject *)obj;
     return obj2->data;
 }
 
@@ -1008,7 +1008,7 @@ PyavtSimulationCommandSpecification_Wrap(const avtSimulationCommandSpecification
 void
 PyavtSimulationCommandSpecification_SetParent(PyObject *obj, PyObject *parent)
 {
-    avtSimulationCommandSpecificationObject *obj2 = (avtSimulationCommandSpecificationObject *)obj;
+    PyavtSimulationCommandSpecificationObject *obj2 = (PyavtSimulationCommandSpecificationObject *)obj;
     obj2->parent = parent;
 }
 

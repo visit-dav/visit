@@ -5,6 +5,7 @@
 #include <PyViewerClientInformation.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 #include <PyViewerClientInformationElement.h>
 
@@ -24,7 +25,7 @@
 //
 // This struct contains the Python type information and a ViewerClientInformation.
 //
-struct ViewerClientInformationObject
+struct PyViewerClientInformationObject
 {
     PyObject_HEAD
     ViewerClientInformation *data;
@@ -77,16 +78,44 @@ PyViewerClientInformation_ToString(const ViewerClientInformation *atts, const ch
 static PyObject *
 ViewerClientInformation_Notify(PyObject *self, PyObject *args)
 {
-    ViewerClientInformationObject *obj = (ViewerClientInformationObject *)self;
+    PyViewerClientInformationObject *obj = (PyViewerClientInformationObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+ViewerClientInformation_dir(PyObject *self, PyObject *args)
+{
+    static ViewerClientInformation atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyViewerClientInformation_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 ViewerClientInformation_GetVars(PyObject *self, PyObject *args)
 {
-    ViewerClientInformationObject *obj = (ViewerClientInformationObject *)self;
+    PyViewerClientInformationObject *obj = (PyViewerClientInformationObject *)self;
     int index = -1;
     if (args == NULL)
         return PyErr_Format(PyExc_NameError, "Use .GetVars(int index) to get a single entry");
@@ -110,14 +139,14 @@ ViewerClientInformation_GetVars(PyObject *self, PyObject *args)
 PyObject *
 ViewerClientInformation_GetNumVars(PyObject *self, PyObject *args)
 {
-    ViewerClientInformationObject *obj = (ViewerClientInformationObject *)self;
+    PyViewerClientInformationObject *obj = (PyViewerClientInformationObject *)self;
     return PyInt_FromLong((long)obj->data->GetVars().size());
 }
 
 PyObject *
 ViewerClientInformation_AddVars(PyObject *self, PyObject *args)
 {
-    ViewerClientInformationObject *obj = (ViewerClientInformationObject *)self;
+    PyViewerClientInformationObject *obj = (PyViewerClientInformationObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
         return NULL;
@@ -133,7 +162,7 @@ ViewerClientInformation_AddVars(PyObject *self, PyObject *args)
 static PyObject *
 ViewerClientInformation_Remove_One_Vars(PyObject *self, int index)
 {
-    ViewerClientInformationObject *obj = (ViewerClientInformationObject *)self;
+    PyViewerClientInformationObject *obj = (PyViewerClientInformationObject *)self;
     // Remove in the AttributeGroupVector instead of calling RemoveVars() because we don't want to delete the object; just remove it.
     AttributeGroupVector &atts = obj->data->GetVars();
     AttributeGroupVector::iterator pos = atts.begin();
@@ -163,7 +192,7 @@ ViewerClientInformation_RemoveVars(PyObject *self, PyObject *args)
     int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
-    ViewerClientInformationObject *obj = (ViewerClientInformationObject *)self;
+    PyViewerClientInformationObject *obj = (PyViewerClientInformationObject *)self;
     if(index < 0 || index >= obj->data->GetNumVars())
         return PyErr_Format(PyExc_IndexError, "Index out of range");
 
@@ -173,7 +202,7 @@ ViewerClientInformation_RemoveVars(PyObject *self, PyObject *args)
 PyObject *
 ViewerClientInformation_ClearVars(PyObject *self, PyObject *args)
 {
-    ViewerClientInformationObject *obj = (ViewerClientInformationObject *)self;
+    PyViewerClientInformationObject *obj = (PyViewerClientInformationObject *)self;
     int n = obj->data->GetNumVars();
     for(int i = 0; i < n; ++i)
     {
@@ -187,7 +216,7 @@ ViewerClientInformation_ClearVars(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewerClientInformation_SetSupportedFormats(PyObject *self, PyObject *args)
 {
-    ViewerClientInformationObject *obj = (ViewerClientInformationObject *)self;
+    PyViewerClientInformationObject *obj = (PyViewerClientInformationObject *)self;
 
     stringVector vec;
 
@@ -244,7 +273,7 @@ ViewerClientInformation_SetSupportedFormats(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewerClientInformation_GetSupportedFormats(PyObject *self, PyObject *args)
 {
-    ViewerClientInformationObject *obj = (ViewerClientInformationObject *)self;
+    PyViewerClientInformationObject *obj = (PyViewerClientInformationObject *)self;
     // Allocate a tuple the with enough entries to hold the supportedFormats.
     const stringVector &supportedFormats = obj->data->GetSupportedFormats();
     PyObject *retval = PyTuple_New(supportedFormats.size());
@@ -256,7 +285,8 @@ ViewerClientInformation_GetSupportedFormats(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyViewerClientInformation_methods[VIEWERCLIENTINFORMATION_NMETH] = {
-    {"Notify", ViewerClientInformation_Notify, METH_VARARGS},
+    {"__dir__", ViewerClientInformation_dir, METH_NOARGS},
+    {"Notify", ViewerClientInformation_Notify, METH_NOARGS},
     {"GetVars", ViewerClientInformation_GetVars, METH_VARARGS},
     {"GetNumVars", ViewerClientInformation_GetNumVars, METH_VARARGS},
     {"AddVars", ViewerClientInformation_AddVars, METH_VARARGS},
@@ -272,47 +302,49 @@ PyMethodDef PyViewerClientInformation_methods[VIEWERCLIENTINFORMATION_NMETH] = {
 //
 
 static void
-ViewerClientInformation_dealloc(PyObject *v)
+PyViewerClientInformation_dealloc(PyObject *v)
 {
-   ViewerClientInformationObject *obj = (ViewerClientInformationObject *)v;
+   PyViewerClientInformationObject *obj = (PyViewerClientInformationObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *ViewerClientInformation_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyViewerClientInformation_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyViewerClientInformation_getattr(PyObject *self, char *name)
+PyViewerClientInformation_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "vars") == 0)
         return ViewerClientInformation_GetVars(self, NULL);
     if(strcmp(name, "supportedFormats") == 0)
         return ViewerClientInformation_GetSupportedFormats(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyViewerClientInformation_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyViewerClientInformation_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyViewerClientInformation_methods[i].ml_name),
-                PyString_FromString(PyViewerClientInformation_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyViewerClientInformation_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyViewerClientInformation_setattr(PyObject *self, char *name, PyObject *args)
+PyViewerClientInformation_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "supportedFormats") == 0)
         obj = ViewerClientInformation_SetSupportedFormats(self, args);
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -328,78 +360,45 @@ PyViewerClientInformation_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ViewerClientInformation_print(PyObject *v, FILE *fp, int flags)
-{
-    ViewerClientInformationObject *obj = (ViewerClientInformationObject *)v;
-    fprintf(fp, "%s", PyViewerClientInformation_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-ViewerClientInformation_str(PyObject *v)
+PyViewerClientInformation_str(PyObject *v)
 {
-    ViewerClientInformationObject *obj = (ViewerClientInformationObject *)v;
+    PyViewerClientInformationObject *obj = (PyViewerClientInformationObject *)v;
     return PyString_FromString(PyViewerClientInformation_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *ViewerClientInformation_Purpose = "This class contains information generated for each client";
-#else
-static char *ViewerClientInformation_Purpose = "This class contains information generated for each client";
-#endif
+static char const *PyViewerClientInformation_purpose = "This class contains information generated for each client";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(ViewerClientInformationType,         \
-                  "ViewerClientInformation",           \
-                  ViewerClientInformationObject,       \
-                  ViewerClientInformation_dealloc,     \
-                  ViewerClientInformation_print,       \
-                  PyViewerClientInformation_getattr,   \
-                  PyViewerClientInformation_setattr,   \
-                  ViewerClientInformation_str,         \
-                  ViewerClientInformation_Purpose,     \
-                  ViewerClientInformation_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(ViewerClientInformation);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-ViewerClientInformation_richcompare(PyObject *self, PyObject *other, int op)
+PyViewerClientInformation_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &ViewerClientInformationType
-         || Py_TYPE(other) != &ViewerClientInformationType)
+    if ( Py_TYPE(self) != &PyViewerClientInformationType
+         || Py_TYPE(other) != &PyViewerClientInformationType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    ViewerClientInformation *a = ((ViewerClientInformationObject *)self)->data;
-    ViewerClientInformation *b = ((ViewerClientInformationObject *)other)->data;
+    ViewerClientInformation *a = ((PyViewerClientInformationObject *)self)->data;
+    ViewerClientInformation *b = ((PyViewerClientInformationObject *)other)->data;
 
     switch (op)
     {
@@ -428,8 +427,8 @@ static ViewerClientInformation *currentAtts = 0;
 static PyObject *
 NewViewerClientInformation(int useCurrent)
 {
-    ViewerClientInformationObject *newObject;
-    newObject = PyObject_NEW(ViewerClientInformationObject, &ViewerClientInformationType);
+    PyViewerClientInformationObject *newObject;
+    newObject = PyObject_NEW(PyViewerClientInformationObject, &PyViewerClientInformationType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -440,14 +439,15 @@ NewViewerClientInformation(int useCurrent)
         newObject->data = new ViewerClientInformation;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyViewerClientInformationType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapViewerClientInformation(const ViewerClientInformation *attr)
 {
-    ViewerClientInformationObject *newObject;
-    newObject = PyObject_NEW(ViewerClientInformationObject, &ViewerClientInformationType);
+    PyViewerClientInformationObject *newObject;
+    newObject = PyObject_NEW(PyViewerClientInformationObject, &PyViewerClientInformationType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (ViewerClientInformation *)attr;
@@ -549,13 +549,13 @@ PyViewerClientInformation_GetMethodTable(int *nMethods)
 bool
 PyViewerClientInformation_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ViewerClientInformationType);
+    return (obj->ob_type == &PyViewerClientInformationType);
 }
 
 ViewerClientInformation *
 PyViewerClientInformation_FromPyObject(PyObject *obj)
 {
-    ViewerClientInformationObject *obj2 = (ViewerClientInformationObject *)obj;
+    PyViewerClientInformationObject *obj2 = (PyViewerClientInformationObject *)obj;
     return obj2->data;
 }
 
@@ -574,7 +574,7 @@ PyViewerClientInformation_Wrap(const ViewerClientInformation *attr)
 void
 PyViewerClientInformation_SetParent(PyObject *obj, PyObject *parent)
 {
-    ViewerClientInformationObject *obj2 = (ViewerClientInformationObject *)obj;
+    PyViewerClientInformationObject *obj2 = (PyViewerClientInformationObject *)obj;
     obj2->parent = parent;
 }
 

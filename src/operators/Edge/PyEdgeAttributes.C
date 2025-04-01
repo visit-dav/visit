@@ -5,6 +5,7 @@
 #include <PyEdgeAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a EdgeAttributes.
 //
-struct EdgeAttributesObject
+struct PyEdgeAttributesObject
 {
     PyObject_HEAD
     EdgeAttributes *data;
@@ -52,16 +53,44 @@ PyEdgeAttributes_ToString(const EdgeAttributes *atts, const char *prefix, const 
 static PyObject *
 EdgeAttributes_Notify(PyObject *self, PyObject *args)
 {
-    EdgeAttributesObject *obj = (EdgeAttributesObject *)self;
+    PyEdgeAttributesObject *obj = (PyEdgeAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+EdgeAttributes_dir(PyObject *self, PyObject *args)
+{
+    static EdgeAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyEdgeAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 EdgeAttributes_SetDummy(PyObject *self, PyObject *args)
 {
-    EdgeAttributesObject *obj = (EdgeAttributesObject *)self;
+    PyEdgeAttributesObject *obj = (PyEdgeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -113,7 +142,7 @@ EdgeAttributes_SetDummy(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 EdgeAttributes_GetDummy(PyObject *self, PyObject *args)
 {
-    EdgeAttributesObject *obj = (EdgeAttributesObject *)self;
+    PyEdgeAttributesObject *obj = (PyEdgeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetDummy()?1L:0L);
     return retval;
 }
@@ -121,7 +150,8 @@ EdgeAttributes_GetDummy(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyEdgeAttributes_methods[EDGEATTRIBUTES_NMETH] = {
-    {"Notify", EdgeAttributes_Notify, METH_VARARGS},
+    {"__dir__", EdgeAttributes_dir, METH_NOARGS},
+    {"Notify", EdgeAttributes_Notify, METH_NOARGS},
     {"SetDummy", EdgeAttributes_SetDummy, METH_VARARGS},
     {"GetDummy", EdgeAttributes_GetDummy, METH_VARARGS},
     {NULL, NULL}
@@ -132,45 +162,47 @@ PyMethodDef PyEdgeAttributes_methods[EDGEATTRIBUTES_NMETH] = {
 //
 
 static void
-EdgeAttributes_dealloc(PyObject *v)
+PyEdgeAttributes_dealloc(PyObject *v)
 {
-   EdgeAttributesObject *obj = (EdgeAttributesObject *)v;
+   PyEdgeAttributesObject *obj = (PyEdgeAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *EdgeAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyEdgeAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyEdgeAttributes_getattr(PyObject *self, char *name)
+PyEdgeAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "dummy") == 0)
         return EdgeAttributes_GetDummy(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyEdgeAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyEdgeAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyEdgeAttributes_methods[i].ml_name),
-                PyString_FromString(PyEdgeAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyEdgeAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyEdgeAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyEdgeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "dummy") == 0)
         obj = EdgeAttributes_SetDummy(self, args);
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -186,78 +218,45 @@ PyEdgeAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-EdgeAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    EdgeAttributesObject *obj = (EdgeAttributesObject *)v;
-    fprintf(fp, "%s", PyEdgeAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-EdgeAttributes_str(PyObject *v)
+PyEdgeAttributes_str(PyObject *v)
 {
-    EdgeAttributesObject *obj = (EdgeAttributesObject *)v;
+    PyEdgeAttributesObject *obj = (PyEdgeAttributesObject *)v;
     return PyString_FromString(PyEdgeAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *EdgeAttributes_Purpose = "Attributes for the Edge operator";
-#else
-static char *EdgeAttributes_Purpose = "Attributes for the Edge operator";
-#endif
+static char const *PyEdgeAttributes_purpose = "Attributes for the Edge operator";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(EdgeAttributesType,         \
-                  "EdgeAttributes",           \
-                  EdgeAttributesObject,       \
-                  EdgeAttributes_dealloc,     \
-                  EdgeAttributes_print,       \
-                  PyEdgeAttributes_getattr,   \
-                  PyEdgeAttributes_setattr,   \
-                  EdgeAttributes_str,         \
-                  EdgeAttributes_Purpose,     \
-                  EdgeAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(EdgeAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-EdgeAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyEdgeAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &EdgeAttributesType
-         || Py_TYPE(other) != &EdgeAttributesType)
+    if ( Py_TYPE(self) != &PyEdgeAttributesType
+         || Py_TYPE(other) != &PyEdgeAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    EdgeAttributes *a = ((EdgeAttributesObject *)self)->data;
-    EdgeAttributes *b = ((EdgeAttributesObject *)other)->data;
+    EdgeAttributes *a = ((PyEdgeAttributesObject *)self)->data;
+    EdgeAttributes *b = ((PyEdgeAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -286,8 +285,8 @@ static EdgeAttributes *currentAtts = 0;
 static PyObject *
 NewEdgeAttributes(int useCurrent)
 {
-    EdgeAttributesObject *newObject;
-    newObject = PyObject_NEW(EdgeAttributesObject, &EdgeAttributesType);
+    PyEdgeAttributesObject *newObject;
+    newObject = PyObject_NEW(PyEdgeAttributesObject, &PyEdgeAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -298,14 +297,15 @@ NewEdgeAttributes(int useCurrent)
         newObject->data = new EdgeAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyEdgeAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapEdgeAttributes(const EdgeAttributes *attr)
 {
-    EdgeAttributesObject *newObject;
-    newObject = PyObject_NEW(EdgeAttributesObject, &EdgeAttributesType);
+    PyEdgeAttributesObject *newObject;
+    newObject = PyObject_NEW(PyEdgeAttributesObject, &PyEdgeAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (EdgeAttributes *)attr;
@@ -407,13 +407,13 @@ PyEdgeAttributes_GetMethodTable(int *nMethods)
 bool
 PyEdgeAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &EdgeAttributesType);
+    return (obj->ob_type == &PyEdgeAttributesType);
 }
 
 EdgeAttributes *
 PyEdgeAttributes_FromPyObject(PyObject *obj)
 {
-    EdgeAttributesObject *obj2 = (EdgeAttributesObject *)obj;
+    PyEdgeAttributesObject *obj2 = (PyEdgeAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -432,7 +432,7 @@ PyEdgeAttributes_Wrap(const EdgeAttributes *attr)
 void
 PyEdgeAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    EdgeAttributesObject *obj2 = (EdgeAttributesObject *)obj;
+    PyEdgeAttributesObject *obj2 = (PyEdgeAttributesObject *)obj;
     obj2->parent = parent;
 }
 

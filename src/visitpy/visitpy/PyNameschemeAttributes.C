@@ -5,6 +5,7 @@
 #include <PyNameschemeAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a NameschemeAttributes.
 //
-struct NameschemeAttributesObject
+struct PyNameschemeAttributesObject
 {
     PyObject_HEAD
     NameschemeAttributes *data;
@@ -145,16 +146,44 @@ PyNameschemeAttributes_ToString(const NameschemeAttributes *atts, const char *pr
 static PyObject *
 NameschemeAttributes_Notify(PyObject *self, PyObject *args)
 {
-    NameschemeAttributesObject *obj = (NameschemeAttributesObject *)self;
+    PyNameschemeAttributesObject *obj = (PyNameschemeAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+NameschemeAttributes_dir(PyObject *self, PyObject *args)
+{
+    static NameschemeAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyNameschemeAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 NameschemeAttributes_SetNamescheme(PyObject *self, PyObject *args)
 {
-    NameschemeAttributesObject *obj = (NameschemeAttributesObject *)self;
+    PyNameschemeAttributesObject *obj = (PyNameschemeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -195,7 +224,7 @@ NameschemeAttributes_SetNamescheme(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 NameschemeAttributes_GetNamescheme(PyObject *self, PyObject *args)
 {
-    NameschemeAttributesObject *obj = (NameschemeAttributesObject *)self;
+    PyNameschemeAttributesObject *obj = (PyNameschemeAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetNamescheme().c_str());
     return retval;
 }
@@ -203,7 +232,7 @@ NameschemeAttributes_GetNamescheme(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 NameschemeAttributes_SetExternalArrayNames(PyObject *self, PyObject *args)
 {
-    NameschemeAttributesObject *obj = (NameschemeAttributesObject *)self;
+    PyNameschemeAttributesObject *obj = (PyNameschemeAttributesObject *)self;
 
     stringVector vec;
 
@@ -260,7 +289,7 @@ NameschemeAttributes_SetExternalArrayNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 NameschemeAttributes_GetExternalArrayNames(PyObject *self, PyObject *args)
 {
-    NameschemeAttributesObject *obj = (NameschemeAttributesObject *)self;
+    PyNameschemeAttributesObject *obj = (PyNameschemeAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the externalArrayNames.
     const stringVector &externalArrayNames = obj->data->GetExternalArrayNames();
     PyObject *retval = PyTuple_New(externalArrayNames.size());
@@ -272,7 +301,7 @@ NameschemeAttributes_GetExternalArrayNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 NameschemeAttributes_SetExternalArrayOffsets(PyObject *self, PyObject *args)
 {
-    NameschemeAttributesObject *obj = (NameschemeAttributesObject *)self;
+    PyNameschemeAttributesObject *obj = (PyNameschemeAttributesObject *)self;
 
     intVector vec;
 
@@ -336,7 +365,7 @@ NameschemeAttributes_SetExternalArrayOffsets(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 NameschemeAttributes_GetExternalArrayOffsets(PyObject *self, PyObject *args)
 {
-    NameschemeAttributesObject *obj = (NameschemeAttributesObject *)self;
+    PyNameschemeAttributesObject *obj = (PyNameschemeAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the externalArrayOffsets.
     const intVector &externalArrayOffsets = obj->data->GetExternalArrayOffsets();
     PyObject *retval = PyTuple_New(externalArrayOffsets.size());
@@ -348,7 +377,7 @@ NameschemeAttributes_GetExternalArrayOffsets(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 NameschemeAttributes_SetExternalArrayData(PyObject *self, PyObject *args)
 {
-    NameschemeAttributesObject *obj = (NameschemeAttributesObject *)self;
+    PyNameschemeAttributesObject *obj = (PyNameschemeAttributesObject *)self;
 
     intVector vec;
 
@@ -412,7 +441,7 @@ NameschemeAttributes_SetExternalArrayData(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 NameschemeAttributes_GetExternalArrayData(PyObject *self, PyObject *args)
 {
-    NameschemeAttributesObject *obj = (NameschemeAttributesObject *)self;
+    PyNameschemeAttributesObject *obj = (PyNameschemeAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the externalArrayData.
     const intVector &externalArrayData = obj->data->GetExternalArrayData();
     PyObject *retval = PyTuple_New(externalArrayData.size());
@@ -424,7 +453,7 @@ NameschemeAttributes_GetExternalArrayData(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 NameschemeAttributes_SetAllExplicitNames(PyObject *self, PyObject *args)
 {
-    NameschemeAttributesObject *obj = (NameschemeAttributesObject *)self;
+    PyNameschemeAttributesObject *obj = (PyNameschemeAttributesObject *)self;
 
     stringVector vec;
 
@@ -481,7 +510,7 @@ NameschemeAttributes_SetAllExplicitNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 NameschemeAttributes_GetAllExplicitNames(PyObject *self, PyObject *args)
 {
-    NameschemeAttributesObject *obj = (NameschemeAttributesObject *)self;
+    PyNameschemeAttributesObject *obj = (PyNameschemeAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the allExplicitNames.
     const stringVector &allExplicitNames = obj->data->GetAllExplicitNames();
     PyObject *retval = PyTuple_New(allExplicitNames.size());
@@ -493,7 +522,7 @@ NameschemeAttributes_GetAllExplicitNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 NameschemeAttributes_SetExplicitIds(PyObject *self, PyObject *args)
 {
-    NameschemeAttributesObject *obj = (NameschemeAttributesObject *)self;
+    PyNameschemeAttributesObject *obj = (PyNameschemeAttributesObject *)self;
 
     intVector vec;
 
@@ -557,7 +586,7 @@ NameschemeAttributes_SetExplicitIds(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 NameschemeAttributes_GetExplicitIds(PyObject *self, PyObject *args)
 {
-    NameschemeAttributesObject *obj = (NameschemeAttributesObject *)self;
+    PyNameschemeAttributesObject *obj = (PyNameschemeAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the explicitIds.
     const intVector &explicitIds = obj->data->GetExplicitIds();
     PyObject *retval = PyTuple_New(explicitIds.size());
@@ -569,7 +598,7 @@ NameschemeAttributes_GetExplicitIds(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 NameschemeAttributes_SetExplicitNames(PyObject *self, PyObject *args)
 {
-    NameschemeAttributesObject *obj = (NameschemeAttributesObject *)self;
+    PyNameschemeAttributesObject *obj = (PyNameschemeAttributesObject *)self;
 
     stringVector vec;
 
@@ -626,7 +655,7 @@ NameschemeAttributes_SetExplicitNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 NameschemeAttributes_GetExplicitNames(PyObject *self, PyObject *args)
 {
-    NameschemeAttributesObject *obj = (NameschemeAttributesObject *)self;
+    PyNameschemeAttributesObject *obj = (PyNameschemeAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the explicitNames.
     const stringVector &explicitNames = obj->data->GetExplicitNames();
     PyObject *retval = PyTuple_New(explicitNames.size());
@@ -638,7 +667,8 @@ NameschemeAttributes_GetExplicitNames(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyNameschemeAttributes_methods[NAMESCHEMEATTRIBUTES_NMETH] = {
-    {"Notify", NameschemeAttributes_Notify, METH_VARARGS},
+    {"__dir__", NameschemeAttributes_dir, METH_NOARGS},
+    {"Notify", NameschemeAttributes_Notify, METH_NOARGS},
     {"SetNamescheme", NameschemeAttributes_SetNamescheme, METH_VARARGS},
     {"GetNamescheme", NameschemeAttributes_GetNamescheme, METH_VARARGS},
     {"SetExternalArrayNames", NameschemeAttributes_SetExternalArrayNames, METH_VARARGS},
@@ -661,19 +691,22 @@ PyMethodDef PyNameschemeAttributes_methods[NAMESCHEMEATTRIBUTES_NMETH] = {
 //
 
 static void
-NameschemeAttributes_dealloc(PyObject *v)
+PyNameschemeAttributes_dealloc(PyObject *v)
 {
-   NameschemeAttributesObject *obj = (NameschemeAttributesObject *)v;
+   PyNameschemeAttributesObject *obj = (PyNameschemeAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *NameschemeAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyNameschemeAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyNameschemeAttributes_getattr(PyObject *self, char *name)
+PyNameschemeAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "namescheme") == 0)
         return NameschemeAttributes_GetNamescheme(self, NULL);
     if(strcmp(name, "externalArrayNames") == 0)
@@ -689,26 +722,19 @@ PyNameschemeAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "explicitNames") == 0)
         return NameschemeAttributes_GetExplicitNames(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyNameschemeAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyNameschemeAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyNameschemeAttributes_methods[i].ml_name),
-                PyString_FromString(PyNameschemeAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyNameschemeAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyNameschemeAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyNameschemeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "namescheme") == 0)
         obj = NameschemeAttributes_SetNamescheme(self, args);
@@ -725,6 +751,12 @@ PyNameschemeAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "explicitNames") == 0)
         obj = NameschemeAttributes_SetExplicitNames(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -739,78 +771,45 @@ PyNameschemeAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-NameschemeAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    NameschemeAttributesObject *obj = (NameschemeAttributesObject *)v;
-    fprintf(fp, "%s", PyNameschemeAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-NameschemeAttributes_str(PyObject *v)
+PyNameschemeAttributes_str(PyObject *v)
 {
-    NameschemeAttributesObject *obj = (NameschemeAttributesObject *)v;
+    PyNameschemeAttributesObject *obj = (PyNameschemeAttributesObject *)v;
     return PyString_FromString(PyNameschemeAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *NameschemeAttributes_Purpose = "Information and methods to manage nameschemes";
-#else
-static char *NameschemeAttributes_Purpose = "Information and methods to manage nameschemes";
-#endif
+static char const *PyNameschemeAttributes_purpose = "Information and methods to manage nameschemes";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(NameschemeAttributesType,         \
-                  "NameschemeAttributes",           \
-                  NameschemeAttributesObject,       \
-                  NameschemeAttributes_dealloc,     \
-                  NameschemeAttributes_print,       \
-                  PyNameschemeAttributes_getattr,   \
-                  PyNameschemeAttributes_setattr,   \
-                  NameschemeAttributes_str,         \
-                  NameschemeAttributes_Purpose,     \
-                  NameschemeAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(NameschemeAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-NameschemeAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyNameschemeAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &NameschemeAttributesType
-         || Py_TYPE(other) != &NameschemeAttributesType)
+    if ( Py_TYPE(self) != &PyNameschemeAttributesType
+         || Py_TYPE(other) != &PyNameschemeAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    NameschemeAttributes *a = ((NameschemeAttributesObject *)self)->data;
-    NameschemeAttributes *b = ((NameschemeAttributesObject *)other)->data;
+    NameschemeAttributes *a = ((PyNameschemeAttributesObject *)self)->data;
+    NameschemeAttributes *b = ((PyNameschemeAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -839,8 +838,8 @@ static NameschemeAttributes *currentAtts = 0;
 static PyObject *
 NewNameschemeAttributes(int useCurrent)
 {
-    NameschemeAttributesObject *newObject;
-    newObject = PyObject_NEW(NameschemeAttributesObject, &NameschemeAttributesType);
+    PyNameschemeAttributesObject *newObject;
+    newObject = PyObject_NEW(PyNameschemeAttributesObject, &PyNameschemeAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -851,14 +850,15 @@ NewNameschemeAttributes(int useCurrent)
         newObject->data = new NameschemeAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyNameschemeAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapNameschemeAttributes(const NameschemeAttributes *attr)
 {
-    NameschemeAttributesObject *newObject;
-    newObject = PyObject_NEW(NameschemeAttributesObject, &NameschemeAttributesType);
+    PyNameschemeAttributesObject *newObject;
+    newObject = PyObject_NEW(PyNameschemeAttributesObject, &PyNameschemeAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (NameschemeAttributes *)attr;
@@ -960,13 +960,13 @@ PyNameschemeAttributes_GetMethodTable(int *nMethods)
 bool
 PyNameschemeAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &NameschemeAttributesType);
+    return (obj->ob_type == &PyNameschemeAttributesType);
 }
 
 NameschemeAttributes *
 PyNameschemeAttributes_FromPyObject(PyObject *obj)
 {
-    NameschemeAttributesObject *obj2 = (NameschemeAttributesObject *)obj;
+    PyNameschemeAttributesObject *obj2 = (PyNameschemeAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -985,7 +985,7 @@ PyNameschemeAttributes_Wrap(const NameschemeAttributes *attr)
 void
 PyNameschemeAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    NameschemeAttributesObject *obj2 = (NameschemeAttributesObject *)obj;
+    PyNameschemeAttributesObject *obj2 = (PyNameschemeAttributesObject *)obj;
     obj2->parent = parent;
 }
 

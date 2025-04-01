@@ -5,6 +5,7 @@
 #include <PyDataBinningAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a DataBinningAttributes.
 //
-struct DataBinningAttributesObject
+struct PyDataBinningAttributesObject
 {
     PyObject_HEAD
     DataBinningAttributes *data;
@@ -257,16 +258,44 @@ PyDataBinningAttributes_ToString(const DataBinningAttributes *atts, const char *
 static PyObject *
 DataBinningAttributes_Notify(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+DataBinningAttributes_dir(PyObject *self, PyObject *args)
+{
+    static DataBinningAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyDataBinningAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 DataBinningAttributes_SetNumDimensions(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -325,7 +354,7 @@ DataBinningAttributes_SetNumDimensions(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_GetNumDimensions(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNumDimensions()));
     return retval;
 }
@@ -333,7 +362,7 @@ DataBinningAttributes_GetNumDimensions(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_SetDim1BinBasedOn(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -393,7 +422,7 @@ DataBinningAttributes_SetDim1BinBasedOn(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_GetDim1BinBasedOn(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetDim1BinBasedOn()));
     return retval;
 }
@@ -401,7 +430,7 @@ DataBinningAttributes_GetDim1BinBasedOn(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_SetDim1Var(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -442,7 +471,7 @@ DataBinningAttributes_SetDim1Var(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_GetDim1Var(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetDim1Var().c_str());
     return retval;
 }
@@ -450,7 +479,7 @@ DataBinningAttributes_GetDim1Var(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_SetDim1SpecifyRange(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -502,7 +531,7 @@ DataBinningAttributes_SetDim1SpecifyRange(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_GetDim1SpecifyRange(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetDim1SpecifyRange()?1L:0L);
     return retval;
 }
@@ -510,7 +539,7 @@ DataBinningAttributes_GetDim1SpecifyRange(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_SetDim1MinRange(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -562,7 +591,7 @@ DataBinningAttributes_SetDim1MinRange(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_GetDim1MinRange(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetDim1MinRange());
     return retval;
 }
@@ -570,7 +599,7 @@ DataBinningAttributes_GetDim1MinRange(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_SetDim1MaxRange(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -622,7 +651,7 @@ DataBinningAttributes_SetDim1MaxRange(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_GetDim1MaxRange(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetDim1MaxRange());
     return retval;
 }
@@ -630,7 +659,7 @@ DataBinningAttributes_GetDim1MaxRange(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_SetDim1NumBins(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -682,7 +711,7 @@ DataBinningAttributes_SetDim1NumBins(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_GetDim1NumBins(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetDim1NumBins()));
     return retval;
 }
@@ -690,7 +719,7 @@ DataBinningAttributes_GetDim1NumBins(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_SetDim2BinBasedOn(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -750,7 +779,7 @@ DataBinningAttributes_SetDim2BinBasedOn(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_GetDim2BinBasedOn(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetDim2BinBasedOn()));
     return retval;
 }
@@ -758,7 +787,7 @@ DataBinningAttributes_GetDim2BinBasedOn(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_SetDim2Var(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -799,7 +828,7 @@ DataBinningAttributes_SetDim2Var(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_GetDim2Var(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetDim2Var().c_str());
     return retval;
 }
@@ -807,7 +836,7 @@ DataBinningAttributes_GetDim2Var(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_SetDim2SpecifyRange(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -859,7 +888,7 @@ DataBinningAttributes_SetDim2SpecifyRange(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_GetDim2SpecifyRange(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetDim2SpecifyRange()?1L:0L);
     return retval;
 }
@@ -867,7 +896,7 @@ DataBinningAttributes_GetDim2SpecifyRange(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_SetDim2MinRange(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -919,7 +948,7 @@ DataBinningAttributes_SetDim2MinRange(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_GetDim2MinRange(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetDim2MinRange());
     return retval;
 }
@@ -927,7 +956,7 @@ DataBinningAttributes_GetDim2MinRange(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_SetDim2MaxRange(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -979,7 +1008,7 @@ DataBinningAttributes_SetDim2MaxRange(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_GetDim2MaxRange(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetDim2MaxRange());
     return retval;
 }
@@ -987,7 +1016,7 @@ DataBinningAttributes_GetDim2MaxRange(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_SetDim2NumBins(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1039,7 +1068,7 @@ DataBinningAttributes_SetDim2NumBins(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_GetDim2NumBins(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetDim2NumBins()));
     return retval;
 }
@@ -1047,7 +1076,7 @@ DataBinningAttributes_GetDim2NumBins(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_SetDim3BinBasedOn(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1107,7 +1136,7 @@ DataBinningAttributes_SetDim3BinBasedOn(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_GetDim3BinBasedOn(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetDim3BinBasedOn()));
     return retval;
 }
@@ -1115,7 +1144,7 @@ DataBinningAttributes_GetDim3BinBasedOn(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_SetDim3Var(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1156,7 +1185,7 @@ DataBinningAttributes_SetDim3Var(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_GetDim3Var(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetDim3Var().c_str());
     return retval;
 }
@@ -1164,7 +1193,7 @@ DataBinningAttributes_GetDim3Var(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_SetDim3SpecifyRange(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1216,7 +1245,7 @@ DataBinningAttributes_SetDim3SpecifyRange(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_GetDim3SpecifyRange(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetDim3SpecifyRange()?1L:0L);
     return retval;
 }
@@ -1224,7 +1253,7 @@ DataBinningAttributes_GetDim3SpecifyRange(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_SetDim3MinRange(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1276,7 +1305,7 @@ DataBinningAttributes_SetDim3MinRange(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_GetDim3MinRange(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetDim3MinRange());
     return retval;
 }
@@ -1284,7 +1313,7 @@ DataBinningAttributes_GetDim3MinRange(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_SetDim3MaxRange(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1336,7 +1365,7 @@ DataBinningAttributes_SetDim3MaxRange(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_GetDim3MaxRange(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetDim3MaxRange());
     return retval;
 }
@@ -1344,7 +1373,7 @@ DataBinningAttributes_GetDim3MaxRange(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_SetDim3NumBins(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1396,7 +1425,7 @@ DataBinningAttributes_SetDim3NumBins(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_GetDim3NumBins(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetDim3NumBins()));
     return retval;
 }
@@ -1404,7 +1433,7 @@ DataBinningAttributes_GetDim3NumBins(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_SetOutOfBoundsBehavior(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1462,7 +1491,7 @@ DataBinningAttributes_SetOutOfBoundsBehavior(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_GetOutOfBoundsBehavior(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetOutOfBoundsBehavior()));
     return retval;
 }
@@ -1470,7 +1499,7 @@ DataBinningAttributes_GetOutOfBoundsBehavior(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_SetReductionOperator(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1535,7 +1564,7 @@ DataBinningAttributes_SetReductionOperator(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_GetReductionOperator(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetReductionOperator()));
     return retval;
 }
@@ -1543,7 +1572,7 @@ DataBinningAttributes_GetReductionOperator(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_SetVarForReduction(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1584,7 +1613,7 @@ DataBinningAttributes_SetVarForReduction(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_GetVarForReduction(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetVarForReduction().c_str());
     return retval;
 }
@@ -1592,7 +1621,7 @@ DataBinningAttributes_GetVarForReduction(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_SetEmptyVal(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1644,7 +1673,7 @@ DataBinningAttributes_SetEmptyVal(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_GetEmptyVal(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetEmptyVal());
     return retval;
 }
@@ -1652,7 +1681,7 @@ DataBinningAttributes_GetEmptyVal(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_SetOutputType(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1710,7 +1739,7 @@ DataBinningAttributes_SetOutputType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_GetOutputType(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetOutputType()));
     return retval;
 }
@@ -1718,7 +1747,7 @@ DataBinningAttributes_GetOutputType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_SetRemoveEmptyValFromCurve(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1770,7 +1799,7 @@ DataBinningAttributes_SetRemoveEmptyValFromCurve(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DataBinningAttributes_GetRemoveEmptyValFromCurve(PyObject *self, PyObject *args)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)self;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetRemoveEmptyValFromCurve()?1L:0L);
     return retval;
 }
@@ -1778,7 +1807,8 @@ DataBinningAttributes_GetRemoveEmptyValFromCurve(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyDataBinningAttributes_methods[DATABINNINGATTRIBUTES_NMETH] = {
-    {"Notify", DataBinningAttributes_Notify, METH_VARARGS},
+    {"__dir__", DataBinningAttributes_dir, METH_NOARGS},
+    {"Notify", DataBinningAttributes_Notify, METH_NOARGS},
     {"SetNumDimensions", DataBinningAttributes_SetNumDimensions, METH_VARARGS},
     {"GetNumDimensions", DataBinningAttributes_GetNumDimensions, METH_VARARGS},
     {"SetDim1BinBasedOn", DataBinningAttributes_SetDim1BinBasedOn, METH_VARARGS},
@@ -1837,19 +1867,22 @@ PyMethodDef PyDataBinningAttributes_methods[DATABINNINGATTRIBUTES_NMETH] = {
 //
 
 static void
-DataBinningAttributes_dealloc(PyObject *v)
+PyDataBinningAttributes_dealloc(PyObject *v)
 {
-   DataBinningAttributesObject *obj = (DataBinningAttributesObject *)v;
+   PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *DataBinningAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyDataBinningAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyDataBinningAttributes_getattr(PyObject *self, char *name)
+PyDataBinningAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "numDimensions") == 0)
         return DataBinningAttributes_GetNumDimensions(self, NULL);
     if(strcmp(name, "One") == 0)
@@ -1964,26 +1997,19 @@ PyDataBinningAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "removeEmptyValFromCurve") == 0)
         return DataBinningAttributes_GetRemoveEmptyValFromCurve(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyDataBinningAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyDataBinningAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyDataBinningAttributes_methods[i].ml_name),
-                PyString_FromString(PyDataBinningAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyDataBinningAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyDataBinningAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyDataBinningAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "numDimensions") == 0)
         obj = DataBinningAttributes_SetNumDimensions(self, args);
@@ -2036,6 +2062,12 @@ PyDataBinningAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "removeEmptyValFromCurve") == 0)
         obj = DataBinningAttributes_SetRemoveEmptyValFromCurve(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -2050,78 +2082,45 @@ PyDataBinningAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-DataBinningAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)v;
-    fprintf(fp, "%s", PyDataBinningAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-DataBinningAttributes_str(PyObject *v)
+PyDataBinningAttributes_str(PyObject *v)
 {
-    DataBinningAttributesObject *obj = (DataBinningAttributesObject *)v;
+    PyDataBinningAttributesObject *obj = (PyDataBinningAttributesObject *)v;
     return PyString_FromString(PyDataBinningAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *DataBinningAttributes_Purpose = "The attributes for the DataBinning operator";
-#else
-static char *DataBinningAttributes_Purpose = "The attributes for the DataBinning operator";
-#endif
+static char const *PyDataBinningAttributes_purpose = "The attributes for the DataBinning operator";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(DataBinningAttributesType,         \
-                  "DataBinningAttributes",           \
-                  DataBinningAttributesObject,       \
-                  DataBinningAttributes_dealloc,     \
-                  DataBinningAttributes_print,       \
-                  PyDataBinningAttributes_getattr,   \
-                  PyDataBinningAttributes_setattr,   \
-                  DataBinningAttributes_str,         \
-                  DataBinningAttributes_Purpose,     \
-                  DataBinningAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(DataBinningAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-DataBinningAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyDataBinningAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &DataBinningAttributesType
-         || Py_TYPE(other) != &DataBinningAttributesType)
+    if ( Py_TYPE(self) != &PyDataBinningAttributesType
+         || Py_TYPE(other) != &PyDataBinningAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    DataBinningAttributes *a = ((DataBinningAttributesObject *)self)->data;
-    DataBinningAttributes *b = ((DataBinningAttributesObject *)other)->data;
+    DataBinningAttributes *a = ((PyDataBinningAttributesObject *)self)->data;
+    DataBinningAttributes *b = ((PyDataBinningAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -2150,8 +2149,8 @@ static DataBinningAttributes *currentAtts = 0;
 static PyObject *
 NewDataBinningAttributes(int useCurrent)
 {
-    DataBinningAttributesObject *newObject;
-    newObject = PyObject_NEW(DataBinningAttributesObject, &DataBinningAttributesType);
+    PyDataBinningAttributesObject *newObject;
+    newObject = PyObject_NEW(PyDataBinningAttributesObject, &PyDataBinningAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -2162,14 +2161,15 @@ NewDataBinningAttributes(int useCurrent)
         newObject->data = new DataBinningAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyDataBinningAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapDataBinningAttributes(const DataBinningAttributes *attr)
 {
-    DataBinningAttributesObject *newObject;
-    newObject = PyObject_NEW(DataBinningAttributesObject, &DataBinningAttributesType);
+    PyDataBinningAttributesObject *newObject;
+    newObject = PyObject_NEW(PyDataBinningAttributesObject, &PyDataBinningAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (DataBinningAttributes *)attr;
@@ -2271,13 +2271,13 @@ PyDataBinningAttributes_GetMethodTable(int *nMethods)
 bool
 PyDataBinningAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &DataBinningAttributesType);
+    return (obj->ob_type == &PyDataBinningAttributesType);
 }
 
 DataBinningAttributes *
 PyDataBinningAttributes_FromPyObject(PyObject *obj)
 {
-    DataBinningAttributesObject *obj2 = (DataBinningAttributesObject *)obj;
+    PyDataBinningAttributesObject *obj2 = (PyDataBinningAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -2296,7 +2296,7 @@ PyDataBinningAttributes_Wrap(const DataBinningAttributes *attr)
 void
 PyDataBinningAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    DataBinningAttributesObject *obj2 = (DataBinningAttributesObject *)obj;
+    PyDataBinningAttributesObject *obj2 = (PyDataBinningAttributesObject *)obj;
     obj2->parent = parent;
 }
 

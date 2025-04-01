@@ -5,6 +5,7 @@
 #include <PyLightAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 #include <ColorAttribute.h>
 
@@ -24,7 +25,7 @@
 //
 // This struct contains the Python type information and a LightAttributes.
 //
-struct LightAttributesObject
+struct PyLightAttributesObject
 {
     PyObject_HEAD
     LightAttributes *data;
@@ -93,16 +94,45 @@ PyLightAttributes_ToString(const LightAttributes *atts, const char *prefix, cons
 static PyObject *
 LightAttributes_Notify(PyObject *self, PyObject *args)
 {
-    LightAttributesObject *obj = (LightAttributesObject *)self;
+    PyLightAttributesObject *obj = (PyLightAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+LightAttributes_dir(PyObject *self, PyObject *args)
+{
+    static LightAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyLightAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        if (i == 0) continue; // internal field
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 LightAttributes_SetEnabledFlag(PyObject *self, PyObject *args)
 {
-    LightAttributesObject *obj = (LightAttributesObject *)self;
+    PyLightAttributesObject *obj = (PyLightAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -154,7 +184,7 @@ LightAttributes_SetEnabledFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LightAttributes_GetEnabledFlag(PyObject *self, PyObject *args)
 {
-    LightAttributesObject *obj = (LightAttributesObject *)self;
+    PyLightAttributesObject *obj = (PyLightAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetEnabledFlag()?1L:0L);
     return retval;
 }
@@ -162,7 +192,7 @@ LightAttributes_GetEnabledFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LightAttributes_SetType(PyObject *self, PyObject *args)
 {
-    LightAttributesObject *obj = (LightAttributesObject *)self;
+    PyLightAttributesObject *obj = (PyLightAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -221,7 +251,7 @@ LightAttributes_SetType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LightAttributes_GetType(PyObject *self, PyObject *args)
 {
-    LightAttributesObject *obj = (LightAttributesObject *)self;
+    PyLightAttributesObject *obj = (PyLightAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetType()));
     return retval;
 }
@@ -229,7 +259,7 @@ LightAttributes_GetType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LightAttributes_SetDirection(PyObject *self, PyObject *args)
 {
-    LightAttributesObject *obj = (LightAttributesObject *)self;
+    PyLightAttributesObject *obj = (PyLightAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetDirection();
@@ -296,7 +326,7 @@ LightAttributes_SetDirection(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LightAttributes_GetDirection(PyObject *self, PyObject *args)
 {
-    LightAttributesObject *obj = (LightAttributesObject *)self;
+    PyLightAttributesObject *obj = (PyLightAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the direction.
     PyObject *retval = PyTuple_New(3);
     const double *direction = obj->data->GetDirection();
@@ -308,7 +338,7 @@ LightAttributes_GetDirection(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LightAttributes_SetColor(PyObject *self, PyObject *args)
 {
-    LightAttributesObject *obj = (LightAttributesObject *)self;
+    PyLightAttributesObject *obj = (PyLightAttributesObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -371,7 +401,7 @@ LightAttributes_SetColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LightAttributes_GetColor(PyObject *self, PyObject *args)
 {
-    LightAttributesObject *obj = (LightAttributesObject *)self;
+    PyLightAttributesObject *obj = (PyLightAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the color.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *color = obj->data->GetColor().GetColor();
@@ -385,7 +415,7 @@ LightAttributes_GetColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LightAttributes_SetBrightness(PyObject *self, PyObject *args)
 {
-    LightAttributesObject *obj = (LightAttributesObject *)self;
+    PyLightAttributesObject *obj = (PyLightAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -437,7 +467,7 @@ LightAttributes_SetBrightness(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LightAttributes_GetBrightness(PyObject *self, PyObject *args)
 {
-    LightAttributesObject *obj = (LightAttributesObject *)self;
+    PyLightAttributesObject *obj = (PyLightAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetBrightness());
     return retval;
 }
@@ -445,7 +475,8 @@ LightAttributes_GetBrightness(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyLightAttributes_methods[LIGHTATTRIBUTES_NMETH] = {
-    {"Notify", LightAttributes_Notify, METH_VARARGS},
+    {"__dir__", LightAttributes_dir, METH_NOARGS},
+    {"Notify", LightAttributes_Notify, METH_NOARGS},
     {"SetEnabledFlag", LightAttributes_SetEnabledFlag, METH_VARARGS},
     {"GetEnabledFlag", LightAttributes_GetEnabledFlag, METH_VARARGS},
     {"SetType", LightAttributes_SetType, METH_VARARGS},
@@ -464,19 +495,22 @@ PyMethodDef PyLightAttributes_methods[LIGHTATTRIBUTES_NMETH] = {
 //
 
 static void
-LightAttributes_dealloc(PyObject *v)
+PyLightAttributes_dealloc(PyObject *v)
 {
-   LightAttributesObject *obj = (LightAttributesObject *)v;
+   PyLightAttributesObject *obj = (PyLightAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *LightAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyLightAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyLightAttributes_getattr(PyObject *self, char *name)
+PyLightAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "enabledFlag") == 0)
         return LightAttributes_GetEnabledFlag(self, NULL);
     if(strcmp(name, "type") == 0)
@@ -495,26 +529,19 @@ PyLightAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "brightness") == 0)
         return LightAttributes_GetBrightness(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyLightAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyLightAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyLightAttributes_methods[i].ml_name),
-                PyString_FromString(PyLightAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyLightAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyLightAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyLightAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "enabledFlag") == 0)
         obj = LightAttributes_SetEnabledFlag(self, args);
@@ -526,6 +553,12 @@ PyLightAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = LightAttributes_SetColor(self, args);
     else if(strcmp(name, "brightness") == 0)
         obj = LightAttributes_SetBrightness(self, args);
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -541,78 +574,45 @@ PyLightAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-LightAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    LightAttributesObject *obj = (LightAttributesObject *)v;
-    fprintf(fp, "%s", PyLightAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-LightAttributes_str(PyObject *v)
+PyLightAttributes_str(PyObject *v)
 {
-    LightAttributesObject *obj = (LightAttributesObject *)v;
+    PyLightAttributesObject *obj = (PyLightAttributesObject *)v;
     return PyString_FromString(PyLightAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *LightAttributes_Purpose = "This class is a light in a light list.";
-#else
-static char *LightAttributes_Purpose = "This class is a light in a light list.";
-#endif
+static char const *PyLightAttributes_purpose = "This class is a light in a light list.";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(LightAttributesType,         \
-                  "LightAttributes",           \
-                  LightAttributesObject,       \
-                  LightAttributes_dealloc,     \
-                  LightAttributes_print,       \
-                  PyLightAttributes_getattr,   \
-                  PyLightAttributes_setattr,   \
-                  LightAttributes_str,         \
-                  LightAttributes_Purpose,     \
-                  LightAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(LightAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-LightAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyLightAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &LightAttributesType
-         || Py_TYPE(other) != &LightAttributesType)
+    if ( Py_TYPE(self) != &PyLightAttributesType
+         || Py_TYPE(other) != &PyLightAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    LightAttributes *a = ((LightAttributesObject *)self)->data;
-    LightAttributes *b = ((LightAttributesObject *)other)->data;
+    LightAttributes *a = ((PyLightAttributesObject *)self)->data;
+    LightAttributes *b = ((PyLightAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -641,8 +641,8 @@ static LightAttributes *currentAtts = 0;
 static PyObject *
 NewLightAttributes(int useCurrent)
 {
-    LightAttributesObject *newObject;
-    newObject = PyObject_NEW(LightAttributesObject, &LightAttributesType);
+    PyLightAttributesObject *newObject;
+    newObject = PyObject_NEW(PyLightAttributesObject, &PyLightAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -653,14 +653,15 @@ NewLightAttributes(int useCurrent)
         newObject->data = new LightAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyLightAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapLightAttributes(const LightAttributes *attr)
 {
-    LightAttributesObject *newObject;
-    newObject = PyObject_NEW(LightAttributesObject, &LightAttributesType);
+    PyLightAttributesObject *newObject;
+    newObject = PyObject_NEW(PyLightAttributesObject, &PyLightAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (LightAttributes *)attr;
@@ -762,13 +763,13 @@ PyLightAttributes_GetMethodTable(int *nMethods)
 bool
 PyLightAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &LightAttributesType);
+    return (obj->ob_type == &PyLightAttributesType);
 }
 
 LightAttributes *
 PyLightAttributes_FromPyObject(PyObject *obj)
 {
-    LightAttributesObject *obj2 = (LightAttributesObject *)obj;
+    PyLightAttributesObject *obj2 = (PyLightAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -787,7 +788,7 @@ PyLightAttributes_Wrap(const LightAttributes *attr)
 void
 PyLightAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    LightAttributesObject *obj2 = (LightAttributesObject *)obj;
+    PyLightAttributesObject *obj2 = (PyLightAttributesObject *)obj;
     obj2->parent = parent;
 }
 

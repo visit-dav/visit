@@ -5,6 +5,7 @@
 #include <PyFiveFoldTetSubdivisionAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a FiveFoldTetSubdivisionAttributes.
 //
-struct FiveFoldTetSubdivisionAttributesObject
+struct PyFiveFoldTetSubdivisionAttributesObject
 {
     PyObject_HEAD
     FiveFoldTetSubdivisionAttributes *data;
@@ -97,16 +98,44 @@ PyFiveFoldTetSubdivisionAttributes_ToString(const FiveFoldTetSubdivisionAttribut
 static PyObject *
 FiveFoldTetSubdivisionAttributes_Notify(PyObject *self, PyObject *args)
 {
-    FiveFoldTetSubdivisionAttributesObject *obj = (FiveFoldTetSubdivisionAttributesObject *)self;
+    PyFiveFoldTetSubdivisionAttributesObject *obj = (PyFiveFoldTetSubdivisionAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+FiveFoldTetSubdivisionAttributes_dir(PyObject *self, PyObject *args)
+{
+    static FiveFoldTetSubdivisionAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyFiveFoldTetSubdivisionAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 FiveFoldTetSubdivisionAttributes_SetOddParityHasSixNeighborhood(PyObject *self, PyObject *args)
 {
-    FiveFoldTetSubdivisionAttributesObject *obj = (FiveFoldTetSubdivisionAttributesObject *)self;
+    PyFiveFoldTetSubdivisionAttributesObject *obj = (PyFiveFoldTetSubdivisionAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -158,7 +187,7 @@ FiveFoldTetSubdivisionAttributes_SetOddParityHasSixNeighborhood(PyObject *self, 
 /*static*/ PyObject *
 FiveFoldTetSubdivisionAttributes_GetOddParityHasSixNeighborhood(PyObject *self, PyObject *args)
 {
-    FiveFoldTetSubdivisionAttributesObject *obj = (FiveFoldTetSubdivisionAttributesObject *)self;
+    PyFiveFoldTetSubdivisionAttributesObject *obj = (PyFiveFoldTetSubdivisionAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetOddParityHasSixNeighborhood()?1L:0L);
     return retval;
 }
@@ -166,7 +195,7 @@ FiveFoldTetSubdivisionAttributes_GetOddParityHasSixNeighborhood(PyObject *self, 
 /*static*/ PyObject *
 FiveFoldTetSubdivisionAttributes_SetAddComponentInformation(PyObject *self, PyObject *args)
 {
-    FiveFoldTetSubdivisionAttributesObject *obj = (FiveFoldTetSubdivisionAttributesObject *)self;
+    PyFiveFoldTetSubdivisionAttributesObject *obj = (PyFiveFoldTetSubdivisionAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -218,7 +247,7 @@ FiveFoldTetSubdivisionAttributes_SetAddComponentInformation(PyObject *self, PyOb
 /*static*/ PyObject *
 FiveFoldTetSubdivisionAttributes_GetAddComponentInformation(PyObject *self, PyObject *args)
 {
-    FiveFoldTetSubdivisionAttributesObject *obj = (FiveFoldTetSubdivisionAttributesObject *)self;
+    PyFiveFoldTetSubdivisionAttributesObject *obj = (PyFiveFoldTetSubdivisionAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetAddComponentInformation()?1L:0L);
     return retval;
 }
@@ -226,7 +255,7 @@ FiveFoldTetSubdivisionAttributes_GetAddComponentInformation(PyObject *self, PyOb
 /*static*/ PyObject *
 FiveFoldTetSubdivisionAttributes_SetIdVar(PyObject *self, PyObject *args)
 {
-    FiveFoldTetSubdivisionAttributesObject *obj = (FiveFoldTetSubdivisionAttributesObject *)self;
+    PyFiveFoldTetSubdivisionAttributesObject *obj = (PyFiveFoldTetSubdivisionAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -267,7 +296,7 @@ FiveFoldTetSubdivisionAttributes_SetIdVar(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FiveFoldTetSubdivisionAttributes_GetIdVar(PyObject *self, PyObject *args)
 {
-    FiveFoldTetSubdivisionAttributesObject *obj = (FiveFoldTetSubdivisionAttributesObject *)self;
+    PyFiveFoldTetSubdivisionAttributesObject *obj = (PyFiveFoldTetSubdivisionAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetIdVar().c_str());
     return retval;
 }
@@ -275,7 +304,7 @@ FiveFoldTetSubdivisionAttributes_GetIdVar(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FiveFoldTetSubdivisionAttributes_SetValueVar(PyObject *self, PyObject *args)
 {
-    FiveFoldTetSubdivisionAttributesObject *obj = (FiveFoldTetSubdivisionAttributesObject *)self;
+    PyFiveFoldTetSubdivisionAttributesObject *obj = (PyFiveFoldTetSubdivisionAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -316,7 +345,7 @@ FiveFoldTetSubdivisionAttributes_SetValueVar(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FiveFoldTetSubdivisionAttributes_GetValueVar(PyObject *self, PyObject *args)
 {
-    FiveFoldTetSubdivisionAttributesObject *obj = (FiveFoldTetSubdivisionAttributesObject *)self;
+    PyFiveFoldTetSubdivisionAttributesObject *obj = (PyFiveFoldTetSubdivisionAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetValueVar().c_str());
     return retval;
 }
@@ -324,7 +353,7 @@ FiveFoldTetSubdivisionAttributes_GetValueVar(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FiveFoldTetSubdivisionAttributes_SetContourTreeFilename(PyObject *self, PyObject *args)
 {
-    FiveFoldTetSubdivisionAttributesObject *obj = (FiveFoldTetSubdivisionAttributesObject *)self;
+    PyFiveFoldTetSubdivisionAttributesObject *obj = (PyFiveFoldTetSubdivisionAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -365,7 +394,7 @@ FiveFoldTetSubdivisionAttributes_SetContourTreeFilename(PyObject *self, PyObject
 /*static*/ PyObject *
 FiveFoldTetSubdivisionAttributes_GetContourTreeFilename(PyObject *self, PyObject *args)
 {
-    FiveFoldTetSubdivisionAttributesObject *obj = (FiveFoldTetSubdivisionAttributesObject *)self;
+    PyFiveFoldTetSubdivisionAttributesObject *obj = (PyFiveFoldTetSubdivisionAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetContourTreeFilename().c_str());
     return retval;
 }
@@ -373,7 +402,7 @@ FiveFoldTetSubdivisionAttributes_GetContourTreeFilename(PyObject *self, PyObject
 /*static*/ PyObject *
 FiveFoldTetSubdivisionAttributes_SetIsovalue(PyObject *self, PyObject *args)
 {
-    FiveFoldTetSubdivisionAttributesObject *obj = (FiveFoldTetSubdivisionAttributesObject *)self;
+    PyFiveFoldTetSubdivisionAttributesObject *obj = (PyFiveFoldTetSubdivisionAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -425,7 +454,7 @@ FiveFoldTetSubdivisionAttributes_SetIsovalue(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FiveFoldTetSubdivisionAttributes_GetIsovalue(PyObject *self, PyObject *args)
 {
-    FiveFoldTetSubdivisionAttributesObject *obj = (FiveFoldTetSubdivisionAttributesObject *)self;
+    PyFiveFoldTetSubdivisionAttributesObject *obj = (PyFiveFoldTetSubdivisionAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetIsovalue());
     return retval;
 }
@@ -433,7 +462,7 @@ FiveFoldTetSubdivisionAttributes_GetIsovalue(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FiveFoldTetSubdivisionAttributes_SetSelectedIds(PyObject *self, PyObject *args)
 {
-    FiveFoldTetSubdivisionAttributesObject *obj = (FiveFoldTetSubdivisionAttributesObject *)self;
+    PyFiveFoldTetSubdivisionAttributesObject *obj = (PyFiveFoldTetSubdivisionAttributesObject *)self;
 
     intVector vec;
 
@@ -497,7 +526,7 @@ FiveFoldTetSubdivisionAttributes_SetSelectedIds(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FiveFoldTetSubdivisionAttributes_GetSelectedIds(PyObject *self, PyObject *args)
 {
-    FiveFoldTetSubdivisionAttributesObject *obj = (FiveFoldTetSubdivisionAttributesObject *)self;
+    PyFiveFoldTetSubdivisionAttributesObject *obj = (PyFiveFoldTetSubdivisionAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the selectedIds.
     const intVector &selectedIds = obj->data->GetSelectedIds();
     PyObject *retval = PyTuple_New(selectedIds.size());
@@ -509,7 +538,7 @@ FiveFoldTetSubdivisionAttributes_GetSelectedIds(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FiveFoldTetSubdivisionAttributes_SetHighlightedIds(PyObject *self, PyObject *args)
 {
-    FiveFoldTetSubdivisionAttributesObject *obj = (FiveFoldTetSubdivisionAttributesObject *)self;
+    PyFiveFoldTetSubdivisionAttributesObject *obj = (PyFiveFoldTetSubdivisionAttributesObject *)self;
 
     intVector vec;
 
@@ -573,7 +602,7 @@ FiveFoldTetSubdivisionAttributes_SetHighlightedIds(PyObject *self, PyObject *arg
 /*static*/ PyObject *
 FiveFoldTetSubdivisionAttributes_GetHighlightedIds(PyObject *self, PyObject *args)
 {
-    FiveFoldTetSubdivisionAttributesObject *obj = (FiveFoldTetSubdivisionAttributesObject *)self;
+    PyFiveFoldTetSubdivisionAttributesObject *obj = (PyFiveFoldTetSubdivisionAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the highlightedIds.
     const intVector &highlightedIds = obj->data->GetHighlightedIds();
     PyObject *retval = PyTuple_New(highlightedIds.size());
@@ -585,7 +614,8 @@ FiveFoldTetSubdivisionAttributes_GetHighlightedIds(PyObject *self, PyObject *arg
 
 
 PyMethodDef PyFiveFoldTetSubdivisionAttributes_methods[FIVEFOLDTETSUBDIVISIONATTRIBUTES_NMETH] = {
-    {"Notify", FiveFoldTetSubdivisionAttributes_Notify, METH_VARARGS},
+    {"__dir__", FiveFoldTetSubdivisionAttributes_dir, METH_NOARGS},
+    {"Notify", FiveFoldTetSubdivisionAttributes_Notify, METH_NOARGS},
     {"SetOddParityHasSixNeighborhood", FiveFoldTetSubdivisionAttributes_SetOddParityHasSixNeighborhood, METH_VARARGS},
     {"GetOddParityHasSixNeighborhood", FiveFoldTetSubdivisionAttributes_GetOddParityHasSixNeighborhood, METH_VARARGS},
     {"SetAddComponentInformation", FiveFoldTetSubdivisionAttributes_SetAddComponentInformation, METH_VARARGS},
@@ -610,19 +640,22 @@ PyMethodDef PyFiveFoldTetSubdivisionAttributes_methods[FIVEFOLDTETSUBDIVISIONATT
 //
 
 static void
-FiveFoldTetSubdivisionAttributes_dealloc(PyObject *v)
+PyFiveFoldTetSubdivisionAttributes_dealloc(PyObject *v)
 {
-   FiveFoldTetSubdivisionAttributesObject *obj = (FiveFoldTetSubdivisionAttributesObject *)v;
+   PyFiveFoldTetSubdivisionAttributesObject *obj = (PyFiveFoldTetSubdivisionAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *FiveFoldTetSubdivisionAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyFiveFoldTetSubdivisionAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyFiveFoldTetSubdivisionAttributes_getattr(PyObject *self, char *name)
+PyFiveFoldTetSubdivisionAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "oddParityHasSixNeighborhood") == 0)
         return FiveFoldTetSubdivisionAttributes_GetOddParityHasSixNeighborhood(self, NULL);
     if(strcmp(name, "addComponentInformation") == 0)
@@ -640,26 +673,19 @@ PyFiveFoldTetSubdivisionAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "highlightedIds") == 0)
         return FiveFoldTetSubdivisionAttributes_GetHighlightedIds(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyFiveFoldTetSubdivisionAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyFiveFoldTetSubdivisionAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyFiveFoldTetSubdivisionAttributes_methods[i].ml_name),
-                PyString_FromString(PyFiveFoldTetSubdivisionAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyFiveFoldTetSubdivisionAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyFiveFoldTetSubdivisionAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyFiveFoldTetSubdivisionAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "oddParityHasSixNeighborhood") == 0)
         obj = FiveFoldTetSubdivisionAttributes_SetOddParityHasSixNeighborhood(self, args);
@@ -678,6 +704,12 @@ PyFiveFoldTetSubdivisionAttributes_setattr(PyObject *self, char *name, PyObject 
     else if(strcmp(name, "highlightedIds") == 0)
         obj = FiveFoldTetSubdivisionAttributes_SetHighlightedIds(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -692,78 +724,45 @@ PyFiveFoldTetSubdivisionAttributes_setattr(PyObject *self, char *name, PyObject 
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-FiveFoldTetSubdivisionAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    FiveFoldTetSubdivisionAttributesObject *obj = (FiveFoldTetSubdivisionAttributesObject *)v;
-    fprintf(fp, "%s", PyFiveFoldTetSubdivisionAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-FiveFoldTetSubdivisionAttributes_str(PyObject *v)
+PyFiveFoldTetSubdivisionAttributes_str(PyObject *v)
 {
-    FiveFoldTetSubdivisionAttributesObject *obj = (FiveFoldTetSubdivisionAttributesObject *)v;
+    PyFiveFoldTetSubdivisionAttributesObject *obj = (PyFiveFoldTetSubdivisionAttributesObject *)v;
     return PyString_FromString(PyFiveFoldTetSubdivisionAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *FiveFoldTetSubdivisionAttributes_Purpose = "Attributes for five fold tetrahedral subdivision operator";
-#else
-static char *FiveFoldTetSubdivisionAttributes_Purpose = "Attributes for five fold tetrahedral subdivision operator";
-#endif
+static char const *PyFiveFoldTetSubdivisionAttributes_purpose = "Attributes for five fold tetrahedral subdivision operator";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(FiveFoldTetSubdivisionAttributesType,         \
-                  "FiveFoldTetSubdivisionAttributes",           \
-                  FiveFoldTetSubdivisionAttributesObject,       \
-                  FiveFoldTetSubdivisionAttributes_dealloc,     \
-                  FiveFoldTetSubdivisionAttributes_print,       \
-                  PyFiveFoldTetSubdivisionAttributes_getattr,   \
-                  PyFiveFoldTetSubdivisionAttributes_setattr,   \
-                  FiveFoldTetSubdivisionAttributes_str,         \
-                  FiveFoldTetSubdivisionAttributes_Purpose,     \
-                  FiveFoldTetSubdivisionAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(FiveFoldTetSubdivisionAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-FiveFoldTetSubdivisionAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyFiveFoldTetSubdivisionAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &FiveFoldTetSubdivisionAttributesType
-         || Py_TYPE(other) != &FiveFoldTetSubdivisionAttributesType)
+    if ( Py_TYPE(self) != &PyFiveFoldTetSubdivisionAttributesType
+         || Py_TYPE(other) != &PyFiveFoldTetSubdivisionAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    FiveFoldTetSubdivisionAttributes *a = ((FiveFoldTetSubdivisionAttributesObject *)self)->data;
-    FiveFoldTetSubdivisionAttributes *b = ((FiveFoldTetSubdivisionAttributesObject *)other)->data;
+    FiveFoldTetSubdivisionAttributes *a = ((PyFiveFoldTetSubdivisionAttributesObject *)self)->data;
+    FiveFoldTetSubdivisionAttributes *b = ((PyFiveFoldTetSubdivisionAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -792,8 +791,8 @@ static FiveFoldTetSubdivisionAttributes *currentAtts = 0;
 static PyObject *
 NewFiveFoldTetSubdivisionAttributes(int useCurrent)
 {
-    FiveFoldTetSubdivisionAttributesObject *newObject;
-    newObject = PyObject_NEW(FiveFoldTetSubdivisionAttributesObject, &FiveFoldTetSubdivisionAttributesType);
+    PyFiveFoldTetSubdivisionAttributesObject *newObject;
+    newObject = PyObject_NEW(PyFiveFoldTetSubdivisionAttributesObject, &PyFiveFoldTetSubdivisionAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -804,14 +803,15 @@ NewFiveFoldTetSubdivisionAttributes(int useCurrent)
         newObject->data = new FiveFoldTetSubdivisionAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyFiveFoldTetSubdivisionAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapFiveFoldTetSubdivisionAttributes(const FiveFoldTetSubdivisionAttributes *attr)
 {
-    FiveFoldTetSubdivisionAttributesObject *newObject;
-    newObject = PyObject_NEW(FiveFoldTetSubdivisionAttributesObject, &FiveFoldTetSubdivisionAttributesType);
+    PyFiveFoldTetSubdivisionAttributesObject *newObject;
+    newObject = PyObject_NEW(PyFiveFoldTetSubdivisionAttributesObject, &PyFiveFoldTetSubdivisionAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (FiveFoldTetSubdivisionAttributes *)attr;
@@ -913,13 +913,13 @@ PyFiveFoldTetSubdivisionAttributes_GetMethodTable(int *nMethods)
 bool
 PyFiveFoldTetSubdivisionAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &FiveFoldTetSubdivisionAttributesType);
+    return (obj->ob_type == &PyFiveFoldTetSubdivisionAttributesType);
 }
 
 FiveFoldTetSubdivisionAttributes *
 PyFiveFoldTetSubdivisionAttributes_FromPyObject(PyObject *obj)
 {
-    FiveFoldTetSubdivisionAttributesObject *obj2 = (FiveFoldTetSubdivisionAttributesObject *)obj;
+    PyFiveFoldTetSubdivisionAttributesObject *obj2 = (PyFiveFoldTetSubdivisionAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -938,7 +938,7 @@ PyFiveFoldTetSubdivisionAttributes_Wrap(const FiveFoldTetSubdivisionAttributes *
 void
 PyFiveFoldTetSubdivisionAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    FiveFoldTetSubdivisionAttributesObject *obj2 = (FiveFoldTetSubdivisionAttributesObject *)obj;
+    PyFiveFoldTetSubdivisionAttributesObject *obj2 = (PyFiveFoldTetSubdivisionAttributesObject *)obj;
     obj2->parent = parent;
 }
 

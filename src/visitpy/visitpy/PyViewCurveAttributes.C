@@ -5,6 +5,7 @@
 #include <PyViewCurveAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a ViewCurveAttributes.
 //
-struct ViewCurveAttributesObject
+struct PyViewCurveAttributesObject
 {
     PyObject_HEAD
     ViewCurveAttributes *data;
@@ -101,16 +102,44 @@ PyViewCurveAttributes_ToString(const ViewCurveAttributes *atts, const char *pref
 static PyObject *
 ViewCurveAttributes_Notify(PyObject *self, PyObject *args)
 {
-    ViewCurveAttributesObject *obj = (ViewCurveAttributesObject *)self;
+    PyViewCurveAttributesObject *obj = (PyViewCurveAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+ViewCurveAttributes_dir(PyObject *self, PyObject *args)
+{
+    static ViewCurveAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyViewCurveAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 ViewCurveAttributes_SetDomainCoords(PyObject *self, PyObject *args)
 {
-    ViewCurveAttributesObject *obj = (ViewCurveAttributesObject *)self;
+    PyViewCurveAttributesObject *obj = (PyViewCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetDomainCoords();
@@ -177,7 +206,7 @@ ViewCurveAttributes_SetDomainCoords(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewCurveAttributes_GetDomainCoords(PyObject *self, PyObject *args)
 {
-    ViewCurveAttributesObject *obj = (ViewCurveAttributesObject *)self;
+    PyViewCurveAttributesObject *obj = (PyViewCurveAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the domainCoords.
     PyObject *retval = PyTuple_New(2);
     const double *domainCoords = obj->data->GetDomainCoords();
@@ -189,7 +218,7 @@ ViewCurveAttributes_GetDomainCoords(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewCurveAttributes_SetRangeCoords(PyObject *self, PyObject *args)
 {
-    ViewCurveAttributesObject *obj = (ViewCurveAttributesObject *)self;
+    PyViewCurveAttributesObject *obj = (PyViewCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetRangeCoords();
@@ -256,7 +285,7 @@ ViewCurveAttributes_SetRangeCoords(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewCurveAttributes_GetRangeCoords(PyObject *self, PyObject *args)
 {
-    ViewCurveAttributesObject *obj = (ViewCurveAttributesObject *)self;
+    PyViewCurveAttributesObject *obj = (PyViewCurveAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the rangeCoords.
     PyObject *retval = PyTuple_New(2);
     const double *rangeCoords = obj->data->GetRangeCoords();
@@ -268,7 +297,7 @@ ViewCurveAttributes_GetRangeCoords(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewCurveAttributes_SetViewportCoords(PyObject *self, PyObject *args)
 {
-    ViewCurveAttributesObject *obj = (ViewCurveAttributesObject *)self;
+    PyViewCurveAttributesObject *obj = (PyViewCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetViewportCoords();
@@ -335,7 +364,7 @@ ViewCurveAttributes_SetViewportCoords(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewCurveAttributes_GetViewportCoords(PyObject *self, PyObject *args)
 {
-    ViewCurveAttributesObject *obj = (ViewCurveAttributesObject *)self;
+    PyViewCurveAttributesObject *obj = (PyViewCurveAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the viewportCoords.
     PyObject *retval = PyTuple_New(4);
     const double *viewportCoords = obj->data->GetViewportCoords();
@@ -347,7 +376,7 @@ ViewCurveAttributes_GetViewportCoords(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewCurveAttributes_SetDomainScale(PyObject *self, PyObject *args)
 {
-    ViewCurveAttributesObject *obj = (ViewCurveAttributesObject *)self;
+    PyViewCurveAttributesObject *obj = (PyViewCurveAttributesObject *)self;
 
     int ival = -999;
     if (PySequence_Check(args) && !PyArg_ParseTuple(args, "i", &ival))
@@ -375,7 +404,7 @@ ViewCurveAttributes_SetDomainScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewCurveAttributes_GetDomainScale(PyObject *self, PyObject *args)
 {
-    ViewCurveAttributesObject *obj = (ViewCurveAttributesObject *)self;
+    PyViewCurveAttributesObject *obj = (PyViewCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetDomainScale()));
     return retval;
 }
@@ -383,7 +412,7 @@ ViewCurveAttributes_GetDomainScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewCurveAttributes_SetRangeScale(PyObject *self, PyObject *args)
 {
-    ViewCurveAttributesObject *obj = (ViewCurveAttributesObject *)self;
+    PyViewCurveAttributesObject *obj = (PyViewCurveAttributesObject *)self;
 
     int ival = -999;
     if (PySequence_Check(args) && !PyArg_ParseTuple(args, "i", &ival))
@@ -411,7 +440,7 @@ ViewCurveAttributes_SetRangeScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewCurveAttributes_GetRangeScale(PyObject *self, PyObject *args)
 {
-    ViewCurveAttributesObject *obj = (ViewCurveAttributesObject *)self;
+    PyViewCurveAttributesObject *obj = (PyViewCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetRangeScale()));
     return retval;
 }
@@ -419,7 +448,8 @@ ViewCurveAttributes_GetRangeScale(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyViewCurveAttributes_methods[VIEWCURVEATTRIBUTES_NMETH] = {
-    {"Notify", ViewCurveAttributes_Notify, METH_VARARGS},
+    {"__dir__", ViewCurveAttributes_dir, METH_NOARGS},
+    {"Notify", ViewCurveAttributes_Notify, METH_NOARGS},
     {"SetDomainCoords", ViewCurveAttributes_SetDomainCoords, METH_VARARGS},
     {"GetDomainCoords", ViewCurveAttributes_GetDomainCoords, METH_VARARGS},
     {"SetRangeCoords", ViewCurveAttributes_SetRangeCoords, METH_VARARGS},
@@ -438,19 +468,22 @@ PyMethodDef PyViewCurveAttributes_methods[VIEWCURVEATTRIBUTES_NMETH] = {
 //
 
 static void
-ViewCurveAttributes_dealloc(PyObject *v)
+PyViewCurveAttributes_dealloc(PyObject *v)
 {
-   ViewCurveAttributesObject *obj = (ViewCurveAttributesObject *)v;
+   PyViewCurveAttributesObject *obj = (PyViewCurveAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *ViewCurveAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyViewCurveAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyViewCurveAttributes_getattr(PyObject *self, char *name)
+PyViewCurveAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "domainCoords") == 0)
         return ViewCurveAttributes_GetDomainCoords(self, NULL);
     if(strcmp(name, "rangeCoords") == 0)
@@ -472,26 +505,19 @@ PyViewCurveAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(1));
 
 
+    PyObject *meth = Py_FindMethod(PyViewCurveAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyViewCurveAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyViewCurveAttributes_methods[i].ml_name),
-                PyString_FromString(PyViewCurveAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyViewCurveAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyViewCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyViewCurveAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "domainCoords") == 0)
         obj = ViewCurveAttributes_SetDomainCoords(self, args);
@@ -503,6 +529,12 @@ PyViewCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ViewCurveAttributes_SetDomainScale(self, args);
     else if(strcmp(name, "rangeScale") == 0)
         obj = ViewCurveAttributes_SetRangeScale(self, args);
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -518,78 +550,45 @@ PyViewCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ViewCurveAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    ViewCurveAttributesObject *obj = (ViewCurveAttributesObject *)v;
-    fprintf(fp, "%s", PyViewCurveAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-ViewCurveAttributes_str(PyObject *v)
+PyViewCurveAttributes_str(PyObject *v)
 {
-    ViewCurveAttributesObject *obj = (ViewCurveAttributesObject *)v;
+    PyViewCurveAttributesObject *obj = (PyViewCurveAttributesObject *)v;
     return PyString_FromString(PyViewCurveAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *ViewCurveAttributes_Purpose = "This class contains the curve view attributes.";
-#else
-static char *ViewCurveAttributes_Purpose = "This class contains the curve view attributes.";
-#endif
+static char const *PyViewCurveAttributes_purpose = "This class contains the curve view attributes.";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(ViewCurveAttributesType,         \
-                  "ViewCurveAttributes",           \
-                  ViewCurveAttributesObject,       \
-                  ViewCurveAttributes_dealloc,     \
-                  ViewCurveAttributes_print,       \
-                  PyViewCurveAttributes_getattr,   \
-                  PyViewCurveAttributes_setattr,   \
-                  ViewCurveAttributes_str,         \
-                  ViewCurveAttributes_Purpose,     \
-                  ViewCurveAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(ViewCurveAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-ViewCurveAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyViewCurveAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &ViewCurveAttributesType
-         || Py_TYPE(other) != &ViewCurveAttributesType)
+    if ( Py_TYPE(self) != &PyViewCurveAttributesType
+         || Py_TYPE(other) != &PyViewCurveAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    ViewCurveAttributes *a = ((ViewCurveAttributesObject *)self)->data;
-    ViewCurveAttributes *b = ((ViewCurveAttributesObject *)other)->data;
+    ViewCurveAttributes *a = ((PyViewCurveAttributesObject *)self)->data;
+    ViewCurveAttributes *b = ((PyViewCurveAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -618,8 +617,8 @@ static ViewCurveAttributes *currentAtts = 0;
 static PyObject *
 NewViewCurveAttributes(int useCurrent)
 {
-    ViewCurveAttributesObject *newObject;
-    newObject = PyObject_NEW(ViewCurveAttributesObject, &ViewCurveAttributesType);
+    PyViewCurveAttributesObject *newObject;
+    newObject = PyObject_NEW(PyViewCurveAttributesObject, &PyViewCurveAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -630,14 +629,15 @@ NewViewCurveAttributes(int useCurrent)
         newObject->data = new ViewCurveAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyViewCurveAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapViewCurveAttributes(const ViewCurveAttributes *attr)
 {
-    ViewCurveAttributesObject *newObject;
-    newObject = PyObject_NEW(ViewCurveAttributesObject, &ViewCurveAttributesType);
+    PyViewCurveAttributesObject *newObject;
+    newObject = PyObject_NEW(PyViewCurveAttributesObject, &PyViewCurveAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (ViewCurveAttributes *)attr;
@@ -739,13 +739,13 @@ PyViewCurveAttributes_GetMethodTable(int *nMethods)
 bool
 PyViewCurveAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ViewCurveAttributesType);
+    return (obj->ob_type == &PyViewCurveAttributesType);
 }
 
 ViewCurveAttributes *
 PyViewCurveAttributes_FromPyObject(PyObject *obj)
 {
-    ViewCurveAttributesObject *obj2 = (ViewCurveAttributesObject *)obj;
+    PyViewCurveAttributesObject *obj2 = (PyViewCurveAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -764,7 +764,7 @@ PyViewCurveAttributes_Wrap(const ViewCurveAttributes *attr)
 void
 PyViewCurveAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    ViewCurveAttributesObject *obj2 = (ViewCurveAttributesObject *)obj;
+    PyViewCurveAttributesObject *obj2 = (PyViewCurveAttributesObject *)obj;
     obj2->parent = parent;
 }
 

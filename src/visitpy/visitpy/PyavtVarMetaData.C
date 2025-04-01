@@ -5,6 +5,7 @@
 #include <PyavtVarMetaData.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 #include <avtTypes.h>
 
@@ -24,7 +25,7 @@
 //
 // This struct contains the Python type information and a avtVarMetaData.
 //
-struct avtVarMetaDataObject
+struct PyavtVarMetaDataObject
 {
     PyObject_HEAD
     avtVarMetaData *data;
@@ -104,16 +105,44 @@ PyavtVarMetaData_ToString(const avtVarMetaData *atts, const char *prefix, const 
 static PyObject *
 avtVarMetaData_Notify(PyObject *self, PyObject *args)
 {
-    avtVarMetaDataObject *obj = (avtVarMetaDataObject *)self;
+    PyavtVarMetaDataObject *obj = (PyavtVarMetaDataObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+avtVarMetaData_dir(PyObject *self, PyObject *args)
+{
+    static avtVarMetaData atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyavtVarMetaData_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 avtVarMetaData_SetCentering(PyObject *self, PyObject *args)
 {
-    avtVarMetaDataObject *obj = (avtVarMetaDataObject *)self;
+    PyavtVarMetaDataObject *obj = (PyavtVarMetaDataObject *)self;
 
     int ival = -999;
     if (PySequence_Check(args) && !PyArg_ParseTuple(args, "i", &ival))
@@ -132,7 +161,7 @@ avtVarMetaData_SetCentering(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtVarMetaData_GetCentering(PyObject *self, PyObject *args)
 {
-    avtVarMetaDataObject *obj = (avtVarMetaDataObject *)self;
+    PyavtVarMetaDataObject *obj = (PyavtVarMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->centering));
     return retval;
 }
@@ -140,7 +169,7 @@ avtVarMetaData_GetCentering(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtVarMetaData_SetHasUnits(PyObject *self, PyObject *args)
 {
-    avtVarMetaDataObject *obj = (avtVarMetaDataObject *)self;
+    PyavtVarMetaDataObject *obj = (PyavtVarMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -192,7 +221,7 @@ avtVarMetaData_SetHasUnits(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtVarMetaData_GetHasUnits(PyObject *self, PyObject *args)
 {
-    avtVarMetaDataObject *obj = (avtVarMetaDataObject *)self;
+    PyavtVarMetaDataObject *obj = (PyavtVarMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->hasUnits?1L:0L);
     return retval;
 }
@@ -200,7 +229,7 @@ avtVarMetaData_GetHasUnits(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtVarMetaData_SetUnits(PyObject *self, PyObject *args)
 {
-    avtVarMetaDataObject *obj = (avtVarMetaDataObject *)self;
+    PyavtVarMetaDataObject *obj = (PyavtVarMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -241,7 +270,7 @@ avtVarMetaData_SetUnits(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtVarMetaData_GetUnits(PyObject *self, PyObject *args)
 {
-    avtVarMetaDataObject *obj = (avtVarMetaDataObject *)self;
+    PyavtVarMetaDataObject *obj = (PyavtVarMetaDataObject *)self;
     PyObject *retval = PyString_FromString(obj->data->units.c_str());
     return retval;
 }
@@ -249,7 +278,7 @@ avtVarMetaData_GetUnits(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtVarMetaData_SetHasDataExtents(PyObject *self, PyObject *args)
 {
-    avtVarMetaDataObject *obj = (avtVarMetaDataObject *)self;
+    PyavtVarMetaDataObject *obj = (PyavtVarMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -301,7 +330,7 @@ avtVarMetaData_SetHasDataExtents(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtVarMetaData_GetHasDataExtents(PyObject *self, PyObject *args)
 {
-    avtVarMetaDataObject *obj = (avtVarMetaDataObject *)self;
+    PyavtVarMetaDataObject *obj = (PyavtVarMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->hasDataExtents?1L:0L);
     return retval;
 }
@@ -309,7 +338,7 @@ avtVarMetaData_GetHasDataExtents(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtVarMetaData_SetMinDataExtents(PyObject *self, PyObject *args)
 {
-    avtVarMetaDataObject *obj = (avtVarMetaDataObject *)self;
+    PyavtVarMetaDataObject *obj = (PyavtVarMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -361,7 +390,7 @@ avtVarMetaData_SetMinDataExtents(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtVarMetaData_GetMinDataExtents(PyObject *self, PyObject *args)
 {
-    avtVarMetaDataObject *obj = (avtVarMetaDataObject *)self;
+    PyavtVarMetaDataObject *obj = (PyavtVarMetaDataObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->minDataExtents);
     return retval;
 }
@@ -369,7 +398,7 @@ avtVarMetaData_GetMinDataExtents(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtVarMetaData_SetMaxDataExtents(PyObject *self, PyObject *args)
 {
-    avtVarMetaDataObject *obj = (avtVarMetaDataObject *)self;
+    PyavtVarMetaDataObject *obj = (PyavtVarMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -421,7 +450,7 @@ avtVarMetaData_SetMaxDataExtents(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtVarMetaData_GetMaxDataExtents(PyObject *self, PyObject *args)
 {
-    avtVarMetaDataObject *obj = (avtVarMetaDataObject *)self;
+    PyavtVarMetaDataObject *obj = (PyavtVarMetaDataObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->maxDataExtents);
     return retval;
 }
@@ -429,7 +458,7 @@ avtVarMetaData_GetMaxDataExtents(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtVarMetaData_SetMatRestricted(PyObject *self, PyObject *args)
 {
-    avtVarMetaDataObject *obj = (avtVarMetaDataObject *)self;
+    PyavtVarMetaDataObject *obj = (PyavtVarMetaDataObject *)self;
 
     intVector vec;
 
@@ -493,7 +522,7 @@ avtVarMetaData_SetMatRestricted(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtVarMetaData_GetMatRestricted(PyObject *self, PyObject *args)
 {
-    avtVarMetaDataObject *obj = (avtVarMetaDataObject *)self;
+    PyavtVarMetaDataObject *obj = (PyavtVarMetaDataObject *)self;
     // Allocate a tuple the with enough entries to hold the matRestricted.
     const intVector &matRestricted = obj->data->matRestricted;
     PyObject *retval = PyTuple_New(matRestricted.size());
@@ -505,7 +534,8 @@ avtVarMetaData_GetMatRestricted(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyavtVarMetaData_methods[AVTVARMETADATA_NMETH] = {
-    {"Notify", avtVarMetaData_Notify, METH_VARARGS},
+    {"__dir__", avtVarMetaData_dir, METH_NOARGS},
+    {"Notify", avtVarMetaData_Notify, METH_NOARGS},
     {"SetCentering", avtVarMetaData_SetCentering, METH_VARARGS},
     {"GetCentering", avtVarMetaData_GetCentering, METH_VARARGS},
     {"SetHasUnits", avtVarMetaData_SetHasUnits, METH_VARARGS},
@@ -548,19 +578,22 @@ static void PyavtVarMetaData_ExtendSetGetMethodTable()
 //
 
 static void
-avtVarMetaData_dealloc(PyObject *v)
+PyavtVarMetaData_dealloc(PyObject *v)
 {
-   avtVarMetaDataObject *obj = (avtVarMetaDataObject *)v;
+   PyavtVarMetaDataObject *obj = (PyavtVarMetaDataObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *avtVarMetaData_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyavtVarMetaData_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyavtVarMetaData_getattr(PyObject *self, char *name)
+PyavtVarMetaData_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "centering") == 0)
         return avtVarMetaData_GetCentering(self, NULL);
     if(strcmp(name, "AVT_NODECENT") == 0)
@@ -587,36 +620,29 @@ PyavtVarMetaData_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "__methods__") != 0)
     {
-        PyObject *retval = PyavtBaseVarMetaData_getattr(self, name);
+        PyObject *retval = PyavtBaseVarMetaData_getattro(self, attr_name);
         if (retval) return retval;
     }
 
     PyavtVarMetaData_ExtendSetGetMethodTable();
+    PyObject *meth = Py_FindMethod(PyavtVarMetaData_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyavtVarMetaData_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyavtVarMetaData_methods[i].ml_name),
-                PyString_FromString(PyavtVarMetaData_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyavtVarMetaData_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyavtVarMetaData_setattr(PyObject *self, char *name, PyObject *args)
+PyavtVarMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
-    if (PyavtBaseVarMetaData_setattr(self, name, args) != -1)
+    if (PyavtBaseVarMetaData_setattro(self, attr_name, args) != -1)
         return 0;
     else
         PyErr_Clear();
 
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "centering") == 0)
         obj = avtVarMetaData_SetCentering(self, args);
@@ -633,6 +659,12 @@ PyavtVarMetaData_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "matRestricted") == 0)
         obj = avtVarMetaData_SetMatRestricted(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -647,78 +679,45 @@ PyavtVarMetaData_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-avtVarMetaData_print(PyObject *v, FILE *fp, int flags)
-{
-    avtVarMetaDataObject *obj = (avtVarMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtVarMetaData_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-avtVarMetaData_str(PyObject *v)
+PyavtVarMetaData_str(PyObject *v)
 {
-    avtVarMetaDataObject *obj = (avtVarMetaDataObject *)v;
+    PyavtVarMetaDataObject *obj = (PyavtVarMetaDataObject *)v;
     return PyString_FromString(PyavtVarMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *avtVarMetaData_Purpose = "Contains metadata attributes associated with all mesh variables";
-#else
-static char *avtVarMetaData_Purpose = "Contains metadata attributes associated with all mesh variables";
-#endif
+static char const *PyavtVarMetaData_purpose = "Contains metadata attributes associated with all mesh variables";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(avtVarMetaDataType,         \
-                  "avtVarMetaData",           \
-                  avtVarMetaDataObject,       \
-                  avtVarMetaData_dealloc,     \
-                  avtVarMetaData_print,       \
-                  PyavtVarMetaData_getattr,   \
-                  PyavtVarMetaData_setattr,   \
-                  avtVarMetaData_str,         \
-                  avtVarMetaData_Purpose,     \
-                  avtVarMetaData_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(avtVarMetaData);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-avtVarMetaData_richcompare(PyObject *self, PyObject *other, int op)
+PyavtVarMetaData_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &avtVarMetaDataType
-         || Py_TYPE(other) != &avtVarMetaDataType)
+    if ( Py_TYPE(self) != &PyavtVarMetaDataType
+         || Py_TYPE(other) != &PyavtVarMetaDataType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    avtVarMetaData *a = ((avtVarMetaDataObject *)self)->data;
-    avtVarMetaData *b = ((avtVarMetaDataObject *)other)->data;
+    avtVarMetaData *a = ((PyavtVarMetaDataObject *)self)->data;
+    avtVarMetaData *b = ((PyavtVarMetaDataObject *)other)->data;
 
     switch (op)
     {
@@ -747,8 +746,8 @@ static avtVarMetaData *currentAtts = 0;
 static PyObject *
 NewavtVarMetaData(int useCurrent)
 {
-    avtVarMetaDataObject *newObject;
-    newObject = PyObject_NEW(avtVarMetaDataObject, &avtVarMetaDataType);
+    PyavtVarMetaDataObject *newObject;
+    newObject = PyObject_NEW(PyavtVarMetaDataObject, &PyavtVarMetaDataType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -759,14 +758,15 @@ NewavtVarMetaData(int useCurrent)
         newObject->data = new avtVarMetaData;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyavtVarMetaDataType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapavtVarMetaData(const avtVarMetaData *attr)
 {
-    avtVarMetaDataObject *newObject;
-    newObject = PyObject_NEW(avtVarMetaDataObject, &avtVarMetaDataType);
+    PyavtVarMetaDataObject *newObject;
+    newObject = PyObject_NEW(PyavtVarMetaDataObject, &PyavtVarMetaDataType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (avtVarMetaData *)attr;
@@ -868,13 +868,13 @@ PyavtVarMetaData_GetMethodTable(int *nMethods)
 bool
 PyavtVarMetaData_Check(PyObject *obj)
 {
-    return (obj->ob_type == &avtVarMetaDataType);
+    return (obj->ob_type == &PyavtVarMetaDataType);
 }
 
 avtVarMetaData *
 PyavtVarMetaData_FromPyObject(PyObject *obj)
 {
-    avtVarMetaDataObject *obj2 = (avtVarMetaDataObject *)obj;
+    PyavtVarMetaDataObject *obj2 = (PyavtVarMetaDataObject *)obj;
     return obj2->data;
 }
 
@@ -893,7 +893,7 @@ PyavtVarMetaData_Wrap(const avtVarMetaData *attr)
 void
 PyavtVarMetaData_SetParent(PyObject *obj, PyObject *parent)
 {
-    avtVarMetaDataObject *obj2 = (avtVarMetaDataObject *)obj;
+    PyavtVarMetaDataObject *obj2 = (PyavtVarMetaDataObject *)obj;
     obj2->parent = parent;
 }
 

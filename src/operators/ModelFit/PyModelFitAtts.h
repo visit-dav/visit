@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define MODELFITATTS_NMETH 24
+#define MODELFITATTS_NMETH 25
 void           PyModelFitAtts_StartUp(ModelFitAtts *subj, void *data);
 void           PyModelFitAtts_CloseDown();
 PyMethodDef *  PyModelFitAtts_GetMethodTable(int *nMethods);
@@ -23,8 +23,8 @@ void           PyModelFitAtts_SetParent(PyObject *obj, PyObject *parent);
 void           PyModelFitAtts_SetDefaults(const ModelFitAtts *atts);
 std::string    PyModelFitAtts_GetLogString();
 std::string    PyModelFitAtts_ToString(const ModelFitAtts *, const char *, const bool=false);
-PyObject *     PyModelFitAtts_getattr(PyObject *self, char *name);
-int            PyModelFitAtts_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PyModelFitAtts_getattro(PyObject *self, PyObject *attr_name);
+int            PyModelFitAtts_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PyModelFitAtts_methods[MODELFITATTS_NMETH];
 
 #endif

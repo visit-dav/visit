@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define FILLEDBOUNDARYATTRIBUTES_NMETH 40
+#define FILLEDBOUNDARYATTRIBUTES_NMETH 41
 void           PyFilledBoundaryAttributes_StartUp(FilledBoundaryAttributes *subj, void *data);
 void           PyFilledBoundaryAttributes_CloseDown();
 PyMethodDef *  PyFilledBoundaryAttributes_GetMethodTable(int *nMethods);
@@ -23,8 +23,8 @@ void           PyFilledBoundaryAttributes_SetParent(PyObject *obj, PyObject *par
 void           PyFilledBoundaryAttributes_SetDefaults(const FilledBoundaryAttributes *atts);
 std::string    PyFilledBoundaryAttributes_GetLogString();
 std::string    PyFilledBoundaryAttributes_ToString(const FilledBoundaryAttributes *, const char *, const bool=false);
-PyObject *     PyFilledBoundaryAttributes_getattr(PyObject *self, char *name);
-int            PyFilledBoundaryAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PyFilledBoundaryAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyFilledBoundaryAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PyFilledBoundaryAttributes_methods[FILLEDBOUNDARYATTRIBUTES_NMETH];
 
 #endif

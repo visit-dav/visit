@@ -31,7 +31,7 @@ extern bool DeleteAnnotationObjectHelper(AnnotationObject *);
 //
 // This struct contains the Python type information and a AnnotationObject.
 //
-struct Line3DObjectObject
+struct PyLine3DObjectObject
 {
     PyObject_HEAD
     AnnotationObject *data;
@@ -46,7 +46,7 @@ static PyObject *NewLine3DObject();
 static PyObject *
 Line3DObject_SetVisible(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -63,7 +63,7 @@ Line3DObject_SetVisible(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_GetVisible(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetVisible()?1L:0L);
     return retval;
 }
@@ -71,7 +71,7 @@ Line3DObject_GetVisible(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_SetActive(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -88,7 +88,7 @@ Line3DObject_SetActive(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_GetActive(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetActive()?1L:0L);
     return retval;
 }
@@ -96,7 +96,7 @@ Line3DObject_GetActive(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_SetPosition(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
 
     double *dvals = obj->data->GetPosition();
     if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
@@ -139,7 +139,7 @@ Line3DObject_SetPosition(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_GetPosition(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
     // Allocate a tuple the with enough entries to hold the position.
     PyObject *retval = PyTuple_New(3);
     const double *position = obj->data->GetPosition();
@@ -151,7 +151,7 @@ Line3DObject_GetPosition(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_SetPosition2(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
 
     double *dvals = obj->data->GetPosition2();
     if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
@@ -194,7 +194,7 @@ Line3DObject_SetPosition2(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_GetPosition2(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
     // Allocate a tuple the with enough entries to hold the position2.
     PyObject *retval = PyTuple_New(3);
     const double *position2 = obj->data->GetPosition2();
@@ -206,7 +206,7 @@ Line3DObject_GetPosition2(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_SetLineType(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -234,7 +234,7 @@ Line3DObject_SetLineType(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_GetLineType(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetOptions().GetEntry("lineType")->AsInt()));
     return retval;
 }
@@ -242,7 +242,7 @@ Line3DObject_GetLineType(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_SetWidth(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -259,7 +259,7 @@ Line3DObject_SetWidth(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_GetWidth(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetOptions().GetEntry("width")->AsInt()));
     return retval;
 }
@@ -267,7 +267,7 @@ Line3DObject_GetWidth(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_SetTubeQuality(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -295,7 +295,7 @@ Line3DObject_SetTubeQuality(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_GetTubeQuality(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetOptions().GetEntry("tubeQuality")->AsInt()));
     return retval;
 }
@@ -303,7 +303,7 @@ Line3DObject_GetTubeQuality(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_SetTubeRadius(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
@@ -318,7 +318,7 @@ Line3DObject_SetTubeRadius(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_GetTubeRadius(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetOptions().GetEntry("tubeRadius")->AsDouble());
     return retval;
 }
@@ -326,7 +326,7 @@ Line3DObject_GetTubeRadius(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_SetColor(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -390,7 +390,7 @@ Line3DObject_SetColor(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_GetColor(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
     // Allocate a tuple the with enough entries to hold the color.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *color = obj->data->GetColor1().GetColor();
@@ -404,7 +404,7 @@ Line3DObject_GetColor(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_SetUseForegroundForLineColor(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -421,7 +421,7 @@ Line3DObject_SetUseForegroundForLineColor(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_GetUseForegroundForLineColor(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetUseForegroundForTextColor()?1L:0L);
     return retval;
 }
@@ -429,7 +429,7 @@ Line3DObject_GetUseForegroundForLineColor(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_SetOpacity(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -446,7 +446,7 @@ Line3DObject_SetOpacity(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_GetOpacity(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetColor1().Alpha()));
     return retval;
 }
@@ -454,7 +454,7 @@ Line3DObject_GetOpacity(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_SetArrow1(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -470,7 +470,7 @@ Line3DObject_SetArrow1(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_GetArrow1(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetOptions().GetEntry("arrow1")->AsBool()));
     return retval;
 }
@@ -478,7 +478,7 @@ Line3DObject_GetArrow1(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_SetArrow1Resolution(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -494,7 +494,7 @@ Line3DObject_SetArrow1Resolution(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_GetArrow1Resolution(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetOptions().GetEntry("arrow1Resolution")->AsInt()));
     return retval;
 }
@@ -503,7 +503,7 @@ Line3DObject_GetArrow1Resolution(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_SetArrow1Radius(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
@@ -519,7 +519,7 @@ Line3DObject_SetArrow1Radius(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_GetArrow1Radius(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetOptions().GetEntry("arrow1Radius")->AsDouble());
     return retval;
 }
@@ -527,7 +527,7 @@ Line3DObject_GetArrow1Radius(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_SetArrow1Height(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
@@ -543,7 +543,7 @@ Line3DObject_SetArrow1Height(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_GetArrow1Height(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetOptions().GetEntry("arrow1Height")->AsDouble());
     return retval;
 }
@@ -551,7 +551,7 @@ Line3DObject_GetArrow1Height(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_SetArrow2(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -567,7 +567,7 @@ Line3DObject_SetArrow2(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_GetArrow2(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetOptions().GetEntry("arrow2")->AsInt()));
     return retval;
 }
@@ -575,7 +575,7 @@ Line3DObject_GetArrow2(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_SetArrow2Resolution(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -591,7 +591,7 @@ Line3DObject_SetArrow2Resolution(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_GetArrow2Resolution(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetOptions().GetEntry("arrow2Resolution")->AsInt()));
     return retval;
 }
@@ -600,7 +600,7 @@ Line3DObject_GetArrow2Resolution(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_SetArrow2Radius(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
@@ -616,7 +616,7 @@ Line3DObject_SetArrow2Radius(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_GetArrow2Radius(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetOptions().GetEntry("arrow2Radius")->AsDouble());
     return retval;
 }
@@ -624,7 +624,7 @@ Line3DObject_GetArrow2Radius(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_SetArrow2Height(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
@@ -640,7 +640,7 @@ Line3DObject_SetArrow2Height(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_GetArrow2Height(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetOptions().GetEntry("arrow2Height")->AsDouble());
     return retval;
 }
@@ -648,7 +648,7 @@ Line3DObject_GetArrow2Height(PyObject *self, PyObject *args)
 static PyObject *
 Line3DObject_Delete(PyObject *self, PyObject *args)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)self;
 
     // Tell the VisIt module to decrement the reference count for the
     // AnnotationObject pointed to by obj->data. If there are no more
@@ -659,7 +659,11 @@ Line3DObject_Delete(PyObject *self, PyObject *args)
     return Py_None;
 }
 
-static struct PyMethodDef Line3DObject_methods[] = {
+// Forward declaration for methods table
+static PyObject * Line3DObject_dir(PyObject *self, PyObject *args);
+
+static struct PyMethodDef PyLine3DObject_methods[] = {
+    {"__dir__", Line3DObject_dir, METH_NOARGS},
     {"SetVisible", Line3DObject_SetVisible, METH_VARARGS},
     {"GetVisible", Line3DObject_GetVisible, METH_VARARGS},
     {"SetActive", Line3DObject_SetActive, METH_VARARGS},
@@ -702,14 +706,42 @@ static struct PyMethodDef Line3DObject_methods[] = {
     {NULL, NULL}
 };
 
+static PyObject *
+Line3DObject_dir(PyObject *self, PyObject *args)
+{
+    static AnnotationObject atts; // dummy to access field names
+    
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL; 
+    }
+    
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyLine3DObject_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+    
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}   
+
 //
 // Type functions
 //
 
 static void
-Line3DObject_dealloc(PyObject *v)
+PyLine3DObject_dealloc(PyObject *v)
 {
-   Line3DObjectObject *obj = (Line3DObjectObject *)v;
+   PyLine3DObjectObject *obj = (PyLine3DObjectObject *)v;
    if(obj->owns)
        delete obj->data;
 }
@@ -718,14 +750,17 @@ Line3DObject_dealloc(PyObject *v)
 // static int
 // Line3DObject_compare(PyObject *v, PyObject *w)
 // {
-//     AnnotationObject *a = ((Line3DObjectObject *)v)->data;
-//     AnnotationObject *b = ((Line3DObjectObject *)w)->data;
+//     AnnotationObject *a = ((PyLine3DObjectObject *)v)->data;
+//     AnnotationObject *b = ((PyLine3DObjectObject *)w)->data;
 //     return (*a == *b) ? 0 : -1;
 // }
 
 static PyObject *
-Line3DObject_getattr(PyObject *self, char *name)
+PyLine3DObject_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "visible") == 0)
         return Line3DObject_GetVisible(self, NULL);
     if(strcmp(name, "active") == 0)
@@ -776,15 +811,19 @@ Line3DObject_getattr(PyObject *self, char *name)
     if(strcmp(name, "arrow2Height") == 0)
         return Line3DObject_GetArrow2Height(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyLine3DObject_methods, self, (char*)name);
+    if (meth) return meth;
 
-    return Py_FindMethod(Line3DObject_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 static int
-Line3DObject_setattr(PyObject *self, char *name, PyObject *args)
+PyLine3DObject_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     // Create a tuple to contain the arguments since all of the Set
     // functions expect a tuple.
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
     PyObject *tuple = PyTuple_New(1);
     PyTuple_SET_ITEM(tuple, 0, args);
     Py_INCREF(args);
@@ -828,6 +867,8 @@ Line3DObject_setattr(PyObject *self, char *name, PyObject *args)
         retval = (Line3DObject_SetArrow2Radius(self, tuple) != NULL);
     else if(strcmp(name, "arrow2Height") == 0)
         retval = (Line3DObject_SetArrow2Height(self, tuple) != NULL);
+    else
+        retval = PyObject_GenericSetAttr(self, attr_name, args);
 
     Py_DECREF(tuple);
     return retval ? 0 : -1;
@@ -929,80 +970,49 @@ PyLine3DObject_ToString(const AnnotationObject *atts, const char *prefix)
     return str;
 }
 
-static int
-Line3DObject_print(PyObject *v, FILE *fp, int flags)
-{
-    Line3DObjectObject *obj = (Line3DObjectObject *)v;
-    fprintf(fp, "%s", PyLine3DObject_ToString(obj->data, "").c_str());
-    return 0;
-}
-
 static PyObject *
-Line3DObject_str(PyObject *v)
+PyLine3DObject_str(PyObject *v)
 {
-    Line3DObjectObject *obj = (Line3DObjectObject *)v;
+    PyLine3DObjectObject *obj = (PyLine3DObjectObject *)v;
     return PyString_FromString(PyLine3DObject_ToString(obj->data,"").c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *Line3DObject_Purpose = "This class defines defines an interface to a 3D line object.";
-#else
-static char *Line3DObject_Purpose = "This class defines defines an interface to a 3D line object.";
-#endif
+static char const *PyLine3DObject_purpose = "This class defines defines an interface to a 3D line object.";
 
 // CUSTOM
-static PyObject *Line3DObject_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyLine3DObject_richcompare(PyObject *self, PyObject *other, int op);
 
 // CUSTOM
-
-//
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-VISIT_PY_TYPE_OBJ(Line3DObjectType,
-                  "Line3DObject",
-                  Line3DObjectObject,
-                  Line3DObject_dealloc,
-                  Line3DObject_print,
-                  Line3DObject_getattr,
-                  Line3DObject_setattr,
-                  Line3DObject_str,
-                  Line3DObject_Purpose,
-                  Line3DObject_richcompare,
-                  0); /* as_number */
+// Re-define tp slots for this custom object
+#undef VISIT_PY_TYPE_OBJ_TP_SLOTS
+#define VISIT_PY_TYPE_OBJ_TP_SLOTS(VSObjName)                          \
+    VISIT_PY_TYPE_OBJ_SLOT2(VSObjName, doc, purpose);                  \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, dealloc);                       \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, getattro);                      \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, setattro);                      \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, str);                           \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, richcompare);                   \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, methods)
+VISIT_PY_TYPE_OBJ(Line3DObject);
 
 // CUSTOM
 static PyObject *
-Line3DObject_richcompare(PyObject *self, PyObject *other, int op)
+PyLine3DObject_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type
     if ( Py_TYPE(self) != Py_TYPE(other)
-         || Py_TYPE(self) != &Line3DObjectType)
+         || Py_TYPE(self) != &PyLine3DObjectType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    AnnotationObject *a = ((Line3DObjectObject *)self)->data;
-    AnnotationObject *b = ((Line3DObjectObject *)other)->data;
+    AnnotationObject *a = ((PyLine3DObjectObject *)self)->data;
+    AnnotationObject *b = ((PyLine3DObjectObject *)other)->data;
 
     switch (op)
     {
@@ -1029,25 +1039,27 @@ Line3DObject_richcompare(PyObject *self, PyObject *other, int op)
 static PyObject *
 NewLine3DObject()
 {
-    Line3DObjectObject *newObject;
-    newObject = PyObject_NEW(Line3DObjectObject, &Line3DObjectType);
+    PyLine3DObjectObject *newObject;
+    newObject = PyObject_NEW(PyLine3DObjectObject, &PyLine3DObjectType);
     if(newObject == NULL)
         return NULL;
     newObject->data = new AnnotationObject;
     newObject->data->SetObjectType(AnnotationObject::Line3D);
     newObject->owns = true;
+    PyType_Ready(&PyLine3DObjectType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapLine3DObject(AnnotationObject *annot)
 {
-    Line3DObjectObject *newObject;
-    newObject = PyObject_NEW(Line3DObjectObject, &Line3DObjectType);
+    PyLine3DObjectObject *newObject;
+    newObject = PyObject_NEW(PyLine3DObjectObject, &PyLine3DObjectType);
     if(newObject == NULL)
         return NULL;
     newObject->data = annot;
     newObject->owns = false;
+    PyType_Ready(&PyLine3DObjectType);
     return (PyObject *)newObject;
 }
 
@@ -1060,13 +1072,13 @@ WrapLine3DObject(AnnotationObject *annot)
 bool
 PyLine3DObject_Check(PyObject *obj)
 {
-    return (obj->ob_type == &Line3DObjectType);
+    return (obj->ob_type == &PyLine3DObjectType);
 }
 
 AnnotationObject *
 PyLine3DObject_FromPyObject(PyObject *obj)
 {
-    Line3DObjectObject *obj2 = (Line3DObjectObject *)obj;
+    PyLine3DObjectObject *obj2 = (PyLine3DObjectObject *)obj;
     return obj2->data;
 }
 

@@ -5,6 +5,7 @@
 #include <PyCylinderAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a CylinderAttributes.
 //
-struct CylinderAttributesObject
+struct PyCylinderAttributesObject
 {
     PyObject_HEAD
     CylinderAttributes *data;
@@ -86,16 +87,44 @@ PyCylinderAttributes_ToString(const CylinderAttributes *atts, const char *prefix
 static PyObject *
 CylinderAttributes_Notify(PyObject *self, PyObject *args)
 {
-    CylinderAttributesObject *obj = (CylinderAttributesObject *)self;
+    PyCylinderAttributesObject *obj = (PyCylinderAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+CylinderAttributes_dir(PyObject *self, PyObject *args)
+{
+    static CylinderAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyCylinderAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 CylinderAttributes_SetPoint1(PyObject *self, PyObject *args)
 {
-    CylinderAttributesObject *obj = (CylinderAttributesObject *)self;
+    PyCylinderAttributesObject *obj = (PyCylinderAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetPoint1();
@@ -162,7 +191,7 @@ CylinderAttributes_SetPoint1(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CylinderAttributes_GetPoint1(PyObject *self, PyObject *args)
 {
-    CylinderAttributesObject *obj = (CylinderAttributesObject *)self;
+    PyCylinderAttributesObject *obj = (PyCylinderAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the point1.
     PyObject *retval = PyTuple_New(3);
     const double *point1 = obj->data->GetPoint1();
@@ -174,7 +203,7 @@ CylinderAttributes_GetPoint1(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CylinderAttributes_SetPoint2(PyObject *self, PyObject *args)
 {
-    CylinderAttributesObject *obj = (CylinderAttributesObject *)self;
+    PyCylinderAttributesObject *obj = (PyCylinderAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetPoint2();
@@ -241,7 +270,7 @@ CylinderAttributes_SetPoint2(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CylinderAttributes_GetPoint2(PyObject *self, PyObject *args)
 {
-    CylinderAttributesObject *obj = (CylinderAttributesObject *)self;
+    PyCylinderAttributesObject *obj = (PyCylinderAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the point2.
     PyObject *retval = PyTuple_New(3);
     const double *point2 = obj->data->GetPoint2();
@@ -253,7 +282,7 @@ CylinderAttributes_GetPoint2(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CylinderAttributes_SetRadius(PyObject *self, PyObject *args)
 {
-    CylinderAttributesObject *obj = (CylinderAttributesObject *)self;
+    PyCylinderAttributesObject *obj = (PyCylinderAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -305,7 +334,7 @@ CylinderAttributes_SetRadius(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CylinderAttributes_GetRadius(PyObject *self, PyObject *args)
 {
-    CylinderAttributesObject *obj = (CylinderAttributesObject *)self;
+    PyCylinderAttributesObject *obj = (PyCylinderAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetRadius());
     return retval;
 }
@@ -313,7 +342,7 @@ CylinderAttributes_GetRadius(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CylinderAttributes_SetInverse(PyObject *self, PyObject *args)
 {
-    CylinderAttributesObject *obj = (CylinderAttributesObject *)self;
+    PyCylinderAttributesObject *obj = (PyCylinderAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -365,7 +394,7 @@ CylinderAttributes_SetInverse(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CylinderAttributes_GetInverse(PyObject *self, PyObject *args)
 {
-    CylinderAttributesObject *obj = (CylinderAttributesObject *)self;
+    PyCylinderAttributesObject *obj = (PyCylinderAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetInverse()?1L:0L);
     return retval;
 }
@@ -373,7 +402,8 @@ CylinderAttributes_GetInverse(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyCylinderAttributes_methods[CYLINDERATTRIBUTES_NMETH] = {
-    {"Notify", CylinderAttributes_Notify, METH_VARARGS},
+    {"__dir__", CylinderAttributes_dir, METH_NOARGS},
+    {"Notify", CylinderAttributes_Notify, METH_NOARGS},
     {"SetPoint1", CylinderAttributes_SetPoint1, METH_VARARGS},
     {"GetPoint1", CylinderAttributes_GetPoint1, METH_VARARGS},
     {"SetPoint2", CylinderAttributes_SetPoint2, METH_VARARGS},
@@ -390,19 +420,22 @@ PyMethodDef PyCylinderAttributes_methods[CYLINDERATTRIBUTES_NMETH] = {
 //
 
 static void
-CylinderAttributes_dealloc(PyObject *v)
+PyCylinderAttributes_dealloc(PyObject *v)
 {
-   CylinderAttributesObject *obj = (CylinderAttributesObject *)v;
+   PyCylinderAttributesObject *obj = (PyCylinderAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *CylinderAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyCylinderAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyCylinderAttributes_getattr(PyObject *self, char *name)
+PyCylinderAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "point1") == 0)
         return CylinderAttributes_GetPoint1(self, NULL);
     if(strcmp(name, "point2") == 0)
@@ -412,26 +445,19 @@ PyCylinderAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "inverse") == 0)
         return CylinderAttributes_GetInverse(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyCylinderAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyCylinderAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyCylinderAttributes_methods[i].ml_name),
-                PyString_FromString(PyCylinderAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyCylinderAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyCylinderAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyCylinderAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "point1") == 0)
         obj = CylinderAttributes_SetPoint1(self, args);
@@ -441,6 +467,12 @@ PyCylinderAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = CylinderAttributes_SetRadius(self, args);
     else if(strcmp(name, "inverse") == 0)
         obj = CylinderAttributes_SetInverse(self, args);
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -456,78 +488,45 @@ PyCylinderAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-CylinderAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    CylinderAttributesObject *obj = (CylinderAttributesObject *)v;
-    fprintf(fp, "%s", PyCylinderAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-CylinderAttributes_str(PyObject *v)
+PyCylinderAttributes_str(PyObject *v)
 {
-    CylinderAttributesObject *obj = (CylinderAttributesObject *)v;
+    PyCylinderAttributesObject *obj = (PyCylinderAttributesObject *)v;
     return PyString_FromString(PyCylinderAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *CylinderAttributes_Purpose = "Contain the attributes for a cylinder";
-#else
-static char *CylinderAttributes_Purpose = "Contain the attributes for a cylinder";
-#endif
+static char const *PyCylinderAttributes_purpose = "Contain the attributes for a cylinder";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(CylinderAttributesType,         \
-                  "CylinderAttributes",           \
-                  CylinderAttributesObject,       \
-                  CylinderAttributes_dealloc,     \
-                  CylinderAttributes_print,       \
-                  PyCylinderAttributes_getattr,   \
-                  PyCylinderAttributes_setattr,   \
-                  CylinderAttributes_str,         \
-                  CylinderAttributes_Purpose,     \
-                  CylinderAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(CylinderAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-CylinderAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyCylinderAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &CylinderAttributesType
-         || Py_TYPE(other) != &CylinderAttributesType)
+    if ( Py_TYPE(self) != &PyCylinderAttributesType
+         || Py_TYPE(other) != &PyCylinderAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    CylinderAttributes *a = ((CylinderAttributesObject *)self)->data;
-    CylinderAttributes *b = ((CylinderAttributesObject *)other)->data;
+    CylinderAttributes *a = ((PyCylinderAttributesObject *)self)->data;
+    CylinderAttributes *b = ((PyCylinderAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -556,8 +555,8 @@ static CylinderAttributes *currentAtts = 0;
 static PyObject *
 NewCylinderAttributes(int useCurrent)
 {
-    CylinderAttributesObject *newObject;
-    newObject = PyObject_NEW(CylinderAttributesObject, &CylinderAttributesType);
+    PyCylinderAttributesObject *newObject;
+    newObject = PyObject_NEW(PyCylinderAttributesObject, &PyCylinderAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -568,14 +567,15 @@ NewCylinderAttributes(int useCurrent)
         newObject->data = new CylinderAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyCylinderAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapCylinderAttributes(const CylinderAttributes *attr)
 {
-    CylinderAttributesObject *newObject;
-    newObject = PyObject_NEW(CylinderAttributesObject, &CylinderAttributesType);
+    PyCylinderAttributesObject *newObject;
+    newObject = PyObject_NEW(PyCylinderAttributesObject, &PyCylinderAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (CylinderAttributes *)attr;
@@ -677,13 +677,13 @@ PyCylinderAttributes_GetMethodTable(int *nMethods)
 bool
 PyCylinderAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &CylinderAttributesType);
+    return (obj->ob_type == &PyCylinderAttributesType);
 }
 
 CylinderAttributes *
 PyCylinderAttributes_FromPyObject(PyObject *obj)
 {
-    CylinderAttributesObject *obj2 = (CylinderAttributesObject *)obj;
+    PyCylinderAttributesObject *obj2 = (PyCylinderAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -702,7 +702,7 @@ PyCylinderAttributes_Wrap(const CylinderAttributes *attr)
 void
 PyCylinderAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    CylinderAttributesObject *obj2 = (CylinderAttributesObject *)obj;
+    PyCylinderAttributesObject *obj2 = (PyCylinderAttributesObject *)obj;
     obj2->parent = parent;
 }
 
