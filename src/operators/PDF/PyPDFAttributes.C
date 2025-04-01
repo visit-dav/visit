@@ -5,6 +5,7 @@
 #include <PyPDFAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a PDFAttributes.
 //
-struct PDFAttributesObject
+struct PyPDFAttributesObject
 {
     PyObject_HEAD
     PDFAttributes *data;
@@ -199,16 +200,44 @@ PyPDFAttributes_ToString(const PDFAttributes *atts, const char *prefix, const bo
 static PyObject *
 PDFAttributes_Notify(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+PDFAttributes_dir(PyObject *self, PyObject *args)
+{
+    static PDFAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyPDFAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 PDFAttributes_SetVar1(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -249,7 +278,7 @@ PDFAttributes_SetVar1(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_GetVar1(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetVar1().c_str());
     return retval;
 }
@@ -257,7 +286,7 @@ PDFAttributes_GetVar1(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_SetVar1MinFlag(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -309,7 +338,7 @@ PDFAttributes_SetVar1MinFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_GetVar1MinFlag(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetVar1MinFlag()?1L:0L);
     return retval;
 }
@@ -317,7 +346,7 @@ PDFAttributes_GetVar1MinFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_SetVar1MaxFlag(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -369,7 +398,7 @@ PDFAttributes_SetVar1MaxFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_GetVar1MaxFlag(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetVar1MaxFlag()?1L:0L);
     return retval;
 }
@@ -377,7 +406,7 @@ PDFAttributes_GetVar1MaxFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_SetVar1Min(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -429,7 +458,7 @@ PDFAttributes_SetVar1Min(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_GetVar1Min(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetVar1Min());
     return retval;
 }
@@ -437,7 +466,7 @@ PDFAttributes_GetVar1Min(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_SetVar1Max(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -489,7 +518,7 @@ PDFAttributes_SetVar1Max(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_GetVar1Max(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetVar1Max());
     return retval;
 }
@@ -497,7 +526,7 @@ PDFAttributes_GetVar1Max(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_SetVar1Scaling(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -556,7 +585,7 @@ PDFAttributes_SetVar1Scaling(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_GetVar1Scaling(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetVar1Scaling()));
     return retval;
 }
@@ -564,7 +593,7 @@ PDFAttributes_GetVar1Scaling(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_SetVar1SkewFactor(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -616,7 +645,7 @@ PDFAttributes_SetVar1SkewFactor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_GetVar1SkewFactor(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetVar1SkewFactor());
     return retval;
 }
@@ -624,7 +653,7 @@ PDFAttributes_GetVar1SkewFactor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_SetVar1NumSamples(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -676,7 +705,7 @@ PDFAttributes_SetVar1NumSamples(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_GetVar1NumSamples(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetVar1NumSamples()));
     return retval;
 }
@@ -684,7 +713,7 @@ PDFAttributes_GetVar1NumSamples(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_SetVar2(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -725,7 +754,7 @@ PDFAttributes_SetVar2(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_GetVar2(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetVar2().c_str());
     return retval;
 }
@@ -733,7 +762,7 @@ PDFAttributes_GetVar2(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_SetVar2MinFlag(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -785,7 +814,7 @@ PDFAttributes_SetVar2MinFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_GetVar2MinFlag(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetVar2MinFlag()?1L:0L);
     return retval;
 }
@@ -793,7 +822,7 @@ PDFAttributes_GetVar2MinFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_SetVar2MaxFlag(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -845,7 +874,7 @@ PDFAttributes_SetVar2MaxFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_GetVar2MaxFlag(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetVar2MaxFlag()?1L:0L);
     return retval;
 }
@@ -853,7 +882,7 @@ PDFAttributes_GetVar2MaxFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_SetVar2Min(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -905,7 +934,7 @@ PDFAttributes_SetVar2Min(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_GetVar2Min(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetVar2Min());
     return retval;
 }
@@ -913,7 +942,7 @@ PDFAttributes_GetVar2Min(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_SetVar2Max(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -965,7 +994,7 @@ PDFAttributes_SetVar2Max(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_GetVar2Max(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetVar2Max());
     return retval;
 }
@@ -973,7 +1002,7 @@ PDFAttributes_GetVar2Max(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_SetVar2Scaling(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1032,7 +1061,7 @@ PDFAttributes_SetVar2Scaling(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_GetVar2Scaling(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetVar2Scaling()));
     return retval;
 }
@@ -1040,7 +1069,7 @@ PDFAttributes_GetVar2Scaling(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_SetVar2SkewFactor(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1092,7 +1121,7 @@ PDFAttributes_SetVar2SkewFactor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_GetVar2SkewFactor(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetVar2SkewFactor());
     return retval;
 }
@@ -1100,7 +1129,7 @@ PDFAttributes_GetVar2SkewFactor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_SetVar2NumSamples(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1152,7 +1181,7 @@ PDFAttributes_SetVar2NumSamples(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_GetVar2NumSamples(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetVar2NumSamples()));
     return retval;
 }
@@ -1160,7 +1189,7 @@ PDFAttributes_GetVar2NumSamples(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_SetNumAxes(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1218,7 +1247,7 @@ PDFAttributes_SetNumAxes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_GetNumAxes(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNumAxes()));
     return retval;
 }
@@ -1226,7 +1255,7 @@ PDFAttributes_GetNumAxes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_SetVar3(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1267,7 +1296,7 @@ PDFAttributes_SetVar3(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_GetVar3(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetVar3().c_str());
     return retval;
 }
@@ -1275,7 +1304,7 @@ PDFAttributes_GetVar3(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_SetVar3MinFlag(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1327,7 +1356,7 @@ PDFAttributes_SetVar3MinFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_GetVar3MinFlag(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetVar3MinFlag()?1L:0L);
     return retval;
 }
@@ -1335,7 +1364,7 @@ PDFAttributes_GetVar3MinFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_SetVar3MaxFlag(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1387,7 +1416,7 @@ PDFAttributes_SetVar3MaxFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_GetVar3MaxFlag(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetVar3MaxFlag()?1L:0L);
     return retval;
 }
@@ -1395,7 +1424,7 @@ PDFAttributes_GetVar3MaxFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_SetVar3Min(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1447,7 +1476,7 @@ PDFAttributes_SetVar3Min(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_GetVar3Min(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetVar3Min());
     return retval;
 }
@@ -1455,7 +1484,7 @@ PDFAttributes_GetVar3Min(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_SetVar3Max(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1507,7 +1536,7 @@ PDFAttributes_SetVar3Max(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_GetVar3Max(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetVar3Max());
     return retval;
 }
@@ -1515,7 +1544,7 @@ PDFAttributes_GetVar3Max(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_SetVar3Scaling(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1574,7 +1603,7 @@ PDFAttributes_SetVar3Scaling(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_GetVar3Scaling(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetVar3Scaling()));
     return retval;
 }
@@ -1582,7 +1611,7 @@ PDFAttributes_GetVar3Scaling(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_SetVar3SkewFactor(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1634,7 +1663,7 @@ PDFAttributes_SetVar3SkewFactor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_GetVar3SkewFactor(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetVar3SkewFactor());
     return retval;
 }
@@ -1642,7 +1671,7 @@ PDFAttributes_GetVar3SkewFactor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_SetVar3NumSamples(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1694,7 +1723,7 @@ PDFAttributes_SetVar3NumSamples(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_GetVar3NumSamples(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetVar3NumSamples()));
     return retval;
 }
@@ -1702,7 +1731,7 @@ PDFAttributes_GetVar3NumSamples(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_SetScaleCube(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1754,7 +1783,7 @@ PDFAttributes_SetScaleCube(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_GetScaleCube(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetScaleCube()?1L:0L);
     return retval;
 }
@@ -1762,7 +1791,7 @@ PDFAttributes_GetScaleCube(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_SetDensityType(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1820,7 +1849,7 @@ PDFAttributes_SetDensityType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 PDFAttributes_GetDensityType(PyObject *self, PyObject *args)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)self;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetDensityType()));
     return retval;
 }
@@ -1828,7 +1857,8 @@ PDFAttributes_GetDensityType(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyPDFAttributes_methods[PDFATTRIBUTES_NMETH] = {
-    {"Notify", PDFAttributes_Notify, METH_VARARGS},
+    {"__dir__", PDFAttributes_dir, METH_NOARGS},
+    {"Notify", PDFAttributes_Notify, METH_NOARGS},
     {"SetVar1", PDFAttributes_SetVar1, METH_VARARGS},
     {"GetVar1", PDFAttributes_GetVar1, METH_VARARGS},
     {"SetVar1MinFlag", PDFAttributes_SetVar1MinFlag, METH_VARARGS},
@@ -1891,19 +1921,22 @@ PyMethodDef PyPDFAttributes_methods[PDFATTRIBUTES_NMETH] = {
 //
 
 static void
-PDFAttributes_dealloc(PyObject *v)
+PyPDFAttributes_dealloc(PyObject *v)
 {
-   PDFAttributesObject *obj = (PDFAttributesObject *)v;
+   PyPDFAttributesObject *obj = (PyPDFAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *PDFAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyPDFAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyPDFAttributes_getattr(PyObject *self, char *name)
+PyPDFAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "var1") == 0)
         return PDFAttributes_GetVar1(self, NULL);
     if(strcmp(name, "var1MinFlag") == 0)
@@ -1990,26 +2023,19 @@ PyPDFAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(PDFAttributes::ZoneCount));
 
 
+    PyObject *meth = Py_FindMethod(PyPDFAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyPDFAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyPDFAttributes_methods[i].ml_name),
-                PyString_FromString(PyPDFAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyPDFAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyPDFAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyPDFAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "var1") == 0)
         obj = PDFAttributes_SetVar1(self, args);
@@ -2066,6 +2092,12 @@ PyPDFAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "densityType") == 0)
         obj = PDFAttributes_SetDensityType(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -2080,78 +2112,45 @@ PyPDFAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-PDFAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    PDFAttributesObject *obj = (PDFAttributesObject *)v;
-    fprintf(fp, "%s", PyPDFAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-PDFAttributes_str(PyObject *v)
+PyPDFAttributes_str(PyObject *v)
 {
-    PDFAttributesObject *obj = (PDFAttributesObject *)v;
+    PyPDFAttributesObject *obj = (PyPDFAttributesObject *)v;
     return PyString_FromString(PyPDFAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *PDFAttributes_Purpose = "Attributes for the PDF operator";
-#else
-static char *PDFAttributes_Purpose = "Attributes for the PDF operator";
-#endif
+static char const *PyPDFAttributes_purpose = "Attributes for the PDF operator";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(PDFAttributesType,         \
-                  "PDFAttributes",           \
-                  PDFAttributesObject,       \
-                  PDFAttributes_dealloc,     \
-                  PDFAttributes_print,       \
-                  PyPDFAttributes_getattr,   \
-                  PyPDFAttributes_setattr,   \
-                  PDFAttributes_str,         \
-                  PDFAttributes_Purpose,     \
-                  PDFAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(PDFAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-PDFAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyPDFAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &PDFAttributesType
-         || Py_TYPE(other) != &PDFAttributesType)
+    if ( Py_TYPE(self) != &PyPDFAttributesType
+         || Py_TYPE(other) != &PyPDFAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    PDFAttributes *a = ((PDFAttributesObject *)self)->data;
-    PDFAttributes *b = ((PDFAttributesObject *)other)->data;
+    PDFAttributes *a = ((PyPDFAttributesObject *)self)->data;
+    PDFAttributes *b = ((PyPDFAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -2180,8 +2179,8 @@ static PDFAttributes *currentAtts = 0;
 static PyObject *
 NewPDFAttributes(int useCurrent)
 {
-    PDFAttributesObject *newObject;
-    newObject = PyObject_NEW(PDFAttributesObject, &PDFAttributesType);
+    PyPDFAttributesObject *newObject;
+    newObject = PyObject_NEW(PyPDFAttributesObject, &PyPDFAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -2192,14 +2191,15 @@ NewPDFAttributes(int useCurrent)
         newObject->data = new PDFAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyPDFAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapPDFAttributes(const PDFAttributes *attr)
 {
-    PDFAttributesObject *newObject;
-    newObject = PyObject_NEW(PDFAttributesObject, &PDFAttributesType);
+    PyPDFAttributesObject *newObject;
+    newObject = PyObject_NEW(PyPDFAttributesObject, &PyPDFAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (PDFAttributes *)attr;
@@ -2301,13 +2301,13 @@ PyPDFAttributes_GetMethodTable(int *nMethods)
 bool
 PyPDFAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &PDFAttributesType);
+    return (obj->ob_type == &PyPDFAttributesType);
 }
 
 PDFAttributes *
 PyPDFAttributes_FromPyObject(PyObject *obj)
 {
-    PDFAttributesObject *obj2 = (PDFAttributesObject *)obj;
+    PyPDFAttributesObject *obj2 = (PyPDFAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -2326,7 +2326,7 @@ PyPDFAttributes_Wrap(const PDFAttributes *attr)
 void
 PyPDFAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    PDFAttributesObject *obj2 = (PDFAttributesObject *)obj;
+    PyPDFAttributesObject *obj2 = (PyPDFAttributesObject *)obj;
     obj2->parent = parent;
 }
 

@@ -5,6 +5,7 @@
 #include <PyGlobalAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a GlobalAttributes.
 //
-struct GlobalAttributesObject
+struct PyGlobalAttributesObject
 {
     PyObject_HEAD
     GlobalAttributes *data;
@@ -227,16 +228,44 @@ PyGlobalAttributes_ToString(const GlobalAttributes *atts, const char *prefix, co
 static PyObject *
 GlobalAttributes_Notify(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+GlobalAttributes_dir(PyObject *self, PyObject *args)
+{
+    static GlobalAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyGlobalAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 GlobalAttributes_SetSources(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
 
     stringVector vec;
 
@@ -293,7 +322,7 @@ GlobalAttributes_SetSources(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_GetSources(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the sources.
     const stringVector &sources = obj->data->GetSources();
     PyObject *retval = PyTuple_New(sources.size());
@@ -305,7 +334,7 @@ GlobalAttributes_GetSources(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_SetWindows(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
 
     intVector vec;
 
@@ -369,7 +398,7 @@ GlobalAttributes_SetWindows(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_GetWindows(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the windows.
     const intVector &windows = obj->data->GetWindows();
     PyObject *retval = PyTuple_New(windows.size());
@@ -381,7 +410,7 @@ GlobalAttributes_GetWindows(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_SetActiveWindow(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -433,7 +462,7 @@ GlobalAttributes_SetActiveWindow(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_GetActiveWindow(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetActiveWindow()));
     return retval;
 }
@@ -441,7 +470,7 @@ GlobalAttributes_GetActiveWindow(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_SetIconifiedFlag(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -493,7 +522,7 @@ GlobalAttributes_SetIconifiedFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_GetIconifiedFlag(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetIconifiedFlag()?1L:0L);
     return retval;
 }
@@ -501,7 +530,7 @@ GlobalAttributes_GetIconifiedFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_SetAutoUpdateFlag(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -553,7 +582,7 @@ GlobalAttributes_SetAutoUpdateFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_GetAutoUpdateFlag(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetAutoUpdateFlag()?1L:0L);
     return retval;
 }
@@ -561,7 +590,7 @@ GlobalAttributes_GetAutoUpdateFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_SetReplacePlots(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -613,7 +642,7 @@ GlobalAttributes_SetReplacePlots(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_GetReplacePlots(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetReplacePlots()?1L:0L);
     return retval;
 }
@@ -621,7 +650,7 @@ GlobalAttributes_GetReplacePlots(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_SetApplyOperator(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -673,7 +702,7 @@ GlobalAttributes_SetApplyOperator(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_GetApplyOperator(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetApplyOperator()?1L:0L);
     return retval;
 }
@@ -681,7 +710,7 @@ GlobalAttributes_GetApplyOperator(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_SetApplySelection(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -733,7 +762,7 @@ GlobalAttributes_SetApplySelection(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_GetApplySelection(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetApplySelection()?1L:0L);
     return retval;
 }
@@ -741,7 +770,7 @@ GlobalAttributes_GetApplySelection(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_SetApplyWindow(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -793,7 +822,7 @@ GlobalAttributes_SetApplyWindow(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_GetApplyWindow(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetApplyWindow()?1L:0L);
     return retval;
 }
@@ -801,7 +830,7 @@ GlobalAttributes_GetApplyWindow(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_SetExecuting(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -853,7 +882,7 @@ GlobalAttributes_SetExecuting(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_GetExecuting(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetExecuting()?1L:0L);
     return retval;
 }
@@ -861,7 +890,7 @@ GlobalAttributes_GetExecuting(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_SetWindowLayout(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -913,7 +942,7 @@ GlobalAttributes_SetWindowLayout(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_GetWindowLayout(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetWindowLayout()));
     return retval;
 }
@@ -921,7 +950,7 @@ GlobalAttributes_GetWindowLayout(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_SetMakeDefaultConfirm(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -973,7 +1002,7 @@ GlobalAttributes_SetMakeDefaultConfirm(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_GetMakeDefaultConfirm(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetMakeDefaultConfirm()?1L:0L);
     return retval;
 }
@@ -981,7 +1010,7 @@ GlobalAttributes_GetMakeDefaultConfirm(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_SetCloneWindowOnFirstRef(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1033,7 +1062,7 @@ GlobalAttributes_SetCloneWindowOnFirstRef(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_GetCloneWindowOnFirstRef(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetCloneWindowOnFirstRef()?1L:0L);
     return retval;
 }
@@ -1041,7 +1070,7 @@ GlobalAttributes_GetCloneWindowOnFirstRef(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_SetAutomaticallyAddOperator(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1093,7 +1122,7 @@ GlobalAttributes_SetAutomaticallyAddOperator(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_GetAutomaticallyAddOperator(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetAutomaticallyAddOperator()?1L:0L);
     return retval;
 }
@@ -1101,7 +1130,7 @@ GlobalAttributes_GetAutomaticallyAddOperator(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_SetTryHarderCyclesTimes(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1153,7 +1182,7 @@ GlobalAttributes_SetTryHarderCyclesTimes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_GetTryHarderCyclesTimes(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetTryHarderCyclesTimes()?1L:0L);
     return retval;
 }
@@ -1161,7 +1190,7 @@ GlobalAttributes_GetTryHarderCyclesTimes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_SetTreatAllDBsAsTimeVarying(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1213,7 +1242,7 @@ GlobalAttributes_SetTreatAllDBsAsTimeVarying(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_GetTreatAllDBsAsTimeVarying(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetTreatAllDBsAsTimeVarying()?1L:0L);
     return retval;
 }
@@ -1221,7 +1250,7 @@ GlobalAttributes_GetTreatAllDBsAsTimeVarying(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_SetCreateMeshQualityExpressions(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1273,7 +1302,7 @@ GlobalAttributes_SetCreateMeshQualityExpressions(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_GetCreateMeshQualityExpressions(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetCreateMeshQualityExpressions()?1L:0L);
     return retval;
 }
@@ -1281,7 +1310,7 @@ GlobalAttributes_GetCreateMeshQualityExpressions(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_SetCreateTimeDerivativeExpressions(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1333,7 +1362,7 @@ GlobalAttributes_SetCreateTimeDerivativeExpressions(PyObject *self, PyObject *ar
 /*static*/ PyObject *
 GlobalAttributes_GetCreateTimeDerivativeExpressions(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetCreateTimeDerivativeExpressions()?1L:0L);
     return retval;
 }
@@ -1341,7 +1370,7 @@ GlobalAttributes_GetCreateTimeDerivativeExpressions(PyObject *self, PyObject *ar
 /*static*/ PyObject *
 GlobalAttributes_SetCreateVectorMagnitudeExpressions(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1393,7 +1422,7 @@ GlobalAttributes_SetCreateVectorMagnitudeExpressions(PyObject *self, PyObject *a
 /*static*/ PyObject *
 GlobalAttributes_GetCreateVectorMagnitudeExpressions(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetCreateVectorMagnitudeExpressions()?1L:0L);
     return retval;
 }
@@ -1401,7 +1430,7 @@ GlobalAttributes_GetCreateVectorMagnitudeExpressions(PyObject *self, PyObject *a
 /*static*/ PyObject *
 GlobalAttributes_SetNewPlotsInheritSILRestriction(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1453,7 +1482,7 @@ GlobalAttributes_SetNewPlotsInheritSILRestriction(PyObject *self, PyObject *args
 /*static*/ PyObject *
 GlobalAttributes_GetNewPlotsInheritSILRestriction(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetNewPlotsInheritSILRestriction()?1L:0L);
     return retval;
 }
@@ -1461,7 +1490,7 @@ GlobalAttributes_GetNewPlotsInheritSILRestriction(PyObject *self, PyObject *args
 /*static*/ PyObject *
 GlobalAttributes_SetUserDirForSessionFiles(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1513,7 +1542,7 @@ GlobalAttributes_SetUserDirForSessionFiles(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_GetUserDirForSessionFiles(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetUserDirForSessionFiles()?1L:0L);
     return retval;
 }
@@ -1521,7 +1550,7 @@ GlobalAttributes_GetUserDirForSessionFiles(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_SetSaveCrashRecoveryFile(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1573,7 +1602,7 @@ GlobalAttributes_SetSaveCrashRecoveryFile(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_GetSaveCrashRecoveryFile(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetSaveCrashRecoveryFile()?1L:0L);
     return retval;
 }
@@ -1581,7 +1610,7 @@ GlobalAttributes_GetSaveCrashRecoveryFile(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_SetIgnoreExtentsFromDbs(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1633,7 +1662,7 @@ GlobalAttributes_SetIgnoreExtentsFromDbs(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_GetIgnoreExtentsFromDbs(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetIgnoreExtentsFromDbs()?1L:0L);
     return retval;
 }
@@ -1641,7 +1670,7 @@ GlobalAttributes_GetIgnoreExtentsFromDbs(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_SetExpandNewPlots(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1693,7 +1722,7 @@ GlobalAttributes_SetExpandNewPlots(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_GetExpandNewPlots(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetExpandNewPlots()?1L:0L);
     return retval;
 }
@@ -1701,7 +1730,7 @@ GlobalAttributes_GetExpandNewPlots(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_SetUserRestoreSessionFile(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1753,7 +1782,7 @@ GlobalAttributes_SetUserRestoreSessionFile(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_GetUserRestoreSessionFile(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetUserRestoreSessionFile()?1L:0L);
     return retval;
 }
@@ -1761,7 +1790,7 @@ GlobalAttributes_GetUserRestoreSessionFile(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_SetPrecisionType(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1820,7 +1849,7 @@ GlobalAttributes_SetPrecisionType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_GetPrecisionType(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetPrecisionType()));
     return retval;
 }
@@ -1828,7 +1857,7 @@ GlobalAttributes_GetPrecisionType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_SetBackendType(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1886,7 +1915,7 @@ GlobalAttributes_SetBackendType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_GetBackendType(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetBackendType()));
     return retval;
 }
@@ -1894,7 +1923,7 @@ GlobalAttributes_GetBackendType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_SetRemoveDuplicateNodes(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1946,7 +1975,7 @@ GlobalAttributes_SetRemoveDuplicateNodes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 GlobalAttributes_GetRemoveDuplicateNodes(PyObject *self, PyObject *args)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetRemoveDuplicateNodes()?1L:0L);
     return retval;
 }
@@ -1954,7 +1983,8 @@ GlobalAttributes_GetRemoveDuplicateNodes(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyGlobalAttributes_methods[GLOBALATTRIBUTES_NMETH] = {
-    {"Notify", GlobalAttributes_Notify, METH_VARARGS},
+    {"__dir__", GlobalAttributes_dir, METH_NOARGS},
+    {"Notify", GlobalAttributes_Notify, METH_NOARGS},
     {"SetSources", GlobalAttributes_SetSources, METH_VARARGS},
     {"GetSources", GlobalAttributes_GetSources, METH_VARARGS},
     {"SetWindows", GlobalAttributes_SetWindows, METH_VARARGS},
@@ -2019,19 +2049,22 @@ PyMethodDef PyGlobalAttributes_methods[GLOBALATTRIBUTES_NMETH] = {
 //
 
 static void
-GlobalAttributes_dealloc(PyObject *v)
+PyGlobalAttributes_dealloc(PyObject *v)
 {
-   GlobalAttributesObject *obj = (GlobalAttributesObject *)v;
+   PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *GlobalAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyGlobalAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyGlobalAttributes_getattr(PyObject *self, char *name)
+PyGlobalAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "sources") == 0)
         return GlobalAttributes_GetSources(self, NULL);
     if(strcmp(name, "windows") == 0)
@@ -2101,26 +2134,19 @@ PyGlobalAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "removeDuplicateNodes") == 0)
         return GlobalAttributes_GetRemoveDuplicateNodes(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyGlobalAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyGlobalAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyGlobalAttributes_methods[i].ml_name),
-                PyString_FromString(PyGlobalAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyGlobalAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyGlobalAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyGlobalAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "sources") == 0)
         obj = GlobalAttributes_SetSources(self, args);
@@ -2179,6 +2205,12 @@ PyGlobalAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "removeDuplicateNodes") == 0)
         obj = GlobalAttributes_SetRemoveDuplicateNodes(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -2193,78 +2225,45 @@ PyGlobalAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-GlobalAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)v;
-    fprintf(fp, "%s", PyGlobalAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-GlobalAttributes_str(PyObject *v)
+PyGlobalAttributes_str(PyObject *v)
 {
-    GlobalAttributesObject *obj = (GlobalAttributesObject *)v;
+    PyGlobalAttributesObject *obj = (PyGlobalAttributesObject *)v;
     return PyString_FromString(PyGlobalAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *GlobalAttributes_Purpose = "This class contains attributes associated with the main window.";
-#else
-static char *GlobalAttributes_Purpose = "This class contains attributes associated with the main window.";
-#endif
+static char const *PyGlobalAttributes_purpose = "This class contains attributes associated with the main window.";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(GlobalAttributesType,         \
-                  "GlobalAttributes",           \
-                  GlobalAttributesObject,       \
-                  GlobalAttributes_dealloc,     \
-                  GlobalAttributes_print,       \
-                  PyGlobalAttributes_getattr,   \
-                  PyGlobalAttributes_setattr,   \
-                  GlobalAttributes_str,         \
-                  GlobalAttributes_Purpose,     \
-                  GlobalAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(GlobalAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-GlobalAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyGlobalAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &GlobalAttributesType
-         || Py_TYPE(other) != &GlobalAttributesType)
+    if ( Py_TYPE(self) != &PyGlobalAttributesType
+         || Py_TYPE(other) != &PyGlobalAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    GlobalAttributes *a = ((GlobalAttributesObject *)self)->data;
-    GlobalAttributes *b = ((GlobalAttributesObject *)other)->data;
+    GlobalAttributes *a = ((PyGlobalAttributesObject *)self)->data;
+    GlobalAttributes *b = ((PyGlobalAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -2293,8 +2292,8 @@ static GlobalAttributes *currentAtts = 0;
 static PyObject *
 NewGlobalAttributes(int useCurrent)
 {
-    GlobalAttributesObject *newObject;
-    newObject = PyObject_NEW(GlobalAttributesObject, &GlobalAttributesType);
+    PyGlobalAttributesObject *newObject;
+    newObject = PyObject_NEW(PyGlobalAttributesObject, &PyGlobalAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -2305,14 +2304,15 @@ NewGlobalAttributes(int useCurrent)
         newObject->data = new GlobalAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyGlobalAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapGlobalAttributes(const GlobalAttributes *attr)
 {
-    GlobalAttributesObject *newObject;
-    newObject = PyObject_NEW(GlobalAttributesObject, &GlobalAttributesType);
+    PyGlobalAttributesObject *newObject;
+    newObject = PyObject_NEW(PyGlobalAttributesObject, &PyGlobalAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (GlobalAttributes *)attr;
@@ -2414,13 +2414,13 @@ PyGlobalAttributes_GetMethodTable(int *nMethods)
 bool
 PyGlobalAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &GlobalAttributesType);
+    return (obj->ob_type == &PyGlobalAttributesType);
 }
 
 GlobalAttributes *
 PyGlobalAttributes_FromPyObject(PyObject *obj)
 {
-    GlobalAttributesObject *obj2 = (GlobalAttributesObject *)obj;
+    PyGlobalAttributesObject *obj2 = (PyGlobalAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -2439,7 +2439,7 @@ PyGlobalAttributes_Wrap(const GlobalAttributes *attr)
 void
 PyGlobalAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    GlobalAttributesObject *obj2 = (GlobalAttributesObject *)obj;
+    PyGlobalAttributesObject *obj2 = (PyGlobalAttributesObject *)obj;
     obj2->parent = parent;
 }
 

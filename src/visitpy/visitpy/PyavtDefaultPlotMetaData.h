@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define AVTDEFAULTPLOTMETADATA_NMETH 8
+#define AVTDEFAULTPLOTMETADATA_NMETH 9
 void VISITPY_API           PyavtDefaultPlotMetaData_StartUp(avtDefaultPlotMetaData *subj, void *data);
 void VISITPY_API           PyavtDefaultPlotMetaData_CloseDown();
 VISITPY_API PyMethodDef *  PyavtDefaultPlotMetaData_GetMethodTable(int *nMethods);
@@ -24,8 +24,8 @@ void VISITPY_API           PyavtDefaultPlotMetaData_SetParent(PyObject *obj, PyO
 void VISITPY_API           PyavtDefaultPlotMetaData_SetDefaults(const avtDefaultPlotMetaData *atts);
 std::string VISITPY_API    PyavtDefaultPlotMetaData_GetLogString();
 std::string VISITPY_API    PyavtDefaultPlotMetaData_ToString(const avtDefaultPlotMetaData *, const char *, const bool=false);
-VISITPY_API PyObject *     PyavtDefaultPlotMetaData_getattr(PyObject *self, char *name);
-int VISITPY_API            PyavtDefaultPlotMetaData_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyavtDefaultPlotMetaData_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyavtDefaultPlotMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyavtDefaultPlotMetaData_methods[AVTDEFAULTPLOTMETADATA_NMETH];
 
 #endif

@@ -5,6 +5,7 @@
 #include <PyRemoveCellsAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a RemoveCellsAttributes.
 //
-struct RemoveCellsAttributesObject
+struct PyRemoveCellsAttributesObject
 {
     PyObject_HEAD
     RemoveCellsAttributes *data;
@@ -79,16 +80,44 @@ PyRemoveCellsAttributes_ToString(const RemoveCellsAttributes *atts, const char *
 static PyObject *
 RemoveCellsAttributes_Notify(PyObject *self, PyObject *args)
 {
-    RemoveCellsAttributesObject *obj = (RemoveCellsAttributesObject *)self;
+    PyRemoveCellsAttributesObject *obj = (PyRemoveCellsAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+RemoveCellsAttributes_dir(PyObject *self, PyObject *args)
+{
+    static RemoveCellsAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyRemoveCellsAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 RemoveCellsAttributes_SetCellList(PyObject *self, PyObject *args)
 {
-    RemoveCellsAttributesObject *obj = (RemoveCellsAttributesObject *)self;
+    PyRemoveCellsAttributesObject *obj = (PyRemoveCellsAttributesObject *)self;
 
     intVector vec;
 
@@ -152,7 +181,7 @@ RemoveCellsAttributes_SetCellList(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RemoveCellsAttributes_GetCellList(PyObject *self, PyObject *args)
 {
-    RemoveCellsAttributesObject *obj = (RemoveCellsAttributesObject *)self;
+    PyRemoveCellsAttributesObject *obj = (PyRemoveCellsAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the cellList.
     const intVector &cellList = obj->data->GetCellList();
     PyObject *retval = PyTuple_New(cellList.size());
@@ -164,7 +193,7 @@ RemoveCellsAttributes_GetCellList(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RemoveCellsAttributes_SetDomainList(PyObject *self, PyObject *args)
 {
-    RemoveCellsAttributesObject *obj = (RemoveCellsAttributesObject *)self;
+    PyRemoveCellsAttributesObject *obj = (PyRemoveCellsAttributesObject *)self;
 
     intVector vec;
 
@@ -228,7 +257,7 @@ RemoveCellsAttributes_SetDomainList(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RemoveCellsAttributes_GetDomainList(PyObject *self, PyObject *args)
 {
-    RemoveCellsAttributesObject *obj = (RemoveCellsAttributesObject *)self;
+    PyRemoveCellsAttributesObject *obj = (PyRemoveCellsAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the domainList.
     const intVector &domainList = obj->data->GetDomainList();
     PyObject *retval = PyTuple_New(domainList.size());
@@ -240,7 +269,8 @@ RemoveCellsAttributes_GetDomainList(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyRemoveCellsAttributes_methods[REMOVECELLSATTRIBUTES_NMETH] = {
-    {"Notify", RemoveCellsAttributes_Notify, METH_VARARGS},
+    {"__dir__", RemoveCellsAttributes_dir, METH_NOARGS},
+    {"Notify", RemoveCellsAttributes_Notify, METH_NOARGS},
     {"SetCellList", RemoveCellsAttributes_SetCellList, METH_VARARGS},
     {"GetCellList", RemoveCellsAttributes_GetCellList, METH_VARARGS},
     {"SetDomainList", RemoveCellsAttributes_SetDomainList, METH_VARARGS},
@@ -253,49 +283,51 @@ PyMethodDef PyRemoveCellsAttributes_methods[REMOVECELLSATTRIBUTES_NMETH] = {
 //
 
 static void
-RemoveCellsAttributes_dealloc(PyObject *v)
+PyRemoveCellsAttributes_dealloc(PyObject *v)
 {
-   RemoveCellsAttributesObject *obj = (RemoveCellsAttributesObject *)v;
+   PyRemoveCellsAttributesObject *obj = (PyRemoveCellsAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *RemoveCellsAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyRemoveCellsAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyRemoveCellsAttributes_getattr(PyObject *self, char *name)
+PyRemoveCellsAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "cellList") == 0)
         return RemoveCellsAttributes_GetCellList(self, NULL);
     if(strcmp(name, "domainList") == 0)
         return RemoveCellsAttributes_GetDomainList(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyRemoveCellsAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyRemoveCellsAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyRemoveCellsAttributes_methods[i].ml_name),
-                PyString_FromString(PyRemoveCellsAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyRemoveCellsAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyRemoveCellsAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyRemoveCellsAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "cellList") == 0)
         obj = RemoveCellsAttributes_SetCellList(self, args);
     else if(strcmp(name, "domainList") == 0)
         obj = RemoveCellsAttributes_SetDomainList(self, args);
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -311,78 +343,45 @@ PyRemoveCellsAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-RemoveCellsAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    RemoveCellsAttributesObject *obj = (RemoveCellsAttributesObject *)v;
-    fprintf(fp, "%s", PyRemoveCellsAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-RemoveCellsAttributes_str(PyObject *v)
+PyRemoveCellsAttributes_str(PyObject *v)
 {
-    RemoveCellsAttributesObject *obj = (RemoveCellsAttributesObject *)v;
+    PyRemoveCellsAttributesObject *obj = (PyRemoveCellsAttributesObject *)v;
     return PyString_FromString(PyRemoveCellsAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *RemoveCellsAttributes_Purpose = "This class contains attributes for the RemoveCells operator.";
-#else
-static char *RemoveCellsAttributes_Purpose = "This class contains attributes for the RemoveCells operator.";
-#endif
+static char const *PyRemoveCellsAttributes_purpose = "This class contains attributes for the RemoveCells operator.";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(RemoveCellsAttributesType,         \
-                  "RemoveCellsAttributes",           \
-                  RemoveCellsAttributesObject,       \
-                  RemoveCellsAttributes_dealloc,     \
-                  RemoveCellsAttributes_print,       \
-                  PyRemoveCellsAttributes_getattr,   \
-                  PyRemoveCellsAttributes_setattr,   \
-                  RemoveCellsAttributes_str,         \
-                  RemoveCellsAttributes_Purpose,     \
-                  RemoveCellsAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(RemoveCellsAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-RemoveCellsAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyRemoveCellsAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &RemoveCellsAttributesType
-         || Py_TYPE(other) != &RemoveCellsAttributesType)
+    if ( Py_TYPE(self) != &PyRemoveCellsAttributesType
+         || Py_TYPE(other) != &PyRemoveCellsAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    RemoveCellsAttributes *a = ((RemoveCellsAttributesObject *)self)->data;
-    RemoveCellsAttributes *b = ((RemoveCellsAttributesObject *)other)->data;
+    RemoveCellsAttributes *a = ((PyRemoveCellsAttributesObject *)self)->data;
+    RemoveCellsAttributes *b = ((PyRemoveCellsAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -411,8 +410,8 @@ static RemoveCellsAttributes *currentAtts = 0;
 static PyObject *
 NewRemoveCellsAttributes(int useCurrent)
 {
-    RemoveCellsAttributesObject *newObject;
-    newObject = PyObject_NEW(RemoveCellsAttributesObject, &RemoveCellsAttributesType);
+    PyRemoveCellsAttributesObject *newObject;
+    newObject = PyObject_NEW(PyRemoveCellsAttributesObject, &PyRemoveCellsAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -423,14 +422,15 @@ NewRemoveCellsAttributes(int useCurrent)
         newObject->data = new RemoveCellsAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyRemoveCellsAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapRemoveCellsAttributes(const RemoveCellsAttributes *attr)
 {
-    RemoveCellsAttributesObject *newObject;
-    newObject = PyObject_NEW(RemoveCellsAttributesObject, &RemoveCellsAttributesType);
+    PyRemoveCellsAttributesObject *newObject;
+    newObject = PyObject_NEW(PyRemoveCellsAttributesObject, &PyRemoveCellsAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (RemoveCellsAttributes *)attr;
@@ -532,13 +532,13 @@ PyRemoveCellsAttributes_GetMethodTable(int *nMethods)
 bool
 PyRemoveCellsAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &RemoveCellsAttributesType);
+    return (obj->ob_type == &PyRemoveCellsAttributesType);
 }
 
 RemoveCellsAttributes *
 PyRemoveCellsAttributes_FromPyObject(PyObject *obj)
 {
-    RemoveCellsAttributesObject *obj2 = (RemoveCellsAttributesObject *)obj;
+    PyRemoveCellsAttributesObject *obj2 = (PyRemoveCellsAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -557,7 +557,7 @@ PyRemoveCellsAttributes_Wrap(const RemoveCellsAttributes *attr)
 void
 PyRemoveCellsAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    RemoveCellsAttributesObject *obj2 = (RemoveCellsAttributesObject *)obj;
+    PyRemoveCellsAttributesObject *obj2 = (PyRemoveCellsAttributesObject *)obj;
     obj2->parent = parent;
 }
 

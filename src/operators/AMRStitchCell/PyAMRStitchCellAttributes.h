@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define AMRSTITCHCELLATTRIBUTES_NMETH 4
+#define AMRSTITCHCELLATTRIBUTES_NMETH 5
 void           PyAMRStitchCellAttributes_StartUp(AMRStitchCellAttributes *subj, void *data);
 void           PyAMRStitchCellAttributes_CloseDown();
 PyMethodDef *  PyAMRStitchCellAttributes_GetMethodTable(int *nMethods);
@@ -23,8 +23,8 @@ void           PyAMRStitchCellAttributes_SetParent(PyObject *obj, PyObject *pare
 void           PyAMRStitchCellAttributes_SetDefaults(const AMRStitchCellAttributes *atts);
 std::string    PyAMRStitchCellAttributes_GetLogString();
 std::string    PyAMRStitchCellAttributes_ToString(const AMRStitchCellAttributes *, const char *, const bool=false);
-PyObject *     PyAMRStitchCellAttributes_getattr(PyObject *self, char *name);
-int            PyAMRStitchCellAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PyAMRStitchCellAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyAMRStitchCellAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PyAMRStitchCellAttributes_methods[AMRSTITCHCELLATTRIBUTES_NMETH];
 
 #endif

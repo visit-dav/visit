@@ -5,6 +5,7 @@
 #include <PyLineoutAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a LineoutAttributes.
 //
-struct LineoutAttributesObject
+struct PyLineoutAttributesObject
 {
     PyObject_HEAD
     LineoutAttributes *data;
@@ -101,16 +102,45 @@ PyLineoutAttributes_ToString(const LineoutAttributes *atts, const char *prefix, 
 static PyObject *
 LineoutAttributes_Notify(PyObject *self, PyObject *args)
 {
-    LineoutAttributesObject *obj = (LineoutAttributesObject *)self;
+    PyLineoutAttributesObject *obj = (PyLineoutAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+LineoutAttributes_dir(PyObject *self, PyObject *args)
+{
+    static LineoutAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyLineoutAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        if (i == 7) continue; // internal field
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 LineoutAttributes_SetPoint1(PyObject *self, PyObject *args)
 {
-    LineoutAttributesObject *obj = (LineoutAttributesObject *)self;
+    PyLineoutAttributesObject *obj = (PyLineoutAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetPoint1();
@@ -177,7 +207,7 @@ LineoutAttributes_SetPoint1(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineoutAttributes_GetPoint1(PyObject *self, PyObject *args)
 {
-    LineoutAttributesObject *obj = (LineoutAttributesObject *)self;
+    PyLineoutAttributesObject *obj = (PyLineoutAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the point1.
     PyObject *retval = PyTuple_New(3);
     const double *point1 = obj->data->GetPoint1();
@@ -189,7 +219,7 @@ LineoutAttributes_GetPoint1(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineoutAttributes_SetPoint2(PyObject *self, PyObject *args)
 {
-    LineoutAttributesObject *obj = (LineoutAttributesObject *)self;
+    PyLineoutAttributesObject *obj = (PyLineoutAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetPoint2();
@@ -256,7 +286,7 @@ LineoutAttributes_SetPoint2(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineoutAttributes_GetPoint2(PyObject *self, PyObject *args)
 {
-    LineoutAttributesObject *obj = (LineoutAttributesObject *)self;
+    PyLineoutAttributesObject *obj = (PyLineoutAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the point2.
     PyObject *retval = PyTuple_New(3);
     const double *point2 = obj->data->GetPoint2();
@@ -268,7 +298,7 @@ LineoutAttributes_GetPoint2(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineoutAttributes_SetInteractive(PyObject *self, PyObject *args)
 {
-    LineoutAttributesObject *obj = (LineoutAttributesObject *)self;
+    PyLineoutAttributesObject *obj = (PyLineoutAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -320,7 +350,7 @@ LineoutAttributes_SetInteractive(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineoutAttributes_GetInteractive(PyObject *self, PyObject *args)
 {
-    LineoutAttributesObject *obj = (LineoutAttributesObject *)self;
+    PyLineoutAttributesObject *obj = (PyLineoutAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetInteractive()?1L:0L);
     return retval;
 }
@@ -328,7 +358,7 @@ LineoutAttributes_GetInteractive(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineoutAttributes_SetIgnoreGlobal(PyObject *self, PyObject *args)
 {
-    LineoutAttributesObject *obj = (LineoutAttributesObject *)self;
+    PyLineoutAttributesObject *obj = (PyLineoutAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -380,7 +410,7 @@ LineoutAttributes_SetIgnoreGlobal(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineoutAttributes_GetIgnoreGlobal(PyObject *self, PyObject *args)
 {
-    LineoutAttributesObject *obj = (LineoutAttributesObject *)self;
+    PyLineoutAttributesObject *obj = (PyLineoutAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetIgnoreGlobal()?1L:0L);
     return retval;
 }
@@ -388,7 +418,7 @@ LineoutAttributes_GetIgnoreGlobal(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineoutAttributes_SetSamplingOn(PyObject *self, PyObject *args)
 {
-    LineoutAttributesObject *obj = (LineoutAttributesObject *)self;
+    PyLineoutAttributesObject *obj = (PyLineoutAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -440,7 +470,7 @@ LineoutAttributes_SetSamplingOn(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineoutAttributes_GetSamplingOn(PyObject *self, PyObject *args)
 {
-    LineoutAttributesObject *obj = (LineoutAttributesObject *)self;
+    PyLineoutAttributesObject *obj = (PyLineoutAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetSamplingOn()?1L:0L);
     return retval;
 }
@@ -448,7 +478,7 @@ LineoutAttributes_GetSamplingOn(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineoutAttributes_SetNumberOfSamplePoints(PyObject *self, PyObject *args)
 {
-    LineoutAttributesObject *obj = (LineoutAttributesObject *)self;
+    PyLineoutAttributesObject *obj = (PyLineoutAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -500,7 +530,7 @@ LineoutAttributes_SetNumberOfSamplePoints(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineoutAttributes_GetNumberOfSamplePoints(PyObject *self, PyObject *args)
 {
-    LineoutAttributesObject *obj = (LineoutAttributesObject *)self;
+    PyLineoutAttributesObject *obj = (PyLineoutAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNumberOfSamplePoints()));
     return retval;
 }
@@ -508,7 +538,7 @@ LineoutAttributes_GetNumberOfSamplePoints(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineoutAttributes_SetReflineLabels(PyObject *self, PyObject *args)
 {
-    LineoutAttributesObject *obj = (LineoutAttributesObject *)self;
+    PyLineoutAttributesObject *obj = (PyLineoutAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -560,7 +590,7 @@ LineoutAttributes_SetReflineLabels(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LineoutAttributes_GetReflineLabels(PyObject *self, PyObject *args)
 {
-    LineoutAttributesObject *obj = (LineoutAttributesObject *)self;
+    PyLineoutAttributesObject *obj = (PyLineoutAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetReflineLabels()?1L:0L);
     return retval;
 }
@@ -568,7 +598,8 @@ LineoutAttributes_GetReflineLabels(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyLineoutAttributes_methods[LINEOUTATTRIBUTES_NMETH] = {
-    {"Notify", LineoutAttributes_Notify, METH_VARARGS},
+    {"__dir__", LineoutAttributes_dir, METH_NOARGS},
+    {"Notify", LineoutAttributes_Notify, METH_NOARGS},
     {"SetPoint1", LineoutAttributes_SetPoint1, METH_VARARGS},
     {"GetPoint1", LineoutAttributes_GetPoint1, METH_VARARGS},
     {"SetPoint2", LineoutAttributes_SetPoint2, METH_VARARGS},
@@ -591,19 +622,22 @@ PyMethodDef PyLineoutAttributes_methods[LINEOUTATTRIBUTES_NMETH] = {
 //
 
 static void
-LineoutAttributes_dealloc(PyObject *v)
+PyLineoutAttributes_dealloc(PyObject *v)
 {
-   LineoutAttributesObject *obj = (LineoutAttributesObject *)v;
+   PyLineoutAttributesObject *obj = (PyLineoutAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *LineoutAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyLineoutAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyLineoutAttributes_getattr(PyObject *self, char *name)
+PyLineoutAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "point1") == 0)
         return LineoutAttributes_GetPoint1(self, NULL);
     if(strcmp(name, "point2") == 0)
@@ -619,26 +653,19 @@ PyLineoutAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "reflineLabels") == 0)
         return LineoutAttributes_GetReflineLabels(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyLineoutAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyLineoutAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyLineoutAttributes_methods[i].ml_name),
-                PyString_FromString(PyLineoutAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyLineoutAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyLineoutAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyLineoutAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "point1") == 0)
         obj = LineoutAttributes_SetPoint1(self, args);
@@ -655,6 +682,12 @@ PyLineoutAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "reflineLabels") == 0)
         obj = LineoutAttributes_SetReflineLabels(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -669,78 +702,45 @@ PyLineoutAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-LineoutAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    LineoutAttributesObject *obj = (LineoutAttributesObject *)v;
-    fprintf(fp, "%s", PyLineoutAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-LineoutAttributes_str(PyObject *v)
+PyLineoutAttributes_str(PyObject *v)
 {
-    LineoutAttributesObject *obj = (LineoutAttributesObject *)v;
+    PyLineoutAttributesObject *obj = (PyLineoutAttributesObject *)v;
     return PyString_FromString(PyLineoutAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *LineoutAttributes_Purpose = "Attributes for the Lineout operator.";
-#else
-static char *LineoutAttributes_Purpose = "Attributes for the Lineout operator.";
-#endif
+static char const *PyLineoutAttributes_purpose = "Attributes for the Lineout operator.";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(LineoutAttributesType,         \
-                  "LineoutAttributes",           \
-                  LineoutAttributesObject,       \
-                  LineoutAttributes_dealloc,     \
-                  LineoutAttributes_print,       \
-                  PyLineoutAttributes_getattr,   \
-                  PyLineoutAttributes_setattr,   \
-                  LineoutAttributes_str,         \
-                  LineoutAttributes_Purpose,     \
-                  LineoutAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(LineoutAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-LineoutAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyLineoutAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &LineoutAttributesType
-         || Py_TYPE(other) != &LineoutAttributesType)
+    if ( Py_TYPE(self) != &PyLineoutAttributesType
+         || Py_TYPE(other) != &PyLineoutAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    LineoutAttributes *a = ((LineoutAttributesObject *)self)->data;
-    LineoutAttributes *b = ((LineoutAttributesObject *)other)->data;
+    LineoutAttributes *a = ((PyLineoutAttributesObject *)self)->data;
+    LineoutAttributes *b = ((PyLineoutAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -769,8 +769,8 @@ static LineoutAttributes *currentAtts = 0;
 static PyObject *
 NewLineoutAttributes(int useCurrent)
 {
-    LineoutAttributesObject *newObject;
-    newObject = PyObject_NEW(LineoutAttributesObject, &LineoutAttributesType);
+    PyLineoutAttributesObject *newObject;
+    newObject = PyObject_NEW(PyLineoutAttributesObject, &PyLineoutAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -781,14 +781,15 @@ NewLineoutAttributes(int useCurrent)
         newObject->data = new LineoutAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyLineoutAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapLineoutAttributes(const LineoutAttributes *attr)
 {
-    LineoutAttributesObject *newObject;
-    newObject = PyObject_NEW(LineoutAttributesObject, &LineoutAttributesType);
+    PyLineoutAttributesObject *newObject;
+    newObject = PyObject_NEW(PyLineoutAttributesObject, &PyLineoutAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (LineoutAttributes *)attr;
@@ -890,13 +891,13 @@ PyLineoutAttributes_GetMethodTable(int *nMethods)
 bool
 PyLineoutAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &LineoutAttributesType);
+    return (obj->ob_type == &PyLineoutAttributesType);
 }
 
 LineoutAttributes *
 PyLineoutAttributes_FromPyObject(PyObject *obj)
 {
-    LineoutAttributesObject *obj2 = (LineoutAttributesObject *)obj;
+    PyLineoutAttributesObject *obj2 = (PyLineoutAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -915,7 +916,7 @@ PyLineoutAttributes_Wrap(const LineoutAttributes *attr)
 void
 PyLineoutAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    LineoutAttributesObject *obj2 = (LineoutAttributesObject *)obj;
+    PyLineoutAttributesObject *obj2 = (PyLineoutAttributesObject *)obj;
     obj2->parent = parent;
 }
 

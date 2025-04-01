@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define DELAUNAYATTRIBUTES_NMETH 4
+#define DELAUNAYATTRIBUTES_NMETH 5
 void           PyDelaunayAttributes_StartUp(DelaunayAttributes *subj, void *data);
 void           PyDelaunayAttributes_CloseDown();
 PyMethodDef *  PyDelaunayAttributes_GetMethodTable(int *nMethods);
@@ -23,8 +23,8 @@ void           PyDelaunayAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyDelaunayAttributes_SetDefaults(const DelaunayAttributes *atts);
 std::string    PyDelaunayAttributes_GetLogString();
 std::string    PyDelaunayAttributes_ToString(const DelaunayAttributes *, const char *, const bool=false);
-PyObject *     PyDelaunayAttributes_getattr(PyObject *self, char *name);
-int            PyDelaunayAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PyDelaunayAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyDelaunayAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PyDelaunayAttributes_methods[DELAUNAYATTRIBUTES_NMETH];
 
 #endif

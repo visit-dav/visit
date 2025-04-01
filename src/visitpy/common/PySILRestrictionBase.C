@@ -49,7 +49,7 @@ struct PySILRestrictionObject
 //
 
 // forward declare b/c we need to use in type def and need to use the type in this func
-static PyObject *SILRestriction_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PySILRestriction_richcompare(PyObject *self, PyObject *other, int op);
 
 // ****************************************************************************
 // Function: SILRestriction_Categories
@@ -793,7 +793,11 @@ SILRestriction_EnableCorrectnessChecking(PyObject *self, PyObject *args)
     return Py_None;
 }
 
-static struct PyMethodDef SILRestriction_methods[] = {
+// Forward declaration for methods table
+static PyObject * SILRestriction_dir(PyObject *self, PyObject *args);
+
+static struct PyMethodDef PySILRestriction_methods[] = {
+    {"__dir__",          SILRestriction_dir, METH_NOARGS},
     {"Categories",       SILRestriction_Categories, METH_VARARGS},
     {"MapsOut",          SILRestriction_MapsOut, METH_VARARGS},
     {"NumCategories",    SILRestriction_NumCategories, METH_VARARGS},
@@ -815,31 +819,30 @@ static struct PyMethodDef SILRestriction_methods[] = {
     {NULL, NULL}
 };
 
+static PyObject *
+SILRestriction_dir(PyObject *self, PyObject *args)
+{
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL; 
+    }
+    
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PySILRestriction_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+    
+    return dir_list;
+}   
+
 //
 // Type functions
 //
-
-// ****************************************************************************
-// Function: SILRestriction_dealloc
-//
-// Purpose:
-//   Destructor for PySILRestriction.
-//
-//
-// Programmer: TODO
-// Creation:   TODO
-//
-//  Modifications:
-//
-//    Hank Childs, Mon Dec  2 14:08:29 PST 2002
-//    Do not delete the SIL restriction, since it is reference counted.
-//
-// ****************************************************************************
-static void
-SILRestriction_dealloc(PyObject *v)
-{
-    // SIL restriction is a ref ptr, so it will clean itself up.
-}
 
 // ****************************************************************************
 // Function: SILRestriction_compare
@@ -868,7 +871,7 @@ SILRestriction_compare(PyObject *v, PyObject *w)
 }
 
 // ****************************************************************************
-// Function: SILRestriction_getattr
+// Function: PySILRestriction_getattro
 //
 // Purpose:
 //   Attribute fetch for PySILRestriction.
@@ -882,86 +885,37 @@ SILRestriction_compare(PyObject *v, PyObject *w)
 // ****************************************************************************
 
 static PyObject *
-SILRestriction_getattr(PyObject *self, char *name)
+PySILRestriction_getattro(PyObject *self, PyObject *attr_name)
 {
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; SILRestriction_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(SILRestriction_methods[i].ml_name),
-                PyString_FromString(SILRestriction_methods[i].ml_name));
-        return result;
-    }
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
 
-    return Py_FindMethod(SILRestriction_methods, self, name);
+    PyObject *meth = Py_FindMethod(PySILRestriction_methods, self, (char*)name);
+    if (meth) return meth;
+
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 
-// ****************************************************************************
-// Function: SILRestriction_print
-//
-// Purpose:
-//   Print method for SILRestriction.
-//
-//
-// Programmer: TODO
-// Creation:   TODO
-//
-// Modifications:
-//
-// ****************************************************************************
-
-static int
-SILRestriction_print(PyObject *v, FILE *fp, int flags)
-{
-    PySILRestrictionObject *obj = (PySILRestrictionObject *)v;
-    avtSILRestriction_p silr = *(obj->silr);
-    silr->Print(cout);
-    return 0;
-}
-
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *SILRestriction_Purpose = "This class contains attributes used to restrict the subset inclusion lattice of a plot.";
-#else
-static char *SILRestriction_Purpose = "This class contains attributes used to restrict the subset inclusion lattice of a plot.";
-#endif
+static char const *PySILRestriction_purpose = "This class contains attributes used to restrict the subset inclusion lattice of a plot.";
 
 // CUSTOM
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
 // The type description structure
 //
-VISIT_PY_TYPE_OBJ(PySILRestrictionType,        \
-                  "SILRestriction",            \
-                  PySILRestrictionObject,      \
-                  SILRestriction_dealloc,      \
-                  SILRestriction_print,        \
-                  SILRestriction_getattr,      \
-                  0,                           \
-                  0,                           \
-                  SILRestriction_Purpose,      \
-                  SILRestriction_richcompare,  \
-                  0); /* as_number*/
+
+// Re-define tp slots for this custom object
+#undef VISIT_PY_TYPE_OBJ_TP_SLOTS
+#define VISIT_PY_TYPE_OBJ_TP_SLOTS(VSObjName)                          \
+    VISIT_PY_TYPE_OBJ_SLOT2(VSObjName, doc, purpose);                  \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, getattro);                      \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, richcompare);                   \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, methods)
+VISIT_PY_TYPE_OBJ(SILRestriction);
 
 // ****************************************************************************
-// Function: SILRestriction_richcompare
+// Function: PySILRestriction_richcompare
 //
 // Purpose:
 //   Comparison function for PySILRestriction.
@@ -977,7 +931,7 @@ VISIT_PY_TYPE_OBJ(PySILRestrictionType,        \
 //
 // ****************************************************************************
 static PyObject *
-SILRestriction_richcompare(PyObject *self, PyObject *other, int op)
+PySILRestriction_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type
     if ( Py_TYPE(self) != Py_TYPE(other)
@@ -1044,6 +998,7 @@ PySILRestriction_Wrap(avtSILRestriction_p restriction)
     res->silr = new avtSILRestriction_p;
     // set the restriction
     *(res->silr) = restriction;
+    PyType_Ready(&PySILRestrictionType);
     return (PyObject *)res;
 }
 

@@ -5,6 +5,7 @@
 #include <PyMoleculeAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 #include <visit-config.h>
 #include <ColorAttribute.h>
@@ -25,7 +26,7 @@
 //
 // This struct contains the Python type information and a MoleculeAttributes.
 //
-struct MoleculeAttributesObject
+struct PyMoleculeAttributesObject
 {
     PyObject_HEAD
     MoleculeAttributes *data;
@@ -211,16 +212,44 @@ PyMoleculeAttributes_ToString(const MoleculeAttributes *atts, const char *prefix
 static PyObject *
 MoleculeAttributes_Notify(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+MoleculeAttributes_dir(PyObject *self, PyObject *args)
+{
+    static MoleculeAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyMoleculeAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 MoleculeAttributes_SetDrawAtomsAs(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -279,7 +308,7 @@ MoleculeAttributes_SetDrawAtomsAs(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_GetDrawAtomsAs(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetDrawAtomsAs()));
     return retval;
 }
@@ -287,7 +316,7 @@ MoleculeAttributes_GetDrawAtomsAs(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_SetScaleRadiusBy(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -347,7 +376,7 @@ MoleculeAttributes_SetScaleRadiusBy(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_GetScaleRadiusBy(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetScaleRadiusBy()));
     return retval;
 }
@@ -355,7 +384,7 @@ MoleculeAttributes_GetScaleRadiusBy(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_SetDrawBondsAs(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -414,7 +443,7 @@ MoleculeAttributes_SetDrawBondsAs(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_GetDrawBondsAs(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetDrawBondsAs()));
     return retval;
 }
@@ -422,7 +451,7 @@ MoleculeAttributes_GetDrawBondsAs(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_SetColorBonds(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -480,7 +509,7 @@ MoleculeAttributes_SetColorBonds(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_GetColorBonds(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetColorBonds()));
     return retval;
 }
@@ -488,7 +517,7 @@ MoleculeAttributes_GetColorBonds(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_SetBondSingleColor(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -551,7 +580,7 @@ MoleculeAttributes_SetBondSingleColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_GetBondSingleColor(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the bondSingleColor.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *bondSingleColor = obj->data->GetBondSingleColor().GetColor();
@@ -565,7 +594,7 @@ MoleculeAttributes_GetBondSingleColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_SetRadiusVariable(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -606,7 +635,7 @@ MoleculeAttributes_SetRadiusVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_GetRadiusVariable(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetRadiusVariable().c_str());
     return retval;
 }
@@ -614,7 +643,7 @@ MoleculeAttributes_GetRadiusVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_SetRadiusScaleFactor(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -666,7 +695,7 @@ MoleculeAttributes_SetRadiusScaleFactor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_GetRadiusScaleFactor(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetRadiusScaleFactor()));
     return retval;
 }
@@ -674,7 +703,7 @@ MoleculeAttributes_GetRadiusScaleFactor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_SetRadiusFixed(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -726,7 +755,7 @@ MoleculeAttributes_SetRadiusFixed(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_GetRadiusFixed(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetRadiusFixed()));
     return retval;
 }
@@ -734,7 +763,7 @@ MoleculeAttributes_GetRadiusFixed(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_SetAtomSphereQuality(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -794,7 +823,7 @@ MoleculeAttributes_SetAtomSphereQuality(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_GetAtomSphereQuality(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetAtomSphereQuality()));
     return retval;
 }
@@ -802,7 +831,7 @@ MoleculeAttributes_GetAtomSphereQuality(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_SetBondCylinderQuality(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -862,7 +891,7 @@ MoleculeAttributes_SetBondCylinderQuality(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_GetBondCylinderQuality(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetBondCylinderQuality()));
     return retval;
 }
@@ -870,7 +899,7 @@ MoleculeAttributes_GetBondCylinderQuality(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_SetBondRadius(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -922,7 +951,7 @@ MoleculeAttributes_SetBondRadius(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_GetBondRadius(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetBondRadius()));
     return retval;
 }
@@ -930,7 +959,7 @@ MoleculeAttributes_GetBondRadius(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_SetBondLineWidth(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -982,7 +1011,7 @@ MoleculeAttributes_SetBondLineWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_GetBondLineWidth(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetBondLineWidth()));
     return retval;
 }
@@ -990,7 +1019,7 @@ MoleculeAttributes_GetBondLineWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_SetElementColorTable(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1031,7 +1060,7 @@ MoleculeAttributes_SetElementColorTable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_GetElementColorTable(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetElementColorTable().c_str());
     return retval;
 }
@@ -1039,7 +1068,7 @@ MoleculeAttributes_GetElementColorTable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_SetResidueTypeColorTable(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1080,7 +1109,7 @@ MoleculeAttributes_SetResidueTypeColorTable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_GetResidueTypeColorTable(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetResidueTypeColorTable().c_str());
     return retval;
 }
@@ -1088,7 +1117,7 @@ MoleculeAttributes_GetResidueTypeColorTable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_SetResidueSequenceColorTable(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1129,7 +1158,7 @@ MoleculeAttributes_SetResidueSequenceColorTable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_GetResidueSequenceColorTable(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetResidueSequenceColorTable().c_str());
     return retval;
 }
@@ -1137,7 +1166,7 @@ MoleculeAttributes_GetResidueSequenceColorTable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_SetContinuousColorTable(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1178,7 +1207,7 @@ MoleculeAttributes_SetContinuousColorTable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_GetContinuousColorTable(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetContinuousColorTable().c_str());
     return retval;
 }
@@ -1186,7 +1215,7 @@ MoleculeAttributes_GetContinuousColorTable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1238,7 +1267,7 @@ MoleculeAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_GetLegendFlag(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetLegendFlag()?1L:0L);
     return retval;
 }
@@ -1246,7 +1275,7 @@ MoleculeAttributes_GetLegendFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_SetMinFlag(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1298,7 +1327,7 @@ MoleculeAttributes_SetMinFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_GetMinFlag(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetMinFlag()?1L:0L);
     return retval;
 }
@@ -1306,7 +1335,7 @@ MoleculeAttributes_GetMinFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_SetScalarMin(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1358,7 +1387,7 @@ MoleculeAttributes_SetScalarMin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_GetScalarMin(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetScalarMin()));
     return retval;
 }
@@ -1366,7 +1395,7 @@ MoleculeAttributes_GetScalarMin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_SetMaxFlag(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1418,7 +1447,7 @@ MoleculeAttributes_SetMaxFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_GetMaxFlag(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetMaxFlag()?1L:0L);
     return retval;
 }
@@ -1426,7 +1455,7 @@ MoleculeAttributes_GetMaxFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_SetScalarMax(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1478,7 +1507,7 @@ MoleculeAttributes_SetScalarMax(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MoleculeAttributes_GetScalarMax(PyObject *self, PyObject *args)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetScalarMax()));
     return retval;
 }
@@ -1486,7 +1515,8 @@ MoleculeAttributes_GetScalarMax(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyMoleculeAttributes_methods[MOLECULEATTRIBUTES_NMETH] = {
-    {"Notify", MoleculeAttributes_Notify, METH_VARARGS},
+    {"__dir__", MoleculeAttributes_dir, METH_NOARGS},
+    {"Notify", MoleculeAttributes_Notify, METH_NOARGS},
     {"SetDrawAtomsAs", MoleculeAttributes_SetDrawAtomsAs, METH_VARARGS},
     {"GetDrawAtomsAs", MoleculeAttributes_GetDrawAtomsAs, METH_VARARGS},
     {"SetScaleRadiusBy", MoleculeAttributes_SetScaleRadiusBy, METH_VARARGS},
@@ -1537,19 +1567,22 @@ PyMethodDef PyMoleculeAttributes_methods[MOLECULEATTRIBUTES_NMETH] = {
 //
 
 static void
-MoleculeAttributes_dealloc(PyObject *v)
+PyMoleculeAttributes_dealloc(PyObject *v)
 {
-   MoleculeAttributesObject *obj = (MoleculeAttributesObject *)v;
+   PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *MoleculeAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyMoleculeAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyMoleculeAttributes_getattr(PyObject *self, char *name)
+PyMoleculeAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "drawAtomsAs") == 0)
         return MoleculeAttributes_GetDrawAtomsAs(self, NULL);
     if(strcmp(name, "NoAtoms") == 0)
@@ -1639,26 +1672,19 @@ PyMoleculeAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "scalarMax") == 0)
         return MoleculeAttributes_GetScalarMax(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyMoleculeAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyMoleculeAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyMoleculeAttributes_methods[i].ml_name),
-                PyString_FromString(PyMoleculeAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyMoleculeAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyMoleculeAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyMoleculeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "drawAtomsAs") == 0)
         obj = MoleculeAttributes_SetDrawAtomsAs(self, args);
@@ -1703,6 +1729,12 @@ PyMoleculeAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "scalarMax") == 0)
         obj = MoleculeAttributes_SetScalarMax(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -1717,78 +1749,45 @@ PyMoleculeAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-MoleculeAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)v;
-    fprintf(fp, "%s", PyMoleculeAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-MoleculeAttributes_str(PyObject *v)
+PyMoleculeAttributes_str(PyObject *v)
 {
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)v;
+    PyMoleculeAttributesObject *obj = (PyMoleculeAttributesObject *)v;
     return PyString_FromString(PyMoleculeAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *MoleculeAttributes_Purpose = "This class contains the plot attributes for the molecule plot.";
-#else
-static char *MoleculeAttributes_Purpose = "This class contains the plot attributes for the molecule plot.";
-#endif
+static char const *PyMoleculeAttributes_purpose = "This class contains the plot attributes for the molecule plot.";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(MoleculeAttributesType,         \
-                  "MoleculeAttributes",           \
-                  MoleculeAttributesObject,       \
-                  MoleculeAttributes_dealloc,     \
-                  MoleculeAttributes_print,       \
-                  PyMoleculeAttributes_getattr,   \
-                  PyMoleculeAttributes_setattr,   \
-                  MoleculeAttributes_str,         \
-                  MoleculeAttributes_Purpose,     \
-                  MoleculeAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(MoleculeAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-MoleculeAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyMoleculeAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &MoleculeAttributesType
-         || Py_TYPE(other) != &MoleculeAttributesType)
+    if ( Py_TYPE(self) != &PyMoleculeAttributesType
+         || Py_TYPE(other) != &PyMoleculeAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    MoleculeAttributes *a = ((MoleculeAttributesObject *)self)->data;
-    MoleculeAttributes *b = ((MoleculeAttributesObject *)other)->data;
+    MoleculeAttributes *a = ((PyMoleculeAttributesObject *)self)->data;
+    MoleculeAttributes *b = ((PyMoleculeAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -1817,8 +1816,8 @@ static MoleculeAttributes *currentAtts = 0;
 static PyObject *
 NewMoleculeAttributes(int useCurrent)
 {
-    MoleculeAttributesObject *newObject;
-    newObject = PyObject_NEW(MoleculeAttributesObject, &MoleculeAttributesType);
+    PyMoleculeAttributesObject *newObject;
+    newObject = PyObject_NEW(PyMoleculeAttributesObject, &PyMoleculeAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1829,14 +1828,15 @@ NewMoleculeAttributes(int useCurrent)
         newObject->data = new MoleculeAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyMoleculeAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapMoleculeAttributes(const MoleculeAttributes *attr)
 {
-    MoleculeAttributesObject *newObject;
-    newObject = PyObject_NEW(MoleculeAttributesObject, &MoleculeAttributesType);
+    PyMoleculeAttributesObject *newObject;
+    newObject = PyObject_NEW(PyMoleculeAttributesObject, &PyMoleculeAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (MoleculeAttributes *)attr;
@@ -1938,13 +1938,13 @@ PyMoleculeAttributes_GetMethodTable(int *nMethods)
 bool
 PyMoleculeAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &MoleculeAttributesType);
+    return (obj->ob_type == &PyMoleculeAttributesType);
 }
 
 MoleculeAttributes *
 PyMoleculeAttributes_FromPyObject(PyObject *obj)
 {
-    MoleculeAttributesObject *obj2 = (MoleculeAttributesObject *)obj;
+    PyMoleculeAttributesObject *obj2 = (PyMoleculeAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1963,7 +1963,7 @@ PyMoleculeAttributes_Wrap(const MoleculeAttributes *attr)
 void
 PyMoleculeAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    MoleculeAttributesObject *obj2 = (MoleculeAttributesObject *)obj;
+    PyMoleculeAttributesObject *obj2 = (PyMoleculeAttributesObject *)obj;
     obj2->parent = parent;
 }
 

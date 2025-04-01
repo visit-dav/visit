@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define ANIMATIONATTRIBUTES_NMETH 12
+#define ANIMATIONATTRIBUTES_NMETH 13
 void VISITPY_API           PyAnimationAttributes_StartUp(AnimationAttributes *subj, void *data);
 void VISITPY_API           PyAnimationAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyAnimationAttributes_GetMethodTable(int *nMethods);
@@ -24,8 +24,8 @@ void VISITPY_API           PyAnimationAttributes_SetParent(PyObject *obj, PyObje
 void VISITPY_API           PyAnimationAttributes_SetDefaults(const AnimationAttributes *atts);
 std::string VISITPY_API    PyAnimationAttributes_GetLogString();
 std::string VISITPY_API    PyAnimationAttributes_ToString(const AnimationAttributes *, const char *, const bool=false);
-VISITPY_API PyObject *     PyAnimationAttributes_getattr(PyObject *self, char *name);
-int VISITPY_API            PyAnimationAttributes_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyAnimationAttributes_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyAnimationAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyAnimationAttributes_methods[ANIMATIONATTRIBUTES_NMETH];
 
 #endif

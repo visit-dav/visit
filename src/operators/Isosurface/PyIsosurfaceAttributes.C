@@ -5,6 +5,7 @@
 #include <PyIsosurfaceAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a IsosurfaceAttributes.
 //
-struct IsosurfaceAttributesObject
+struct PyIsosurfaceAttributesObject
 {
     PyObject_HEAD
     IsosurfaceAttributes *data;
@@ -131,16 +132,44 @@ PyIsosurfaceAttributes_ToString(const IsosurfaceAttributes *atts, const char *pr
 static PyObject *
 IsosurfaceAttributes_Notify(PyObject *self, PyObject *args)
 {
-    IsosurfaceAttributesObject *obj = (IsosurfaceAttributesObject *)self;
+    PyIsosurfaceAttributesObject *obj = (PyIsosurfaceAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+IsosurfaceAttributes_dir(PyObject *self, PyObject *args)
+{
+    static IsosurfaceAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyIsosurfaceAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 IsosurfaceAttributes_SetContourNLevels(PyObject *self, PyObject *args)
 {
-    IsosurfaceAttributesObject *obj = (IsosurfaceAttributesObject *)self;
+    PyIsosurfaceAttributesObject *obj = (PyIsosurfaceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -192,7 +221,7 @@ IsosurfaceAttributes_SetContourNLevels(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IsosurfaceAttributes_GetContourNLevels(PyObject *self, PyObject *args)
 {
-    IsosurfaceAttributesObject *obj = (IsosurfaceAttributesObject *)self;
+    PyIsosurfaceAttributesObject *obj = (PyIsosurfaceAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetContourNLevels()));
     return retval;
 }
@@ -200,7 +229,7 @@ IsosurfaceAttributes_GetContourNLevels(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IsosurfaceAttributes_SetContourValue(PyObject *self, PyObject *args)
 {
-    IsosurfaceAttributesObject *obj = (IsosurfaceAttributesObject *)self;
+    PyIsosurfaceAttributesObject *obj = (PyIsosurfaceAttributesObject *)self;
 
     doubleVector vec;
 
@@ -264,7 +293,7 @@ IsosurfaceAttributes_SetContourValue(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IsosurfaceAttributes_GetContourValue(PyObject *self, PyObject *args)
 {
-    IsosurfaceAttributesObject *obj = (IsosurfaceAttributesObject *)self;
+    PyIsosurfaceAttributesObject *obj = (PyIsosurfaceAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the contourValue.
     const doubleVector &contourValue = obj->data->GetContourValue();
     PyObject *retval = PyTuple_New(contourValue.size());
@@ -276,7 +305,7 @@ IsosurfaceAttributes_GetContourValue(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IsosurfaceAttributes_SetContourPercent(PyObject *self, PyObject *args)
 {
-    IsosurfaceAttributesObject *obj = (IsosurfaceAttributesObject *)self;
+    PyIsosurfaceAttributesObject *obj = (PyIsosurfaceAttributesObject *)self;
 
     doubleVector vec;
 
@@ -340,7 +369,7 @@ IsosurfaceAttributes_SetContourPercent(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IsosurfaceAttributes_GetContourPercent(PyObject *self, PyObject *args)
 {
-    IsosurfaceAttributesObject *obj = (IsosurfaceAttributesObject *)self;
+    PyIsosurfaceAttributesObject *obj = (PyIsosurfaceAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the contourPercent.
     const doubleVector &contourPercent = obj->data->GetContourPercent();
     PyObject *retval = PyTuple_New(contourPercent.size());
@@ -352,7 +381,7 @@ IsosurfaceAttributes_GetContourPercent(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IsosurfaceAttributes_SetContourMethod(PyObject *self, PyObject *args)
 {
-    IsosurfaceAttributesObject *obj = (IsosurfaceAttributesObject *)self;
+    PyIsosurfaceAttributesObject *obj = (PyIsosurfaceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -411,7 +440,7 @@ IsosurfaceAttributes_SetContourMethod(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IsosurfaceAttributes_GetContourMethod(PyObject *self, PyObject *args)
 {
-    IsosurfaceAttributesObject *obj = (IsosurfaceAttributesObject *)self;
+    PyIsosurfaceAttributesObject *obj = (PyIsosurfaceAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetContourMethod()));
     return retval;
 }
@@ -419,7 +448,7 @@ IsosurfaceAttributes_GetContourMethod(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IsosurfaceAttributes_SetMinFlag(PyObject *self, PyObject *args)
 {
-    IsosurfaceAttributesObject *obj = (IsosurfaceAttributesObject *)self;
+    PyIsosurfaceAttributesObject *obj = (PyIsosurfaceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -471,7 +500,7 @@ IsosurfaceAttributes_SetMinFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IsosurfaceAttributes_GetMinFlag(PyObject *self, PyObject *args)
 {
-    IsosurfaceAttributesObject *obj = (IsosurfaceAttributesObject *)self;
+    PyIsosurfaceAttributesObject *obj = (PyIsosurfaceAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetMinFlag()?1L:0L);
     return retval;
 }
@@ -479,7 +508,7 @@ IsosurfaceAttributes_GetMinFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IsosurfaceAttributes_SetMin(PyObject *self, PyObject *args)
 {
-    IsosurfaceAttributesObject *obj = (IsosurfaceAttributesObject *)self;
+    PyIsosurfaceAttributesObject *obj = (PyIsosurfaceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -531,7 +560,7 @@ IsosurfaceAttributes_SetMin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IsosurfaceAttributes_GetMin(PyObject *self, PyObject *args)
 {
-    IsosurfaceAttributesObject *obj = (IsosurfaceAttributesObject *)self;
+    PyIsosurfaceAttributesObject *obj = (PyIsosurfaceAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMin());
     return retval;
 }
@@ -539,7 +568,7 @@ IsosurfaceAttributes_GetMin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IsosurfaceAttributes_SetMaxFlag(PyObject *self, PyObject *args)
 {
-    IsosurfaceAttributesObject *obj = (IsosurfaceAttributesObject *)self;
+    PyIsosurfaceAttributesObject *obj = (PyIsosurfaceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -591,7 +620,7 @@ IsosurfaceAttributes_SetMaxFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IsosurfaceAttributes_GetMaxFlag(PyObject *self, PyObject *args)
 {
-    IsosurfaceAttributesObject *obj = (IsosurfaceAttributesObject *)self;
+    PyIsosurfaceAttributesObject *obj = (PyIsosurfaceAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetMaxFlag()?1L:0L);
     return retval;
 }
@@ -599,7 +628,7 @@ IsosurfaceAttributes_GetMaxFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IsosurfaceAttributes_SetMax(PyObject *self, PyObject *args)
 {
-    IsosurfaceAttributesObject *obj = (IsosurfaceAttributesObject *)self;
+    PyIsosurfaceAttributesObject *obj = (PyIsosurfaceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -651,7 +680,7 @@ IsosurfaceAttributes_SetMax(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IsosurfaceAttributes_GetMax(PyObject *self, PyObject *args)
 {
-    IsosurfaceAttributesObject *obj = (IsosurfaceAttributesObject *)self;
+    PyIsosurfaceAttributesObject *obj = (PyIsosurfaceAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMax());
     return retval;
 }
@@ -659,7 +688,7 @@ IsosurfaceAttributes_GetMax(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IsosurfaceAttributes_SetScaling(PyObject *self, PyObject *args)
 {
-    IsosurfaceAttributesObject *obj = (IsosurfaceAttributesObject *)self;
+    PyIsosurfaceAttributesObject *obj = (PyIsosurfaceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -717,7 +746,7 @@ IsosurfaceAttributes_SetScaling(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IsosurfaceAttributes_GetScaling(PyObject *self, PyObject *args)
 {
-    IsosurfaceAttributesObject *obj = (IsosurfaceAttributesObject *)self;
+    PyIsosurfaceAttributesObject *obj = (PyIsosurfaceAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetScaling()));
     return retval;
 }
@@ -725,7 +754,7 @@ IsosurfaceAttributes_GetScaling(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IsosurfaceAttributes_SetVariable(PyObject *self, PyObject *args)
 {
-    IsosurfaceAttributesObject *obj = (IsosurfaceAttributesObject *)self;
+    PyIsosurfaceAttributesObject *obj = (PyIsosurfaceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -766,7 +795,7 @@ IsosurfaceAttributes_SetVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 IsosurfaceAttributes_GetVariable(PyObject *self, PyObject *args)
 {
-    IsosurfaceAttributesObject *obj = (IsosurfaceAttributesObject *)self;
+    PyIsosurfaceAttributesObject *obj = (PyIsosurfaceAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetVariable().c_str());
     return retval;
 }
@@ -774,7 +803,8 @@ IsosurfaceAttributes_GetVariable(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyIsosurfaceAttributes_methods[ISOSURFACEATTRIBUTES_NMETH] = {
-    {"Notify", IsosurfaceAttributes_Notify, METH_VARARGS},
+    {"__dir__", IsosurfaceAttributes_dir, METH_NOARGS},
+    {"Notify", IsosurfaceAttributes_Notify, METH_NOARGS},
     {"SetContourNLevels", IsosurfaceAttributes_SetContourNLevels, METH_VARARGS},
     {"GetContourNLevels", IsosurfaceAttributes_GetContourNLevels, METH_VARARGS},
     {"SetContourValue", IsosurfaceAttributes_SetContourValue, METH_VARARGS},
@@ -803,19 +833,22 @@ PyMethodDef PyIsosurfaceAttributes_methods[ISOSURFACEATTRIBUTES_NMETH] = {
 //
 
 static void
-IsosurfaceAttributes_dealloc(PyObject *v)
+PyIsosurfaceAttributes_dealloc(PyObject *v)
 {
-   IsosurfaceAttributesObject *obj = (IsosurfaceAttributesObject *)v;
+   PyIsosurfaceAttributesObject *obj = (PyIsosurfaceAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *IsosurfaceAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyIsosurfaceAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyIsosurfaceAttributes_getattr(PyObject *self, char *name)
+PyIsosurfaceAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "contourNLevels") == 0)
         return IsosurfaceAttributes_GetContourNLevels(self, NULL);
     if(strcmp(name, "contourValue") == 0)
@@ -849,26 +882,19 @@ PyIsosurfaceAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "variable") == 0)
         return IsosurfaceAttributes_GetVariable(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyIsosurfaceAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyIsosurfaceAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyIsosurfaceAttributes_methods[i].ml_name),
-                PyString_FromString(PyIsosurfaceAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyIsosurfaceAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyIsosurfaceAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyIsosurfaceAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "contourNLevels") == 0)
         obj = IsosurfaceAttributes_SetContourNLevels(self, args);
@@ -891,6 +917,12 @@ PyIsosurfaceAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "variable") == 0)
         obj = IsosurfaceAttributes_SetVariable(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -905,78 +937,45 @@ PyIsosurfaceAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-IsosurfaceAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    IsosurfaceAttributesObject *obj = (IsosurfaceAttributesObject *)v;
-    fprintf(fp, "%s", PyIsosurfaceAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-IsosurfaceAttributes_str(PyObject *v)
+PyIsosurfaceAttributes_str(PyObject *v)
 {
-    IsosurfaceAttributesObject *obj = (IsosurfaceAttributesObject *)v;
+    PyIsosurfaceAttributesObject *obj = (PyIsosurfaceAttributesObject *)v;
     return PyString_FromString(PyIsosurfaceAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *IsosurfaceAttributes_Purpose = "Attributes for the isosurface operator";
-#else
-static char *IsosurfaceAttributes_Purpose = "Attributes for the isosurface operator";
-#endif
+static char const *PyIsosurfaceAttributes_purpose = "Attributes for the isosurface operator";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(IsosurfaceAttributesType,         \
-                  "IsosurfaceAttributes",           \
-                  IsosurfaceAttributesObject,       \
-                  IsosurfaceAttributes_dealloc,     \
-                  IsosurfaceAttributes_print,       \
-                  PyIsosurfaceAttributes_getattr,   \
-                  PyIsosurfaceAttributes_setattr,   \
-                  IsosurfaceAttributes_str,         \
-                  IsosurfaceAttributes_Purpose,     \
-                  IsosurfaceAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(IsosurfaceAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-IsosurfaceAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyIsosurfaceAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &IsosurfaceAttributesType
-         || Py_TYPE(other) != &IsosurfaceAttributesType)
+    if ( Py_TYPE(self) != &PyIsosurfaceAttributesType
+         || Py_TYPE(other) != &PyIsosurfaceAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    IsosurfaceAttributes *a = ((IsosurfaceAttributesObject *)self)->data;
-    IsosurfaceAttributes *b = ((IsosurfaceAttributesObject *)other)->data;
+    IsosurfaceAttributes *a = ((PyIsosurfaceAttributesObject *)self)->data;
+    IsosurfaceAttributes *b = ((PyIsosurfaceAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -1005,8 +1004,8 @@ static IsosurfaceAttributes *currentAtts = 0;
 static PyObject *
 NewIsosurfaceAttributes(int useCurrent)
 {
-    IsosurfaceAttributesObject *newObject;
-    newObject = PyObject_NEW(IsosurfaceAttributesObject, &IsosurfaceAttributesType);
+    PyIsosurfaceAttributesObject *newObject;
+    newObject = PyObject_NEW(PyIsosurfaceAttributesObject, &PyIsosurfaceAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1017,14 +1016,15 @@ NewIsosurfaceAttributes(int useCurrent)
         newObject->data = new IsosurfaceAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyIsosurfaceAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapIsosurfaceAttributes(const IsosurfaceAttributes *attr)
 {
-    IsosurfaceAttributesObject *newObject;
-    newObject = PyObject_NEW(IsosurfaceAttributesObject, &IsosurfaceAttributesType);
+    PyIsosurfaceAttributesObject *newObject;
+    newObject = PyObject_NEW(PyIsosurfaceAttributesObject, &PyIsosurfaceAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (IsosurfaceAttributes *)attr;
@@ -1126,13 +1126,13 @@ PyIsosurfaceAttributes_GetMethodTable(int *nMethods)
 bool
 PyIsosurfaceAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &IsosurfaceAttributesType);
+    return (obj->ob_type == &PyIsosurfaceAttributesType);
 }
 
 IsosurfaceAttributes *
 PyIsosurfaceAttributes_FromPyObject(PyObject *obj)
 {
-    IsosurfaceAttributesObject *obj2 = (IsosurfaceAttributesObject *)obj;
+    PyIsosurfaceAttributesObject *obj2 = (PyIsosurfaceAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1151,7 +1151,7 @@ PyIsosurfaceAttributes_Wrap(const IsosurfaceAttributes *attr)
 void
 PyIsosurfaceAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    IsosurfaceAttributesObject *obj2 = (IsosurfaceAttributesObject *)obj;
+    PyIsosurfaceAttributesObject *obj2 = (PyIsosurfaceAttributesObject *)obj;
     obj2->parent = parent;
 }
 

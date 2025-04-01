@@ -5,6 +5,7 @@
 #include <PyMachineProfile.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 #include <PyLaunchProfile.h>
 
@@ -24,7 +25,7 @@
 //
 // This struct contains the Python type information and a MachineProfile.
 //
-struct MachineProfileObject
+struct PyMachineProfileObject
 {
     PyObject_HEAD
     MachineProfile *data;
@@ -155,16 +156,44 @@ PyMachineProfile_ToString(const MachineProfile *atts, const char *prefix, const 
 static PyObject *
 MachineProfile_Notify(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+MachineProfile_dir(PyObject *self, PyObject *args)
+{
+    static MachineProfile atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyMachineProfile_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 MachineProfile_SetHost(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -205,7 +234,7 @@ MachineProfile_SetHost(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_GetHost(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetHost().c_str());
     return retval;
 }
@@ -213,7 +242,7 @@ MachineProfile_GetHost(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_SetUserName(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -254,7 +283,7 @@ MachineProfile_SetUserName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_GetUserName(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetUserName().c_str());
     return retval;
 }
@@ -262,7 +291,7 @@ MachineProfile_GetUserName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_SetPassword(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -303,7 +332,7 @@ MachineProfile_SetPassword(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_GetPassword(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetPassword().c_str());
     return retval;
 }
@@ -311,7 +340,7 @@ MachineProfile_GetPassword(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_SetHostAliases(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -352,7 +381,7 @@ MachineProfile_SetHostAliases(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_GetHostAliases(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetHostAliases().c_str());
     return retval;
 }
@@ -360,7 +389,7 @@ MachineProfile_GetHostAliases(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_SetHostNickname(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -401,7 +430,7 @@ MachineProfile_SetHostNickname(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_GetHostNickname(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetHostNickname().c_str());
     return retval;
 }
@@ -409,7 +438,7 @@ MachineProfile_GetHostNickname(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_SetDirectory(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -450,7 +479,7 @@ MachineProfile_SetDirectory(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_GetDirectory(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetDirectory().c_str());
     return retval;
 }
@@ -458,7 +487,7 @@ MachineProfile_GetDirectory(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_SetShareOneBatchJob(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -510,7 +539,7 @@ MachineProfile_SetShareOneBatchJob(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_GetShareOneBatchJob(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShareOneBatchJob()?1L:0L);
     return retval;
 }
@@ -518,7 +547,7 @@ MachineProfile_GetShareOneBatchJob(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_SetSshPortSpecified(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -570,7 +599,7 @@ MachineProfile_SetSshPortSpecified(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_GetSshPortSpecified(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetSshPortSpecified()?1L:0L);
     return retval;
 }
@@ -578,7 +607,7 @@ MachineProfile_GetSshPortSpecified(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_SetSshPort(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -630,7 +659,7 @@ MachineProfile_SetSshPort(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_GetSshPort(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetSshPort()));
     return retval;
 }
@@ -638,7 +667,7 @@ MachineProfile_GetSshPort(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_SetSshCommandSpecified(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -690,7 +719,7 @@ MachineProfile_SetSshCommandSpecified(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_GetSshCommandSpecified(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetSshCommandSpecified()?1L:0L);
     return retval;
 }
@@ -698,7 +727,7 @@ MachineProfile_GetSshCommandSpecified(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_SetSshCommand(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
 
     stringVector vec;
 
@@ -755,7 +784,7 @@ MachineProfile_SetSshCommand(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_GetSshCommand(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
     // Allocate a tuple the with enough entries to hold the sshCommand.
     const stringVector &sshCommand = obj->data->GetSshCommand();
     PyObject *retval = PyTuple_New(sshCommand.size());
@@ -767,7 +796,7 @@ MachineProfile_GetSshCommand(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_SetUseGateway(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -819,7 +848,7 @@ MachineProfile_SetUseGateway(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_GetUseGateway(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetUseGateway()?1L:0L);
     return retval;
 }
@@ -827,7 +856,7 @@ MachineProfile_GetUseGateway(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_SetGatewayHost(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -868,7 +897,7 @@ MachineProfile_SetGatewayHost(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_GetGatewayHost(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetGatewayHost().c_str());
     return retval;
 }
@@ -876,7 +905,7 @@ MachineProfile_GetGatewayHost(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_SetClientHostDetermination(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -935,7 +964,7 @@ MachineProfile_SetClientHostDetermination(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_GetClientHostDetermination(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetClientHostDetermination()));
     return retval;
 }
@@ -943,7 +972,7 @@ MachineProfile_GetClientHostDetermination(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_SetManualClientHostName(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -984,7 +1013,7 @@ MachineProfile_SetManualClientHostName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_GetManualClientHostName(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetManualClientHostName().c_str());
     return retval;
 }
@@ -992,7 +1021,7 @@ MachineProfile_GetManualClientHostName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_SetTunnelSSH(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1044,7 +1073,7 @@ MachineProfile_SetTunnelSSH(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_GetTunnelSSH(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetTunnelSSH()?1L:0L);
     return retval;
 }
@@ -1052,7 +1081,7 @@ MachineProfile_GetTunnelSSH(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_SetMaximumNodesValid(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1104,7 +1133,7 @@ MachineProfile_SetMaximumNodesValid(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_GetMaximumNodesValid(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetMaximumNodesValid()?1L:0L);
     return retval;
 }
@@ -1112,7 +1141,7 @@ MachineProfile_GetMaximumNodesValid(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_SetMaximumNodes(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1164,7 +1193,7 @@ MachineProfile_SetMaximumNodes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_GetMaximumNodes(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMaximumNodes()));
     return retval;
 }
@@ -1172,7 +1201,7 @@ MachineProfile_GetMaximumNodes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_SetMaximumProcessorsValid(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1224,7 +1253,7 @@ MachineProfile_SetMaximumProcessorsValid(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_GetMaximumProcessorsValid(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetMaximumProcessorsValid()?1L:0L);
     return retval;
 }
@@ -1232,7 +1261,7 @@ MachineProfile_GetMaximumProcessorsValid(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_SetMaximumProcessors(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1284,7 +1313,7 @@ MachineProfile_SetMaximumProcessors(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_GetMaximumProcessors(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMaximumProcessors()));
     return retval;
 }
@@ -1292,7 +1321,7 @@ MachineProfile_GetMaximumProcessors(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_GetLaunchProfiles(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
     int index = -1;
     if (args == NULL)
         return PyErr_Format(PyExc_NameError, "Use .GetLaunchProfiles(int index) to get a single entry");
@@ -1316,14 +1345,14 @@ MachineProfile_GetLaunchProfiles(PyObject *self, PyObject *args)
 PyObject *
 MachineProfile_GetNumLaunchProfiles(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
     return PyInt_FromLong((long)obj->data->GetLaunchProfiles().size());
 }
 
 PyObject *
 MachineProfile_AddLaunchProfiles(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
         return NULL;
@@ -1339,7 +1368,7 @@ MachineProfile_AddLaunchProfiles(PyObject *self, PyObject *args)
 static PyObject *
 MachineProfile_Remove_One_LaunchProfiles(PyObject *self, int index)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
     // Remove in the AttributeGroupVector instead of calling RemoveLaunchProfiles() because we don't want to delete the object; just remove it.
     AttributeGroupVector &atts = obj->data->GetLaunchProfiles();
     AttributeGroupVector::iterator pos = atts.begin();
@@ -1369,7 +1398,7 @@ MachineProfile_RemoveLaunchProfiles(PyObject *self, PyObject *args)
     int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
     if(index < 0 || index >= obj->data->GetNumLaunchProfiles())
         return PyErr_Format(PyExc_IndexError, "Index out of range");
 
@@ -1379,7 +1408,7 @@ MachineProfile_RemoveLaunchProfiles(PyObject *self, PyObject *args)
 PyObject *
 MachineProfile_ClearLaunchProfiles(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
     int n = obj->data->GetNumLaunchProfiles();
     for(int i = 0; i < n; ++i)
     {
@@ -1393,7 +1422,7 @@ MachineProfile_ClearLaunchProfiles(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_SetActiveProfile(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1445,7 +1474,7 @@ MachineProfile_SetActiveProfile(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MachineProfile_GetActiveProfile(PyObject *self, PyObject *args)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)self;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetActiveProfile()));
     return retval;
 }
@@ -1453,7 +1482,8 @@ MachineProfile_GetActiveProfile(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyMachineProfile_methods[MACHINEPROFILE_NMETH] = {
-    {"Notify", MachineProfile_Notify, METH_VARARGS},
+    {"__dir__", MachineProfile_dir, METH_NOARGS},
+    {"Notify", MachineProfile_Notify, METH_NOARGS},
     {"SetHost", MachineProfile_SetHost, METH_VARARGS},
     {"GetHost", MachineProfile_GetHost, METH_VARARGS},
     {"SetUserName", MachineProfile_SetUserName, METH_VARARGS},
@@ -1509,19 +1539,22 @@ PyMethodDef PyMachineProfile_methods[MACHINEPROFILE_NMETH] = {
 //
 
 static void
-MachineProfile_dealloc(PyObject *v)
+PyMachineProfile_dealloc(PyObject *v)
 {
-   MachineProfileObject *obj = (MachineProfileObject *)v;
+   PyMachineProfileObject *obj = (PyMachineProfileObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *MachineProfile_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyMachineProfile_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyMachineProfile_getattr(PyObject *self, char *name)
+PyMachineProfile_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "host") == 0)
         return MachineProfile_GetHost(self, NULL);
     if(strcmp(name, "userName") == 0)
@@ -1574,26 +1607,19 @@ PyMachineProfile_getattr(PyObject *self, char *name)
     if(strcmp(name, "activeProfile") == 0)
         return MachineProfile_GetActiveProfile(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyMachineProfile_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyMachineProfile_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyMachineProfile_methods[i].ml_name),
-                PyString_FromString(PyMachineProfile_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyMachineProfile_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyMachineProfile_setattr(PyObject *self, char *name, PyObject *args)
+PyMachineProfile_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "host") == 0)
         obj = MachineProfile_SetHost(self, args);
@@ -1638,6 +1664,12 @@ PyMachineProfile_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "activeProfile") == 0)
         obj = MachineProfile_SetActiveProfile(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -1652,78 +1684,45 @@ PyMachineProfile_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-MachineProfile_print(PyObject *v, FILE *fp, int flags)
-{
-    MachineProfileObject *obj = (MachineProfileObject *)v;
-    fprintf(fp, "%s", PyMachineProfile_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-MachineProfile_str(PyObject *v)
+PyMachineProfile_str(PyObject *v)
 {
-    MachineProfileObject *obj = (MachineProfileObject *)v;
+    PyMachineProfileObject *obj = (PyMachineProfileObject *)v;
     return PyString_FromString(PyMachineProfile_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *MachineProfile_Purpose = "This class contains information about a host for a remote VisIt engine.";
-#else
-static char *MachineProfile_Purpose = "This class contains information about a host for a remote VisIt engine.";
-#endif
+static char const *PyMachineProfile_purpose = "This class contains information about a host for a remote VisIt engine.";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(MachineProfileType,         \
-                  "MachineProfile",           \
-                  MachineProfileObject,       \
-                  MachineProfile_dealloc,     \
-                  MachineProfile_print,       \
-                  PyMachineProfile_getattr,   \
-                  PyMachineProfile_setattr,   \
-                  MachineProfile_str,         \
-                  MachineProfile_Purpose,     \
-                  MachineProfile_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(MachineProfile);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-MachineProfile_richcompare(PyObject *self, PyObject *other, int op)
+PyMachineProfile_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &MachineProfileType
-         || Py_TYPE(other) != &MachineProfileType)
+    if ( Py_TYPE(self) != &PyMachineProfileType
+         || Py_TYPE(other) != &PyMachineProfileType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    MachineProfile *a = ((MachineProfileObject *)self)->data;
-    MachineProfile *b = ((MachineProfileObject *)other)->data;
+    MachineProfile *a = ((PyMachineProfileObject *)self)->data;
+    MachineProfile *b = ((PyMachineProfileObject *)other)->data;
 
     switch (op)
     {
@@ -1752,8 +1751,8 @@ static MachineProfile *currentAtts = 0;
 static PyObject *
 NewMachineProfile(int useCurrent)
 {
-    MachineProfileObject *newObject;
-    newObject = PyObject_NEW(MachineProfileObject, &MachineProfileType);
+    PyMachineProfileObject *newObject;
+    newObject = PyObject_NEW(PyMachineProfileObject, &PyMachineProfileType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1764,14 +1763,15 @@ NewMachineProfile(int useCurrent)
         newObject->data = new MachineProfile;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyMachineProfileType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapMachineProfile(const MachineProfile *attr)
 {
-    MachineProfileObject *newObject;
-    newObject = PyObject_NEW(MachineProfileObject, &MachineProfileType);
+    PyMachineProfileObject *newObject;
+    newObject = PyObject_NEW(PyMachineProfileObject, &PyMachineProfileType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (MachineProfile *)attr;
@@ -1873,13 +1873,13 @@ PyMachineProfile_GetMethodTable(int *nMethods)
 bool
 PyMachineProfile_Check(PyObject *obj)
 {
-    return (obj->ob_type == &MachineProfileType);
+    return (obj->ob_type == &PyMachineProfileType);
 }
 
 MachineProfile *
 PyMachineProfile_FromPyObject(PyObject *obj)
 {
-    MachineProfileObject *obj2 = (MachineProfileObject *)obj;
+    PyMachineProfileObject *obj2 = (PyMachineProfileObject *)obj;
     return obj2->data;
 }
 
@@ -1898,7 +1898,7 @@ PyMachineProfile_Wrap(const MachineProfile *attr)
 void
 PyMachineProfile_SetParent(PyObject *obj, PyObject *parent)
 {
-    MachineProfileObject *obj2 = (MachineProfileObject *)obj;
+    PyMachineProfileObject *obj2 = (PyMachineProfileObject *)obj;
     obj2->parent = parent;
 }
 

@@ -5,6 +5,7 @@
 #include <PyScatterAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 #include <GlyphTypes.h>
 #include <ColorAttribute.h>
@@ -25,7 +26,7 @@
 //
 // This struct contains the Python type information and a ScatterAttributes.
 //
-struct ScatterAttributesObject
+struct PyScatterAttributesObject
 {
     PyObject_HEAD
     ScatterAttributes *data;
@@ -388,16 +389,44 @@ PyScatterAttributes_ToString(const ScatterAttributes *atts, const char *prefix, 
 static PyObject *
 ScatterAttributes_Notify(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+ScatterAttributes_dir(PyObject *self, PyObject *args)
+{
+    static ScatterAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyScatterAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 ScatterAttributes_SetVar1(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -438,7 +467,7 @@ ScatterAttributes_SetVar1(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetVar1(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetVar1().c_str());
     return retval;
 }
@@ -446,7 +475,7 @@ ScatterAttributes_GetVar1(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetVar1Role(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -507,7 +536,7 @@ ScatterAttributes_SetVar1Role(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetVar1Role(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetVar1Role()));
     return retval;
 }
@@ -515,7 +544,7 @@ ScatterAttributes_GetVar1Role(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetVar1MinFlag(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -567,7 +596,7 @@ ScatterAttributes_SetVar1MinFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetVar1MinFlag(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetVar1MinFlag()?1L:0L);
     return retval;
 }
@@ -575,7 +604,7 @@ ScatterAttributes_GetVar1MinFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetVar1MaxFlag(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -627,7 +656,7 @@ ScatterAttributes_SetVar1MaxFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetVar1MaxFlag(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetVar1MaxFlag()?1L:0L);
     return retval;
 }
@@ -635,7 +664,7 @@ ScatterAttributes_GetVar1MaxFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetVar1Min(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -687,7 +716,7 @@ ScatterAttributes_SetVar1Min(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetVar1Min(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetVar1Min());
     return retval;
 }
@@ -695,7 +724,7 @@ ScatterAttributes_GetVar1Min(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetVar1Max(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -747,7 +776,7 @@ ScatterAttributes_SetVar1Max(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetVar1Max(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetVar1Max());
     return retval;
 }
@@ -755,7 +784,7 @@ ScatterAttributes_GetVar1Max(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetVar1Scaling(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -814,7 +843,7 @@ ScatterAttributes_SetVar1Scaling(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetVar1Scaling(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetVar1Scaling()));
     return retval;
 }
@@ -822,7 +851,7 @@ ScatterAttributes_GetVar1Scaling(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetVar1SkewFactor(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -874,7 +903,7 @@ ScatterAttributes_SetVar1SkewFactor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetVar1SkewFactor(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetVar1SkewFactor());
     return retval;
 }
@@ -882,7 +911,7 @@ ScatterAttributes_GetVar1SkewFactor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetVar2Role(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -943,7 +972,7 @@ ScatterAttributes_SetVar2Role(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetVar2Role(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetVar2Role()));
     return retval;
 }
@@ -951,7 +980,7 @@ ScatterAttributes_GetVar2Role(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetVar2(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -992,7 +1021,7 @@ ScatterAttributes_SetVar2(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetVar2(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetVar2().c_str());
     return retval;
 }
@@ -1000,7 +1029,7 @@ ScatterAttributes_GetVar2(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetVar2MinFlag(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1052,7 +1081,7 @@ ScatterAttributes_SetVar2MinFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetVar2MinFlag(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetVar2MinFlag()?1L:0L);
     return retval;
 }
@@ -1060,7 +1089,7 @@ ScatterAttributes_GetVar2MinFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetVar2MaxFlag(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1112,7 +1141,7 @@ ScatterAttributes_SetVar2MaxFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetVar2MaxFlag(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetVar2MaxFlag()?1L:0L);
     return retval;
 }
@@ -1120,7 +1149,7 @@ ScatterAttributes_GetVar2MaxFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetVar2Min(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1172,7 +1201,7 @@ ScatterAttributes_SetVar2Min(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetVar2Min(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetVar2Min());
     return retval;
 }
@@ -1180,7 +1209,7 @@ ScatterAttributes_GetVar2Min(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetVar2Max(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1232,7 +1261,7 @@ ScatterAttributes_SetVar2Max(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetVar2Max(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetVar2Max());
     return retval;
 }
@@ -1240,7 +1269,7 @@ ScatterAttributes_GetVar2Max(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetVar2Scaling(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1299,7 +1328,7 @@ ScatterAttributes_SetVar2Scaling(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetVar2Scaling(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetVar2Scaling()));
     return retval;
 }
@@ -1307,7 +1336,7 @@ ScatterAttributes_GetVar2Scaling(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetVar2SkewFactor(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1359,7 +1388,7 @@ ScatterAttributes_SetVar2SkewFactor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetVar2SkewFactor(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetVar2SkewFactor());
     return retval;
 }
@@ -1367,7 +1396,7 @@ ScatterAttributes_GetVar2SkewFactor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetVar3Role(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1428,7 +1457,7 @@ ScatterAttributes_SetVar3Role(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetVar3Role(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetVar3Role()));
     return retval;
 }
@@ -1436,7 +1465,7 @@ ScatterAttributes_GetVar3Role(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetVar3(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1477,7 +1506,7 @@ ScatterAttributes_SetVar3(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetVar3(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetVar3().c_str());
     return retval;
 }
@@ -1485,7 +1514,7 @@ ScatterAttributes_GetVar3(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetVar3MinFlag(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1537,7 +1566,7 @@ ScatterAttributes_SetVar3MinFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetVar3MinFlag(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetVar3MinFlag()?1L:0L);
     return retval;
 }
@@ -1545,7 +1574,7 @@ ScatterAttributes_GetVar3MinFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetVar3MaxFlag(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1597,7 +1626,7 @@ ScatterAttributes_SetVar3MaxFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetVar3MaxFlag(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetVar3MaxFlag()?1L:0L);
     return retval;
 }
@@ -1605,7 +1634,7 @@ ScatterAttributes_GetVar3MaxFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetVar3Min(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1657,7 +1686,7 @@ ScatterAttributes_SetVar3Min(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetVar3Min(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetVar3Min());
     return retval;
 }
@@ -1665,7 +1694,7 @@ ScatterAttributes_GetVar3Min(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetVar3Max(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1717,7 +1746,7 @@ ScatterAttributes_SetVar3Max(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetVar3Max(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetVar3Max());
     return retval;
 }
@@ -1725,7 +1754,7 @@ ScatterAttributes_GetVar3Max(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetVar3Scaling(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1784,7 +1813,7 @@ ScatterAttributes_SetVar3Scaling(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetVar3Scaling(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetVar3Scaling()));
     return retval;
 }
@@ -1792,7 +1821,7 @@ ScatterAttributes_GetVar3Scaling(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetVar3SkewFactor(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1844,7 +1873,7 @@ ScatterAttributes_SetVar3SkewFactor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetVar3SkewFactor(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetVar3SkewFactor());
     return retval;
 }
@@ -1852,7 +1881,7 @@ ScatterAttributes_GetVar3SkewFactor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetVar4Role(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1913,7 +1942,7 @@ ScatterAttributes_SetVar4Role(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetVar4Role(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetVar4Role()));
     return retval;
 }
@@ -1921,7 +1950,7 @@ ScatterAttributes_GetVar4Role(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetVar4(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1962,7 +1991,7 @@ ScatterAttributes_SetVar4(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetVar4(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetVar4().c_str());
     return retval;
 }
@@ -1970,7 +1999,7 @@ ScatterAttributes_GetVar4(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetVar4MinFlag(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2022,7 +2051,7 @@ ScatterAttributes_SetVar4MinFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetVar4MinFlag(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetVar4MinFlag()?1L:0L);
     return retval;
 }
@@ -2030,7 +2059,7 @@ ScatterAttributes_GetVar4MinFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetVar4MaxFlag(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2082,7 +2111,7 @@ ScatterAttributes_SetVar4MaxFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetVar4MaxFlag(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetVar4MaxFlag()?1L:0L);
     return retval;
 }
@@ -2090,7 +2119,7 @@ ScatterAttributes_GetVar4MaxFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetVar4Min(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2142,7 +2171,7 @@ ScatterAttributes_SetVar4Min(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetVar4Min(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetVar4Min());
     return retval;
 }
@@ -2150,7 +2179,7 @@ ScatterAttributes_GetVar4Min(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetVar4Max(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2202,7 +2231,7 @@ ScatterAttributes_SetVar4Max(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetVar4Max(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetVar4Max());
     return retval;
 }
@@ -2210,7 +2239,7 @@ ScatterAttributes_GetVar4Max(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetVar4Scaling(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2269,7 +2298,7 @@ ScatterAttributes_SetVar4Scaling(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetVar4Scaling(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetVar4Scaling()));
     return retval;
 }
@@ -2277,7 +2306,7 @@ ScatterAttributes_GetVar4Scaling(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetVar4SkewFactor(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2329,7 +2358,7 @@ ScatterAttributes_SetVar4SkewFactor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetVar4SkewFactor(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetVar4SkewFactor());
     return retval;
 }
@@ -2337,7 +2366,7 @@ ScatterAttributes_GetVar4SkewFactor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetPointSize(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2389,7 +2418,7 @@ ScatterAttributes_SetPointSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetPointSize(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetPointSize());
     return retval;
 }
@@ -2397,7 +2426,7 @@ ScatterAttributes_GetPointSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetPointSizePixels(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2449,7 +2478,7 @@ ScatterAttributes_SetPointSizePixels(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetPointSizePixels(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetPointSizePixels()));
     return retval;
 }
@@ -2457,7 +2486,7 @@ ScatterAttributes_GetPointSizePixels(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetPointType(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     int ival = -999;
     if (PySequence_Check(args) && !PyArg_ParseTuple(args, "i", &ival))
@@ -2487,7 +2516,7 @@ ScatterAttributes_SetPointType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetPointType(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetPointType()));
     return retval;
 }
@@ -2495,7 +2524,7 @@ ScatterAttributes_GetPointType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetScaleCube(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2547,7 +2576,7 @@ ScatterAttributes_SetScaleCube(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetScaleCube(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetScaleCube()?1L:0L);
     return retval;
 }
@@ -2555,7 +2584,7 @@ ScatterAttributes_GetScaleCube(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetColorType(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2614,7 +2643,7 @@ ScatterAttributes_SetColorType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetColorType(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetColorType()));
     return retval;
 }
@@ -2622,7 +2651,7 @@ ScatterAttributes_GetColorType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetSingleColor(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -2685,7 +2714,7 @@ ScatterAttributes_SetSingleColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetSingleColor(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the singleColor.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *singleColor = obj->data->GetSingleColor().GetColor();
@@ -2699,7 +2728,7 @@ ScatterAttributes_GetSingleColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetColorTableName(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2740,7 +2769,7 @@ ScatterAttributes_SetColorTableName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetColorTableName(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetColorTableName().c_str());
     return retval;
 }
@@ -2748,7 +2777,7 @@ ScatterAttributes_GetColorTableName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2800,7 +2829,7 @@ ScatterAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetInvertColorTable(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetInvertColorTable()?1L:0L);
     return retval;
 }
@@ -2808,7 +2837,7 @@ ScatterAttributes_GetInvertColorTable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2860,7 +2889,7 @@ ScatterAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ScatterAttributes_GetLegendFlag(PyObject *self, PyObject *args)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)self;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetLegendFlag()?1L:0L);
     return retval;
 }
@@ -2868,7 +2897,8 @@ ScatterAttributes_GetLegendFlag(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyScatterAttributes_methods[SCATTERATTRIBUTES_NMETH] = {
-    {"Notify", ScatterAttributes_Notify, METH_VARARGS},
+    {"__dir__", ScatterAttributes_dir, METH_NOARGS},
+    {"Notify", ScatterAttributes_Notify, METH_NOARGS},
     {"SetVar1", ScatterAttributes_SetVar1, METH_VARARGS},
     {"GetVar1", ScatterAttributes_GetVar1, METH_VARARGS},
     {"SetVar1Role", ScatterAttributes_SetVar1Role, METH_VARARGS},
@@ -2959,19 +2989,22 @@ PyMethodDef PyScatterAttributes_methods[SCATTERATTRIBUTES_NMETH] = {
 //
 
 static void
-ScatterAttributes_dealloc(PyObject *v)
+PyScatterAttributes_dealloc(PyObject *v)
 {
-   ScatterAttributesObject *obj = (ScatterAttributesObject *)v;
+   PyScatterAttributesObject *obj = (PyScatterAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *ScatterAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyScatterAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyScatterAttributes_getattr(PyObject *self, char *name)
+PyScatterAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "var1") == 0)
         return ScatterAttributes_GetVar1(self, NULL);
     if(strcmp(name, "var1Role") == 0)
@@ -3159,26 +3192,19 @@ PyScatterAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "legendFlag") == 0)
         return ScatterAttributes_GetLegendFlag(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyScatterAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyScatterAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyScatterAttributes_methods[i].ml_name),
-                PyString_FromString(PyScatterAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyScatterAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyScatterAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyScatterAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "var1") == 0)
         obj = ScatterAttributes_SetVar1(self, args);
@@ -3263,36 +3289,12 @@ PyScatterAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "legendFlag") == 0)
         obj = ScatterAttributes_SetLegendFlag(self, args);
 
-    // If the user changes one of the roles and one of the roles is
-    // "Color" then assume that they want to use the color table.
-
-    // If they do not want to use the color table and want to use
-    // either the foreground or a single color they must set it after
-    // all variables (roles) have been set.
-    if( strcmp(name, "var1Role") == 0 ||
-        strcmp(name, "var2Role") == 0 ||
-        strcmp(name, "var3Role") == 0 ||
-        strcmp(name, "var4Role") == 0 )
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
     {
-        // A color variable has been specified.
-        if(ScatterAttributes_GetVar1Role(self, NULL) == PyInt_FromLong(3) ||
-           ScatterAttributes_GetVar2Role(self, NULL) == PyInt_FromLong(3) ||
-           ScatterAttributes_GetVar3Role(self, NULL) == PyInt_FromLong(3) ||
-           ScatterAttributes_GetVar4Role(self, NULL) == PyInt_FromLong(3) )
-        {
-            PyObject *new_args = Py_BuildValue("(i)", 2);
-            obj = ScatterAttributes_SetColorType(self, new_args);
-            Py_DECREF(new_args);
-        }
-
-        // No color variable so use the foreground as a default.
-        else
-        {
-            PyObject *new_args = Py_BuildValue("(i)", 0);
-            obj = ScatterAttributes_SetColorType(self, new_args);
-            Py_DECREF(new_args);
-        }
+        Py_INCREF(Py_None);
+        obj = Py_None;
     }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -3307,78 +3309,45 @@ PyScatterAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ScatterAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)v;
-    fprintf(fp, "%s", PyScatterAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-ScatterAttributes_str(PyObject *v)
+PyScatterAttributes_str(PyObject *v)
 {
-    ScatterAttributesObject *obj = (ScatterAttributesObject *)v;
+    PyScatterAttributesObject *obj = (PyScatterAttributesObject *)v;
     return PyString_FromString(PyScatterAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *ScatterAttributes_Purpose = "Attributes for the scatter plot";
-#else
-static char *ScatterAttributes_Purpose = "Attributes for the scatter plot";
-#endif
+static char const *PyScatterAttributes_purpose = "Attributes for the scatter plot";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(ScatterAttributesType,         \
-                  "ScatterAttributes",           \
-                  ScatterAttributesObject,       \
-                  ScatterAttributes_dealloc,     \
-                  ScatterAttributes_print,       \
-                  PyScatterAttributes_getattr,   \
-                  PyScatterAttributes_setattr,   \
-                  ScatterAttributes_str,         \
-                  ScatterAttributes_Purpose,     \
-                  ScatterAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(ScatterAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-ScatterAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyScatterAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &ScatterAttributesType
-         || Py_TYPE(other) != &ScatterAttributesType)
+    if ( Py_TYPE(self) != &PyScatterAttributesType
+         || Py_TYPE(other) != &PyScatterAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    ScatterAttributes *a = ((ScatterAttributesObject *)self)->data;
-    ScatterAttributes *b = ((ScatterAttributesObject *)other)->data;
+    ScatterAttributes *a = ((PyScatterAttributesObject *)self)->data;
+    ScatterAttributes *b = ((PyScatterAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -3407,8 +3376,8 @@ static ScatterAttributes *currentAtts = 0;
 static PyObject *
 NewScatterAttributes(int useCurrent)
 {
-    ScatterAttributesObject *newObject;
-    newObject = PyObject_NEW(ScatterAttributesObject, &ScatterAttributesType);
+    PyScatterAttributesObject *newObject;
+    newObject = PyObject_NEW(PyScatterAttributesObject, &PyScatterAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -3419,14 +3388,15 @@ NewScatterAttributes(int useCurrent)
         newObject->data = new ScatterAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyScatterAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapScatterAttributes(const ScatterAttributes *attr)
 {
-    ScatterAttributesObject *newObject;
-    newObject = PyObject_NEW(ScatterAttributesObject, &ScatterAttributesType);
+    PyScatterAttributesObject *newObject;
+    newObject = PyObject_NEW(PyScatterAttributesObject, &PyScatterAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (ScatterAttributes *)attr;
@@ -3528,13 +3498,13 @@ PyScatterAttributes_GetMethodTable(int *nMethods)
 bool
 PyScatterAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ScatterAttributesType);
+    return (obj->ob_type == &PyScatterAttributesType);
 }
 
 ScatterAttributes *
 PyScatterAttributes_FromPyObject(PyObject *obj)
 {
-    ScatterAttributesObject *obj2 = (ScatterAttributesObject *)obj;
+    PyScatterAttributesObject *obj2 = (PyScatterAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -3553,7 +3523,7 @@ PyScatterAttributes_Wrap(const ScatterAttributes *attr)
 void
 PyScatterAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    ScatterAttributesObject *obj2 = (ScatterAttributesObject *)obj;
+    PyScatterAttributesObject *obj2 = (PyScatterAttributesObject *)obj;
     obj2->parent = parent;
 }
 

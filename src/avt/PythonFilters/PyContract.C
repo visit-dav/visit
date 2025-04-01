@@ -7,6 +7,9 @@
 #include <PyContract.h>
 #include <PyDataRequest.h>
 
+#include <sstream>
+#include <string>
+
 // ****************************************************************************
 //  Modifications:
 //
@@ -394,13 +397,14 @@ Contract_GetDataRequest(PyObject *self, PyObject *args)
     return PyDataRequest_Wrap(req);
 }
 
+// Forward declaration for methods table
+static PyObject *Contract_dir(PyObject *self, PyObject *args);
 
 //
 // Method Table
 //
-
-
-static struct PyMethodDef Contract_methods[] = {
+static PyMethodDef PyContract_methods[] = {
+    {"__dir__",                                 Contract_dir, METH_NOARGS},
     {"ShouldUseStreaming",                      Contract_ShouldUseStreaming, METH_VARARGS},
     {"NoStreaming",                             Contract_NoStreaming, METH_VARARGS},
     {"ShouldUseLoadBalancing",                  Contract_ShouldUseLoadBalancing, METH_VARARGS},
@@ -419,6 +423,25 @@ static struct PyMethodDef Contract_methods[] = {
 //
 // Type functions
 //
+static PyObject *
+Contract_dir(PyObject *self, PyObject *args)
+{
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+       
+    // Add methods from the methods table
+    for (PyMethodDef const *method = PyContract_methods;
+         method && method->ml_name;
+         method++) {
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    return dir_list;
+}   
 
 
 // ****************************************************************************
@@ -435,7 +458,7 @@ static struct PyMethodDef Contract_methods[] = {
 //
 // ****************************************************************************
 static void
-Contract_dealloc(PyObject *v)
+PyContract_dealloc(PyObject *v)
 {
     // Contract is  stored in a a ref ptr, so it will clean itself up.
     // but ?
@@ -443,7 +466,7 @@ Contract_dealloc(PyObject *v)
 
 
 // ****************************************************************************
-// Function: Contract_getattr
+// Function: Contract_getattro
 //
 // Purpose:
 //   Attribute fetch for PySILContract.
@@ -455,12 +478,14 @@ Contract_dealloc(PyObject *v)
 // Modifications:
 //
 // ****************************************************************************
-static PyObject *
-Contract_getattr(PyObject *self, char *name)
-{
-    return Py_FindMethod(Contract_methods, self, name);
-}
 
+static PyObject *
+PyContract_getattro(PyObject *self, PyObject *attr_name)
+{
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+    return Py_FindMethod(PyContract_methods, self, (char*)name);
+}
 
 // ****************************************************************************
 // Function: Contract_print
@@ -475,47 +500,29 @@ Contract_getattr(PyObject *self, char *name)
 // Modifications:
 //
 // ****************************************************************************
-static int
-Contract_print(PyObject *v, FILE *fp, int flags)
+static PyObject *
+PyContract_str(PyObject *v)
 {
     PyContractObject *obj = (PyContractObject *)v;
     avtContract_p contract= *(obj->contract);
-    contract->Print(cout);
-    return 0;
+    std::ostringstream oss;
+    contract->Print(oss);
+    std::string result = oss.str();
+    return PyUnicode_FromString(result.c_str());
 }
 
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *Contract_Doc = "This class provides access to the avt pipeline contract.";
-#else
-static char *Contract_Doc = "This class provides access to the avt pipeline contract";
-#endif
+static char const *PyContract_purpose = "This class provides access to the avt pipeline contract";
 
-//
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
+// Re-define slot definitions for this custom object
+#undef VISIT_PY_TYPE_OBJ_TP_SLOTS
+#define VISIT_PY_TYPE_OBJ_TP_SLOTS(VSObjName)         \
+    VISIT_PY_TYPE_OBJ_SLOT2(VSObjName, doc, purpose); \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, dealloc);      \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, getattro);     \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, str);          \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, methods)
 
-VISIT_PY_TYPE_OBJ(PyContractType,      \
-                  "Contract",          \
-                  PyContractObject,    \
-                  Contract_dealloc,    \
-                  Contract_print,      \
-                  Contract_getattr,    \
-                  0,                   \
-                  0,                   \
-                  Contract_Doc,        \
-                  0,                   \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(Contract);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -547,6 +554,7 @@ PyContract_Wrap(avtContract_p contract)
     res->contract = new avtContract_p;
     // set the contract
     *(res->contract) = contract;
+    PyType_Ready(&PyContractType);
     return (PyObject *)res;
 }
 

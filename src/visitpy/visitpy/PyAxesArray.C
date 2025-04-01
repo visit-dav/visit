@@ -5,6 +5,7 @@
 #include <PyAxesArray.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 #include <PyAxisAttributes.h>
 
@@ -24,7 +25,7 @@
 //
 // This struct contains the Python type information and a AxesArray.
 //
-struct AxesArrayObject
+struct PyAxesArrayObject
 {
     PyObject_HEAD
     AxesArray *data;
@@ -75,16 +76,44 @@ PyAxesArray_ToString(const AxesArray *atts, const char *prefix, const bool forLo
 static PyObject *
 AxesArray_Notify(PyObject *self, PyObject *args)
 {
-    AxesArrayObject *obj = (AxesArrayObject *)self;
+    PyAxesArrayObject *obj = (PyAxesArrayObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+AxesArray_dir(PyObject *self, PyObject *args)
+{
+    static AxesArray atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyAxesArray_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 AxesArray_SetVisible(PyObject *self, PyObject *args)
 {
-    AxesArrayObject *obj = (AxesArrayObject *)self;
+    PyAxesArrayObject *obj = (PyAxesArrayObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -136,7 +165,7 @@ AxesArray_SetVisible(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxesArray_GetVisible(PyObject *self, PyObject *args)
 {
-    AxesArrayObject *obj = (AxesArrayObject *)self;
+    PyAxesArrayObject *obj = (PyAxesArrayObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetVisible()?1L:0L);
     return retval;
 }
@@ -144,7 +173,7 @@ AxesArray_GetVisible(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxesArray_SetTicksVisible(PyObject *self, PyObject *args)
 {
-    AxesArrayObject *obj = (AxesArrayObject *)self;
+    PyAxesArrayObject *obj = (PyAxesArrayObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -196,7 +225,7 @@ AxesArray_SetTicksVisible(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxesArray_GetTicksVisible(PyObject *self, PyObject *args)
 {
-    AxesArrayObject *obj = (AxesArrayObject *)self;
+    PyAxesArrayObject *obj = (PyAxesArrayObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetTicksVisible()?1L:0L);
     return retval;
 }
@@ -204,7 +233,7 @@ AxesArray_GetTicksVisible(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxesArray_SetAutoSetTicks(PyObject *self, PyObject *args)
 {
-    AxesArrayObject *obj = (AxesArrayObject *)self;
+    PyAxesArrayObject *obj = (PyAxesArrayObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -256,7 +285,7 @@ AxesArray_SetAutoSetTicks(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxesArray_GetAutoSetTicks(PyObject *self, PyObject *args)
 {
-    AxesArrayObject *obj = (AxesArrayObject *)self;
+    PyAxesArrayObject *obj = (PyAxesArrayObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetAutoSetTicks()?1L:0L);
     return retval;
 }
@@ -264,7 +293,7 @@ AxesArray_GetAutoSetTicks(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxesArray_SetAutoSetScaling(PyObject *self, PyObject *args)
 {
-    AxesArrayObject *obj = (AxesArrayObject *)self;
+    PyAxesArrayObject *obj = (PyAxesArrayObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -316,7 +345,7 @@ AxesArray_SetAutoSetScaling(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxesArray_GetAutoSetScaling(PyObject *self, PyObject *args)
 {
-    AxesArrayObject *obj = (AxesArrayObject *)self;
+    PyAxesArrayObject *obj = (PyAxesArrayObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetAutoSetScaling()?1L:0L);
     return retval;
 }
@@ -324,7 +353,7 @@ AxesArray_GetAutoSetScaling(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxesArray_SetLineWidth(PyObject *self, PyObject *args)
 {
-    AxesArrayObject *obj = (AxesArrayObject *)self;
+    PyAxesArrayObject *obj = (PyAxesArrayObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -376,7 +405,7 @@ AxesArray_SetLineWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxesArray_GetLineWidth(PyObject *self, PyObject *args)
 {
-    AxesArrayObject *obj = (AxesArrayObject *)self;
+    PyAxesArrayObject *obj = (PyAxesArrayObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetLineWidth()));
     return retval;
 }
@@ -384,7 +413,7 @@ AxesArray_GetLineWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxesArray_SetAxes(PyObject *self, PyObject *args)
 {
-    AxesArrayObject *obj = (AxesArrayObject *)self;
+    PyAxesArrayObject *obj = (PyAxesArrayObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -401,7 +430,7 @@ AxesArray_SetAxes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxesArray_GetAxes(PyObject *self, PyObject *args)
 {
-    AxesArrayObject *obj = (AxesArrayObject *)self;
+    PyAxesArrayObject *obj = (PyAxesArrayObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -417,7 +446,8 @@ AxesArray_GetAxes(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyAxesArray_methods[AXESARRAY_NMETH] = {
-    {"Notify", AxesArray_Notify, METH_VARARGS},
+    {"__dir__", AxesArray_dir, METH_NOARGS},
+    {"Notify", AxesArray_Notify, METH_NOARGS},
     {"SetVisible", AxesArray_SetVisible, METH_VARARGS},
     {"GetVisible", AxesArray_GetVisible, METH_VARARGS},
     {"SetTicksVisible", AxesArray_SetTicksVisible, METH_VARARGS},
@@ -438,19 +468,22 @@ PyMethodDef PyAxesArray_methods[AXESARRAY_NMETH] = {
 //
 
 static void
-AxesArray_dealloc(PyObject *v)
+PyAxesArray_dealloc(PyObject *v)
 {
-   AxesArrayObject *obj = (AxesArrayObject *)v;
+   PyAxesArrayObject *obj = (PyAxesArrayObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *AxesArray_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyAxesArray_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyAxesArray_getattr(PyObject *self, char *name)
+PyAxesArray_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "visible") == 0)
         return AxesArray_GetVisible(self, NULL);
     if(strcmp(name, "ticksVisible") == 0)
@@ -464,26 +497,19 @@ PyAxesArray_getattr(PyObject *self, char *name)
     if(strcmp(name, "axes") == 0)
         return AxesArray_GetAxes(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyAxesArray_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyAxesArray_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyAxesArray_methods[i].ml_name),
-                PyString_FromString(PyAxesArray_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyAxesArray_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyAxesArray_setattr(PyObject *self, char *name, PyObject *args)
+PyAxesArray_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "visible") == 0)
         obj = AxesArray_SetVisible(self, args);
@@ -497,6 +523,12 @@ PyAxesArray_setattr(PyObject *self, char *name, PyObject *args)
         obj = AxesArray_SetLineWidth(self, args);
     else if(strcmp(name, "axes") == 0)
         obj = AxesArray_SetAxes(self, args);
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -512,78 +544,45 @@ PyAxesArray_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-AxesArray_print(PyObject *v, FILE *fp, int flags)
-{
-    AxesArrayObject *obj = (AxesArrayObject *)v;
-    fprintf(fp, "%s", PyAxesArray_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-AxesArray_str(PyObject *v)
+PyAxesArray_str(PyObject *v)
 {
-    AxesArrayObject *obj = (AxesArrayObject *)v;
+    PyAxesArrayObject *obj = (PyAxesArrayObject *)v;
     return PyString_FromString(PyAxesArray_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *AxesArray_Purpose = "Contains the properties for the array axes.";
-#else
-static char *AxesArray_Purpose = "Contains the properties for the array axes.";
-#endif
+static char const *PyAxesArray_purpose = "Contains the properties for the array axes.";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(AxesArrayType,         \
-                  "AxesArray",           \
-                  AxesArrayObject,       \
-                  AxesArray_dealloc,     \
-                  AxesArray_print,       \
-                  PyAxesArray_getattr,   \
-                  PyAxesArray_setattr,   \
-                  AxesArray_str,         \
-                  AxesArray_Purpose,     \
-                  AxesArray_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(AxesArray);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-AxesArray_richcompare(PyObject *self, PyObject *other, int op)
+PyAxesArray_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &AxesArrayType
-         || Py_TYPE(other) != &AxesArrayType)
+    if ( Py_TYPE(self) != &PyAxesArrayType
+         || Py_TYPE(other) != &PyAxesArrayType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    AxesArray *a = ((AxesArrayObject *)self)->data;
-    AxesArray *b = ((AxesArrayObject *)other)->data;
+    AxesArray *a = ((PyAxesArrayObject *)self)->data;
+    AxesArray *b = ((PyAxesArrayObject *)other)->data;
 
     switch (op)
     {
@@ -612,8 +611,8 @@ static AxesArray *currentAtts = 0;
 static PyObject *
 NewAxesArray(int useCurrent)
 {
-    AxesArrayObject *newObject;
-    newObject = PyObject_NEW(AxesArrayObject, &AxesArrayType);
+    PyAxesArrayObject *newObject;
+    newObject = PyObject_NEW(PyAxesArrayObject, &PyAxesArrayType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -624,14 +623,15 @@ NewAxesArray(int useCurrent)
         newObject->data = new AxesArray;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyAxesArrayType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapAxesArray(const AxesArray *attr)
 {
-    AxesArrayObject *newObject;
-    newObject = PyObject_NEW(AxesArrayObject, &AxesArrayType);
+    PyAxesArrayObject *newObject;
+    newObject = PyObject_NEW(PyAxesArrayObject, &PyAxesArrayType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (AxesArray *)attr;
@@ -733,13 +733,13 @@ PyAxesArray_GetMethodTable(int *nMethods)
 bool
 PyAxesArray_Check(PyObject *obj)
 {
-    return (obj->ob_type == &AxesArrayType);
+    return (obj->ob_type == &PyAxesArrayType);
 }
 
 AxesArray *
 PyAxesArray_FromPyObject(PyObject *obj)
 {
-    AxesArrayObject *obj2 = (AxesArrayObject *)obj;
+    PyAxesArrayObject *obj2 = (PyAxesArrayObject *)obj;
     return obj2->data;
 }
 
@@ -758,7 +758,7 @@ PyAxesArray_Wrap(const AxesArray *attr)
 void
 PyAxesArray_SetParent(PyObject *obj, PyObject *parent)
 {
-    AxesArrayObject *obj2 = (AxesArrayObject *)obj;
+    PyAxesArrayObject *obj2 = (PyAxesArrayObject *)obj;
     obj2->parent = parent;
 }
 

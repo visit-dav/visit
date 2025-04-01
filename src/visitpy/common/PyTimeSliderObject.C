@@ -29,7 +29,7 @@ extern bool DeleteAnnotationObjectHelper(AnnotationObject *);
 //
 // This struct contains the Python type information and a TimeSliderObject.
 //
-struct TimeSliderObjectObject
+struct PyTimeSliderObjectObject
 {
     PyObject_HEAD
     AnnotationObject *data;
@@ -44,7 +44,7 @@ static PyObject *NewTimeSliderObject();
 static PyObject *
 TimeSliderObject_SetVisible(PyObject *self, PyObject *args)
 {
-    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
+    PyTimeSliderObjectObject *obj = (PyTimeSliderObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -62,7 +62,7 @@ TimeSliderObject_SetVisible(PyObject *self, PyObject *args)
 static PyObject *
 TimeSliderObject_GetVisible(PyObject *self, PyObject *args)
 {
-    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
+    PyTimeSliderObjectObject *obj = (PyTimeSliderObjectObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetVisible()?1L:0L);
     return retval;
 }
@@ -70,7 +70,7 @@ TimeSliderObject_GetVisible(PyObject *self, PyObject *args)
 static PyObject *
 TimeSliderObject_SetActive(PyObject *self, PyObject *args)
 {
-    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
+    PyTimeSliderObjectObject *obj = (PyTimeSliderObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -88,7 +88,7 @@ TimeSliderObject_SetActive(PyObject *self, PyObject *args)
 static PyObject *
 TimeSliderObject_GetActive(PyObject *self, PyObject *args)
 {
-    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
+    PyTimeSliderObjectObject *obj = (PyTimeSliderObjectObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetActive()?1L:0L);
     return retval;
 }
@@ -96,7 +96,7 @@ TimeSliderObject_GetActive(PyObject *self, PyObject *args)
 static PyObject *
 TimeSliderObject_SetPosition(PyObject *self, PyObject *args)
 {
-    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
+    PyTimeSliderObjectObject *obj = (PyTimeSliderObjectObject *)self;
 
     double *dvals = obj->data->GetPosition();
     if(!PyArg_ParseTuple(args, "dd", &dvals[0], &dvals[1]))
@@ -140,7 +140,7 @@ TimeSliderObject_SetPosition(PyObject *self, PyObject *args)
 static PyObject *
 TimeSliderObject_GetPosition(PyObject *self, PyObject *args)
 {
-    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
+    PyTimeSliderObjectObject *obj = (PyTimeSliderObjectObject *)self;
     // Allocate a tuple the with enough entries to hold the position.
     PyObject *retval = PyTuple_New(2);
     const double *position = obj->data->GetPosition();
@@ -152,7 +152,7 @@ TimeSliderObject_GetPosition(PyObject *self, PyObject *args)
 static PyObject *
 TimeSliderObject_SetWidth(PyObject *self, PyObject *args)
 {
-    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
+    PyTimeSliderObjectObject *obj = (PyTimeSliderObjectObject *)self;
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
@@ -172,7 +172,7 @@ TimeSliderObject_SetWidth(PyObject *self, PyObject *args)
 static PyObject *
 TimeSliderObject_GetWidth(PyObject *self, PyObject *args)
 {
-    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
+    PyTimeSliderObjectObject *obj = (PyTimeSliderObjectObject *)self;
 /*CUSTOM*/
     double *pos2 = obj->data->GetPosition2();
     PyObject *retval = PyFloat_FromDouble(double(pos2[0]));
@@ -182,7 +182,7 @@ TimeSliderObject_GetWidth(PyObject *self, PyObject *args)
 static PyObject *
 TimeSliderObject_SetHeight(PyObject *self, PyObject *args)
 {
-    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
+    PyTimeSliderObjectObject *obj = (PyTimeSliderObjectObject *)self;
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
@@ -202,7 +202,7 @@ TimeSliderObject_SetHeight(PyObject *self, PyObject *args)
 static PyObject *
 TimeSliderObject_GetHeight(PyObject *self, PyObject *args)
 {
-    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
+    PyTimeSliderObjectObject *obj = (PyTimeSliderObjectObject *)self;
 /*CUSTOM*/
     double *pos2 = obj->data->GetPosition2();
     PyObject *retval = PyFloat_FromDouble(double(pos2[1]));
@@ -212,7 +212,7 @@ TimeSliderObject_GetHeight(PyObject *self, PyObject *args)
 static PyObject *
 TimeSliderObject_SetTextColor(PyObject *self, PyObject *args)
 {
-    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
+    PyTimeSliderObjectObject *obj = (PyTimeSliderObjectObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -276,7 +276,7 @@ TimeSliderObject_SetTextColor(PyObject *self, PyObject *args)
 static PyObject *
 TimeSliderObject_GetTextColor(PyObject *self, PyObject *args)
 {
-    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
+    PyTimeSliderObjectObject *obj = (PyTimeSliderObjectObject *)self;
     // Allocate a tuple the with enough entries to hold the textColor.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *textColor = obj->data->GetTextColor().GetColor();
@@ -290,7 +290,7 @@ TimeSliderObject_GetTextColor(PyObject *self, PyObject *args)
 static PyObject *
 TimeSliderObject_SetUseForegroundForTextColor(PyObject *self, PyObject *args)
 {
-    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
+    PyTimeSliderObjectObject *obj = (PyTimeSliderObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -308,7 +308,7 @@ TimeSliderObject_SetUseForegroundForTextColor(PyObject *self, PyObject *args)
 static PyObject *
 TimeSliderObject_GetUseForegroundForTextColor(PyObject *self, PyObject *args)
 {
-    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
+    PyTimeSliderObjectObject *obj = (PyTimeSliderObjectObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetUseForegroundForTextColor()?1L:0L);
     return retval;
 }
@@ -316,7 +316,7 @@ TimeSliderObject_GetUseForegroundForTextColor(PyObject *self, PyObject *args)
 static PyObject *
 TimeSliderObject_SetStartColor(PyObject *self, PyObject *args)
 {
-    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
+    PyTimeSliderObjectObject *obj = (PyTimeSliderObjectObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -381,7 +381,7 @@ TimeSliderObject_SetStartColor(PyObject *self, PyObject *args)
 static PyObject *
 TimeSliderObject_GetStartColor(PyObject *self, PyObject *args)
 {
-    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
+    PyTimeSliderObjectObject *obj = (PyTimeSliderObjectObject *)self;
     // Allocate a tuple the with enough entries to hold the startColor.
     PyObject *retval = PyTuple_New(4);
 /*CUSTOM*/
@@ -396,7 +396,7 @@ TimeSliderObject_GetStartColor(PyObject *self, PyObject *args)
 static PyObject *
 TimeSliderObject_SetEndColor(PyObject *self, PyObject *args)
 {
-    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
+    PyTimeSliderObjectObject *obj = (PyTimeSliderObjectObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -461,7 +461,7 @@ TimeSliderObject_SetEndColor(PyObject *self, PyObject *args)
 static PyObject *
 TimeSliderObject_GetEndColor(PyObject *self, PyObject *args)
 {
-    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
+    PyTimeSliderObjectObject *obj = (PyTimeSliderObjectObject *)self;
     // Allocate a tuple the with enough entries to hold the endColor.
     PyObject *retval = PyTuple_New(4);
 /*CUSTOM*/
@@ -476,7 +476,7 @@ TimeSliderObject_GetEndColor(PyObject *self, PyObject *args)
 static PyObject *
 TimeSliderObject_SetText(PyObject *self, PyObject *args)
 {
-    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
+    PyTimeSliderObjectObject *obj = (PyTimeSliderObjectObject *)self;
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
@@ -505,7 +505,7 @@ TimeSliderObject_SetText(PyObject *self, PyObject *args)
 static PyObject *
 TimeSliderObject_GetText(PyObject *self, PyObject *args)
 {
-    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
+    PyTimeSliderObjectObject *obj = (PyTimeSliderObjectObject *)self;
 /*CUSTOM*/
     const stringVector &s = obj->data->GetText();
     PyObject *retval = PyString_FromString(s.size() > 0 ? s[0].c_str(): "");
@@ -515,7 +515,7 @@ TimeSliderObject_GetText(PyObject *self, PyObject *args)
 static PyObject *
 TimeSliderObject_SetTimeFormatString(PyObject *self, PyObject *args)
 {
-    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
+    PyTimeSliderObjectObject *obj = (PyTimeSliderObjectObject *)self;
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
@@ -544,7 +544,7 @@ TimeSliderObject_SetTimeFormatString(PyObject *self, PyObject *args)
 static PyObject *
 TimeSliderObject_GetTimeFormatString(PyObject *self, PyObject *args)
 {
-    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
+    PyTimeSliderObjectObject *obj = (PyTimeSliderObjectObject *)self;
 /*CUSTOM*/
     const stringVector &s = obj->data->GetText();
     PyObject *retval = PyString_FromString(s.size() > 1 ? s[1].c_str(): "%%g");
@@ -554,7 +554,7 @@ TimeSliderObject_GetTimeFormatString(PyObject *self, PyObject *args)
 static PyObject *
 TimeSliderObject_SetTimeDisplay(PyObject *self, PyObject *args)
 {
-    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
+    PyTimeSliderObjectObject *obj = (PyTimeSliderObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -585,7 +585,7 @@ TimeSliderObject_SetTimeDisplay(PyObject *self, PyObject *args)
 static PyObject *
 TimeSliderObject_GetTimeDisplay(PyObject *self, PyObject *args)
 {
-    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
+    PyTimeSliderObjectObject *obj = (PyTimeSliderObjectObject *)self;
 /*CUSTOM*/
     int timeDisplay = ((obj->data->GetIntAttribute1() >> 2) & 3);
     PyObject *retval = PyInt_FromLong(long(timeDisplay));
@@ -595,7 +595,7 @@ TimeSliderObject_GetTimeDisplay(PyObject *self, PyObject *args)
 static PyObject *
 TimeSliderObject_SetPercentComplete(PyObject *self, PyObject *args)
 {
-    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
+    PyTimeSliderObjectObject *obj = (PyTimeSliderObjectObject *)self;
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
@@ -623,7 +623,7 @@ TimeSliderObject_SetPercentComplete(PyObject *self, PyObject *args)
 static PyObject *
 TimeSliderObject_GetPercentComplete(PyObject *self, PyObject *args)
 {
-    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
+    PyTimeSliderObjectObject *obj = (PyTimeSliderObjectObject *)self;
 /*CUSTOM*/
     double percent = obj->data->GetDoubleAttribute1() * 100.;
     PyObject *retval = PyInt_FromLong(long(percent));
@@ -633,7 +633,7 @@ TimeSliderObject_GetPercentComplete(PyObject *self, PyObject *args)
 static PyObject *
 TimeSliderObject_SetRounded(PyObject *self, PyObject *args)
 {
-    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
+    PyTimeSliderObjectObject *obj = (PyTimeSliderObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -652,7 +652,7 @@ TimeSliderObject_SetRounded(PyObject *self, PyObject *args)
 static PyObject *
 TimeSliderObject_GetRounded(PyObject *self, PyObject *args)
 {
-    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
+    PyTimeSliderObjectObject *obj = (PyTimeSliderObjectObject *)self;
 /*CUSTOM*/
     int rounded = obj->data->GetIntAttribute1() & 1;
     PyObject *retval = PyInt_FromLong(rounded?1L:0L);
@@ -662,7 +662,7 @@ TimeSliderObject_GetRounded(PyObject *self, PyObject *args)
 static PyObject *
 TimeSliderObject_SetShaded(PyObject *self, PyObject *args)
 {
-    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
+    PyTimeSliderObjectObject *obj = (PyTimeSliderObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -681,7 +681,7 @@ TimeSliderObject_SetShaded(PyObject *self, PyObject *args)
 static PyObject *
 TimeSliderObject_GetShaded(PyObject *self, PyObject *args)
 {
-    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
+    PyTimeSliderObjectObject *obj = (PyTimeSliderObjectObject *)self;
 /*CUSTOM*/
     int shaded = obj->data->GetIntAttribute1() & 2;
     PyObject *retval = PyInt_FromLong(shaded?1L:0L);
@@ -693,7 +693,7 @@ TimeSliderObject_GetShaded(PyObject *self, PyObject *args)
 static PyObject *
 TimeSliderObject_Delete(PyObject *self, PyObject *args)
 {
-    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)self;
+    PyTimeSliderObjectObject *obj = (PyTimeSliderObjectObject *)self;
 
     // Tell the VisIt module to decrement the reference count for the
     // AnnotationObject pointed to by obj->data. If there are no more
@@ -707,7 +707,11 @@ TimeSliderObject_Delete(PyObject *self, PyObject *args)
     return Py_None;
 }
 
-static struct PyMethodDef TimeSliderObject_methods[] = {
+// Forward declaration for methods table
+static PyObject * TimeSliderObject_dir(PyObject *self, PyObject *args);
+
+static struct PyMethodDef PyTimeSliderObject_methods[] = {
+    {"__dir__", TimeSliderObject_dir, METH_NOARGS},
     {"SetVisible", TimeSliderObject_SetVisible, METH_VARARGS},
     {"GetVisible", TimeSliderObject_GetVisible, METH_VARARGS},
     {"SetActive", TimeSliderObject_SetActive, METH_VARARGS},
@@ -742,14 +746,42 @@ static struct PyMethodDef TimeSliderObject_methods[] = {
     {NULL, NULL}
 };
 
+static PyObject *
+TimeSliderObject_dir(PyObject *self, PyObject *args)
+{
+    static AnnotationObject atts; // dummy to access field names
+    
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL; 
+    }
+    
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyTimeSliderObject_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+    
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}   
+
 //
 // Type functions
 //
 
 static void
-TimeSliderObject_dealloc(PyObject *v)
+PyTimeSliderObject_dealloc(PyObject *v)
 {
-   TimeSliderObjectObject *obj = (TimeSliderObjectObject *)v;
+   PyTimeSliderObjectObject *obj = (PyTimeSliderObjectObject *)v;
    if(obj->owns)
        delete obj->data;
 }
@@ -757,14 +789,17 @@ TimeSliderObject_dealloc(PyObject *v)
 // static int
 // TimeSliderObject_compare(PyObject *v, PyObject *w)
 // {
-//     AnnotationObject *a = ((TimeSliderObjectObject *)v)->data;
-//     AnnotationObject *b = ((TimeSliderObjectObject *)w)->data;
+//     AnnotationObject *a = ((PyTimeSliderObjectObject *)v)->data;
+//     AnnotationObject *b = ((PyTimeSliderObjectObject *)w)->data;
 //     return (*a == *b) ? 0 : -1;
 // }
 
 static PyObject *
-TimeSliderObject_getattr(PyObject *self, char *name)
+PyTimeSliderObject_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "visible") == 0)
         return TimeSliderObject_GetVisible(self, NULL);
     if(strcmp(name, "active") == 0)
@@ -805,14 +840,19 @@ TimeSliderObject_getattr(PyObject *self, char *name)
     if(strcmp(name, "shaded") == 0)
         return TimeSliderObject_GetShaded(self, NULL);
 
-    return Py_FindMethod(TimeSliderObject_methods, self, name);
+    PyObject *meth = Py_FindMethod(PyTimeSliderObject_methods, self, (char*)name);
+    if (meth) return meth;
+
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 static int
-TimeSliderObject_setattr(PyObject *self, char *name, PyObject *args)
+PyTimeSliderObject_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     // Create a tuple to contain the arguments since all of the Set
     // functions expect a tuple.
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
     PyObject *tuple = PyTuple_New(1);
     PyTuple_SET_ITEM(tuple, 0, args);
     Py_INCREF(args);
@@ -848,6 +888,8 @@ TimeSliderObject_setattr(PyObject *self, char *name, PyObject *args)
         retval = (TimeSliderObject_SetRounded(self, tuple) != NULL);
     else if(strcmp(name, "shaded") == 0)
         retval = (TimeSliderObject_SetShaded(self, tuple) != NULL);
+    else
+        retval = PyObject_GenericSetAttr(self, attr_name, args);
 
     Py_DECREF(tuple);
     return retval ? 0 : -1;
@@ -945,80 +987,49 @@ PyTimeSliderObject_ToString(const AnnotationObject *atts, const char *prefix)
     return str;
 }
 
-static int
-TimeSliderObject_print(PyObject *v, FILE *fp, int flags)
-{
-    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)v;
-    fprintf(fp, "%s", PyTimeSliderObject_ToString(obj->data, "").c_str());
-    return 0;
-}
-
 PyObject *
-TimeSliderObject_str(PyObject *v)
+PyTimeSliderObject_str(PyObject *v)
 {
-    TimeSliderObjectObject *obj = (TimeSliderObjectObject *)v;
+    PyTimeSliderObjectObject *obj = (PyTimeSliderObjectObject *)v;
     return PyString_FromString(PyTimeSliderObject_ToString(obj->data, "").c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *TimeSliderObject_Purpose = "This class defines a general set of attributes that are used to set the attributes for all annotation objects.";
-#else
-static char *TimeSliderObject_Purpose = "This class defines a general set of attributes that are used to set the attributes for all annotation objects.";
-#endif
+static char const *PyTimeSliderObject_purpose = "This class defines a general set of attributes that are used to set the attributes for all annotation objects.";
 
 // CUSTOM
-static PyObject *TimeSliderObject_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyTimeSliderObject_richcompare(PyObject *self, PyObject *other, int op);
 
 // CUSTOM
-
-//
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-VISIT_PY_TYPE_OBJ( TimeSliderObjectType,              \
-                   "TimeSliderObject",                \
-                   TimeSliderObjectObject,            \
-                   TimeSliderObject_dealloc,          \
-                   TimeSliderObject_print,            \
-                   TimeSliderObject_getattr,          \
-                   TimeSliderObject_setattr,          \
-                   TimeSliderObject_str,              \
-                   TimeSliderObject_Purpose,          \
-                   TimeSliderObject_richcompare,      \
-                   0); /* as_number*/
+// Re-define tp slots for this custom object
+#undef VISIT_PY_TYPE_OBJ_TP_SLOTS
+#define VISIT_PY_TYPE_OBJ_TP_SLOTS(VSObjName)                          \
+    VISIT_PY_TYPE_OBJ_SLOT2(VSObjName, doc, purpose);                  \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, dealloc);                       \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, getattro);                      \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, setattro);                      \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, str);                           \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, richcompare);                   \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, methods)
+VISIT_PY_TYPE_OBJ(TimeSliderObject);
 
 // CUSTOM
 static PyObject *
-TimeSliderObject_richcompare(PyObject *self, PyObject *other, int op)
+PyTimeSliderObject_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type
     if ( Py_TYPE(self) != Py_TYPE(other)
-         || Py_TYPE(self) != &TimeSliderObjectType)
+         || Py_TYPE(self) != &PyTimeSliderObjectType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    AnnotationObject *a = ((TimeSliderObjectObject *)self)->data;
-    AnnotationObject *b = ((TimeSliderObjectObject *)other)->data;
+    AnnotationObject *a = ((PyTimeSliderObjectObject *)self)->data;
+    AnnotationObject *b = ((PyTimeSliderObjectObject *)other)->data;
 
     switch (op)
     {
@@ -1045,25 +1056,27 @@ TimeSliderObject_richcompare(PyObject *self, PyObject *other, int op)
 static PyObject *
 NewTimeSliderObject()
 {
-    TimeSliderObjectObject *newObject;
-    newObject = PyObject_NEW(TimeSliderObjectObject, &TimeSliderObjectType);
+    PyTimeSliderObjectObject *newObject;
+    newObject = PyObject_NEW(PyTimeSliderObjectObject, &PyTimeSliderObjectType);
     if(newObject == NULL)
         return NULL;
     newObject->data = new AnnotationObject;
     newObject->data->SetObjectType(AnnotationObject::TimeSlider);
     newObject->owns = true;
+    PyType_Ready(&PyTimeSliderObjectType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapTimeSliderObject(AnnotationObject *annot)
 {
-    TimeSliderObjectObject *newObject;
-    newObject = PyObject_NEW(TimeSliderObjectObject, &TimeSliderObjectType);
+    PyTimeSliderObjectObject *newObject;
+    newObject = PyObject_NEW(PyTimeSliderObjectObject, &PyTimeSliderObjectType);
     if(newObject == NULL)
         return NULL;
     newObject->data = annot;
     newObject->owns = false;
+    PyType_Ready(&PyTimeSliderObjectType);
     return (PyObject *)newObject;
 }
 
@@ -1076,13 +1089,13 @@ WrapTimeSliderObject(AnnotationObject *annot)
 bool
 PyTimeSliderObject_Check(PyObject *obj)
 {
-    return (obj->ob_type == &TimeSliderObjectType);
+    return (obj->ob_type == &PyTimeSliderObjectType);
 }
 
 AnnotationObject *
 PyTimeSliderObject_FromPyObject(PyObject *obj)
 {
-    TimeSliderObjectObject *obj2 = (TimeSliderObjectObject *)obj;
+    PyTimeSliderObjectObject *obj2 = (PyTimeSliderObjectObject *)obj;
     return obj2->data;
 }
 

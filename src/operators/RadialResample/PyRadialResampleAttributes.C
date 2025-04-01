@@ -5,6 +5,7 @@
 #include <PyRadialResampleAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -22,7 +23,7 @@
 //
 // This struct contains the Python type information and a RadialResampleAttributes.
 //
-struct RadialResampleAttributesObject
+struct PyRadialResampleAttributesObject
 {
     PyObject_HEAD
     RadialResampleAttributes *data;
@@ -88,16 +89,44 @@ PyRadialResampleAttributes_ToString(const RadialResampleAttributes *atts, const 
 static PyObject *
 RadialResampleAttributes_Notify(PyObject *self, PyObject *args)
 {
-    RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)self;
+    PyRadialResampleAttributesObject *obj = (PyRadialResampleAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+RadialResampleAttributes_dir(PyObject *self, PyObject *args)
+{
+    static RadialResampleAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyRadialResampleAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 RadialResampleAttributes_SetIsFast(PyObject *self, PyObject *args)
 {
-    RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)self;
+    PyRadialResampleAttributesObject *obj = (PyRadialResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -149,7 +178,7 @@ RadialResampleAttributes_SetIsFast(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RadialResampleAttributes_GetIsFast(PyObject *self, PyObject *args)
 {
-    RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)self;
+    PyRadialResampleAttributesObject *obj = (PyRadialResampleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetIsFast()?1L:0L);
     return retval;
 }
@@ -157,7 +186,7 @@ RadialResampleAttributes_GetIsFast(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RadialResampleAttributes_SetMinTheta(PyObject *self, PyObject *args)
 {
-    RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)self;
+    PyRadialResampleAttributesObject *obj = (PyRadialResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -209,7 +238,7 @@ RadialResampleAttributes_SetMinTheta(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RadialResampleAttributes_GetMinTheta(PyObject *self, PyObject *args)
 {
-    RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)self;
+    PyRadialResampleAttributesObject *obj = (PyRadialResampleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetMinTheta()));
     return retval;
 }
@@ -217,7 +246,7 @@ RadialResampleAttributes_GetMinTheta(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RadialResampleAttributes_SetMaxTheta(PyObject *self, PyObject *args)
 {
-    RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)self;
+    PyRadialResampleAttributesObject *obj = (PyRadialResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -269,7 +298,7 @@ RadialResampleAttributes_SetMaxTheta(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RadialResampleAttributes_GetMaxTheta(PyObject *self, PyObject *args)
 {
-    RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)self;
+    PyRadialResampleAttributesObject *obj = (PyRadialResampleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetMaxTheta()));
     return retval;
 }
@@ -277,7 +306,7 @@ RadialResampleAttributes_GetMaxTheta(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RadialResampleAttributes_SetDeltaTheta(PyObject *self, PyObject *args)
 {
-    RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)self;
+    PyRadialResampleAttributesObject *obj = (PyRadialResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -329,7 +358,7 @@ RadialResampleAttributes_SetDeltaTheta(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RadialResampleAttributes_GetDeltaTheta(PyObject *self, PyObject *args)
 {
-    RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)self;
+    PyRadialResampleAttributesObject *obj = (PyRadialResampleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetDeltaTheta()));
     return retval;
 }
@@ -337,7 +366,7 @@ RadialResampleAttributes_GetDeltaTheta(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RadialResampleAttributes_SetRadius(PyObject *self, PyObject *args)
 {
-    RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)self;
+    PyRadialResampleAttributesObject *obj = (PyRadialResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -389,7 +418,7 @@ RadialResampleAttributes_SetRadius(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RadialResampleAttributes_GetRadius(PyObject *self, PyObject *args)
 {
-    RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)self;
+    PyRadialResampleAttributesObject *obj = (PyRadialResampleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetRadius()));
     return retval;
 }
@@ -397,7 +426,7 @@ RadialResampleAttributes_GetRadius(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RadialResampleAttributes_SetDeltaRadius(PyObject *self, PyObject *args)
 {
-    RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)self;
+    PyRadialResampleAttributesObject *obj = (PyRadialResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -449,7 +478,7 @@ RadialResampleAttributes_SetDeltaRadius(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RadialResampleAttributes_GetDeltaRadius(PyObject *self, PyObject *args)
 {
-    RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)self;
+    PyRadialResampleAttributesObject *obj = (PyRadialResampleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetDeltaRadius()));
     return retval;
 }
@@ -457,7 +486,7 @@ RadialResampleAttributes_GetDeltaRadius(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RadialResampleAttributes_SetCenter(PyObject *self, PyObject *args)
 {
-    RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)self;
+    PyRadialResampleAttributesObject *obj = (PyRadialResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     float *vals = obj->data->GetCenter();
@@ -524,7 +553,7 @@ RadialResampleAttributes_SetCenter(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RadialResampleAttributes_GetCenter(PyObject *self, PyObject *args)
 {
-    RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)self;
+    PyRadialResampleAttributesObject *obj = (PyRadialResampleAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the center.
     PyObject *retval = PyTuple_New(3);
     const float *center = obj->data->GetCenter();
@@ -536,7 +565,7 @@ RadialResampleAttributes_GetCenter(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RadialResampleAttributes_SetIs3D(PyObject *self, PyObject *args)
 {
-    RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)self;
+    PyRadialResampleAttributesObject *obj = (PyRadialResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -588,7 +617,7 @@ RadialResampleAttributes_SetIs3D(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RadialResampleAttributes_GetIs3D(PyObject *self, PyObject *args)
 {
-    RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)self;
+    PyRadialResampleAttributesObject *obj = (PyRadialResampleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetIs3D()?1L:0L);
     return retval;
 }
@@ -596,7 +625,7 @@ RadialResampleAttributes_GetIs3D(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RadialResampleAttributes_SetMinAzimuth(PyObject *self, PyObject *args)
 {
-    RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)self;
+    PyRadialResampleAttributesObject *obj = (PyRadialResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -648,7 +677,7 @@ RadialResampleAttributes_SetMinAzimuth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RadialResampleAttributes_GetMinAzimuth(PyObject *self, PyObject *args)
 {
-    RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)self;
+    PyRadialResampleAttributesObject *obj = (PyRadialResampleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetMinAzimuth()));
     return retval;
 }
@@ -656,7 +685,7 @@ RadialResampleAttributes_GetMinAzimuth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RadialResampleAttributes_SetMaxAzimuth(PyObject *self, PyObject *args)
 {
-    RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)self;
+    PyRadialResampleAttributesObject *obj = (PyRadialResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -708,7 +737,7 @@ RadialResampleAttributes_SetMaxAzimuth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RadialResampleAttributes_GetMaxAzimuth(PyObject *self, PyObject *args)
 {
-    RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)self;
+    PyRadialResampleAttributesObject *obj = (PyRadialResampleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetMaxAzimuth()));
     return retval;
 }
@@ -716,7 +745,7 @@ RadialResampleAttributes_GetMaxAzimuth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RadialResampleAttributes_SetDeltaAzimuth(PyObject *self, PyObject *args)
 {
-    RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)self;
+    PyRadialResampleAttributesObject *obj = (PyRadialResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -768,7 +797,7 @@ RadialResampleAttributes_SetDeltaAzimuth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RadialResampleAttributes_GetDeltaAzimuth(PyObject *self, PyObject *args)
 {
-    RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)self;
+    PyRadialResampleAttributesObject *obj = (PyRadialResampleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetDeltaAzimuth()));
     return retval;
 }
@@ -776,7 +805,8 @@ RadialResampleAttributes_GetDeltaAzimuth(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyRadialResampleAttributes_methods[RADIALRESAMPLEATTRIBUTES_NMETH] = {
-    {"Notify", RadialResampleAttributes_Notify, METH_VARARGS},
+    {"__dir__", RadialResampleAttributes_dir, METH_NOARGS},
+    {"Notify", RadialResampleAttributes_Notify, METH_NOARGS},
     {"SetIsFast", RadialResampleAttributes_SetIsFast, METH_VARARGS},
     {"GetIsFast", RadialResampleAttributes_GetIsFast, METH_VARARGS},
     {"SetMinTheta", RadialResampleAttributes_SetMinTheta, METH_VARARGS},
@@ -807,19 +837,22 @@ PyMethodDef PyRadialResampleAttributes_methods[RADIALRESAMPLEATTRIBUTES_NMETH] =
 //
 
 static void
-RadialResampleAttributes_dealloc(PyObject *v)
+PyRadialResampleAttributes_dealloc(PyObject *v)
 {
-   RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)v;
+   PyRadialResampleAttributesObject *obj = (PyRadialResampleAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *RadialResampleAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyRadialResampleAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyRadialResampleAttributes_getattr(PyObject *self, char *name)
+PyRadialResampleAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "isFast") == 0)
         return RadialResampleAttributes_GetIsFast(self, NULL);
     if(strcmp(name, "minTheta") == 0)
@@ -843,26 +876,19 @@ PyRadialResampleAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "deltaAzimuth") == 0)
         return RadialResampleAttributes_GetDeltaAzimuth(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyRadialResampleAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyRadialResampleAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyRadialResampleAttributes_methods[i].ml_name),
-                PyString_FromString(PyRadialResampleAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyRadialResampleAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyRadialResampleAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyRadialResampleAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "isFast") == 0)
         obj = RadialResampleAttributes_SetIsFast(self, args);
@@ -887,6 +913,12 @@ PyRadialResampleAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "deltaAzimuth") == 0)
         obj = RadialResampleAttributes_SetDeltaAzimuth(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -901,78 +933,45 @@ PyRadialResampleAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-RadialResampleAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)v;
-    fprintf(fp, "%s", PyRadialResampleAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-RadialResampleAttributes_str(PyObject *v)
+PyRadialResampleAttributes_str(PyObject *v)
 {
-    RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)v;
+    PyRadialResampleAttributesObject *obj = (PyRadialResampleAttributesObject *)v;
     return PyString_FromString(PyRadialResampleAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *RadialResampleAttributes_Purpose = "";
-#else
-static char *RadialResampleAttributes_Purpose = "";
-#endif
+static char const *PyRadialResampleAttributes_purpose = "";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(RadialResampleAttributesType,         \
-                  "RadialResampleAttributes",           \
-                  RadialResampleAttributesObject,       \
-                  RadialResampleAttributes_dealloc,     \
-                  RadialResampleAttributes_print,       \
-                  PyRadialResampleAttributes_getattr,   \
-                  PyRadialResampleAttributes_setattr,   \
-                  RadialResampleAttributes_str,         \
-                  RadialResampleAttributes_Purpose,     \
-                  RadialResampleAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(RadialResampleAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-RadialResampleAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyRadialResampleAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &RadialResampleAttributesType
-         || Py_TYPE(other) != &RadialResampleAttributesType)
+    if ( Py_TYPE(self) != &PyRadialResampleAttributesType
+         || Py_TYPE(other) != &PyRadialResampleAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    RadialResampleAttributes *a = ((RadialResampleAttributesObject *)self)->data;
-    RadialResampleAttributes *b = ((RadialResampleAttributesObject *)other)->data;
+    RadialResampleAttributes *a = ((PyRadialResampleAttributesObject *)self)->data;
+    RadialResampleAttributes *b = ((PyRadialResampleAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -1001,8 +1000,8 @@ static RadialResampleAttributes *currentAtts = 0;
 static PyObject *
 NewRadialResampleAttributes(int useCurrent)
 {
-    RadialResampleAttributesObject *newObject;
-    newObject = PyObject_NEW(RadialResampleAttributesObject, &RadialResampleAttributesType);
+    PyRadialResampleAttributesObject *newObject;
+    newObject = PyObject_NEW(PyRadialResampleAttributesObject, &PyRadialResampleAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1013,14 +1012,15 @@ NewRadialResampleAttributes(int useCurrent)
         newObject->data = new RadialResampleAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyRadialResampleAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapRadialResampleAttributes(const RadialResampleAttributes *attr)
 {
-    RadialResampleAttributesObject *newObject;
-    newObject = PyObject_NEW(RadialResampleAttributesObject, &RadialResampleAttributesType);
+    PyRadialResampleAttributesObject *newObject;
+    newObject = PyObject_NEW(PyRadialResampleAttributesObject, &PyRadialResampleAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (RadialResampleAttributes *)attr;
@@ -1122,13 +1122,13 @@ PyRadialResampleAttributes_GetMethodTable(int *nMethods)
 bool
 PyRadialResampleAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &RadialResampleAttributesType);
+    return (obj->ob_type == &PyRadialResampleAttributesType);
 }
 
 RadialResampleAttributes *
 PyRadialResampleAttributes_FromPyObject(PyObject *obj)
 {
-    RadialResampleAttributesObject *obj2 = (RadialResampleAttributesObject *)obj;
+    PyRadialResampleAttributesObject *obj2 = (PyRadialResampleAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1147,7 +1147,7 @@ PyRadialResampleAttributes_Wrap(const RadialResampleAttributes *attr)
 void
 PyRadialResampleAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    RadialResampleAttributesObject *obj2 = (RadialResampleAttributesObject *)obj;
+    PyRadialResampleAttributesObject *obj2 = (PyRadialResampleAttributesObject *)obj;
     obj2->parent = parent;
 }
 
