@@ -11,7 +11,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define CLIPATTRIBUTES_NMETH 37
 void           PyClipAttributes_StartUp(ClipAttributes *subj, void *data);
 void           PyClipAttributes_CloseDown();
 PyMethodDef *  PyClipAttributes_GetMethodTable(int *nMethods);
@@ -23,9 +22,6 @@ void           PyClipAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyClipAttributes_SetDefaults(const ClipAttributes *atts);
 std::string    PyClipAttributes_GetLogString();
 std::string    PyClipAttributes_ToString(const ClipAttributes *, const char *, const bool=false);
-PyObject *     PyClipAttributes_getattro(PyObject *self, PyObject *attr_name);
-int            PyClipAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-extern PyMethodDef PyClipAttributes_methods[CLIPATTRIBUTES_NMETH];
 
 #endif
 

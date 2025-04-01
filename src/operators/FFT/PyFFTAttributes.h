@@ -11,7 +11,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define FFTATTRIBUTES_NMETH 5
 void           PyFFTAttributes_StartUp(FFTAttributes *subj, void *data);
 void           PyFFTAttributes_CloseDown();
 PyMethodDef *  PyFFTAttributes_GetMethodTable(int *nMethods);
@@ -23,9 +22,6 @@ void           PyFFTAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyFFTAttributes_SetDefaults(const FFTAttributes *atts);
 std::string    PyFFTAttributes_GetLogString();
 std::string    PyFFTAttributes_ToString(const FFTAttributes *, const char *, const bool=false);
-PyObject *     PyFFTAttributes_getattro(PyObject *self, PyObject *attr_name);
-int            PyFFTAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-extern PyMethodDef PyFFTAttributes_methods[FFTATTRIBUTES_NMETH];
 
 #endif
 

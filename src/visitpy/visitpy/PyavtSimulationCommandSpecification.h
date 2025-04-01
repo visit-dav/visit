@@ -12,7 +12,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define AVTSIMULATIONCOMMANDSPECIFICATION_NMETH 23
 void VISITPY_API           PyavtSimulationCommandSpecification_StartUp(avtSimulationCommandSpecification *subj, void *data);
 void VISITPY_API           PyavtSimulationCommandSpecification_CloseDown();
 VISITPY_API PyMethodDef *  PyavtSimulationCommandSpecification_GetMethodTable(int *nMethods);
@@ -24,9 +23,6 @@ void VISITPY_API           PyavtSimulationCommandSpecification_SetParent(PyObjec
 void VISITPY_API           PyavtSimulationCommandSpecification_SetDefaults(const avtSimulationCommandSpecification *atts);
 std::string VISITPY_API    PyavtSimulationCommandSpecification_GetLogString();
 std::string VISITPY_API    PyavtSimulationCommandSpecification_ToString(const avtSimulationCommandSpecification *, const char *, const bool=false);
-VISITPY_API PyObject *     PyavtSimulationCommandSpecification_getattro(PyObject *self, PyObject *attr_name);
-int VISITPY_API            PyavtSimulationCommandSpecification_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-VISITPY_API extern PyMethodDef PyavtSimulationCommandSpecification_methods[AVTSIMULATIONCOMMANDSPECIFICATION_NMETH];
 
 #endif
 

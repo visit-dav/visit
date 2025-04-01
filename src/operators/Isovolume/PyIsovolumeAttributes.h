@@ -11,7 +11,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define ISOVOLUMEATTRIBUTES_NMETH 9
 void           PyIsovolumeAttributes_StartUp(IsovolumeAttributes *subj, void *data);
 void           PyIsovolumeAttributes_CloseDown();
 PyMethodDef *  PyIsovolumeAttributes_GetMethodTable(int *nMethods);
@@ -23,9 +22,6 @@ void           PyIsovolumeAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyIsovolumeAttributes_SetDefaults(const IsovolumeAttributes *atts);
 std::string    PyIsovolumeAttributes_GetLogString();
 std::string    PyIsovolumeAttributes_ToString(const IsovolumeAttributes *, const char *, const bool=false);
-PyObject *     PyIsovolumeAttributes_getattro(PyObject *self, PyObject *attr_name);
-int            PyIsovolumeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-extern PyMethodDef PyIsovolumeAttributes_methods[ISOVOLUMEATTRIBUTES_NMETH];
 
 #endif
 

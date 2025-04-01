@@ -11,7 +11,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define HISTOGRAMATTRIBUTES_NMETH 41
 void           PyHistogramAttributes_StartUp(HistogramAttributes *subj, void *data);
 void           PyHistogramAttributes_CloseDown();
 PyMethodDef *  PyHistogramAttributes_GetMethodTable(int *nMethods);
@@ -23,9 +22,6 @@ void           PyHistogramAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyHistogramAttributes_SetDefaults(const HistogramAttributes *atts);
 std::string    PyHistogramAttributes_GetLogString();
 std::string    PyHistogramAttributes_ToString(const HistogramAttributes *, const char *, const bool=false);
-PyObject *     PyHistogramAttributes_getattro(PyObject *self, PyObject *attr_name);
-int            PyHistogramAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-extern PyMethodDef PyHistogramAttributes_methods[HISTOGRAMATTRIBUTES_NMETH];
 
 #endif
 

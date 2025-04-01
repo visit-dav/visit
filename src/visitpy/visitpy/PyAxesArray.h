@@ -12,7 +12,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define AXESARRAY_NMETH 15
 void VISITPY_API           PyAxesArray_StartUp(AxesArray *subj, void *data);
 void VISITPY_API           PyAxesArray_CloseDown();
 VISITPY_API PyMethodDef *  PyAxesArray_GetMethodTable(int *nMethods);
@@ -24,9 +23,6 @@ void VISITPY_API           PyAxesArray_SetParent(PyObject *obj, PyObject *parent
 void VISITPY_API           PyAxesArray_SetDefaults(const AxesArray *atts);
 std::string VISITPY_API    PyAxesArray_GetLogString();
 std::string VISITPY_API    PyAxesArray_ToString(const AxesArray *, const char *, const bool=false);
-VISITPY_API PyObject *     PyAxesArray_getattro(PyObject *self, PyObject *attr_name);
-int VISITPY_API            PyAxesArray_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-VISITPY_API extern PyMethodDef PyAxesArray_methods[AXESARRAY_NMETH];
 
 #endif
 

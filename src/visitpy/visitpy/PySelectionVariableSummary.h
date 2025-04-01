@@ -12,7 +12,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define SELECTIONVARIABLESUMMARY_NMETH 11
 void VISITPY_API           PySelectionVariableSummary_StartUp(SelectionVariableSummary *subj, void *data);
 void VISITPY_API           PySelectionVariableSummary_CloseDown();
 VISITPY_API PyMethodDef *  PySelectionVariableSummary_GetMethodTable(int *nMethods);
@@ -24,9 +23,6 @@ void VISITPY_API           PySelectionVariableSummary_SetParent(PyObject *obj, P
 void VISITPY_API           PySelectionVariableSummary_SetDefaults(const SelectionVariableSummary *atts);
 std::string VISITPY_API    PySelectionVariableSummary_GetLogString();
 std::string VISITPY_API    PySelectionVariableSummary_ToString(const SelectionVariableSummary *, const char *, const bool=false);
-VISITPY_API PyObject *     PySelectionVariableSummary_getattro(PyObject *self, PyObject *attr_name);
-int VISITPY_API            PySelectionVariableSummary_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-VISITPY_API extern PyMethodDef PySelectionVariableSummary_methods[SELECTIONVARIABLESUMMARY_NMETH];
 
 #endif
 

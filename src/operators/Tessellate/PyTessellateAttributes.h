@@ -11,7 +11,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define TESSELLATEATTRIBUTES_NMETH 9
 void           PyTessellateAttributes_StartUp(TessellateAttributes *subj, void *data);
 void           PyTessellateAttributes_CloseDown();
 PyMethodDef *  PyTessellateAttributes_GetMethodTable(int *nMethods);
@@ -23,9 +22,6 @@ void           PyTessellateAttributes_SetParent(PyObject *obj, PyObject *parent)
 void           PyTessellateAttributes_SetDefaults(const TessellateAttributes *atts);
 std::string    PyTessellateAttributes_GetLogString();
 std::string    PyTessellateAttributes_ToString(const TessellateAttributes *, const char *, const bool=false);
-PyObject *     PyTessellateAttributes_getattro(PyObject *self, PyObject *attr_name);
-int            PyTessellateAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-extern PyMethodDef PyTessellateAttributes_methods[TESSELLATEATTRIBUTES_NMETH];
 
 #endif
 

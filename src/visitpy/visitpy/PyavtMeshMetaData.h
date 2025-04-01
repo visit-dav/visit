@@ -12,7 +12,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define AVTMESHMETADATA_NMETH 109
 void VISITPY_API           PyavtMeshMetaData_StartUp(avtMeshMetaData *subj, void *data);
 void VISITPY_API           PyavtMeshMetaData_CloseDown();
 VISITPY_API PyMethodDef *  PyavtMeshMetaData_GetMethodTable(int *nMethods);
@@ -24,9 +23,6 @@ void VISITPY_API           PyavtMeshMetaData_SetParent(PyObject *obj, PyObject *
 void VISITPY_API           PyavtMeshMetaData_SetDefaults(const avtMeshMetaData *atts);
 std::string VISITPY_API    PyavtMeshMetaData_GetLogString();
 std::string VISITPY_API    PyavtMeshMetaData_ToString(const avtMeshMetaData *, const char *, const bool=false);
-VISITPY_API PyObject *     PyavtMeshMetaData_getattro(PyObject *self, PyObject *attr_name);
-int VISITPY_API            PyavtMeshMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-VISITPY_API extern PyMethodDef PyavtMeshMetaData_methods[AVTMESHMETADATA_NMETH];
 
 #endif
 

@@ -11,7 +11,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define CURVEATTRIBUTES_NMETH 57
 void           PyCurveAttributes_StartUp(CurveAttributes *subj, void *data);
 void           PyCurveAttributes_CloseDown();
 PyMethodDef *  PyCurveAttributes_GetMethodTable(int *nMethods);
@@ -23,9 +22,6 @@ void           PyCurveAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyCurveAttributes_SetDefaults(const CurveAttributes *atts);
 std::string    PyCurveAttributes_GetLogString();
 std::string    PyCurveAttributes_ToString(const CurveAttributes *, const char *, const bool=false);
-PyObject *     PyCurveAttributes_getattro(PyObject *self, PyObject *attr_name);
-int            PyCurveAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-extern PyMethodDef PyCurveAttributes_methods[CURVEATTRIBUTES_NMETH];
 
 #endif
 

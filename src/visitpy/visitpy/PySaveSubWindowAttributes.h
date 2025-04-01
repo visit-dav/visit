@@ -12,7 +12,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define SAVESUBWINDOWATTRIBUTES_NMETH 13
 void VISITPY_API           PySaveSubWindowAttributes_StartUp(SaveSubWindowAttributes *subj, void *data);
 void VISITPY_API           PySaveSubWindowAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PySaveSubWindowAttributes_GetMethodTable(int *nMethods);
@@ -24,9 +23,6 @@ void VISITPY_API           PySaveSubWindowAttributes_SetParent(PyObject *obj, Py
 void VISITPY_API           PySaveSubWindowAttributes_SetDefaults(const SaveSubWindowAttributes *atts);
 std::string VISITPY_API    PySaveSubWindowAttributes_GetLogString();
 std::string VISITPY_API    PySaveSubWindowAttributes_ToString(const SaveSubWindowAttributes *, const char *, const bool=false);
-VISITPY_API PyObject *     PySaveSubWindowAttributes_getattro(PyObject *self, PyObject *attr_name);
-int VISITPY_API            PySaveSubWindowAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-VISITPY_API extern PyMethodDef PySaveSubWindowAttributes_methods[SAVESUBWINDOWATTRIBUTES_NMETH];
 
 #endif
 

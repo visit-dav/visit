@@ -11,7 +11,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define CONNCOMPREDUCEATTRIBUTES_NMETH 5
 void           PyConnCompReduceAttributes_StartUp(ConnCompReduceAttributes *subj, void *data);
 void           PyConnCompReduceAttributes_CloseDown();
 PyMethodDef *  PyConnCompReduceAttributes_GetMethodTable(int *nMethods);
@@ -23,9 +22,6 @@ void           PyConnCompReduceAttributes_SetParent(PyObject *obj, PyObject *par
 void           PyConnCompReduceAttributes_SetDefaults(const ConnCompReduceAttributes *atts);
 std::string    PyConnCompReduceAttributes_GetLogString();
 std::string    PyConnCompReduceAttributes_ToString(const ConnCompReduceAttributes *, const char *, const bool=false);
-PyObject *     PyConnCompReduceAttributes_getattro(PyObject *self, PyObject *attr_name);
-int            PyConnCompReduceAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-extern PyMethodDef PyConnCompReduceAttributes_methods[CONNCOMPREDUCEATTRIBUTES_NMETH];
 
 #endif
 

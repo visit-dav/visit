@@ -11,7 +11,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define DEFEREXPRESSIONATTRIBUTES_NMETH 5
 void           PyDeferExpressionAttributes_StartUp(DeferExpressionAttributes *subj, void *data);
 void           PyDeferExpressionAttributes_CloseDown();
 PyMethodDef *  PyDeferExpressionAttributes_GetMethodTable(int *nMethods);
@@ -23,9 +22,6 @@ void           PyDeferExpressionAttributes_SetParent(PyObject *obj, PyObject *pa
 void           PyDeferExpressionAttributes_SetDefaults(const DeferExpressionAttributes *atts);
 std::string    PyDeferExpressionAttributes_GetLogString();
 std::string    PyDeferExpressionAttributes_ToString(const DeferExpressionAttributes *, const char *, const bool=false);
-PyObject *     PyDeferExpressionAttributes_getattro(PyObject *self, PyObject *attr_name);
-int            PyDeferExpressionAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-extern PyMethodDef PyDeferExpressionAttributes_methods[DEFEREXPRESSIONATTRIBUTES_NMETH];
 
 #endif
 

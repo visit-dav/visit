@@ -11,7 +11,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define SPHERESLICEATTRIBUTES_NMETH 7
 void           PySphereSliceAttributes_StartUp(SphereSliceAttributes *subj, void *data);
 void           PySphereSliceAttributes_CloseDown();
 PyMethodDef *  PySphereSliceAttributes_GetMethodTable(int *nMethods);
@@ -23,9 +22,6 @@ void           PySphereSliceAttributes_SetParent(PyObject *obj, PyObject *parent
 void           PySphereSliceAttributes_SetDefaults(const SphereSliceAttributes *atts);
 std::string    PySphereSliceAttributes_GetLogString();
 std::string    PySphereSliceAttributes_ToString(const SphereSliceAttributes *, const char *, const bool=false);
-PyObject *     PySphereSliceAttributes_getattro(PyObject *self, PyObject *attr_name);
-int            PySphereSliceAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-extern PyMethodDef PySphereSliceAttributes_methods[SPHERESLICEATTRIBUTES_NMETH];
 
 #endif
 

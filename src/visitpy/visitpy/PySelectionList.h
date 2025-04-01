@@ -12,7 +12,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define SELECTIONLIST_NMETH 15
 void VISITPY_API           PySelectionList_StartUp(SelectionList *subj, void *data);
 void VISITPY_API           PySelectionList_CloseDown();
 VISITPY_API PyMethodDef *  PySelectionList_GetMethodTable(int *nMethods);
@@ -24,9 +23,6 @@ void VISITPY_API           PySelectionList_SetParent(PyObject *obj, PyObject *pa
 void VISITPY_API           PySelectionList_SetDefaults(const SelectionList *atts);
 std::string VISITPY_API    PySelectionList_GetLogString();
 std::string VISITPY_API    PySelectionList_ToString(const SelectionList *, const char *, const bool=false);
-VISITPY_API PyObject *     PySelectionList_getattro(PyObject *self, PyObject *attr_name);
-int VISITPY_API            PySelectionList_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-VISITPY_API extern PyMethodDef PySelectionList_methods[SELECTIONLIST_NMETH];
 
 #endif
 

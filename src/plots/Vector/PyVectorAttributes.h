@@ -11,7 +11,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define VECTORATTRIBUTES_NMETH 57
 void           PyVectorAttributes_StartUp(VectorAttributes *subj, void *data);
 void           PyVectorAttributes_CloseDown();
 PyMethodDef *  PyVectorAttributes_GetMethodTable(int *nMethods);
@@ -23,9 +22,6 @@ void           PyVectorAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyVectorAttributes_SetDefaults(const VectorAttributes *atts);
 std::string    PyVectorAttributes_GetLogString();
 std::string    PyVectorAttributes_ToString(const VectorAttributes *, const char *, const bool=false);
-PyObject *     PyVectorAttributes_getattro(PyObject *self, PyObject *attr_name);
-int            PyVectorAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-extern PyMethodDef PyVectorAttributes_methods[VECTORATTRIBUTES_NMETH];
 
 #endif
 

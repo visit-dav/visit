@@ -58,34 +58,6 @@ avtVectorMetaData_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
-static PyObject *
-avtVectorMetaData_dir(PyObject *self, PyObject *args)
-{
-    static avtVectorMetaData atts; // dummy to access field names
-
-    PyObject *dir_list = PyList_New(0);
-    if (!dir_list)
-    {
-        PyErr_NoMemory();
-        return NULL;
-    }
-
-    // Add methods from the methods table
-    for (PyMethodDef const *method = &PyavtVectorMetaData_methods[0];
-         method && method->ml_name;
-         method++) {
-        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
-        if (!strncmp(method->ml_name, "Notify", 6)) continue;
-        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
-    }
-
-    // Add members using generic AttributeGroup interface
-    for (int i = 0; i < atts.NumAttributes(); i++) {
-        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
-    }
-
-    return dir_list;
-}
 /*static*/ PyObject *
 avtVectorMetaData_SetVarDim(PyObject *self, PyObject *args)
 {
@@ -148,7 +120,10 @@ avtVectorMetaData_GetVarDim(PyObject *self, PyObject *args)
 
 
 
-PyMethodDef PyavtVectorMetaData_methods[AVTVECTORMETADATA_NMETH] = {
+// Forward declaration for __dir__ method (it uses methods table)
+static PyObject *avtVectorMetaData_dir(PyObject *self, PyObject *args);
+
+static PyMethodDef PyavtVectorMetaData_methods[] = {
     {"__dir__", avtVectorMetaData_dir, METH_NOARGS},
     {"Notify", avtVectorMetaData_Notify, METH_NOARGS},
     {"SetVarDim", avtVectorMetaData_SetVarDim, METH_VARARGS},
@@ -180,6 +155,40 @@ static void PyavtVectorMetaData_ExtendSetGetMethodTable()
 // Type functions
 //
 
+//
+// Although the __dir__ method is really handled in the _methods table,
+// we define it here instead of with other _methods table functions
+// because it's implementation USES the _methods table to do its work.
+// This allows us to keep the _methods table declared static.
+//
+static PyObject *
+avtVectorMetaData_dir(PyObject *self, PyObject *args)
+{
+    static avtVectorMetaData atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyavtVectorMetaData_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 static void
 PyavtVectorMetaData_dealloc(PyObject *v)
 {
@@ -191,7 +200,7 @@ PyavtVectorMetaData_dealloc(PyObject *v)
 }
 
 static PyObject *PyavtVectorMetaData_richcompare(PyObject *self, PyObject *other, int op);
-PyObject *
+static PyObject *
 PyavtVectorMetaData_getattro(PyObject *self, PyObject *attr_name)
 {
     const char *name = PyUnicode_AsUTF8(attr_name);
@@ -213,7 +222,7 @@ PyavtVectorMetaData_getattro(PyObject *self, PyObject *attr_name)
     return PyObject_GenericGetAttr(self, attr_name);
 }
 
-int
+static int
 PyavtVectorMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     if (PyavtVarMetaData_setattro(self, attr_name, args) != -1)

@@ -11,7 +11,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define PDFATTRIBUTES_NMETH 57
 void           PyPDFAttributes_StartUp(PDFAttributes *subj, void *data);
 void           PyPDFAttributes_CloseDown();
 PyMethodDef *  PyPDFAttributes_GetMethodTable(int *nMethods);
@@ -23,9 +22,6 @@ void           PyPDFAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyPDFAttributes_SetDefaults(const PDFAttributes *atts);
 std::string    PyPDFAttributes_GetLogString();
 std::string    PyPDFAttributes_ToString(const PDFAttributes *, const char *, const bool=false);
-PyObject *     PyPDFAttributes_getattro(PyObject *self, PyObject *attr_name);
-int            PyPDFAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-extern PyMethodDef PyPDFAttributes_methods[PDFATTRIBUTES_NMETH];
 
 #endif
 

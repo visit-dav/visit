@@ -12,7 +12,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define VIEWERCLIENTATTRIBUTES_NMETH 21
 void VISITPY_API           PyViewerClientAttributes_StartUp(ViewerClientAttributes *subj, void *data);
 void VISITPY_API           PyViewerClientAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyViewerClientAttributes_GetMethodTable(int *nMethods);
@@ -24,9 +23,6 @@ void VISITPY_API           PyViewerClientAttributes_SetParent(PyObject *obj, PyO
 void VISITPY_API           PyViewerClientAttributes_SetDefaults(const ViewerClientAttributes *atts);
 std::string VISITPY_API    PyViewerClientAttributes_GetLogString();
 std::string VISITPY_API    PyViewerClientAttributes_ToString(const ViewerClientAttributes *, const char *, const bool=false);
-VISITPY_API PyObject *     PyViewerClientAttributes_getattro(PyObject *self, PyObject *attr_name);
-int VISITPY_API            PyViewerClientAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-VISITPY_API extern PyMethodDef PyViewerClientAttributes_methods[VIEWERCLIENTATTRIBUTES_NMETH];
 
 #endif
 

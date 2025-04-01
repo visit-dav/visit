@@ -12,7 +12,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define AXISTITLES_NMETH 15
 void VISITPY_API           PyAxisTitles_StartUp(AxisTitles *subj, void *data);
 void VISITPY_API           PyAxisTitles_CloseDown();
 VISITPY_API PyMethodDef *  PyAxisTitles_GetMethodTable(int *nMethods);
@@ -24,9 +23,6 @@ void VISITPY_API           PyAxisTitles_SetParent(PyObject *obj, PyObject *paren
 void VISITPY_API           PyAxisTitles_SetDefaults(const AxisTitles *atts);
 std::string VISITPY_API    PyAxisTitles_GetLogString();
 std::string VISITPY_API    PyAxisTitles_ToString(const AxisTitles *, const char *, const bool=false);
-VISITPY_API PyObject *     PyAxisTitles_getattro(PyObject *self, PyObject *attr_name);
-int VISITPY_API            PyAxisTitles_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-VISITPY_API extern PyMethodDef PyAxisTitles_methods[AXISTITLES_NMETH];
 
 #endif
 

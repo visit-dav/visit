@@ -11,7 +11,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define FIVEFOLDTETSUBDIVISIONATTRIBUTES_NMETH 19
 void           PyFiveFoldTetSubdivisionAttributes_StartUp(FiveFoldTetSubdivisionAttributes *subj, void *data);
 void           PyFiveFoldTetSubdivisionAttributes_CloseDown();
 PyMethodDef *  PyFiveFoldTetSubdivisionAttributes_GetMethodTable(int *nMethods);
@@ -23,9 +22,6 @@ void           PyFiveFoldTetSubdivisionAttributes_SetParent(PyObject *obj, PyObj
 void           PyFiveFoldTetSubdivisionAttributes_SetDefaults(const FiveFoldTetSubdivisionAttributes *atts);
 std::string    PyFiveFoldTetSubdivisionAttributes_GetLogString();
 std::string    PyFiveFoldTetSubdivisionAttributes_ToString(const FiveFoldTetSubdivisionAttributes *, const char *, const bool=false);
-PyObject *     PyFiveFoldTetSubdivisionAttributes_getattro(PyObject *self, PyObject *attr_name);
-int            PyFiveFoldTetSubdivisionAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-extern PyMethodDef PyFiveFoldTetSubdivisionAttributes_methods[FIVEFOLDTETSUBDIVISIONATTRIBUTES_NMETH];
 
 #endif
 

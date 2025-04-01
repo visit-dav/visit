@@ -12,7 +12,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define INTERACTORATTRIBUTES_NMETH 15
 void VISITPY_API           PyInteractorAttributes_StartUp(InteractorAttributes *subj, void *data);
 void VISITPY_API           PyInteractorAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyInteractorAttributes_GetMethodTable(int *nMethods);
@@ -24,9 +23,6 @@ void VISITPY_API           PyInteractorAttributes_SetParent(PyObject *obj, PyObj
 void VISITPY_API           PyInteractorAttributes_SetDefaults(const InteractorAttributes *atts);
 std::string VISITPY_API    PyInteractorAttributes_GetLogString();
 std::string VISITPY_API    PyInteractorAttributes_ToString(const InteractorAttributes *, const char *, const bool=false);
-VISITPY_API PyObject *     PyInteractorAttributes_getattro(PyObject *self, PyObject *attr_name);
-int VISITPY_API            PyInteractorAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-VISITPY_API extern PyMethodDef PyInteractorAttributes_methods[INTERACTORATTRIBUTES_NMETH];
 
 #endif
 

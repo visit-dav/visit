@@ -11,7 +11,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define EXPLODEATTRIBUTES_NMETH 36
 void           PyExplodeAttributes_StartUp(ExplodeAttributes *subj, void *data);
 void           PyExplodeAttributes_CloseDown();
 PyMethodDef *  PyExplodeAttributes_GetMethodTable(int *nMethods);
@@ -23,9 +22,6 @@ void           PyExplodeAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyExplodeAttributes_SetDefaults(const ExplodeAttributes *atts);
 std::string    PyExplodeAttributes_GetLogString();
 std::string    PyExplodeAttributes_ToString(const ExplodeAttributes *, const char *, const bool=false);
-PyObject *     PyExplodeAttributes_getattro(PyObject *self, PyObject *attr_name);
-int            PyExplodeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-extern PyMethodDef PyExplodeAttributes_methods[EXPLODEATTRIBUTES_NMETH];
 
 #endif
 

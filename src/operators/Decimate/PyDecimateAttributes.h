@@ -11,7 +11,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define DECIMATEATTRIBUTES_NMETH 5
 void           PyDecimateAttributes_StartUp(DecimateAttributes *subj, void *data);
 void           PyDecimateAttributes_CloseDown();
 PyMethodDef *  PyDecimateAttributes_GetMethodTable(int *nMethods);
@@ -23,9 +22,6 @@ void           PyDecimateAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyDecimateAttributes_SetDefaults(const DecimateAttributes *atts);
 std::string    PyDecimateAttributes_GetLogString();
 std::string    PyDecimateAttributes_ToString(const DecimateAttributes *, const char *, const bool=false);
-PyObject *     PyDecimateAttributes_getattro(PyObject *self, PyObject *attr_name);
-int            PyDecimateAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-extern PyMethodDef PyDecimateAttributes_methods[DECIMATEATTRIBUTES_NMETH];
 
 #endif
 

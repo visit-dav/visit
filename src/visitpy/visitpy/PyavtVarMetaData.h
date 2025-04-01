@@ -13,7 +13,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define AVTVARMETADATA_NMETH (AVTBASEVARMETADATA_NMETH+17)
 void VISITPY_API           PyavtVarMetaData_StartUp(avtVarMetaData *subj, void *data);
 void VISITPY_API           PyavtVarMetaData_CloseDown();
 VISITPY_API PyMethodDef *  PyavtVarMetaData_GetMethodTable(int *nMethods);
@@ -25,9 +24,6 @@ void VISITPY_API           PyavtVarMetaData_SetParent(PyObject *obj, PyObject *p
 void VISITPY_API           PyavtVarMetaData_SetDefaults(const avtVarMetaData *atts);
 std::string VISITPY_API    PyavtVarMetaData_GetLogString();
 std::string VISITPY_API    PyavtVarMetaData_ToString(const avtVarMetaData *, const char *, const bool=false);
-VISITPY_API PyObject *     PyavtVarMetaData_getattro(PyObject *self, PyObject *attr_name);
-int VISITPY_API            PyavtVarMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-VISITPY_API extern PyMethodDef PyavtVarMetaData_methods[AVTVARMETADATA_NMETH];
 
 #endif
 

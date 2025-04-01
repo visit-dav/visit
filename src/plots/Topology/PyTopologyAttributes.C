@@ -80,34 +80,6 @@ TopologyAttributes_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
-static PyObject *
-TopologyAttributes_dir(PyObject *self, PyObject *args)
-{
-    static TopologyAttributes atts; // dummy to access field names
-
-    PyObject *dir_list = PyList_New(0);
-    if (!dir_list)
-    {
-        PyErr_NoMemory();
-        return NULL;
-    }
-
-    // Add methods from the methods table
-    for (PyMethodDef const *method = &PyTopologyAttributes_methods[0];
-         method && method->ml_name;
-         method++) {
-        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
-        if (!strncmp(method->ml_name, "Notify", 6)) continue;
-        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
-    }
-
-    // Add members using generic AttributeGroup interface
-    for (int i = 0; i < atts.NumAttributes(); i++) {
-        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
-    }
-
-    return dir_list;
-}
 /*static*/ PyObject *
 TopologyAttributes_SetLineWidth(PyObject *self, PyObject *args)
 {
@@ -740,7 +712,10 @@ TopologyAttributes_GetHitpercent(PyObject *self, PyObject *args)
 
 
 
-PyMethodDef PyTopologyAttributes_methods[TOPOLOGYATTRIBUTES_NMETH] = {
+// Forward declaration for __dir__ method (it uses methods table)
+static PyObject *TopologyAttributes_dir(PyObject *self, PyObject *args);
+
+static PyMethodDef PyTopologyAttributes_methods[] = {
     {"__dir__", TopologyAttributes_dir, METH_NOARGS},
     {"Notify", TopologyAttributes_Notify, METH_NOARGS},
     {"SetLineWidth", TopologyAttributes_SetLineWidth, METH_VARARGS},
@@ -766,6 +741,40 @@ PyMethodDef PyTopologyAttributes_methods[TOPOLOGYATTRIBUTES_NMETH] = {
 // Type functions
 //
 
+//
+// Although the __dir__ method is really handled in the _methods table,
+// we define it here instead of with other _methods table functions
+// because it's implementation USES the _methods table to do its work.
+// This allows us to keep the _methods table declared static.
+//
+static PyObject *
+TopologyAttributes_dir(PyObject *self, PyObject *args)
+{
+    static TopologyAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyTopologyAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 static void
 PyTopologyAttributes_dealloc(PyObject *v)
 {
@@ -777,7 +786,7 @@ PyTopologyAttributes_dealloc(PyObject *v)
 }
 
 static PyObject *PyTopologyAttributes_richcompare(PyObject *self, PyObject *other, int op);
-PyObject *
+static PyObject *
 PyTopologyAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
     const char *name = PyUnicode_AsUTF8(attr_name);
@@ -806,7 +815,7 @@ PyTopologyAttributes_getattro(PyObject *self, PyObject *attr_name)
     return PyObject_GenericGetAttr(self, attr_name);
 }
 
-int
+static int
 PyTopologyAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
@@ -866,10 +875,10 @@ static char const *PyTopologyAttributes_purpose = "This class contains the plot 
 //
 // Initialize the python object type structure with default values.
 // If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
-// which is defined with default values for our standard pythong objects
+// which is defined with default values for our standard python objects
 // in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
-// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples in
-// src/avt/PythonFilters.
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
 VISIT_PY_TYPE_OBJ(TopologyAttributes);
 

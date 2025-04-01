@@ -63,34 +63,6 @@ TessellateAttributes_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
-static PyObject *
-TessellateAttributes_dir(PyObject *self, PyObject *args)
-{
-    static TessellateAttributes atts; // dummy to access field names
-
-    PyObject *dir_list = PyList_New(0);
-    if (!dir_list)
-    {
-        PyErr_NoMemory();
-        return NULL;
-    }
-
-    // Add methods from the methods table
-    for (PyMethodDef const *method = &PyTessellateAttributes_methods[0];
-         method && method->ml_name;
-         method++) {
-        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
-        if (!strncmp(method->ml_name, "Notify", 6)) continue;
-        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
-    }
-
-    // Add members using generic AttributeGroup interface
-    for (int i = 0; i < atts.NumAttributes(); i++) {
-        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
-    }
-
-    return dir_list;
-}
 /*static*/ PyObject *
 TessellateAttributes_SetChordError(PyObject *self, PyObject *args)
 {
@@ -273,7 +245,10 @@ TessellateAttributes_GetMergePoints(PyObject *self, PyObject *args)
 
 
 
-PyMethodDef PyTessellateAttributes_methods[TESSELLATEATTRIBUTES_NMETH] = {
+// Forward declaration for __dir__ method (it uses methods table)
+static PyObject *TessellateAttributes_dir(PyObject *self, PyObject *args);
+
+static PyMethodDef PyTessellateAttributes_methods[] = {
     {"__dir__", TessellateAttributes_dir, METH_NOARGS},
     {"Notify", TessellateAttributes_Notify, METH_NOARGS},
     {"SetChordError", TessellateAttributes_SetChordError, METH_VARARGS},
@@ -289,6 +264,40 @@ PyMethodDef PyTessellateAttributes_methods[TESSELLATEATTRIBUTES_NMETH] = {
 // Type functions
 //
 
+//
+// Although the __dir__ method is really handled in the _methods table,
+// we define it here instead of with other _methods table functions
+// because it's implementation USES the _methods table to do its work.
+// This allows us to keep the _methods table declared static.
+//
+static PyObject *
+TessellateAttributes_dir(PyObject *self, PyObject *args)
+{
+    static TessellateAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyTessellateAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 static void
 PyTessellateAttributes_dealloc(PyObject *v)
 {
@@ -300,7 +309,7 @@ PyTessellateAttributes_dealloc(PyObject *v)
 }
 
 static PyObject *PyTessellateAttributes_richcompare(PyObject *self, PyObject *other, int op);
-PyObject *
+static PyObject *
 PyTessellateAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
     const char *name = PyUnicode_AsUTF8(attr_name);
@@ -319,7 +328,7 @@ PyTessellateAttributes_getattro(PyObject *self, PyObject *attr_name)
     return PyObject_GenericGetAttr(self, attr_name);
 }
 
-int
+static int
 PyTessellateAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;

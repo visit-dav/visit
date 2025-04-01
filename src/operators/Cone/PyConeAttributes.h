@@ -11,7 +11,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define CONEATTRIBUTES_NMETH 17
 void           PyConeAttributes_StartUp(ConeAttributes *subj, void *data);
 void           PyConeAttributes_CloseDown();
 PyMethodDef *  PyConeAttributes_GetMethodTable(int *nMethods);
@@ -23,9 +22,6 @@ void           PyConeAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyConeAttributes_SetDefaults(const ConeAttributes *atts);
 std::string    PyConeAttributes_GetLogString();
 std::string    PyConeAttributes_ToString(const ConeAttributes *, const char *, const bool=false);
-PyObject *     PyConeAttributes_getattro(PyObject *self, PyObject *attr_name);
-int            PyConeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-extern PyMethodDef PyConeAttributes_methods[CONEATTRIBUTES_NMETH];
 
 #endif
 

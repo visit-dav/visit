@@ -11,7 +11,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define REPLICATEATTRIBUTES_NMETH 25
 void           PyReplicateAttributes_StartUp(ReplicateAttributes *subj, void *data);
 void           PyReplicateAttributes_CloseDown();
 PyMethodDef *  PyReplicateAttributes_GetMethodTable(int *nMethods);
@@ -23,9 +22,6 @@ void           PyReplicateAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyReplicateAttributes_SetDefaults(const ReplicateAttributes *atts);
 std::string    PyReplicateAttributes_GetLogString();
 std::string    PyReplicateAttributes_ToString(const ReplicateAttributes *, const char *, const bool=false);
-PyObject *     PyReplicateAttributes_getattro(PyObject *self, PyObject *attr_name);
-int            PyReplicateAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-extern PyMethodDef PyReplicateAttributes_methods[REPLICATEATTRIBUTES_NMETH];
 
 #endif
 

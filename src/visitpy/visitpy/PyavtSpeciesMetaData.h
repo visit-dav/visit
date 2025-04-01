@@ -12,7 +12,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define AVTSPECIESMETADATA_NMETH 20
 void VISITPY_API           PyavtSpeciesMetaData_StartUp(avtSpeciesMetaData *subj, void *data);
 void VISITPY_API           PyavtSpeciesMetaData_CloseDown();
 VISITPY_API PyMethodDef *  PyavtSpeciesMetaData_GetMethodTable(int *nMethods);
@@ -24,9 +23,6 @@ void VISITPY_API           PyavtSpeciesMetaData_SetParent(PyObject *obj, PyObjec
 void VISITPY_API           PyavtSpeciesMetaData_SetDefaults(const avtSpeciesMetaData *atts);
 std::string VISITPY_API    PyavtSpeciesMetaData_GetLogString();
 std::string VISITPY_API    PyavtSpeciesMetaData_ToString(const avtSpeciesMetaData *, const char *, const bool=false);
-VISITPY_API PyObject *     PyavtSpeciesMetaData_getattro(PyObject *self, PyObject *attr_name);
-int VISITPY_API            PyavtSpeciesMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-VISITPY_API extern PyMethodDef PyavtSpeciesMetaData_methods[AVTSPECIESMETADATA_NMETH];
 
 #endif
 

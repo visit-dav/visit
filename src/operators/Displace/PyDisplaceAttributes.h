@@ -11,7 +11,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define DISPLACEATTRIBUTES_NMETH 7
 void           PyDisplaceAttributes_StartUp(DisplaceAttributes *subj, void *data);
 void           PyDisplaceAttributes_CloseDown();
 PyMethodDef *  PyDisplaceAttributes_GetMethodTable(int *nMethods);
@@ -23,9 +22,6 @@ void           PyDisplaceAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyDisplaceAttributes_SetDefaults(const DisplaceAttributes *atts);
 std::string    PyDisplaceAttributes_GetLogString();
 std::string    PyDisplaceAttributes_ToString(const DisplaceAttributes *, const char *, const bool=false);
-PyObject *     PyDisplaceAttributes_getattro(PyObject *self, PyObject *attr_name);
-int            PyDisplaceAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-extern PyMethodDef PyDisplaceAttributes_methods[DISPLACEATTRIBUTES_NMETH];
 
 #endif
 

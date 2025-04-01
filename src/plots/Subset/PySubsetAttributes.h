@@ -11,7 +11,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define SUBSETATTRIBUTES_NMETH 37
 void           PySubsetAttributes_StartUp(SubsetAttributes *subj, void *data);
 void           PySubsetAttributes_CloseDown();
 PyMethodDef *  PySubsetAttributes_GetMethodTable(int *nMethods);
@@ -23,9 +22,6 @@ void           PySubsetAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PySubsetAttributes_SetDefaults(const SubsetAttributes *atts);
 std::string    PySubsetAttributes_GetLogString();
 std::string    PySubsetAttributes_ToString(const SubsetAttributes *, const char *, const bool=false);
-PyObject *     PySubsetAttributes_getattro(PyObject *self, PyObject *attr_name);
-int            PySubsetAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-extern PyMethodDef PySubsetAttributes_methods[SUBSETATTRIBUTES_NMETH];
 
 #endif
 

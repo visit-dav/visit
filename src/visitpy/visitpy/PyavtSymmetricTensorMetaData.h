@@ -13,7 +13,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define AVTSYMMETRICTENSORMETADATA_NMETH (AVTVARMETADATA_NMETH+5)
 void VISITPY_API           PyavtSymmetricTensorMetaData_StartUp(avtSymmetricTensorMetaData *subj, void *data);
 void VISITPY_API           PyavtSymmetricTensorMetaData_CloseDown();
 VISITPY_API PyMethodDef *  PyavtSymmetricTensorMetaData_GetMethodTable(int *nMethods);
@@ -25,9 +24,6 @@ void VISITPY_API           PyavtSymmetricTensorMetaData_SetParent(PyObject *obj,
 void VISITPY_API           PyavtSymmetricTensorMetaData_SetDefaults(const avtSymmetricTensorMetaData *atts);
 std::string VISITPY_API    PyavtSymmetricTensorMetaData_GetLogString();
 std::string VISITPY_API    PyavtSymmetricTensorMetaData_ToString(const avtSymmetricTensorMetaData *, const char *, const bool=false);
-VISITPY_API PyObject *     PyavtSymmetricTensorMetaData_getattro(PyObject *self, PyObject *attr_name);
-int VISITPY_API            PyavtSymmetricTensorMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-VISITPY_API extern PyMethodDef PyavtSymmetricTensorMetaData_methods[AVTSYMMETRICTENSORMETADATA_NMETH];
 
 #endif
 

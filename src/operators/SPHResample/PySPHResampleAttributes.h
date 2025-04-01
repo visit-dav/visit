@@ -11,7 +11,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define SPHRESAMPLEATTRIBUTES_NMETH 27
 void           PySPHResampleAttributes_StartUp(SPHResampleAttributes *subj, void *data);
 void           PySPHResampleAttributes_CloseDown();
 PyMethodDef *  PySPHResampleAttributes_GetMethodTable(int *nMethods);
@@ -23,9 +22,6 @@ void           PySPHResampleAttributes_SetParent(PyObject *obj, PyObject *parent
 void           PySPHResampleAttributes_SetDefaults(const SPHResampleAttributes *atts);
 std::string    PySPHResampleAttributes_GetLogString();
 std::string    PySPHResampleAttributes_ToString(const SPHResampleAttributes *, const char *, const bool=false);
-PyObject *     PySPHResampleAttributes_getattro(PyObject *self, PyObject *attr_name);
-int            PySPHResampleAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-extern PyMethodDef PySPHResampleAttributes_methods[SPHRESAMPLEATTRIBUTES_NMETH];
 
 #endif
 

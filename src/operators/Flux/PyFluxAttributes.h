@@ -11,7 +11,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define FLUXATTRIBUTES_NMETH 9
 void           PyFluxAttributes_StartUp(FluxAttributes *subj, void *data);
 void           PyFluxAttributes_CloseDown();
 PyMethodDef *  PyFluxAttributes_GetMethodTable(int *nMethods);
@@ -23,9 +22,6 @@ void           PyFluxAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyFluxAttributes_SetDefaults(const FluxAttributes *atts);
 std::string    PyFluxAttributes_GetLogString();
 std::string    PyFluxAttributes_ToString(const FluxAttributes *, const char *, const bool=false);
-PyObject *     PyFluxAttributes_getattro(PyObject *self, PyObject *attr_name);
-int            PyFluxAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-extern PyMethodDef PyFluxAttributes_methods[FLUXATTRIBUTES_NMETH];
 
 #endif
 

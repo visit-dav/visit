@@ -11,7 +11,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define PERSISTENTPARTICLESATTRIBUTES_NMETH 25
 void           PyPersistentParticlesAttributes_StartUp(PersistentParticlesAttributes *subj, void *data);
 void           PyPersistentParticlesAttributes_CloseDown();
 PyMethodDef *  PyPersistentParticlesAttributes_GetMethodTable(int *nMethods);
@@ -23,9 +22,6 @@ void           PyPersistentParticlesAttributes_SetParent(PyObject *obj, PyObject
 void           PyPersistentParticlesAttributes_SetDefaults(const PersistentParticlesAttributes *atts);
 std::string    PyPersistentParticlesAttributes_GetLogString();
 std::string    PyPersistentParticlesAttributes_ToString(const PersistentParticlesAttributes *, const char *, const bool=false);
-PyObject *     PyPersistentParticlesAttributes_getattro(PyObject *self, PyObject *attr_name);
-int            PyPersistentParticlesAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-extern PyMethodDef PyPersistentParticlesAttributes_methods[PERSISTENTPARTICLESATTRIBUTES_NMETH];
 
 #endif
 

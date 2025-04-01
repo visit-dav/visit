@@ -11,7 +11,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define EXTRUDESTACKEDATTRIBUTES_NMETH 27
 void           PyExtrudeStackedAttributes_StartUp(ExtrudeStackedAttributes *subj, void *data);
 void           PyExtrudeStackedAttributes_CloseDown();
 PyMethodDef *  PyExtrudeStackedAttributes_GetMethodTable(int *nMethods);
@@ -23,9 +22,6 @@ void           PyExtrudeStackedAttributes_SetParent(PyObject *obj, PyObject *par
 void           PyExtrudeStackedAttributes_SetDefaults(const ExtrudeStackedAttributes *atts);
 std::string    PyExtrudeStackedAttributes_GetLogString();
 std::string    PyExtrudeStackedAttributes_ToString(const ExtrudeStackedAttributes *, const char *, const bool=false);
-PyObject *     PyExtrudeStackedAttributes_getattro(PyObject *self, PyObject *attr_name);
-int            PyExtrudeStackedAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-extern PyMethodDef PyExtrudeStackedAttributes_methods[EXTRUDESTACKEDATTRIBUTES_NMETH];
 
 #endif
 

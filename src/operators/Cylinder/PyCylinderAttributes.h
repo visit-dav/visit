@@ -11,7 +11,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define CYLINDERATTRIBUTES_NMETH 11
 void           PyCylinderAttributes_StartUp(CylinderAttributes *subj, void *data);
 void           PyCylinderAttributes_CloseDown();
 PyMethodDef *  PyCylinderAttributes_GetMethodTable(int *nMethods);
@@ -23,9 +22,6 @@ void           PyCylinderAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyCylinderAttributes_SetDefaults(const CylinderAttributes *atts);
 std::string    PyCylinderAttributes_GetLogString();
 std::string    PyCylinderAttributes_ToString(const CylinderAttributes *, const char *, const bool=false);
-PyObject *     PyCylinderAttributes_getattro(PyObject *self, PyObject *attr_name);
-int            PyCylinderAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-extern PyMethodDef PyCylinderAttributes_methods[CYLINDERATTRIBUTES_NMETH];
 
 #endif
 

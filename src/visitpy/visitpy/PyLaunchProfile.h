@@ -12,7 +12,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define LAUNCHPROFILE_NMETH 79
 void VISITPY_API           PyLaunchProfile_StartUp(LaunchProfile *subj, void *data);
 void VISITPY_API           PyLaunchProfile_CloseDown();
 VISITPY_API PyMethodDef *  PyLaunchProfile_GetMethodTable(int *nMethods);
@@ -24,9 +23,6 @@ void VISITPY_API           PyLaunchProfile_SetParent(PyObject *obj, PyObject *pa
 void VISITPY_API           PyLaunchProfile_SetDefaults(const LaunchProfile *atts);
 std::string VISITPY_API    PyLaunchProfile_GetLogString();
 std::string VISITPY_API    PyLaunchProfile_ToString(const LaunchProfile *, const char *, const bool=false);
-VISITPY_API PyObject *     PyLaunchProfile_getattro(PyObject *self, PyObject *attr_name);
-int VISITPY_API            PyLaunchProfile_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-VISITPY_API extern PyMethodDef PyLaunchProfile_methods[LAUNCHPROFILE_NMETH];
 
 #endif
 

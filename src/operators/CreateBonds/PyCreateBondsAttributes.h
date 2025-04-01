@@ -11,7 +11,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define CREATEBONDSATTRIBUTES_NMETH 31
 void           PyCreateBondsAttributes_StartUp(CreateBondsAttributes *subj, void *data);
 void           PyCreateBondsAttributes_CloseDown();
 PyMethodDef *  PyCreateBondsAttributes_GetMethodTable(int *nMethods);
@@ -23,9 +22,6 @@ void           PyCreateBondsAttributes_SetParent(PyObject *obj, PyObject *parent
 void           PyCreateBondsAttributes_SetDefaults(const CreateBondsAttributes *atts);
 std::string    PyCreateBondsAttributes_GetLogString();
 std::string    PyCreateBondsAttributes_ToString(const CreateBondsAttributes *, const char *, const bool=false);
-PyObject *     PyCreateBondsAttributes_getattro(PyObject *self, PyObject *attr_name);
-int            PyCreateBondsAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-extern PyMethodDef PyCreateBondsAttributes_methods[CREATEBONDSATTRIBUTES_NMETH];
 
 #endif
 

@@ -12,7 +12,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define THRESHOLDOPATTRIBUTES_NMETH 21
 void VISITPY_API           PyThresholdOpAttributes_StartUp(ThresholdOpAttributes *subj, void *data);
 void VISITPY_API           PyThresholdOpAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyThresholdOpAttributes_GetMethodTable(int *nMethods);
@@ -24,9 +23,6 @@ void VISITPY_API           PyThresholdOpAttributes_SetParent(PyObject *obj, PyOb
 void VISITPY_API           PyThresholdOpAttributes_SetDefaults(const ThresholdOpAttributes *atts);
 std::string VISITPY_API    PyThresholdOpAttributes_GetLogString();
 std::string VISITPY_API    PyThresholdOpAttributes_ToString(const ThresholdOpAttributes *, const char *, const bool=false);
-VISITPY_API PyObject *     PyThresholdOpAttributes_getattro(PyObject *self, PyObject *attr_name);
-int VISITPY_API            PyThresholdOpAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-VISITPY_API extern PyMethodDef PyThresholdOpAttributes_methods[THRESHOLDOPATTRIBUTES_NMETH];
 
 #endif
 

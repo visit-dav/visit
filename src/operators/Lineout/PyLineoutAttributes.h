@@ -11,7 +11,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define LINEOUTATTRIBUTES_NMETH 17
 void           PyLineoutAttributes_StartUp(LineoutAttributes *subj, void *data);
 void           PyLineoutAttributes_CloseDown();
 PyMethodDef *  PyLineoutAttributes_GetMethodTable(int *nMethods);
@@ -23,9 +22,6 @@ void           PyLineoutAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyLineoutAttributes_SetDefaults(const LineoutAttributes *atts);
 std::string    PyLineoutAttributes_GetLogString();
 std::string    PyLineoutAttributes_ToString(const LineoutAttributes *, const char *, const bool=false);
-PyObject *     PyLineoutAttributes_getattro(PyObject *self, PyObject *attr_name);
-int            PyLineoutAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-extern PyMethodDef PyLineoutAttributes_methods[LINEOUTATTRIBUTES_NMETH];
 
 #endif
 

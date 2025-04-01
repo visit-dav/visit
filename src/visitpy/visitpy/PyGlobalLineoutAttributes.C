@@ -113,34 +113,6 @@ GlobalLineoutAttributes_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
-static PyObject *
-GlobalLineoutAttributes_dir(PyObject *self, PyObject *args)
-{
-    static GlobalLineoutAttributes atts; // dummy to access field names
-
-    PyObject *dir_list = PyList_New(0);
-    if (!dir_list)
-    {
-        PyErr_NoMemory();
-        return NULL;
-    }
-
-    // Add methods from the methods table
-    for (PyMethodDef const *method = &PyGlobalLineoutAttributes_methods[0];
-         method && method->ml_name;
-         method++) {
-        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
-        if (!strncmp(method->ml_name, "Notify", 6)) continue;
-        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
-    }
-
-    // Add members using generic AttributeGroup interface
-    for (int i = 0; i < atts.NumAttributes(); i++) {
-        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
-    }
-
-    return dir_list;
-}
 /*static*/ PyObject *
 GlobalLineoutAttributes_SetDynamic(PyObject *self, PyObject *args)
 {
@@ -695,7 +667,10 @@ GlobalLineoutAttributes_GetFreezeInTime(PyObject *self, PyObject *args)
 
 
 
-PyMethodDef PyGlobalLineoutAttributes_methods[GLOBALLINEOUTATTRIBUTES_NMETH] = {
+// Forward declaration for __dir__ method (it uses methods table)
+static PyObject *GlobalLineoutAttributes_dir(PyObject *self, PyObject *args);
+
+static PyMethodDef PyGlobalLineoutAttributes_methods[] = {
     {"__dir__", GlobalLineoutAttributes_dir, METH_NOARGS},
     {"Notify", GlobalLineoutAttributes_Notify, METH_NOARGS},
     {"SetDynamic", GlobalLineoutAttributes_SetDynamic, METH_VARARGS},
@@ -723,6 +698,40 @@ PyMethodDef PyGlobalLineoutAttributes_methods[GLOBALLINEOUTATTRIBUTES_NMETH] = {
 // Type functions
 //
 
+//
+// Although the __dir__ method is really handled in the _methods table,
+// we define it here instead of with other _methods table functions
+// because it's implementation USES the _methods table to do its work.
+// This allows us to keep the _methods table declared static.
+//
+static PyObject *
+GlobalLineoutAttributes_dir(PyObject *self, PyObject *args)
+{
+    static GlobalLineoutAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyGlobalLineoutAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 static void
 PyGlobalLineoutAttributes_dealloc(PyObject *v)
 {
@@ -734,7 +743,7 @@ PyGlobalLineoutAttributes_dealloc(PyObject *v)
 }
 
 static PyObject *PyGlobalLineoutAttributes_richcompare(PyObject *self, PyObject *other, int op);
-PyObject *
+static PyObject *
 PyGlobalLineoutAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
     const char *name = PyUnicode_AsUTF8(attr_name);
@@ -775,7 +784,7 @@ PyGlobalLineoutAttributes_getattro(PyObject *self, PyObject *attr_name)
     return PyObject_GenericGetAttr(self, attr_name);
 }
 
-int
+static int
 PyGlobalLineoutAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;

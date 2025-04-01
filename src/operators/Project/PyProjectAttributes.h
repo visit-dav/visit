@@ -11,7 +11,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define PROJECTATTRIBUTES_NMETH 7
 void           PyProjectAttributes_StartUp(ProjectAttributes *subj, void *data);
 void           PyProjectAttributes_CloseDown();
 PyMethodDef *  PyProjectAttributes_GetMethodTable(int *nMethods);
@@ -23,9 +22,6 @@ void           PyProjectAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyProjectAttributes_SetDefaults(const ProjectAttributes *atts);
 std::string    PyProjectAttributes_GetLogString();
 std::string    PyProjectAttributes_ToString(const ProjectAttributes *, const char *, const bool=false);
-PyObject *     PyProjectAttributes_getattro(PyObject *self, PyObject *attr_name);
-int            PyProjectAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-extern PyMethodDef PyProjectAttributes_methods[PROJECTATTRIBUTES_NMETH];
 
 #endif
 

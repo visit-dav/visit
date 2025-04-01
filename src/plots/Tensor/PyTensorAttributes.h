@@ -11,7 +11,6 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define TENSORATTRIBUTES_NMETH 41
 void           PyTensorAttributes_StartUp(TensorAttributes *subj, void *data);
 void           PyTensorAttributes_CloseDown();
 PyMethodDef *  PyTensorAttributes_GetMethodTable(int *nMethods);
@@ -23,9 +22,6 @@ void           PyTensorAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyTensorAttributes_SetDefaults(const TensorAttributes *atts);
 std::string    PyTensorAttributes_GetLogString();
 std::string    PyTensorAttributes_ToString(const TensorAttributes *, const char *, const bool=false);
-PyObject *     PyTensorAttributes_getattro(PyObject *self, PyObject *attr_name);
-int            PyTensorAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
-extern PyMethodDef PyTensorAttributes_methods[TENSORATTRIBUTES_NMETH];
 
 #endif
 
