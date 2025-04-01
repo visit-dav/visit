@@ -350,7 +350,7 @@ PoincareAttributes::ProcessOldVersions(DataNode *parentNode,
 }
 
 Target: xml2python
-Code: PyPoincareAttributes_getattr
+Code: PyPoincareAttributes_getattro
 Prefix:
 Postfix:
 #include <visit-config.h>
@@ -371,7 +371,7 @@ Postfix:
         return PyInt_FromLong(long(PoincareAttributes::ManagerWorker));
     }           
     // end parallelizationAlgorithmType 
-    // NOTE: no cooresponding _setattr method is needed for this case because this
+    // NOTE: no cooresponding _setattro method is needed for this case because this
     // is handling only a change in enum symbol name. Those are constants in the
     // python object and never set
 #endif  

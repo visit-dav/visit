@@ -1,5 +1,5 @@
 Target: xml2python
-Code: PyScatterAttributes_setattr
+Code: PyScatterAttributes_setattro
 Prefix:
 Postfix:
     // If the user changes one of the roles and one of the roles is

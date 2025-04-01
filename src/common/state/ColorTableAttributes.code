@@ -37,7 +37,7 @@ constexpr int REMOVETAG = 1;
 Postfix:
 
 Target: xml2python
-Code: PyColorTableAttributes_getattr
+Code: PyColorTableAttributes_getattro
 Prefix:
 #include <visit-config.h>
 Postfix:
@@ -51,13 +51,13 @@ Postfix:
     //
     if(strcmp(name, "activeContinuous") == 0)
     {
-        ColorTableAttributesObject *ColorTableObj = (ColorTableAttributesObject *)self;
+        PyColorTableAttributesObject *ColorTableObj = (PyColorTableAttributesObject *)self;
         std::string defaultContinuous = ColorTableObj->data->GetDefaultContinuous();
         return PyString_FromString(defaultContinuous.c_str());
     }
     if(strcmp(name, "activeDiscrete") == 0)
     {
-        ColorTableAttributesObject *ColorTableObj = (ColorTableAttributesObject *)self;
+        PyColorTableAttributesObject *ColorTableObj = (PyColorTableAttributesObject *)self;
         std::string defaultDiscrete = ColorTableObj->data->GetDefaultDiscrete();
         return PyString_FromString(defaultDiscrete.c_str());
     }
@@ -80,7 +80,7 @@ Postfix:
     }
 #endif
 
-Code: PyColorTableAttributes_setattr
+Code: PyColorTableAttributes_setattro
 Prefix:
 #include <visit-config.h>
 Postfix:
@@ -90,7 +90,7 @@ Postfix:
    // Try and handle legacy fields in ColorTableAttributes
     if(obj == &NULL_PY_OBJ)
     {
-        ColorTableAttributesObject *ColorTableObj = (ColorTableAttributesObject *)self;
+        PyColorTableAttributesObject *ColorTableObj = (PyColorTableAttributesObject *)self;
 
         //
         // Removed in 3.3.0

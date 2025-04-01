@@ -3289,6 +3289,37 @@ PyScatterAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args
     else if(strcmp(name, "legendFlag") == 0)
         obj = ScatterAttributes_SetLegendFlag(self, args);
 
+    // If the user changes one of the roles and one of the roles is
+    // "Color" then assume that they want to use the color table.
+
+    // If they do not want to use the color table and want to use
+    // either the foreground or a single color they must set it after
+    // all variables (roles) have been set.
+    if( strcmp(name, "var1Role") == 0 ||
+        strcmp(name, "var2Role") == 0 ||
+        strcmp(name, "var3Role") == 0 ||
+        strcmp(name, "var4Role") == 0 )
+    {
+        // A color variable has been specified.
+        if(ScatterAttributes_GetVar1Role(self, NULL) == PyInt_FromLong(3) ||
+           ScatterAttributes_GetVar2Role(self, NULL) == PyInt_FromLong(3) ||
+           ScatterAttributes_GetVar3Role(self, NULL) == PyInt_FromLong(3) ||
+           ScatterAttributes_GetVar4Role(self, NULL) == PyInt_FromLong(3) )
+        {
+            PyObject *new_args = Py_BuildValue("(i)", 2);
+            obj = ScatterAttributes_SetColorType(self, new_args);
+            Py_DECREF(new_args);
+        }
+
+        // No color variable so use the foreground as a default.
+        else
+        {
+            PyObject *new_args = Py_BuildValue("(i)", 0);
+            obj = ScatterAttributes_SetColorType(self, new_args);
+            Py_DECREF(new_args);
+        }
+    }
+
     if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
     {
         Py_INCREF(Py_None);
