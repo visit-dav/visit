@@ -11,6 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define PSEUDOCOLORATTRIBUTES_NMETH 109
 void           PyPseudocolorAttributes_StartUp(PseudocolorAttributes *subj, void *data);
 void           PyPseudocolorAttributes_CloseDown();
 PyMethodDef *  PyPseudocolorAttributes_GetMethodTable(int *nMethods);
@@ -22,6 +23,9 @@ void           PyPseudocolorAttributes_SetParent(PyObject *obj, PyObject *parent
 void           PyPseudocolorAttributes_SetDefaults(const PseudocolorAttributes *atts);
 std::string    PyPseudocolorAttributes_GetLogString();
 std::string    PyPseudocolorAttributes_ToString(const PseudocolorAttributes *, const char *, const bool=false);
+PyObject *     PyPseudocolorAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyPseudocolorAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
+extern PyMethodDef PyPseudocolorAttributes_methods[PSEUDOCOLORATTRIBUTES_NMETH];
 
 #endif
 

@@ -12,6 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define COLORCONTROLPOINTLIST_NMETH 17
 void VISITPY_API           PyColorControlPointList_StartUp(ColorControlPointList *subj, void *data);
 void VISITPY_API           PyColorControlPointList_CloseDown();
 VISITPY_API PyMethodDef *  PyColorControlPointList_GetMethodTable(int *nMethods);
@@ -23,6 +24,9 @@ void VISITPY_API           PyColorControlPointList_SetParent(PyObject *obj, PyOb
 void VISITPY_API           PyColorControlPointList_SetDefaults(const ColorControlPointList *atts);
 std::string VISITPY_API    PyColorControlPointList_GetLogString();
 std::string VISITPY_API    PyColorControlPointList_ToString(const ColorControlPointList *, const char *, const bool=false);
+VISITPY_API PyObject *     PyColorControlPointList_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyColorControlPointList_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
+VISITPY_API extern PyMethodDef PyColorControlPointList_methods[COLORCONTROLPOINTLIST_NMETH];
 
 #endif
 

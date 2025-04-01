@@ -11,6 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define MULTICURVEATTRIBUTES_NMETH 35
 void           PyMultiCurveAttributes_StartUp(MultiCurveAttributes *subj, void *data);
 void           PyMultiCurveAttributes_CloseDown();
 PyMethodDef *  PyMultiCurveAttributes_GetMethodTable(int *nMethods);
@@ -22,6 +23,9 @@ void           PyMultiCurveAttributes_SetParent(PyObject *obj, PyObject *parent)
 void           PyMultiCurveAttributes_SetDefaults(const MultiCurveAttributes *atts);
 std::string    PyMultiCurveAttributes_GetLogString();
 std::string    PyMultiCurveAttributes_ToString(const MultiCurveAttributes *, const char *, const bool=false);
+PyObject *     PyMultiCurveAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyMultiCurveAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
+extern PyMethodDef PyMultiCurveAttributes_methods[MULTICURVEATTRIBUTES_NMETH];
 
 #endif
 

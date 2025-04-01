@@ -420,6 +420,34 @@ VolumeAttributes_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject *
+VolumeAttributes_dir(PyObject *self, PyObject *args)
+{
+    static VolumeAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyVolumeAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 VolumeAttributes_SetOSPRayEnabledFlag(PyObject *self, PyObject *args)
 {
@@ -3171,10 +3199,7 @@ VolumeAttributes_GetMaterialProperties(PyObject *self, PyObject *args)
 
 
 
-// Forward declaration for __dir__ method (it uses methods table)
-static PyObject *VolumeAttributes_dir(PyObject *self, PyObject *args);
-
-static PyMethodDef PyVolumeAttributes_methods[] = {
+PyMethodDef PyVolumeAttributes_methods[VOLUMEATTRIBUTES_NMETH] = {
     {"__dir__", VolumeAttributes_dir, METH_NOARGS},
     {"Notify", VolumeAttributes_Notify, METH_NOARGS},
     {"SetOSPRayEnabledFlag", VolumeAttributes_SetOSPRayEnabledFlag, METH_VARARGS},
@@ -3274,40 +3299,6 @@ static PyMethodDef PyVolumeAttributes_methods[] = {
 // Type functions
 //
 
-//
-// Although the __dir__ method is really handled in the _methods table,
-// we define it here instead of with other _methods table functions
-// because it's implementation USES the _methods table to do its work.
-// This allows us to keep the _methods table declared static.
-//
-static PyObject *
-VolumeAttributes_dir(PyObject *self, PyObject *args)
-{
-    static VolumeAttributes atts; // dummy to access field names
-
-    PyObject *dir_list = PyList_New(0);
-    if (!dir_list)
-    {
-        PyErr_NoMemory();
-        return NULL;
-    }
-
-    // Add methods from the methods table
-    for (PyMethodDef const *method = &PyVolumeAttributes_methods[0];
-         method && method->ml_name;
-         method++) {
-        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
-        if (!strncmp(method->ml_name, "Notify", 6)) continue;
-        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
-    }
-
-    // Add members using generic AttributeGroup interface
-    for (int i = 0; i < atts.NumAttributes(); i++) {
-        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
-    }
-
-    return dir_list;
-}
 static void
 PyVolumeAttributes_dealloc(PyObject *v)
 {
@@ -3319,7 +3310,7 @@ PyVolumeAttributes_dealloc(PyObject *v)
 }
 
 static PyObject *PyVolumeAttributes_richcompare(PyObject *self, PyObject *other, int op);
-static PyObject *
+PyObject *
 PyVolumeAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
     const char *name = PyUnicode_AsUTF8(attr_name);
@@ -3543,7 +3534,7 @@ PyVolumeAttributes_getattro(PyObject *self, PyObject *attr_name)
     return PyObject_GenericGetAttr(self, attr_name);
 }
 
-static int
+int
 PyVolumeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
@@ -3755,10 +3746,10 @@ static char const *PyVolumeAttributes_purpose = "This class contains the plot at
 //
 // Initialize the python object type structure with default values.
 // If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
-// which is defined with default values for our standard python objects
+// which is defined with default values for our standard pythong objects
 // in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
-// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
-// such customization in src/avt/PythonFilters or src/visitpy/common.
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples in
+// src/avt/PythonFilters.
 //
 VISIT_PY_TYPE_OBJ(VolumeAttributes);
 

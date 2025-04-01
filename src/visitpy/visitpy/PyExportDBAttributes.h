@@ -12,6 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define EXPORTDBATTRIBUTES_NMETH 23
 void VISITPY_API           PyExportDBAttributes_StartUp(ExportDBAttributes *subj, void *data);
 void VISITPY_API           PyExportDBAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyExportDBAttributes_GetMethodTable(int *nMethods);
@@ -23,6 +24,9 @@ void VISITPY_API           PyExportDBAttributes_SetParent(PyObject *obj, PyObjec
 void VISITPY_API           PyExportDBAttributes_SetDefaults(const ExportDBAttributes *atts);
 std::string VISITPY_API    PyExportDBAttributes_GetLogString();
 std::string VISITPY_API    PyExportDBAttributes_ToString(const ExportDBAttributes *, const char *, const bool=false);
+VISITPY_API PyObject *     PyExportDBAttributes_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyExportDBAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
+VISITPY_API extern PyMethodDef PyExportDBAttributes_methods[EXPORTDBATTRIBUTES_NMETH];
 
 #endif
 

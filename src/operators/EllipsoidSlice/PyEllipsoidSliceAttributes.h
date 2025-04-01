@@ -11,6 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define ELLIPSOIDSLICEATTRIBUTES_NMETH 9
 void           PyEllipsoidSliceAttributes_StartUp(EllipsoidSliceAttributes *subj, void *data);
 void           PyEllipsoidSliceAttributes_CloseDown();
 PyMethodDef *  PyEllipsoidSliceAttributes_GetMethodTable(int *nMethods);
@@ -22,6 +23,9 @@ void           PyEllipsoidSliceAttributes_SetParent(PyObject *obj, PyObject *par
 void           PyEllipsoidSliceAttributes_SetDefaults(const EllipsoidSliceAttributes *atts);
 std::string    PyEllipsoidSliceAttributes_GetLogString();
 std::string    PyEllipsoidSliceAttributes_ToString(const EllipsoidSliceAttributes *, const char *, const bool=false);
+PyObject *     PyEllipsoidSliceAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyEllipsoidSliceAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
+extern PyMethodDef PyEllipsoidSliceAttributes_methods[ELLIPSOIDSLICEATTRIBUTES_NMETH];
 
 #endif
 

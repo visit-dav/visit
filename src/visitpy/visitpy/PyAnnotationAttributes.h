@@ -12,6 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define ANNOTATIONATTRIBUTES_NMETH 45
 void VISITPY_API           PyAnnotationAttributes_StartUp(AnnotationAttributes *subj, void *data);
 void VISITPY_API           PyAnnotationAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyAnnotationAttributes_GetMethodTable(int *nMethods);
@@ -23,6 +24,9 @@ void VISITPY_API           PyAnnotationAttributes_SetParent(PyObject *obj, PyObj
 void VISITPY_API           PyAnnotationAttributes_SetDefaults(const AnnotationAttributes *atts);
 std::string VISITPY_API    PyAnnotationAttributes_GetLogString();
 std::string VISITPY_API    PyAnnotationAttributes_ToString(const AnnotationAttributes *, const char *, const bool=false);
+VISITPY_API PyObject *     PyAnnotationAttributes_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyAnnotationAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
+VISITPY_API extern PyMethodDef PyAnnotationAttributes_methods[ANNOTATIONATTRIBUTES_NMETH];
 
 #endif
 

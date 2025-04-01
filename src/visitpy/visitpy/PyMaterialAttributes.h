@@ -12,6 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define MATERIALATTRIBUTES_NMETH 27
 void VISITPY_API           PyMaterialAttributes_StartUp(MaterialAttributes *subj, void *data);
 void VISITPY_API           PyMaterialAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyMaterialAttributes_GetMethodTable(int *nMethods);
@@ -23,6 +24,9 @@ void VISITPY_API           PyMaterialAttributes_SetParent(PyObject *obj, PyObjec
 void VISITPY_API           PyMaterialAttributes_SetDefaults(const MaterialAttributes *atts);
 std::string VISITPY_API    PyMaterialAttributes_GetLogString();
 std::string VISITPY_API    PyMaterialAttributes_ToString(const MaterialAttributes *, const char *, const bool=false);
+VISITPY_API PyObject *     PyMaterialAttributes_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyMaterialAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
+VISITPY_API extern PyMethodDef PyMaterialAttributes_methods[MATERIALATTRIBUTES_NMETH];
 
 #endif
 

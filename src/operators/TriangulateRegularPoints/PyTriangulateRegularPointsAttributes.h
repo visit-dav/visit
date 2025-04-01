@@ -11,6 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define TRIANGULATEREGULARPOINTSATTRIBUTES_NMETH 11
 void           PyTriangulateRegularPointsAttributes_StartUp(TriangulateRegularPointsAttributes *subj, void *data);
 void           PyTriangulateRegularPointsAttributes_CloseDown();
 PyMethodDef *  PyTriangulateRegularPointsAttributes_GetMethodTable(int *nMethods);
@@ -22,6 +23,9 @@ void           PyTriangulateRegularPointsAttributes_SetParent(PyObject *obj, PyO
 void           PyTriangulateRegularPointsAttributes_SetDefaults(const TriangulateRegularPointsAttributes *atts);
 std::string    PyTriangulateRegularPointsAttributes_GetLogString();
 std::string    PyTriangulateRegularPointsAttributes_ToString(const TriangulateRegularPointsAttributes *, const char *, const bool=false);
+PyObject *     PyTriangulateRegularPointsAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyTriangulateRegularPointsAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
+extern PyMethodDef PyTriangulateRegularPointsAttributes_methods[TRIANGULATEREGULARPOINTSATTRIBUTES_NMETH];
 
 #endif
 

@@ -12,6 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define PRINTERATTRIBUTES_NMETH 23
 void VISITPY_API           PyPrinterAttributes_StartUp(PrinterAttributes *subj, void *data);
 void VISITPY_API           PyPrinterAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyPrinterAttributes_GetMethodTable(int *nMethods);
@@ -23,6 +24,9 @@ void VISITPY_API           PyPrinterAttributes_SetParent(PyObject *obj, PyObject
 void VISITPY_API           PyPrinterAttributes_SetDefaults(const PrinterAttributes *atts);
 std::string VISITPY_API    PyPrinterAttributes_GetLogString();
 std::string VISITPY_API    PyPrinterAttributes_ToString(const PrinterAttributes *, const char *, const bool=false);
+VISITPY_API PyObject *     PyPrinterAttributes_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyPrinterAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
+VISITPY_API extern PyMethodDef PyPrinterAttributes_methods[PRINTERATTRIBUTES_NMETH];
 
 #endif
 

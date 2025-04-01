@@ -138,6 +138,34 @@ IsosurfaceAttributes_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject *
+IsosurfaceAttributes_dir(PyObject *self, PyObject *args)
+{
+    static IsosurfaceAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyIsosurfaceAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 IsosurfaceAttributes_SetContourNLevels(PyObject *self, PyObject *args)
 {
@@ -774,10 +802,7 @@ IsosurfaceAttributes_GetVariable(PyObject *self, PyObject *args)
 
 
 
-// Forward declaration for __dir__ method (it uses methods table)
-static PyObject *IsosurfaceAttributes_dir(PyObject *self, PyObject *args);
-
-static PyMethodDef PyIsosurfaceAttributes_methods[] = {
+PyMethodDef PyIsosurfaceAttributes_methods[ISOSURFACEATTRIBUTES_NMETH] = {
     {"__dir__", IsosurfaceAttributes_dir, METH_NOARGS},
     {"Notify", IsosurfaceAttributes_Notify, METH_NOARGS},
     {"SetContourNLevels", IsosurfaceAttributes_SetContourNLevels, METH_VARARGS},
@@ -807,40 +832,6 @@ static PyMethodDef PyIsosurfaceAttributes_methods[] = {
 // Type functions
 //
 
-//
-// Although the __dir__ method is really handled in the _methods table,
-// we define it here instead of with other _methods table functions
-// because it's implementation USES the _methods table to do its work.
-// This allows us to keep the _methods table declared static.
-//
-static PyObject *
-IsosurfaceAttributes_dir(PyObject *self, PyObject *args)
-{
-    static IsosurfaceAttributes atts; // dummy to access field names
-
-    PyObject *dir_list = PyList_New(0);
-    if (!dir_list)
-    {
-        PyErr_NoMemory();
-        return NULL;
-    }
-
-    // Add methods from the methods table
-    for (PyMethodDef const *method = &PyIsosurfaceAttributes_methods[0];
-         method && method->ml_name;
-         method++) {
-        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
-        if (!strncmp(method->ml_name, "Notify", 6)) continue;
-        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
-    }
-
-    // Add members using generic AttributeGroup interface
-    for (int i = 0; i < atts.NumAttributes(); i++) {
-        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
-    }
-
-    return dir_list;
-}
 static void
 PyIsosurfaceAttributes_dealloc(PyObject *v)
 {
@@ -852,7 +843,7 @@ PyIsosurfaceAttributes_dealloc(PyObject *v)
 }
 
 static PyObject *PyIsosurfaceAttributes_richcompare(PyObject *self, PyObject *other, int op);
-static PyObject *
+PyObject *
 PyIsosurfaceAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
     const char *name = PyUnicode_AsUTF8(attr_name);
@@ -897,7 +888,7 @@ PyIsosurfaceAttributes_getattro(PyObject *self, PyObject *attr_name)
     return PyObject_GenericGetAttr(self, attr_name);
 }
 
-static int
+int
 PyIsosurfaceAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;

@@ -11,6 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define ZONEDUMPATTRIBUTES_NMETH 13
 void           PyZoneDumpAttributes_StartUp(ZoneDumpAttributes *subj, void *data);
 void           PyZoneDumpAttributes_CloseDown();
 PyMethodDef *  PyZoneDumpAttributes_GetMethodTable(int *nMethods);
@@ -22,6 +23,9 @@ void           PyZoneDumpAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyZoneDumpAttributes_SetDefaults(const ZoneDumpAttributes *atts);
 std::string    PyZoneDumpAttributes_GetLogString();
 std::string    PyZoneDumpAttributes_ToString(const ZoneDumpAttributes *, const char *, const bool=false);
+PyObject *     PyZoneDumpAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyZoneDumpAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
+extern PyMethodDef PyZoneDumpAttributes_methods[ZONEDUMPATTRIBUTES_NMETH];
 
 #endif
 

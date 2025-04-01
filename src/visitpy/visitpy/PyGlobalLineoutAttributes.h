@@ -12,6 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define GLOBALLINEOUTATTRIBUTES_NMETH 21
 void VISITPY_API           PyGlobalLineoutAttributes_StartUp(GlobalLineoutAttributes *subj, void *data);
 void VISITPY_API           PyGlobalLineoutAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyGlobalLineoutAttributes_GetMethodTable(int *nMethods);
@@ -23,6 +24,9 @@ void VISITPY_API           PyGlobalLineoutAttributes_SetParent(PyObject *obj, Py
 void VISITPY_API           PyGlobalLineoutAttributes_SetDefaults(const GlobalLineoutAttributes *atts);
 std::string VISITPY_API    PyGlobalLineoutAttributes_GetLogString();
 std::string VISITPY_API    PyGlobalLineoutAttributes_ToString(const GlobalLineoutAttributes *, const char *, const bool=false);
+VISITPY_API PyObject *     PyGlobalLineoutAttributes_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyGlobalLineoutAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
+VISITPY_API extern PyMethodDef PyGlobalLineoutAttributes_methods[GLOBALLINEOUTATTRIBUTES_NMETH];
 
 #endif
 

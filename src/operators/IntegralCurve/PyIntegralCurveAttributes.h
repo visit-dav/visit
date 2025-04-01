@@ -11,6 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define INTEGRALCURVEATTRIBUTES_NMETH 145
 void           PyIntegralCurveAttributes_StartUp(IntegralCurveAttributes *subj, void *data);
 void           PyIntegralCurveAttributes_CloseDown();
 PyMethodDef *  PyIntegralCurveAttributes_GetMethodTable(int *nMethods);
@@ -22,6 +23,9 @@ void           PyIntegralCurveAttributes_SetParent(PyObject *obj, PyObject *pare
 void           PyIntegralCurveAttributes_SetDefaults(const IntegralCurveAttributes *atts);
 std::string    PyIntegralCurveAttributes_GetLogString();
 std::string    PyIntegralCurveAttributes_ToString(const IntegralCurveAttributes *, const char *, const bool=false);
+PyObject *     PyIntegralCurveAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyIntegralCurveAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
+extern PyMethodDef PyIntegralCurveAttributes_methods[INTEGRALCURVEATTRIBUTES_NMETH];
 
 #endif
 

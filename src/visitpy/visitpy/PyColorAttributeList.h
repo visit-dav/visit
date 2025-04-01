@@ -12,6 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define COLORATTRIBUTELIST_NMETH 8
 void VISITPY_API           PyColorAttributeList_StartUp(ColorAttributeList *subj, void *data);
 void VISITPY_API           PyColorAttributeList_CloseDown();
 VISITPY_API PyMethodDef *  PyColorAttributeList_GetMethodTable(int *nMethods);
@@ -23,6 +24,9 @@ void VISITPY_API           PyColorAttributeList_SetParent(PyObject *obj, PyObjec
 void VISITPY_API           PyColorAttributeList_SetDefaults(const ColorAttributeList *atts);
 std::string VISITPY_API    PyColorAttributeList_GetLogString();
 std::string VISITPY_API    PyColorAttributeList_ToString(const ColorAttributeList *, const char *, const bool=false);
+VISITPY_API PyObject *     PyColorAttributeList_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyColorAttributeList_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
+VISITPY_API extern PyMethodDef PyColorAttributeList_methods[COLORATTRIBUTELIST_NMETH];
 
 #endif
 

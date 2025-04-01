@@ -11,6 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define REMAPATTRIBUTES_NMETH 27
 void           PyRemapAttributes_StartUp(RemapAttributes *subj, void *data);
 void           PyRemapAttributes_CloseDown();
 PyMethodDef *  PyRemapAttributes_GetMethodTable(int *nMethods);
@@ -22,6 +23,9 @@ void           PyRemapAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyRemapAttributes_SetDefaults(const RemapAttributes *atts);
 std::string    PyRemapAttributes_GetLogString();
 std::string    PyRemapAttributes_ToString(const RemapAttributes *, const char *, const bool=false);
+PyObject *     PyRemapAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyRemapAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
+extern PyMethodDef PyRemapAttributes_methods[REMAPATTRIBUTES_NMETH];
 
 #endif
 

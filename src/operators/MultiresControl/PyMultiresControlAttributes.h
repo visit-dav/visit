@@ -11,6 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define MULTIRESCONTROLATTRIBUTES_NMETH 9
 void           PyMultiresControlAttributes_StartUp(MultiresControlAttributes *subj, void *data);
 void           PyMultiresControlAttributes_CloseDown();
 PyMethodDef *  PyMultiresControlAttributes_GetMethodTable(int *nMethods);
@@ -22,6 +23,9 @@ void           PyMultiresControlAttributes_SetParent(PyObject *obj, PyObject *pa
 void           PyMultiresControlAttributes_SetDefaults(const MultiresControlAttributes *atts);
 std::string    PyMultiresControlAttributes_GetLogString();
 std::string    PyMultiresControlAttributes_ToString(const MultiresControlAttributes *, const char *, const bool=false);
+PyObject *     PyMultiresControlAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyMultiresControlAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
+extern PyMethodDef PyMultiresControlAttributes_methods[MULTIRESCONTROLATTRIBUTES_NMETH];
 
 #endif
 

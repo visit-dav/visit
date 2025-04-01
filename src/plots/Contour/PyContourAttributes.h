@@ -11,6 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define CONTOURATTRIBUTES_NMETH 41
 void           PyContourAttributes_StartUp(ContourAttributes *subj, void *data);
 void           PyContourAttributes_CloseDown();
 PyMethodDef *  PyContourAttributes_GetMethodTable(int *nMethods);
@@ -22,6 +23,9 @@ void           PyContourAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyContourAttributes_SetDefaults(const ContourAttributes *atts);
 std::string    PyContourAttributes_GetLogString();
 std::string    PyContourAttributes_ToString(const ContourAttributes *, const char *, const bool=false);
+PyObject *     PyContourAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyContourAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
+extern PyMethodDef PyContourAttributes_methods[CONTOURATTRIBUTES_NMETH];
 
 #endif
 

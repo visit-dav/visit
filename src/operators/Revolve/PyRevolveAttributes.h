@@ -11,6 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define REVOLVEATTRIBUTES_NMETH 15
 void           PyRevolveAttributes_StartUp(RevolveAttributes *subj, void *data);
 void           PyRevolveAttributes_CloseDown();
 PyMethodDef *  PyRevolveAttributes_GetMethodTable(int *nMethods);
@@ -22,6 +23,9 @@ void           PyRevolveAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyRevolveAttributes_SetDefaults(const RevolveAttributes *atts);
 std::string    PyRevolveAttributes_GetLogString();
 std::string    PyRevolveAttributes_ToString(const RevolveAttributes *, const char *, const bool=false);
+PyObject *     PyRevolveAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyRevolveAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
+extern PyMethodDef PyRevolveAttributes_methods[REVOLVEATTRIBUTES_NMETH];
 
 #endif
 

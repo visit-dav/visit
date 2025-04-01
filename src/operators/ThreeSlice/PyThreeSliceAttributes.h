@@ -11,6 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define THREESLICEATTRIBUTES_NMETH 11
 void           PyThreeSliceAttributes_StartUp(ThreeSliceAttributes *subj, void *data);
 void           PyThreeSliceAttributes_CloseDown();
 PyMethodDef *  PyThreeSliceAttributes_GetMethodTable(int *nMethods);
@@ -22,6 +23,9 @@ void           PyThreeSliceAttributes_SetParent(PyObject *obj, PyObject *parent)
 void           PyThreeSliceAttributes_SetDefaults(const ThreeSliceAttributes *atts);
 std::string    PyThreeSliceAttributes_GetLogString();
 std::string    PyThreeSliceAttributes_ToString(const ThreeSliceAttributes *, const char *, const bool=false);
+PyObject *     PyThreeSliceAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyThreeSliceAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
+extern PyMethodDef PyThreeSliceAttributes_methods[THREESLICEATTRIBUTES_NMETH];
 
 #endif
 

@@ -11,6 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define TOPOLOGYATTRIBUTES_NMETH 19
 void           PyTopologyAttributes_StartUp(TopologyAttributes *subj, void *data);
 void           PyTopologyAttributes_CloseDown();
 PyMethodDef *  PyTopologyAttributes_GetMethodTable(int *nMethods);
@@ -22,6 +23,9 @@ void           PyTopologyAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyTopologyAttributes_SetDefaults(const TopologyAttributes *atts);
 std::string    PyTopologyAttributes_GetLogString();
 std::string    PyTopologyAttributes_ToString(const TopologyAttributes *, const char *, const bool=false);
+PyObject *     PyTopologyAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyTopologyAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
+extern PyMethodDef PyTopologyAttributes_methods[TOPOLOGYATTRIBUTES_NMETH];
 
 #endif
 

@@ -11,6 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define SURFACENORMALATTRIBUTES_NMETH 5
 void           PySurfaceNormalAttributes_StartUp(SurfaceNormalAttributes *subj, void *data);
 void           PySurfaceNormalAttributes_CloseDown();
 PyMethodDef *  PySurfaceNormalAttributes_GetMethodTable(int *nMethods);
@@ -22,6 +23,9 @@ void           PySurfaceNormalAttributes_SetParent(PyObject *obj, PyObject *pare
 void           PySurfaceNormalAttributes_SetDefaults(const SurfaceNormalAttributes *atts);
 std::string    PySurfaceNormalAttributes_GetLogString();
 std::string    PySurfaceNormalAttributes_ToString(const SurfaceNormalAttributes *, const char *, const bool=false);
+PyObject *     PySurfaceNormalAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PySurfaceNormalAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
+extern PyMethodDef PySurfaceNormalAttributes_methods[SURFACENORMALATTRIBUTES_NMETH];
 
 #endif
 

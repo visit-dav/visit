@@ -11,6 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define LCSATTRIBUTES_NMETH 111
 void           PyLCSAttributes_StartUp(LCSAttributes *subj, void *data);
 void           PyLCSAttributes_CloseDown();
 PyMethodDef *  PyLCSAttributes_GetMethodTable(int *nMethods);
@@ -22,6 +23,9 @@ void           PyLCSAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyLCSAttributes_SetDefaults(const LCSAttributes *atts);
 std::string    PyLCSAttributes_GetLogString();
 std::string    PyLCSAttributes_ToString(const LCSAttributes *, const char *, const bool=false);
+PyObject *     PyLCSAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyLCSAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
+extern PyMethodDef PyLCSAttributes_methods[LCSATTRIBUTES_NMETH];
 
 #endif
 

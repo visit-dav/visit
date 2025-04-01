@@ -11,6 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define LAGRANGIANATTRIBUTES_NMETH 13
 void           PyLagrangianAttributes_StartUp(LagrangianAttributes *subj, void *data);
 void           PyLagrangianAttributes_CloseDown();
 PyMethodDef *  PyLagrangianAttributes_GetMethodTable(int *nMethods);
@@ -22,6 +23,9 @@ void           PyLagrangianAttributes_SetParent(PyObject *obj, PyObject *parent)
 void           PyLagrangianAttributes_SetDefaults(const LagrangianAttributes *atts);
 std::string    PyLagrangianAttributes_GetLogString();
 std::string    PyLagrangianAttributes_ToString(const LagrangianAttributes *, const char *, const bool=false);
+PyObject *     PyLagrangianAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyLagrangianAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
+extern PyMethodDef PyLagrangianAttributes_methods[LAGRANGIANATTRIBUTES_NMETH];
 
 #endif
 

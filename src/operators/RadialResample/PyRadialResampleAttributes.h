@@ -11,6 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define RADIALRESAMPLEATTRIBUTES_NMETH 25
 void           PyRadialResampleAttributes_StartUp(RadialResampleAttributes *subj, void *data);
 void           PyRadialResampleAttributes_CloseDown();
 PyMethodDef *  PyRadialResampleAttributes_GetMethodTable(int *nMethods);
@@ -22,6 +23,9 @@ void           PyRadialResampleAttributes_SetParent(PyObject *obj, PyObject *par
 void           PyRadialResampleAttributes_SetDefaults(const RadialResampleAttributes *atts);
 std::string    PyRadialResampleAttributes_GetLogString();
 std::string    PyRadialResampleAttributes_ToString(const RadialResampleAttributes *, const char *, const bool=false);
+PyObject *     PyRadialResampleAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyRadialResampleAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
+extern PyMethodDef PyRadialResampleAttributes_methods[RADIALRESAMPLEATTRIBUTES_NMETH];
 
 #endif
 

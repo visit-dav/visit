@@ -230,6 +230,34 @@ ModelFitAtts_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject *
+ModelFitAtts_dir(PyObject *self, PyObject *args)
+{
+    static ModelFitAtts atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyModelFitAtts_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 ModelFitAtts_SetVars(PyObject *self, PyObject *args)
 {
@@ -1055,10 +1083,7 @@ ModelFitAtts_GetModelNums(PyObject *self, PyObject *args)
 
 
 
-// Forward declaration for __dir__ method (it uses methods table)
-static PyObject *ModelFitAtts_dir(PyObject *self, PyObject *args);
-
-static PyMethodDef PyModelFitAtts_methods[] = {
+PyMethodDef PyModelFitAtts_methods[MODELFITATTS_NMETH] = {
     {"__dir__", ModelFitAtts_dir, METH_NOARGS},
     {"Notify", ModelFitAtts_Notify, METH_NOARGS},
     {"SetVars", ModelFitAtts_SetVars, METH_VARARGS},
@@ -1090,40 +1115,6 @@ static PyMethodDef PyModelFitAtts_methods[] = {
 // Type functions
 //
 
-//
-// Although the __dir__ method is really handled in the _methods table,
-// we define it here instead of with other _methods table functions
-// because it's implementation USES the _methods table to do its work.
-// This allows us to keep the _methods table declared static.
-//
-static PyObject *
-ModelFitAtts_dir(PyObject *self, PyObject *args)
-{
-    static ModelFitAtts atts; // dummy to access field names
-
-    PyObject *dir_list = PyList_New(0);
-    if (!dir_list)
-    {
-        PyErr_NoMemory();
-        return NULL;
-    }
-
-    // Add methods from the methods table
-    for (PyMethodDef const *method = &PyModelFitAtts_methods[0];
-         method && method->ml_name;
-         method++) {
-        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
-        if (!strncmp(method->ml_name, "Notify", 6)) continue;
-        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
-    }
-
-    // Add members using generic AttributeGroup interface
-    for (int i = 0; i < atts.NumAttributes(); i++) {
-        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
-    }
-
-    return dir_list;
-}
 static void
 PyModelFitAtts_dealloc(PyObject *v)
 {
@@ -1135,7 +1126,7 @@ PyModelFitAtts_dealloc(PyObject *v)
 }
 
 static PyObject *PyModelFitAtts_richcompare(PyObject *self, PyObject *other, int op);
-static PyObject *
+PyObject *
 PyModelFitAtts_getattro(PyObject *self, PyObject *attr_name)
 {
     const char *name = PyUnicode_AsUTF8(attr_name);
@@ -1170,7 +1161,7 @@ PyModelFitAtts_getattro(PyObject *self, PyObject *attr_name)
     return PyObject_GenericGetAttr(self, attr_name);
 }
 
-static int
+int
 PyModelFitAtts_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;

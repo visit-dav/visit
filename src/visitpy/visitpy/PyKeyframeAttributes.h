@@ -12,6 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define KEYFRAMEATTRIBUTES_NMETH 9
 void VISITPY_API           PyKeyframeAttributes_StartUp(KeyframeAttributes *subj, void *data);
 void VISITPY_API           PyKeyframeAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyKeyframeAttributes_GetMethodTable(int *nMethods);
@@ -23,6 +24,9 @@ void VISITPY_API           PyKeyframeAttributes_SetParent(PyObject *obj, PyObjec
 void VISITPY_API           PyKeyframeAttributes_SetDefaults(const KeyframeAttributes *atts);
 std::string VISITPY_API    PyKeyframeAttributes_GetLogString();
 std::string VISITPY_API    PyKeyframeAttributes_ToString(const KeyframeAttributes *, const char *, const bool=false);
+VISITPY_API PyObject *     PyKeyframeAttributes_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyKeyframeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
+VISITPY_API extern PyMethodDef PyKeyframeAttributes_methods[KEYFRAMEATTRIBUTES_NMETH];
 
 #endif
 

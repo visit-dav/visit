@@ -11,6 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define VOLUMEATTRIBUTES_NMETH 93
 void           PyVolumeAttributes_StartUp(VolumeAttributes *subj, void *data);
 void           PyVolumeAttributes_CloseDown();
 PyMethodDef *  PyVolumeAttributes_GetMethodTable(int *nMethods);
@@ -22,6 +23,9 @@ void           PyVolumeAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyVolumeAttributes_SetDefaults(const VolumeAttributes *atts);
 std::string    PyVolumeAttributes_GetLogString();
 std::string    PyVolumeAttributes_ToString(const VolumeAttributes *, const char *, const bool=false);
+PyObject *     PyVolumeAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyVolumeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
+extern PyMethodDef PyVolumeAttributes_methods[VOLUMEATTRIBUTES_NMETH];
 
 #endif
 

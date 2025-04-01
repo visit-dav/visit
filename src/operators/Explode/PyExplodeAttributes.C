@@ -216,6 +216,35 @@ ExplodeAttributes_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject *
+ExplodeAttributes_dir(PyObject *self, PyObject *args)
+{
+    static ExplodeAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyExplodeAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        if (i == 15) continue; // internal field
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 ExplodeAttributes_SetExplosionType(PyObject *self, PyObject *args)
 {
@@ -1265,10 +1294,7 @@ ExplodeAttributes_ClearExplosions(PyObject *self, PyObject *args)
 
 
 
-// Forward declaration for __dir__ method (it uses methods table)
-static PyObject *ExplodeAttributes_dir(PyObject *self, PyObject *args);
-
-static PyMethodDef PyExplodeAttributes_methods[] = {
+PyMethodDef PyExplodeAttributes_methods[EXPLODEATTRIBUTES_NMETH] = {
     {"__dir__", ExplodeAttributes_dir, METH_NOARGS},
     {"Notify", ExplodeAttributes_Notify, METH_NOARGS},
     {"SetExplosionType", ExplodeAttributes_SetExplosionType, METH_VARARGS},
@@ -1311,41 +1337,6 @@ static PyMethodDef PyExplodeAttributes_methods[] = {
 // Type functions
 //
 
-//
-// Although the __dir__ method is really handled in the _methods table,
-// we define it here instead of with other _methods table functions
-// because it's implementation USES the _methods table to do its work.
-// This allows us to keep the _methods table declared static.
-//
-static PyObject *
-ExplodeAttributes_dir(PyObject *self, PyObject *args)
-{
-    static ExplodeAttributes atts; // dummy to access field names
-
-    PyObject *dir_list = PyList_New(0);
-    if (!dir_list)
-    {
-        PyErr_NoMemory();
-        return NULL;
-    }
-
-    // Add methods from the methods table
-    for (PyMethodDef const *method = &PyExplodeAttributes_methods[0];
-         method && method->ml_name;
-         method++) {
-        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
-        if (!strncmp(method->ml_name, "Notify", 6)) continue;
-        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
-    }
-
-    // Add members using generic AttributeGroup interface
-    for (int i = 0; i < atts.NumAttributes(); i++) {
-        if (i == 15) continue; // internal field
-        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
-    }
-
-    return dir_list;
-}
 static void
 PyExplodeAttributes_dealloc(PyObject *v)
 {
@@ -1357,7 +1348,7 @@ PyExplodeAttributes_dealloc(PyObject *v)
 }
 
 static PyObject *PyExplodeAttributes_richcompare(PyObject *self, PyObject *other, int op);
-static PyObject *
+PyObject *
 PyExplodeAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
     const char *name = PyUnicode_AsUTF8(attr_name);
@@ -1412,7 +1403,7 @@ PyExplodeAttributes_getattro(PyObject *self, PyObject *attr_name)
     return PyObject_GenericGetAttr(self, attr_name);
 }
 
-static int
+int
 PyExplodeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;

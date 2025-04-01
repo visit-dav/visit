@@ -68,6 +68,34 @@ ExpressionList_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject *
+ExpressionList_dir(PyObject *self, PyObject *args)
+{
+    static ExpressionList atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyExpressionList_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 ExpressionList_GetExpressions(PyObject *self, PyObject *args)
 {
@@ -171,10 +199,7 @@ ExpressionList_ClearExpressions(PyObject *self, PyObject *args)
 
 
 
-// Forward declaration for __dir__ method (it uses methods table)
-static PyObject *ExpressionList_dir(PyObject *self, PyObject *args);
-
-static PyMethodDef PyExpressionList_methods[] = {
+PyMethodDef PyExpressionList_methods[EXPRESSIONLIST_NMETH] = {
     {"__dir__", ExpressionList_dir, METH_NOARGS},
     {"Notify", ExpressionList_Notify, METH_NOARGS},
     {"GetExpressions", ExpressionList_GetExpressions, METH_VARARGS},
@@ -189,40 +214,6 @@ static PyMethodDef PyExpressionList_methods[] = {
 // Type functions
 //
 
-//
-// Although the __dir__ method is really handled in the _methods table,
-// we define it here instead of with other _methods table functions
-// because it's implementation USES the _methods table to do its work.
-// This allows us to keep the _methods table declared static.
-//
-static PyObject *
-ExpressionList_dir(PyObject *self, PyObject *args)
-{
-    static ExpressionList atts; // dummy to access field names
-
-    PyObject *dir_list = PyList_New(0);
-    if (!dir_list)
-    {
-        PyErr_NoMemory();
-        return NULL;
-    }
-
-    // Add methods from the methods table
-    for (PyMethodDef const *method = &PyExpressionList_methods[0];
-         method && method->ml_name;
-         method++) {
-        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
-        if (!strncmp(method->ml_name, "Notify", 6)) continue;
-        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
-    }
-
-    // Add members using generic AttributeGroup interface
-    for (int i = 0; i < atts.NumAttributes(); i++) {
-        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
-    }
-
-    return dir_list;
-}
 static void
 PyExpressionList_dealloc(PyObject *v)
 {
@@ -234,7 +225,7 @@ PyExpressionList_dealloc(PyObject *v)
 }
 
 static PyObject *PyExpressionList_richcompare(PyObject *self, PyObject *other, int op);
-static PyObject *
+PyObject *
 PyExpressionList_getattro(PyObject *self, PyObject *attr_name)
 {
     const char *name = PyUnicode_AsUTF8(attr_name);
@@ -249,7 +240,7 @@ PyExpressionList_getattro(PyObject *self, PyObject *attr_name)
     return PyObject_GenericGetAttr(self, attr_name);
 }
 
-static int
+int
 PyExpressionList_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;

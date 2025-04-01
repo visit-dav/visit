@@ -12,6 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define MACHINEPROFILE_NMETH 50
 void VISITPY_API           PyMachineProfile_StartUp(MachineProfile *subj, void *data);
 void VISITPY_API           PyMachineProfile_CloseDown();
 VISITPY_API PyMethodDef *  PyMachineProfile_GetMethodTable(int *nMethods);
@@ -23,6 +24,9 @@ void VISITPY_API           PyMachineProfile_SetParent(PyObject *obj, PyObject *p
 void VISITPY_API           PyMachineProfile_SetDefaults(const MachineProfile *atts);
 std::string VISITPY_API    PyMachineProfile_GetLogString();
 std::string VISITPY_API    PyMachineProfile_ToString(const MachineProfile *, const char *, const bool=false);
+VISITPY_API PyObject *     PyMachineProfile_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyMachineProfile_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
+VISITPY_API extern PyMethodDef PyMachineProfile_methods[MACHINEPROFILE_NMETH];
 
 #endif
 

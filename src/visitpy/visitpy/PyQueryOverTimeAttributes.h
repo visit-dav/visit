@@ -12,6 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define QUERYOVERTIMEATTRIBUTES_NMETH 25
 void VISITPY_API           PyQueryOverTimeAttributes_StartUp(QueryOverTimeAttributes *subj, void *data);
 void VISITPY_API           PyQueryOverTimeAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyQueryOverTimeAttributes_GetMethodTable(int *nMethods);
@@ -23,6 +24,9 @@ void VISITPY_API           PyQueryOverTimeAttributes_SetParent(PyObject *obj, Py
 void VISITPY_API           PyQueryOverTimeAttributes_SetDefaults(const QueryOverTimeAttributes *atts);
 std::string VISITPY_API    PyQueryOverTimeAttributes_GetLogString();
 std::string VISITPY_API    PyQueryOverTimeAttributes_ToString(const QueryOverTimeAttributes *, const char *, const bool=false);
+VISITPY_API PyObject *     PyQueryOverTimeAttributes_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyQueryOverTimeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
+VISITPY_API extern PyMethodDef PyQueryOverTimeAttributes_methods[QUERYOVERTIMEATTRIBUTES_NMETH];
 
 #endif
 

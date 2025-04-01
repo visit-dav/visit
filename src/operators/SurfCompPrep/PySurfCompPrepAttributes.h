@@ -11,6 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define SURFCOMPPREPATTRIBUTES_NMETH 43
 void           PySurfCompPrepAttributes_StartUp(SurfCompPrepAttributes *subj, void *data);
 void           PySurfCompPrepAttributes_CloseDown();
 PyMethodDef *  PySurfCompPrepAttributes_GetMethodTable(int *nMethods);
@@ -22,6 +23,9 @@ void           PySurfCompPrepAttributes_SetParent(PyObject *obj, PyObject *paren
 void           PySurfCompPrepAttributes_SetDefaults(const SurfCompPrepAttributes *atts);
 std::string    PySurfCompPrepAttributes_GetLogString();
 std::string    PySurfCompPrepAttributes_ToString(const SurfCompPrepAttributes *, const char *, const bool=false);
+PyObject *     PySurfCompPrepAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PySurfCompPrepAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
+extern PyMethodDef PySurfCompPrepAttributes_methods[SURFCOMPPREPATTRIBUTES_NMETH];
 
 #endif
 

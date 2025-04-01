@@ -12,6 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define EXPRESSION_NMETH 23
 void VISITPY_API           PyExpression_StartUp(Expression *subj, void *data);
 void VISITPY_API           PyExpression_CloseDown();
 VISITPY_API PyMethodDef *  PyExpression_GetMethodTable(int *nMethods);
@@ -23,6 +24,9 @@ void VISITPY_API           PyExpression_SetParent(PyObject *obj, PyObject *paren
 void VISITPY_API           PyExpression_SetDefaults(const Expression *atts);
 std::string VISITPY_API    PyExpression_GetLogString();
 std::string VISITPY_API    PyExpression_ToString(const Expression *, const char *, const bool=false);
+VISITPY_API PyObject *     PyExpression_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyExpression_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
+VISITPY_API extern PyMethodDef PyExpression_methods[EXPRESSION_NMETH];
 
 #endif
 

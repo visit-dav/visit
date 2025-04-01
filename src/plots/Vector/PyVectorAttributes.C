@@ -223,6 +223,34 @@ VectorAttributes_Notify(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+static PyObject *
+VectorAttributes_dir(PyObject *self, PyObject *args)
+{
+    static VectorAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyVectorAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 VectorAttributes_SetGlyphLocation(PyObject *self, PyObject *args)
 {
@@ -1888,10 +1916,7 @@ VectorAttributes_GetAnimationStep(PyObject *self, PyObject *args)
 
 
 
-// Forward declaration for __dir__ method (it uses methods table)
-static PyObject *VectorAttributes_dir(PyObject *self, PyObject *args);
-
-static PyMethodDef PyVectorAttributes_methods[] = {
+PyMethodDef PyVectorAttributes_methods[VECTORATTRIBUTES_NMETH] = {
     {"__dir__", VectorAttributes_dir, METH_NOARGS},
     {"Notify", VectorAttributes_Notify, METH_NOARGS},
     {"SetGlyphLocation", VectorAttributes_SetGlyphLocation, METH_VARARGS},
@@ -1955,40 +1980,6 @@ static PyMethodDef PyVectorAttributes_methods[] = {
 // Type functions
 //
 
-//
-// Although the __dir__ method is really handled in the _methods table,
-// we define it here instead of with other _methods table functions
-// because it's implementation USES the _methods table to do its work.
-// This allows us to keep the _methods table declared static.
-//
-static PyObject *
-VectorAttributes_dir(PyObject *self, PyObject *args)
-{
-    static VectorAttributes atts; // dummy to access field names
-
-    PyObject *dir_list = PyList_New(0);
-    if (!dir_list)
-    {
-        PyErr_NoMemory();
-        return NULL;
-    }
-
-    // Add methods from the methods table
-    for (PyMethodDef const *method = &PyVectorAttributes_methods[0];
-         method && method->ml_name;
-         method++) {
-        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
-        if (!strncmp(method->ml_name, "Notify", 6)) continue;
-        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
-    }
-
-    // Add members using generic AttributeGroup interface
-    for (int i = 0; i < atts.NumAttributes(); i++) {
-        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
-    }
-
-    return dir_list;
-}
 static void
 PyVectorAttributes_dealloc(PyObject *v)
 {
@@ -2000,7 +1991,7 @@ PyVectorAttributes_dealloc(PyObject *v)
 }
 
 static PyObject *PyVectorAttributes_richcompare(PyObject *self, PyObject *other, int op);
-static PyObject *
+PyObject *
 PyVectorAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
     const char *name = PyUnicode_AsUTF8(attr_name);
@@ -2099,7 +2090,7 @@ PyVectorAttributes_getattro(PyObject *self, PyObject *attr_name)
     return PyObject_GenericGetAttr(self, attr_name);
 }
 
-static int
+int
 PyVectorAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;

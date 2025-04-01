@@ -12,6 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define PICKATTRIBUTES_NMETH 69
 void VISITPY_API           PyPickAttributes_StartUp(PickAttributes *subj, void *data);
 void VISITPY_API           PyPickAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyPickAttributes_GetMethodTable(int *nMethods);
@@ -23,6 +24,9 @@ void VISITPY_API           PyPickAttributes_SetParent(PyObject *obj, PyObject *p
 void VISITPY_API           PyPickAttributes_SetDefaults(const PickAttributes *atts);
 std::string VISITPY_API    PyPickAttributes_GetLogString();
 std::string VISITPY_API    PyPickAttributes_ToString(const PickAttributes *, const char *, const bool=false);
+VISITPY_API PyObject *     PyPickAttributes_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyPickAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
+VISITPY_API extern PyMethodDef PyPickAttributes_methods[PICKATTRIBUTES_NMETH];
 
 #endif
 

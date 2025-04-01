@@ -11,6 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
+#define EDGEATTRIBUTES_NMETH 5
 void           PyEdgeAttributes_StartUp(EdgeAttributes *subj, void *data);
 void           PyEdgeAttributes_CloseDown();
 PyMethodDef *  PyEdgeAttributes_GetMethodTable(int *nMethods);
@@ -22,6 +23,9 @@ void           PyEdgeAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyEdgeAttributes_SetDefaults(const EdgeAttributes *atts);
 std::string    PyEdgeAttributes_GetLogString();
 std::string    PyEdgeAttributes_ToString(const EdgeAttributes *, const char *, const bool=false);
+PyObject *     PyEdgeAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyEdgeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
+extern PyMethodDef PyEdgeAttributes_methods[EDGEATTRIBUTES_NMETH];
 
 #endif
 
