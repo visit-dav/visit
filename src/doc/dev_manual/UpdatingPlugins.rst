@@ -224,4 +224,21 @@ Now for the python getattr and setattr methods::
     #endif
 
 
-**Important**: Changes to fields in the Attributes are not allowed in patch releases, as it may cause incompatibility between client and server running different patches of the same major.minor release.
+.. danger::
+
+   Changes to fields in the Attributes are not allowed in patch releases, as it may cause incompatibility between client and server running different patches of the same major.minor release.
+
+Non-static Python Functions in State Objects
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Creating the C/C++ extension module version of VisIt_ state objects (e.g. attributes) involves defining two sets of functions.
+One set is the set of type object *slot* functions involving the ``.tp_xxx`` function pointers of the ``PythonTypeObject`` type. 
+The other is the set of *methods* defined in the ``PyMethodDef`` methods table.
+Ordinarily, all these functions would be be qualified with the ``static`` keyword for internal-only linkage.
+This is useful in minimizing pollution of the global namespace.
+
+However, VisIt_'s state objects support a simplified form of inheritance.
+An example is the state objects associated with database metadata.
+There is an ``avtBaseVarMetaData`` state object that most of the other metadata state objects are built on top of.
+Because of this *one case*, all of VisIt_'s python objects expose their ``setattro``, ``getattro`` functions and their ``_methods[]`` table for external linkage.
+It would be better to limit this exposure to just the cases that need it.
+That is, it would be better if *just* those state objects serving as a *parent* (e.g. ``avtBaseVarMetaData``) exposed their associated python functions and symbols.
