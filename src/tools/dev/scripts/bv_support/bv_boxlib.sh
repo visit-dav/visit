@@ -279,17 +279,7 @@ function build_boxlib
     info "Building Boxlib. . . (~4 minutes)"
 
     set -x
-    if [[ "$OPSYS" == "AIX" ]]; then
-        $MAKE -f GNUmakefile CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-              CCFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-              DEBUG="FALSE" DIM=3 COMP="xlC" USE_MPI="FALSE" \
-              BL_NO_FORT="TRUE" || error "Boxlib build failed. Giving up"
-
-        $MAKE -f GNUmakefile CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-              CCFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-              DEBUG="FALSE" DIM=2 COMP="xlC" USE_MPI="FALSE" \
-              BL_NO_FORT="TRUE" || error "Boxlib build failed. Giving up"
-    elif [[ "$OPSYS" == "Darwin" ]]; then
+    if [[ "$OPSYS" == "Darwin" ]]; then
         $MAKE -f GNUmakefile CXX="$CXX_COMPILER" CC="$C_COMPILER" \
               CCFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
               DEBUG="FALSE" DIM=3 USE_MPI="FALSE" BL_MANGLE_SYMBOLS_WITH_DIM="TRUE" \
