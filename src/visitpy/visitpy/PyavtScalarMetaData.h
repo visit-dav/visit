@@ -13,7 +13,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define AVTSCALARMETADATA_NMETH (AVTVARMETADATA_NMETH+30)
+#define AVTSCALARMETADATA_NMETH (AVTVARMETADATA_NMETH+31)
 void VISITPY_API           PyavtScalarMetaData_StartUp(avtScalarMetaData *subj, void *data);
 void VISITPY_API           PyavtScalarMetaData_CloseDown();
 VISITPY_API PyMethodDef *  PyavtScalarMetaData_GetMethodTable(int *nMethods);
@@ -25,8 +25,8 @@ void VISITPY_API           PyavtScalarMetaData_SetParent(PyObject *obj, PyObject
 void VISITPY_API           PyavtScalarMetaData_SetDefaults(const avtScalarMetaData *atts);
 std::string VISITPY_API    PyavtScalarMetaData_GetLogString();
 std::string VISITPY_API    PyavtScalarMetaData_ToString(const avtScalarMetaData *, const char *, const bool=false);
-VISITPY_API PyObject *     PyavtScalarMetaData_getattr(PyObject *self, char *name);
-int VISITPY_API            PyavtScalarMetaData_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyavtScalarMetaData_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyavtScalarMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyavtScalarMetaData_methods[AVTSCALARMETADATA_NMETH];
 
 #endif

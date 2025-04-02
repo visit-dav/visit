@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define STAGGERATTRIBUTES_NMETH 8
+#define STAGGERATTRIBUTES_NMETH 9
 void           PyStaggerAttributes_StartUp(StaggerAttributes *subj, void *data);
 void           PyStaggerAttributes_CloseDown();
 PyMethodDef *  PyStaggerAttributes_GetMethodTable(int *nMethods);
@@ -23,8 +23,8 @@ void           PyStaggerAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyStaggerAttributes_SetDefaults(const StaggerAttributes *atts);
 std::string    PyStaggerAttributes_GetLogString();
 std::string    PyStaggerAttributes_ToString(const StaggerAttributes *, const char *, const bool=false);
-PyObject *     PyStaggerAttributes_getattr(PyObject *self, char *name);
-int            PyStaggerAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PyStaggerAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyStaggerAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PyStaggerAttributes_methods[STAGGERATTRIBUTES_NMETH];
 
 #endif

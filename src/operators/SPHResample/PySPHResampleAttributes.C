@@ -5,6 +5,7 @@
 #include <PySPHResampleAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -22,7 +23,7 @@
 //
 // This struct contains the Python type information and a SPHResampleAttributes.
 //
-struct SPHResampleAttributesObject
+struct PySPHResampleAttributesObject
 {
     PyObject_HEAD
     SPHResampleAttributes *data;
@@ -73,16 +74,44 @@ PySPHResampleAttributes_ToString(const SPHResampleAttributes *atts, const char *
 static PyObject *
 SPHResampleAttributes_Notify(PyObject *self, PyObject *args)
 {
-    SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
+    PySPHResampleAttributesObject *obj = (PySPHResampleAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+SPHResampleAttributes_dir(PyObject *self, PyObject *args)
+{
+    static SPHResampleAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PySPHResampleAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 SPHResampleAttributes_SetMinX(PyObject *self, PyObject *args)
 {
-    SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
+    PySPHResampleAttributesObject *obj = (PySPHResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -134,7 +163,7 @@ SPHResampleAttributes_SetMinX(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SPHResampleAttributes_GetMinX(PyObject *self, PyObject *args)
 {
-    SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
+    PySPHResampleAttributesObject *obj = (PySPHResampleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetMinX()));
     return retval;
 }
@@ -142,7 +171,7 @@ SPHResampleAttributes_GetMinX(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SPHResampleAttributes_SetMaxX(PyObject *self, PyObject *args)
 {
-    SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
+    PySPHResampleAttributesObject *obj = (PySPHResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -194,7 +223,7 @@ SPHResampleAttributes_SetMaxX(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SPHResampleAttributes_GetMaxX(PyObject *self, PyObject *args)
 {
-    SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
+    PySPHResampleAttributesObject *obj = (PySPHResampleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetMaxX()));
     return retval;
 }
@@ -202,7 +231,7 @@ SPHResampleAttributes_GetMaxX(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SPHResampleAttributes_SetXnum(PyObject *self, PyObject *args)
 {
-    SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
+    PySPHResampleAttributesObject *obj = (PySPHResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -254,7 +283,7 @@ SPHResampleAttributes_SetXnum(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SPHResampleAttributes_GetXnum(PyObject *self, PyObject *args)
 {
-    SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
+    PySPHResampleAttributesObject *obj = (PySPHResampleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetXnum()));
     return retval;
 }
@@ -262,7 +291,7 @@ SPHResampleAttributes_GetXnum(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SPHResampleAttributes_SetMinY(PyObject *self, PyObject *args)
 {
-    SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
+    PySPHResampleAttributesObject *obj = (PySPHResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -314,7 +343,7 @@ SPHResampleAttributes_SetMinY(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SPHResampleAttributes_GetMinY(PyObject *self, PyObject *args)
 {
-    SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
+    PySPHResampleAttributesObject *obj = (PySPHResampleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetMinY()));
     return retval;
 }
@@ -322,7 +351,7 @@ SPHResampleAttributes_GetMinY(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SPHResampleAttributes_SetMaxY(PyObject *self, PyObject *args)
 {
-    SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
+    PySPHResampleAttributesObject *obj = (PySPHResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -374,7 +403,7 @@ SPHResampleAttributes_SetMaxY(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SPHResampleAttributes_GetMaxY(PyObject *self, PyObject *args)
 {
-    SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
+    PySPHResampleAttributesObject *obj = (PySPHResampleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetMaxY()));
     return retval;
 }
@@ -382,7 +411,7 @@ SPHResampleAttributes_GetMaxY(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SPHResampleAttributes_SetYnum(PyObject *self, PyObject *args)
 {
-    SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
+    PySPHResampleAttributesObject *obj = (PySPHResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -434,7 +463,7 @@ SPHResampleAttributes_SetYnum(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SPHResampleAttributes_GetYnum(PyObject *self, PyObject *args)
 {
-    SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
+    PySPHResampleAttributesObject *obj = (PySPHResampleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetYnum()));
     return retval;
 }
@@ -442,7 +471,7 @@ SPHResampleAttributes_GetYnum(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SPHResampleAttributes_SetMinZ(PyObject *self, PyObject *args)
 {
-    SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
+    PySPHResampleAttributesObject *obj = (PySPHResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -494,7 +523,7 @@ SPHResampleAttributes_SetMinZ(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SPHResampleAttributes_GetMinZ(PyObject *self, PyObject *args)
 {
-    SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
+    PySPHResampleAttributesObject *obj = (PySPHResampleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetMinZ()));
     return retval;
 }
@@ -502,7 +531,7 @@ SPHResampleAttributes_GetMinZ(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SPHResampleAttributes_SetMaxZ(PyObject *self, PyObject *args)
 {
-    SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
+    PySPHResampleAttributesObject *obj = (PySPHResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -554,7 +583,7 @@ SPHResampleAttributes_SetMaxZ(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SPHResampleAttributes_GetMaxZ(PyObject *self, PyObject *args)
 {
-    SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
+    PySPHResampleAttributesObject *obj = (PySPHResampleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetMaxZ()));
     return retval;
 }
@@ -562,7 +591,7 @@ SPHResampleAttributes_GetMaxZ(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SPHResampleAttributes_SetZnum(PyObject *self, PyObject *args)
 {
-    SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
+    PySPHResampleAttributesObject *obj = (PySPHResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -614,7 +643,7 @@ SPHResampleAttributes_SetZnum(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SPHResampleAttributes_GetZnum(PyObject *self, PyObject *args)
 {
-    SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
+    PySPHResampleAttributesObject *obj = (PySPHResampleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetZnum()));
     return retval;
 }
@@ -622,7 +651,7 @@ SPHResampleAttributes_GetZnum(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SPHResampleAttributes_SetTensorSupportVariable(PyObject *self, PyObject *args)
 {
-    SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
+    PySPHResampleAttributesObject *obj = (PySPHResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -663,7 +692,7 @@ SPHResampleAttributes_SetTensorSupportVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SPHResampleAttributes_GetTensorSupportVariable(PyObject *self, PyObject *args)
 {
-    SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
+    PySPHResampleAttributesObject *obj = (PySPHResampleAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetTensorSupportVariable().c_str());
     return retval;
 }
@@ -671,7 +700,7 @@ SPHResampleAttributes_GetTensorSupportVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SPHResampleAttributes_SetWeightVariable(PyObject *self, PyObject *args)
 {
-    SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
+    PySPHResampleAttributesObject *obj = (PySPHResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -712,7 +741,7 @@ SPHResampleAttributes_SetWeightVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SPHResampleAttributes_GetWeightVariable(PyObject *self, PyObject *args)
 {
-    SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
+    PySPHResampleAttributesObject *obj = (PySPHResampleAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetWeightVariable().c_str());
     return retval;
 }
@@ -720,7 +749,7 @@ SPHResampleAttributes_GetWeightVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SPHResampleAttributes_SetRK(PyObject *self, PyObject *args)
 {
-    SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
+    PySPHResampleAttributesObject *obj = (PySPHResampleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -772,7 +801,7 @@ SPHResampleAttributes_SetRK(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SPHResampleAttributes_GetRK(PyObject *self, PyObject *args)
 {
-    SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
+    PySPHResampleAttributesObject *obj = (PySPHResampleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetRK()?1L:0L);
     return retval;
 }
@@ -780,7 +809,8 @@ SPHResampleAttributes_GetRK(PyObject *self, PyObject *args)
 
 
 PyMethodDef PySPHResampleAttributes_methods[SPHRESAMPLEATTRIBUTES_NMETH] = {
-    {"Notify", SPHResampleAttributes_Notify, METH_VARARGS},
+    {"__dir__", SPHResampleAttributes_dir, METH_NOARGS},
+    {"Notify", SPHResampleAttributes_Notify, METH_NOARGS},
     {"SetMinX", SPHResampleAttributes_SetMinX, METH_VARARGS},
     {"GetMinX", SPHResampleAttributes_GetMinX, METH_VARARGS},
     {"SetMaxX", SPHResampleAttributes_SetMaxX, METH_VARARGS},
@@ -813,19 +843,22 @@ PyMethodDef PySPHResampleAttributes_methods[SPHRESAMPLEATTRIBUTES_NMETH] = {
 //
 
 static void
-SPHResampleAttributes_dealloc(PyObject *v)
+PySPHResampleAttributes_dealloc(PyObject *v)
 {
-   SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)v;
+   PySPHResampleAttributesObject *obj = (PySPHResampleAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *SPHResampleAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PySPHResampleAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PySPHResampleAttributes_getattr(PyObject *self, char *name)
+PySPHResampleAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "minX") == 0)
         return SPHResampleAttributes_GetMinX(self, NULL);
     if(strcmp(name, "maxX") == 0)
@@ -851,26 +884,19 @@ PySPHResampleAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "RK") == 0)
         return SPHResampleAttributes_GetRK(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PySPHResampleAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PySPHResampleAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PySPHResampleAttributes_methods[i].ml_name),
-                PyString_FromString(PySPHResampleAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PySPHResampleAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PySPHResampleAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PySPHResampleAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "minX") == 0)
         obj = SPHResampleAttributes_SetMinX(self, args);
@@ -897,6 +923,12 @@ PySPHResampleAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "RK") == 0)
         obj = SPHResampleAttributes_SetRK(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -911,78 +943,45 @@ PySPHResampleAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-SPHResampleAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)v;
-    fprintf(fp, "%s", PySPHResampleAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-SPHResampleAttributes_str(PyObject *v)
+PySPHResampleAttributes_str(PyObject *v)
 {
-    SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)v;
+    PySPHResampleAttributesObject *obj = (PySPHResampleAttributesObject *)v;
     return PyString_FromString(PySPHResampleAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *SPHResampleAttributes_Purpose = "";
-#else
-static char *SPHResampleAttributes_Purpose = "";
-#endif
+static char const *PySPHResampleAttributes_purpose = "";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(SPHResampleAttributesType,         \
-                  "SPHResampleAttributes",           \
-                  SPHResampleAttributesObject,       \
-                  SPHResampleAttributes_dealloc,     \
-                  SPHResampleAttributes_print,       \
-                  PySPHResampleAttributes_getattr,   \
-                  PySPHResampleAttributes_setattr,   \
-                  SPHResampleAttributes_str,         \
-                  SPHResampleAttributes_Purpose,     \
-                  SPHResampleAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(SPHResampleAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-SPHResampleAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PySPHResampleAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &SPHResampleAttributesType
-         || Py_TYPE(other) != &SPHResampleAttributesType)
+    if ( Py_TYPE(self) != &PySPHResampleAttributesType
+         || Py_TYPE(other) != &PySPHResampleAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    SPHResampleAttributes *a = ((SPHResampleAttributesObject *)self)->data;
-    SPHResampleAttributes *b = ((SPHResampleAttributesObject *)other)->data;
+    SPHResampleAttributes *a = ((PySPHResampleAttributesObject *)self)->data;
+    SPHResampleAttributes *b = ((PySPHResampleAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -1011,8 +1010,8 @@ static SPHResampleAttributes *currentAtts = 0;
 static PyObject *
 NewSPHResampleAttributes(int useCurrent)
 {
-    SPHResampleAttributesObject *newObject;
-    newObject = PyObject_NEW(SPHResampleAttributesObject, &SPHResampleAttributesType);
+    PySPHResampleAttributesObject *newObject;
+    newObject = PyObject_NEW(PySPHResampleAttributesObject, &PySPHResampleAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1023,14 +1022,15 @@ NewSPHResampleAttributes(int useCurrent)
         newObject->data = new SPHResampleAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PySPHResampleAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapSPHResampleAttributes(const SPHResampleAttributes *attr)
 {
-    SPHResampleAttributesObject *newObject;
-    newObject = PyObject_NEW(SPHResampleAttributesObject, &SPHResampleAttributesType);
+    PySPHResampleAttributesObject *newObject;
+    newObject = PyObject_NEW(PySPHResampleAttributesObject, &PySPHResampleAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (SPHResampleAttributes *)attr;
@@ -1132,13 +1132,13 @@ PySPHResampleAttributes_GetMethodTable(int *nMethods)
 bool
 PySPHResampleAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &SPHResampleAttributesType);
+    return (obj->ob_type == &PySPHResampleAttributesType);
 }
 
 SPHResampleAttributes *
 PySPHResampleAttributes_FromPyObject(PyObject *obj)
 {
-    SPHResampleAttributesObject *obj2 = (SPHResampleAttributesObject *)obj;
+    PySPHResampleAttributesObject *obj2 = (PySPHResampleAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1157,7 +1157,7 @@ PySPHResampleAttributes_Wrap(const SPHResampleAttributes *attr)
 void
 PySPHResampleAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    SPHResampleAttributesObject *obj2 = (SPHResampleAttributesObject *)obj;
+    PySPHResampleAttributesObject *obj2 = (PySPHResampleAttributesObject *)obj;
     obj2->parent = parent;
 }
 

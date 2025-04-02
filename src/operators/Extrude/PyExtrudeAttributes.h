@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define EXTRUDEATTRIBUTES_NMETH 14
+#define EXTRUDEATTRIBUTES_NMETH 15
 void           PyExtrudeAttributes_StartUp(ExtrudeAttributes *subj, void *data);
 void           PyExtrudeAttributes_CloseDown();
 PyMethodDef *  PyExtrudeAttributes_GetMethodTable(int *nMethods);
@@ -23,8 +23,8 @@ void           PyExtrudeAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyExtrudeAttributes_SetDefaults(const ExtrudeAttributes *atts);
 std::string    PyExtrudeAttributes_GetLogString();
 std::string    PyExtrudeAttributes_ToString(const ExtrudeAttributes *, const char *, const bool=false);
-PyObject *     PyExtrudeAttributes_getattr(PyObject *self, char *name);
-int            PyExtrudeAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PyExtrudeAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyExtrudeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PyExtrudeAttributes_methods[EXTRUDEATTRIBUTES_NMETH];
 
 #endif

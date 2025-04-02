@@ -74,7 +74,7 @@ Definition:
 PyObject *
 GaussianControlPointList_SetNumControlPoints(PyObject *self, PyObject *args)
 {
-    GaussianControlPointListObject *obj = (GaussianControlPointListObject *)self;
+    PyGaussianControlPointListObject *obj = (PyGaussianControlPointListObject *)self;
     int numItems = -1;
     if(!PyArg_ParseTuple(args, "i", &numItems))
         return PyErr_Format(PyExc_TypeError, "Expecting integer numItems");

@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define SLICEATTRIBUTES_NMETH 36
+#define SLICEATTRIBUTES_NMETH 37
 void           PySliceAttributes_StartUp(SliceAttributes *subj, void *data);
 void           PySliceAttributes_CloseDown();
 PyMethodDef *  PySliceAttributes_GetMethodTable(int *nMethods);
@@ -23,8 +23,8 @@ void           PySliceAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PySliceAttributes_SetDefaults(const SliceAttributes *atts);
 std::string    PySliceAttributes_GetLogString();
 std::string    PySliceAttributes_ToString(const SliceAttributes *, const char *, const bool=false);
-PyObject *     PySliceAttributes_getattr(PyObject *self, char *name);
-int            PySliceAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PySliceAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PySliceAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PySliceAttributes_methods[SLICEATTRIBUTES_NMETH];
 
 #endif

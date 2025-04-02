@@ -5,6 +5,7 @@
 #include <PyReflectAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a ReflectAttributes.
 //
-struct ReflectAttributesObject
+struct PyReflectAttributesObject
 {
     PyObject_HEAD
     ReflectAttributes *data;
@@ -171,16 +172,44 @@ PyReflectAttributes_ToString(const ReflectAttributes *atts, const char *prefix, 
 static PyObject *
 ReflectAttributes_Notify(PyObject *self, PyObject *args)
 {
-    ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
+    PyReflectAttributesObject *obj = (PyReflectAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+ReflectAttributes_dir(PyObject *self, PyObject *args)
+{
+    static ReflectAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyReflectAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 ReflectAttributes_SetOctant(PyObject *self, PyObject *args)
 {
-    ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
+    PyReflectAttributesObject *obj = (PyReflectAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -244,7 +273,7 @@ ReflectAttributes_SetOctant(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReflectAttributes_GetOctant(PyObject *self, PyObject *args)
 {
-    ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
+    PyReflectAttributesObject *obj = (PyReflectAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetOctant()));
     return retval;
 }
@@ -252,7 +281,7 @@ ReflectAttributes_GetOctant(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReflectAttributes_SetUseXBoundary(PyObject *self, PyObject *args)
 {
-    ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
+    PyReflectAttributesObject *obj = (PyReflectAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -304,7 +333,7 @@ ReflectAttributes_SetUseXBoundary(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReflectAttributes_GetUseXBoundary(PyObject *self, PyObject *args)
 {
-    ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
+    PyReflectAttributesObject *obj = (PyReflectAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetUseXBoundary()?1L:0L);
     return retval;
 }
@@ -312,7 +341,7 @@ ReflectAttributes_GetUseXBoundary(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReflectAttributes_SetSpecifiedX(PyObject *self, PyObject *args)
 {
-    ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
+    PyReflectAttributesObject *obj = (PyReflectAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -364,7 +393,7 @@ ReflectAttributes_SetSpecifiedX(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReflectAttributes_GetSpecifiedX(PyObject *self, PyObject *args)
 {
-    ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
+    PyReflectAttributesObject *obj = (PyReflectAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetSpecifiedX());
     return retval;
 }
@@ -372,7 +401,7 @@ ReflectAttributes_GetSpecifiedX(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReflectAttributes_SetUseYBoundary(PyObject *self, PyObject *args)
 {
-    ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
+    PyReflectAttributesObject *obj = (PyReflectAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -424,7 +453,7 @@ ReflectAttributes_SetUseYBoundary(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReflectAttributes_GetUseYBoundary(PyObject *self, PyObject *args)
 {
-    ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
+    PyReflectAttributesObject *obj = (PyReflectAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetUseYBoundary()?1L:0L);
     return retval;
 }
@@ -432,7 +461,7 @@ ReflectAttributes_GetUseYBoundary(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReflectAttributes_SetSpecifiedY(PyObject *self, PyObject *args)
 {
-    ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
+    PyReflectAttributesObject *obj = (PyReflectAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -484,7 +513,7 @@ ReflectAttributes_SetSpecifiedY(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReflectAttributes_GetSpecifiedY(PyObject *self, PyObject *args)
 {
-    ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
+    PyReflectAttributesObject *obj = (PyReflectAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetSpecifiedY());
     return retval;
 }
@@ -492,7 +521,7 @@ ReflectAttributes_GetSpecifiedY(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReflectAttributes_SetUseZBoundary(PyObject *self, PyObject *args)
 {
-    ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
+    PyReflectAttributesObject *obj = (PyReflectAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -544,7 +573,7 @@ ReflectAttributes_SetUseZBoundary(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReflectAttributes_GetUseZBoundary(PyObject *self, PyObject *args)
 {
-    ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
+    PyReflectAttributesObject *obj = (PyReflectAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetUseZBoundary()?1L:0L);
     return retval;
 }
@@ -552,7 +581,7 @@ ReflectAttributes_GetUseZBoundary(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReflectAttributes_SetSpecifiedZ(PyObject *self, PyObject *args)
 {
-    ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
+    PyReflectAttributesObject *obj = (PyReflectAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -604,7 +633,7 @@ ReflectAttributes_SetSpecifiedZ(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReflectAttributes_GetSpecifiedZ(PyObject *self, PyObject *args)
 {
-    ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
+    PyReflectAttributesObject *obj = (PyReflectAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetSpecifiedZ());
     return retval;
 }
@@ -612,7 +641,7 @@ ReflectAttributes_GetSpecifiedZ(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReflectAttributes_SetReflections(PyObject *self, PyObject *args)
 {
-    ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
+    PyReflectAttributesObject *obj = (PyReflectAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     int *vals = obj->data->GetReflections();
@@ -679,7 +708,7 @@ ReflectAttributes_SetReflections(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReflectAttributes_GetReflections(PyObject *self, PyObject *args)
 {
-    ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
+    PyReflectAttributesObject *obj = (PyReflectAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the reflections.
     PyObject *retval = PyTuple_New(8);
     const int *reflections = obj->data->GetReflections();
@@ -691,7 +720,7 @@ ReflectAttributes_GetReflections(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReflectAttributes_SetPlanePoint(PyObject *self, PyObject *args)
 {
-    ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
+    PyReflectAttributesObject *obj = (PyReflectAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetPlanePoint();
@@ -758,7 +787,7 @@ ReflectAttributes_SetPlanePoint(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReflectAttributes_GetPlanePoint(PyObject *self, PyObject *args)
 {
-    ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
+    PyReflectAttributesObject *obj = (PyReflectAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the planePoint.
     PyObject *retval = PyTuple_New(3);
     const double *planePoint = obj->data->GetPlanePoint();
@@ -770,7 +799,7 @@ ReflectAttributes_GetPlanePoint(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReflectAttributes_SetPlaneNormal(PyObject *self, PyObject *args)
 {
-    ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
+    PyReflectAttributesObject *obj = (PyReflectAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetPlaneNormal();
@@ -837,7 +866,7 @@ ReflectAttributes_SetPlaneNormal(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReflectAttributes_GetPlaneNormal(PyObject *self, PyObject *args)
 {
-    ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
+    PyReflectAttributesObject *obj = (PyReflectAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the planeNormal.
     PyObject *retval = PyTuple_New(3);
     const double *planeNormal = obj->data->GetPlaneNormal();
@@ -849,7 +878,7 @@ ReflectAttributes_GetPlaneNormal(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReflectAttributes_SetReflectType(PyObject *self, PyObject *args)
 {
-    ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
+    PyReflectAttributesObject *obj = (PyReflectAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -907,7 +936,7 @@ ReflectAttributes_SetReflectType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ReflectAttributes_GetReflectType(PyObject *self, PyObject *args)
 {
-    ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
+    PyReflectAttributesObject *obj = (PyReflectAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetReflectType()));
     return retval;
 }
@@ -915,7 +944,8 @@ ReflectAttributes_GetReflectType(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyReflectAttributes_methods[REFLECTATTRIBUTES_NMETH] = {
-    {"Notify", ReflectAttributes_Notify, METH_VARARGS},
+    {"__dir__", ReflectAttributes_dir, METH_NOARGS},
+    {"Notify", ReflectAttributes_Notify, METH_NOARGS},
     {"SetOctant", ReflectAttributes_SetOctant, METH_VARARGS},
     {"GetOctant", ReflectAttributes_GetOctant, METH_VARARGS},
     {"SetUseXBoundary", ReflectAttributes_SetUseXBoundary, METH_VARARGS},
@@ -946,19 +976,22 @@ PyMethodDef PyReflectAttributes_methods[REFLECTATTRIBUTES_NMETH] = {
 //
 
 static void
-ReflectAttributes_dealloc(PyObject *v)
+PyReflectAttributes_dealloc(PyObject *v)
 {
-   ReflectAttributesObject *obj = (ReflectAttributesObject *)v;
+   PyReflectAttributesObject *obj = (PyReflectAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *ReflectAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyReflectAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyReflectAttributes_getattr(PyObject *self, char *name)
+PyReflectAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "octant") == 0)
         return ReflectAttributes_GetOctant(self, NULL);
     if(strcmp(name, "PXPYPZ") == 0)
@@ -1004,26 +1037,19 @@ PyReflectAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(ReflectAttributes::Axis));
 
 
+    PyObject *meth = Py_FindMethod(PyReflectAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyReflectAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyReflectAttributes_methods[i].ml_name),
-                PyString_FromString(PyReflectAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyReflectAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyReflectAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyReflectAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "octant") == 0)
         obj = ReflectAttributes_SetOctant(self, args);
@@ -1048,6 +1074,12 @@ PyReflectAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "reflectType") == 0)
         obj = ReflectAttributes_SetReflectType(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -1062,78 +1094,45 @@ PyReflectAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ReflectAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    ReflectAttributesObject *obj = (ReflectAttributesObject *)v;
-    fprintf(fp, "%s", PyReflectAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-ReflectAttributes_str(PyObject *v)
+PyReflectAttributes_str(PyObject *v)
 {
-    ReflectAttributesObject *obj = (ReflectAttributesObject *)v;
+    PyReflectAttributesObject *obj = (PyReflectAttributesObject *)v;
     return PyString_FromString(PyReflectAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *ReflectAttributes_Purpose = "This class contains attributes for the reflect operator.";
-#else
-static char *ReflectAttributes_Purpose = "This class contains attributes for the reflect operator.";
-#endif
+static char const *PyReflectAttributes_purpose = "This class contains attributes for the reflect operator.";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(ReflectAttributesType,         \
-                  "ReflectAttributes",           \
-                  ReflectAttributesObject,       \
-                  ReflectAttributes_dealloc,     \
-                  ReflectAttributes_print,       \
-                  PyReflectAttributes_getattr,   \
-                  PyReflectAttributes_setattr,   \
-                  ReflectAttributes_str,         \
-                  ReflectAttributes_Purpose,     \
-                  ReflectAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(ReflectAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-ReflectAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyReflectAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &ReflectAttributesType
-         || Py_TYPE(other) != &ReflectAttributesType)
+    if ( Py_TYPE(self) != &PyReflectAttributesType
+         || Py_TYPE(other) != &PyReflectAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    ReflectAttributes *a = ((ReflectAttributesObject *)self)->data;
-    ReflectAttributes *b = ((ReflectAttributesObject *)other)->data;
+    ReflectAttributes *a = ((PyReflectAttributesObject *)self)->data;
+    ReflectAttributes *b = ((PyReflectAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -1162,8 +1161,8 @@ static ReflectAttributes *currentAtts = 0;
 static PyObject *
 NewReflectAttributes(int useCurrent)
 {
-    ReflectAttributesObject *newObject;
-    newObject = PyObject_NEW(ReflectAttributesObject, &ReflectAttributesType);
+    PyReflectAttributesObject *newObject;
+    newObject = PyObject_NEW(PyReflectAttributesObject, &PyReflectAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1174,14 +1173,15 @@ NewReflectAttributes(int useCurrent)
         newObject->data = new ReflectAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyReflectAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapReflectAttributes(const ReflectAttributes *attr)
 {
-    ReflectAttributesObject *newObject;
-    newObject = PyObject_NEW(ReflectAttributesObject, &ReflectAttributesType);
+    PyReflectAttributesObject *newObject;
+    newObject = PyObject_NEW(PyReflectAttributesObject, &PyReflectAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (ReflectAttributes *)attr;
@@ -1283,13 +1283,13 @@ PyReflectAttributes_GetMethodTable(int *nMethods)
 bool
 PyReflectAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ReflectAttributesType);
+    return (obj->ob_type == &PyReflectAttributesType);
 }
 
 ReflectAttributes *
 PyReflectAttributes_FromPyObject(PyObject *obj)
 {
-    ReflectAttributesObject *obj2 = (ReflectAttributesObject *)obj;
+    PyReflectAttributesObject *obj2 = (PyReflectAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1308,7 +1308,7 @@ PyReflectAttributes_Wrap(const ReflectAttributes *attr)
 void
 PyReflectAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    ReflectAttributesObject *obj2 = (ReflectAttributesObject *)obj;
+    PyReflectAttributesObject *obj2 = (PyReflectAttributesObject *)obj;
     obj2->parent = parent;
 }
 

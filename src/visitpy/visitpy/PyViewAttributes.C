@@ -5,6 +5,7 @@
 #include <PyViewAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a ViewAttributes.
 //
-struct ViewAttributesObject
+struct PyViewAttributesObject
 {
     PyObject_HEAD
     ViewAttributes *data;
@@ -165,16 +166,44 @@ PyViewAttributes_ToString(const ViewAttributes *atts, const char *prefix, const 
 static PyObject *
 ViewAttributes_Notify(PyObject *self, PyObject *args)
 {
-    ViewAttributesObject *obj = (ViewAttributesObject *)self;
+    PyViewAttributesObject *obj = (PyViewAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+ViewAttributes_dir(PyObject *self, PyObject *args)
+{
+    static ViewAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyViewAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 ViewAttributes_SetViewNormal(PyObject *self, PyObject *args)
 {
-    ViewAttributesObject *obj = (ViewAttributesObject *)self;
+    PyViewAttributesObject *obj = (PyViewAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetViewNormal();
@@ -241,7 +270,7 @@ ViewAttributes_SetViewNormal(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewAttributes_GetViewNormal(PyObject *self, PyObject *args)
 {
-    ViewAttributesObject *obj = (ViewAttributesObject *)self;
+    PyViewAttributesObject *obj = (PyViewAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the viewNormal.
     PyObject *retval = PyTuple_New(3);
     const double *viewNormal = obj->data->GetViewNormal();
@@ -253,7 +282,7 @@ ViewAttributes_GetViewNormal(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewAttributes_SetFocus(PyObject *self, PyObject *args)
 {
-    ViewAttributesObject *obj = (ViewAttributesObject *)self;
+    PyViewAttributesObject *obj = (PyViewAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetFocus();
@@ -320,7 +349,7 @@ ViewAttributes_SetFocus(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewAttributes_GetFocus(PyObject *self, PyObject *args)
 {
-    ViewAttributesObject *obj = (ViewAttributesObject *)self;
+    PyViewAttributesObject *obj = (PyViewAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the focus.
     PyObject *retval = PyTuple_New(3);
     const double *focus = obj->data->GetFocus();
@@ -332,7 +361,7 @@ ViewAttributes_GetFocus(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewAttributes_SetViewUp(PyObject *self, PyObject *args)
 {
-    ViewAttributesObject *obj = (ViewAttributesObject *)self;
+    PyViewAttributesObject *obj = (PyViewAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetViewUp();
@@ -399,7 +428,7 @@ ViewAttributes_SetViewUp(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewAttributes_GetViewUp(PyObject *self, PyObject *args)
 {
-    ViewAttributesObject *obj = (ViewAttributesObject *)self;
+    PyViewAttributesObject *obj = (PyViewAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the viewUp.
     PyObject *retval = PyTuple_New(3);
     const double *viewUp = obj->data->GetViewUp();
@@ -411,7 +440,7 @@ ViewAttributes_GetViewUp(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewAttributes_SetViewAngle(PyObject *self, PyObject *args)
 {
-    ViewAttributesObject *obj = (ViewAttributesObject *)self;
+    PyViewAttributesObject *obj = (PyViewAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -463,7 +492,7 @@ ViewAttributes_SetViewAngle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewAttributes_GetViewAngle(PyObject *self, PyObject *args)
 {
-    ViewAttributesObject *obj = (ViewAttributesObject *)self;
+    PyViewAttributesObject *obj = (PyViewAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetViewAngle());
     return retval;
 }
@@ -471,7 +500,7 @@ ViewAttributes_GetViewAngle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewAttributes_SetSetScale(PyObject *self, PyObject *args)
 {
-    ViewAttributesObject *obj = (ViewAttributesObject *)self;
+    PyViewAttributesObject *obj = (PyViewAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -523,7 +552,7 @@ ViewAttributes_SetSetScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewAttributes_GetSetScale(PyObject *self, PyObject *args)
 {
-    ViewAttributesObject *obj = (ViewAttributesObject *)self;
+    PyViewAttributesObject *obj = (PyViewAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetSetScale()?1L:0L);
     return retval;
 }
@@ -531,7 +560,7 @@ ViewAttributes_GetSetScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewAttributes_SetParallelScale(PyObject *self, PyObject *args)
 {
-    ViewAttributesObject *obj = (ViewAttributesObject *)self;
+    PyViewAttributesObject *obj = (PyViewAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -583,7 +612,7 @@ ViewAttributes_SetParallelScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewAttributes_GetParallelScale(PyObject *self, PyObject *args)
 {
-    ViewAttributesObject *obj = (ViewAttributesObject *)self;
+    PyViewAttributesObject *obj = (PyViewAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetParallelScale());
     return retval;
 }
@@ -591,7 +620,7 @@ ViewAttributes_GetParallelScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewAttributes_SetNearPlane(PyObject *self, PyObject *args)
 {
-    ViewAttributesObject *obj = (ViewAttributesObject *)self;
+    PyViewAttributesObject *obj = (PyViewAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -643,7 +672,7 @@ ViewAttributes_SetNearPlane(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewAttributes_GetNearPlane(PyObject *self, PyObject *args)
 {
-    ViewAttributesObject *obj = (ViewAttributesObject *)self;
+    PyViewAttributesObject *obj = (PyViewAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetNearPlane());
     return retval;
 }
@@ -651,7 +680,7 @@ ViewAttributes_GetNearPlane(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewAttributes_SetFarPlane(PyObject *self, PyObject *args)
 {
-    ViewAttributesObject *obj = (ViewAttributesObject *)self;
+    PyViewAttributesObject *obj = (PyViewAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -703,7 +732,7 @@ ViewAttributes_SetFarPlane(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewAttributes_GetFarPlane(PyObject *self, PyObject *args)
 {
-    ViewAttributesObject *obj = (ViewAttributesObject *)self;
+    PyViewAttributesObject *obj = (PyViewAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetFarPlane());
     return retval;
 }
@@ -711,7 +740,7 @@ ViewAttributes_GetFarPlane(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewAttributes_SetImagePan(PyObject *self, PyObject *args)
 {
-    ViewAttributesObject *obj = (ViewAttributesObject *)self;
+    PyViewAttributesObject *obj = (PyViewAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetImagePan();
@@ -778,7 +807,7 @@ ViewAttributes_SetImagePan(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewAttributes_GetImagePan(PyObject *self, PyObject *args)
 {
-    ViewAttributesObject *obj = (ViewAttributesObject *)self;
+    PyViewAttributesObject *obj = (PyViewAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the imagePan.
     PyObject *retval = PyTuple_New(2);
     const double *imagePan = obj->data->GetImagePan();
@@ -790,7 +819,7 @@ ViewAttributes_GetImagePan(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewAttributes_SetImageZoom(PyObject *self, PyObject *args)
 {
-    ViewAttributesObject *obj = (ViewAttributesObject *)self;
+    PyViewAttributesObject *obj = (PyViewAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -842,7 +871,7 @@ ViewAttributes_SetImageZoom(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewAttributes_GetImageZoom(PyObject *self, PyObject *args)
 {
-    ViewAttributesObject *obj = (ViewAttributesObject *)self;
+    PyViewAttributesObject *obj = (PyViewAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetImageZoom());
     return retval;
 }
@@ -850,7 +879,7 @@ ViewAttributes_GetImageZoom(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewAttributes_SetPerspective(PyObject *self, PyObject *args)
 {
-    ViewAttributesObject *obj = (ViewAttributesObject *)self;
+    PyViewAttributesObject *obj = (PyViewAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -902,7 +931,7 @@ ViewAttributes_SetPerspective(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewAttributes_GetPerspective(PyObject *self, PyObject *args)
 {
-    ViewAttributesObject *obj = (ViewAttributesObject *)self;
+    PyViewAttributesObject *obj = (PyViewAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetPerspective()?1L:0L);
     return retval;
 }
@@ -910,7 +939,7 @@ ViewAttributes_GetPerspective(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewAttributes_SetWindowCoords(PyObject *self, PyObject *args)
 {
-    ViewAttributesObject *obj = (ViewAttributesObject *)self;
+    PyViewAttributesObject *obj = (PyViewAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetWindowCoords();
@@ -977,7 +1006,7 @@ ViewAttributes_SetWindowCoords(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewAttributes_GetWindowCoords(PyObject *self, PyObject *args)
 {
-    ViewAttributesObject *obj = (ViewAttributesObject *)self;
+    PyViewAttributesObject *obj = (PyViewAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the windowCoords.
     PyObject *retval = PyTuple_New(4);
     const double *windowCoords = obj->data->GetWindowCoords();
@@ -989,7 +1018,7 @@ ViewAttributes_GetWindowCoords(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewAttributes_SetViewportCoords(PyObject *self, PyObject *args)
 {
-    ViewAttributesObject *obj = (ViewAttributesObject *)self;
+    PyViewAttributesObject *obj = (PyViewAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetViewportCoords();
@@ -1056,7 +1085,7 @@ ViewAttributes_SetViewportCoords(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewAttributes_GetViewportCoords(PyObject *self, PyObject *args)
 {
-    ViewAttributesObject *obj = (ViewAttributesObject *)self;
+    PyViewAttributesObject *obj = (PyViewAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the viewportCoords.
     PyObject *retval = PyTuple_New(4);
     const double *viewportCoords = obj->data->GetViewportCoords();
@@ -1068,7 +1097,7 @@ ViewAttributes_GetViewportCoords(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewAttributes_SetEyeAngle(PyObject *self, PyObject *args)
 {
-    ViewAttributesObject *obj = (ViewAttributesObject *)self;
+    PyViewAttributesObject *obj = (PyViewAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1120,7 +1149,7 @@ ViewAttributes_SetEyeAngle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewAttributes_GetEyeAngle(PyObject *self, PyObject *args)
 {
-    ViewAttributesObject *obj = (ViewAttributesObject *)self;
+    PyViewAttributesObject *obj = (PyViewAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetEyeAngle());
     return retval;
 }
@@ -1128,7 +1157,8 @@ ViewAttributes_GetEyeAngle(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyViewAttributes_methods[VIEWATTRIBUTES_NMETH] = {
-    {"Notify", ViewAttributes_Notify, METH_VARARGS},
+    {"__dir__", ViewAttributes_dir, METH_NOARGS},
+    {"Notify", ViewAttributes_Notify, METH_NOARGS},
     {"SetViewNormal", ViewAttributes_SetViewNormal, METH_VARARGS},
     {"GetViewNormal", ViewAttributes_GetViewNormal, METH_VARARGS},
     {"SetFocus", ViewAttributes_SetFocus, METH_VARARGS},
@@ -1165,19 +1195,22 @@ PyMethodDef PyViewAttributes_methods[VIEWATTRIBUTES_NMETH] = {
 //
 
 static void
-ViewAttributes_dealloc(PyObject *v)
+PyViewAttributes_dealloc(PyObject *v)
 {
-   ViewAttributesObject *obj = (ViewAttributesObject *)v;
+   PyViewAttributesObject *obj = (PyViewAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *ViewAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyViewAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyViewAttributes_getattr(PyObject *self, char *name)
+PyViewAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "viewNormal") == 0)
         return ViewAttributes_GetViewNormal(self, NULL);
     if(strcmp(name, "focus") == 0)
@@ -1207,26 +1240,19 @@ PyViewAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "eyeAngle") == 0)
         return ViewAttributes_GetEyeAngle(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyViewAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyViewAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyViewAttributes_methods[i].ml_name),
-                PyString_FromString(PyViewAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyViewAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyViewAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyViewAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "viewNormal") == 0)
         obj = ViewAttributes_SetViewNormal(self, args);
@@ -1257,6 +1283,12 @@ PyViewAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "eyeAngle") == 0)
         obj = ViewAttributes_SetEyeAngle(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -1271,78 +1303,45 @@ PyViewAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ViewAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    ViewAttributesObject *obj = (ViewAttributesObject *)v;
-    fprintf(fp, "%s", PyViewAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-ViewAttributes_str(PyObject *v)
+PyViewAttributes_str(PyObject *v)
 {
-    ViewAttributesObject *obj = (ViewAttributesObject *)v;
+    PyViewAttributesObject *obj = (PyViewAttributesObject *)v;
     return PyString_FromString(PyViewAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *ViewAttributes_Purpose = "This class contains the view attributes.";
-#else
-static char *ViewAttributes_Purpose = "This class contains the view attributes.";
-#endif
+static char const *PyViewAttributes_purpose = "This class contains the view attributes.";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(ViewAttributesType,         \
-                  "ViewAttributes",           \
-                  ViewAttributesObject,       \
-                  ViewAttributes_dealloc,     \
-                  ViewAttributes_print,       \
-                  PyViewAttributes_getattr,   \
-                  PyViewAttributes_setattr,   \
-                  ViewAttributes_str,         \
-                  ViewAttributes_Purpose,     \
-                  ViewAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(ViewAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-ViewAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyViewAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &ViewAttributesType
-         || Py_TYPE(other) != &ViewAttributesType)
+    if ( Py_TYPE(self) != &PyViewAttributesType
+         || Py_TYPE(other) != &PyViewAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    ViewAttributes *a = ((ViewAttributesObject *)self)->data;
-    ViewAttributes *b = ((ViewAttributesObject *)other)->data;
+    ViewAttributes *a = ((PyViewAttributesObject *)self)->data;
+    ViewAttributes *b = ((PyViewAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -1371,8 +1370,8 @@ static ViewAttributes *currentAtts = 0;
 static PyObject *
 NewViewAttributes(int useCurrent)
 {
-    ViewAttributesObject *newObject;
-    newObject = PyObject_NEW(ViewAttributesObject, &ViewAttributesType);
+    PyViewAttributesObject *newObject;
+    newObject = PyObject_NEW(PyViewAttributesObject, &PyViewAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1383,14 +1382,15 @@ NewViewAttributes(int useCurrent)
         newObject->data = new ViewAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyViewAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapViewAttributes(const ViewAttributes *attr)
 {
-    ViewAttributesObject *newObject;
-    newObject = PyObject_NEW(ViewAttributesObject, &ViewAttributesType);
+    PyViewAttributesObject *newObject;
+    newObject = PyObject_NEW(PyViewAttributesObject, &PyViewAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (ViewAttributes *)attr;
@@ -1492,13 +1492,13 @@ PyViewAttributes_GetMethodTable(int *nMethods)
 bool
 PyViewAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ViewAttributesType);
+    return (obj->ob_type == &PyViewAttributesType);
 }
 
 ViewAttributes *
 PyViewAttributes_FromPyObject(PyObject *obj)
 {
-    ViewAttributesObject *obj2 = (ViewAttributesObject *)obj;
+    PyViewAttributesObject *obj2 = (PyViewAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1517,7 +1517,7 @@ PyViewAttributes_Wrap(const ViewAttributes *attr)
 void
 PyViewAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    ViewAttributesObject *obj2 = (ViewAttributesObject *)obj;
+    PyViewAttributesObject *obj2 = (PyViewAttributesObject *)obj;
     obj2->parent = parent;
 }
 

@@ -207,11 +207,15 @@ SILRequest_EmptySpecification(PyObject *self, PyObject *args)
 }
 
 
+// Forward declearation for method table
+static PyObject *SILRequest_dir(PyObject *self, PyObject *args);
+
 //
 // Method Table
 //
 
-static struct PyMethodDef SILRequest_methods[] = {
+static struct PyMethodDef PySILRequest_methods[] = {
+    {"__dir__",            SILRequest_dir, METH_NOARGS},
     {"UseRestriction",     SILRequest_UseRestriction, METH_VARARGS},
     {"GetSIL",             SILRequest_GetSIL, METH_VARARGS},
     {"GetDataChunk",       SILRequest_GetDataChunk, METH_VARARGS},
@@ -227,28 +231,25 @@ static struct PyMethodDef SILRequest_methods[] = {
 // Type functions
 //
 
-// ****************************************************************************
-// Function: SILRequest_dealloc
-//
-// Purpose:
-//   Destructor for PySILRequest.
-//
-//
-// Programmer: Cyrus Harrison
-// Creation:   Tue Feb  9 08:58:23 PST 2010
-//
-// Modifications:
-//
-// ****************************************************************************
-static void
-SILRequest_dealloc(PyObject *v)
+static PyObject *
+SILRequest_dir(PyObject *self, PyObject *args)
 {
-    // do nothing
-    // avtSILSpecification lives as non heap member of avtDataRequest.
-    // This is a little different than most other objects in the avt pipeline
-    // which use ref pointers.
-}
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+       
+    // Add methods from the methods table
+    for (PyMethodDef const *method = PySILRequest_methods;
+         method && method->ml_name;
+         method++) {
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
 
+    return dir_list;
+}   
 
 // ****************************************************************************
 // Function: SILRequest_getattr
@@ -264,53 +265,27 @@ SILRequest_dealloc(PyObject *v)
 //
 // ****************************************************************************
 static PyObject *
-SILRequest_getattr(PyObject *self, char *name)
+PySILRequest_getattro(PyObject *self, PyObject *attr_name)
 {
-    return Py_FindMethod(SILRequest_methods, self, name);
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+    return Py_FindMethod(PySILRequest_methods, self, (char*)name);
 }
 
-
-
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *SILRequest_Doc = "This class provides access to the avt pipeline SIL Request.";
-#else
-static char *SILRequest_Doc = "This class provides access to the avt pipeline SIL Request.";
-#endif
+static char const *PySILRequest_purpose = "This class provides access to the avt pipeline SIL Request.";
 
 //
 // Note: avtSILSpecification provides a comparison which could be exposed.
 //
 //
 
-//
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-VISIT_PY_TYPE_OBJ(PySILRequestType,      \
-                  "SILRequest",          \
-                  PySILRequestObject,    \
-                  SILRequest_dealloc,    \
-                  0,                     \
-                  SILRequest_getattr,    \
-                  0,                     \
-                  0,                     \
-                  SILRequest_Doc,        \
-                  0,                     \
-                  0); /* as_number*/
+// Re-define tp slots for this custom object
+#undef VISIT_PY_TYPE_OBJ_TP_SLOTS
+#define VISIT_PY_TYPE_OBJ_TP_SLOTS(VSObjName)         \
+    VISIT_PY_TYPE_OBJ_SLOT2(VSObjName, doc, purpose); \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, getattro);     \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, methods)
+VISIT_PY_TYPE_OBJ(SILRequest);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -340,6 +315,7 @@ PySILRequest_Wrap(avtSILSpecification *request)
     if(res  == NULL)
         return NULL;
     res->request = request;
+    PyType_Ready(&PySILRequestType);
     return (PyObject *)res;
 }
 

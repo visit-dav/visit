@@ -5,6 +5,7 @@
 #include <PyTensorAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 #include <ColorAttribute.h>
 
@@ -24,7 +25,7 @@
 //
 // This struct contains the Python type information and a TensorAttributes.
 //
-struct TensorAttributesObject
+struct PyTensorAttributesObject
 {
     PyObject_HEAD
     TensorAttributes *data;
@@ -140,16 +141,44 @@ PyTensorAttributes_ToString(const TensorAttributes *atts, const char *prefix, co
 static PyObject *
 TensorAttributes_Notify(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+TensorAttributes_dir(PyObject *self, PyObject *args)
+{
+    static TensorAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyTensorAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 TensorAttributes_SetGlyphLocation(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -207,7 +236,7 @@ TensorAttributes_SetGlyphLocation(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_GetGlyphLocation(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetGlyphLocation()));
     return retval;
 }
@@ -215,7 +244,7 @@ TensorAttributes_GetGlyphLocation(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_SetUseStride(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -267,7 +296,7 @@ TensorAttributes_SetUseStride(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_GetUseStride(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetUseStride()?1L:0L);
     return retval;
 }
@@ -275,7 +304,7 @@ TensorAttributes_GetUseStride(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_SetNTensors(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -327,7 +356,7 @@ TensorAttributes_SetNTensors(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_GetNTensors(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNTensors()));
     return retval;
 }
@@ -335,7 +364,7 @@ TensorAttributes_GetNTensors(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_SetStride(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -387,7 +416,7 @@ TensorAttributes_SetStride(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_GetStride(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetStride()));
     return retval;
 }
@@ -395,7 +424,7 @@ TensorAttributes_GetStride(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_SetOrigOnly(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -447,7 +476,7 @@ TensorAttributes_SetOrigOnly(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_GetOrigOnly(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetOrigOnly()?1L:0L);
     return retval;
 }
@@ -455,7 +484,7 @@ TensorAttributes_GetOrigOnly(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_SetLimitsMode(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -513,7 +542,7 @@ TensorAttributes_SetLimitsMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_GetLimitsMode(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetLimitsMode()));
     return retval;
 }
@@ -521,7 +550,7 @@ TensorAttributes_GetLimitsMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_SetMinFlag(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -573,7 +602,7 @@ TensorAttributes_SetMinFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_GetMinFlag(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetMinFlag()?1L:0L);
     return retval;
 }
@@ -581,7 +610,7 @@ TensorAttributes_GetMinFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_SetMin(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -633,7 +662,7 @@ TensorAttributes_SetMin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_GetMin(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMin());
     return retval;
 }
@@ -641,7 +670,7 @@ TensorAttributes_GetMin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_SetMaxFlag(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -693,7 +722,7 @@ TensorAttributes_SetMaxFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_GetMaxFlag(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetMaxFlag()?1L:0L);
     return retval;
 }
@@ -701,7 +730,7 @@ TensorAttributes_GetMaxFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_SetMax(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -753,7 +782,7 @@ TensorAttributes_SetMax(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_GetMax(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMax());
     return retval;
 }
@@ -761,7 +790,7 @@ TensorAttributes_GetMax(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_SetColorByEigenValues(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -813,7 +842,7 @@ TensorAttributes_SetColorByEigenValues(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_GetColorByEigenValues(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetColorByEigenValues()?1L:0L);
     return retval;
 }
@@ -821,7 +850,7 @@ TensorAttributes_GetColorByEigenValues(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_SetColorTableName(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -862,7 +891,7 @@ TensorAttributes_SetColorTableName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_GetColorTableName(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetColorTableName().c_str());
     return retval;
 }
@@ -870,7 +899,7 @@ TensorAttributes_GetColorTableName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -922,7 +951,7 @@ TensorAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_GetInvertColorTable(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetInvertColorTable()?1L:0L);
     return retval;
 }
@@ -930,7 +959,7 @@ TensorAttributes_GetInvertColorTable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_SetTensorColor(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -993,7 +1022,7 @@ TensorAttributes_SetTensorColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_GetTensorColor(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the tensorColor.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *tensorColor = obj->data->GetTensorColor().GetColor();
@@ -1007,7 +1036,7 @@ TensorAttributes_GetTensorColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_SetUseLegend(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1059,7 +1088,7 @@ TensorAttributes_SetUseLegend(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_GetUseLegend(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetUseLegend()?1L:0L);
     return retval;
 }
@@ -1067,7 +1096,7 @@ TensorAttributes_GetUseLegend(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_SetScale(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1119,7 +1148,7 @@ TensorAttributes_SetScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_GetScale(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetScale());
     return retval;
 }
@@ -1127,7 +1156,7 @@ TensorAttributes_GetScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_SetScaleByMagnitude(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1179,7 +1208,7 @@ TensorAttributes_SetScaleByMagnitude(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_GetScaleByMagnitude(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetScaleByMagnitude()?1L:0L);
     return retval;
 }
@@ -1187,7 +1216,7 @@ TensorAttributes_GetScaleByMagnitude(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_SetAutoScale(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1239,7 +1268,7 @@ TensorAttributes_SetAutoScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_GetAutoScale(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetAutoScale()?1L:0L);
     return retval;
 }
@@ -1247,7 +1276,7 @@ TensorAttributes_GetAutoScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_SetAnimationStep(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1299,7 +1328,7 @@ TensorAttributes_SetAnimationStep(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TensorAttributes_GetAnimationStep(PyObject *self, PyObject *args)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)self;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetAnimationStep()));
     return retval;
 }
@@ -1307,7 +1336,8 @@ TensorAttributes_GetAnimationStep(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyTensorAttributes_methods[TENSORATTRIBUTES_NMETH] = {
-    {"Notify", TensorAttributes_Notify, METH_VARARGS},
+    {"__dir__", TensorAttributes_dir, METH_NOARGS},
+    {"Notify", TensorAttributes_Notify, METH_NOARGS},
     {"SetGlyphLocation", TensorAttributes_SetGlyphLocation, METH_VARARGS},
     {"GetGlyphLocation", TensorAttributes_GetGlyphLocation, METH_VARARGS},
     {"SetUseStride", TensorAttributes_SetUseStride, METH_VARARGS},
@@ -1354,19 +1384,22 @@ PyMethodDef PyTensorAttributes_methods[TENSORATTRIBUTES_NMETH] = {
 //
 
 static void
-TensorAttributes_dealloc(PyObject *v)
+PyTensorAttributes_dealloc(PyObject *v)
 {
-   TensorAttributesObject *obj = (TensorAttributesObject *)v;
+   PyTensorAttributesObject *obj = (PyTensorAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *TensorAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyTensorAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyTensorAttributes_getattr(PyObject *self, char *name)
+PyTensorAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "glyphLocation") == 0)
         return TensorAttributes_GetGlyphLocation(self, NULL);
     if(strcmp(name, "AdaptsToMeshResolution") == 0)
@@ -1416,26 +1449,19 @@ PyTensorAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "animationStep") == 0)
         return TensorAttributes_GetAnimationStep(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyTensorAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyTensorAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyTensorAttributes_methods[i].ml_name),
-                PyString_FromString(PyTensorAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyTensorAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyTensorAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyTensorAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "glyphLocation") == 0)
         obj = TensorAttributes_SetGlyphLocation(self, args);
@@ -1476,6 +1502,12 @@ PyTensorAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "animationStep") == 0)
         obj = TensorAttributes_SetAnimationStep(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -1490,78 +1522,45 @@ PyTensorAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-TensorAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    TensorAttributesObject *obj = (TensorAttributesObject *)v;
-    fprintf(fp, "%s", PyTensorAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-TensorAttributes_str(PyObject *v)
+PyTensorAttributes_str(PyObject *v)
 {
-    TensorAttributesObject *obj = (TensorAttributesObject *)v;
+    PyTensorAttributesObject *obj = (PyTensorAttributesObject *)v;
     return PyString_FromString(PyTensorAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *TensorAttributes_Purpose = "Attributes for the tensor plot";
-#else
-static char *TensorAttributes_Purpose = "Attributes for the tensor plot";
-#endif
+static char const *PyTensorAttributes_purpose = "Attributes for the tensor plot";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(TensorAttributesType,         \
-                  "TensorAttributes",           \
-                  TensorAttributesObject,       \
-                  TensorAttributes_dealloc,     \
-                  TensorAttributes_print,       \
-                  PyTensorAttributes_getattr,   \
-                  PyTensorAttributes_setattr,   \
-                  TensorAttributes_str,         \
-                  TensorAttributes_Purpose,     \
-                  TensorAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(TensorAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-TensorAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyTensorAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &TensorAttributesType
-         || Py_TYPE(other) != &TensorAttributesType)
+    if ( Py_TYPE(self) != &PyTensorAttributesType
+         || Py_TYPE(other) != &PyTensorAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    TensorAttributes *a = ((TensorAttributesObject *)self)->data;
-    TensorAttributes *b = ((TensorAttributesObject *)other)->data;
+    TensorAttributes *a = ((PyTensorAttributesObject *)self)->data;
+    TensorAttributes *b = ((PyTensorAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -1590,8 +1589,8 @@ static TensorAttributes *currentAtts = 0;
 static PyObject *
 NewTensorAttributes(int useCurrent)
 {
-    TensorAttributesObject *newObject;
-    newObject = PyObject_NEW(TensorAttributesObject, &TensorAttributesType);
+    PyTensorAttributesObject *newObject;
+    newObject = PyObject_NEW(PyTensorAttributesObject, &PyTensorAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1602,14 +1601,15 @@ NewTensorAttributes(int useCurrent)
         newObject->data = new TensorAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyTensorAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapTensorAttributes(const TensorAttributes *attr)
 {
-    TensorAttributesObject *newObject;
-    newObject = PyObject_NEW(TensorAttributesObject, &TensorAttributesType);
+    PyTensorAttributesObject *newObject;
+    newObject = PyObject_NEW(PyTensorAttributesObject, &PyTensorAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (TensorAttributes *)attr;
@@ -1711,13 +1711,13 @@ PyTensorAttributes_GetMethodTable(int *nMethods)
 bool
 PyTensorAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &TensorAttributesType);
+    return (obj->ob_type == &PyTensorAttributesType);
 }
 
 TensorAttributes *
 PyTensorAttributes_FromPyObject(PyObject *obj)
 {
-    TensorAttributesObject *obj2 = (TensorAttributesObject *)obj;
+    PyTensorAttributesObject *obj2 = (PyTensorAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1736,7 +1736,7 @@ PyTensorAttributes_Wrap(const TensorAttributes *attr)
 void
 PyTensorAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    TensorAttributesObject *obj2 = (TensorAttributesObject *)obj;
+    PyTensorAttributesObject *obj2 = (PyTensorAttributesObject *)obj;
     obj2->parent = parent;
 }
 

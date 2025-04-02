@@ -5,6 +5,7 @@
 #include <PyOnionPeelAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a OnionPeelAttributes.
 //
-struct OnionPeelAttributesObject
+struct PyOnionPeelAttributesObject
 {
     PyObject_HEAD
     OnionPeelAttributes *data;
@@ -114,16 +115,44 @@ PyOnionPeelAttributes_ToString(const OnionPeelAttributes *atts, const char *pref
 static PyObject *
 OnionPeelAttributes_Notify(PyObject *self, PyObject *args)
 {
-    OnionPeelAttributesObject *obj = (OnionPeelAttributesObject *)self;
+    PyOnionPeelAttributesObject *obj = (PyOnionPeelAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+OnionPeelAttributes_dir(PyObject *self, PyObject *args)
+{
+    static OnionPeelAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyOnionPeelAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 OnionPeelAttributes_SetAdjacencyType(PyObject *self, PyObject *args)
 {
-    OnionPeelAttributesObject *obj = (OnionPeelAttributesObject *)self;
+    PyOnionPeelAttributesObject *obj = (PyOnionPeelAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -181,7 +210,7 @@ OnionPeelAttributes_SetAdjacencyType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 OnionPeelAttributes_GetAdjacencyType(PyObject *self, PyObject *args)
 {
-    OnionPeelAttributesObject *obj = (OnionPeelAttributesObject *)self;
+    PyOnionPeelAttributesObject *obj = (PyOnionPeelAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetAdjacencyType()));
     return retval;
 }
@@ -189,7 +218,7 @@ OnionPeelAttributes_GetAdjacencyType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 OnionPeelAttributes_SetUseGlobalId(PyObject *self, PyObject *args)
 {
-    OnionPeelAttributesObject *obj = (OnionPeelAttributesObject *)self;
+    PyOnionPeelAttributesObject *obj = (PyOnionPeelAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -241,7 +270,7 @@ OnionPeelAttributes_SetUseGlobalId(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 OnionPeelAttributes_GetUseGlobalId(PyObject *self, PyObject *args)
 {
-    OnionPeelAttributesObject *obj = (OnionPeelAttributesObject *)self;
+    PyOnionPeelAttributesObject *obj = (PyOnionPeelAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetUseGlobalId()?1L:0L);
     return retval;
 }
@@ -249,7 +278,7 @@ OnionPeelAttributes_GetUseGlobalId(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 OnionPeelAttributes_SetCategoryName(PyObject *self, PyObject *args)
 {
-    OnionPeelAttributesObject *obj = (OnionPeelAttributesObject *)self;
+    PyOnionPeelAttributesObject *obj = (PyOnionPeelAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -290,7 +319,7 @@ OnionPeelAttributes_SetCategoryName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 OnionPeelAttributes_GetCategoryName(PyObject *self, PyObject *args)
 {
-    OnionPeelAttributesObject *obj = (OnionPeelAttributesObject *)self;
+    PyOnionPeelAttributesObject *obj = (PyOnionPeelAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetCategoryName().c_str());
     return retval;
 }
@@ -298,7 +327,7 @@ OnionPeelAttributes_GetCategoryName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 OnionPeelAttributes_SetSubsetName(PyObject *self, PyObject *args)
 {
-    OnionPeelAttributesObject *obj = (OnionPeelAttributesObject *)self;
+    PyOnionPeelAttributesObject *obj = (PyOnionPeelAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -339,7 +368,7 @@ OnionPeelAttributes_SetSubsetName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 OnionPeelAttributes_GetSubsetName(PyObject *self, PyObject *args)
 {
-    OnionPeelAttributesObject *obj = (OnionPeelAttributesObject *)self;
+    PyOnionPeelAttributesObject *obj = (PyOnionPeelAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetSubsetName().c_str());
     return retval;
 }
@@ -347,7 +376,7 @@ OnionPeelAttributes_GetSubsetName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 OnionPeelAttributes_SetIndex(PyObject *self, PyObject *args)
 {
-    OnionPeelAttributesObject *obj = (OnionPeelAttributesObject *)self;
+    PyOnionPeelAttributesObject *obj = (PyOnionPeelAttributesObject *)self;
 
     intVector vec;
 
@@ -411,7 +440,7 @@ OnionPeelAttributes_SetIndex(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 OnionPeelAttributes_GetIndex(PyObject *self, PyObject *args)
 {
-    OnionPeelAttributesObject *obj = (OnionPeelAttributesObject *)self;
+    PyOnionPeelAttributesObject *obj = (PyOnionPeelAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the index.
     const intVector &index = obj->data->GetIndex();
     PyObject *retval = PyTuple_New(index.size());
@@ -423,7 +452,7 @@ OnionPeelAttributes_GetIndex(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 OnionPeelAttributes_SetLogical(PyObject *self, PyObject *args)
 {
-    OnionPeelAttributesObject *obj = (OnionPeelAttributesObject *)self;
+    PyOnionPeelAttributesObject *obj = (PyOnionPeelAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -475,7 +504,7 @@ OnionPeelAttributes_SetLogical(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 OnionPeelAttributes_GetLogical(PyObject *self, PyObject *args)
 {
-    OnionPeelAttributesObject *obj = (OnionPeelAttributesObject *)self;
+    PyOnionPeelAttributesObject *obj = (PyOnionPeelAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetLogical()?1L:0L);
     return retval;
 }
@@ -483,7 +512,7 @@ OnionPeelAttributes_GetLogical(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 OnionPeelAttributes_SetRequestedLayer(PyObject *self, PyObject *args)
 {
-    OnionPeelAttributesObject *obj = (OnionPeelAttributesObject *)self;
+    PyOnionPeelAttributesObject *obj = (PyOnionPeelAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -535,7 +564,7 @@ OnionPeelAttributes_SetRequestedLayer(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 OnionPeelAttributes_GetRequestedLayer(PyObject *self, PyObject *args)
 {
-    OnionPeelAttributesObject *obj = (OnionPeelAttributesObject *)self;
+    PyOnionPeelAttributesObject *obj = (PyOnionPeelAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetRequestedLayer()));
     return retval;
 }
@@ -543,7 +572,7 @@ OnionPeelAttributes_GetRequestedLayer(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 OnionPeelAttributes_SetSeedType(PyObject *self, PyObject *args)
 {
-    OnionPeelAttributesObject *obj = (OnionPeelAttributesObject *)self;
+    PyOnionPeelAttributesObject *obj = (PyOnionPeelAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -601,7 +630,7 @@ OnionPeelAttributes_SetSeedType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 OnionPeelAttributes_GetSeedType(PyObject *self, PyObject *args)
 {
-    OnionPeelAttributesObject *obj = (OnionPeelAttributesObject *)self;
+    PyOnionPeelAttributesObject *obj = (PyOnionPeelAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetSeedType()));
     return retval;
 }
@@ -609,7 +638,7 @@ OnionPeelAttributes_GetSeedType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 OnionPeelAttributes_SetHonorOriginalMesh(PyObject *self, PyObject *args)
 {
-    OnionPeelAttributesObject *obj = (OnionPeelAttributesObject *)self;
+    PyOnionPeelAttributesObject *obj = (PyOnionPeelAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -661,7 +690,7 @@ OnionPeelAttributes_SetHonorOriginalMesh(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 OnionPeelAttributes_GetHonorOriginalMesh(PyObject *self, PyObject *args)
 {
-    OnionPeelAttributesObject *obj = (OnionPeelAttributesObject *)self;
+    PyOnionPeelAttributesObject *obj = (PyOnionPeelAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetHonorOriginalMesh()?1L:0L);
     return retval;
 }
@@ -669,7 +698,8 @@ OnionPeelAttributes_GetHonorOriginalMesh(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyOnionPeelAttributes_methods[ONIONPEELATTRIBUTES_NMETH] = {
-    {"Notify", OnionPeelAttributes_Notify, METH_VARARGS},
+    {"__dir__", OnionPeelAttributes_dir, METH_NOARGS},
+    {"Notify", OnionPeelAttributes_Notify, METH_NOARGS},
     {"SetAdjacencyType", OnionPeelAttributes_SetAdjacencyType, METH_VARARGS},
     {"GetAdjacencyType", OnionPeelAttributes_GetAdjacencyType, METH_VARARGS},
     {"SetUseGlobalId", OnionPeelAttributes_SetUseGlobalId, METH_VARARGS},
@@ -696,19 +726,22 @@ PyMethodDef PyOnionPeelAttributes_methods[ONIONPEELATTRIBUTES_NMETH] = {
 //
 
 static void
-OnionPeelAttributes_dealloc(PyObject *v)
+PyOnionPeelAttributes_dealloc(PyObject *v)
 {
-   OnionPeelAttributesObject *obj = (OnionPeelAttributesObject *)v;
+   PyOnionPeelAttributesObject *obj = (PyOnionPeelAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *OnionPeelAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyOnionPeelAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyOnionPeelAttributes_getattr(PyObject *self, char *name)
+PyOnionPeelAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "adjacencyType") == 0)
         return OnionPeelAttributes_GetAdjacencyType(self, NULL);
     if(strcmp(name, "Node") == 0)
@@ -738,26 +771,19 @@ PyOnionPeelAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "honorOriginalMesh") == 0)
         return OnionPeelAttributes_GetHonorOriginalMesh(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyOnionPeelAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyOnionPeelAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyOnionPeelAttributes_methods[i].ml_name),
-                PyString_FromString(PyOnionPeelAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyOnionPeelAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyOnionPeelAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyOnionPeelAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "adjacencyType") == 0)
         obj = OnionPeelAttributes_SetAdjacencyType(self, args);
@@ -778,6 +804,12 @@ PyOnionPeelAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "honorOriginalMesh") == 0)
         obj = OnionPeelAttributes_SetHonorOriginalMesh(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -792,78 +824,45 @@ PyOnionPeelAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-OnionPeelAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    OnionPeelAttributesObject *obj = (OnionPeelAttributesObject *)v;
-    fprintf(fp, "%s", PyOnionPeelAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-OnionPeelAttributes_str(PyObject *v)
+PyOnionPeelAttributes_str(PyObject *v)
 {
-    OnionPeelAttributesObject *obj = (OnionPeelAttributesObject *)v;
+    PyOnionPeelAttributesObject *obj = (PyOnionPeelAttributesObject *)v;
     return PyString_FromString(PyOnionPeelAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *OnionPeelAttributes_Purpose = "Attributes for the onion peel operator";
-#else
-static char *OnionPeelAttributes_Purpose = "Attributes for the onion peel operator";
-#endif
+static char const *PyOnionPeelAttributes_purpose = "Attributes for the onion peel operator";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(OnionPeelAttributesType,         \
-                  "OnionPeelAttributes",           \
-                  OnionPeelAttributesObject,       \
-                  OnionPeelAttributes_dealloc,     \
-                  OnionPeelAttributes_print,       \
-                  PyOnionPeelAttributes_getattr,   \
-                  PyOnionPeelAttributes_setattr,   \
-                  OnionPeelAttributes_str,         \
-                  OnionPeelAttributes_Purpose,     \
-                  OnionPeelAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(OnionPeelAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-OnionPeelAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyOnionPeelAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &OnionPeelAttributesType
-         || Py_TYPE(other) != &OnionPeelAttributesType)
+    if ( Py_TYPE(self) != &PyOnionPeelAttributesType
+         || Py_TYPE(other) != &PyOnionPeelAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    OnionPeelAttributes *a = ((OnionPeelAttributesObject *)self)->data;
-    OnionPeelAttributes *b = ((OnionPeelAttributesObject *)other)->data;
+    OnionPeelAttributes *a = ((PyOnionPeelAttributesObject *)self)->data;
+    OnionPeelAttributes *b = ((PyOnionPeelAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -892,8 +891,8 @@ static OnionPeelAttributes *currentAtts = 0;
 static PyObject *
 NewOnionPeelAttributes(int useCurrent)
 {
-    OnionPeelAttributesObject *newObject;
-    newObject = PyObject_NEW(OnionPeelAttributesObject, &OnionPeelAttributesType);
+    PyOnionPeelAttributesObject *newObject;
+    newObject = PyObject_NEW(PyOnionPeelAttributesObject, &PyOnionPeelAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -904,14 +903,15 @@ NewOnionPeelAttributes(int useCurrent)
         newObject->data = new OnionPeelAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyOnionPeelAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapOnionPeelAttributes(const OnionPeelAttributes *attr)
 {
-    OnionPeelAttributesObject *newObject;
-    newObject = PyObject_NEW(OnionPeelAttributesObject, &OnionPeelAttributesType);
+    PyOnionPeelAttributesObject *newObject;
+    newObject = PyObject_NEW(PyOnionPeelAttributesObject, &PyOnionPeelAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (OnionPeelAttributes *)attr;
@@ -1013,13 +1013,13 @@ PyOnionPeelAttributes_GetMethodTable(int *nMethods)
 bool
 PyOnionPeelAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &OnionPeelAttributesType);
+    return (obj->ob_type == &PyOnionPeelAttributesType);
 }
 
 OnionPeelAttributes *
 PyOnionPeelAttributes_FromPyObject(PyObject *obj)
 {
-    OnionPeelAttributesObject *obj2 = (OnionPeelAttributesObject *)obj;
+    PyOnionPeelAttributesObject *obj2 = (PyOnionPeelAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1038,7 +1038,7 @@ PyOnionPeelAttributes_Wrap(const OnionPeelAttributes *attr)
 void
 PyOnionPeelAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    OnionPeelAttributesObject *obj2 = (OnionPeelAttributesObject *)obj;
+    PyOnionPeelAttributesObject *obj2 = (PyOnionPeelAttributesObject *)obj;
     obj2->parent = parent;
 }
 

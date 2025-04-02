@@ -5,6 +5,7 @@
 #include <PyViewAxisArrayAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a ViewAxisArrayAttributes.
 //
-struct ViewAxisArrayAttributesObject
+struct PyViewAxisArrayAttributesObject
 {
     PyObject_HEAD
     ViewAxisArrayAttributes *data;
@@ -95,16 +96,44 @@ PyViewAxisArrayAttributes_ToString(const ViewAxisArrayAttributes *atts, const ch
 static PyObject *
 ViewAxisArrayAttributes_Notify(PyObject *self, PyObject *args)
 {
-    ViewAxisArrayAttributesObject *obj = (ViewAxisArrayAttributesObject *)self;
+    PyViewAxisArrayAttributesObject *obj = (PyViewAxisArrayAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+ViewAxisArrayAttributes_dir(PyObject *self, PyObject *args)
+{
+    static ViewAxisArrayAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyViewAxisArrayAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 ViewAxisArrayAttributes_SetDomainCoords(PyObject *self, PyObject *args)
 {
-    ViewAxisArrayAttributesObject *obj = (ViewAxisArrayAttributesObject *)self;
+    PyViewAxisArrayAttributesObject *obj = (PyViewAxisArrayAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetDomainCoords();
@@ -171,7 +200,7 @@ ViewAxisArrayAttributes_SetDomainCoords(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewAxisArrayAttributes_GetDomainCoords(PyObject *self, PyObject *args)
 {
-    ViewAxisArrayAttributesObject *obj = (ViewAxisArrayAttributesObject *)self;
+    PyViewAxisArrayAttributesObject *obj = (PyViewAxisArrayAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the domainCoords.
     PyObject *retval = PyTuple_New(2);
     const double *domainCoords = obj->data->GetDomainCoords();
@@ -183,7 +212,7 @@ ViewAxisArrayAttributes_GetDomainCoords(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewAxisArrayAttributes_SetRangeCoords(PyObject *self, PyObject *args)
 {
-    ViewAxisArrayAttributesObject *obj = (ViewAxisArrayAttributesObject *)self;
+    PyViewAxisArrayAttributesObject *obj = (PyViewAxisArrayAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetRangeCoords();
@@ -250,7 +279,7 @@ ViewAxisArrayAttributes_SetRangeCoords(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewAxisArrayAttributes_GetRangeCoords(PyObject *self, PyObject *args)
 {
-    ViewAxisArrayAttributesObject *obj = (ViewAxisArrayAttributesObject *)self;
+    PyViewAxisArrayAttributesObject *obj = (PyViewAxisArrayAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the rangeCoords.
     PyObject *retval = PyTuple_New(2);
     const double *rangeCoords = obj->data->GetRangeCoords();
@@ -262,7 +291,7 @@ ViewAxisArrayAttributes_GetRangeCoords(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewAxisArrayAttributes_SetViewportCoords(PyObject *self, PyObject *args)
 {
-    ViewAxisArrayAttributesObject *obj = (ViewAxisArrayAttributesObject *)self;
+    PyViewAxisArrayAttributesObject *obj = (PyViewAxisArrayAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetViewportCoords();
@@ -329,7 +358,7 @@ ViewAxisArrayAttributes_SetViewportCoords(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ViewAxisArrayAttributes_GetViewportCoords(PyObject *self, PyObject *args)
 {
-    ViewAxisArrayAttributesObject *obj = (ViewAxisArrayAttributesObject *)self;
+    PyViewAxisArrayAttributesObject *obj = (PyViewAxisArrayAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the viewportCoords.
     PyObject *retval = PyTuple_New(4);
     const double *viewportCoords = obj->data->GetViewportCoords();
@@ -341,7 +370,8 @@ ViewAxisArrayAttributes_GetViewportCoords(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyViewAxisArrayAttributes_methods[VIEWAXISARRAYATTRIBUTES_NMETH] = {
-    {"Notify", ViewAxisArrayAttributes_Notify, METH_VARARGS},
+    {"__dir__", ViewAxisArrayAttributes_dir, METH_NOARGS},
+    {"Notify", ViewAxisArrayAttributes_Notify, METH_NOARGS},
     {"SetDomainCoords", ViewAxisArrayAttributes_SetDomainCoords, METH_VARARGS},
     {"GetDomainCoords", ViewAxisArrayAttributes_GetDomainCoords, METH_VARARGS},
     {"SetRangeCoords", ViewAxisArrayAttributes_SetRangeCoords, METH_VARARGS},
@@ -356,19 +386,22 @@ PyMethodDef PyViewAxisArrayAttributes_methods[VIEWAXISARRAYATTRIBUTES_NMETH] = {
 //
 
 static void
-ViewAxisArrayAttributes_dealloc(PyObject *v)
+PyViewAxisArrayAttributes_dealloc(PyObject *v)
 {
-   ViewAxisArrayAttributesObject *obj = (ViewAxisArrayAttributesObject *)v;
+   PyViewAxisArrayAttributesObject *obj = (PyViewAxisArrayAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *ViewAxisArrayAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyViewAxisArrayAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyViewAxisArrayAttributes_getattr(PyObject *self, char *name)
+PyViewAxisArrayAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "domainCoords") == 0)
         return ViewAxisArrayAttributes_GetDomainCoords(self, NULL);
     if(strcmp(name, "rangeCoords") == 0)
@@ -376,26 +409,19 @@ PyViewAxisArrayAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "viewportCoords") == 0)
         return ViewAxisArrayAttributes_GetViewportCoords(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyViewAxisArrayAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyViewAxisArrayAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyViewAxisArrayAttributes_methods[i].ml_name),
-                PyString_FromString(PyViewAxisArrayAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyViewAxisArrayAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyViewAxisArrayAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyViewAxisArrayAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "domainCoords") == 0)
         obj = ViewAxisArrayAttributes_SetDomainCoords(self, args);
@@ -403,6 +429,12 @@ PyViewAxisArrayAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ViewAxisArrayAttributes_SetRangeCoords(self, args);
     else if(strcmp(name, "viewportCoords") == 0)
         obj = ViewAxisArrayAttributes_SetViewportCoords(self, args);
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -418,78 +450,45 @@ PyViewAxisArrayAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ViewAxisArrayAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    ViewAxisArrayAttributesObject *obj = (ViewAxisArrayAttributesObject *)v;
-    fprintf(fp, "%s", PyViewAxisArrayAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-ViewAxisArrayAttributes_str(PyObject *v)
+PyViewAxisArrayAttributes_str(PyObject *v)
 {
-    ViewAxisArrayAttributesObject *obj = (ViewAxisArrayAttributesObject *)v;
+    PyViewAxisArrayAttributesObject *obj = (PyViewAxisArrayAttributesObject *)v;
     return PyString_FromString(PyViewAxisArrayAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *ViewAxisArrayAttributes_Purpose = "This class contains the axis array view attributes.";
-#else
-static char *ViewAxisArrayAttributes_Purpose = "This class contains the axis array view attributes.";
-#endif
+static char const *PyViewAxisArrayAttributes_purpose = "This class contains the axis array view attributes.";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(ViewAxisArrayAttributesType,         \
-                  "ViewAxisArrayAttributes",           \
-                  ViewAxisArrayAttributesObject,       \
-                  ViewAxisArrayAttributes_dealloc,     \
-                  ViewAxisArrayAttributes_print,       \
-                  PyViewAxisArrayAttributes_getattr,   \
-                  PyViewAxisArrayAttributes_setattr,   \
-                  ViewAxisArrayAttributes_str,         \
-                  ViewAxisArrayAttributes_Purpose,     \
-                  ViewAxisArrayAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(ViewAxisArrayAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-ViewAxisArrayAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyViewAxisArrayAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &ViewAxisArrayAttributesType
-         || Py_TYPE(other) != &ViewAxisArrayAttributesType)
+    if ( Py_TYPE(self) != &PyViewAxisArrayAttributesType
+         || Py_TYPE(other) != &PyViewAxisArrayAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    ViewAxisArrayAttributes *a = ((ViewAxisArrayAttributesObject *)self)->data;
-    ViewAxisArrayAttributes *b = ((ViewAxisArrayAttributesObject *)other)->data;
+    ViewAxisArrayAttributes *a = ((PyViewAxisArrayAttributesObject *)self)->data;
+    ViewAxisArrayAttributes *b = ((PyViewAxisArrayAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -518,8 +517,8 @@ static ViewAxisArrayAttributes *currentAtts = 0;
 static PyObject *
 NewViewAxisArrayAttributes(int useCurrent)
 {
-    ViewAxisArrayAttributesObject *newObject;
-    newObject = PyObject_NEW(ViewAxisArrayAttributesObject, &ViewAxisArrayAttributesType);
+    PyViewAxisArrayAttributesObject *newObject;
+    newObject = PyObject_NEW(PyViewAxisArrayAttributesObject, &PyViewAxisArrayAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -530,14 +529,15 @@ NewViewAxisArrayAttributes(int useCurrent)
         newObject->data = new ViewAxisArrayAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyViewAxisArrayAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapViewAxisArrayAttributes(const ViewAxisArrayAttributes *attr)
 {
-    ViewAxisArrayAttributesObject *newObject;
-    newObject = PyObject_NEW(ViewAxisArrayAttributesObject, &ViewAxisArrayAttributesType);
+    PyViewAxisArrayAttributesObject *newObject;
+    newObject = PyObject_NEW(PyViewAxisArrayAttributesObject, &PyViewAxisArrayAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (ViewAxisArrayAttributes *)attr;
@@ -639,13 +639,13 @@ PyViewAxisArrayAttributes_GetMethodTable(int *nMethods)
 bool
 PyViewAxisArrayAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ViewAxisArrayAttributesType);
+    return (obj->ob_type == &PyViewAxisArrayAttributesType);
 }
 
 ViewAxisArrayAttributes *
 PyViewAxisArrayAttributes_FromPyObject(PyObject *obj)
 {
-    ViewAxisArrayAttributesObject *obj2 = (ViewAxisArrayAttributesObject *)obj;
+    PyViewAxisArrayAttributesObject *obj2 = (PyViewAxisArrayAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -664,7 +664,7 @@ PyViewAxisArrayAttributes_Wrap(const ViewAxisArrayAttributes *attr)
 void
 PyViewAxisArrayAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    ViewAxisArrayAttributesObject *obj2 = (ViewAxisArrayAttributesObject *)obj;
+    PyViewAxisArrayAttributesObject *obj2 = (PyViewAxisArrayAttributesObject *)obj;
     obj2->parent = parent;
 }
 

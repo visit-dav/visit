@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define MOLECULEATTRIBUTES_NMETH 44
+#define MOLECULEATTRIBUTES_NMETH 45
 void           PyMoleculeAttributes_StartUp(MoleculeAttributes *subj, void *data);
 void           PyMoleculeAttributes_CloseDown();
 PyMethodDef *  PyMoleculeAttributes_GetMethodTable(int *nMethods);
@@ -23,8 +23,8 @@ void           PyMoleculeAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyMoleculeAttributes_SetDefaults(const MoleculeAttributes *atts);
 std::string    PyMoleculeAttributes_GetLogString();
 std::string    PyMoleculeAttributes_ToString(const MoleculeAttributes *, const char *, const bool=false);
-PyObject *     PyMoleculeAttributes_getattr(PyObject *self, char *name);
-int            PyMoleculeAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PyMoleculeAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyMoleculeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PyMoleculeAttributes_methods[MOLECULEATTRIBUTES_NMETH];
 
 #endif

@@ -5,6 +5,7 @@
 #include <PyTransformAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a TransformAttributes.
 //
-struct TransformAttributesObject
+struct PyTransformAttributesObject
 {
     PyObject_HEAD
     TransformAttributes *data;
@@ -266,16 +267,44 @@ PyTransformAttributes_ToString(const TransformAttributes *atts, const char *pref
 static PyObject *
 TransformAttributes_Notify(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+TransformAttributes_dir(PyObject *self, PyObject *args)
+{
+    static TransformAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyTransformAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 TransformAttributes_SetDoRotate(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -327,7 +356,7 @@ TransformAttributes_SetDoRotate(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetDoRotate(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetDoRotate()?1L:0L);
     return retval;
 }
@@ -335,7 +364,7 @@ TransformAttributes_GetDoRotate(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_SetRotateOrigin(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetRotateOrigin();
@@ -402,7 +431,7 @@ TransformAttributes_SetRotateOrigin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetRotateOrigin(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the rotateOrigin.
     PyObject *retval = PyTuple_New(3);
     const double *rotateOrigin = obj->data->GetRotateOrigin();
@@ -414,7 +443,7 @@ TransformAttributes_GetRotateOrigin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_SetRotateAxis(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetRotateAxis();
@@ -481,7 +510,7 @@ TransformAttributes_SetRotateAxis(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetRotateAxis(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the rotateAxis.
     PyObject *retval = PyTuple_New(3);
     const double *rotateAxis = obj->data->GetRotateAxis();
@@ -493,7 +522,7 @@ TransformAttributes_GetRotateAxis(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_SetRotateAmount(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -545,7 +574,7 @@ TransformAttributes_SetRotateAmount(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetRotateAmount(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetRotateAmount());
     return retval;
 }
@@ -553,7 +582,7 @@ TransformAttributes_GetRotateAmount(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_SetRotateType(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -611,7 +640,7 @@ TransformAttributes_SetRotateType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetRotateType(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetRotateType()));
     return retval;
 }
@@ -619,7 +648,7 @@ TransformAttributes_GetRotateType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_SetDoScale(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -671,7 +700,7 @@ TransformAttributes_SetDoScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetDoScale(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetDoScale()?1L:0L);
     return retval;
 }
@@ -679,7 +708,7 @@ TransformAttributes_GetDoScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_SetScaleOrigin(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetScaleOrigin();
@@ -746,7 +775,7 @@ TransformAttributes_SetScaleOrigin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetScaleOrigin(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the scaleOrigin.
     PyObject *retval = PyTuple_New(3);
     const double *scaleOrigin = obj->data->GetScaleOrigin();
@@ -758,7 +787,7 @@ TransformAttributes_GetScaleOrigin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_SetScaleX(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -810,7 +839,7 @@ TransformAttributes_SetScaleX(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetScaleX(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetScaleX());
     return retval;
 }
@@ -818,7 +847,7 @@ TransformAttributes_GetScaleX(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_SetScaleY(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -870,7 +899,7 @@ TransformAttributes_SetScaleY(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetScaleY(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetScaleY());
     return retval;
 }
@@ -878,7 +907,7 @@ TransformAttributes_GetScaleY(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_SetScaleZ(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -930,7 +959,7 @@ TransformAttributes_SetScaleZ(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetScaleZ(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetScaleZ());
     return retval;
 }
@@ -938,7 +967,7 @@ TransformAttributes_GetScaleZ(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_SetDoTranslate(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -990,7 +1019,7 @@ TransformAttributes_SetDoTranslate(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetDoTranslate(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetDoTranslate()?1L:0L);
     return retval;
 }
@@ -998,7 +1027,7 @@ TransformAttributes_GetDoTranslate(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_SetTranslateX(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1050,7 +1079,7 @@ TransformAttributes_SetTranslateX(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetTranslateX(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetTranslateX());
     return retval;
 }
@@ -1058,7 +1087,7 @@ TransformAttributes_GetTranslateX(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_SetTranslateY(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1110,7 +1139,7 @@ TransformAttributes_SetTranslateY(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetTranslateY(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetTranslateY());
     return retval;
 }
@@ -1118,7 +1147,7 @@ TransformAttributes_GetTranslateY(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_SetTranslateZ(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1170,7 +1199,7 @@ TransformAttributes_SetTranslateZ(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetTranslateZ(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetTranslateZ());
     return retval;
 }
@@ -1178,7 +1207,7 @@ TransformAttributes_GetTranslateZ(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_SetTransformType(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1237,7 +1266,7 @@ TransformAttributes_SetTransformType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetTransformType(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetTransformType()));
     return retval;
 }
@@ -1245,7 +1274,7 @@ TransformAttributes_GetTransformType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_SetInputCoordSys(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1304,7 +1333,7 @@ TransformAttributes_SetInputCoordSys(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetInputCoordSys(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetInputCoordSys()));
     return retval;
 }
@@ -1312,7 +1341,7 @@ TransformAttributes_GetInputCoordSys(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_SetOutputCoordSys(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1371,7 +1400,7 @@ TransformAttributes_SetOutputCoordSys(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetOutputCoordSys(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetOutputCoordSys()));
     return retval;
 }
@@ -1379,7 +1408,7 @@ TransformAttributes_GetOutputCoordSys(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_SetContinuousPhi(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1431,7 +1460,7 @@ TransformAttributes_SetContinuousPhi(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetContinuousPhi(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetContinuousPhi()?1L:0L);
     return retval;
 }
@@ -1439,7 +1468,7 @@ TransformAttributes_GetContinuousPhi(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_SetM00(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1491,7 +1520,7 @@ TransformAttributes_SetM00(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetM00(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetM00());
     return retval;
 }
@@ -1499,7 +1528,7 @@ TransformAttributes_GetM00(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_SetM01(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1551,7 +1580,7 @@ TransformAttributes_SetM01(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetM01(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetM01());
     return retval;
 }
@@ -1559,7 +1588,7 @@ TransformAttributes_GetM01(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_SetM02(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1611,7 +1640,7 @@ TransformAttributes_SetM02(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetM02(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetM02());
     return retval;
 }
@@ -1619,7 +1648,7 @@ TransformAttributes_GetM02(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_SetM03(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1671,7 +1700,7 @@ TransformAttributes_SetM03(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetM03(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetM03());
     return retval;
 }
@@ -1679,7 +1708,7 @@ TransformAttributes_GetM03(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_SetM10(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1731,7 +1760,7 @@ TransformAttributes_SetM10(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetM10(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetM10());
     return retval;
 }
@@ -1739,7 +1768,7 @@ TransformAttributes_GetM10(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_SetM11(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1791,7 +1820,7 @@ TransformAttributes_SetM11(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetM11(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetM11());
     return retval;
 }
@@ -1799,7 +1828,7 @@ TransformAttributes_GetM11(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_SetM12(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1851,7 +1880,7 @@ TransformAttributes_SetM12(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetM12(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetM12());
     return retval;
 }
@@ -1859,7 +1888,7 @@ TransformAttributes_GetM12(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_SetM13(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1911,7 +1940,7 @@ TransformAttributes_SetM13(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetM13(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetM13());
     return retval;
 }
@@ -1919,7 +1948,7 @@ TransformAttributes_GetM13(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_SetM20(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1971,7 +2000,7 @@ TransformAttributes_SetM20(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetM20(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetM20());
     return retval;
 }
@@ -1979,7 +2008,7 @@ TransformAttributes_GetM20(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_SetM21(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2031,7 +2060,7 @@ TransformAttributes_SetM21(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetM21(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetM21());
     return retval;
 }
@@ -2039,7 +2068,7 @@ TransformAttributes_GetM21(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_SetM22(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2091,7 +2120,7 @@ TransformAttributes_SetM22(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetM22(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetM22());
     return retval;
 }
@@ -2099,7 +2128,7 @@ TransformAttributes_GetM22(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_SetM23(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2151,7 +2180,7 @@ TransformAttributes_SetM23(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetM23(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetM23());
     return retval;
 }
@@ -2159,7 +2188,7 @@ TransformAttributes_GetM23(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_SetM30(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2211,7 +2240,7 @@ TransformAttributes_SetM30(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetM30(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetM30());
     return retval;
 }
@@ -2219,7 +2248,7 @@ TransformAttributes_GetM30(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_SetM31(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2271,7 +2300,7 @@ TransformAttributes_SetM31(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetM31(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetM31());
     return retval;
 }
@@ -2279,7 +2308,7 @@ TransformAttributes_GetM31(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_SetM32(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2331,7 +2360,7 @@ TransformAttributes_SetM32(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetM32(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetM32());
     return retval;
 }
@@ -2339,7 +2368,7 @@ TransformAttributes_GetM32(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_SetM33(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2391,7 +2420,7 @@ TransformAttributes_SetM33(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetM33(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetM33());
     return retval;
 }
@@ -2399,7 +2428,7 @@ TransformAttributes_GetM33(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_SetInvertLinearTransform(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2451,7 +2480,7 @@ TransformAttributes_SetInvertLinearTransform(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetInvertLinearTransform(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetInvertLinearTransform()?1L:0L);
     return retval;
 }
@@ -2459,7 +2488,7 @@ TransformAttributes_GetInvertLinearTransform(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_SetVectorTransformMethod(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2519,7 +2548,7 @@ TransformAttributes_SetVectorTransformMethod(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetVectorTransformMethod(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetVectorTransformMethod()));
     return retval;
 }
@@ -2527,7 +2556,7 @@ TransformAttributes_GetVectorTransformMethod(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_SetTransformVectors(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2579,7 +2608,7 @@ TransformAttributes_SetTransformVectors(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TransformAttributes_GetTransformVectors(PyObject *self, PyObject *args)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)self;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetTransformVectors()?1L:0L);
     return retval;
 }
@@ -2587,7 +2616,8 @@ TransformAttributes_GetTransformVectors(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyTransformAttributes_methods[TRANSFORMATTRIBUTES_NMETH] = {
-    {"Notify", TransformAttributes_Notify, METH_VARARGS},
+    {"__dir__", TransformAttributes_dir, METH_NOARGS},
+    {"Notify", TransformAttributes_Notify, METH_NOARGS},
     {"SetDoRotate", TransformAttributes_SetDoRotate, METH_VARARGS},
     {"GetDoRotate", TransformAttributes_GetDoRotate, METH_VARARGS},
     {"SetRotateOrigin", TransformAttributes_SetRotateOrigin, METH_VARARGS},
@@ -2670,19 +2700,22 @@ PyMethodDef PyTransformAttributes_methods[TRANSFORMATTRIBUTES_NMETH] = {
 //
 
 static void
-TransformAttributes_dealloc(PyObject *v)
+PyTransformAttributes_dealloc(PyObject *v)
 {
-   TransformAttributesObject *obj = (TransformAttributesObject *)v;
+   PyTransformAttributesObject *obj = (PyTransformAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *TransformAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyTransformAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyTransformAttributes_getattr(PyObject *self, char *name)
+PyTransformAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "doRotate") == 0)
         return TransformAttributes_GetDoRotate(self, NULL);
     if(strcmp(name, "rotateOrigin") == 0)
@@ -2795,26 +2828,19 @@ PyTransformAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "transformVectors") == 0)
         return TransformAttributes_GetTransformVectors(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyTransformAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyTransformAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyTransformAttributes_methods[i].ml_name),
-                PyString_FromString(PyTransformAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyTransformAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyTransformAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyTransformAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "doRotate") == 0)
         obj = TransformAttributes_SetDoRotate(self, args);
@@ -2891,6 +2917,12 @@ PyTransformAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "transformVectors") == 0)
         obj = TransformAttributes_SetTransformVectors(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -2905,78 +2937,45 @@ PyTransformAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-TransformAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    TransformAttributesObject *obj = (TransformAttributesObject *)v;
-    fprintf(fp, "%s", PyTransformAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-TransformAttributes_str(PyObject *v)
+PyTransformAttributes_str(PyObject *v)
 {
-    TransformAttributesObject *obj = (TransformAttributesObject *)v;
+    PyTransformAttributesObject *obj = (PyTransformAttributesObject *)v;
     return PyString_FromString(PyTransformAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *TransformAttributes_Purpose = "This class contains attributes for the transform operator.";
-#else
-static char *TransformAttributes_Purpose = "This class contains attributes for the transform operator.";
-#endif
+static char const *PyTransformAttributes_purpose = "This class contains attributes for the transform operator.";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(TransformAttributesType,         \
-                  "TransformAttributes",           \
-                  TransformAttributesObject,       \
-                  TransformAttributes_dealloc,     \
-                  TransformAttributes_print,       \
-                  PyTransformAttributes_getattr,   \
-                  PyTransformAttributes_setattr,   \
-                  TransformAttributes_str,         \
-                  TransformAttributes_Purpose,     \
-                  TransformAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(TransformAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-TransformAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyTransformAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &TransformAttributesType
-         || Py_TYPE(other) != &TransformAttributesType)
+    if ( Py_TYPE(self) != &PyTransformAttributesType
+         || Py_TYPE(other) != &PyTransformAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    TransformAttributes *a = ((TransformAttributesObject *)self)->data;
-    TransformAttributes *b = ((TransformAttributesObject *)other)->data;
+    TransformAttributes *a = ((PyTransformAttributesObject *)self)->data;
+    TransformAttributes *b = ((PyTransformAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -3005,8 +3004,8 @@ static TransformAttributes *currentAtts = 0;
 static PyObject *
 NewTransformAttributes(int useCurrent)
 {
-    TransformAttributesObject *newObject;
-    newObject = PyObject_NEW(TransformAttributesObject, &TransformAttributesType);
+    PyTransformAttributesObject *newObject;
+    newObject = PyObject_NEW(PyTransformAttributesObject, &PyTransformAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -3017,14 +3016,15 @@ NewTransformAttributes(int useCurrent)
         newObject->data = new TransformAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyTransformAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapTransformAttributes(const TransformAttributes *attr)
 {
-    TransformAttributesObject *newObject;
-    newObject = PyObject_NEW(TransformAttributesObject, &TransformAttributesType);
+    PyTransformAttributesObject *newObject;
+    newObject = PyObject_NEW(PyTransformAttributesObject, &PyTransformAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (TransformAttributes *)attr;
@@ -3126,13 +3126,13 @@ PyTransformAttributes_GetMethodTable(int *nMethods)
 bool
 PyTransformAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &TransformAttributesType);
+    return (obj->ob_type == &PyTransformAttributesType);
 }
 
 TransformAttributes *
 PyTransformAttributes_FromPyObject(PyObject *obj)
 {
-    TransformAttributesObject *obj2 = (TransformAttributesObject *)obj;
+    PyTransformAttributesObject *obj2 = (PyTransformAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -3151,7 +3151,7 @@ PyTransformAttributes_Wrap(const TransformAttributes *attr)
 void
 PyTransformAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    TransformAttributesObject *obj2 = (TransformAttributesObject *)obj;
+    PyTransformAttributesObject *obj2 = (PyTransformAttributesObject *)obj;
     obj2->parent = parent;
 }
 

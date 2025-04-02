@@ -5,6 +5,7 @@
 #include <PyAxes3D.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 #include <PyAxisAttributes.h>
 #include <PyAxisAttributes.h>
@@ -26,7 +27,7 @@
 //
 // This struct contains the Python type information and a Axes3D.
 //
-struct Axes3DObject
+struct PyAxes3DObject
 {
     PyObject_HEAD
     Axes3D *data;
@@ -194,16 +195,44 @@ PyAxes3D_ToString(const Axes3D *atts, const char *prefix, const bool forLogging)
 static PyObject *
 Axes3D_Notify(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+Axes3D_dir(PyObject *self, PyObject *args)
+{
+    static Axes3D atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyAxes3D_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 Axes3D_SetVisible(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -255,7 +284,7 @@ Axes3D_SetVisible(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_GetVisible(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetVisible()?1L:0L);
     return retval;
 }
@@ -263,7 +292,7 @@ Axes3D_GetVisible(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_SetAutoSetTicks(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -315,7 +344,7 @@ Axes3D_SetAutoSetTicks(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_GetAutoSetTicks(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetAutoSetTicks()?1L:0L);
     return retval;
 }
@@ -323,7 +352,7 @@ Axes3D_GetAutoSetTicks(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_SetAutoSetScaling(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -375,7 +404,7 @@ Axes3D_SetAutoSetScaling(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_GetAutoSetScaling(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetAutoSetScaling()?1L:0L);
     return retval;
 }
@@ -383,7 +412,7 @@ Axes3D_GetAutoSetScaling(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_SetLineWidth(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -435,7 +464,7 @@ Axes3D_SetLineWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_GetLineWidth(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetLineWidth()));
     return retval;
 }
@@ -443,7 +472,7 @@ Axes3D_GetLineWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_SetTickLocation(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -502,7 +531,7 @@ Axes3D_SetTickLocation(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_GetTickLocation(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetTickLocation()));
     return retval;
 }
@@ -510,7 +539,7 @@ Axes3D_GetTickLocation(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_SetAxesType(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -571,7 +600,7 @@ Axes3D_SetAxesType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_GetAxesType(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetAxesType()));
     return retval;
 }
@@ -579,7 +608,7 @@ Axes3D_GetAxesType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_SetTriadFlag(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -631,7 +660,7 @@ Axes3D_SetTriadFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_GetTriadFlag(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetTriadFlag()?1L:0L);
     return retval;
 }
@@ -639,7 +668,7 @@ Axes3D_GetTriadFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_SetBboxFlag(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -691,7 +720,7 @@ Axes3D_SetBboxFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_GetBboxFlag(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetBboxFlag()?1L:0L);
     return retval;
 }
@@ -699,7 +728,7 @@ Axes3D_GetBboxFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_SetXAxis(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -716,7 +745,7 @@ Axes3D_SetXAxis(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_GetXAxis(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -732,7 +761,7 @@ Axes3D_GetXAxis(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_SetYAxis(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -749,7 +778,7 @@ Axes3D_SetYAxis(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_GetYAxis(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -765,7 +794,7 @@ Axes3D_GetYAxis(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_SetZAxis(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -782,7 +811,7 @@ Axes3D_SetZAxis(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_GetZAxis(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -798,7 +827,7 @@ Axes3D_GetZAxis(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_SetSetBBoxLocation(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -850,7 +879,7 @@ Axes3D_SetSetBBoxLocation(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_GetSetBBoxLocation(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetSetBBoxLocation()?1L:0L);
     return retval;
 }
@@ -858,7 +887,7 @@ Axes3D_GetSetBBoxLocation(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_SetBboxLocation(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetBboxLocation();
@@ -925,7 +954,7 @@ Axes3D_SetBboxLocation(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_GetBboxLocation(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
     // Allocate a tuple the with enough entries to hold the bboxLocation.
     PyObject *retval = PyTuple_New(6);
     const double *bboxLocation = obj->data->GetBboxLocation();
@@ -937,7 +966,7 @@ Axes3D_GetBboxLocation(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_SetTriadColor(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
 
     PyObject *packaged_args = 0;
     int *vals = obj->data->GetTriadColor();
@@ -1004,7 +1033,7 @@ Axes3D_SetTriadColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_GetTriadColor(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
     // Allocate a tuple the with enough entries to hold the triadColor.
     PyObject *retval = PyTuple_New(3);
     const int *triadColor = obj->data->GetTriadColor();
@@ -1016,7 +1045,7 @@ Axes3D_GetTriadColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_SetTriadLineWidth(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1068,7 +1097,7 @@ Axes3D_SetTriadLineWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_GetTriadLineWidth(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetTriadLineWidth()));
     return retval;
 }
@@ -1076,7 +1105,7 @@ Axes3D_GetTriadLineWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_SetTriadFont(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1128,7 +1157,7 @@ Axes3D_SetTriadFont(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_GetTriadFont(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetTriadFont()));
     return retval;
 }
@@ -1136,7 +1165,7 @@ Axes3D_GetTriadFont(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_SetTriadBold(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1188,7 +1217,7 @@ Axes3D_SetTriadBold(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_GetTriadBold(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetTriadBold()?1L:0L);
     return retval;
 }
@@ -1196,7 +1225,7 @@ Axes3D_GetTriadBold(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_SetTriadItalic(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1248,7 +1277,7 @@ Axes3D_SetTriadItalic(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_GetTriadItalic(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetTriadItalic()?1L:0L);
     return retval;
 }
@@ -1256,7 +1285,7 @@ Axes3D_GetTriadItalic(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_SetTriadSetManually(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1308,7 +1337,7 @@ Axes3D_SetTriadSetManually(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 Axes3D_GetTriadSetManually(PyObject *self, PyObject *args)
 {
-    Axes3DObject *obj = (Axes3DObject *)self;
+    PyAxes3DObject *obj = (PyAxes3DObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetTriadSetManually()?1L:0L);
     return retval;
 }
@@ -1316,7 +1345,8 @@ Axes3D_GetTriadSetManually(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyAxes3D_methods[AXES3D_NMETH] = {
-    {"Notify", Axes3D_Notify, METH_VARARGS},
+    {"__dir__", Axes3D_dir, METH_NOARGS},
+    {"Notify", Axes3D_Notify, METH_NOARGS},
     {"SetVisible", Axes3D_SetVisible, METH_VARARGS},
     {"GetVisible", Axes3D_GetVisible, METH_VARARGS},
     {"SetAutoSetTicks", Axes3D_SetAutoSetTicks, METH_VARARGS},
@@ -1363,19 +1393,22 @@ PyMethodDef PyAxes3D_methods[AXES3D_NMETH] = {
 //
 
 static void
-Axes3D_dealloc(PyObject *v)
+PyAxes3D_dealloc(PyObject *v)
 {
-   Axes3DObject *obj = (Axes3DObject *)v;
+   PyAxes3DObject *obj = (PyAxes3DObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *Axes3D_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyAxes3D_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyAxes3D_getattr(PyObject *self, char *name)
+PyAxes3D_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "visible") == 0)
         return Axes3D_GetVisible(self, NULL);
     if(strcmp(name, "autoSetTicks") == 0)
@@ -1433,26 +1466,19 @@ PyAxes3D_getattr(PyObject *self, char *name)
     if(strcmp(name, "triadSetManually") == 0)
         return Axes3D_GetTriadSetManually(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyAxes3D_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyAxes3D_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyAxes3D_methods[i].ml_name),
-                PyString_FromString(PyAxes3D_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyAxes3D_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyAxes3D_setattr(PyObject *self, char *name, PyObject *args)
+PyAxes3D_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "visible") == 0)
         obj = Axes3D_SetVisible(self, args);
@@ -1493,6 +1519,12 @@ PyAxes3D_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "triadSetManually") == 0)
         obj = Axes3D_SetTriadSetManually(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -1507,78 +1539,45 @@ PyAxes3D_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-Axes3D_print(PyObject *v, FILE *fp, int flags)
-{
-    Axes3DObject *obj = (Axes3DObject *)v;
-    fprintf(fp, "%s", PyAxes3D_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-Axes3D_str(PyObject *v)
+PyAxes3D_str(PyObject *v)
 {
-    Axes3DObject *obj = (Axes3DObject *)v;
+    PyAxes3DObject *obj = (PyAxes3DObject *)v;
     return PyString_FromString(PyAxes3D_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *Axes3D_Purpose = "Contains the properties for the 3D axes.";
-#else
-static char *Axes3D_Purpose = "Contains the properties for the 3D axes.";
-#endif
+static char const *PyAxes3D_purpose = "Contains the properties for the 3D axes.";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(Axes3DType,         \
-                  "Axes3D",           \
-                  Axes3DObject,       \
-                  Axes3D_dealloc,     \
-                  Axes3D_print,       \
-                  PyAxes3D_getattr,   \
-                  PyAxes3D_setattr,   \
-                  Axes3D_str,         \
-                  Axes3D_Purpose,     \
-                  Axes3D_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(Axes3D);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-Axes3D_richcompare(PyObject *self, PyObject *other, int op)
+PyAxes3D_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &Axes3DType
-         || Py_TYPE(other) != &Axes3DType)
+    if ( Py_TYPE(self) != &PyAxes3DType
+         || Py_TYPE(other) != &PyAxes3DType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    Axes3D *a = ((Axes3DObject *)self)->data;
-    Axes3D *b = ((Axes3DObject *)other)->data;
+    Axes3D *a = ((PyAxes3DObject *)self)->data;
+    Axes3D *b = ((PyAxes3DObject *)other)->data;
 
     switch (op)
     {
@@ -1607,8 +1606,8 @@ static Axes3D *currentAtts = 0;
 static PyObject *
 NewAxes3D(int useCurrent)
 {
-    Axes3DObject *newObject;
-    newObject = PyObject_NEW(Axes3DObject, &Axes3DType);
+    PyAxes3DObject *newObject;
+    newObject = PyObject_NEW(PyAxes3DObject, &PyAxes3DType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1619,14 +1618,15 @@ NewAxes3D(int useCurrent)
         newObject->data = new Axes3D;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyAxes3DType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapAxes3D(const Axes3D *attr)
 {
-    Axes3DObject *newObject;
-    newObject = PyObject_NEW(Axes3DObject, &Axes3DType);
+    PyAxes3DObject *newObject;
+    newObject = PyObject_NEW(PyAxes3DObject, &PyAxes3DType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (Axes3D *)attr;
@@ -1728,13 +1728,13 @@ PyAxes3D_GetMethodTable(int *nMethods)
 bool
 PyAxes3D_Check(PyObject *obj)
 {
-    return (obj->ob_type == &Axes3DType);
+    return (obj->ob_type == &PyAxes3DType);
 }
 
 Axes3D *
 PyAxes3D_FromPyObject(PyObject *obj)
 {
-    Axes3DObject *obj2 = (Axes3DObject *)obj;
+    PyAxes3DObject *obj2 = (PyAxes3DObject *)obj;
     return obj2->data;
 }
 
@@ -1753,7 +1753,7 @@ PyAxes3D_Wrap(const Axes3D *attr)
 void
 PyAxes3D_SetParent(PyObject *obj, PyObject *parent)
 {
-    Axes3DObject *obj2 = (Axes3DObject *)obj;
+    PyAxes3DObject *obj2 = (PyAxes3DObject *)obj;
     obj2->parent = parent;
 }
 

@@ -57,6 +57,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Added a <code>GetActiveWindow()</code> method to return the currently active window.</li>
   <li>Ultrawrapper has been removed from VisIt. For similar functionality, please see: <a href=https://pydv.readthedocs.io/en/latest/>PyDV</a>.</li>
+  <li>CLI objects and functions improved in various ways including fixing <code>dir()</code> for them.</li>
+  <li><code>apropos()</code> help function is improved with additional arguments to control searches.</li>
 </ul>
 
 <a name="File_format"></a>
@@ -101,6 +103,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a crash in structured domain boundaries when exchanging materials that lack a <i>mix_zone</i> array.</li>
   <li>Fixed a crash in structured domain boundaries when exchanging mixed material data using local boundary data.</li>
   <li>Fixed a potential infinite loop in our internal string helper utilities.</li>
+  <li>Fixed error in Command Recording of a Query, where python tuples weren't represented correctly.</li>
 </ul>
 
 <a name="Build_features"></a>
@@ -122,3 +125,4 @@ enhancements and bug-fixes that were added to this release.</p>
 of VisIt: <a href=relnotes3.4.2.html>3.4.2</a>.</p>
 </body>
 </html>
+

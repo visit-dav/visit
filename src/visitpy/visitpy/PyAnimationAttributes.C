@@ -5,6 +5,7 @@
 #include <PyAnimationAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a AnimationAttributes.
 //
-struct AnimationAttributesObject
+struct PyAnimationAttributesObject
 {
     PyObject_HEAD
     AnimationAttributes *data;
@@ -94,16 +95,44 @@ PyAnimationAttributes_ToString(const AnimationAttributes *atts, const char *pref
 static PyObject *
 AnimationAttributes_Notify(PyObject *self, PyObject *args)
 {
-    AnimationAttributesObject *obj = (AnimationAttributesObject *)self;
+    PyAnimationAttributesObject *obj = (PyAnimationAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+AnimationAttributes_dir(PyObject *self, PyObject *args)
+{
+    static AnimationAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyAnimationAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 AnimationAttributes_SetAnimationMode(PyObject *self, PyObject *args)
 {
-    AnimationAttributesObject *obj = (AnimationAttributesObject *)self;
+    PyAnimationAttributesObject *obj = (PyAnimationAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -162,7 +191,7 @@ AnimationAttributes_SetAnimationMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnimationAttributes_GetAnimationMode(PyObject *self, PyObject *args)
 {
-    AnimationAttributesObject *obj = (AnimationAttributesObject *)self;
+    PyAnimationAttributesObject *obj = (PyAnimationAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetAnimationMode()));
     return retval;
 }
@@ -170,7 +199,7 @@ AnimationAttributes_GetAnimationMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnimationAttributes_SetPipelineCachingMode(PyObject *self, PyObject *args)
 {
-    AnimationAttributesObject *obj = (AnimationAttributesObject *)self;
+    PyAnimationAttributesObject *obj = (PyAnimationAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -222,7 +251,7 @@ AnimationAttributes_SetPipelineCachingMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnimationAttributes_GetPipelineCachingMode(PyObject *self, PyObject *args)
 {
-    AnimationAttributesObject *obj = (AnimationAttributesObject *)self;
+    PyAnimationAttributesObject *obj = (PyAnimationAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetPipelineCachingMode()?1L:0L);
     return retval;
 }
@@ -230,7 +259,7 @@ AnimationAttributes_GetPipelineCachingMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnimationAttributes_SetFrameIncrement(PyObject *self, PyObject *args)
 {
-    AnimationAttributesObject *obj = (AnimationAttributesObject *)self;
+    PyAnimationAttributesObject *obj = (PyAnimationAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -282,7 +311,7 @@ AnimationAttributes_SetFrameIncrement(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnimationAttributes_GetFrameIncrement(PyObject *self, PyObject *args)
 {
-    AnimationAttributesObject *obj = (AnimationAttributesObject *)self;
+    PyAnimationAttributesObject *obj = (PyAnimationAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetFrameIncrement()));
     return retval;
 }
@@ -290,7 +319,7 @@ AnimationAttributes_GetFrameIncrement(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnimationAttributes_SetTimeout(PyObject *self, PyObject *args)
 {
-    AnimationAttributesObject *obj = (AnimationAttributesObject *)self;
+    PyAnimationAttributesObject *obj = (PyAnimationAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -342,7 +371,7 @@ AnimationAttributes_SetTimeout(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnimationAttributes_GetTimeout(PyObject *self, PyObject *args)
 {
-    AnimationAttributesObject *obj = (AnimationAttributesObject *)self;
+    PyAnimationAttributesObject *obj = (PyAnimationAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetTimeout()));
     return retval;
 }
@@ -350,7 +379,7 @@ AnimationAttributes_GetTimeout(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnimationAttributes_SetPlaybackMode(PyObject *self, PyObject *args)
 {
-    AnimationAttributesObject *obj = (AnimationAttributesObject *)self;
+    PyAnimationAttributesObject *obj = (PyAnimationAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -409,7 +438,7 @@ AnimationAttributes_SetPlaybackMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AnimationAttributes_GetPlaybackMode(PyObject *self, PyObject *args)
 {
-    AnimationAttributesObject *obj = (AnimationAttributesObject *)self;
+    PyAnimationAttributesObject *obj = (PyAnimationAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetPlaybackMode()));
     return retval;
 }
@@ -417,7 +446,8 @@ AnimationAttributes_GetPlaybackMode(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyAnimationAttributes_methods[ANIMATIONATTRIBUTES_NMETH] = {
-    {"Notify", AnimationAttributes_Notify, METH_VARARGS},
+    {"__dir__", AnimationAttributes_dir, METH_NOARGS},
+    {"Notify", AnimationAttributes_Notify, METH_NOARGS},
     {"SetAnimationMode", AnimationAttributes_SetAnimationMode, METH_VARARGS},
     {"GetAnimationMode", AnimationAttributes_GetAnimationMode, METH_VARARGS},
     {"SetPipelineCachingMode", AnimationAttributes_SetPipelineCachingMode, METH_VARARGS},
@@ -436,19 +466,22 @@ PyMethodDef PyAnimationAttributes_methods[ANIMATIONATTRIBUTES_NMETH] = {
 //
 
 static void
-AnimationAttributes_dealloc(PyObject *v)
+PyAnimationAttributes_dealloc(PyObject *v)
 {
-   AnimationAttributesObject *obj = (AnimationAttributesObject *)v;
+   PyAnimationAttributesObject *obj = (PyAnimationAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *AnimationAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyAnimationAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyAnimationAttributes_getattr(PyObject *self, char *name)
+PyAnimationAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "animationMode") == 0)
         return AnimationAttributes_GetAnimationMode(self, NULL);
     if(strcmp(name, "ReversePlayMode") == 0)
@@ -474,26 +507,19 @@ PyAnimationAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(AnimationAttributes::Swing));
 
 
+    PyObject *meth = Py_FindMethod(PyAnimationAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyAnimationAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyAnimationAttributes_methods[i].ml_name),
-                PyString_FromString(PyAnimationAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyAnimationAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyAnimationAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyAnimationAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "animationMode") == 0)
         obj = AnimationAttributes_SetAnimationMode(self, args);
@@ -505,6 +531,12 @@ PyAnimationAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = AnimationAttributes_SetTimeout(self, args);
     else if(strcmp(name, "playbackMode") == 0)
         obj = AnimationAttributes_SetPlaybackMode(self, args);
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -520,78 +552,45 @@ PyAnimationAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-AnimationAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    AnimationAttributesObject *obj = (AnimationAttributesObject *)v;
-    fprintf(fp, "%s", PyAnimationAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-AnimationAttributes_str(PyObject *v)
+PyAnimationAttributes_str(PyObject *v)
 {
-    AnimationAttributesObject *obj = (AnimationAttributesObject *)v;
+    PyAnimationAttributesObject *obj = (PyAnimationAttributesObject *)v;
     return PyString_FromString(PyAnimationAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *AnimationAttributes_Purpose = "This class contains the animation attributes.";
-#else
-static char *AnimationAttributes_Purpose = "This class contains the animation attributes.";
-#endif
+static char const *PyAnimationAttributes_purpose = "This class contains the animation attributes.";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(AnimationAttributesType,         \
-                  "AnimationAttributes",           \
-                  AnimationAttributesObject,       \
-                  AnimationAttributes_dealloc,     \
-                  AnimationAttributes_print,       \
-                  PyAnimationAttributes_getattr,   \
-                  PyAnimationAttributes_setattr,   \
-                  AnimationAttributes_str,         \
-                  AnimationAttributes_Purpose,     \
-                  AnimationAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(AnimationAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-AnimationAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyAnimationAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &AnimationAttributesType
-         || Py_TYPE(other) != &AnimationAttributesType)
+    if ( Py_TYPE(self) != &PyAnimationAttributesType
+         || Py_TYPE(other) != &PyAnimationAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    AnimationAttributes *a = ((AnimationAttributesObject *)self)->data;
-    AnimationAttributes *b = ((AnimationAttributesObject *)other)->data;
+    AnimationAttributes *a = ((PyAnimationAttributesObject *)self)->data;
+    AnimationAttributes *b = ((PyAnimationAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -620,8 +619,8 @@ static AnimationAttributes *currentAtts = 0;
 static PyObject *
 NewAnimationAttributes(int useCurrent)
 {
-    AnimationAttributesObject *newObject;
-    newObject = PyObject_NEW(AnimationAttributesObject, &AnimationAttributesType);
+    PyAnimationAttributesObject *newObject;
+    newObject = PyObject_NEW(PyAnimationAttributesObject, &PyAnimationAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -632,14 +631,15 @@ NewAnimationAttributes(int useCurrent)
         newObject->data = new AnimationAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyAnimationAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapAnimationAttributes(const AnimationAttributes *attr)
 {
-    AnimationAttributesObject *newObject;
-    newObject = PyObject_NEW(AnimationAttributesObject, &AnimationAttributesType);
+    PyAnimationAttributesObject *newObject;
+    newObject = PyObject_NEW(PyAnimationAttributesObject, &PyAnimationAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (AnimationAttributes *)attr;
@@ -741,13 +741,13 @@ PyAnimationAttributes_GetMethodTable(int *nMethods)
 bool
 PyAnimationAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &AnimationAttributesType);
+    return (obj->ob_type == &PyAnimationAttributesType);
 }
 
 AnimationAttributes *
 PyAnimationAttributes_FromPyObject(PyObject *obj)
 {
-    AnimationAttributesObject *obj2 = (AnimationAttributesObject *)obj;
+    PyAnimationAttributesObject *obj2 = (PyAnimationAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -766,7 +766,7 @@ PyAnimationAttributes_Wrap(const AnimationAttributes *attr)
 void
 PyAnimationAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    AnimationAttributesObject *obj2 = (AnimationAttributesObject *)obj;
+    PyAnimationAttributesObject *obj2 = (PyAnimationAttributesObject *)obj;
     obj2->parent = parent;
 }
 

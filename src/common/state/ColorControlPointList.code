@@ -1,5 +1,5 @@
 Target: xml2python
-Code: PyColorControlPointList_getattr
+Code: PyColorControlPointList_getattro
 Prefix:
 #include <visit-config.h>
 Postfix:
@@ -22,7 +22,7 @@ Postfix:
 #endif
 
 
-Code: PyColorControlPointList_setattr
+Code: PyColorControlPointList_setattro
 Prefix:
 #include <visit-config.h>
 Postfix:
@@ -1250,7 +1250,7 @@ Definition:
 PyObject *
 ColorControlPointList_SetNumControlPoints(PyObject *self, PyObject *args)
 {
-    ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
+    PyColorControlPointListObject *obj = (PyColorControlPointListObject *)self;
     int numItems = -1;
     if(!PyArg_ParseTuple(args, "i", &numItems))
         return PyErr_Format(PyExc_TypeError, "Expecting integer argument");

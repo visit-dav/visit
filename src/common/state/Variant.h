@@ -32,6 +32,9 @@ class Connection;
 //    Cyrus Harrison, Wed Jan  9 14:16:38 PST 2013
 //    Added conversion helpers for numeric types (ToFloat,ToFloatVector,...etc)
 //
+//    Kathleen Biagas, Tue Mar 25, 2025
+//    Added ConvertToPythonTupleString, IsVector.
+//
 // ****************************************************************************
 
 class STATE_API Variant
@@ -152,9 +155,10 @@ class STATE_API Variant
 
     bool                      IsNumeric()       const;
     bool                      IsNumericVector() const;
+    bool                      IsVector() const;
 
     std::string              &ConvertToString();
-
+    std::string              &ConvertToPythonTupleString();
 
     void                      SetValue(const Variant&);
     virtual void              SetValue(const XMLNode&,bool decodeString = true);

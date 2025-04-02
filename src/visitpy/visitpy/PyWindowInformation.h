@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define WINDOWINFORMATION_NMETH 60
+#define WINDOWINFORMATION_NMETH 61
 void VISITPY_API           PyWindowInformation_StartUp(WindowInformation *subj, void *data);
 void VISITPY_API           PyWindowInformation_CloseDown();
 VISITPY_API PyMethodDef *  PyWindowInformation_GetMethodTable(int *nMethods);
@@ -24,8 +24,8 @@ void VISITPY_API           PyWindowInformation_SetParent(PyObject *obj, PyObject
 void VISITPY_API           PyWindowInformation_SetDefaults(const WindowInformation *atts);
 std::string VISITPY_API    PyWindowInformation_GetLogString();
 std::string VISITPY_API    PyWindowInformation_ToString(const WindowInformation *, const char *, const bool=false);
-VISITPY_API PyObject *     PyWindowInformation_getattr(PyObject *self, char *name);
-int VISITPY_API            PyWindowInformation_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyWindowInformation_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyWindowInformation_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyWindowInformation_methods[WINDOWINFORMATION_NMETH];
 
 #endif

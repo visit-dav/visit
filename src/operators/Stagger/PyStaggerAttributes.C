@@ -5,6 +5,7 @@
 #include <PyStaggerAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a StaggerAttributes.
 //
-struct StaggerAttributesObject
+struct PyStaggerAttributesObject
 {
     PyObject_HEAD
     StaggerAttributes *data;
@@ -53,16 +54,44 @@ PyStaggerAttributes_ToString(const StaggerAttributes *atts, const char *prefix, 
 static PyObject *
 StaggerAttributes_Notify(PyObject *self, PyObject *args)
 {
-    StaggerAttributesObject *obj = (StaggerAttributesObject *)self;
+    PyStaggerAttributesObject *obj = (PyStaggerAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+StaggerAttributes_dir(PyObject *self, PyObject *args)
+{
+    static StaggerAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyStaggerAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 StaggerAttributes_SetOffsetX(PyObject *self, PyObject *args)
 {
-    StaggerAttributesObject *obj = (StaggerAttributesObject *)self;
+    PyStaggerAttributesObject *obj = (PyStaggerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -114,7 +143,7 @@ StaggerAttributes_SetOffsetX(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 StaggerAttributes_GetOffsetX(PyObject *self, PyObject *args)
 {
-    StaggerAttributesObject *obj = (StaggerAttributesObject *)self;
+    PyStaggerAttributesObject *obj = (PyStaggerAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetOffsetX());
     return retval;
 }
@@ -122,7 +151,7 @@ StaggerAttributes_GetOffsetX(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 StaggerAttributes_SetOffsetY(PyObject *self, PyObject *args)
 {
-    StaggerAttributesObject *obj = (StaggerAttributesObject *)self;
+    PyStaggerAttributesObject *obj = (PyStaggerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -174,7 +203,7 @@ StaggerAttributes_SetOffsetY(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 StaggerAttributes_GetOffsetY(PyObject *self, PyObject *args)
 {
-    StaggerAttributesObject *obj = (StaggerAttributesObject *)self;
+    PyStaggerAttributesObject *obj = (PyStaggerAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetOffsetY());
     return retval;
 }
@@ -182,7 +211,7 @@ StaggerAttributes_GetOffsetY(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 StaggerAttributes_SetOffsetZ(PyObject *self, PyObject *args)
 {
-    StaggerAttributesObject *obj = (StaggerAttributesObject *)self;
+    PyStaggerAttributesObject *obj = (PyStaggerAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -234,7 +263,7 @@ StaggerAttributes_SetOffsetZ(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 StaggerAttributes_GetOffsetZ(PyObject *self, PyObject *args)
 {
-    StaggerAttributesObject *obj = (StaggerAttributesObject *)self;
+    PyStaggerAttributesObject *obj = (PyStaggerAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetOffsetZ());
     return retval;
 }
@@ -242,7 +271,8 @@ StaggerAttributes_GetOffsetZ(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyStaggerAttributes_methods[STAGGERATTRIBUTES_NMETH] = {
-    {"Notify", StaggerAttributes_Notify, METH_VARARGS},
+    {"__dir__", StaggerAttributes_dir, METH_NOARGS},
+    {"Notify", StaggerAttributes_Notify, METH_NOARGS},
     {"SetOffsetX", StaggerAttributes_SetOffsetX, METH_VARARGS},
     {"GetOffsetX", StaggerAttributes_GetOffsetX, METH_VARARGS},
     {"SetOffsetY", StaggerAttributes_SetOffsetY, METH_VARARGS},
@@ -257,19 +287,22 @@ PyMethodDef PyStaggerAttributes_methods[STAGGERATTRIBUTES_NMETH] = {
 //
 
 static void
-StaggerAttributes_dealloc(PyObject *v)
+PyStaggerAttributes_dealloc(PyObject *v)
 {
-   StaggerAttributesObject *obj = (StaggerAttributesObject *)v;
+   PyStaggerAttributesObject *obj = (PyStaggerAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *StaggerAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyStaggerAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyStaggerAttributes_getattr(PyObject *self, char *name)
+PyStaggerAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "offsetX") == 0)
         return StaggerAttributes_GetOffsetX(self, NULL);
     if(strcmp(name, "offsetY") == 0)
@@ -277,26 +310,19 @@ PyStaggerAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "offsetZ") == 0)
         return StaggerAttributes_GetOffsetZ(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyStaggerAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyStaggerAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyStaggerAttributes_methods[i].ml_name),
-                PyString_FromString(PyStaggerAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyStaggerAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyStaggerAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyStaggerAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "offsetX") == 0)
         obj = StaggerAttributes_SetOffsetX(self, args);
@@ -304,6 +330,12 @@ PyStaggerAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = StaggerAttributes_SetOffsetY(self, args);
     else if(strcmp(name, "offsetZ") == 0)
         obj = StaggerAttributes_SetOffsetZ(self, args);
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -319,78 +351,45 @@ PyStaggerAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-StaggerAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    StaggerAttributesObject *obj = (StaggerAttributesObject *)v;
-    fprintf(fp, "%s", PyStaggerAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-StaggerAttributes_str(PyObject *v)
+PyStaggerAttributes_str(PyObject *v)
 {
-    StaggerAttributesObject *obj = (StaggerAttributesObject *)v;
+    PyStaggerAttributesObject *obj = (PyStaggerAttributesObject *)v;
     return PyString_FromString(PyStaggerAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *StaggerAttributes_Purpose = "This class contains attributes for the stagger operator.";
-#else
-static char *StaggerAttributes_Purpose = "This class contains attributes for the stagger operator.";
-#endif
+static char const *PyStaggerAttributes_purpose = "This class contains attributes for the stagger operator.";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(StaggerAttributesType,         \
-                  "StaggerAttributes",           \
-                  StaggerAttributesObject,       \
-                  StaggerAttributes_dealloc,     \
-                  StaggerAttributes_print,       \
-                  PyStaggerAttributes_getattr,   \
-                  PyStaggerAttributes_setattr,   \
-                  StaggerAttributes_str,         \
-                  StaggerAttributes_Purpose,     \
-                  StaggerAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(StaggerAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-StaggerAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyStaggerAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &StaggerAttributesType
-         || Py_TYPE(other) != &StaggerAttributesType)
+    if ( Py_TYPE(self) != &PyStaggerAttributesType
+         || Py_TYPE(other) != &PyStaggerAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    StaggerAttributes *a = ((StaggerAttributesObject *)self)->data;
-    StaggerAttributes *b = ((StaggerAttributesObject *)other)->data;
+    StaggerAttributes *a = ((PyStaggerAttributesObject *)self)->data;
+    StaggerAttributes *b = ((PyStaggerAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -419,8 +418,8 @@ static StaggerAttributes *currentAtts = 0;
 static PyObject *
 NewStaggerAttributes(int useCurrent)
 {
-    StaggerAttributesObject *newObject;
-    newObject = PyObject_NEW(StaggerAttributesObject, &StaggerAttributesType);
+    PyStaggerAttributesObject *newObject;
+    newObject = PyObject_NEW(PyStaggerAttributesObject, &PyStaggerAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -431,14 +430,15 @@ NewStaggerAttributes(int useCurrent)
         newObject->data = new StaggerAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyStaggerAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapStaggerAttributes(const StaggerAttributes *attr)
 {
-    StaggerAttributesObject *newObject;
-    newObject = PyObject_NEW(StaggerAttributesObject, &StaggerAttributesType);
+    PyStaggerAttributesObject *newObject;
+    newObject = PyObject_NEW(PyStaggerAttributesObject, &PyStaggerAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (StaggerAttributes *)attr;
@@ -540,13 +540,13 @@ PyStaggerAttributes_GetMethodTable(int *nMethods)
 bool
 PyStaggerAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &StaggerAttributesType);
+    return (obj->ob_type == &PyStaggerAttributesType);
 }
 
 StaggerAttributes *
 PyStaggerAttributes_FromPyObject(PyObject *obj)
 {
-    StaggerAttributesObject *obj2 = (StaggerAttributesObject *)obj;
+    PyStaggerAttributesObject *obj2 = (PyStaggerAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -565,7 +565,7 @@ PyStaggerAttributes_Wrap(const StaggerAttributes *attr)
 void
 PyStaggerAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    StaggerAttributesObject *obj2 = (StaggerAttributesObject *)obj;
+    PyStaggerAttributesObject *obj2 = (PyStaggerAttributesObject *)obj;
     obj2->parent = parent;
 }
 

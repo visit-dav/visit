@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define INVERSEGHOSTZONEATTRIBUTES_NMETH 16
+#define INVERSEGHOSTZONEATTRIBUTES_NMETH 17
 void           PyInverseGhostZoneAttributes_StartUp(InverseGhostZoneAttributes *subj, void *data);
 void           PyInverseGhostZoneAttributes_CloseDown();
 PyMethodDef *  PyInverseGhostZoneAttributes_GetMethodTable(int *nMethods);
@@ -23,8 +23,8 @@ void           PyInverseGhostZoneAttributes_SetParent(PyObject *obj, PyObject *p
 void           PyInverseGhostZoneAttributes_SetDefaults(const InverseGhostZoneAttributes *atts);
 std::string    PyInverseGhostZoneAttributes_GetLogString();
 std::string    PyInverseGhostZoneAttributes_ToString(const InverseGhostZoneAttributes *, const char *, const bool=false);
-PyObject *     PyInverseGhostZoneAttributes_getattr(PyObject *self, char *name);
-int            PyInverseGhostZoneAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PyInverseGhostZoneAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyInverseGhostZoneAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PyInverseGhostZoneAttributes_methods[INVERSEGHOSTZONEATTRIBUTES_NMETH];
 
 #endif

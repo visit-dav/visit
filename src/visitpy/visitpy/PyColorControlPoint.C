@@ -5,6 +5,7 @@
 #include <PyColorControlPoint.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a ColorControlPoint.
 //
-struct ColorControlPointObject
+struct PyColorControlPointObject
 {
     PyObject_HEAD
     ColorControlPoint *data;
@@ -65,16 +66,44 @@ PyColorControlPoint_ToString(const ColorControlPoint *atts, const char *prefix, 
 static PyObject *
 ColorControlPoint_Notify(PyObject *self, PyObject *args)
 {
-    ColorControlPointObject *obj = (ColorControlPointObject *)self;
+    PyColorControlPointObject *obj = (PyColorControlPointObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+ColorControlPoint_dir(PyObject *self, PyObject *args)
+{
+    static ColorControlPoint atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyColorControlPoint_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 ColorControlPoint_SetColors(PyObject *self, PyObject *args)
 {
-    ColorControlPointObject *obj = (ColorControlPointObject *)self;
+    PyColorControlPointObject *obj = (PyColorControlPointObject *)self;
 
     typedef unsigned char uchar;
     PyObject *packaged_args = 0;
@@ -142,7 +171,7 @@ ColorControlPoint_SetColors(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ColorControlPoint_GetColors(PyObject *self, PyObject *args)
 {
-    ColorControlPointObject *obj = (ColorControlPointObject *)self;
+    PyColorControlPointObject *obj = (PyColorControlPointObject *)self;
     // Allocate a tuple the with enough entries to hold the colors.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *colors = obj->data->GetColors();
@@ -154,7 +183,7 @@ ColorControlPoint_GetColors(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ColorControlPoint_SetPosition(PyObject *self, PyObject *args)
 {
-    ColorControlPointObject *obj = (ColorControlPointObject *)self;
+    PyColorControlPointObject *obj = (PyColorControlPointObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -206,7 +235,7 @@ ColorControlPoint_SetPosition(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ColorControlPoint_GetPosition(PyObject *self, PyObject *args)
 {
-    ColorControlPointObject *obj = (ColorControlPointObject *)self;
+    PyColorControlPointObject *obj = (PyColorControlPointObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetPosition()));
     return retval;
 }
@@ -214,7 +243,8 @@ ColorControlPoint_GetPosition(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyColorControlPoint_methods[COLORCONTROLPOINT_NMETH] = {
-    {"Notify", ColorControlPoint_Notify, METH_VARARGS},
+    {"__dir__", ColorControlPoint_dir, METH_NOARGS},
+    {"Notify", ColorControlPoint_Notify, METH_NOARGS},
     {"SetColors", ColorControlPoint_SetColors, METH_VARARGS},
     {"GetColors", ColorControlPoint_GetColors, METH_VARARGS},
     {"SetPosition", ColorControlPoint_SetPosition, METH_VARARGS},
@@ -227,49 +257,51 @@ PyMethodDef PyColorControlPoint_methods[COLORCONTROLPOINT_NMETH] = {
 //
 
 static void
-ColorControlPoint_dealloc(PyObject *v)
+PyColorControlPoint_dealloc(PyObject *v)
 {
-   ColorControlPointObject *obj = (ColorControlPointObject *)v;
+   PyColorControlPointObject *obj = (PyColorControlPointObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *ColorControlPoint_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyColorControlPoint_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyColorControlPoint_getattr(PyObject *self, char *name)
+PyColorControlPoint_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "colors") == 0)
         return ColorControlPoint_GetColors(self, NULL);
     if(strcmp(name, "position") == 0)
         return ColorControlPoint_GetPosition(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyColorControlPoint_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyColorControlPoint_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyColorControlPoint_methods[i].ml_name),
-                PyString_FromString(PyColorControlPoint_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyColorControlPoint_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyColorControlPoint_setattr(PyObject *self, char *name, PyObject *args)
+PyColorControlPoint_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "colors") == 0)
         obj = ColorControlPoint_SetColors(self, args);
     else if(strcmp(name, "position") == 0)
         obj = ColorControlPoint_SetPosition(self, args);
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -285,78 +317,45 @@ PyColorControlPoint_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ColorControlPoint_print(PyObject *v, FILE *fp, int flags)
-{
-    ColorControlPointObject *obj = (ColorControlPointObject *)v;
-    fprintf(fp, "%s", PyColorControlPoint_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-ColorControlPoint_str(PyObject *v)
+PyColorControlPoint_str(PyObject *v)
 {
-    ColorControlPointObject *obj = (ColorControlPointObject *)v;
+    PyColorControlPointObject *obj = (PyColorControlPointObject *)v;
     return PyString_FromString(PyColorControlPoint_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *ColorControlPoint_Purpose = "This class contains an RGBA color with a position value.";
-#else
-static char *ColorControlPoint_Purpose = "This class contains an RGBA color with a position value.";
-#endif
+static char const *PyColorControlPoint_purpose = "This class contains an RGBA color with a position value.";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(ColorControlPointType,         \
-                  "ColorControlPoint",           \
-                  ColorControlPointObject,       \
-                  ColorControlPoint_dealloc,     \
-                  ColorControlPoint_print,       \
-                  PyColorControlPoint_getattr,   \
-                  PyColorControlPoint_setattr,   \
-                  ColorControlPoint_str,         \
-                  ColorControlPoint_Purpose,     \
-                  ColorControlPoint_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(ColorControlPoint);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-ColorControlPoint_richcompare(PyObject *self, PyObject *other, int op)
+PyColorControlPoint_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &ColorControlPointType
-         || Py_TYPE(other) != &ColorControlPointType)
+    if ( Py_TYPE(self) != &PyColorControlPointType
+         || Py_TYPE(other) != &PyColorControlPointType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    ColorControlPoint *a = ((ColorControlPointObject *)self)->data;
-    ColorControlPoint *b = ((ColorControlPointObject *)other)->data;
+    ColorControlPoint *a = ((PyColorControlPointObject *)self)->data;
+    ColorControlPoint *b = ((PyColorControlPointObject *)other)->data;
 
     switch (op)
     {
@@ -385,8 +384,8 @@ static ColorControlPoint *currentAtts = 0;
 static PyObject *
 NewColorControlPoint(int useCurrent)
 {
-    ColorControlPointObject *newObject;
-    newObject = PyObject_NEW(ColorControlPointObject, &ColorControlPointType);
+    PyColorControlPointObject *newObject;
+    newObject = PyObject_NEW(PyColorControlPointObject, &PyColorControlPointType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -397,14 +396,15 @@ NewColorControlPoint(int useCurrent)
         newObject->data = new ColorControlPoint;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyColorControlPointType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapColorControlPoint(const ColorControlPoint *attr)
 {
-    ColorControlPointObject *newObject;
-    newObject = PyObject_NEW(ColorControlPointObject, &ColorControlPointType);
+    PyColorControlPointObject *newObject;
+    newObject = PyObject_NEW(PyColorControlPointObject, &PyColorControlPointType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (ColorControlPoint *)attr;
@@ -506,13 +506,13 @@ PyColorControlPoint_GetMethodTable(int *nMethods)
 bool
 PyColorControlPoint_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ColorControlPointType);
+    return (obj->ob_type == &PyColorControlPointType);
 }
 
 ColorControlPoint *
 PyColorControlPoint_FromPyObject(PyObject *obj)
 {
-    ColorControlPointObject *obj2 = (ColorControlPointObject *)obj;
+    PyColorControlPointObject *obj2 = (PyColorControlPointObject *)obj;
     return obj2->data;
 }
 
@@ -531,7 +531,7 @@ PyColorControlPoint_Wrap(const ColorControlPoint *attr)
 void
 PyColorControlPoint_SetParent(PyObject *obj, PyObject *parent)
 {
-    ColorControlPointObject *obj2 = (ColorControlPointObject *)obj;
+    PyColorControlPointObject *obj2 = (PyColorControlPointObject *)obj;
     obj2->parent = parent;
 }
 

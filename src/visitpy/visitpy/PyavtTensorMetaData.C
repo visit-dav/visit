@@ -5,6 +5,7 @@
 #include <PyavtTensorMetaData.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a avtTensorMetaData.
 //
-struct avtTensorMetaDataObject
+struct PyavtTensorMetaDataObject
 {
     PyObject_HEAD
     avtTensorMetaData *data;
@@ -51,16 +52,44 @@ PyavtTensorMetaData_ToString(const avtTensorMetaData *atts, const char *prefix, 
 static PyObject *
 avtTensorMetaData_Notify(PyObject *self, PyObject *args)
 {
-    avtTensorMetaDataObject *obj = (avtTensorMetaDataObject *)self;
+    PyavtTensorMetaDataObject *obj = (PyavtTensorMetaDataObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+avtTensorMetaData_dir(PyObject *self, PyObject *args)
+{
+    static avtTensorMetaData atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyavtTensorMetaData_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 avtTensorMetaData_SetDim(PyObject *self, PyObject *args)
 {
-    avtTensorMetaDataObject *obj = (avtTensorMetaDataObject *)self;
+    PyavtTensorMetaDataObject *obj = (PyavtTensorMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -112,7 +141,7 @@ avtTensorMetaData_SetDim(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtTensorMetaData_GetDim(PyObject *self, PyObject *args)
 {
-    avtTensorMetaDataObject *obj = (avtTensorMetaDataObject *)self;
+    PyavtTensorMetaDataObject *obj = (PyavtTensorMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->dim));
     return retval;
 }
@@ -120,7 +149,8 @@ avtTensorMetaData_GetDim(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyavtTensorMetaData_methods[AVTTENSORMETADATA_NMETH] = {
-    {"Notify", avtTensorMetaData_Notify, METH_VARARGS},
+    {"__dir__", avtTensorMetaData_dir, METH_NOARGS},
+    {"Notify", avtTensorMetaData_Notify, METH_NOARGS},
     {"SetDim", avtTensorMetaData_SetDim, METH_VARARGS},
     {"GetDim", avtTensorMetaData_GetDim, METH_VARARGS},
     {NULL, NULL}
@@ -151,57 +181,59 @@ static void PyavtTensorMetaData_ExtendSetGetMethodTable()
 //
 
 static void
-avtTensorMetaData_dealloc(PyObject *v)
+PyavtTensorMetaData_dealloc(PyObject *v)
 {
-   avtTensorMetaDataObject *obj = (avtTensorMetaDataObject *)v;
+   PyavtTensorMetaDataObject *obj = (PyavtTensorMetaDataObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *avtTensorMetaData_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyavtTensorMetaData_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyavtTensorMetaData_getattr(PyObject *self, char *name)
+PyavtTensorMetaData_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "dim") == 0)
         return avtTensorMetaData_GetDim(self, NULL);
 
     if(strcmp(name, "__methods__") != 0)
     {
-        PyObject *retval = PyavtVarMetaData_getattr(self, name);
+        PyObject *retval = PyavtVarMetaData_getattro(self, attr_name);
         if (retval) return retval;
     }
 
     PyavtTensorMetaData_ExtendSetGetMethodTable();
+    PyObject *meth = Py_FindMethod(PyavtTensorMetaData_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyavtTensorMetaData_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyavtTensorMetaData_methods[i].ml_name),
-                PyString_FromString(PyavtTensorMetaData_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyavtTensorMetaData_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyavtTensorMetaData_setattr(PyObject *self, char *name, PyObject *args)
+PyavtTensorMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
-    if (PyavtVarMetaData_setattr(self, name, args) != -1)
+    if (PyavtVarMetaData_setattro(self, attr_name, args) != -1)
         return 0;
     else
         PyErr_Clear();
 
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "dim") == 0)
         obj = avtTensorMetaData_SetDim(self, args);
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -217,78 +249,45 @@ PyavtTensorMetaData_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-avtTensorMetaData_print(PyObject *v, FILE *fp, int flags)
-{
-    avtTensorMetaDataObject *obj = (avtTensorMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtTensorMetaData_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-avtTensorMetaData_str(PyObject *v)
+PyavtTensorMetaData_str(PyObject *v)
 {
-    avtTensorMetaDataObject *obj = (avtTensorMetaDataObject *)v;
+    PyavtTensorMetaDataObject *obj = (PyavtTensorMetaDataObject *)v;
     return PyString_FromString(PyavtTensorMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *avtTensorMetaData_Purpose = "Contains tensor metadata attributes";
-#else
-static char *avtTensorMetaData_Purpose = "Contains tensor metadata attributes";
-#endif
+static char const *PyavtTensorMetaData_purpose = "Contains tensor metadata attributes";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(avtTensorMetaDataType,         \
-                  "avtTensorMetaData",           \
-                  avtTensorMetaDataObject,       \
-                  avtTensorMetaData_dealloc,     \
-                  avtTensorMetaData_print,       \
-                  PyavtTensorMetaData_getattr,   \
-                  PyavtTensorMetaData_setattr,   \
-                  avtTensorMetaData_str,         \
-                  avtTensorMetaData_Purpose,     \
-                  avtTensorMetaData_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(avtTensorMetaData);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-avtTensorMetaData_richcompare(PyObject *self, PyObject *other, int op)
+PyavtTensorMetaData_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &avtTensorMetaDataType
-         || Py_TYPE(other) != &avtTensorMetaDataType)
+    if ( Py_TYPE(self) != &PyavtTensorMetaDataType
+         || Py_TYPE(other) != &PyavtTensorMetaDataType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    avtTensorMetaData *a = ((avtTensorMetaDataObject *)self)->data;
-    avtTensorMetaData *b = ((avtTensorMetaDataObject *)other)->data;
+    avtTensorMetaData *a = ((PyavtTensorMetaDataObject *)self)->data;
+    avtTensorMetaData *b = ((PyavtTensorMetaDataObject *)other)->data;
 
     switch (op)
     {
@@ -317,8 +316,8 @@ static avtTensorMetaData *currentAtts = 0;
 static PyObject *
 NewavtTensorMetaData(int useCurrent)
 {
-    avtTensorMetaDataObject *newObject;
-    newObject = PyObject_NEW(avtTensorMetaDataObject, &avtTensorMetaDataType);
+    PyavtTensorMetaDataObject *newObject;
+    newObject = PyObject_NEW(PyavtTensorMetaDataObject, &PyavtTensorMetaDataType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -329,14 +328,15 @@ NewavtTensorMetaData(int useCurrent)
         newObject->data = new avtTensorMetaData;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyavtTensorMetaDataType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapavtTensorMetaData(const avtTensorMetaData *attr)
 {
-    avtTensorMetaDataObject *newObject;
-    newObject = PyObject_NEW(avtTensorMetaDataObject, &avtTensorMetaDataType);
+    PyavtTensorMetaDataObject *newObject;
+    newObject = PyObject_NEW(PyavtTensorMetaDataObject, &PyavtTensorMetaDataType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (avtTensorMetaData *)attr;
@@ -438,13 +438,13 @@ PyavtTensorMetaData_GetMethodTable(int *nMethods)
 bool
 PyavtTensorMetaData_Check(PyObject *obj)
 {
-    return (obj->ob_type == &avtTensorMetaDataType);
+    return (obj->ob_type == &PyavtTensorMetaDataType);
 }
 
 avtTensorMetaData *
 PyavtTensorMetaData_FromPyObject(PyObject *obj)
 {
-    avtTensorMetaDataObject *obj2 = (avtTensorMetaDataObject *)obj;
+    PyavtTensorMetaDataObject *obj2 = (PyavtTensorMetaDataObject *)obj;
     return obj2->data;
 }
 
@@ -463,7 +463,7 @@ PyavtTensorMetaData_Wrap(const avtTensorMetaData *attr)
 void
 PyavtTensorMetaData_SetParent(PyObject *obj, PyObject *parent)
 {
-    avtTensorMetaDataObject *obj2 = (avtTensorMetaDataObject *)obj;
+    PyavtTensorMetaDataObject *obj2 = (PyavtTensorMetaDataObject *)obj;
     obj2->parent = parent;
 }
 

@@ -5,6 +5,7 @@
 #include <PyExportDBAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 #include "PyDBOptionsAttributes_Helpers.h"
 #include <PyDBOptionsAttributes.h>
@@ -25,7 +26,7 @@
 //
 // This struct contains the Python type information and a ExportDBAttributes.
 //
-struct ExportDBAttributesObject
+struct PyExportDBAttributesObject
 {
     PyObject_HEAD
     ExportDBAttributes *data;
@@ -110,16 +111,44 @@ PyExportDBAttributes_ToString(const ExportDBAttributes *atts, const char *prefix
 static PyObject *
 ExportDBAttributes_Notify(PyObject *self, PyObject *args)
 {
-    ExportDBAttributesObject *obj = (ExportDBAttributesObject *)self;
+    PyExportDBAttributesObject *obj = (PyExportDBAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+ExportDBAttributes_dir(PyObject *self, PyObject *args)
+{
+    static ExportDBAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyExportDBAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 ExportDBAttributes_SetAllTimes(PyObject *self, PyObject *args)
 {
-    ExportDBAttributesObject *obj = (ExportDBAttributesObject *)self;
+    PyExportDBAttributesObject *obj = (PyExportDBAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -171,7 +200,7 @@ ExportDBAttributes_SetAllTimes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExportDBAttributes_GetAllTimes(PyObject *self, PyObject *args)
 {
-    ExportDBAttributesObject *obj = (ExportDBAttributesObject *)self;
+    PyExportDBAttributesObject *obj = (PyExportDBAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetAllTimes()?1L:0L);
     return retval;
 }
@@ -179,7 +208,7 @@ ExportDBAttributes_GetAllTimes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExportDBAttributes_SetDirname(PyObject *self, PyObject *args)
 {
-    ExportDBAttributesObject *obj = (ExportDBAttributesObject *)self;
+    PyExportDBAttributesObject *obj = (PyExportDBAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -220,7 +249,7 @@ ExportDBAttributes_SetDirname(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExportDBAttributes_GetDirname(PyObject *self, PyObject *args)
 {
-    ExportDBAttributesObject *obj = (ExportDBAttributesObject *)self;
+    PyExportDBAttributesObject *obj = (PyExportDBAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetDirname().c_str());
     return retval;
 }
@@ -228,7 +257,7 @@ ExportDBAttributes_GetDirname(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExportDBAttributes_SetFilename(PyObject *self, PyObject *args)
 {
-    ExportDBAttributesObject *obj = (ExportDBAttributesObject *)self;
+    PyExportDBAttributesObject *obj = (PyExportDBAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -269,7 +298,7 @@ ExportDBAttributes_SetFilename(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExportDBAttributes_GetFilename(PyObject *self, PyObject *args)
 {
-    ExportDBAttributesObject *obj = (ExportDBAttributesObject *)self;
+    PyExportDBAttributesObject *obj = (PyExportDBAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetFilename().c_str());
     return retval;
 }
@@ -277,7 +306,7 @@ ExportDBAttributes_GetFilename(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExportDBAttributes_SetTimeStateFormat(PyObject *self, PyObject *args)
 {
-    ExportDBAttributesObject *obj = (ExportDBAttributesObject *)self;
+    PyExportDBAttributesObject *obj = (PyExportDBAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -318,7 +347,7 @@ ExportDBAttributes_SetTimeStateFormat(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExportDBAttributes_GetTimeStateFormat(PyObject *self, PyObject *args)
 {
-    ExportDBAttributesObject *obj = (ExportDBAttributesObject *)self;
+    PyExportDBAttributesObject *obj = (PyExportDBAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetTimeStateFormat().c_str());
     return retval;
 }
@@ -326,7 +355,7 @@ ExportDBAttributes_GetTimeStateFormat(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExportDBAttributes_SetDb_type(PyObject *self, PyObject *args)
 {
-    ExportDBAttributesObject *obj = (ExportDBAttributesObject *)self;
+    PyExportDBAttributesObject *obj = (PyExportDBAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -367,7 +396,7 @@ ExportDBAttributes_SetDb_type(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExportDBAttributes_GetDb_type(PyObject *self, PyObject *args)
 {
-    ExportDBAttributesObject *obj = (ExportDBAttributesObject *)self;
+    PyExportDBAttributesObject *obj = (PyExportDBAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetDb_type().c_str());
     return retval;
 }
@@ -375,7 +404,7 @@ ExportDBAttributes_GetDb_type(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExportDBAttributes_SetDb_type_fullname(PyObject *self, PyObject *args)
 {
-    ExportDBAttributesObject *obj = (ExportDBAttributesObject *)self;
+    PyExportDBAttributesObject *obj = (PyExportDBAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -416,7 +445,7 @@ ExportDBAttributes_SetDb_type_fullname(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExportDBAttributes_GetDb_type_fullname(PyObject *self, PyObject *args)
 {
-    ExportDBAttributesObject *obj = (ExportDBAttributesObject *)self;
+    PyExportDBAttributesObject *obj = (PyExportDBAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetDb_type_fullname().c_str());
     return retval;
 }
@@ -424,7 +453,7 @@ ExportDBAttributes_GetDb_type_fullname(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExportDBAttributes_SetVariables(PyObject *self, PyObject *args)
 {
-    ExportDBAttributesObject *obj = (ExportDBAttributesObject *)self;
+    PyExportDBAttributesObject *obj = (PyExportDBAttributesObject *)self;
 
     stringVector vec;
 
@@ -481,7 +510,7 @@ ExportDBAttributes_SetVariables(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExportDBAttributes_GetVariables(PyObject *self, PyObject *args)
 {
-    ExportDBAttributesObject *obj = (ExportDBAttributesObject *)self;
+    PyExportDBAttributesObject *obj = (PyExportDBAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the variables.
     const stringVector &variables = obj->data->GetVariables();
     PyObject *retval = PyTuple_New(variables.size());
@@ -493,7 +522,7 @@ ExportDBAttributes_GetVariables(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExportDBAttributes_SetWriteUsingGroups(PyObject *self, PyObject *args)
 {
-    ExportDBAttributesObject *obj = (ExportDBAttributesObject *)self;
+    PyExportDBAttributesObject *obj = (PyExportDBAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -545,7 +574,7 @@ ExportDBAttributes_SetWriteUsingGroups(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExportDBAttributes_GetWriteUsingGroups(PyObject *self, PyObject *args)
 {
-    ExportDBAttributesObject *obj = (ExportDBAttributesObject *)self;
+    PyExportDBAttributesObject *obj = (PyExportDBAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetWriteUsingGroups()?1L:0L);
     return retval;
 }
@@ -553,7 +582,7 @@ ExportDBAttributes_GetWriteUsingGroups(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExportDBAttributes_SetGroupSize(PyObject *self, PyObject *args)
 {
-    ExportDBAttributesObject *obj = (ExportDBAttributesObject *)self;
+    PyExportDBAttributesObject *obj = (PyExportDBAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -605,7 +634,7 @@ ExportDBAttributes_SetGroupSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExportDBAttributes_GetGroupSize(PyObject *self, PyObject *args)
 {
-    ExportDBAttributesObject *obj = (ExportDBAttributesObject *)self;
+    PyExportDBAttributesObject *obj = (PyExportDBAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetGroupSize()));
     return retval;
 }
@@ -613,7 +642,7 @@ ExportDBAttributes_GetGroupSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExportDBAttributes_SetOpts(PyObject *self, PyObject *args)
 {
-    ExportDBAttributesObject *obj = (ExportDBAttributesObject *)self;
+    PyExportDBAttributesObject *obj = (PyExportDBAttributesObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -630,7 +659,7 @@ ExportDBAttributes_SetOpts(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ExportDBAttributes_GetOpts(PyObject *self, PyObject *args)
 {
-    ExportDBAttributesObject *obj = (ExportDBAttributesObject *)self;
+    PyExportDBAttributesObject *obj = (PyExportDBAttributesObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -646,7 +675,8 @@ ExportDBAttributes_GetOpts(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyExportDBAttributes_methods[EXPORTDBATTRIBUTES_NMETH] = {
-    {"Notify", ExportDBAttributes_Notify, METH_VARARGS},
+    {"__dir__", ExportDBAttributes_dir, METH_NOARGS},
+    {"Notify", ExportDBAttributes_Notify, METH_NOARGS},
     {"SetAllTimes", ExportDBAttributes_SetAllTimes, METH_VARARGS},
     {"GetAllTimes", ExportDBAttributes_GetAllTimes, METH_VARARGS},
     {"SetDirname", ExportDBAttributes_SetDirname, METH_VARARGS},
@@ -675,19 +705,22 @@ PyMethodDef PyExportDBAttributes_methods[EXPORTDBATTRIBUTES_NMETH] = {
 //
 
 static void
-ExportDBAttributes_dealloc(PyObject *v)
+PyExportDBAttributes_dealloc(PyObject *v)
 {
-   ExportDBAttributesObject *obj = (ExportDBAttributesObject *)v;
+   PyExportDBAttributesObject *obj = (PyExportDBAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *ExportDBAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyExportDBAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyExportDBAttributes_getattr(PyObject *self, char *name)
+PyExportDBAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "allTimes") == 0)
         return ExportDBAttributes_GetAllTimes(self, NULL);
     if(strcmp(name, "dirname") == 0)
@@ -709,26 +742,19 @@ PyExportDBAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "opts") == 0)
         return ExportDBAttributes_GetOpts(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyExportDBAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyExportDBAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyExportDBAttributes_methods[i].ml_name),
-                PyString_FromString(PyExportDBAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyExportDBAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyExportDBAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyExportDBAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "allTimes") == 0)
         obj = ExportDBAttributes_SetAllTimes(self, args);
@@ -751,6 +777,12 @@ PyExportDBAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "opts") == 0)
         obj = ExportDBAttributes_SetOpts(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -765,78 +797,45 @@ PyExportDBAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ExportDBAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    ExportDBAttributesObject *obj = (ExportDBAttributesObject *)v;
-    fprintf(fp, "%s", PyExportDBAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-ExportDBAttributes_str(PyObject *v)
+PyExportDBAttributes_str(PyObject *v)
 {
-    ExportDBAttributesObject *obj = (ExportDBAttributesObject *)v;
+    PyExportDBAttributesObject *obj = (PyExportDBAttributesObject *)v;
     return PyString_FromString(PyExportDBAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *ExportDBAttributes_Purpose = "The attributes for export a database";
-#else
-static char *ExportDBAttributes_Purpose = "The attributes for export a database";
-#endif
+static char const *PyExportDBAttributes_purpose = "The attributes for export a database";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(ExportDBAttributesType,         \
-                  "ExportDBAttributes",           \
-                  ExportDBAttributesObject,       \
-                  ExportDBAttributes_dealloc,     \
-                  ExportDBAttributes_print,       \
-                  PyExportDBAttributes_getattr,   \
-                  PyExportDBAttributes_setattr,   \
-                  ExportDBAttributes_str,         \
-                  ExportDBAttributes_Purpose,     \
-                  ExportDBAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(ExportDBAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-ExportDBAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyExportDBAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &ExportDBAttributesType
-         || Py_TYPE(other) != &ExportDBAttributesType)
+    if ( Py_TYPE(self) != &PyExportDBAttributesType
+         || Py_TYPE(other) != &PyExportDBAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    ExportDBAttributes *a = ((ExportDBAttributesObject *)self)->data;
-    ExportDBAttributes *b = ((ExportDBAttributesObject *)other)->data;
+    ExportDBAttributes *a = ((PyExportDBAttributesObject *)self)->data;
+    ExportDBAttributes *b = ((PyExportDBAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -865,8 +864,8 @@ static ExportDBAttributes *currentAtts = 0;
 static PyObject *
 NewExportDBAttributes(int useCurrent)
 {
-    ExportDBAttributesObject *newObject;
-    newObject = PyObject_NEW(ExportDBAttributesObject, &ExportDBAttributesType);
+    PyExportDBAttributesObject *newObject;
+    newObject = PyObject_NEW(PyExportDBAttributesObject, &PyExportDBAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -877,14 +876,15 @@ NewExportDBAttributes(int useCurrent)
         newObject->data = new ExportDBAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyExportDBAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapExportDBAttributes(const ExportDBAttributes *attr)
 {
-    ExportDBAttributesObject *newObject;
-    newObject = PyObject_NEW(ExportDBAttributesObject, &ExportDBAttributesType);
+    PyExportDBAttributesObject *newObject;
+    newObject = PyObject_NEW(PyExportDBAttributesObject, &PyExportDBAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (ExportDBAttributes *)attr;
@@ -986,13 +986,13 @@ PyExportDBAttributes_GetMethodTable(int *nMethods)
 bool
 PyExportDBAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ExportDBAttributesType);
+    return (obj->ob_type == &PyExportDBAttributesType);
 }
 
 ExportDBAttributes *
 PyExportDBAttributes_FromPyObject(PyObject *obj)
 {
-    ExportDBAttributesObject *obj2 = (ExportDBAttributesObject *)obj;
+    PyExportDBAttributesObject *obj2 = (PyExportDBAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1011,7 +1011,7 @@ PyExportDBAttributes_Wrap(const ExportDBAttributes *attr)
 void
 PyExportDBAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    ExportDBAttributesObject *obj2 = (ExportDBAttributesObject *)obj;
+    PyExportDBAttributesObject *obj2 = (PyExportDBAttributesObject *)obj;
     obj2->parent = parent;
 }
 

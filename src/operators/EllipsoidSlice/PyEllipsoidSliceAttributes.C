@@ -5,6 +5,7 @@
 #include <PyEllipsoidSliceAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a EllipsoidSliceAttributes.
 //
-struct EllipsoidSliceAttributesObject
+struct PyEllipsoidSliceAttributesObject
 {
     PyObject_HEAD
     EllipsoidSliceAttributes *data;
@@ -95,16 +96,44 @@ PyEllipsoidSliceAttributes_ToString(const EllipsoidSliceAttributes *atts, const 
 static PyObject *
 EllipsoidSliceAttributes_Notify(PyObject *self, PyObject *args)
 {
-    EllipsoidSliceAttributesObject *obj = (EllipsoidSliceAttributesObject *)self;
+    PyEllipsoidSliceAttributesObject *obj = (PyEllipsoidSliceAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+EllipsoidSliceAttributes_dir(PyObject *self, PyObject *args)
+{
+    static EllipsoidSliceAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyEllipsoidSliceAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 EllipsoidSliceAttributes_SetOrigin(PyObject *self, PyObject *args)
 {
-    EllipsoidSliceAttributesObject *obj = (EllipsoidSliceAttributesObject *)self;
+    PyEllipsoidSliceAttributesObject *obj = (PyEllipsoidSliceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetOrigin();
@@ -171,7 +200,7 @@ EllipsoidSliceAttributes_SetOrigin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 EllipsoidSliceAttributes_GetOrigin(PyObject *self, PyObject *args)
 {
-    EllipsoidSliceAttributesObject *obj = (EllipsoidSliceAttributesObject *)self;
+    PyEllipsoidSliceAttributesObject *obj = (PyEllipsoidSliceAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the origin.
     PyObject *retval = PyTuple_New(3);
     const double *origin = obj->data->GetOrigin();
@@ -183,7 +212,7 @@ EllipsoidSliceAttributes_GetOrigin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 EllipsoidSliceAttributes_SetRadii(PyObject *self, PyObject *args)
 {
-    EllipsoidSliceAttributesObject *obj = (EllipsoidSliceAttributesObject *)self;
+    PyEllipsoidSliceAttributesObject *obj = (PyEllipsoidSliceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetRadii();
@@ -250,7 +279,7 @@ EllipsoidSliceAttributes_SetRadii(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 EllipsoidSliceAttributes_GetRadii(PyObject *self, PyObject *args)
 {
-    EllipsoidSliceAttributesObject *obj = (EllipsoidSliceAttributesObject *)self;
+    PyEllipsoidSliceAttributesObject *obj = (PyEllipsoidSliceAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the radii.
     PyObject *retval = PyTuple_New(3);
     const double *radii = obj->data->GetRadii();
@@ -262,7 +291,7 @@ EllipsoidSliceAttributes_GetRadii(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 EllipsoidSliceAttributes_SetRotationAngle(PyObject *self, PyObject *args)
 {
-    EllipsoidSliceAttributesObject *obj = (EllipsoidSliceAttributesObject *)self;
+    PyEllipsoidSliceAttributesObject *obj = (PyEllipsoidSliceAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetRotationAngle();
@@ -329,7 +358,7 @@ EllipsoidSliceAttributes_SetRotationAngle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 EllipsoidSliceAttributes_GetRotationAngle(PyObject *self, PyObject *args)
 {
-    EllipsoidSliceAttributesObject *obj = (EllipsoidSliceAttributesObject *)self;
+    PyEllipsoidSliceAttributesObject *obj = (PyEllipsoidSliceAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the rotationAngle.
     PyObject *retval = PyTuple_New(3);
     const double *rotationAngle = obj->data->GetRotationAngle();
@@ -341,7 +370,8 @@ EllipsoidSliceAttributes_GetRotationAngle(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyEllipsoidSliceAttributes_methods[ELLIPSOIDSLICEATTRIBUTES_NMETH] = {
-    {"Notify", EllipsoidSliceAttributes_Notify, METH_VARARGS},
+    {"__dir__", EllipsoidSliceAttributes_dir, METH_NOARGS},
+    {"Notify", EllipsoidSliceAttributes_Notify, METH_NOARGS},
     {"SetOrigin", EllipsoidSliceAttributes_SetOrigin, METH_VARARGS},
     {"GetOrigin", EllipsoidSliceAttributes_GetOrigin, METH_VARARGS},
     {"SetRadii", EllipsoidSliceAttributes_SetRadii, METH_VARARGS},
@@ -356,19 +386,22 @@ PyMethodDef PyEllipsoidSliceAttributes_methods[ELLIPSOIDSLICEATTRIBUTES_NMETH] =
 //
 
 static void
-EllipsoidSliceAttributes_dealloc(PyObject *v)
+PyEllipsoidSliceAttributes_dealloc(PyObject *v)
 {
-   EllipsoidSliceAttributesObject *obj = (EllipsoidSliceAttributesObject *)v;
+   PyEllipsoidSliceAttributesObject *obj = (PyEllipsoidSliceAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *EllipsoidSliceAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyEllipsoidSliceAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyEllipsoidSliceAttributes_getattr(PyObject *self, char *name)
+PyEllipsoidSliceAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "origin") == 0)
         return EllipsoidSliceAttributes_GetOrigin(self, NULL);
     if(strcmp(name, "radii") == 0)
@@ -376,26 +409,19 @@ PyEllipsoidSliceAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "rotationAngle") == 0)
         return EllipsoidSliceAttributes_GetRotationAngle(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyEllipsoidSliceAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyEllipsoidSliceAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyEllipsoidSliceAttributes_methods[i].ml_name),
-                PyString_FromString(PyEllipsoidSliceAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyEllipsoidSliceAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyEllipsoidSliceAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyEllipsoidSliceAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "origin") == 0)
         obj = EllipsoidSliceAttributes_SetOrigin(self, args);
@@ -403,6 +429,12 @@ PyEllipsoidSliceAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = EllipsoidSliceAttributes_SetRadii(self, args);
     else if(strcmp(name, "rotationAngle") == 0)
         obj = EllipsoidSliceAttributes_SetRotationAngle(self, args);
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -418,78 +450,45 @@ PyEllipsoidSliceAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-EllipsoidSliceAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    EllipsoidSliceAttributesObject *obj = (EllipsoidSliceAttributesObject *)v;
-    fprintf(fp, "%s", PyEllipsoidSliceAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-EllipsoidSliceAttributes_str(PyObject *v)
+PyEllipsoidSliceAttributes_str(PyObject *v)
 {
-    EllipsoidSliceAttributesObject *obj = (EllipsoidSliceAttributesObject *)v;
+    PyEllipsoidSliceAttributesObject *obj = (PyEllipsoidSliceAttributesObject *)v;
     return PyString_FromString(PyEllipsoidSliceAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *EllipsoidSliceAttributes_Purpose = "EllipsoidSliceAttributes";
-#else
-static char *EllipsoidSliceAttributes_Purpose = "EllipsoidSliceAttributes";
-#endif
+static char const *PyEllipsoidSliceAttributes_purpose = "EllipsoidSliceAttributes";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(EllipsoidSliceAttributesType,         \
-                  "EllipsoidSliceAttributes",           \
-                  EllipsoidSliceAttributesObject,       \
-                  EllipsoidSliceAttributes_dealloc,     \
-                  EllipsoidSliceAttributes_print,       \
-                  PyEllipsoidSliceAttributes_getattr,   \
-                  PyEllipsoidSliceAttributes_setattr,   \
-                  EllipsoidSliceAttributes_str,         \
-                  EllipsoidSliceAttributes_Purpose,     \
-                  EllipsoidSliceAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(EllipsoidSliceAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-EllipsoidSliceAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyEllipsoidSliceAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &EllipsoidSliceAttributesType
-         || Py_TYPE(other) != &EllipsoidSliceAttributesType)
+    if ( Py_TYPE(self) != &PyEllipsoidSliceAttributesType
+         || Py_TYPE(other) != &PyEllipsoidSliceAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    EllipsoidSliceAttributes *a = ((EllipsoidSliceAttributesObject *)self)->data;
-    EllipsoidSliceAttributes *b = ((EllipsoidSliceAttributesObject *)other)->data;
+    EllipsoidSliceAttributes *a = ((PyEllipsoidSliceAttributesObject *)self)->data;
+    EllipsoidSliceAttributes *b = ((PyEllipsoidSliceAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -518,8 +517,8 @@ static EllipsoidSliceAttributes *currentAtts = 0;
 static PyObject *
 NewEllipsoidSliceAttributes(int useCurrent)
 {
-    EllipsoidSliceAttributesObject *newObject;
-    newObject = PyObject_NEW(EllipsoidSliceAttributesObject, &EllipsoidSliceAttributesType);
+    PyEllipsoidSliceAttributesObject *newObject;
+    newObject = PyObject_NEW(PyEllipsoidSliceAttributesObject, &PyEllipsoidSliceAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -530,14 +529,15 @@ NewEllipsoidSliceAttributes(int useCurrent)
         newObject->data = new EllipsoidSliceAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyEllipsoidSliceAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapEllipsoidSliceAttributes(const EllipsoidSliceAttributes *attr)
 {
-    EllipsoidSliceAttributesObject *newObject;
-    newObject = PyObject_NEW(EllipsoidSliceAttributesObject, &EllipsoidSliceAttributesType);
+    PyEllipsoidSliceAttributesObject *newObject;
+    newObject = PyObject_NEW(PyEllipsoidSliceAttributesObject, &PyEllipsoidSliceAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (EllipsoidSliceAttributes *)attr;
@@ -639,13 +639,13 @@ PyEllipsoidSliceAttributes_GetMethodTable(int *nMethods)
 bool
 PyEllipsoidSliceAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &EllipsoidSliceAttributesType);
+    return (obj->ob_type == &PyEllipsoidSliceAttributesType);
 }
 
 EllipsoidSliceAttributes *
 PyEllipsoidSliceAttributes_FromPyObject(PyObject *obj)
 {
-    EllipsoidSliceAttributesObject *obj2 = (EllipsoidSliceAttributesObject *)obj;
+    PyEllipsoidSliceAttributesObject *obj2 = (PyEllipsoidSliceAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -664,7 +664,7 @@ PyEllipsoidSliceAttributes_Wrap(const EllipsoidSliceAttributes *attr)
 void
 PyEllipsoidSliceAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    EllipsoidSliceAttributesObject *obj2 = (EllipsoidSliceAttributesObject *)obj;
+    PyEllipsoidSliceAttributesObject *obj2 = (PyEllipsoidSliceAttributesObject *)obj;
     obj2->parent = parent;
 }
 

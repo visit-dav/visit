@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define TUBEATTRIBUTES_NMETH 16
+#define TUBEATTRIBUTES_NMETH 17
 void           PyTubeAttributes_StartUp(TubeAttributes *subj, void *data);
 void           PyTubeAttributes_CloseDown();
 PyMethodDef *  PyTubeAttributes_GetMethodTable(int *nMethods);
@@ -23,8 +23,8 @@ void           PyTubeAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyTubeAttributes_SetDefaults(const TubeAttributes *atts);
 std::string    PyTubeAttributes_GetLogString();
 std::string    PyTubeAttributes_ToString(const TubeAttributes *, const char *, const bool=false);
-PyObject *     PyTubeAttributes_getattr(PyObject *self, char *name);
-int            PyTubeAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PyTubeAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyTubeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PyTubeAttributes_methods[TUBEATTRIBUTES_NMETH];
 
 #endif

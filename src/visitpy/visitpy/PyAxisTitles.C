@@ -5,6 +5,7 @@
 #include <PyAxisTitles.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 #include <PyFontAttributes.h>
 
@@ -24,7 +25,7 @@
 //
 // This struct contains the Python type information and a AxisTitles.
 //
-struct AxisTitlesObject
+struct PyAxisTitlesObject
 {
     PyObject_HEAD
     AxisTitles *data;
@@ -72,16 +73,44 @@ PyAxisTitles_ToString(const AxisTitles *atts, const char *prefix, const bool for
 static PyObject *
 AxisTitles_Notify(PyObject *self, PyObject *args)
 {
-    AxisTitlesObject *obj = (AxisTitlesObject *)self;
+    PyAxisTitlesObject *obj = (PyAxisTitlesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+AxisTitles_dir(PyObject *self, PyObject *args)
+{
+    static AxisTitles atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyAxisTitles_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 AxisTitles_SetVisible(PyObject *self, PyObject *args)
 {
-    AxisTitlesObject *obj = (AxisTitlesObject *)self;
+    PyAxisTitlesObject *obj = (PyAxisTitlesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -133,7 +162,7 @@ AxisTitles_SetVisible(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisTitles_GetVisible(PyObject *self, PyObject *args)
 {
-    AxisTitlesObject *obj = (AxisTitlesObject *)self;
+    PyAxisTitlesObject *obj = (PyAxisTitlesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetVisible()?1L:0L);
     return retval;
 }
@@ -141,7 +170,7 @@ AxisTitles_GetVisible(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisTitles_SetFont(PyObject *self, PyObject *args)
 {
-    AxisTitlesObject *obj = (AxisTitlesObject *)self;
+    PyAxisTitlesObject *obj = (PyAxisTitlesObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -158,7 +187,7 @@ AxisTitles_SetFont(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisTitles_GetFont(PyObject *self, PyObject *args)
 {
-    AxisTitlesObject *obj = (AxisTitlesObject *)self;
+    PyAxisTitlesObject *obj = (PyAxisTitlesObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -174,7 +203,7 @@ AxisTitles_GetFont(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisTitles_SetUserTitle(PyObject *self, PyObject *args)
 {
-    AxisTitlesObject *obj = (AxisTitlesObject *)self;
+    PyAxisTitlesObject *obj = (PyAxisTitlesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -226,7 +255,7 @@ AxisTitles_SetUserTitle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisTitles_GetUserTitle(PyObject *self, PyObject *args)
 {
-    AxisTitlesObject *obj = (AxisTitlesObject *)self;
+    PyAxisTitlesObject *obj = (PyAxisTitlesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetUserTitle()?1L:0L);
     return retval;
 }
@@ -234,7 +263,7 @@ AxisTitles_GetUserTitle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisTitles_SetUserUnits(PyObject *self, PyObject *args)
 {
-    AxisTitlesObject *obj = (AxisTitlesObject *)self;
+    PyAxisTitlesObject *obj = (PyAxisTitlesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -286,7 +315,7 @@ AxisTitles_SetUserUnits(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisTitles_GetUserUnits(PyObject *self, PyObject *args)
 {
-    AxisTitlesObject *obj = (AxisTitlesObject *)self;
+    PyAxisTitlesObject *obj = (PyAxisTitlesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetUserUnits()?1L:0L);
     return retval;
 }
@@ -294,7 +323,7 @@ AxisTitles_GetUserUnits(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisTitles_SetTitle(PyObject *self, PyObject *args)
 {
-    AxisTitlesObject *obj = (AxisTitlesObject *)self;
+    PyAxisTitlesObject *obj = (PyAxisTitlesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -335,7 +364,7 @@ AxisTitles_SetTitle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisTitles_GetTitle(PyObject *self, PyObject *args)
 {
-    AxisTitlesObject *obj = (AxisTitlesObject *)self;
+    PyAxisTitlesObject *obj = (PyAxisTitlesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetTitle().c_str());
     return retval;
 }
@@ -343,7 +372,7 @@ AxisTitles_GetTitle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisTitles_SetUnits(PyObject *self, PyObject *args)
 {
-    AxisTitlesObject *obj = (AxisTitlesObject *)self;
+    PyAxisTitlesObject *obj = (PyAxisTitlesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -384,7 +413,7 @@ AxisTitles_SetUnits(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisTitles_GetUnits(PyObject *self, PyObject *args)
 {
-    AxisTitlesObject *obj = (AxisTitlesObject *)self;
+    PyAxisTitlesObject *obj = (PyAxisTitlesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetUnits().c_str());
     return retval;
 }
@@ -392,7 +421,8 @@ AxisTitles_GetUnits(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyAxisTitles_methods[AXISTITLES_NMETH] = {
-    {"Notify", AxisTitles_Notify, METH_VARARGS},
+    {"__dir__", AxisTitles_dir, METH_NOARGS},
+    {"Notify", AxisTitles_Notify, METH_NOARGS},
     {"SetVisible", AxisTitles_SetVisible, METH_VARARGS},
     {"GetVisible", AxisTitles_GetVisible, METH_VARARGS},
     {"SetFont", AxisTitles_SetFont, METH_VARARGS},
@@ -413,19 +443,22 @@ PyMethodDef PyAxisTitles_methods[AXISTITLES_NMETH] = {
 //
 
 static void
-AxisTitles_dealloc(PyObject *v)
+PyAxisTitles_dealloc(PyObject *v)
 {
-   AxisTitlesObject *obj = (AxisTitlesObject *)v;
+   PyAxisTitlesObject *obj = (PyAxisTitlesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *AxisTitles_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyAxisTitles_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyAxisTitles_getattr(PyObject *self, char *name)
+PyAxisTitles_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "visible") == 0)
         return AxisTitles_GetVisible(self, NULL);
     if(strcmp(name, "font") == 0)
@@ -439,26 +472,19 @@ PyAxisTitles_getattr(PyObject *self, char *name)
     if(strcmp(name, "units") == 0)
         return AxisTitles_GetUnits(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyAxisTitles_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyAxisTitles_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyAxisTitles_methods[i].ml_name),
-                PyString_FromString(PyAxisTitles_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyAxisTitles_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyAxisTitles_setattr(PyObject *self, char *name, PyObject *args)
+PyAxisTitles_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "visible") == 0)
         obj = AxisTitles_SetVisible(self, args);
@@ -472,6 +498,12 @@ PyAxisTitles_setattr(PyObject *self, char *name, PyObject *args)
         obj = AxisTitles_SetTitle(self, args);
     else if(strcmp(name, "units") == 0)
         obj = AxisTitles_SetUnits(self, args);
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -487,78 +519,45 @@ PyAxisTitles_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-AxisTitles_print(PyObject *v, FILE *fp, int flags)
-{
-    AxisTitlesObject *obj = (AxisTitlesObject *)v;
-    fprintf(fp, "%s", PyAxisTitles_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-AxisTitles_str(PyObject *v)
+PyAxisTitles_str(PyObject *v)
 {
-    AxisTitlesObject *obj = (AxisTitlesObject *)v;
+    PyAxisTitlesObject *obj = (PyAxisTitlesObject *)v;
     return PyString_FromString(PyAxisTitles_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *AxisTitles_Purpose = "Contains the title properties for one axis.";
-#else
-static char *AxisTitles_Purpose = "Contains the title properties for one axis.";
-#endif
+static char const *PyAxisTitles_purpose = "Contains the title properties for one axis.";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(AxisTitlesType,         \
-                  "AxisTitles",           \
-                  AxisTitlesObject,       \
-                  AxisTitles_dealloc,     \
-                  AxisTitles_print,       \
-                  PyAxisTitles_getattr,   \
-                  PyAxisTitles_setattr,   \
-                  AxisTitles_str,         \
-                  AxisTitles_Purpose,     \
-                  AxisTitles_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(AxisTitles);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-AxisTitles_richcompare(PyObject *self, PyObject *other, int op)
+PyAxisTitles_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &AxisTitlesType
-         || Py_TYPE(other) != &AxisTitlesType)
+    if ( Py_TYPE(self) != &PyAxisTitlesType
+         || Py_TYPE(other) != &PyAxisTitlesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    AxisTitles *a = ((AxisTitlesObject *)self)->data;
-    AxisTitles *b = ((AxisTitlesObject *)other)->data;
+    AxisTitles *a = ((PyAxisTitlesObject *)self)->data;
+    AxisTitles *b = ((PyAxisTitlesObject *)other)->data;
 
     switch (op)
     {
@@ -587,8 +586,8 @@ static AxisTitles *currentAtts = 0;
 static PyObject *
 NewAxisTitles(int useCurrent)
 {
-    AxisTitlesObject *newObject;
-    newObject = PyObject_NEW(AxisTitlesObject, &AxisTitlesType);
+    PyAxisTitlesObject *newObject;
+    newObject = PyObject_NEW(PyAxisTitlesObject, &PyAxisTitlesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -599,14 +598,15 @@ NewAxisTitles(int useCurrent)
         newObject->data = new AxisTitles;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyAxisTitlesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapAxisTitles(const AxisTitles *attr)
 {
-    AxisTitlesObject *newObject;
-    newObject = PyObject_NEW(AxisTitlesObject, &AxisTitlesType);
+    PyAxisTitlesObject *newObject;
+    newObject = PyObject_NEW(PyAxisTitlesObject, &PyAxisTitlesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (AxisTitles *)attr;
@@ -708,13 +708,13 @@ PyAxisTitles_GetMethodTable(int *nMethods)
 bool
 PyAxisTitles_Check(PyObject *obj)
 {
-    return (obj->ob_type == &AxisTitlesType);
+    return (obj->ob_type == &PyAxisTitlesType);
 }
 
 AxisTitles *
 PyAxisTitles_FromPyObject(PyObject *obj)
 {
-    AxisTitlesObject *obj2 = (AxisTitlesObject *)obj;
+    PyAxisTitlesObject *obj2 = (PyAxisTitlesObject *)obj;
     return obj2->data;
 }
 
@@ -733,7 +733,7 @@ PyAxisTitles_Wrap(const AxisTitles *attr)
 void
 PyAxisTitles_SetParent(PyObject *obj, PyObject *parent)
 {
-    AxisTitlesObject *obj2 = (AxisTitlesObject *)obj;
+    PyAxisTitlesObject *obj2 = (PyAxisTitlesObject *)obj;
     obj2->parent = parent;
 }
 

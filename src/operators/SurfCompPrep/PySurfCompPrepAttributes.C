@@ -5,6 +5,7 @@
 #include <PySurfCompPrepAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a SurfCompPrepAttributes.
 //
-struct SurfCompPrepAttributesObject
+struct PySurfCompPrepAttributesObject
 {
     PyObject_HEAD
     SurfCompPrepAttributes *data;
@@ -121,16 +122,44 @@ PySurfCompPrepAttributes_ToString(const SurfCompPrepAttributes *atts, const char
 static PyObject *
 SurfCompPrepAttributes_Notify(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+SurfCompPrepAttributes_dir(PyObject *self, PyObject *args)
+{
+    static SurfCompPrepAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PySurfCompPrepAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 SurfCompPrepAttributes_SetSurfaceType(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -189,7 +218,7 @@ SurfCompPrepAttributes_SetSurfaceType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_GetSurfaceType(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetSurfaceType()));
     return retval;
 }
@@ -197,7 +226,7 @@ SurfCompPrepAttributes_GetSurfaceType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_SetCoordSystem(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -256,7 +285,7 @@ SurfCompPrepAttributes_SetCoordSystem(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_GetCoordSystem(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetCoordSystem()));
     return retval;
 }
@@ -264,7 +293,7 @@ SurfCompPrepAttributes_GetCoordSystem(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_SetThetaStart(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -316,7 +345,7 @@ SurfCompPrepAttributes_SetThetaStart(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_GetThetaStart(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetThetaStart());
     return retval;
 }
@@ -324,7 +353,7 @@ SurfCompPrepAttributes_GetThetaStart(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_SetThetaStop(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -376,7 +405,7 @@ SurfCompPrepAttributes_SetThetaStop(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_GetThetaStop(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetThetaStop());
     return retval;
 }
@@ -384,7 +413,7 @@ SurfCompPrepAttributes_GetThetaStop(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_SetThetaSteps(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -436,7 +465,7 @@ SurfCompPrepAttributes_SetThetaSteps(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_GetThetaSteps(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetThetaSteps()));
     return retval;
 }
@@ -444,7 +473,7 @@ SurfCompPrepAttributes_GetThetaSteps(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_SetPhiStart(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -496,7 +525,7 @@ SurfCompPrepAttributes_SetPhiStart(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_GetPhiStart(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetPhiStart());
     return retval;
 }
@@ -504,7 +533,7 @@ SurfCompPrepAttributes_GetPhiStart(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_SetPhiStop(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -556,7 +585,7 @@ SurfCompPrepAttributes_SetPhiStop(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_GetPhiStop(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetPhiStop());
     return retval;
 }
@@ -564,7 +593,7 @@ SurfCompPrepAttributes_GetPhiStop(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_SetPhiSteps(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -616,7 +645,7 @@ SurfCompPrepAttributes_SetPhiSteps(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_GetPhiSteps(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetPhiSteps()));
     return retval;
 }
@@ -624,7 +653,7 @@ SurfCompPrepAttributes_GetPhiSteps(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_SetStartRadius(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -676,7 +705,7 @@ SurfCompPrepAttributes_SetStartRadius(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_GetStartRadius(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetStartRadius());
     return retval;
 }
@@ -684,7 +713,7 @@ SurfCompPrepAttributes_GetStartRadius(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_SetEndRadius(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -736,7 +765,7 @@ SurfCompPrepAttributes_SetEndRadius(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_GetEndRadius(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetEndRadius());
     return retval;
 }
@@ -744,7 +773,7 @@ SurfCompPrepAttributes_GetEndRadius(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_SetRadiusSteps(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -796,7 +825,7 @@ SurfCompPrepAttributes_SetRadiusSteps(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_GetRadiusSteps(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetRadiusSteps()));
     return retval;
 }
@@ -804,7 +833,7 @@ SurfCompPrepAttributes_GetRadiusSteps(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_SetXStart(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -856,7 +885,7 @@ SurfCompPrepAttributes_SetXStart(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_GetXStart(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetXStart());
     return retval;
 }
@@ -864,7 +893,7 @@ SurfCompPrepAttributes_GetXStart(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_SetXStop(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -916,7 +945,7 @@ SurfCompPrepAttributes_SetXStop(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_GetXStop(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetXStop());
     return retval;
 }
@@ -924,7 +953,7 @@ SurfCompPrepAttributes_GetXStop(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_SetXSteps(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -976,7 +1005,7 @@ SurfCompPrepAttributes_SetXSteps(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_GetXSteps(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetXSteps()));
     return retval;
 }
@@ -984,7 +1013,7 @@ SurfCompPrepAttributes_GetXSteps(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_SetYStart(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1036,7 +1065,7 @@ SurfCompPrepAttributes_SetYStart(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_GetYStart(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetYStart());
     return retval;
 }
@@ -1044,7 +1073,7 @@ SurfCompPrepAttributes_GetYStart(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_SetYStop(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1096,7 +1125,7 @@ SurfCompPrepAttributes_SetYStop(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_GetYStop(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetYStop());
     return retval;
 }
@@ -1104,7 +1133,7 @@ SurfCompPrepAttributes_GetYStop(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_SetYSteps(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1156,7 +1185,7 @@ SurfCompPrepAttributes_SetYSteps(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_GetYSteps(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetYSteps()));
     return retval;
 }
@@ -1164,7 +1193,7 @@ SurfCompPrepAttributes_GetYSteps(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_SetZStart(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1216,7 +1245,7 @@ SurfCompPrepAttributes_SetZStart(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_GetZStart(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetZStart());
     return retval;
 }
@@ -1224,7 +1253,7 @@ SurfCompPrepAttributes_GetZStart(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_SetZStop(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1276,7 +1305,7 @@ SurfCompPrepAttributes_SetZStop(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_GetZStop(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetZStop());
     return retval;
 }
@@ -1284,7 +1313,7 @@ SurfCompPrepAttributes_GetZStop(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_SetZSteps(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1336,7 +1365,7 @@ SurfCompPrepAttributes_SetZSteps(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SurfCompPrepAttributes_GetZSteps(PyObject *self, PyObject *args)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)self;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetZSteps()));
     return retval;
 }
@@ -1344,7 +1373,8 @@ SurfCompPrepAttributes_GetZSteps(PyObject *self, PyObject *args)
 
 
 PyMethodDef PySurfCompPrepAttributes_methods[SURFCOMPPREPATTRIBUTES_NMETH] = {
-    {"Notify", SurfCompPrepAttributes_Notify, METH_VARARGS},
+    {"__dir__", SurfCompPrepAttributes_dir, METH_NOARGS},
+    {"Notify", SurfCompPrepAttributes_Notify, METH_NOARGS},
     {"SetSurfaceType", SurfCompPrepAttributes_SetSurfaceType, METH_VARARGS},
     {"GetSurfaceType", SurfCompPrepAttributes_GetSurfaceType, METH_VARARGS},
     {"SetCoordSystem", SurfCompPrepAttributes_SetCoordSystem, METH_VARARGS},
@@ -1393,19 +1423,22 @@ PyMethodDef PySurfCompPrepAttributes_methods[SURFCOMPPREPATTRIBUTES_NMETH] = {
 //
 
 static void
-SurfCompPrepAttributes_dealloc(PyObject *v)
+PySurfCompPrepAttributes_dealloc(PyObject *v)
 {
-   SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)v;
+   PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *SurfCompPrepAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PySurfCompPrepAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PySurfCompPrepAttributes_getattr(PyObject *self, char *name)
+PySurfCompPrepAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "surfaceType") == 0)
         return SurfCompPrepAttributes_GetSurfaceType(self, NULL);
     if(strcmp(name, "Closest") == 0)
@@ -1461,26 +1494,19 @@ PySurfCompPrepAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "zSteps") == 0)
         return SurfCompPrepAttributes_GetZSteps(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PySurfCompPrepAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PySurfCompPrepAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PySurfCompPrepAttributes_methods[i].ml_name),
-                PyString_FromString(PySurfCompPrepAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PySurfCompPrepAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PySurfCompPrepAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PySurfCompPrepAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "surfaceType") == 0)
         obj = SurfCompPrepAttributes_SetSurfaceType(self, args);
@@ -1523,6 +1549,12 @@ PySurfCompPrepAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "zSteps") == 0)
         obj = SurfCompPrepAttributes_SetZSteps(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -1537,78 +1569,45 @@ PySurfCompPrepAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-SurfCompPrepAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)v;
-    fprintf(fp, "%s", PySurfCompPrepAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-SurfCompPrepAttributes_str(PyObject *v)
+PySurfCompPrepAttributes_str(PyObject *v)
 {
-    SurfCompPrepAttributesObject *obj = (SurfCompPrepAttributesObject *)v;
+    PySurfCompPrepAttributesObject *obj = (PySurfCompPrepAttributesObject *)v;
     return PyString_FromString(PySurfCompPrepAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *SurfCompPrepAttributes_Purpose = "Attributes for the SurfCompPrep operator.";
-#else
-static char *SurfCompPrepAttributes_Purpose = "Attributes for the SurfCompPrep operator.";
-#endif
+static char const *PySurfCompPrepAttributes_purpose = "Attributes for the SurfCompPrep operator.";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(SurfCompPrepAttributesType,         \
-                  "SurfCompPrepAttributes",           \
-                  SurfCompPrepAttributesObject,       \
-                  SurfCompPrepAttributes_dealloc,     \
-                  SurfCompPrepAttributes_print,       \
-                  PySurfCompPrepAttributes_getattr,   \
-                  PySurfCompPrepAttributes_setattr,   \
-                  SurfCompPrepAttributes_str,         \
-                  SurfCompPrepAttributes_Purpose,     \
-                  SurfCompPrepAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(SurfCompPrepAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-SurfCompPrepAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PySurfCompPrepAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &SurfCompPrepAttributesType
-         || Py_TYPE(other) != &SurfCompPrepAttributesType)
+    if ( Py_TYPE(self) != &PySurfCompPrepAttributesType
+         || Py_TYPE(other) != &PySurfCompPrepAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    SurfCompPrepAttributes *a = ((SurfCompPrepAttributesObject *)self)->data;
-    SurfCompPrepAttributes *b = ((SurfCompPrepAttributesObject *)other)->data;
+    SurfCompPrepAttributes *a = ((PySurfCompPrepAttributesObject *)self)->data;
+    SurfCompPrepAttributes *b = ((PySurfCompPrepAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -1637,8 +1636,8 @@ static SurfCompPrepAttributes *currentAtts = 0;
 static PyObject *
 NewSurfCompPrepAttributes(int useCurrent)
 {
-    SurfCompPrepAttributesObject *newObject;
-    newObject = PyObject_NEW(SurfCompPrepAttributesObject, &SurfCompPrepAttributesType);
+    PySurfCompPrepAttributesObject *newObject;
+    newObject = PyObject_NEW(PySurfCompPrepAttributesObject, &PySurfCompPrepAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1649,14 +1648,15 @@ NewSurfCompPrepAttributes(int useCurrent)
         newObject->data = new SurfCompPrepAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PySurfCompPrepAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapSurfCompPrepAttributes(const SurfCompPrepAttributes *attr)
 {
-    SurfCompPrepAttributesObject *newObject;
-    newObject = PyObject_NEW(SurfCompPrepAttributesObject, &SurfCompPrepAttributesType);
+    PySurfCompPrepAttributesObject *newObject;
+    newObject = PyObject_NEW(PySurfCompPrepAttributesObject, &PySurfCompPrepAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (SurfCompPrepAttributes *)attr;
@@ -1758,13 +1758,13 @@ PySurfCompPrepAttributes_GetMethodTable(int *nMethods)
 bool
 PySurfCompPrepAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &SurfCompPrepAttributesType);
+    return (obj->ob_type == &PySurfCompPrepAttributesType);
 }
 
 SurfCompPrepAttributes *
 PySurfCompPrepAttributes_FromPyObject(PyObject *obj)
 {
-    SurfCompPrepAttributesObject *obj2 = (SurfCompPrepAttributesObject *)obj;
+    PySurfCompPrepAttributesObject *obj2 = (PySurfCompPrepAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1783,7 +1783,7 @@ PySurfCompPrepAttributes_Wrap(const SurfCompPrepAttributes *attr)
 void
 PySurfCompPrepAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    SurfCompPrepAttributesObject *obj2 = (SurfCompPrepAttributesObject *)obj;
+    PySurfCompPrepAttributesObject *obj2 = (PySurfCompPrepAttributesObject *)obj;
     obj2->parent = parent;
 }
 

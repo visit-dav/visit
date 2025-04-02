@@ -50,8 +50,11 @@ We rely on xml code generation to keep our State object, Attribute, and Plugin A
 To automate the process we provide CMake targets that call our xml code generation tools for each object or plugin registered. 
 Individual code gen targets are all wired into top level targets that allow you to apply the code gen tools to categories of code gen tasks.  
 These targets replace older tools such as regen-ajp and various regenerateatts.py scripts. 
-Keep in mind however, that these targets are only created for plugins that are enabled for building. 
-Any use of the plugin-reducing CMake vars (*VISIT_BUILD_MINIMAL_PLUGINS* and any of the *VISIT_SELECTED_XXX_PLUGINS*) will limit the created code gen targets to those plugins being built.
+
+.. danger::
+
+   Keep in mind however, that these targets are only created for plugins that are enabled for building. 
+   Any use of the plugin-reducing CMake vars (``VISIT_BUILD_MINIMAL_PLUGINS`` and any of the ``VISIT_SELECTED_XXX_PLUGINS``) will limit the created code gen targets to those plugins being built.
 
 
 Top Level CMake Code Gen Targets

@@ -5,6 +5,7 @@
 #include <PyProcessAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a ProcessAttributes.
 //
-struct ProcessAttributesObject
+struct PyProcessAttributesObject
 {
     PyObject_HEAD
     ProcessAttributes *data;
@@ -132,16 +133,44 @@ PyProcessAttributes_ToString(const ProcessAttributes *atts, const char *prefix, 
 static PyObject *
 ProcessAttributes_Notify(PyObject *self, PyObject *args)
 {
-    ProcessAttributesObject *obj = (ProcessAttributesObject *)self;
+    PyProcessAttributesObject *obj = (PyProcessAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+ProcessAttributes_dir(PyObject *self, PyObject *args)
+{
+    static ProcessAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyProcessAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 ProcessAttributes_SetPids(PyObject *self, PyObject *args)
 {
-    ProcessAttributesObject *obj = (ProcessAttributesObject *)self;
+    PyProcessAttributesObject *obj = (PyProcessAttributesObject *)self;
 
     intVector vec;
 
@@ -205,7 +234,7 @@ ProcessAttributes_SetPids(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ProcessAttributes_GetPids(PyObject *self, PyObject *args)
 {
-    ProcessAttributesObject *obj = (ProcessAttributesObject *)self;
+    PyProcessAttributesObject *obj = (PyProcessAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the pids.
     const intVector &pids = obj->data->GetPids();
     PyObject *retval = PyTuple_New(pids.size());
@@ -217,7 +246,7 @@ ProcessAttributes_GetPids(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ProcessAttributes_SetPpids(PyObject *self, PyObject *args)
 {
-    ProcessAttributesObject *obj = (ProcessAttributesObject *)self;
+    PyProcessAttributesObject *obj = (PyProcessAttributesObject *)self;
 
     intVector vec;
 
@@ -281,7 +310,7 @@ ProcessAttributes_SetPpids(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ProcessAttributes_GetPpids(PyObject *self, PyObject *args)
 {
-    ProcessAttributesObject *obj = (ProcessAttributesObject *)self;
+    PyProcessAttributesObject *obj = (PyProcessAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the ppids.
     const intVector &ppids = obj->data->GetPpids();
     PyObject *retval = PyTuple_New(ppids.size());
@@ -293,7 +322,7 @@ ProcessAttributes_GetPpids(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ProcessAttributes_SetHosts(PyObject *self, PyObject *args)
 {
-    ProcessAttributesObject *obj = (ProcessAttributesObject *)self;
+    PyProcessAttributesObject *obj = (PyProcessAttributesObject *)self;
 
     stringVector vec;
 
@@ -350,7 +379,7 @@ ProcessAttributes_SetHosts(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ProcessAttributes_GetHosts(PyObject *self, PyObject *args)
 {
-    ProcessAttributesObject *obj = (ProcessAttributesObject *)self;
+    PyProcessAttributesObject *obj = (PyProcessAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the hosts.
     const stringVector &hosts = obj->data->GetHosts();
     PyObject *retval = PyTuple_New(hosts.size());
@@ -362,7 +391,7 @@ ProcessAttributes_GetHosts(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ProcessAttributes_SetIsParallel(PyObject *self, PyObject *args)
 {
-    ProcessAttributesObject *obj = (ProcessAttributesObject *)self;
+    PyProcessAttributesObject *obj = (PyProcessAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -414,7 +443,7 @@ ProcessAttributes_SetIsParallel(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ProcessAttributes_GetIsParallel(PyObject *self, PyObject *args)
 {
-    ProcessAttributesObject *obj = (ProcessAttributesObject *)self;
+    PyProcessAttributesObject *obj = (PyProcessAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetIsParallel()?1L:0L);
     return retval;
 }
@@ -422,7 +451,7 @@ ProcessAttributes_GetIsParallel(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ProcessAttributes_SetMemory(PyObject *self, PyObject *args)
 {
-    ProcessAttributesObject *obj = (ProcessAttributesObject *)self;
+    PyProcessAttributesObject *obj = (PyProcessAttributesObject *)self;
 
     intVector vec;
 
@@ -486,7 +515,7 @@ ProcessAttributes_SetMemory(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ProcessAttributes_GetMemory(PyObject *self, PyObject *args)
 {
-    ProcessAttributesObject *obj = (ProcessAttributesObject *)self;
+    PyProcessAttributesObject *obj = (PyProcessAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the memory.
     const intVector &memory = obj->data->GetMemory();
     PyObject *retval = PyTuple_New(memory.size());
@@ -498,7 +527,7 @@ ProcessAttributes_GetMemory(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ProcessAttributes_SetTimes(PyObject *self, PyObject *args)
 {
-    ProcessAttributesObject *obj = (ProcessAttributesObject *)self;
+    PyProcessAttributesObject *obj = (PyProcessAttributesObject *)self;
 
     doubleVector vec;
 
@@ -562,7 +591,7 @@ ProcessAttributes_SetTimes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ProcessAttributes_GetTimes(PyObject *self, PyObject *args)
 {
-    ProcessAttributesObject *obj = (ProcessAttributesObject *)self;
+    PyProcessAttributesObject *obj = (PyProcessAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the times.
     const doubleVector &times = obj->data->GetTimes();
     PyObject *retval = PyTuple_New(times.size());
@@ -574,7 +603,8 @@ ProcessAttributes_GetTimes(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyProcessAttributes_methods[PROCESSATTRIBUTES_NMETH] = {
-    {"Notify", ProcessAttributes_Notify, METH_VARARGS},
+    {"__dir__", ProcessAttributes_dir, METH_NOARGS},
+    {"Notify", ProcessAttributes_Notify, METH_NOARGS},
     {"SetPids", ProcessAttributes_SetPids, METH_VARARGS},
     {"GetPids", ProcessAttributes_GetPids, METH_VARARGS},
     {"SetPpids", ProcessAttributes_SetPpids, METH_VARARGS},
@@ -595,19 +625,22 @@ PyMethodDef PyProcessAttributes_methods[PROCESSATTRIBUTES_NMETH] = {
 //
 
 static void
-ProcessAttributes_dealloc(PyObject *v)
+PyProcessAttributes_dealloc(PyObject *v)
 {
-   ProcessAttributesObject *obj = (ProcessAttributesObject *)v;
+   PyProcessAttributesObject *obj = (PyProcessAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *ProcessAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyProcessAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyProcessAttributes_getattr(PyObject *self, char *name)
+PyProcessAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "pids") == 0)
         return ProcessAttributes_GetPids(self, NULL);
     if(strcmp(name, "ppids") == 0)
@@ -621,26 +654,19 @@ PyProcessAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "times") == 0)
         return ProcessAttributes_GetTimes(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyProcessAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyProcessAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyProcessAttributes_methods[i].ml_name),
-                PyString_FromString(PyProcessAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyProcessAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyProcessAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyProcessAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "pids") == 0)
         obj = ProcessAttributes_SetPids(self, args);
@@ -654,6 +680,12 @@ PyProcessAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ProcessAttributes_SetMemory(self, args);
     else if(strcmp(name, "times") == 0)
         obj = ProcessAttributes_SetTimes(self, args);
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -669,78 +701,45 @@ PyProcessAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ProcessAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    ProcessAttributesObject *obj = (ProcessAttributesObject *)v;
-    fprintf(fp, "%s", PyProcessAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-ProcessAttributes_str(PyObject *v)
+PyProcessAttributes_str(PyObject *v)
 {
-    ProcessAttributesObject *obj = (ProcessAttributesObject *)v;
+    PyProcessAttributesObject *obj = (PyProcessAttributesObject *)v;
     return PyString_FromString(PyProcessAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *ProcessAttributes_Purpose = "attributes to describe a running process";
-#else
-static char *ProcessAttributes_Purpose = "attributes to describe a running process";
-#endif
+static char const *PyProcessAttributes_purpose = "attributes to describe a running process";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(ProcessAttributesType,         \
-                  "ProcessAttributes",           \
-                  ProcessAttributesObject,       \
-                  ProcessAttributes_dealloc,     \
-                  ProcessAttributes_print,       \
-                  PyProcessAttributes_getattr,   \
-                  PyProcessAttributes_setattr,   \
-                  ProcessAttributes_str,         \
-                  ProcessAttributes_Purpose,     \
-                  ProcessAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(ProcessAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-ProcessAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyProcessAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &ProcessAttributesType
-         || Py_TYPE(other) != &ProcessAttributesType)
+    if ( Py_TYPE(self) != &PyProcessAttributesType
+         || Py_TYPE(other) != &PyProcessAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    ProcessAttributes *a = ((ProcessAttributesObject *)self)->data;
-    ProcessAttributes *b = ((ProcessAttributesObject *)other)->data;
+    ProcessAttributes *a = ((PyProcessAttributesObject *)self)->data;
+    ProcessAttributes *b = ((PyProcessAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -769,8 +768,8 @@ static ProcessAttributes *currentAtts = 0;
 static PyObject *
 NewProcessAttributes(int useCurrent)
 {
-    ProcessAttributesObject *newObject;
-    newObject = PyObject_NEW(ProcessAttributesObject, &ProcessAttributesType);
+    PyProcessAttributesObject *newObject;
+    newObject = PyObject_NEW(PyProcessAttributesObject, &PyProcessAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -781,14 +780,15 @@ NewProcessAttributes(int useCurrent)
         newObject->data = new ProcessAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyProcessAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapProcessAttributes(const ProcessAttributes *attr)
 {
-    ProcessAttributesObject *newObject;
-    newObject = PyObject_NEW(ProcessAttributesObject, &ProcessAttributesType);
+    PyProcessAttributesObject *newObject;
+    newObject = PyObject_NEW(PyProcessAttributesObject, &PyProcessAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (ProcessAttributes *)attr;
@@ -890,13 +890,13 @@ PyProcessAttributes_GetMethodTable(int *nMethods)
 bool
 PyProcessAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ProcessAttributesType);
+    return (obj->ob_type == &PyProcessAttributesType);
 }
 
 ProcessAttributes *
 PyProcessAttributes_FromPyObject(PyObject *obj)
 {
-    ProcessAttributesObject *obj2 = (ProcessAttributesObject *)obj;
+    PyProcessAttributesObject *obj2 = (PyProcessAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -915,7 +915,7 @@ PyProcessAttributes_Wrap(const ProcessAttributes *attr)
 void
 PyProcessAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    ProcessAttributesObject *obj2 = (ProcessAttributesObject *)obj;
+    PyProcessAttributesObject *obj2 = (PyProcessAttributesObject *)obj;
     obj2->parent = parent;
 }
 

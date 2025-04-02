@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define PROCESSATTRIBUTES_NMETH 14
+#define PROCESSATTRIBUTES_NMETH 15
 void VISITPY_API           PyProcessAttributes_StartUp(ProcessAttributes *subj, void *data);
 void VISITPY_API           PyProcessAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyProcessAttributes_GetMethodTable(int *nMethods);
@@ -24,8 +24,8 @@ void VISITPY_API           PyProcessAttributes_SetParent(PyObject *obj, PyObject
 void VISITPY_API           PyProcessAttributes_SetDefaults(const ProcessAttributes *atts);
 std::string VISITPY_API    PyProcessAttributes_GetLogString();
 std::string VISITPY_API    PyProcessAttributes_ToString(const ProcessAttributes *, const char *, const bool=false);
-VISITPY_API PyObject *     PyProcessAttributes_getattr(PyObject *self, char *name);
-int VISITPY_API            PyProcessAttributes_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyProcessAttributes_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyProcessAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyProcessAttributes_methods[PROCESSATTRIBUTES_NMETH];
 
 #endif
