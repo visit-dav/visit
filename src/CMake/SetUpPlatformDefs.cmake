@@ -8,10 +8,13 @@
 #   Made Message of type 'status', otherwise it appears as an error when 
 #   using the CMake gui.
 #
+#   Kathleen Biagas, Thu Mar 21, 2025
+#   Remove AIX.
+#
 #****************************************************************************/
 
 #
-# sets up extended platform defines: LINUX & AIX
+# sets up extended platform defines: LINUX
 #
 
 SET(VISIT_CMAKE_PLATFORM ${CMAKE_HOST_SYSTEM_NAME})
@@ -21,9 +24,6 @@ IF (${VISIT_CMAKE_PLATFORM} MATCHES "Linux")
    SET(LINUX 1)
 ENDIF (${VISIT_CMAKE_PLATFORM} MATCHES "Linux")
 
-IF (${VISIT_CMAKE_PLATFORM} MATCHES "AIX")
-   SET(AIX 1)
-ENDIF (${VISIT_CMAKE_PLATFORM} MATCHES "AIX")
 
 
 
