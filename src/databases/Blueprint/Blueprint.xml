@@ -4,7 +4,6 @@
       ${VISIT_INCLUDE_DIR}/avt/MFEM
       ${VISIT_INCLUDE_DIR}/avt/Blueprint
     </CXXFLAGS>
-    </LDFLAGS>
     <LIBS>
       avtmfem
       avtblueprint
