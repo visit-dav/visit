@@ -192,6 +192,11 @@ avtUnstructuredDomainBoundaries::SetSharedPoints(int d1, int d2,
 //    Later logic unconditionally sends cells without checking if points
 //    exist or not. The correct thing to do is to send 0 for num cells if
 //    num points is 0.
+// 
+//    Justin Privitera, Wed Apr  2 16:17:04 PDT 2025
+//    Fixed a bug and logic error when the given index was -1, potentially
+//    causing index out of bounds errors later in the function. Removed
+//    extraneous index calculation. TODO MORE
 //
 // ****************************************************************************
 
@@ -205,6 +210,7 @@ avtUnstructuredDomainBoundaries::SetGivenCellsAndPoints(int fromDom, int toDom,
 
     if (index == -1)
     {
+        index = static_cast<int>(giveIndex.size());
         giveIndex.push_back(pair<int, int>(fromDom, toDom));
         givenCells.push_back(cells);
         // Use emplace_back to add a default-initialized std::vector<int> 
@@ -223,9 +229,7 @@ avtUnstructuredDomainBoundaries::SetGivenCellsAndPoints(int fromDom, int toDom,
     }
     else
     {
-        int sIndex = GetGivenIndex(fromDom, toDom);
-
-        map<int, int> &smap = sharedPointsMap[sIndex];
+        map<int, int> &smap = sharedPointsMap[index];
 
         // Go through and manually insert the points that are not shared.
 
@@ -238,6 +242,7 @@ avtUnstructuredDomainBoundaries::SetGivenCellsAndPoints(int fromDom, int toDom,
         }
     }
 
+    // if the number of points to share is 0, then we cannot share cells.
     if (givenPoints[index].empty())
     {
         givenCells[index].clear();
@@ -263,12 +268,14 @@ avtUnstructuredDomainBoundaries::SetGivenCellsAndPoints(int fromDom, int toDom,
 // ****************************************************************************
 
 int
-avtUnstructuredDomainBoundaries::GetGivenIndex(int from, int to)
+avtUnstructuredDomainBoundaries::GetGivenIndex(const int from, const int to)
 {
     for (size_t i = 0; i < giveIndex.size(); ++i)
     {
         if (giveIndex[i].first == from && giveIndex[i].second == to)
-            return (int)i;
+        {
+            return static_cast<int>(i);
+        }
     }
     return -1;
 }
@@ -293,15 +300,16 @@ avtUnstructuredDomainBoundaries::GetGivenIndex(int from, int to)
 
 template <class T>
 void
-CopyPointer(T *src, T *dest, int components,
-                                                              int count)
+CopyPointer(T *src, T *dest, int components, int count)
 {
     int i;
     int nIter = count * components;
 
     *dest = *src;
     for (i = 1; i < nIter; ++i)
+    {
         *(++dest) = *(++src);
+    }
 }
 
 // ****************************************************************************
@@ -355,7 +363,9 @@ avtUnstructuredDomainBoundaries::ExchangeMesh(vector<int>       domainNum,
 
     int nonNullDomain = 0;
     while (nonNullDomain < meshes.size() && meshes[nonNullDomain] == NULL)
+    {
         nonNullDomain++;
+    }
     vtkPoints *pts = vtkUnstructuredGrid::SafeDownCast(meshes[nonNullDomain])->GetPoints();
 
     switch (pts->GetDataType())
@@ -376,7 +386,7 @@ avtUnstructuredDomainBoundaries::ExchangeMesh(vector<int>       domainNum,
     return meshes;
 }
 
-
+// ****************************************************************************
 template <typename T>
 vector<vtkDataSet*>
 avtUnstructuredDomainBoundaries::ExchangeMeshT(vector<int>       domainNum,
