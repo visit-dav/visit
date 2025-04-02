@@ -45,8 +45,7 @@ set(visitconvert_DEPENDS
         ${ALL_THIRDPARTY_IO_LIB}
         ${vtkjpeg_LIBRARIES}
         ${vtkpng_LIBRARIES}
-        Threads::Threads
-        ${ZLIB_LIBRARY})
+        Threads::Threads)
 
 set(visitconvert_DEPENDS_SER
         ${engine_ser_exe_IDatabase}

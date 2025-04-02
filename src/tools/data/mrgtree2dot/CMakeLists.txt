@@ -13,11 +13,6 @@
 visit_add_executable(
     NAME        mrgtree2dot
     SOURCES     mrgtree2dot.C
-    INCLUDES    ${SILO_INCLUDE_DIR}
-    DEPENDS_ON  ${SILO_LIB}
+    DEPENDS_ON  silo
     FOLDER      tools/data)
-
-visit_patch_target(
-    NAME        mrgtree2dot
-    LINKDIR     ${SILO_LIBRARY_DIR})
 

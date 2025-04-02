@@ -86,7 +86,7 @@
 #include <avtConduitBlueprintDataAdaptor.h>
 #endif
 
-#ifdef HAVE_LIBVTKM
+#ifdef HAVE_VTKM
 #include <vtkm/cont/Initialize.h>
 #endif
 
@@ -799,7 +799,7 @@ Engine::InitializeCompute()
     int setupTimer = visitTimer->StartTimer();
     InitVTK::Initialize();
     InitVTKRendering::Initialize();
-#ifdef HAVE_LIBVTKM
+#ifdef HAVE_VTKM
     vtkm::cont::Initialize();
 #endif
 #ifdef HAVE_CONDUIT

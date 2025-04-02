@@ -10,6 +10,7 @@
 #define AVT_CALLBACK_H
 #include <pipeline_exports.h>
 
+#include <visit-config.h> // for HAVE_OSPRAY
 #include <string>
 
 #include <avtDataObject.h>

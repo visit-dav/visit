@@ -104,7 +104,7 @@ function(ADD_SIMV2_SIMULATION target)
         set(sim_${target}_DEPENDS simV2 ${EXTRA_SIM_LIBS})
     else()
         set(sim_${target}_DEPENDS simV2_static_ser
-           ${VTK_LIBS} ${ZLIB_LIB} ${EXTRA_SIM_LIBS})
+           ${VTK_LIBS} ${EXTRA_SIM_LIBS})
     endif()
 
     visit_add_executable(
@@ -128,7 +128,7 @@ function(ADD_FORTRAN_SIMV2_SIMULATION target)
         set(sim_${target}_DEPENDS simV2f simV2 ${EXTRA_SIM_LIBS})
     else()
         set(sim_${target}_DEPENDS simV2f simV2_static_ser 
-            ${VTK_LIBS} ${ZLIB_LIB} ${EXTRA_SIM_LIBS})
+            ${VTK_LIBS} ${EXTRA_SIM_LIBS})
     endif()
 
     visit_add_executable(
@@ -150,7 +150,7 @@ function(ADD_PARALLEL_SIMV2_SIMULATION target)
         set(sim_${target}_DEPENDS simV2 ${EXTRA_SIM_LIBS})
     else()
         set(sim_${target}_DEPENDS simV2_static_par
-            ${VTK_LIBS} ${ZLIB_LIB} ${EXTRA_SIM_LIBS})
+            ${VTK_LIBS} ${EXTRA_SIM_LIBS})
     endif()
     if(ICET_FOUND)
         list(APPEND sim_${target}_DEPENDS ${ICET_LIB})
@@ -191,7 +191,7 @@ function(ADD_PARALLEL_FORTRAN_SIMV2_SIMULATION target)
         list(APPEND sim_${target}_DEPENDS simV2)
     else()
         list(APPEND sim_${target}_DEPENDS simV2_static_ser 
-            ${VTK_LIBS} ${ZLIB_LIB})
+            ${VTK_LIBS} )
     endif()
 
     visit_add_executable(

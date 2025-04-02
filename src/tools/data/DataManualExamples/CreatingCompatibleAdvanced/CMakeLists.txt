@@ -24,16 +24,10 @@ if(SILO_FOUND)
         NAME        adv_example_${target}
         SOURCES     ${ARGN}
         INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
-        DEPENDS_ON  ${SILO_LIB} stdc++ m
+        DEPENDS_ON  silo stdc++ m
         OUTPUT_NAME ${target}
         FOLDER      tools/DataManualExamples/CreatingCompatibleAdvanced
         SKIP_INSTALL)
-
-    # until Silo is imported as a CMake target
-    visit_patch_target(
-        NAME        adv_example_${target}
-        INCLUDES    ${SILO_INCLUDE_DIR}
-        LINKDIR     ${SILO_LIBRARY_DIR})
 
     set_target_properties(adv_example_${target} PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY ${VISIT_BINARY_DIR}/tools/DataManualExamples/CreatingCompatibleAdvanced)

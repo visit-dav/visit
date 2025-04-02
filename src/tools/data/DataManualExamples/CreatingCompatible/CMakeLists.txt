@@ -41,17 +41,10 @@ function(ADD_SILO_EXAMPLE target)
         SOURCES     ${ARGN}
         INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
                     ${VISIT_BINARY_DIR}/include
-        DEPENDS_ON  ${SILO_LIB} stdc++ m
+        DEPENDS_ON  silo stdc++ m
         OUTPUT_NAME ${target}
         FOLDER tools/DataManualExamples/CreatingCompatible
         SKIP_INSTALL)
-
-    # until Silo is imported as a cmake target
-    visit_patch_target(
-        NAME        example_${target}
-        INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
-                    ${SILO_INCLUDE_DIR}
-        LINKDIR     ${SILO_LIBRARY_DIR})
 
     set_target_properties(example_${target} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${VISIT_BINARY_DIR}/tools/DataManualExamples/CreatingCompatible)

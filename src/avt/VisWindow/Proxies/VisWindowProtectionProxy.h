@@ -9,6 +9,7 @@
 #ifndef VIS_WINDOW_PROTECTION_PROXY_H
 #define VIS_WINDOW_PROTECTION_PROXY_H
 #include <viswindow_exports.h>
+#include <visit-config.h> // for HAVE_OSPRAY
 #include <vector>
 
 #include <VisWindowTypes.h>

@@ -8,8 +8,8 @@
 
 #include <avtIsovolumeFilter.h>
 
-#include <visit-config.h> // for HAVE_LIBVTKM
-#ifdef HAVE_LIBVTKM
+#include <visit-config.h> // for HAVE_VTKM
+#ifdef HAVE_VTKM
 #include <avtVtkmDataSet.h>
 #include <vtkm/cont/DataSet.h>
 #include <vtkm/filter/contour/ClipWithField.h>
@@ -654,7 +654,7 @@ avtIsovolumeFilter::ExecuteData_VTKM(avtDataRepresentation *in_dr,
                                      std::vector<double> bounds,
                                      std::vector<bool> clips)
 {
-#ifndef HAVE_LIBVTKM
+#ifndef HAVE_VTKM
     return NULL;
 #else
     //
