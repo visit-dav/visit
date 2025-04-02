@@ -7,13 +7,12 @@
 #   Kathleen Biagas, Wed Oct 19 09:58:16 MST 2011
 #   Remove ${VISIT_MSVC_VERSION} from lib location.
 #
+#   Kathleen Biagas, Mon Mar 31 2025
+#   Utilize visit_import_third_party.
+#
 #****************************************************************************/
 
-# Use the H5PART_DIR hint from the config-site .cmake file
+# Uses the H5PART_DIR hint from the config-site .cmake file
 
-IF (WIN32)
-  SET_UP_THIRD_PARTY(H5PART LIBS h5partdll)
-ELSE (WIN32)
-  SET_UP_THIRD_PARTY(H5PART LIBS H5Part)
-ENDIF (WIN32)
+visit_import_third_party(H5PART LIBNAMES H5Part h5partdll)
 

@@ -41,65 +41,36 @@
 #    Kathleen Biagas, Mon May 22 12:44:32 PDT 2023
 #    Support different library names on Windows.
 #
+#    Kathleen Biagas, Mon Mar 31, 2025
+#    Utilize visit_import_third_party.
+#
 #****************************************************************************/
 
-# Use the SILO_DIR hint from the config-site .cmake file
+# Uses the SILO_DIR hint from the config-site .cmake file
 #
 
-IF (WIN32)
-  if(EXISTS ${SILO_DIR}/lib/silohdf5.lib)
-      SET_UP_THIRD_PARTY(SILO LIBS silohdf5)
-  else() 
-      SET_UP_THIRD_PARTY(SILO LIBS siloh5)
-  endif()
-  IF(EXISTS ${SILO_DIR}/lib/silex.exe)
-    EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy
+visit_import_third_party(SILO LIBNAMES silohdf5 siloh5 silo)
+
+if (WIN32)
+  if(EXISTS ${SILO_DIR}/lib/silex.exe)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy
          ${SILO_DIR}/lib/silex.exe
          ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
-    INSTALL(FILES ${SILO_DIR}/lib/silex.exe
+    install(FILES ${SILO_DIR}/lib/silex.exe
         DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                     GROUP_READ GROUP_WRITE GROUP_EXECUTE
-                    WORLD_READ WORLD_EXECUTE
-        CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
-        )
-  ENDIF()
-  IF(EXISTS ${SILO_DIR}/lib/browser.exe)
-    EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy
+                    WORLD_READ WORLD_EXECUTE)
+  endif()
+  if(EXISTS ${SILO_DIR}/lib/browser.exe)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy
          ${SILO_DIR}/lib/browser.exe
          ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
-    INSTALL(FILES ${SILO_DIR}/lib/browser.exe
+    install(FILES ${SILO_DIR}/lib/browser.exe
         DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                     GROUP_READ GROUP_WRITE GROUP_EXECUTE
-                    WORLD_READ WORLD_EXECUTE
-        CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
-        )
-  ENDIF()
-ELSE (WIN32)
-    FIND_LIBRARY(SILOH5_LIBRARY_EXISTS
-      NAME siloh5
-      PATHS ${SILO_DIR}/lib
-      NO_DEFAULT_PATH
-      NO_CMAKE_ENVIRONMENT_PATH
-      NO_CMAKE_PATH
-      NO_SYSTEM_ENVIRONMENT_PATH)
-    IF(SILOH5_LIBRARY_EXISTS)
-        SET_UP_THIRD_PARTY(SILO LIBS siloh5)
-    ELSE()
-        SET_UP_THIRD_PARTY(SILO LIBS silo)
-    ENDIF()
-ENDIF (WIN32)
-
-# We use Silo for PDB most of the time so set up additional PDB variables.
-IF(SILO_FOUND)
-
-    MESSAGE(STATUS "    Using PDB Lite built into Silo")
-    SET(PDB_FOUND 1 CACHE BOOL "PDB library found" FORCE)
-    SET(PDB_INCLUDE_DIR ${SILO_INCLUDE_DIR} CACHE PATH "PDB include directory" FORCE)
-    SET(PDB_LIBRARY_DIR ${SILO_LIBRARY_DIR} CACHE PATH "PDB library directory" FORCE)
-    SET(PDB_LIB ${SILO_LIB} CACHE STRING "PDB library" FORCE)
-    MARK_AS_ADVANCED(PDB_INCLUDE_DIR PDB_LIBRARY_DIR PDB_LIB)
-
-ENDIF(SILO_FOUND)
+                    WORLD_READ WORLD_EXECUTE)
+  endif()
+endif()
 

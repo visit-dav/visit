@@ -7,61 +7,12 @@
 #   Kathleen Biagas, Tue June 25, 2024
 #   Create exportable library via blt_import_library.
 #
+#   Kathleen Biagas, Mon Mar 31, 2025
+#   Utilize visit_import_third_party.
+#
 #-----------------------------------------------------------------------------
 
-# Use the MFEM_DIR hint from the config-site .cmake file
+# Uses the MFEM_DIR hint from the config-site .cmake file
 
-SET_UP_THIRD_PARTY(MFEM LIBS mfem)
-
-if(MFEM_FOUND)
-    # create a list of full-path libraries to be used when linking
-    list(REMOVE_DUPLICATES MFEM_LIBRARY_DIR)
-    list(REMOVE_DUPLICATES MFEM_LIB)
-    foreach(libdir ${MFEM_LIBRARY_DIR})
-        foreach(lib ${MFEM_LIB})
-            if(EXISTS ${libdir}/${lib})
-                list(APPEND mll $<BUILD_INTERFACE:${libdir}/${lib}>)
-            endif()
-        endforeach()
-    endforeach()
-
-    # create include dirs for build and install interface
-    foreach(incdir ${MFEM_INCLUDE_DIR})
-        list(APPEND mfem_inc $<BUILD_INTERFACE:${incdir}>)
-        if(${incdir} MATCHES "mfem")
-            list(APPEND mfem_inc
-                $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/mfem/include>)
-        elseif(${incdir} MATCHES "conduit")
-            list(APPEND mfem_inc
-                $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/conduit/conduit>)
-        elseif(${incdir} MATCHES "fms")
-            list(APPEND mfem_inc
-                $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/fms/include>)
-        endif()
-    endforeach()
-
-    # create import library
-    blt_import_library(
-        NAME       mfem
-        INCLUDES   ${mfem_inc}
-        LIBRARIES  ${mll}
-        EXPORTABLE ON)
-
-    # Add install interface for link libraries
-    foreach(libdir ${MFEM_LIBRARY_DIR})
-        foreach(lib ${MFEM_LIB})
-            if(EXISTS ${libdir}/${lib})
-                target_link_libraries(mfem INTERFACE
-                    $<INSTALL_INTERFACE:\${_IMPORT_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${lib}>)
-            endif()
-        endforeach()
-    endforeach()
-
-    # install export target
-    visit_install_export_targets(mfem)
-
-    unset(mll)
-    unset(mfem_inc)
-endif()
-
+visit_import_third_party(MFEM LIBS mfem)
 

@@ -10,20 +10,17 @@
 #   Kathleen Biagas, Thu July 15, 2021
 #   Add NETCDF_WIN32_DEFINES (used by xml2cmake to add preprocessor defines).
 #
+#   Kathleen Biagas, Mon Mar 31, 2025
+#   Utilize visit_import_third_party.
+#
 #****************************************************************************/
 
-# Use the H5PART_DIR hint from the config-site .cmake file
+# Uses the NETCDF_DIR hint from the config-site .cmake file
 
-SET_UP_THIRD_PARTY(NETCDF LIBS netcdf)
+visit_import_third_party(NETCDF LIBS netcdf WIN32DEFINES DLL_NETCDF)
 
-if (WIN32)
-    if (MSVC_VERSION LESS "1910")
-      set(NETCDF_CXX_DIR ${NETCDF_DIR})
-      SET_UP_THIRD_PARTY(NETCDF_CXX LIBS netcdf_c++)
-    endif()
-    set(NETCDF_WIN32_DEFINES "DLL_NETCDF")
-else()
+if(NOT WIN32)
     set(NETCDF_CXX_DIR ${NETCDF_DIR})
-    SET_UP_THIRD_PARTY(NETCDF_CXX LIBS netcdf_c++)
+    visit_import_third_party(NETCDF_CXX LIBS netcdf_c++)
 endif()
 

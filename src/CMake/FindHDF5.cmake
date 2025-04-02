@@ -16,34 +16,16 @@
 #   Kathleen Biagas, Wed July 31, 2024
 #   Add hdf5_hl to search on Linux.
 #
+#   Kathleen Biagas, Mon Mar 31, 2025
+#   Utilize visit_import_third_party.
+#
 #****************************************************************************/
 
-# Use the HDF5_DIR hint from the config-site .cmake file
+# Uses the HDF5_DIR hint from the config-site .cmake file
 
+visit_import_third_party(HDF5 LIBS hdf5 hdf5_hl)
 
-OPTION(HDF5_LIBNAMES_AFFIX_DLL "Whether HDF5 library base names end with dll" ON)
-IF(WIN32)
-  if(HDF5_LIB_NAME)
-    SET_UP_THIRD_PARTY(HDF5 LIBS ${HDF5_LIB_NAME})
-    IF(VISIT_PARALLEL)
-        SET_UP_THIRD_PARTY(HDF5_MPI LIBS ${HDF5_LIB_NAME})
-    ENDIF(VISIT_PARALLEL)
-  else()
-    if(HDF5_LIBNAMES_AFFIX_DLL)
-      SET_UP_THIRD_PARTY(HDF5 LIBS hdf5dll hdf5_hldll)
-      IF(VISIT_PARALLEL)
-          SET_UP_THIRD_PARTY(HDF5_MPI LIBS hdf5_mpidll hdf5_mpi_hldll)
-      ENDIF(VISIT_PARALLEL)
-    else()
-      SET_UP_THIRD_PARTY(HDF5 LIBS hdf5 hdf5_hl)
-      IF(VISIT_PARALLEL)
-          SET_UP_THIRD_PARTY(HDF5_MPI LIBS hdf5_mpi hdf5_mpi_hl)
-      ENDIF(VISIT_PARALLEL)
-    endif()
-  endif()
-ELSE()
-  SET_UP_THIRD_PARTY(HDF5 LIBS hdf5 hdf5_hl)
-  IF(VISIT_PARALLEL)
-      SET_UP_THIRD_PARTY(HDF5_MPI LIBS hdf5_mpi hdf5_mpi_hl)
-  ENDIF(VISIT_PARALLEL)
-ENDIF()
+if(VISIT_PARALLEL)
+    visit_import_third_party(HDF5_MPI LIBS hdf5_mpi hdf5_mpi_hl)
+endif()
+
