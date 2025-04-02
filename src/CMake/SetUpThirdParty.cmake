@@ -591,11 +591,12 @@ function(visit_import_third_party pkg)
         set(libdirs lib lib64)
     endif()
 
-    set(_${pkg}_INCLUDE_DIR ${${pkg}_DIR}/include)
     if(DEFINED vitp_INCDIR)
         foreach(inc ${vitp_INCDIR})
-            list(APPEND _${pkg}_INCLUDE_DIR ${${pkg}_DIR}/${vitp_INCDIR})
+            list(APPEND _${pkg}_INCLUDE_DIR ${${pkg}_DIR}/${inc})
         endforeach()
+    else()
+        set(_${pkg}_INCLUDE_DIR ${${pkg}_DIR}/include)
     endif()
 
     if(${vitpls_HEADER_ONLY})
@@ -655,14 +656,15 @@ function(visit_import_third_party pkg)
             ${tplibs})
 
     if(${pkg}_FOUND)
+        string(TOLOWER ${pkg} LNAME)
+        set(HAVE_${pkg} TRUE CACHE BOOL "Have ${LNAME} libraries")
+
         # create a list of libs using BUILD_INTERFACE
         set(buildlibs)
         foreach(lib ${tplibs})
             # lib is a cmake var, so need double-indirection to get at the value
             list(APPEND buildlibs $<BUILD_INTERFACE:${${lib}}>)
         endforeach()
-
-        string(TOLOWER ${pkg} LNAME)
 
         blt_import_library(
             NAME        ${LNAME}
@@ -843,6 +845,8 @@ if(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 
     include(${VISIT_SOURCE_DIR}/CMake/FindCGNS.cmake)
 
+    # conduit needs silo
+    include(${VISIT_SOURCE_DIR}/CMake/FindSilo.cmake)
     include(${VISIT_SOURCE_DIR}/CMake/FindConduit.cmake)
 
     include(${VISIT_SOURCE_DIR}/CMake/FindFMS.cmake)
@@ -861,7 +865,6 @@ if(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 
     include(${VISIT_SOURCE_DIR}/CMake/FindOpenEXR.cmake)
 
-    include(${VISIT_SOURCE_DIR}/CMake/FindSilo.cmake)
 
     include(${VISIT_SOURCE_DIR}/CMake/FindXdmf.cmake)
 
