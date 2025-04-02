@@ -43,7 +43,7 @@ IF (VISIT_VTKM_DIR)
    include(${VTKm_DIR}/VTKmConfig.cmake)
    find_package(VTKm REQUIRED QUIET)
    set(VTKM_FOUND true CACHE BOOL "VTKM library found" FORCE)
-   set("HAVE_LIBVTKM" true CACHE BOOL "Have VTKM library" FORCE)
+   set("HAVE_VTKM" true CACHE BOOL "Have VTKM library" FORCE)
 
    MESSAGE(STATUS "  VTKM_DIR = ${VTKM_DIR}")
    MESSAGE(STATUS "  VTKM_FOUND = ${VTKM_FOUND}")
