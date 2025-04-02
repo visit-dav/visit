@@ -886,18 +886,6 @@ function build_qt
     if [[ "$OPSYS" == "Darwin" ]]; then       
         QT_PLATFORM="macx-clang"
 
-    elif [[ "$OPSYS" == "AIX" ]]; then
-        if [[ "$OBJECT_MODE" == 32 ]]; then
-            QT_PLATFORM="aix-g++"
-        else
-            QT_PLATFORM="aix-g++-64"
-        fi
-    elif [[ "$OPSYS" == "SunOS" ]]; then
-        if [[ "$OBJECT_MODE" == 32 ]]; then
-            QT_PLATFORM="aix-solaris"
-        else
-            QT_PLATFORM="aix-solaris-64"
-        fi
     elif [[ "$OPSYS" == "Linux" ]] ; then
         if [[ "$C_COMPILER" == "clang" ]]; then
             QT_PLATFORM="linux-clang"
@@ -1081,12 +1069,6 @@ function build_qt
     #
     # Fix this by creating .so simlinks to the .a versions
     #
-
-    if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "AIX" ]]; then
-        cd ${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}/lib/
-        for f in *.a; do ln -s $f ${f%\.*}.so; done
-
-    fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
         chmod -R ug+w,a+rX "$VISITDIR/qt"

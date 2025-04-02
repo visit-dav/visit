@@ -46,6 +46,9 @@
 #   Cyrus Harrison, Thu Dec 12 11:33:24 PST 2024
 #   Added case for power9 architecture
 #
+#   Kathleen Biagas, Fri Mar 21, 2025
+#   Removed AIX.
+#
 ###############################################################################
 
 #
@@ -78,12 +81,6 @@ elif test "$osname" = "Darwin"; then
         platform="darwin-x86_64"
     elif test "$proc" = "arm64"; then
         platform="darwin-arm64"
-    fi
-elif test "$osname" = "AIX"; then
-    if test "$OBJECT_MODE" = "32"; then
-        platform="ibm-aix-pwr"
-    else
-        platform="ibm-aix-pwr64"
     fi
 elif test "$osname" = "freebsd"; then
     version=$(uname -r)

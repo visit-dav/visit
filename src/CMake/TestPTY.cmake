@@ -8,21 +8,20 @@
 #   I modified the file to no longer use BSD style pseudo terminals on
 #   MacOSX, since it doesn't work on newer Mac operating sytems.
 #
+#   Kathleen Biagas, Thu Mar 21, 2025 
+#   Removed AIX logic.
+#
 #****************************************************************************/
 
-IF(NOT WIN32)
-    IF(CMAKE_SYSTEM_NAME STREQUAL AIX)
-        MESSAGE(STATUS "BSD style pseudo-tty")
-    ELSE(CMAKE_SYSTEM_NAME STREQUAL AIX)
-        TRY_COMPILE(tmpVar
-                ${CMAKE_CURRENT_BINARY_DIR}
-                ${VISIT_SOURCE_DIR}/CMake/TestPTY.cpp
-                OUTPUT_VARIABLE outvar)
-        IF(tmpVar)
-            MESSAGE(STATUS "System V style pseudo-tty")
-            SET(PTY_SYSV 1 CACHE BOOL "Defined if we have System V style pty functions")
-        ELSE(tmpVar)
-            MESSAGE(STATUS "BSD style pseudo-tty")
-        ENDIF(tmpVar)
-    ENDIF(CMAKE_SYSTEM_NAME STREQUAL AIX)
-ENDIF(NOT WIN32)
+if(NOT WIN32)
+    try_compile(tmpVar
+            ${CMAKE_CURRENT_BINARY_DIR}
+            ${VISIT_SOURCE_DIR}/CMake/TestPTY.cpp
+            OUTPUT_VARIABLE outvar)
+    if(tmpVar)
+        MESSAGE(STATUS "System V style pseudo-tty")
+        SET(PTY_SYSV 1 CACHE BOOL "Defined if we have System V style pty functions")
+    else()
+        message(STATUS "BSD style pseudo-tty")
+    endif()
+endif()

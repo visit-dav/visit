@@ -3,9 +3,6 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #if !defined(_WIN32)
-#ifdef AIX
-#include <strings.h>
-#endif
 #include <unistd.h> // alarm
 #include <signal.h>
 #endif

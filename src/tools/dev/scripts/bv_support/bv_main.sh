@@ -418,7 +418,7 @@ function initialize_build_visit()
                 FCFLAGS="$FCFLAGS -qpic"
                 CXXFLAGS="$CXXFLAGS -qpic"
                 export CXX_COMPILER=${CXX_COMPILER-"xlC"}
-                QT_PLATFORM="linux-xlc" #aix-xlc"
+                QT_PLATFORM="linux-xlc"
             else
                 CFLAGS="$CFLAGS -fPIC"
                 FCFLAGS="$FCFLAGS -fPIC"
@@ -446,33 +446,6 @@ function initialize_build_visit()
         export FC_COMPILER=${FC_COMPILER:-$GFORTRAN}
         export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
         export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
-    elif [[ "$OPSYS" == "AIX" ]]; then
-        export ARCH="aix" # You can change this to say RHEL, SuSE, Fedora, etc.
-        export SO_EXT="a"
-        export C_COMPILER=${C_COMPILER:-"xlc"}
-        export FC_COMPILER=${FC_COMPILER:-$(which xlf | grep '^/')}
-        export CXX_COMPILER=${CXX_COMPILER:-"xlC"}
-        export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
-        export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
-        export MAKE=${MAKE:-"gmake"}
-    elif [[ "$OPSYS" == "IRIX64" ]]; then
-        export ARCH="irix64" # You can change this to say RHEL, SuSE, Fedora, etc.
-        export SO_EXT="so"
-        export C_COMPILER=${C_COMPILER:-"gcc"}
-        export FC_COMPILER=${FC_COMPILER:-$GFORTRAN}
-        export CXX_COMPILER=${CXX_COMPILER:-"g++"}
-        export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
-        export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
-        export MAKE=${MAKE:-"gmake"}
-    elif [[ "$OPSYS" == "SunOS" ]]; then
-        export ARCH=${ARCH:-"sunos5"}
-        export SO_EXT="so"
-        export C_COMPILER=${C_COMPILER:-"gcc"}
-        export FC_COMPILER=${FC_COMPILER:-$GFORTRAN}
-        export CXX_COMPILER=${CXX_COMPILER:-"g++"}
-        export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
-        export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
-        export MAKE=${MAKE:-"make"}
     else
         export ARCH=${ARCH:-"linux-$(uname -m)"} # You can change this to say RHEL, SuSE, Fedora.
         export SO_EXT="so"
@@ -1302,19 +1275,6 @@ function run_build_visit()
     if [[ "$OPSYS" != "Darwin" && $DO_MESAGL == "no" && $DO_CONTEXT_CHECK != "no"  && $DO_DBIO_ONLY == "no" ]] ; then 
         if [[ $DO_VTK == "yes" || $DO_VISIT == "yes" ]] ; then
             check_opengl_context
-        fi
-    fi
-
-    #
-    # If we are AIX, make sure we are using GNU tar.
-    #
-    if [[ "$OPSYS" == "AIX" ]]; then
-        TARVERSION=$($TAR --version >/dev/null 2>&1)
-        if [[ $? != 0 ]] ; then
-            echo "Error in build process. You are using the system tar on AIX."
-            echo "Change the TAR variable in the script to the location of the"
-            echo "GNU tar command."
-            exit 1
         fi
     fi
 

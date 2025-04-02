@@ -254,21 +254,16 @@ function bv_gdal_build
 {
     cd "$START_DIR"
     if [[ "$DO_GDAL" == "yes" ]] ; then
-        if [[ "$OPSYS" == "AIX" ]]; then
-            info "Skipping GDAL build.  AIX build is not supported."
-            DO_GDAL="no"
+        check_if_installed "gdal" $GDAL_VERSION
+        if [[ $? == 0 ]] ; then
+            info "Skipping GDAL build.  GDAL is already installed."
         else
-            check_if_installed "gdal" $GDAL_VERSION
-            if [[ $? == 0 ]] ; then
-                info "Skipping GDAL build.  GDAL is already installed."
-            else
-                info "Building GDAL (~2 minutes)"
-                build_gdal
-                if [[ $? != 0 ]] ; then
-                    error "Unable to build or install GDAL.  Bailing out."
-                fi
-                info "Done building GDAL"
+            info "Building GDAL (~2 minutes)"
+            build_gdal
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install GDAL.  Bailing out."
             fi
+            info "Done building GDAL"
         fi
     fi
 }

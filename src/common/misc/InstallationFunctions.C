@@ -927,6 +927,9 @@ GetVisItLauncher()
 //   Brad Whitlock, Mon Oct 31 15:05:20 PDT 2011
 //   darwin-x86_64 enhancements.
 //
+//   Kathleen Biagas, Fri Mar 21, 2025 
+//   Removed AIX, sunos, osf, irix.
+//
 // ****************************************************************************
 
 bool
@@ -952,14 +955,6 @@ ReadInstallationInfo(std::string &distName, std::string &configName, std::string
 
     // Deprecated
     "darwin-ppc",
-    "sun4-sunos5-sparc",
-
-    "ibm-aix-pwr",
-    "ibm-aix-pwr64",
-
-    "sgi-irix6-mips2",
-
-    "dec-osf1-alpha",
     };
 
 #define NARCH (sizeof(archNames) / sizeof(const char *))
@@ -982,14 +977,6 @@ ReadInstallationInfo(std::string &distName, std::string &configName, std::string
 
     // Deprecated
     "darwin-ppc",
-    "sunos5",
-
-    "aix",
-    "aix64",
-
-    "irix6",
-
-    "osf1",
     };
 
     //
@@ -1003,7 +990,7 @@ ReadInstallationInfo(std::string &distName, std::string &configName, std::string
 
         // Try and read the .installinfo file that tells us just how VisIt
         // was installed. That way we can be sure that we pick up the right
-        // Linux or AIX installation.
+        // Linux installation.
         std::string installinfo(archHome);
         if(installinfo[installinfo.length()-1] != '/')
             installinfo += "/";
