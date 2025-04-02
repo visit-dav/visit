@@ -28,15 +28,10 @@ avtExodusOptions.C
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
-${NETCDF_INCLUDE_DIR}
 ${VISIT_DATABASE_INCLUDES}
 )
 
-if(WIN32)
-    add_compile_definitions(${NETCDF_WIN32_DEFINES})
-endif()
-
-LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${NETCDF_LIBRARY_DIR} )
+LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 
 ADD_LIBRARY(IExodusDatabase ${LIBI_SOURCES})
 TARGET_LINK_LIBRARIES(IExodusDatabase visitcommon)
@@ -44,19 +39,19 @@ SET(INSTALLTARGETS IExodusDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MExodusDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MExodusDatabase visitcommon avtdbatts avtdatabase_ser ${NETCDF_LIB} )
+    TARGET_LINK_LIBRARIES(MExodusDatabase visitcommon avtdbatts avtdatabase_ser netcdf )
     ADD_TARGET_DEFINITIONS(MExodusDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MExodusDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EExodusDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EExodusDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${NETCDF_LIB} )
+TARGET_LINK_LIBRARIES(EExodusDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser netcdf )
 ADD_TARGET_DEFINITIONS(EExodusDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EExodusDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EExodusDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EExodusDatabase_par visitcommon avtpipeline_par avtdatabase_par ${NETCDF_LIB} )
+    TARGET_LINK_LIBRARIES(EExodusDatabase_par visitcommon avtpipeline_par avtdatabase_par netcdf )
     ADD_TARGET_DEFINITIONS(EExodusDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EExodusDatabase_par)
 ENDIF(VISIT_PARALLEL)

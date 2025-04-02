@@ -41,8 +41,6 @@ if(LINUX)
     add_definitions(-fext-numeric-literals)
 endif()
 
-set(vtk_libs VTK::IOXML )
-
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${NEKTAR++_LIBRARY_DIR} ${NEKTAR++_LIBRARY_DIRS} ${NEKTAR++_TP_LIBRARY_DIRS} ${ACCELERATE_FRAMEWORK_LINK_FLAGS} )
 
 ADD_LIBRARY(INektarPPDatabase ${LIBI_SOURCES})
@@ -51,19 +49,19 @@ SET(INSTALLTARGETS INektarPPDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MNektarPPDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MNektarPPDatabase visitcommon avtdbatts avtdatabase_ser ${NEKTAR++_LIB} ${NEKTAR++_LIBRARIES} ${NEKTAR++_TP_LIBRARIES} ${vtk_libs} )
+    TARGET_LINK_LIBRARIES(MNektarPPDatabase visitcommon avtdbatts avtdatabase_ser ${NEKTAR++_LIB} ${NEKTAR++_LIBRARIES} ${NEKTAR++_TP_LIBRARIES} VTK::IOXML )
     ADD_TARGET_DEFINITIONS(MNektarPPDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MNektarPPDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(ENektarPPDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(ENektarPPDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${NEKTAR++_LIB} ${NEKTAR++_LIBRARIES} ${NEKTAR++_TP_LIBRARIES} ${vtk_libs} )
+TARGET_LINK_LIBRARIES(ENektarPPDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${NEKTAR++_LIB} ${NEKTAR++_LIBRARIES} ${NEKTAR++_TP_LIBRARIES} VTK::IOXML )
 ADD_TARGET_DEFINITIONS(ENektarPPDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} ENektarPPDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(ENektarPPDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(ENektarPPDatabase_par visitcommon avtpipeline_par avtdatabase_par ${NEKTAR++_LIB} ${NEKTAR++_LIBRARIES} ${NEKTAR++_TP_LIBRARIES} ${vtk_libs} )
+    TARGET_LINK_LIBRARIES(ENektarPPDatabase_par visitcommon avtpipeline_par avtdatabase_par ${NEKTAR++_LIB} ${NEKTAR++_LIBRARIES} ${NEKTAR++_TP_LIBRARIES} VTK::IOXML )
     ADD_TARGET_DEFINITIONS(ENektarPPDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} ENektarPPDatabase_par)
 ENDIF(VISIT_PARALLEL)

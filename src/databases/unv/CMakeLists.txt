@@ -49,7 +49,7 @@ SET(INSTALLTARGETS ${INSTALLTARGETS} EunvDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EunvDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EunvDatabase_par visitcommon avtpipeline_par avtdatabase_par zlib)
+    TARGET_LINK_LIBRARIES(EunvDatabase_par visitcommon avtpipeline_par avtdatabase_par zlib )
     ADD_TARGET_DEFINITIONS(EunvDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EunvDatabase_par)
 ENDIF(VISIT_PARALLEL)

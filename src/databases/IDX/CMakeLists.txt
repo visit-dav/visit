@@ -36,8 +36,6 @@ ${VISIT_PARALLEL_RPATH}/../include
 ${VISIT_DATABASE_INCLUDES}
 )
 
-set(vtk_libs VTK::IOXML )
-
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 
 ADD_LIBRARY(IIDXDatabase ${LIBI_SOURCES})
@@ -46,19 +44,19 @@ SET(INSTALLTARGETS IIDXDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MIDXDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MIDXDatabase visitcommon avtdbatts avtdatabase_ser pidx ${vtk_libs} )
+    TARGET_LINK_LIBRARIES(MIDXDatabase visitcommon avtdbatts avtdatabase_ser pidx VTK::IOXML )
     ADD_TARGET_DEFINITIONS(MIDXDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MIDXDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EIDXDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EIDXDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser pidx ${vtk_libs} )
+TARGET_LINK_LIBRARIES(EIDXDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser pidx VTK::IOXML )
 ADD_TARGET_DEFINITIONS(EIDXDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EIDXDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EIDXDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EIDXDatabase_par visitcommon avtpipeline_par avtdatabase_par pidx ${vtk_libs} )
+    TARGET_LINK_LIBRARIES(EIDXDatabase_par visitcommon avtpipeline_par avtdatabase_par pidx VTK::IOXML )
     ADD_TARGET_DEFINITIONS(EIDXDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EIDXDatabase_par)
 ENDIF(VISIT_PARALLEL)

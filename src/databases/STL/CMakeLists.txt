@@ -32,8 +32,6 @@ ${CMAKE_CURRENT_SOURCE_DIR}
 ${VISIT_DATABASE_INCLUDES}
 )
 
-set(vtk_libs VTK::IOGeometry )
-
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 
 ADD_LIBRARY(ISTLDatabase ${LIBI_SOURCES})
@@ -42,19 +40,19 @@ SET(INSTALLTARGETS ISTLDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MSTLDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MSTLDatabase visitcommon avtdbatts avtdatabase_ser ${vtk_libs} )
+    TARGET_LINK_LIBRARIES(MSTLDatabase visitcommon avtdbatts avtdatabase_ser VTK::IOGeometry )
     ADD_TARGET_DEFINITIONS(MSTLDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MSTLDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(ESTLDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(ESTLDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${vtk_libs} )
+TARGET_LINK_LIBRARIES(ESTLDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser VTK::IOGeometry )
 ADD_TARGET_DEFINITIONS(ESTLDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} ESTLDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(ESTLDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(ESTLDatabase_par visitcommon avtpipeline_par avtdatabase_par ${vtk_libs} )
+    TARGET_LINK_LIBRARIES(ESTLDatabase_par visitcommon avtpipeline_par avtdatabase_par VTK::IOGeometry )
     ADD_TARGET_DEFINITIONS(ESTLDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} ESTLDatabase_par)
 ENDIF(VISIT_PARALLEL)

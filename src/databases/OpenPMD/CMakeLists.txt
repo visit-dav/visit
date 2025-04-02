@@ -34,11 +34,10 @@ avtOpenPMDFileFormat.C
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
-${HDF5_INCLUDE_DIR}
 ${VISIT_DATABASE_INCLUDES}
 )
 
-LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${HDF5_LIBRARY_DIR} )
+LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 
 ADD_LIBRARY(IOpenPMDDatabase ${LIBI_SOURCES})
 TARGET_LINK_LIBRARIES(IOpenPMDDatabase visitcommon)
@@ -46,19 +45,19 @@ SET(INSTALLTARGETS IOpenPMDDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MOpenPMDDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MOpenPMDDatabase visitcommon avtdbatts avtdatabase_ser ${HDF5_LIB} )
+    TARGET_LINK_LIBRARIES(MOpenPMDDatabase visitcommon avtdbatts avtdatabase_ser hdf5 )
     ADD_TARGET_DEFINITIONS(MOpenPMDDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MOpenPMDDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EOpenPMDDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EOpenPMDDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${HDF5_LIB} )
+TARGET_LINK_LIBRARIES(EOpenPMDDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser hdf5 )
 ADD_TARGET_DEFINITIONS(EOpenPMDDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EOpenPMDDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EOpenPMDDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EOpenPMDDatabase_par visitcommon avtpipeline_par avtdatabase_par ${HDF5_LIB} )
+    TARGET_LINK_LIBRARIES(EOpenPMDDatabase_par visitcommon avtpipeline_par avtdatabase_par hdf5 )
     ADD_TARGET_DEFINITIONS(EOpenPMDDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EOpenPMDDatabase_par)
 ENDIF(VISIT_PARALLEL)

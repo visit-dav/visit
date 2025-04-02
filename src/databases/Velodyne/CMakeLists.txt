@@ -28,11 +28,10 @@ VelodyneReader.C
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
-${HDF5_INCLUDE_DIR}
 ${VISIT_DATABASE_INCLUDES}
 )
 
-LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${HDF5_LIBRARY_DIR} )
+LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 
 ADD_LIBRARY(IVelodyneDatabase ${LIBI_SOURCES})
 TARGET_LINK_LIBRARIES(IVelodyneDatabase visitcommon)
@@ -40,19 +39,19 @@ SET(INSTALLTARGETS IVelodyneDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MVelodyneDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MVelodyneDatabase visitcommon avtdbatts avtdatabase_ser ${HDF5_LIB} )
+    TARGET_LINK_LIBRARIES(MVelodyneDatabase visitcommon avtdbatts avtdatabase_ser hdf5 )
     ADD_TARGET_DEFINITIONS(MVelodyneDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MVelodyneDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EVelodyneDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EVelodyneDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${HDF5_LIB} )
+TARGET_LINK_LIBRARIES(EVelodyneDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser hdf5 )
 ADD_TARGET_DEFINITIONS(EVelodyneDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EVelodyneDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EVelodyneDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EVelodyneDatabase_par visitcommon avtpipeline_par avtdatabase_par ${HDF5_LIB} )
+    TARGET_LINK_LIBRARIES(EVelodyneDatabase_par visitcommon avtpipeline_par avtdatabase_par hdf5 )
     ADD_TARGET_DEFINITIONS(EVelodyneDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EVelodyneDatabase_par)
 ENDIF(VISIT_PARALLEL)

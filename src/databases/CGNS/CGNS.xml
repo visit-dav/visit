@@ -1,17 +1,8 @@
 <?xml version="1.0"?>
   <Plugin name="CGNS" type="database" label="CGNS" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false" skipInfoGen="true">
-    <CXXFLAGS>
-      ${CGNS_INCLUDE_DIR}
-    </CXXFLAGS>
     <LIBS>
-      ${CGNS_LIB}
+      cgns
     </LIBS>
-    <LDFLAGS>
-      ${CGNS_LIBRARY_DIR}
-    </LDFLAGS>
-    <WIN32DEFINES>
-      ${CGNS_WIN32_DEFINES}
-    </WIN32DEFINES>
     <FilePatterns>
       *.cgns.*.*
       *.cgns

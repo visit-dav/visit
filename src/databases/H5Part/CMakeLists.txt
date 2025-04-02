@@ -30,12 +30,10 @@ avtH5PartWriter.C
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
-${HDF5_INCLUDE_DIR}
-${H5PART_INCLUDE_DIR}
 ${VISIT_DATABASE_INCLUDES}
 )
 
-LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${HDF5_LIBRARY_DIR} ${H5PART_LIBRARY_DIR} )
+LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 
 ADD_LIBRARY(IH5PartDatabase ${LIBI_SOURCES})
 TARGET_LINK_LIBRARIES(IH5PartDatabase visitcommon)
@@ -43,19 +41,19 @@ SET(INSTALLTARGETS IH5PartDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MH5PartDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MH5PartDatabase visitcommon avtdbatts avtdatabase_ser ${H5PART_LIB} ${HDF5_LIB} ${RT} )
+    TARGET_LINK_LIBRARIES(MH5PartDatabase visitcommon avtdbatts avtdatabase_ser h5part ${RT} )
     ADD_TARGET_DEFINITIONS(MH5PartDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MH5PartDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EH5PartDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EH5PartDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${H5PART_LIB} ${HDF5_LIB} ${RT} )
+TARGET_LINK_LIBRARIES(EH5PartDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser h5part ${RT} )
 ADD_TARGET_DEFINITIONS(EH5PartDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EH5PartDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EH5PartDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EH5PartDatabase_par visitcommon avtpipeline_par avtdatabase_par ${H5PART_LIB} ${HDF5_LIB} ${RT} )
+    TARGET_LINK_LIBRARIES(EH5PartDatabase_par visitcommon avtpipeline_par avtdatabase_par h5part ${RT} )
     ADD_TARGET_DEFINITIONS(EH5PartDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EH5PartDatabase_par)
 ENDIF(VISIT_PARALLEL)

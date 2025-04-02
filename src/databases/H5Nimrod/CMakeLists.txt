@@ -28,11 +28,10 @@ H5utils.C
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
-${HDF5_INCLUDE_DIR}
 ${VISIT_DATABASE_INCLUDES}
 )
 
-LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${HDF5_LIBRARY_DIR} )
+LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 
 ADD_LIBRARY(IH5NimrodDatabase ${LIBI_SOURCES})
 TARGET_LINK_LIBRARIES(IH5NimrodDatabase visitcommon)
@@ -40,19 +39,19 @@ SET(INSTALLTARGETS IH5NimrodDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MH5NimrodDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MH5NimrodDatabase visitcommon avtdbatts avtdatabase_ser ${HDF5_LIB} )
+    TARGET_LINK_LIBRARIES(MH5NimrodDatabase visitcommon avtdbatts avtdatabase_ser hdf5 )
     ADD_TARGET_DEFINITIONS(MH5NimrodDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MH5NimrodDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EH5NimrodDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EH5NimrodDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${HDF5_LIB} )
+TARGET_LINK_LIBRARIES(EH5NimrodDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser hdf5 )
 ADD_TARGET_DEFINITIONS(EH5NimrodDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EH5NimrodDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EH5NimrodDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EH5NimrodDatabase_par visitcommon avtpipeline_par avtdatabase_par ${HDF5_LIB} )
+    TARGET_LINK_LIBRARIES(EH5NimrodDatabase_par visitcommon avtpipeline_par avtdatabase_par hdf5 )
     ADD_TARGET_DEFINITIONS(EH5NimrodDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EH5NimrodDatabase_par)
 ENDIF(VISIT_PARALLEL)

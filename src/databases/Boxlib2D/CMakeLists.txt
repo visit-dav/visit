@@ -51,7 +51,7 @@ SET(INSTALLTARGETS ${INSTALLTARGETS} EBoxlib2DDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EBoxlib2DDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EBoxlib2DDatabase_par visitcommon avtpipeline_par avtdatabase_par boxlib2d)
+    TARGET_LINK_LIBRARIES(EBoxlib2DDatabase_par visitcommon avtpipeline_par avtdatabase_par boxlib2d )
     ADD_TARGET_DEFINITIONS(EBoxlib2DDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EBoxlib2DDatabase_par)
 ENDIF(VISIT_PARALLEL)

@@ -48,13 +48,12 @@ JMFileFormat.C
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
-${PDB_INCLUDE_DIR}
 ${VISIT_INCLUDE_DIR}/third_party_builtin/bow
 ${VISIT_INCLUDE_DIR}/visit/third_party_builtin/bow
 ${VISIT_DATABASE_INCLUDES}
 )
 
-LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${PDB_LIBRARY_DIR} )
+LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 
 ADD_LIBRARY(IPDBDatabase ${LIBI_SOURCES})
 TARGET_LINK_LIBRARIES(IPDBDatabase visitcommon)
@@ -62,19 +61,19 @@ SET(INSTALLTARGETS IPDBDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MPDBDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MPDBDatabase visitcommon avtdbatts avtdatabase_ser ${PDB_LIB} bow )
+    TARGET_LINK_LIBRARIES(MPDBDatabase visitcommon avtdbatts avtdatabase_ser silo bow )
     ADD_TARGET_DEFINITIONS(MPDBDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MPDBDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EPDBDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EPDBDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${PDB_LIB} bow )
+TARGET_LINK_LIBRARIES(EPDBDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser silo bow )
 ADD_TARGET_DEFINITIONS(EPDBDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EPDBDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EPDBDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EPDBDatabase_par visitcommon avtpipeline_par avtdatabase_par ${PDB_LIB} bow )
+    TARGET_LINK_LIBRARIES(EPDBDatabase_par visitcommon avtpipeline_par avtdatabase_par silo bow )
     ADD_TARGET_DEFINITIONS(EPDBDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EPDBDatabase_par)
 ENDIF(VISIT_PARALLEL)

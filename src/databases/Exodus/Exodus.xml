@@ -40,18 +40,9 @@
       avtExodusFileFormat.C
       avtExodusOptions.C
     </Files>
-    <CXXFLAGS>
-      ${NETCDF_INCLUDE_DIR}
-    </CXXFLAGS>
-    <LDFLAGS>
-      ${NETCDF_LIBRARY_DIR}
-    </LDFLAGS>
     <LIBS>
-      ${NETCDF_LIB}
+      netcdf
     </LIBS>
-    <WIN32DEFINES>
-      ${NETCDF_WIN32_DEFINES}
-    </WIN32DEFINES>
     <Attribute name="" purpose="" persistent="true" exportAPI="" exportInclude="" codefile="Exodus.code">
       <Function name="ExodusCommonPluginInfo::SetupDatabase" user="false" member="true">
       </Function>

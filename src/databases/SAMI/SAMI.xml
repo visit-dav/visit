@@ -3,13 +3,7 @@
     <FilePatterns> 
       *.sami 
     </FilePatterns>
-    <CXXFLAGS> 
-      ${SILO_INCLUDE_DIR} 
-    </CXXFLAGS>
-    <LDFLAGS> 
-      ${SILO_LIBRARY_DIR} 
-    </LDFLAGS>
     <LIBS> 
-      ${SILO_LIB} 
+      silo
     </LIBS>
   </Plugin>

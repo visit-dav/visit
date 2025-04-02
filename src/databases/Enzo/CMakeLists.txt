@@ -26,11 +26,10 @@ avtEnzoFileFormat.C
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
-${HDF5_INCLUDE_DIR}
 ${VISIT_DATABASE_INCLUDES}
 )
 
-LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${HDF5_LIBRARY_DIR} )
+LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 
 ADD_LIBRARY(IEnzoDatabase ${LIBI_SOURCES})
 TARGET_LINK_LIBRARIES(IEnzoDatabase visitcommon)
@@ -38,19 +37,19 @@ SET(INSTALLTARGETS IEnzoDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MEnzoDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MEnzoDatabase visitcommon avtdbatts avtdatabase_ser ${HDF5_LIB} )
+    TARGET_LINK_LIBRARIES(MEnzoDatabase visitcommon avtdbatts avtdatabase_ser hdf5 )
     ADD_TARGET_DEFINITIONS(MEnzoDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MEnzoDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EEnzoDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EEnzoDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${HDF5_LIB} )
+TARGET_LINK_LIBRARIES(EEnzoDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser hdf5 )
 ADD_TARGET_DEFINITIONS(EEnzoDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EEnzoDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EEnzoDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EEnzoDatabase_par visitcommon avtpipeline_par avtdatabase_par ${HDF5_LIB} )
+    TARGET_LINK_LIBRARIES(EEnzoDatabase_par visitcommon avtpipeline_par avtdatabase_par hdf5 )
     ADD_TARGET_DEFINITIONS(EEnzoDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EEnzoDatabase_par)
 ENDIF(VISIT_PARALLEL)

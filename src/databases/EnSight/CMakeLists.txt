@@ -26,11 +26,8 @@ avtEnSightFileFormat.C
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
-${ENSIGHT_FLAGS}
 ${VISIT_DATABASE_INCLUDES}
 )
-
-set(vtk_libs VTK::IOEnSight )
 
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 
@@ -40,19 +37,19 @@ SET(INSTALLTARGETS IEnSightDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MEnSightDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MEnSightDatabase visitcommon avtdbatts avtdatabase_ser ${vtk_libs} )
+    TARGET_LINK_LIBRARIES(MEnSightDatabase visitcommon avtdbatts avtdatabase_ser VTK::IOEnSight )
     ADD_TARGET_DEFINITIONS(MEnSightDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MEnSightDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EEnSightDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EEnSightDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${vtk_libs} )
+TARGET_LINK_LIBRARIES(EEnSightDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser VTK::IOEnSight )
 ADD_TARGET_DEFINITIONS(EEnSightDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EEnSightDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EEnSightDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EEnSightDatabase_par visitcommon avtpipeline_par avtdatabase_par ${vtk_libs} )
+    TARGET_LINK_LIBRARIES(EEnSightDatabase_par visitcommon avtpipeline_par avtdatabase_par VTK::IOEnSight )
     ADD_TARGET_DEFINITIONS(EEnSightDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EEnSightDatabase_par)
 ENDIF(VISIT_PARALLEL)

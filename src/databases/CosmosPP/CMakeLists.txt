@@ -26,11 +26,10 @@ avtCosmosPPFileFormat.C
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
-${HDF5_INCLUDE_DIR}
 ${VISIT_DATABASE_INCLUDES}
 )
 
-LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${HDF5_LIBRARY_DIR} )
+LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 
 ADD_LIBRARY(ICosmosPPDatabase ${LIBI_SOURCES})
 TARGET_LINK_LIBRARIES(ICosmosPPDatabase visitcommon)
@@ -38,19 +37,19 @@ SET(INSTALLTARGETS ICosmosPPDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MCosmosPPDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MCosmosPPDatabase visitcommon avtdbatts avtdatabase_ser ${HDF5_LIB} )
+    TARGET_LINK_LIBRARIES(MCosmosPPDatabase visitcommon avtdbatts avtdatabase_ser hdf5 )
     ADD_TARGET_DEFINITIONS(MCosmosPPDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MCosmosPPDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(ECosmosPPDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(ECosmosPPDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${HDF5_LIB} )
+TARGET_LINK_LIBRARIES(ECosmosPPDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser hdf5 )
 ADD_TARGET_DEFINITIONS(ECosmosPPDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} ECosmosPPDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(ECosmosPPDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(ECosmosPPDatabase_par visitcommon avtpipeline_par avtdatabase_par ${HDF5_LIB} )
+    TARGET_LINK_LIBRARIES(ECosmosPPDatabase_par visitcommon avtpipeline_par avtdatabase_par hdf5 )
     ADD_TARGET_DEFINITIONS(ECosmosPPDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} ECosmosPPDatabase_par)
 ENDIF(VISIT_PARALLEL)
