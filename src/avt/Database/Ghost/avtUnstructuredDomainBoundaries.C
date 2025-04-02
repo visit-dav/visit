@@ -57,17 +57,6 @@ namespace
 
 #endif
 
-//
-// Use the preprocessor to help ensure that the right template ExchangeData
-// function is instantiated.
-//
-#define ExchangeData_float         ExchangeData<float>
-#define ExchangeData_double        ExchangeData<double>
-#define ExchangeData_char          ExchangeData<char>
-#define ExchangeData_unsigned_char ExchangeData<unsigned char>
-#define ExchangeData_int           ExchangeData<int>
-#define ExchangeData_unsigned_int  ExchangeData<unsigned int>
-
 
 // ****************************************************************************
 //  Constructor:  avtUnstructuredDomainBoundaries::
@@ -139,40 +128,38 @@ avtUnstructuredDomainBoundaries::SetSharedPoints(int d1, int d2,
                                                const vector<int> &d1pts,
                                                const vector<int> &d2pts)
 {
-    int index = GetGivenIndex(d1, d2);
-
-    if (index == -1)
+    // we do the same thing twice, just changing the order of the inputs
+    auto handleGivenIndex = [&](int dFirst,
+                                int dSecond,
+                                const vector<int> &dFirstPts,
+                                const vector<int> &dSecondPts)
     {
-        index = (int)giveIndex.size();
-        giveIndex.push_back(pair<int, int> (d1, d2));
-        givenCells.resize(givenCells.size() + 1);
-        givenPoints.resize(givenPoints.size() + 1);
-        sharedPointsMap.resize(sharedPointsMap.size() + 1);
-    }
-    else
-        sharedPointsMap[index].clear();
+        int index = GetGivenIndex(dFirst, dSecond);
 
-    for (size_t i = 0; i < d1pts.size(); ++i)
-    {
-        sharedPointsMap[index][d1pts[i]] = d2pts[i];
-    }
+        if (index == -1)
+        {
+            index = static_cast<int>(giveIndex.size());
+            giveIndex.push_back(pair<int, int> (dFirst, dSecond));
+            // Use emplace_back to add a default-initialized std::vector<int> 
+            // to the vector, avoiding creating a temporary object.
+            givenCells.emplace_back();
+            givenPoints.emplace_back();
+            sharedPointsMap.emplace_back();
+        }
+        else
+        {
+            sharedPointsMap[index].clear();
+        }
 
+        for (size_t i = 0; i < dFirstPts.size(); ++i)
+        {
+            sharedPointsMap[index][dFirstPts[i]] = dSecondPts[i];
+        }
+    };
+
+    handleGivenIndex(d1, d2, d1pts, d2pts);
     // And put in the reverse.
-
-    index = GetGivenIndex(d2, d1);
-    if (index == -1)
-    {
-        index = (int)giveIndex.size();
-        giveIndex.push_back(pair<int, int> (d2, d1));
-        givenCells.resize(givenCells.size() + 1);
-        givenPoints.resize(givenPoints.size() + 1);
-        sharedPointsMap.resize(sharedPointsMap.size() + 1);
-    }
-    else
-        sharedPointsMap[index].clear();
-
-    for (size_t i = 0; i < d1pts.size(); ++i)
-        sharedPointsMap[index][d2pts[i]] = d1pts[i];
+    handleGivenIndex(d2, d1, d2pts, d1pts);
 }
 
 
@@ -220,15 +207,20 @@ avtUnstructuredDomainBoundaries::SetGivenCellsAndPoints(int fromDom, int toDom,
     {
         giveIndex.push_back(pair<int, int>(fromDom, toDom));
         givenCells.push_back(cells);
-        givenPoints.resize(givenPoints.size() + 1);
-
-        sharedPointsMap.resize(sharedPointsMap.size() + 1);
+        // Use emplace_back to add a default-initialized std::vector<int> 
+        // to the vector, avoiding creating a temporary object.
+        givenPoints.emplace_back();
+        sharedPointsMap.emplace_back();
     }
     else
+    {
         givenCells[index] = cells;
+    }
 
     if (!filterShared)
+    {
         givenPoints[index] = points;
+    }
     else
     {
         int sIndex = GetGivenIndex(fromDom, toDom);
@@ -660,17 +652,17 @@ avtUnstructuredDomainBoundaries::ExchangeScalar(vector<int>         domainNum,
     switch (maxDataType)
     {
         case VTK_INT:
-            return ExchangeData_int(domainNum, isPointData, scalars);
+            return ExchangeData<int>(domainNum, isPointData, scalars);
         case VTK_CHAR:
-            return ExchangeData_char(domainNum, isPointData, scalars);
+            return ExchangeData<char>(domainNum, isPointData, scalars);
         case VTK_FLOAT:
-            return ExchangeData_float(domainNum, isPointData, scalars);
+            return ExchangeData<float>(domainNum, isPointData, scalars);
         case VTK_DOUBLE:
-            return ExchangeData_double(domainNum, isPointData, scalars);
+            return ExchangeData<double>(domainNum, isPointData, scalars);
         case VTK_UNSIGNED_CHAR:
-            return ExchangeData_unsigned_char(domainNum, isPointData, scalars);
+            return ExchangeData<unsigned char>(domainNum, isPointData, scalars);
         case VTK_UNSIGNED_INT:
-            return ExchangeData_unsigned_int(domainNum, isPointData, scalars);
+            return ExchangeData<unsigned int>(domainNum, isPointData, scalars);
         default:
             string exc_mesg = "avtUnstructuredDomainBoundaries does not know "
                               "how to exchange scalars from array type "
@@ -790,7 +782,7 @@ avtUnstructuredDomainBoundaries::ExchangeFloatVector(vector<int>      domainNum,
                                               bool                  isPointData,
                                               vector<vtkDataArray*> vectors)
 {
-    return ExchangeData_float(domainNum, isPointData, vectors);
+    return ExchangeData<float>(domainNum, isPointData, vectors);
 }
 
 // ****************************************************************************
@@ -817,7 +809,7 @@ avtUnstructuredDomainBoundaries::ExchangeDoubleVector(vector<int>      domainNum
                                               bool                  isPointData,
                                               vector<vtkDataArray*> vectors)
 {
-    return ExchangeData_double(domainNum, isPointData, vectors);
+    return ExchangeData<double>(domainNum, isPointData, vectors);
 }
 
 // ****************************************************************************
@@ -852,7 +844,7 @@ avtUnstructuredDomainBoundaries::ExchangeIntVector(vector<int>        domainNum,
                                                  bool               isPointData,
                                                  vector<vtkDataArray*> vectors)
 {
-    return ExchangeData_int(domainNum, isPointData, vectors);
+    return ExchangeData<int>(domainNum, isPointData, vectors);
 }
 
 
@@ -1152,7 +1144,7 @@ avtUnstructuredDomainBoundaries::ExchangeCleanMaterials(vector<int> domainNum,
     }
 
     vector<vtkDataArray *> result;
-    result = ExchangeData_int(domainNum, false, materialArrays);
+    result = ExchangeData<int>(domainNum, false, materialArrays);
 
     vector<avtMaterial*> out(mats.size(), NULL);
 
