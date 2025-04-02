@@ -70,6 +70,10 @@ avtMinMaxExpression::~avtMinMaxExpression()
 //
 //  Programmer: Eddie Rusu
 //  Creation:   Mon Sep 30 14:09:49 PDT 2019
+// 
+//  Modifications:
+//    Justin Privitera, Wed Apr  2 15:03:35 PDT 2025
+//    Handle the single input case.
 //
 // ****************************************************************************
 

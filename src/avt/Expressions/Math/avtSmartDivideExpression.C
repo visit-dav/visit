@@ -70,6 +70,10 @@ avtSmartDivideExpression::~avtSmartDivideExpression()
 //
 //  Programmer: Eddie Rusu
 //  Creation:   Tue Sep 24 09:07:44 PDT 2019
+// 
+//  Modifications:
+//    Justin Privitera, Wed Apr  2 15:03:35 PDT 2025
+//    Handle the single input case.
 //
 // ****************************************************************************
 
@@ -124,6 +128,9 @@ avtSmartDivideExpression::RecenterData(vtkDataSet* in_ds)
 //      Eddie Rusu, Mon Sep 30 14:49:38 PDT 2019
 //      Replaced output variable setup with
 //      avtMultiInputMathExpression::CreateOutputVariable.
+// 
+//      Justin Privitera, Wed Apr  2 15:03:35 PDT 2025
+//      Handle the single input case.
 //
 // ****************************************************************************
 
