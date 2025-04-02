@@ -3249,38 +3249,6 @@ void
 ColorTableAttributes::ProcessOldVersions(DataNode *parentNode,
                                          const char *configVersion)
 {
-#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
-#error This code is obsolete in this version. Please remove it.
-#else
-    if(parentNode == 0)
-        return;
-
-    DataNode *searchNode = parentNode->GetNode("ColorTableAttributes");
-    if(searchNode == 0)
-        return;
-
-    if (VersionLessThan(configVersion, "3.3.0"))
-    {
-        DataNode *k = 0;
-        if ((k = searchNode->GetNode("activeContinuous")) != 0)
-        {
-#ifdef VIEWER
-            avtCallback::IssueWarning(DeprecationMessage("activeContinuous", "3.5.0"));
-#endif
-            searchNode->AddNode(new DataNode("defaultContinuous", k->AsString()));
-            searchNode->RemoveNode(k);
-        }
-        if ((k = searchNode->GetNode("activeDiscrete")) != 0)
-        {
-#ifdef VIEWER
-            avtCallback::IssueWarning(DeprecationMessage("activeDiscrete", "3.5.0"));
-#endif
-            searchNode->AddNode(new DataNode("defaultDiscrete", k->AsString()));
-            searchNode->RemoveNode(k);
-        }
-    }
-#endif
-
 #if VISIT_OBSOLETE_AT_VERSION(3,6,0)
 #error This code is obsolete in this version. Please remove it.
 #else
