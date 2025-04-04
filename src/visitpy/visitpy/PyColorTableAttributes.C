@@ -541,27 +541,6 @@ PyColorTableAttributes_getattro(PyObject *self, PyObject *attr_name)
     if(strcmp(name, "defaultDiscrete") == 0)
         return ColorTableAttributes_GetDefaultDiscrete(self, NULL);
 
-#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
-#error This code is obsolete in this version. Please remove it.
-#else
-    // Try and handle legacy fields in ColorTableAttributes
-
-    //
-    // Removed in 3.3.0
-    //
-    if(strcmp(name, "activeContinuous") == 0)
-    {
-        PyColorTableAttributesObject *ColorTableObj = (PyColorTableAttributesObject *)self;
-        std::string defaultContinuous = ColorTableObj->data->GetDefaultContinuous();
-        return PyString_FromString(defaultContinuous.c_str());
-    }
-    if(strcmp(name, "activeDiscrete") == 0)
-    {
-        PyColorTableAttributesObject *ColorTableObj = (PyColorTableAttributesObject *)self;
-        std::string defaultDiscrete = ColorTableObj->data->GetDefaultDiscrete();
-        return PyString_FromString(defaultDiscrete.c_str());
-    }
-#endif
 #if VISIT_OBSOLETE_AT_VERSION(3,6,0)
 #error This code is obsolete in this version. Please remove it.
 #else
@@ -603,35 +582,6 @@ PyColorTableAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *a
     else if(strcmp(name, "defaultDiscrete") == 0)
         obj = ColorTableAttributes_SetDefaultDiscrete(self, args);
 
-#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
-#error This code is obsolete in this version. Please remove it.
-#else
-   // Try and handle legacy fields in ColorTableAttributes
-    if(obj == &NULL_PY_OBJ)
-    {
-        PyColorTableAttributesObject *ColorTableObj = (PyColorTableAttributesObject *)self;
-
-        //
-        // Removed in 3.3.0
-        //
-        if(strcmp(name, "activeContinuous") == 0)
-        {
-            const std::string defaultCont = PyString_AsString(args);
-            PyErr_WarnEx(NULL, "'activeContinuous' is obsolete. Use 'defaultContinuous'.", 3);
-            ColorTableObj->data->SetDefaultContinuous(defaultCont);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        if(strcmp(name, "activeDiscrete") == 0)
-        {
-            const std::string defaultDisc = PyString_AsString(args);
-            PyErr_WarnEx(NULL, "'activeDiscrete' is obsolete. Use 'defaultDiscrete'.", 3);
-            ColorTableObj->data->SetDefaultDiscrete(defaultDisc);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-    }
-#endif
 #if VISIT_OBSOLETE_AT_VERSION(3,6,0)
 #error This code is obsolete in this version. Please remove it.
 #else

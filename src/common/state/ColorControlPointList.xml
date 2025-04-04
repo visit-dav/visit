@@ -60,8 +60,6 @@
     </Function>
     <Function name="SetTagNames" user="false" member="true">
     </Function>
-    <Function name="ProcessOldVersions" user="true" member="true">
-    </Function>
     <Include file="source" quoted="false">
       DebugStream.h
     </Include>
