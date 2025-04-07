@@ -5,6 +5,7 @@
 #include <PyContourAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 #include <visit-config.h>
 #include <PyColorControlPointList.h>
@@ -27,7 +28,7 @@
 //
 // This struct contains the Python type information and a ContourAttributes.
 //
-struct ContourAttributesObject
+struct PyContourAttributesObject
 {
     PyObject_HEAD
     ContourAttributes *data;
@@ -205,16 +206,44 @@ PyContourAttributes_ToString(const ContourAttributes *atts, const char *prefix, 
 static PyObject *
 ContourAttributes_Notify(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+ContourAttributes_dir(PyObject *self, PyObject *args)
+{
+    static ContourAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyContourAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 ContourAttributes_SetDefaultPalette(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -231,7 +260,7 @@ ContourAttributes_SetDefaultPalette(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_GetDefaultPalette(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -247,7 +276,7 @@ ContourAttributes_GetDefaultPalette(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_SetChangedColors(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
 
     typedef unsigned char uchar;
     ucharVector vec;
@@ -312,7 +341,7 @@ ContourAttributes_SetChangedColors(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_GetChangedColors(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the changedColors.
     const unsignedCharVector &changedColors = obj->data->GetChangedColors();
     PyObject *retval = PyTuple_New(changedColors.size());
@@ -324,7 +353,7 @@ ContourAttributes_GetChangedColors(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_SetColorType(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -383,7 +412,7 @@ ContourAttributes_SetColorType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_GetColorType(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetColorType()));
     return retval;
 }
@@ -391,7 +420,7 @@ ContourAttributes_GetColorType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_SetColorTableName(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -432,7 +461,7 @@ ContourAttributes_SetColorTableName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_GetColorTableName(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetColorTableName().c_str());
     return retval;
 }
@@ -440,7 +469,7 @@ ContourAttributes_GetColorTableName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -492,7 +521,7 @@ ContourAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_GetInvertColorTable(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetInvertColorTable()?1L:0L);
     return retval;
 }
@@ -500,7 +529,7 @@ ContourAttributes_GetInvertColorTable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -552,7 +581,7 @@ ContourAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_GetLegendFlag(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetLegendFlag()?1L:0L);
     return retval;
 }
@@ -560,7 +589,7 @@ ContourAttributes_GetLegendFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_SetLineWidth(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -612,7 +641,7 @@ ContourAttributes_SetLineWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_GetLineWidth(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetLineWidth()));
     return retval;
 }
@@ -620,7 +649,7 @@ ContourAttributes_GetLineWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_SetSingleColor(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -683,7 +712,7 @@ ContourAttributes_SetSingleColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_GetSingleColor(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the singleColor.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *singleColor = obj->data->GetSingleColor().GetColor();
@@ -697,7 +726,7 @@ ContourAttributes_GetSingleColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_SetContourMethod(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -756,7 +785,7 @@ ContourAttributes_SetContourMethod(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_GetContourMethod(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetContourMethod()));
     return retval;
 }
@@ -764,7 +793,7 @@ ContourAttributes_GetContourMethod(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_SetContourNLevels(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -816,7 +845,7 @@ ContourAttributes_SetContourNLevels(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_GetContourNLevels(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetContourNLevels()));
     return retval;
 }
@@ -824,7 +853,7 @@ ContourAttributes_GetContourNLevels(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_SetContourValue(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
 
     doubleVector vec;
 
@@ -888,7 +917,7 @@ ContourAttributes_SetContourValue(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_GetContourValue(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the contourValue.
     const doubleVector &contourValue = obj->data->GetContourValue();
     PyObject *retval = PyTuple_New(contourValue.size());
@@ -900,7 +929,7 @@ ContourAttributes_GetContourValue(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_SetContourPercent(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
 
     doubleVector vec;
 
@@ -964,7 +993,7 @@ ContourAttributes_SetContourPercent(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_GetContourPercent(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the contourPercent.
     const doubleVector &contourPercent = obj->data->GetContourPercent();
     PyObject *retval = PyTuple_New(contourPercent.size());
@@ -976,7 +1005,7 @@ ContourAttributes_GetContourPercent(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_SetMultiColor(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
 
     PyObject *pyobj = NULL;
     ColorAttributeList &cL = obj->data->GetMultiColor();
@@ -1143,7 +1172,7 @@ ContourAttributes_SetMultiColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_GetMultiColor(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
     PyObject *retval = NULL;
     ColorAttributeList &cL = obj->data->GetMultiColor();
 
@@ -1186,7 +1215,7 @@ ContourAttributes_GetMultiColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_SetMinFlag(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1238,7 +1267,7 @@ ContourAttributes_SetMinFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_GetMinFlag(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetMinFlag()?1L:0L);
     return retval;
 }
@@ -1246,7 +1275,7 @@ ContourAttributes_GetMinFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_SetMaxFlag(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1298,7 +1327,7 @@ ContourAttributes_SetMaxFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_GetMaxFlag(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetMaxFlag()?1L:0L);
     return retval;
 }
@@ -1306,7 +1335,7 @@ ContourAttributes_GetMaxFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_SetMin(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1358,7 +1387,7 @@ ContourAttributes_SetMin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_GetMin(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMin());
     return retval;
 }
@@ -1366,7 +1395,7 @@ ContourAttributes_GetMin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_SetMax(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1418,7 +1447,7 @@ ContourAttributes_SetMax(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_GetMax(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMax());
     return retval;
 }
@@ -1426,7 +1455,7 @@ ContourAttributes_GetMax(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_SetScaling(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1484,7 +1513,7 @@ ContourAttributes_SetScaling(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_GetScaling(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetScaling()));
     return retval;
 }
@@ -1492,7 +1521,7 @@ ContourAttributes_GetScaling(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_SetWireframe(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1544,7 +1573,7 @@ ContourAttributes_SetWireframe(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ContourAttributes_GetWireframe(PyObject *self, PyObject *args)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetWireframe()?1L:0L);
     return retval;
 }
@@ -1552,7 +1581,8 @@ ContourAttributes_GetWireframe(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyContourAttributes_methods[CONTOURATTRIBUTES_NMETH] = {
-    {"Notify", ContourAttributes_Notify, METH_VARARGS},
+    {"__dir__", ContourAttributes_dir, METH_NOARGS},
+    {"Notify", ContourAttributes_Notify, METH_NOARGS},
     {"SetDefaultPalette", ContourAttributes_SetDefaultPalette, METH_VARARGS},
     {"GetDefaultPalette", ContourAttributes_GetDefaultPalette, METH_VARARGS},
     {"SetChangedColors", ContourAttributes_SetChangedColors, METH_VARARGS},
@@ -1599,19 +1629,22 @@ PyMethodDef PyContourAttributes_methods[CONTOURATTRIBUTES_NMETH] = {
 //
 
 static void
-ContourAttributes_dealloc(PyObject *v)
+PyContourAttributes_dealloc(PyObject *v)
 {
-   ContourAttributesObject *obj = (ContourAttributesObject *)v;
+   PyContourAttributesObject *obj = (PyContourAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *ContourAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyContourAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyContourAttributes_getattr(PyObject *self, char *name)
+PyContourAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "defaultPalette") == 0)
         return ContourAttributes_GetDefaultPalette(self, NULL);
     if(strcmp(name, "changedColors") == 0)
@@ -1670,26 +1703,19 @@ PyContourAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "wireframe") == 0)
         return ContourAttributes_GetWireframe(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyContourAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyContourAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyContourAttributes_methods[i].ml_name),
-                PyString_FromString(PyContourAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyContourAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyContourAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyContourAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "defaultPalette") == 0)
         obj = ContourAttributes_SetDefaultPalette(self, args);
@@ -1730,6 +1756,12 @@ PyContourAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "wireframe") == 0)
         obj = ContourAttributes_SetWireframe(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -1744,78 +1776,45 @@ PyContourAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ContourAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    ContourAttributesObject *obj = (ContourAttributesObject *)v;
-    fprintf(fp, "%s", PyContourAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-ContourAttributes_str(PyObject *v)
+PyContourAttributes_str(PyObject *v)
 {
-    ContourAttributesObject *obj = (ContourAttributesObject *)v;
+    PyContourAttributesObject *obj = (PyContourAttributesObject *)v;
     return PyString_FromString(PyContourAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *ContourAttributes_Purpose = "This class contains the plot attributes for the contour plot.";
-#else
-static char *ContourAttributes_Purpose = "This class contains the plot attributes for the contour plot.";
-#endif
+static char const *PyContourAttributes_purpose = "This class contains the plot attributes for the contour plot.";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(ContourAttributesType,         \
-                  "ContourAttributes",           \
-                  ContourAttributesObject,       \
-                  ContourAttributes_dealloc,     \
-                  ContourAttributes_print,       \
-                  PyContourAttributes_getattr,   \
-                  PyContourAttributes_setattr,   \
-                  ContourAttributes_str,         \
-                  ContourAttributes_Purpose,     \
-                  ContourAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(ContourAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-ContourAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyContourAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &ContourAttributesType
-         || Py_TYPE(other) != &ContourAttributesType)
+    if ( Py_TYPE(self) != &PyContourAttributesType
+         || Py_TYPE(other) != &PyContourAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    ContourAttributes *a = ((ContourAttributesObject *)self)->data;
-    ContourAttributes *b = ((ContourAttributesObject *)other)->data;
+    ContourAttributes *a = ((PyContourAttributesObject *)self)->data;
+    ContourAttributes *b = ((PyContourAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -1844,8 +1843,8 @@ static ContourAttributes *currentAtts = 0;
 static PyObject *
 NewContourAttributes(int useCurrent)
 {
-    ContourAttributesObject *newObject;
-    newObject = PyObject_NEW(ContourAttributesObject, &ContourAttributesType);
+    PyContourAttributesObject *newObject;
+    newObject = PyObject_NEW(PyContourAttributesObject, &PyContourAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1856,14 +1855,15 @@ NewContourAttributes(int useCurrent)
         newObject->data = new ContourAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyContourAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapContourAttributes(const ContourAttributes *attr)
 {
-    ContourAttributesObject *newObject;
-    newObject = PyObject_NEW(ContourAttributesObject, &ContourAttributesType);
+    PyContourAttributesObject *newObject;
+    newObject = PyObject_NEW(PyContourAttributesObject, &PyContourAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (ContourAttributes *)attr;
@@ -1965,13 +1965,13 @@ PyContourAttributes_GetMethodTable(int *nMethods)
 bool
 PyContourAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ContourAttributesType);
+    return (obj->ob_type == &PyContourAttributesType);
 }
 
 ContourAttributes *
 PyContourAttributes_FromPyObject(PyObject *obj)
 {
-    ContourAttributesObject *obj2 = (ContourAttributesObject *)obj;
+    PyContourAttributesObject *obj2 = (PyContourAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1990,7 +1990,7 @@ PyContourAttributes_Wrap(const ContourAttributes *attr)
 void
 PyContourAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    ContourAttributesObject *obj2 = (ContourAttributesObject *)obj;
+    PyContourAttributesObject *obj2 = (PyContourAttributesObject *)obj;
     obj2->parent = parent;
 }
 

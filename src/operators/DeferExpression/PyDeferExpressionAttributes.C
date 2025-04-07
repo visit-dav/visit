@@ -5,6 +5,7 @@
 #include <PyDeferExpressionAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a DeferExpressionAttributes.
 //
-struct DeferExpressionAttributesObject
+struct PyDeferExpressionAttributesObject
 {
     PyObject_HEAD
     DeferExpressionAttributes *data;
@@ -63,16 +64,44 @@ PyDeferExpressionAttributes_ToString(const DeferExpressionAttributes *atts, cons
 static PyObject *
 DeferExpressionAttributes_Notify(PyObject *self, PyObject *args)
 {
-    DeferExpressionAttributesObject *obj = (DeferExpressionAttributesObject *)self;
+    PyDeferExpressionAttributesObject *obj = (PyDeferExpressionAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+DeferExpressionAttributes_dir(PyObject *self, PyObject *args)
+{
+    static DeferExpressionAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyDeferExpressionAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 DeferExpressionAttributes_SetExprs(PyObject *self, PyObject *args)
 {
-    DeferExpressionAttributesObject *obj = (DeferExpressionAttributesObject *)self;
+    PyDeferExpressionAttributesObject *obj = (PyDeferExpressionAttributesObject *)self;
 
     stringVector vec;
 
@@ -129,7 +158,7 @@ DeferExpressionAttributes_SetExprs(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DeferExpressionAttributes_GetExprs(PyObject *self, PyObject *args)
 {
-    DeferExpressionAttributesObject *obj = (DeferExpressionAttributesObject *)self;
+    PyDeferExpressionAttributesObject *obj = (PyDeferExpressionAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the exprs.
     const stringVector &exprs = obj->data->GetExprs();
     PyObject *retval = PyTuple_New(exprs.size());
@@ -141,7 +170,8 @@ DeferExpressionAttributes_GetExprs(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyDeferExpressionAttributes_methods[DEFEREXPRESSIONATTRIBUTES_NMETH] = {
-    {"Notify", DeferExpressionAttributes_Notify, METH_VARARGS},
+    {"__dir__", DeferExpressionAttributes_dir, METH_NOARGS},
+    {"Notify", DeferExpressionAttributes_Notify, METH_NOARGS},
     {"SetExprs", DeferExpressionAttributes_SetExprs, METH_VARARGS},
     {"GetExprs", DeferExpressionAttributes_GetExprs, METH_VARARGS},
     {NULL, NULL}
@@ -152,45 +182,47 @@ PyMethodDef PyDeferExpressionAttributes_methods[DEFEREXPRESSIONATTRIBUTES_NMETH]
 //
 
 static void
-DeferExpressionAttributes_dealloc(PyObject *v)
+PyDeferExpressionAttributes_dealloc(PyObject *v)
 {
-   DeferExpressionAttributesObject *obj = (DeferExpressionAttributesObject *)v;
+   PyDeferExpressionAttributesObject *obj = (PyDeferExpressionAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *DeferExpressionAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyDeferExpressionAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyDeferExpressionAttributes_getattr(PyObject *self, char *name)
+PyDeferExpressionAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "exprs") == 0)
         return DeferExpressionAttributes_GetExprs(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyDeferExpressionAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyDeferExpressionAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyDeferExpressionAttributes_methods[i].ml_name),
-                PyString_FromString(PyDeferExpressionAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyDeferExpressionAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyDeferExpressionAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyDeferExpressionAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "exprs") == 0)
         obj = DeferExpressionAttributes_SetExprs(self, args);
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -206,78 +238,45 @@ PyDeferExpressionAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-DeferExpressionAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    DeferExpressionAttributesObject *obj = (DeferExpressionAttributesObject *)v;
-    fprintf(fp, "%s", PyDeferExpressionAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-DeferExpressionAttributes_str(PyObject *v)
+PyDeferExpressionAttributes_str(PyObject *v)
 {
-    DeferExpressionAttributesObject *obj = (DeferExpressionAttributesObject *)v;
+    PyDeferExpressionAttributesObject *obj = (PyDeferExpressionAttributesObject *)v;
     return PyString_FromString(PyDeferExpressionAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *DeferExpressionAttributes_Purpose = "Attributes for the DeferExpression operator";
-#else
-static char *DeferExpressionAttributes_Purpose = "Attributes for the DeferExpression operator";
-#endif
+static char const *PyDeferExpressionAttributes_purpose = "Attributes for the DeferExpression operator";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(DeferExpressionAttributesType,         \
-                  "DeferExpressionAttributes",           \
-                  DeferExpressionAttributesObject,       \
-                  DeferExpressionAttributes_dealloc,     \
-                  DeferExpressionAttributes_print,       \
-                  PyDeferExpressionAttributes_getattr,   \
-                  PyDeferExpressionAttributes_setattr,   \
-                  DeferExpressionAttributes_str,         \
-                  DeferExpressionAttributes_Purpose,     \
-                  DeferExpressionAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(DeferExpressionAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-DeferExpressionAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyDeferExpressionAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &DeferExpressionAttributesType
-         || Py_TYPE(other) != &DeferExpressionAttributesType)
+    if ( Py_TYPE(self) != &PyDeferExpressionAttributesType
+         || Py_TYPE(other) != &PyDeferExpressionAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    DeferExpressionAttributes *a = ((DeferExpressionAttributesObject *)self)->data;
-    DeferExpressionAttributes *b = ((DeferExpressionAttributesObject *)other)->data;
+    DeferExpressionAttributes *a = ((PyDeferExpressionAttributesObject *)self)->data;
+    DeferExpressionAttributes *b = ((PyDeferExpressionAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -306,8 +305,8 @@ static DeferExpressionAttributes *currentAtts = 0;
 static PyObject *
 NewDeferExpressionAttributes(int useCurrent)
 {
-    DeferExpressionAttributesObject *newObject;
-    newObject = PyObject_NEW(DeferExpressionAttributesObject, &DeferExpressionAttributesType);
+    PyDeferExpressionAttributesObject *newObject;
+    newObject = PyObject_NEW(PyDeferExpressionAttributesObject, &PyDeferExpressionAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -318,14 +317,15 @@ NewDeferExpressionAttributes(int useCurrent)
         newObject->data = new DeferExpressionAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyDeferExpressionAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapDeferExpressionAttributes(const DeferExpressionAttributes *attr)
 {
-    DeferExpressionAttributesObject *newObject;
-    newObject = PyObject_NEW(DeferExpressionAttributesObject, &DeferExpressionAttributesType);
+    PyDeferExpressionAttributesObject *newObject;
+    newObject = PyObject_NEW(PyDeferExpressionAttributesObject, &PyDeferExpressionAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (DeferExpressionAttributes *)attr;
@@ -427,13 +427,13 @@ PyDeferExpressionAttributes_GetMethodTable(int *nMethods)
 bool
 PyDeferExpressionAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &DeferExpressionAttributesType);
+    return (obj->ob_type == &PyDeferExpressionAttributesType);
 }
 
 DeferExpressionAttributes *
 PyDeferExpressionAttributes_FromPyObject(PyObject *obj)
 {
-    DeferExpressionAttributesObject *obj2 = (DeferExpressionAttributesObject *)obj;
+    PyDeferExpressionAttributesObject *obj2 = (PyDeferExpressionAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -452,7 +452,7 @@ PyDeferExpressionAttributes_Wrap(const DeferExpressionAttributes *attr)
 void
 PyDeferExpressionAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    DeferExpressionAttributesObject *obj2 = (DeferExpressionAttributesObject *)obj;
+    PyDeferExpressionAttributesObject *obj2 = (PyDeferExpressionAttributesObject *)obj;
     obj2->parent = parent;
 }
 

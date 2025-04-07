@@ -5,6 +5,7 @@
 #include <PyModelFitAtts.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a ModelFitAtts.
 //
-struct ModelFitAttsObject
+struct PyModelFitAttsObject
 {
     PyObject_HEAD
     ModelFitAtts *data;
@@ -223,16 +224,44 @@ PyModelFitAtts_ToString(const ModelFitAtts *atts, const char *prefix, const bool
 static PyObject *
 ModelFitAtts_Notify(PyObject *self, PyObject *args)
 {
-    ModelFitAttsObject *obj = (ModelFitAttsObject *)self;
+    PyModelFitAttsObject *obj = (PyModelFitAttsObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+ModelFitAtts_dir(PyObject *self, PyObject *args)
+{
+    static ModelFitAtts atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyModelFitAtts_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 ModelFitAtts_SetVars(PyObject *self, PyObject *args)
 {
-    ModelFitAttsObject *obj = (ModelFitAttsObject *)self;
+    PyModelFitAttsObject *obj = (PyModelFitAttsObject *)self;
 
     stringVector vec;
 
@@ -289,7 +318,7 @@ ModelFitAtts_SetVars(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ModelFitAtts_GetVars(PyObject *self, PyObject *args)
 {
-    ModelFitAttsObject *obj = (ModelFitAttsObject *)self;
+    PyModelFitAttsObject *obj = (PyModelFitAttsObject *)self;
     // Allocate a tuple the with enough entries to hold the Vars.
     const stringVector &Vars = obj->data->GetVars();
     PyObject *retval = PyTuple_New(Vars.size());
@@ -301,7 +330,7 @@ ModelFitAtts_GetVars(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ModelFitAtts_SetNumVars(PyObject *self, PyObject *args)
 {
-    ModelFitAttsObject *obj = (ModelFitAttsObject *)self;
+    PyModelFitAttsObject *obj = (PyModelFitAttsObject *)self;
 
     intVector vec;
 
@@ -365,7 +394,7 @@ ModelFitAtts_SetNumVars(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ModelFitAtts_GetNumVars(PyObject *self, PyObject *args)
 {
-    ModelFitAttsObject *obj = (ModelFitAttsObject *)self;
+    PyModelFitAttsObject *obj = (PyModelFitAttsObject *)self;
     // Allocate a tuple the with enough entries to hold the numVars.
     const intVector &numVars = obj->data->GetNumVars();
     PyObject *retval = PyTuple_New(numVars.size());
@@ -377,7 +406,7 @@ ModelFitAtts_GetNumVars(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ModelFitAtts_SetTuples(PyObject *self, PyObject *args)
 {
-    ModelFitAttsObject *obj = (ModelFitAttsObject *)self;
+    PyModelFitAttsObject *obj = (PyModelFitAttsObject *)self;
 
     doubleVector vec;
 
@@ -441,7 +470,7 @@ ModelFitAtts_SetTuples(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ModelFitAtts_GetTuples(PyObject *self, PyObject *args)
 {
-    ModelFitAttsObject *obj = (ModelFitAttsObject *)self;
+    PyModelFitAttsObject *obj = (PyModelFitAttsObject *)self;
     // Allocate a tuple the with enough entries to hold the Tuples.
     const doubleVector &Tuples = obj->data->GetTuples();
     PyObject *retval = PyTuple_New(Tuples.size());
@@ -453,7 +482,7 @@ ModelFitAtts_GetTuples(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ModelFitAtts_SetStatTuples(PyObject *self, PyObject *args)
 {
-    ModelFitAttsObject *obj = (ModelFitAttsObject *)self;
+    PyModelFitAttsObject *obj = (PyModelFitAttsObject *)self;
 
     typedef unsigned char uchar;
     ucharVector vec;
@@ -518,7 +547,7 @@ ModelFitAtts_SetStatTuples(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ModelFitAtts_GetStatTuples(PyObject *self, PyObject *args)
 {
-    ModelFitAttsObject *obj = (ModelFitAttsObject *)self;
+    PyModelFitAttsObject *obj = (PyModelFitAttsObject *)self;
     // Allocate a tuple the with enough entries to hold the StatTuples.
     const unsignedCharVector &StatTuples = obj->data->GetStatTuples();
     PyObject *retval = PyTuple_New(StatTuples.size());
@@ -530,7 +559,7 @@ ModelFitAtts_GetStatTuples(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ModelFitAtts_SetNumTups(PyObject *self, PyObject *args)
 {
-    ModelFitAttsObject *obj = (ModelFitAttsObject *)self;
+    PyModelFitAttsObject *obj = (PyModelFitAttsObject *)self;
 
     intVector vec;
 
@@ -594,7 +623,7 @@ ModelFitAtts_SetNumTups(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ModelFitAtts_GetNumTups(PyObject *self, PyObject *args)
 {
-    ModelFitAttsObject *obj = (ModelFitAttsObject *)self;
+    PyModelFitAttsObject *obj = (PyModelFitAttsObject *)self;
     // Allocate a tuple the with enough entries to hold the numTups.
     const intVector &numTups = obj->data->GetNumTups();
     PyObject *retval = PyTuple_New(numTups.size());
@@ -606,7 +635,7 @@ ModelFitAtts_GetNumTups(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ModelFitAtts_SetThold(PyObject *self, PyObject *args)
 {
-    ModelFitAttsObject *obj = (ModelFitAttsObject *)self;
+    PyModelFitAttsObject *obj = (PyModelFitAttsObject *)self;
 
     doubleVector vec;
 
@@ -670,7 +699,7 @@ ModelFitAtts_SetThold(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ModelFitAtts_GetThold(PyObject *self, PyObject *args)
 {
-    ModelFitAttsObject *obj = (ModelFitAttsObject *)self;
+    PyModelFitAttsObject *obj = (PyModelFitAttsObject *)self;
     // Allocate a tuple the with enough entries to hold the thold.
     const doubleVector &thold = obj->data->GetThold();
     PyObject *retval = PyTuple_New(thold.size());
@@ -682,7 +711,7 @@ ModelFitAtts_GetThold(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ModelFitAtts_SetSelectionType(PyObject *self, PyObject *args)
 {
-    ModelFitAttsObject *obj = (ModelFitAttsObject *)self;
+    PyModelFitAttsObject *obj = (PyModelFitAttsObject *)self;
 
     intVector vec;
 
@@ -746,7 +775,7 @@ ModelFitAtts_SetSelectionType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ModelFitAtts_GetSelectionType(PyObject *self, PyObject *args)
 {
-    ModelFitAttsObject *obj = (ModelFitAttsObject *)self;
+    PyModelFitAttsObject *obj = (PyModelFitAttsObject *)self;
     // Allocate a tuple the with enough entries to hold the selectionType.
     const intVector &selectionType = obj->data->GetSelectionType();
     PyObject *retval = PyTuple_New(selectionType.size());
@@ -758,7 +787,7 @@ ModelFitAtts_GetSelectionType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ModelFitAtts_SetDistanceType(PyObject *self, PyObject *args)
 {
-    ModelFitAttsObject *obj = (ModelFitAttsObject *)self;
+    PyModelFitAttsObject *obj = (PyModelFitAttsObject *)self;
 
     intVector vec;
 
@@ -822,7 +851,7 @@ ModelFitAtts_SetDistanceType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ModelFitAtts_GetDistanceType(PyObject *self, PyObject *args)
 {
-    ModelFitAttsObject *obj = (ModelFitAttsObject *)self;
+    PyModelFitAttsObject *obj = (PyModelFitAttsObject *)self;
     // Allocate a tuple the with enough entries to hold the distanceType.
     const intVector &distanceType = obj->data->GetDistanceType();
     PyObject *retval = PyTuple_New(distanceType.size());
@@ -834,7 +863,7 @@ ModelFitAtts_GetDistanceType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ModelFitAtts_SetInputSpace(PyObject *self, PyObject *args)
 {
-    ModelFitAttsObject *obj = (ModelFitAttsObject *)self;
+    PyModelFitAttsObject *obj = (PyModelFitAttsObject *)self;
 
     intVector vec;
 
@@ -898,7 +927,7 @@ ModelFitAtts_SetInputSpace(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ModelFitAtts_GetInputSpace(PyObject *self, PyObject *args)
 {
-    ModelFitAttsObject *obj = (ModelFitAttsObject *)self;
+    PyModelFitAttsObject *obj = (PyModelFitAttsObject *)self;
     // Allocate a tuple the with enough entries to hold the inputSpace.
     const intVector &inputSpace = obj->data->GetInputSpace();
     PyObject *retval = PyTuple_New(inputSpace.size());
@@ -910,7 +939,7 @@ ModelFitAtts_GetInputSpace(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ModelFitAtts_SetModelNames(PyObject *self, PyObject *args)
 {
-    ModelFitAttsObject *obj = (ModelFitAttsObject *)self;
+    PyModelFitAttsObject *obj = (PyModelFitAttsObject *)self;
 
     stringVector vec;
 
@@ -967,7 +996,7 @@ ModelFitAtts_SetModelNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ModelFitAtts_GetModelNames(PyObject *self, PyObject *args)
 {
-    ModelFitAttsObject *obj = (ModelFitAttsObject *)self;
+    PyModelFitAttsObject *obj = (PyModelFitAttsObject *)self;
     // Allocate a tuple the with enough entries to hold the modelNames.
     const stringVector &modelNames = obj->data->GetModelNames();
     PyObject *retval = PyTuple_New(modelNames.size());
@@ -979,7 +1008,7 @@ ModelFitAtts_GetModelNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ModelFitAtts_SetModelNums(PyObject *self, PyObject *args)
 {
-    ModelFitAttsObject *obj = (ModelFitAttsObject *)self;
+    PyModelFitAttsObject *obj = (PyModelFitAttsObject *)self;
 
     intVector vec;
 
@@ -1043,7 +1072,7 @@ ModelFitAtts_SetModelNums(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 ModelFitAtts_GetModelNums(PyObject *self, PyObject *args)
 {
-    ModelFitAttsObject *obj = (ModelFitAttsObject *)self;
+    PyModelFitAttsObject *obj = (PyModelFitAttsObject *)self;
     // Allocate a tuple the with enough entries to hold the modelNums.
     const intVector &modelNums = obj->data->GetModelNums();
     PyObject *retval = PyTuple_New(modelNums.size());
@@ -1055,7 +1084,8 @@ ModelFitAtts_GetModelNums(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyModelFitAtts_methods[MODELFITATTS_NMETH] = {
-    {"Notify", ModelFitAtts_Notify, METH_VARARGS},
+    {"__dir__", ModelFitAtts_dir, METH_NOARGS},
+    {"Notify", ModelFitAtts_Notify, METH_NOARGS},
     {"SetVars", ModelFitAtts_SetVars, METH_VARARGS},
     {"GetVars", ModelFitAtts_GetVars, METH_VARARGS},
     {"SetNumVars", ModelFitAtts_SetNumVars, METH_VARARGS},
@@ -1086,19 +1116,22 @@ PyMethodDef PyModelFitAtts_methods[MODELFITATTS_NMETH] = {
 //
 
 static void
-ModelFitAtts_dealloc(PyObject *v)
+PyModelFitAtts_dealloc(PyObject *v)
 {
-   ModelFitAttsObject *obj = (ModelFitAttsObject *)v;
+   PyModelFitAttsObject *obj = (PyModelFitAttsObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *ModelFitAtts_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyModelFitAtts_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyModelFitAtts_getattr(PyObject *self, char *name)
+PyModelFitAtts_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "Vars") == 0)
         return ModelFitAtts_GetVars(self, NULL);
     if(strcmp(name, "numVars") == 0)
@@ -1122,26 +1155,19 @@ PyModelFitAtts_getattr(PyObject *self, char *name)
     if(strcmp(name, "modelNums") == 0)
         return ModelFitAtts_GetModelNums(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyModelFitAtts_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyModelFitAtts_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyModelFitAtts_methods[i].ml_name),
-                PyString_FromString(PyModelFitAtts_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyModelFitAtts_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyModelFitAtts_setattr(PyObject *self, char *name, PyObject *args)
+PyModelFitAtts_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "Vars") == 0)
         obj = ModelFitAtts_SetVars(self, args);
@@ -1166,6 +1192,12 @@ PyModelFitAtts_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "modelNums") == 0)
         obj = ModelFitAtts_SetModelNums(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -1180,78 +1212,45 @@ PyModelFitAtts_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ModelFitAtts_print(PyObject *v, FILE *fp, int flags)
-{
-    ModelFitAttsObject *obj = (ModelFitAttsObject *)v;
-    fprintf(fp, "%s", PyModelFitAtts_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-ModelFitAtts_str(PyObject *v)
+PyModelFitAtts_str(PyObject *v)
 {
-    ModelFitAttsObject *obj = (ModelFitAttsObject *)v;
+    PyModelFitAttsObject *obj = (PyModelFitAttsObject *)v;
     return PyString_FromString(PyModelFitAtts_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *ModelFitAtts_Purpose = "This file contains attributes for the ModelFit operator.";
-#else
-static char *ModelFitAtts_Purpose = "This file contains attributes for the ModelFit operator.";
-#endif
+static char const *PyModelFitAtts_purpose = "This file contains attributes for the ModelFit operator.";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(ModelFitAttsType,         \
-                  "ModelFitAtts",           \
-                  ModelFitAttsObject,       \
-                  ModelFitAtts_dealloc,     \
-                  ModelFitAtts_print,       \
-                  PyModelFitAtts_getattr,   \
-                  PyModelFitAtts_setattr,   \
-                  ModelFitAtts_str,         \
-                  ModelFitAtts_Purpose,     \
-                  ModelFitAtts_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(ModelFitAtts);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-ModelFitAtts_richcompare(PyObject *self, PyObject *other, int op)
+PyModelFitAtts_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &ModelFitAttsType
-         || Py_TYPE(other) != &ModelFitAttsType)
+    if ( Py_TYPE(self) != &PyModelFitAttsType
+         || Py_TYPE(other) != &PyModelFitAttsType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    ModelFitAtts *a = ((ModelFitAttsObject *)self)->data;
-    ModelFitAtts *b = ((ModelFitAttsObject *)other)->data;
+    ModelFitAtts *a = ((PyModelFitAttsObject *)self)->data;
+    ModelFitAtts *b = ((PyModelFitAttsObject *)other)->data;
 
     switch (op)
     {
@@ -1280,8 +1279,8 @@ static ModelFitAtts *currentAtts = 0;
 static PyObject *
 NewModelFitAtts(int useCurrent)
 {
-    ModelFitAttsObject *newObject;
-    newObject = PyObject_NEW(ModelFitAttsObject, &ModelFitAttsType);
+    PyModelFitAttsObject *newObject;
+    newObject = PyObject_NEW(PyModelFitAttsObject, &PyModelFitAttsType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1292,14 +1291,15 @@ NewModelFitAtts(int useCurrent)
         newObject->data = new ModelFitAtts;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyModelFitAttsType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapModelFitAtts(const ModelFitAtts *attr)
 {
-    ModelFitAttsObject *newObject;
-    newObject = PyObject_NEW(ModelFitAttsObject, &ModelFitAttsType);
+    PyModelFitAttsObject *newObject;
+    newObject = PyObject_NEW(PyModelFitAttsObject, &PyModelFitAttsType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (ModelFitAtts *)attr;
@@ -1401,13 +1401,13 @@ PyModelFitAtts_GetMethodTable(int *nMethods)
 bool
 PyModelFitAtts_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ModelFitAttsType);
+    return (obj->ob_type == &PyModelFitAttsType);
 }
 
 ModelFitAtts *
 PyModelFitAtts_FromPyObject(PyObject *obj)
 {
-    ModelFitAttsObject *obj2 = (ModelFitAttsObject *)obj;
+    PyModelFitAttsObject *obj2 = (PyModelFitAttsObject *)obj;
     return obj2->data;
 }
 
@@ -1426,7 +1426,7 @@ PyModelFitAtts_Wrap(const ModelFitAtts *attr)
 void
 PyModelFitAtts_SetParent(PyObject *obj, PyObject *parent)
 {
-    ModelFitAttsObject *obj2 = (ModelFitAttsObject *)obj;
+    PyModelFitAttsObject *obj2 = (PyModelFitAttsObject *)obj;
     obj2->parent = parent;
 }
 

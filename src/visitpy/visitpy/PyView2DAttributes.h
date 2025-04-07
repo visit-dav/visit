@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define VIEW2DATTRIBUTES_NMETH 18
+#define VIEW2DATTRIBUTES_NMETH 19
 void VISITPY_API           PyView2DAttributes_StartUp(View2DAttributes *subj, void *data);
 void VISITPY_API           PyView2DAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyView2DAttributes_GetMethodTable(int *nMethods);

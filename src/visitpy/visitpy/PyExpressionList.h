@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define EXPRESSIONLIST_NMETH 7
+#define EXPRESSIONLIST_NMETH 8
 void VISITPY_API           PyExpressionList_StartUp(ExpressionList *subj, void *data);
 void VISITPY_API           PyExpressionList_CloseDown();
 VISITPY_API PyMethodDef *  PyExpressionList_GetMethodTable(int *nMethods);
@@ -24,8 +24,8 @@ void VISITPY_API           PyExpressionList_SetParent(PyObject *obj, PyObject *p
 void VISITPY_API           PyExpressionList_SetDefaults(const ExpressionList *atts);
 std::string VISITPY_API    PyExpressionList_GetLogString();
 std::string VISITPY_API    PyExpressionList_ToString(const ExpressionList *, const char *, const bool=false);
-VISITPY_API PyObject *     PyExpressionList_getattr(PyObject *self, char *name);
-int VISITPY_API            PyExpressionList_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyExpressionList_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyExpressionList_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyExpressionList_methods[EXPRESSIONLIST_NMETH];
 
 #endif

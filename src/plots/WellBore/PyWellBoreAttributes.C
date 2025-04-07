@@ -5,6 +5,7 @@
 #include <PyWellBoreAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 #include <visit-config.h>
 #include <PyColorControlPointList.h>
@@ -27,7 +28,7 @@
 //
 // This struct contains the Python type information and a WellBoreAttributes.
 //
-struct WellBoreAttributesObject
+struct PyWellBoreAttributesObject
 {
     PyObject_HEAD
     WellBoreAttributes *data;
@@ -219,16 +220,44 @@ PyWellBoreAttributes_ToString(const WellBoreAttributes *atts, const char *prefix
 static PyObject *
 WellBoreAttributes_Notify(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+WellBoreAttributes_dir(PyObject *self, PyObject *args)
+{
+    static WellBoreAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyWellBoreAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 WellBoreAttributes_SetDefaultPalette(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -245,7 +274,7 @@ WellBoreAttributes_SetDefaultPalette(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WellBoreAttributes_GetDefaultPalette(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -261,7 +290,7 @@ WellBoreAttributes_GetDefaultPalette(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WellBoreAttributes_SetChangedColors(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
 
     typedef unsigned char uchar;
     ucharVector vec;
@@ -326,7 +355,7 @@ WellBoreAttributes_SetChangedColors(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WellBoreAttributes_GetChangedColors(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the changedColors.
     const unsignedCharVector &changedColors = obj->data->GetChangedColors();
     PyObject *retval = PyTuple_New(changedColors.size());
@@ -338,7 +367,7 @@ WellBoreAttributes_GetChangedColors(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WellBoreAttributes_SetColorType(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -397,7 +426,7 @@ WellBoreAttributes_SetColorType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WellBoreAttributes_GetColorType(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetColorType()));
     return retval;
 }
@@ -405,7 +434,7 @@ WellBoreAttributes_GetColorType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WellBoreAttributes_SetColorTableName(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -446,7 +475,7 @@ WellBoreAttributes_SetColorTableName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WellBoreAttributes_GetColorTableName(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetColorTableName().c_str());
     return retval;
 }
@@ -454,7 +483,7 @@ WellBoreAttributes_GetColorTableName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WellBoreAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -506,7 +535,7 @@ WellBoreAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WellBoreAttributes_GetInvertColorTable(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetInvertColorTable()?1L:0L);
     return retval;
 }
@@ -514,7 +543,7 @@ WellBoreAttributes_GetInvertColorTable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WellBoreAttributes_SetSingleColor(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -577,7 +606,7 @@ WellBoreAttributes_SetSingleColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WellBoreAttributes_GetSingleColor(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the singleColor.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *singleColor = obj->data->GetSingleColor().GetColor();
@@ -591,7 +620,7 @@ WellBoreAttributes_GetSingleColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WellBoreAttributes_SetMultiColor(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
 
     PyObject *pyobj = NULL;
     ColorAttributeList &cL = obj->data->GetMultiColor();
@@ -758,7 +787,7 @@ WellBoreAttributes_SetMultiColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WellBoreAttributes_GetMultiColor(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
     PyObject *retval = NULL;
     ColorAttributeList &cL = obj->data->GetMultiColor();
 
@@ -801,7 +830,7 @@ WellBoreAttributes_GetMultiColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WellBoreAttributes_SetDrawWellsAs(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -859,7 +888,7 @@ WellBoreAttributes_SetDrawWellsAs(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WellBoreAttributes_GetDrawWellsAs(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetDrawWellsAs()));
     return retval;
 }
@@ -867,7 +896,7 @@ WellBoreAttributes_GetDrawWellsAs(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WellBoreAttributes_SetWellCylinderQuality(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -927,7 +956,7 @@ WellBoreAttributes_SetWellCylinderQuality(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WellBoreAttributes_GetWellCylinderQuality(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetWellCylinderQuality()));
     return retval;
 }
@@ -935,7 +964,7 @@ WellBoreAttributes_GetWellCylinderQuality(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WellBoreAttributes_SetWellRadius(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -987,7 +1016,7 @@ WellBoreAttributes_SetWellRadius(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WellBoreAttributes_GetWellRadius(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetWellRadius()));
     return retval;
 }
@@ -995,7 +1024,7 @@ WellBoreAttributes_GetWellRadius(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WellBoreAttributes_SetWellLineWidth(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1047,7 +1076,7 @@ WellBoreAttributes_SetWellLineWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WellBoreAttributes_GetWellLineWidth(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetWellLineWidth()));
     return retval;
 }
@@ -1055,7 +1084,7 @@ WellBoreAttributes_GetWellLineWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WellBoreAttributes_SetWellAnnotation(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1115,7 +1144,7 @@ WellBoreAttributes_SetWellAnnotation(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WellBoreAttributes_GetWellAnnotation(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetWellAnnotation()));
     return retval;
 }
@@ -1123,7 +1152,7 @@ WellBoreAttributes_GetWellAnnotation(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WellBoreAttributes_SetWellStemHeight(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1175,7 +1204,7 @@ WellBoreAttributes_SetWellStemHeight(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WellBoreAttributes_GetWellStemHeight(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetWellStemHeight()));
     return retval;
 }
@@ -1183,7 +1212,7 @@ WellBoreAttributes_GetWellStemHeight(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WellBoreAttributes_SetWellNameScale(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1235,7 +1264,7 @@ WellBoreAttributes_SetWellNameScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WellBoreAttributes_GetWellNameScale(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetWellNameScale()));
     return retval;
 }
@@ -1243,7 +1272,7 @@ WellBoreAttributes_GetWellNameScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WellBoreAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1295,7 +1324,7 @@ WellBoreAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WellBoreAttributes_GetLegendFlag(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetLegendFlag()?1L:0L);
     return retval;
 }
@@ -1303,7 +1332,7 @@ WellBoreAttributes_GetLegendFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WellBoreAttributes_SetNWellBores(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1355,7 +1384,7 @@ WellBoreAttributes_SetNWellBores(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WellBoreAttributes_GetNWellBores(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNWellBores()));
     return retval;
 }
@@ -1363,7 +1392,7 @@ WellBoreAttributes_GetNWellBores(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WellBoreAttributes_SetWellBores(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
 
     intVector vec;
 
@@ -1427,7 +1456,7 @@ WellBoreAttributes_SetWellBores(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WellBoreAttributes_GetWellBores(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the wellBores.
     const intVector &wellBores = obj->data->GetWellBores();
     PyObject *retval = PyTuple_New(wellBores.size());
@@ -1439,7 +1468,7 @@ WellBoreAttributes_GetWellBores(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WellBoreAttributes_SetWellNames(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
 
     stringVector vec;
 
@@ -1496,7 +1525,7 @@ WellBoreAttributes_SetWellNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WellBoreAttributes_GetWellNames(PyObject *self, PyObject *args)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the wellNames.
     const stringVector &wellNames = obj->data->GetWellNames();
     PyObject *retval = PyTuple_New(wellNames.size());
@@ -1508,7 +1537,8 @@ WellBoreAttributes_GetWellNames(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyWellBoreAttributes_methods[WELLBOREATTRIBUTES_NMETH] = {
-    {"Notify", WellBoreAttributes_Notify, METH_VARARGS},
+    {"__dir__", WellBoreAttributes_dir, METH_NOARGS},
+    {"Notify", WellBoreAttributes_Notify, METH_NOARGS},
     {"SetDefaultPalette", WellBoreAttributes_SetDefaultPalette, METH_VARARGS},
     {"GetDefaultPalette", WellBoreAttributes_GetDefaultPalette, METH_VARARGS},
     {"SetChangedColors", WellBoreAttributes_SetChangedColors, METH_VARARGS},
@@ -1553,19 +1583,22 @@ PyMethodDef PyWellBoreAttributes_methods[WELLBOREATTRIBUTES_NMETH] = {
 //
 
 static void
-WellBoreAttributes_dealloc(PyObject *v)
+PyWellBoreAttributes_dealloc(PyObject *v)
 {
-   WellBoreAttributesObject *obj = (WellBoreAttributesObject *)v;
+   PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *WellBoreAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyWellBoreAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyWellBoreAttributes_getattr(PyObject *self, char *name)
+PyWellBoreAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "defaultPalette") == 0)
         return WellBoreAttributes_GetDefaultPalette(self, NULL);
     if(strcmp(name, "changedColors") == 0)
@@ -1635,26 +1668,19 @@ PyWellBoreAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "wellNames") == 0)
         return WellBoreAttributes_GetWellNames(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyWellBoreAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyWellBoreAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyWellBoreAttributes_methods[i].ml_name),
-                PyString_FromString(PyWellBoreAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyWellBoreAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyWellBoreAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyWellBoreAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "defaultPalette") == 0)
         obj = WellBoreAttributes_SetDefaultPalette(self, args);
@@ -1693,6 +1719,12 @@ PyWellBoreAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "wellNames") == 0)
         obj = WellBoreAttributes_SetWellNames(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -1707,78 +1739,45 @@ PyWellBoreAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-WellBoreAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)v;
-    fprintf(fp, "%s", PyWellBoreAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-WellBoreAttributes_str(PyObject *v)
+PyWellBoreAttributes_str(PyObject *v)
 {
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)v;
+    PyWellBoreAttributesObject *obj = (PyWellBoreAttributesObject *)v;
     return PyString_FromString(PyWellBoreAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *WellBoreAttributes_Purpose = "This class contains the plot attributes for the well bore plot.";
-#else
-static char *WellBoreAttributes_Purpose = "This class contains the plot attributes for the well bore plot.";
-#endif
+static char const *PyWellBoreAttributes_purpose = "This class contains the plot attributes for the well bore plot.";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(WellBoreAttributesType,         \
-                  "WellBoreAttributes",           \
-                  WellBoreAttributesObject,       \
-                  WellBoreAttributes_dealloc,     \
-                  WellBoreAttributes_print,       \
-                  PyWellBoreAttributes_getattr,   \
-                  PyWellBoreAttributes_setattr,   \
-                  WellBoreAttributes_str,         \
-                  WellBoreAttributes_Purpose,     \
-                  WellBoreAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(WellBoreAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-WellBoreAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyWellBoreAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &WellBoreAttributesType
-         || Py_TYPE(other) != &WellBoreAttributesType)
+    if ( Py_TYPE(self) != &PyWellBoreAttributesType
+         || Py_TYPE(other) != &PyWellBoreAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    WellBoreAttributes *a = ((WellBoreAttributesObject *)self)->data;
-    WellBoreAttributes *b = ((WellBoreAttributesObject *)other)->data;
+    WellBoreAttributes *a = ((PyWellBoreAttributesObject *)self)->data;
+    WellBoreAttributes *b = ((PyWellBoreAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -1807,8 +1806,8 @@ static WellBoreAttributes *currentAtts = 0;
 static PyObject *
 NewWellBoreAttributes(int useCurrent)
 {
-    WellBoreAttributesObject *newObject;
-    newObject = PyObject_NEW(WellBoreAttributesObject, &WellBoreAttributesType);
+    PyWellBoreAttributesObject *newObject;
+    newObject = PyObject_NEW(PyWellBoreAttributesObject, &PyWellBoreAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1819,14 +1818,15 @@ NewWellBoreAttributes(int useCurrent)
         newObject->data = new WellBoreAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyWellBoreAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapWellBoreAttributes(const WellBoreAttributes *attr)
 {
-    WellBoreAttributesObject *newObject;
-    newObject = PyObject_NEW(WellBoreAttributesObject, &WellBoreAttributesType);
+    PyWellBoreAttributesObject *newObject;
+    newObject = PyObject_NEW(PyWellBoreAttributesObject, &PyWellBoreAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (WellBoreAttributes *)attr;
@@ -1928,13 +1928,13 @@ PyWellBoreAttributes_GetMethodTable(int *nMethods)
 bool
 PyWellBoreAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &WellBoreAttributesType);
+    return (obj->ob_type == &PyWellBoreAttributesType);
 }
 
 WellBoreAttributes *
 PyWellBoreAttributes_FromPyObject(PyObject *obj)
 {
-    WellBoreAttributesObject *obj2 = (WellBoreAttributesObject *)obj;
+    PyWellBoreAttributesObject *obj2 = (PyWellBoreAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1953,7 +1953,7 @@ PyWellBoreAttributes_Wrap(const WellBoreAttributes *attr)
 void
 PyWellBoreAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    WellBoreAttributesObject *obj2 = (WellBoreAttributesObject *)obj;
+    PyWellBoreAttributesObject *obj2 = (PyWellBoreAttributesObject *)obj;
     obj2->parent = parent;
 }
 

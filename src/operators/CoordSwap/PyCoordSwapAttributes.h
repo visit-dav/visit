@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define COORDSWAPATTRIBUTES_NMETH 8
+#define COORDSWAPATTRIBUTES_NMETH 9
 void           PyCoordSwapAttributes_StartUp(CoordSwapAttributes *subj, void *data);
 void           PyCoordSwapAttributes_CloseDown();
 PyMethodDef *  PyCoordSwapAttributes_GetMethodTable(int *nMethods);
@@ -23,8 +23,8 @@ void           PyCoordSwapAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyCoordSwapAttributes_SetDefaults(const CoordSwapAttributes *atts);
 std::string    PyCoordSwapAttributes_GetLogString();
 std::string    PyCoordSwapAttributes_ToString(const CoordSwapAttributes *, const char *, const bool=false);
-PyObject *     PyCoordSwapAttributes_getattr(PyObject *self, char *name);
-int            PyCoordSwapAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PyCoordSwapAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PyCoordSwapAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PyCoordSwapAttributes_methods[COORDSWAPATTRIBUTES_NMETH];
 
 #endif

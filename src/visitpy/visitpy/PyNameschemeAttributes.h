@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define NAMESCHEMEATTRIBUTES_NMETH 16
+#define NAMESCHEMEATTRIBUTES_NMETH 17
 void VISITPY_API           PyNameschemeAttributes_StartUp(NameschemeAttributes *subj, void *data);
 void VISITPY_API           PyNameschemeAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyNameschemeAttributes_GetMethodTable(int *nMethods);
@@ -24,8 +24,8 @@ void VISITPY_API           PyNameschemeAttributes_SetParent(PyObject *obj, PyObj
 void VISITPY_API           PyNameschemeAttributes_SetDefaults(const NameschemeAttributes *atts);
 std::string VISITPY_API    PyNameschemeAttributes_GetLogString();
 std::string VISITPY_API    PyNameschemeAttributes_ToString(const NameschemeAttributes *, const char *, const bool=false);
-VISITPY_API PyObject *     PyNameschemeAttributes_getattr(PyObject *self, char *name);
-int VISITPY_API            PyNameschemeAttributes_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyNameschemeAttributes_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyNameschemeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyNameschemeAttributes_methods[NAMESCHEMEATTRIBUTES_NMETH];
 
 #endif

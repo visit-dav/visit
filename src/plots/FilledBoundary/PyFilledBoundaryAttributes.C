@@ -5,6 +5,7 @@
 #include <PyFilledBoundaryAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 #include <visit-config.h>
 #include <ColorAttribute.h>
@@ -28,7 +29,7 @@
 //
 // This struct contains the Python type information and a FilledBoundaryAttributes.
 //
-struct FilledBoundaryAttributesObject
+struct PyFilledBoundaryAttributesObject
 {
     PyObject_HEAD
     FilledBoundaryAttributes *data;
@@ -187,16 +188,44 @@ PyFilledBoundaryAttributes_ToString(const FilledBoundaryAttributes *atts, const 
 static PyObject *
 FilledBoundaryAttributes_Notify(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+FilledBoundaryAttributes_dir(PyObject *self, PyObject *args)
+{
+    static FilledBoundaryAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyFilledBoundaryAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 FilledBoundaryAttributes_SetColorType(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -255,7 +284,7 @@ FilledBoundaryAttributes_SetColorType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_GetColorType(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetColorType()));
     return retval;
 }
@@ -263,7 +292,7 @@ FilledBoundaryAttributes_GetColorType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_SetColorTableName(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -304,7 +333,7 @@ FilledBoundaryAttributes_SetColorTableName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_GetColorTableName(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetColorTableName().c_str());
     return retval;
 }
@@ -312,7 +341,7 @@ FilledBoundaryAttributes_GetColorTableName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -364,7 +393,7 @@ FilledBoundaryAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_GetInvertColorTable(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetInvertColorTable()?1L:0L);
     return retval;
 }
@@ -372,7 +401,7 @@ FilledBoundaryAttributes_GetInvertColorTable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -424,7 +453,7 @@ FilledBoundaryAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_GetLegendFlag(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetLegendFlag()?1L:0L);
     return retval;
 }
@@ -432,7 +461,7 @@ FilledBoundaryAttributes_GetLegendFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_SetLineWidth(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -484,7 +513,7 @@ FilledBoundaryAttributes_SetLineWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_GetLineWidth(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetLineWidth()));
     return retval;
 }
@@ -492,7 +521,7 @@ FilledBoundaryAttributes_GetLineWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_SetSingleColor(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -555,7 +584,7 @@ FilledBoundaryAttributes_SetSingleColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_GetSingleColor(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the singleColor.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *singleColor = obj->data->GetSingleColor().GetColor();
@@ -569,7 +598,7 @@ FilledBoundaryAttributes_GetSingleColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_SetMultiColor(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
 
     PyObject *pyobj = NULL;
     ColorAttributeList &cL = obj->data->GetMultiColor();
@@ -736,7 +765,7 @@ FilledBoundaryAttributes_SetMultiColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_GetMultiColor(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
     PyObject *retval = NULL;
     ColorAttributeList &cL = obj->data->GetMultiColor();
 
@@ -779,7 +808,7 @@ FilledBoundaryAttributes_GetMultiColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_SetBoundaryNames(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
 
     stringVector vec;
 
@@ -836,7 +865,7 @@ FilledBoundaryAttributes_SetBoundaryNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_GetBoundaryNames(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the boundaryNames.
     const stringVector &boundaryNames = obj->data->GetBoundaryNames();
     PyObject *retval = PyTuple_New(boundaryNames.size());
@@ -848,7 +877,7 @@ FilledBoundaryAttributes_GetBoundaryNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_SetOpacity(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -900,7 +929,7 @@ FilledBoundaryAttributes_SetOpacity(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_GetOpacity(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetOpacity());
     return retval;
 }
@@ -908,7 +937,7 @@ FilledBoundaryAttributes_GetOpacity(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_SetWireframe(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -960,7 +989,7 @@ FilledBoundaryAttributes_SetWireframe(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_GetWireframe(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetWireframe()?1L:0L);
     return retval;
 }
@@ -968,7 +997,7 @@ FilledBoundaryAttributes_GetWireframe(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_SetDrawInternal(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1020,7 +1049,7 @@ FilledBoundaryAttributes_SetDrawInternal(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_GetDrawInternal(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetDrawInternal()?1L:0L);
     return retval;
 }
@@ -1028,7 +1057,7 @@ FilledBoundaryAttributes_GetDrawInternal(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_SetSmoothingLevel(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1080,7 +1109,7 @@ FilledBoundaryAttributes_SetSmoothingLevel(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_GetSmoothingLevel(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetSmoothingLevel()));
     return retval;
 }
@@ -1088,7 +1117,7 @@ FilledBoundaryAttributes_GetSmoothingLevel(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_SetCleanZonesOnly(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1140,7 +1169,7 @@ FilledBoundaryAttributes_SetCleanZonesOnly(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_GetCleanZonesOnly(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetCleanZonesOnly()?1L:0L);
     return retval;
 }
@@ -1148,7 +1177,7 @@ FilledBoundaryAttributes_GetCleanZonesOnly(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_SetMixedColor(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -1211,7 +1240,7 @@ FilledBoundaryAttributes_SetMixedColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_GetMixedColor(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the mixedColor.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *mixedColor = obj->data->GetMixedColor().GetColor();
@@ -1225,7 +1254,7 @@ FilledBoundaryAttributes_GetMixedColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_SetPointSize(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1277,7 +1306,7 @@ FilledBoundaryAttributes_SetPointSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_GetPointSize(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetPointSize());
     return retval;
 }
@@ -1285,7 +1314,7 @@ FilledBoundaryAttributes_GetPointSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_SetPointType(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
 
     int ival = -999;
     if (PySequence_Check(args) && !PyArg_ParseTuple(args, "i", &ival))
@@ -1315,7 +1344,7 @@ FilledBoundaryAttributes_SetPointType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_GetPointType(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetPointType()));
     return retval;
 }
@@ -1323,7 +1352,7 @@ FilledBoundaryAttributes_GetPointType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_SetPointSizeVarEnabled(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1375,7 +1404,7 @@ FilledBoundaryAttributes_SetPointSizeVarEnabled(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_GetPointSizeVarEnabled(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetPointSizeVarEnabled()?1L:0L);
     return retval;
 }
@@ -1383,7 +1412,7 @@ FilledBoundaryAttributes_GetPointSizeVarEnabled(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_SetPointSizeVar(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1424,7 +1453,7 @@ FilledBoundaryAttributes_SetPointSizeVar(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_GetPointSizeVar(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetPointSizeVar().c_str());
     return retval;
 }
@@ -1432,7 +1461,7 @@ FilledBoundaryAttributes_GetPointSizeVar(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_SetPointSizePixels(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1484,7 +1513,7 @@ FilledBoundaryAttributes_SetPointSizePixels(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 FilledBoundaryAttributes_GetPointSizePixels(PyObject *self, PyObject *args)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetPointSizePixels()));
     return retval;
 }
@@ -1492,7 +1521,8 @@ FilledBoundaryAttributes_GetPointSizePixels(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyFilledBoundaryAttributes_methods[FILLEDBOUNDARYATTRIBUTES_NMETH] = {
-    {"Notify", FilledBoundaryAttributes_Notify, METH_VARARGS},
+    {"__dir__", FilledBoundaryAttributes_dir, METH_NOARGS},
+    {"Notify", FilledBoundaryAttributes_Notify, METH_NOARGS},
     {"SetColorType", FilledBoundaryAttributes_SetColorType, METH_VARARGS},
     {"GetColorType", FilledBoundaryAttributes_GetColorType, METH_VARARGS},
     {"SetColorTableName", FilledBoundaryAttributes_SetColorTableName, METH_VARARGS},
@@ -1539,19 +1569,22 @@ PyMethodDef PyFilledBoundaryAttributes_methods[FILLEDBOUNDARYATTRIBUTES_NMETH] =
 //
 
 static void
-FilledBoundaryAttributes_dealloc(PyObject *v)
+PyFilledBoundaryAttributes_dealloc(PyObject *v)
 {
-   FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)v;
+   PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *FilledBoundaryAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyFilledBoundaryAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyFilledBoundaryAttributes_getattr(PyObject *self, char *name)
+PyFilledBoundaryAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "colorType") == 0)
         return FilledBoundaryAttributes_GetColorType(self, NULL);
     if(strcmp(name, "ColorBySingleColor") == 0)
@@ -1615,26 +1648,19 @@ PyFilledBoundaryAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "pointSizePixels") == 0)
         return FilledBoundaryAttributes_GetPointSizePixels(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyFilledBoundaryAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyFilledBoundaryAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyFilledBoundaryAttributes_methods[i].ml_name),
-                PyString_FromString(PyFilledBoundaryAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyFilledBoundaryAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyFilledBoundaryAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyFilledBoundaryAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "colorType") == 0)
         obj = FilledBoundaryAttributes_SetColorType(self, args);
@@ -1675,6 +1701,12 @@ PyFilledBoundaryAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "pointSizePixels") == 0)
         obj = FilledBoundaryAttributes_SetPointSizePixels(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -1689,78 +1721,45 @@ PyFilledBoundaryAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-FilledBoundaryAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)v;
-    fprintf(fp, "%s", PyFilledBoundaryAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-FilledBoundaryAttributes_str(PyObject *v)
+PyFilledBoundaryAttributes_str(PyObject *v)
 {
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)v;
+    PyFilledBoundaryAttributesObject *obj = (PyFilledBoundaryAttributesObject *)v;
     return PyString_FromString(PyFilledBoundaryAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *FilledBoundaryAttributes_Purpose = "This class contains the plot attributes for the filled boundary plot.";
-#else
-static char *FilledBoundaryAttributes_Purpose = "This class contains the plot attributes for the filled boundary plot.";
-#endif
+static char const *PyFilledBoundaryAttributes_purpose = "This class contains the plot attributes for the filled boundary plot.";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(FilledBoundaryAttributesType,         \
-                  "FilledBoundaryAttributes",           \
-                  FilledBoundaryAttributesObject,       \
-                  FilledBoundaryAttributes_dealloc,     \
-                  FilledBoundaryAttributes_print,       \
-                  PyFilledBoundaryAttributes_getattr,   \
-                  PyFilledBoundaryAttributes_setattr,   \
-                  FilledBoundaryAttributes_str,         \
-                  FilledBoundaryAttributes_Purpose,     \
-                  FilledBoundaryAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(FilledBoundaryAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-FilledBoundaryAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyFilledBoundaryAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &FilledBoundaryAttributesType
-         || Py_TYPE(other) != &FilledBoundaryAttributesType)
+    if ( Py_TYPE(self) != &PyFilledBoundaryAttributesType
+         || Py_TYPE(other) != &PyFilledBoundaryAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    FilledBoundaryAttributes *a = ((FilledBoundaryAttributesObject *)self)->data;
-    FilledBoundaryAttributes *b = ((FilledBoundaryAttributesObject *)other)->data;
+    FilledBoundaryAttributes *a = ((PyFilledBoundaryAttributesObject *)self)->data;
+    FilledBoundaryAttributes *b = ((PyFilledBoundaryAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -1789,8 +1788,8 @@ static FilledBoundaryAttributes *currentAtts = 0;
 static PyObject *
 NewFilledBoundaryAttributes(int useCurrent)
 {
-    FilledBoundaryAttributesObject *newObject;
-    newObject = PyObject_NEW(FilledBoundaryAttributesObject, &FilledBoundaryAttributesType);
+    PyFilledBoundaryAttributesObject *newObject;
+    newObject = PyObject_NEW(PyFilledBoundaryAttributesObject, &PyFilledBoundaryAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1801,14 +1800,15 @@ NewFilledBoundaryAttributes(int useCurrent)
         newObject->data = new FilledBoundaryAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyFilledBoundaryAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapFilledBoundaryAttributes(const FilledBoundaryAttributes *attr)
 {
-    FilledBoundaryAttributesObject *newObject;
-    newObject = PyObject_NEW(FilledBoundaryAttributesObject, &FilledBoundaryAttributesType);
+    PyFilledBoundaryAttributesObject *newObject;
+    newObject = PyObject_NEW(PyFilledBoundaryAttributesObject, &PyFilledBoundaryAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (FilledBoundaryAttributes *)attr;
@@ -1910,13 +1910,13 @@ PyFilledBoundaryAttributes_GetMethodTable(int *nMethods)
 bool
 PyFilledBoundaryAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &FilledBoundaryAttributesType);
+    return (obj->ob_type == &PyFilledBoundaryAttributesType);
 }
 
 FilledBoundaryAttributes *
 PyFilledBoundaryAttributes_FromPyObject(PyObject *obj)
 {
-    FilledBoundaryAttributesObject *obj2 = (FilledBoundaryAttributesObject *)obj;
+    PyFilledBoundaryAttributesObject *obj2 = (PyFilledBoundaryAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1935,7 +1935,7 @@ PyFilledBoundaryAttributes_Wrap(const FilledBoundaryAttributes *attr)
 void
 PyFilledBoundaryAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    FilledBoundaryAttributesObject *obj2 = (FilledBoundaryAttributesObject *)obj;
+    PyFilledBoundaryAttributesObject *obj2 = (PyFilledBoundaryAttributesObject *)obj;
     obj2->parent = parent;
 }
 

@@ -5,6 +5,7 @@
 #include <PyTruecolorAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a TruecolorAttributes.
 //
-struct TruecolorAttributesObject
+struct PyTruecolorAttributesObject
 {
     PyObject_HEAD
     TruecolorAttributes *data;
@@ -54,16 +55,44 @@ PyTruecolorAttributes_ToString(const TruecolorAttributes *atts, const char *pref
 static PyObject *
 TruecolorAttributes_Notify(PyObject *self, PyObject *args)
 {
-    TruecolorAttributesObject *obj = (TruecolorAttributesObject *)self;
+    PyTruecolorAttributesObject *obj = (PyTruecolorAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+TruecolorAttributes_dir(PyObject *self, PyObject *args)
+{
+    static TruecolorAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyTruecolorAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 TruecolorAttributes_SetOpacity(PyObject *self, PyObject *args)
 {
-    TruecolorAttributesObject *obj = (TruecolorAttributesObject *)self;
+    PyTruecolorAttributesObject *obj = (PyTruecolorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -115,7 +144,7 @@ TruecolorAttributes_SetOpacity(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TruecolorAttributes_GetOpacity(PyObject *self, PyObject *args)
 {
-    TruecolorAttributesObject *obj = (TruecolorAttributesObject *)self;
+    PyTruecolorAttributesObject *obj = (PyTruecolorAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetOpacity());
     return retval;
 }
@@ -123,7 +152,7 @@ TruecolorAttributes_GetOpacity(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TruecolorAttributes_SetLightingFlag(PyObject *self, PyObject *args)
 {
-    TruecolorAttributesObject *obj = (TruecolorAttributesObject *)self;
+    PyTruecolorAttributesObject *obj = (PyTruecolorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -175,7 +204,7 @@ TruecolorAttributes_SetLightingFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 TruecolorAttributes_GetLightingFlag(PyObject *self, PyObject *args)
 {
-    TruecolorAttributesObject *obj = (TruecolorAttributesObject *)self;
+    PyTruecolorAttributesObject *obj = (PyTruecolorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetLightingFlag()?1L:0L);
     return retval;
 }
@@ -183,7 +212,8 @@ TruecolorAttributes_GetLightingFlag(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyTruecolorAttributes_methods[TRUECOLORATTRIBUTES_NMETH] = {
-    {"Notify", TruecolorAttributes_Notify, METH_VARARGS},
+    {"__dir__", TruecolorAttributes_dir, METH_NOARGS},
+    {"Notify", TruecolorAttributes_Notify, METH_NOARGS},
     {"SetOpacity", TruecolorAttributes_SetOpacity, METH_VARARGS},
     {"GetOpacity", TruecolorAttributes_GetOpacity, METH_VARARGS},
     {"SetLightingFlag", TruecolorAttributes_SetLightingFlag, METH_VARARGS},
@@ -196,49 +226,51 @@ PyMethodDef PyTruecolorAttributes_methods[TRUECOLORATTRIBUTES_NMETH] = {
 //
 
 static void
-TruecolorAttributes_dealloc(PyObject *v)
+PyTruecolorAttributes_dealloc(PyObject *v)
 {
-   TruecolorAttributesObject *obj = (TruecolorAttributesObject *)v;
+   PyTruecolorAttributesObject *obj = (PyTruecolorAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *TruecolorAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyTruecolorAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyTruecolorAttributes_getattr(PyObject *self, char *name)
+PyTruecolorAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "opacity") == 0)
         return TruecolorAttributes_GetOpacity(self, NULL);
     if(strcmp(name, "lightingFlag") == 0)
         return TruecolorAttributes_GetLightingFlag(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyTruecolorAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyTruecolorAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyTruecolorAttributes_methods[i].ml_name),
-                PyString_FromString(PyTruecolorAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyTruecolorAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyTruecolorAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyTruecolorAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "opacity") == 0)
         obj = TruecolorAttributes_SetOpacity(self, args);
     else if(strcmp(name, "lightingFlag") == 0)
         obj = TruecolorAttributes_SetLightingFlag(self, args);
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -254,78 +286,45 @@ PyTruecolorAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-TruecolorAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    TruecolorAttributesObject *obj = (TruecolorAttributesObject *)v;
-    fprintf(fp, "%s", PyTruecolorAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-TruecolorAttributes_str(PyObject *v)
+PyTruecolorAttributes_str(PyObject *v)
 {
-    TruecolorAttributesObject *obj = (TruecolorAttributesObject *)v;
+    PyTruecolorAttributesObject *obj = (PyTruecolorAttributesObject *)v;
     return PyString_FromString(PyTruecolorAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *TruecolorAttributes_Purpose = "Truecolor plot";
-#else
-static char *TruecolorAttributes_Purpose = "Truecolor plot";
-#endif
+static char const *PyTruecolorAttributes_purpose = "Truecolor plot";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(TruecolorAttributesType,         \
-                  "TruecolorAttributes",           \
-                  TruecolorAttributesObject,       \
-                  TruecolorAttributes_dealloc,     \
-                  TruecolorAttributes_print,       \
-                  PyTruecolorAttributes_getattr,   \
-                  PyTruecolorAttributes_setattr,   \
-                  TruecolorAttributes_str,         \
-                  TruecolorAttributes_Purpose,     \
-                  TruecolorAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(TruecolorAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-TruecolorAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyTruecolorAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &TruecolorAttributesType
-         || Py_TYPE(other) != &TruecolorAttributesType)
+    if ( Py_TYPE(self) != &PyTruecolorAttributesType
+         || Py_TYPE(other) != &PyTruecolorAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    TruecolorAttributes *a = ((TruecolorAttributesObject *)self)->data;
-    TruecolorAttributes *b = ((TruecolorAttributesObject *)other)->data;
+    TruecolorAttributes *a = ((PyTruecolorAttributesObject *)self)->data;
+    TruecolorAttributes *b = ((PyTruecolorAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -354,8 +353,8 @@ static TruecolorAttributes *currentAtts = 0;
 static PyObject *
 NewTruecolorAttributes(int useCurrent)
 {
-    TruecolorAttributesObject *newObject;
-    newObject = PyObject_NEW(TruecolorAttributesObject, &TruecolorAttributesType);
+    PyTruecolorAttributesObject *newObject;
+    newObject = PyObject_NEW(PyTruecolorAttributesObject, &PyTruecolorAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -366,14 +365,15 @@ NewTruecolorAttributes(int useCurrent)
         newObject->data = new TruecolorAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyTruecolorAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapTruecolorAttributes(const TruecolorAttributes *attr)
 {
-    TruecolorAttributesObject *newObject;
-    newObject = PyObject_NEW(TruecolorAttributesObject, &TruecolorAttributesType);
+    PyTruecolorAttributesObject *newObject;
+    newObject = PyObject_NEW(PyTruecolorAttributesObject, &PyTruecolorAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (TruecolorAttributes *)attr;
@@ -475,13 +475,13 @@ PyTruecolorAttributes_GetMethodTable(int *nMethods)
 bool
 PyTruecolorAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &TruecolorAttributesType);
+    return (obj->ob_type == &PyTruecolorAttributesType);
 }
 
 TruecolorAttributes *
 PyTruecolorAttributes_FromPyObject(PyObject *obj)
 {
-    TruecolorAttributesObject *obj2 = (TruecolorAttributesObject *)obj;
+    PyTruecolorAttributesObject *obj2 = (PyTruecolorAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -500,7 +500,7 @@ PyTruecolorAttributes_Wrap(const TruecolorAttributes *attr)
 void
 PyTruecolorAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    TruecolorAttributesObject *obj2 = (TruecolorAttributesObject *)obj;
+    PyTruecolorAttributesObject *obj2 = (PyTruecolorAttributesObject *)obj;
     obj2->parent = parent;
 }
 

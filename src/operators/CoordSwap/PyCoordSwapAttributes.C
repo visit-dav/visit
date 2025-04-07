@@ -5,6 +5,7 @@
 #include <PyCoordSwapAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a CoordSwapAttributes.
 //
-struct CoordSwapAttributesObject
+struct PyCoordSwapAttributesObject
 {
     PyObject_HEAD
     CoordSwapAttributes *data;
@@ -104,16 +105,44 @@ PyCoordSwapAttributes_ToString(const CoordSwapAttributes *atts, const char *pref
 static PyObject *
 CoordSwapAttributes_Notify(PyObject *self, PyObject *args)
 {
-    CoordSwapAttributesObject *obj = (CoordSwapAttributesObject *)self;
+    PyCoordSwapAttributesObject *obj = (PyCoordSwapAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+CoordSwapAttributes_dir(PyObject *self, PyObject *args)
+{
+    static CoordSwapAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyCoordSwapAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 CoordSwapAttributes_SetNewCoord1(PyObject *self, PyObject *args)
 {
-    CoordSwapAttributesObject *obj = (CoordSwapAttributesObject *)self;
+    PyCoordSwapAttributesObject *obj = (PyCoordSwapAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -172,7 +201,7 @@ CoordSwapAttributes_SetNewCoord1(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CoordSwapAttributes_GetNewCoord1(PyObject *self, PyObject *args)
 {
-    CoordSwapAttributesObject *obj = (CoordSwapAttributesObject *)self;
+    PyCoordSwapAttributesObject *obj = (PyCoordSwapAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNewCoord1()));
     return retval;
 }
@@ -180,7 +209,7 @@ CoordSwapAttributes_GetNewCoord1(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CoordSwapAttributes_SetNewCoord2(PyObject *self, PyObject *args)
 {
-    CoordSwapAttributesObject *obj = (CoordSwapAttributesObject *)self;
+    PyCoordSwapAttributesObject *obj = (PyCoordSwapAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -239,7 +268,7 @@ CoordSwapAttributes_SetNewCoord2(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CoordSwapAttributes_GetNewCoord2(PyObject *self, PyObject *args)
 {
-    CoordSwapAttributesObject *obj = (CoordSwapAttributesObject *)self;
+    PyCoordSwapAttributesObject *obj = (PyCoordSwapAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNewCoord2()));
     return retval;
 }
@@ -247,7 +276,7 @@ CoordSwapAttributes_GetNewCoord2(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CoordSwapAttributes_SetNewCoord3(PyObject *self, PyObject *args)
 {
-    CoordSwapAttributesObject *obj = (CoordSwapAttributesObject *)self;
+    PyCoordSwapAttributesObject *obj = (PyCoordSwapAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -306,7 +335,7 @@ CoordSwapAttributes_SetNewCoord3(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 CoordSwapAttributes_GetNewCoord3(PyObject *self, PyObject *args)
 {
-    CoordSwapAttributesObject *obj = (CoordSwapAttributesObject *)self;
+    PyCoordSwapAttributesObject *obj = (PyCoordSwapAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNewCoord3()));
     return retval;
 }
@@ -314,7 +343,8 @@ CoordSwapAttributes_GetNewCoord3(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyCoordSwapAttributes_methods[COORDSWAPATTRIBUTES_NMETH] = {
-    {"Notify", CoordSwapAttributes_Notify, METH_VARARGS},
+    {"__dir__", CoordSwapAttributes_dir, METH_NOARGS},
+    {"Notify", CoordSwapAttributes_Notify, METH_NOARGS},
     {"SetNewCoord1", CoordSwapAttributes_SetNewCoord1, METH_VARARGS},
     {"GetNewCoord1", CoordSwapAttributes_GetNewCoord1, METH_VARARGS},
     {"SetNewCoord2", CoordSwapAttributes_SetNewCoord2, METH_VARARGS},
@@ -329,19 +359,22 @@ PyMethodDef PyCoordSwapAttributes_methods[COORDSWAPATTRIBUTES_NMETH] = {
 //
 
 static void
-CoordSwapAttributes_dealloc(PyObject *v)
+PyCoordSwapAttributes_dealloc(PyObject *v)
 {
-   CoordSwapAttributesObject *obj = (CoordSwapAttributesObject *)v;
+   PyCoordSwapAttributesObject *obj = (PyCoordSwapAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *CoordSwapAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyCoordSwapAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyCoordSwapAttributes_getattr(PyObject *self, char *name)
+PyCoordSwapAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "newCoord1") == 0)
         return CoordSwapAttributes_GetNewCoord1(self, NULL);
     if(strcmp(name, "Coord1") == 0)
@@ -370,26 +403,19 @@ PyCoordSwapAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(CoordSwapAttributes::Coord3));
 
 
+    PyObject *meth = Py_FindMethod(PyCoordSwapAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyCoordSwapAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyCoordSwapAttributes_methods[i].ml_name),
-                PyString_FromString(PyCoordSwapAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyCoordSwapAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyCoordSwapAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyCoordSwapAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "newCoord1") == 0)
         obj = CoordSwapAttributes_SetNewCoord1(self, args);
@@ -397,6 +423,12 @@ PyCoordSwapAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = CoordSwapAttributes_SetNewCoord2(self, args);
     else if(strcmp(name, "newCoord3") == 0)
         obj = CoordSwapAttributes_SetNewCoord3(self, args);
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -412,78 +444,45 @@ PyCoordSwapAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-CoordSwapAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    CoordSwapAttributesObject *obj = (CoordSwapAttributesObject *)v;
-    fprintf(fp, "%s", PyCoordSwapAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-CoordSwapAttributes_str(PyObject *v)
+PyCoordSwapAttributes_str(PyObject *v)
 {
-    CoordSwapAttributesObject *obj = (CoordSwapAttributesObject *)v;
+    PyCoordSwapAttributesObject *obj = (PyCoordSwapAttributesObject *)v;
     return PyString_FromString(PyCoordSwapAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *CoordSwapAttributes_Purpose = "This class contains attributes for the coord swap operator.";
-#else
-static char *CoordSwapAttributes_Purpose = "This class contains attributes for the coord swap operator.";
-#endif
+static char const *PyCoordSwapAttributes_purpose = "This class contains attributes for the coord swap operator.";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(CoordSwapAttributesType,         \
-                  "CoordSwapAttributes",           \
-                  CoordSwapAttributesObject,       \
-                  CoordSwapAttributes_dealloc,     \
-                  CoordSwapAttributes_print,       \
-                  PyCoordSwapAttributes_getattr,   \
-                  PyCoordSwapAttributes_setattr,   \
-                  CoordSwapAttributes_str,         \
-                  CoordSwapAttributes_Purpose,     \
-                  CoordSwapAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(CoordSwapAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-CoordSwapAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyCoordSwapAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &CoordSwapAttributesType
-         || Py_TYPE(other) != &CoordSwapAttributesType)
+    if ( Py_TYPE(self) != &PyCoordSwapAttributesType
+         || Py_TYPE(other) != &PyCoordSwapAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    CoordSwapAttributes *a = ((CoordSwapAttributesObject *)self)->data;
-    CoordSwapAttributes *b = ((CoordSwapAttributesObject *)other)->data;
+    CoordSwapAttributes *a = ((PyCoordSwapAttributesObject *)self)->data;
+    CoordSwapAttributes *b = ((PyCoordSwapAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -512,8 +511,8 @@ static CoordSwapAttributes *currentAtts = 0;
 static PyObject *
 NewCoordSwapAttributes(int useCurrent)
 {
-    CoordSwapAttributesObject *newObject;
-    newObject = PyObject_NEW(CoordSwapAttributesObject, &CoordSwapAttributesType);
+    PyCoordSwapAttributesObject *newObject;
+    newObject = PyObject_NEW(PyCoordSwapAttributesObject, &PyCoordSwapAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -524,14 +523,15 @@ NewCoordSwapAttributes(int useCurrent)
         newObject->data = new CoordSwapAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyCoordSwapAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapCoordSwapAttributes(const CoordSwapAttributes *attr)
 {
-    CoordSwapAttributesObject *newObject;
-    newObject = PyObject_NEW(CoordSwapAttributesObject, &CoordSwapAttributesType);
+    PyCoordSwapAttributesObject *newObject;
+    newObject = PyObject_NEW(PyCoordSwapAttributesObject, &PyCoordSwapAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (CoordSwapAttributes *)attr;
@@ -633,13 +633,13 @@ PyCoordSwapAttributes_GetMethodTable(int *nMethods)
 bool
 PyCoordSwapAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &CoordSwapAttributesType);
+    return (obj->ob_type == &PyCoordSwapAttributesType);
 }
 
 CoordSwapAttributes *
 PyCoordSwapAttributes_FromPyObject(PyObject *obj)
 {
-    CoordSwapAttributesObject *obj2 = (CoordSwapAttributesObject *)obj;
+    PyCoordSwapAttributesObject *obj2 = (PyCoordSwapAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -658,7 +658,7 @@ PyCoordSwapAttributes_Wrap(const CoordSwapAttributes *attr)
 void
 PyCoordSwapAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    CoordSwapAttributesObject *obj2 = (CoordSwapAttributesObject *)obj;
+    PyCoordSwapAttributesObject *obj2 = (PyCoordSwapAttributesObject *)obj;
     obj2->parent = parent;
 }
 

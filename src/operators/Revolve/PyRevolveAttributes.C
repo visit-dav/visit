@@ -5,6 +5,7 @@
 #include <PyRevolveAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a RevolveAttributes.
 //
-struct RevolveAttributesObject
+struct PyRevolveAttributesObject
 {
     PyObject_HEAD
     RevolveAttributes *data;
@@ -97,16 +98,44 @@ PyRevolveAttributes_ToString(const RevolveAttributes *atts, const char *prefix, 
 static PyObject *
 RevolveAttributes_Notify(PyObject *self, PyObject *args)
 {
-    RevolveAttributesObject *obj = (RevolveAttributesObject *)self;
+    PyRevolveAttributesObject *obj = (PyRevolveAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+RevolveAttributes_dir(PyObject *self, PyObject *args)
+{
+    static RevolveAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyRevolveAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 RevolveAttributes_SetMeshType(PyObject *self, PyObject *args)
 {
-    RevolveAttributesObject *obj = (RevolveAttributesObject *)self;
+    PyRevolveAttributesObject *obj = (PyRevolveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -166,7 +195,7 @@ RevolveAttributes_SetMeshType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RevolveAttributes_GetMeshType(PyObject *self, PyObject *args)
 {
-    RevolveAttributesObject *obj = (RevolveAttributesObject *)self;
+    PyRevolveAttributesObject *obj = (PyRevolveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMeshType()));
     return retval;
 }
@@ -174,7 +203,7 @@ RevolveAttributes_GetMeshType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RevolveAttributes_SetAutoAxis(PyObject *self, PyObject *args)
 {
-    RevolveAttributesObject *obj = (RevolveAttributesObject *)self;
+    PyRevolveAttributesObject *obj = (PyRevolveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -226,7 +255,7 @@ RevolveAttributes_SetAutoAxis(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RevolveAttributes_GetAutoAxis(PyObject *self, PyObject *args)
 {
-    RevolveAttributesObject *obj = (RevolveAttributesObject *)self;
+    PyRevolveAttributesObject *obj = (PyRevolveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetAutoAxis()?1L:0L);
     return retval;
 }
@@ -234,7 +263,7 @@ RevolveAttributes_GetAutoAxis(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RevolveAttributes_SetAxis(PyObject *self, PyObject *args)
 {
-    RevolveAttributesObject *obj = (RevolveAttributesObject *)self;
+    PyRevolveAttributesObject *obj = (PyRevolveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetAxis();
@@ -301,7 +330,7 @@ RevolveAttributes_SetAxis(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RevolveAttributes_GetAxis(PyObject *self, PyObject *args)
 {
-    RevolveAttributesObject *obj = (RevolveAttributesObject *)self;
+    PyRevolveAttributesObject *obj = (PyRevolveAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the axis.
     PyObject *retval = PyTuple_New(3);
     const double *axis = obj->data->GetAxis();
@@ -313,7 +342,7 @@ RevolveAttributes_GetAxis(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RevolveAttributes_SetStartAngle(PyObject *self, PyObject *args)
 {
-    RevolveAttributesObject *obj = (RevolveAttributesObject *)self;
+    PyRevolveAttributesObject *obj = (PyRevolveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -365,7 +394,7 @@ RevolveAttributes_SetStartAngle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RevolveAttributes_GetStartAngle(PyObject *self, PyObject *args)
 {
-    RevolveAttributesObject *obj = (RevolveAttributesObject *)self;
+    PyRevolveAttributesObject *obj = (PyRevolveAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetStartAngle());
     return retval;
 }
@@ -373,7 +402,7 @@ RevolveAttributes_GetStartAngle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RevolveAttributes_SetStopAngle(PyObject *self, PyObject *args)
 {
-    RevolveAttributesObject *obj = (RevolveAttributesObject *)self;
+    PyRevolveAttributesObject *obj = (PyRevolveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -425,7 +454,7 @@ RevolveAttributes_SetStopAngle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RevolveAttributes_GetStopAngle(PyObject *self, PyObject *args)
 {
-    RevolveAttributesObject *obj = (RevolveAttributesObject *)self;
+    PyRevolveAttributesObject *obj = (PyRevolveAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetStopAngle());
     return retval;
 }
@@ -433,7 +462,7 @@ RevolveAttributes_GetStopAngle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RevolveAttributes_SetSteps(PyObject *self, PyObject *args)
 {
-    RevolveAttributesObject *obj = (RevolveAttributesObject *)self;
+    PyRevolveAttributesObject *obj = (PyRevolveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -485,7 +514,7 @@ RevolveAttributes_SetSteps(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 RevolveAttributes_GetSteps(PyObject *self, PyObject *args)
 {
-    RevolveAttributesObject *obj = (RevolveAttributesObject *)self;
+    PyRevolveAttributesObject *obj = (PyRevolveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetSteps()));
     return retval;
 }
@@ -493,7 +522,8 @@ RevolveAttributes_GetSteps(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyRevolveAttributes_methods[REVOLVEATTRIBUTES_NMETH] = {
-    {"Notify", RevolveAttributes_Notify, METH_VARARGS},
+    {"__dir__", RevolveAttributes_dir, METH_NOARGS},
+    {"Notify", RevolveAttributes_Notify, METH_NOARGS},
     {"SetMeshType", RevolveAttributes_SetMeshType, METH_VARARGS},
     {"GetMeshType", RevolveAttributes_GetMeshType, METH_VARARGS},
     {"SetAutoAxis", RevolveAttributes_SetAutoAxis, METH_VARARGS},
@@ -514,19 +544,22 @@ PyMethodDef PyRevolveAttributes_methods[REVOLVEATTRIBUTES_NMETH] = {
 //
 
 static void
-RevolveAttributes_dealloc(PyObject *v)
+PyRevolveAttributes_dealloc(PyObject *v)
 {
-   RevolveAttributesObject *obj = (RevolveAttributesObject *)v;
+   PyRevolveAttributesObject *obj = (PyRevolveAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *RevolveAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyRevolveAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyRevolveAttributes_getattr(PyObject *self, char *name)
+PyRevolveAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "meshType") == 0)
         return RevolveAttributes_GetMeshType(self, NULL);
     if(strcmp(name, "Auto") == 0)
@@ -549,26 +582,19 @@ PyRevolveAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "steps") == 0)
         return RevolveAttributes_GetSteps(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyRevolveAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyRevolveAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyRevolveAttributes_methods[i].ml_name),
-                PyString_FromString(PyRevolveAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyRevolveAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyRevolveAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyRevolveAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "meshType") == 0)
         obj = RevolveAttributes_SetMeshType(self, args);
@@ -582,6 +608,12 @@ PyRevolveAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = RevolveAttributes_SetStopAngle(self, args);
     else if(strcmp(name, "steps") == 0)
         obj = RevolveAttributes_SetSteps(self, args);
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -597,78 +629,45 @@ PyRevolveAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-RevolveAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    RevolveAttributesObject *obj = (RevolveAttributesObject *)v;
-    fprintf(fp, "%s", PyRevolveAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-RevolveAttributes_str(PyObject *v)
+PyRevolveAttributes_str(PyObject *v)
 {
-    RevolveAttributesObject *obj = (RevolveAttributesObject *)v;
+    PyRevolveAttributesObject *obj = (PyRevolveAttributesObject *)v;
     return PyString_FromString(PyRevolveAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *RevolveAttributes_Purpose = "This class contains attributes for the revolve operator.";
-#else
-static char *RevolveAttributes_Purpose = "This class contains attributes for the revolve operator.";
-#endif
+static char const *PyRevolveAttributes_purpose = "This class contains attributes for the revolve operator.";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(RevolveAttributesType,         \
-                  "RevolveAttributes",           \
-                  RevolveAttributesObject,       \
-                  RevolveAttributes_dealloc,     \
-                  RevolveAttributes_print,       \
-                  PyRevolveAttributes_getattr,   \
-                  PyRevolveAttributes_setattr,   \
-                  RevolveAttributes_str,         \
-                  RevolveAttributes_Purpose,     \
-                  RevolveAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(RevolveAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-RevolveAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyRevolveAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &RevolveAttributesType
-         || Py_TYPE(other) != &RevolveAttributesType)
+    if ( Py_TYPE(self) != &PyRevolveAttributesType
+         || Py_TYPE(other) != &PyRevolveAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    RevolveAttributes *a = ((RevolveAttributesObject *)self)->data;
-    RevolveAttributes *b = ((RevolveAttributesObject *)other)->data;
+    RevolveAttributes *a = ((PyRevolveAttributesObject *)self)->data;
+    RevolveAttributes *b = ((PyRevolveAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -697,8 +696,8 @@ static RevolveAttributes *currentAtts = 0;
 static PyObject *
 NewRevolveAttributes(int useCurrent)
 {
-    RevolveAttributesObject *newObject;
-    newObject = PyObject_NEW(RevolveAttributesObject, &RevolveAttributesType);
+    PyRevolveAttributesObject *newObject;
+    newObject = PyObject_NEW(PyRevolveAttributesObject, &PyRevolveAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -709,14 +708,15 @@ NewRevolveAttributes(int useCurrent)
         newObject->data = new RevolveAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyRevolveAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapRevolveAttributes(const RevolveAttributes *attr)
 {
-    RevolveAttributesObject *newObject;
-    newObject = PyObject_NEW(RevolveAttributesObject, &RevolveAttributesType);
+    PyRevolveAttributesObject *newObject;
+    newObject = PyObject_NEW(PyRevolveAttributesObject, &PyRevolveAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (RevolveAttributes *)attr;
@@ -818,13 +818,13 @@ PyRevolveAttributes_GetMethodTable(int *nMethods)
 bool
 PyRevolveAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &RevolveAttributesType);
+    return (obj->ob_type == &PyRevolveAttributesType);
 }
 
 RevolveAttributes *
 PyRevolveAttributes_FromPyObject(PyObject *obj)
 {
-    RevolveAttributesObject *obj2 = (RevolveAttributesObject *)obj;
+    PyRevolveAttributesObject *obj2 = (PyRevolveAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -843,7 +843,7 @@ PyRevolveAttributes_Wrap(const RevolveAttributes *attr)
 void
 PyRevolveAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    RevolveAttributesObject *obj2 = (RevolveAttributesObject *)obj;
+    PyRevolveAttributesObject *obj2 = (PyRevolveAttributesObject *)obj;
     obj2->parent = parent;
 }
 

@@ -23,7 +23,7 @@
 //
 // This struct contains the Python type information and a DatabaseCorrelation.
 //
-struct DatabaseCorrelationObject
+struct PyDatabaseCorrelationObject
 {
     PyObject_HEAD
     DatabaseCorrelation *data;
@@ -315,7 +315,7 @@ PyDatabaseCorrelation_ToString(const DatabaseCorrelation *atts, const char *pref
 /*static*/ PyObject *
 DatabaseCorrelation_GetName(PyObject *self, PyObject *args)
 {
-    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
+    PyDatabaseCorrelationObject *obj = (PyDatabaseCorrelationObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetName().c_str());
     return retval;
 }
@@ -328,7 +328,7 @@ DatabaseCorrelation_GetName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DatabaseCorrelation_GetNumStates(PyObject *self, PyObject *args)
 {
-    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
+    PyDatabaseCorrelationObject *obj = (PyDatabaseCorrelationObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNumStates()));
     return retval;
 }
@@ -341,7 +341,7 @@ DatabaseCorrelation_GetNumStates(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DatabaseCorrelation_GetMethod(PyObject *self, PyObject *args)
 {
-    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
+    PyDatabaseCorrelationObject *obj = (PyDatabaseCorrelationObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMethod()));
     return retval;
 }
@@ -353,7 +353,7 @@ DatabaseCorrelation_GetMethod(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DatabaseCorrelation_GetDatabaseNames(PyObject *self, PyObject *args)
 {
-    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
+    PyDatabaseCorrelationObject *obj = (PyDatabaseCorrelationObject *)self;
     // Allocate a tuple the with enough entries to hold the databaseNames.
     const stringVector &databaseNames = obj->data->GetDatabaseNames();
     PyObject *retval = PyTuple_New(databaseNames.size());
@@ -370,7 +370,7 @@ DatabaseCorrelation_GetDatabaseNames(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DatabaseCorrelation_GetDatabaseNStates(PyObject *self, PyObject *args)
 {
-    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
+    PyDatabaseCorrelationObject *obj = (PyDatabaseCorrelationObject *)self;
     // Allocate a tuple the with enough entries to hold the databaseNStates.
     const intVector &databaseNStates = obj->data->GetDatabaseNStates();
     PyObject *retval = PyTuple_New(databaseNStates.size());
@@ -386,7 +386,7 @@ DatabaseCorrelation_GetDatabaseNStates(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DatabaseCorrelation_GetDatabaseTimes(PyObject *self, PyObject *args)
 {
-    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
+    PyDatabaseCorrelationObject *obj = (PyDatabaseCorrelationObject *)self;
     // Allocate a tuple the with enough entries to hold the databaseTimes.
     const doubleVector &databaseTimes = obj->data->GetDatabaseTimes();
     PyObject *retval = PyTuple_New(databaseTimes.size());
@@ -402,7 +402,7 @@ DatabaseCorrelation_GetDatabaseTimes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DatabaseCorrelation_GetDatabaseCycles(PyObject *self, PyObject *args)
 {
-    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
+    PyDatabaseCorrelationObject *obj = (PyDatabaseCorrelationObject *)self;
     // Allocate a tuple the with enough entries to hold the databaseCycles.
     const intVector &databaseCycles = obj->data->GetDatabaseCycles();
     PyObject *retval = PyTuple_New(databaseCycles.size());
@@ -419,7 +419,7 @@ DatabaseCorrelation_GetDatabaseCycles(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DatabaseCorrelation_GetIndices(PyObject *self, PyObject *args)
 {
-    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
+    PyDatabaseCorrelationObject *obj = (PyDatabaseCorrelationObject *)self;
     // Allocate a tuple the with enough entries to hold the indices.
     const intVector &indices = obj->data->GetIndices();
     PyObject *retval = PyTuple_New(indices.size());
@@ -436,7 +436,7 @@ DatabaseCorrelation_GetIndices(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DatabaseCorrelation_GetCondensedTimes(PyObject *self, PyObject *args)
 {
-    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
+    PyDatabaseCorrelationObject *obj = (PyDatabaseCorrelationObject *)self;
     // Allocate a tuple the with enough entries to hold the condensedTimes.
     const doubleVector &condensedTimes = obj->data->GetCondensedTimes();
     PyObject *retval = PyTuple_New(condensedTimes.size());
@@ -452,7 +452,7 @@ DatabaseCorrelation_GetCondensedTimes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 DatabaseCorrelation_GetCondensedCycles(PyObject *self, PyObject *args)
 {
-    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
+    PyDatabaseCorrelationObject *obj = (PyDatabaseCorrelationObject *)self;
     // Allocate a tuple the with enough entries to hold the condensedCycles.
     const intVector &condensedCycles = obj->data->GetCondensedCycles();
     PyObject *retval = PyTuple_New(condensedCycles.size());
@@ -470,11 +470,39 @@ DatabaseCorrelation_GetCondensedCycles(PyObject *self, PyObject *args)
 ////////////////////////////////////////////////////////////////////////////////
 /// BEGIN WRAPPED USER-DEFINED DATABASECORRELATION METHODS.
 ////////////////////////////////////////////////////////////////////////////////
+static PyObject *
+DatabaseCorrelation_dir(PyObject *self, PyObject *args)
+{
+    static DatabaseCorrelation atts; // dummy to access field names
+    
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL; 
+    }
+    
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyDatabaseCorrelation_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+    
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}   
+
 
 static PyObject *
 DatabaseCorrelation_GetCorrelatedTimeStates(PyObject *self, PyObject *args)
 {
-    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
+    PyDatabaseCorrelationObject *obj = (PyDatabaseCorrelationObject *)self;
 
     int state = 0;
     if (!PyArg_ParseTuple(args, "i", &state))
@@ -499,7 +527,7 @@ DatabaseCorrelation_GetCorrelatedTimeStates(PyObject *self, PyObject *args)
 static PyObject *
 DatabaseCorrelation_UsesDatabase(PyObject *self, PyObject *args)
 {
-    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
+    PyDatabaseCorrelationObject *obj = (PyDatabaseCorrelationObject *)self;
     char *name = 0;
     if (!PyArg_ParseTuple(args, "s", &name))
         return NULL;
@@ -511,14 +539,14 @@ DatabaseCorrelation_UsesDatabase(PyObject *self, PyObject *args)
 static PyObject *
 DatabaseCorrelation_GetNumDatabases(PyObject *self, PyObject *args)
 {
-    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
+    PyDatabaseCorrelationObject *obj = (PyDatabaseCorrelationObject *)self;
     return PyLong_FromLong(long(obj->data->GetNumDatabases()));
 }
 
 static PyObject *
 DatabaseCorrelation_GetCorrelatedTimeState(PyObject *self, PyObject *args)
 {
-    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
+    PyDatabaseCorrelationObject *obj = (PyDatabaseCorrelationObject *)self;
     char *db = 0;
     int state = 0;
     if (!PyArg_ParseTuple(args, "si", &db, &state))
@@ -530,7 +558,7 @@ DatabaseCorrelation_GetCorrelatedTimeState(PyObject *self, PyObject *args)
 static PyObject *
 DatabaseCorrelation_GetInverseCorrelatedTimeState(PyObject *self, PyObject *args)
 {
-    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
+    PyDatabaseCorrelationObject *obj = (PyDatabaseCorrelationObject *)self;
     char *db = 0;
     int state = 0;
     if (!PyArg_ParseTuple(args, "si", &db, &state))
@@ -542,7 +570,7 @@ DatabaseCorrelation_GetInverseCorrelatedTimeState(PyObject *self, PyObject *args
 static PyObject *
 DatabaseCorrelation_GetDatabaseCycleForState(PyObject *self, PyObject *args)
 {
-    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
+    PyDatabaseCorrelationObject *obj = (PyDatabaseCorrelationObject *)self;
     char *db = 0;
     int state = 0;
     if (!PyArg_ParseTuple(args, "si", &db, &state))
@@ -573,7 +601,7 @@ DatabaseCorrelation_GetDatabaseCycleForState(PyObject *self, PyObject *args)
 static PyObject *
 DatabaseCorrelation_GetDatabaseTimeForState(PyObject *self, PyObject *args)
 {
-    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
+    PyDatabaseCorrelationObject *obj = (PyDatabaseCorrelationObject *)self;
     char *db = 0;
     int state = 0;
     if (!PyArg_ParseTuple(args, "si", &db, &state))
@@ -604,7 +632,7 @@ DatabaseCorrelation_GetDatabaseTimeForState(PyObject *self, PyObject *args)
 static PyObject *
 DatabaseCorrelation_GetCondensedCycleForState(PyObject *self, PyObject *args)
 {
-    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
+    PyDatabaseCorrelationObject *obj = (PyDatabaseCorrelationObject *)self;
     int state = 0;
     if (!PyArg_ParseTuple(args, "i", &state))
         return NULL;
@@ -615,7 +643,7 @@ DatabaseCorrelation_GetCondensedCycleForState(PyObject *self, PyObject *args)
 static PyObject *
 DatabaseCorrelation_GetCondensedTimeForState(PyObject *self, PyObject *args)
 {
-    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)self;
+    PyDatabaseCorrelationObject *obj = (PyDatabaseCorrelationObject *)self;
     int state = 0;
     if (!PyArg_ParseTuple(args, "i", &state))
         return NULL;
@@ -628,7 +656,8 @@ DatabaseCorrelation_GetCondensedTimeForState(PyObject *self, PyObject *args)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-static struct PyMethodDef DatabaseCorrelation_methods[] = {
+struct PyMethodDef PyDatabaseCorrelation_methods[] = {
+    {"__dir__", DatabaseCorrelation_dir, METH_NOARGS},
     {"GetName", DatabaseCorrelation_GetName, METH_VARARGS},
     {"GetNumStates", DatabaseCorrelation_GetNumStates, METH_VARARGS},
     {"GetMethod", DatabaseCorrelation_GetMethod, METH_VARARGS},
@@ -655,16 +684,16 @@ static struct PyMethodDef DatabaseCorrelation_methods[] = {
 //
 
 static void
-DatabaseCorrelation_dealloc(PyObject *v)
+PyDatabaseCorrelation_dealloc(PyObject *v)
 {
-   DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)v;
+   PyDatabaseCorrelationObject *obj = (PyDatabaseCorrelationObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *DatabaseCorrelation_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyDatabaseCorrelation_richcompare(PyObject *self, PyObject *other, int op);
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Custom PyDatabaseCorrelation_getattr
@@ -672,8 +701,11 @@ static PyObject *DatabaseCorrelation_richcompare(PyObject *self, PyObject *other
 
 
 PyObject *
-PyDatabaseCorrelation_getattr(PyObject *self, char *name)
+PyDatabaseCorrelation_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "name") == 0)
         return DatabaseCorrelation_GetName(self, NULL);
     if(strcmp(name, "numStates") == 0)
@@ -696,92 +728,53 @@ PyDatabaseCorrelation_getattr(PyObject *self, char *name)
     if(strcmp(name, "databaseNStates") == 0)
         return DatabaseCorrelation_GetDatabaseNStates(self, NULL);
 
-    return Py_FindMethod(DatabaseCorrelation_methods, self, name);
+    PyObject *meth = Py_FindMethod(PyDatabaseCorrelation_methods, self, (char*)name);
+    if (meth) return meth;
+
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
-
-///////////////////////////////////////////////////////////////////////////////
-/// Custom PyDatabaseCorrelation_setattr
-///////////////////////////////////////////////////////////////////////////////
-
-int
-PyDatabaseCorrelation_setattr(PyObject *self, char *name, PyObject *args)
-{
-    return -1;
-}
-
-static int
-DatabaseCorrelation_print(PyObject *v, FILE *fp, int flags)
-{
-    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)v;
-    fprintf(fp, "%s", PyDatabaseCorrelation_ToString(obj->data, "").c_str());
-    return 0;
-}
 
 PyObject *
-DatabaseCorrelation_str(PyObject *v)
+PyDatabaseCorrelation_str(PyObject *v)
 {
-    DatabaseCorrelationObject *obj = (DatabaseCorrelationObject *)v;
+    PyDatabaseCorrelationObject *obj = (PyDatabaseCorrelationObject *)v;
     return PyString_FromString(PyDatabaseCorrelation_ToString(obj->data,"").c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *DatabaseCorrelation_Purpose = "This class encapsulates a database correlation, which is a mapping of one or more databases to a set of indices that go from 0 to N.";
-#else
-static char *DatabaseCorrelation_Purpose = "This class encapsulates a database correlation, which is a mapping of one or more databases to a set of indices that go from 0 to N.";
-#endif
+static char const *PyDatabaseCorrelation_purpose = "This class encapsulates a database correlation, which is a mapping of one or more databases to a set of indices that go from 0 to N.";
 
-//
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(DatabaseCorrelationType,         \
-                  "DatabaseCorrelation",           \
-                  DatabaseCorrelationObject,       \
-                  DatabaseCorrelation_dealloc,     \
-                  DatabaseCorrelation_print,       \
-                  PyDatabaseCorrelation_getattr,   \
-                  PyDatabaseCorrelation_setattr,   \
-                  DatabaseCorrelation_str,         \
-                  DatabaseCorrelation_Purpose,     \
-                  DatabaseCorrelation_richcompare, \
-                  0); /* as_number*/
+// Re-define tp slots for this custom object
+#undef VISIT_PY_TYPE_OBJ_TP_SLOTS
+#define VISIT_PY_TYPE_OBJ_TP_SLOTS(VSObjName)                          \
+    VISIT_PY_TYPE_OBJ_SLOT2(VSObjName, doc, purpose);                  \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, dealloc);                       \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, getattro);                      \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, str);                           \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, richcompare);                   \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, methods)
+VISIT_PY_TYPE_OBJ(DatabaseCorrelation);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-DatabaseCorrelation_richcompare(PyObject *self, PyObject *other, int op)
+PyDatabaseCorrelation_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
     if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &DatabaseCorrelationType)
+         && Py_TYPE(self) == &PyDatabaseCorrelationType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    DatabaseCorrelation *a = ((DatabaseCorrelationObject *)self)->data;
-    DatabaseCorrelation *b = ((DatabaseCorrelationObject *)other)->data;
+    DatabaseCorrelation *a = ((PyDatabaseCorrelationObject *)self)->data;
+    DatabaseCorrelation *b = ((PyDatabaseCorrelationObject *)other)->data;
 
     switch (op)
     {
@@ -810,8 +803,8 @@ static DatabaseCorrelation *currentAtts = 0;
 static PyObject *
 NewDatabaseCorrelation(int useCurrent)
 {
-    DatabaseCorrelationObject *newObject;
-    newObject = PyObject_NEW(DatabaseCorrelationObject, &DatabaseCorrelationType);
+    PyDatabaseCorrelationObject *newObject;
+    newObject = PyObject_NEW(PyDatabaseCorrelationObject, &PyDatabaseCorrelationType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -828,8 +821,8 @@ NewDatabaseCorrelation(int useCurrent)
 static PyObject *
 WrapDatabaseCorrelation(const DatabaseCorrelation *attr)
 {
-    DatabaseCorrelationObject *newObject;
-    newObject = PyObject_NEW(DatabaseCorrelationObject, &DatabaseCorrelationType);
+    PyDatabaseCorrelationObject *newObject;
+    newObject = PyObject_NEW(PyDatabaseCorrelationObject, &PyDatabaseCorrelationType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (DatabaseCorrelation *)attr;
@@ -931,13 +924,13 @@ PyDatabaseCorrelation_GetMethodTable(int *nMethods)
 bool
 PyDatabaseCorrelation_Check(PyObject *obj)
 {
-    return (obj->ob_type == &DatabaseCorrelationType);
+    return (obj->ob_type == &PyDatabaseCorrelationType);
 }
 
 DatabaseCorrelation *
 PyDatabaseCorrelation_FromPyObject(PyObject *obj)
 {
-    DatabaseCorrelationObject *obj2 = (DatabaseCorrelationObject *)obj;
+    PyDatabaseCorrelationObject *obj2 = (PyDatabaseCorrelationObject *)obj;
     return obj2->data;
 }
 
@@ -956,7 +949,7 @@ PyDatabaseCorrelation_Wrap(const DatabaseCorrelation *attr)
 void
 PyDatabaseCorrelation_SetParent(PyObject *obj, PyObject *parent)
 {
-    DatabaseCorrelationObject *obj2 = (DatabaseCorrelationObject *)obj;
+    PyDatabaseCorrelationObject *obj2 = (PyDatabaseCorrelationObject *)obj;
     obj2->parent = parent;
 }
 

@@ -5,6 +5,7 @@
 #include <PyAxisAlignedSlice4DAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a AxisAlignedSlice4DAttributes.
 //
-struct AxisAlignedSlice4DAttributesObject
+struct PyAxisAlignedSlice4DAttributesObject
 {
     PyObject_HEAD
     AxisAlignedSlice4DAttributes *data;
@@ -111,16 +112,44 @@ PyAxisAlignedSlice4DAttributes_ToString(const AxisAlignedSlice4DAttributes *atts
 static PyObject *
 AxisAlignedSlice4DAttributes_Notify(PyObject *self, PyObject *args)
 {
-    AxisAlignedSlice4DAttributesObject *obj = (AxisAlignedSlice4DAttributesObject *)self;
+    PyAxisAlignedSlice4DAttributesObject *obj = (PyAxisAlignedSlice4DAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+AxisAlignedSlice4DAttributes_dir(PyObject *self, PyObject *args)
+{
+    static AxisAlignedSlice4DAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyAxisAlignedSlice4DAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 AxisAlignedSlice4DAttributes_SetI(PyObject *self, PyObject *args)
 {
-    AxisAlignedSlice4DAttributesObject *obj = (AxisAlignedSlice4DAttributesObject *)self;
+    PyAxisAlignedSlice4DAttributesObject *obj = (PyAxisAlignedSlice4DAttributesObject *)self;
 
     intVector vec;
 
@@ -184,7 +213,7 @@ AxisAlignedSlice4DAttributes_SetI(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisAlignedSlice4DAttributes_GetI(PyObject *self, PyObject *args)
 {
-    AxisAlignedSlice4DAttributesObject *obj = (AxisAlignedSlice4DAttributesObject *)self;
+    PyAxisAlignedSlice4DAttributesObject *obj = (PyAxisAlignedSlice4DAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the I.
     const intVector &I = obj->data->GetI();
     PyObject *retval = PyTuple_New(I.size());
@@ -196,7 +225,7 @@ AxisAlignedSlice4DAttributes_GetI(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisAlignedSlice4DAttributes_SetJ(PyObject *self, PyObject *args)
 {
-    AxisAlignedSlice4DAttributesObject *obj = (AxisAlignedSlice4DAttributesObject *)self;
+    PyAxisAlignedSlice4DAttributesObject *obj = (PyAxisAlignedSlice4DAttributesObject *)self;
 
     intVector vec;
 
@@ -260,7 +289,7 @@ AxisAlignedSlice4DAttributes_SetJ(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisAlignedSlice4DAttributes_GetJ(PyObject *self, PyObject *args)
 {
-    AxisAlignedSlice4DAttributesObject *obj = (AxisAlignedSlice4DAttributesObject *)self;
+    PyAxisAlignedSlice4DAttributesObject *obj = (PyAxisAlignedSlice4DAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the J.
     const intVector &J = obj->data->GetJ();
     PyObject *retval = PyTuple_New(J.size());
@@ -272,7 +301,7 @@ AxisAlignedSlice4DAttributes_GetJ(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisAlignedSlice4DAttributes_SetK(PyObject *self, PyObject *args)
 {
-    AxisAlignedSlice4DAttributesObject *obj = (AxisAlignedSlice4DAttributesObject *)self;
+    PyAxisAlignedSlice4DAttributesObject *obj = (PyAxisAlignedSlice4DAttributesObject *)self;
 
     intVector vec;
 
@@ -336,7 +365,7 @@ AxisAlignedSlice4DAttributes_SetK(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisAlignedSlice4DAttributes_GetK(PyObject *self, PyObject *args)
 {
-    AxisAlignedSlice4DAttributesObject *obj = (AxisAlignedSlice4DAttributesObject *)self;
+    PyAxisAlignedSlice4DAttributesObject *obj = (PyAxisAlignedSlice4DAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the K.
     const intVector &K = obj->data->GetK();
     PyObject *retval = PyTuple_New(K.size());
@@ -348,7 +377,7 @@ AxisAlignedSlice4DAttributes_GetK(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisAlignedSlice4DAttributes_SetL(PyObject *self, PyObject *args)
 {
-    AxisAlignedSlice4DAttributesObject *obj = (AxisAlignedSlice4DAttributesObject *)self;
+    PyAxisAlignedSlice4DAttributesObject *obj = (PyAxisAlignedSlice4DAttributesObject *)self;
 
     intVector vec;
 
@@ -412,7 +441,7 @@ AxisAlignedSlice4DAttributes_SetL(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 AxisAlignedSlice4DAttributes_GetL(PyObject *self, PyObject *args)
 {
-    AxisAlignedSlice4DAttributesObject *obj = (AxisAlignedSlice4DAttributesObject *)self;
+    PyAxisAlignedSlice4DAttributesObject *obj = (PyAxisAlignedSlice4DAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the L.
     const intVector &L = obj->data->GetL();
     PyObject *retval = PyTuple_New(L.size());
@@ -424,7 +453,8 @@ AxisAlignedSlice4DAttributes_GetL(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyAxisAlignedSlice4DAttributes_methods[AXISALIGNEDSLICE4DATTRIBUTES_NMETH] = {
-    {"Notify", AxisAlignedSlice4DAttributes_Notify, METH_VARARGS},
+    {"__dir__", AxisAlignedSlice4DAttributes_dir, METH_NOARGS},
+    {"Notify", AxisAlignedSlice4DAttributes_Notify, METH_NOARGS},
     {"SetI", AxisAlignedSlice4DAttributes_SetI, METH_VARARGS},
     {"GetI", AxisAlignedSlice4DAttributes_GetI, METH_VARARGS},
     {"SetJ", AxisAlignedSlice4DAttributes_SetJ, METH_VARARGS},
@@ -441,19 +471,22 @@ PyMethodDef PyAxisAlignedSlice4DAttributes_methods[AXISALIGNEDSLICE4DATTRIBUTES_
 //
 
 static void
-AxisAlignedSlice4DAttributes_dealloc(PyObject *v)
+PyAxisAlignedSlice4DAttributes_dealloc(PyObject *v)
 {
-   AxisAlignedSlice4DAttributesObject *obj = (AxisAlignedSlice4DAttributesObject *)v;
+   PyAxisAlignedSlice4DAttributesObject *obj = (PyAxisAlignedSlice4DAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *AxisAlignedSlice4DAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyAxisAlignedSlice4DAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyAxisAlignedSlice4DAttributes_getattr(PyObject *self, char *name)
+PyAxisAlignedSlice4DAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "I") == 0)
         return AxisAlignedSlice4DAttributes_GetI(self, NULL);
     if(strcmp(name, "J") == 0)
@@ -463,26 +496,19 @@ PyAxisAlignedSlice4DAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "L") == 0)
         return AxisAlignedSlice4DAttributes_GetL(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyAxisAlignedSlice4DAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyAxisAlignedSlice4DAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyAxisAlignedSlice4DAttributes_methods[i].ml_name),
-                PyString_FromString(PyAxisAlignedSlice4DAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyAxisAlignedSlice4DAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyAxisAlignedSlice4DAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyAxisAlignedSlice4DAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "I") == 0)
         obj = AxisAlignedSlice4DAttributes_SetI(self, args);
@@ -492,6 +518,12 @@ PyAxisAlignedSlice4DAttributes_setattr(PyObject *self, char *name, PyObject *arg
         obj = AxisAlignedSlice4DAttributes_SetK(self, args);
     else if(strcmp(name, "L") == 0)
         obj = AxisAlignedSlice4DAttributes_SetL(self, args);
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -507,78 +539,45 @@ PyAxisAlignedSlice4DAttributes_setattr(PyObject *self, char *name, PyObject *arg
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-AxisAlignedSlice4DAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    AxisAlignedSlice4DAttributesObject *obj = (AxisAlignedSlice4DAttributesObject *)v;
-    fprintf(fp, "%s", PyAxisAlignedSlice4DAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-AxisAlignedSlice4DAttributes_str(PyObject *v)
+PyAxisAlignedSlice4DAttributes_str(PyObject *v)
 {
-    AxisAlignedSlice4DAttributesObject *obj = (AxisAlignedSlice4DAttributesObject *)v;
+    PyAxisAlignedSlice4DAttributesObject *obj = (PyAxisAlignedSlice4DAttributesObject *)v;
     return PyString_FromString(PyAxisAlignedSlice4DAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *AxisAlignedSlice4DAttributes_Purpose = "Attributes for AxisAlignedSlice4D";
-#else
-static char *AxisAlignedSlice4DAttributes_Purpose = "Attributes for AxisAlignedSlice4D";
-#endif
+static char const *PyAxisAlignedSlice4DAttributes_purpose = "Attributes for AxisAlignedSlice4D";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(AxisAlignedSlice4DAttributesType,         \
-                  "AxisAlignedSlice4DAttributes",           \
-                  AxisAlignedSlice4DAttributesObject,       \
-                  AxisAlignedSlice4DAttributes_dealloc,     \
-                  AxisAlignedSlice4DAttributes_print,       \
-                  PyAxisAlignedSlice4DAttributes_getattr,   \
-                  PyAxisAlignedSlice4DAttributes_setattr,   \
-                  AxisAlignedSlice4DAttributes_str,         \
-                  AxisAlignedSlice4DAttributes_Purpose,     \
-                  AxisAlignedSlice4DAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(AxisAlignedSlice4DAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-AxisAlignedSlice4DAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyAxisAlignedSlice4DAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &AxisAlignedSlice4DAttributesType
-         || Py_TYPE(other) != &AxisAlignedSlice4DAttributesType)
+    if ( Py_TYPE(self) != &PyAxisAlignedSlice4DAttributesType
+         || Py_TYPE(other) != &PyAxisAlignedSlice4DAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    AxisAlignedSlice4DAttributes *a = ((AxisAlignedSlice4DAttributesObject *)self)->data;
-    AxisAlignedSlice4DAttributes *b = ((AxisAlignedSlice4DAttributesObject *)other)->data;
+    AxisAlignedSlice4DAttributes *a = ((PyAxisAlignedSlice4DAttributesObject *)self)->data;
+    AxisAlignedSlice4DAttributes *b = ((PyAxisAlignedSlice4DAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -607,8 +606,8 @@ static AxisAlignedSlice4DAttributes *currentAtts = 0;
 static PyObject *
 NewAxisAlignedSlice4DAttributes(int useCurrent)
 {
-    AxisAlignedSlice4DAttributesObject *newObject;
-    newObject = PyObject_NEW(AxisAlignedSlice4DAttributesObject, &AxisAlignedSlice4DAttributesType);
+    PyAxisAlignedSlice4DAttributesObject *newObject;
+    newObject = PyObject_NEW(PyAxisAlignedSlice4DAttributesObject, &PyAxisAlignedSlice4DAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -619,14 +618,15 @@ NewAxisAlignedSlice4DAttributes(int useCurrent)
         newObject->data = new AxisAlignedSlice4DAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyAxisAlignedSlice4DAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapAxisAlignedSlice4DAttributes(const AxisAlignedSlice4DAttributes *attr)
 {
-    AxisAlignedSlice4DAttributesObject *newObject;
-    newObject = PyObject_NEW(AxisAlignedSlice4DAttributesObject, &AxisAlignedSlice4DAttributesType);
+    PyAxisAlignedSlice4DAttributesObject *newObject;
+    newObject = PyObject_NEW(PyAxisAlignedSlice4DAttributesObject, &PyAxisAlignedSlice4DAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (AxisAlignedSlice4DAttributes *)attr;
@@ -728,13 +728,13 @@ PyAxisAlignedSlice4DAttributes_GetMethodTable(int *nMethods)
 bool
 PyAxisAlignedSlice4DAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &AxisAlignedSlice4DAttributesType);
+    return (obj->ob_type == &PyAxisAlignedSlice4DAttributesType);
 }
 
 AxisAlignedSlice4DAttributes *
 PyAxisAlignedSlice4DAttributes_FromPyObject(PyObject *obj)
 {
-    AxisAlignedSlice4DAttributesObject *obj2 = (AxisAlignedSlice4DAttributesObject *)obj;
+    PyAxisAlignedSlice4DAttributesObject *obj2 = (PyAxisAlignedSlice4DAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -753,7 +753,7 @@ PyAxisAlignedSlice4DAttributes_Wrap(const AxisAlignedSlice4DAttributes *attr)
 void
 PyAxisAlignedSlice4DAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    AxisAlignedSlice4DAttributesObject *obj2 = (AxisAlignedSlice4DAttributesObject *)obj;
+    PyAxisAlignedSlice4DAttributesObject *obj2 = (PyAxisAlignedSlice4DAttributesObject *)obj;
     obj2->parent = parent;
 }
 

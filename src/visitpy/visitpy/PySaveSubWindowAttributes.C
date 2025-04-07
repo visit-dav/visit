@@ -5,6 +5,7 @@
 #include <PySaveSubWindowAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a SaveSubWindowAttributes.
 //
-struct SaveSubWindowAttributesObject
+struct PySaveSubWindowAttributesObject
 {
     PyObject_HEAD
     SaveSubWindowAttributes *data;
@@ -88,16 +89,44 @@ PySaveSubWindowAttributes_ToString(const SaveSubWindowAttributes *atts, const ch
 static PyObject *
 SaveSubWindowAttributes_Notify(PyObject *self, PyObject *args)
 {
-    SaveSubWindowAttributesObject *obj = (SaveSubWindowAttributesObject *)self;
+    PySaveSubWindowAttributesObject *obj = (PySaveSubWindowAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+SaveSubWindowAttributes_dir(PyObject *self, PyObject *args)
+{
+    static SaveSubWindowAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PySaveSubWindowAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 SaveSubWindowAttributes_SetPosition(PyObject *self, PyObject *args)
 {
-    SaveSubWindowAttributesObject *obj = (SaveSubWindowAttributesObject *)self;
+    PySaveSubWindowAttributesObject *obj = (PySaveSubWindowAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     int *vals = obj->data->GetPosition();
@@ -164,7 +193,7 @@ SaveSubWindowAttributes_SetPosition(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowAttributes_GetPosition(PyObject *self, PyObject *args)
 {
-    SaveSubWindowAttributesObject *obj = (SaveSubWindowAttributesObject *)self;
+    PySaveSubWindowAttributesObject *obj = (PySaveSubWindowAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the position.
     PyObject *retval = PyTuple_New(2);
     const int *position = obj->data->GetPosition();
@@ -176,7 +205,7 @@ SaveSubWindowAttributes_GetPosition(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowAttributes_SetSize(PyObject *self, PyObject *args)
 {
-    SaveSubWindowAttributesObject *obj = (SaveSubWindowAttributesObject *)self;
+    PySaveSubWindowAttributesObject *obj = (PySaveSubWindowAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     int *vals = obj->data->GetSize();
@@ -243,7 +272,7 @@ SaveSubWindowAttributes_SetSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowAttributes_GetSize(PyObject *self, PyObject *args)
 {
-    SaveSubWindowAttributesObject *obj = (SaveSubWindowAttributesObject *)self;
+    PySaveSubWindowAttributesObject *obj = (PySaveSubWindowAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the size.
     PyObject *retval = PyTuple_New(2);
     const int *size = obj->data->GetSize();
@@ -255,7 +284,7 @@ SaveSubWindowAttributes_GetSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowAttributes_SetLayer(PyObject *self, PyObject *args)
 {
-    SaveSubWindowAttributesObject *obj = (SaveSubWindowAttributesObject *)self;
+    PySaveSubWindowAttributesObject *obj = (PySaveSubWindowAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -307,7 +336,7 @@ SaveSubWindowAttributes_SetLayer(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowAttributes_GetLayer(PyObject *self, PyObject *args)
 {
-    SaveSubWindowAttributesObject *obj = (SaveSubWindowAttributesObject *)self;
+    PySaveSubWindowAttributesObject *obj = (PySaveSubWindowAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetLayer()));
     return retval;
 }
@@ -315,7 +344,7 @@ SaveSubWindowAttributes_GetLayer(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowAttributes_SetTransparency(PyObject *self, PyObject *args)
 {
-    SaveSubWindowAttributesObject *obj = (SaveSubWindowAttributesObject *)self;
+    PySaveSubWindowAttributesObject *obj = (PySaveSubWindowAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -367,7 +396,7 @@ SaveSubWindowAttributes_SetTransparency(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowAttributes_GetTransparency(PyObject *self, PyObject *args)
 {
-    SaveSubWindowAttributesObject *obj = (SaveSubWindowAttributesObject *)self;
+    PySaveSubWindowAttributesObject *obj = (PySaveSubWindowAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetTransparency());
     return retval;
 }
@@ -375,7 +404,7 @@ SaveSubWindowAttributes_GetTransparency(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowAttributes_SetOmitWindow(PyObject *self, PyObject *args)
 {
-    SaveSubWindowAttributesObject *obj = (SaveSubWindowAttributesObject *)self;
+    PySaveSubWindowAttributesObject *obj = (PySaveSubWindowAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -427,7 +456,7 @@ SaveSubWindowAttributes_SetOmitWindow(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SaveSubWindowAttributes_GetOmitWindow(PyObject *self, PyObject *args)
 {
-    SaveSubWindowAttributesObject *obj = (SaveSubWindowAttributesObject *)self;
+    PySaveSubWindowAttributesObject *obj = (PySaveSubWindowAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetOmitWindow()?1L:0L);
     return retval;
 }
@@ -435,7 +464,8 @@ SaveSubWindowAttributes_GetOmitWindow(PyObject *self, PyObject *args)
 
 
 PyMethodDef PySaveSubWindowAttributes_methods[SAVESUBWINDOWATTRIBUTES_NMETH] = {
-    {"Notify", SaveSubWindowAttributes_Notify, METH_VARARGS},
+    {"__dir__", SaveSubWindowAttributes_dir, METH_NOARGS},
+    {"Notify", SaveSubWindowAttributes_Notify, METH_NOARGS},
     {"SetPosition", SaveSubWindowAttributes_SetPosition, METH_VARARGS},
     {"GetPosition", SaveSubWindowAttributes_GetPosition, METH_VARARGS},
     {"SetSize", SaveSubWindowAttributes_SetSize, METH_VARARGS},
@@ -454,19 +484,22 @@ PyMethodDef PySaveSubWindowAttributes_methods[SAVESUBWINDOWATTRIBUTES_NMETH] = {
 //
 
 static void
-SaveSubWindowAttributes_dealloc(PyObject *v)
+PySaveSubWindowAttributes_dealloc(PyObject *v)
 {
-   SaveSubWindowAttributesObject *obj = (SaveSubWindowAttributesObject *)v;
+   PySaveSubWindowAttributesObject *obj = (PySaveSubWindowAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *SaveSubWindowAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PySaveSubWindowAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PySaveSubWindowAttributes_getattr(PyObject *self, char *name)
+PySaveSubWindowAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "position") == 0)
         return SaveSubWindowAttributes_GetPosition(self, NULL);
     if(strcmp(name, "size") == 0)
@@ -478,26 +511,19 @@ PySaveSubWindowAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "omitWindow") == 0)
         return SaveSubWindowAttributes_GetOmitWindow(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PySaveSubWindowAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PySaveSubWindowAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PySaveSubWindowAttributes_methods[i].ml_name),
-                PyString_FromString(PySaveSubWindowAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PySaveSubWindowAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PySaveSubWindowAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PySaveSubWindowAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "position") == 0)
         obj = SaveSubWindowAttributes_SetPosition(self, args);
@@ -509,6 +535,12 @@ PySaveSubWindowAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = SaveSubWindowAttributes_SetTransparency(self, args);
     else if(strcmp(name, "omitWindow") == 0)
         obj = SaveSubWindowAttributes_SetOmitWindow(self, args);
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -524,78 +556,45 @@ PySaveSubWindowAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-SaveSubWindowAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    SaveSubWindowAttributesObject *obj = (SaveSubWindowAttributesObject *)v;
-    fprintf(fp, "%s", PySaveSubWindowAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-SaveSubWindowAttributes_str(PyObject *v)
+PySaveSubWindowAttributes_str(PyObject *v)
 {
-    SaveSubWindowAttributesObject *obj = (SaveSubWindowAttributesObject *)v;
+    PySaveSubWindowAttributesObject *obj = (PySaveSubWindowAttributesObject *)v;
     return PyString_FromString(PySaveSubWindowAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *SaveSubWindowAttributes_Purpose = "The attributes for saving a sub window";
-#else
-static char *SaveSubWindowAttributes_Purpose = "The attributes for saving a sub window";
-#endif
+static char const *PySaveSubWindowAttributes_purpose = "The attributes for saving a sub window";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(SaveSubWindowAttributesType,         \
-                  "SaveSubWindowAttributes",           \
-                  SaveSubWindowAttributesObject,       \
-                  SaveSubWindowAttributes_dealloc,     \
-                  SaveSubWindowAttributes_print,       \
-                  PySaveSubWindowAttributes_getattr,   \
-                  PySaveSubWindowAttributes_setattr,   \
-                  SaveSubWindowAttributes_str,         \
-                  SaveSubWindowAttributes_Purpose,     \
-                  SaveSubWindowAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(SaveSubWindowAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-SaveSubWindowAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PySaveSubWindowAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &SaveSubWindowAttributesType
-         || Py_TYPE(other) != &SaveSubWindowAttributesType)
+    if ( Py_TYPE(self) != &PySaveSubWindowAttributesType
+         || Py_TYPE(other) != &PySaveSubWindowAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    SaveSubWindowAttributes *a = ((SaveSubWindowAttributesObject *)self)->data;
-    SaveSubWindowAttributes *b = ((SaveSubWindowAttributesObject *)other)->data;
+    SaveSubWindowAttributes *a = ((PySaveSubWindowAttributesObject *)self)->data;
+    SaveSubWindowAttributes *b = ((PySaveSubWindowAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -624,8 +623,8 @@ static SaveSubWindowAttributes *currentAtts = 0;
 static PyObject *
 NewSaveSubWindowAttributes(int useCurrent)
 {
-    SaveSubWindowAttributesObject *newObject;
-    newObject = PyObject_NEW(SaveSubWindowAttributesObject, &SaveSubWindowAttributesType);
+    PySaveSubWindowAttributesObject *newObject;
+    newObject = PyObject_NEW(PySaveSubWindowAttributesObject, &PySaveSubWindowAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -636,14 +635,15 @@ NewSaveSubWindowAttributes(int useCurrent)
         newObject->data = new SaveSubWindowAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PySaveSubWindowAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapSaveSubWindowAttributes(const SaveSubWindowAttributes *attr)
 {
-    SaveSubWindowAttributesObject *newObject;
-    newObject = PyObject_NEW(SaveSubWindowAttributesObject, &SaveSubWindowAttributesType);
+    PySaveSubWindowAttributesObject *newObject;
+    newObject = PyObject_NEW(PySaveSubWindowAttributesObject, &PySaveSubWindowAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (SaveSubWindowAttributes *)attr;
@@ -745,13 +745,13 @@ PySaveSubWindowAttributes_GetMethodTable(int *nMethods)
 bool
 PySaveSubWindowAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &SaveSubWindowAttributesType);
+    return (obj->ob_type == &PySaveSubWindowAttributesType);
 }
 
 SaveSubWindowAttributes *
 PySaveSubWindowAttributes_FromPyObject(PyObject *obj)
 {
-    SaveSubWindowAttributesObject *obj2 = (SaveSubWindowAttributesObject *)obj;
+    PySaveSubWindowAttributesObject *obj2 = (PySaveSubWindowAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -770,7 +770,7 @@ PySaveSubWindowAttributes_Wrap(const SaveSubWindowAttributes *attr)
 void
 PySaveSubWindowAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    SaveSubWindowAttributesObject *obj2 = (SaveSubWindowAttributesObject *)obj;
+    PySaveSubWindowAttributesObject *obj2 = (PySaveSubWindowAttributesObject *)obj;
     obj2->parent = parent;
 }
 

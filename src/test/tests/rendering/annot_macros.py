@@ -10,6 +10,12 @@
 #  Defect ID:  None
 #
 #  Mark C. Miller, Thu Nov  7 14:17:54 PST 2024
+#
+#  Modifications:
+#    Kathleen Biagas, Mon April 7, 2025
+#    Removed 'fulldbname' test from allmacros, as it fails when run in any
+#    location other than the nightly regression location.
+#
 # ----------------------------------------------------------------------------
 import os
 
@@ -30,7 +36,7 @@ def allmacros():
     #
     macroNames = ("time", "cycle", "index", "numstates", "dbcomment",
         "vardim", "numvar", "topodim", "spatialdim", "varname",
-        "meshname", "filename", "fulldbname", "xlabel", "ylabel", "zlabel")
+        "meshname", "filename", "xlabel", "ylabel", "zlabel")
 
     text2d = create_text2d_annot()
     text3d = CreateAnnotationObject("Text3D")

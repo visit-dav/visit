@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define TOROIDALPOLOIDALPROJECTION_NMETH 12
+#define TOROIDALPOLOIDALPROJECTION_NMETH 13
 void           PyToroidalPoloidalProjection_StartUp(ToroidalPoloidalProjection *subj, void *data);
 void           PyToroidalPoloidalProjection_CloseDown();
 PyMethodDef *  PyToroidalPoloidalProjection_GetMethodTable(int *nMethods);
@@ -23,8 +23,8 @@ void           PyToroidalPoloidalProjection_SetParent(PyObject *obj, PyObject *p
 void           PyToroidalPoloidalProjection_SetDefaults(const ToroidalPoloidalProjection *atts);
 std::string    PyToroidalPoloidalProjection_GetLogString();
 std::string    PyToroidalPoloidalProjection_ToString(const ToroidalPoloidalProjection *, const char *, const bool=false);
-PyObject *     PyToroidalPoloidalProjection_getattr(PyObject *self, char *name);
-int            PyToroidalPoloidalProjection_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PyToroidalPoloidalProjection_getattro(PyObject *self, PyObject *attr_name);
+int            PyToroidalPoloidalProjection_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PyToroidalPoloidalProjection_methods[TOROIDALPOLOIDALPROJECTION_NMETH];
 
 #endif

@@ -3951,14 +3951,12 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
     #    Eric Brugger, Mon Aug 26 10:54:18 PDT 2024
     #    Added jsrun as a new job submitter.
     #
+    #    Kathleen Biagas, Fri Mar 21, 2025 
+    #    Removed aix test.
+    #
     ############################################################################
 
     def JobSubmitterFactory(self, launch):
-        # If launch has not been set then pick a platform-specific default launcher.
-        if launch == None:
-            if self.os == "aix":
-                launch = "poe"
-
         # Instantiate a job submitter
         if launch == "mpirun":
             return JobSubmitter_mpirun(self)

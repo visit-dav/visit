@@ -30,7 +30,7 @@ extern bool DeleteAnnotationObjectHelper(AnnotationObject *);
 //
 // This struct contains the Python type information and a Text2DObject.
 //
-struct Text2DObjectObject
+struct PyText2DObjectObject
 {
     PyObject_HEAD
     AnnotationObject *data;
@@ -45,7 +45,7 @@ static PyObject *NewText2DObject();
 static PyObject *
 Text2DObject_SetVisible(PyObject *self, PyObject *args)
 {
-    Text2DObjectObject *obj = (Text2DObjectObject *)self;
+    PyText2DObjectObject *obj = (PyText2DObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -63,7 +63,7 @@ Text2DObject_SetVisible(PyObject *self, PyObject *args)
 static PyObject *
 Text2DObject_GetVisible(PyObject *self, PyObject *args)
 {
-    Text2DObjectObject *obj = (Text2DObjectObject *)self;
+    PyText2DObjectObject *obj = (PyText2DObjectObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetVisible()?1L:0L);
     return retval;
 }
@@ -71,7 +71,7 @@ Text2DObject_GetVisible(PyObject *self, PyObject *args)
 static PyObject *
 Text2DObject_SetActive(PyObject *self, PyObject *args)
 {
-    Text2DObjectObject *obj = (Text2DObjectObject *)self;
+    PyText2DObjectObject *obj = (PyText2DObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -89,7 +89,7 @@ Text2DObject_SetActive(PyObject *self, PyObject *args)
 static PyObject *
 Text2DObject_GetActive(PyObject *self, PyObject *args)
 {
-    Text2DObjectObject *obj = (Text2DObjectObject *)self;
+    PyText2DObjectObject *obj = (PyText2DObjectObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetActive()?1L:0L);
     return retval;
 }
@@ -97,7 +97,7 @@ Text2DObject_GetActive(PyObject *self, PyObject *args)
 static PyObject *
 Text2DObject_SetPosition(PyObject *self, PyObject *args)
 {
-    Text2DObjectObject *obj = (Text2DObjectObject *)self;
+    PyText2DObjectObject *obj = (PyText2DObjectObject *)self;
 
     double *dvals = obj->data->GetPosition();
     if(!PyArg_ParseTuple(args, "dd", &dvals[0], &dvals[1]))
@@ -141,7 +141,7 @@ Text2DObject_SetPosition(PyObject *self, PyObject *args)
 static PyObject *
 Text2DObject_GetPosition(PyObject *self, PyObject *args)
 {
-    Text2DObjectObject *obj = (Text2DObjectObject *)self;
+    PyText2DObjectObject *obj = (PyText2DObjectObject *)self;
     // Allocate a tuple the with enough entries to hold the position.
     PyObject *retval = PyTuple_New(2);
     const double *position = obj->data->GetPosition();
@@ -153,7 +153,7 @@ Text2DObject_GetPosition(PyObject *self, PyObject *args)
 static PyObject *
 Text2DObject_SetHeight(PyObject *self, PyObject *args)
 {
-    Text2DObjectObject *obj = (Text2DObjectObject *)self;
+    PyText2DObjectObject *obj = (PyText2DObjectObject *)self;
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
@@ -173,7 +173,7 @@ Text2DObject_SetHeight(PyObject *self, PyObject *args)
 static PyObject *
 Text2DObject_GetHeight(PyObject *self, PyObject *args)
 {
-    Text2DObjectObject *obj = (Text2DObjectObject *)self;
+    PyText2DObjectObject *obj = (PyText2DObjectObject *)self;
 /*CUSTOM*/
     double *pos2 = obj->data->GetPosition2();
     PyObject *retval = PyFloat_FromDouble(double(pos2[0]));
@@ -183,7 +183,7 @@ Text2DObject_GetHeight(PyObject *self, PyObject *args)
 static PyObject *
 Text2DObject_SetTextColor(PyObject *self, PyObject *args)
 {
-    Text2DObjectObject *obj = (Text2DObjectObject *)self;
+    PyText2DObjectObject *obj = (PyText2DObjectObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -248,7 +248,7 @@ Text2DObject_SetTextColor(PyObject *self, PyObject *args)
 static PyObject *
 Text2DObject_GetTextColor(PyObject *self, PyObject *args)
 {
-    Text2DObjectObject *obj = (Text2DObjectObject *)self;
+    PyText2DObjectObject *obj = (PyText2DObjectObject *)self;
     // Allocate a tuple the with enough entries to hold the textColor.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *textColor = obj->data->GetTextColor().GetColor();
@@ -262,7 +262,7 @@ Text2DObject_GetTextColor(PyObject *self, PyObject *args)
 static PyObject *
 Text2DObject_SetUseForegroundForTextColor(PyObject *self, PyObject *args)
 {
-    Text2DObjectObject *obj = (Text2DObjectObject *)self;
+    PyText2DObjectObject *obj = (PyText2DObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -280,7 +280,7 @@ Text2DObject_SetUseForegroundForTextColor(PyObject *self, PyObject *args)
 static PyObject *
 Text2DObject_GetUseForegroundForTextColor(PyObject *self, PyObject *args)
 {
-    Text2DObjectObject *obj = (Text2DObjectObject *)self;
+    PyText2DObjectObject *obj = (PyText2DObjectObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetUseForegroundForTextColor()?1L:0L);
     return retval;
 }
@@ -288,7 +288,7 @@ Text2DObject_GetUseForegroundForTextColor(PyObject *self, PyObject *args)
 static PyObject *
 Text2DObject_SetText(PyObject *self, PyObject *args)
 {
-    Text2DObjectObject *obj = (Text2DObjectObject *)self;
+    PyText2DObjectObject *obj = (PyText2DObjectObject *)self;
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
@@ -307,7 +307,7 @@ Text2DObject_SetText(PyObject *self, PyObject *args)
 static PyObject *
 Text2DObject_GetText(PyObject *self, PyObject *args)
 {
-    Text2DObjectObject *obj = (Text2DObjectObject *)self;
+    PyText2DObjectObject *obj = (PyText2DObjectObject *)self;
 /*CUSTOM*/
     const stringVector &s = obj->data->GetText();
     PyObject *retval = PyString_FromString(s.size() > 0 ? s[0].c_str(): "");
@@ -317,7 +317,7 @@ Text2DObject_GetText(PyObject *self, PyObject *args)
 static PyObject *
 Text2DObject_SetFontFamily(PyObject *self, PyObject *args)
 {
-    Text2DObjectObject *obj = (Text2DObjectObject *)self;
+    PyText2DObjectObject *obj = (PyText2DObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -346,7 +346,7 @@ Text2DObject_SetFontFamily(PyObject *self, PyObject *args)
 static PyObject *
 Text2DObject_GetFontFamily(PyObject *self, PyObject *args)
 {
-    Text2DObjectObject *obj = (Text2DObjectObject *)self;
+    PyText2DObjectObject *obj = (PyText2DObjectObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetFontFamily()));
     return retval;
 }
@@ -354,7 +354,7 @@ Text2DObject_GetFontFamily(PyObject *self, PyObject *args)
 static PyObject *
 Text2DObject_SetFontBold(PyObject *self, PyObject *args)
 {
-    Text2DObjectObject *obj = (Text2DObjectObject *)self;
+    PyText2DObjectObject *obj = (PyText2DObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -372,7 +372,7 @@ Text2DObject_SetFontBold(PyObject *self, PyObject *args)
 static PyObject *
 Text2DObject_GetFontBold(PyObject *self, PyObject *args)
 {
-    Text2DObjectObject *obj = (Text2DObjectObject *)self;
+    PyText2DObjectObject *obj = (PyText2DObjectObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetFontBold()?1L:0L);
     return retval;
 }
@@ -380,7 +380,7 @@ Text2DObject_GetFontBold(PyObject *self, PyObject *args)
 static PyObject *
 Text2DObject_SetFontItalic(PyObject *self, PyObject *args)
 {
-    Text2DObjectObject *obj = (Text2DObjectObject *)self;
+    PyText2DObjectObject *obj = (PyText2DObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -398,7 +398,7 @@ Text2DObject_SetFontItalic(PyObject *self, PyObject *args)
 static PyObject *
 Text2DObject_GetFontItalic(PyObject *self, PyObject *args)
 {
-    Text2DObjectObject *obj = (Text2DObjectObject *)self;
+    PyText2DObjectObject *obj = (PyText2DObjectObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetFontItalic()?1L:0L);
     return retval;
 }
@@ -406,7 +406,7 @@ Text2DObject_GetFontItalic(PyObject *self, PyObject *args)
 static PyObject *
 Text2DObject_SetFontShadow(PyObject *self, PyObject *args)
 {
-    Text2DObjectObject *obj = (Text2DObjectObject *)self;
+    PyText2DObjectObject *obj = (PyText2DObjectObject *)self;
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
@@ -424,7 +424,7 @@ Text2DObject_SetFontShadow(PyObject *self, PyObject *args)
 static PyObject *
 Text2DObject_GetFontShadow(PyObject *self, PyObject *args)
 {
-    Text2DObjectObject *obj = (Text2DObjectObject *)self;
+    PyText2DObjectObject *obj = (PyText2DObjectObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetFontShadow()?1L:0L);
     return retval;
 }
@@ -433,7 +433,7 @@ Text2DObject_GetFontShadow(PyObject *self, PyObject *args)
 static PyObject *
 Text2DObject_Delete(PyObject *self, PyObject *args)
 {
-    Text2DObjectObject *obj = (Text2DObjectObject *)self;
+    PyText2DObjectObject *obj = (PyText2DObjectObject *)self;
 
     // Tell the VisIt module to decrement the reference count for the
     // AnnotationObject pointed to by obj->data. If there are no more
@@ -444,8 +444,11 @@ Text2DObject_Delete(PyObject *self, PyObject *args)
     return Py_None;
 }
 
-#define TEXT2DOBJECT_NMETH 24
-PyMethodDef Text2DObject_methods[TEXT2DOBJECT_NMETH] = {
+// Forward declaration for methods table
+static PyObject * Text2DObject_dir(PyObject *self, PyObject *args);
+
+PyMethodDef PyText2DObject_methods[] = {
+    {"__dir__", Text2DObject_dir, METH_NOARGS},
     {"SetVisible", Text2DObject_SetVisible, METH_VARARGS},
     {"GetVisible", Text2DObject_GetVisible, METH_VARARGS},
     {"SetActive", Text2DObject_SetActive, METH_VARARGS},
@@ -472,30 +475,52 @@ PyMethodDef Text2DObject_methods[TEXT2DOBJECT_NMETH] = {
     {NULL, NULL}
 };
 
+static PyObject *
+Text2DObject_dir(PyObject *self, PyObject *args)
+{
+    static AnnotationObject atts; // dummy to access field names
+    
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL; 
+    }
+    
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyText2DObject_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+    
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}   
+
 //
 // Type functions
 //
 
 static void
-Text2DObject_dealloc(PyObject *v)
+PyText2DObject_dealloc(PyObject *v)
 {
-   Text2DObjectObject *obj = (Text2DObjectObject *)v;
+   PyText2DObjectObject *obj = (PyText2DObjectObject *)v;
    if(obj->owns)
        delete obj->data;
 }
 
-// OLD
-// static int
-// Text2DObject_compare(PyObject *v, PyObject *w)
-// {
-//     AnnotationObject *a = ((Text2DObjectObject *)v)->data;
-//     AnnotationObject *b = ((Text2DObjectObject *)w)->data;
-//     return (*a == *b) ? 0 : -1;
-// }
-
 static PyObject *
-Text2DObject_getattr(PyObject *self, char *name)
+PyText2DObject_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "visible") == 0)
         return Text2DObject_GetVisible(self, NULL);
     if(strcmp(name, "active") == 0)
@@ -526,14 +551,19 @@ Text2DObject_getattr(PyObject *self, char *name)
     if(strcmp(name, "fontShadow") == 0)
         return Text2DObject_GetFontShadow(self, NULL);
 
-    return Py_FindMethod(Text2DObject_methods, self, name);
+    PyObject *meth = Py_FindMethod(PyText2DObject_methods, self, (char*)name);
+    if (meth) return meth;
+
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 static int
-Text2DObject_setattr(PyObject *self, char *name, PyObject *args)
+PyText2DObject_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     // Create a tuple to contain the arguments since all of the Set
     // functions expect a tuple.
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
     PyObject *tuple = PyTuple_New(1);
     PyTuple_SET_ITEM(tuple, 0, args);
     Py_INCREF(args);
@@ -561,6 +591,8 @@ Text2DObject_setattr(PyObject *self, char *name, PyObject *args)
         retval = (Text2DObject_SetFontItalic(self, tuple) != NULL);
     else if(strcmp(name, "fontShadow") == 0)
         retval = (Text2DObject_SetFontShadow(self, tuple) != NULL);
+    else
+        retval = PyObject_GenericSetAttr(self, attr_name, args);
 
     Py_DECREF(tuple);
     return retval ? 0 : -1;
@@ -628,80 +660,50 @@ PyText2DObject_ToString(const AnnotationObject *atts, const char *prefix)
     return str;
 }
 
-static int
-Text2DObject_print(PyObject *v, FILE *fp, int flags)
-{
-    Text2DObjectObject *obj = (Text2DObjectObject *)v;
-    fprintf(fp, "%s", PyText2DObject_ToString(obj->data, "").c_str());
-    return 0;
-}
-
 static PyObject *
-Text2DObject_str(PyObject *v)
+PyText2DObject_str(PyObject *v)
 {
-    Text2DObjectObject *obj = (Text2DObjectObject *)v;
+    PyText2DObjectObject *obj = (PyText2DObjectObject *)v;
     return PyString_FromString(PyText2DObject_ToString(obj->data,"").c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *Text2DObject_Purpose = "This class defines defines an interface to a 2D text object.";
-#else
-static char *Text2DObject_Purpose = "This class defines defines an interface to a 2D text object.";
-#endif
+static char const *PyText2DObject_purpose = "This class defines defines an interface to a 2D text object.";
 
 // CUSTOM
-static PyObject *Text2DObject_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyText2DObject_richcompare(PyObject *self, PyObject *other, int op);
 
 // CUSTOM
 
-//
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-VISIT_PY_TYPE_OBJ( Text2DObjectType,         \
-                   "Text2DObject",           \
-                   Text2DObjectObject,       \
-                   Text2DObject_dealloc,     \
-                   Text2DObject_print,       \
-                   Text2DObject_getattr,     \
-                   Text2DObject_setattr,     \
-                   Text2DObject_str,         \
-                   Text2DObject_Purpose,     \
-                   Text2DObject_richcompare, \
-                   0); /* as_number*/
+// Re-define tp slots for this custom object
+#undef VISIT_PY_TYPE_OBJ_TP_SLOTS
+#define VISIT_PY_TYPE_OBJ_TP_SLOTS(VSObjName)                          \
+    VISIT_PY_TYPE_OBJ_SLOT2(VSObjName, doc, purpose);                  \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, dealloc);                       \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, getattro);                      \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, setattro);                      \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, str);                           \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, richcompare);                   \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, methods)
+VISIT_PY_TYPE_OBJ(Text2DObject);
 
 // CUSTOM
 static PyObject *
-Text2DObject_richcompare(PyObject *self, PyObject *other, int op)
+PyText2DObject_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type
     if ( Py_TYPE(self) != Py_TYPE(other)
-         || Py_TYPE(self) != &Text2DObjectType)
+         || Py_TYPE(self) != &PyText2DObjectType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    AnnotationObject *a = ((Text2DObjectObject *)self)->data;
-    AnnotationObject *b = ((Text2DObjectObject *)other)->data;
+    AnnotationObject *a = ((PyText2DObjectObject *)self)->data;
+    AnnotationObject *b = ((PyText2DObjectObject *)other)->data;
 
     switch (op)
     {
@@ -728,25 +730,27 @@ Text2DObject_richcompare(PyObject *self, PyObject *other, int op)
 static PyObject *
 NewText2DObject()
 {
-    Text2DObjectObject *newObject;
-    newObject = PyObject_NEW(Text2DObjectObject, &Text2DObjectType);
+    PyText2DObjectObject *newObject;
+    newObject = PyObject_NEW(PyText2DObjectObject, &PyText2DObjectType);
     if(newObject == NULL)
         return NULL;
     newObject->data = new AnnotationObject;
     newObject->data->SetObjectType(AnnotationObject::Text2D);
     newObject->owns = true;
+    PyType_Ready(&PyText2DObjectType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapText2DObject(AnnotationObject *annot)
 {
-    Text2DObjectObject *newObject;
-    newObject = PyObject_NEW(Text2DObjectObject, &Text2DObjectType);
+    PyText2DObjectObject *newObject;
+    newObject = PyObject_NEW(PyText2DObjectObject, &PyText2DObjectType);
     if(newObject == NULL)
         return NULL;
     newObject->data = annot;
     newObject->owns = false;
+    PyType_Ready(&PyText2DObjectType);
     return (PyObject *)newObject;
 }
 
@@ -759,13 +763,13 @@ WrapText2DObject(AnnotationObject *annot)
 bool
 PyText2DObject_Check(PyObject *obj)
 {
-    return (obj->ob_type == &Text2DObjectType);
+    return (obj->ob_type == &PyText2DObjectType);
 }
 
 AnnotationObject *
 PyText2DObject_FromPyObject(PyObject *obj)
 {
-    Text2DObjectObject *obj2 = (Text2DObjectObject *)obj;
+    PyText2DObjectObject *obj2 = (PyText2DObjectObject *)obj;
     return obj2->data;
 }
 

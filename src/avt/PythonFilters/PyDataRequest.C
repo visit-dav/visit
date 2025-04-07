@@ -2936,11 +2936,14 @@ DataRequest_SetNeedPostGhostMaterialInfo(PyObject *self, PyObject *args)
 
 
 
+// Forward declaration for methods table
+static PyObject *DataRequest_dir(PyObject *self, PyObject *args);
+
 //
 // Method Table
 //
-
-static struct PyMethodDef DataRequest_methods[] = {
+static struct PyMethodDef PyDataRequest_methods[] = {
+    {"__dir__",                                 DataRequest_dir, METH_NOARGS},
     // timestep
     {"GetTimestep",                             DataRequest_GetTimestep, METH_VARARGS},
     {"SetTimestep",                             DataRequest_SetTimestep, METH_VARARGS},
@@ -3082,26 +3085,26 @@ static struct PyMethodDef DataRequest_methods[] = {
 //
 // Type functions
 //
-
-
-// ****************************************************************************
-// Function: DataRequest_dealloc
-//
-// Purpose:
-//   Destructor for PyDataRequest.
-//
-//
-// Programmer: Cyrus Harrison
-// Creation:   Tue Feb  9 08:58:23 PST 2010
-//
-// Modifications:
-//
-// ****************************************************************************
-static void
-DataRequest_dealloc(PyObject *v)
+static PyObject *
+DataRequest_dir(PyObject *self, PyObject *args)
 {
-    // DataRequest is  stored in a a ref ptr, so it will clean itself up.
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = PyDataRequest_methods;
+         method && method->ml_name;
+         method++) {
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    return dir_list;
 }
+
 
 
 // ****************************************************************************
@@ -3118,66 +3121,23 @@ DataRequest_dealloc(PyObject *v)
 //
 // ****************************************************************************
 static PyObject *
-DataRequest_getattr(PyObject *self, char *name)
+PyDataRequest_getattro(PyObject *self, PyObject *attr_name)
 {
-    return Py_FindMethod(DataRequest_methods, self, name);
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+    return Py_FindMethod(PyDataRequest_methods, self, (char*)name);
 }
 
+static char const *PyDataRequest_purpose = "This class provides access to the avt pipeline data req";
 
-// ****************************************************************************
-// Function: DataRequest_print
-//
-// Purpose:
-//   Print function for PyDataRequest.
-//
-//
-// Programmer: Cyrus Harrison
-// Creation:   Tue Feb  9 08:58:23 PST 2010
-//
-// Modifications:
-//
-// ****************************************************************************
-static int
-DataRequest_print(PyObject *v, FILE *fp, int flags)
-{
-    return 0;
-}
+// Re-define tp slots for this custom object
+#undef VISIT_PY_TYPE_OBJ_TP_SLOTS
+#define VISIT_PY_TYPE_OBJ_TP_SLOTS(VSObjName)         \
+    VISIT_PY_TYPE_OBJ_SLOT2(VSObjName, doc, purpose); \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, getattro);     \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, methods)
 
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *DataRequest_Doc = "This class provides access to the avt pipeline data request.";
-#else
-static char *DataRequest_Doc = "This class provides access to the avt pipeline data req";
-#endif
-
-//
-// Python Type Struct Def Macro from Py2and3Support.h
-//
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-VISIT_PY_TYPE_OBJ(PyDataRequestType,    \
-                  "DataRequest",        \
-                  PyDataRequestObject,  \
-                  DataRequest_dealloc,  \
-                  DataRequest_print,    \
-                  DataRequest_getattr,  \
-                  0,                    \
-                  0,                    \
-                  DataRequest_Doc,      \
-                  0,                    \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(DataRequest);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -3209,6 +3169,7 @@ PyDataRequest_Wrap(avtDataRequest_p request)
     res->request = new avtDataRequest_p;
     // set the contract
     *(res->request) = request;
+    PyType_Ready(&PyDataRequestType);
     return (PyObject *)res;
 }
 

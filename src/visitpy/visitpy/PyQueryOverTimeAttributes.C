@@ -5,6 +5,7 @@
 #include <PyQueryOverTimeAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 #include <PyQueryAttributes.h>
 #include <PyPickAttributes.h>
@@ -25,7 +26,7 @@
 //
 // This struct contains the Python type information and a QueryOverTimeAttributes.
 //
-struct QueryOverTimeAttributesObject
+struct PyQueryOverTimeAttributesObject
 {
     PyObject_HEAD
     QueryOverTimeAttributes *data;
@@ -117,16 +118,47 @@ PyQueryOverTimeAttributes_ToString(const QueryOverTimeAttributes *atts, const ch
 static PyObject *
 QueryOverTimeAttributes_Notify(PyObject *self, PyObject *args)
 {
-    QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
+    PyQueryOverTimeAttributesObject *obj = (PyQueryOverTimeAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+QueryOverTimeAttributes_dir(PyObject *self, PyObject *args)
+{
+    static QueryOverTimeAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyQueryOverTimeAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        if (i == 9) continue; // internal field
+        if (i == 10) continue; // internal field
+        if (i == 13) continue; // internal field
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 QueryOverTimeAttributes_SetTimeType(PyObject *self, PyObject *args)
 {
-    QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
+    PyQueryOverTimeAttributesObject *obj = (PyQueryOverTimeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -185,7 +217,7 @@ QueryOverTimeAttributes_SetTimeType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryOverTimeAttributes_GetTimeType(PyObject *self, PyObject *args)
 {
-    QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
+    PyQueryOverTimeAttributesObject *obj = (PyQueryOverTimeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetTimeType()));
     return retval;
 }
@@ -193,7 +225,7 @@ QueryOverTimeAttributes_GetTimeType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryOverTimeAttributes_SetStartTimeFlag(PyObject *self, PyObject *args)
 {
-    QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
+    PyQueryOverTimeAttributesObject *obj = (PyQueryOverTimeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -245,7 +277,7 @@ QueryOverTimeAttributes_SetStartTimeFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryOverTimeAttributes_GetStartTimeFlag(PyObject *self, PyObject *args)
 {
-    QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
+    PyQueryOverTimeAttributesObject *obj = (PyQueryOverTimeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetStartTimeFlag()?1L:0L);
     return retval;
 }
@@ -253,7 +285,7 @@ QueryOverTimeAttributes_GetStartTimeFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryOverTimeAttributes_SetStartTime(PyObject *self, PyObject *args)
 {
-    QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
+    PyQueryOverTimeAttributesObject *obj = (PyQueryOverTimeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -305,7 +337,7 @@ QueryOverTimeAttributes_SetStartTime(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryOverTimeAttributes_GetStartTime(PyObject *self, PyObject *args)
 {
-    QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
+    PyQueryOverTimeAttributesObject *obj = (PyQueryOverTimeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetStartTime()));
     return retval;
 }
@@ -313,7 +345,7 @@ QueryOverTimeAttributes_GetStartTime(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryOverTimeAttributes_SetEndTimeFlag(PyObject *self, PyObject *args)
 {
-    QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
+    PyQueryOverTimeAttributesObject *obj = (PyQueryOverTimeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -365,7 +397,7 @@ QueryOverTimeAttributes_SetEndTimeFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryOverTimeAttributes_GetEndTimeFlag(PyObject *self, PyObject *args)
 {
-    QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
+    PyQueryOverTimeAttributesObject *obj = (PyQueryOverTimeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetEndTimeFlag()?1L:0L);
     return retval;
 }
@@ -373,7 +405,7 @@ QueryOverTimeAttributes_GetEndTimeFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryOverTimeAttributes_SetEndTime(PyObject *self, PyObject *args)
 {
-    QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
+    PyQueryOverTimeAttributesObject *obj = (PyQueryOverTimeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -425,7 +457,7 @@ QueryOverTimeAttributes_SetEndTime(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryOverTimeAttributes_GetEndTime(PyObject *self, PyObject *args)
 {
-    QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
+    PyQueryOverTimeAttributesObject *obj = (PyQueryOverTimeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetEndTime()));
     return retval;
 }
@@ -433,7 +465,7 @@ QueryOverTimeAttributes_GetEndTime(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryOverTimeAttributes_SetStrideFlag(PyObject *self, PyObject *args)
 {
-    QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
+    PyQueryOverTimeAttributesObject *obj = (PyQueryOverTimeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -485,7 +517,7 @@ QueryOverTimeAttributes_SetStrideFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryOverTimeAttributes_GetStrideFlag(PyObject *self, PyObject *args)
 {
-    QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
+    PyQueryOverTimeAttributesObject *obj = (PyQueryOverTimeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetStrideFlag()?1L:0L);
     return retval;
 }
@@ -493,7 +525,7 @@ QueryOverTimeAttributes_GetStrideFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryOverTimeAttributes_SetStride(PyObject *self, PyObject *args)
 {
-    QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
+    PyQueryOverTimeAttributesObject *obj = (PyQueryOverTimeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -545,7 +577,7 @@ QueryOverTimeAttributes_SetStride(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryOverTimeAttributes_GetStride(PyObject *self, PyObject *args)
 {
-    QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
+    PyQueryOverTimeAttributesObject *obj = (PyQueryOverTimeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetStride()));
     return retval;
 }
@@ -553,7 +585,7 @@ QueryOverTimeAttributes_GetStride(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryOverTimeAttributes_SetCreateWindow(PyObject *self, PyObject *args)
 {
-    QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
+    PyQueryOverTimeAttributesObject *obj = (PyQueryOverTimeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -605,7 +637,7 @@ QueryOverTimeAttributes_SetCreateWindow(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryOverTimeAttributes_GetCreateWindow(PyObject *self, PyObject *args)
 {
-    QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
+    PyQueryOverTimeAttributesObject *obj = (PyQueryOverTimeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetCreateWindow()?1L:0L);
     return retval;
 }
@@ -613,7 +645,7 @@ QueryOverTimeAttributes_GetCreateWindow(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryOverTimeAttributes_SetWindowId(PyObject *self, PyObject *args)
 {
-    QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
+    PyQueryOverTimeAttributesObject *obj = (PyQueryOverTimeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -665,7 +697,7 @@ QueryOverTimeAttributes_SetWindowId(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryOverTimeAttributes_GetWindowId(PyObject *self, PyObject *args)
 {
-    QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
+    PyQueryOverTimeAttributesObject *obj = (PyQueryOverTimeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetWindowId()));
     return retval;
 }
@@ -673,7 +705,7 @@ QueryOverTimeAttributes_GetWindowId(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryOverTimeAttributes_SetCachedCurvePts(PyObject *self, PyObject *args)
 {
-    QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
+    PyQueryOverTimeAttributesObject *obj = (PyQueryOverTimeAttributesObject *)self;
 
     doubleVector vec;
 
@@ -737,7 +769,7 @@ QueryOverTimeAttributes_SetCachedCurvePts(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryOverTimeAttributes_GetCachedCurvePts(PyObject *self, PyObject *args)
 {
-    QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
+    PyQueryOverTimeAttributesObject *obj = (PyQueryOverTimeAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the cachedCurvePts.
     const doubleVector &cachedCurvePts = obj->data->GetCachedCurvePts();
     PyObject *retval = PyTuple_New(cachedCurvePts.size());
@@ -749,7 +781,7 @@ QueryOverTimeAttributes_GetCachedCurvePts(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryOverTimeAttributes_SetUseCachedPts(PyObject *self, PyObject *args)
 {
-    QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
+    PyQueryOverTimeAttributesObject *obj = (PyQueryOverTimeAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -801,7 +833,7 @@ QueryOverTimeAttributes_SetUseCachedPts(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 QueryOverTimeAttributes_GetUseCachedPts(PyObject *self, PyObject *args)
 {
-    QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
+    PyQueryOverTimeAttributesObject *obj = (PyQueryOverTimeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetUseCachedPts()?1L:0L);
     return retval;
 }
@@ -809,7 +841,8 @@ QueryOverTimeAttributes_GetUseCachedPts(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyQueryOverTimeAttributes_methods[QUERYOVERTIMEATTRIBUTES_NMETH] = {
-    {"Notify", QueryOverTimeAttributes_Notify, METH_VARARGS},
+    {"__dir__", QueryOverTimeAttributes_dir, METH_NOARGS},
+    {"Notify", QueryOverTimeAttributes_Notify, METH_NOARGS},
     {"SetTimeType", QueryOverTimeAttributes_SetTimeType, METH_VARARGS},
     {"GetTimeType", QueryOverTimeAttributes_GetTimeType, METH_VARARGS},
     {"SetStartTimeFlag", QueryOverTimeAttributes_SetStartTimeFlag, METH_VARARGS},
@@ -840,19 +873,22 @@ PyMethodDef PyQueryOverTimeAttributes_methods[QUERYOVERTIMEATTRIBUTES_NMETH] = {
 //
 
 static void
-QueryOverTimeAttributes_dealloc(PyObject *v)
+PyQueryOverTimeAttributes_dealloc(PyObject *v)
 {
-   QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)v;
+   PyQueryOverTimeAttributesObject *obj = (PyQueryOverTimeAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *QueryOverTimeAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyQueryOverTimeAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyQueryOverTimeAttributes_getattr(PyObject *self, char *name)
+PyQueryOverTimeAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "timeType") == 0)
         return QueryOverTimeAttributes_GetTimeType(self, NULL);
     if(strcmp(name, "Cycle") == 0)
@@ -883,26 +919,19 @@ PyQueryOverTimeAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "useCachedPts") == 0)
         return QueryOverTimeAttributes_GetUseCachedPts(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyQueryOverTimeAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyQueryOverTimeAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyQueryOverTimeAttributes_methods[i].ml_name),
-                PyString_FromString(PyQueryOverTimeAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyQueryOverTimeAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyQueryOverTimeAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyQueryOverTimeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "timeType") == 0)
         obj = QueryOverTimeAttributes_SetTimeType(self, args);
@@ -927,6 +956,12 @@ PyQueryOverTimeAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "useCachedPts") == 0)
         obj = QueryOverTimeAttributes_SetUseCachedPts(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -941,78 +976,45 @@ PyQueryOverTimeAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-QueryOverTimeAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)v;
-    fprintf(fp, "%s", PyQueryOverTimeAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-QueryOverTimeAttributes_str(PyObject *v)
+PyQueryOverTimeAttributes_str(PyObject *v)
 {
-    QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)v;
+    PyQueryOverTimeAttributesObject *obj = (PyQueryOverTimeAttributesObject *)v;
     return PyString_FromString(PyQueryOverTimeAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *QueryOverTimeAttributes_Purpose = "Attributes for queries over time.";
-#else
-static char *QueryOverTimeAttributes_Purpose = "Attributes for queries over time.";
-#endif
+static char const *PyQueryOverTimeAttributes_purpose = "Attributes for queries over time.";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(QueryOverTimeAttributesType,         \
-                  "QueryOverTimeAttributes",           \
-                  QueryOverTimeAttributesObject,       \
-                  QueryOverTimeAttributes_dealloc,     \
-                  QueryOverTimeAttributes_print,       \
-                  PyQueryOverTimeAttributes_getattr,   \
-                  PyQueryOverTimeAttributes_setattr,   \
-                  QueryOverTimeAttributes_str,         \
-                  QueryOverTimeAttributes_Purpose,     \
-                  QueryOverTimeAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(QueryOverTimeAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-QueryOverTimeAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyQueryOverTimeAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &QueryOverTimeAttributesType
-         || Py_TYPE(other) != &QueryOverTimeAttributesType)
+    if ( Py_TYPE(self) != &PyQueryOverTimeAttributesType
+         || Py_TYPE(other) != &PyQueryOverTimeAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    QueryOverTimeAttributes *a = ((QueryOverTimeAttributesObject *)self)->data;
-    QueryOverTimeAttributes *b = ((QueryOverTimeAttributesObject *)other)->data;
+    QueryOverTimeAttributes *a = ((PyQueryOverTimeAttributesObject *)self)->data;
+    QueryOverTimeAttributes *b = ((PyQueryOverTimeAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -1041,8 +1043,8 @@ static QueryOverTimeAttributes *currentAtts = 0;
 static PyObject *
 NewQueryOverTimeAttributes(int useCurrent)
 {
-    QueryOverTimeAttributesObject *newObject;
-    newObject = PyObject_NEW(QueryOverTimeAttributesObject, &QueryOverTimeAttributesType);
+    PyQueryOverTimeAttributesObject *newObject;
+    newObject = PyObject_NEW(PyQueryOverTimeAttributesObject, &PyQueryOverTimeAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1053,14 +1055,15 @@ NewQueryOverTimeAttributes(int useCurrent)
         newObject->data = new QueryOverTimeAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyQueryOverTimeAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapQueryOverTimeAttributes(const QueryOverTimeAttributes *attr)
 {
-    QueryOverTimeAttributesObject *newObject;
-    newObject = PyObject_NEW(QueryOverTimeAttributesObject, &QueryOverTimeAttributesType);
+    PyQueryOverTimeAttributesObject *newObject;
+    newObject = PyObject_NEW(PyQueryOverTimeAttributesObject, &PyQueryOverTimeAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (QueryOverTimeAttributes *)attr;
@@ -1162,13 +1165,13 @@ PyQueryOverTimeAttributes_GetMethodTable(int *nMethods)
 bool
 PyQueryOverTimeAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &QueryOverTimeAttributesType);
+    return (obj->ob_type == &PyQueryOverTimeAttributesType);
 }
 
 QueryOverTimeAttributes *
 PyQueryOverTimeAttributes_FromPyObject(PyObject *obj)
 {
-    QueryOverTimeAttributesObject *obj2 = (QueryOverTimeAttributesObject *)obj;
+    PyQueryOverTimeAttributesObject *obj2 = (PyQueryOverTimeAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1187,7 +1190,7 @@ PyQueryOverTimeAttributes_Wrap(const QueryOverTimeAttributes *attr)
 void
 PyQueryOverTimeAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    QueryOverTimeAttributesObject *obj2 = (QueryOverTimeAttributesObject *)obj;
+    PyQueryOverTimeAttributesObject *obj2 = (PyQueryOverTimeAttributesObject *)obj;
     obj2->parent = parent;
 }
 

@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define FILEOPENOPTIONS_NMETH 15
+#define FILEOPENOPTIONS_NMETH 16
 void VISITPY_API           PyFileOpenOptions_StartUp(FileOpenOptions *subj, void *data);
 void VISITPY_API           PyFileOpenOptions_CloseDown();
 VISITPY_API PyMethodDef *  PyFileOpenOptions_GetMethodTable(int *nMethods);
@@ -24,8 +24,8 @@ void VISITPY_API           PyFileOpenOptions_SetParent(PyObject *obj, PyObject *
 void VISITPY_API           PyFileOpenOptions_SetDefaults(const FileOpenOptions *atts);
 std::string VISITPY_API    PyFileOpenOptions_GetLogString();
 std::string VISITPY_API    PyFileOpenOptions_ToString(const FileOpenOptions *, const char *, const bool=false);
-VISITPY_API PyObject *     PyFileOpenOptions_getattr(PyObject *self, char *name);
-int VISITPY_API            PyFileOpenOptions_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyFileOpenOptions_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyFileOpenOptions_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyFileOpenOptions_methods[FILEOPENOPTIONS_NMETH];
 
 #endif

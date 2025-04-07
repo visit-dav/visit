@@ -5,6 +5,7 @@
 #include <PySmoothOperatorAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a SmoothOperatorAttributes.
 //
-struct SmoothOperatorAttributesObject
+struct PySmoothOperatorAttributesObject
 {
     PyObject_HEAD
     SmoothOperatorAttributes *data;
@@ -67,16 +68,44 @@ PySmoothOperatorAttributes_ToString(const SmoothOperatorAttributes *atts, const 
 static PyObject *
 SmoothOperatorAttributes_Notify(PyObject *self, PyObject *args)
 {
-    SmoothOperatorAttributesObject *obj = (SmoothOperatorAttributesObject *)self;
+    PySmoothOperatorAttributesObject *obj = (PySmoothOperatorAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+SmoothOperatorAttributes_dir(PyObject *self, PyObject *args)
+{
+    static SmoothOperatorAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PySmoothOperatorAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 SmoothOperatorAttributes_SetNumIterations(PyObject *self, PyObject *args)
 {
-    SmoothOperatorAttributesObject *obj = (SmoothOperatorAttributesObject *)self;
+    PySmoothOperatorAttributesObject *obj = (PySmoothOperatorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -128,7 +157,7 @@ SmoothOperatorAttributes_SetNumIterations(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SmoothOperatorAttributes_GetNumIterations(PyObject *self, PyObject *args)
 {
-    SmoothOperatorAttributesObject *obj = (SmoothOperatorAttributesObject *)self;
+    PySmoothOperatorAttributesObject *obj = (PySmoothOperatorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNumIterations()));
     return retval;
 }
@@ -136,7 +165,7 @@ SmoothOperatorAttributes_GetNumIterations(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SmoothOperatorAttributes_SetRelaxationFactor(PyObject *self, PyObject *args)
 {
-    SmoothOperatorAttributesObject *obj = (SmoothOperatorAttributesObject *)self;
+    PySmoothOperatorAttributesObject *obj = (PySmoothOperatorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -188,7 +217,7 @@ SmoothOperatorAttributes_SetRelaxationFactor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SmoothOperatorAttributes_GetRelaxationFactor(PyObject *self, PyObject *args)
 {
-    SmoothOperatorAttributesObject *obj = (SmoothOperatorAttributesObject *)self;
+    PySmoothOperatorAttributesObject *obj = (PySmoothOperatorAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetRelaxationFactor());
     return retval;
 }
@@ -196,7 +225,7 @@ SmoothOperatorAttributes_GetRelaxationFactor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SmoothOperatorAttributes_SetConvergence(PyObject *self, PyObject *args)
 {
-    SmoothOperatorAttributesObject *obj = (SmoothOperatorAttributesObject *)self;
+    PySmoothOperatorAttributesObject *obj = (PySmoothOperatorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -248,7 +277,7 @@ SmoothOperatorAttributes_SetConvergence(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SmoothOperatorAttributes_GetConvergence(PyObject *self, PyObject *args)
 {
-    SmoothOperatorAttributesObject *obj = (SmoothOperatorAttributesObject *)self;
+    PySmoothOperatorAttributesObject *obj = (PySmoothOperatorAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetConvergence());
     return retval;
 }
@@ -256,7 +285,7 @@ SmoothOperatorAttributes_GetConvergence(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SmoothOperatorAttributes_SetMaintainFeatures(PyObject *self, PyObject *args)
 {
-    SmoothOperatorAttributesObject *obj = (SmoothOperatorAttributesObject *)self;
+    PySmoothOperatorAttributesObject *obj = (PySmoothOperatorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -308,7 +337,7 @@ SmoothOperatorAttributes_SetMaintainFeatures(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SmoothOperatorAttributes_GetMaintainFeatures(PyObject *self, PyObject *args)
 {
-    SmoothOperatorAttributesObject *obj = (SmoothOperatorAttributesObject *)self;
+    PySmoothOperatorAttributesObject *obj = (PySmoothOperatorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetMaintainFeatures()?1L:0L);
     return retval;
 }
@@ -316,7 +345,7 @@ SmoothOperatorAttributes_GetMaintainFeatures(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SmoothOperatorAttributes_SetFeatureAngle(PyObject *self, PyObject *args)
 {
-    SmoothOperatorAttributesObject *obj = (SmoothOperatorAttributesObject *)self;
+    PySmoothOperatorAttributesObject *obj = (PySmoothOperatorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -368,7 +397,7 @@ SmoothOperatorAttributes_SetFeatureAngle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SmoothOperatorAttributes_GetFeatureAngle(PyObject *self, PyObject *args)
 {
-    SmoothOperatorAttributesObject *obj = (SmoothOperatorAttributesObject *)self;
+    PySmoothOperatorAttributesObject *obj = (PySmoothOperatorAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetFeatureAngle());
     return retval;
 }
@@ -376,7 +405,7 @@ SmoothOperatorAttributes_GetFeatureAngle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SmoothOperatorAttributes_SetEdgeAngle(PyObject *self, PyObject *args)
 {
-    SmoothOperatorAttributesObject *obj = (SmoothOperatorAttributesObject *)self;
+    PySmoothOperatorAttributesObject *obj = (PySmoothOperatorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -428,7 +457,7 @@ SmoothOperatorAttributes_SetEdgeAngle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SmoothOperatorAttributes_GetEdgeAngle(PyObject *self, PyObject *args)
 {
-    SmoothOperatorAttributesObject *obj = (SmoothOperatorAttributesObject *)self;
+    PySmoothOperatorAttributesObject *obj = (PySmoothOperatorAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetEdgeAngle());
     return retval;
 }
@@ -436,7 +465,7 @@ SmoothOperatorAttributes_GetEdgeAngle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SmoothOperatorAttributes_SetSmoothBoundaries(PyObject *self, PyObject *args)
 {
-    SmoothOperatorAttributesObject *obj = (SmoothOperatorAttributesObject *)self;
+    PySmoothOperatorAttributesObject *obj = (PySmoothOperatorAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -488,7 +517,7 @@ SmoothOperatorAttributes_SetSmoothBoundaries(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SmoothOperatorAttributes_GetSmoothBoundaries(PyObject *self, PyObject *args)
 {
-    SmoothOperatorAttributesObject *obj = (SmoothOperatorAttributesObject *)self;
+    PySmoothOperatorAttributesObject *obj = (PySmoothOperatorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetSmoothBoundaries()?1L:0L);
     return retval;
 }
@@ -496,7 +525,8 @@ SmoothOperatorAttributes_GetSmoothBoundaries(PyObject *self, PyObject *args)
 
 
 PyMethodDef PySmoothOperatorAttributes_methods[SMOOTHOPERATORATTRIBUTES_NMETH] = {
-    {"Notify", SmoothOperatorAttributes_Notify, METH_VARARGS},
+    {"__dir__", SmoothOperatorAttributes_dir, METH_NOARGS},
+    {"Notify", SmoothOperatorAttributes_Notify, METH_NOARGS},
     {"SetNumIterations", SmoothOperatorAttributes_SetNumIterations, METH_VARARGS},
     {"GetNumIterations", SmoothOperatorAttributes_GetNumIterations, METH_VARARGS},
     {"SetRelaxationFactor", SmoothOperatorAttributes_SetRelaxationFactor, METH_VARARGS},
@@ -519,19 +549,22 @@ PyMethodDef PySmoothOperatorAttributes_methods[SMOOTHOPERATORATTRIBUTES_NMETH] =
 //
 
 static void
-SmoothOperatorAttributes_dealloc(PyObject *v)
+PySmoothOperatorAttributes_dealloc(PyObject *v)
 {
-   SmoothOperatorAttributesObject *obj = (SmoothOperatorAttributesObject *)v;
+   PySmoothOperatorAttributesObject *obj = (PySmoothOperatorAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *SmoothOperatorAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PySmoothOperatorAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PySmoothOperatorAttributes_getattr(PyObject *self, char *name)
+PySmoothOperatorAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "numIterations") == 0)
         return SmoothOperatorAttributes_GetNumIterations(self, NULL);
     if(strcmp(name, "relaxationFactor") == 0)
@@ -547,26 +580,19 @@ PySmoothOperatorAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "smoothBoundaries") == 0)
         return SmoothOperatorAttributes_GetSmoothBoundaries(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PySmoothOperatorAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PySmoothOperatorAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PySmoothOperatorAttributes_methods[i].ml_name),
-                PyString_FromString(PySmoothOperatorAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PySmoothOperatorAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PySmoothOperatorAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PySmoothOperatorAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "numIterations") == 0)
         obj = SmoothOperatorAttributes_SetNumIterations(self, args);
@@ -583,6 +609,12 @@ PySmoothOperatorAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "smoothBoundaries") == 0)
         obj = SmoothOperatorAttributes_SetSmoothBoundaries(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -597,78 +629,45 @@ PySmoothOperatorAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-SmoothOperatorAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    SmoothOperatorAttributesObject *obj = (SmoothOperatorAttributesObject *)v;
-    fprintf(fp, "%s", PySmoothOperatorAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-SmoothOperatorAttributes_str(PyObject *v)
+PySmoothOperatorAttributes_str(PyObject *v)
 {
-    SmoothOperatorAttributesObject *obj = (SmoothOperatorAttributesObject *)v;
+    PySmoothOperatorAttributesObject *obj = (PySmoothOperatorAttributesObject *)v;
     return PyString_FromString(PySmoothOperatorAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *SmoothOperatorAttributes_Purpose = "Attributes for the Smooth Operator";
-#else
-static char *SmoothOperatorAttributes_Purpose = "Attributes for the Smooth Operator";
-#endif
+static char const *PySmoothOperatorAttributes_purpose = "Attributes for the Smooth Operator";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(SmoothOperatorAttributesType,         \
-                  "SmoothOperatorAttributes",           \
-                  SmoothOperatorAttributesObject,       \
-                  SmoothOperatorAttributes_dealloc,     \
-                  SmoothOperatorAttributes_print,       \
-                  PySmoothOperatorAttributes_getattr,   \
-                  PySmoothOperatorAttributes_setattr,   \
-                  SmoothOperatorAttributes_str,         \
-                  SmoothOperatorAttributes_Purpose,     \
-                  SmoothOperatorAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(SmoothOperatorAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-SmoothOperatorAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PySmoothOperatorAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &SmoothOperatorAttributesType
-         || Py_TYPE(other) != &SmoothOperatorAttributesType)
+    if ( Py_TYPE(self) != &PySmoothOperatorAttributesType
+         || Py_TYPE(other) != &PySmoothOperatorAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    SmoothOperatorAttributes *a = ((SmoothOperatorAttributesObject *)self)->data;
-    SmoothOperatorAttributes *b = ((SmoothOperatorAttributesObject *)other)->data;
+    SmoothOperatorAttributes *a = ((PySmoothOperatorAttributesObject *)self)->data;
+    SmoothOperatorAttributes *b = ((PySmoothOperatorAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -697,8 +696,8 @@ static SmoothOperatorAttributes *currentAtts = 0;
 static PyObject *
 NewSmoothOperatorAttributes(int useCurrent)
 {
-    SmoothOperatorAttributesObject *newObject;
-    newObject = PyObject_NEW(SmoothOperatorAttributesObject, &SmoothOperatorAttributesType);
+    PySmoothOperatorAttributesObject *newObject;
+    newObject = PyObject_NEW(PySmoothOperatorAttributesObject, &PySmoothOperatorAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -709,14 +708,15 @@ NewSmoothOperatorAttributes(int useCurrent)
         newObject->data = new SmoothOperatorAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PySmoothOperatorAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapSmoothOperatorAttributes(const SmoothOperatorAttributes *attr)
 {
-    SmoothOperatorAttributesObject *newObject;
-    newObject = PyObject_NEW(SmoothOperatorAttributesObject, &SmoothOperatorAttributesType);
+    PySmoothOperatorAttributesObject *newObject;
+    newObject = PyObject_NEW(PySmoothOperatorAttributesObject, &PySmoothOperatorAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (SmoothOperatorAttributes *)attr;
@@ -818,13 +818,13 @@ PySmoothOperatorAttributes_GetMethodTable(int *nMethods)
 bool
 PySmoothOperatorAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &SmoothOperatorAttributesType);
+    return (obj->ob_type == &PySmoothOperatorAttributesType);
 }
 
 SmoothOperatorAttributes *
 PySmoothOperatorAttributes_FromPyObject(PyObject *obj)
 {
-    SmoothOperatorAttributesObject *obj2 = (SmoothOperatorAttributesObject *)obj;
+    PySmoothOperatorAttributesObject *obj2 = (PySmoothOperatorAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -843,7 +843,7 @@ PySmoothOperatorAttributes_Wrap(const SmoothOperatorAttributes *attr)
 void
 PySmoothOperatorAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    SmoothOperatorAttributesObject *obj2 = (SmoothOperatorAttributesObject *)obj;
+    PySmoothOperatorAttributesObject *obj2 = (PySmoothOperatorAttributesObject *)obj;
     obj2->parent = parent;
 }
 

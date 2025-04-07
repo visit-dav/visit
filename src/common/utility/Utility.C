@@ -27,7 +27,7 @@ using std::vector;
 #include <netinet/in.h>
 #endif
 
-#if !defined(_WIN32) && !defined(_AIX)
+#if !defined(_WIN32)
 #include <execinfo.h>
 #if defined(__GNUC__) && defined(__cplusplus)
 #include <cxxabi.h>
@@ -188,7 +188,7 @@ LongestCommonSuffixLength(const char * const *list, int listN)
 void
 PrintCallStack(ostream &out, const char *file, int line)
 {
-#if !defined(_WIN32) && !defined(_AIX)
+#if !defined(_WIN32)
     const int N = 1000;
     void *stackAddrs[N];
 

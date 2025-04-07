@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define DATABASECORRELATION_NMETH 22
+#define DATABASECORRELATION_NMETH 23
 void VISITPY_API           PyDatabaseCorrelation_StartUp(DatabaseCorrelation *subj, void *data);
 void VISITPY_API           PyDatabaseCorrelation_CloseDown();
 VISITPY_API PyMethodDef *  PyDatabaseCorrelation_GetMethodTable(int *nMethods);

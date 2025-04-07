@@ -5,6 +5,7 @@
 #include <PyConnectedComponentsAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a ConnectedComponentsAttributes.
 //
-struct ConnectedComponentsAttributesObject
+struct PyConnectedComponentsAttributesObject
 {
     PyObject_HEAD
     ConnectedComponentsAttributes *data;
@@ -52,16 +53,44 @@ PyConnectedComponentsAttributes_ToString(const ConnectedComponentsAttributes *at
 static PyObject *
 ConnectedComponentsAttributes_Notify(PyObject *self, PyObject *args)
 {
-    ConnectedComponentsAttributesObject *obj = (ConnectedComponentsAttributesObject *)self;
+    PyConnectedComponentsAttributesObject *obj = (PyConnectedComponentsAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+ConnectedComponentsAttributes_dir(PyObject *self, PyObject *args)
+{
+    static ConnectedComponentsAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyConnectedComponentsAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 ConnectedComponentsAttributes_SetEnableGhostNeighborsOptimization(PyObject *self, PyObject *args)
 {
-    ConnectedComponentsAttributesObject *obj = (ConnectedComponentsAttributesObject *)self;
+    PyConnectedComponentsAttributesObject *obj = (PyConnectedComponentsAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -113,7 +142,7 @@ ConnectedComponentsAttributes_SetEnableGhostNeighborsOptimization(PyObject *self
 /*static*/ PyObject *
 ConnectedComponentsAttributes_GetEnableGhostNeighborsOptimization(PyObject *self, PyObject *args)
 {
-    ConnectedComponentsAttributesObject *obj = (ConnectedComponentsAttributesObject *)self;
+    PyConnectedComponentsAttributesObject *obj = (PyConnectedComponentsAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetEnableGhostNeighborsOptimization()?1L:0L);
     return retval;
 }
@@ -121,7 +150,8 @@ ConnectedComponentsAttributes_GetEnableGhostNeighborsOptimization(PyObject *self
 
 
 PyMethodDef PyConnectedComponentsAttributes_methods[CONNECTEDCOMPONENTSATTRIBUTES_NMETH] = {
-    {"Notify", ConnectedComponentsAttributes_Notify, METH_VARARGS},
+    {"__dir__", ConnectedComponentsAttributes_dir, METH_NOARGS},
+    {"Notify", ConnectedComponentsAttributes_Notify, METH_NOARGS},
     {"SetEnableGhostNeighborsOptimization", ConnectedComponentsAttributes_SetEnableGhostNeighborsOptimization, METH_VARARGS},
     {"GetEnableGhostNeighborsOptimization", ConnectedComponentsAttributes_GetEnableGhostNeighborsOptimization, METH_VARARGS},
     {NULL, NULL}
@@ -132,45 +162,47 @@ PyMethodDef PyConnectedComponentsAttributes_methods[CONNECTEDCOMPONENTSATTRIBUTE
 //
 
 static void
-ConnectedComponentsAttributes_dealloc(PyObject *v)
+PyConnectedComponentsAttributes_dealloc(PyObject *v)
 {
-   ConnectedComponentsAttributesObject *obj = (ConnectedComponentsAttributesObject *)v;
+   PyConnectedComponentsAttributesObject *obj = (PyConnectedComponentsAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *ConnectedComponentsAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyConnectedComponentsAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyConnectedComponentsAttributes_getattr(PyObject *self, char *name)
+PyConnectedComponentsAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "EnableGhostNeighborsOptimization") == 0)
         return ConnectedComponentsAttributes_GetEnableGhostNeighborsOptimization(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyConnectedComponentsAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyConnectedComponentsAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyConnectedComponentsAttributes_methods[i].ml_name),
-                PyString_FromString(PyConnectedComponentsAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyConnectedComponentsAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyConnectedComponentsAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyConnectedComponentsAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "EnableGhostNeighborsOptimization") == 0)
         obj = ConnectedComponentsAttributes_SetEnableGhostNeighborsOptimization(self, args);
+
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
@@ -186,78 +218,45 @@ PyConnectedComponentsAttributes_setattr(PyObject *self, char *name, PyObject *ar
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-ConnectedComponentsAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    ConnectedComponentsAttributesObject *obj = (ConnectedComponentsAttributesObject *)v;
-    fprintf(fp, "%s", PyConnectedComponentsAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-ConnectedComponentsAttributes_str(PyObject *v)
+PyConnectedComponentsAttributes_str(PyObject *v)
 {
-    ConnectedComponentsAttributesObject *obj = (ConnectedComponentsAttributesObject *)v;
+    PyConnectedComponentsAttributesObject *obj = (PyConnectedComponentsAttributesObject *)v;
     return PyString_FromString(PyConnectedComponentsAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *ConnectedComponentsAttributes_Purpose = "Attributes for Connected Components operator";
-#else
-static char *ConnectedComponentsAttributes_Purpose = "Attributes for Connected Components operator";
-#endif
+static char const *PyConnectedComponentsAttributes_purpose = "Attributes for Connected Components operator";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(ConnectedComponentsAttributesType,         \
-                  "ConnectedComponentsAttributes",           \
-                  ConnectedComponentsAttributesObject,       \
-                  ConnectedComponentsAttributes_dealloc,     \
-                  ConnectedComponentsAttributes_print,       \
-                  PyConnectedComponentsAttributes_getattr,   \
-                  PyConnectedComponentsAttributes_setattr,   \
-                  ConnectedComponentsAttributes_str,         \
-                  ConnectedComponentsAttributes_Purpose,     \
-                  ConnectedComponentsAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(ConnectedComponentsAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-ConnectedComponentsAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyConnectedComponentsAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &ConnectedComponentsAttributesType
-         || Py_TYPE(other) != &ConnectedComponentsAttributesType)
+    if ( Py_TYPE(self) != &PyConnectedComponentsAttributesType
+         || Py_TYPE(other) != &PyConnectedComponentsAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    ConnectedComponentsAttributes *a = ((ConnectedComponentsAttributesObject *)self)->data;
-    ConnectedComponentsAttributes *b = ((ConnectedComponentsAttributesObject *)other)->data;
+    ConnectedComponentsAttributes *a = ((PyConnectedComponentsAttributesObject *)self)->data;
+    ConnectedComponentsAttributes *b = ((PyConnectedComponentsAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -286,8 +285,8 @@ static ConnectedComponentsAttributes *currentAtts = 0;
 static PyObject *
 NewConnectedComponentsAttributes(int useCurrent)
 {
-    ConnectedComponentsAttributesObject *newObject;
-    newObject = PyObject_NEW(ConnectedComponentsAttributesObject, &ConnectedComponentsAttributesType);
+    PyConnectedComponentsAttributesObject *newObject;
+    newObject = PyObject_NEW(PyConnectedComponentsAttributesObject, &PyConnectedComponentsAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -298,14 +297,15 @@ NewConnectedComponentsAttributes(int useCurrent)
         newObject->data = new ConnectedComponentsAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyConnectedComponentsAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapConnectedComponentsAttributes(const ConnectedComponentsAttributes *attr)
 {
-    ConnectedComponentsAttributesObject *newObject;
-    newObject = PyObject_NEW(ConnectedComponentsAttributesObject, &ConnectedComponentsAttributesType);
+    PyConnectedComponentsAttributesObject *newObject;
+    newObject = PyObject_NEW(PyConnectedComponentsAttributesObject, &PyConnectedComponentsAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (ConnectedComponentsAttributes *)attr;
@@ -407,13 +407,13 @@ PyConnectedComponentsAttributes_GetMethodTable(int *nMethods)
 bool
 PyConnectedComponentsAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &ConnectedComponentsAttributesType);
+    return (obj->ob_type == &PyConnectedComponentsAttributesType);
 }
 
 ConnectedComponentsAttributes *
 PyConnectedComponentsAttributes_FromPyObject(PyObject *obj)
 {
-    ConnectedComponentsAttributesObject *obj2 = (ConnectedComponentsAttributesObject *)obj;
+    PyConnectedComponentsAttributesObject *obj2 = (PyConnectedComponentsAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -432,7 +432,7 @@ PyConnectedComponentsAttributes_Wrap(const ConnectedComponentsAttributes *attr)
 void
 PyConnectedComponentsAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    ConnectedComponentsAttributesObject *obj2 = (ConnectedComponentsAttributesObject *)obj;
+    PyConnectedComponentsAttributesObject *obj2 = (PyConnectedComponentsAttributesObject *)obj;
     obj2->parent = parent;
 }
 

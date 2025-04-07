@@ -5,6 +5,7 @@
 #include <PyWindowInformation.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a WindowInformation.
 //
-struct WindowInformationObject
+struct PyWindowInformationObject
 {
     PyObject_HEAD
     WindowInformation *data;
@@ -211,16 +212,44 @@ PyWindowInformation_ToString(const WindowInformation *atts, const char *prefix, 
 static PyObject *
 WindowInformation_Notify(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+WindowInformation_dir(PyObject *self, PyObject *args)
+{
+    static WindowInformation atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyWindowInformation_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 WindowInformation_SetActiveSource(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -261,7 +290,7 @@ WindowInformation_SetActiveSource(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_GetActiveSource(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetActiveSource().c_str());
     return retval;
 }
@@ -269,7 +298,7 @@ WindowInformation_GetActiveSource(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_SetActiveTimeSlider(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -321,7 +350,7 @@ WindowInformation_SetActiveTimeSlider(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_GetActiveTimeSlider(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetActiveTimeSlider()));
     return retval;
 }
@@ -329,7 +358,7 @@ WindowInformation_GetActiveTimeSlider(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_SetTimeSliders(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
 
     stringVector vec;
 
@@ -386,7 +415,7 @@ WindowInformation_SetTimeSliders(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_GetTimeSliders(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
     // Allocate a tuple the with enough entries to hold the timeSliders.
     const stringVector &timeSliders = obj->data->GetTimeSliders();
     PyObject *retval = PyTuple_New(timeSliders.size());
@@ -398,7 +427,7 @@ WindowInformation_GetTimeSliders(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_SetTimeSliderCurrentStates(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
 
     intVector vec;
 
@@ -462,7 +491,7 @@ WindowInformation_SetTimeSliderCurrentStates(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_GetTimeSliderCurrentStates(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
     // Allocate a tuple the with enough entries to hold the timeSliderCurrentStates.
     const intVector &timeSliderCurrentStates = obj->data->GetTimeSliderCurrentStates();
     PyObject *retval = PyTuple_New(timeSliderCurrentStates.size());
@@ -474,7 +503,7 @@ WindowInformation_GetTimeSliderCurrentStates(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_SetAnimationMode(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -526,7 +555,7 @@ WindowInformation_SetAnimationMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_GetAnimationMode(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetAnimationMode()));
     return retval;
 }
@@ -534,7 +563,7 @@ WindowInformation_GetAnimationMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_SetInteractionMode(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -586,7 +615,7 @@ WindowInformation_SetInteractionMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_GetInteractionMode(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetInteractionMode()));
     return retval;
 }
@@ -594,7 +623,7 @@ WindowInformation_GetInteractionMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_SetToolUpdateMode(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -646,7 +675,7 @@ WindowInformation_SetToolUpdateMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_GetToolUpdateMode(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetToolUpdateMode()));
     return retval;
 }
@@ -654,7 +683,7 @@ WindowInformation_GetToolUpdateMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_SetBoundingBoxNavigate(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -706,7 +735,7 @@ WindowInformation_SetBoundingBoxNavigate(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_GetBoundingBoxNavigate(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetBoundingBoxNavigate()?1L:0L);
     return retval;
 }
@@ -714,7 +743,7 @@ WindowInformation_GetBoundingBoxNavigate(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_SetSpin(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -766,7 +795,7 @@ WindowInformation_SetSpin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_GetSpin(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetSpin()?1L:0L);
     return retval;
 }
@@ -774,7 +803,7 @@ WindowInformation_GetSpin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_SetFullFrame(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -826,7 +855,7 @@ WindowInformation_SetFullFrame(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_GetFullFrame(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetFullFrame()?1L:0L);
     return retval;
 }
@@ -834,7 +863,7 @@ WindowInformation_GetFullFrame(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_SetPerspective(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -886,7 +915,7 @@ WindowInformation_SetPerspective(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_GetPerspective(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetPerspective()?1L:0L);
     return retval;
 }
@@ -894,7 +923,7 @@ WindowInformation_GetPerspective(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_SetMaintainView(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -946,7 +975,7 @@ WindowInformation_SetMaintainView(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_GetMaintainView(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetMaintainView()?1L:0L);
     return retval;
 }
@@ -954,7 +983,7 @@ WindowInformation_GetMaintainView(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_SetLockView(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1006,7 +1035,7 @@ WindowInformation_SetLockView(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_GetLockView(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetLockView()?1L:0L);
     return retval;
 }
@@ -1014,7 +1043,7 @@ WindowInformation_GetLockView(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_SetLockTools(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1066,7 +1095,7 @@ WindowInformation_SetLockTools(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_GetLockTools(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetLockTools()?1L:0L);
     return retval;
 }
@@ -1074,7 +1103,7 @@ WindowInformation_GetLockTools(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_SetLockTime(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1126,7 +1155,7 @@ WindowInformation_SetLockTime(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_GetLockTime(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetLockTime()?1L:0L);
     return retval;
 }
@@ -1134,7 +1163,7 @@ WindowInformation_GetLockTime(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_SetViewExtentsType(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1186,7 +1215,7 @@ WindowInformation_SetViewExtentsType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_GetViewExtentsType(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetViewExtentsType()));
     return retval;
 }
@@ -1194,7 +1223,7 @@ WindowInformation_GetViewExtentsType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_SetViewDimension(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1246,7 +1275,7 @@ WindowInformation_SetViewDimension(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_GetViewDimension(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetViewDimension()));
     return retval;
 }
@@ -1254,7 +1283,7 @@ WindowInformation_GetViewDimension(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_SetViewKeyframes(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
 
     intVector vec;
 
@@ -1318,7 +1347,7 @@ WindowInformation_SetViewKeyframes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_GetViewKeyframes(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
     // Allocate a tuple the with enough entries to hold the viewKeyframes.
     const intVector &viewKeyframes = obj->data->GetViewKeyframes();
     PyObject *retval = PyTuple_New(viewKeyframes.size());
@@ -1330,7 +1359,7 @@ WindowInformation_GetViewKeyframes(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_SetCameraViewMode(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1382,7 +1411,7 @@ WindowInformation_SetCameraViewMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_GetCameraViewMode(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetCameraViewMode()?1L:0L);
     return retval;
 }
@@ -1390,7 +1419,7 @@ WindowInformation_GetCameraViewMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_SetUsingScalableRendering(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1442,7 +1471,7 @@ WindowInformation_SetUsingScalableRendering(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_GetUsingScalableRendering(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetUsingScalableRendering()?1L:0L);
     return retval;
 }
@@ -1450,7 +1479,7 @@ WindowInformation_GetUsingScalableRendering(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_SetLastRenderMin(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1502,7 +1531,7 @@ WindowInformation_SetLastRenderMin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_GetLastRenderMin(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetLastRenderMin()));
     return retval;
 }
@@ -1510,7 +1539,7 @@ WindowInformation_GetLastRenderMin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_SetLastRenderAvg(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1562,7 +1591,7 @@ WindowInformation_SetLastRenderAvg(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_GetLastRenderAvg(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetLastRenderAvg()));
     return retval;
 }
@@ -1570,7 +1599,7 @@ WindowInformation_GetLastRenderAvg(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_SetLastRenderMax(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1622,7 +1651,7 @@ WindowInformation_SetLastRenderMax(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_GetLastRenderMax(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetLastRenderMax()));
     return retval;
 }
@@ -1630,7 +1659,7 @@ WindowInformation_GetLastRenderMax(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_SetNumPrimitives(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1682,7 +1711,7 @@ WindowInformation_SetNumPrimitives(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_GetNumPrimitives(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNumPrimitives()));
     return retval;
 }
@@ -1690,7 +1719,7 @@ WindowInformation_GetNumPrimitives(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_SetExtents(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetExtents();
@@ -1757,7 +1786,7 @@ WindowInformation_SetExtents(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_GetExtents(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
     // Allocate a tuple the with enough entries to hold the extents.
     PyObject *retval = PyTuple_New(6);
     const double *extents = obj->data->GetExtents();
@@ -1769,7 +1798,7 @@ WindowInformation_GetExtents(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_SetWindowSize(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
 
     PyObject *packaged_args = 0;
     int *vals = obj->data->GetWindowSize();
@@ -1836,7 +1865,7 @@ WindowInformation_SetWindowSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_GetWindowSize(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
     // Allocate a tuple the with enough entries to hold the windowSize.
     PyObject *retval = PyTuple_New(2);
     const int *windowSize = obj->data->GetWindowSize();
@@ -1848,7 +1877,7 @@ WindowInformation_GetWindowSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_SetWinMode(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1900,7 +1929,7 @@ WindowInformation_SetWinMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_GetWinMode(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetWinMode()));
     return retval;
 }
@@ -1908,7 +1937,7 @@ WindowInformation_GetWinMode(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_SetDDTSim(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1960,7 +1989,7 @@ WindowInformation_SetDDTSim(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_GetDDTSim(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetDDTSim()?1L:0L);
     return retval;
 }
@@ -1968,7 +1997,7 @@ WindowInformation_GetDDTSim(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_SetDDTConnected(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2020,7 +2049,7 @@ WindowInformation_SetDDTConnected(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 WindowInformation_GetDDTConnected(PyObject *self, PyObject *args)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)self;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetDDTConnected()?1L:0L);
     return retval;
 }
@@ -2028,7 +2057,8 @@ WindowInformation_GetDDTConnected(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyWindowInformation_methods[WINDOWINFORMATION_NMETH] = {
-    {"Notify", WindowInformation_Notify, METH_VARARGS},
+    {"__dir__", WindowInformation_dir, METH_NOARGS},
+    {"Notify", WindowInformation_Notify, METH_NOARGS},
     {"SetActiveSource", WindowInformation_SetActiveSource, METH_VARARGS},
     {"GetActiveSource", WindowInformation_GetActiveSource, METH_VARARGS},
     {"SetActiveTimeSlider", WindowInformation_SetActiveTimeSlider, METH_VARARGS},
@@ -2095,19 +2125,22 @@ PyMethodDef PyWindowInformation_methods[WINDOWINFORMATION_NMETH] = {
 //
 
 static void
-WindowInformation_dealloc(PyObject *v)
+PyWindowInformation_dealloc(PyObject *v)
 {
-   WindowInformationObject *obj = (WindowInformationObject *)v;
+   PyWindowInformationObject *obj = (PyWindowInformationObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *WindowInformation_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyWindowInformation_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyWindowInformation_getattr(PyObject *self, char *name)
+PyWindowInformation_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "activeSource") == 0)
         return WindowInformation_GetActiveSource(self, NULL);
     if(strcmp(name, "activeTimeSlider") == 0)
@@ -2167,26 +2200,19 @@ PyWindowInformation_getattr(PyObject *self, char *name)
     if(strcmp(name, "DDTConnected") == 0)
         return WindowInformation_GetDDTConnected(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyWindowInformation_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyWindowInformation_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyWindowInformation_methods[i].ml_name),
-                PyString_FromString(PyWindowInformation_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyWindowInformation_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyWindowInformation_setattr(PyObject *self, char *name, PyObject *args)
+PyWindowInformation_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "activeSource") == 0)
         obj = WindowInformation_SetActiveSource(self, args);
@@ -2247,6 +2273,12 @@ PyWindowInformation_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "DDTConnected") == 0)
         obj = WindowInformation_SetDDTConnected(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -2261,78 +2293,45 @@ PyWindowInformation_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-WindowInformation_print(PyObject *v, FILE *fp, int flags)
-{
-    WindowInformationObject *obj = (WindowInformationObject *)v;
-    fprintf(fp, "%s", PyWindowInformation_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-WindowInformation_str(PyObject *v)
+PyWindowInformation_str(PyObject *v)
 {
-    WindowInformationObject *obj = (WindowInformationObject *)v;
+    PyWindowInformationObject *obj = (PyWindowInformationObject *)v;
     return PyString_FromString(PyWindowInformation_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *WindowInformation_Purpose = "This class contains the attributes that tell the state of a viewer window.";
-#else
-static char *WindowInformation_Purpose = "This class contains the attributes that tell the state of a viewer window.";
-#endif
+static char const *PyWindowInformation_purpose = "This class contains the attributes that tell the state of a viewer window.";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(WindowInformationType,         \
-                  "WindowInformation",           \
-                  WindowInformationObject,       \
-                  WindowInformation_dealloc,     \
-                  WindowInformation_print,       \
-                  PyWindowInformation_getattr,   \
-                  PyWindowInformation_setattr,   \
-                  WindowInformation_str,         \
-                  WindowInformation_Purpose,     \
-                  WindowInformation_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(WindowInformation);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-WindowInformation_richcompare(PyObject *self, PyObject *other, int op)
+PyWindowInformation_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &WindowInformationType
-         || Py_TYPE(other) != &WindowInformationType)
+    if ( Py_TYPE(self) != &PyWindowInformationType
+         || Py_TYPE(other) != &PyWindowInformationType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    WindowInformation *a = ((WindowInformationObject *)self)->data;
-    WindowInformation *b = ((WindowInformationObject *)other)->data;
+    WindowInformation *a = ((PyWindowInformationObject *)self)->data;
+    WindowInformation *b = ((PyWindowInformationObject *)other)->data;
 
     switch (op)
     {
@@ -2361,8 +2360,8 @@ static WindowInformation *currentAtts = 0;
 static PyObject *
 NewWindowInformation(int useCurrent)
 {
-    WindowInformationObject *newObject;
-    newObject = PyObject_NEW(WindowInformationObject, &WindowInformationType);
+    PyWindowInformationObject *newObject;
+    newObject = PyObject_NEW(PyWindowInformationObject, &PyWindowInformationType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -2373,14 +2372,15 @@ NewWindowInformation(int useCurrent)
         newObject->data = new WindowInformation;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyWindowInformationType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapWindowInformation(const WindowInformation *attr)
 {
-    WindowInformationObject *newObject;
-    newObject = PyObject_NEW(WindowInformationObject, &WindowInformationType);
+    PyWindowInformationObject *newObject;
+    newObject = PyObject_NEW(PyWindowInformationObject, &PyWindowInformationType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (WindowInformation *)attr;
@@ -2482,13 +2482,13 @@ PyWindowInformation_GetMethodTable(int *nMethods)
 bool
 PyWindowInformation_Check(PyObject *obj)
 {
-    return (obj->ob_type == &WindowInformationType);
+    return (obj->ob_type == &PyWindowInformationType);
 }
 
 WindowInformation *
 PyWindowInformation_FromPyObject(PyObject *obj)
 {
-    WindowInformationObject *obj2 = (WindowInformationObject *)obj;
+    PyWindowInformationObject *obj2 = (PyWindowInformationObject *)obj;
     return obj2->data;
 }
 
@@ -2507,7 +2507,7 @@ PyWindowInformation_Wrap(const WindowInformation *attr)
 void
 PyWindowInformation_SetParent(PyObject *obj, PyObject *parent)
 {
-    WindowInformationObject *obj2 = (WindowInformationObject *)obj;
+    PyWindowInformationObject *obj2 = (PyWindowInformationObject *)obj;
     obj2->parent = parent;
 }
 

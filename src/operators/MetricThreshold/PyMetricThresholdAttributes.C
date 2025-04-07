@@ -5,6 +5,7 @@
 #include <PyMetricThresholdAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a MetricThresholdAttributes.
 //
-struct MetricThresholdAttributesObject
+struct PyMetricThresholdAttributesObject
 {
     PyObject_HEAD
     MetricThresholdAttributes *data;
@@ -196,16 +197,44 @@ PyMetricThresholdAttributes_ToString(const MetricThresholdAttributes *atts, cons
 static PyObject *
 MetricThresholdAttributes_Notify(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+MetricThresholdAttributes_dir(PyObject *self, PyObject *args)
+{
+    static MetricThresholdAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyMetricThresholdAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 MetricThresholdAttributes_SetPreset(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -282,7 +311,7 @@ MetricThresholdAttributes_SetPreset(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_GetPreset(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetPreset()));
     return retval;
 }
@@ -290,7 +319,7 @@ MetricThresholdAttributes_GetPreset(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_SetHexahedron(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -342,7 +371,7 @@ MetricThresholdAttributes_SetHexahedron(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_GetHexahedron(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetHexahedron()?1L:0L);
     return retval;
 }
@@ -350,7 +379,7 @@ MetricThresholdAttributes_GetHexahedron(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_SetHex_lower(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -402,7 +431,7 @@ MetricThresholdAttributes_SetHex_lower(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_GetHex_lower(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetHex_lower());
     return retval;
 }
@@ -410,7 +439,7 @@ MetricThresholdAttributes_GetHex_lower(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_SetHex_upper(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -462,7 +491,7 @@ MetricThresholdAttributes_SetHex_upper(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_GetHex_upper(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetHex_upper());
     return retval;
 }
@@ -470,7 +499,7 @@ MetricThresholdAttributes_GetHex_upper(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_SetTetrahedron(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -522,7 +551,7 @@ MetricThresholdAttributes_SetTetrahedron(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_GetTetrahedron(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetTetrahedron()?1L:0L);
     return retval;
 }
@@ -530,7 +559,7 @@ MetricThresholdAttributes_GetTetrahedron(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_SetTet_lower(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -582,7 +611,7 @@ MetricThresholdAttributes_SetTet_lower(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_GetTet_lower(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetTet_lower());
     return retval;
 }
@@ -590,7 +619,7 @@ MetricThresholdAttributes_GetTet_lower(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_SetTet_upper(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -642,7 +671,7 @@ MetricThresholdAttributes_SetTet_upper(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_GetTet_upper(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetTet_upper());
     return retval;
 }
@@ -650,7 +679,7 @@ MetricThresholdAttributes_GetTet_upper(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_SetWedge(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -702,7 +731,7 @@ MetricThresholdAttributes_SetWedge(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_GetWedge(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetWedge()?1L:0L);
     return retval;
 }
@@ -710,7 +739,7 @@ MetricThresholdAttributes_GetWedge(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_SetWed_lower(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -762,7 +791,7 @@ MetricThresholdAttributes_SetWed_lower(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_GetWed_lower(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetWed_lower());
     return retval;
 }
@@ -770,7 +799,7 @@ MetricThresholdAttributes_GetWed_lower(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_SetWed_upper(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -822,7 +851,7 @@ MetricThresholdAttributes_SetWed_upper(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_GetWed_upper(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetWed_upper());
     return retval;
 }
@@ -830,7 +859,7 @@ MetricThresholdAttributes_GetWed_upper(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_SetPyramid(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -882,7 +911,7 @@ MetricThresholdAttributes_SetPyramid(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_GetPyramid(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetPyramid()?1L:0L);
     return retval;
 }
@@ -890,7 +919,7 @@ MetricThresholdAttributes_GetPyramid(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_SetPyr_lower(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -942,7 +971,7 @@ MetricThresholdAttributes_SetPyr_lower(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_GetPyr_lower(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetPyr_lower());
     return retval;
 }
@@ -950,7 +979,7 @@ MetricThresholdAttributes_GetPyr_lower(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_SetPyr_upper(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1002,7 +1031,7 @@ MetricThresholdAttributes_SetPyr_upper(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_GetPyr_upper(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetPyr_upper());
     return retval;
 }
@@ -1010,7 +1039,7 @@ MetricThresholdAttributes_GetPyr_upper(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_SetTriangle(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1062,7 +1091,7 @@ MetricThresholdAttributes_SetTriangle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_GetTriangle(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetTriangle()?1L:0L);
     return retval;
 }
@@ -1070,7 +1099,7 @@ MetricThresholdAttributes_GetTriangle(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_SetTri_lower(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1122,7 +1151,7 @@ MetricThresholdAttributes_SetTri_lower(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_GetTri_lower(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetTri_lower());
     return retval;
 }
@@ -1130,7 +1159,7 @@ MetricThresholdAttributes_GetTri_lower(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_SetTri_upper(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1182,7 +1211,7 @@ MetricThresholdAttributes_SetTri_upper(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_GetTri_upper(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetTri_upper());
     return retval;
 }
@@ -1190,7 +1219,7 @@ MetricThresholdAttributes_GetTri_upper(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_SetQuad(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1242,7 +1271,7 @@ MetricThresholdAttributes_SetQuad(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_GetQuad(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetQuad()?1L:0L);
     return retval;
 }
@@ -1250,7 +1279,7 @@ MetricThresholdAttributes_GetQuad(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_SetQuad_lower(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1302,7 +1331,7 @@ MetricThresholdAttributes_SetQuad_lower(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_GetQuad_lower(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetQuad_lower());
     return retval;
 }
@@ -1310,7 +1339,7 @@ MetricThresholdAttributes_GetQuad_lower(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_SetQuad_upper(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1362,7 +1391,7 @@ MetricThresholdAttributes_SetQuad_upper(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MetricThresholdAttributes_GetQuad_upper(PyObject *self, PyObject *args)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetQuad_upper());
     return retval;
 }
@@ -1370,7 +1399,8 @@ MetricThresholdAttributes_GetQuad_upper(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyMetricThresholdAttributes_methods[METRICTHRESHOLDATTRIBUTES_NMETH] = {
-    {"Notify", MetricThresholdAttributes_Notify, METH_VARARGS},
+    {"__dir__", MetricThresholdAttributes_dir, METH_NOARGS},
+    {"Notify", MetricThresholdAttributes_Notify, METH_NOARGS},
     {"SetPreset", MetricThresholdAttributes_SetPreset, METH_VARARGS},
     {"GetPreset", MetricThresholdAttributes_GetPreset, METH_VARARGS},
     {"SetHexahedron", MetricThresholdAttributes_SetHexahedron, METH_VARARGS},
@@ -1417,19 +1447,22 @@ PyMethodDef PyMetricThresholdAttributes_methods[METRICTHRESHOLDATTRIBUTES_NMETH]
 //
 
 static void
-MetricThresholdAttributes_dealloc(PyObject *v)
+PyMetricThresholdAttributes_dealloc(PyObject *v)
 {
-   MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)v;
+   PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *MetricThresholdAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyMetricThresholdAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyMetricThresholdAttributes_getattr(PyObject *self, char *name)
+PyMetricThresholdAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "preset") == 0)
         return MetricThresholdAttributes_GetPreset(self, NULL);
     if(strcmp(name, "None") == 0)
@@ -1514,26 +1547,19 @@ PyMetricThresholdAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "quad_upper") == 0)
         return MetricThresholdAttributes_GetQuad_upper(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyMetricThresholdAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyMetricThresholdAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyMetricThresholdAttributes_methods[i].ml_name),
-                PyString_FromString(PyMetricThresholdAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyMetricThresholdAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyMetricThresholdAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyMetricThresholdAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "preset") == 0)
         obj = MetricThresholdAttributes_SetPreset(self, args);
@@ -1574,6 +1600,12 @@ PyMetricThresholdAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "quad_upper") == 0)
         obj = MetricThresholdAttributes_SetQuad_upper(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -1588,78 +1620,45 @@ PyMetricThresholdAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-MetricThresholdAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)v;
-    fprintf(fp, "%s", PyMetricThresholdAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-MetricThresholdAttributes_str(PyObject *v)
+PyMetricThresholdAttributes_str(PyObject *v)
 {
-    MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)v;
+    PyMetricThresholdAttributesObject *obj = (PyMetricThresholdAttributesObject *)v;
     return PyString_FromString(PyMetricThresholdAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *MetricThresholdAttributes_Purpose = "This class contains attributes for the MetricThreshold operator.";
-#else
-static char *MetricThresholdAttributes_Purpose = "This class contains attributes for the MetricThreshold operator.";
-#endif
+static char const *PyMetricThresholdAttributes_purpose = "This class contains attributes for the MetricThreshold operator.";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(MetricThresholdAttributesType,         \
-                  "MetricThresholdAttributes",           \
-                  MetricThresholdAttributesObject,       \
-                  MetricThresholdAttributes_dealloc,     \
-                  MetricThresholdAttributes_print,       \
-                  PyMetricThresholdAttributes_getattr,   \
-                  PyMetricThresholdAttributes_setattr,   \
-                  MetricThresholdAttributes_str,         \
-                  MetricThresholdAttributes_Purpose,     \
-                  MetricThresholdAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(MetricThresholdAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-MetricThresholdAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyMetricThresholdAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &MetricThresholdAttributesType
-         || Py_TYPE(other) != &MetricThresholdAttributesType)
+    if ( Py_TYPE(self) != &PyMetricThresholdAttributesType
+         || Py_TYPE(other) != &PyMetricThresholdAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    MetricThresholdAttributes *a = ((MetricThresholdAttributesObject *)self)->data;
-    MetricThresholdAttributes *b = ((MetricThresholdAttributesObject *)other)->data;
+    MetricThresholdAttributes *a = ((PyMetricThresholdAttributesObject *)self)->data;
+    MetricThresholdAttributes *b = ((PyMetricThresholdAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -1688,8 +1687,8 @@ static MetricThresholdAttributes *currentAtts = 0;
 static PyObject *
 NewMetricThresholdAttributes(int useCurrent)
 {
-    MetricThresholdAttributesObject *newObject;
-    newObject = PyObject_NEW(MetricThresholdAttributesObject, &MetricThresholdAttributesType);
+    PyMetricThresholdAttributesObject *newObject;
+    newObject = PyObject_NEW(PyMetricThresholdAttributesObject, &PyMetricThresholdAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1700,14 +1699,15 @@ NewMetricThresholdAttributes(int useCurrent)
         newObject->data = new MetricThresholdAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyMetricThresholdAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapMetricThresholdAttributes(const MetricThresholdAttributes *attr)
 {
-    MetricThresholdAttributesObject *newObject;
-    newObject = PyObject_NEW(MetricThresholdAttributesObject, &MetricThresholdAttributesType);
+    PyMetricThresholdAttributesObject *newObject;
+    newObject = PyObject_NEW(PyMetricThresholdAttributesObject, &PyMetricThresholdAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (MetricThresholdAttributes *)attr;
@@ -1809,13 +1809,13 @@ PyMetricThresholdAttributes_GetMethodTable(int *nMethods)
 bool
 PyMetricThresholdAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &MetricThresholdAttributesType);
+    return (obj->ob_type == &PyMetricThresholdAttributesType);
 }
 
 MetricThresholdAttributes *
 PyMetricThresholdAttributes_FromPyObject(PyObject *obj)
 {
-    MetricThresholdAttributesObject *obj2 = (MetricThresholdAttributesObject *)obj;
+    PyMetricThresholdAttributesObject *obj2 = (PyMetricThresholdAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1834,7 +1834,7 @@ PyMetricThresholdAttributes_Wrap(const MetricThresholdAttributes *attr)
 void
 PyMetricThresholdAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    MetricThresholdAttributesObject *obj2 = (MetricThresholdAttributesObject *)obj;
+    PyMetricThresholdAttributesObject *obj2 = (PyMetricThresholdAttributesObject *)obj;
     obj2->parent = parent;
 }
 

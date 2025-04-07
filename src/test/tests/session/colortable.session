@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Object name="VisIt">
-    <Field name="Version" type="string">3.2.2</Field>
+    <Field name="Version" type="string">3.4.2</Field>
     <Object name="VIEWER">
         <Object name="DEFAULT_VALUES">
             <Object name="GlobalAttributes">
@@ -4713,16 +4713,16 @@
                 <Field name="animationStep" type="int">0</Field>
             </Object>
             <Object name="VolumeAttributes">
-                <Field name="osprayShadowsEnabledFlag" type="bool">false</Field>
-                <Field name="osprayUseGridAcceleratorFlag" type="bool">false</Field>
-                <Field name="osprayPreIntegrationFlag" type="bool">false</Field>
-                <Field name="ospraySingleShadeFlag" type="bool">false</Field>
-                <Field name="osprayOneSidedLightingFlag" type="bool">false</Field>
-                <Field name="osprayAoTransparencyEnabledFlag" type="bool">false</Field>
-                <Field name="ospraySpp" type="int">1</Field>
-                <Field name="osprayAoSamples" type="int">0</Field>
-                <Field name="osprayAoDistance" type="double">100000</Field>
-                <Field name="osprayMinContribution" type="double">0.001</Field>
+                <Field name="OSPRayShadowsEnabledFlag" type="bool">false</Field>
+                <Field name="OSPRayUseGridAcceleratorFlag" type="bool">false</Field>
+                <Field name="OSPRayPreIntegrationFlag" type="bool">false</Field>
+                <Field name="OSPRaySingleShadeFlag" type="bool">false</Field>
+                <Field name="OSPRayOneSidedLightingFlag" type="bool">false</Field>
+                <Field name="OSPRayAOTransparencyEnabledFlag" type="bool">false</Field>
+                <Field name="OSPRaySPP" type="int">1</Field>
+                <Field name="OSPRayAOSamples" type="int">0</Field>
+                <Field name="OSPRayAODistance" type="double">100000</Field>
+                <Field name="OSPRayMinContribution" type="double">0.001</Field>
                 <Field name="legendFlag" type="bool">true</Field>
                 <Field name="lightingFlag" type="bool">true</Field>
                 <Object name="colorControlPoints">

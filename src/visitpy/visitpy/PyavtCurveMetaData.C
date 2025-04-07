@@ -5,6 +5,7 @@
 #include <PyavtCurveMetaData.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a avtCurveMetaData.
 //
-struct avtCurveMetaDataObject
+struct PyavtCurveMetaDataObject
 {
     PyObject_HEAD
     avtCurveMetaData *data;
@@ -68,16 +69,44 @@ PyavtCurveMetaData_ToString(const avtCurveMetaData *atts, const char *prefix, co
 static PyObject *
 avtCurveMetaData_Notify(PyObject *self, PyObject *args)
 {
-    avtCurveMetaDataObject *obj = (avtCurveMetaDataObject *)self;
+    PyavtCurveMetaDataObject *obj = (PyavtCurveMetaDataObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+avtCurveMetaData_dir(PyObject *self, PyObject *args)
+{
+    static avtCurveMetaData atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyavtCurveMetaData_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 avtCurveMetaData_SetXUnits(PyObject *self, PyObject *args)
 {
-    avtCurveMetaDataObject *obj = (avtCurveMetaDataObject *)self;
+    PyavtCurveMetaDataObject *obj = (PyavtCurveMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -118,7 +147,7 @@ avtCurveMetaData_SetXUnits(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtCurveMetaData_GetXUnits(PyObject *self, PyObject *args)
 {
-    avtCurveMetaDataObject *obj = (avtCurveMetaDataObject *)self;
+    PyavtCurveMetaDataObject *obj = (PyavtCurveMetaDataObject *)self;
     PyObject *retval = PyString_FromString(obj->data->xUnits.c_str());
     return retval;
 }
@@ -126,7 +155,7 @@ avtCurveMetaData_GetXUnits(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtCurveMetaData_SetXLabel(PyObject *self, PyObject *args)
 {
-    avtCurveMetaDataObject *obj = (avtCurveMetaDataObject *)self;
+    PyavtCurveMetaDataObject *obj = (PyavtCurveMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -167,7 +196,7 @@ avtCurveMetaData_SetXLabel(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtCurveMetaData_GetXLabel(PyObject *self, PyObject *args)
 {
-    avtCurveMetaDataObject *obj = (avtCurveMetaDataObject *)self;
+    PyavtCurveMetaDataObject *obj = (PyavtCurveMetaDataObject *)self;
     PyObject *retval = PyString_FromString(obj->data->xLabel.c_str());
     return retval;
 }
@@ -175,7 +204,7 @@ avtCurveMetaData_GetXLabel(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtCurveMetaData_SetYUnits(PyObject *self, PyObject *args)
 {
-    avtCurveMetaDataObject *obj = (avtCurveMetaDataObject *)self;
+    PyavtCurveMetaDataObject *obj = (PyavtCurveMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -216,7 +245,7 @@ avtCurveMetaData_SetYUnits(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtCurveMetaData_GetYUnits(PyObject *self, PyObject *args)
 {
-    avtCurveMetaDataObject *obj = (avtCurveMetaDataObject *)self;
+    PyavtCurveMetaDataObject *obj = (PyavtCurveMetaDataObject *)self;
     PyObject *retval = PyString_FromString(obj->data->yUnits.c_str());
     return retval;
 }
@@ -224,7 +253,7 @@ avtCurveMetaData_GetYUnits(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtCurveMetaData_SetYLabel(PyObject *self, PyObject *args)
 {
-    avtCurveMetaDataObject *obj = (avtCurveMetaDataObject *)self;
+    PyavtCurveMetaDataObject *obj = (PyavtCurveMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -265,7 +294,7 @@ avtCurveMetaData_SetYLabel(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtCurveMetaData_GetYLabel(PyObject *self, PyObject *args)
 {
-    avtCurveMetaDataObject *obj = (avtCurveMetaDataObject *)self;
+    PyavtCurveMetaDataObject *obj = (PyavtCurveMetaDataObject *)self;
     PyObject *retval = PyString_FromString(obj->data->yLabel.c_str());
     return retval;
 }
@@ -273,7 +302,7 @@ avtCurveMetaData_GetYLabel(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtCurveMetaData_SetHasSpatialExtents(PyObject *self, PyObject *args)
 {
-    avtCurveMetaDataObject *obj = (avtCurveMetaDataObject *)self;
+    PyavtCurveMetaDataObject *obj = (PyavtCurveMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -325,7 +354,7 @@ avtCurveMetaData_SetHasSpatialExtents(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtCurveMetaData_GetHasSpatialExtents(PyObject *self, PyObject *args)
 {
-    avtCurveMetaDataObject *obj = (avtCurveMetaDataObject *)self;
+    PyavtCurveMetaDataObject *obj = (PyavtCurveMetaDataObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->hasSpatialExtents?1L:0L);
     return retval;
 }
@@ -333,7 +362,7 @@ avtCurveMetaData_GetHasSpatialExtents(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtCurveMetaData_SetMinSpatialExtents(PyObject *self, PyObject *args)
 {
-    avtCurveMetaDataObject *obj = (avtCurveMetaDataObject *)self;
+    PyavtCurveMetaDataObject *obj = (PyavtCurveMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -385,7 +414,7 @@ avtCurveMetaData_SetMinSpatialExtents(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtCurveMetaData_GetMinSpatialExtents(PyObject *self, PyObject *args)
 {
-    avtCurveMetaDataObject *obj = (avtCurveMetaDataObject *)self;
+    PyavtCurveMetaDataObject *obj = (PyavtCurveMetaDataObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->minSpatialExtents);
     return retval;
 }
@@ -393,7 +422,7 @@ avtCurveMetaData_GetMinSpatialExtents(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtCurveMetaData_SetMaxSpatialExtents(PyObject *self, PyObject *args)
 {
-    avtCurveMetaDataObject *obj = (avtCurveMetaDataObject *)self;
+    PyavtCurveMetaDataObject *obj = (PyavtCurveMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -445,7 +474,7 @@ avtCurveMetaData_SetMaxSpatialExtents(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtCurveMetaData_GetMaxSpatialExtents(PyObject *self, PyObject *args)
 {
-    avtCurveMetaDataObject *obj = (avtCurveMetaDataObject *)self;
+    PyavtCurveMetaDataObject *obj = (PyavtCurveMetaDataObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->maxSpatialExtents);
     return retval;
 }
@@ -453,7 +482,7 @@ avtCurveMetaData_GetMaxSpatialExtents(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtCurveMetaData_SetFrom1DScalarName(PyObject *self, PyObject *args)
 {
-    avtCurveMetaDataObject *obj = (avtCurveMetaDataObject *)self;
+    PyavtCurveMetaDataObject *obj = (PyavtCurveMetaDataObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -494,7 +523,7 @@ avtCurveMetaData_SetFrom1DScalarName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 avtCurveMetaData_GetFrom1DScalarName(PyObject *self, PyObject *args)
 {
-    avtCurveMetaDataObject *obj = (avtCurveMetaDataObject *)self;
+    PyavtCurveMetaDataObject *obj = (PyavtCurveMetaDataObject *)self;
     PyObject *retval = PyString_FromString(obj->data->from1DScalarName.c_str());
     return retval;
 }
@@ -502,7 +531,8 @@ avtCurveMetaData_GetFrom1DScalarName(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyavtCurveMetaData_methods[AVTCURVEMETADATA_NMETH] = {
-    {"Notify", avtCurveMetaData_Notify, METH_VARARGS},
+    {"__dir__", avtCurveMetaData_dir, METH_NOARGS},
+    {"Notify", avtCurveMetaData_Notify, METH_NOARGS},
     {"SetXUnits", avtCurveMetaData_SetXUnits, METH_VARARGS},
     {"GetXUnits", avtCurveMetaData_GetXUnits, METH_VARARGS},
     {"SetXLabel", avtCurveMetaData_SetXLabel, METH_VARARGS},
@@ -547,19 +577,22 @@ static void PyavtCurveMetaData_ExtendSetGetMethodTable()
 //
 
 static void
-avtCurveMetaData_dealloc(PyObject *v)
+PyavtCurveMetaData_dealloc(PyObject *v)
 {
-   avtCurveMetaDataObject *obj = (avtCurveMetaDataObject *)v;
+   PyavtCurveMetaDataObject *obj = (PyavtCurveMetaDataObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *avtCurveMetaData_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyavtCurveMetaData_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyavtCurveMetaData_getattr(PyObject *self, char *name)
+PyavtCurveMetaData_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "xUnits") == 0)
         return avtCurveMetaData_GetXUnits(self, NULL);
     if(strcmp(name, "xLabel") == 0)
@@ -579,36 +612,29 @@ PyavtCurveMetaData_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "__methods__") != 0)
     {
-        PyObject *retval = PyavtVarMetaData_getattr(self, name);
+        PyObject *retval = PyavtVarMetaData_getattro(self, attr_name);
         if (retval) return retval;
     }
 
     PyavtCurveMetaData_ExtendSetGetMethodTable();
+    PyObject *meth = Py_FindMethod(PyavtCurveMetaData_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyavtCurveMetaData_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyavtCurveMetaData_methods[i].ml_name),
-                PyString_FromString(PyavtCurveMetaData_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyavtCurveMetaData_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyavtCurveMetaData_setattr(PyObject *self, char *name, PyObject *args)
+PyavtCurveMetaData_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
-    if (PyavtVarMetaData_setattr(self, name, args) != -1)
+    if (PyavtVarMetaData_setattro(self, attr_name, args) != -1)
         return 0;
     else
         PyErr_Clear();
 
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "xUnits") == 0)
         obj = avtCurveMetaData_SetXUnits(self, args);
@@ -627,6 +653,12 @@ PyavtCurveMetaData_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "from1DScalarName") == 0)
         obj = avtCurveMetaData_SetFrom1DScalarName(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -641,78 +673,45 @@ PyavtCurveMetaData_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-avtCurveMetaData_print(PyObject *v, FILE *fp, int flags)
-{
-    avtCurveMetaDataObject *obj = (avtCurveMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtCurveMetaData_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-avtCurveMetaData_str(PyObject *v)
+PyavtCurveMetaData_str(PyObject *v)
 {
-    avtCurveMetaDataObject *obj = (avtCurveMetaDataObject *)v;
+    PyavtCurveMetaDataObject *obj = (PyavtCurveMetaDataObject *)v;
     return PyString_FromString(PyavtCurveMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *avtCurveMetaData_Purpose = "Contains curve metadata attributes";
-#else
-static char *avtCurveMetaData_Purpose = "Contains curve metadata attributes";
-#endif
+static char const *PyavtCurveMetaData_purpose = "Contains curve metadata attributes";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(avtCurveMetaDataType,         \
-                  "avtCurveMetaData",           \
-                  avtCurveMetaDataObject,       \
-                  avtCurveMetaData_dealloc,     \
-                  avtCurveMetaData_print,       \
-                  PyavtCurveMetaData_getattr,   \
-                  PyavtCurveMetaData_setattr,   \
-                  avtCurveMetaData_str,         \
-                  avtCurveMetaData_Purpose,     \
-                  avtCurveMetaData_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(avtCurveMetaData);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-avtCurveMetaData_richcompare(PyObject *self, PyObject *other, int op)
+PyavtCurveMetaData_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &avtCurveMetaDataType
-         || Py_TYPE(other) != &avtCurveMetaDataType)
+    if ( Py_TYPE(self) != &PyavtCurveMetaDataType
+         || Py_TYPE(other) != &PyavtCurveMetaDataType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    avtCurveMetaData *a = ((avtCurveMetaDataObject *)self)->data;
-    avtCurveMetaData *b = ((avtCurveMetaDataObject *)other)->data;
+    avtCurveMetaData *a = ((PyavtCurveMetaDataObject *)self)->data;
+    avtCurveMetaData *b = ((PyavtCurveMetaDataObject *)other)->data;
 
     switch (op)
     {
@@ -741,8 +740,8 @@ static avtCurveMetaData *currentAtts = 0;
 static PyObject *
 NewavtCurveMetaData(int useCurrent)
 {
-    avtCurveMetaDataObject *newObject;
-    newObject = PyObject_NEW(avtCurveMetaDataObject, &avtCurveMetaDataType);
+    PyavtCurveMetaDataObject *newObject;
+    newObject = PyObject_NEW(PyavtCurveMetaDataObject, &PyavtCurveMetaDataType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -753,14 +752,15 @@ NewavtCurveMetaData(int useCurrent)
         newObject->data = new avtCurveMetaData;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyavtCurveMetaDataType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapavtCurveMetaData(const avtCurveMetaData *attr)
 {
-    avtCurveMetaDataObject *newObject;
-    newObject = PyObject_NEW(avtCurveMetaDataObject, &avtCurveMetaDataType);
+    PyavtCurveMetaDataObject *newObject;
+    newObject = PyObject_NEW(PyavtCurveMetaDataObject, &PyavtCurveMetaDataType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (avtCurveMetaData *)attr;
@@ -862,13 +862,13 @@ PyavtCurveMetaData_GetMethodTable(int *nMethods)
 bool
 PyavtCurveMetaData_Check(PyObject *obj)
 {
-    return (obj->ob_type == &avtCurveMetaDataType);
+    return (obj->ob_type == &PyavtCurveMetaDataType);
 }
 
 avtCurveMetaData *
 PyavtCurveMetaData_FromPyObject(PyObject *obj)
 {
-    avtCurveMetaDataObject *obj2 = (avtCurveMetaDataObject *)obj;
+    PyavtCurveMetaDataObject *obj2 = (PyavtCurveMetaDataObject *)obj;
     return obj2->data;
 }
 
@@ -887,7 +887,7 @@ PyavtCurveMetaData_Wrap(const avtCurveMetaData *attr)
 void
 PyavtCurveMetaData_SetParent(PyObject *obj, PyObject *parent)
 {
-    avtCurveMetaDataObject *obj2 = (avtCurveMetaDataObject *)obj;
+    PyavtCurveMetaDataObject *obj2 = (PyavtCurveMetaDataObject *)obj;
     obj2->parent = parent;
 }
 

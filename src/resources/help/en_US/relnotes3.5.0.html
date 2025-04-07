@@ -57,6 +57,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Added a <code>GetActiveWindow()</code> method to return the currently active window.</li>
   <li>Ultrawrapper has been removed from VisIt. For similar functionality, please see: <a href=https://pydv.readthedocs.io/en/latest/>PyDV</a>.</li>
+  <li>CLI objects and functions improved in various ways including fixing <code>dir()</code> for them.</li>
+  <li><code>apropos()</code> help function is improved with additional arguments to control searches.</li>
 </ul>
 
 <a name="File_format"></a>
@@ -83,7 +85,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Expression_changes"></a>
 <p><b><font size="4">Changes to VisIt's expression language in version 3.5</font></b></p>
 <ul>
-  <li>Expression Change 1</li>
+  <li>Fixed a bug causing the min, max, and divide expressions to crash the compute engine when given a single variable as input. Min and max now return the result of that single variable, and divide throws an error instead of crashing.</li>
   <li>Expression Change 2</li>
 </ul>
 

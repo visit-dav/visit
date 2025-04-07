@@ -5,6 +5,7 @@
 #include <PyMultiCurveAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 #include <visit-config.h>
 #include <PyColorControlPointList.h>
@@ -27,7 +28,7 @@
 //
 // This struct contains the Python type information and a MultiCurveAttributes.
 //
-struct MultiCurveAttributesObject
+struct PyMultiCurveAttributesObject
 {
     PyObject_HEAD
     MultiCurveAttributes *data;
@@ -134,16 +135,44 @@ PyMultiCurveAttributes_ToString(const MultiCurveAttributes *atts, const char *pr
 static PyObject *
 MultiCurveAttributes_Notify(PyObject *self, PyObject *args)
 {
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+    PyMultiCurveAttributesObject *obj = (PyMultiCurveAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+MultiCurveAttributes_dir(PyObject *self, PyObject *args)
+{
+    static MultiCurveAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyMultiCurveAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 MultiCurveAttributes_SetDefaultPalette(PyObject *self, PyObject *args)
 {
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+    PyMultiCurveAttributesObject *obj = (PyMultiCurveAttributesObject *)self;
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
@@ -160,7 +189,7 @@ MultiCurveAttributes_SetDefaultPalette(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiCurveAttributes_GetDefaultPalette(PyObject *self, PyObject *args)
 {
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+    PyMultiCurveAttributesObject *obj = (PyMultiCurveAttributesObject *)self;
     // Since the new object will point to data owned by this object,
     // we need to increment the reference count.
     Py_INCREF(self);
@@ -176,7 +205,7 @@ MultiCurveAttributes_GetDefaultPalette(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiCurveAttributes_SetChangedColors(PyObject *self, PyObject *args)
 {
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+    PyMultiCurveAttributesObject *obj = (PyMultiCurveAttributesObject *)self;
 
     typedef unsigned char uchar;
     ucharVector vec;
@@ -241,7 +270,7 @@ MultiCurveAttributes_SetChangedColors(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiCurveAttributes_GetChangedColors(PyObject *self, PyObject *args)
 {
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+    PyMultiCurveAttributesObject *obj = (PyMultiCurveAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the changedColors.
     const unsignedCharVector &changedColors = obj->data->GetChangedColors();
     PyObject *retval = PyTuple_New(changedColors.size());
@@ -253,7 +282,7 @@ MultiCurveAttributes_GetChangedColors(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiCurveAttributes_SetColorType(PyObject *self, PyObject *args)
 {
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+    PyMultiCurveAttributesObject *obj = (PyMultiCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -311,7 +340,7 @@ MultiCurveAttributes_SetColorType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiCurveAttributes_GetColorType(PyObject *self, PyObject *args)
 {
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+    PyMultiCurveAttributesObject *obj = (PyMultiCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetColorType()));
     return retval;
 }
@@ -319,7 +348,7 @@ MultiCurveAttributes_GetColorType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiCurveAttributes_SetSingleColor(PyObject *self, PyObject *args)
 {
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+    PyMultiCurveAttributesObject *obj = (PyMultiCurveAttributesObject *)self;
 
     int c[4];
     if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
@@ -382,7 +411,7 @@ MultiCurveAttributes_SetSingleColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiCurveAttributes_GetSingleColor(PyObject *self, PyObject *args)
 {
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+    PyMultiCurveAttributesObject *obj = (PyMultiCurveAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the singleColor.
     PyObject *retval = PyTuple_New(4);
     const unsigned char *singleColor = obj->data->GetSingleColor().GetColor();
@@ -396,7 +425,7 @@ MultiCurveAttributes_GetSingleColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiCurveAttributes_SetMultiColor(PyObject *self, PyObject *args)
 {
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+    PyMultiCurveAttributesObject *obj = (PyMultiCurveAttributesObject *)self;
 
     PyObject *pyobj = NULL;
     ColorAttributeList &cL = obj->data->GetMultiColor();
@@ -563,7 +592,7 @@ MultiCurveAttributes_SetMultiColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiCurveAttributes_GetMultiColor(PyObject *self, PyObject *args)
 {
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+    PyMultiCurveAttributesObject *obj = (PyMultiCurveAttributesObject *)self;
     PyObject *retval = NULL;
     ColorAttributeList &cL = obj->data->GetMultiColor();
 
@@ -606,7 +635,7 @@ MultiCurveAttributes_GetMultiColor(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiCurveAttributes_SetLineWidth(PyObject *self, PyObject *args)
 {
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+    PyMultiCurveAttributesObject *obj = (PyMultiCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -658,7 +687,7 @@ MultiCurveAttributes_SetLineWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiCurveAttributes_GetLineWidth(PyObject *self, PyObject *args)
 {
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+    PyMultiCurveAttributesObject *obj = (PyMultiCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetLineWidth()));
     return retval;
 }
@@ -666,7 +695,7 @@ MultiCurveAttributes_GetLineWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiCurveAttributes_SetYAxisTitleFormat(PyObject *self, PyObject *args)
 {
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+    PyMultiCurveAttributesObject *obj = (PyMultiCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -707,7 +736,7 @@ MultiCurveAttributes_SetYAxisTitleFormat(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiCurveAttributes_GetYAxisTitleFormat(PyObject *self, PyObject *args)
 {
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+    PyMultiCurveAttributesObject *obj = (PyMultiCurveAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetYAxisTitleFormat().c_str());
     return retval;
 }
@@ -715,7 +744,7 @@ MultiCurveAttributes_GetYAxisTitleFormat(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiCurveAttributes_SetUseYAxisTickSpacing(PyObject *self, PyObject *args)
 {
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+    PyMultiCurveAttributesObject *obj = (PyMultiCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -767,7 +796,7 @@ MultiCurveAttributes_SetUseYAxisTickSpacing(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiCurveAttributes_GetUseYAxisTickSpacing(PyObject *self, PyObject *args)
 {
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+    PyMultiCurveAttributesObject *obj = (PyMultiCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetUseYAxisTickSpacing()?1L:0L);
     return retval;
 }
@@ -775,7 +804,7 @@ MultiCurveAttributes_GetUseYAxisTickSpacing(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiCurveAttributes_SetYAxisTickSpacing(PyObject *self, PyObject *args)
 {
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+    PyMultiCurveAttributesObject *obj = (PyMultiCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -827,7 +856,7 @@ MultiCurveAttributes_SetYAxisTickSpacing(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiCurveAttributes_GetYAxisTickSpacing(PyObject *self, PyObject *args)
 {
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+    PyMultiCurveAttributesObject *obj = (PyMultiCurveAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetYAxisTickSpacing());
     return retval;
 }
@@ -835,7 +864,7 @@ MultiCurveAttributes_GetYAxisTickSpacing(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiCurveAttributes_SetDisplayMarkers(PyObject *self, PyObject *args)
 {
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+    PyMultiCurveAttributesObject *obj = (PyMultiCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -887,7 +916,7 @@ MultiCurveAttributes_SetDisplayMarkers(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiCurveAttributes_GetDisplayMarkers(PyObject *self, PyObject *args)
 {
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+    PyMultiCurveAttributesObject *obj = (PyMultiCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetDisplayMarkers()?1L:0L);
     return retval;
 }
@@ -895,7 +924,7 @@ MultiCurveAttributes_GetDisplayMarkers(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiCurveAttributes_SetMarkerScale(PyObject *self, PyObject *args)
 {
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+    PyMultiCurveAttributesObject *obj = (PyMultiCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -947,7 +976,7 @@ MultiCurveAttributes_SetMarkerScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiCurveAttributes_GetMarkerScale(PyObject *self, PyObject *args)
 {
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+    PyMultiCurveAttributesObject *obj = (PyMultiCurveAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMarkerScale());
     return retval;
 }
@@ -955,7 +984,7 @@ MultiCurveAttributes_GetMarkerScale(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiCurveAttributes_SetMarkerLineWidth(PyObject *self, PyObject *args)
 {
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+    PyMultiCurveAttributesObject *obj = (PyMultiCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1007,7 +1036,7 @@ MultiCurveAttributes_SetMarkerLineWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiCurveAttributes_GetMarkerLineWidth(PyObject *self, PyObject *args)
 {
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+    PyMultiCurveAttributesObject *obj = (PyMultiCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMarkerLineWidth()));
     return retval;
 }
@@ -1015,7 +1044,7 @@ MultiCurveAttributes_GetMarkerLineWidth(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiCurveAttributes_SetMarkerVariable(PyObject *self, PyObject *args)
 {
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+    PyMultiCurveAttributesObject *obj = (PyMultiCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1056,7 +1085,7 @@ MultiCurveAttributes_SetMarkerVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiCurveAttributes_GetMarkerVariable(PyObject *self, PyObject *args)
 {
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+    PyMultiCurveAttributesObject *obj = (PyMultiCurveAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetMarkerVariable().c_str());
     return retval;
 }
@@ -1064,7 +1093,7 @@ MultiCurveAttributes_GetMarkerVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiCurveAttributes_SetDisplayIds(PyObject *self, PyObject *args)
 {
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+    PyMultiCurveAttributesObject *obj = (PyMultiCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1116,7 +1145,7 @@ MultiCurveAttributes_SetDisplayIds(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiCurveAttributes_GetDisplayIds(PyObject *self, PyObject *args)
 {
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+    PyMultiCurveAttributesObject *obj = (PyMultiCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetDisplayIds()?1L:0L);
     return retval;
 }
@@ -1124,7 +1153,7 @@ MultiCurveAttributes_GetDisplayIds(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiCurveAttributes_SetIdVariable(PyObject *self, PyObject *args)
 {
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+    PyMultiCurveAttributesObject *obj = (PyMultiCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1165,7 +1194,7 @@ MultiCurveAttributes_SetIdVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiCurveAttributes_GetIdVariable(PyObject *self, PyObject *args)
 {
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+    PyMultiCurveAttributesObject *obj = (PyMultiCurveAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetIdVariable().c_str());
     return retval;
 }
@@ -1173,7 +1202,7 @@ MultiCurveAttributes_GetIdVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiCurveAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 {
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+    PyMultiCurveAttributesObject *obj = (PyMultiCurveAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1225,7 +1254,7 @@ MultiCurveAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 MultiCurveAttributes_GetLegendFlag(PyObject *self, PyObject *args)
 {
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
+    PyMultiCurveAttributesObject *obj = (PyMultiCurveAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetLegendFlag()?1L:0L);
     return retval;
 }
@@ -1233,7 +1262,8 @@ MultiCurveAttributes_GetLegendFlag(PyObject *self, PyObject *args)
 
 
 PyMethodDef PyMultiCurveAttributes_methods[MULTICURVEATTRIBUTES_NMETH] = {
-    {"Notify", MultiCurveAttributes_Notify, METH_VARARGS},
+    {"__dir__", MultiCurveAttributes_dir, METH_NOARGS},
+    {"Notify", MultiCurveAttributes_Notify, METH_NOARGS},
     {"SetDefaultPalette", MultiCurveAttributes_SetDefaultPalette, METH_VARARGS},
     {"GetDefaultPalette", MultiCurveAttributes_GetDefaultPalette, METH_VARARGS},
     {"SetChangedColors", MultiCurveAttributes_SetChangedColors, METH_VARARGS},
@@ -1274,19 +1304,22 @@ PyMethodDef PyMultiCurveAttributes_methods[MULTICURVEATTRIBUTES_NMETH] = {
 //
 
 static void
-MultiCurveAttributes_dealloc(PyObject *v)
+PyMultiCurveAttributes_dealloc(PyObject *v)
 {
-   MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)v;
+   PyMultiCurveAttributesObject *obj = (PyMultiCurveAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *MultiCurveAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyMultiCurveAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyMultiCurveAttributes_getattr(PyObject *self, char *name)
+PyMultiCurveAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "defaultPalette") == 0)
         return MultiCurveAttributes_GetDefaultPalette(self, NULL);
     if(strcmp(name, "changedColors") == 0)
@@ -1325,26 +1358,19 @@ PyMultiCurveAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "legendFlag") == 0)
         return MultiCurveAttributes_GetLegendFlag(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PyMultiCurveAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyMultiCurveAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyMultiCurveAttributes_methods[i].ml_name),
-                PyString_FromString(PyMultiCurveAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyMultiCurveAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyMultiCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyMultiCurveAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "defaultPalette") == 0)
         obj = MultiCurveAttributes_SetDefaultPalette(self, args);
@@ -1379,6 +1405,12 @@ PyMultiCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "legendFlag") == 0)
         obj = MultiCurveAttributes_SetLegendFlag(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -1393,78 +1425,45 @@ PyMultiCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-MultiCurveAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)v;
-    fprintf(fp, "%s", PyMultiCurveAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-MultiCurveAttributes_str(PyObject *v)
+PyMultiCurveAttributes_str(PyObject *v)
 {
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)v;
+    PyMultiCurveAttributesObject *obj = (PyMultiCurveAttributesObject *)v;
     return PyString_FromString(PyMultiCurveAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *MultiCurveAttributes_Purpose = "This class contains the plot attributes for the MultiCurve plot.";
-#else
-static char *MultiCurveAttributes_Purpose = "This class contains the plot attributes for the MultiCurve plot.";
-#endif
+static char const *PyMultiCurveAttributes_purpose = "This class contains the plot attributes for the MultiCurve plot.";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(MultiCurveAttributesType,         \
-                  "MultiCurveAttributes",           \
-                  MultiCurveAttributesObject,       \
-                  MultiCurveAttributes_dealloc,     \
-                  MultiCurveAttributes_print,       \
-                  PyMultiCurveAttributes_getattr,   \
-                  PyMultiCurveAttributes_setattr,   \
-                  MultiCurveAttributes_str,         \
-                  MultiCurveAttributes_Purpose,     \
-                  MultiCurveAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(MultiCurveAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-MultiCurveAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyMultiCurveAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &MultiCurveAttributesType
-         || Py_TYPE(other) != &MultiCurveAttributesType)
+    if ( Py_TYPE(self) != &PyMultiCurveAttributesType
+         || Py_TYPE(other) != &PyMultiCurveAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    MultiCurveAttributes *a = ((MultiCurveAttributesObject *)self)->data;
-    MultiCurveAttributes *b = ((MultiCurveAttributesObject *)other)->data;
+    MultiCurveAttributes *a = ((PyMultiCurveAttributesObject *)self)->data;
+    MultiCurveAttributes *b = ((PyMultiCurveAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -1493,8 +1492,8 @@ static MultiCurveAttributes *currentAtts = 0;
 static PyObject *
 NewMultiCurveAttributes(int useCurrent)
 {
-    MultiCurveAttributesObject *newObject;
-    newObject = PyObject_NEW(MultiCurveAttributesObject, &MultiCurveAttributesType);
+    PyMultiCurveAttributesObject *newObject;
+    newObject = PyObject_NEW(PyMultiCurveAttributesObject, &PyMultiCurveAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1505,14 +1504,15 @@ NewMultiCurveAttributes(int useCurrent)
         newObject->data = new MultiCurveAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyMultiCurveAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapMultiCurveAttributes(const MultiCurveAttributes *attr)
 {
-    MultiCurveAttributesObject *newObject;
-    newObject = PyObject_NEW(MultiCurveAttributesObject, &MultiCurveAttributesType);
+    PyMultiCurveAttributesObject *newObject;
+    newObject = PyObject_NEW(PyMultiCurveAttributesObject, &PyMultiCurveAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (MultiCurveAttributes *)attr;
@@ -1614,13 +1614,13 @@ PyMultiCurveAttributes_GetMethodTable(int *nMethods)
 bool
 PyMultiCurveAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &MultiCurveAttributesType);
+    return (obj->ob_type == &PyMultiCurveAttributesType);
 }
 
 MultiCurveAttributes *
 PyMultiCurveAttributes_FromPyObject(PyObject *obj)
 {
-    MultiCurveAttributesObject *obj2 = (MultiCurveAttributesObject *)obj;
+    PyMultiCurveAttributesObject *obj2 = (PyMultiCurveAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -1639,7 +1639,7 @@ PyMultiCurveAttributes_Wrap(const MultiCurveAttributes *attr)
 void
 PyMultiCurveAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    MultiCurveAttributesObject *obj2 = (MultiCurveAttributesObject *)obj;
+    PyMultiCurveAttributesObject *obj2 = (PyMultiCurveAttributesObject *)obj;
     obj2->parent = parent;
 }
 

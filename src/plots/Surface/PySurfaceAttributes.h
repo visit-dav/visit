@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define SURFACEATTRIBUTES_NMETH 36
+#define SURFACEATTRIBUTES_NMETH 37
 void           PySurfaceAttributes_StartUp(SurfaceAttributes *subj, void *data);
 void           PySurfaceAttributes_CloseDown();
 PyMethodDef *  PySurfaceAttributes_GetMethodTable(int *nMethods);
@@ -23,8 +23,8 @@ void           PySurfaceAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PySurfaceAttributes_SetDefaults(const SurfaceAttributes *atts);
 std::string    PySurfaceAttributes_GetLogString();
 std::string    PySurfaceAttributes_ToString(const SurfaceAttributes *, const char *, const bool=false);
-PyObject *     PySurfaceAttributes_getattr(PyObject *self, char *name);
-int            PySurfaceAttributes_setattr(PyObject *self, char *name, PyObject *args);
+PyObject *     PySurfaceAttributes_getattro(PyObject *self, PyObject *attr_name);
+int            PySurfaceAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 extern PyMethodDef PySurfaceAttributes_methods[SURFACEATTRIBUTES_NMETH];
 
 #endif

@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define QUERYATTRIBUTES_NMETH 20
+#define QUERYATTRIBUTES_NMETH 21
 void VISITPY_API           PyQueryAttributes_StartUp(QueryAttributes *subj, void *data);
 void VISITPY_API           PyQueryAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyQueryAttributes_GetMethodTable(int *nMethods);
@@ -24,8 +24,8 @@ void VISITPY_API           PyQueryAttributes_SetParent(PyObject *obj, PyObject *
 void VISITPY_API           PyQueryAttributes_SetDefaults(const QueryAttributes *atts);
 std::string VISITPY_API    PyQueryAttributes_GetLogString();
 std::string VISITPY_API    PyQueryAttributes_ToString(const QueryAttributes *, const char *, const bool=false);
-VISITPY_API PyObject *     PyQueryAttributes_getattr(PyObject *self, char *name);
-int VISITPY_API            PyQueryAttributes_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyQueryAttributes_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyQueryAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyQueryAttributes_methods[QUERYATTRIBUTES_NMETH];
 
 #endif

@@ -5,6 +5,7 @@
 #include <PySelectionProperties.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a SelectionProperties.
 //
-struct SelectionPropertiesObject
+struct PySelectionPropertiesObject
 {
     PyObject_HEAD
     SelectionProperties *data;
@@ -198,16 +199,44 @@ PySelectionProperties_ToString(const SelectionProperties *atts, const char *pref
 static PyObject *
 SelectionProperties_Notify(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+SelectionProperties_dir(PyObject *self, PyObject *args)
+{
+    static SelectionProperties atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PySelectionProperties_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 SelectionProperties_SetName(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -248,7 +277,7 @@ SelectionProperties_SetName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_GetName(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetName().c_str());
     return retval;
 }
@@ -256,7 +285,7 @@ SelectionProperties_GetName(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_SetSource(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -297,7 +326,7 @@ SelectionProperties_SetSource(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_GetSource(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetSource().c_str());
     return retval;
 }
@@ -305,7 +334,7 @@ SelectionProperties_GetSource(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_SetHost(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -346,7 +375,7 @@ SelectionProperties_SetHost(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_GetHost(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetHost().c_str());
     return retval;
 }
@@ -354,7 +383,7 @@ SelectionProperties_GetHost(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_SetSelectionType(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -412,7 +441,7 @@ SelectionProperties_SetSelectionType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_GetSelectionType(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetSelectionType()));
     return retval;
 }
@@ -420,7 +449,7 @@ SelectionProperties_GetSelectionType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_SetIdVariableType(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -480,7 +509,7 @@ SelectionProperties_SetIdVariableType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_GetIdVariableType(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetIdVariableType()));
     return retval;
 }
@@ -488,7 +517,7 @@ SelectionProperties_GetIdVariableType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_SetIdVariable(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -529,7 +558,7 @@ SelectionProperties_SetIdVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_GetIdVariable(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetIdVariable().c_str());
     return retval;
 }
@@ -537,7 +566,7 @@ SelectionProperties_GetIdVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_SetVariables(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
 
     stringVector vec;
 
@@ -594,7 +623,7 @@ SelectionProperties_SetVariables(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_GetVariables(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
     // Allocate a tuple the with enough entries to hold the variables.
     const stringVector &variables = obj->data->GetVariables();
     PyObject *retval = PyTuple_New(variables.size());
@@ -606,7 +635,7 @@ SelectionProperties_GetVariables(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_SetVariableMins(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
 
     doubleVector vec;
 
@@ -670,7 +699,7 @@ SelectionProperties_SetVariableMins(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_GetVariableMins(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
     // Allocate a tuple the with enough entries to hold the variableMins.
     const doubleVector &variableMins = obj->data->GetVariableMins();
     PyObject *retval = PyTuple_New(variableMins.size());
@@ -682,7 +711,7 @@ SelectionProperties_GetVariableMins(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_SetVariableMaxs(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
 
     doubleVector vec;
 
@@ -746,7 +775,7 @@ SelectionProperties_SetVariableMaxs(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_GetVariableMaxs(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
     // Allocate a tuple the with enough entries to hold the variableMaxs.
     const doubleVector &variableMaxs = obj->data->GetVariableMaxs();
     PyObject *retval = PyTuple_New(variableMaxs.size());
@@ -758,7 +787,7 @@ SelectionProperties_GetVariableMaxs(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_SetMinTimeState(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -810,7 +839,7 @@ SelectionProperties_SetMinTimeState(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_GetMinTimeState(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMinTimeState()));
     return retval;
 }
@@ -818,7 +847,7 @@ SelectionProperties_GetMinTimeState(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_SetMaxTimeState(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -870,7 +899,7 @@ SelectionProperties_SetMaxTimeState(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_GetMaxTimeState(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMaxTimeState()));
     return retval;
 }
@@ -878,7 +907,7 @@ SelectionProperties_GetMaxTimeState(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_SetTimeStateStride(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -930,7 +959,7 @@ SelectionProperties_SetTimeStateStride(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_GetTimeStateStride(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetTimeStateStride()));
     return retval;
 }
@@ -938,7 +967,7 @@ SelectionProperties_GetTimeStateStride(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_SetCombineRule(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -996,7 +1025,7 @@ SelectionProperties_SetCombineRule(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_GetCombineRule(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetCombineRule()));
     return retval;
 }
@@ -1004,7 +1033,7 @@ SelectionProperties_GetCombineRule(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_SetHistogramType(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1064,7 +1093,7 @@ SelectionProperties_SetHistogramType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_GetHistogramType(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetHistogramType()));
     return retval;
 }
@@ -1072,7 +1101,7 @@ SelectionProperties_GetHistogramType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_SetHistogramNumBins(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1124,7 +1153,7 @@ SelectionProperties_SetHistogramNumBins(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_GetHistogramNumBins(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetHistogramNumBins()));
     return retval;
 }
@@ -1132,7 +1161,7 @@ SelectionProperties_GetHistogramNumBins(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_SetHistogramAutoScaleNumBins(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1184,7 +1213,7 @@ SelectionProperties_SetHistogramAutoScaleNumBins(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_GetHistogramAutoScaleNumBins(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetHistogramAutoScaleNumBins()?1L:0L);
     return retval;
 }
@@ -1192,7 +1221,7 @@ SelectionProperties_GetHistogramAutoScaleNumBins(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_SetHistogramStartBin(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1244,7 +1273,7 @@ SelectionProperties_SetHistogramStartBin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_GetHistogramStartBin(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetHistogramStartBin()));
     return retval;
 }
@@ -1252,7 +1281,7 @@ SelectionProperties_GetHistogramStartBin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_SetHistogramEndBin(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1304,7 +1333,7 @@ SelectionProperties_SetHistogramEndBin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_GetHistogramEndBin(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetHistogramEndBin()));
     return retval;
 }
@@ -1312,7 +1341,7 @@ SelectionProperties_GetHistogramEndBin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_SetHistogramVariable(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1353,7 +1382,7 @@ SelectionProperties_SetHistogramVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 SelectionProperties_GetHistogramVariable(PyObject *self, PyObject *args)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)self;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetHistogramVariable().c_str());
     return retval;
 }
@@ -1361,7 +1390,8 @@ SelectionProperties_GetHistogramVariable(PyObject *self, PyObject *args)
 
 
 PyMethodDef PySelectionProperties_methods[SELECTIONPROPERTIES_NMETH] = {
-    {"Notify", SelectionProperties_Notify, METH_VARARGS},
+    {"__dir__", SelectionProperties_dir, METH_NOARGS},
+    {"Notify", SelectionProperties_Notify, METH_NOARGS},
     {"SetName", SelectionProperties_SetName, METH_VARARGS},
     {"GetName", SelectionProperties_GetName, METH_VARARGS},
     {"SetSource", SelectionProperties_SetSource, METH_VARARGS},
@@ -1408,19 +1438,22 @@ PyMethodDef PySelectionProperties_methods[SELECTIONPROPERTIES_NMETH] = {
 //
 
 static void
-SelectionProperties_dealloc(PyObject *v)
+PySelectionProperties_dealloc(PyObject *v)
 {
-   SelectionPropertiesObject *obj = (SelectionPropertiesObject *)v;
+   PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *SelectionProperties_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PySelectionProperties_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PySelectionProperties_getattr(PyObject *self, char *name)
+PySelectionProperties_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "name") == 0)
         return SelectionProperties_GetName(self, NULL);
     if(strcmp(name, "source") == 0)
@@ -1488,26 +1521,19 @@ PySelectionProperties_getattr(PyObject *self, char *name)
     if(strcmp(name, "histogramVariable") == 0)
         return SelectionProperties_GetHistogramVariable(self, NULL);
 
+    PyObject *meth = Py_FindMethod(PySelectionProperties_methods, self, (char*)name);
+    if (meth) return meth;
 
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PySelectionProperties_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PySelectionProperties_methods[i].ml_name),
-                PyString_FromString(PySelectionProperties_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PySelectionProperties_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PySelectionProperties_setattr(PyObject *self, char *name, PyObject *args)
+PySelectionProperties_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "name") == 0)
         obj = SelectionProperties_SetName(self, args);
@@ -1548,6 +1574,12 @@ PySelectionProperties_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "histogramVariable") == 0)
         obj = SelectionProperties_SetHistogramVariable(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -1562,78 +1594,45 @@ PySelectionProperties_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-SelectionProperties_print(PyObject *v, FILE *fp, int flags)
-{
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)v;
-    fprintf(fp, "%s", PySelectionProperties_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-SelectionProperties_str(PyObject *v)
+PySelectionProperties_str(PyObject *v)
 {
-    SelectionPropertiesObject *obj = (SelectionPropertiesObject *)v;
+    PySelectionPropertiesObject *obj = (PySelectionPropertiesObject *)v;
     return PyString_FromString(PySelectionProperties_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *SelectionProperties_Purpose = "Contains attributes for a selection";
-#else
-static char *SelectionProperties_Purpose = "Contains attributes for a selection";
-#endif
+static char const *PySelectionProperties_purpose = "Contains attributes for a selection";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(SelectionPropertiesType,         \
-                  "SelectionProperties",           \
-                  SelectionPropertiesObject,       \
-                  SelectionProperties_dealloc,     \
-                  SelectionProperties_print,       \
-                  PySelectionProperties_getattr,   \
-                  PySelectionProperties_setattr,   \
-                  SelectionProperties_str,         \
-                  SelectionProperties_Purpose,     \
-                  SelectionProperties_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(SelectionProperties);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-SelectionProperties_richcompare(PyObject *self, PyObject *other, int op)
+PySelectionProperties_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &SelectionPropertiesType
-         || Py_TYPE(other) != &SelectionPropertiesType)
+    if ( Py_TYPE(self) != &PySelectionPropertiesType
+         || Py_TYPE(other) != &PySelectionPropertiesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    SelectionProperties *a = ((SelectionPropertiesObject *)self)->data;
-    SelectionProperties *b = ((SelectionPropertiesObject *)other)->data;
+    SelectionProperties *a = ((PySelectionPropertiesObject *)self)->data;
+    SelectionProperties *b = ((PySelectionPropertiesObject *)other)->data;
 
     switch (op)
     {
@@ -1662,8 +1661,8 @@ static SelectionProperties *currentAtts = 0;
 static PyObject *
 NewSelectionProperties(int useCurrent)
 {
-    SelectionPropertiesObject *newObject;
-    newObject = PyObject_NEW(SelectionPropertiesObject, &SelectionPropertiesType);
+    PySelectionPropertiesObject *newObject;
+    newObject = PyObject_NEW(PySelectionPropertiesObject, &PySelectionPropertiesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -1674,14 +1673,15 @@ NewSelectionProperties(int useCurrent)
         newObject->data = new SelectionProperties;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PySelectionPropertiesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapSelectionProperties(const SelectionProperties *attr)
 {
-    SelectionPropertiesObject *newObject;
-    newObject = PyObject_NEW(SelectionPropertiesObject, &SelectionPropertiesType);
+    PySelectionPropertiesObject *newObject;
+    newObject = PyObject_NEW(PySelectionPropertiesObject, &PySelectionPropertiesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (SelectionProperties *)attr;
@@ -1783,13 +1783,13 @@ PySelectionProperties_GetMethodTable(int *nMethods)
 bool
 PySelectionProperties_Check(PyObject *obj)
 {
-    return (obj->ob_type == &SelectionPropertiesType);
+    return (obj->ob_type == &PySelectionPropertiesType);
 }
 
 SelectionProperties *
 PySelectionProperties_FromPyObject(PyObject *obj)
 {
-    SelectionPropertiesObject *obj2 = (SelectionPropertiesObject *)obj;
+    PySelectionPropertiesObject *obj2 = (PySelectionPropertiesObject *)obj;
     return obj2->data;
 }
 
@@ -1808,7 +1808,7 @@ PySelectionProperties_Wrap(const SelectionProperties *attr)
 void
 PySelectionProperties_SetParent(PyObject *obj, PyObject *parent)
 {
-    SelectionPropertiesObject *obj2 = (SelectionPropertiesObject *)obj;
+    PySelectionPropertiesObject *obj2 = (PySelectionPropertiesObject *)obj;
     obj2->parent = parent;
 }
 

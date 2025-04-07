@@ -5,6 +5,7 @@
 #include <PyLimitCycleAttributes.h>
 #include <ObserverToCallback.h>
 #include <stdio.h>
+#include <string.h>
 #include <Py2and3Support.h>
 
 // ****************************************************************************
@@ -23,7 +24,7 @@
 //
 // This struct contains the Python type information and a LimitCycleAttributes.
 //
-struct LimitCycleAttributesObject
+struct PyLimitCycleAttributesObject
 {
     PyObject_HEAD
     LimitCycleAttributes *data;
@@ -511,16 +512,44 @@ PyLimitCycleAttributes_ToString(const LimitCycleAttributes *atts, const char *pr
 static PyObject *
 LimitCycleAttributes_Notify(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *
+LimitCycleAttributes_dir(PyObject *self, PyObject *args)
+{
+    static LimitCycleAttributes atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyLimitCycleAttributes_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        if (!strncmp(method->ml_name, "Notify", 6)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}
 /*static*/ PyObject *
 LimitCycleAttributes_SetSourceType(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -578,7 +607,7 @@ LimitCycleAttributes_SetSourceType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetSourceType(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetSourceType()));
     return retval;
 }
@@ -586,7 +615,7 @@ LimitCycleAttributes_GetSourceType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetLineStart(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetLineStart();
@@ -653,7 +682,7 @@ LimitCycleAttributes_SetLineStart(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetLineStart(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the lineStart.
     PyObject *retval = PyTuple_New(3);
     const double *lineStart = obj->data->GetLineStart();
@@ -665,7 +694,7 @@ LimitCycleAttributes_GetLineStart(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetLineEnd(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetLineEnd();
@@ -732,7 +761,7 @@ LimitCycleAttributes_SetLineEnd(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetLineEnd(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the lineEnd.
     PyObject *retval = PyTuple_New(3);
     const double *lineEnd = obj->data->GetLineEnd();
@@ -744,7 +773,7 @@ LimitCycleAttributes_GetLineEnd(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetPlaneOrigin(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetPlaneOrigin();
@@ -811,7 +840,7 @@ LimitCycleAttributes_SetPlaneOrigin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetPlaneOrigin(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the planeOrigin.
     PyObject *retval = PyTuple_New(3);
     const double *planeOrigin = obj->data->GetPlaneOrigin();
@@ -823,7 +852,7 @@ LimitCycleAttributes_GetPlaneOrigin(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetPlaneNormal(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetPlaneNormal();
@@ -890,7 +919,7 @@ LimitCycleAttributes_SetPlaneNormal(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetPlaneNormal(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the planeNormal.
     PyObject *retval = PyTuple_New(3);
     const double *planeNormal = obj->data->GetPlaneNormal();
@@ -902,7 +931,7 @@ LimitCycleAttributes_GetPlaneNormal(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetPlaneUpAxis(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetPlaneUpAxis();
@@ -969,7 +998,7 @@ LimitCycleAttributes_SetPlaneUpAxis(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetPlaneUpAxis(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the planeUpAxis.
     PyObject *retval = PyTuple_New(3);
     const double *planeUpAxis = obj->data->GetPlaneUpAxis();
@@ -981,7 +1010,7 @@ LimitCycleAttributes_GetPlaneUpAxis(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetSampleDensity0(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1033,7 +1062,7 @@ LimitCycleAttributes_SetSampleDensity0(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetSampleDensity0(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetSampleDensity0()));
     return retval;
 }
@@ -1041,7 +1070,7 @@ LimitCycleAttributes_GetSampleDensity0(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetSampleDensity1(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1093,7 +1122,7 @@ LimitCycleAttributes_SetSampleDensity1(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetSampleDensity1(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetSampleDensity1()));
     return retval;
 }
@@ -1101,7 +1130,7 @@ LimitCycleAttributes_GetSampleDensity1(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetDataValue(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1168,7 +1197,7 @@ LimitCycleAttributes_SetDataValue(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetDataValue(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetDataValue()));
     return retval;
 }
@@ -1176,7 +1205,7 @@ LimitCycleAttributes_GetDataValue(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetDataVariable(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1217,7 +1246,7 @@ LimitCycleAttributes_SetDataVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetDataVariable(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyString_FromString(obj->data->GetDataVariable().c_str());
     return retval;
 }
@@ -1225,7 +1254,7 @@ LimitCycleAttributes_GetDataVariable(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetIntegrationDirection(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1287,7 +1316,7 @@ LimitCycleAttributes_SetIntegrationDirection(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetIntegrationDirection(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetIntegrationDirection()));
     return retval;
 }
@@ -1295,7 +1324,7 @@ LimitCycleAttributes_GetIntegrationDirection(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetMaxSteps(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1347,7 +1376,7 @@ LimitCycleAttributes_SetMaxSteps(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetMaxSteps(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMaxSteps()));
     return retval;
 }
@@ -1355,7 +1384,7 @@ LimitCycleAttributes_GetMaxSteps(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetTerminateByDistance(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1407,7 +1436,7 @@ LimitCycleAttributes_SetTerminateByDistance(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetTerminateByDistance(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetTerminateByDistance()?1L:0L);
     return retval;
 }
@@ -1415,7 +1444,7 @@ LimitCycleAttributes_GetTerminateByDistance(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetTermDistance(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1467,7 +1496,7 @@ LimitCycleAttributes_SetTermDistance(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetTermDistance(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetTermDistance());
     return retval;
 }
@@ -1475,7 +1504,7 @@ LimitCycleAttributes_GetTermDistance(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetTerminateByTime(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1527,7 +1556,7 @@ LimitCycleAttributes_SetTerminateByTime(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetTerminateByTime(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetTerminateByTime()?1L:0L);
     return retval;
 }
@@ -1535,7 +1564,7 @@ LimitCycleAttributes_GetTerminateByTime(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetTermTime(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1587,7 +1616,7 @@ LimitCycleAttributes_SetTermTime(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetTermTime(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetTermTime());
     return retval;
 }
@@ -1595,7 +1624,7 @@ LimitCycleAttributes_GetTermTime(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetMaxStepLength(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1647,7 +1676,7 @@ LimitCycleAttributes_SetMaxStepLength(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetMaxStepLength(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMaxStepLength());
     return retval;
 }
@@ -1655,7 +1684,7 @@ LimitCycleAttributes_GetMaxStepLength(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetLimitMaximumTimestep(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1707,7 +1736,7 @@ LimitCycleAttributes_SetLimitMaximumTimestep(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetLimitMaximumTimestep(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetLimitMaximumTimestep()?1L:0L);
     return retval;
 }
@@ -1715,7 +1744,7 @@ LimitCycleAttributes_GetLimitMaximumTimestep(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetMaxTimeStep(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1767,7 +1796,7 @@ LimitCycleAttributes_SetMaxTimeStep(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetMaxTimeStep(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMaxTimeStep());
     return retval;
 }
@@ -1775,7 +1804,7 @@ LimitCycleAttributes_GetMaxTimeStep(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetRelTol(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1827,7 +1856,7 @@ LimitCycleAttributes_SetRelTol(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetRelTol(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetRelTol());
     return retval;
 }
@@ -1835,7 +1864,7 @@ LimitCycleAttributes_GetRelTol(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetAbsTolSizeType(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1893,7 +1922,7 @@ LimitCycleAttributes_SetAbsTolSizeType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetAbsTolSizeType(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetAbsTolSizeType()));
     return retval;
 }
@@ -1901,7 +1930,7 @@ LimitCycleAttributes_GetAbsTolSizeType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetAbsTolAbsolute(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -1953,7 +1982,7 @@ LimitCycleAttributes_SetAbsTolAbsolute(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetAbsTolAbsolute(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetAbsTolAbsolute());
     return retval;
 }
@@ -1961,7 +1990,7 @@ LimitCycleAttributes_GetAbsTolAbsolute(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetAbsTolBBox(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2013,7 +2042,7 @@ LimitCycleAttributes_SetAbsTolBBox(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetAbsTolBBox(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetAbsTolBBox());
     return retval;
 }
@@ -2021,7 +2050,7 @@ LimitCycleAttributes_GetAbsTolBBox(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetFieldType(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2083,7 +2112,7 @@ LimitCycleAttributes_SetFieldType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetFieldType(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetFieldType()));
     return retval;
 }
@@ -2091,7 +2120,7 @@ LimitCycleAttributes_GetFieldType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetFieldConstant(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2143,7 +2172,7 @@ LimitCycleAttributes_SetFieldConstant(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetFieldConstant(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetFieldConstant());
     return retval;
 }
@@ -2151,7 +2180,7 @@ LimitCycleAttributes_GetFieldConstant(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetVelocitySource(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
     double *vals = obj->data->GetVelocitySource();
@@ -2218,7 +2247,7 @@ LimitCycleAttributes_SetVelocitySource(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetVelocitySource(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the velocitySource.
     PyObject *retval = PyTuple_New(3);
     const double *velocitySource = obj->data->GetVelocitySource();
@@ -2230,7 +2259,7 @@ LimitCycleAttributes_GetVelocitySource(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetIntegrationType(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2292,7 +2321,7 @@ LimitCycleAttributes_SetIntegrationType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetIntegrationType(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetIntegrationType()));
     return retval;
 }
@@ -2300,7 +2329,7 @@ LimitCycleAttributes_GetIntegrationType(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetParallelizationAlgorithmType(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2360,7 +2389,7 @@ LimitCycleAttributes_SetParallelizationAlgorithmType(PyObject *self, PyObject *a
 /*static*/ PyObject *
 LimitCycleAttributes_GetParallelizationAlgorithmType(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetParallelizationAlgorithmType()));
     return retval;
 }
@@ -2368,7 +2397,7 @@ LimitCycleAttributes_GetParallelizationAlgorithmType(PyObject *self, PyObject *a
 /*static*/ PyObject *
 LimitCycleAttributes_SetMaxProcessCount(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2420,7 +2449,7 @@ LimitCycleAttributes_SetMaxProcessCount(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetMaxProcessCount(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMaxProcessCount()));
     return retval;
 }
@@ -2428,7 +2457,7 @@ LimitCycleAttributes_GetMaxProcessCount(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetMaxDomainCacheSize(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2480,7 +2509,7 @@ LimitCycleAttributes_SetMaxDomainCacheSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetMaxDomainCacheSize(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMaxDomainCacheSize()));
     return retval;
 }
@@ -2488,7 +2517,7 @@ LimitCycleAttributes_GetMaxDomainCacheSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetWorkGroupSize(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2540,7 +2569,7 @@ LimitCycleAttributes_SetWorkGroupSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetWorkGroupSize(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetWorkGroupSize()));
     return retval;
 }
@@ -2548,7 +2577,7 @@ LimitCycleAttributes_GetWorkGroupSize(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetPathlines(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2600,7 +2629,7 @@ LimitCycleAttributes_SetPathlines(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetPathlines(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetPathlines()?1L:0L);
     return retval;
 }
@@ -2608,7 +2637,7 @@ LimitCycleAttributes_GetPathlines(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetPathlinesOverrideStartingTimeFlag(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2660,7 +2689,7 @@ LimitCycleAttributes_SetPathlinesOverrideStartingTimeFlag(PyObject *self, PyObje
 /*static*/ PyObject *
 LimitCycleAttributes_GetPathlinesOverrideStartingTimeFlag(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetPathlinesOverrideStartingTimeFlag()?1L:0L);
     return retval;
 }
@@ -2668,7 +2697,7 @@ LimitCycleAttributes_GetPathlinesOverrideStartingTimeFlag(PyObject *self, PyObje
 /*static*/ PyObject *
 LimitCycleAttributes_SetPathlinesOverrideStartingTime(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2720,7 +2749,7 @@ LimitCycleAttributes_SetPathlinesOverrideStartingTime(PyObject *self, PyObject *
 /*static*/ PyObject *
 LimitCycleAttributes_GetPathlinesOverrideStartingTime(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetPathlinesOverrideStartingTime());
     return retval;
 }
@@ -2728,7 +2757,7 @@ LimitCycleAttributes_GetPathlinesOverrideStartingTime(PyObject *self, PyObject *
 /*static*/ PyObject *
 LimitCycleAttributes_SetPathlinesPeriod(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2780,7 +2809,7 @@ LimitCycleAttributes_SetPathlinesPeriod(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetPathlinesPeriod(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetPathlinesPeriod());
     return retval;
 }
@@ -2788,7 +2817,7 @@ LimitCycleAttributes_GetPathlinesPeriod(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetPathlinesCMFE(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2846,7 +2875,7 @@ LimitCycleAttributes_SetPathlinesCMFE(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetPathlinesCMFE(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetPathlinesCMFE()));
     return retval;
 }
@@ -2854,7 +2883,7 @@ LimitCycleAttributes_GetPathlinesCMFE(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetSampleDistance0(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2906,7 +2935,7 @@ LimitCycleAttributes_SetSampleDistance0(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetSampleDistance0(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetSampleDistance0());
     return retval;
 }
@@ -2914,7 +2943,7 @@ LimitCycleAttributes_GetSampleDistance0(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetSampleDistance1(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -2966,7 +2995,7 @@ LimitCycleAttributes_SetSampleDistance1(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetSampleDistance1(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetSampleDistance1());
     return retval;
 }
@@ -2974,7 +3003,7 @@ LimitCycleAttributes_GetSampleDistance1(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetSampleDistance2(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3026,7 +3055,7 @@ LimitCycleAttributes_SetSampleDistance2(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetSampleDistance2(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetSampleDistance2());
     return retval;
 }
@@ -3034,7 +3063,7 @@ LimitCycleAttributes_GetSampleDistance2(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetFillInterior(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3086,7 +3115,7 @@ LimitCycleAttributes_SetFillInterior(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetFillInterior(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetFillInterior()?1L:0L);
     return retval;
 }
@@ -3094,7 +3123,7 @@ LimitCycleAttributes_GetFillInterior(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetRandomSamples(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3146,7 +3175,7 @@ LimitCycleAttributes_SetRandomSamples(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetRandomSamples(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetRandomSamples()?1L:0L);
     return retval;
 }
@@ -3154,7 +3183,7 @@ LimitCycleAttributes_GetRandomSamples(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetRandomSeed(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3206,7 +3235,7 @@ LimitCycleAttributes_SetRandomSeed(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetRandomSeed(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetRandomSeed()));
     return retval;
 }
@@ -3214,7 +3243,7 @@ LimitCycleAttributes_GetRandomSeed(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetNumberOfRandomSamples(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3266,7 +3295,7 @@ LimitCycleAttributes_SetNumberOfRandomSamples(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetNumberOfRandomSamples(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNumberOfRandomSamples()));
     return retval;
 }
@@ -3274,7 +3303,7 @@ LimitCycleAttributes_GetNumberOfRandomSamples(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetForceNodeCenteredData(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3326,7 +3355,7 @@ LimitCycleAttributes_SetForceNodeCenteredData(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetForceNodeCenteredData(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetForceNodeCenteredData()?1L:0L);
     return retval;
 }
@@ -3334,7 +3363,7 @@ LimitCycleAttributes_GetForceNodeCenteredData(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetCycleTolerance(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3386,7 +3415,7 @@ LimitCycleAttributes_SetCycleTolerance(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetCycleTolerance(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetCycleTolerance());
     return retval;
 }
@@ -3394,7 +3423,7 @@ LimitCycleAttributes_GetCycleTolerance(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetMaxIterations(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3446,7 +3475,7 @@ LimitCycleAttributes_SetMaxIterations(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetMaxIterations(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMaxIterations()));
     return retval;
 }
@@ -3454,7 +3483,7 @@ LimitCycleAttributes_GetMaxIterations(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetShowPartialResults(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3506,7 +3535,7 @@ LimitCycleAttributes_SetShowPartialResults(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetShowPartialResults(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowPartialResults()?1L:0L);
     return retval;
 }
@@ -3514,7 +3543,7 @@ LimitCycleAttributes_GetShowPartialResults(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetShowReturnDistances(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3566,7 +3595,7 @@ LimitCycleAttributes_SetShowReturnDistances(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetShowReturnDistances(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowReturnDistances()?1L:0L);
     return retval;
 }
@@ -3574,7 +3603,7 @@ LimitCycleAttributes_GetShowReturnDistances(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetIssueAdvectionWarnings(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3626,7 +3655,7 @@ LimitCycleAttributes_SetIssueAdvectionWarnings(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetIssueAdvectionWarnings(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetIssueAdvectionWarnings()?1L:0L);
     return retval;
 }
@@ -3634,7 +3663,7 @@ LimitCycleAttributes_GetIssueAdvectionWarnings(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetIssueBoundaryWarnings(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3686,7 +3715,7 @@ LimitCycleAttributes_SetIssueBoundaryWarnings(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetIssueBoundaryWarnings(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetIssueBoundaryWarnings()?1L:0L);
     return retval;
 }
@@ -3694,7 +3723,7 @@ LimitCycleAttributes_GetIssueBoundaryWarnings(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetIssueTerminationWarnings(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3746,7 +3775,7 @@ LimitCycleAttributes_SetIssueTerminationWarnings(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetIssueTerminationWarnings(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetIssueTerminationWarnings()?1L:0L);
     return retval;
 }
@@ -3754,7 +3783,7 @@ LimitCycleAttributes_GetIssueTerminationWarnings(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetIssueStepsizeWarnings(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3806,7 +3835,7 @@ LimitCycleAttributes_SetIssueStepsizeWarnings(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetIssueStepsizeWarnings(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetIssueStepsizeWarnings()?1L:0L);
     return retval;
 }
@@ -3814,7 +3843,7 @@ LimitCycleAttributes_GetIssueStepsizeWarnings(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetIssueStiffnessWarnings(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3866,7 +3895,7 @@ LimitCycleAttributes_SetIssueStiffnessWarnings(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetIssueStiffnessWarnings(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetIssueStiffnessWarnings()?1L:0L);
     return retval;
 }
@@ -3874,7 +3903,7 @@ LimitCycleAttributes_GetIssueStiffnessWarnings(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetIssueCriticalPointsWarnings(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3926,7 +3955,7 @@ LimitCycleAttributes_SetIssueCriticalPointsWarnings(PyObject *self, PyObject *ar
 /*static*/ PyObject *
 LimitCycleAttributes_GetIssueCriticalPointsWarnings(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetIssueCriticalPointsWarnings()?1L:0L);
     return retval;
 }
@@ -3934,7 +3963,7 @@ LimitCycleAttributes_GetIssueCriticalPointsWarnings(PyObject *self, PyObject *ar
 /*static*/ PyObject *
 LimitCycleAttributes_SetCriticalPointThreshold(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -3986,7 +4015,7 @@ LimitCycleAttributes_SetCriticalPointThreshold(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_GetCriticalPointThreshold(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetCriticalPointThreshold());
     return retval;
 }
@@ -3994,7 +4023,7 @@ LimitCycleAttributes_GetCriticalPointThreshold(PyObject *self, PyObject *args)
 /*static*/ PyObject *
 LimitCycleAttributes_SetCorrelationDistanceAngTol(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4046,7 +4075,7 @@ LimitCycleAttributes_SetCorrelationDistanceAngTol(PyObject *self, PyObject *args
 /*static*/ PyObject *
 LimitCycleAttributes_GetCorrelationDistanceAngTol(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetCorrelationDistanceAngTol());
     return retval;
 }
@@ -4054,7 +4083,7 @@ LimitCycleAttributes_GetCorrelationDistanceAngTol(PyObject *self, PyObject *args
 /*static*/ PyObject *
 LimitCycleAttributes_SetCorrelationDistanceMinDistAbsolute(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4106,7 +4135,7 @@ LimitCycleAttributes_SetCorrelationDistanceMinDistAbsolute(PyObject *self, PyObj
 /*static*/ PyObject *
 LimitCycleAttributes_GetCorrelationDistanceMinDistAbsolute(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetCorrelationDistanceMinDistAbsolute());
     return retval;
 }
@@ -4114,7 +4143,7 @@ LimitCycleAttributes_GetCorrelationDistanceMinDistAbsolute(PyObject *self, PyObj
 /*static*/ PyObject *
 LimitCycleAttributes_SetCorrelationDistanceMinDistBBox(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4166,7 +4195,7 @@ LimitCycleAttributes_SetCorrelationDistanceMinDistBBox(PyObject *self, PyObject 
 /*static*/ PyObject *
 LimitCycleAttributes_GetCorrelationDistanceMinDistBBox(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetCorrelationDistanceMinDistBBox());
     return retval;
 }
@@ -4174,7 +4203,7 @@ LimitCycleAttributes_GetCorrelationDistanceMinDistBBox(PyObject *self, PyObject 
 /*static*/ PyObject *
 LimitCycleAttributes_SetCorrelationDistanceMinDistType(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
@@ -4232,7 +4261,7 @@ LimitCycleAttributes_SetCorrelationDistanceMinDistType(PyObject *self, PyObject 
 /*static*/ PyObject *
 LimitCycleAttributes_GetCorrelationDistanceMinDistType(PyObject *self, PyObject *args)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)self;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetCorrelationDistanceMinDistType()));
     return retval;
 }
@@ -4240,7 +4269,8 @@ LimitCycleAttributes_GetCorrelationDistanceMinDistType(PyObject *self, PyObject 
 
 
 PyMethodDef PyLimitCycleAttributes_methods[LIMITCYCLEATTRIBUTES_NMETH] = {
-    {"Notify", LimitCycleAttributes_Notify, METH_VARARGS},
+    {"__dir__", LimitCycleAttributes_dir, METH_NOARGS},
+    {"Notify", LimitCycleAttributes_Notify, METH_NOARGS},
     {"SetSourceType", LimitCycleAttributes_SetSourceType, METH_VARARGS},
     {"GetSourceType", LimitCycleAttributes_GetSourceType, METH_VARARGS},
     {"SetLineStart", LimitCycleAttributes_SetLineStart, METH_VARARGS},
@@ -4367,19 +4397,22 @@ PyMethodDef PyLimitCycleAttributes_methods[LIMITCYCLEATTRIBUTES_NMETH] = {
 //
 
 static void
-LimitCycleAttributes_dealloc(PyObject *v)
+PyLimitCycleAttributes_dealloc(PyObject *v)
 {
-   LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)v;
+   PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)v;
    if(obj->parent != 0)
        Py_DECREF(obj->parent);
    if(obj->owns)
        delete obj->data;
 }
 
-static PyObject *LimitCycleAttributes_richcompare(PyObject *self, PyObject *other, int op);
+static PyObject *PyLimitCycleAttributes_richcompare(PyObject *self, PyObject *other, int op);
 PyObject *
-PyLimitCycleAttributes_getattr(PyObject *self, char *name)
+PyLimitCycleAttributes_getattro(PyObject *self, PyObject *attr_name)
 {
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
     if(strcmp(name, "sourceType") == 0)
         return LimitCycleAttributes_GetSourceType(self, NULL);
     if(strcmp(name, "SpecifiedLine") == 0)
@@ -4590,48 +4623,19 @@ PyLimitCycleAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(LimitCycleAttributes::FractionOfBBox));
 
 
-#include <visit-config.h>
+    PyObject *meth = Py_FindMethod(PyLimitCycleAttributes_methods, self, (char*)name);
+    if (meth) return meth;
 
-#if VISIT_OBSOLETE_AT_VERSION(3,5,0) 
-#error This code is obsolete in this version of VisIt and should be removed.
-#else
-    // Try and handle legacy fields
-#define NAME_CHANGE_MESSAGE2(oldname, newname) \
-    PyErr_WarnFormat(NULL, 1, "'%s' is no longer a valid LimitCycle attribute.\n" \
-                    "It's name has been changed to '%s', " \
-                    "please update your script.\n", oldname, newname);
-        
-    // parallelizationAlgorithmType
-    if(strcmp(name, "MasterSlave") == 0)
-    {       
-        NAME_CHANGE_MESSAGE2(name, "ManagerWorker");
-        return PyInt_FromLong(long(LimitCycleAttributes::ManagerWorker));
-    }           
-    // end parallelizationAlgorithmType 
-    // NOTE: no cooresponding _setattr method is needed for this case because this
-    // is handling only a change in enum symbol name. Those are constants in the
-    // python object and never set
-#endif  
-
-    // Add a __dict__ answer so that dir() works
-    if (!strcmp(name, "__dict__"))
-    {
-        PyObject *result = PyDict_New();
-        for (int i = 0; PyLimitCycleAttributes_methods[i].ml_meth; i++)
-            PyDict_SetItem(result,
-                PyString_FromString(PyLimitCycleAttributes_methods[i].ml_name),
-                PyString_FromString(PyLimitCycleAttributes_methods[i].ml_name));
-        return result;
-    }
-
-    return Py_FindMethod(PyLimitCycleAttributes_methods, self, name);
+    return PyObject_GenericGetAttr(self, attr_name);
 }
 
 int
-PyLimitCycleAttributes_setattr(PyObject *self, char *name, PyObject *args)
+PyLimitCycleAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return -1;
 
     if(strcmp(name, "sourceType") == 0)
         obj = LimitCycleAttributes_SetSourceType(self, args);
@@ -4752,6 +4756,12 @@ PyLimitCycleAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "correlationDistanceMinDistType") == 0)
         obj = LimitCycleAttributes_SetCorrelationDistanceMinDistType(self, args);
 
+    if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
+    {
+        Py_INCREF(Py_None);
+        obj = Py_None;
+    }
+
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -4766,78 +4776,45 @@ PyLimitCycleAttributes_setattr(PyObject *self, char *name, PyObject *args)
     return (obj != NULL) ? 0 : -1;
 }
 
-static int
-LimitCycleAttributes_print(PyObject *v, FILE *fp, int flags)
-{
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)v;
-    fprintf(fp, "%s", PyLimitCycleAttributes_ToString(obj->data, "",false).c_str());
-    return 0;
-}
-
 PyObject *
-LimitCycleAttributes_str(PyObject *v)
+PyLimitCycleAttributes_str(PyObject *v)
 {
-    LimitCycleAttributesObject *obj = (LimitCycleAttributesObject *)v;
+    PyLimitCycleAttributesObject *obj = (PyLimitCycleAttributesObject *)v;
     return PyString_FromString(PyLimitCycleAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
 // The doc string for the class.
 //
-#if PY_MAJOR_VERSION > 2 || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION >= 5)
-static const char *LimitCycleAttributes_Purpose = "Attributes for the LimitCycle";
-#else
-static char *LimitCycleAttributes_Purpose = "Attributes for the LimitCycle";
-#endif
+static char const *PyLimitCycleAttributes_purpose = "Attributes for the LimitCycle";
 
 //
-// Python Type Struct Def Macro from Py2and3Support.h
+// Initialize the python object type structure with default values.
+// If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
+// which is defined with default values for our standard python objects
+// in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
-//         VISIT_PY_TYPE_OBJ( VPY_TYPE,
-//                            VPY_NAME,
-//                            VPY_OBJECT,
-//                            VPY_DEALLOC,
-//                            VPY_PRINT,
-//                            VPY_GETATTR,
-//                            VPY_SETATTR,
-//                            VPY_STR,
-//                            VPY_PURPOSE,
-//                            VPY_RICHCOMP,
-//                            VPY_AS_NUMBER)
-
-//
-// The type description structure
-//
-
-VISIT_PY_TYPE_OBJ(LimitCycleAttributesType,         \
-                  "LimitCycleAttributes",           \
-                  LimitCycleAttributesObject,       \
-                  LimitCycleAttributes_dealloc,     \
-                  LimitCycleAttributes_print,       \
-                  PyLimitCycleAttributes_getattr,   \
-                  PyLimitCycleAttributes_setattr,   \
-                  LimitCycleAttributes_str,         \
-                  LimitCycleAttributes_Purpose,     \
-                  LimitCycleAttributes_richcompare, \
-                  0); /* as_number*/
+VISIT_PY_TYPE_OBJ(LimitCycleAttributes);
 
 //
 // Helper function for comparing.
 //
 static PyObject *
-LimitCycleAttributes_richcompare(PyObject *self, PyObject *other, int op)
+PyLimitCycleAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &LimitCycleAttributesType
-         || Py_TYPE(other) != &LimitCycleAttributesType)
+    if ( Py_TYPE(self) != &PyLimitCycleAttributesType
+         || Py_TYPE(other) != &PyLimitCycleAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    LimitCycleAttributes *a = ((LimitCycleAttributesObject *)self)->data;
-    LimitCycleAttributes *b = ((LimitCycleAttributesObject *)other)->data;
+    LimitCycleAttributes *a = ((PyLimitCycleAttributesObject *)self)->data;
+    LimitCycleAttributes *b = ((PyLimitCycleAttributesObject *)other)->data;
 
     switch (op)
     {
@@ -4866,8 +4843,8 @@ static LimitCycleAttributes *currentAtts = 0;
 static PyObject *
 NewLimitCycleAttributes(int useCurrent)
 {
-    LimitCycleAttributesObject *newObject;
-    newObject = PyObject_NEW(LimitCycleAttributesObject, &LimitCycleAttributesType);
+    PyLimitCycleAttributesObject *newObject;
+    newObject = PyObject_NEW(PyLimitCycleAttributesObject, &PyLimitCycleAttributesType);
     if(newObject == NULL)
         return NULL;
     if(useCurrent && currentAtts != 0)
@@ -4878,14 +4855,15 @@ NewLimitCycleAttributes(int useCurrent)
         newObject->data = new LimitCycleAttributes;
     newObject->owns = true;
     newObject->parent = 0;
+    PyType_Ready(&PyLimitCycleAttributesType);
     return (PyObject *)newObject;
 }
 
 static PyObject *
 WrapLimitCycleAttributes(const LimitCycleAttributes *attr)
 {
-    LimitCycleAttributesObject *newObject;
-    newObject = PyObject_NEW(LimitCycleAttributesObject, &LimitCycleAttributesType);
+    PyLimitCycleAttributesObject *newObject;
+    newObject = PyObject_NEW(PyLimitCycleAttributesObject, &PyLimitCycleAttributesType);
     if(newObject == NULL)
         return NULL;
     newObject->data = (LimitCycleAttributes *)attr;
@@ -4987,13 +4965,13 @@ PyLimitCycleAttributes_GetMethodTable(int *nMethods)
 bool
 PyLimitCycleAttributes_Check(PyObject *obj)
 {
-    return (obj->ob_type == &LimitCycleAttributesType);
+    return (obj->ob_type == &PyLimitCycleAttributesType);
 }
 
 LimitCycleAttributes *
 PyLimitCycleAttributes_FromPyObject(PyObject *obj)
 {
-    LimitCycleAttributesObject *obj2 = (LimitCycleAttributesObject *)obj;
+    PyLimitCycleAttributesObject *obj2 = (PyLimitCycleAttributesObject *)obj;
     return obj2->data;
 }
 
@@ -5012,7 +4990,7 @@ PyLimitCycleAttributes_Wrap(const LimitCycleAttributes *attr)
 void
 PyLimitCycleAttributes_SetParent(PyObject *obj, PyObject *parent)
 {
-    LimitCycleAttributesObject *obj2 = (LimitCycleAttributesObject *)obj;
+    PyLimitCycleAttributesObject *obj2 = (PyLimitCycleAttributesObject *)obj;
     obj2->parent = parent;
 }
 

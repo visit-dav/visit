@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define LIGHTATTRIBUTES_NMETH 12
+#define LIGHTATTRIBUTES_NMETH 13
 void VISITPY_API           PyLightAttributes_StartUp(LightAttributes *subj, void *data);
 void VISITPY_API           PyLightAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PyLightAttributes_GetMethodTable(int *nMethods);
@@ -24,8 +24,8 @@ void VISITPY_API           PyLightAttributes_SetParent(PyObject *obj, PyObject *
 void VISITPY_API           PyLightAttributes_SetDefaults(const LightAttributes *atts);
 std::string VISITPY_API    PyLightAttributes_GetLogString();
 std::string VISITPY_API    PyLightAttributes_ToString(const LightAttributes *, const char *, const bool=false);
-VISITPY_API PyObject *     PyLightAttributes_getattr(PyObject *self, char *name);
-int VISITPY_API            PyLightAttributes_setattr(PyObject *self, char *name, PyObject *args);
+VISITPY_API PyObject *     PyLightAttributes_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyLightAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyLightAttributes_methods[LIGHTATTRIBUTES_NMETH];
 
 #endif
