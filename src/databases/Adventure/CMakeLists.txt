@@ -32,11 +32,10 @@ MshData.C
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
-${ADVIO_INCLUDE_DIR}
 ${VISIT_DATABASE_INCLUDES}
 )
 
-LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${ADVIO_LIBRARY_DIR} )
+LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 
 ADD_LIBRARY(IAdventureDatabase ${LIBI_SOURCES})
 TARGET_LINK_LIBRARIES(IAdventureDatabase visitcommon)
@@ -44,19 +43,19 @@ SET(INSTALLTARGETS IAdventureDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MAdventureDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MAdventureDatabase visitcommon avtdbatts avtdatabase_ser ${ADVIO_LIB} visit_verdict )
+    TARGET_LINK_LIBRARIES(MAdventureDatabase visitcommon avtdbatts avtdatabase_ser advio visit_verdict )
     ADD_TARGET_DEFINITIONS(MAdventureDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MAdventureDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EAdventureDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EAdventureDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${ADVIO_LIB} visit_verdict )
+TARGET_LINK_LIBRARIES(EAdventureDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser advio visit_verdict )
 ADD_TARGET_DEFINITIONS(EAdventureDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EAdventureDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EAdventureDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EAdventureDatabase_par visitcommon avtpipeline_par avtdatabase_par ${ADVIO_LIB} visit_verdict )
+    TARGET_LINK_LIBRARIES(EAdventureDatabase_par visitcommon avtpipeline_par avtdatabase_par advio visit_verdict )
     ADD_TARGET_DEFINITIONS(EAdventureDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EAdventureDatabase_par)
 ENDIF(VISIT_PARALLEL)

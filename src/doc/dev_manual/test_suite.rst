@@ -638,7 +638,7 @@ When a failure occurs, another output file is generated in ``logs/plugins`` subd
 
 The most likely culprit for errors is missing information in one of the following files:
 
-* ``src/include/visit-cmake.h.in`` --  Holds all the #defines needed for a build (HAVE_LIBXXX, etc).
+* ``src/include/visit-cmake.h.in`` --  Holds all the #defines needed for a build (HAVE_XXX, etc).
 * ``src/CMake/PluginVsInstall.cmake.in`` -- Ensures third-party include/library locations are correct for an install.
 * ``src/CMake/FilterDependnecies.cmake.in`` -- Filters library dependency paths to account for differences between locations of third-party libraries used in a build vs. where they are located within an installed version of VisIt.
 

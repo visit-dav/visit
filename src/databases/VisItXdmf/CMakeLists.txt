@@ -28,11 +28,10 @@ XDMFParser.C
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
-${HDF5_INCLUDE_DIR}
 ${VISIT_DATABASE_INCLUDES}
 )
 
-LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${HDF5_LIBRARY_DIR} )
+LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 
 ADD_LIBRARY(IVisItXdmfDatabase ${LIBI_SOURCES})
 TARGET_LINK_LIBRARIES(IVisItXdmfDatabase visitcommon)
@@ -40,19 +39,19 @@ SET(INSTALLTARGETS IVisItXdmfDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MVisItXdmfDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MVisItXdmfDatabase visitcommon avtdbatts avtdatabase_ser ${HDF5_LIB} )
+    TARGET_LINK_LIBRARIES(MVisItXdmfDatabase visitcommon avtdbatts avtdatabase_ser hdf5 )
     ADD_TARGET_DEFINITIONS(MVisItXdmfDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MVisItXdmfDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EVisItXdmfDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EVisItXdmfDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${HDF5_LIB} )
+TARGET_LINK_LIBRARIES(EVisItXdmfDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser hdf5 )
 ADD_TARGET_DEFINITIONS(EVisItXdmfDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EVisItXdmfDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EVisItXdmfDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EVisItXdmfDatabase_par visitcommon avtpipeline_par avtdatabase_par ${HDF5_LIB} )
+    TARGET_LINK_LIBRARIES(EVisItXdmfDatabase_par visitcommon avtpipeline_par avtdatabase_par hdf5 )
     ADD_TARGET_DEFINITIONS(EVisItXdmfDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EVisItXdmfDatabase_par)
 ENDIF(VISIT_PARALLEL)

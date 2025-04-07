@@ -26,15 +26,10 @@ avtS3DFileFormat.C
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
-${NETCDF_INCLUDE_DIR}
 ${VISIT_DATABASE_INCLUDES}
 )
 
-if(WIN32)
-    add_compile_definitions(${NETCDF_WIN32_DEFINES})
-endif()
-
-LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${NETCDF_LIBRARY_DIR} )
+LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 
 ADD_LIBRARY(IS3DDatabase ${LIBI_SOURCES})
 TARGET_LINK_LIBRARIES(IS3DDatabase visitcommon)
@@ -42,19 +37,19 @@ SET(INSTALLTARGETS IS3DDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MS3DDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MS3DDatabase visitcommon avtdbatts avtdatabase_ser ${NETCDF_CXX_LIB} ${NETCDF_LIB} )
+    TARGET_LINK_LIBRARIES(MS3DDatabase visitcommon avtdbatts avtdatabase_ser netcdf_cxx netcdf )
     ADD_TARGET_DEFINITIONS(MS3DDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MS3DDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(ES3DDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(ES3DDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${NETCDF_CXX_LIB} ${NETCDF_LIB} )
+TARGET_LINK_LIBRARIES(ES3DDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser netcdf_cxx netcdf )
 ADD_TARGET_DEFINITIONS(ES3DDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} ES3DDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(ES3DDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(ES3DDatabase_par visitcommon avtpipeline_par avtdatabase_par ${NETCDF_CXX_LIB} ${NETCDF_LIB} )
+    TARGET_LINK_LIBRARIES(ES3DDatabase_par visitcommon avtpipeline_par avtdatabase_par netcdf_cxx netcdf )
     ADD_TARGET_DEFINITIONS(ES3DDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} ES3DDatabase_par)
 ENDIF(VISIT_PARALLEL)

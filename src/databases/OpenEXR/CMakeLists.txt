@@ -26,11 +26,10 @@ avtOpenEXRFileFormat.C
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
-${OPENEXR_INCLUDE_DIR}
 ${VISIT_DATABASE_INCLUDES}
 )
 
-LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${OPENEXR_LIBRARY_DIR} )
+LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 
 ADD_LIBRARY(IOpenEXRDatabase ${LIBI_SOURCES})
 TARGET_LINK_LIBRARIES(IOpenEXRDatabase visitcommon)
@@ -38,19 +37,19 @@ SET(INSTALLTARGETS IOpenEXRDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MOpenEXRDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MOpenEXRDatabase visitcommon avtdbatts avtdatabase_ser ${OPENEXR_LIB} )
+    TARGET_LINK_LIBRARIES(MOpenEXRDatabase visitcommon avtdbatts avtdatabase_ser openexr )
     ADD_TARGET_DEFINITIONS(MOpenEXRDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MOpenEXRDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EOpenEXRDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EOpenEXRDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${OPENEXR_LIB} )
+TARGET_LINK_LIBRARIES(EOpenEXRDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser openexr )
 ADD_TARGET_DEFINITIONS(EOpenEXRDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EOpenEXRDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EOpenEXRDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EOpenEXRDatabase_par visitcommon avtpipeline_par avtdatabase_par ${OPENEXR_LIB} )
+    TARGET_LINK_LIBRARIES(EOpenEXRDatabase_par visitcommon avtpipeline_par avtdatabase_par openexr )
     ADD_TARGET_DEFINITIONS(EOpenEXRDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EOpenEXRDatabase_par)
 ENDIF(VISIT_PARALLEL)

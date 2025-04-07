@@ -17,9 +17,7 @@ visit_add_library(
     SOURCES     xdmf_writer.c
     HEADERS     xdmf_writer.h
     INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
-                ${HDF5_INCLUDE_DIR}
-    DEPENDS_ON  ${HDF5_LIB} 
-                ${ZLIB_LIBRARY}
+    DEPENDS_ON  hdf5
                 m
     SKIP_INSTALL)  
 
@@ -48,9 +46,7 @@ IF(VISIT_PARALLEL)
         SOURCES     xdmf_writer.c
         HEADERS     xdmf_writer.h
         INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
-                    ${HDF5_INCLUDE_DIR}
-        DEPENDS_ON  ${HDF5_LIB} 
-                    ${ZLIB_LIBRARY}
+        DEPENDS_ON  hdf5
                     m
         SKIP_INSTALL)  
 

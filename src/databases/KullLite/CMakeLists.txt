@@ -26,11 +26,10 @@ avtKullLiteFileFormat.C
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
-${PDB_INCLUDE_DIR}
 ${VISIT_DATABASE_INCLUDES}
 )
 
-LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${PDB_LIBRARY_DIR} )
+LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 
 ADD_LIBRARY(IKullLiteDatabase ${LIBI_SOURCES})
 TARGET_LINK_LIBRARIES(IKullLiteDatabase visitcommon)
@@ -38,19 +37,19 @@ SET(INSTALLTARGETS IKullLiteDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MKullLiteDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MKullLiteDatabase visitcommon avtdbatts avtdatabase_ser ${PDB_LIB} )
+    TARGET_LINK_LIBRARIES(MKullLiteDatabase visitcommon avtdbatts avtdatabase_ser silo )
     ADD_TARGET_DEFINITIONS(MKullLiteDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MKullLiteDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EKullLiteDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EKullLiteDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${PDB_LIB} )
+TARGET_LINK_LIBRARIES(EKullLiteDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser silo )
 ADD_TARGET_DEFINITIONS(EKullLiteDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EKullLiteDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EKullLiteDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EKullLiteDatabase_par visitcommon avtpipeline_par avtdatabase_par ${PDB_LIB} )
+    TARGET_LINK_LIBRARIES(EKullLiteDatabase_par visitcommon avtpipeline_par avtdatabase_par silo )
     ADD_TARGET_DEFINITIONS(EKullLiteDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EKullLiteDatabase_par)
 ENDIF(VISIT_PARALLEL)

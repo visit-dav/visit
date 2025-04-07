@@ -26,11 +26,10 @@ avtDenovoFileFormat.C
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
-${HDF5_INCLUDE_DIR}
 ${VISIT_DATABASE_INCLUDES}
 )
 
-LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${HDF5_LIBRARY_DIR} )
+LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 
 ADD_LIBRARY(IDenovoDatabase ${LIBI_SOURCES})
 TARGET_LINK_LIBRARIES(IDenovoDatabase visitcommon)
@@ -38,19 +37,19 @@ SET(INSTALLTARGETS IDenovoDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MDenovoDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MDenovoDatabase visitcommon avtdbatts avtdatabase_ser ${HDF5_LIB} )
+    TARGET_LINK_LIBRARIES(MDenovoDatabase visitcommon avtdbatts avtdatabase_ser hdf5 )
     ADD_TARGET_DEFINITIONS(MDenovoDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MDenovoDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EDenovoDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EDenovoDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${HDF5_LIB} )
+TARGET_LINK_LIBRARIES(EDenovoDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser hdf5 )
 ADD_TARGET_DEFINITIONS(EDenovoDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EDenovoDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EDenovoDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EDenovoDatabase_par visitcommon avtpipeline_par avtdatabase_par ${HDF5_LIB} )
+    TARGET_LINK_LIBRARIES(EDenovoDatabase_par visitcommon avtpipeline_par avtdatabase_par hdf5 )
     ADD_TARGET_DEFINITIONS(EDenovoDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EDenovoDatabase_par)
 ENDIF(VISIT_PARALLEL)

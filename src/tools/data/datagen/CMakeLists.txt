@@ -226,11 +226,11 @@ endforeach()
 # If we have HDF5 build all HDF5 Data Gen Target Programs
 #-----------------------------------------------------------------------------
 if(HDF5_FOUND)
-    foreach(HDF5_TARGET unic xdmf xdmf2d)
+    set(xdmf3d_SOURCES xdmf.C)
+    foreach(HDF5_TARGET unic xdmf3d xdmf2d)
         BUILD_DATA_TARGET(${HDF5_TARGET}
-            INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR} ${HDF5_INCLUDE_DIR}
-            LIB_DIRS ${HDF5_LIBRARY_DIR}
-            LIBS ${HDF5_LIB})
+            INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
+            LIBS hdf5)
     endforeach()
 endif()
 
@@ -251,9 +251,7 @@ if(SILO_FOUND)
                          ${VISIT_BINARY_DIR}/include
                          ${VISIT_SOURCE_DIR}/include
                          ${VISIT_SOURCE_DIR}/common/utility
-                         ${SILO_INCLUDE_DIR}
-            LIB_DIRS ${PDB_LIBRARY_DIR}
-            LIBS ${PDB_LIB})
+            LIBS silo)
     endforeach()
     #-------------------------------------------------------------------------
     #  Setup {TARGET}_SOURCES for targets with multiple source files.
@@ -269,10 +267,8 @@ if(SILO_FOUND)
                          specmix specmix_double testall thinplane tire wave)
         BUILD_DATA_TARGET(${SILO_TARGET}
             INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
-                         ${SILO_INCLUDE_DIR}
                          ${VISIT_SOURCE_DIR}/common/utility
-            LIB_DIRS ${SILO_LIBRARY_DIR}
-            LIBS ${SILO_LIB})
+            LIBS silo)
     endforeach()
     if(WIN32)
       set_target_properties(multi_test PROPERTIES LINK_FLAGS "/STACK:8000000")

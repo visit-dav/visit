@@ -73,11 +73,10 @@ HighOrderUnstructuredData.C
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
-${HDF5_INCLUDE_DIR}
 ${VISIT_DATABASE_INCLUDES}
 )
 
-LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${HDF5_LIBRARY_DIR} )
+LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 
 ADD_LIBRARY(IVsDatabase ${LIBI_SOURCES})
 TARGET_LINK_LIBRARIES(IVsDatabase visitcommon)
@@ -85,19 +84,19 @@ SET(INSTALLTARGETS IVsDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MVsDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MVsDatabase visitcommon avtdbatts avtdatabase_ser ${HDF5_LIB} )
+    TARGET_LINK_LIBRARIES(MVsDatabase visitcommon avtdbatts avtdatabase_ser hdf5 )
     ADD_TARGET_DEFINITIONS(MVsDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MVsDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EVsDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EVsDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${HDF5_LIB} )
+TARGET_LINK_LIBRARIES(EVsDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser hdf5 )
 ADD_TARGET_DEFINITIONS(EVsDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EVsDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EVsDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EVsDatabase_par visitcommon avtpipeline_par avtdatabase_par ${HDF5_LIB} )
+    TARGET_LINK_LIBRARIES(EVsDatabase_par visitcommon avtpipeline_par avtdatabase_par hdf5 )
     ADD_TARGET_DEFINITIONS(EVsDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EVsDatabase_par)
 ENDIF(VISIT_PARALLEL)

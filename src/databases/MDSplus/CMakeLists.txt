@@ -30,11 +30,10 @@ mdsPlusAPI.C
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
-${MDSPLUS_INCLUDE_DIR}
 ${VISIT_DATABASE_INCLUDES}
 )
 
-LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${MDSPLUS_LIBRARY_DIR} )
+LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 
 ADD_LIBRARY(IMDSplusDatabase ${LIBI_SOURCES})
 TARGET_LINK_LIBRARIES(IMDSplusDatabase visitcommon)
@@ -42,19 +41,19 @@ SET(INSTALLTARGETS IMDSplusDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MMDSplusDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MMDSplusDatabase visitcommon avtdbatts avtdatabase_ser ${MDSPLUS_LIB} )
+    TARGET_LINK_LIBRARIES(MMDSplusDatabase visitcommon avtdbatts avtdatabase_ser mdsplus )
     ADD_TARGET_DEFINITIONS(MMDSplusDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MMDSplusDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EMDSplusDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EMDSplusDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${MDSPLUS_LIB} )
+TARGET_LINK_LIBRARIES(EMDSplusDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser mdsplus )
 ADD_TARGET_DEFINITIONS(EMDSplusDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EMDSplusDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EMDSplusDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EMDSplusDatabase_par visitcommon avtpipeline_par avtdatabase_par ${MDSPLUS_LIB} )
+    TARGET_LINK_LIBRARIES(EMDSplusDatabase_par visitcommon avtpipeline_par avtdatabase_par mdsplus )
     ADD_TARGET_DEFINITIONS(EMDSplusDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EMDSplusDatabase_par)
 ENDIF(VISIT_PARALLEL)

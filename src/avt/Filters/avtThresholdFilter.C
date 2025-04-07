@@ -36,8 +36,8 @@
 #include <ImproperUseException.h>
 #include <NoDefaultVariableException.h>
 
-#include <visit-config.h> // for HAVE_LIBVTKM
-#ifdef HAVE_LIBVTKM
+#include <visit-config.h> // for HAVE_VTKM
+#ifdef HAVE_VTKM
 #include <avtVtkmDataSet.h>
 #include <vtkm/cont/DataSet.h>
 #include <vtkm/filter/entity_extraction/Threshold.h>
@@ -550,7 +550,7 @@ avtThresholdFilter::ProcessOneChunk_VTK(avtDataRepresentation *in_dr, bool fromC
 avtDataRepresentation *
 avtThresholdFilter::ProcessOneChunk_VTKM(avtDataRepresentation *in_dr)
 {
-#ifndef HAVE_LIBVTKM
+#ifndef HAVE_VTKM
     return NULL;
 #else
     int timerHandle = visitTimer->StartTimer();

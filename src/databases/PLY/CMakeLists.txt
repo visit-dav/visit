@@ -32,8 +32,6 @@ ${CMAKE_CURRENT_SOURCE_DIR}
 ${VISIT_DATABASE_INCLUDES}
 )
 
-set(vtk_libs VTK::IOPLY )
-
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 
 ADD_LIBRARY(IPLYDatabase ${LIBI_SOURCES})
@@ -42,25 +40,19 @@ SET(INSTALLTARGETS IPLYDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MPLYDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MPLYDatabase visitcommon avtdbatts avtdatabase_ser ${vtk_libs} )
+    TARGET_LINK_LIBRARIES(MPLYDatabase visitcommon avtdbatts avtdatabase_ser VTK::IOPLY )
     ADD_TARGET_DEFINITIONS(MPLYDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MPLYDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EPLYDatabase_ser ${LIBE_SOURCES})
-
-set(vtk_elibsSer VTK::RenderingCore )
-
-TARGET_LINK_LIBRARIES(EPLYDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${vtk_libs} ${vtk_elibsSer} )
+TARGET_LINK_LIBRARIES(EPLYDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser VTK::IOPLY VTK::RenderingCore )
 ADD_TARGET_DEFINITIONS(EPLYDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EPLYDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EPLYDatabase_par ${LIBE_SOURCES})
-
-    set(vtk_elibsPar VTK::RenderingCore )
-
-    TARGET_LINK_LIBRARIES(EPLYDatabase_par visitcommon avtpipeline_par avtdatabase_par ${vtk_libs} ${vtk_elibsPar} )
+    TARGET_LINK_LIBRARIES(EPLYDatabase_par visitcommon avtpipeline_par avtdatabase_par VTK::IOPLY VTK::RenderingCore )
     ADD_TARGET_DEFINITIONS(EPLYDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EPLYDatabase_par)
 ENDIF(VISIT_PARALLEL)

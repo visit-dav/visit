@@ -28,17 +28,10 @@ BoxLibHelper.C
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
-${BOXLIB_INCLUDE_DIR}
 ${VISIT_DATABASE_INCLUDES}
 )
 
-ADD_DEFINITIONS(-DBL_SPACEDIM=3)
-
-if(WIN32)
-    add_compile_definitions(${BOXLIB_WIN32_DEFINES})
-endif()
-
-LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${BOXLIB_LIBRARY_DIR} )
+LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 
 ADD_LIBRARY(IBoxlib3DDatabase ${LIBI_SOURCES})
 TARGET_LINK_LIBRARIES(IBoxlib3DDatabase visitcommon)
@@ -46,19 +39,19 @@ SET(INSTALLTARGETS IBoxlib3DDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MBoxlib3DDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MBoxlib3DDatabase visitcommon avtdbatts avtdatabase_ser ${BOXLIB_3D_LIB} )
+    TARGET_LINK_LIBRARIES(MBoxlib3DDatabase visitcommon avtdbatts avtdatabase_ser boxlib3d )
     ADD_TARGET_DEFINITIONS(MBoxlib3DDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MBoxlib3DDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EBoxlib3DDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EBoxlib3DDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${BOXLIB_3D_LIB} )
+TARGET_LINK_LIBRARIES(EBoxlib3DDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser boxlib3d )
 ADD_TARGET_DEFINITIONS(EBoxlib3DDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EBoxlib3DDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EBoxlib3DDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EBoxlib3DDatabase_par visitcommon avtpipeline_par avtdatabase_par ${BOXLIB_3D_LIB} )
+    TARGET_LINK_LIBRARIES(EBoxlib3DDatabase_par visitcommon avtpipeline_par avtdatabase_par boxlib3d )
     ADD_TARGET_DEFINITIONS(EBoxlib3DDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EBoxlib3DDatabase_par)
 ENDIF(VISIT_PARALLEL)

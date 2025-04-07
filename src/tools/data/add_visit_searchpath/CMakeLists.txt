@@ -12,12 +12,6 @@
 visit_add_executable(
     NAME       add_visit_searchpath
     SOURCES    add_visit_searchpath.C
-    DEPENDS_ON ${SILO_LIB}
+    DEPENDS_ON silo
     FOLDER     tools/add_visit_searchpath) 
-
-# until Silo is imported as a proper cmake target
-visit_patch_target(
-    NAME       add_visit_searchpath
-    INCLUDES   ${SILO_INCLUDE_DIR}
-    LINKDIR    ${SILO_LIBRARY_DIR})
 

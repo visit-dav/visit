@@ -4,14 +4,8 @@
        *.pdb
        *.mkf
     </FilePatterns>
-    <CXXFLAGS>
-       ${PDB_INCLUDE_DIR}
-    </CXXFLAGS>
-    <LDFLAGS> 
-       ${PDB_LIBRARY_DIR}
-    </LDFLAGS>
     <LIBS>
-       ${PDB_LIB}
+       silo
     </LIBS>
     <Attribute name="" purpose="" persistent="true" exportAPI="" exportInclude="" codefile="KullLite.code">
       <Function name="KullLiteCommonPluginInfo::SetupDatabase" user="false" member="true">

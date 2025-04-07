@@ -7,30 +7,15 @@
       md.idx
       md.0
     </FilePatterns>
-    <DEFINES components="EPar">
-      ADIOS2_USE_MPI
-    </DEFINES>
-    <CXXFLAGS components="M,ESer">
-      $(ADIOS2_INCLUDE_DIR)
-    </CXXFLAGS>
-    <CXXFLAGS components="EPar">
-      $(ADIOS2_PAR_INCLUDE_DIR)
-    </CXXFLAGS>
-    <LDFLAGS components="M,ESer">
-      $(ADIOS2_LIBRARY_DIR)
-    </LDFLAGS>
-    <LDFLAGS components="EPar">
-      $(ADIOS2_PAR_LIBRARY_DIR)
-    </LDFLAGS>
     <LIBS> 
       vtkFiltersHybrid
       vtksys
     </LIBS>
     <LIBS components="M,ESer">
-      ${ADIOS2_LIB}
+      adios2
     </LIBS>
     <LIBS components="EPar">
-      ${ADIOS2_PAR_LIB}
+      adios2_par
     </LIBS>
     <Files components="M,E">
       avtADIOS2FileFormat.C

@@ -8,31 +8,37 @@
 #cmakedefine AC_APPLE_UNIVERSAL_BUILD
 
 /* Define if you have the cgns library. */
-#cmakedefine HAVE_LIBCGNS
+#cmakedefine HAVE_CGNS
+
+/* Define if you have Conduit. */
+#cmakedefine HAVE_CONDUIT
 
 /* Define if you have the gdal library. */
-#cmakedefine HAVE_LIBGDAL
+#cmakedefine HAVE_GDAL
 
 /* Define if you have hdf5. */
-#cmakedefine HAVE_LIBHDF5
+#cmakedefine HAVE_HDF5
+
+/* Define if you have the MFEM library. */
+#cmakedefine HAVE_MFEM
+
+/* Define if you have the Nektar++ library. */
+#cmakedefine HAVE_NEKTAR_PP
 
 /* Define if you have the netcdf library. */
-#cmakedefine HAVE_LIBNETCDF
-
-/* Define if you have the netcdf header. */
-#cmakedefine HAVE_NETCDF_H
+#cmakedefine HAVE_NETCDF
 
 /* Define if you have the OpenEXR library. */
-#cmakedefine HAVE_LIBOPENEXR
+#cmakedefine HAVE_OPENEXR
 
 /* Define if you have pdb. */
-#cmakedefine HAVE_LIBPDB
+#cmakedefine HAVE_PDB
 
 /* Define if you are using PDB proper instead of PDB lite. */
 #cmakedefine HAVE_PDB_PROPER
 
 /* Define if you have silo. */
-#cmakedefine HAVE_LIBSILO
+#cmakedefine HAVE_SILO
 
 /* Define to identify the variant of PDB Lite (in silo) */
 #cmakedefine PDB_LITE_HAS_LONG_LONG
@@ -50,26 +56,17 @@
 /* Define to 1 if you have the `m' library (-lm). */
 #cmakedefine HAVE_LIBM 1
 
-/* Define if you have the MFEM library. */
-#cmakedefine HAVE_LIBMFEM
+/* Define if you have the OSPRAY library. */
+#cmakedefine HAVE_OSPRAY
 
 /* Define if you have the VTKm library. */
-#cmakedefine HAVE_LIBVTKM
+#cmakedefine HAVE_VTKM
 
 /* Define if you have the X11 library */
 #cmakedefine HAVE_LIBX11
 
-/* Define to 1 if you have the `z' library (-lz). */
-#cmakedefine HAVE_LIBZ 1
-
-/* Define if you have the Nektar++ library. */
-#cmakedefine HAVE_NEKTAR_PP
-
 /* Define if you have the OSMESA */
 #cmakedefine HAVE_OSMESA
-
-/* Define if you have Conduit. */
-#cmakedefine HAVE_CONDUIT
 
 
 /*******************************************************************************

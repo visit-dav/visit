@@ -4,7 +4,7 @@
 
 #include <Python.h>
 #include <stdio.h>
-#include <visit-config.h> // for VISIT_VERSION, HAVE_LIBVTKM
+#include <visit-config.h> // for VISIT_VERSION, HAVE_VTKM
 #if !defined(_WIN32)
 #include <strings.h>
 #else
@@ -2376,7 +2376,7 @@ visit_SetBackendType(PyObject *self, PyObject *args)
         return NULL;
 
     int index = 0;
-#if defined(HAVE_LIBVTKM)
+#if defined(HAVE_VTKM)
     if(StringHelpers::CaseInsensitiveEqual(name, "vtkm"))
         index = 1;
 #endif

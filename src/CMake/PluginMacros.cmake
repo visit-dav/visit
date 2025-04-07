@@ -51,8 +51,7 @@ macro(VISIT_INSTALL_PLUGINS type)
             install(TARGETS ${ARGN}
                 LIBRARY DESTINATION ${VISIT_INSTALLED_VERSION_PLUGINS}/${type}
                 RUNTIME DESTINATION ${VISIT_INSTALLED_VERSION_PLUGINS}/${type}
-                PERMISSIONS ${VPERM}
-            )
+                PERMISSIONS ${VPERM})
         else()
             install(TARGETS ${ARGN}
                 RUNTIME DESTINATION ${VISIT_INSTALLED_VERSION_PLUGINS}/${type}
@@ -435,7 +434,8 @@ function(visit_add_plot_plugin)
             DEFINES     ENGINE ${plot_DEFINES}
             DEPENDS_ON  visitcommon
                         avtplotter_par
-                        ${plot_EPARLIBS})
+                        ${plot_EPARLIBS}
+            SKIP_INSTALL)
         list(APPEND INSTALLTARGETS ${EParTarget})
     endif()
 
@@ -674,7 +674,8 @@ function(visit_add_operator_plugin)
             DEFINES     ENGINE ${operator_DEFINES}
             DEPENDS_ON  visitcommon
                         avtexpressions_par
-                        ${operator_EPARLIBS})
+                        ${operator_EPARLIBS}
+            SKIP_INSTALL)
         list(APPEND INSTALLTARGETS ${EParTarget})
     endif()
 

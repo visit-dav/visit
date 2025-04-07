@@ -68,7 +68,7 @@ visit_append_list(
           ${CMAKE_CURRENT_SOURCE_DIR}/vtkVisItScalarBarWithOpacityActor.h
           ${CMAKE_CURRENT_SOURCE_DIR}/vtkVisItTextActor.h)
 
-if(HAVE_LIBOSPRAY)
+if(HAVE_OSPRAY)
     visit_append_list(
         NAME  avtplotter_ser_SOURCES
         ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/vtkOSPRayVisItAxisActorNode.C

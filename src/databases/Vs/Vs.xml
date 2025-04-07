@@ -55,14 +55,8 @@
       HighOrderUnstructuredData.C
     </Files>
 
-    <CXXFLAGS>
-      ${HDF5_INCLUDE_DIR}
-    </CXXFLAGS>
-    <LDFLAGS>
-      ${HDF5_LIBRARY_DIR}
-    </LDFLAGS>
     <LIBS>
-      ${HDF5_LIB}
+      hdf5
     </LIBS>
     <FilePatterns>
       *.tvsh5

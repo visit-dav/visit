@@ -516,6 +516,241 @@ function(THIRD_PARTY_INSTALL_INCLUDE pkg incdir)
 endfunction(THIRD_PARTY_INSTALL_INCLUDE)
 
 # ==============================================
+# Function for checking and importing TP libs
+# ==============================================
+
+#[=[
+  Creates an import library with name ${pkg} (in lower case).
+  Cache variables created:
+      x_FOUND
+
+  Assumes headers are in ${x_DIR}/include unless INCDIR argument is used
+  Assumes libs are in ${x_DIR}/lib64 or ${x_DIR}/lib unless LIBDIR argument is used
+  Either LIBS or LIBNAMES must be specified.
+  LIBS is used for multiple-library packages.
+  LIBNAMES is used for single-library packges if the names may be different depending on platform/version.
+
+  pkg is the name used to specify the x_DIR (generally upper case name of pkg)
+
+  keyword arguments:
+      HEADER_ONLY optional specifies HEADER_ONLY package
+      LIBS (required if HEADER_ONLY not specified AND LIBNAMES not specified)
+             is the list of library names for this package
+      LIBNAMES List of possible names for a library
+      LIBDIR (optional) are the paths beyond x_DIR where the libs may be found.
+      INCDIR (optional) is the path beyond x_DIR where the includes may be found.
+      DEFINES (optional) compile definitions
+      WIN32DEFINES (optional) compile definitions to be used on Windows.
+
+  Uses path specified by pkg_DIR as base path for the files
+
+#]=]
+# ==============================================
+
+function(visit_import_third_party pkg)
+    message(STATUS "Looking for ${pkg}")
+
+    # If this package wasn't requested, its ok, just return.
+    if(NOT ${pkg}_DIR)
+        message(STATUS "${pkg} not requested")
+        return()
+    endif()
+
+    # If base dir doesn't exist, we can go no further.
+    if(NOT EXISTS ${${pkg}_DIR})
+        if(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
+            message(STATUS "\n** \n** \n** Base Directory for ${pkg} ${${pkg}_DIR} does not exist.\n**\n**")
+        else()
+            message(FATAL_ERROR "  Base Directory for ${pkg} ${${pkg}_DIR} does not exist.")
+        endif()
+        return()
+    endif()
+
+    cmake_parse_arguments(PARSE_ARGV 1 vitp "HEADER_ONLY" "LIBDIR;INCDIR" "LIBS;LIBNAMES;DEFINES;WIN32DEFINES")
+
+    if(NOT DEFINED vitp_LIBNAMES AND NOT DEFINED vitp_LIBS)
+        if(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
+            message(STATUS "  One of LIBS or LIBNAMES for ${pkg} must be provided to visit_import_third_party")
+        else()
+            message(FATAL_ERROR "  One of LIBS or LIBNAMES for ${pkg} must be provided to visit_import_third_party.")
+        endif()
+    endif()
+
+
+    if(DEFINED vitp_LIBNAMES AND DEFINED vitp_LIBS)
+        if(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
+            message(STATUS "  Both LIBS and LIBNAMES for ${pkg} were provided to visit_import_third_party, use only one.")
+        else()
+            message(FATAL_ERROR "  Both LIBS and LIBNAMES for ${pkg} were provided to visit_import_third_party, use only one.")
+        endif()
+    endif()
+
+    if(DEFINED vitp_LIBDIR)
+        set(libdirs ${vitp_LIBDIR})
+    else()
+        set(libdirs lib lib64)
+    endif()
+
+    if(DEFINED vitp_INCDIR)
+        foreach(inc ${vitp_INCDIR})
+            list(APPEND _${pkg}_INCLUDE_DIR ${${pkg}_DIR}/${inc})
+        endforeach()
+    else()
+        set(_${pkg}_INCLUDE_DIR ${${pkg}_DIR}/include)
+    endif()
+
+    if(${vitpls_HEADER_ONLY})
+        if(EXISTS ${_${pkg}_INCLUDE_DIR})
+            if(${VISIT_${pkg}_SKIP_INSTALL})
+                message(STATUS "Skipping installation of ${pkg}")
+             else()
+                 THIRD_PARTY_INSTALL_INCLUDE(${pkg} ${_${pkg}_INCLUDE_DIR})
+             endif()
+        else()
+            if(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
+                message(STATUS "  Include directory for header-only ${pkg} does not exist (${_${pkg}_INCLUDE_DIR})")
+            else()
+                message(FATAL_ERROR "  Include directory for header-only ${pkg} does not exist (${_${pkg}_INCLUDE_DIR})")
+            endif()
+        endif()
+        return()
+    endif()
+
+    set(tplibs)
+    if(DEFINED vitp_LIBNAMES)
+        find_library(_${pkg}_LIBRARY
+                     NAMES ${vitp_LIBNAMES}
+                     PATHS ${${pkg}_DIR}
+                     PATH_SUFFIXES ${libdirs}
+                     NO_DEFAULT_PATH)
+
+        if(_${pkg}_LIBRARY)
+            list(APPEND tplibs _${pkg}_LIBRARY)
+        endif()
+    else()
+        set(tplibs)
+        foreach (X ${vitp_LIBS})
+            message("looking for ${X} in ${${pkg}_DIR} ${libdirs}")
+            find_library(_${pkg}_${X}
+                         NAMES ${X}
+                         PATHS ${${pkg}_DIR}
+                         PATH_SUFFIXES ${libdirs}
+                         NO_DEFAULT_PATH)
+            if(_${pkg}_${X})
+                list(APPEND tplibs _${pkg}_${X})
+                message(STATUS "  Found library ${X} in one of ${libdirs}")
+            else()
+                message(FATAL_ERROR "Library ${X} not found in one of ${libdirs}")
+                if(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
+                    message(STATUS "\n** \n** \n** Library ${X} not found in ${lib_dir}.\n**\n**")
+                else()
+                    message(FATAL_ERROR "Library ${X} not found in ${lib_dir}")
+                endif()
+                return()
+            endif()
+        endforeach()
+     endif()
+
+     find_package_handle_standard_args(${pkg} DEFAULT_MSG
+            _${pkg}_INCLUDE_DIR
+            ${tplibs})
+
+    if(${pkg}_FOUND)
+        string(TOLOWER ${pkg} LNAME)
+        set(HAVE_${pkg} TRUE CACHE BOOL "Have ${LNAME} libraries")
+
+        # create a list of libs using BUILD_INTERFACE
+        set(buildlibs)
+        foreach(lib ${tplibs})
+            # lib is a cmake var, so need double-indirection to get at the value
+            list(APPEND buildlibs $<BUILD_INTERFACE:${${lib}}>)
+        endforeach()
+
+        blt_import_library(
+            NAME        ${LNAME}
+            INCLUDES    $<BUILD_INTERFACE:${_${pkg}_INCLUDE_DIR}>
+                        $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/${LNAME}/include>
+            LIBRARIES   ${buildlibs}
+            EXPORTABLE  ON)
+
+        if(DEFINED vitp_DEFINES)
+            target_compile_definitions(${LNAME} INTERFACE ${vitp_DEFINES})
+        endif()
+
+        if(WIN32 AND DEFINED vitp_WIN32DEFINES)
+            target_compile_definitions(${LNAME} INTERFACE ${vitp_WIN32DEFINES})
+        endif()
+
+        if(${pkg}_LIBDEP)
+            message(STATUS "  Looking for dependent libraries for ${pkg}")
+
+            # all dependencies must already have been declared as import targets
+            # or full-path to a library
+            # they aren't installed by the logic below, only added to the
+            # interface of the current library being imported.
+            foreach (X ${${pkg}_LIBDEP})
+                if(TARGET ${X})
+                    message(STATUS "    found target for ${X}")
+                    target_link_libraries(${LNAME} INTERFACE
+                        $<BUILD_INTERFACE:${X}>
+                        $<INSTALL_INTERFACE:${X}>)
+                elseif(EXISTS ${X})
+                    message(STATUS "    found full path: ${X}")
+                    target_link_libraries(${LNAME} INTERFACE
+                        $<BUILD_INTERFACE:${X}>)
+                else()
+                    message(FATAL_ERROR "Dependent lib ${X} is not an imported target, nor is it a full path to the library.")
+                endif()
+            endforeach()
+        endif()
+
+
+        if(VISIT_INSTALL_THIRD_PARTY)
+            # install
+            if(${VISIT_${pkg}_SKIP_INSTALL})
+                message(STATUS "Skipping installation of ${pkg}")
+            else()
+
+                # TODO:  this logic is intended for third-party libraries
+                # that were built by build_visit and are installed alongside
+                # VisIt, not for system libraries or ThirdParty libraries
+                # that aren't in the general VisIt-specified location.
+                # 
+                # Need a mechanism to bypass the below install commands
+                # but still be able to find all necessary dependencies
+                # during an 'import visit' or building against an installed
+                # version of VisIt
+
+               
+                # Install libs and headers
+                foreach(lib ${tplibs})
+                    cmake_path(SET tmplib ${${lib}})
+                    cmake_path(GET tmplib EXTENSION LAST_ONLY LIBEXT)
+                    if(${LIBEXT} STREQUAL ".a")
+                        set(dest ${VISIT_INSTALLED_VERSION_ARCHIVES})
+                    else()
+                        set(dest ${VISIT_INSTALLED_VERSION_LIB})
+                    endif()
+                    cmake_path(GET tmplib FILENAME _lib)
+                   # add INSTALL_INTERFACE
+                   target_link_libraries(${LNAME} INTERFACE
+                       $<INSTALL_INTERFACE:\${_IMPORT_PREFIX}/${dest}/${_lib}>)
+
+                    THIRD_PARTY_INSTALL_LIBRARY(${${lib}})
+                endforeach()
+                THIRD_PARTY_INSTALL_INCLUDE(${pkg} ${_${pkg}_INCLUDE_DIR})
+
+                # ensure the tp libs are added to visit's export set.
+                visit_install_export_targets(${LNAME})
+
+            endif()
+        endif()
+        set(${pkg}_FOUND true CACHE BOOL "${pkg} library found" FORCE)
+    endif()
+endfunction()
+
+
+# ==============================================
 # Installs a library's executables.
 # ==============================================
 
@@ -610,6 +845,8 @@ if(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 
     include(${VISIT_SOURCE_DIR}/CMake/FindCGNS.cmake)
 
+    # conduit needs silo
+    include(${VISIT_SOURCE_DIR}/CMake/FindSilo.cmake)
     include(${VISIT_SOURCE_DIR}/CMake/FindConduit.cmake)
 
     include(${VISIT_SOURCE_DIR}/CMake/FindFMS.cmake)
@@ -628,7 +865,6 @@ if(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 
     include(${VISIT_SOURCE_DIR}/CMake/FindOpenEXR.cmake)
 
-    include(${VISIT_SOURCE_DIR}/CMake/FindSilo.cmake)
 
     include(${VISIT_SOURCE_DIR}/CMake/FindXdmf.cmake)
 

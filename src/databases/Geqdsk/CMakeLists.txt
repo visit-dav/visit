@@ -28,11 +28,10 @@ avtGeqdskOptions.C
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
-${GEQDSK_INCLUDE_DIR}
 ${VISIT_DATABASE_INCLUDES}
 )
 
-LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${GEQDSK_LIBRARY_DIR} )
+LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 
 ADD_LIBRARY(IGeqdskDatabase ${LIBI_SOURCES})
 TARGET_LINK_LIBRARIES(IGeqdskDatabase visitcommon)
@@ -40,19 +39,19 @@ SET(INSTALLTARGETS IGeqdskDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MGeqdskDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MGeqdskDatabase visitcommon avtdbatts avtdatabase_ser ${GEQDSK_LIB} )
+    TARGET_LINK_LIBRARIES(MGeqdskDatabase visitcommon avtdbatts avtdatabase_ser )
     ADD_TARGET_DEFINITIONS(MGeqdskDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MGeqdskDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EGeqdskDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EGeqdskDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${GEQDSK_LIB} )
+TARGET_LINK_LIBRARIES(EGeqdskDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser )
 ADD_TARGET_DEFINITIONS(EGeqdskDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EGeqdskDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EGeqdskDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EGeqdskDatabase_par visitcommon avtpipeline_par avtdatabase_par ${GEQDSK_LIB} )
+    TARGET_LINK_LIBRARIES(EGeqdskDatabase_par visitcommon avtpipeline_par avtdatabase_par )
     ADD_TARGET_DEFINITIONS(EGeqdskDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EGeqdskDatabase_par)
 ENDIF(VISIT_PARALLEL)

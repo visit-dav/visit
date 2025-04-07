@@ -42,8 +42,8 @@ find_package(ospray ${OSPRAY_VERSION} REQUIRED
              NO_DEFAULT_PATH)
 
 if(ospray_FOUND)
-    set(HAVE_LIBOSPRAY true)
-    add_definitions(-DHAVE_OSPRAY)
+    set(HAVE_OSPRAY TRUE CACHE BOOL "Have ospray libraries")
+
     if(VISIT_INSTALL_THIRD_PARTY)
         # since all the libs needed for VisIt at runtime aren't
         # enumerated in the ospray targets from find_package,

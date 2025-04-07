@@ -33,7 +33,7 @@
 static const char *fileFormats[] = {
 "bmp",
 "curve",
-#ifdef HAVE_LIBOPENEXR
+#ifdef HAVE_OPENEXR
 "exr",
 #endif
 "jpeg",

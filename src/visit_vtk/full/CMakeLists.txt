@@ -193,10 +193,8 @@ target_include_directories(visit_vtk PRIVATE
     $<BUILD_INTERFACE:${VISIT_SOURCE_DIR}/avt/Pipeline/Data>)
 
 if(OPENEXR_FOUND)
-    target_link_libraries(visit_vtk PRIVATE ${OPENEXR_LIB})
+    target_link_libraries(visit_vtk PRIVATE openexr)
 
-    target_include_directories(visit_vtk PRIVATE
-        INCLUDES  $<BUILD_INTERFACE:${OPENEXR_INCLUDE_DIR}>)
 endif()
 
 

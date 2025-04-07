@@ -20,36 +20,44 @@
 #   Justin Privitera, Wed Apr 27 17:46:52 PDT 2022
 #   Updated adios2 to 2.7.1 and added all the libraries it creates to the
 #   installation as well as additional logic for parallel building.
-# 
+#
 #   Justin Privitera, Thu Jan 18 09:56:51 PST 2024
 #   adios2 libs have changed so I removed many of the old ones.
 #
 #   Mark C. Miller, Tue Mar 19 12:20:18 PDT 2024
 #   Adjust parallel to include both serial and parallel libs.
+#
+#   Kathleen Biagas, Mon Mar 24, 2025
+#   Utilize visit_import_third_party.
+#
 #****************************************************************************/
 
-# Use the ADIOS_DIR hint from the config-site .cmake file
+# Uses the ADIOS2_DIR hint from the config-site .cmake file
+
+set(adios2_libs
+    adios2_atl
+    adios2_c
+    adios2_core
+    adios2_cxx11
+    adios2_dill
+    adios2_ffs)
 
 if(NOT WIN32)
-    SET_UP_THIRD_PARTY(ADIOS2 LIBS
-        adios2_c adios2_atl adios2_dill adios2_evpath adios2_ffs
-        adios2_perfstubs adios2_cxx11 adios2_core adios2_enet)
-else()
-    SET_UP_THIRD_PARTY(ADIOS2 LIBS
-        adios2_c adios2_cxx11 adios2_core adios2_atl
-        adios2_dill adios2_ffs )
+    list(APPEND adios2_libs
+        adios2_enet
+        adios2_evpath
+        adios2_perfstubs)
 endif()
 
+visit_import_third_party(ADIOS2 LIBS ${adios2_libs})
+
+
 if(VISIT_PARALLEL)
-    if(NOT WIN32)
-        SET_UP_THIRD_PARTY(ADIOS2_PAR LIBS
-            adios2_c adios2_atl adios2_dill adios2_evpath adios2_ffs
-            adios2_perfstubs adios2_cxx11 adios2_core adios2_enet
-            adios2_c_mpi adios2_cxx11_mpi adios2_core_mpi)
-    else()
-        SET_UP_THIRD_PARTY(ADIOS2_PAR LIBS
-            adios2_c adios2_cxx11 adios2_core
-            adios2_atl adios2_dill adios2_ffs 
-            adios2_c_mpi adios2_cxx11_mpi adios2_core_mpi)
-    endif()
+    visit_import_third_party(ADIOS2_PAR
+         LIBS     ${adios2_libs}
+                  adios2_c_mpi
+                  adios2_cxx11_mpi
+                  adios2_core_mpi
+          DEFINES ADIOS2_USE_MPI)
 endif()
+

@@ -28,11 +28,10 @@ avtXolotlOptions.C
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
-${HDF5_INCLUDE_DIR}
 ${VISIT_DATABASE_INCLUDES}
 )
 
-LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${HDF5_LIBRARY_DIR} )
+LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 
 ADD_LIBRARY(IXolotlDatabase ${LIBI_SOURCES})
 TARGET_LINK_LIBRARIES(IXolotlDatabase visitcommon)
@@ -40,19 +39,19 @@ SET(INSTALLTARGETS IXolotlDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MXolotlDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MXolotlDatabase visitcommon avtdbatts avtdatabase_ser ${HDF5_LIB} ${ZLIB_LIBRARY} )
+    TARGET_LINK_LIBRARIES(MXolotlDatabase visitcommon avtdbatts avtdatabase_ser hdf5 )
     ADD_TARGET_DEFINITIONS(MXolotlDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MXolotlDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EXolotlDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EXolotlDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${HDF5_LIB} ${ZLIB_LIBRARY} )
+TARGET_LINK_LIBRARIES(EXolotlDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser hdf5 )
 ADD_TARGET_DEFINITIONS(EXolotlDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EXolotlDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EXolotlDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EXolotlDatabase_par visitcommon avtpipeline_par avtdatabase_par ${HDF5_LIB} ${ZLIB_LIBRARY} )
+    TARGET_LINK_LIBRARIES(EXolotlDatabase_par visitcommon avtpipeline_par avtdatabase_par hdf5 )
     ADD_TARGET_DEFINITIONS(EXolotlDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EXolotlDatabase_par)
 ENDIF(VISIT_PARALLEL)
