@@ -74,7 +74,6 @@
                     {"platform":"win","category":"plots","file":"label.py","cases":["label_8_02"]},
                     {"platform":"win", "category":"queries","file":"flatten.py"},
                     {"platform":"win","category":"quickrecipes","file":"saving_images.py"},
-                    {"platform":"win","category":"rendering","file":"ospray.py","cases":["ospray_domain_boundaries_00"]},
                     {"platform":"win","category":"rendering","file":"volume.py","cases":["volume_15","volume_16","volume_23","volume_24","volume_33","volume_34"]},
                     {"platform":"win","category":"rendering","file":"volume_rect_multiDomain.py","cases":["volume_23","volume_24"]},
                     {"platform":"win","category":"rendering","file":"volume_rect_singleDomain.py","cases":["volume_15","volume_16"]},
