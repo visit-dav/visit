@@ -29,7 +29,7 @@
 
 // Relative scale will scale the text as a percentage of the bbox diagonal
 #define GetRelativeHeight GetOptions().GetEntry("relativeHeight")->AsInt
-#define SetRelativeHeight GetOptions().GetEntry("relatveHeight")->SetValue
+#define SetRelativeHeight GetOptions().GetEntry("relativeHeight")->SetValue
 
 // Fixed height in world coordinates.
 #define GetFixedHeight   GetOptions().GetEntry("fixedHeight")->AsDouble
@@ -530,6 +530,7 @@ QvisText3DInterface::heightModeChanged(int mode)
 void
 QvisText3DInterface::relativeHeightChanged(int h)
 {
+cerr << "setting relative height to: " << h << endl;
     annot->SetRelativeHeight(h);
     SetUpdate(false);
     Apply();
