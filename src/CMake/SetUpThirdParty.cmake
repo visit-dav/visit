@@ -874,8 +874,6 @@ if(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
     include(${VISIT_SOURCE_DIR}/CMake/FindPIDX.cmake)
 
     include(${VISIT_SOURCE_DIR}/CMake/FindVTKm.cmake)
-
-    include(${VISIT_SOURCE_DIR}/CMake/FindGFortran.cmake)
 endif()
 
 unset(VISIT_TP_PERMS)
