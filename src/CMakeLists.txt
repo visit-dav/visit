@@ -366,8 +366,8 @@ if(NOT WIN32)
 endif()
 
 # Set up placeholders for package vars: XXX_LIBDEP
-foreach(pkg CGNS CONDUIT FMS HDF5 HDF5_MPI H5PART MFEM NEKTAR++ NETCDF
-            SILO XDMF)
+foreach(pkg ADIOS2 ADIOS2_PAR CGNS CONDUIT FMS HDF5 HDF5_MPI H5PART MFEM
+        NEKTAR++ NETCDF SILO XDMF)
     VISIT_3RDPARTY_LIBDEP(${pkg})
 endforeach()
 
