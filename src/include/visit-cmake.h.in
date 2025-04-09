@@ -56,6 +56,9 @@
 /* Define to 1 if you have the `m' library (-lm). */
 #cmakedefine HAVE_LIBM 1
 
+/* Define if you have the ICET library. */
+#cmakedefine HAVE_ICET
+
 /* Define if you have the OSPRAY library. */
 #cmakedefine HAVE_OSPRAY
 

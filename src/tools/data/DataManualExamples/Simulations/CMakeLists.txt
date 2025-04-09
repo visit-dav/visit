@@ -152,8 +152,8 @@ function(ADD_PARALLEL_SIMV2_SIMULATION target)
         set(sim_${target}_DEPENDS simV2_static_par
             ${VTK_LIBS} ${EXTRA_SIM_LIBS})
     endif()
-    if(ICET_FOUND)
-        list(APPEND sim_${target}_DEPENDS ${ICET_LIB})
+    if(HAVE_ICET)
+        list(APPEND sim_${target}_DEPENDS icet)
     endif()
 
     visit_add_parallel_executable(
@@ -169,9 +169,6 @@ function(ADD_PARALLEL_SIMV2_SIMULATION target)
         RUNTIME_OUTPUT_DIRECTORY ${RTOD}
         HAS_CXX ON)
 
-    if(ICET_FOUND)
-        visit_patch_target(NAME sim_${target} LINKDIR ${ICET_LIBRARY_DIR})
-    endif()
 endfunction()
 
 function(ADD_PARALLEL_FORTRAN_SIMV2_SIMULATION target)
@@ -183,8 +180,8 @@ function(ADD_PARALLEL_FORTRAN_SIMV2_SIMULATION target)
         # HACK: Force the Fortran MPI libraries.
         ${MPI_Fortran_LIBRARIES})
 
-    if(ICET_FOUND)
-        list(APPEND sim_${target}_DEPENDS ${ICET_LIB})
+    if(HAVE_ICET)
+        list(APPEND sim_${target}_DEPENDS icet)
     endif()
 
     if(NOT VISIT_STATIC)
@@ -204,10 +201,6 @@ function(ADD_PARALLEL_FORTRAN_SIMV2_SIMULATION target)
         DEPENDS_ON  ${sim_${target}_DEPENDS}
         OUTPUT_NAME ${target}
         SKIP_INSTALL)
-
-    if(ICET_FOUND)
-        visit_patch_target(NAME sim_${target} LINKDIR ${ICET_LIBRARY_DIR})
-    endif()
 
     set_target_properties(sim_${target} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${RTOD})

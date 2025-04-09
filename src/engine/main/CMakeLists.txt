@@ -141,7 +141,7 @@ endif()
 
 if(VISIT_PARALLEL)
     # If we have Ice-T then add more sources to the build
-    if(ICET_FOUND)
+    if(HAVE_ICET)
         set(ICET_SOURCES IceTNetworkManager.C)
         set(ICET_HEADERS IceTNetworkManager.h)
         if(APPLE)
@@ -150,9 +150,9 @@ if(VISIT_PARALLEL)
         endif()
 
         if(VISIT_STATIC)
-            set(ICET_STATIC_LIB ${ICET_LIB} ${ICET_OPENGL} ${VISIT_PARALLEL_LIBS})
+            set(ICET_STATIC_LIB icet ${ICET_OPENGL} ${VISIT_PARALLEL_LIBS})
         else()
-            set(ICET_DYNAMIC_LIB ${ICET_LIB} ${ICET_OPENGL})
+            set(ICET_DYNAMIC_LIB icet ${ICET_OPENGL})
         endif()
     endif()
 
@@ -181,13 +181,7 @@ if(VISIT_PARALLEL)
         visit_patch_target(NAME engine_par DEFINES COMM_EXPORTS)
     endif()
 
-    if(ICET_FOUND)
-        visit_patch_target(
-            NAME        engine_par
-            LINKDIR     ${ICET_LIBRARY_DIR}
-            INCLUDES    $<BUILD_INTERFACE:${ICET_INCLUDE_DIR}>
-                        $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/icet>
-            DEFINES     HAVE_ICET)
+    if(HAVE_ICET)
         if(VISIT_MESAGL_DIR)
             visit_patch_target(
                 NAME engine_par
@@ -240,7 +234,7 @@ if(VISIT_PARALLEL)
 
     # For static builds with icet, don't add the parallel libs automatically. We
     # try to control it explicitly so icet comes before mpi on the link line.
-    if(ICET_FOUND AND VISIT_STATIC)
+    if(HAVE_ICET AND VISIT_STATIC)
         set(tmpval ${VISIT_NOLINK_MPI_WITH_LIBRARIES})
         set(VISIT_NOLINK_MPI_WITH_LIBRARIES OFF)
     endif()
@@ -271,8 +265,7 @@ if(VISIT_PARALLEL)
             LINK_FLAGS "/STACK:4000000")
     endif()
 
-    if(ICET_FOUND)
-        visit_PATCH_TARGET(NAME engine_par_exe LINKDIR ${ICET_LIBRARY_DIR})
+    if(HAVE_ICET)
         if(VISIT_STATIC)
             set(VISIT_NOLINK_MPI_WITH_LIBRARIES ${tmpval})
         endif()
