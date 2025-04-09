@@ -530,7 +530,6 @@ QvisText3DInterface::heightModeChanged(int mode)
 void
 QvisText3DInterface::relativeHeightChanged(int h)
 {
-cerr << "setting relative height to: " << h << endl;
     annot->SetRelativeHeight(h);
     SetUpdate(false);
     Apply();
