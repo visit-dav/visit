@@ -630,7 +630,6 @@ function(visit_import_third_party pkg)
     else()
         set(tplibs)
         foreach (X ${vitp_LIBS})
-            message("looking for ${X} in ${${pkg}_DIR} ${libdirs}")
             find_library(_${pkg}_${X}
                          NAMES ${X}
                          PATHS ${${pkg}_DIR}

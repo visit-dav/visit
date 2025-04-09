@@ -24,17 +24,15 @@
 visit_import_third_party(GDAL LIBNAMES gdal gdal_i)
 
 if(WIN32)
-    # normally handled in INSTALL_THIRD_PARTY_LIBRARY, but gdal has a weird
-    # naming convention on windows
-    foreach(VER 17 19 110 111 222 224)
-        if(EXISTS ${GDAL_LIBRARY_DIR}/gdal${VER}.dll)
-            execute_process(COMMAND ${CMAKE_COMMAND} -E copy
-                ${GDAL_LIBRARY_DIR}/gdal${VER}.dll
-                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
-            install(FILES ${GDAL_LIBRARY_DIR}/gdal${VER}.dll
+    if(EXISTS ${VISIT_GDAL_DIR}/lib/gdal224.dll)
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+            ${VISIT_GDAL_DIR}/lib/gdal224.dll
+            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
+        install(FILES ${VISIT_GDAL_DIR}/lib/gdal224.dll
                 DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
-                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-        endif()
-    endforeach()
+                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                            GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                            WORLD_READ             WORLD_EXECUTE)
+    endif()
 endif()
 

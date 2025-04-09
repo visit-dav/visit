@@ -740,6 +740,8 @@ configure_file(${VISIT_SOURCE_DIR}/include/visit-python-cmake.h.in
 configure_file(${VISIT_SOURCE_DIR}/include/visit-version.h.in
                ${VISIT_BINARY_DIR}/include/visit-version.h @ONLY IMMEDIATE)
 
+configure_file(${VISIT_SOURCE_DIR}/include/visit-hdf5.h.in
+               ${VISIT_BINARY_DIR}/include/visit-hdf5.h @ONLY IMMEDIATE)
 
 #-----------------------------------------------------------------------------
 # Create common/misc/ConfigureInfo.C
