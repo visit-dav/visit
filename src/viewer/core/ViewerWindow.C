@@ -246,9 +246,6 @@ static void RotateAroundY(const avtView3D&, double, avtView3D&);
 //    Kathleen Biagas, Wed Aug 17, 2022
 //    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9.
 //
-//    Kevin Griffin, Thu Mar 6 15:51:48 CST 2025
-//    Added ANARI
-//
 // ****************************************************************************
 
 ViewerWindow::ViewerWindow(int windowIndex) : ViewerBase(),
@@ -389,9 +386,6 @@ ViewerWindow::~ViewerWindow()
 // Modifications:
 //    Kathleen Biagas, Wed Aug 17, 2022
 //    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9.
-//
-//    Kevin Griffin, Thu Mar 6 15:51:48 CST 2025
-//    Added ANARI
 //
 // ****************************************************************************
 

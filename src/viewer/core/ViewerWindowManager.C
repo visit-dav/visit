@@ -8322,27 +8322,27 @@ ViewerWindowManager::SetWindowAttributes(int windowIndex, bool copyAtts)
 #endif
 
 #ifdef HAVE_ANARI
-        w->SetAnariRendering(GetViewerState()->GetRenderingAttributes()->GetAnariRendering());
-        w->SetAnariSPP(GetViewerState()->GetRenderingAttributes()->GetAnariSPP());
-        w->SetAnariAO(GetViewerState()->GetRenderingAttributes()->GetAnariAO());
-        w->SetAnariLibraryName(GetViewerState()->GetRenderingAttributes()->GetAnariLibrary());
-        w->SetAnariLibrarySubtype(GetViewerState()->GetRenderingAttributes()->GetAnariLibrarySubtype());
-        w->SetAnariRendererSubtype(GetViewerState()->GetRenderingAttributes()->GetAnariRendererSubtype());
-        w->SetUseAnariDenoiser(GetViewerState()->GetRenderingAttributes()->GetUseAnariDenoiser());
-        w->SetAnariLightFalloff(GetViewerState()->GetRenderingAttributes()->GetAnariLightFalloff());
-        w->SetAnariAmbientIntensity(GetViewerState()->GetRenderingAttributes()->GetAnariAmbientIntensity());
-        w->SetAnariMaxDepth(GetViewerState()->GetRenderingAttributes()->GetAnariMaxDepth());
-        w->SetAnariRValue(GetViewerState()->GetRenderingAttributes()->GetAnariRValue());
-        w->SetAnariDebugMethod(GetViewerState()->GetRenderingAttributes()->GetAnariDebugMethod());
-        w->SetUsdDir(GetViewerState()->GetRenderingAttributes()->GetUsdDir());
-        w->SetUsdAtCommit(GetViewerState()->GetRenderingAttributes()->GetUsdAtCommit());
-        w->SetUsdOutputBinary(GetViewerState()->GetRenderingAttributes()->GetUsdOutputBinary());
-        w->SetUsdOutputMaterial(GetViewerState()->GetRenderingAttributes()->GetUsdOutputMaterial());
-        w->SetUsdOutputPreviewSurface(GetViewerState()->GetRenderingAttributes()->GetUsdOutputPreviewSurface());
-        w->SetUsdOutputMDL(GetViewerState()->GetRenderingAttributes()->GetUsdOutputMDL());
-        w->SetUsdOutputMDLColors(GetViewerState()->GetRenderingAttributes()->GetUsdOutputMDLColors());
-        w->SetUsdOutputDisplayColors(GetViewerState()->GetRenderingAttributes()->GetUsdOutputDisplayColors());
-        w->SetUsingUsdDevice(GetViewerState()->GetRenderingAttributes()->GetUsingUsdDevice());
+    w->SetAnariRendering(GetViewerState()->GetRenderingAttributes()->GetAnariRendering());
+    w->SetAnariSPP(GetViewerState()->GetRenderingAttributes()->GetAnariSPP());
+    w->SetAnariAO(GetViewerState()->GetRenderingAttributes()->GetAnariAO());
+    w->SetAnariLibraryName(GetViewerState()->GetRenderingAttributes()->GetAnariLibrary());
+    w->SetAnariLibrarySubtype(GetViewerState()->GetRenderingAttributes()->GetAnariLibrarySubtype());
+    w->SetAnariRendererSubtype(GetViewerState()->GetRenderingAttributes()->GetAnariRendererSubtype());
+    w->SetUseAnariDenoiser(GetViewerState()->GetRenderingAttributes()->GetUseAnariDenoiser());
+    w->SetAnariLightFalloff(GetViewerState()->GetRenderingAttributes()->GetAnariLightFalloff());
+    w->SetAnariAmbientIntensity(GetViewerState()->GetRenderingAttributes()->GetAnariAmbientIntensity());
+    w->SetAnariMaxDepth(GetViewerState()->GetRenderingAttributes()->GetAnariMaxDepth());
+    w->SetAnariRValue(GetViewerState()->GetRenderingAttributes()->GetAnariRValue());
+    w->SetAnariDebugMethod(GetViewerState()->GetRenderingAttributes()->GetAnariDebugMethod());
+    w->SetUsdDir(GetViewerState()->GetRenderingAttributes()->GetUsdDir());
+    w->SetUsdAtCommit(GetViewerState()->GetRenderingAttributes()->GetUsdAtCommit());
+    w->SetUsdOutputBinary(GetViewerState()->GetRenderingAttributes()->GetUsdOutputBinary());
+    w->SetUsdOutputMaterial(GetViewerState()->GetRenderingAttributes()->GetUsdOutputMaterial());
+    w->SetUsdOutputPreviewSurface(GetViewerState()->GetRenderingAttributes()->GetUsdOutputPreviewSurface());
+    w->SetUsdOutputMDL(GetViewerState()->GetRenderingAttributes()->GetUsdOutputMDL());
+    w->SetUsdOutputMDLColors(GetViewerState()->GetRenderingAttributes()->GetUsdOutputMDLColors());
+    w->SetUsdOutputDisplayColors(GetViewerState()->GetRenderingAttributes()->GetUsdOutputDisplayColors());
+    w->SetUsingUsdDevice(GetViewerState()->GetRenderingAttributes()->GetUsingUsdDevice());
 #endif
 }
 

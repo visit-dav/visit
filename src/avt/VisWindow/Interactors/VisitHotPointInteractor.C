@@ -30,7 +30,7 @@
 // ****************************************************************************
 // Method: VisitHotPointInteractor::VisitHotPointInteractor
 //
-// Purpose: 
+// Purpose:
 //   This is the constructor for the VisitHotPointInteractor class.
 //
 // Arguments:
@@ -40,9 +40,9 @@
 // Creation:   Mon Oct 1 11:53:27 PDT 2001
 //
 // Modifications:
-//   Kathleen Bonnell, Wed May  8 10:34:52 PDT 2002  
+//   Kathleen Bonnell, Wed May  8 10:34:52 PDT 2002
 //   Added Lineout2D, ZoomCurve.
-//   
+//
 //   Eric Brugger, Thu Oct 23 15:12:04 PDT 2003
 //   Added navigateCurve.
 //
@@ -55,7 +55,7 @@
 //   Eric Brugger, Tue Dec 28 07:52:34 PST 2004
 //   Added dolly3D.
 //
-//   Kathleen Bonnell, Thu Jan 12 13:58:25 PST 2006 
+//   Kathleen Bonnell, Thu Jan 12 13:58:25 PST 2006
 //   Replaced Pick3D and Pick2D with Pick.
 //
 //   Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
@@ -91,16 +91,16 @@ VisitHotPointInteractor::VisitHotPointInteractor(VisWindowInteractorProxy &v) :
 // ****************************************************************************
 // Method: VisitHotPointInteractor::~VisitHotPointInteractor
 //
-// Purpose: 
+// Purpose:
 //   This is the destructor for the VisitHotPointInteractor class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Oct 1 11:54:17 PDT 2001
 //
 // Modifications:
-//   Kathleen Bonnell, Wed May  8 10:34:52 PDT 2002  
+//   Kathleen Bonnell, Wed May  8 10:34:52 PDT 2002
 //   Added lineout2D, zoomCurve.
-// 
+//
 //   Eric Brugger, Wed Oct 15 17:36:06 PDT 2003
 //   Added navigateCurve.
 //
@@ -110,7 +110,7 @@ VisitHotPointInteractor::VisitHotPointInteractor(VisWindowInteractorProxy &v) :
 //   Eric Brugger, Tue Dec 28 07:52:34 PST 2004
 //   Added dolly3D.
 //
-//   Kathleen Bonnell, Thu Jan 12 13:58:25 PST 2006 
+//   Kathleen Bonnell, Thu Jan 12 13:58:25 PST 2006
 //   Replaced Pick3D and Pick2D with Pick.
 //
 //   Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
@@ -193,7 +193,7 @@ VisitHotPointInteractor::~VisitHotPointInteractor()
 // ****************************************************************************
 // Method: VisitHotPointInteractor::SetInteractor
 //
-// Purpose: 
+// Purpose:
 //   This method sets the current interactor that is called when no hot points
 //   are dragged.
 //
@@ -235,7 +235,7 @@ VisitHotPointInteractor::SetInteractor(VisitInteractor *newInteractor)
 
     newInteractor->SetInteractor(Interactor);
 
-    if (newInteractor != NULL) 
+    if (newInteractor != NULL)
     {
         if (newInteractor->LeftButtonIsDown())
             newInteractor->StartLeftButtonAction();
@@ -251,7 +251,7 @@ VisitHotPointInteractor::SetInteractor(VisitInteractor *newInteractor)
 // ****************************************************************************
 // Method: VisitHotPointInteractor::SetNullInteractor
 //
-// Purpose: 
+// Purpose:
 //   Sets the NullInteractor as the default interactor.
 //
 // Programmer: Brad Whitlock
@@ -268,7 +268,7 @@ VisitHotPointInteractor::SetNullInteractor()
 // ****************************************************************************
 // Method: VisitHotPointInteractor::Start2DMode
 //
-// Purpose: 
+// Purpose:
 //   Starts 2D interaction mode.
 //
 // Arguments:
@@ -282,15 +282,15 @@ VisitHotPointInteractor::SetNullInteractor()
 // Modifications:
 //   Kathleen Bonnell, Fri Dec 14 11:54:54 PST 2001
 //   Added LINEOUT.
-//   
-//   Kathleen Bonnell, Fri Jun 27 16:34:31 PDT 2003  
-//   Handle NodePick, ZonePick. 
-//   
-//   Kathleen Bonnell, Thu Jan 12 13:58:25 PST 2006 
+//
+//   Kathleen Bonnell, Fri Jun 27 16:34:31 PDT 2003
+//   Handle NodePick, ZonePick.
+//
+//   Kathleen Bonnell, Thu Jan 12 13:58:25 PST 2006
 //   Replaced Pick2D with Pick.
 //
 //   Gunther H. Weber, Wed Mar 19 16:10:11 PDT 2008
-//   Added SPREADSHEET_PICK 
+//   Added SPREADSHEET_PICK
 //
 //   Jonathan Byrd (Allinea Software), Sun Dec 18, 2011
 //   Added the DDT_PICK mode
@@ -359,7 +359,7 @@ VisitHotPointInteractor::Start2DMode(INTERACTION_MODE mode)
 // ****************************************************************************
 // Method: VisitHotPointInteractor::Start3DMode
 //
-// Purpose: 
+// Purpose:
 //   Starts 3D interaction mode.
 //
 // Arguments:
@@ -371,13 +371,13 @@ VisitHotPointInteractor::Start2DMode(INTERACTION_MODE mode)
 // Creation:   Mon Oct 1 11:57:25 PDT 2001
 //
 // Modifications:
-//   Kathleen Bonnell, Mon Dec 23 11:16:59 PST 2002 
+//   Kathleen Bonnell, Mon Dec 23 11:16:59 PST 2002
 //   Handle LINEOUT mode.  There is no true 3d Lineout mode yet, but 3d
 //   lineout queries need to set the interactor, so use Navigate.
-//   
-//   Kathleen Bonnell, Fri Jun 27 16:34:31 PDT 2003  
-//   Handle NodePick, ZonePick. 
-//   
+//
+//   Kathleen Bonnell, Fri Jun 27 16:34:31 PDT 2003
+//   Handle NodePick, ZonePick.
+//
 //   Eric Brugger, Thu Oct 28 15:56:10 PDT 2004
 //   Modified to use the FlyThrough interactor when the navigation mode
 //   is Flythrough and we are in navigate mode.
@@ -386,11 +386,11 @@ VisitHotPointInteractor::Start2DMode(INTERACTION_MODE mode)
 //   Modified to use the Dolly3D interactor when the navigation mode is
 //   Dolly and we are in navigate mode.
 //
-//   Kathleen Bonnell, Thu Jan 12 13:58:25 PST 2006 
+//   Kathleen Bonnell, Thu Jan 12 13:58:25 PST 2006
 //   Replaced Pick3D with Pick.
 //
 //   Gunther H. Weber, Wed Mar 19 16:10:11 PDT 2008
-//   Added SPREADSHEET_PICK 
+//   Added SPREADSHEET_PICK
 //
 //   Jonathan Byrd (Allinea Software), Sun Dec 18, 2011
 //   Added the DDT_PICK mode
@@ -475,37 +475,37 @@ VisitHotPointInteractor::Start3DMode(INTERACTION_MODE mode)
 // ****************************************************************************
 // Method: VisitHotPointInteractor::StartCurveMode
 //
-// Purpose: 
+// Purpose:
 //   Starts Curve interaction mode.
 //
 // Arguments:
 //   mode : The new interaction mode.
 //
-// Note:       
+// Note:
 //   Only two interaction modes are valid in CurveMode:  Navigate and Zoom.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   May 8, 2002 
+// Programmer: Kathleen Bonnell
+// Creation:   May 8, 2002
 //
 // Modifications:
-//   Kathleen Bonnell, Fri Jun 27 16:34:31 PDT 2003  
-//   Handle NodePick, ZonePick. 
-//   
+//   Kathleen Bonnell, Fri Jun 27 16:34:31 PDT 2003
+//   Handle NodePick, ZonePick.
+//
 //   Eric Brugger, Wed Oct 15 17:36:06 PDT 2003
 //   Change navigate mode to use the NavigateCurve interactor.
 //
-//   Kathleen Bonnell, Tue Dec  2 17:41:31 PST 2003 
-//   Allow Pick interactions (use Pick2d). 
+//   Kathleen Bonnell, Tue Dec  2 17:41:31 PST 2003
+//   Allow Pick interactions (use Pick2d).
 //
 //   Brad Whitlock, Wed Apr 27 17:20:09 PST 2005
 //   Make it use a navigate interactor for lineout mode so we at least have
 //   an interactor in the rare case that we enter lineout mode here.
 //
-//   Kathleen Bonnell, Thu Jan 12 13:58:25 PST 2006 
+//   Kathleen Bonnell, Thu Jan 12 13:58:25 PST 2006
 //   Replaced Pick3D and Pick2D with Pick.
 //
 //   Gunther H. Weber, Wed Mar 19 16:10:11 PDT 2008
-//   Added SPREADSHEET_PICK 
+//   Added SPREADSHEET_PICK
 //
 //   Jonathan Byrd (Allinea Software), Sun Dec 18, 2011
 //   Added the DDT_PICK mode
@@ -582,7 +582,7 @@ VisitHotPointInteractor::StartCurveMode(INTERACTION_MODE mode)
 //   Added zoom interactor for AxisArray mode.
 //
 //   Gunther H. Weber, Wed Mar 19 16:10:11 PDT 2008
-//   Added SPREADSHEET_PICK 
+//   Added SPREADSHEET_PICK
 //
 //   Eric Brugger, Tue Dec  9 16:32:45 PST 2008
 //   Added code to set the axis orientation for the navigateAxisArray.
@@ -744,7 +744,7 @@ VisitHotPointInteractor::StartParallelAxesMode(INTERACTION_MODE mode)
 // ****************************************************************************
 // Method: VisitHotPointInteractor::Stop2DMode
 //
-// Purpose: 
+// Purpose:
 //   Ends 2D interaction mode.
 //
 // Programmer: Brad Whitlock
@@ -761,7 +761,7 @@ VisitHotPointInteractor::Stop2DMode()
 // ****************************************************************************
 // Method: VisitHotPointInteractor::Stop3DMode
 //
-// Purpose: 
+// Purpose:
 //   Ends 3D interaction mode.
 //
 // Programmer: Brad Whitlock
@@ -778,11 +778,11 @@ VisitHotPointInteractor::Stop3DMode()
 // ****************************************************************************
 // Method: VisitHotPointInteractor::StopCurveMode
 //
-// Purpose: 
+// Purpose:
 //   Ends Curve interaction mode.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   May 8, 2002 
+// Programmer: Kathleen Bonnell
+// Creation:   May 8, 2002
 //
 // ****************************************************************************
 
@@ -795,7 +795,7 @@ VisitHotPointInteractor::StopCurveMode()
 // ****************************************************************************
 // Method: VisitHotPointInteractor::StopAxisArrayMode
 //
-// Purpose: 
+// Purpose:
 //   Ends AxisArray interaction mode.
 //
 // Programmer: Jeremy Meredith
@@ -812,7 +812,7 @@ VisitHotPointInteractor::StopAxisArrayMode()
 // ****************************************************************************
 // Method: VisitHotPointInteractor::StopParallelAxesMode
 //
-// Purpose: 
+// Purpose:
 //   Ends ParallelAxes interaction mode.
 //
 // Programmer: Eric Brugger
@@ -829,7 +829,7 @@ VisitHotPointInteractor::StopParallelAxesMode()
 // ****************************************************************************
 // Method: VisitHotPointInteractor::StartLeftButtonAction
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the left mouse button is clicked.
 //
 // Arguments:
@@ -853,10 +853,10 @@ VisitHotPointInteractor::StopParallelAxesMode()
 //    I moved MotionEnd from the base class to here so it is not called
 //    twice for each button down event.
 //
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002  
+//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
 //    Removed arguments to match vtk's new interactor api.  The values are
-//    now accessed directly from the RenderWindowInteractor. 
-//    
+//    now accessed directly from the RenderWindowInteractor.
+//
 //    Jeremy Meredith, Fri Feb  1 18:01:15 EST 2008
 //    Added new data value to hotpoints that is passed to callback.
 //
@@ -908,8 +908,8 @@ VisitHotPointInteractor::StartLeftButtonAction()
 // ****************************************************************************
 // Method: VisitHotPointInteractor::EndLeftButtonAction
 //
-// Purpose: 
-//   This method is called when the left mouse button is released. 
+// Purpose:
+//   This method is called when the left mouse button is released.
 //
 // Arguments:
 //   ctrl  : The state of the Ctrl key.
@@ -931,9 +931,9 @@ VisitHotPointInteractor::StartLeftButtonAction()
 //    I moved MotionEnd from the base class to here so it is not called
 //    twice for each button up event.
 //
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002  
+//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
 //    Removed arguments to match vtk's new interactor api.  The values are
-//    now accessed directly from the RenderWindowInteractor. 
+//    now accessed directly from the RenderWindowInteractor.
 //
 //    Jeremy Meredith, Fri Feb  1 18:01:15 EST 2008
 //    Added new data value to hotpoints that is passed to callback.
@@ -1004,8 +1004,8 @@ VisitHotPointInteractor::EndLeftButtonAction()
 // Creation:   March 18, 2002
 //
 // Modifications:
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002  
-//    Removed arguments to match vtk's new interactor api.  
+//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
+//    Removed arguments to match vtk's new interactor api.
 //
 //    Eric Brugger, Mon Aug 15 13:32:17 PDT 2005
 //    Modified the routine to no longer call AbortLeftButtonAction for
@@ -1028,7 +1028,7 @@ VisitHotPointInteractor::AbortLeftButtonAction()
 // ****************************************************************************
 // Method: VisitHotPointInteractor::StartMiddleButtonAction
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the middle mouse button is pressed.
 //
 // Arguments:
@@ -1050,8 +1050,8 @@ VisitHotPointInteractor::AbortLeftButtonAction()
 //    I moved MotionEnd from the base class to here so it is not called
 //    twice for each button down event.
 //
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002  
-//    Removed arguments to match vtk's new interactor api.  
+//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
+//    Removed arguments to match vtk's new interactor api.
 //
 // ****************************************************************************
 
@@ -1075,7 +1075,7 @@ VisitHotPointInteractor::StartMiddleButtonAction()
 // ****************************************************************************
 // Method: VisitHotPointInteractor::EndMiddleButtonAction
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the middle mouse button is released.
 //
 // Arguments:
@@ -1097,8 +1097,8 @@ VisitHotPointInteractor::StartMiddleButtonAction()
 //    I moved MotionEnd from the base class to here so it is not called
 //    twice for each button up event.
 //
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002  
-//    Removed arguments to match vtk's new interactor api.  
+//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
+//    Removed arguments to match vtk's new interactor api.
 //
 // ****************************************************************************
 
@@ -1135,8 +1135,8 @@ VisitHotPointInteractor::EndMiddleButtonAction()
 // Creation:   March 18, 2002
 //
 // Modifications:
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002  
-//    Removed arguments to match vtk's new interactor api.  
+//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
+//    Removed arguments to match vtk's new interactor api.
 //
 //    Eric Brugger, Mon Aug 15 13:32:17 PDT 2005
 //    Modified the routine to no longer call AbortMiddleButtonAction for
@@ -1159,7 +1159,7 @@ VisitHotPointInteractor::AbortMiddleButtonAction()
 // ****************************************************************************
 // Method: VisitHotPointInteractor::StartRightButtonAction
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the right mouse button is pressed.
 //
 // Programmer: Eric Brugger
@@ -1176,7 +1176,7 @@ VisitHotPointInteractor::StartRightButtonAction()
 // ****************************************************************************
 // Method: VisitHotPointInteractor::EndRightButtonAction
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the right mouse button is released.
 //
 // Programmer: Eric Brugger
@@ -1210,7 +1210,7 @@ VisitHotPointInteractor::AbortRightButtonAction()
 // ****************************************************************************
 // Method: VisitHotPointInteractor::OnMouseMove
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the mouse is moved.
 //
 // Arguments:
@@ -1226,10 +1226,10 @@ VisitHotPointInteractor::AbortRightButtonAction()
 // Creation:   Tue Oct 2 13:17:26 PST 2001
 //
 // Modifications:
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002  
+//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
 //    Removed arguments to match vtk's new interactor api.  They are now
 //    accessed directly from the RenderWindowInteractor.
-//   
+//
 //    Jeremy Meredith, Fri Feb  1 18:01:15 EST 2008
 //    Added new data value to hotpoints that is passed to callback.
 //
@@ -1263,14 +1263,14 @@ VisitHotPointInteractor::OnMouseMove()
 
         // Save the x,y location as the last coordinates.
         lastX = x;
-        lastY = y;  
+        lastY = y;
     }
 }
 
 // ****************************************************************************
 // Method: VisitHotPointInteractor::OnTimer
 //
-// Purpose: 
+// Purpose:
 //   This method is called with a timer.
 //
 // Note:       If there is no current hotpoint, the current interactor's
@@ -1315,8 +1315,8 @@ VisitHotPointInteractor::OnTimer()
 void
 VisitHotPointInteractor::OnMouseWheelForward()
 {
-    if (!currentInteractor->LeftButtonIsDown() && 
-        !currentInteractor->MiddleButtonIsDown() && 
+    if (!currentInteractor->LeftButtonIsDown() &&
+        !currentInteractor->MiddleButtonIsDown() &&
         !currentInteractor->RightButtonIsDown())
     {
         currentInteractor->OnMouseWheelForward();
@@ -1328,7 +1328,7 @@ VisitHotPointInteractor::OnMouseWheelForward()
 //  Method: VisitHotPointInteractor::OnMouseWheelBackward()
 //
 //  Purpose:
-//    Handles the mouse wheel turned forward.  
+//    Handles the mouse wheel turned forward.
 //
 //  Arguments:
 //
@@ -1348,8 +1348,8 @@ VisitHotPointInteractor::OnMouseWheelForward()
 void
 VisitHotPointInteractor::OnMouseWheelBackward()
 {
-    if (!currentInteractor->LeftButtonIsDown() && 
-        !currentInteractor->MiddleButtonIsDown() && 
+    if (!currentInteractor->LeftButtonIsDown() &&
+        !currentInteractor->MiddleButtonIsDown() &&
         !currentInteractor->RightButtonIsDown())
     {
         currentInteractor->OnMouseWheelBackward();
@@ -1360,13 +1360,13 @@ VisitHotPointInteractor::OnMouseWheelBackward()
 //  Method: VisitHotPointInteractor::SetInteractor
 //
 //  Purpose:
-//      Associate this 'style' with the passed render window interactor. 
+//      Associate this 'style' with the passed render window interactor.
 //
 //  Arguments:
 //      rwi     The render window interactor.
-// 
-//  Programmer: Kathleen Bonnell 
-//  Creation:   November 25, 2002 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   November 25, 2002
 //
 // ****************************************************************************
 
@@ -1375,8 +1375,28 @@ VisitHotPointInteractor::SetInteractor(vtkRenderWindowInteractor *rwi)
 {
     //
     //  We want this class to be the 'controller', so it should observe the
-    //  actions taken by the RenderWindowInteractor.  The base class adds 
+    //  actions taken by the RenderWindowInteractor.  The base class adds
     //  the observers, so call it.
     //
     vtkInteractorStyle::SetInteractor(rwi);
+}
+
+// ****************************************************************************
+//  Method: VisitHotPointInteractor::SetAnariRendering
+//
+//  Purpose:
+//    Sets the anari rendering flag for the current interactor.
+//
+//  Arguments:
+//    enabled : True if ANARI rendering is enabled, otherwise false.
+//
+//  Programmer: Kevin Griffin, Mon Apr 10, 2025
+//
+// ****************************************************************************
+
+void
+VisitHotPointInteractor::SetAnariRendering(bool enabled)
+{
+    useAnari = enabled;
+    currentInteractor->SetAnariRendering(enabled);
 }

@@ -77,7 +77,9 @@ Navigate3D::Navigate3D(VisWindowInteractorProxy &v) : VisitInteractor(v)
 //    currently being used.
 //
 //    Kevin Griffin, Mon Mar 24 2025
-//    Test HAVE_ANARI to determine if PanCamera or PanImage should be used.
+//    Test useAnari to determine if PanCamera or PanImage should be used.
+//    It will be true if the user has selected ANARI rendering in the
+//    advanced rendering dialog.
 //
 // ****************************************************************************
 
@@ -99,13 +101,10 @@ Navigate3D::OnTimer(void)
         break;
 
       case VTKIS_PAN:
-        #ifdef HAVE_ANARI
-           PanCamera3D(Pos[0], Pos[1]);
-        #else
-        // Currently the SetWindowCenter called from avtViewInfo.C
-        // does not get used in the vtkOSPRayCamerNode so instead pan
-        // the camera rather than the image.
-        if (useOSPRay)
+        // Currently the SetWindowCenter called from avtViewInfo.C does not
+        // get used in the vtkOSPRayCamerNode or vtkAnariCameraNode so instead
+        // pan the camera rather than the image.
+        if (useOSPRay || useAnari)
         {
             PanCamera3D(Pos[0], Pos[1]);
         }
@@ -113,7 +112,6 @@ Navigate3D::OnTimer(void)
         {
             PanImage3D(Pos[0], Pos[1]);
         }
-        #endif
         rwi->CreateTimer(VTKI_TIMER_UPDATE);
         break;
 
