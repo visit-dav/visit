@@ -784,9 +784,9 @@ if(NOT VISIT_DBIO_ONLY)
   include(${VISIT_SOURCE_DIR}/CMake/VisItOpenGL.cmake)
 endif()
 
-include(${VISIT_SOURCE_DIR}/CMake/FindNektar++.cmake)
+#include(${VISIT_SOURCE_DIR}/CMake/FindNektar++.cmake)
 
-include(${VISIT_SOURCE_DIR}/CMake/FindVisItDamaris.cmake)
+#include(${VISIT_SOURCE_DIR}/CMake/FindVisItDamaris.cmake)
 
 include(${VISIT_SOURCE_DIR}/CMake/FindVisItBoost.cmake)
 
