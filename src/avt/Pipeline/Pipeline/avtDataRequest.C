@@ -201,7 +201,7 @@ avtDataRequest::avtDataRequest(const char *var, int ts,
     needNativePrecision = false;
     discTol = 0.01;
     flatTol = 0.05;
-#ifdef BOOST_FOUND
+#ifdef HAVE_BOOST
     discMode = 1; // adaptive
 #else
     discMode = 0; // uniform 
@@ -1785,7 +1785,7 @@ void
 avtDataRequest::SetDiscMode(int mode)
 {
     discMode = mode;
-#ifndef BOOST_FOUND
+#ifndef HAVE_BOOST
     if (discMode == 1) // Adaptive
     {
         debug1 << "Adaptive not available. "

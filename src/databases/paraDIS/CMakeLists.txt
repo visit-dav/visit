@@ -43,7 +43,6 @@ ${CMAKE_CURRENT_SOURCE_DIR}
 paraDIS_lib
 RC_cpp_lib/RC_c_lib
 RC_cpp_lib
-${BOOST_INCLUDE_DIR}
 ${VISIT_DATABASE_INCLUDES}
 )
 
@@ -57,19 +56,19 @@ SET(INSTALLTARGETS IparaDISDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MparaDISDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MparaDISDatabase visitcommon avtdbatts avtdatabase_ser )
+    TARGET_LINK_LIBRARIES(MparaDISDatabase visitcommon avtdbatts avtdatabase_ser  boost)
     ADD_TARGET_DEFINITIONS(MparaDISDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MparaDISDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EparaDISDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EparaDISDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser )
+TARGET_LINK_LIBRARIES(EparaDISDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser  boost)
 ADD_TARGET_DEFINITIONS(EparaDISDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EparaDISDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EparaDISDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EparaDISDatabase_par visitcommon avtpipeline_par avtdatabase_par )
+    TARGET_LINK_LIBRARIES(EparaDISDatabase_par visitcommon avtpipeline_par avtdatabase_par boost)
     ADD_TARGET_DEFINITIONS(EparaDISDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EparaDISDatabase_par)
 ENDIF(VISIT_PARALLEL)

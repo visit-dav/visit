@@ -2,12 +2,17 @@
 # Project developers.  See the top-level LICENSE file for dates and other
 # details.  No copyright assignment is required to contribute to VisIt.
 
-# Use the BOOST_DIR hint from the config-site .cmake file
+#*************************************************************************
+# Modifications:
+#   Kathleen Biagas, Wed Apr 9, 2025
+#   Utilize visit_import_third_party.
+#
+#*************************************************************************
 
-set(BOOST_LIBS NO_LIBS)
+# Uses the BOOST_DIR hint from the config-site .cmake file
 
 if(NEKTAR++_FOUND)
-    set(BOOST_LIBS
+    visit_import_third_party(BOOST LIBS
         boost_chrono
         boost_iostreams
         boost_thread
@@ -17,7 +22,7 @@ if(NEKTAR++_FOUND)
         boost_system
         boost_timer
         boost_program_options)
+else()
+    visit_import_third_party(BOOST HEADER_ONLY)
 endif()
-
-SET_UP_THIRD_PARTY(BOOST LIBS ${BOOST_LIBS} )
 
