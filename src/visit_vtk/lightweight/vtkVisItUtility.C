@@ -11,6 +11,7 @@
 #include <float.h>
 #include <limits>
 #include <list>
+#include <string>
 
 #include <vtkVisItUtility.h>
 
@@ -29,10 +30,14 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkShortArray.h>
 #include <vtkStructuredGrid.h>
+#include <vtkTextProperty.h>
 #include <vtkVisItPointLocator.h>
 #include <vtkWedge.h>
 
+#include <visit-config.h>
+
 #include <DebugStream.h>
+#include <InstallationFunctions.h>
 
 static std::list<vtkObject*> vtkobjects;
 
@@ -1650,3 +1655,151 @@ vtkVisItUtility::IntersectBox(double bounds[6], double origin[3],
     return true;
 }
 
+// ****************************************************************************
+//  Function: ApplyPropsForNonFamilyFonts
+//
+//  Purpose: Handles setting of things like bold, italic, etc if the currently
+//           selected font is not a VTK "family" font.
+//
+//           Everywhere VisIt handles setting of font or font attributes, it
+//           uses VTK's very old, font "family" mechanism. This allows for one
+//           of three font familys to be selected (Arial (0), Courier (1) or
+//           Times (2)). On many systems, the ultimate font VTK selects to 
+//           satisfy the requested font "family" does not support unicode
+//           characters. By default, VisIt uses Arial (0) font family.
+//
+//           To improve this situation, we decided to replace the default
+//           font "family" (Arial) with an Arial-like TrueType font that is
+//           visually highly similar to Arial and also supports unicode chars.
+//           The selected font we choose was Deja Vu Sans. Four .ttf font
+//           files for regular, bold, italic and bold-italic are installed in
+//           "resources" directory.
+//
+//           For "family" fonts, things like bold and italic are
+//           delegated to an associated vtkTextProperty object and VTK handles
+//           them. But, for non-family fonts, this doesn't work. We need to
+//           select the appropriate font file variant explicitly.
+//
+//           This function is intended to be placed after any calls to
+//           vtkTextProperty->SetBold(), SetItalic() and ensure that if the
+//           associated font is not a VTK family font, it will select the
+//           correct font file variant.
+//
+//  Programmer: Mark C. Miller, Thu Apr 10 15:59:57 PDT 2025
+// ****************************************************************************
+
+bool
+vtkVisItUtility::FontHasVariants(vtkTextProperty *tprop)
+{
+    if (tprop->GetFontFamily() == VTK_ARIAL) return true;
+    if (tprop->GetFontFamily() == VTK_COURIER) return true;
+    if (tprop->GetFontFamily() == VTK_TIMES) return true;
+    return false;
+}
+
+void
+vtkVisItUtility::AdjustPropsForNonFamilyFonts(vtkTextProperty *tprop)
+{
+    std::string fontFile = GetVisItResourcesDirectory(VISIT_RESOURCES_FONTS) +
+                           VISIT_SLASH_STRING;
+    
+    // Treat Arial as the "Regular" form of DejaVuSans
+    if (tprop->GetFontFamily() == VTK_ARIAL)
+    {
+        if (tprop->GetBold() && tprop->GetItalic())
+            fontFile += "DejaVuSans-BoldOblique.ttf";
+        else if (tprop->GetBold())
+            fontFile += "DejaVuSans-Bold.ttf";
+        else if (tprop->GetItalic())
+            fontFile += "DejaVuSans-Oblique.ttf";
+        else
+            fontFile += "DejaVuSans.ttf";
+        tprop->SetFontFamily(VTK_FONT_FILE);
+        tprop->SetFontFile(fontFile.c_str());
+    }
+
+    // Treat Courier as the "Mono" form of DejaVuSans
+    else if (tprop->GetFontFamily() == VTK_COURIER)
+    {
+        if (tprop->GetBold() && tprop->GetItalic())
+            fontFile += "DejaVuSansMono-BoldOblique.ttf";
+        else if (tprop->GetBold())
+            fontFile += "DejaVuSansMono-Bold.ttf";
+        else if (tprop->GetItalic())
+            fontFile += "DejaVuSansMono-Oblique.ttf";
+        else
+            fontFile += "DejaVuSansMono.ttf";
+        tprop->SetFontFamily(VTK_FONT_FILE);
+        tprop->SetFontFile(fontFile.c_str());
+    }
+
+    // Treat Times as the "Serif" form of DejaVu
+    else if (tprop->GetFontFamily() == VTK_TIMES)
+    {
+        if (tprop->GetBold() && tprop->GetItalic())
+            fontFile += "DejaVuSerif-BoldItalic.ttf";
+        else if (tprop->GetBold())
+            fontFile += "DejaVuSerif-Bold.ttf";
+        else if (tprop->GetItalic())
+            fontFile += "DejaVuSerif-Italic.ttf";
+        else
+            fontFile += "DejaVuSerif.ttf";
+        tprop->SetFontFamily(VTK_FONT_FILE);
+        tprop->SetFontFile(fontFile.c_str());
+    }
+
+    // The VTK_FONT_FILE case can happen once we've adjusted a
+    // vtkTextProperty object by a previous call here. But, we
+    // might be here changing only the variant. So, now we just
+    // make sure the current font file setting is consistent
+    // with whatever the variant is.
+    else if (tprop->GetFontFamily() == VTK_FONT_FILE)
+    {
+        std::string currentFontFile = tprop->GetFontFile();
+        if (tprop->GetBold() && tprop->GetItalic())
+        {
+            if (currentFontFile.find("DejaVuSans") != std::string::npos)
+                fontFile += "DejaVuSans-BoldOblique.ttf";
+            else if (currentFontFile.find("DejaVuSansMono") != std::string::npos)
+                fontFile += "DejaVuSansMono-BoldOblique.ttf";
+            else if (currentFontFile.find("DejaVuSerif") != std::string::npos)
+                fontFile += "DejaVuSerif-BoldItalic.ttf";
+        }
+        else if (tprop->GetBold())
+        {
+            if (currentFontFile.find("DejaVuSans") != std::string::npos)
+                fontFile += "DejaVuSans-Bold.ttf";
+            else if (currentFontFile.find("DejaVuSansMono") != std::string::npos)
+                fontFile += "DejaVuSansMono-Bold.ttf";
+            else if (currentFontFile.find("DejaVuSerif") != std::string::npos)
+                fontFile += "DejaVuSerif-Bold.ttf";
+        }
+        else if (tprop->GetItalic())
+        {
+            if (currentFontFile.find("DejaVuSans") != std::string::npos)
+                fontFile += "DejaVuSans-Oblique.ttf";
+            else if (currentFontFile.find("DejaVuSansMono") != std::string::npos)
+                fontFile += "DejaVuSansMono-Oblique.ttf";
+            else if (currentFontFile.find("DejaVuSerif") != std::string::npos)
+                fontFile += "DejaVuSerif-Italic.ttf";
+        }
+        else
+        {
+            if (currentFontFile.find("DejaVuSans") != std::string::npos)
+                fontFile += "DejaVuSans.ttf";
+            else if (currentFontFile.find("DejaVuSansMono") != std::string::npos)
+                fontFile += "DejaVuSansMono.ttf";
+            else if (currentFontFile.find("DejaVuSerif") != std::string::npos)
+                fontFile += "DejaVuSerif.ttf";
+        }
+        tprop->SetFontFile(fontFile.c_str());
+    }
+
+    // Treat UNKNOWN case as the Math font (does not support bold/italic)
+    else if (tprop->GetFontFamily() == VTK_UNKNOWN_FONT)
+    {
+        fontFile += "LibertinusMath-Regular.ttf";
+        tprop->SetFontFamily(VTK_FONT_FILE);
+        tprop->SetFontFile(fontFile.c_str());
+    }
+}

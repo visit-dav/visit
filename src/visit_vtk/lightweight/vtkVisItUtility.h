@@ -17,6 +17,7 @@ class vtkDataSet;
 class vtkObject;
 class vtkPoints;
 class vtkRectilinearGrid;
+class vtkTextProperty;
 
 // ****************************************************************************
 //  Modifications:
@@ -103,6 +104,9 @@ namespace vtkVisItUtility
                                                 double dir[3],
                                                 double coord[3],
                                                 double& t);
+
+    VISIT_VTK_LIGHT_API bool       FontHasVariants(vtkTextProperty *tprop);
+    VISIT_VTK_LIGHT_API void       AdjustPropsForNonFamilyFonts(vtkTextProperty *tprop);
 
 }
 #endif
