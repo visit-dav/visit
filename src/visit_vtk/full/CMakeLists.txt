@@ -194,13 +194,10 @@ target_include_directories(visit_vtk PRIVATE
 
 if(OPENEXR_FOUND)
     target_link_libraries(visit_vtk PRIVATE openexr)
-
 endif()
 
 
-if(BOOST_FOUND)
-    target_include_directories(visit_vtk PRIVATE
-        $<BUILD_INTERFACE:${BOOST_INCLUDE_DIR}>)
-    target_compile_definitions(visit_vtk PRIVATE __USE_ISOC99)
+if(HAVE_BOOST)
+    target_link_libraries(visit_vtk PRIVATE boost)
 endif()
 

@@ -48,13 +48,16 @@
  ******************************************************************************/
 
 /* Define if you have the boost library. */
-#cmakedefine BOOST_FOUND
+#cmakedefine HAVE_BOOST
 
 /* Define if you have the Damaris library. */
 #cmakedefine HAVE_DAMARIS
 
 /* Define to 1 if you have the `m' library (-lm). */
 #cmakedefine HAVE_LIBM 1
+
+/* Define if you have the ICET library. */
+#cmakedefine HAVE_ICET
 
 /* Define if you have the OSPRAY library. */
 #cmakedefine HAVE_OSPRAY

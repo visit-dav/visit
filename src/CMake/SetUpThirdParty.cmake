@@ -568,7 +568,9 @@ function(visit_import_third_party pkg)
 
     cmake_parse_arguments(PARSE_ARGV 1 vitp "HEADER_ONLY" "LIBDIR;INCDIR" "LIBS;LIBNAMES;DEFINES;WIN32DEFINES")
 
-    if(NOT DEFINED vitp_LIBNAMES AND NOT DEFINED vitp_LIBS)
+    if(NOT ${vitp_HEADER_ONLY} AND
+       NOT DEFINED vitp_LIBNAMES AND
+       NOT DEFINED vitp_LIBS)
         if(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
             message(STATUS "  One of LIBS or LIBNAMES for ${pkg} must be provided to visit_import_third_party")
         else()
@@ -599,13 +601,24 @@ function(visit_import_third_party pkg)
         set(_${pkg}_INCLUDE_DIR ${${pkg}_DIR}/include)
     endif()
 
-    if(${vitpls_HEADER_ONLY})
+    # lower case package name to be used as imported target name
+    string(TOLOWER ${pkg} LNAME)
+
+
+    if(${vitp_HEADER_ONLY})
         if(EXISTS ${_${pkg}_INCLUDE_DIR})
+            blt_import_library(
+                NAME        ${LNAME}
+                INCLUDES    $<BUILD_INTERFACE:${_${pkg}_INCLUDE_DIR}>
+                            $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/${LNAME}/include>
+                EXPORTABLE  ON)
+            visit_install_export_targets(${LNAME})
             if(${VISIT_${pkg}_SKIP_INSTALL})
                 message(STATUS "Skipping installation of ${pkg}")
              else()
                  THIRD_PARTY_INSTALL_INCLUDE(${pkg} ${_${pkg}_INCLUDE_DIR})
              endif()
+             set(HAVE_${pkg} TRUE CACHE BOOL "Have ${LNAME} headers")
         else()
             if(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
                 message(STATUS "  Include directory for header-only ${pkg} does not exist (${_${pkg}_INCLUDE_DIR})")
@@ -655,7 +668,6 @@ function(visit_import_third_party pkg)
             ${tplibs})
 
     if(${pkg}_FOUND)
-        string(TOLOWER ${pkg} LNAME)
         set(HAVE_${pkg} TRUE CACHE BOOL "Have ${LNAME} libraries")
 
         # create a list of libs using BUILD_INTERFACE
@@ -772,9 +784,9 @@ if(NOT VISIT_DBIO_ONLY)
   include(${VISIT_SOURCE_DIR}/CMake/VisItOpenGL.cmake)
 endif()
 
-include(${VISIT_SOURCE_DIR}/CMake/FindNektar++.cmake)
+#include(${VISIT_SOURCE_DIR}/CMake/FindNektar++.cmake)
 
-include(${VISIT_SOURCE_DIR}/CMake/FindVisItDamaris.cmake)
+#include(${VISIT_SOURCE_DIR}/CMake/FindVisItDamaris.cmake)
 
 include(${VISIT_SOURCE_DIR}/CMake/FindVisItBoost.cmake)
 
@@ -874,8 +886,6 @@ if(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
     include(${VISIT_SOURCE_DIR}/CMake/FindPIDX.cmake)
 
     include(${VISIT_SOURCE_DIR}/CMake/FindVTKm.cmake)
-
-    include(${VISIT_SOURCE_DIR}/CMake/FindGFortran.cmake)
 endif()
 
 unset(VISIT_TP_PERMS)

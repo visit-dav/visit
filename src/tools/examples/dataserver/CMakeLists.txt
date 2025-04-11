@@ -48,7 +48,6 @@ visit_add_executable(
                 ${vtkjpeg_LIBRARIES}
                 ${vtkpng_LIBRARIES}
                 Threads::Threads
-                ${ZLIB_LIBRARY}
     FOLDER      tools/examples/usedataserver
     SKIP_INSTALL)
 

@@ -73,8 +73,7 @@ set(mcurvit_DEPENDS
     ${QT_QTCORE_LIBRARY}
     ${vtktiff_LIBRARIES}
     ${vtkjpeg_LIBRARIES}
-    ${vtkpng_LIBRARIES}
-    ${ZLIB_LIBRARY})
+    ${vtkpng_LIBRARIES})
 
 if(VISIT_STATIC)
     list(APPEND mcurvit_DEPENDS 
