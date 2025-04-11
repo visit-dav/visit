@@ -19,6 +19,8 @@
 #include <VisWindow.h>
 #include <VisWindowColleagueProxy.h>
 
+#include <vtkVisItUtility.h>
+
 #include <DebugStream.h>
 
 
@@ -1783,6 +1785,7 @@ VisWinAxes::UpdateTitleTextAttributes(double fr, double fg, double fb)
         titles[i]->SetFontFamily((int)titleTextAttributes[i].font);
         titles[i]->SetBold(titleTextAttributes[i].bold?1:0);
         titles[i]->SetItalic(titleTextAttributes[i].italic?1:0);
+        vtkVisItUtility::AdjustPropsForNonFamilyFonts(titles[i]);
 
         // Pass the opacity in the line offset.
         titles[i]->SetLineOffset(titleTextAttributes[i].color[3]);

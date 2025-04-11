@@ -55,6 +55,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <DebugStream.h>
 #include <vectortypes.h>
 
+#include <vtkVisItUtility.h>
+
 #include <algorithm>
 #include <climits>
 
@@ -154,6 +156,7 @@ vtkVisItAxisActor2D::vtkVisItAxisActor2D()
   this->TitleTextProperty->SetFontFamilyToArial();
   this->TitleTextProperty->BoldOn();
   this->TitleTextProperty->ItalicOn();
+  vtkVisItUtility::AdjustPropsForNonFamilyFonts(this->TitleTextProperty);
   this->TitleTextProperty->ShadowOn();
 
   this->LabelTextProperty = vtkTextProperty::New();
@@ -161,6 +164,7 @@ vtkVisItAxisActor2D::vtkVisItAxisActor2D()
   this->LabelTextProperty->SetFontFamilyToArial();
   this->LabelTextProperty->BoldOn();
   this->LabelTextProperty->ItalicOn();
+  vtkVisItUtility::AdjustPropsForNonFamilyFonts(this->TitleTextProperty);
   this->LabelTextProperty->ShadowOn();
 
   this->LabelFormat = new char[8]; 
@@ -811,7 +815,16 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
       tprop->SetBold(this->LabelTextProperty->GetBold());
       tprop->SetItalic(this->LabelTextProperty->GetItalic());
       tprop->SetShadow(this->LabelTextProperty->GetShadow());
-      tprop->SetFontFamily(this->LabelTextProperty->GetFontFamily());
+      if (this->LabelTextProperty->GetFontFamily() != VTK_FONT_FILE)
+      {
+          tprop->SetFontFamily(this->LabelTextProperty->GetFontFamily());
+      }
+      else
+      {
+          tprop->SetFontFamily(VTK_FONT_FILE);
+          tprop->SetFontFile(this->LabelTextProperty->GetFontFile());
+      }
+      vtkVisItUtility::AdjustPropsForNonFamilyFonts(this->LabelTextProperty);
       if(this->UseSeparateColors)
           tprop->SetColor(this->LabelTextProperty->GetColor());
       else
@@ -863,7 +876,16 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
     titleTprop->SetBold(this->TitleTextProperty->GetBold());
     titleTprop->SetItalic(this->TitleTextProperty->GetItalic());
     titleTprop->SetShadow(this->TitleTextProperty->GetShadow());
-    titleTprop->SetFontFamily(this->TitleTextProperty->GetFontFamily());
+    if (this->TitleTextProperty->GetFontFamily() != VTK_FONT_FILE)
+    {
+        titleTprop->SetFontFamily(this->TitleTextProperty->GetFontFamily());
+    }
+    else
+    {
+        titleTprop->SetFontFamily(VTK_FONT_FILE);
+        titleTprop->SetFontFile(this->TitleTextProperty->GetFontFile());
+    }
+    vtkVisItUtility::AdjustPropsForNonFamilyFonts(this->TitleTextProperty);
     if(this->UseSeparateColors)
         titleTprop->SetColor(this->TitleTextProperty->GetColor());
     else
@@ -1680,11 +1702,13 @@ vtkVisItAxisActor2D::SetFontFamily(int val)
     if(this->TitleTextProperty != NULL)
     {
         this->TitleTextProperty->SetFontFamily(val);
+        vtkVisItUtility::AdjustPropsForNonFamilyFonts(this->TitleTextProperty);
         modified = true;
     }
     if(this->LabelTextProperty != NULL)
     {
         this->LabelTextProperty->SetFontFamily(val);
+        vtkVisItUtility::AdjustPropsForNonFamilyFonts(this->LabelTextProperty);
         modified = true;
     }
     if(modified)

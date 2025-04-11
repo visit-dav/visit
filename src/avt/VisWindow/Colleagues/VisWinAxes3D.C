@@ -17,8 +17,10 @@
 #include <VisWindow.h>
 #include <VisWindowColleagueProxy.h>
 #include <VisWinAxes3D.h>
-#include <float.h>
 
+#include <vtkVisItUtility.h>
+
+#include <float.h>
 #include <string>
 #include <vector>
 
@@ -1365,6 +1367,7 @@ VisWinAxes3D::UpdateTitleTextAttributes(double fr, double fg, double fb)
         axes->GetTitleTextProperty(i)->SetFontFamily((int)titleTextAttributes[i].font);
         axes->GetTitleTextProperty(i)->SetBold(titleTextAttributes[i].bold?1:0);
         axes->GetTitleTextProperty(i)->SetItalic(titleTextAttributes[i].italic?1:0);
+        vtkVisItUtility::AdjustPropsForNonFamilyFonts(axes->GetTitleTextProperty(i));
 
         // Pass the opacity in the line offset.
         axes->GetTitleTextProperty(i)->SetLineOffset(titleTextAttributes[i].color[3]);

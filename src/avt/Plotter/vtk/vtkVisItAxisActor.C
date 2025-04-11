@@ -25,6 +25,9 @@ All rights reserved.
 #include <vtkCollection.h>
 #include <vtkProperty.h>
 #include <vtkViewport.h>
+
+#include <vtkVisItUtility.h>
+
 #include <algorithm>
 
 using std::string;
@@ -109,6 +112,7 @@ vtkVisItAxisActor::vtkVisItAxisActor()
   this->TitleTextProperty = vtkTextProperty::New();
   this->TitleTextProperty->SetColor(0.,0.,0.);
   this->TitleTextProperty->SetFontFamilyToArial();
+  vtkVisItUtility::AdjustPropsForNonFamilyFonts(this->TitleTextProperty);
 
   // to avoid deleting/rebuilding create once up front
   this->NumberOfLabelsBuilt = 0;
@@ -1554,6 +1558,7 @@ vtkVisItAxisActor::SetTitleTextProperty(vtkTextProperty *prop)
     if(prop != NULL)
         prop->Register(NULL);
     this->TitleTextProperty = prop;
+    vtkVisItUtility::AdjustPropsForNonFamilyFonts(this->TitleTextProperty);
     this->Modified();
 }
 
