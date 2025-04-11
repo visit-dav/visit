@@ -215,7 +215,6 @@ visit_add_executable(
                 ${vtkpng_LIBRARIES}
                 ${ALL_THIRDPARTY_IO_LIB}
                 Threads::Threads
-                ${ZLIB_LIBRARY}
     OUTPUT_NAME engine_ser)
 
 if(WIN32 AND MSVC)
@@ -257,7 +256,6 @@ if(VISIT_PARALLEL)
                     ${ALL_THIRDPARTY_IO_LIB}
                     ${ICET_STATIC_LIB}
                     Threads::Threads
-                    ${ZLIB_LIBRARY}
         OUTPUT_NAME engine_par)
 
     if(WIN32 AND MSVC)

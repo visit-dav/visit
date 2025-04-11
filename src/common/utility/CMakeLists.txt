@@ -73,7 +73,7 @@ if(VISIT_ENABLE_UNIT_TESTS)
         NAME       Namescheme_test
         SOURCES    Namescheme_test.C
         INCLUDES   ${CMAKE_CURRENT_SOURCE_DIR}
-        DEPENDS_ON visitcommon ${ZLIB_LIBRARY} Threads::Threads ${DL_LIB}
+        DEPENDS_ON visitcommon Threads::Threads ${DL_LIB}
         FOLDER     unit_tests
         SKIP_INSTALL)
 
@@ -81,7 +81,7 @@ if(VISIT_ENABLE_UNIT_TESTS)
         NAME       Utility_test
         SOURCES    Utility_test.C
         INCLUDES   ${CMAKE_CURRENT_SOURCE_DIR}
-        DEPENDS_ON visitcommon ${ZLIB_LIBRARY} Threads::Threads ${DL_LIB}
+        DEPENDS_ON visitcommon Threads::Threads ${DL_LIB}
         FOLDER     unit_tests
         SKIP_INSTALL)
 

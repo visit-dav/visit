@@ -40,8 +40,6 @@ if(JPEG_DIR)
         _jpeg_LIBRARY)
 
     if(JPEG_FOUND)
-        get_filename_component(libjpeg ${_jpeg_LIBRARY} NAME)
-
         ####
         # VTK needs this var set in order to find our version of jpeg
         set(JPEG_LIBRARY ${_jpeg_LIBRARY})
@@ -54,17 +52,8 @@ if(JPEG_DIR)
             LIBRARIES   $<BUILD_INTERFACE:${_jpeg_LIBRARY}>
             EXPORTABLE  ON)
 
-
-        # CMake doesn't prepend ${_IMPORT_PREFIX} in the generated export
-        # set for INTERFACE libs, so "${IMPORT_PREFIX}" needs to be
-        # explicitly added to the INSTALL_INTERFACE, and escaped so it
-        # doesn't get evaluated.
-        #
-        # Also, it seems if the INSTALL_INTERFACE is used in the
-        # blt_import_library,  the ${_IMPORT_PREFIX} is stripped, even
-        # if it is escaped, so it appears to be getting evaluated.
-        # That's why it is added separately here instead of being added
-        # to the LIBRARIES above.
+       # need just the library name for  INSTALL_INTERFACE
+        get_filename_component(libjpeg ${_jpeg_LIBRARY} NAME)
         target_link_libraries(jpeg INTERFACE
             $<INSTALL_INTERFACE:\${_IMPORT_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${libjpeg}>)
 
@@ -76,12 +65,14 @@ if(JPEG_DIR)
 
         if(WIN32)
             # need to copy the dll to the build dir
-            cmake_path(REPLACE_EXTENSION _libjpeg dll OUTPUT_VARIABLE _jpeg_DLL)
-            if(EXISTS ${_jpeg_DLL})
-                cmake_path(SET _jpeg_DLL ${JPEG_LIBRARY_DIR}/${_jpeg_DLL})
-            else()    
-                cmake_path(SET _jpeg_DLL NORMALIZE ${JPEG_LIBRARY_DIR}/../bin/${_jpeg_DLL})
+            cmake_path(SET libjpeg_path ${_jpeg_LIBRARY})
+            cmake_path(REPLACE_EXTENSION libjpeg_path dll OUTPUT_VARIABLE _jpeg_DLL)
+            if(NOT EXISTS ${_jpeg_DLL})
+                cmake_path(GET _jpeg_DLL PARENT_PATH _JPEG_LIBRARY_DIR)
+                cmake_path(GET _jpeg_DLL FILENAME _JPEG_DLL_NAME)
+                cmake_path(SET _jpeg_DLL NORMALIZE ${_JPEG_LIBRARY_DIR}/../bin/${_JPEG_DLL_NAME})
             endif()
+
             if(EXISTS ${_jpeg_DLL})
                 execute_process(COMMAND ${CMAKE_COMMAND} -E copy
                                 ${_jpeg_DLL}

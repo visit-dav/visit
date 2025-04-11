@@ -53,15 +53,9 @@ if(ZLIB_DIR)
         _zlib_LIBRARY)
 
     if(ZLIB_FOUND)
-        get_filename_component(libz ${_zlib_LIBRARY} NAME)
-
-        ####
-        # until everything is updated to use the new target
-        get_filename_component(ZLIB_LIBRARY_DIR ${_zlib_LIBRARY} PATH)
+        ## VTK needs this set to find our zlib instead of system
         set(ZLIB_LIBRARY ${_zlib_LIBRARY})
-        set(ZLIB_LIB ${libz})
-        set(ZLIB_INCLUDE_DIR ${_zlib_INCLUDE_DIR})
-        ####
+        ###
 
 
         blt_import_library(
@@ -71,17 +65,8 @@ if(ZLIB_DIR)
             LIBRARIES   $<BUILD_INTERFACE:${_zlib_LIBRARY}>
             EXPORTABLE  ON)
 
-
-        # CMake doesn't prepend ${_IMPORT_PREFIX} in the generated export
-        # set for INTERFACE libs, so "${IMPORT_PREFIX}" needs to be
-        # explicitly added to the INSTALL_INTERFACE, and escaped so it
-        # doesn't get evaluated.
-        #
-        # Also, it seems if the INSTALL_INTERFACE is used in the
-        # blt_import_library,  the ${_IMPORT_PREFIX} is stripped, even
-        # if it is escaped, so it appears to be getting evaluated.
-        # That's why it is added separately here instead of being added
-        # to the LIBRARIES above.
+        # need just the library name for  INSTALL_INTERFACE
+        get_filename_component(libz ${_zlib_LIBRARY} NAME)
         target_link_libraries(zlib INTERFACE
             $<INSTALL_INTERFACE:\${_IMPORT_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${libz}>)
 
@@ -89,30 +74,23 @@ if(ZLIB_DIR)
         if(VISIT_INSTALL_THIRD_PARTY)
             visit_install_export_targets(zlib)
 
-            # headers aren't being installed. Perhaps because it is INTERFACE lib?
-            # There is a PUBLIC_HEADER property for INTERFACE libraries
-            # that will allow the installation of the headers in a normal
-            # install(TARGETS) command (like the one being used by
-            # visit_install_export_targets).
-            # However, you cannot specifiy a directory as PUBLIC_HEADER
-            # property, but must instead list them all, so using this
-            # property would require a file(glob). Do we want to do that?
-            # I think it is easier to install the directory the way we do
-            # for TP libs in the following function:
-
             THIRD_PARTY_INSTALL_INCLUDE(zlib ${_zlib_INCLUDE_DIR})
         endif()
+
         if(WIN32)
             # need to copy the dll to the build dir
-            cmake_path(REPLACE_EXTENSION libz dll OUTPUT_VARIABLE _zlib_DLL)
-            if(EXISTS ${_zlib_DLL})
-                cmake_path(SET _zlib_DLL ${ZLIB_LIBRARY_DIR}/${_zlib_DLL})
-            else()    
-                cmake_path(SET _zlib_DLL NORMALIZE ${ZLIB_LIBRARY_DIR}/../bin/${_zlib_DLL})
+            cmake_path(SET libz_path ${_zlib_LIBRARY})
+            cmake_path(REPLACE_EXTENSION libz_path dll OUTPUT_VARIABLE _zlib_DLL)
+            if(NOT EXISTS ${_zlib_DLL})
+                cmake_path(GET _zlib_DLL PARENT_PATH _ZLIB_LIBRARY_DIR)
+                cmake_path(GET _zlib_DLL FILENAME _ZLIB_DLL_NAME)
+                cmake_path(SET _zlib_DLL NORMALIZE ${_ZLIB_LIBRARY_DIR}/../bin/${_ZLIB_DLL_NAME})
             endif()
-            execute_process(COMMAND ${CMAKE_COMMAND} -E copy
-                            ${_zlib_DLL}
-                            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
+            if(EXISTS ${_zlib_DLL})
+                execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+                                ${_zlib_DLL}
+                                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
+           endif()
         endif()
     else()
         message(FATAL_ERROR "VisIt requires lib z and it could not be found. Tried ZLIB_DIR: ${ZLIB_DIR}")

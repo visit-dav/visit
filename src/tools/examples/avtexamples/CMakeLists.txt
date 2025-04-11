@@ -48,8 +48,7 @@ set(avtexamples_COMMON_DEPENDS
     visit_vtk
     ${ALL_THIRDPARTY_IO_LIB}
     ${OPENGL_LIBRARIES}
-    Threads::Threads
-    ${ZLIB_LIBRARY})
+    Threads::Threads)
 
 ## avtFilterExample
 visit_add_executable(
@@ -128,7 +127,6 @@ visit_add_executable(
                 VTK::InteractionStyle
                 VTK::RenderingOpenGL2
                 ${OPENGL_LIBRARIES}
-                ${ZLIB_LIBRARY}
     FOLDER      tools/examples/avtexamples)
  
 
@@ -149,7 +147,6 @@ visit_add_executable(
                 VTK::InteractionStyle
                 VTK::RenderingOpenGL2
                 ${OPENGL_LIBRARIES}
-                ${ZLIB_LIBRARY}
     FOLDER      tools/examples/avtexamples)
 
 set_target_properties(qvtkopenglExample qtvtkExample PROPERTIES AUTOMOC ON)
