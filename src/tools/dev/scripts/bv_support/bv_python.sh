@@ -479,10 +479,76 @@ function bv_python_ensure
     if [[ "$USE_SYSTEM_PYTHON" == "no" ]]; then
         if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
             if [[ "$DO_PYTHON" == "yes" || "$DO_VTK" == "yes" ]] ; then
+
+                if [[ "$DOWNLOAD_ONLY" == "yes" ]] ; then
+                    # ensure all packages are downloaded
+                    # wheel and its dependencies
+                    download_py_module ${PY_FLITCORE_FILE} ${PY_FLITCORE_URL}
+                    download_py_module ${PY_WHEEL_FILE} ${PY_WHEEL_URL}
+                    # setuptools
+                    download_py_module ${PY_SETUPTOOLS_FILE} ${PY_SETUPTOOLS_URL}
+
+                    if [[ "$DO_STATIC_BUILD" == "no" ]]; then
+                        # numpy
+                        download_py_module ${PY_CYTHON_FILE} ${PY_CYTHON_URL}
+                        download_py_module ${PY_NUMPY_FILE} ${PY_NUMPY_URL}
+                        # Pillow
+                        download_py_module ${PY_PILLOW_FILE} ${PY_PILLOW_URL}
+                        # mpi4py
+                        if [[ "$PY_BUILD_MPI4PY" == "yes" ]]; then
+                            download_py_module ${PY_MPI4PY_FILE} ${PY_MPI4PY_URL}
+                        fi
+                        if [[ "$PY_BUILD_SPHINX" == "yes" ]]; then
+                            # Requests and dependencies
+                            download_py_module ${PY_CERTIFI_FILE} ${PY_CERTIFI_URL}
+                            download_py_module ${PY_TOML_FILE} ${PY_TOML_URL}
+                            download_py_module ${PY_TOMLI_FILE} ${PY_TOMLI_URL}
+                            download_py_module ${PY_PATHSPEC_FILE} ${PY_PATHSPEC_URL}
+                            download_py_module ${PY_CALVER_FILE} ${PY_TCALVER_URL}
+                            download_py_module ${PY_TROVECLASSIFIERS_FILE} ${PY_TROVECLASSIFIERS_URL}
+                            download_py_module ${PY_PACKAGING_FILE} ${PY_PACKAGING_URL}
+                            download_py_module ${PY_EDITABLES_FILE} ${PY_EDITABLES_URL}
+                            download_py_module ${PY_PLUGGY_FILE} ${PY_PLUGGY_URL}
+                            download_py_module ${PY_HATCHLING_FILE} ${PY_HATCHLING_URL}
+                            download_py_module ${PY_URLLIB3_FILE} ${PY_URLLIB3_URL}
+                            download_py_module ${PY_IDNA_FILE} ${PY_IDNA_URL}
+                            download_py_module ${PY_CHARSET_NORMALIZER_FILE} ${PY_CHARSET_NORMALIZER_URL}
+                            download_py_module ${PY_REQUESTS_FILE} ${PY_REQUESTS_URL}
+                            # sphinx
+                            download_py_module ${PY_PACKAGING_FILE} ${PY_PACKAGING_URL}
+                            download_py_module ${PY_IMAGESIZE_FILE} ${PY_IMAGESIZE_URL}
+                            download_py_module ${PY_ALABASTER_FILE} ${PY_ALABASTER_URL}
+                            download_py_module ${PY_BABEL_FILE} ${PY_BABEL_URL}
+                            download_py_module ${PY_SNOWBALLSTEMMER_FILE} ${PY_SNOWBALLSTEMMER_URL}
+                            download_py_module ${PY_DOCUTILS_FILE} ${PY_DOCUTILS_URL}
+                            download_py_module ${PY_PYGMENTS_FILE} ${PY_PYGMENTS_URL}
+                            download_py_module ${PY_JINJA2_FILE} ${PY_JINJA2_URL}
+                            download_py_module ${PY_SPHINXCONTRIB_QTHELP_FILE} ${PY_SPHINXCONTRIB_QTHELP_URL}
+                            download_py_module ${PY_SPHINXCONTRIB_SERIALIZINGHTML_FILE} ${PY_SPHINXCONTRIB_SERIALIZINGHTML_URL}
+                            download_py_module ${PY_SPHINXCONTRIB_HTMLHELP_FILE} ${PY_SPHINXCONTRIB_HTMLHELP_URL}
+                            download_py_module ${PY_SPHINXCONTRIB_JSMATH_FILE} ${PY_SPHINXCONTRIB_JSMATH_URL}
+                            download_py_module ${PY_SPHINXCONTRIB_DEVHELP_FILE} ${PY_SPHINXCONTRIB_DEVHELP_URL}
+                            download_py_module ${PY_SPHINXCONTRIB_APPLEHELP_FILE} ${PY_SPHINXCONTRIB_APPLEHELP_ULR}
+                            download_py_module ${PY_MARKUPSAFE_FILE} ${PY_MARKUPSAFE_URL}
+                            download_py_module ${PY_ZIPP_FILE} ${PY_ZIPP_URL}
+
+                            download_py_module ${PY_IMPORTLIB_METADATA_FILE} ${PY_IMPORTLIB_METADATA_URL}
+                            download_py_module ${PY_SPHINX_FILE} ${PY_SPHINX_URL}
+                            # sphinx rtd
+                            download_py_module ${PY_SPHINXCONTRIB_JQUERY_FILE} ${PY_SPHINXCONTRIB_JQUERY_URL}
+                            download_py_module ${PY_SPHINX_RTD_THEME_FILE} ${PY_SPHINX_RTD_THEME_URL}
+                            # sphinx tabs
+                            download_py_module ${PY_SPHINX_TABS_FILE} ${PY_SPHINX_TABS_URL}
+                        fi
+                    fi
+                fi
+
                 ensure_built_or_ready "python" $PYTHON_VERSION $PYTHON_BUILD_DIR $PYTHON_FILE
                 if [[ $? != 0 ]] ; then
                     return 1
+
                 fi
+
             fi
         fi
     fi
@@ -1085,11 +1151,6 @@ function build_sphinx
     fi
 
     download_py_module ${PY_SPHINXCONTRIB_APPLEHELP_FILE} ${PY_SPHINXCONTRIB_APPLEHELP_ULR}
-    if test $? -ne 0 ; then
-        return 1
-    fi
-
-    download_py_module ${PY_SIX_FILE} ${PY_SIX_URL}
     if test $? -ne 0 ; then
         return 1
     fi

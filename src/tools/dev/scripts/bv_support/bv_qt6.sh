@@ -91,6 +91,10 @@ function bv_qt6_initialize_vars
 function bv_qt6_ensure
 {
     if [[ "$DO_QT6" == "yes" ]]; then
+        if [[ "$DOWNLOAD_ONLY" == "yes" ]] ; then
+            download_file ${QT6_TOOLS_FILE} ${QT6_URL}
+            download_file ${QT6_SVG_FILE} ${QT6_URL}
+        fi
         ensure_built_or_ready "qt"     $QT6_VERSION    $QT6_BASE_SOURCE_DIR    $QT6_BASE_FILE    $QT6_URL
         if [[ $? != 0 ]] ; then
             return 1
