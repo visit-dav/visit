@@ -1671,7 +1671,7 @@ vtkVisItUtility::IntersectBox(double bounds[6], double origin[3],
 //           To improve this situation, we decided to replace the default
 //           font "family" (Arial) with an Arial-like TrueType font that is
 //           visually highly similar to Arial and also supports unicode chars.
-//           The selected font we choose was Deja Vu Sans. Four .ttf font
+//           The selected font we chose was Deja Vu Sans. Four .ttf font
 //           files for regular, bold, italic and bold-italic are installed in
 //           "resources" directory.
 //
