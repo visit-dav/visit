@@ -471,6 +471,7 @@ def TestExportFileVersion():
     e.variables = ("d",)
     ExportDatabase(e)
     time.sleep(1)
+    DeleteAllPlots()
     CloseDatabase(dbname)
     filename = export_name + ".vtk"
     with open(filename) as input_file:
