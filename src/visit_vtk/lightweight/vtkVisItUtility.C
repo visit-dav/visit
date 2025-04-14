@@ -1673,7 +1673,7 @@ vtkVisItUtility::IntersectBox(double bounds[6], double origin[3],
 //           visually highly similar to Arial and also supports unicode chars.
 //           The selected font we chose was Deja Vu Sans. Four .ttf font
 //           files for regular, bold, italic and bold-italic are installed in
-//           "resources" directory.
+//           the "resources" directory.
 //
 //           For "family" fonts, things like bold and italic are
 //           delegated to an associated vtkTextProperty object and VTK handles
