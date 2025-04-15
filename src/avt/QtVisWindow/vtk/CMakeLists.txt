@@ -17,10 +17,4 @@ visit_patch_target(
               vtkRubberBandMapper2D.h
     INCLUDES  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
-if(NOT APPLE AND X11_FOUND)
-    set_source_files_properties(
-        vtkDashedXorGridMapper2D.C  vtkRubberBandMapper2D.C
-        PROPERTIES COMPILE_FLAGS "-DHAVE_XLIB")
-endif()
-
 

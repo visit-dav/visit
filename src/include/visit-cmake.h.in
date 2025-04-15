@@ -1,266 +1,332 @@
 #include <visit-version.h>
 
-/*******************************************************************************
- * Optional I/O libraries
- ******************************************************************************/
+// ************************************
+//  Optional I/O libraries
+// ************************************
 
-/* Define if building universal (internal helper macro) */
-#cmakedefine AC_APPLE_UNIVERSAL_BUILD
+// Defined if VisIt built with adios.
+#cmakedefine VISIT_HAS_ADIOS
 
-/* Define if you have the cgns library. */
-#cmakedefine HAVE_CGNS
+// Defined if VisIt built with adios2.
+#cmakedefine VISIT_HAS_ADIOS2
 
-/* Define if you have Conduit. */
-#cmakedefine HAVE_CONDUIT
+// Defined if VisIt built with advio.
+#cmakedefine VISIT_HAS_ADVIO
 
-/* Define if you have the gdal library. */
-#cmakedefine HAVE_GDAL
+// Defined if VisIt built with blosc2.
+#cmakedefine VISIT_HAS_BLOSC2
 
-/* Define if you have hdf5. */
-#cmakedefine HAVE_HDF5
+// Defined if VisIt built with boxlib2d.
+#cmakedefine VISIT_HAS_BOXLIB2D
 
-/* Define if you have the MFEM library. */
-#cmakedefine HAVE_MFEM
+// Defined if VisIt built with boxlib3d.
+#cmakedefine VISIT_HAS_BOXLIB3D
 
-/* Define if you have the Nektar++ library. */
-#cmakedefine HAVE_NEKTAR_PP
+// Defined if VisIt built with cfitsio.
+#cmakedefine VISIT_HAS_CFITSIO
 
-/* Define if you have the netcdf library. */
-#cmakedefine HAVE_NETCDF
+// Defined if VisIt built with cgns.
+#cmakedefine VISIT_HAS_CGNS
 
-/* Define if you have the OpenEXR library. */
-#cmakedefine HAVE_OPENEXR
+// Defined if VisIt built with conduit.
+#cmakedefine VISIT_HAS_CONDUIT
 
-/* Define if you have pdb. */
-#cmakedefine HAVE_PDB
+// Defined if VisIt built with fms.
+#cmakedefine VISIT_HAS_FMS
 
-/* Define if you are using PDB proper instead of PDB lite. */
-#cmakedefine HAVE_PDB_PROPER
+// Defined if VisIt built with gdal.
+#cmakedefine VISIT_HAS_GDAL
 
-/* Define if you have silo. */
-#cmakedefine HAVE_SILO
+// Defined if VisIt built with h5part.
+#cmakedefine VISIT_HAS_H5PART
 
-/* Define to identify the variant of PDB Lite (in silo) */
-#cmakedefine PDB_LITE_HAS_LONG_LONG
+// Defined if VisIt built with hdf5.
+#cmakedefine VISIT_HAS_HDF5
 
-/*******************************************************************************
- * Optional libraries
- ******************************************************************************/
+// Defined if VisIt built with mfem.
+#cmakedefine VISIT_HAS_MFEM
 
-/* Define if you have the boost library. */
-#cmakedefine HAVE_BOOST
+// Defined if VisIt built with mili.
+#cmakedefine VISIT_HAS_MILI
 
-/* Define if you have the Damaris library. */
-#cmakedefine HAVE_DAMARIS
+// Defined if VisIt built with moab.
+#cmakedefine VISIT_HAS_MOAB
 
-/* Define to 1 if you have the `m' library (-lm). */
-#cmakedefine HAVE_LIBM 1
+// Defined if VisIt built with nektarpp.
+#cmakedefine VISIT_HAS_NEKTARPP
 
-/* Define if you have the ICET library. */
-#cmakedefine HAVE_ICET
+// Defined if VisIt built with netcdf.
+#cmakedefine VISIT_HAS_NETCDF
 
-/* Define if you have the OSPRAY library. */
-#cmakedefine HAVE_OSPRAY
+// Defined if VisIt built with openexr.
+#cmakedefine VISIT_HAS_OPENEXR
 
-/* Define if you have the VTKm library. */
-#cmakedefine HAVE_VTKM
+// Defined if VisIt built with pdb.
+#cmakedefine VISIT_HAS_PDB
 
-/* Define if you have the X11 library */
-#cmakedefine HAVE_LIBX11
+// Defined if VisIt built with pdb proper.
+#cmakedefine VISIT_HAS_PDB_PROPER
 
-/* Define if you have the OSMESA */
-#cmakedefine HAVE_OSMESA
+// Defined if VisIt built with pidx.
+#cmakedefine VISIT_HAS_PIDX
+
+// Defined if VisIt built with silo.
+#cmakedefine VISIT_HAS_SILO
+
+// Defined if VisIt built with uintah.
+#cmakedefine VISIT_HAS_UINTAH
+
+// Defined if VisIt built with xdmf.
+#cmakedefine VISIT_HAS_XDMF
+
+// ********************************
+//  Optional Non I/O libraries
+// ********************************
+
+// Defined if VisIt built with anari.
+#cmakedefine VISIT_HAS_ANARI
+
+// Defined if VisIt built with boost.
+#cmakedefine VISIT_HAS_BOOST
+
+// Defined if VisIt built with damaris.
+#cmakedefine VISIT_HAS_DAMARIS
+
+// Defined if VisIt built with icet.
+#cmakedefine VISIT_HAS_ICET
+
+// Defined if VisIt built with jpeg.
+#cmakedefine VISIT_HAS_JPEG
+
+// Defined to 1 if VisIt built with the 'm' library (-lm).
+#cmakedefine VISIT_HAS_LIBM 1
+
+// Defined if VisIt built with mesagl.
+#cmakedefine VISIT_HAS_MESAGL
+
+// Defined if VisIt built with osmesa.
+#cmakedefine VISIT_HAS_OSMESA
+
+// Defined if VisIt built with ospray.
+#cmakedefine VISIT_HAS_OSPRAY
+
+// Defined if VisIt built with pyside.
+#cmakedefine VISIT_HAS_PYSIDE
+
+// Defined if VisIt built with qwt.
+#cmakedefine VISIT_HAS_QWT
+
+// Defined if VisIt built with sphinx.
+#cmakedefine VISIT_HAS_SPHINX
+
+// Defined if VisIt built with szip.
+#cmakedefine VISIT_HAS_SZIP
+
+// Defined if VisIt built with tiff.
+#cmakedefine VISIT_HAS_TIFF
+
+// Defined if VisIt built with vtkm.
+#cmakedefine VISIT_HAS_VTKM
+
+// Defined if VisIt built with zlib.
+#cmakedefine VISIT_HAS_ZLIB
+
+// Defined if VisIt built with X11. 
+#cmakedefine VISIT_HAS_LIBX11
 
 
-/*******************************************************************************
- * Header file checks
- ******************************************************************************/
+// *****************************
+//   Header file checks
+// *****************************
 
-/* Define to 1 if you have the <fcntl.h> header file. */
+// Define to 1 if you have the <fcntl.h> header file.
 #cmakedefine HAVE_FCNTL_H 1
 
-/* Define to 1 if you have the <inttypes.h> header file. */
+// Define to 1 if you have the <inttypes.h> header file.
 #cmakedefine HAVE_INTTYPES_H 1
 
-/* Define to 1 if you have the <limits.h> header file. */
+// Define to 1 if you have the <limits.h> header file.
 #cmakedefine HAVE_LIMITS_H 1
 
-/* Define to 1 if you have the <memory.h> header file. */
+// Define to 1 if you have the <memory.h> header file.
 #cmakedefine HAVE_MEMORY_H 1
 
-/* Define if socklen_t is defined. */
+// Define if socklen_t is defined.
 #cmakedefine HAVE_SOCKLEN_T
 
-/* Define to 1 if stdbool.h conforms to C99. */
+// Define to 1 if stdbool.h conforms to C99.
 #cmakedefine HAVE_STDBOOL_H 1
 
-/* Define to 1 if you have the <stdint.h> header file. */
+// Define to 1 if you have the <stdint.h> header file.
 #cmakedefine HAVE_STDINT_H 1
 
-/* Define to 1 if you have the <stdlib.h> header file. */
+// Define to 1 if you have the <stdlib.h> header file.
 #cmakedefine HAVE_STDLIB_H 1
 
-/* Define to 1 if you have the <strings.h> header file. */
+// Define to 1 if you have the <strings.h> header file.
 #cmakedefine HAVE_STRINGS_H 1
 
-/* Define to 1 if you have the <string.h> header file. */
+// Define to 1 if you have the <string.h> header file.
 #cmakedefine HAVE_STRING_H 1
 
-/* Define to 1 if you have the <sys/stat.h> header file. */
+// Define to 1 if you have the <sys/stat.h> header file.
 #cmakedefine HAVE_SYS_STAT_H 1
 
-/* Define to 1 if you have the <sys/time.h> header file. */
+// Define to 1 if you have the <sys/time.h> header file.
 #cmakedefine HAVE_SYS_TIME_H 1
 
-/* Define to 1 if you have the <sys/types.h> header file. */
+// Define to 1 if you have the <sys/types.h> header file.
 #cmakedefine HAVE_SYS_TYPES_H 1
 
-/* Define to 1 if you have the <unistd.h> header file. */
+// Define to 1 if you have the <unistd.h> header file.
 #cmakedefine HAVE_UNISTD_H 1
 
-/* Define to 1 if you have the ANSI C header files. */
+// Define to 1 if you have the ANSI C header files.
 #cmakedefine STDC_HEADERS 1
 
-/* Define to 1 if the system has the type `_Bool'. */
+// Define to 1 if the system has the type `_Bool'.
 #cmakedefine HAVE__BOOL 1
 
-/* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
+// Define to 1 if you can safely include both <sys/time.h> and <time.h>.
 #cmakedefine TIME_WITH_SYS_TIME 1
 
-/*******************************************************************************
- * Prototype checks
- ******************************************************************************/
+// *************************
+//  Prototype checks
+// *************************
 
-/* Define to 1 if you have the `memmove' function. */
+// Define to 1 if you have the `memmove' function.
 #cmakedefine HAVE_MEMMOVE 1
 
-/* Define to 1 if you have the `div' function. */
+// Define to 1 if you have the `div' function.
 #cmakedefine HAVE_DIV 1
 
-/* Define if you have the prototype for ftime in the <sys/timeb.h>. */
+// Define if you have the prototype for ftime in the <sys/timeb.h>.
 #cmakedefine HAVE_FTIME_PROTOTYPE
 
-/* Define if you have isfinite. */
+// Define if you have isfinite.
 #cmakedefine HAVE_ISFINITE
 
-/* Define to 1 if you have the `select' function. */
+// Define to 1 if you have the `select' function.
 #cmakedefine HAVE_SELECT 1
 
-/* Define to 1 if you have the `setenv' function. */
+// Define to 1 if you have the `setenv' function.
 #cmakedefine HAVE_SETENV 1
 
-/* Define to 1 if you have the `strtof' function. */
+// Define to 1 if you have the `strtof' function.
 #cmakedefine HAVE_STRTOF 1
 
-/* Define if you have the prototype for strtof in the <stdlib.h>. */
+// Define if you have the prototype for strtof in the <stdlib.h>.
 #cmakedefine HAVE_STRTOF_PROTOTYPE
 
-/* defined for aligned_alloc function, a malloc substitute in cstdlib  */
+// defined for aligned_alloc function, a malloc substitute in cstdlib
 #cmakedefine HAVE_ALIGNED_ALLOC
 #define VISIT_MEM_ALIGN 64
 
-/*******************************************************************************
- * Package information
- ******************************************************************************/
+// ****************************
+//  Package information
+// ****************************
 
-/* Define to the address where bug reports for this package should be sent. */
+// Define to the address where bug reports for this package should be sent.
 #cmakedefine PACKAGE_BUGREPORT
 
-/* Define to the full name of this package. */
+// Define to the full name of this package.
 #cmakedefine PACKAGE_NAME
 
-/* Define to the full name and version of this package. */
+// Define to the full name and version of this package.
 #cmakedefine PACKAGE_STRING
 
-/* Define to the one symbol short name of this package. */
+// Define to the one symbol short name of this package.
 #cmakedefine PACKAGE_TARNAME
 
-/* Define to the version of this package. */
+// Define to the version of this package.
 #cmakedefine PACKAGE_VERSION
 
 /*******************************************************************************
  * Platform information
  ******************************************************************************/
 
-/* The size of `boolean', as computed by sizeof. */
+// Defined if building universal (internal helper macro)
+#cmakedefine AC_APPLE_UNIVERSAL_BUILD
+
+// The size of `boolean', as computed by sizeof.
 #cmakedefine SIZEOF_BOOLEAN @SIZEOF_BOOLEAN@
 
-/* The size of `char', as computed by sizeof. */
+// The size of `char', as computed by sizeof.
 #cmakedefine SIZEOF_CHAR @SIZEOF_CHAR@
 
-/* The size of `double', as computed by sizeof. */
+// The size of `double', as computed by sizeof.
 #cmakedefine SIZEOF_DOUBLE @SIZEOF_DOUBLE@
 
-/* The size of `float', as computed by sizeof. */
+// The size of `float', as computed by sizeof.
 #cmakedefine SIZEOF_FLOAT @SIZEOF_FLOAT@
 
-/* The size of `int', as computed by sizeof. */
+// The size of `int', as computed by sizeof.
 #cmakedefine SIZEOF_INT  @SIZEOF_INT@
 
-/* The size of `long', as computed by sizeof. */
+// The size of `long', as computed by sizeof.
 #cmakedefine SIZEOF_LONG @SIZEOF_LONG@
 
-/* The size of `long double', as computed by sizeof. */
+// The size of `long double', as computed by sizeof.
 #cmakedefine SIZEOF_LONG_DOUBLE @SIZEOF_LONG_DOUBLE@
 
-/* The size of a `long double', as computed by sizeof. */
+// The size of a `long double', as computed by sizeof.
 #cmakedefine SIZEOF_LONG_FLOAT @SIZEOF_LONG_FLOAT@
 
-/* The size of `long long', as computed by sizeof. */
+// The size of `long long', as computed by sizeof.
 #cmakedefine SIZEOF_LONG_LONG @SIZEOF_LONG_LONG@
 
-/* The size of `short', as computed by sizeof. */
+// The size of `short', as computed by sizeof.
 #cmakedefine SIZEOF_SHORT @SIZEOF_SHORT@
 
-/* The size of `unsigned char', as computed by sizeof. */
+// The size of `unsigned char', as computed by sizeof.
 #cmakedefine SIZEOF_UNSIGNED_CHAR @SIZEOF_UNSIGNED_CHAR@
 
-/* The size of `unsigned int', as computed by sizeof. */
+// The size of `unsigned int', as computed by sizeof.
 #cmakedefine SIZEOF_UNSIGNED_INT @SIZEOF_UNSIGNED_INT@
 
-/* The size of `size_t', as computed by sizeof. */
+// The size of `size_t', as computed by sizeof.
 #cmakedefine SIZEOF_SIZE_T @SIZEOF_SIZE_T@
 
-/* The size of `unsigned long', as computed by sizeof. */
+// The size of `unsigned long', as computed by sizeof.
 #cmakedefine SIZEOF_UNSIGNED_LONG @SIZEOF_UNSIGNED_LONG@
 
-/* The size of `unsigned long long', as computed by sizeof. */
+// The size of `unsigned long long', as computed by sizeof.
 #cmakedefine SIZEOF_UNSIGNED_LONG_LONG @SIZEOF_UNSIGNED_LONG_LONG@
 
-/* The size of `unsigned short', as computed by sizeof. */
+// The size of `unsigned short', as computed by sizeof.
 #cmakedefine SIZEOF_UNSIGNED_SHORT @SIZEOF_UNSIGNED_SHORT@
 
-/* The size of `void *', as computed by sizeof. */
+// The size of `void *', as computed by sizeof.
 #cmakedefine SIZEOF_VOID_P @SIZEOF_VOID_P@
 
-/* The size of a `off64_t', as computed by sizeof. */
+// The size of a `off64_t', as computed by sizeof.
 #cmakedefine SIZEOF_OFF64_T @SIZEOF_OFF64_T@
 
-/* Define the slash character */
+// Define the slash character
 #cmakedefine VISIT_SLASH_CHAR @VISIT_SLASH_CHAR@
 
-/* Define the slash string */
+// Define the slash string
 #cmakedefine VISIT_SLASH_STRING @VISIT_SLASH_STRING@
 
-/* Define the plugin extension string */
+// Define the plugin extension string
 #cmakedefine VISIT_PLUGIN_EXTENSION "@VISIT_PLUGIN_EXTENSION@"
 
-/* Define VISIT_USE_PTY if we want to use PTYs. */
+// Define VISIT_USE_PTY if we want to use PTYs.
 #cmakedefine VISIT_USE_PTY
 
-/* Define PTY_SYSV if we have System V style pty functions -- BSD otherwise. */
+// Define PTY_SYSV if we have System V style pty functions -- BSD otherwise.
 #cmakedefine PTY_SYSV
 
-/* Define NO_SETBUF if streambuf::setbuf is not public. */
+// Define NO_SETBUF if streambuf::setbuf is not public.
 #cmakedefine NO_SETBUF
 
-/* Define if we want to use VisIt's no-spin BCast. */
+// Define if we want to use VisIt's no-spin BCast.
 #cmakedefine VISIT_USE_NOSPIN_BCAST
 
-/* Plugin version macro */
+// Plugin version macro
 #define VISIT_PLUGIN_VERSION_NAME(A,B) A##B
 #ifdef WIN32
-/* We need the extern "C" on Windows. */
+// We need the extern "C" on Windows.
 #define VISIT_PLUGIN_VERSION(NAME, EXPORTMACRO) extern "C" EXPORTMACRO const char *VISIT_PLUGIN_VERSION_NAME(NAME,VisItPluginVersion) = VISIT_VERSION;
 #else
 #define VISIT_PLUGIN_VERSION(NAME, EXPORTMACRO) EXPORTMACRO const char *NAME##VisItPluginVersion = VISIT_VERSION;
@@ -285,11 +351,10 @@
 #define LIB_VERSION_LE(NAME, A,B,C) (NAME##_VERSION_HEX <= LIB_VERSION_HEX(A,B,C))
 #define LIB_VERSION_GE(NAME, A,B,C) (NAME##_VERSION_HEX >= LIB_VERSION_HEX(A,B,C))
 
-/* Define to 1 if your processor stores words with the most significant byte
-   first (like Motorola and SPARC, unlike Intel and VAX). */
+// Define to 1 if your processor stores words with the most significant byte
+//   first (like Motorola and SPARC, unlike Intel and VAX).
 #cmakedefine WORDS_BIGENDIAN 1
-/* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
-   significant byte first (like Motorola and SPARC, unlike Intel). */
+
 
 /* NEED TO CHECK OF MORE NEEDS TO BE DONE FOR THIS OR IF THE CMAKE DEFINE
    ABOVE WILL BE SUFFICIENT 
@@ -304,25 +369,25 @@
 #endif
 */
 
-/* Define the largest image that VisIt can save. */
+// Define the largest image that VisIt can save.
 #cmakedefine VISIT_RENDERING_SIZE_LIMIT @VISIT_RENDERING_SIZE_LIMIT@
 
-/* Define to `int' if <sys/types.h> doesn't define. */
+// Define to `int' if <sys/types.h> doesn't define.
 #cmakedefine gid_t
 
-/* Define to `int' if <sys/types.h> doesn't define. */
+// Define to `int' if <sys/types.h> doesn't define.
 #cmakedefine uid_t
 
-/* Disable ssh tunneling on Panther. */
+// Disable ssh tunneling on Panther.
 #cmakedefine PANTHERHACK
 
-/* Force ssh tunneling. */
+// Force ssh tunneling.
 #cmakedefine VISIT_FORCE_SSH_TUNNELING
 
-/* Force WinMain entry point on applications. */
+// Force WinMain entry point on applications.
 #cmakedefine VISIT_WINDOWS_APPLICATION
 
-/* Define a uniform socket buffer size that we can use in various places. */
+// Define a uniform socket buffer size that we can use in various places.
 #define VISIT_SOCKET_BUFFER_SIZE 1024
 
 /* 

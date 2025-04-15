@@ -111,7 +111,7 @@ set(VIEWERCORE_DEPENDS
     Threads::Threads)
 
 if(VTK_VERSION VERSION_LESS "9.4.0")
-    if(HAVE_OSMESA)
+    if(VISIT_HAS_OSMESA)
         list(APPEND VIEWERCORE_DEPENDS visit_vtk_offscreen)
     endif()
 endif()

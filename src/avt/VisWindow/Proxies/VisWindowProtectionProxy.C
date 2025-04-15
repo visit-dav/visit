@@ -1163,7 +1163,7 @@ VisWindowProtectionProxy::ProxiedGetExtents(double ext[2])
      return viswin->GetExtents(ext);
 }
 
-#if defined(HAVE_OSPRAY)
+#if defined(VISIT_HAS_OSPRAY)
 // ****************************************************************************
 // Method: VisWindowProtectionProxy::ProxiedGetOsprayRendering
 //

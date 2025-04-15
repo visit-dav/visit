@@ -14,7 +14,9 @@
 #include <avtXRayFilter.h>
 #include <avtVector.h>
 
-#ifdef HAVE_CONDUIT
+#include <visit-config.h>
+
+#ifdef VISIT_HAS_CONDUIT
     #include <conduit.hpp>
     #include <conduit_blueprint.hpp>
     #include <conduit_relay.hpp>
@@ -233,7 +235,7 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     std::string               WriteFloats(const char *, int, int, T*);
     std::string               WriteBOVHeader(const char *, const char *,
                                   int, int, int, const char *);
-#ifdef HAVE_CONDUIT
+#ifdef VISIT_HAS_CONDUIT
     template <typename T>
     void                      WriteArrays(vtkDataSet **leaves, 
                                           conduit::float64 *intensity_vals,

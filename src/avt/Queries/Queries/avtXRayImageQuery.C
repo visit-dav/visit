@@ -1353,7 +1353,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
     }
     // It would be nice to have something that could check the validity of the 
     // output directory without needing conduit.
-#ifdef HAVE_CONDUIT
+#ifdef VISIT_HAS_CONDUIT
     // check if output directory exists before proceeding
     if (!conduit::utils::is_directory(outputDir))
     {
@@ -1512,7 +1512,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         //
         vtkDataArray *intensity;
         vtkDataArray *pathLength;
-#ifdef HAVE_CONDUIT
+#ifdef VISIT_HAS_CONDUIT
         conduit::Node data_out;
 #endif
         std::vector<std::string> filenames;
@@ -1577,7 +1577,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         }
         else if (outputTypeIsBlueprint(outputType))
         {
-#ifdef HAVE_CONDUIT
+#ifdef VISIT_HAS_CONDUIT
             // calculate constants for use in multiple functions
             double nearHeight, nearWidth, viewHeight, viewWidth, farHeight, farWidth;
             avtXRayFilter::CalculateImagingPlaneDims(parallelScale, viewWidthOverride,
@@ -1699,7 +1699,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 << std::setfill('0') << std::setw(2)
                 << 2 * numBins - 1 << "."
                 << file_extensions[outputType] << "\n";
-#ifdef HAVE_CONDUIT
+#ifdef VISIT_HAS_CONDUIT
         else if (outputTypeIsBlueprint(outputType))
         {
             buf << "The x ray image query results were "
@@ -2069,7 +2069,7 @@ avtXRayImageQuery::WriteBOVHeader(const char *baseName, const char *varName,
 //  Modifications:
 //
 // ****************************************************************************
-#ifdef HAVE_CONDUIT
+#ifdef VISIT_HAS_CONDUIT
 template <typename T>
 void
 avtXRayImageQuery::WriteArrays(vtkDataSet **leaves, 
@@ -2121,7 +2121,7 @@ avtXRayImageQuery::WriteArrays(vtkDataSet **leaves,
 //    Leverage conduit's features to make the code more legible.
 //
 // ****************************************************************************
-#ifdef HAVE_CONDUIT
+#ifdef VISIT_HAS_CONDUIT
 void
 avtXRayImageQuery::WriteBlueprintImagingPlane(conduit::Node &data_out,
                                               const std::string plane_name,
@@ -2191,7 +2191,7 @@ avtXRayImageQuery::WriteBlueprintImagingPlane(conduit::Node &data_out,
 //    Leverage conduit's features to make the code more legible.
 //
 // ****************************************************************************
-#ifdef HAVE_CONDUIT
+#ifdef VISIT_HAS_CONDUIT
 void
 WriteBlueprintRayCornersMesh(conduit::Node &data_out,
                              const avtVector &llc_near,
@@ -2261,7 +2261,7 @@ WriteBlueprintRayCornersMesh(conduit::Node &data_out,
 //    Leverage conduit's features to make the code more legible.
 //
 // ****************************************************************************
-#ifdef HAVE_CONDUIT
+#ifdef VISIT_HAS_CONDUIT
 void
 avtXRayImageQuery::WriteBlueprintRaysMesh(conduit::Node &data_out,
                                           const double detectorWidth,
@@ -2359,7 +2359,7 @@ avtXRayImageQuery::WriteBlueprintRaysMesh(conduit::Node &data_out,
 //  Modifications:
 //
 // ****************************************************************************
-#ifdef HAVE_CONDUIT
+#ifdef VISIT_HAS_CONDUIT
 void
 avtXRayImageQuery::WriteBlueprintImagingMeshes(conduit::Node &data_out,
                                                const double nearWidth, 
@@ -2435,7 +2435,7 @@ avtXRayImageQuery::WriteBlueprintImagingMeshes(conduit::Node &data_out,
 //    Added view width override and non square pixels.
 //
 // ****************************************************************************
-#ifdef HAVE_CONDUIT
+#ifdef VISIT_HAS_CONDUIT
 void
 avtXRayImageQuery::WriteBlueprintXRayView(conduit::Node &xray_view)
 {
@@ -2480,7 +2480,7 @@ avtXRayImageQuery::WriteBlueprintXRayView(conduit::Node &xray_view)
 //    Leverage conduit's features to make the code more legible.
 //
 // ****************************************************************************
-#ifdef HAVE_CONDUIT
+#ifdef VISIT_HAS_CONDUIT
 void
 avtXRayImageQuery::WriteBlueprintXRayQuery(conduit::Node &xray_query, 
                                            const int numBins)
@@ -2520,7 +2520,7 @@ avtXRayImageQuery::WriteBlueprintXRayQuery(conduit::Node &xray_query,
 //    Leverage conduit's features to make the code more legible.
 //
 // ****************************************************************************
-#ifdef HAVE_CONDUIT
+#ifdef VISIT_HAS_CONDUIT
 void
 avtXRayImageQuery::WriteBlueprintXRayData(conduit::Node &xray_data, 
                                           const double detectorWidth, 
@@ -2578,7 +2578,7 @@ avtXRayImageQuery::WriteBlueprintXRayData(conduit::Node &xray_data,
 //    Leverage conduit's features to make the code more legible.
 //
 // ****************************************************************************
-#ifdef HAVE_CONDUIT
+#ifdef VISIT_HAS_CONDUIT
 void
 avtXRayImageQuery::WriteBlueprintMetadata(conduit::Node &metadata,
                                           const int cycle,
@@ -2623,7 +2623,7 @@ avtXRayImageQuery::WriteBlueprintMetadata(conduit::Node &metadata,
 //    when provided energy group bounds are not the right size.
 //
 // ****************************************************************************
-#ifdef HAVE_CONDUIT
+#ifdef VISIT_HAS_CONDUIT
 void
 avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &coordsets,
                                                const int x_coords_dim,
@@ -2754,7 +2754,7 @@ avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &coordsets,
 //    Added spectra topo.
 //
 // ****************************************************************************
-#ifdef HAVE_CONDUIT
+#ifdef VISIT_HAS_CONDUIT
 void
 avtXRayImageQuery::WriteBlueprintMeshTopologies(conduit::Node &topologies)
 {
@@ -2796,7 +2796,7 @@ avtXRayImageQuery::WriteBlueprintMeshTopologies(conduit::Node &topologies)
 //    Consistent error messaging.
 //
 // ****************************************************************************
-#ifdef HAVE_CONDUIT
+#ifdef VISIT_HAS_CONDUIT
 void
 avtXRayImageQuery::WriteBlueprintMeshFields(conduit::Node &fields, 
                                             const int numfieldvals,
@@ -2986,7 +2986,7 @@ avtXRayImageQuery::WriteBlueprintMeshFields(conduit::Node &fields,
 //    instead of the whole thing.
 //
 // ****************************************************************************
-#ifdef HAVE_CONDUIT
+#ifdef VISIT_HAS_CONDUIT
 void
 avtXRayImageQuery::WriteBlueprintMeshes(conduit::Node &data_out, 
                                         const double detectorWidth, 

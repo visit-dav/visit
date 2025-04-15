@@ -6772,7 +6772,7 @@ VisWindow::GetCompactDomainsAutoThreshold() const
     return rendering->GetCompactDomainsAutoThreshold();
 }
 
-#if defined(HAVE_OSPRAY)
+#if defined(VISIT_HAS_OSPRAY)
 // ****************************************************************************
 // Method: VisWindow::SetOsprayRendering
 //
@@ -6797,7 +6797,7 @@ VisWindow::SetOsprayRendering(bool enabled)
     if (enabled != rendering->GetOsprayRendering())
     {
         rendering->SetOsprayRendering(enabled);
-#ifdef HAVE_OSPRAY
+#ifdef VISIT_HAS_OSPRAY
         view->SetOsprayRendering(enabled);
         interactions->SetOsprayRendering(enabled);
 #endif

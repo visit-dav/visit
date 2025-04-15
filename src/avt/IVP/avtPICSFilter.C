@@ -19,6 +19,7 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #include "avtPODICAlgorithm.h"
 #include "avtVariableCache.h"
 #include <visitstream.h>
+#include <visit-config.h>
 
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
@@ -50,7 +51,7 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #include <avtIVPM3DC1Field.h>
 #include <avtIVPNek5000Field.h>
 #include <avtIVPNek5000TimeVaryingField.h>
-#ifdef HAVE_NEKTAR_PP
+#ifdef VISIT_HAS_NEKTARPP
 #include <avtIVPNektar++Field.h>
 #include <avtIVPNektar++TimeVaryingField.h>
 #endif
@@ -2112,7 +2113,7 @@ avtPICSFilter::GetFieldForDomain(const BlockIDType &domain, vtkDataSet *ds)
       }
       else if( fieldType == PICS_FIELD_NEKTARPP )
       {
-#ifdef HAVE_NEKTAR_PP
+#ifdef VISIT_HAS_NEKTARPP
         if (integrationDirection == PICS_INTEGRATE_BACKWARD)
             return new avtIVPNektarPPTimeVaryingField(ds, *locator, 
                                        domainTimeIntervals[curTimeSlice-1][1],
@@ -2152,7 +2153,7 @@ avtPICSFilter::GetFieldForDomain(const BlockIDType &domain, vtkDataSet *ds)
 
       else if( fieldType == PICS_FIELD_NEKTARPP )
       {
-#ifdef HAVE_NEKTAR_PP
+#ifdef VISIT_HAS_NEKTARPP
          return new avtIVPNektarPPField(ds, *locator);
 #else
         EXCEPTION1(ImproperUseException, "Requesting Nektar++ interpolation but VisIt has not been built with Nektar++ support.");

@@ -16,7 +16,7 @@ add_subdirectory(full)
 
 # if osmesa is enabled, add our offscreen rendering factory
 if(VTK_VERSION LESS "9.4.0")
-if(HAVE_OSMESA)
+if(VISIT_HAS_OSMESA)
     add_subdirectory(offscreen)
 endif()
 endif()

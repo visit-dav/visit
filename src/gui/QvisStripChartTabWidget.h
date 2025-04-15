@@ -9,10 +9,10 @@
 #include <QVector>
 #include <QTabBar>
 #include <QTabWidget>
-
+#include <visit-config.h>
 
 class QScrollArea;
-#ifdef HAVE_QWT
+#ifdef VISIT_HAS_QWT
 class QvisStripChart;
 #endif
 
@@ -127,7 +127,7 @@ private:
     // index of the currently displayed strip chart
     unsigned int currentStripChart;
 
-#ifdef HAVE_QWT
+#ifdef VISIT_HAS_QWT
     // array of maxStripCharts
     QvisStripChart *stripCharts[MAX_STRIP_CHARTS];
 #endif

@@ -51,6 +51,11 @@
 
 visit_import_third_party(SILO LIBNAMES silohdf5 siloh5 silo)
 
+if(TARGET silo)
+    set(VISIT_HAS_PDB TRUE CACHE BOOL "VisIt has pdb lite")
+    add_library(pdb ALIAS silo)
+endif()
+
 if (WIN32)
   if(EXISTS ${SILO_DIR}/lib/silex.exe)
     execute_process(COMMAND ${CMAKE_COMMAND} -E copy

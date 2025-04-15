@@ -62,7 +62,7 @@ if (VISIT_OSMESA_DIR)
     if (OSMESA_LIBRARY)
         set(OSMESA_FOUND true)
         if (MESAGL_LIBRARY)
-            set(HAVE_OSMESA true CACHE BOOL "Have OSMesa library")
+            set(VISIT_HAS_OSMESA true CACHE BOOL "Have OSMesa library")
         endif()
         get_filename_component(OSMESA_LIB ${OSMESA_LIBRARY} NAME)
 

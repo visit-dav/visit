@@ -9,13 +9,9 @@
 #ifndef AVT_ICET_COMPOSITOR_H
 #define AVT_ICET_COMPOSITOR_H
 
-#include <avtImage.h>
+#include <visit-config.h> // VISIT_HAS_ICET
 
-#include <vtkImageData.h>
-
-#include <visit-config.h> // HAVE_ICET
-
-#if defined(PARALLEL) && defined(HAVE_ICET)
+#if defined(PARALLEL) && defined(VISIT_HAS_ICET)
     #include <IceT.h>
     #include <IceTMPI.h>
 #endif
@@ -29,7 +25,7 @@ public:
 
     void            Composite(const void *, void * const, const int, const int, const int);
 private:
-#if defined(PARALLEL) && defined(HAVE_ICET)
+#if defined(PARALLEL) && defined(VISIT_HAS_ICET)
     void            InitIceT(float depth);
     void            CompositeIceT(void * const, const int, const int);
 

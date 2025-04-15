@@ -1497,7 +1497,7 @@ void QvisVolumePlotWindow::CreateOSPRayGroups(QWidget *parent, QLayout *pLayout)
 
     size_t row = 0;
 
-#ifndef HAVE_OSPRAY
+#ifndef VISIT_HAS_OSPRAY
     QLabel *osprayAvailableLabel = new QLabel(tr("OSPRay rendering is not available locally but may be remotely. "), osprayGroup);
     osprayLayout->addWidget(osprayAvailableLabel,        row, 0, 1, 3, Qt::AlignLeft);
     ++row;

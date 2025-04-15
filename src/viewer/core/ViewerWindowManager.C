@@ -3606,7 +3606,7 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
                 ratts->GetColorTexturingFlag());
         }
 
-#if defined(HAVE_OSPRAY)
+#if defined(VISIT_HAS_OSPRAY)
         if (windows[index]->GetOsprayRendering() != ratts->GetOsprayRendering())
             windows[index]->SetOsprayRendering(ratts->GetOsprayRendering());
         if (windows[index]->GetOspraySPP() != ratts->GetOspraySPP())
@@ -5270,7 +5270,7 @@ ViewerWindowManager::UpdateRenderingAtts(int windowIndex)
         GetViewerState()->GetRenderingAttributes()->SetOcclusionRatio(win->GetOcclusionRatio());
         GetViewerState()->GetRenderingAttributes()->SetNumberOfPeels(win->GetNumberOfPeels());
         GetViewerState()->GetRenderingAttributes()->SetColorTexturingFlag(win->GetColorTexturingFlag());
-#if defined(HAVE_OSPRAY)
+#if defined(VISIT_HAS_OSPRAY)
 //NOTE: win->GetOsprayRendering is returning 0 here which means that ospray is immediately getting turned off after the config setup turns it on
         GetViewerState()->GetRenderingAttributes()->SetOsprayRendering(win->GetOsprayRendering());
         GetViewerState()->GetRenderingAttributes()->SetOspraySPP(win->GetOspraySPP());
@@ -8237,7 +8237,7 @@ ViewerWindowManager::SetWindowAttributes(int windowIndex, bool copyAtts)
     w->SetNumberOfPeels(GetViewerState()->GetRenderingAttributes()->GetNumberOfPeels());
     w->SetColorTexturingFlag(GetViewerState()->GetRenderingAttributes()->GetColorTexturingFlag());
 
-#ifdef HAVE_OSPRAY
+#ifdef VISIT_HAS_OSPRAY
     w->SetOsprayRendering(GetViewerState()->GetRenderingAttributes()->GetOsprayRendering());
     w->SetOspraySPP(GetViewerState()->GetRenderingAttributes()->GetOspraySPP());
     w->SetOsprayAO(GetViewerState()->GetRenderingAttributes()->GetOsprayAO());
@@ -10103,7 +10103,7 @@ void ViewerWindowManager::SetRemoveDuplicateNodes(bool newVal)
 void
 ViewerWindowManager::CheckForOSPRayRendering() const
 {
-#ifdef HAVE_OSPRAY
+#ifdef VISIT_HAS_OSPRAY
     if(avtCallback::GetUseOSPRay())
     {
         GetViewerState()->GetRenderingAttributes()->SetOsprayRendering(true);

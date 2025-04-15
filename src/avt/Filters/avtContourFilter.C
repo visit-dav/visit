@@ -12,8 +12,8 @@
 #include <float.h>
 #include <vector>
 
-#include <visit-config.h> // for HAVE_VTKM
-#ifdef HAVE_VTKM
+#include <visit-config.h> // for VISIT_HAS_VTKM
+#ifdef VISIT_HAS_VTKM
 #include <avtVtkmDataSet.h>
 #include <vtkm/cont/DataSet.h>
 #include <vtkm/filter/contour/Contour.h>
@@ -964,7 +964,7 @@ avtContourFilter::ExecuteDataTree_VTK(avtDataRepresentation *in_dr)
 avtDataTree_p
 avtContourFilter::ExecuteDataTree_VTKM(avtDataRepresentation *in_dr)
 {
-#ifndef HAVE_VTKM
+#ifndef VISIT_HAS_VTKM
     return NULL;
 #else
     //

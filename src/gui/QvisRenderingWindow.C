@@ -590,7 +590,7 @@ QvisRenderingWindow::CreateAdvancedPage()
     advLayout->addWidget(colorTexturingToggle, row, 0, 1, 3);
     row++;
 
-#if defined(HAVE_OSPRAY)
+#if defined(VISIT_HAS_OSPRAY)
     QFrame *line = new QFrame(advancedOptions);
     line->setFrameShape(QFrame::HLine);
     line->setFrameShadow(QFrame::Sunken);
@@ -958,7 +958,7 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             numberOfPeels->setText(tmp);
             numberOfPeels->blockSignals(false);
             break;
-#if defined(HAVE_OSPRAY)
+#if defined(VISIT_HAS_OSPRAY)
         case RenderingAttributes::ID_osprayRendering:
             enabled = renderAtts->GetOsprayRendering();
             osprayGroup->blockSignals(true);

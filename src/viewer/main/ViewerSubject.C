@@ -167,7 +167,7 @@ static int nConfigArgs = 1;
 
 #include <visit-config.h>
 #if LIB_VERSION_LE(VTK,9,2,6)
-#ifdef HAVE_OSMESA
+#ifdef VISIT_HAS_OSMESA
 #  include <vtkOffScreenRenderingFactory.h>
 #endif
 #endif
@@ -2610,7 +2610,7 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
         else if (strcmp(argv[i], "-nowin") == 0)
         {
 #if LIB_VERSION_LE(VTK,9,2,6)
-#ifdef HAVE_OSMESA
+#ifdef VISIT_HAS_OSMESA
             vtkOffScreenRenderingFactory::ForceOffScreen();
 #endif
 #endif
@@ -2624,7 +2624,7 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
         {
             WindowMetrics::SetEmbeddedWindowState(true);
         }
-#if defined(HAVE_OSPRAY) // ospray 3.0, vtk 9
+#if defined(VISIT_HAS_OSPRAY) // ospray 3.0, vtk 9
         else if (strcmp(argv[i], "-ospray") == 0)
         {
             debug5 << "Viewer launching with OSPRay" << endl;

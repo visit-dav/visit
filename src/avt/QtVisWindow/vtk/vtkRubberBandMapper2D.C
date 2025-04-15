@@ -26,7 +26,9 @@
 #include <QPixmap>
 #include <QPainter>
 #include <QLine>
-#if defined(HAVE_XLIB)
+
+#include <visit-config.h>
+#if defined(VISIT_HAS_LIBX11)
 #  include <QtX11Extras/QX11Info>
 #  include <X11/Intrinsic.h>
 #endif
@@ -79,7 +81,7 @@ struct vtkRubberBandMapper2DPrivate
 
 #if defined(__APPLE__) || defined(_WIN32)
         bestRenderer = 2;
-#elif defined(HAVE_XLIB)
+#elif defined(VISIT_HAS_LIBX11)
         bestRenderer = 1;
 #if 0
 // X is not creating the Qt overlay as transparent. Disable for now.
@@ -247,7 +249,7 @@ vtkRubberBandMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* actor)
 void
 vtkRubberBandMapper2D::RenderOverlay_X11(vtkViewport* viewport, vtkActor2D* actor)
 {
-#if defined(HAVE_XLIB)
+#if defined(VISIT_HAS_LIBX11)
 #define STORE_POINT(P, X, Y) P.x = short(X); P.y = short(Y);
 
 #define SET_FOREGROUND_D(rgba) \

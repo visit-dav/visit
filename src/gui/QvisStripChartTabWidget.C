@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include <QvisStripChartTabWidget.h>
-#ifdef HAVE_QWT
+#ifdef VISIT_HAS_QWT
 #include <QvisStripChart.h>
 #endif
 
@@ -74,7 +74,7 @@ QvisStripChartTabWidget::QvisStripChartTabWidget( QWidget *parent,
     SC_Info.resize(MAX_STRIP_CHARTS);
 
     // create the strip charts
-#ifdef HAVE_QWT
+#ifdef VISIT_HAS_QWT
     for( unsigned int i=0; i<SC_Info.size(); ++i )
     {
         std::stringstream str;
@@ -238,7 +238,7 @@ QvisStripChartTabWidget::nameToIndex(const QString &SC_Name) const
 void
 QvisStripChartTabWidget::pick()
 {
-#ifdef HAVE_QWT
+#ifdef VISIT_HAS_QWT
     stripCharts[currentStripChart]->toggleDisplayMode(false);
 #endif
 }
@@ -261,7 +261,7 @@ QvisStripChartTabWidget::pick()
 void
 QvisStripChartTabWidget::zoom()
 {
-#ifdef HAVE_QWT
+#ifdef VISIT_HAS_QWT
     stripCharts[currentStripChart]->toggleDisplayMode(true);
 #endif
 }
@@ -284,7 +284,7 @@ QvisStripChartTabWidget::zoom()
 void
 QvisStripChartTabWidget::reset()
 {
-#ifdef HAVE_QWT
+#ifdef VISIT_HAS_QWT
     stripCharts[currentStripChart]->reset();
 #endif
 }
@@ -307,7 +307,7 @@ QvisStripChartTabWidget::reset()
 void
 QvisStripChartTabWidget::clear()
 {
-#ifdef HAVE_QWT
+#ifdef VISIT_HAS_QWT
     stripCharts[currentStripChart]->clear();
 #endif
 }
@@ -330,7 +330,7 @@ QvisStripChartTabWidget::clear()
 void
 QvisStripChartTabWidget::clear( const unsigned int index )
 {
-#ifdef HAVE_QWT
+#ifdef VISIT_HAS_QWT
     stripCharts[index]->clear();
 #endif
 }
@@ -357,7 +357,7 @@ void
 QvisStripChartTabWidget::setCurveTitle(const unsigned int curveIndex,
                                        const QString &newTitle)
 {
-#ifdef HAVE_QWT
+#ifdef VISIT_HAS_QWT
     stripCharts[currentStripChart]->setCurveTitle(curveIndex, newTitle);
 #endif
 }
@@ -384,7 +384,7 @@ void
 QvisStripChartTabWidget::clearAll(const unsigned int tabIndex)
 {
     // Clear the plot
-#ifdef HAVE_QWT
+#ifdef VISIT_HAS_QWT
     stripCharts[tabIndex]->clear();
 #endif
 
@@ -392,11 +392,11 @@ QvisStripChartTabWidget::clearAll(const unsigned int tabIndex)
     std::ostringstream label;
     label << "StripChart_" << tabIndex;
     setTabText(tabIndex, label.str().c_str());
-#ifdef HAVE_QWT
+#ifdef VISIT_HAS_QWT
     stripCharts[tabIndex]->setTitle( "History" );
 #endif
 
-#ifdef HAVE_QWT
+#ifdef VISIT_HAS_QWT
     // Clear the curves.
     for( unsigned int i=0; i<MAX_STRIP_CHART_VARS; ++i )
       stripCharts[tabIndex]->setCurveTitle( i, "" );
@@ -431,14 +431,14 @@ QvisStripChartTabWidget::setTabLabel(const unsigned int tabIndex,
         std::ostringstream label;
         label << "StripChart_" << tabIndex;
         setTabText(tabIndex, label.str().c_str());
-#ifdef HAVE_QWT
+#ifdef VISIT_HAS_QWT
         stripCharts[tabIndex]->setTitle( "History" );
 #endif
     }
     else
     {
         setTabText(tabIndex, newLabel);
-#ifdef HAVE_QWT
+#ifdef VISIT_HAS_QWT
         stripCharts[tabIndex]->setTitle( newLabel );
 #endif
     }
@@ -468,7 +468,7 @@ QvisStripChartTabWidget::setCurveTitle(const unsigned int tabIndex,
                                        const unsigned int curveIndex,
                                        const QString &newTitle)
 {
-#ifdef HAVE_QWT
+#ifdef VISIT_HAS_QWT
     stripCharts[tabIndex]->setCurveTitle(curveIndex, newTitle);
 #endif
 }
@@ -499,7 +499,7 @@ QvisStripChartTabWidget::addDataPoint( const unsigned int tabIndex,
                                        const unsigned int curveIndex,
                                        const double x, const double y )
 {
-#ifdef HAVE_QWT
+#ifdef VISIT_HAS_QWT
     stripCharts[tabIndex]->addDataPoint(curveIndex, x, y);
 #endif
 }
@@ -532,7 +532,7 @@ QvisStripChartTabWidget::addDataPoints( const unsigned int tabIndex,
                                         const unsigned int npts,
                                         const double *x, const double *y )
 {
-#ifdef HAVE_QWT
+#ifdef VISIT_HAS_QWT
     stripCharts[tabIndex]->addDataPoints(curveIndex, npts, x, y);
 #endif
 }

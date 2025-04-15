@@ -45,7 +45,7 @@ if(NOT PySide_FOUND)
 
     if(NOT PYTHON_EXECUTABLE OR NOT PYTHON_LIBRARY)
         message(WARNING "PySide2 requires python, but python not found, disabling PySide")
-        set(HAVE_LIBPYSIDE false CACHE BOOL "Have PySide2" FORCE)
+        set(VISIT_HAS_PYSIDE false CACHE BOOL "Have PySide2" FORCE)
         return()
     endif()
 

@@ -10,7 +10,7 @@
 #define AVT_CALLBACK_H
 #include <pipeline_exports.h>
 
-#include <visit-config.h> // for HAVE_OSPRAY
+#include <visit-config.h> // for VISIT_HAS_OSPRAY
 #include <string>
 
 #include <avtDataObject.h>
@@ -116,7 +116,7 @@ class PIPELINE_API avtCallback
     static bool                  GetSoftwareRendering(void)
                                      { return swRendering; }
 
-#if defined(HAVE_OSPRAY)
+#if defined(VISIT_HAS_OSPRAY)
     static void                  SetUseOSPRay(bool b)
                                      { useOSPRay = b; }
     static bool                  GetUseOSPRay(void)
@@ -163,7 +163,7 @@ class PIPELINE_API avtCallback
     static bool                  nowinInteractionMode;
     static bool                  swRendering;
 
-#if defined(HAVE_OSPRAY)
+#if defined(VISIT_HAS_OSPRAY)
     static bool                  useOSPRay;
 #endif
     static bool                  safeMode;

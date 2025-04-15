@@ -41,7 +41,7 @@ set(vtkqt_DEPENDS ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY}
 list(APPEND vtkqt_DEPENDS VTK::CommonCore VTK::GUISupportQt VTK::IOImage
         VTK::RenderingOpenGL2 VTK::RenderingFreeType)
 
-if(HAVE_OSMESA)
+if(VISIT_HAS_OSMESA)
     list(APPEND vtkqt_DEPENDS ${OSMESA_LIBRARIES})
 endif()
 

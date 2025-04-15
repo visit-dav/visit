@@ -31,7 +31,7 @@
 #include <vtkAutoInit.h>
 VTK_MODULE_INIT(vtkRenderingVolumeOpenGL2)
       
-#ifdef HAVE_OSPRAY
+#ifdef VISIT_HAS_OSPRAY
 VTK_MODULE_INIT(vtkRenderingRayTracing)
     #include <vtkOSPRayVolumeMapper.h>
     #include <vtkOSPRayRendererNode.h>

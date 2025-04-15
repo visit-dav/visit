@@ -44,7 +44,7 @@
 #include <vtkProperty.h>
 #endif
 
-#if defined(HAVE_OSPRAY)
+#if defined(VISIT_HAS_OSPRAY)
   #include <vtkOSPRayRendererNode.h>
   #include <vtkOSPRayPass.h>
   #include <vtkViewNodeFactory.h>
@@ -304,7 +304,7 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
 
     curRenderTimes[0] = curRenderTimes[1] = curRenderTimes[2] = 0.0;
 
-#if defined(HAVE_OSPRAY)
+#if defined(VISIT_HAS_OSPRAY)
     osprayRendering = false;
     ospraySPP = 1;
     osprayAO = 0;
@@ -373,7 +373,7 @@ VisWinRendering::~VisWinRendering()
         foreground->Delete();
         foreground = nullptr;
     }
-#if defined(HAVE_OSPRAY)
+#if defined(VISIT_HAS_OSPRAY)
     if (osprayPass != nullptr)
     {
         osprayPass->Delete();
@@ -734,7 +734,7 @@ VisWinRendering::Start2DMode(void)
     canvas->SetViewport(vport);
     canvas->ComputeAspect();
 
-#if defined(HAVE_OSPRAY)
+#if defined(VISIT_HAS_OSPRAY)
     viewIs3D = false;
 #endif
 }
@@ -776,7 +776,7 @@ VisWinRendering::Stop2DMode(void)
     canvas->SetViewport(0., 0., 1., 1.);
     canvas->ComputeAspect();
 
-#if defined(HAVE_OSPRAY)
+#if defined(VISIT_HAS_OSPRAY)
     viewIs3D = true;
 #endif
 }
@@ -811,7 +811,7 @@ VisWinRendering::StartCurveMode(void)
     canvas->SetViewport(vport);
     canvas->ComputeAspect();
 
-#if defined(HAVE_OSPRAY)
+#if defined(VISIT_HAS_OSPRAY)
     viewIs3D = false;
 #endif
 }
@@ -847,7 +847,7 @@ VisWinRendering::StopCurveMode(void)
     canvas->SetViewport(0., 0., 1., 1.);
     canvas->ComputeAspect();
 
-#if defined(HAVE_OSPRAY)
+#if defined(VISIT_HAS_OSPRAY)
     viewIs3D = true;
 #endif
 }
@@ -882,7 +882,7 @@ VisWinRendering::StartAxisArrayMode(void)
     canvas->SetViewport(vport);
     canvas->ComputeAspect();
 
-#if defined(HAVE_OSPRAY)
+#if defined(VISIT_HAS_OSPRAY)
     viewIs3D = false;
 #endif
 }
@@ -918,7 +918,7 @@ VisWinRendering::StopAxisArrayMode(void)
     canvas->SetViewport(0., 0., 1., 1.);
     canvas->ComputeAspect();
 
-#if defined(HAVE_OSPRAY)
+#if defined(VISIT_HAS_OSPRAY)
     viewIs3D = true;
 #endif
 }
@@ -953,7 +953,7 @@ VisWinRendering::StartParallelAxesMode(void)
     canvas->SetViewport(vport);
     canvas->ComputeAspect();
 
-#if defined(HAVE_OSPRAY)
+#if defined(VISIT_HAS_OSPRAY)
     viewIs3D = false;
 #endif
 }
@@ -989,7 +989,7 @@ VisWinRendering::StopParallelAxesMode(void)
     canvas->SetViewport(0., 0., 1., 1.);
     canvas->ComputeAspect();
 
-#if defined(HAVE_OSPRAY)
+#if defined(VISIT_HAS_OSPRAY)
     viewIs3D = true;
 #endif
 }
@@ -1275,7 +1275,7 @@ VisWinRendering::Realize(void)
 void
 VisWinRendering::RenderRenderWindow(void)
 {
-#if defined(HAVE_OSPRAY)
+#if defined(VISIT_HAS_OSPRAY)
     if (osprayRendering && viewIs3D)
     {
         canvas->SetUseShadows(osprayShadows);
@@ -2988,7 +2988,7 @@ VisWinRendering::UpdateMouseActions(std::string action, double start_dx, double 
     }
 }
 
-#if defined(HAVE_OSPRAY)
+#if defined(VISIT_HAS_OSPRAY)
 // ****************************************************************************
 // Method: VisWinRendering::Set3DView
 //
@@ -3013,7 +3013,7 @@ VisWinRendering::Set3DView(bool enable)
 #endif
 
 
-#if defined(HAVE_OSPRAY)
+#if defined(VISIT_HAS_OSPRAY)
 // ****************************************************************************
 // Method: VisWinRendering::SetOsprayRendering
 //

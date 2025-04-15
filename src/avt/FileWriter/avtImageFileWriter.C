@@ -20,7 +20,7 @@
 #include <vtkPostScriptWriter.h>
 #include <vtkRGBWriter.h>
 #include <vtkPNGWriter.h>
-#ifdef HAVE_OPENEXR
+#ifdef VISIT_HAS_OPENEXR
 #include <vtkOpenEXRWriter.h>
 #endif
 #include <vtkUnsignedCharArray.h>
@@ -171,7 +171,7 @@ avtImageFileWriter::Write(ImageFileFormat format, const char *filename,
         writer = vtkRGBWriter::New();
         break;
     case OPENEXR:
-#ifdef HAVE_OPENEXR
+#ifdef VISIT_HAS_OPENEXR
         { // new scope
         vtkOpenEXRWriter *exrWriter = vtkOpenEXRWriter::New();
         // Pass the Z buffer, if there is one, to the writer.

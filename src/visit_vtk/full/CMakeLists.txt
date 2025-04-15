@@ -197,7 +197,7 @@ if(OPENEXR_FOUND)
 endif()
 
 
-if(HAVE_BOOST)
+if(VISIT_HAS_BOOST)
     target_link_libraries(visit_vtk PRIVATE boost)
 endif()
 

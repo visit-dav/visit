@@ -105,7 +105,7 @@ QvisStripChartMgr::CreateWindowContents()
     stripChartTabWidget = new QvisStripChartTabWidget(central, this, 2000, 100);
     topLayout->addWidget( stripChartTabWidget);
 
-#ifndef HAVE_QWT
+#ifndef VISIT_HAS_QWT
     QGroupBox *noStripChartsGroup = new QGroupBox(central);
     noStripChartsGroup->setTitle(tr("VisIt was not compiled with QWT, StripChart functionality is not available"));
     topLayout->addWidget(noStripChartsGroup);
@@ -180,7 +180,7 @@ QvisStripChartMgr::CreateWindowContents()
             SLOT(clickedStripChartVarButton4()));
     menuLayout->addWidget(stripChartVarButton4,0,4);
 
-#ifndef HAVE_QWT
+#ifndef VISIT_HAS_QWT
    stripChartGroup->hide();
 #endif
 

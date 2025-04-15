@@ -8,7 +8,6 @@
 
 #include <Navigate3D.h>
 
-#include <visit-config.h> // for HAVE_OSPRAY
 #include <avtVector.h>
 #include <avtMatrix.h>
 

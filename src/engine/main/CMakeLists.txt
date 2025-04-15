@@ -111,7 +111,7 @@ if(CONDUIT_FOUND AND MFEM_FOUND)
 endif()
 
 if(VTK_VERSION VERSION_LESS "9.4.0")
-    if(HAVE_OSMESA)
+    if(VISIT_HAS_OSMESA)
         list(APPEND LIBENGINE_DEPENDS visit_vtk_offscreen)
     endif()
 endif()
@@ -141,7 +141,7 @@ endif()
 
 if(VISIT_PARALLEL)
     # If we have Ice-T then add more sources to the build
-    if(HAVE_ICET)
+    if(VISIT_HAS_ICET)
         set(ICET_SOURCES IceTNetworkManager.C)
         set(ICET_HEADERS IceTNetworkManager.h)
         if(APPLE)
@@ -181,7 +181,7 @@ if(VISIT_PARALLEL)
         visit_patch_target(NAME engine_par DEFINES COMM_EXPORTS)
     endif()
 
-    if(HAVE_ICET)
+    if(VISIT_HAS_ICET)
         if(VISIT_MESAGL_DIR)
             visit_patch_target(
                 NAME engine_par
@@ -233,7 +233,7 @@ if(VISIT_PARALLEL)
 
     # For static builds with icet, don't add the parallel libs automatically. We
     # try to control it explicitly so icet comes before mpi on the link line.
-    if(HAVE_ICET AND VISIT_STATIC)
+    if(VISIT_HAS_ICET AND VISIT_STATIC)
         set(tmpval ${VISIT_NOLINK_MPI_WITH_LIBRARIES})
         set(VISIT_NOLINK_MPI_WITH_LIBRARIES OFF)
     endif()
@@ -263,7 +263,7 @@ if(VISIT_PARALLEL)
             LINK_FLAGS "/STACK:4000000")
     endif()
 
-    if(HAVE_ICET)
+    if(VISIT_HAS_ICET)
         if(VISIT_STATIC)
             set(VISIT_NOLINK_MPI_WITH_LIBRARIES ${tmpval})
         endif()

@@ -658,18 +658,17 @@ Condition: VISIT_SLIVR
 Definitions: VISIT_SLIVR
 
 Target: xml2cmake
-Condition: HAVE_ICET
+Condition: VISIT_HAS_ICET
 ELinkLibraries: ${ICET_LIBS}
 
 Target: xml2cmake
 Verbatim: Pre
-if(HAVE_ICET)
+if(VISIT_HAS_ICET)
+    set(ICET_LIBS icet)
     # We need to link with OpenGL on Mac when we have IceT.
     if(APPLE)
-        set(ICET_OPENGL ${OPENGL_gl_LIBRARY})
+        list(APPEND ICET_LIBS ${OPENGL_gl_LIBRARY})
     endif()
-    # Link icet libraries
-    set(ICET_LIBS icet ${ICET_OPENGL})
 endif()
 
 

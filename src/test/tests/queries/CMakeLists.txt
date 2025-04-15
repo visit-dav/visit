@@ -27,7 +27,7 @@ PY_3RDPARTY_TEST(PY_TESTS SILO
     pickcleanzonesonly pickNamedArgs py_queries queryMultiWindow
     revolved_surface_area scf watertight xrayimage)
 
-IF (HAVE_OSMESA)
+IF (VISIT_HAS_OSMESA)
     # osmesa rasterizes lines differently and
     # thus this test fails with other GL
     PY_3RDPARTY_TEST(PY_TESTS SILO line_scan)

@@ -34,9 +34,9 @@
 #include <vtkColorTransferFunction.h>
 #include <vtkPiecewiseFunction.h>
 
-#include <visit-config.h> // for HAVE_OSPRAY
+#include <visit-config.h> // for VISIT_HAS_OSPRAY
 
-#ifdef HAVE_OSPRAY
+#ifdef VISIT_HAS_OSPRAY
     #include <vtkOSPRayVolumeMapper.h>
     #include <vtkOSPRayRendererNode.h>
 #endif
@@ -181,7 +181,7 @@ avtVisItVTKRenderer::NumberOfComponents(const std::string activeVariable,
     {
         m_nComponents = 2;
 
-#ifdef HAVE_OSPRAY
+#ifdef VISIT_HAS_OSPRAY
         if( m_atts.GetOSPRayEnabledFlag() )
         {
             avtCallback::IssueWarning("The opacity variable is not the same as "
@@ -324,7 +324,7 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
 {
     StackTimer t0("VisItVTKRenderer Rendering");
 
-#ifndef HAVE_OSPRAY
+#ifndef VISIT_HAS_OSPRAY
     if( m_atts.GetOSPRayEnabledFlag() )
     {
         avtCallback::IssueWarning("Trying to use OSPRay when VTK was not built with OSPRay support. The default VTK renderering will be used.");
@@ -630,7 +630,7 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
             m_volumeMapper->Delete();
 
         // Create the volume mapper.
-#ifdef HAVE_OSPRAY
+#ifdef VISIT_HAS_OSPRAY
         if( m_atts.GetOSPRayEnabledFlag() )
         {
             m_volumeMapper = vtkOSPRayVolumeMapper::New();
@@ -775,7 +775,7 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
     m_volume->SetMapper(m_volumeMapper);
     m_volume->SetProperty(m_volumeProperty);
 
-#ifdef HAVE_OSPRAY
+#ifdef VISIT_HAS_OSPRAY
     if( m_atts.GetOSPRayEnabledFlag() )
     {
         LOCAL_DEBUG << "RenderType: "

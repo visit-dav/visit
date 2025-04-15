@@ -36,9 +36,9 @@
 #include <vtkGPUVolumeRayCastMapper.h>
 #include <vtkSmartVolumeMapper.h>
 
-#include <visit-config.h> // for HAVE_OSPRAY
+#include <visit-config.h> // for VISIT_HAS_OSPRAY
 
-#ifdef HAVE_OSPRAY
+#ifdef VISIT_HAS_OSPRAY
     #include <vtkOSPRayVolumeMapper.h>
     #include <vtkOSPRayRendererNode.h>
 #endif

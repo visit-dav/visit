@@ -7,7 +7,8 @@
 
 #define MAX_STRIP_CHART_VARS 5
 
-#ifdef HAVE_QWT
+#include <visit-config.h>
+#ifdef VISIT_HAS_QWT
 #include <qwt_plot.h>
 #include <qwt_plot_curve.h>
 #include <QPen>

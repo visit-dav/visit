@@ -88,7 +88,7 @@ if(NOT VISIT_DBIO_ONLY)
         ITEMS avtmath)
 endif()
 
-if(HAVE_VTKM)
+if(VISIT_HAS_VTKM)
     visit_append_list(
         NAME  avtpipeline_ser_DEPENDS
         ITEMS vtkm_cont

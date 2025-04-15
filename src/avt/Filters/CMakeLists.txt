@@ -209,7 +209,7 @@ list(APPEND avtfilters_DEPENDS
     VTK::FiltersGeneral
     VTK::FiltersModeling)
 
-if(HAVE_VTKM)
+if(VISIT_HAS_VTKM)
     list(APPEND avtfilters_DEPENDS
         vtkm_cont
         vtkm_filter_contour

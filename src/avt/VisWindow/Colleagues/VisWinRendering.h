@@ -9,7 +9,7 @@
 #ifndef VIS_WIN_RENDERING_H
 #define VIS_WIN_RENDERING_H
 #include <viswindow_exports.h>
-#include <visit-config.h> // for HAVE_OSPRAY
+#include <visit-config.h> // for VISIT_HAS_OSPRAY
 
 #include <VisWinColleague.h>
 
@@ -18,7 +18,7 @@
 #include <avtImageType.h>
 #include <ColorAttribute.h>
 
-#if defined(HAVE_OSPRAY)
+#if defined(VISIT_HAS_OSPRAY)
 #include <vtkOSPRayPass.h>
 #endif
 
@@ -385,7 +385,7 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     int                      GetCompactDomainsAutoThreshold() const
                                  { return compactDomainsAutoThreshold; }
     int                      SetCompactDomainsAutoThreshold(int val);
-#if defined(HAVE_OSPRAY)
+#if defined(VISIT_HAS_OSPRAY)
     void                     SetOsprayRendering(bool enabled);
     bool                     GetOsprayRendering() const
                                  { return osprayRendering; }
@@ -398,8 +398,6 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     void                     SetOsprayShadows(bool enabled);
     bool                     GetOsprayShadows() const
                                  { return osprayShadows; }
-#endif
-#ifdef HAVE_OSPRAY
     void                     Set3DView(bool enabled);
     bool                     Get3DView() const
                                  { return viewIs3D; }
@@ -444,7 +442,7 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     bool                          depthPeeling;
     double                        occlusionRatio;
     int                           numberOfPeels;
-#if defined(HAVE_OSPRAY)
+#if defined(VISIT_HAS_OSPRAY)
     bool                          osprayRendering {false};
     int                           ospraySPP {1};
     int                           osprayAO {0};

@@ -11,6 +11,7 @@
 
 #include <DebugStream.h>
 
+#include <cstring>
 #include <memory>
 #include <map>
 #include <vector>
@@ -61,7 +62,7 @@ avtICETCompositor::avtICETCompositor(float z, float * bgColor) :
     }
 
     // Initialize IceT
-    #if defined(PARALLEL) && defined(HAVE_ICET)
+    #if defined(PARALLEL) && defined(VISIT_HAS_ICET)
         InitIceT(z);
     #endif
 }
@@ -78,13 +79,13 @@ avtICETCompositor::avtICETCompositor(float z, float * bgColor) :
 
 avtICETCompositor::~avtICETCompositor()
 {
-    #if defined(PARALLEL) && defined(HAVE_ICET)
+    #if defined(PARALLEL) && defined(VISIT_HAS_ICET)
         icetDestroyContext(m_icetContext);
         icetSetContext(m_prevIceTContext);
     #endif
 }
 
-#if defined(PARALLEL) && defined(HAVE_ICET)
+#if defined(PARALLEL) && defined(VISIT_HAS_ICET)
 
 // ****************************************************************************
 //  Method: avtICETCompositor::InitIceT
@@ -203,10 +204,10 @@ avtICETCompositor::GetProcessRanks(float depth, const int mpiSize, IceTInt * con
 
 void
 avtICETCompositor::IceTDrawCallback(const IceTDouble *projMatrix,
-                                        const IceTDouble *modelViewMatrix,
-                                        const IceTFloat *bgColor,
-                                        const IceTInt *readBackViewport,
-                                        IceTImage result)
+                                    const IceTDouble *modelViewMatrix,
+                                    const IceTFloat *bgColor,
+                                    const IceTInt *readBackViewport,
+                                    IceTImage result)
 {
     // int width = icetImageGetWidth(result);
     // int height = icetImageGetHeight(result);
@@ -332,7 +333,7 @@ avtICETCompositor::Composite(const void *colorBuffer,
 
     debug5 << "[ICETCompositor] width = " << width << " height = " << height << std::endl;
 
-#if defined(PARALLEL) && defined(HAVE_ICET)
+#if defined(PARALLEL) && defined(VISIT_HAS_ICET)
     debug5 << "[ICETCompositor] Info - Compositing with IceT" << std::endl;
     CompositeIceT(outBuffer, height, width);
 #elif PARALLEL

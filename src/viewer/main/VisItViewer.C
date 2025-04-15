@@ -87,7 +87,7 @@ VisItViewer::Initialize(int *argc, char ***argv)
         {
             nowin = true;
         }
-#if defined(HAVE_OSPRAY) // ospray 3.0, vtk 9
+#if defined(VISIT_HAS_OSPRAY) // ospray 3.0, vtk 9
         else if (strcmp((*argv)[i], "-ospray") == 0)
         {
             debug5 << "Viewer launching with OSPRay" << endl;

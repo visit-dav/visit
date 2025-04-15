@@ -152,7 +152,7 @@ function(ADD_PARALLEL_SIMV2_SIMULATION target)
         set(sim_${target}_DEPENDS simV2_static_par
             ${VTK_LIBS} ${EXTRA_SIM_LIBS})
     endif()
-    if(HAVE_ICET)
+    if(VISIT_HAS_ICET)
         list(APPEND sim_${target}_DEPENDS icet)
     endif()
 
@@ -180,7 +180,7 @@ function(ADD_PARALLEL_FORTRAN_SIMV2_SIMULATION target)
         # HACK: Force the Fortran MPI libraries.
         ${MPI_Fortran_LIBRARIES})
 
-    if(HAVE_ICET)
+    if(VISIT_HAS_ICET)
         list(APPEND sim_${target}_DEPENDS icet)
     endif()
 

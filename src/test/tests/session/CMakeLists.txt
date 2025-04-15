@@ -15,7 +15,7 @@ PY_3RDPARTY_TEST(PY_TESTS SILO
     simplekeyframe textannot view3d wavecontour)
 
 SET(TEST_EXTRA_ARGS)
-IF (NOT HAVE_OSMESA)
+IF (NOT VISIT_HAS_OSMESA)
     SET(TEST_EXTRA_ARGS "--threshold-error=wavecontour00:12")
 ENDIF()
 

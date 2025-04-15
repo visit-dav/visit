@@ -53,6 +53,7 @@ if(ZLIB_DIR)
         _zlib_LIBRARY)
 
     if(ZLIB_FOUND)
+        set(VISIT_HAS_ZLIB TRUE CACHE BOOL "VisIt has zlib.")
         ## VTK needs this set to find our zlib instead of system
         set(ZLIB_LIBRARY ${_zlib_LIBRARY})
         ###

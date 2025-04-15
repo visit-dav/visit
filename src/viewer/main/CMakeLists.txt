@@ -122,7 +122,7 @@ set(VIEWERLIB_DEPENDS
     VTK::GUISupportQt)
     
 if(VTK_VERSION VERSION_LESS "9.4.0")
-    if(HAVE_OSMESA)
+    if(VISIT_HAS_OSMESA)
         list(APPEND VIEWERLIB_DEPENDS visit_vtk_offscreen)
     endif()
 endif()

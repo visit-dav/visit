@@ -9,7 +9,7 @@
 #ifndef VIS_WINDOW_PROTECTION_PROXY_H
 #define VIS_WINDOW_PROTECTION_PROXY_H
 #include <viswindow_exports.h>
-#include <visit-config.h> // for HAVE_OSPRAY
+#include <visit-config.h> // for VISIT_HAS_OSPRAY
 #include <vector>
 
 #include <VisWindowTypes.h>
@@ -225,7 +225,7 @@ class VISWINDOW_API VisWindowProtectionProxy
                             int w, int h, const double *c);
 
     void                ProxiedGetExtents(double ext[2]); // TODO: remove with VTK8.
-#if defined(HAVE_OSPRAY)
+#if defined(VISIT_HAS_OSPRAY)
     bool                ProxiedGetOsprayRendering();
     int                 ProxiedGetOspraySPP();
     int                 ProxiedGetOsprayAO();

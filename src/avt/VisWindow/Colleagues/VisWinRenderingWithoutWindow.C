@@ -153,7 +153,7 @@ VisWinRenderingWithoutWindow::GetRenderWindow(void)
 void
 VisWinRenderingWithoutWindow::RenderRenderWindow(void)
 {
-#if defined(HAVE_OSPRAY)
+#if defined(VISIT_HAS_OSPRAY)
     if (osprayRendering && viewIs3D)
     {
         if (canvas->GetPass() == NULL)
@@ -169,7 +169,7 @@ VisWinRenderingWithoutWindow::RenderRenderWindow(void)
     }
 #endif
 
-#if defined(__unix__) && !defined(__APPLE__) && defined(HAVE_LIBX11) && !defined(HAVE_OSMESA)
+#if defined(__unix__) && !defined(__APPLE__) && defined(VISIT_HAS_LIBX11) && !defined(VISIT_HAS_OSMESA)
     if(displayStatus == DS_NOT_CHECKED)
     {
         // On X11 systems not using mangled mesa, make sure that the DISPLAY is set.

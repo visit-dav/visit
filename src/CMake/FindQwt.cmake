@@ -74,8 +74,6 @@ if(QWT_FOUND)
     target_link_libraries(qwt INTERFACE
         $<INSTALL_INTERFACE:\${_IMPORT_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${lib_qwt}>)
 
-    target_compile_definitions(qwt INTERFACE HAVE_QWT)
-
     # install and export
     if(VISIT_INSTALL_THIRD_PARTY)
         visit_install_export_targets(qwt)
@@ -106,6 +104,6 @@ if(QWT_FOUND)
                         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
     endif()
 
-    set(HAVE_QWT TRUE CACHE BOOL "Have Qwt library")
+    set(VISIT_HAS_QWT TRUE CACHE BOOL "Have Qwt library")
 endif()
 

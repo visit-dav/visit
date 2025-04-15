@@ -6,7 +6,7 @@
 #define QVIS_RENDERING_WINDOW_H
 #include <QvisPostableWindowSimpleObserver.h>
 #include <gui_exports.h>
-#include <visit-config.h> // for HAVE_OSPRAY
+#include <visit-config.h> // for VISIT_HAS_OSPRAY
 #include <GUIBase.h>
 
 // Forward declarations
@@ -227,7 +227,7 @@ private:
     QLabel            *depthCueingEndLabel;
     QLineEdit         *depthCueingEndEdit;
     QCheckBox         *colorTexturingToggle;
-#if defined(HAVE_OSPRAY)
+#if defined(VISIT_HAS_OSPRAY)
     QGroupBox         *osprayGroup;
     QLabel            *ospraySPPLabel;
     QSpinBox          *ospraySPP;

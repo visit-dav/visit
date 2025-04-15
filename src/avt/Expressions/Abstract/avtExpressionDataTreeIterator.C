@@ -22,8 +22,8 @@
 
 #include <avtExprNode.h>
 
-#include <visit-config.h> // for HAVE_VTKM
-#ifdef HAVE_VTKM
+#include <visit-config.h> // for VISIT_HAS_VTKM
+#ifdef VISIT_HAS_VTKM
 #include <avtVtkmDataSet.h>
 #endif
 
@@ -181,7 +181,7 @@ avtExpressionDataTreeIterator::ExecuteData(avtDataRepresentation *in_dr)
 {
     avtDataRepresentation *out_dr = NULL;
 
-#ifdef HAVE_VTKM
+#ifdef VISIT_HAS_VTKM
     // TODO: Each expression should have a SupportsVTKm() method that we can
     //       call here to see if we should even enter the ExecuteData_VTKm
     //       method.
@@ -347,7 +347,7 @@ avtExpressionDataTreeIterator::ExecuteData_VTK(avtDataRepresentation *in_dr)
 avtDataRepresentation *
 avtExpressionDataTreeIterator::ExecuteData_VTKm(avtDataRepresentation *in_dr)
 {
-#ifdef HAVE_VTKM
+#ifdef VISIT_HAS_VTKM
     //
     // Get the VTK data set and domain number.
     //

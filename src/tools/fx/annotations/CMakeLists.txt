@@ -41,7 +41,7 @@ visit_add_executable(
     FOLDER      tools/fx/annotations)
 
 
-if(HAVE_OSMESA)
+if(VISIT_HAS_OSMESA)
     visit_patch_target(
         NAME       time_annotation
         DEPENDS_ON ${OSMESA_LIBRARIES})

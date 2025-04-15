@@ -9,7 +9,7 @@
 #ifndef VIS_WINDOW_H
 #define VIS_WINDOW_H
 #include <viswindow_exports.h>
-#include <visit-config.h> // for HAVE_OSPRAY
+#include <visit-config.h> // for VISIT_HAS_OSPRAY
 
 
 #include <vector>
@@ -712,7 +712,7 @@ public:
     int                  GetCompactDomainsActivationMode() const;
     void                 SetCompactDomainsAutoThreshold(int val);
     int                  GetCompactDomainsAutoThreshold() const;
-#if defined(HAVE_OSPRAY)
+#if defined(VISIT_HAS_OSPRAY)
     void                 SetOsprayRendering(bool enabled);
     bool                 GetOsprayRendering() const;
     void                 SetOspraySPP(int val);

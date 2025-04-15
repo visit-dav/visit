@@ -604,7 +604,6 @@ function(visit_import_third_party pkg)
     # lower case package name to be used as imported target name
     string(TOLOWER ${pkg} LNAME)
 
-
     if(${vitp_HEADER_ONLY})
         if(EXISTS ${_${pkg}_INCLUDE_DIR})
             blt_import_library(
@@ -618,7 +617,7 @@ function(visit_import_third_party pkg)
              else()
                  THIRD_PARTY_INSTALL_INCLUDE(${pkg} ${_${pkg}_INCLUDE_DIR})
              endif()
-             set(HAVE_${pkg} TRUE CACHE BOOL "Have ${LNAME} headers")
+             set(VISIT_HAS_${pkg} TRUE CACHE BOOL "VisIt has ${LNAME} headers")
         else()
             if(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
                 message(STATUS "  Include directory for header-only ${pkg} does not exist (${_${pkg}_INCLUDE_DIR})")
@@ -668,7 +667,7 @@ function(visit_import_third_party pkg)
             ${tplibs})
 
     if(${pkg}_FOUND)
-        set(HAVE_${pkg} TRUE CACHE BOOL "Have ${LNAME} libraries")
+        set(VISIT_HAS_${pkg} TRUE CACHE BOOL "VisIt has ${LNAME} libraries")
 
         # create a list of libs using BUILD_INTERFACE
         set(buildlibs)

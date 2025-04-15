@@ -38,7 +38,7 @@
 SET(_MODE_FLAGS "serial")
 IF(VISIT_PARALLEL)
     LIST(APPEND _MODE_FLAGS "parallel")
-    IF(HAVE_ICET)
+    IF(VISIT_HAS_ICET)
         LIST(APPEND _MODE_FLAGS "scalable,parallel,icet")
     ENDIF()
 ENDIF()

@@ -19,7 +19,7 @@
 
 #include <ivp_exports.h>
 
-#ifdef HAVE_NEKTAR_PP
+#ifdef VISIT_HAS_NEKTARPP
 #include <MultiRegions/ExpList.h>
 #endif
 

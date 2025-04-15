@@ -7,14 +7,14 @@
 #
 #****************************************************************************
 
-IF(HAVE_LIBPYSIDE OR HAVE_LIBPYQT)
-    ADD_SUBDIRECTORY(common)
-ENDIF()
+if(VISIT_HAS_PYSIDE OR VISIT_HAS_PYQT)
+    add_subdirectory(common)
+endif()
 
-IF(HAVE_LIBPYSIDE)
-    ADD_SUBDIRECTORY(pyside)
-ENDIF()
+if(VISIT_HAS_PYSIDE)
+    add_subdirectory(pyside)
+endif()
 
-IF(HAVE_LIBPYQT AND VISIT_SIP_DIR)
-    ADD_SUBDIRECTORY(pyqt)
-ENDIF(HAVE_LIBPYQT AND VISIT_SIP_DIR)
+if(VISIT_HAS_PYQT AND VISIT_SIP_DIR)
+    add_subdirectory(pyqt)
+endif()

@@ -9,7 +9,7 @@
 #ifndef VIEWER_WINDOW_H
 #define VIEWER_WINDOW_H
 #include <viewercore_exports.h>
-#include <visit-config.h> // for HAVE_OSPRAY
+#include <visit-config.h> // for VISIT_HAS_OSPRAY
 #include <ViewerBase.h>
 #include <avtActor.h>
 #include <avtDataset.h>
@@ -729,7 +729,7 @@ public:
     int GetCompressionActivationMode() const;
     int SetCompressionActivationMode(int);
     bool GetIsCompressingScalableImage() const;
-#if defined(HAVE_OSPRAY)
+#if defined(VISIT_HAS_OSPRAY)
     void SetOsprayRendering(bool);
     bool GetOsprayRendering() const;
     void SetOspraySPP(int);

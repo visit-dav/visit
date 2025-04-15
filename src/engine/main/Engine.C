@@ -33,7 +33,7 @@
 #include <ExprParser.h>
 #ifdef PARALLEL
 #   include <cognomen.h>
-#   ifdef HAVE_ICET
+#   ifdef VISIT_HAS_ICET
 #      include <IceTNetworkManager.h>
 #   endif
 #else
@@ -59,7 +59,7 @@
 #include <StackTimer.h>
 #include <Utility.h>
 #include <VisItDisplay.h>
-#if !defined(_WIN32) && !defined(__APPLE__) && defined(HAVE_LIBX11)
+#if !defined(_WIN32) && !defined(__APPLE__) && defined(VISIT_HAS_LIBX11)
 # include <XDisplay.h>
 #endif
 
@@ -82,17 +82,17 @@
 #include <avtStructuredDomainBoundaries.h>
 #include <avtExecutionManager.h>
 
-#ifdef HAVE_CONDUIT
+#ifdef VISIT_HAS_CONDUIT
 #include <avtConduitBlueprintDataAdaptor.h>
 #endif
 
-#ifdef HAVE_VTKM
+#ifdef VISIT_HAS_VTKM
 #include <vtkm/cont/Initialize.h>
 #endif
 
 #include <visit-config.h>
 #if LIB_VERSION_LE(VTK,9,2,6)
-#ifdef HAVE_OSMESA
+#ifdef VISIT_HAS_OSMESA
 #  include <vtkOffScreenRenderingFactory.h>
 #endif
 #endif
@@ -387,7 +387,7 @@ Engine::Engine() : EngineBase(), viewerArgs(), destinationFormat(), rpcExecutors
 
     procAtts = NULL;
 
-#if defined(PARALLEL) && defined(HAVE_ICET)
+#if defined(PARALLEL) && defined(VISIT_HAS_ICET)
     useIceT = true;
 #else
     useIceT = false;
@@ -799,17 +799,17 @@ Engine::InitializeCompute()
     int setupTimer = visitTimer->StartTimer();
     InitVTK::Initialize();
     InitVTKRendering::Initialize();
-#ifdef HAVE_VTKM
+#ifdef VISIT_HAS_VTKM
     vtkm::cont::Initialize();
 #endif
-#ifdef HAVE_CONDUIT
+#ifdef VISIT_HAS_CONDUIT
     avtConduitBlueprintDataAdaptor::Initialize();
 #endif
     if (avtCallback::GetSoftwareRendering())
     {
         // Install factory for  VisIt's OffScreen Render Window overrides
 #if LIB_VERSION_LE(VTK,9,2,6)
-#ifdef HAVE_OSMESA
+#ifdef VISIT_HAS_OSMESA
         debug1 << mName << "Offscreen rendering will use offscreen factory." << endl;
         vtkOffScreenRenderingFactory::ForceOffScreen();
 #else
@@ -835,7 +835,7 @@ Engine::InitializeCompute()
     // code to set the display and decide if we are using Mesa.
     //
     delete netmgr;
-#if defined(PARALLEL) && defined(HAVE_ICET)
+#if defined(PARALLEL) && defined(VISIT_HAS_ICET)
     if(this->useIceT)
     {
         if (DebugStream::Level1())
@@ -2345,7 +2345,7 @@ Engine::ProcessCommandLine(int argc, char **argv)
         {
             this->launchXServers = false;
         }
-#if defined(HAVE_OSPRAY)
+#if defined(VISIT_HAS_OSPRAY)
         else if (strcmp(argv[i], "-ospray") == 0)
         {
             debug5 << "Engine found OSPRay flag" << endl;
@@ -4214,7 +4214,7 @@ Engine::SetupDisplay()
 #endif
     std::string X_Display = RuntimeSetting::lookups("x-display");
     std::string disp = display_format(X_Display, PAR_Rank(), display_num);
-#if !defined(_WIN32) && !defined(__APPLE__) && defined(HAVE_LIBX11)
+#if !defined(_WIN32) && !defined(__APPLE__) && defined(VISIT_HAS_LIBX11)
     // Tell the display whether or not it should start X servers.  This must be
     // done before ::Initialize!
     XDisplay* xd = dynamic_cast<XDisplay*>(this->renderingDisplay);

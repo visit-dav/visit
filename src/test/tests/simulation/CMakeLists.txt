@@ -34,7 +34,7 @@ SET(PY_TESTS
     zerocopy)
 
 SET(TEST_EXTRA_ARGS)
-IF (NOT HAVE_OSMESA)
+IF (NOT VISIT_HAS_OSMESA)
     SET(TEST_EXTRA_ARGS "--threshold-error=mandelbrot02:12")
 ENDIF()
 

@@ -33,7 +33,7 @@
 // Add other file formats as needed.
 const char *fileFormats[] = {
 "bmp", 
-#ifdef HAVE_OPENEXR
+#ifdef VISIT_HAS_OPENEXR
 "exr",
 #endif
 "jpeg",

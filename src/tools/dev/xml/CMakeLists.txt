@@ -46,7 +46,7 @@ endforeach()
 
 target_compile_definitions(xml2cmake PRIVATE VTK_MAJ=${VTK_MAJOR_VERSION} VTK_MIN=${VTK_MINOR_VERSION})
 
-if(HAVE_VTKM)
+if(VISIT_HAS_VTKM)
     target_compile_definitions(xml2cmake PRIVATE VTKM_SMALL=${VTKm_VERSION_MAJOR}.${VTKm_VERSION_MINOR})
 endif()
 

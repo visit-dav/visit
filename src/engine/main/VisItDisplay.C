@@ -12,7 +12,7 @@
 
 #include <visit-config.h>
 
-#if !defined(_WIN32) && !defined(__APPLE__) && defined(HAVE_LIBX11)
+#if !defined(_WIN32) && !defined(__APPLE__) && defined(VISIT_HAS_LIBX11)
 #include <XDisplay.h>
 #endif
 
@@ -128,7 +128,7 @@ VDisplay::Create(VisItDisplay::DisplayType vtype)
             dpy = new MesaDisplay();
             break;
         case VisItDisplay::D_X:
-#if ! defined(_WIN32) && !defined(__APPLE__) && defined(HAVE_LIBX11)
+#if ! defined(_WIN32) && !defined(__APPLE__) && defined(VISIT_HAS_LIBX11)
             debug3 << "Creating X (HW-based) display." << std::endl;
             dpy = new XDisplay();
 #endif
