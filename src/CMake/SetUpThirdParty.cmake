@@ -135,7 +135,7 @@ function(SET_UP_THIRD_PARTY pkg)
     set(lib_dir_var "${pkg}_LIBRARY_DIR")
     set(lib_var "${pkg}_LIB")
     set(tp_found "${pkg}_FOUND")
-    set(have_tp "HAVE_LIB${pkg}")
+    set(have_tp "VISIT_HAS_${pkg}")
     set(lib_skip_install "VISIT_${pkg}_SKIP_INSTALL")
 
     #
@@ -306,7 +306,7 @@ function(SET_UP_THIRD_PARTY pkg)
 
     # Cache final results
     set("${tp_found}" true CACHE BOOL "${pkg} library found" FORCE)
-    set("${have_tp}"  true CACHE BOOL "Have ${pkg} library" FORCE)
+    set("${have_tp}"  true CACHE BOOL "VisIt has ${pkg} library" FORCE)
     set("${base_dir}"    ${${base_dir}}    CACHE PATH   "${pkg} base directory" FORCE)
     set("${inc_dir_var}" ${${inc_dir_var}} CACHE PATH   "${pkg} include directory" FORCE)
 

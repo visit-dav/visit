@@ -207,6 +207,10 @@
 #    Eric Brugger, Mon May 1 15:28:30 PST 2023
 #    Add HTG plugin.
 #
+#    Kathleen Biagas, Tue April 15, 2025 
+#    Made CHECK_THIRDPARTY_SATISFIED use VISIT_HAS_${lib_check} instead of
+#    ${lib_check}_FOUND.
+#
 #****************************************************************************
 
 include(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
@@ -234,8 +238,7 @@ MACRO(CHECK_THIRDPARTY_SATISFIED dbplugin dep_libs)
     # make sure we have found ALL of the deps
     MESSAGE(STATUS "Checking ${dbplugin} plugin dependencies: ${all_deps}")
     FOREACH (lib_check ${all_deps})
-    SET(dep_lib_check "${lib_check}_FOUND")
-        IF(${dep_lib_check})
+        IF(VISIT_HAS_${lib_check})
             LIST(APPEND deps_found ${lib_check})
         ELSE()
             SET(all_satisfied 0)
