@@ -282,30 +282,6 @@ class CMakeGeneratorPlugin : public Plugin
     }
 
     void
-    FilterConditionalLibs(QString &links, QString &libs)
-    {
-#ifdef HAVE_VTKM
-        // Will convert vtkm_xxx to vtkm_xxx-version
-        // otherwise will leave it alone.
-        QString vtkmversion = QString("-%1").arg(VTKM_SMALL);
-
-        QStringList newlist = links.split(" ");
-        for(int i = 0; i < newlist.size(); ++i)
-        {
-            QString tmp(newlist[i]);
-            if(tmp.startsWith("vtkm_") && !using_dev)
-            {
-                // append the vtkm version
-                tmp.append(vtkmversion);
-            }
-            libs += " " + tmp;
-        }
-#else
-        libs = links;
-#endif
-    }
-
-    void
     FilterVTKLibs(std::vector<QString> &libs,
                   std::vector<QString> &libs9)
     {
@@ -501,10 +477,8 @@ class CMakeGeneratorPlugin : public Plugin
         {
             for (int i = 0; i < conditions.size(); ++i)
             {
-                QString libs;
-                FilterConditionalLibs(links[i], libs);
                 out << indent << "if(" << conditions[i] << ")" << Endl;
-                out << indent << "    target_link_libraries(" << libType << target << plugType << " " << libs << ")" << Endl;
+                out << indent << "    target_link_libraries(" << libType << target << plugType << " " << links[i] << ")" << Endl;
                 out << indent << "endif()" << Endl;
                 out << Endl;
             }
@@ -660,27 +634,27 @@ class CMakeGeneratorPlugin : public Plugin
 
     void WriteCMake_PluginLibs(QTextStream &out,
         const QString component,
-        const std::vector<QString> libs,
+        const std::vector<QString> clibs,
         const bool hasConditionalLibs)
     {
-        if(libs.empty() && !hasConditionalLibs)
+        if(clibs.empty() && !hasConditionalLibs)
             return;
 
         out << Endl;
         QString IOne("   ");
         QChar c(component[0]);
-        if (c == 'V' || c =='G')
+        if (c == 'V' || c =='G'|| c == 'M')
             IOne += QString("   ");
         out << "    " << component << "LIBS" << IOne;
-        if(!libs.empty())
+        if(!clibs.empty())
         {
-            out << libs[0];
-            for(size_t i = 1; i < libs.size(); ++i)
-                out << Endl << "               " << libs[i];
+            out << clibs[0];
+            for(size_t i = 1; i < clibs.size(); ++i)
+                out << Endl << "               " << clibs[i];
         }
         if(hasConditionalLibs)
         {
-            if(!libs.empty())
+            if(!clibs.empty())
                 out << Endl << "               ";
             out << "${" << name << "_" << c << "Libs}";
         }
@@ -696,10 +670,8 @@ class CMakeGeneratorPlugin : public Plugin
             out << Endl;
             for (int i = 0; i < conditions.size(); ++i)
             {
-                QString libs;
-                FilterConditionalLibs(links[i], libs);
                 out << "if(" << conditions[i] << ")" << Endl;
-                out << "    set(" << name << "_" << libType << "Libs " << libs << ")" << Endl;
+                out << "    set(" << name << "_" << libType << "Libs " << links[i] << ")" << Endl;
                 out << "endif()" << Endl;
             }
             return true;
@@ -710,37 +682,65 @@ class CMakeGeneratorPlugin : public Plugin
     bool WriteCMake_PluginConditionalIncludes(QTextStream &out)
     {
         QStringList conditions, incs;
-        if(GetCondition("Includes:", conditions, incs))
+        bool hasIncludes = GetCondition("Includes:", conditions, incs);
+
+        // check for Includes from xml file
+        std::vector<QString> xmlIncludes;
+        for (size_t i=0; i<cxxflags.size(); i++)
+        {
+            if(cxxflags[i].startsWith("${"))
+                 xmlIncludes.push_back(ConvertToProperVisItIncludeDir(cxxflags[i]));
+            else if(cxxflags[i].startsWith("$("))
+                 xmlIncludes.push_back(ConvertToProperVisItIncludeDir(ConvertDollarParenthesis(cxxflags[i])));
+            else if(cxxflags[i].startsWith("-I"))
+                 xmlIncludes.push_back(ConvertToProperVisItIncludeDir(cxxflags[i].right(cxxflags[i].size()-2)));
+        }
+        hasIncludes |= !xmlIncludes.empty();
+
+        if(hasIncludes)
         {
             out << Endl;
+            out << "set(" << name << "_INCLUDES ";
+            for(int i = 0; i < xmlIncludes.size(); ++i)
+                out << "\n    " << xmlIncludes[i];
+            out << ")" << Endl;
+
             for (int i = 0; i < conditions.size(); ++i)
             {
                 out << "if(" << conditions[i] << ")" << Endl;
-                out << "    set(" << name << "_INCLUDES " << incs[i] << ")" << Endl;
+                out << "    list(APPEND " << name << "_INCLUDES " << incs[i] << ")" << Endl;
                 out << "endif()" << Endl;
             }
-            return true;
         }
-        return false;
+        return hasIncludes;
     }
 
     bool WriteCMake_PluginConditionalDefinitions(QTextStream &out)
     {
-        QStringList conditions, defs;
-        if(GetCondition("Definitions:", conditions, defs))
+        QStringList conditions, cdefs;
+        bool hasDefines = !defs.empty();
+        if(!defs.empty())
         {
             out << Endl;
-            out << "set(" << name << "_DEFINES)" << Endl;
+            out << "set(" << name << "_DEFINES " << ToString(defs) << ")" << Endl;
+        }
+        if(GetCondition("Definitions:", conditions, cdefs))
+        {
+            if(defs.empty())
+            {
+                out << Endl;
+                out << "set(" << name << "_DEFINES)" << Endl;
+            }
             for (int i = 0; i < conditions.size(); ++i)
             {
                 out << "if(" << conditions[i] << ")" << Endl;
-                out << "    list(APPEND " << name << "_DEFINES " << defs[i];
+                out << "    list(APPEND " << name << "_DEFINES " << cdefs[i];
                 out << ")" << Endl;
                 out << "endif()" << Endl;
             }
-            return true;
+            hasDefines = true;
         }
-        return false;
+        return hasDefines;
     }
 
     void WriteCMake_PluginVerbatim(QTextStream &out, QString prepost)
@@ -752,7 +752,7 @@ class CMakeGeneratorPlugin : public Plugin
             {
                 out << Endl;
                 out << "\n" << logic[0] << Endl;
-                out << Endl;
+                //out << Endl;
             }
         }
     }
@@ -815,234 +815,54 @@ class CMakeGeneratorPlugin : public Plugin
 
         WriteCMake_PluginVerbatim(out, "Post");
     }
-
-    void WriteCMake_Database(QTextStream &out)
+    void WriteCMake_DatabasePlugin(QTextStream &out)
     {
         bool useFortran = false;
 
-        out << "PROJECT("<<name<<"_database)" << Endl;
+        WriteCMake_PluginVerbatim(out, "Pre");
+        bool hasDefines = WriteCMake_PluginConditionalDefinitions(out);
+        bool hasIncludes = WriteCMake_PluginConditionalIncludes(out);
+        bool hasMLibs  = WriteCMake_PluginConditionalLibs(out, "M");
+        bool hasELibs  = WriteCMake_PluginConditionalLibs(out, "E");
         out << Endl;
-        if (using_dev)
+
+        out << "visit_add_database_plugin(" << Endl;
+        out << "    DNAME      " << name;
+
+        if (custommfiles)
         {
-        out << "ADD_DATABASE_CODE_GEN_TARGETS(" << name ;
-        if(skipInfoGen)
-            out << " SKIP_INFO";
+            WriteCMake_PluginSources(out, "M", mfiles);
+        }
+        if (customefiles)
+        {
+            WriteCMake_PluginSources(out, "E", efiles);
+        }
+
+        if(hasDefines)
+        {
+            out << "\n    DEFINES    ${" << name << "_DEFINES}";
+        }
+        if(hasIncludes)
+        {
+            out << "\n    INCLUDES   ${" << name << "_INCLUDES}";
+        }
+        if(!libs.empty())
+        {
+            out << "\n    LIBS       " << libs[0] ;
+            for(size_t i = 1; i < libs.size(); ++i)
+                out << Endl << "               " << libs[i];
+        }
+
+        // mdserver libs
+        WriteCMake_PluginLibs(out, "M", mlibs, hasMLibs);
+
+        // engine libs
+        WriteCMake_PluginLibs(out, "ESER", elibsSer, hasELibs);
+        WriteCMake_PluginLibs(out, "EPAR", elibsPar, hasELibs);
+
         out << ")" << Endl;
-        out << Endl;
-        }
-        out << "SET(COMMON_SOURCES" << Endl;
-        out << ""<<name<<"PluginInfo.C" << Endl;
-        out << ""<<name<<"CommonPluginInfo.C" << Endl;
-        out << ")" << Endl;
-        out << Endl;
-        out << "SET(LIBI_SOURCES" << Endl;
-        out << ""<<name<<"PluginInfo.C" << Endl;
-        out << ")" << Endl;
-        out << Endl;
-        WriteCMake_ConditionalSources(out, "I", "");
-        if(!onlyEnginePlugin)
-        {
-            out << "SET(LIBM_SOURCES" << Endl;
-            out << ""<<name<<"MDServerPluginInfo.C" << Endl;
-            out << "${COMMON_SOURCES}" << Endl;
-            if (custommfiles)
-            {
-                useFortran |= CustomFilesUseFortran(mfiles);
-                for (size_t i=0; i<mfiles.size(); i++)
-                    out << mfiles[i] << Endl;
-            }
-            else
-                for (size_t i=0; i<defaultmfiles.size(); i++)
-                    out << defaultmfiles[i] << Endl;
-            out << ")" << Endl;
-            WriteCMake_ConditionalSources(out, "M", "");
-            if (customwmfiles)
-            {
-                useFortran |= CustomFilesUseFortran(wmfiles);
-                out << "IF(WIN32)" << Endl;
-                out << "    SET(LIBM_WIN32_SOURCES" << Endl;
-                for (size_t i=0; i<wmfiles.size(); i++)
-                    out << "    " << wmfiles[i] << Endl;
-                out << "    )" << Endl;
-                for (size_t i=0; i<wmfiles.size(); i++)
-                {
-                    if(wmfiles[i].endsWith(".c"))
-                    {
-                        out << "    SET_SOURCE_FILES_PROPERTIES("
-                            << wmfiles[i] << Endl;
-                        out << "        PROPERTIES LANGUAGE CXX)" << Endl;
-                    }
-                }
-                out << "ENDIF(WIN32)" << Endl;
-            }
-            out << Endl;
-        }
-        if(!noEnginePlugin)
-        {
-            out << "SET(LIBE_SOURCES" << Endl;
-            out <<name<<"EnginePluginInfo.C" << Endl;
-            out << "${COMMON_SOURCES}" << Endl;
-            if (customefiles)
-            {
-                useFortran |= CustomFilesUseFortran(efiles);
-                for (size_t i=0; i<efiles.size(); i++)
-                    out << efiles[i] << Endl;
-            }
-            else
-                for (size_t i=0; i<defaultefiles.size(); i++)
-                    out << defaultefiles[i] << Endl;
-            out << ")" << Endl;
-            WriteCMake_ConditionalSources(out, "E", "");
-            if (customwefiles)
-            {
-                useFortran |= CustomFilesUseFortran(wefiles);
-                out << "IF(WIN32)" << Endl;
-                out << "    SET(LIBE_WIN32_SOURCES" << Endl;
-                for (size_t i=0; i<wefiles.size(); i++)
-                    out << "    " << wefiles[i] << Endl;
-                out << "    )" << Endl;
-                for (size_t i=0; i<wefiles.size(); i++)
-                {
-                    if(wefiles[i].endsWith(".c"))
-                    {
-                        out << "    SET_SOURCE_FILES_PROPERTIES("
-                            << wefiles[i] << Endl;
-                        out << "        PROPERTIES LANGUAGE CXX)" << Endl;
-                    }
-                }
-                out << "ENDIF(WIN32)" << Endl;
-            }
-            out << Endl;
-        }
 
-        // take any ${} from the CXXFLAGS to mean a variable that contains
-        // include directories.
-        std::vector<QString> extraIncludes;
-        for (size_t i=0; i<cxxflags.size(); i++)
-        {
-            if(cxxflags[i].startsWith("${"))
-                 extraIncludes.push_back(ConvertToProperVisItIncludeDir(cxxflags[i]));
-            else if(cxxflags[i].startsWith("$("))
-                 extraIncludes.push_back(ConvertToProperVisItIncludeDir(ConvertDollarParenthesis(cxxflags[i])));
-            else if(cxxflags[i].startsWith("-I"))
-                 extraIncludes.push_back(ConvertToProperVisItIncludeDir(cxxflags[i].right(cxxflags[i].size()-2)));
-        }
-        out << "INCLUDE_DIRECTORIES(" << Endl;
-        out << "${CMAKE_CURRENT_SOURCE_DIR}" << Endl;
-        if(extraIncludes.size() > 0)
-            out << ToString(extraIncludes, true) ;
-        out << "${VISIT_DATABASE_INCLUDES}" << Endl;
-        out << ")" << Endl;
-        out << Endl;
-
-        WriteCMake_ConditionalIncludes(out);
-
-        // Pass other CXXFLAGS
-        for (size_t i=0; i<cxxflags.size(); i++)
-        {
-            if(!cxxflags[i].startsWith("${") &&
-               !cxxflags[i].startsWith("$(") &&
-               !cxxflags[i].startsWith("-I"))
-                 out << "ADD_DEFINITIONS(" << cxxflags[i] << ")" << Endl;
-        }
-
-        // Pass defines
-        for (size_t i=0; i<defs.size(); i++)
-        {
-            out << "ADD_DEFINITIONS(" << defs[i] << ")" << Endl;
-        }
-        if (!defs.empty())
-            out << Endl;
-
-        // Pass Win32-only defines
-        if (!windefs.empty())
-        {
-            out << "if(WIN32)" << Endl;
-            for (size_t i=0; i<windefs.size(); i++)
-            {
-                out << "    add_compile_definitions(" << windefs[i] << ")" << Endl;
-            }
-            out << "endif()"<< Endl;
-            out << Endl;
-        }
-
-        WriteCMake_ConditionalDefinitions(out);
-
-        if (!vtk9_libs.empty())
-        {
-            out << "set(vtk_libs " << ToString(vtk9_libs) << ")" << Endl;
-        }
-
-        if(useFortran)
-        {
-            out << "ENABLE_LANGUAGE(Fortran)" << Endl;
-            out << Endl;
-        }
-
-        // Extract extra link directories from LDFLAGS if they have ${},$(),-L
-        std::vector<QString> linkDirs;
-        linkDirs.push_back("${VISIT_LIBRARY_DIR}");
-        for (size_t i=0; i<ldflags.size(); i++)
-        {
-            if(ldflags[i].startsWith("${") || ldflags[i].startsWith("$("))
-                 linkDirs.push_back(ldflags[i]);
-            else if(ldflags[i].startsWith("-L"))
-                 linkDirs.push_back(ldflags[i].right(ldflags[i].size()-2));
-        }
-        out << "LINK_DIRECTORIES(" << ToString(linkDirs) << ")" << Endl;
-        out << Endl;
-        out << "ADD_LIBRARY(I"<<name<<"Database ${LIBI_SOURCES})" << Endl;
-        out << "TARGET_LINK_LIBRARIES(I"<<name<<"Database visitcommon)" << Endl;
-        WriteCMake_ConditionalTargetLinks(out, name, "I", "Database", "");
-        out << "SET(INSTALLTARGETS I"<<name<<"Database)" << Endl;
-        out << Endl;
-        if(!onlyEnginePlugin)
-        {
-            out << "IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)" << Endl;
-
-            out << "    ADD_LIBRARY(M"<<name<<"Database ${LIBM_SOURCES}";
-            if (customwmfiles)
-                out << "     ${LIBM_WIN32_SOURCES}";
-            out << ")" << Endl;
-            if(!mdefs.empty())
-            {
-                CMakeWrite_TargetDefines(out, "    ", "M", "", mdefs);
-            }
-            if(!mcxxflags.empty())
-            {
-                CMakeWrite_TargetIncludes(out, "    ", "M", "", mcxxflags);
-            }
-            if(!mldflags.empty())
-            {
-                CMakeWrite_TargetLinkDirs(out, "    ", "M", "", mldflags);
-            }
-            if (!vtk9_mlibs.empty())
-            {
-                out << "    set(vtk_mlibs " << ToString(vtk9_mlibs) << ")" << Endl;
-            }
-            out << "    TARGET_LINK_LIBRARIES(M"<<name<<"Database visitcommon avtdbatts avtdatabase_ser " << ToString(libs) << ToString(mlibs);
-            if (!vtk9_libs.empty())
-                out << "${vtk_libs} ";
-            if (!vtk9_mlibs.empty())
-                out << "${vtk_mlibs} ";
-            out << ")" << Endl;
-            WriteCMake_ConditionalTargetLinks(out, name, "M", "Database", "    ");
-            out << "    ADD_TARGET_DEFINITIONS(M"<<name<<"Database MDSERVER)" << Endl;
-            out << "    SET(INSTALLTARGETS ${INSTALLTARGETS} M"<<name<<"Database)" << Endl;
-            out << "ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)" << Endl;
-            out << Endl;
-        }
-        if(!noEnginePlugin)
-        {
-            CMakeAdd_EngineTargets(out);
-        }
-        out << "VISIT_INSTALL_DATABASE_PLUGINS(${INSTALLTARGETS})" << Endl;
-        if (using_dev)
-        {
-          out << "VISIT_PLUGIN_TARGET_OUTPUT_DIR(databases ${INSTALLTARGETS})" << Endl;
-          out << "VISIT_PLUGIN_TARGET_FOLDER(databases " << name
-              << " ${INSTALLTARGETS})" << Endl;
-        }
+        WriteCMake_PluginVerbatim(out, "Post");
         out << Endl;
     }
 
@@ -1141,7 +961,7 @@ class CMakeGeneratorPlugin : public Plugin
         }
 #endif
         if(type == "database")
-            WriteCMake_Database(out);
+            WriteCMake_DatabasePlugin(out);
         else
             WriteCMake_PlotOperator(out, guilibname, viewerlibname);
 
