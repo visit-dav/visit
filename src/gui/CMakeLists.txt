@@ -50,6 +50,9 @@
 #   even if QWT isn't found. This will preserve the ability for simulations
 #   to use the StripChart callbacks and not crash.
 #
+#   Kevin Griffin, Wed 05 Mar 2025 03:46:12 PM CST
+#   Added anari/AnariRenderingWidget
+#
 #****************************************************************************
 
 SET(GUILIB_SOURCES
@@ -216,6 +219,11 @@ WidgetDataNode.C
 mini3D.C
 )
 
+if(VISIT_ANARI)
+    list(APPEND GUILIB_SOURCES
+            anari/AnariRenderingWidget.C)
+endif(VISIT_ANARI)
+
 if(QWT_FOUND)
     list(APPEND GUILIB_SOURCES
         QvisStripChart.C)
@@ -228,6 +236,7 @@ ENDIF (NOT WIN32)
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
+${CMAKE_CURRENT_SOURCE_DIR}/anari
 ${VISIT_COMMON_INCLUDES}
 ${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
 ${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
@@ -242,21 +251,21 @@ ${VISIT_SOURCE_DIR}/third_party_builtin
 
 SET(GUI_QT_LIBS
 ${QT_QTUITOOLS_LIBRARY}
-${QT_QTOPENGL_LIBRARY} 
-${QT_QTGUI_LIBRARY} 
-${QT_QTNETWORK_LIBRARY} 
-${QT_QTXML_LIBRARY} 
+${QT_QTOPENGL_LIBRARY}
+${QT_QTGUI_LIBRARY}
+${QT_QTNETWORK_LIBRARY}
+${QT_QTXML_LIBRARY}
 ${QT_QTCORE_LIBRARY}
 ${QT_QTPRINTSUPPORT_LIBRARY}
 )
 IF(VISIT_STATIC)
     SET(GUI_QT_LIBS
         ${GUI_QT_LIBS}
-        ${QT_QTCORE_LIB_DEPENDENCIES} 
-        ${QT_QTGUI_LIB_DEPENDENCIES} 
-        ${QT_QTOPENGL_LIB_DEPENDENCIES} 
-        ${QT_QTNETWORK_LIB_DEPENDENCIES} 
-        ${QT_QTXML_LIB_DEPENDENCIES} 
+        ${QT_QTCORE_LIB_DEPENDENCIES}
+        ${QT_QTGUI_LIB_DEPENDENCIES}
+        ${QT_QTOPENGL_LIB_DEPENDENCIES}
+        ${QT_QTNETWORK_LIB_DEPENDENCIES}
+        ${QT_QTXML_LIB_DEPENDENCIES}
         ${QT_QTUITOOLS_LIB_DEPENDENCIES}
     )
 ENDIF(VISIT_STATIC)
@@ -277,7 +286,7 @@ IF (WIN32)
     endif()
 ENDIF (WIN32)
 
-TARGET_LINK_LIBRARIES(gui 
+TARGET_LINK_LIBRARIES(gui
 viewerrpc
 viewerproxy
 visitcommon
@@ -286,6 +295,7 @@ mdserverproxy
 avtdbatts
 winutil
 ${GUI_QT_LIBS}
+$<$<BOOL:${VISIT_ANARI}>:anari::anari>
 )
 
 if(QWT_FOUND)
@@ -295,7 +305,7 @@ if(QWT_FOUND)
 endif()
 
 IF(APPLE)
-    SET_TARGET_PROPERTIES(gui 
+    SET_TARGET_PROPERTIES(gui
         PROPERTIES
         LINK_FLAGS "-framework Carbon"
     )
