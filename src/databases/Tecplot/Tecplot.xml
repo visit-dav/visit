@@ -5,17 +5,8 @@
       *.plt
       *.tec
     </FilePatterns>
-    <Files components="M">
-      avtTecplotOptions.C
-      avtTecplotFileFormat.C
+    <Files components="M,E">
       avtTecplotBinaryFileFormat.C
-      TecplotFile.C
-    </Files>
-    <Files components="E">
-      avtTecplotOptions.C
-      avtTecplotFileFormat.C
-      avtTecplotBinaryFileFormat.C
-      avtTecplotWriter.C
       TecplotFile.C
     </Files>
     <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="" codefile="Tecplot.code">

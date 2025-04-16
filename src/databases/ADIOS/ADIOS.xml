@@ -6,8 +6,7 @@
     <LIBS>
       vtkFiltersHybrid
     </LIBS>
-    <Files components="M">
-      avtADIOSFileFormat.C
+    <Files components="M,E">
       avtADIOSBasicFileFormat.C
       avtXGCFileFormat.C
       avtSpecFEMFileFormat.C
@@ -16,20 +15,7 @@
       avtPIConGPUFileFormat.C
       ADIOSFileObject.C
     </Files>
-    <LIBS components="M">
-      adios
-    </LIBS>
-    <Files components="E">
-      avtADIOSFileFormat.C
-      avtADIOSBasicFileFormat.C
-      avtXGCFileFormat.C
-      avtSpecFEMFileFormat.C
-      avtADIOSSchemaFileFormat.C
-      avtLAMMPSFileFormat.C
-      avtPIConGPUFileFormat.C
-      ADIOSFileObject.C
-    </Files>
-    <LIBS components="ESer">
+    <LIBS components="M,ESer">
       adios
     </LIBS>
     <LIBS components="EPar">

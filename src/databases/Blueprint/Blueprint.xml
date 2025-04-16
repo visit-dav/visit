@@ -15,16 +15,8 @@
       *.blueprint_root_hdf5
       *.root
     </FilePatterns>
-    <Files components="M">
-      avtBlueprintFileFormat.C
+    <Files components="M,E">
       avtBlueprintTreeCache.C
-      avtBlueprintOptions.C
-    </Files>
-    <Files components="E">
-      avtBlueprintFileFormat.C
-      avtBlueprintTreeCache.C
-      avtBlueprintWriter.C
-      avtBlueprintOptions.C
     </Files>
     <LIBS components="EPar">
       conduit_mpi

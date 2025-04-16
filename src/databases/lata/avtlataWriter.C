@@ -48,23 +48,11 @@ avtlataWriter::avtlataWriter(void)
 // ****************************************************************************
 
 
-#include <DBPluginInfoAttributes.h>
-#include <ViewerProxy.h>
 void
 avtlataWriter::OpenFile(const string &stemname)
 {
     stem = stemname;
     cout<<"\n openfile  "<<__FILE__<<" "<<stem<<endl;
-    /*
-    DBPluginInfoAttributes *dbplugininfo =
-      GetViewerState()->GetDBPluginInfoAttributes();
-   
-    const stringVector &types = dbplugininfo->GetTypes();
-    for (int i = 0 ; i < types.size() ; i++)
-    {
-      cout<<types[i]<<endl;
-    }
-    */
 }
 
 void
@@ -149,27 +137,11 @@ void avtlataWriter::write_data(vtkDataArray *arr,const string& pos, string& file
       EXCEPTION0(ImproperUseException);
     }
 }
+
 void
 avtlataWriter::WriteChunk(vtkDataSet *ds, int chunk)
 {
-  /*  
-  vtkUnstructuredGrid* ug;
-  switch (ds->GetDataObjectType())
-    {
-    case VTK_UNSTRUCTURED_GRID:
-      ug=(vtkUnstructuredGrid *) ds;
-      cout<<ug->GetName()<<endl;
-      cout<<ug->GetMeshName()<<endl;
-      break;
-    default:
-      EXCEPTION0(ImproperUseException);
-    }
-  
-  cout<<ds->GetName()<<endl;
-  cout<<ds->GetMeshName()<<endl;
-  */
-
-   vtkPointData* pd=ds->GetPointData();
+  vtkPointData* pd=ds->GetPointData();
   vtkCellData* cd=ds->GetCellData();
   int cpt=0;
   for (int i = 0 ; i < cd->GetNumberOfArrays() ; i++)
@@ -186,23 +158,6 @@ avtlataWriter::WriteChunk(vtkDataSet *ds, int chunk)
       write_data(arr,string(".SOM."),filename);
       filenames_var[cpt++]=filename;
     }
-
-  /*
- cout<<ds->GetNumberOfPoints()<<endl;
-  cout<<ds->GetNumberOfCells()<<endl;
-  vtkCellData* data=ds->GetCellData();
-  cout<<data->GetNumberOfTuples()<<endl;
-  vtkPointData* datas=ds->GetPointData();
-  cout<<datas->GetNumberOfTuples()<<endl;
-  int nval_elem=data->GetNumberOfTuples();
-  int nval_som=datas->GetNumberOfTuples();
-  vtkDataArray* datar=data->GetArray(0);
-  for( int i=0;i<12;i++)
-    cout<<"test "<<i<<" "<<(datar->GetTuple1(i))<<endl;
-  cout<<" GF pas encore code" <<endl;
-  // exit(-1);
-  */
-    // WRITE OUT THIS ONE CHUNK
 }
 
 
@@ -219,7 +174,6 @@ avtlataWriter::WriteChunk(vtkDataSet *ds, int chunk)
 void
 avtlataWriter::CloseFile(void)
 {
-    // CLOSE FILES
   cout<<stem<< " a ferme "<<endl;
   cout<<"TIME "<<ftime<<endl;
   cout<<filenames_var.size()<<endl;

@@ -7,12 +7,7 @@
       *.xmf
       *.xdmf
     </FilePatterns>
-    <Files components="M">
-      avtVisItXdmfFileFormat.C
-      XDMFParser.C
-    </Files>
-    <Files components="E">
-      avtVisItXdmfFileFormat.C
+    <Files components="M,E">
       XDMFParser.C
     </Files>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">

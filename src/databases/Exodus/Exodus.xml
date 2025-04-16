@@ -36,10 +36,6 @@
     *.exodus
     *.nemesis
     </FilePatterns>
-    <Files components="M,E">
-      avtExodusFileFormat.C
-      avtExodusOptions.C
-    </Files>
     <LIBS>
       netcdf
     </LIBS>

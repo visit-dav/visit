@@ -700,7 +700,7 @@ class CMakeGeneratorPlugin : public Plugin
         if(hasIncludes)
         {
             out << Endl;
-            out << "set(" << name << "_INCLUDES ";
+            out << "set(" << name << "_INCLUDES";
             for(int i = 0; i < xmlIncludes.size(); ++i)
                 out << "\n    " << xmlIncludes[i];
             out << ")" << Endl;

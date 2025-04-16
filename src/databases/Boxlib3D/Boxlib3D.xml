@@ -7,11 +7,7 @@
       *.boxlib3d
       Header
     </FilePatterns>
-    <Files components="M">
-      avtBoxlibFileFormat.C
-      BoxLibHelper.C
-    </Files>
-    <Files components="E">
+    <Files components="M,E">
       avtBoxlibFileFormat.C
       BoxLibHelper.C
     </Files>

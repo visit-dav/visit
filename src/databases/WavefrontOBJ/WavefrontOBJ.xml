@@ -3,16 +3,8 @@
     <FilePatterns>
       *.obj
     </FilePatterns>
-    <Files components="M">
-      avtWavefrontOBJFileFormat.C
+    <Files components="M,E">
       vtkVisItOBJReader.C
-      avtWavefrontOBJOptions.C
-    </Files>
-    <Files components="E">
-      avtWavefrontOBJFileFormat.C
-      avtWavefrontOBJWriter.C
-      vtkVisItOBJReader.C
-      avtWavefrontOBJOptions.C
     </Files>
     <LIBS components="ESer">
       avtwriter_ser

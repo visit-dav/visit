@@ -5,12 +5,7 @@
       *.mpippc
       *.mtx
     </FilePatterns>
-    <Files components="M">
-      avtMatrixMarketFileFormat.C
-      mmio.c
-    </Files>
-    <Files components="E">
-      avtMatrixMarketFileFormat.C
+    <Files components="M,E">
       mmio.c
     </Files>
     <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">

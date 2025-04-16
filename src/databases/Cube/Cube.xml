@@ -3,14 +3,7 @@
     <FilePatterns>
       *.cube
     </FilePatterns>
-    <Files components="M">
-      avtCubeOptions.C
-      avtCubeFileFormat.C
-      CubeReader.C
-    </Files>
-    <Files components="E">
-      avtCubeOptions.C  
-      avtCubeFileFormat.C
+    <Files components="M,E">
       CubeReader.C
     </Files>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">

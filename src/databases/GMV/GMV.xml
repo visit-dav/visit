@@ -8,11 +8,9 @@
       *.gmvG
     </FilePatterns>
     <Files components="M">
-      avtGMVFileFormat.C
       gmvread.c
     </Files>
     <Files components="E">
-      avtGMVFileFormat.C
       gmvMaterialEncoder.C
       gmvread.c
     </Files>

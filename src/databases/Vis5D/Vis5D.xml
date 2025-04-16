@@ -3,13 +3,7 @@
     <FilePatterns>
       *.v5d
     </FilePatterns>
-    <Files components="M">
-      avtVis5DFileFormat.C
-      v5d.C
-      binio.C
-    </Files>
-    <Files components="E">
-      avtVis5DFileFormat.C
+    <Files components="M,E">
       v5d.C
       binio.C
     </Files>

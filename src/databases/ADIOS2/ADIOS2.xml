@@ -18,7 +18,6 @@
       adios2_par
     </LIBS>
     <Files components="M,E">
-      avtADIOS2FileFormat.C
       avtMEUMMAPSFileFormat.C
       avtGTCFileFormat.C
       avtPixie3DFileFormat.C

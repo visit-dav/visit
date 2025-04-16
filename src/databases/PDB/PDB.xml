@@ -5,29 +5,13 @@
       ${VISIT_INCLUDE_DIR}/visit/third_party_builtin/bow
     </CXXFLAGS>
     <LIBS>
-      silo bow
+      pdb bow
     </LIBS>
     <FilePatterns>
       *.pdb
       *.r0000
     </FilePatterns>
-    <Files components="M">
-      avtPDBFileFormat.C
-      avtPDBOptions.C
-      MaterialEncoder.C
-      PDBFileObject.C
-      PDBReader.C
-      PF3DFileFormat.C
-      PP_ZFileReader.C
-      PP_Z_MTSD_FileFormat.C
-      LEOSFileReader.C
-      LEOSFileFormat.C
-      Streaker.C
-      JMFileFormat.C
-    </Files>
-    <Files components="E">
-      avtPDBFileFormat.C
-      avtPDBOptions.C
+    <Files components="M,E">
       MaterialEncoder.C
       PDBFileObject.C
       PDBReader.C
