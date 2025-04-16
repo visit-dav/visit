@@ -56,6 +56,7 @@ if (VISIT_MESAGL_DIR)
 
   find_library(MESAGL_LIBRARY GL  PATH ${VISIT_MESAGL_DIR}/lib NO_DEFAULT_PATH)
   if (MESAGL_LIBRARY)
+      set(VISIT_HAS_MESAGL TRUE CACHE BOOL "VisIt built with MesaGL.")
       execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory
                       ${VISIT_BINARY_DIR}/lib/mesagl
                       RESULT_VARIABLE GEN_MESAGL_DIR)

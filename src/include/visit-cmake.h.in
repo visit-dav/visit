@@ -98,9 +98,6 @@
 // Defined if VisIt built with jpeg.
 #cmakedefine VISIT_HAS_JPEG
 
-// Defined to 1 if VisIt built with the 'm' library (-lm).
-#cmakedefine VISIT_HAS_LIBM 1
-
 // Defined if VisIt built with mesagl.
 #cmakedefine VISIT_HAS_MESAGL
 
@@ -115,9 +112,6 @@
 
 // Defined if VisIt built with qwt.
 #cmakedefine VISIT_HAS_QWT
-
-// Defined if VisIt built with sphinx.
-#cmakedefine VISIT_HAS_SPHINX
 
 // Defined if VisIt built with szip.
 #cmakedefine VISIT_HAS_SZIP
