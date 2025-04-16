@@ -183,7 +183,8 @@ namespace StringHelpers
     static std::ostream NO_OSTREAM(std::cerr.rdbuf());
 
     template<typename T> T
-    inline vstrtonum(char const *numstr, int base = 10, T dfltval = 0, std::ostream& errstrm = NO_OSTREAM, char **eptr = 0)
+    inline vstrtonum(char const *numstr, char **eptr = 0,
+        int base = 10, T dfltval = 0, std::ostream& errstrm = NO_OSTREAM, unsigned long long line = 0)
     {
         char *_eptr;
         char **eptrptr = eptr==0?&_eptr:eptr;
@@ -197,7 +198,7 @@ namespace StringHelpers
             retval = dfltval;
             if (&errstrm != &NO_OSTREAM)
             {
-                errstrm << "Problem converting \"" << numstr << "\" to a number (\"" << strerror(errno_save) << "\")" << std::endl;
+                errstrm << "Can't convert \"" << numstr << "\" to a number (\"" << strerror(errno_save) << "\")" << std::endl;
             }
         }
         if (*eptrptr == numstr)
