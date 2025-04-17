@@ -65,6 +65,7 @@ if(EXISTS ${VISIT_ANARI_DIR})
 endif()
 
 if(anari_FOUND)
+    set(HAVE_LIBANARI true)
     add_definitions(-DHAVE_ANARI)
 
     # Install Headers

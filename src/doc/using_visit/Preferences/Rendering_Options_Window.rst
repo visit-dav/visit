@@ -169,9 +169,8 @@ ANARI Rendering
 
     ANARI rendering options
 
-If VisIt_ is built with `ANARI <https://www.khronos.org/api/index_2017/anari/>`_ support by using the ``--anari`` option
-when building from source, the **ANARI rendering** section will appear in the **Rendering options** window under
-the **Advanced** tab. Once **Anari Rendering** is enabled, all surface rendering will be done using ANARI.
+If VisIt_ is built with `ANARI <https://www.khronos.org/api/index_2017/anari/>`_ support by using the ``--anari`` option when building from source, the **ANARI rendering** section will appear in the **Rendering options** window under the **Advanced** tab.
+Once **Anari Rendering** is enabled, all surface rendering will be done using ANARI.
 This section contains options for controlling the ANARI rendering system.
 
 Back-end
@@ -179,35 +178,34 @@ Back-end
 
 This option allows you to specify any ANARI supported back-end like `NVIDIA VisRTX <https://github.com/NVIDIA/VisRTX/>`_.
 The back-end is a library that implements the ANARI API and must be on your library path.
-You can specify **environment** if you've exported the **ANARI_LIBRARY** environment variable with the name of the
-back-end (e.g., ``export ANARI_LIBRARY=visrtx``). A list of supported back-ends and publicly available applications using ANARI
-can be found `here <https://github.com/KhronosGroup/ANARI-SDK/>`_.
+You can specify **environment** if you've exported the **ANARI_LIBRARY** environment variable with the name of theback-end (e.g., ``export ANARI_LIBRARY=visrtx``).
+A list of supported back-ends and publicly available applications using ANARI can be found `here <https://github.com/KhronosGroup/ANARI-SDK/>`_.
 
 .. note::
-    ANARI back-ends are a software construct. Because ANARI abstracts away the details of an entire rendering system, the
-    underlying hardware which a back-end may use is entirely up to the implementation. Please read your vendor's back-end
-    documentation to see what parameters are available to configure and what underlying hardware is both available and used to
-    render frames.
+    ANARI back-ends are a software construct.
+    Because ANARI abstracts away the details of an entire rendering system, the underlying hardware which a back-end may use is entirely up to the implementation.
+    Please read your vendor's back-end documentation to see what parameters are available to configure and what underlying hardware is both available and used to render frames.
 
 Back-end Subtype
 """"""""""""""""
 
-This option allows you to specify the subtype of the back-end to use if supported by the back-end. The **default** option is most
-common and supported by all of the back-ends.
+This option allows you to specify the subtype of the back-end to use if supported by the back-end.
+The **default** option is most common and supported by all of the back-ends.
 
 Renderer
 """"""""
 
-This option allows you to specify the renderer to use with the back-end. Different renderers implement different algorithms,
-extensions, and support different materials. Every ANARI back-end offers a **default** renderer. See the vendor's documentation for
-details on the available renderers and their capabilities.
+This option allows you to specify the renderer to use with the back-end.
+Different renderers implement different algorithms, extensions, and support different materials.
+Every ANARI back-end offers a **default** renderer.
+See the vendor's documentation for details on the available renderers and their capabilities.
 
 Other Options
 """""""""""""
 
-These options are specific to the **Back-end** and **Renderer** you are using and are generated at runtime. Hovering the mouse
-over the option label will show you a tooltip with more information. For more detailed information on the options, please refer to
-the vendor's documentation.
+These options are specific to the **Back-end** and **Renderer** you are using and are generated at runtime.
+Hovering the mouse over the option label will show you a tooltip with more information.
+For more detailed information on the options, please refer to the vendor's documentation.
 
 Rendering Information
 ~~~~~~~~~~~~~~~~~~~~~

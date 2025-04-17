@@ -204,6 +204,7 @@ set(VISIT_JAVA                   @VISIT_JAVA@)
 set(VISIT_SLIVR                  @VISIT_SLIVR@)
 set(HAVE_LIBOSPRAY               @HAVE_LIBOSPRAY@)
 set(HAVE_OSPRAY                  @HAVE_OSPRAY@)
+set(HAVE_LIBANARI                @HAVE_LIBANARI@)
 set(HAVE_ANARI                   @HAVE_ANARI@)
 
 # Set up VTK

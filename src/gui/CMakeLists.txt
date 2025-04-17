@@ -219,10 +219,10 @@ WidgetDataNode.C
 mini3D.C
 )
 
-if(VISIT_ANARI)
+if(HAVE_LIBANARI)
     list(APPEND GUILIB_SOURCES
             anari/AnariRenderingWidget.C)
-endif(VISIT_ANARI)
+endif(HAVE_LIBANARI)
 
 if(QWT_FOUND)
     list(APPEND GUILIB_SOURCES
@@ -295,7 +295,7 @@ mdserverproxy
 avtdbatts
 winutil
 ${GUI_QT_LIBS}
-$<$<BOOL:${VISIT_ANARI}>:anari::anari>
+$<$<BOOL:${HAVE_LIBANARI}>:anari::anari>
 )
 
 if(QWT_FOUND)
