@@ -136,7 +136,7 @@ static int degen_case(VERDICT_REAL const c[][3], int uniq[])
         return TFUNC(4, tet_coordinates);                                           \
     }
 
-/* Use in cases where there exists only all versions of the associated hex metric */
+/* Use in cases where there exists all versions of the associated hex metric */
 #define HANDLE_DGEN_ALL(TFUNC, PFUNC, WFUNC)                                       \
   int uniq[6];                                                                     \
   switch (degen_case(coordinates, uniq))                                           \
