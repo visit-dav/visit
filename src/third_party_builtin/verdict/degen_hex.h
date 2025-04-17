@@ -118,10 +118,8 @@ static int degen_case(VERDICT_REAL const c[][3], int uniq[])
             uniq[3] = 4; uniq[4] = 5; uniq[5] = 6;
             return 6; /* Degen wedge */
         }
-        else
-            return 8; /* FUNKY, but treat as hex */
     }
-    return 8;
+    return 8; /* Just treat everything else as a hex, as it originally would have */
 }
 
 /* Use in cases where there exists only a tet-version of the associated hex metric */
