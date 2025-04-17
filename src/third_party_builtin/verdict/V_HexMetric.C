@@ -589,7 +589,7 @@ VerdictVector calc_hex_efg( int efg_index, VerdictVector coordinates[8])
 */
 C_FUNC_DEF VERDICT_REAL v_hex_aspect (int /*num_nodes*/, VERDICT_REAL coordinates[][3])
 {
-  HANDLE_DGEN_TET(v_tet_aspect_beta);
+  HANDLE_DGEN_TET(v_tet_aspect_beta); /* tet_aspect_beta is most like hex_aspect */
 
   double aspect;
   VerdictVector node_pos[8];

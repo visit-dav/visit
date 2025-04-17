@@ -28,21 +28,22 @@
     Duplication patterns|    01223455      |    01234444     |      01224444
     --------------------+------------------+-----------------+---------------------
 
-    Test 7==6
+    Let c(i) be coordinate of node local index i, T/F = true/false result of test
+    Test c(7)==c(6)
       F: VTK_HEXAHEDRON, Done (1 compare, common case)
-      T:
-        Test 6==5
-          F: Degen Wedge or FUNKY
-            Test 3==2
-              F: FUNKY, Done proceed as hex (3 compares)
-              T: Degen Wedge, Done (3 compares)
-          T: Degen Tet or Pyramid
-            Test 5==4
-              F: FUNKY, Done proceed as hex (3 compares)
+      T: Could be a degenerate case
+        Test c(6)==c(5)
+          F: Could be degen Wedge or FUNKY
+            Test c(3)==c(2)
+              F: FUNKY but proceed as hex, done (3 compares)
+              T: Degen Wedge, done (3 compares)
+          T: Could be degen Tet, Pyramid or FUNKY
+            Test c(5)==c(4)
+              F: FUNKY but proceed as hex, done (3 compares)
               T: Degen Tet or Pyramid
-                Test 3==2
-                  T: Degen Tet, Done (4 compares)
-                  F: Degen Pyramid, Done (4 compares)
+                Test c(3)==c(2)
+                  T: Degen Tet, done (4 compares)
+                  F: Degen Pyramid, done (4 compares)
 
    There are many ways to construct degenerate tets, pyramids and wedges in a hex.
    Those supported here are constructed, reasonably, by collapsing the highest numbered
