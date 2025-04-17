@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define DATABASECORRELATION_NMETH 23
+#define DATABASECORRELATION_NMETH 32
 void VISITPY_API           PyDatabaseCorrelation_StartUp(DatabaseCorrelation *subj, void *data);
 void VISITPY_API           PyDatabaseCorrelation_CloseDown();
 VISITPY_API PyMethodDef *  PyDatabaseCorrelation_GetMethodTable(int *nMethods);
@@ -23,9 +23,9 @@ VISITPY_API PyObject *     PyDatabaseCorrelation_Wrap(const DatabaseCorrelation 
 void VISITPY_API           PyDatabaseCorrelation_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyDatabaseCorrelation_SetDefaults(const DatabaseCorrelation *atts);
 std::string VISITPY_API    PyDatabaseCorrelation_GetLogString();
-std::string VISITPY_API    PyDatabaseCorrelation_ToString(const DatabaseCorrelation *, const char *);
-VISITPY_API PyObject *     PyDatabaseCorrelation_getattr(PyObject *self, char *name);
-int VISITPY_API            PyDatabaseCorrelation_setattr(PyObject *self, char *name, PyObject *args);
+std::string VISITPY_API    PyDatabaseCorrelation_ToString(const DatabaseCorrelation *, const char *, const bool=false);
+VISITPY_API PyObject *     PyDatabaseCorrelation_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyDatabaseCorrelation_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyDatabaseCorrelation_methods[DATABASECORRELATION_NMETH];
 
 #endif
