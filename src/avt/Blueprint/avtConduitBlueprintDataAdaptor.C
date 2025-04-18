@@ -97,8 +97,8 @@ ElementShapeNameToVTKCellType(const std::string &shape_name)
     if (shape_name == "tet")     return VTK_TETRA;
     if (shape_name == "wedge")   return VTK_WEDGE;
     if (shape_name == "pyramid") return VTK_PYRAMID;
-    if (shape_name == "polygon") return VTK_POLYGON;
-    if (shape_name == "polyhedron") return VTK_POLYHEDRON;
+    if (shape_name == "polygonal") return VTK_POLYGON;
+    if (shape_name == "polyhedal") return VTK_POLYHEDRON;
     AVT_CONDUIT_BP_WARNING("Unsupported Element Shape: " << shape_name);
     return 0;
 }
@@ -111,26 +111,29 @@ VTKCellTypeSize(int cell_type)
     if (cell_type == VTK_LINE)       return 2;
     if (cell_type == VTK_TRIANGLE)   return 3;
     if (cell_type == VTK_QUAD)       return 4;
-    if (cell_type == VTK_HEXAHEDRON) return 8;
     if (cell_type == VTK_TETRA)      return 4;
     if (cell_type == VTK_WEDGE)      return 6;
     if (cell_type == VTK_PYRAMID)    return 5;
+    if (cell_type == VTK_HEXAHEDRON) return 8;
+
     return 0;
 }
 
 // ****************************************************************************
-std::string
-VTKCellTypeToElementShapeName(const int vtk_cell_type)
+static std::string
+VTKCellTypeToElementShapeName(int vtk_cell_type)
 {
     if (vtk_cell_type == VTK_VERTEX)     return "point";
     if (vtk_cell_type == VTK_LINE)       return "line";
     if (vtk_cell_type == VTK_TRIANGLE)   return "tri";
     if (vtk_cell_type == VTK_QUAD)       return "quad";
+    if (vtk_cell_type == VTK_POLYGON)    return "polygonal";
     if (vtk_cell_type == VTK_HEXAHEDRON) return "hex";
     if (vtk_cell_type == VTK_VOXEL)      return "hex";
     if (vtk_cell_type == VTK_TETRA)      return "tet";
     if (vtk_cell_type == VTK_WEDGE)      return "wedge";
     if (vtk_cell_type == VTK_PYRAMID)    return "pyramid";
+    if (vtk_cell_type == VTK_POLYHEDRON) return "polyhedral";
 
     AVT_CONDUIT_BP_WARNING("Unsupported vtkCellType : " << vtk_cell_type);
     return "";
@@ -1622,9 +1625,7 @@ debug4 << "UnstructuredTopologyToVTKUnstructuredGrid: start" << std::endl;
         }
     }
     // polytopal mixed case
-    else if (element_shape == "mixed" &&
-             (n_topo.has_child("subelements") || 
-             n_topo.has_path("elements/shape_map/polygonal")))
+    else if (element_shape == "mixed" && n_topo.has_child("subelements"))
     {
             // either we are making a polyhedral mesh or a polygonal mesh
             const bool mesh_is_polyhedral = n_topo.has_child("subelements");
