@@ -32,6 +32,8 @@
     <Field name="windowValid" label="windowValid" type="bool">
       false
     </Field>
+    <Function name="SetViewportCoords" user="false" member="true">
+    </Function>
     <Function name="GetUseFullFrame" user="true" member="true">
     </Function>
     <Function name="SetUseFullFrame" user="true" member="true">
