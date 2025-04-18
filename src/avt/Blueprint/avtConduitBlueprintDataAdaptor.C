@@ -1302,7 +1302,7 @@ avtConduitBlueprintDataAdaptor::BlueprintToVTK::CreateMixedMeshFromSideAndMixedM
     {
         const Node &shape_map_entry = shape_map_itr.next();
         const std::string shape_name = shape_map_itr.name();
-        const int shape_value = shape_map_entry.as_int();
+        const int shape_value = shape_map_entry.to_int();
 
         if (mesh_is_polyhedral)
         {
