@@ -165,31 +165,47 @@ namespace StringHelpers
     //
     //  Mark C. Miller, Wed Jan 10 17:10:21 PST 2024
     // ****************************************************************************
-    template<typename T> inline T _vstrtonum(char const *numstr, char **eptr, int /* unused */) { return static_cast<T>(strtold(numstr, eptr)); }
 
-    // Specialize int/long cases to use int conversion strtol which with base of 0 can handle octal and hex also
-    template<> inline int _vstrtonum<int>(char const *numstr, char **eptr, int base) { return static_cast<int>(strtol(numstr, eptr, base)); }
-    template<> inline long _vstrtonum<long>(char const *numstr, char **eptr, int base) { return static_cast<long>(strtol(numstr, eptr, base)); }
-    template<> inline long long _vstrtonum<long long>(char const *numstr, char **eptr, int base) { return static_cast<long long>(strtoll(numstr, eptr, base)); }
-
-    // Specialize unsigned cases to use unsigned conversion strtoul and error checking passing negated arg
-    // Note that size_t almost certainly an alias to one of these types and so we should not have to
+    //
+    // Integer types
+    //
+    // Instantiate specializations for int/long cases using strtol and friends which with base of 0 can handle octal and hex also
+    #define _VSTRTONUMI(T,F) template<> inline T _vstrtonum<T>(char const *numstr, char **eptr, int base) { return static_cast<T>(F(numstr, eptr, base)); }
+    _VSTRTONUMI(int,std::strtol)
+    _VSTRTONUMI(long,std::strtol)
+    _VSTRTONUMI(long long,std::strtoll)
+    #undef _VSTRTONUMI
+ 
+    //
+    // Unsigned types
+    //
+    // Instantiate specializations for unsigned cases using strtoul and friends and error checking passing negated arg
+    // Note that size_t is almost certainly an alias to one of these types and so we should not have to
     // explicitly handle it here but any caller can still use it as in vstrtonum<size_t>().
-    template<> inline unsigned int _vstrtonum<unsigned int>(char const *numstr, char **eptr, int base) { char const *s=numstr; while (isspace(*s)) s++; unsigned int retval = static_cast<unsigned int>(strtoul(numstr, eptr, base)); if (*s=='-') errno = EDOM; return retval;}
-    template<> inline unsigned long _vstrtonum<unsigned long>(char const *numstr, char **eptr, int base) { char const *s=numstr; while (isspace(*s)) s++; unsigned long retval = static_cast<unsigned long>(strtoul(numstr, eptr, base)); if (*s=='-') errno = EDOM; return retval;}
-    template<> inline unsigned long long _vstrtonum<unsigned long long>(char const *numstr, char **eptr, int base) { char const *s=numstr; while (isspace(*s)) s++; unsigned long long retval = static_cast<unsigned long long>(strtoull(numstr, eptr, base)); if (*s=='-') errno = EDOM; return retval;}
+    #define _VSTRTONUMU(T,F) template<> inline T _vstrtonum<T>(char const *numstr, char **eptr, int base) { char const *s=numstr; while (isspace(*s)) s++; T retval = static_cast<T>(F(numstr, eptr, base)); if (*s=='-') errno = EDOM; return retval;}
+    _VSTRTONUMU(unsigned int,std::strtoul)
+    _VSTRTONUMU(unsigned long,std::strtoul)
+    _VSTRTONUMU(unsigned long long,std::strtoull)
+    #undef _VSTRTONUMU
+
+    //
+    // Catch-all type
+    //
+    // Instatiate a catch-all case for any types we hadn't planned ahead for.
+    // This uses long double conversion to minimize chances of losing precision but is also likely extremely slow.
+    template<typename T> inline T _vstrtonum(char const *numstr, char **eptr, int /* unused */) { return static_cast<T>(strtold(numstr, eptr)); }
 
     // dummy ostream for default (no ostream) cases 
     static std::ostream NO_OSTREAM(std::cerr.rdbuf());
 
     template<typename T> T
     inline vstrtonum(char const *numstr, char **eptr = 0,
-        int base = 10, T dfltval = 0, std::ostream& errstrm = NO_OSTREAM, unsigned long long line = 0)
+        int base = 10, T dfltval = 0, std::ostream& errstrm = NO_OSTREAM, size_t lno = 0)
     {
-        char *_eptr;
-        char **eptrptr = eptr==0?&_eptr:eptr;
+        char *_eptr = 0;
+        char **_eptrptr = eptr==0?&_eptr:eptr;
         errno = 0;
-        T retval = _vstrtonum<T>(numstr, eptrptr, base);
+        T retval = _vstrtonum<T>(numstr, _eptrptr, base);
         int errno_save = errno;
     
         // emit possible error messages
