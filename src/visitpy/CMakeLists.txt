@@ -63,6 +63,10 @@
 #  Make visitmodule depend on visitmodule_py_setup, so it will be built after
 #  the python module. Prevents pip install from deleting visitmodule.so
 #
+#  Kathleen Biagas, Thu Apr 17, 2025
+#  Remove DatabaseCorrelation, View2DAttributes, View3DAttributes from
+#  code-gen skipping. All customizations are in the .code files now.
+#
 #****************************************************************************
 
 #########################################################
@@ -90,11 +94,6 @@
 
 #####################
 # Metadata Objects
-#####################
-
-
-#####################
-# Metadata Objects that we can't Code-Gen, or have customizations:
 #####################
 
 SET(PY_GEN_METADATA_OBJECTS
@@ -125,9 +124,6 @@ SET(PY_GEN_METADATA_OBJECTS
 #####################
 # State Objects that we can't Code-Gen, or have customizations:
 #####################
-# DatabaseCorrelation - NOT OK
-# View2DAttributes -- NOT OK -- need as_number worked out
-# View3DAttributes -- NOT OK -- need as_number worked out
 
 SET(PY_GEN_STATE_OBJECTS
     AnimationAttributes
@@ -144,7 +140,7 @@ SET(PY_GEN_STATE_OBJECTS
     ColorControlPointList
     ColorTableAttributes 
     ConstructDataBinningAttributes
-    # DatabaseCorrelation # (see above note)
+    DatabaseCorrelation
     DBOptionsAttributes
     EngineProperties
     ExportDBAttributes
@@ -181,8 +177,8 @@ SET(PY_GEN_STATE_OBJECTS
     SelectionVariableSummary
     SelectionList
     ThresholdOpAttributes
-    #View2DAttributes # (see above note)
-    #View3DAttributes # (see above note)
+    View2DAttributes
+    View3DAttributes
     ViewAttributes
     AxisTitles
     ViewAxisArrayAttributes

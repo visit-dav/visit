@@ -35,7 +35,7 @@
             <lib name="mili"/>
             <lib name="moab"/>
             <lib name="mpich"/>
-            <lib name="nektarpp"/>
+            <!--lib name="nektarpp"/ -->
             <lib name="netcdf"/>
             <lib name="ninja"/>
             <lib name="openexr"/>
@@ -127,7 +127,7 @@
             <lib name="h5part"/>
             <lib name="hdf5"/>
             <lib name="netcdf"/>
-            <lib name="nektarpp"/>
+            <!-- lib name="nektarpp"/ -->
             <lib name="openexr"/>
             <lib name="pidx"/>
             <lib name="silo"/>
@@ -153,7 +153,7 @@
             <lib name="h5part"/>
             <lib name="hdf5"/>
             <lib name="netcdf"/>
-            <lib name="nektarpp"/>
+            <!-- lib name="nektarpp"/ -->
             <lib name="pidx"/>
             <lib name="silo"/>
             <lib name="szip"/>
