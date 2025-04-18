@@ -2314,7 +2314,8 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                 conduit::blueprint::mesh::utils::ShapeType shape(n_topo);
                 tdims = shape.dim;
 
-                if (shape.is_polygonal() || shape.is_polyhedral())
+                // We're not making sides for fields!
+                if (false) // shape.is_polygonal() || shape.is_polyhedral())
                 {
                     string field_name, coords_name;
                     // get name of coordset from topology

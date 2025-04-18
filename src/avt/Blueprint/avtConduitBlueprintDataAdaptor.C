@@ -1550,6 +1550,7 @@ debug4 << "UnstructuredTopologyToVTKUnstructuredGrid: start" << std::endl;
         // Cell definitions
         const auto elements_connectivity = n_topo["elements/connectivity"].as_index_t_accessor();
         const auto elements_sizes = n_topo["elements/sizes"].as_index_t_accessor();
+        const auto elements_offsets = n_topo["elements/offsets"].as_index_t_accessor();
         const auto nZones = elements_sizes.number_of_elements();
 
         // Face definitions
@@ -1558,14 +1559,14 @@ debug4 << "UnstructuredTopologyToVTKUnstructuredGrid: start" << std::endl;
         const auto subelements_offsets = n_topo["subelements/offsets"].as_index_t_accessor();
 
         // Iterate the connectivity and add zones/faces.
-        conduit::index_t elem_conn_index = 0;
         vtkNew<vtkIdList> faces;
         for(conduit::index_t zi = 0; zi < nZones; zi++)
         {
             conduit::index_t nZoneFaces = elements_sizes[zi];
+            conduit::index_t zoneOffset = elements_offsets[zi];
             for(conduit::index_t zfi = 0; zfi < nZoneFaces; zfi++)
             {
-                auto currentFaceId = elements_connectivity[elem_conn_index++];
+                auto currentFaceId = elements_connectivity[zoneOffset + zfi];
 
                 // Now, add the face to the zone.
                 auto faceSize = subelements_sizes[currentFaceId];
@@ -1586,54 +1587,37 @@ debug4 << "UnstructuredTopologyToVTKUnstructuredGrid: start" << std::endl;
         const auto emin = elements_sizes.min();
         const auto emax = elements_sizes.max();
 
-        if(emin == emax && emin == 3)
+        // Add as polygons.
+        const auto elements_connectivity = n_topo["elements/connectivity"].as_index_t_accessor();
+        const auto nZones = elements_sizes.number_of_elements();
+        vtkNew<vtkIdList> pts;
+        if(n_topo.has_path("elements/offsets"))
         {
-            // Add as triangles.
-            vtkCellArray *ca = HomogeneousShapeTopologyToVTKCellArray(n_topo, "tri", 3);
-            ugrid->SetCells(ElementShapeNameToVTKCellType("tri"), ca);
-            ca->Delete();
-        }
-        else if(emin == emax && emin == 4)
-        {
-            // Add as quads
-            vtkCellArray *ca = HomogeneousShapeTopologyToVTKCellArray(n_topo, "quad", 4);
-            ugrid->SetCells(ElementShapeNameToVTKCellType("quad"), ca);
-            ca->Delete();
+            const auto elements_offsets = n_topo["elements/offsets"].as_index_t_accessor();
+            for(conduit::index_t zi = 0; zi < nZones; zi++)
+            {
+                conduit::index_t nZonePoints = elements_sizes[zi];
+                conduit::index_t zoneOffset = elements_offsets[zi];
+                for(conduit::index_t zpi = 0; zpi < nZonePoints; zpi++)
+                {
+                    pts->InsertNextId(elements_connectivity[zoneOffset + zpi]);
+                }
+                ugrid->InsertNextCell(VTK_POLYGON, nZonePoints, pts->GetPointer(0));
+                pts->Reset();
+            }
         }
         else
         {
-            // Add as polygons.
-            const auto elements_connectivity = n_topo["elements/connectivity"].as_index_t_accessor();
-            const auto nZones = elements_sizes.number_of_elements();
-            vtkNew<vtkIdList> pts;
-            if(n_topo.has_path("elements/offsets"))
+            conduit::index_t elem_conn_index = 0;
+            for(conduit::index_t zi = 0; zi < nZones; zi++)
             {
-                const auto elements_offsets = n_topo["elements/offsets"].as_index_t_accessor();
-                for(conduit::index_t zi = 0; zi < nZones; zi++)
+                conduit::index_t nZonePoints = elements_sizes[zi];
+                for(conduit::index_t zpi = 0; zpi < nZonePoints; zpi++)
                 {
-                    conduit::index_t nZonePoints = elements_sizes[zi];
-                    conduit::index_t zoneOffset = elements_offsets[zi];
-                    for(conduit::index_t zpi = 0; zpi < nZonePoints; zpi++)
-                    {
-                        pts->InsertNextId(elements_connectivity[zoneOffset + zpi]);
-                    }
-                    ugrid->InsertNextCell(VTK_POLYGON, nZonePoints, pts->GetPointer(0));
-                    pts->Reset();
+                    pts->InsertNextId(elements_connectivity[elem_conn_index++]);
                 }
-            }
-            else
-            {
-                conduit::index_t elem_conn_index = 0;
-                for(conduit::index_t zi = 0; zi < nZones; zi++)
-                {
-                    conduit::index_t nZonePoints = elements_sizes[zi];
-                    for(conduit::index_t zpi = 0; zpi < nZonePoints; zpi++)
-                    {
-                        pts->InsertNextId(elements_connectivity[elem_conn_index++]);
-                    }
-                    ugrid->InsertNextCell(VTK_POLYGON, nZonePoints, pts->GetPointer(0));
-                    pts->Reset();
-                }
+                ugrid->InsertNextCell(VTK_POLYGON, nZonePoints, pts->GetPointer(0));
+                pts->Reset();
             }
         }
     }
@@ -1872,8 +1856,7 @@ avtConduitBlueprintDataAdaptor::BlueprintToVTK::MeshToVTK(int domain,
     if (n_coords["type"].as_string() == "uniform" && 
         n_topo["type"].as_string() == "unstructured")
     {
-// BJW UPDATE CONDUIT SO WE CAN USE THIS FUNCTION
-//        conduit::blueprint::mesh::coordset::to_explicit(n_coords, n_coords_to_use);
+        conduit::blueprint::mesh::coordset::to_explicit(n_coords, n_coords_to_use);
     }
     else
     {
