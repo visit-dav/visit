@@ -57,6 +57,22 @@ namespace
 
 #endif
 
+// ****************************************************************************
+// A container for storing domain communication data. There is one of these for
+// every pair of domains.
+template <typename T>
+class DomainData
+{
+    // contains data for a relation between two domains
+public:
+    std::vector<std::array<T, 3>> gainedPoints;
+    std::vector<int> cellTypes;
+    std::vector<std::vector<int>> cellPoints;
+    std::vector<int> origPointIds;
+    int nGainedPoints;
+    int nGainedCells;
+    std::vector<int> nPointsPerCell;
+};
 
 // ****************************************************************************
 //  Constructor:  avtUnstructuredDomainBoundaries::
@@ -302,11 +318,10 @@ template <class T>
 void
 CopyPointer(T *src, T *dest, int components, int count)
 {
-    int i;
-    int nIter = count * components;
+    const int nIter = count * components;
 
     *dest = *src;
-    for (i = 1; i < nIter; ++i)
+    for (int i = 1; i < nIter; ++i)
     {
         *(++dest) = *(++src);
     }
@@ -397,119 +412,124 @@ avtUnstructuredDomainBoundaries::ExchangeMeshT(vector<int>       domainNum,
     // Gather the information we need
     vector<int> domain2proc = CreateDomainToProcessorMap(domainNum);
 
-    T ***gainedPoints;
-    int ***cellTypes;
-    int ****cellPoints;
-    int ***origPointIds;
-    int **nGainedPoints;
-    int **nGainedCells;
-    int ***nPointsPerCell;
-    CommunicateMeshInformation(domain2proc, domainNum, meshes, gainedPoints,
-                               cellTypes, cellPoints, origPointIds,
-                               nGainedPoints, nGainedCells, nPointsPerCell);
+    std::map<int, std::map<int, DomainData<T>>> domaindata;
+    CommunicateMeshInformation(domain2proc, domainNum, meshes, domaindata);
 
-    for (size_t d = 0; d < domainNum.size(); d++)
+    for (size_t domId = 0; domId < domainNum.size(); domId ++)
     {
-        int recvDom = domainNum[d];
-        vtkUnstructuredGrid *mesh = (vtkUnstructuredGrid*)(meshes[d]);
-        if (mesh == NULL ||
-            mesh->GetNumberOfPoints() == 0 || mesh->GetNumberOfCells() == 0)
+        const int recvDom = domainNum[domId];
+        vtkUnstructuredGrid *mesh = static_cast<vtkUnstructuredGrid *>(meshes[domId]);
+        if (nullptr == mesh ||
+            mesh->GetNumberOfPoints() == 0 || 
+            mesh->GetNumberOfCells() == 0)
+        {
             continue;
-        int nOldPoints = mesh->GetNumberOfPoints();
+        }
+
+        const int nOldPoints = mesh->GetNumberOfPoints();
 
         // Find how many points are given to domain recvDom.
-        int nGivenPoints = 0;
-        int i;
-        for (i = 0; i < nTotalDomains; ++i)
-            nGivenPoints += nGainedPoints[i][recvDom];
+        const int nGivenPoints = [&]()
+        {
+            int sum = 0;
+            for (int sendDom = 0; sendDom < nTotalDomains; ++sendDom)
+            {
+                sum += domaindata[sendDom][recvDom].nGainedPoints;
+            }
+            return sum;
+        }();
+        
 
         // Create the VTK objects
-        vtkUnstructuredGrid    *outm  = vtkUnstructuredGrid::New();
-        vtkPoints *outp  = vtkPoints::New(mesh->GetPoints()->GetDataType());
+        vtkUnstructuredGrid *outMesh = vtkUnstructuredGrid::New();
+        vtkPoints *outPoints = vtkPoints::New(mesh->GetPoints()->GetDataType());
 
-        outm->DeepCopy(meshes[d]);
-
-        outm->SetPoints(outp);
-        outp->Delete();
-        outp->SetNumberOfPoints(nOldPoints + nGivenPoints);
+        outMesh->DeepCopy(meshes[domId]);
+        outMesh->SetPoints(outPoints);
+        outPoints->Delete();
+        outPoints->SetNumberOfPoints(nOldPoints + nGivenPoints);
 
         // Copy the old coordinates over
-        T *oldcoord = (T *)mesh->GetPoints()->GetVoidPointer(0);
-        T *newcoord = (T *)outp->GetVoidPointer(0);
+        T *oldcoord = static_cast<T *>(mesh->GetPoints()->GetVoidPointer(0));
+        T *newcoord = static_cast<T *>(outPoints->GetVoidPointer(0));
         CopyPointer(oldcoord, newcoord, 3, nOldPoints);
 
         // Put in the new coordinates
-        vector<map<int, int> > translatedPointsMap(nTotalDomains);
+        std::vector<std::map<int, int>> translatedPointsMap(nTotalDomains);
         newcoord += 3 * nOldPoints;
         int newId = nOldPoints;
-        int sendDom;
-        for (sendDom = 0; sendDom < nTotalDomains; ++sendDom)
+        for (int sendDom = 0; sendDom < nTotalDomains; sendDom ++)
         {
             if (sendDom == recvDom)
                 continue;
 
-            int nGivenPointsThisDomain = nGainedPoints[sendDom][recvDom];
-            if (nGivenPointsThisDomain == 0)
+            int nGainedPointsThisDomain = domaindata[sendDom][recvDom].nGainedPoints;
+            if (nGainedPointsThisDomain == 0)
                 continue;
 
             // We need to remember what the point id for this exchange
             // of points is.
-            startingPoint[pair<int,int>(sendDom, recvDom)] = newId;
+            startingPoint[std::make_pair(sendDom, recvDom)] = newId;
 
-            T *pts = gainedPoints[sendDom][recvDom];
-            int *origPointIdsThisDomain = origPointIds[sendDom][recvDom];
+            std::vector<std::array<T, 3>> &gainedPoints = 
+                domaindata[sendDom][recvDom].gainedPoints;
+            std::vector<int> &origPointIds = domaindata[sendDom][recvDom].origPointIds;
 
-            for (i = 0; i < nGivenPointsThisDomain; ++i)
+            for (int gainedPtId = 0; gainedPtId < nGainedPointsThisDomain; gainedPtId ++)
             {
-                *(newcoord++) = *(pts++);
-                *(newcoord++) = *(pts++);
-                *(newcoord++) = *(pts++);
-                translatedPointsMap[sendDom][origPointIdsThisDomain[i]] =
-                                                                        newId++;
+                *(newcoord++) = gainedPoints[gainedPtId][0];
+                *(newcoord++) = gainedPoints[gainedPtId][1];
+                *(newcoord++) = gainedPoints[gainedPtId][2];
+                translatedPointsMap[sendDom][origPointIds[gainedPtId]] = (newId ++);
             }
         }
 
-        int nOldCells = outm->GetNumberOfCells();
-
+        const int nOldCells = outMesh->GetNumberOfCells();
 
         vtkIdList *idList = vtkIdList::New();
         // Put in the new cells
-        for (sendDom = 0; sendDom < nTotalDomains; ++sendDom)
+        for (int sendDom = 0; sendDom < nTotalDomains; ++sendDom)
         {
             if (recvDom == sendDom)
                 continue;
 
-            int nGainedCellsThisDomain = nGainedCells[sendDom][recvDom];
+            const int nGainedCellsThisDomain = domaindata[sendDom][recvDom].nGainedCells;
 
             if (nGainedCellsThisDomain == 0)
                 continue;
 
-            // We're going to be be giving cells from sendDom to recvDom.
+            // We're going to be giving cells from sendDom to recvDom.
             // The id that the cells will be inserted at is
             // important, and we need to remember.
-            startingCell[pair<int,int>(sendDom, recvDom)] = outm->
-                                                            GetNumberOfCells();
+            startingCell[std::make_pair(sendDom, recvDom)] = outMesh->GetNumberOfCells();
 
             // We want the map that indexes the ptIds from sendDom into
             // the ptIds of recvDom.
-            int index = GetGivenIndex(sendDom, recvDom);
-            map<int, int> &smap = sharedPointsMap[index];
-            map<int, int> &tmap = translatedPointsMap[sendDom];
+            const int index = GetGivenIndex(sendDom, recvDom);
+            std::map<int, int> &smap = sharedPointsMap[index];
+            std::map<int, int> &tmap = translatedPointsMap[sendDom];
 
-            for (i = 0; i < nGainedCellsThisDomain; ++i)
+            std::vector<int> &nPointsPerCell = domaindata[sendDom][recvDom].nPointsPerCell;
+            std::vector<std::vector<int>> &cellPoints = domaindata[sendDom][recvDom].cellPoints;
+            std::vector<int> &cellTypes = domaindata[sendDom][recvDom].cellTypes;
+
+            for (int gainedCellId = 0; gainedCellId < nGainedCellsThisDomain; gainedCellId ++)
             {
-                int nPointsThisCell = nPointsPerCell[sendDom][recvDom][i];
+                const int nPointsThisCell = nPointsPerCell[gainedCellId];
                 idList->SetNumberOfIds(nPointsThisCell);
-                int k;
-                for (k = 0; k < nPointsThisCell; ++k)
+                for (int ptId = 0; ptId < nPointsThisCell; ptId ++)
                 {
-                    int id = cellPoints[sendDom][recvDom][i][k];
+                    const int id = cellPoints[gainedCellId][ptId];
                     if (smap.find(id) != smap.end())
-                        idList->SetId(k, smap[id]);
+                    {
+                        idList->SetId(ptId, smap[id]);
+                    }
                     else
-                       idList->SetId(k, tmap[id]);
+                    {
+                       idList->SetId(ptId, tmap[id]);
+                    }
                 }
-                outm->InsertNextCell(cellTypes[sendDom][recvDom][i], idList);
+                outMesh->InsertNextCell(cellTypes[gainedCellId], idList);
             }
         }
         idList->Delete();
@@ -518,70 +538,26 @@ avtUnstructuredDomainBoundaries::ExchangeMeshT(vector<int>       domainNum,
 
         vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
         ghostCells->SetName("avtGhostZones");
-        ghostCells->SetNumberOfTuples(outm->GetNumberOfCells());
+        ghostCells->SetNumberOfTuples(outMesh->GetNumberOfCells());
         unsigned char *ptr = ghostCells->GetPointer(0);
-        for (i = 0; i < nOldCells; ++i)
+        for (int i = 0; i < nOldCells; ++i)
             *(ptr++) = 0;
-        int nGhostCells = outm->GetNumberOfCells() - nOldCells;
-        for (i = 0; i < nGhostCells; ++i)
+        int nGhostCells = outMesh->GetNumberOfCells() - nOldCells;
+        for (int i = 0; i < nGhostCells; ++i)
         {
             *ptr = 0;
             avtGhostData::AddGhostZoneType(*ptr,
                                           DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
             ptr++;
         }
-        outm->GetCellData()->AddArray(ghostCells);
+        outMesh->GetCellData()->AddArray(ghostCells);
         ghostCells->Delete();
-        outm->GetInformation()->Set(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0);
+        outMesh->GetInformation()->Set(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0);
 
         // Rebuild the links now that we've added ghost cells.
-        outm->BuildLinks();
-        out[d] = outm;
+        outMesh->BuildLinks();
+        out[domId] = outMesh;
     }
-
-    // Now to destroy all of that memory we used.
-    // In the simple case (gathering information without parallel
-    // communication), new appears invoked 20 times CommunicateMeshInformation.
-    // This means that delete should appear 20 times.
-    int a,b,c;
-
-    for (a = 0; a < nTotalDomains; ++a)
-    {
-        for (b = 0; b < nTotalDomains; ++b)
-        {
-            // These aren't always allocated for each combination.
-            // Check to see if they were allocated before deleting.
-            if (gainedPoints[a][b])
-            {
-                for (c = 0; c < nGainedCells[a][b]; ++c)
-                {
-                    delete [] cellPoints[a][b][c];
-                }
-
-                delete [] gainedPoints[a][b];
-                delete [] cellTypes[a][b];
-                delete [] origPointIds[a][b];
-                delete [] cellPoints[a][b];
-                delete [] nPointsPerCell[a][b];
-            }
-        }
-
-        delete [] gainedPoints[a];
-        delete [] cellTypes[a];
-        delete [] origPointIds[a];
-        delete [] cellPoints[a];
-        delete [] nGainedPoints[a];
-        delete [] nGainedCells[a];
-        delete [] nPointsPerCell[a];
-    }
-
-    delete [] gainedPoints;
-    delete [] cellTypes;
-    delete [] cellPoints;
-    delete [] origPointIds;
-    delete [] nGainedPoints;
-    delete [] nGainedCells;
-    delete [] nPointsPerCell;
 
     return out;
 }
@@ -1659,10 +1635,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                                  const vector<int> &domain2proc,
                                  const vector<int> &domainNum,
                                  const vector<vtkDataSet *> &meshes,
-                                 T ***&gainedPoints, int ***&cellTypes,
-                                 int ****&cellPoints, int ***&origPointIds,
-                                 int **&nGainedPoints, int **&nGainedCells,
-                                 int ***&nPointsPerCell)
+                                 std::map<int, std::map<int, DomainData<T>>> &domaindata)
 {
     // Get the processor rank
     int rank = 0;
@@ -1679,37 +1652,36 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
     int mpiCellPointIdsTag     = tags[6];
 #endif
 
-    gainedPoints = new T**[nTotalDomains];
-    cellTypes = new int**[nTotalDomains];
-    cellPoints = new int***[nTotalDomains];
-    origPointIds = new int**[nTotalDomains];
-    nGainedPoints = new int*[nTotalDomains];
-    nGainedCells = new int*[nTotalDomains];
-    nPointsPerCell = new int **[nTotalDomains];
-
     vtkIdList *idList = vtkIdList::New();
 
     for (int sendDom = 0; sendDom < nTotalDomains; ++sendDom)
     {
-        gainedPoints[sendDom] = new T*[nTotalDomains];
-        cellTypes[sendDom] = new int*[nTotalDomains];
-        cellPoints[sendDom] = new int**[nTotalDomains];
-        origPointIds[sendDom] = new int*[nTotalDomains];
-        nGainedPoints[sendDom] = new int[nTotalDomains];
-        nGainedCells[sendDom] = new int[nTotalDomains];
-        nPointsPerCell[sendDom] = new int *[nTotalDomains];
-
         for (int recvDom = 0; recvDom < nTotalDomains; ++recvDom)
         {
-            gainedPoints[sendDom][recvDom] = NULL;
-            cellTypes[sendDom][recvDom] = NULL;
-            cellPoints[sendDom][recvDom] = NULL;
-            origPointIds[sendDom][recvDom] = NULL;
+            // create references for the domain data here
+            std::vector<std::array<T, 3>> &gainedPoints   = 
+                domaindata[sendDom][recvDom].gainedPoints;
+            std::vector<int>              &cellTypes      = 
+                domaindata[sendDom][recvDom].cellTypes;
+            std::vector<std::vector<int>> &cellPoints     = 
+                domaindata[sendDom][recvDom].cellPoints;
+            std::vector<int>              &origPointIds   = 
+                domaindata[sendDom][recvDom].origPointIds;
+            int                           &nGainedPoints  = 
+                domaindata[sendDom][recvDom].nGainedPoints;
+            int                           &nGainedCells   = 
+                domaindata[sendDom][recvDom].nGainedCells;
+            std::vector<int>              &nPointsPerCell = 
+                domaindata[sendDom][recvDom].nPointsPerCell;
 
-            nPointsPerCell[sendDom][recvDom] = NULL;
-
-            nGainedPoints[sendDom][recvDom] = 0;
-            nGainedCells[sendDom][recvDom] = 0;
+            // initialize data for this domain pair
+            gainedPoints   = std::vector<std::array<T, 3>>();
+            cellTypes      = std::vector<int>();
+            cellPoints     = std::vector<std::vector<int>>();
+            origPointIds   = std::vector<int>();
+            nGainedPoints  = 0;
+            nGainedCells   = 0;
+            nPointsPerCell = std::vector<int>();
 
             // Cases where no computation is required.
             if (sendDom == recvDom)
@@ -1721,61 +1693,72 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
             // calculation: no communication needed
             if (domain2proc[sendDom] == rank && domain2proc[recvDom] == rank)
             {
-                size_t i = 0;
-                for (i = 0; i < domainNum.size(); ++i)
-                    if (domainNum[i] == sendDom)
-                        break;
+                const size_t domIndex = [](const vector<int> &domainNum,
+                                           const int sendDom) -> size_t
+                {
+                    for (size_t domIndex = 0; domIndex < domainNum.size(); domIndex ++)
+                    {
+                        if (domainNum[domIndex] == sendDom)
+                        {
+                            return domIndex;
+                        }
+                    }
+                    return -1;
+                }(domainNum, sendDom);
+                if (domIndex < 0)
+                {
+                    std::string err_msg = "avtUnstructuredDomainBoundaries:CommunicateMeshInformation "
+                                          "failed to communicate for sendDom " + std::to_string(sendDom) +
+                                          " and recvDom " + std::to_string(recvDom);
+                    EXCEPTION1(VisItException, err_msg);
+                }
+                
+                vtkUnstructuredGrid *givingUg = (vtkUnstructuredGrid*)meshes[domIndex];
 
-                vtkUnstructuredGrid *givingUg = (vtkUnstructuredGrid*)meshes[i];
-
-                int index = GetGivenIndex(sendDom, recvDom);
+                const int index = GetGivenIndex(sendDom, recvDom);
 
                 // If no domain boundary, then there's no work to do.
                 if (index < 0)
                     continue;
 
                 size_t nPts = givenPoints[index].size();
-                nGainedPoints[sendDom][recvDom] += (int) nPts;
+                nGainedPoints += (int) nPts;
 
-                gainedPoints[sendDom][recvDom] = new T[nPts * 3];
-                origPointIds[sendDom][recvDom] = new int[nPts];
+                gainedPoints.resize(nPts);
+                origPointIds.resize(nPts);
 
-                T *gainedPtr = gainedPoints[sendDom][recvDom];
-                int *origIdPtr = origPointIds[sendDom][recvDom];
-                T *fromPtr = (T *)(givingUg ->GetPoints()
-                                                    ->GetVoidPointer(0));
-                for (i = 0; i < nPts; ++i)
+                T *fromPtr = static_cast<T *>(givingUg->GetPoints()->GetVoidPointer(0));
+                for (size_t ptId = 0; ptId < nPts; ptId ++)
                 {
-                    *(origIdPtr++) = givenPoints[index][i];
+                    const int origPtId = givenPoints[index][ptId];
+                    origPointIds[ptId] = origPtId;
 
-                    T *ptPtr = fromPtr + 3 * givenPoints[index][i];
-                    *(gainedPtr++) = *(ptPtr++);
-                    *(gainedPtr++) = *(ptPtr++);
-                    *(gainedPtr++) = *(ptPtr++);
+                    T *ptPtr = fromPtr + 3 * origPtId;
+                    gainedPoints[ptId][0] = *(ptPtr++);
+                    gainedPoints[ptId][1] = *(ptPtr++);
+                    gainedPoints[ptId][2] = *(ptPtr++);
                 }
 
-                size_t nCells = givenCells[index].size();
-                nGainedCells[sendDom][recvDom] +=(int) nCells;
+                const size_t nCells = givenCells[index].size();
+                nGainedCells = static_cast<int>(nCells);
 
-                cellTypes[sendDom][recvDom] = new int[nCells];
-                cellPoints[sendDom][recvDom] = new int *[nCells];
-                nPointsPerCell[sendDom][recvDom] = new int[nCells];
+                cellTypes.resize(nCells);
+                cellPoints.resize(nCells);
+                nPointsPerCell.resize(nCells);
 
-                int *cellPtr = cellTypes[sendDom][recvDom];
-                int **cellPtsPtr = cellPoints[sendDom][recvDom];
-                int *nPtsPerCellPtr = nPointsPerCell[sendDom][recvDom];
-
-                for (i = 0; i < nCells; ++i)
+                for (size_t cellId = 0; cellId < nCells; cellId ++)
                 {
-                    cellPtr[i] = givingUg->GetCellType(givenCells[index][i]);
-                    givingUg->GetCellPoints(givenCells[index][i], idList);
+                    cellTypes[cellId] = givingUg->GetCellType(givenCells[index][cellId]);
+                    givingUg->GetCellPoints(givenCells[index][cellId], idList);
 
-                    nPts = idList->GetNumberOfIds();
-                    nPtsPerCellPtr[i] = (int)nPts;
+                    const int nPtsForCell = idList->GetNumberOfIds();
+                    nPointsPerCell[cellId] = static_cast<int>(nPtsForCell);
 
-                    cellPtsPtr[i] = new int[nPts];
-                    for (size_t k = 0; k < nPts; ++k)
-                        cellPtsPtr[i][k] = idList->GetId(k);
+                    cellPoints[cellId].resize(nPtsForCell);
+                    for (size_t ptId = 0; ptId < nPtsForCell; ptId ++)
+                    {
+                        cellPoints[cellId][ptId] = idList->GetId(ptId);
+                    }
                 }
             }
             // All other cases only occur during parallel execution.
@@ -1795,16 +1778,16 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                 if (nPts == 0)
                     continue;
 
-                nGainedPoints[sendDom][recvDom] += nPts;
-                gainedPoints[sendDom][recvDom] = new T[nPts * 3];
-                origPointIds[sendDom][recvDom] = new int[nPts];
+                nGainedPoints += nPts;
+                gainedPoints.resize(nPts);
+                origPointIds.resize(nPts);
 
                 // Get the gained points
-                MPI_Recv(gainedPoints[sendDom][recvDom], nPts * 3, type,
+                MPI_Recv(gainedPoints.data(), nPts * 3, type,
                          fRank, mpiGainedPointsTag, VISIT_MPI_COMM, &stat);
 
                 // Get the original ids for the gained points
-                MPI_Recv(origPointIds[sendDom][recvDom], nPts, MPI_INT,
+                MPI_Recv(origPointIds.data(), nPts, MPI_INT,
                          fRank, mpiOriginalIdsTag, VISIT_MPI_COMM, &stat);
 
                 // Get the number of given cells
@@ -1812,44 +1795,42 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                 MPI_Recv(&nCells, 1, MPI_INT, fRank,
                          mpiNumGivenCellsTag, VISIT_MPI_COMM, &stat);
 
-                nGainedCells[sendDom][recvDom] += nCells;
+                nGainedCells = nCells;
 
-                cellTypes[sendDom][recvDom] = new int[nCells];
-                cellPoints[sendDom][recvDom] = new int *[nCells];
-                nPointsPerCell[sendDom][recvDom] = new int[nCells];
+                cellTypes.resize(nCells);
+                cellPoints.resize(nCells);
+                nPointsPerCell.resize(nCells);
 
                 // Get the cell types
-                MPI_Recv(cellTypes[sendDom][recvDom], nCells, MPI_INT,
+                MPI_Recv(cellTypes.data(), nCells, MPI_INT,
                          fRank, mpiCellTypesTag, VISIT_MPI_COMM, &stat);
 
                 // Get the number of points per cell
-                MPI_Recv(nPointsPerCell[sendDom][recvDom], nCells, MPI_INT,
+                MPI_Recv(nPointsPerCell.data(), nCells, MPI_INT,
                          fRank, mpiNumPointsPerCellTag, VISIT_MPI_COMM, &stat);
 
                 // Prepare for getting the cell point ids
-                int k;
                 int pntArrSize = 0;
-                for (k = 0; k < nCells; ++k)
+                for (int cellId = 0; cellId < nCells; cellId ++)
                 {
-                    cellPoints[sendDom][recvDom][k] =
-                                new int [nPointsPerCell[sendDom][recvDom][k]];
-                    pntArrSize += nPointsPerCell[sendDom][recvDom][k];
+                    cellPoints[cellId].resize(nPointsPerCell[cellId]);
+                    pntArrSize += nPointsPerCell[cellId];
                 }
 
                 // Get the cell point ids
-                int * pntIds = new int[pntArrSize];
-                MPI_Recv(pntIds, pntArrSize, MPI_INT,
+                std::vector<int> pntIds(pntArrSize);
+                MPI_Recv(pntIds.data(), pntArrSize, MPI_INT,
                          fRank, mpiCellPointIdsTag, VISIT_MPI_COMM, &stat);
 
                 // Move over the point ids
-                int *ptr = pntIds;
-                for (k = 0; k < nCells; ++k)
+                for (int cellId = 0; cellId < nCells; cellId ++)
                 {
-                    int p;
-                    for (p = 0; p < nPointsPerCell[sendDom][recvDom][k]; ++p)
-                        cellPoints[sendDom][recvDom][k][p] = *(ptr++);
+                    for (int ptId = 0; ptId < nPointsPerCell[cellId]; ptId ++)
+                    {
+                        const int pntIdIndex = ptId + cellId * nPointsPerCell[cellId];
+                        cellPoints[cellId][ptId] = pntIds[pntIdIndex];
+                    }
                 }
-                delete [] pntIds;
             }
             // If this process owns the sending domain, we send information.
             else if (domain2proc[sendDom] == rank)
@@ -1857,97 +1838,101 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                 MPI_Datatype type = GetMPIDataType<T>();
                 int tRank = domain2proc[recvDom];
 
-                int index = GetGivenIndex(sendDom, recvDom);
+                const int index = GetGivenIndex(sendDom, recvDom);
 
                 // If no domain boundary, send 0 for nPts, and continue
                 // Also continue if there are no given points.
                 if (index < 0 || givenPoints[index].size() == 0)
                 {
-                    int nPts = 0;
+                    const int nPts = 0;
                     MPI_Send(&nPts, 1, MPI_INT, tRank, mpiNPtsTag, VISIT_MPI_COMM);
                     continue;
                 }
 
-                size_t i=0;
-                for (i = 0; i < domainNum.size(); ++i)
-                    if (domainNum[i] == sendDom)
-                        break;
+                const size_t domIndex = [](const vector<int> &domainNum,
+                                           const int sendDom) -> size_t
+                {
+                    for (size_t domIndex = 0; domIndex < domainNum.size(); domIndex ++)
+                    {
+                        if (domainNum[domIndex] == sendDom)
+                        {
+                            return domIndex;
+                        }
+                    }
+                    return -1;
+                }(domainNum, sendDom);
+                if (domIndex < 0)
+                {
+                    std::string err_msg = "avtUnstructuredDomainBoundaries:CommunicateMeshInformation "
+                                          "failed to communicate for sendDom " + std::to_string(sendDom) +
+                                          " and recvDom " + std::to_string(recvDom);
+                    EXCEPTION1(VisItException, err_msg);
+                }
 
-                vtkUnstructuredGrid *givingUg = (vtkUnstructuredGrid*)meshes[i];
+                vtkUnstructuredGrid *givingUg = (vtkUnstructuredGrid*)meshes[domIndex];
 
-                int nPts = (int)givenPoints[index].size();
+                const int nPts = static_cast<int>(givenPoints[index].size());
 
                 // Build the point data to send
-                T *gainedPtrStart = new T[nPts * 3];
-                int *origIdPtrStart = new int[nPts];
-                T *fromPtr = (T *)(givingUg ->GetPoints()
-                                                    ->GetVoidPointer(0));
-
-                T *gainedPtr = gainedPtrStart;
-                int *origIdPtr = origIdPtrStart;
-
-                int k;
-                for (k = 0; k < nPts; ++k)
+                std::vector<std::array<T, 3>> gainedPtsToSend(nPts);
+                std::vector<int> origIdsToSend(nPts);
+                T *fromPtr = static_cast<T *>(givingUg->GetPoints()->GetVoidPointer(0));
+                for (int ptId = 0; ptId < nPts; ptId ++)
                 {
-                    *(origIdPtr++) = givenPoints[index][k];
+                    const int origPtId = givenPoints[index][ptId];
+                    origIdsToSend[ptId] = origPtId;
 
-                    T *ptPtr = fromPtr + 3 * givenPoints[index][k];
-                    *(gainedPtr++) = *(ptPtr++);
-                    *(gainedPtr++) = *(ptPtr++);
-                    *(gainedPtr++) = *(ptPtr++);
+                    T *ptPtr = fromPtr + 3 * origPtId;
+                    gainedPtsToSend[ptId][0] = *(ptPtr++);
+                    gainedPtsToSend[ptId][1] = *(ptPtr++);
+                    gainedPtsToSend[ptId][2] = *(ptPtr++);
                 }
 
                 // Send the number of points given
                 MPI_Send(&nPts, 1, MPI_INT, tRank, mpiNPtsTag, VISIT_MPI_COMM);
 
                 // Send the gained points
-                MPI_Send(gainedPtrStart, nPts * 3, type, tRank,
+                MPI_Send(gainedPtsToSend.data(), nPts * 3, type, tRank,
                          mpiGainedPointsTag, VISIT_MPI_COMM);
 
                 // Send the original ids for the gained points
-                MPI_Send(origIdPtrStart, nPts, MPI_INT, tRank,
+                MPI_Send(origIdsToSend.data(), nPts, MPI_INT, tRank,
                          mpiOriginalIdsTag, VISIT_MPI_COMM);
 
                 // Send the number of given cells
-                int nCells = (int)givenCells[index].size();
+                const int nCells = static_cast<int>(givenCells[index].size());
                 MPI_Send(&nCells, 1, MPI_INT, tRank, mpiNumGivenCellsTag,
                          VISIT_MPI_COMM);
 
                 // Prepare for sending the cell info
-                int *cellPtr = new int[nCells];
-                vector<int> cellPtsVector;
-                int *nPtsPerCellPtr = new int[nCells];
-
-                for (int j = 0; j < nCells; ++j)
+                std::vector<int> cellDataToSend(nCells);
+                std::vector<int> cellPtsToSend;
+                std::vector<int> nPtsPerCellToSend(nCells);
+                for (int cellId = 0; cellId < nCells; cellId ++)
                 {
-                    cellPtr[j] = givingUg->GetCellType(givenCells[index][j]);
-                    givingUg->GetCellPoints(givenCells[index][j], idList);
+                    cellDataToSend[cellId] = givingUg->GetCellType(givenCells[index][cellId]);
+                    givingUg->GetCellPoints(givenCells[index][cellId], idList);
 
-                    nPts = idList->GetNumberOfIds();
-                    nPtsPerCellPtr[j] = nPts;
+                    const int nPtsForCell = idList->GetNumberOfIds();
+                    nPtsPerCellToSend[cellId] = nPtsForCell;
 
-                    for (int k = 0; k < nPts; ++k)
-                        cellPtsVector.push_back(idList->GetId(k));
+                    for (int ptId = 0; ptId < nPtsForCell; ptId ++)
+                    {
+                        cellPtsToSend.push_back(idList->GetId(ptId));
+                    }
                 }
 
-
                 // Send the cell types
-                MPI_Send(cellPtr, nCells, MPI_INT, tRank, mpiCellTypesTag,
+                MPI_Send(cellDataToSend.data(), nCells, MPI_INT, tRank, mpiCellTypesTag,
                     VISIT_MPI_COMM);
 
                 // Send the number of points per cell
-                MPI_Send(nPtsPerCellPtr, nCells, MPI_INT, tRank,
+                MPI_Send(nPtsPerCellToSend.data(), nCells, MPI_INT, tRank,
                     mpiNumPointsPerCellTag, VISIT_MPI_COMM);
 
                 // Send the point cells
-                MPI_Send(&(cellPtsVector[0]), (int)cellPtsVector.size(), MPI_INT,
+                MPI_Send(cellPtsToSend.data(), static_cast<int>(cellPtsToSend.size()), MPI_INT,
                          tRank, mpiCellPointIdsTag, VISIT_MPI_COMM);
-
-
-                delete [] gainedPtrStart;
-                delete [] origIdPtrStart;
-                delete [] cellPtr;
-                delete [] nPtsPerCellPtr;
             }
 #endif
         }

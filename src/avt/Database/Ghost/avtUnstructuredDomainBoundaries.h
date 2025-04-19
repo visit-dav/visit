@@ -20,6 +20,8 @@ class vtkDataSet;
 class vtkDataArray;
 class avtMixedVariable;
 class avtMaterial;
+template <typename T>
+class DomainData;
 
 // ****************************************************************************
 //  Class:  avtUnstructuredDomainBoundaries
@@ -150,13 +152,7 @@ class DATABASE_API avtUnstructuredDomainBoundaries : public avtDomainBoundaries
                                const std::vector<int> &domain2proc,
                                const std::vector<int> &domainNum,
                                const std::vector<vtkDataSet *> &,
-                               T ***&gainedPoints,
-                               int ***&cellTypes,
-                               int ****&cellPoints,
-                               int ***&origPointIds,
-                               int **&nGainedPoints,
-                               int **&nGainedCells,
-                               int ***&nPointsPerCell);
+                               std::map<int, std::map<int, DomainData<T>>> &domaindata);
 
     void            CommunicateMaterialInformation(
                                const std::vector<int> &domain2proc,
