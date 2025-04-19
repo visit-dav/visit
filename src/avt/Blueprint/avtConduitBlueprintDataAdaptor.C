@@ -3,6 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include <avtConduitBlueprintDataAdaptor.h>
+
 #include <conduit.hpp>
 #include <conduit_blueprint.hpp>
 #include <conduit_blueprint_mesh_utils.hpp>
@@ -24,6 +25,7 @@
 #include <vtkUnsignedIntArray.h>
 #include <vtkLongArray.h>
 #include <vtkLongLongArray.h>
+#include <vtkPlane.h>
 #include <vtkUnsignedLongArray.h>
 #include <vtkUnsignedLongLongArray.h>
 #include <vtkFloatArray.h>
@@ -98,7 +100,7 @@ ElementShapeNameToVTKCellType(const std::string &shape_name)
     if (shape_name == "wedge")   return VTK_WEDGE;
     if (shape_name == "pyramid") return VTK_PYRAMID;
     if (shape_name == "polygonal") return VTK_POLYGON;
-    if (shape_name == "polyhedal") return VTK_POLYHEDRON;
+    if (shape_name == "polyhedral") return VTK_POLYHEDRON;
     AVT_CONDUIT_BP_WARNING("Unsupported Element Shape: " << shape_name);
     return 0;
 }
@@ -1627,132 +1629,152 @@ debug4 << "UnstructuredTopologyToVTKUnstructuredGrid: start" << std::endl;
     // polytopal mixed case
     else if (element_shape == "mixed" && n_topo.has_child("subelements"))
     {
-            // either we are making a polyhedral mesh or a polygonal mesh
-            const bool mesh_is_polyhedral = n_topo.has_child("subelements");
-            if (mesh_is_polyhedral && n_topo.has_path("elements/shape_map/polygonal"))
+        // Cell definitions
+        const auto elements_connectivity = n_topo["elements/connectivity"].as_index_t_accessor();
+        const auto elements_sizes = n_topo["elements/sizes"].as_index_t_accessor();
+        const auto elements_offsets = n_topo["elements/offsets"].as_index_t_accessor();
+        const auto elements_shapes = n_topo["elements/shapes"].as_index_t_accessor();
+        const auto nZones = elements_sizes.number_of_elements();
+
+        // Face definitions
+        const auto subelements_connectivity = n_topo["subelements/connectivity"].as_index_t_accessor();
+        const auto subelements_sizes = n_topo["subelements/sizes"].as_index_t_accessor();
+        const auto subelements_offsets = n_topo["subelements/offsets"].as_index_t_accessor();
+
+        // Make a map of shape values to VTK cell types.
+        std::map<int, int> sm2vtk;
+        const conduit::Node &n_shape_map = n_topo.fetch_existing("elements/shape_map");
+        for(index_t i = 0; i < n_shape_map.number_of_children(); i++)
+        {
+            const std::string cellType = n_shape_map[i].name();
+            const int shapeValue = n_shape_map[i].to_int();         
+            sm2vtk[shapeValue] = ElementShapeNameToVTKCellType(n_shape_map[i].name());
+        }
+
+        // Iterate the connectivity and add zones/faces.
+        vtkNew<vtkIdList> faces, pts;
+        vtkNew<vtkPlane> facePlane;
+        for(conduit::index_t zi = 0; zi < nZones; zi++)
+        {
+            const auto zoneOffset = elements_offsets[zi];
+            const auto vtkCellType = sm2vtk[elements_shapes[zi]];
+            if(vtkCellType == VTK_POLYHEDRON)
             {
-                AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException,
-                                          "The mixed polygonal and polyhedral mesh "
-                                          "case is currently unsupported.");
-            }
+                const auto nZoneFaces = elements_sizes[zi];
+#if 0
+//
+// NOTE: I added this when I thought I had a bug but it turned out the data were bad.
+//       Keep this around for a while. This code does checks to make sure the face
+//       normals all point out.
+//
 
-            // 
-            // step 1: threshold out the polytopal elements, placing 
-            // them in their own topology
-            // 
-            conduit::Node res;
-            Node &polytopal_mesh = res["mixed_transformation/polytopal_mesh"];
-
-            avtConduitBlueprintDataAdaptor::BlueprintToVTK::CreatePolytopalMeshFromMixedMesh(
-                n_coords, 
-                n_topo,
-                polytopal_mesh);
-
-            // we will need the polytopal topo for later
-            const Node &polytopal_topo = polytopal_mesh["topologies"][n_topo.name()];
-
-            // 
-            // step 2: run the polytopal mesh through generate_sides
-            // 
-            Node &side_mesh = res["mixed_transformation/side_mesh"];
-            Node &side_topo = side_mesh[n_topo.name()];
-            Node &side_coords = side_mesh[n_topo["coordset"].as_string()];
-            Node &s2dmap = side_mesh["mixed_transformation/maps/s2dmap"];
-            Node &d2smap = side_mesh["mixed_transformation/maps/d2smap"];
-            blueprint::mesh::topology::unstructured::generate_sides(
-                polytopal_topo,
-                side_topo,
-                side_coords,
-                s2dmap,
-                d2smap);
-
-            // 
-            // step 3: stitch the topology back together to create a 
-            // brand new mixed topology
-            // 
-
-            Node &new_mixed_topo = res["mixed_transformation/new_mixed_topo"];
-
-            if (mesh_is_polyhedral)
-            {
-                if (side_topo["elements/shape"].as_string() != "tet")
+                // Compute a zone center. Assume convex.
+                double zoneCenter[3] = {0., 0., 0.};
+                int nodeCount = 0;
+                for(conduit::index_t zfi = 0; zfi < nZoneFaces; zfi++)
                 {
-                    AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException,
-                                              "Generated elements for mixed polyhedral "
-                                              "topology must be tetrahedrons.");
+                    const auto currentFaceId = elements_connectivity[zoneOffset + zfi];
+
+                    const auto faceSize = subelements_sizes[currentFaceId];
+                    const auto faceOffset = subelements_offsets[currentFaceId];
+                    for(conduit::index_t fi = 0; fi < faceSize; fi++)
+                    {
+                        double pt[3] = {0., 0., 0.};
+                        points->GetPoint(subelements_connectivity[faceOffset + fi], pt);
+                        zoneCenter[0] += pt[0];
+                        zoneCenter[1] += pt[1];
+                        zoneCenter[2] += pt[2];
+                        nodeCount++;
+                    }
                 }
+                zoneCenter[0] /= static_cast<double>(nodeCount);
+                zoneCenter[1] /= static_cast<double>(nodeCount);
+                zoneCenter[2] /= static_cast<double>(nodeCount);
+
+                // Add faces.
+                for(conduit::index_t zfi = 0; zfi < nZoneFaces; zfi++)
+                {
+                    const auto currentFaceId = elements_connectivity[zoneOffset + zfi];
+
+                    // Now, add the face to the zone.
+                    const auto faceSize = subelements_sizes[currentFaceId];
+                    const auto faceOffset = subelements_offsets[currentFaceId];
+
+                    // Get the first 3 points
+                    double tmp[3];
+                    points->GetPoint(subelements_connectivity[faceOffset + 0], tmp);
+                    avtVector p0(tmp);
+
+                    points->GetPoint(subelements_connectivity[faceOffset + 1], tmp);
+                    avtVector p1(tmp);
+
+                    points->GetPoint(subelements_connectivity[faceOffset + 2], tmp);
+                    avtVector p2(tmp);
+
+                    // Compute the face normal.
+                    avtVector v1(p2 - p1);
+                    avtVector v2(p0 - p1);
+                    avtVector faceNormal((v1 % v2).normalized());
+
+                    // Evaluate distance from zoneCenter to face plane.
+                    facePlane->SetOrigin(p0.x, p0.y, p0.z);
+                    facePlane->SetNormal(faceNormal.x, faceNormal.y, faceNormal.z);
+                    double dist = facePlane->EvaluateFunction(zoneCenter[0], zoneCenter[1], zoneCenter[2]);
+
+                    faces->InsertNextId(faceSize);
+                    if(dist > 0)
+                    {
+                        // The normal points in toward zone center. We should add the
+                        // points in reverse order so it points out.
+                        for(conduit::index_t fi = faceSize - 1; fi >= 0; fi--)
+                        {
+                            faces->InsertNextId(subelements_connectivity[faceOffset + fi]);
+                        }
+                    }
+                    else
+                    {
+                        // The normal points out, emit the points in this order.
+                        for(conduit::index_t fi = 0; fi < faceSize; fi++)
+                        {
+                            faces->InsertNextId(subelements_connectivity[faceOffset + fi]);
+                        }
+                    }
+                }
+
+                ugrid->InsertNextCell(VTK_POLYHEDRON, nZoneFaces, faces->GetPointer(0));
+                faces->Reset();
+#else
+                // Add the PH zone.
+                for(conduit::index_t zfi = 0; zfi < nZoneFaces; zfi++)
+                {
+                    const auto currentFaceId = elements_connectivity[zoneOffset + zfi];
+
+                    // Now, add the face to the zone.
+                    const auto faceSize = subelements_sizes[currentFaceId];
+                    const auto faceOffset = subelements_offsets[currentFaceId];
+                    faces->InsertNextId(faceSize);
+                    for(conduit::index_t fi = 0; fi < faceSize; fi++)
+                    {
+                        faces->InsertNextId(subelements_connectivity[faceOffset + fi]);
+                    }
+                }
+
+                ugrid->InsertNextCell(VTK_POLYHEDRON, nZoneFaces, faces->GetPointer(0));
+                faces->Reset();
+#endif
             }
             else
             {
-                if (side_topo["elements/shape"].as_string() != "tri")
+                // Add a normal zone.
+                const auto nZonePoints = elements_sizes[zi];
+                for(conduit::index_t zpi = 0; zpi < nZonePoints; zpi++)
                 {
-                    AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException,
-                                              "Generated elements for mixed polygonal "
-                                              "topology must be triangles.");
+                    pts->InsertNextId(elements_connectivity[zoneOffset + zpi]);
                 }
+                ugrid->InsertNextCell(vtkCellType, nZonePoints, pts->GetPointer(0));
+                pts->Reset();
             }
-
-            avtConduitBlueprintDataAdaptor::BlueprintToVTK::CreateMixedMeshFromSideAndMixedMeshes(
-                n_topo,
-                side_topo,
-                new_mixed_topo);
-
-            // 
-            // step 4: create original cell numbers array using data
-            // from generate_sides
-            // 
-            unsigned_int_accessor d2s_values = d2smap["values"].value();
-
-            vtkUnsignedIntArray *oca = vtkUnsignedIntArray::New();
-            oca->SetName("avtOriginalCellNumbers");
-            oca->SetNumberOfComponents(2);
-
-            int_accessor n_shapes = n_topo["elements"]["shapes"].value();
-
-            // iterate through original shapes first
-            int orig_cell_id = 0;
-            if (mesh_is_polyhedral)
-            {
-                for (int i = 0; i < n_shapes.number_of_elements(); i ++)
-                {
-                    if (n_shapes[i] != VTK_POLYHEDRON)
-                    {
-                        unsigned int ocdata[2] = {static_cast<unsigned int>(domain),
-                                                  static_cast<unsigned int>(orig_cell_id)};
-                        oca->InsertNextTypedTuple(ocdata);                    
-                        orig_cell_id ++;
-                    }
-                }
-            }
-            else
-            {
-                for (int i = 0; i < n_shapes.number_of_elements(); i ++)
-                {
-                    if (n_shapes[i] != VTK_POLYGON)
-                    {
-                        unsigned int ocdata[2] = {static_cast<unsigned int>(domain),
-                                                  static_cast<unsigned int>(orig_cell_id)};
-                        oca->InsertNextTypedTuple(ocdata);                    
-                        orig_cell_id ++;
-                    }
-                }
-            }
-
-            // the new cells we have added at the end will start with this number
-            const int cell_nums_start = orig_cell_id;
-            for (int i = 0; i < d2s_values.number_of_elements(); i ++)
-            {
-                unsigned int ocdata[2] = {static_cast<unsigned int>(domain), 
-                                          static_cast<unsigned int>(cell_nums_start + d2s_values[i])};
-                oca->InsertNextTypedTuple(ocdata);
-            }
-
-            // 
-            // step 5: update the reference to the coordset and topology to
-            // point to the new ones we created
-            // 
-            auto coords_ptr = res.fetch_ptr("mixed_transformation/side_mesh/" + n_topo["coordset"].as_string());
-            auto topo_ptr = res.fetch_ptr("mixed_transformation/new_mixed_topo");
+        }
     }
     // mixed topo case
     else if (element_shape == "mixed")
