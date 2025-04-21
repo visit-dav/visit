@@ -219,11 +219,6 @@ WidgetDataNode.C
 mini3D.C
 )
 
-if(HAVE_LIBANARI)
-    list(APPEND GUILIB_SOURCES
-            anari/AnariRenderingWidget.C)
-endif(HAVE_LIBANARI)
-
 if(QWT_FOUND)
     list(APPEND GUILIB_SOURCES
         QvisStripChart.C)
@@ -236,7 +231,6 @@ ENDIF (NOT WIN32)
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
-${CMAKE_CURRENT_SOURCE_DIR}/anari
 ${VISIT_COMMON_INCLUDES}
 ${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
 ${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
@@ -248,6 +242,12 @@ ${VISIT_SOURCE_DIR}/viewer/rpc
 ${VISIT_SOURCE_DIR}/winutil
 ${VISIT_SOURCE_DIR}/third_party_builtin
 )
+
+if(HAVE_ANARI)
+    list(APPEND GUILIB_SOURCES
+            anari/AnariRenderingWidget.C)
+    include_directories(AFTER ${CMAKE_CURRENT_SOURCE_DIR}/anari)
+endif(HAVE_ANARI)
 
 SET(GUI_QT_LIBS
 ${QT_QTUITOOLS_LIBRARY}
@@ -295,7 +295,7 @@ mdserverproxy
 avtdbatts
 winutil
 ${GUI_QT_LIBS}
-$<$<BOOL:${HAVE_LIBANARI}>:anari::anari>
+$<$<BOOL:${HAVE_ANARI}>:anari::anari>
 )
 
 if(QWT_FOUND)

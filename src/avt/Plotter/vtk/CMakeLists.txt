@@ -45,7 +45,7 @@ if(HAVE_LIBOSPRAY)
          vtkVisItViewNodeFactory.C)
 endif()
 
-if(HAVE_LIBANARI)
+if(HAVE_ANARI)
     list(APPEND AVTPLOTTER_VTK_SOURCES
          vtkAnariVisItCubeAxesActorNode.C
          vtkAnariVisItAxisActorNode.C
