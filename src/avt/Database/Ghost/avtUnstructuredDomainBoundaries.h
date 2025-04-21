@@ -21,7 +21,9 @@ class vtkDataArray;
 class avtMixedVariable;
 class avtMaterial;
 template <typename T>
-class DomainData;
+class MeshDomainData;
+template <typename T>
+class MixedMaterialDomainData;
 
 // ****************************************************************************
 //  Class:  avtUnstructuredDomainBoundaries
@@ -152,14 +154,13 @@ class DATABASE_API avtUnstructuredDomainBoundaries : public avtDomainBoundaries
                                const std::vector<int> &domain2proc,
                                const std::vector<int> &domainNum,
                                const std::vector<vtkDataSet *> &,
-                               std::map<int, std::map<int, DomainData<T>>> &domaindata);
+                               std::map<int, std::map<int, MeshDomainData<T>>> &domaindata);
 
     void            CommunicateMaterialInformation(
                                const std::vector<int> &domain2proc,
                                const std::vector<int> &domainNum,
                                const std::vector<avtMaterial*> &,
-                               int **&, int **&, int ***&,
-                               int ***&, float ***&);
+                               std::map<int, std::map<int, MixedMaterialDomainData<T>>> &domaindata);
 
     void            CommunicateMixvarInformation(
                                const std::vector<int> &domain2proc,
@@ -177,23 +178,17 @@ class DATABASE_API avtUnstructuredDomainBoundaries : public avtDomainBoundaries
                                bool isPointData,
                                T ***&gainedData,
                                int **&nGainedTuples);
-    
+
 private:
-    
-    virtual std::vector<vtkDataArray*>  ExchangeFloatVector(
-                                                            std::vector<int> domainNum,
-                                                            bool isPointData,
-                                                            std::vector<vtkDataArray*> vectors);
-    
-    virtual std::vector<vtkDataArray*>  ExchangeDoubleVector(
-                                                             std::vector<int> domainNum,
-                                                             bool isPointData,
-                                                             std::vector<vtkDataArray*> vectors);
-    
-    virtual std::vector<vtkDataArray*>  ExchangeIntVector(
-                                                          std::vector<int> domainNum,
-                                                          bool isPointData,
-                                                          std::vector<vtkDataArray*> vectors);
+    size_t GetDomIndex(const vector<int> &domainNum,
+                       const int sendDom,
+                       const int recvDom);
+
+    int    GetNMixLen(const size_t nCells,
+                      const int index,
+                      const int *matlist,
+                      const int *mix_next,
+                      const int sendDom);
 };
 
 #endif
