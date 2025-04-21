@@ -24,6 +24,7 @@ class avtMaterial;
 template <typename T>
 class MeshDomainData;
 class MixedMaterialDomainData;
+class MixedVarDomainData;
 
 // ****************************************************************************
 //  Class:  avtUnstructuredDomainBoundaries
@@ -167,7 +168,7 @@ class DATABASE_API avtUnstructuredDomainBoundaries : public avtDomainBoundaries
                                const std::vector<int> &domainNum,
                                const std::vector<avtMaterial*> &,
                                const std::vector<avtMixedVariable *> &,
-                               int **&, float ***&);
+                               std::map<int, std::map<int, MixedVarDomainData>> &domaindata);
                       
 
     template <class T>
@@ -189,6 +190,16 @@ private:
                       const int *matlist,
                       const int *mix_next,
                       const int sendDom);
+
+    void   TransferMatInfo(const size_t nCells,
+                           const int index,
+                           const int *matlist,
+                           const int *mix_mat,
+                           const float *mix_vf,
+                           const int *mix_next,
+                           std::vector<int> &out_matlist,
+                           std::vector<int> &out_mix_mat,
+                           std::vector<int> &out_mix_vf)
 };
 
 #endif
