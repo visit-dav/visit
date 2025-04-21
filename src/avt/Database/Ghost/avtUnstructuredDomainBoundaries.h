@@ -15,6 +15,7 @@
 #include <map>
 #include <vector>
 #include <utility>
+#include <cstddef>
 
 class vtkDataSet;
 class vtkDataArray;
@@ -22,7 +23,6 @@ class avtMixedVariable;
 class avtMaterial;
 template <typename T>
 class MeshDomainData;
-template <typename T>
 class MixedMaterialDomainData;
 
 // ****************************************************************************
@@ -160,7 +160,7 @@ class DATABASE_API avtUnstructuredDomainBoundaries : public avtDomainBoundaries
                                const std::vector<int> &domain2proc,
                                const std::vector<int> &domainNum,
                                const std::vector<avtMaterial*> &,
-                               std::map<int, std::map<int, MixedMaterialDomainData<T>>> &domaindata);
+                               std::map<int, std::map<int, MixedMaterialDomainData>> &domaindata);
 
     void            CommunicateMixvarInformation(
                                const std::vector<int> &domain2proc,
@@ -180,7 +180,7 @@ class DATABASE_API avtUnstructuredDomainBoundaries : public avtDomainBoundaries
                                int **&nGainedTuples);
 
 private:
-    size_t GetDomIndex(const vector<int> &domainNum,
+    size_t GetDomIndex(const std::vector<int> &domainNum,
                        const int sendDom,
                        const int recvDom);
 
