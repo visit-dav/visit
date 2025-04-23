@@ -288,7 +288,7 @@ avtUnstructuredDomainBoundaries::TransferMatInfo(const size_t nCells,
                                                  const int *mix_next,
                                                  std::vector<int> &out_matlist,
                                                  std::vector<int> &out_mix_mat,
-                                                 std::vector<int> &out_mix_vf)
+                                                 std::vector<float> &out_mix_vf)
 {
     // assumes the output vectors are sized appropriately
 
@@ -1298,6 +1298,7 @@ avtUnstructuredDomainBoundaries::ExchangeMixVar(std::vector<int>                
         if (nullptr != mixvars[i])
         {
             mixvarname = mixvars[i]->GetVarname();
+            break;
         }
     }
 

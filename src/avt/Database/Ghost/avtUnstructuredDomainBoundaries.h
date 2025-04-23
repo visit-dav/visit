@@ -199,7 +199,7 @@ private:
                            const int *mix_next,
                            std::vector<int> &out_matlist,
                            std::vector<int> &out_mix_mat,
-                           std::vector<int> &out_mix_vf)
+                           std::vector<float> &out_mix_vf);
 };
 
 #endif
