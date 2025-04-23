@@ -2539,7 +2539,7 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
 
                 gainedData.resize(nTuples * nComponents);
 
-                const T *origPtr = static_cast<T *>(data[domIndex]->GetVoidPointer(0));
+                T *origPtr = static_cast<T *>(data[domIndex]->GetVoidPointer(0));
 
                 for (int tupleId = 0; tupleId < nTuples; ++tupleId)
                 {
