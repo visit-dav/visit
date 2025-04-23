@@ -252,7 +252,7 @@ avtUnstructuredDomainBoundaries::GetNMixLen(const size_t nCells,
 
 
 // ****************************************************************************
-//  Method:  avtUnstructuredDomainBoundaries::GetNMixLen
+//  Method:  avtUnstructuredDomainBoundaries::TransferMatInfo
 //
 //  Purpose:
 //       Assess the amount of mix in cells along the boundary.
@@ -290,6 +290,8 @@ avtUnstructuredDomainBoundaries::TransferMatInfo(const size_t nCells,
                                                  std::vector<int> &out_mix_mat,
                                                  std::vector<int> &out_mix_vf)
 {
+    // assumes the output vectors are sized appropriately
+
     int mixcnt = 0;
     for (int cellId = 0; cellId < nCells; cellId ++)
     {
@@ -637,7 +639,7 @@ avtUnstructuredDomainBoundaries::ExchangeMeshT(vector<int>         domainNum,
         const int nGivenPoints = [&]()
         {
             int sum = 0;
-            for (int sendDom = 0; sendDom < nTotalDomains; ++sendDom)
+            for (int sendDom = 0; sendDom < nTotalDomains; sendDom ++)
             {
                 sum += domaindata[sendDom][recvDom].nGainedPoints;
             }
@@ -1264,24 +1266,24 @@ avtUnstructuredDomainBoundaries::ExchangeCleanMaterials(vector<int> domainNum,
 //
 //    Kathleen Bonnell, Thu Apr 10 17:56:33 PDT 2008
 //    Removed redefinition of 'i'.
+// 
+//    Justin Privitera, Wed Apr 23 10:41:13 PDT 2025
+//    Fixed memory leak TODO TODO
 //
 // ****************************************************************************
 
 vector<avtMixedVariable*>
-avtUnstructuredDomainBoundaries::ExchangeMixVar(vector<int>         domainNum,
-                                          const vector<avtMaterial*> mats,
-                                          vector<avtMixedVariable*>  mixvars)
+avtUnstructuredDomainBoundaries::ExchangeMixVar(std::vector<int>                domainNum,
+                                                const std::vector<avtMaterial*> mats,
+                                                std::vector<avtMixedVariable*>  mixvars)
 {
-    vector<int> domain2proc = CreateDomainToProcessorMap(domainNum);
+    std::vector<int> domain2proc = CreateDomainToProcessorMap(domainNum);
 
-    // TODO delete me
-    int **nGainedMixlen;
-    float ***vals;
     std::map<int, std::map<int, MixedVarDomainData>> domaindata;
     CommunicateMixvarInformation(domain2proc, domainNum, mats,
                                  mixvars, domaindata);
 
-    vector<avtMixedVariable *> out(mixvars.size(), NULL);
+    std::vector<avtMixedVariable *> out(mixvars.size(), nullptr);
 
     //
     // Pretty ugly -- we need to come up with the mixed variable's name.  It
@@ -1290,64 +1292,80 @@ avtUnstructuredDomainBoundaries::ExchangeMixVar(vector<int>         domainNum,
     // (It really does happen that a domain with no mixed zones gets ghost
     // zones that are mixed.)
     //
-    const char *mixvarname = NULL;
-    for (size_t i = 0 ; i < mixvars.size() ; i++)
-        if (mixvars[i] != NULL)
-            mixvarname = mixvars[i]->GetVarname().c_str();
+    std::string mixvarname = "";
+    for (size_t i = 0; i < mixvars.size(); i++)
+    {
+        if (nullptr != mixvars[i])
+        {
+            mixvarname = mixvars[i]->GetVarname();
+        }
+    }
 
 #ifdef PARALLEL
     int rank;
     MPI_Comm_rank(VISIT_MPI_COMM, &rank);
 
     int length = 0;
-    if (mixvarname != NULL)
+    if (! mixvarname.empty())
     {
-        length = (int)strlen(mixvarname)+1;
+        length = static_cast<int>(mixvarname.size()) + 1;
     }
-    struct {int length; int rank;} len_rank_out, len_rank_in={length, rank};
+
+    struct LenRank {
+        int length;
+        int rank;
+    };
+
+    LenRank len_rank_in = {length, rank};
+    LenRank len_rank_out;
 
     MPI_Allreduce(&len_rank_in, &len_rank_out, 1, MPI_2INT, MPI_MAXLOC,
                   VISIT_MPI_COMM);
     length = len_rank_out.length;
 
-    char *mvname = new char[length];
-    if (mixvarname != NULL)
+    // allocate with the desired length
+    std::string mvname(length, '\0');
+    if (! mixvarname.empty())
     {
-        strcpy(mvname, mixvarname);
+        // Copy mixvarname into mvname
+        mvname.replace(0, mixvarname.size(), mixvarname);
     }
 
-    MPI_Bcast(mvname, length, MPI_CHAR, len_rank_out.rank, VISIT_MPI_COMM);
+    MPI_Bcast(&mvname[0], length, MPI_CHAR, len_rank_out.rank, VISIT_MPI_COMM);
     mixvarname = mvname;
-#else
-    char *mvname = NULL;
 #endif
 
-    for (size_t i = 0; i < domainNum.size(); ++i)
+    for (size_t domId = 0; domId < domainNum.size(); ++domId)
     {
-        avtMixedVariable *oldMV = mixvars[i];
+        const int recvDom = domainNum[domId];
+
+        avtMixedVariable *oldMV = mixvars[domId];
 
         //
         // Estimate the sizes we will need for the new object.
         //
-        int newMixlen  = (oldMV != NULL ? oldMV->GetMixlen(): 0);
-        for (int j = 0 ; j < nTotalDomains ; j++)
-            newMixlen += nGainedMixlen[j][domainNum[i]];
+        const int oldMixlen = (nullptr != oldMV ? oldMV->GetMixlen() : 0);
+        int newMixlen = oldMixlen;
+        for (int sendDom = 0; sendDom < nTotalDomains; sendDom ++)
+        {
+            newMixlen += domaindata[sendDom][recvDom].nGainedMixlen;
+        }
 
         if (newMixlen <= 0)
         {
-            out[i] = NULL;
+            out[domId] = nullptr;
             continue;
         }
 
         //
         // Start by copying in everything from this domain's mixvar object.
         //
-        float  *new_buff      = new float[newMixlen];
-        int     mixlen_cnt    = (oldMV != NULL ? oldMV->GetMixlen() : 0);
+        std::vector<float> new_buff(newMixlen);
+        int mixlen_cnt = oldMixlen;
         if (mixlen_cnt > 0)
         {
             const float *old_buff = oldMV->GetBuffer();
-            memcpy(new_buff, old_buff, sizeof(float)*mixlen_cnt);
+            std::copy(old_buff, old_buff + mixlen_cnt, new_buff.begin());
         }
 
         //
@@ -1355,15 +1373,23 @@ avtUnstructuredDomainBoundaries::ExchangeMixVar(vector<int>         domainNum,
         // domains in order, we will be constructing ghost information in
         // the exact same order as when we construct ghost zones for the mesh.
         //
-        for (int j = 0 ; j < nTotalDomains ; j++)
+        for (int sendDom = 0; sendDom < nTotalDomains; sendDom ++)
         {
-            memcpy(new_buff+mixlen_cnt, vals[j][domainNum[i]],
-                   sizeof(float)*nGainedMixlen[j][domainNum[i]]);
-            mixlen_cnt += nGainedMixlen[j][domainNum[i]];
+            // create references for the domain data here
+            MixedVarDomainData &currDomainData = domaindata[sendDom][recvDom];
+            int                &nGainedMixlen = currDomainData.nGainedMixlen;
+            std::vector<float> &vals          = currDomainData.vals;
+
+            std::copy(vals.begin(), 
+                      vals.begin() + nGainedMixlen,
+                      new_buff.begin() + mixlen_cnt);
+
+            mixlen_cnt += nGainedMixlen;
         }
 
-        out[i] = new avtMixedVariable(new_buff, newMixlen,mixvarname);
-        delete [] new_buff;
+        out[domId] = new avtMixedVariable(new_buff.data(),
+                                          newMixlen,
+                                          mixvarname.c_str());
     }
 
     return out;
@@ -2021,9 +2047,9 @@ avtUnstructuredDomainBoundaries::CommunicateMixvarInformation(
     int mpiGainedValsTag = tags[1];
 #endif
 
-    for (int sendDom = 0 ; sendDom < nTotalDomains ; sendDom++)
+    for (int sendDom = 0; sendDom < nTotalDomains; sendDom ++)
     {
-        for (int recvDom = 0 ; recvDom < nTotalDomains ; recvDom++)
+        for (int recvDom = 0; recvDom < nTotalDomains; recvDom ++)
         {
             // create references for the domain data here
             MixedVarDomainData &currDomainData = domaindata[sendDom][recvDom];
@@ -2121,7 +2147,6 @@ avtUnstructuredDomainBoundaries::CommunicateMixvarInformation(
             // If this process owns the sending domain, we send information.
             else if (domain2proc[sendDom] == rank)
             {
-
                 int tRank = domain2proc[recvDom];
 
                 const int index = GetGivenIndex(sendDom, recvDom);
