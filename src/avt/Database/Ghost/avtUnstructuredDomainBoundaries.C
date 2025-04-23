@@ -1842,7 +1842,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                 if (nPts == 0)
                     continue;
 
-                nGainedPoints += nPts;
+                nGainedPoints = nPts;
                 gainedPoints.resize(nPts);
                 origPointIds.resize(nPts);
 
