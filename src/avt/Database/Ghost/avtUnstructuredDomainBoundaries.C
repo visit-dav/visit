@@ -2055,34 +2055,45 @@ avtUnstructuredDomainBoundaries::CommunicateMixvarInformation(
 
                 avtMixedVariable *givingVar = mixvars[domIndex];
 
-                size_t nCells = givenCells[index].size();
+                const size_t nCells = givenCells[index].size();
 
                 const int *mix_next = mats[domIndex]->GetMixNext();
                 const int *matlist  = mats[domIndex]->GetMatlist();
-                int nMixlen = GetNMixLen(nCells, index, matlist, mix_next, sendDom);
+                const int nMixlen = GetNMixLen(nCells, index, matlist, mix_next, sendDom);
 
                 // Now that we have assessed the size, we can allocate memory
                 // and populate the buffer.
-                nGainedMixlen[sendDom][recvDom] = nMixlen;
-                vals[sendDom][recvDom] = new float[nMixlen];
-                const float *buff = NULL;
-                if (givingVar != NULL)
-                    buff = givingVar->GetBuffer();
-                // TODO justin shadow useage?
-                nMixlen = 0;
-                for (cellId = 0; cellId < nCells; cellId ++)
+                nGainedMixlen = nMixlen;
+                vals.resize(nMixlen);
+                const float *buff = (nullptr != givingVar ? givingVar->GetBuffer() : nullptr);
+                
+                // we have to protect against reading from buff if it is null
+                // we will only attempt to read from it if there is a mixed
+                // cell, which is true if nMixlen > 0.
+                if (nullptr == buff && nMixlen > 0)
                 {
-                    int cell = givenCells[index][cellId];
+                    std::string err_msg = "avtUnstructuredDomainBoundaries::CommunicateMixvarInformation "
+                                          "failed to communicate for sendDom " + std::to_string(sendDom) +
+                                          " and recvDom " + std::to_string(recvDom);
+                    EXCEPTION1(VisItException, err_msg);
+                }
+                int nMixlenCounter = 0;
+                for (int cellId = 0; cellId < nCells; cellId ++)
+                {
+                    const int cell = givenCells[index][cellId];
                     if (matlist[cell] < 0)
                     {
-                        int current = -matlist[cell]-1;
+                        int current = -matlist[cell] - 1;
                         do
                         {
-                            vals[sendDom][recvDom][nMixlen++] = buff[current];
-                            current = mix_next[current]-1;
+                            // we assume nMixlenCounter < nMixlen
+                            // it is calculated the same way as nMixlen
+                            vals[nMixlenCounter++] = buff[current];
+                            current = mix_next[current] - 1;
                         } while (mix_next[current] != 0);
                     }
                 }
+                
             }
 
             // All other cases only occur during parallel execution.
@@ -2101,10 +2112,10 @@ avtUnstructuredDomainBoundaries::CommunicateMixvarInformation(
                 if (amt == 0)
                     continue;
 
-                nGainedMixlen[sendDom][recvDom] = amt;
-                vals[sendDom][recvDom] = new float[amt];
+                nGainedMixlen = amt;
+                vals.resize(amt);
                 // Get the gained materials
-                MPI_Recv(vals[sendDom][recvDom], amt, MPI_FLOAT,
+                MPI_Recv(vals.data(), amt, MPI_FLOAT,
                          fRank, mpiGainedValsTag, VISIT_MPI_COMM, &stat);
             }
             // If this process owns the sending domain, we send information.
@@ -2113,7 +2124,7 @@ avtUnstructuredDomainBoundaries::CommunicateMixvarInformation(
 
                 int tRank = domain2proc[recvDom];
 
-                int index = GetGivenIndex(sendDom, recvDom);
+                const int index = GetGivenIndex(sendDom, recvDom);
 
                 // If no domain boundary, send 0 for nPts, and continue
                 // Also continue if there are no given points.
@@ -2123,49 +2134,55 @@ avtUnstructuredDomainBoundaries::CommunicateMixvarInformation(
                     MPI_Send(&amt, 1, MPI_INT,tRank,mpiNDataTag,VISIT_MPI_COMM);
                     continue;
                 }
-                size_t i = 0;
-                for (i = 0; i < domainNum.size(); ++i)
-                    if (domainNum[i] == sendDom)
-                        break;
+                
+                // Find the index that corresponds to the sendDom.
+                const size_t domIndex = GetDomIndex(domainNum, sendDom, recvDom);
 
-                avtMixedVariable *givingVar = mixvars[i];
+                avtMixedVariable *givingVar = mixvars[domIndex];
 
-                size_t nCells = givenCells[index].size();
+                const size_t nCells = givenCells[index].size();
 
-                const int *mix_next = mats[i]->GetMixNext();
-                const int *matlist  = mats[i]->GetMatlist();
-                int nMixlen = GetNMixLen(nCells, index, matlist, mix_next, sendDom);
+                const int *mix_next = mats[domIndex]->GetMixNext();
+                const int *matlist  = mats[domIndex]->GetMatlist();
+                const int nMixlen = GetNMixLen(nCells, index, matlist, mix_next, sendDom);
 
                 MPI_Send(&nMixlen, 1,MPI_INT,tRank,mpiNDataTag,VISIT_MPI_COMM);
 
                 // Now that we have assessed the size, we can allocate memory
                 // and populate the buffer.
-                nGainedMixlen[sendDom][recvDom] = nMixlen;
-                float *sendBuff = new float[nMixlen];
-                const float *buff = NULL;
-                if (givingVar != NULL)
-                    buff = givingVar->GetBuffer();
-                // TODO justin shadow usage?
-                nMixlen = 0;
-                for (i = 0; i < (size_t)nCells; ++i)
+                nGainedMixlen = nMixlen;
+                std::vector<float> sendBuff(nMixlen);
+                const float *buff = (nullptr != givingVar ? givingVar->GetBuffer() : nullptr);
+                
+                // we have to protect against reading from buff if it is null
+                // we will only attempt to read from it if there is a mixed
+                // cell, which is true if nMixlen > 0.
+                if (nullptr == buff && nMixlen > 0)
                 {
-                    int cell = givenCells[index][i];
+                    std::string err_msg = "avtUnstructuredDomainBoundaries::CommunicateMixvarInformation "
+                                          "failed to communicate for sendDom " + std::to_string(sendDom) +
+                                          " and recvDom " + std::to_string(recvDom);
+                    EXCEPTION1(VisItException, err_msg);
+                }
+                int nMixlenCounter = 0;
+                for (int cellId = 0; cellId < nCells; cellId ++)
+                {
+                    const int cell = givenCells[index][cellId];
                     if (matlist[cell] < 0)
                     {
-                        int current = -matlist[cell]-1;
+                        int current = -matlist[cell] - 1;
                         do
                         {
-                            sendBuff[nMixlen++] = buff[current];
-                            current = mix_next[current]-1;
+                            // we assume nMixlenCounter < nMixlen
+                            // it is calculated the same way as nMixlen
+                            sendBuff[nMixlenCounter++] = buff[current];
+                            current = mix_next[current] - 1;
                         } while (mix_next[current] != 0);
                     }
                 }
-
                 // Send the matlist
-                MPI_Send(sendBuff, nMixlen, MPI_FLOAT,
+                MPI_Send(sendBuff.data(), nMixlen, MPI_FLOAT,
                          tRank, mpiGainedValsTag, VISIT_MPI_COMM);
-
-                delete [] sendBuff;
             }
 #endif
         }
