@@ -70,6 +70,10 @@ avtSmartDivideExpression::~avtSmartDivideExpression()
 //
 //  Programmer: Eddie Rusu
 //  Creation:   Tue Sep 24 09:07:44 PDT 2019
+// 
+//  Modifications:
+//    Justin Privitera, Wed Apr  2 15:03:35 PDT 2025
+//    Handle the single input case.
 //
 // ****************************************************************************
 
@@ -78,23 +82,30 @@ avtSmartDivideExpression::RecenterData(vtkDataSet* in_ds)
 {
     debug5 << "Entering avtSmartDivideExpression::RecenterData(vtkDataSet*)"
             << std::endl;
-    if (centerings[0] != centerings[1])
+    if (centerings.size() == 1)
     {
-        centering = AVT_ZONECENT;
-        if (centerings[0] == AVT_NODECENT)
-        {
-            dataArrays[0] = Recenter(in_ds, dataArrays[0], centerings[0],
-                outputVariableName);
-        }
-        else
-        {
-            dataArrays[1] = Recenter(in_ds, dataArrays[1], centerings[1],
-                outputVariableName);
-        }
+        centering = centerings[0];
     }
     else
     {
-        centering = centerings[0];
+        if (centerings[0] != centerings[1])
+        {
+            centering = AVT_ZONECENT;
+            if (centerings[0] == AVT_NODECENT)
+            {
+                dataArrays[0] = Recenter(in_ds, dataArrays[0], centerings[0],
+                    outputVariableName);
+            }
+            else
+            {
+                dataArrays[1] = Recenter(in_ds, dataArrays[1], centerings[1],
+                    outputVariableName);
+            }
+        }
+        else
+        {
+            centering = centerings[0];
+        }
     }
     debug5 << "Exiting  avtSmartDivideExpression::RecenterData(vtkDataSet*)"
             << std::endl;
@@ -117,6 +128,9 @@ avtSmartDivideExpression::RecenterData(vtkDataSet* in_ds)
 //      Eddie Rusu, Mon Sep 30 14:49:38 PDT 2019
 //      Replaced output variable setup with
 //      avtMultiInputMathExpression::CreateOutputVariable.
+// 
+//      Justin Privitera, Wed Apr  2 15:03:35 PDT 2025
+//      Handle the single input case.
 //
 // ****************************************************************************
 
@@ -128,6 +142,12 @@ avtSmartDivideExpression::DoOperation()
     // multi-variable divide by zero case. For example, suppose the user
     // wants to specify varying tolernaces over the mesh as represented by
     // some variable or varying div_zero_value. This can be easily done here.
+
+    if (dataArrays.size() < 2)
+    {
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                   "avtSmartDivideExpression cannot divide a single variable.");
+    }
 
     vtkDataArray* data1 = dataArrays[0];
     vtkDataArray* data2 = dataArrays[1];

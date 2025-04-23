@@ -45,44 +45,63 @@ function bv_visit_host_profile
 
 function bv_visit_ensure_built_or_ready
 {
-    # Check-out the latest git sources, before building VisIt
+    # Check out the latest Git sources, before building VisIt
     if [[ "$DO_GIT" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
         if [[ -d visit ]] ; then
-            info "Found existing GIT visit directory, using that . . ."
+            info "Found existing Git VisIt directory ($(cd visit && pwd)), using that . . ."
         else
             # Print a dialog screen
-            info "GIT clone of visit ($GIT_ROOT_PATH) . . ."
+            info "Cloning VisIt with Git ($GIT_ROOT_PATH) . . ."
             if [[ "$DO_REVISION" == "yes" && "$GITREVISION" != "" ]] ; then
                 # Get the specified revision.
-                git clone --recursive $GIT_ROOT_PATH
-                cd visit
-                git checkout $GITREVISION
-                cd ..
+                if ! git clone --recursive "$GIT_ROOT_PATH"; then
+                    warn "Unable to build VisIt. Recursive Git clone of '$GIT_ROOT_PATH' failed."
+                    return 1
+                fi
+                cd visit || return 1
+                if ! git checkout "$GITREVISION"; then
+                    warn "Unable to build VisIt. Git checkout of revision '$GITREVISION' failed."
+                    cd .. || return 1
+                    return 1
+                fi
+                cd .. || return 1
             elif [[ "$TRUNK_BUILD" == "yes" ]] ; then
                 # Get the trunk version
-                git clone --recursive $GIT_ROOT_PATH
+                if ! git clone --recursive "$GIT_ROOT_PATH"; then
+                    warn "Unable to build VisIt. Recursive Git clone of '$GIT_ROOT_PATH' failed."
+                    return 1
+                fi
             elif [[ "$RC_BUILD" == "yes" ]] ; then
                 # Get the RC version
-                git clone --recursive $GIT_ROOT_PATH
-                cd visit
-                git checkout ${VISIT_VERSION:0:3}RC
-                cd ..
+                if ! git clone --recursive "$GIT_ROOT_PATH"; then
+                    warn "Unable to build VisIt. Recursive Git clone of '$GIT_ROOT_PATH' failed."
+                    return 1
+                fi
+                cd visit || return 1
+                if ! git checkout "${VISIT_VERSION:0:3}RC"; then
+                    warn "Unable to build VisIt. Git checkout of RC '${VISIT_VERSION:0:3}RC' failed."
+                    cd .. || return 1
+                    return 1
+                fi
+                cd .. || return 1
             elif [[ "$TAGGED_BUILD" == "yes" ]] ; then
                 # Get the tagged version
-                git clone --recursive $GIT_ROOT_PATH
-                cd visit
-                git checkout v${VISIT_VERSION}
-                cd ..
-            fi
-            if [[ $? != 0 ]] ; then
-                warn "Unable to build VisIt. GIT clone failed."
-                return 1
+                if ! git clone --recursive "$GIT_ROOT_PATH"; then
+                    warn "Unable to build VisIt. Recursive Git clone of '$GIT_ROOT_PATH' failed."
+                    return 1
+                fi
+                cd visit || return 1
+                if ! git checkout "v${VISIT_VERSION}"; then
+                    warn "Unable to build VisIt. Git checkout of tag 'v${VISIT_VERSION}' failed."
+                    return 1
+                fi
+                cd .. || return 1
             fi
         fi
 
-    # Build using (the assumed) existing GIT "visit" directory
+    # Build using (the assumed) existing Git "visit" directory
     elif [[ -d visit ]] ; then
-        info "Found existing GIT visit directory, using that . . ."
+        info "Found existing Git VisIt directory ($(cd visit && pwd)), using that . . ."
         #resetting any values that have mixup the build between Trunk and RC
         VISIT_FILE="" #erase any accidental setting of these values
         USE_VISIT_FILE="no"
@@ -94,8 +113,7 @@ function bv_visit_ensure_built_or_ready
             info \
                 "Got VisIt source code. Let's look for 3rd party libraries."
         else
-            download_file $VISIT_FILE
-            if [[ $? != 0 ]] ; then
+            if ! download_file "$VISIT_FILE"; then
                 warn \
                     "Unable to build VisIt. Can't find source code: ${VISIT_FILE}."
                 return 1

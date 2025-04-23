@@ -53,6 +53,56 @@
     </Function>
     <Function name="GetMethodNameFromMethod" user="true" member="true">
     </Function>
+    <Function name="PyDatabaseCorrelation_ToString" user="false" member="true">
+    </Function>
+    <Function name="DatabaseCorrelation_dir" user="false" member="true">
+    </Function>
+    <Function name="PyDatabaseCorrelation_getattro" user="false" member="true">
+    </Function>
+    <Function name="PyDatabaseCorrelation_setattro" user="false" member="true">
+    </Function>
+    <Function name="DatabaseCorrelation_Notify" user="false" member="true">
+    </Function>
+    <Function name="DatabaseCorrelation_SetName" user="false" member="true">
+    </Function>
+    <Function name="DatabaseCorrelation_SetNumStates" user="false" member="true">
+    </Function>
+    <Function name="DatabaseCorrelation_SetMethod" user="false" member="true">
+    </Function>
+    <Function name="DatabaseCorrelation_SetDatabaseNames" user="false" member="true">
+    </Function>
+    <Function name="DatabaseCorrelation_SetDatabaseNStates" user="false" member="true">
+    </Function>
+    <Function name="DatabaseCorrelation_SetDatabaseTimes" user="false" member="true">
+    </Function>
+    <Function name="DatabaseCorrelation_SetDatabaseCycles" user="false" member="true">
+    </Function>
+    <Function name="DatabaseCorrelation_SetIndices" user="false" member="true">
+    </Function>
+    <Function name="DatabaseCorrelation_SetCondensedTimes" user="false" member="true">
+    </Function>
+    <Function name="DatabaseCorrelation_SetCondensedCycles" user="false" member="true">
+    </Function>
+    <Function name="DatabaseCorrelation_GetCorrelatedTimeStates" user="true" member="true">
+    </Function>
+    <Function name="DatabaseCorrelation_UsesDatabase" user="true" member="true">
+    </Function>
+    <Function name="DatabaseCorrelation_GetNumDatabases" user="true" member="true">
+    </Function>
+    <Function name="DatabaseCorrelation_GetCorrelatedTimeState" user="true" member="true">
+    </Function>
+    <Function name="DatabaseCorrelation_GetInverseCorrelatedTimeState" user="true" member="true">
+    </Function>
+    <Function name="DatabaseCorrelation_GetDatabaseCycleForState" user="true" member="true">
+    </Function>
+    <Function name="DatabaseCorrelation_GetDatabaseTimeForState" user="true" member="true">
+    </Function>
+    <Function name="DatabaseCorrelation_GetCondensedCycleForState" user="true" member="true">
+    </Function>
+    <Function name="DatabaseCorrelation_GetCondensedTimeForState" user="true" member="true">
+    </Function>
+    <Function name="PyDatabaseCorrelation_methods" user="false" member="true">
+    </Function>
     <Include file="source" quoted="false">
       algorithm
     </Include>

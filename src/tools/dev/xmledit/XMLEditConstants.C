@@ -313,7 +313,17 @@ XMLEditConstants::BlockAllSignals(bool block)
 //    Also changed the text set in constantlist from 'text' to 'newname' which
 //    I believe is the intent.
 //
+//    Kathleen Biagas, Wed April 16, 2025
+//    Add no-arg nameTextChanged to match editingFinished signal.
+//
 // ****************************************************************************
+
+void
+XMLEditConstants::nameTextChanged()
+{
+    nameTextChanged(name->text());
+}
+
 void
 XMLEditConstants::nameTextChanged(const QString &text)
 {
@@ -323,7 +333,7 @@ XMLEditConstants::nameTextChanged(const QString &text)
         return;
     Constant *c = a->constants[index];
 
-    QString newname = text.isEmpty() ? name->text().trimmed() : text.trimmed();
+    QString newname = text.trimmed();
     c->name = newname;
     if(CountConstants(newname) > 1)
     {

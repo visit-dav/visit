@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="ViewCurveAttributes" purpose="This class contains the curve view attributes." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+  <Attribute name="ViewCurveAttributes" purpose="This class contains the curve view attributes." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="ViewCurveAttributes.code">
     <Field name="domainCoords" label="domainCoords" type="doubleArray" length="2">
       0.000000
       1.000000
@@ -20,4 +20,6 @@
     <Field name="rangeScale" label="rangeScale" type="scalemode">
       0
     </Field>
+    <Function name="SetViewportCoords" user="false" member="true">
+    </Function>
   </Attribute>

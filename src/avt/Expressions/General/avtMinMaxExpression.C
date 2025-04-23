@@ -70,6 +70,10 @@ avtMinMaxExpression::~avtMinMaxExpression()
 //
 //  Programmer: Eddie Rusu
 //  Creation:   Mon Sep 30 14:09:49 PDT 2019
+// 
+//  Modifications:
+//    Justin Privitera, Wed Apr  2 15:03:35 PDT 2025
+//    Handle the single input case.
 //
 // ****************************************************************************
 
@@ -79,11 +83,29 @@ avtMinMaxExpression::DoOperation()
     debug4 << "Entering avtMinMaxExpression::DoOperation()" << std::endl;
     vtkDataArray* output = CreateOutputVariable();
 
-    // Loop over all inputs and determine the min/max
-    DoOperationHelper(output, dataArrays[0], dataArrays[1]);
-    for (int i = 2; i < nProcessedArgs; ++i)
+    if (dataArrays.size() == 1)
     {
-        DoOperationHelper(output, output, dataArrays[i]);
+        const bool varIsSingleton = (dataArrays[0]->GetNumberOfTuples() == 1);
+        const int ntuples = output->GetNumberOfTuples();
+        const int ncomps = dataArrays[0]->GetNumberOfComponents();
+        for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+        {
+            for (int comp_id = 0; comp_id < ncomps; comp_id++)
+            {
+                vtkIdType tup = (varIsSingleton ? 0 : tuple_id);
+                const double outval = dataArrays[0]->GetComponent(tup, comp_id);
+                output->SetComponent(tuple_id, comp_id, outval);
+            }
+        }
+    }
+    else
+    {
+        // Loop over all inputs and determine the min/max
+        DoOperationHelper(output, dataArrays[0], dataArrays[1]);
+        for (int i = 2; i < nProcessedArgs; ++i)
+        {
+            DoOperationHelper(output, output, dataArrays[i]);
+        }
     }
 
     debug4 << "Exiting  avtMinMaxExpression::DoOperation()" << std::endl;

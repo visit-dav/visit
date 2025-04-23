@@ -520,13 +520,75 @@ ViewCurveAttributes::SetRangeCoords(const double *rangeCoords_)
     Select(ID_rangeCoords, (void *)rangeCoords, 2);
 }
 
+#include <DebugStream.h>
 void
 ViewCurveAttributes::SetViewportCoords(const double *viewportCoords_)
 {
-    viewportCoords[0] = viewportCoords_[0];
-    viewportCoords[1] = viewportCoords_[1];
-    viewportCoords[2] = viewportCoords_[2];
-    viewportCoords[3] = viewportCoords_[3];
+//
+// THIS METHOD IS CUSTOM CODED!!!
+// see .code file
+//
+    bool clamping = false;
+    if(viewportCoords_[0] < 0.)
+    {
+        clamping = true;
+        viewportCoords[0] = 0.;
+    }
+    else if(viewportCoords_[0] > 1.)
+    {
+        clamping = true;
+        viewportCoords[0] = 1.;
+    }
+    else
+    {
+        viewportCoords[0] = viewportCoords_[0];
+    }
+    if(viewportCoords_[1] > 1.)
+    {
+        clamping = true;
+        viewportCoords[1] = 1.;
+    }
+    else if(viewportCoords_[1] < 0.)
+    {
+        clamping = true;
+        viewportCoords[1] = 0.;
+    }
+    else
+    {
+        viewportCoords[1] = viewportCoords_[1];
+    }
+    if(viewportCoords_[2] < 0.)
+    {
+        clamping = true;
+        viewportCoords[2] = 0.;
+    }
+    else if(viewportCoords_[2] > 1.)
+    {
+        clamping = true;
+        viewportCoords[2] = 1.;
+    }
+    else
+    {
+        viewportCoords[2] = viewportCoords_[2];
+    }
+    if(viewportCoords_[3] > 1.)
+    {
+        clamping = true;
+        viewportCoords[3] = 1.;
+    }
+    else if(viewportCoords_[3] < 0.)
+    {
+        clamping = true;
+        viewportCoords[3] = 0.;
+    }
+    else
+    {
+        viewportCoords[3] = viewportCoords_[3];
+    }
+    if(clamping)
+    {
+        debug3 << "ViewCurveAttributes::viewportCoords have been clamped to values between [0,1]." << endl;
+    }
     Select(ID_viewportCoords, (void *)viewportCoords, 4);
 }
 

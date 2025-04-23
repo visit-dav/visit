@@ -3489,45 +3489,6 @@ PyVolumeAttributes_getattro(PyObject *self, PyObject *attr_name)
     if(strcmp(name, "materialProperties") == 0)
         return VolumeAttributes_GetMaterialProperties(self, NULL);
 
-#include <visit-config.h>
-
-#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
-#error This code is obsolete in this version of VisIt and should be removed.
-#else
-    // Try and handle legacy fields
-#define NAME_CHANGE_MESSAGE2(oldname, newname) \
-    PyErr_WarnFormat(NULL, 1, "'%s' is no longer a valid Volume attribute.\n" \
-                    "It's name has been changed to '%s', " \
-                    "please update your script.\n", oldname, newname);
-
-    // rendererTypes
-    if(strcmp(name, "Default") == 0)
-    {
-        NAME_CHANGE_MESSAGE2(name, "Serial");
-        return PyInt_FromLong(0L);
-    }
-    if(strcmp(name, "RayCasting") == 0)
-    {
-        NAME_CHANGE_MESSAGE2(name, "Composite");
-        return PyInt_FromLong(0L);
-    }
-    if(strcmp(name, "RayCastingIntegration") == 0)
-    {
-        NAME_CHANGE_MESSAGE2(name, "Integration");
-        return PyInt_FromLong(0L);
-    }
-    if(strcmp(name, "RayCastingSLIVR") == 0)
-    {
-        NAME_CHANGE_MESSAGE2(name, "SLIVR");
-        return PyInt_FromLong(0L);
-    }
-    if(strcmp(name, "RayCastingOSPRay") == 0)
-    {
-        PyErr_WarnFormat(NULL, 1, "'RayCastingOSPRay is no longer a valid Volume attribute.\nIt's value is being ignored, please remove it from your script.\nTry using 'Parallel' for 'rendererType' and set 'OSPRayEnabledFlag' to '1'\n");
-        return PyInt_FromLong(0L);
-    }
-    // end Renderer types
-#endif
     PyObject *meth = Py_FindMethod(PyVolumeAttributes_methods, self, (char*)name);
     if (meth) return meth;
 
@@ -3633,84 +3594,6 @@ PyVolumeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
     else if(strcmp(name, "materialProperties") == 0)
         obj = VolumeAttributes_SetMaterialProperties(self, args);
 
-#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
-#error This code is obsolete in this version of VisIt. Please remove it
-#else
-#define NAME_CHANGE_MESSAGE(oldname, newname) \
-    PyErr_WarnFormat(NULL, 1, "'%s' is no longer a valid Volume attribute.\n" \
-                    "It's name has been changed to '%s', " \
-                    "please update your script.\n", oldname, newname);
-
-#define DEPRECATED_MESSAGE(oldname) \
-    PyErr_WarnFormat(NULL, 1, "'%s' is no longer a valid Volume attribute.\n" \
-                    "It's value is being ignored, " \
-                    "please remove it from your script.\n", oldname);
-
-    // Try and handle legacy fields
-    if(obj == &NULL_PY_OBJ)
-    {
-        if (strcmp(name, "osprayShadowsEnabledFlag") == 0)
-        {
-            NAME_CHANGE_MESSAGE(name, "OSPRayShadowsEnabledFlag");
-            obj = VolumeAttributes_SetOSPRayShadowsEnabledFlag(self, args);
-        }
-        else if (strcmp(name, "osprayUseGridAcceleratorFlag") == 0)
-        {
-            NAME_CHANGE_MESSAGE(name, "OSPRayUseGridAcceleratorFlag");
-            obj = VolumeAttributes_SetOSPRayUseGridAcceleratorFlag(self, args);
-        }
-        else if (strcmp(name, "osprayPreIntegrationFlag") == 0)
-        {
-            NAME_CHANGE_MESSAGE(name, "OSPRayPreIntegrationFlag");
-            obj = VolumeAttributes_SetOSPRayPreIntegrationFlag(self, args);
-        }
-        else if (strcmp(name, "ospraySingleShadeFlag") == 0)
-        {
-            NAME_CHANGE_MESSAGE(name, "OSPRaySingleShadeFlag");
-            obj = VolumeAttributes_SetOSPRaySingleShadeFlag(self, args);
-        }
-        else if (strcmp(name, "osprayOneSidedLightingFlag") == 0)
-        {
-            NAME_CHANGE_MESSAGE(name, "OSPRayOneSidedLightingFlag");
-            obj = VolumeAttributes_SetOSPRayOneSidedLightingFlag(self, args);
-        }
-        else if (strcmp(name, "osprayAoTransparencyEnabledFlag") == 0)
-        {
-            NAME_CHANGE_MESSAGE(name, "OSPRayAOTransparencyEnabledFlag");
-            obj = VolumeAttributes_SetOSPRayAOTransparencyEnabledFlag(self, args);
-        }
-        else if (strcmp(name, "ospraySpp") == 0)
-        {
-            NAME_CHANGE_MESSAGE(name, "OSPRaySPP");
-            obj = VolumeAttributes_SetOSPRaySPP(self, args);
-        }
-        else if (strcmp(name, "osprayAoSamples") == 0)
-        {
-            NAME_CHANGE_MESSAGE(name, "OSPRayAOSamples");
-            obj = VolumeAttributes_SetOSPRayAOSamples(self, args);
-        }
-        else if (strcmp(name, "osprayAoDistance") == 0)
-        {
-            NAME_CHANGE_MESSAGE(name, "OSPRayAODistance");
-            obj = VolumeAttributes_SetOSPRayAODistance(self, args);
-        }
-        else if (strcmp(name, "osprayMinContribution") == 0)
-        {
-            NAME_CHANGE_MESSAGE(name, "OSPRayMinContribution");
-            obj = VolumeAttributes_SetOSPRayMinContribution(self, args);
-        }
-
-        if ((strcmp(name, "resampleFlag") == 0) ||
-            (strcmp(name, "compactVariable") == 0)  ||
-            (strcmp(name, "renderMode") == 0))
-        {
-            DEPRECATED_MESSAGE(name);
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-    }
-#endif
-
     if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
     {
         Py_INCREF(Py_None);
@@ -3746,10 +3629,10 @@ static char const *PyVolumeAttributes_purpose = "This class contains the plot at
 //
 // Initialize the python object type structure with default values.
 // If you need to do something custom, #undef VISIT_PY_TYPE_OBJ_TP_SLOTS,
-// which is defined with default values for our standard pythong objects
+// which is defined with default values for our standard python objects
 // in src/visitpy/common/Py2and3Support.h. Then re-define it here AHEAD of
-// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples in
-// src/avt/PythonFilters.
+// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of
+// such customization in src/avt/PythonFilters or src/visitpy/common.
 //
 VISIT_PY_TYPE_OBJ(VolumeAttributes);
 
