@@ -100,6 +100,18 @@ public:
 };
 
 // ****************************************************************************
+// A container for storing domain communication var data. There is one of 
+// these for each pair of domains.
+template <typename T>
+class VarDomainData
+{
+    // contains data for a relation between two domains
+public:
+    std::vector<T> gainedData;
+    int nGainedTuples;
+};
+
+// ****************************************************************************
 //  Constructor:  avtUnstructuredDomainBoundaries::
 //                  avtUnstructuredDomainBoundaries
 //
@@ -645,7 +657,6 @@ avtUnstructuredDomainBoundaries::ExchangeMeshT(vector<int>         domainNum,
             }
             return sum;
         }();
-        
 
         // Create the VTK objects
         vtkUnstructuredGrid *outMesh = vtkUnstructuredGrid::New();
@@ -667,20 +678,22 @@ avtUnstructuredDomainBoundaries::ExchangeMeshT(vector<int>         domainNum,
         int newId = nOldPoints;
         for (int sendDom = 0; sendDom < nTotalDomains; sendDom ++)
         {
+            // create references for the domain data here
+            MeshDomainData<T> &currDomainData = domaindata[sendDom][recvDom];
+            std::vector<std::array<T, 3>> &gainedPoints   = currDomainData.gainedPoints;
+            std::vector<int>              &origPointIds   = currDomainData.origPointIds;
+            int                           &nGainedPoints  = currDomainData.nGainedPoints;
+
             if (sendDom == recvDom)
                 continue;
 
-            int nGainedPointsThisDomain = domaindata[sendDom][recvDom].nGainedPoints;
+            const int &nGainedPointsThisDomain = nGainedPoints;
             if (nGainedPointsThisDomain == 0)
                 continue;
 
             // We need to remember what the point id for this exchange
             // of points is.
             startingPoint[std::make_pair(sendDom, recvDom)] = newId;
-
-            std::vector<std::array<T, 3>> &gainedPoints = 
-                domaindata[sendDom][recvDom].gainedPoints;
-            std::vector<int> &origPointIds = domaindata[sendDom][recvDom].origPointIds;
 
             for (int gainedPtId = 0; gainedPtId < nGainedPointsThisDomain; gainedPtId ++)
             {
@@ -697,10 +710,17 @@ avtUnstructuredDomainBoundaries::ExchangeMeshT(vector<int>         domainNum,
         // Put in the new cells
         for (int sendDom = 0; sendDom < nTotalDomains; ++sendDom)
         {
+            // create references for the domain data here
+            MeshDomainData<T> &currDomainData = domaindata[sendDom][recvDom];
+            std::vector<int>              &cellTypes      = currDomainData.cellTypes;
+            std::vector<std::vector<int>> &cellPoints     = currDomainData.cellPoints;
+            int                           &nGainedCells   = currDomainData.nGainedCells;
+            std::vector<int>              &nPointsPerCell = currDomainData.nPointsPerCell;
+
             if (recvDom == sendDom)
                 continue;
 
-            const int nGainedCellsThisDomain = domaindata[sendDom][recvDom].nGainedCells;
+            const int &nGainedCellsThisDomain = nGainedCells;
 
             if (nGainedCellsThisDomain == 0)
                 continue;
@@ -715,10 +735,6 @@ avtUnstructuredDomainBoundaries::ExchangeMeshT(vector<int>         domainNum,
             const int index = GetGivenIndex(sendDom, recvDom);
             std::map<int, int> &smap = sharedPointsMap[index];
             std::map<int, int> &tmap = translatedPointsMap[sendDom];
-
-            std::vector<int> &nPointsPerCell = domaindata[sendDom][recvDom].nPointsPerCell;
-            std::vector<std::vector<int>> &cellPoints = domaindata[sendDom][recvDom].cellPoints;
-            std::vector<int> &cellTypes = domaindata[sendDom][recvDom].cellTypes;
 
             for (int gainedCellId = 0; gainedCellId < nGainedCellsThisDomain; gainedCellId ++)
             {
@@ -1112,13 +1128,13 @@ avtUnstructuredDomainBoundaries::ExchangeMixedMaterials(vector<int> domainNum,
         {
             // create references for the domain data here
             MixedMaterialDomainData &currDomainData = domaindata[sendDom][recvDom];
-            int                &nGainedCells  = currDomainData.nGainedCells;
-            std::vector<int>   &gainedMatlist = currDomainData.gainedMatlist;
-            std::vector<int>   &gainedMixmat  = currDomainData.gainedMixmat;
-            std::vector<float> &gainedMixvf   = currDomainData.gainedMixvf;
+            const int                &nGainedCells  = currDomainData.nGainedCells;
+            const std::vector<int>   &gainedMatlist = currDomainData.gainedMatlist;
+            const std::vector<int>   &gainedMixmat  = currDomainData.gainedMixmat;
+            const std::vector<float> &gainedMixvf   = currDomainData.gainedMixvf;
 
             int lml = 0; // "local" mixlen ... mixlen counter for this domain
-            for (int mixedCellId = 0 ; mixedCellId < nGainedCells; mixedCellId ++)
+            for (int mixedCellId = 0; mixedCellId < nGainedCells; mixedCellId ++)
             {
                 if (gainedMatlist[mixedCellId] >= 0)
                 {
@@ -1378,8 +1394,8 @@ avtUnstructuredDomainBoundaries::ExchangeMixVar(std::vector<int>                
         {
             // create references for the domain data here
             MixedVarDomainData &currDomainData = domaindata[sendDom][recvDom];
-            int                &nGainedMixlen = currDomainData.nGainedMixlen;
-            std::vector<float> &vals          = currDomainData.vals;
+            const int                &nGainedMixlen = currDomainData.nGainedMixlen;
+            const std::vector<float> &vals          = currDomainData.vals;
 
             std::copy(vals.begin(), 
                       vals.begin() + nGainedMixlen,
@@ -1412,13 +1428,10 @@ avtUnstructuredDomainBoundaries::ExchangeMixVar(std::vector<int>                
 bool
 avtUnstructuredDomainBoundaries::RequiresCommunication(avtGhostDataType gtype)
 {
-    if (gtype == NO_GHOST_DATA)
-        return false;
-    else if (gtype == GHOST_NODE_DATA)
-        return false;
-
-    // (gtype == GHOST_ZONE_DATA)
-    return true;
+    // we want to return true only if there are ghost zones.
+    // if there are only ghost nodes or no ghost data, then no communication
+    // is required.
+    return gtype == GHOST_ZONE_DATA;
 }
 
 
@@ -1453,11 +1466,11 @@ avtUnstructuredDomainBoundaries::ConfirmMesh(vector<int>       domainNum,
         if (meshes[i] == 0)
             continue;
 
-        int d1 = domainNum[i];
+        const int d1 = domainNum[i];
         for (size_t j = i + 1; j < domainNum.size(); ++j)
         {
-            int d2 = domainNum[j];
-            int index = GetGivenIndex(d1, d2);
+            const int d2 = domainNum[j];
+            const int index = GetGivenIndex(d1, d2);
             if (index < 0)
                 continue;
 
@@ -1469,19 +1482,20 @@ avtUnstructuredDomainBoundaries::ConfirmMesh(vector<int>       domainNum,
                 continue;
 
             // Found a shared domain, let's take a look.
-            int d1ptId = smap.begin()->first;
-            int d2ptId = smap.begin()->second;
+            const int d1ptId = smap.begin()->first;
+            const int d2ptId = smap.begin()->second;
 
             double pt1[3], pt2[3];
             meshes[i]->GetPoint(d1ptId, pt1);
             meshes[j]->GetPoint(d2ptId, pt2);
 
-            const double epsilon = 1e-12;
+            constexpr double epsilon = 1e-12;
 
-            // If these points are too dis-similar, it has to be
-            // referring another mesh.
-            if (fabs(pt1[0] - pt2[0]) + fabs(pt1[1] - pt2[1])
-                                      + fabs(pt1[2] - pt2[2]) > epsilon)
+            // If these points are too dissimilar, it has to be
+            // referring to another mesh.
+            if (epsilon < (fabs(pt1[0] - pt2[0]) + 
+                           fabs(pt1[1] - pt2[1]) + 
+                           fabs(pt1[2] - pt2[2])))
                 return false;
 
             // If we reached this point, then we've tested this pair of
@@ -1538,91 +1552,72 @@ avtUnstructuredDomainBoundaries::ExchangeData(vector<int>         &domainNum,
 {
     // Gather the needed information
     vector<int> domain2proc = CreateDomainToProcessorMap(domainNum);
-    T ***gainedData;
-    int **nGainedTuples;
-
-    CommunicateDataInformation<T> (domain2proc, domainNum, data, isPointData,
-                                   gainedData, nGainedTuples);
+    
+    std::map<int, std::map<int, VarDomainData<T>>> domaindata;
+    CommunicateDataInformation<T>(domain2proc, domainNum, data, isPointData,
+                                  domaindata);
 
     vector<vtkDataArray*> out(data.size(), NULL);
 
     int nComponents = 0;
     int nonNullDomain =0;
-    while (nonNullDomain < data.size() && data[nonNullDomain] == NULL)
-        nonNullDomain++;
-    if (nonNullDomain < data.size())
-        nComponents = data[nonNullDomain]->GetNumberOfComponents();
-
-    for (size_t i = 0; i < domainNum.size(); ++i)
+    while (nonNullDomain < data.size() && nullptr == data[nonNullDomain])
     {
-        int recvDom = domainNum[i];
-        if (data[i] == NULL)
+        nonNullDomain ++;
+    }
+    if (nonNullDomain < data.size())
+    {
+        nComponents = data[nonNullDomain]->GetNumberOfComponents();
+    }
+
+    for (size_t domId = 0; domId < domainNum.size(); ++domId)
+    {
+        const int recvDom = domainNum[domId];
+        if (nullptr == data[domId])
             continue;
-        out[i] = data[i]->NewInstance();
+        out[domId] = data[domId]->NewInstance();
 
-        out[i]->DeepCopy(data[i]);
-        out[i]->SetName(data[i]->GetName());
-
-        int sendDom;
+        out[domId]->DeepCopy(data[domId]);
+        out[domId]->SetName(data[domId]->GetName());
 
         int nGivenTuples = 0;
-        for (sendDom = 0; sendDom < nTotalDomains; ++sendDom)
+        for (int sendDom = 0; sendDom < nTotalDomains; ++sendDom)
         {
             if (recvDom == sendDom)
                 continue;
 
-            nGivenTuples += nGainedTuples[sendDom][recvDom];
+            nGivenTuples += domaindata[sendDom][recvDom].nGainedTuples;
         }
 
         if (nGivenTuples > 0)
         {
-            out[i]->Resize(nGivenTuples + out[i]->GetNumberOfTuples());
+            out[domId]->Resize(nGivenTuples + out[domId]->GetNumberOfTuples());
 
             // This properly sets the internal size.
-            out[i]->InsertTuple(data[i]->GetNumberOfTuples() + nGivenTuples - 1,
-                                data[i]->GetTuple(0));
+            out[domId]->InsertTuple(data[domId]->GetNumberOfTuples() + nGivenTuples - 1,
+                                    data[domId]->GetTuple(0));
         }
 
-        for (sendDom = 0; sendDom < nTotalDomains; ++sendDom)
+        for (int sendDom = 0; sendDom < nTotalDomains; sendDom ++)
         {
-            if (sendDom == recvDom || nGainedTuples[sendDom][recvDom] == 0)
+            // create references for the domain data here
+            VarDomainData<T> &currDomainData = domaindata[sendDom][recvDom];
+            const std::vector<T> &gainedData    = currDomainData.gainedData;
+            const int            &nGainedTuples = currDomainData.nGainedTuples;
+
+            if (sendDom == recvDom || 0 == nGainedTuples)
                 continue;
 
-            int refIndex;
-            if (isPointData)
-                refIndex = startingPoint[pair<int,int>(sendDom, recvDom)];
-            else
-                refIndex = startingCell[pair<int,int>(sendDom, recvDom)];
-
-            T * ptr = (T *)(out[i]->GetVoidPointer(refIndex * nComponents));
-            T * copyPtr = gainedData[sendDom][recvDom];
-
-            int nDatCopy = nGainedTuples[sendDom][recvDom] * nComponents;
-            int k;
-            for (k = 0; k < nDatCopy; ++k)
+            const int refIndex = (isPointData ? startingPoint[pair<int,int>(sendDom, recvDom)]
+                                              : startingCell[pair<int,int>(sendDom, recvDom)]);
+            T *ptr = static_cast<T *>(out[domId]->GetVoidPointer(refIndex * nComponents));
+            const int nDatCopy = nGainedTuples * nComponents;
+            for (int idx = 0; idx < nDatCopy; idx ++)
             {
-                (*ptr++) = (*copyPtr++) ;
+                (*ptr++) = gainedData[idx];
             }
         }
     }
-
-    int a, b;
-    for (a = 0; a < nTotalDomains; ++a)
-    {
-        for (b = 0; b < nTotalDomains; ++b)
-        {
-            // These aren't always allocated for each combination.
-            // Check to see if they were allocated before deleting.
-            if (gainedData[a][b])
-            {
-                delete [] gainedData[a][b];
-            }
-        }
-        delete [] gainedData[a];
-        delete [] nGainedTuples[a];
-    }
-    delete [] gainedData;
-    delete [] nGainedTuples;
 
     return out;
 }
@@ -1782,7 +1777,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                 // Find the index that corresponds to the sendDom.
                 const size_t domIndex = GetDomIndex(domainNum, sendDom, recvDom);
                 
-                vtkUnstructuredGrid *givingUg = (vtkUnstructuredGrid*)meshes[domIndex];
+                vtkUnstructuredGrid *givingUg = static_cast<vtkUnstructuredGrid*>(meshes[domIndex]);
 
                 const int index = GetGivenIndex(sendDom, recvDom);
 
@@ -2480,8 +2475,8 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
                                  const vector<int> &domain2proc,
                                  const vector<int> &domainNum,
                                  const vector<vtkDataArray *> &data,
-                                 bool isPointData,
-                                 T ***&gainedData, int **&nGainedTuples)
+                                 const bool isPointData,
+                                 std::map<int, std::map<int, VarDomainData<T>>> &domaindata)
 {
     // Get the processor rank
     int rank = 0;
@@ -2495,25 +2490,27 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
 
     int nComponents = 0;
     int nonNullDomain = 0;
-    while (nonNullDomain < data.size() && data[nonNullDomain] == NULL)
-        nonNullDomain++;
-    if (nonNullDomain < data.size())
-        nComponents = data[nonNullDomain]->GetNumberOfComponents();
-
-    gainedData = new T**[nTotalDomains];
-    nGainedTuples = new int*[nTotalDomains];
-
-    int sendDom;
-    for (sendDom = 0; sendDom < nTotalDomains; ++sendDom)
+    while (nonNullDomain < data.size() && nullptr == data[nonNullDomain])
     {
-        gainedData[sendDom] = new T*[nTotalDomains];
-        nGainedTuples[sendDom] = new int[nTotalDomains];
+        nonNullDomain ++;
+    }
+    if (nonNullDomain < data.size())
+    {
+        nComponents = data[nonNullDomain]->GetNumberOfComponents();
+    }
 
-        int recvDom;
-        for (recvDom = 0; recvDom < nTotalDomains; ++recvDom)
+    for (int sendDom = 0; sendDom < nTotalDomains; ++sendDom)
+    {
+        for (int recvDom = 0; recvDom < nTotalDomains; ++recvDom)
         {
-            gainedData[sendDom][recvDom] = NULL;
-            nGainedTuples[sendDom][recvDom] = 0;
+            // create references for the domain data here
+            VarDomainData<T> &currDomainData = domaindata[sendDom][recvDom];
+            std::vector<T> &gainedData    = currDomainData.gainedData;
+            int            &nGainedTuples = currDomainData.nGainedTuples;
+
+            // initialize data for this domain pair
+            gainedData    = std::vector<T>();
+            nGainedTuples = 0;
 
             // Cases where no computation is required.
             if (sendDom == recvDom)
@@ -2525,12 +2522,10 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
             // calculation: no communication needed
             if (domain2proc[sendDom] == rank && domain2proc[recvDom] == rank)
             {
-                size_t i = 0;
-                for (i = 0; i < domainNum.size(); ++i)
-                    if (domainNum[i] == sendDom)
-                        break;
+                // Find the index that corresponds to the sendDom.
+                const size_t domIndex = GetDomIndex(domainNum, sendDom, recvDom);
 
-                int index = GetGivenIndex(sendDom, recvDom);
+                const int index = GetGivenIndex(sendDom, recvDom);
 
                 // If no domain boundary, then there's no work to do.
                 if (index < 0)
@@ -2539,22 +2534,19 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
                 vector<int> &mapRef = isPointData ? givenPoints[index]
                                                   : givenCells[index];
 
-                int nTuples =(int) mapRef.size();
-                nGainedTuples[sendDom][recvDom] = nTuples;
+                const int nTuples = static_cast<int>(mapRef.size());
+                nGainedTuples = nTuples;
 
-                gainedData[sendDom][recvDom] = new T[nTuples * nComponents];
+                gainedData.resize(nTuples * nComponents);
 
-                T * origPtr = (T*)(data[i]->GetVoidPointer(0));
-                T * dataPtr = gainedData[sendDom][recvDom];
+                const T *origPtr = static_cast<T *>(data[domIndex]->GetVoidPointer(0));
 
-
-
-                for (int i = 0; i < nTuples; ++i)
+                for (int tupleId = 0; tupleId < nTuples; ++tupleId)
                 {
-                    T *ptr = origPtr + mapRef[i] * nComponents;
-                    for (int j = 0; j < nComponents; ++j)
+                    T *ptr = origPtr + mapRef[tupleId] * nComponents;
+                    for (int compId = 0; compId < nComponents; ++compId)
                     {
-                        *(dataPtr++) = *(ptr++);
+                        gainedData[compId + nComponents * tupleId] = *(ptr++);
                     }
                 }
             }
@@ -2575,11 +2567,11 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
                 if (nTup == 0)
                     continue;
 
-                nGainedTuples[sendDom][recvDom] = nTup;
-                gainedData[sendDom][recvDom] = new T[nTup * nComponents];
+                nGainedTuples = nTup;
+                gainedData.resize(nTup * nComponents);
 
                 // Get the data
-                MPI_Recv(gainedData[sendDom][recvDom], nTup * nComponents,
+                MPI_Recv(gainedData.data(), nTup * nComponents,
                          type, fRank, mpiTupleDataTag, VISIT_MPI_COMM, &stat);
             }
             // If this process owns the sending domain, we send information.
@@ -2588,7 +2580,7 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
                 MPI_Datatype type = GetMPIDataType<T>();
                 int tRank = domain2proc[recvDom];
 
-                int index = GetGivenIndex(sendDom, recvDom);
+                const int index = GetGivenIndex(sendDom, recvDom);
 
                 // If no domain boundary, send 0 for nTuples and continue
                 if (index < 0)
@@ -2602,7 +2594,7 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
                 // Send the number of tuples
                 vector<int> &mapRef = isPointData ? givenPoints[index]
                                                   : givenCells[index];
-                int nTup = (int)mapRef.size();
+                const int nTup = static_cast<int>(mapRef.size());
                 MPI_Send(&nTup, 1, MPI_INT, tRank, mpiNumTuplesTag,
                     VISIT_MPI_COMM);
 
@@ -2611,31 +2603,25 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
                     continue;
 
                 // Gather the data for sending
-                size_t dIndex;
-                for (dIndex = 0; dIndex < domainNum.size(); ++dIndex)
-                    if (domainNum[dIndex] == sendDom)
-                        break;
 
-                T * dataArr = new T[nTup * nComponents];
-                T * origPtr = (T*)(data[dIndex]->GetVoidPointer(0));
-                T * dataPtr = dataArr;
+                // Find the index that corresponds to the sendDom.
+                const size_t domIndex = GetDomIndex(domainNum, sendDom, recvDom);
 
-                int i;
-                for (i = 0; i < nTup; ++i)
+                std::vector<T> dataArr(nTup * nComponents);
+                T *origPtr = static_cast<T *>(data[domIndex]->GetVoidPointer(0));
+
+                for (int tupleId = 0; tupleId < nTup; tupleId ++)
                 {
-                    T *ptr = origPtr + mapRef[i] * nComponents;
-                    int j;
-                    for (j = 0; j < nComponents; ++j)
+                    T *ptr = origPtr + mapRef[tupleId] * nComponents;
+                    for (int compId = 0; compId < nComponents; compId ++)
                     {
-                        *(dataPtr++) = *(ptr++);
+                        dataArr[compId + nComponents * tupleId] = *(ptr++);
                     }
                 }
 
                 // Send the data
-                MPI_Send(dataArr, nTup * nComponents, type, tRank,
+                MPI_Send(dataArr.data(), nTup * nComponents, type, tRank,
                     mpiTupleDataTag, VISIT_MPI_COMM);
-
-                delete [] dataArr;
             }
 #endif
         }
@@ -2668,27 +2654,28 @@ avtUnstructuredDomainBoundaries::CreateGhostNodes(vector<int> domainNum,
                                                   vector<vtkDataSet*> meshes,
                                                   vector<int> &allDomains)
 {
-    for (size_t i = 0 ; i < domainNum.size() ; i++)
+    for (size_t domId = 0; domId < domainNum.size(); domId ++)
     {
-        vtkDataSet *ds = meshes[i];
-        int npts = ds->GetNumberOfPoints();
+        vtkDataSet *ds = meshes[domId];
+        const int npts = ds->GetNumberOfPoints();
 
         vtkUnsignedCharArray *gn = vtkUnsignedCharArray::New();
         gn->SetNumberOfTuples(npts);
         gn->SetName("avtGhostNodes");
         unsigned char *gnp = gn->GetPointer(0);
-        for (int j = 0 ; j < npts ; j++)
-            gnp[j] = 0;
-
-        for (size_t j = 0 ; j < giveIndex.size() ; j++)
+        for (int ptId = 0; ptId < npts; ptId ++)
         {
-            if (giveIndex[j].first != domainNum[i])
+            gnp[ptId] = 0;
+        }
+
+        for (size_t idx = 0; idx < giveIndex.size(); idx ++)
+        {
+            if (giveIndex[idx].first != domainNum[domId])
                 continue;
-            std::map<int,int> &thisMap = sharedPointsMap[giveIndex[j].first];
-            std::map<int,int>::iterator p = thisMap.begin();
-            for (p = thisMap.begin() ; p != thisMap.end() ; p++)
+            auto& thisMap = sharedPointsMap[giveIndex[idx].first];
+            for (const auto& pair : thisMap)
             {
-                int node = (*p).first;
+                const int node = pair.first;
                 avtGhostData::AddGhostNodeType(gnp[node], DUPLICATED_NODE);
             }
         }

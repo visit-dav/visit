@@ -25,6 +25,8 @@ template <typename T>
 class MeshDomainData;
 class MixedMaterialDomainData;
 class MixedVarDomainData;
+template <typename T>
+class VarDomainData;
 
 // ****************************************************************************
 //  Class:  avtUnstructuredDomainBoundaries
@@ -176,9 +178,8 @@ class DATABASE_API avtUnstructuredDomainBoundaries : public avtDomainBoundaries
                                const std::vector<int> &domain2proc,
                                const std::vector<int> &domainNum,
                                const std::vector<vtkDataArray *>&,
-                               bool isPointData,
-                               T ***&gainedData,
-                               int **&nGainedTuples);
+                               const bool isPointData,
+                               std::map<int, std::map<int, VarDomainData<T>>> &domaindata);
 
 private:
     size_t GetDomIndex(const std::vector<int> &domainNum,
