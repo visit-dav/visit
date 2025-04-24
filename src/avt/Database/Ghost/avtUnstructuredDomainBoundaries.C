@@ -267,12 +267,7 @@ avtUnstructuredDomainBoundaries::GetNMixLen(const size_t nCells,
 //  Method:  avtUnstructuredDomainBoundaries::TransferMatInfo
 //
 //  Purpose:
-//       Assess the amount of mix in cells along the boundary.
-//       For each cell "C" along the boundary, assume a counting
-//       function F(C), where F(C) returns 0 for clean zones and
-//       the number of materials in the zone for mixed zones.
-//       We are calculating Sum(F(C)) where Sum is taken over
-//       all zones along the boundary of the send and recv Doms.
+//       Workhorse to communicate material information from pointers.
 //
 //  Arguments:
 //    nCells        the number of cells
@@ -354,6 +349,11 @@ avtUnstructuredDomainBoundaries::TransferMatInfo(const size_t nCells,
 //
 //  Programmer:  Akira Haddox
 //  Creation:    August 11, 2003
+// 
+//  Modifications:
+//    Justin Privitera, Wed Apr 23 17:39:24 PDT 2025
+//    Refactored into a lambda that is called twice.
+//    Style updates.
 //
 // ****************************************************************************
 
@@ -429,8 +429,10 @@ avtUnstructuredDomainBoundaries::SetSharedPoints(int d1, int d2,
 // 
 //    Justin Privitera, Wed Apr  2 16:17:04 PDT 2025
 //    Fixed a bug and logic error when the given index was -1, potentially
-//    causing index out of bounds errors later in the function. Removed
-//    extraneous index calculation. TODO MORE
+//    causing index out of bounds errors later in the function.
+//    Removed extraneous index calculation.
+//    Style updates.
+//    Use good vector semantics.
 //
 // ****************************************************************************
 
@@ -498,6 +500,11 @@ avtUnstructuredDomainBoundaries::SetGivenCellsAndPoints(int fromDom, int toDom,
 //
 //  Programmer:  Akira Haddox
 //  Creation:    August 11, 2003
+// 
+//  Modifications:
+//    Justin Privitera, Wed Apr 23 17:39:24 PDT 2025
+//    Style updates.
+//    Added const where possible.
 //
 // ****************************************************************************
 
@@ -529,6 +536,11 @@ avtUnstructuredDomainBoundaries::GetGivenIndex(const int from, const int to)
 //
 //  Programmer:  Akira Haddox
 //  Creation:    August 11, 2003
+// 
+//  Modifications:
+//    Justin Privitera, Wed Apr 23 17:39:24 PDT 2025
+//    Style updates.
+//    Added const where possible.
 //
 // ****************************************************************************
 
@@ -582,6 +594,14 @@ CopyPointer(T *src, T *dest, int components, int count)
 //
 //    Eric Brugger, Mon May 24 11:38:21 PDT 2021
 //    Modify to handle meshes with no points or cells.
+// 
+//    Justin Privitera, Wed Apr 23 17:39:24 PDT 2025
+//    Style updates, changed index variable names to be more descriptive.
+//    Added const where possible.
+//    Use a map of class objects instead of pointers.
+//    Use STL containers where possible.
+//    Error checking.
+//    Use new helpers.
 //
 // ****************************************************************************
 
@@ -818,7 +838,11 @@ avtUnstructuredDomainBoundaries::ExchangeMeshT(vector<int>         domainNum,
 //
 //    Kathleen Biagas, Fri Nov 1, 2024
 //    Added consistency check for dataTypes.
-///
+// 
+//    Justin Privitera, Wed Apr 23 17:39:24 PDT 2025
+//    Style updates.
+//    Error checking.
+//
 // ****************************************************************************
 
 vector<vtkDataArray*>
@@ -915,7 +939,11 @@ avtUnstructuredDomainBoundaries::ExchangeScalar(vector<int>           domainNum,
 //
 //    Kathleen Biagas, Fri Nov 1, 2024
 //    Added consistency check for dataTypes.
-///
+// 
+//    Justin Privitera, Wed Apr 23 17:39:24 PDT 2025
+//    Style updates.
+//    Error checking.
+//
 // ****************************************************************************
 
 vector<vtkDataArray*>
@@ -1001,6 +1029,11 @@ avtUnstructuredDomainBoundaries::ExchangeVector(vector<int> domainNum,
 //    Eric Brugger, Fri Mar 13 15:20:08 PDT 2020
 //    Modify to handle NULL meshes.
 //
+//    Justin Privitera, Wed Apr 23 17:39:24 PDT 2025
+//    Style updates.
+//    Added const where possible.
+//    Error checking.
+// 
 // ****************************************************************************
 
 vector<avtMaterial*>
@@ -1054,6 +1087,13 @@ avtUnstructuredDomainBoundaries::ExchangeMaterial(vector<int>    domainNum,
 //
 //    Eric Brugger, Fri Mar 13 15:20:08 PDT 2020
 //    Modify to handle NULL meshes.
+// 
+//    Justin Privitera, Wed Apr 23 17:39:24 PDT 2025
+//    Style updates, changed index variable names to be more descriptive.
+//    Added const where possible.
+//    Use a map of class objects instead of pointers.
+//    Use STL containers where possible.
+//    Use std::copy instead of memcpy.
 //
 // ****************************************************************************
 
@@ -1197,6 +1237,10 @@ avtUnstructuredDomainBoundaries::ExchangeMixedMaterials(vector<int> domainNum,
 //
 //    Eric Brugger, Fri Mar 13 15:20:08 PDT 2020
 //    Modify to handle NULL meshes.
+// 
+//    Justin Privitera, Wed Apr 23 17:39:24 PDT 2025
+//    Style updates, changed index variable names to be more descriptive.
+//    Added const where possible.
 //
 // ****************************************************************************
 
@@ -1283,8 +1327,15 @@ avtUnstructuredDomainBoundaries::ExchangeCleanMaterials(vector<int> domainNum,
 //    Kathleen Bonnell, Thu Apr 10 17:56:33 PDT 2008
 //    Removed redefinition of 'i'.
 // 
-//    Justin Privitera, Wed Apr 23 10:41:13 PDT 2025
-//    Fixed memory leak TODO TODO
+//    Justin Privitera, Wed Apr 23 17:39:24 PDT 2025
+//    Style updates, changed index variable names to be more descriptive.
+//    Added const where possible.
+//    Use a map of class objects instead of pointers.
+//    Use STL containers where possible.
+//    Fixed memory leak with mix variable name never being freed.
+//    Early termination in for loop when we find an answer.
+//    Struct is now named.
+//    Use std::copy instead of memcpy.
 //
 // ****************************************************************************
 
@@ -1422,6 +1473,10 @@ avtUnstructuredDomainBoundaries::ExchangeMixVar(std::vector<int>                
 //
 //  Programmer: Hank Childs
 //  Creation:   February 27, 2005
+// 
+//  Modifications:
+//    Justin Privitera, Wed Apr 23 17:39:24 PDT 2025
+//    Simplified so it is a one-liner.
 //
 // ****************************************************************************
 
@@ -1453,6 +1508,10 @@ avtUnstructuredDomainBoundaries::RequiresCommunication(avtGhostDataType gtype)
 //
 //    Mark C. Miller, Thu Mar  9 11:15:29 PST 2006
 //    Protected loop with checks for null mesh pointers
+//
+//    Justin Privitera, Wed Apr 23 17:39:24 PDT 2025
+//    Style updates.
+//    Added const where possible.
 //
 // ****************************************************************************
 
@@ -1541,6 +1600,12 @@ avtUnstructuredDomainBoundaries::ConfirmMesh(vector<int>       domainNum,
 //
 //    Eric Brugger, Fri Mar 13 15:20:08 PDT 2020
 //    Modify to handle NULL meshes.
+// 
+//    Justin Privitera, Wed Apr 23 17:39:24 PDT 2025
+//    Style updates, changed index variable names to be more descriptive.
+//    Added const where possible.
+//    Use a map of class objects instead of pointers.
+//    Use STL containers where possible.
 //
 // ****************************************************************************
 
@@ -1713,6 +1778,14 @@ avtUnstructuredDomainBoundaries::CreateDomainToProcessorMap(
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+// 
+//    Justin Privitera, Wed Apr 23 17:39:24 PDT 2025
+//    Style updates, changed index variable names to be more descriptive.
+//    Added const where possible.
+//    Pass in a map of class objects instead of pointers.
+//    Use STL containers where possible.
+//    Rely on new helpers.
+//    Error checking.
 //
 // ****************************************************************************
 
@@ -2022,6 +2095,14 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
 //
 //    Hank Childs, Tue Mar  4 13:40:54 PST 2008
 //    Do not assume mixvar is non-NULL for all domains.
+// 
+//    Justin Privitera, Wed Apr 23 17:39:24 PDT 2025
+//    Style updates, changed index variable names to be more descriptive.
+//    Added const where possible.
+//    Pass in a map of class objects instead of pointers.
+//    Use STL containers where possible.
+//    Rely on new helpers.
+//    Error checking.
 //
 // ****************************************************************************
 
@@ -2249,6 +2330,14 @@ avtUnstructuredDomainBoundaries::CommunicateMixvarInformation(
 //  Programmer:  Hank Childs
 //  Creation:    February 13, 2007
 //
+//  Modifications:
+//    Justin Privitera, Wed Apr 23 17:39:24 PDT 2025
+//    Style updates, changed index variable names to be more descriptive.
+//    Added const where possible.
+//    Pass in a map of class objects instead of pointers.
+//    Use STL containers where possible.
+//    Rely on new helpers.
+//
 // ****************************************************************************
 
 void
@@ -2468,6 +2557,13 @@ avtUnstructuredDomainBoundaries::CommunicateMaterialInformation(
 //    Eric Brugger, Fri Mar 13 15:20:08 PDT 2020
 //    Modify to handle NULL meshes.
 //
+//    Justin Privitera, Wed Apr 23 17:39:24 PDT 2025
+//    Style updates, changed index variable names to be more descriptive.
+//    Added const where possible.
+//    Pass in a map of class objects instead of pointers.
+//    Use STL containers where possible.
+///   Rely on new helpers.
+//
 // ****************************************************************************
 template <class T>
 void
@@ -2646,6 +2742,11 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
 //
 //    Hank Childs, Sun Feb 27 14:47:45 PST 2005
 //    Added argument allDomains.
+// 
+//    Justin Privitera, Wed Apr 23 17:39:24 PDT 2025
+//    Style updates, changed index variable names to be more descriptive.
+//    Added const where possible.
+//    Used modern C++ range-based for and auto to simplify map iteration.
 //
 // ****************************************************************************
 

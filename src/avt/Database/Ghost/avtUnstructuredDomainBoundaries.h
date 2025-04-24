@@ -63,6 +63,18 @@ class VarDomainData;
 //    Kevin Griffin, Tue Apr 21 17:41:51 PDT 2015
 //    Added the ExchangeVector method to call the correct Exchange*Vector method
 //    based on the underlying data. (* = Float, Double, etc)
+// 
+//    Justin Privitera, Wed Apr 23 17:39:24 PDT 2025
+//    Removed private method ExchangeFloatVector as it is no longer needed.
+//    Removed private method ExchangeDoubleVector as it is no longer needed.
+//    Removed private method ExchangeIntVector as it is no longer needed.
+//    Added private helper method GetDomIndex.
+//    Added private helper method GetNMixLen.
+//    Added private helper method TransferMatInfo.
+//    Changed communication methods so that they take a map of class objects
+//    instead of large numbers of quadruple, triple, and double pointers.
+//    Forward declared the aforementioned class objects at the top of the file.
+//    Added a dependency on cstddef so that we can use size_t here.
 //
 // ****************************************************************************
 
