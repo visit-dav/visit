@@ -25,7 +25,7 @@
         0--------1      |  0--------1      | 0--------1      |   0--------1
                         |                  |                 |
     --------------------+------------------+-----------------+---------------------
-    Duplication patterns|    01223455      |    01234444     |      01224444
+    8 Node dup patterns |    01223455      |    01234444     |      01223333
     --------------------+------------------+-----------------+---------------------
 
     Let c(i) be coordinate of node local index i, T/F = true/false result of test
@@ -50,6 +50,11 @@
    nodes on a face in the original hex. This places duplicate nodes at the later set
    of 8 nodes in a hex. So, we process them in reverse order to maximize likelihood of
    early resolution.
+
+   But, this does mean that a data producer could select a *valid* alternative
+   degeneracy scheme which would NOT be detected here and we would still potentially
+   produce wrong results. One answer in this case is to ensure the data producer uses
+   the correct degeneracy scheme.
 
    The verdict library has several metrics defined for hex and tet elements but only 
    the volume metric for pyramid and wedge elements.
