@@ -302,7 +302,17 @@ XMLEditCode::BlockAllSignals(bool block)
 //    Also modified setText for codelist to use newname as I believe that
 //    was the original intent.
 //
+//    Kathleen Biagas, Wed April 16, 2025
+//    Add no-arg nameTextChanged to match editingFinished signal.
+//
 // ****************************************************************************
+
+void
+XMLEditCode::nameTextChanged()
+{
+    nameTextChanged(name->text());
+}
+
 void
 XMLEditCode::nameTextChanged(const QString &text)
 {
@@ -312,7 +322,7 @@ XMLEditCode::nameTextChanged(const QString &text)
         return;
     Code *c = a->codes[index];
 
-    QString newname = text.isEmpty() ? name->text().trimmed() : text.trimmed();
+    QString newname = text.trimmed();
 
     c->name = newname;
     if(CountCodes(newname) > 1)
