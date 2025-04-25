@@ -653,7 +653,7 @@ avtUnstructuredDomainBoundaries::ExchangeMeshT(vector<int>         domainNum,
         outPoints->SetNumberOfPoints(nOldPoints + nGivenPoints);
 
         // Copy the old coordinates over
-        T *oldcoord = static_cast<T *>(mesh->GetPoints()->GetVoidPointer(0));
+        const T *oldcoord = static_cast<T *>(mesh->GetPoints()->GetVoidPointer(0));
         T *newcoord = static_cast<T *>(outPoints->GetVoidPointer(0));
         std::copy(oldcoord, oldcoord + (3 * nOldPoints), newcoord);
 
