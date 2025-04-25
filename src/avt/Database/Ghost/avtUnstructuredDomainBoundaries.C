@@ -522,42 +522,6 @@ avtUnstructuredDomainBoundaries::GetGivenIndex(const int from, const int to)
     return -1;
 }
 
-
-// ****************************************************************************
-//  Method:  avtUnstructuredDomainBoundaries::CopyPointer
-//
-//  Purpose:
-//    Copy pointer data.
-//
-//  Arguments:
-//    src           Pointer to source.
-//    dest          Pointer to destination.
-//    components    How many components in the pointer (> 0).
-//    count         The number of components to copy (> 0).
-//
-//  Programmer:  Akira Haddox
-//  Creation:    August 11, 2003
-// 
-//  Modifications:
-//    Justin Privitera, Wed Apr 23 17:39:24 PDT 2025
-//    Style updates.
-//    Added const where possible.
-//
-// ****************************************************************************
-
-template <class T>
-void
-CopyPointer(T *src, T *dest, int components, int count)
-{
-    const int nIter = count * components;
-
-    *dest = *src;
-    for (int i = 1; i < nIter; ++i)
-    {
-        *(++dest) = *(++src);
-    }
-}
-
 // ****************************************************************************
 //  Method:  avtUnstructuredDomainBoundaries::ExchangeMesh
 //
@@ -691,7 +655,7 @@ avtUnstructuredDomainBoundaries::ExchangeMeshT(vector<int>         domainNum,
         // Copy the old coordinates over
         T *oldcoord = static_cast<T *>(mesh->GetPoints()->GetVoidPointer(0));
         T *newcoord = static_cast<T *>(outPoints->GetVoidPointer(0));
-        CopyPointer(oldcoord, newcoord, 3, nOldPoints);
+        std::copy(oldcoord, oldcoord + (3 * nOldPoints), newcoord);
 
         // Put in the new coordinates
         std::vector<std::map<int, int>> translatedPointsMap(nTotalDomains);
