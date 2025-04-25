@@ -373,7 +373,8 @@ avtUnstructuredDomainBoundaries::SetSharedPoints(int d1, int d2,
         if (index == -1)
         {
             index = static_cast<int>(giveIndex.size());
-            giveIndex.push_back(pair<int, int> (dFirst, dSecond));
+            // create the pair in place
+            giveIndex.emplace_back(dFirst, dSecond);
             // Use emplace_back to add a default-initialized std::vector<int> 
             // to the vector, avoiding creating a temporary object.
             givenCells.emplace_back();
@@ -653,11 +654,11 @@ avtUnstructuredDomainBoundaries::ExchangeMeshT(vector<int>         domainNum,
     std::map<int, std::map<int, MeshDomainData<T>>> domaindata;
     CommunicateMeshInformation(domain2proc, domainNum, meshes, domaindata);
 
-    for (size_t domId = 0; domId < domainNum.size(); domId ++)
+    for (size_t domIdIndex = 0; domIdIndex < domainNum.size(); domIdIndex ++)
     {
-        const int recvDom = domainNum[domId];
+        const int recvDom = domainNum[domIdIndex];
 
-        vtkUnstructuredGrid *mesh = static_cast<vtkUnstructuredGrid *>(meshes[domId]);
+        vtkUnstructuredGrid *mesh = static_cast<vtkUnstructuredGrid *>(meshes[domIdIndex]);
         if (nullptr == mesh ||
             mesh->GetNumberOfPoints() == 0 || 
             mesh->GetNumberOfCells() == 0)
@@ -682,7 +683,7 @@ avtUnstructuredDomainBoundaries::ExchangeMeshT(vector<int>         domainNum,
         vtkUnstructuredGrid *outMesh = vtkUnstructuredGrid::New();
         vtkPoints *outPoints = vtkPoints::New(mesh->GetPoints()->GetDataType());
 
-        outMesh->DeepCopy(meshes[domId]);
+        outMesh->DeepCopy(meshes[domIdIndex]);
         outMesh->SetPoints(outPoints);
         outPoints->Delete();
         outPoints->SetNumberOfPoints(nOldPoints + nGivenPoints);
@@ -799,7 +800,7 @@ avtUnstructuredDomainBoundaries::ExchangeMeshT(vector<int>         domainNum,
 
         // Rebuild the links now that we've added ghost cells.
         outMesh->BuildLinks();
-        out[domId] = outMesh;
+        out[domIdIndex] = outMesh;
     }
 
     return out;
@@ -1108,11 +1109,11 @@ avtUnstructuredDomainBoundaries::ExchangeMixedMaterials(vector<int> domainNum,
 
     vector<avtMaterial*> out(mats.size(), NULL);
 
-    for (size_t domId = 0; domId < domainNum.size(); domId ++)
+    for (size_t domIdIndex = 0; domIdIndex < domainNum.size(); domIdIndex ++)
     {
-        const int recvDom = domainNum[domId];
+        const int recvDom = domainNum[domIdIndex];
 
-        avtMaterial *oldMat = mats[domId];
+        avtMaterial *oldMat = mats[domIdIndex];
         if (nullptr == oldMat)
         {
             continue;
@@ -1138,11 +1139,11 @@ avtUnstructuredDomainBoundaries::ExchangeMixedMaterials(vector<int> domainNum,
         // Start by copying in everything from this domain's material object.
         //
         std::vector<int> new_matlist(newNCells);
-        const int *old_matlist = mats[domId]->GetMatlist();
+        const int *old_matlist = mats[domIdIndex]->GetMatlist();
         std::copy(old_matlist, old_matlist + realNCells, new_matlist.begin());
 
         std::vector<int> new_mix_next(newMixlen);
-        const int *old_mix_next = mats[domId]->GetMixNext();
+        const int *old_mix_next = mats[domIdIndex]->GetMixNext();
         std::copy(old_mix_next, old_mix_next + realMixlen, new_mix_next.begin());
 
         std::vector<int> new_mix_mat(newMixlen);
@@ -1200,7 +1201,7 @@ avtUnstructuredDomainBoundaries::ExchangeMixedMaterials(vector<int> domainNum,
             }
         }
 
-        out[domId] = new avtMaterial(oldMat->GetNMaterials(),
+        out[domIdIndex] = new avtMaterial(oldMat->GetNMaterials(),
                                      oldMat->GetMaterials(), newNCells,
                                      new_matlist.data(), newMixlen, new_mix_mat.data(),
                                      new_mix_next.data(), new_mix_zone.data(), new_mix_vf.data());
@@ -1403,11 +1404,11 @@ avtUnstructuredDomainBoundaries::ExchangeMixVar(std::vector<int>                
     mixvarname = mvname;
 #endif
 
-    for (size_t domId = 0; domId < domainNum.size(); ++domId)
+    for (size_t domIdIndex = 0; domIdIndex < domainNum.size(); ++domIdIndex)
     {
-        const int recvDom = domainNum[domId];
+        const int recvDom = domainNum[domIdIndex];
 
-        avtMixedVariable *oldMV = mixvars[domId];
+        avtMixedVariable *oldMV = mixvars[domIdIndex];
 
         //
         // Estimate the sizes we will need for the new object.
@@ -1421,7 +1422,7 @@ avtUnstructuredDomainBoundaries::ExchangeMixVar(std::vector<int>                
 
         if (newMixlen <= 0)
         {
-            out[domId] = nullptr;
+            out[domIdIndex] = nullptr;
             continue;
         }
 
@@ -1455,7 +1456,7 @@ avtUnstructuredDomainBoundaries::ExchangeMixVar(std::vector<int>                
             mixlen_cnt += nGainedMixlen;
         }
 
-        out[domId] = new avtMixedVariable(new_buff.data(),
+        out[domIdIndex] = new avtMixedVariable(new_buff.data(),
                                           newMixlen,
                                           mixvarname.c_str());
     }
@@ -1635,15 +1636,15 @@ avtUnstructuredDomainBoundaries::ExchangeData(vector<int>         &domainNum,
         nComponents = data[nonNullDomain]->GetNumberOfComponents();
     }
 
-    for (size_t domId = 0; domId < domainNum.size(); ++domId)
+    for (size_t domIdIndex = 0; domIdIndex < domainNum.size(); domIdIndex ++)
     {
-        const int recvDom = domainNum[domId];
-        if (nullptr == data[domId])
+        const int recvDom = domainNum[domIdIndex];
+        if (nullptr == data[domIdIndex])
             continue;
-        out[domId] = data[domId]->NewInstance();
+        out[domIdIndex] = data[domIdIndex]->NewInstance();
 
-        out[domId]->DeepCopy(data[domId]);
-        out[domId]->SetName(data[domId]->GetName());
+        out[domIdIndex]->DeepCopy(data[domIdIndex]);
+        out[domIdIndex]->SetName(data[domIdIndex]->GetName());
 
         int nGivenTuples = 0;
         for (int sendDom = 0; sendDom < nTotalDomains; ++sendDom)
@@ -1656,11 +1657,11 @@ avtUnstructuredDomainBoundaries::ExchangeData(vector<int>         &domainNum,
 
         if (nGivenTuples > 0)
         {
-            out[domId]->Resize(nGivenTuples + out[domId]->GetNumberOfTuples());
+            out[domIdIndex]->Resize(nGivenTuples + out[domIdIndex]->GetNumberOfTuples());
 
             // This properly sets the internal size.
-            out[domId]->InsertTuple(data[domId]->GetNumberOfTuples() + nGivenTuples - 1,
-                                    data[domId]->GetTuple(0));
+            out[domIdIndex]->InsertTuple(data[domIdIndex]->GetNumberOfTuples() + nGivenTuples - 1,
+                                         data[domIdIndex]->GetTuple(0));
         }
 
         for (int sendDom = 0; sendDom < nTotalDomains; sendDom ++)
@@ -1675,7 +1676,7 @@ avtUnstructuredDomainBoundaries::ExchangeData(vector<int>         &domainNum,
 
             const int refIndex = (isPointData ? startingPoint[pair<int,int>(sendDom, recvDom)]
                                               : startingCell[pair<int,int>(sendDom, recvDom)]);
-            T *ptr = static_cast<T *>(out[domId]->GetVoidPointer(refIndex * nComponents));
+            T *ptr = static_cast<T *>(out[domIdIndex]->GetVoidPointer(refIndex * nComponents));
             const int nDatCopy = nGainedTuples * nComponents;
             for (int idx = 0; idx < nDatCopy; idx ++)
             {
@@ -2755,9 +2756,9 @@ avtUnstructuredDomainBoundaries::CreateGhostNodes(vector<int> domainNum,
                                                   vector<vtkDataSet*> meshes,
                                                   vector<int> &allDomains)
 {
-    for (size_t domId = 0; domId < domainNum.size(); domId ++)
+    for (size_t domIdIndex = 0; domIdIndex < domainNum.size(); domIdIndex ++)
     {
-        vtkDataSet *ds = meshes[domId];
+        vtkDataSet *ds = meshes[domIdIndex];
         const int npts = ds->GetNumberOfPoints();
 
         vtkUnsignedCharArray *gn = vtkUnsignedCharArray::New();
@@ -2771,7 +2772,7 @@ avtUnstructuredDomainBoundaries::CreateGhostNodes(vector<int> domainNum,
 
         for (size_t idx = 0; idx < giveIndex.size(); idx ++)
         {
-            if (giveIndex[idx].first != domainNum[domId])
+            if (giveIndex[idx].first != domainNum[domIdIndex])
                 continue;
             auto& thisMap = sharedPointsMap[giveIndex[idx].first];
             for (const auto& pair : thisMap)
