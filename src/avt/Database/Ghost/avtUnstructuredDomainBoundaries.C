@@ -1139,18 +1139,18 @@ avtUnstructuredDomainBoundaries::ExchangeMixedMaterials(vector<int> domainNum,
             const std::vector<float> &gainedMixvf   = currDomainData.gainedMixvf;
 
             int lml = 0; // "local" mixlen ... mixlen counter for this domain
-            for (int mixedCellId = 0; mixedCellId < nGainedCells; mixedCellId ++)
+            for (int mixedCellIdx = 0; mixedCellIdx < nGainedCells; mixedCellIdx ++)
             {
-                if (gainedMatlist[mixedCellId] >= 0)
+                if (gainedMatlist[mixedCellIdx] >= 0)
                 {
-                    new_matlist[matlist_cnt] = gainedMatlist[mixedCellId];
+                    new_matlist[matlist_cnt] = gainedMatlist[mixedCellIdx];
                     matlist_cnt ++;
                 }
                 else
                 {
                     // Decode how many materials in the cell.
                     new_matlist[matlist_cnt] = -(mixlen_cnt + 1);
-                    const int nmats = -gainedMatlist[mixedCellId];
+                    const int nmats = -gainedMatlist[mixedCellIdx];
                     matlist_cnt ++;
                     for (int matId = 0; matId < nmats; matId ++)
                     {
