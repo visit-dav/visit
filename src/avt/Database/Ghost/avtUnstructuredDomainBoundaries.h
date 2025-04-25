@@ -194,7 +194,7 @@ class DATABASE_API avtUnstructuredDomainBoundaries : public avtDomainBoundaries
                                std::map<int, std::map<int, VarDomainData<T>>> &domaindata);
 
 private:
-    size_t GetDomIndex(const std::vector<int> &domainNum,
+    int    GetDomIndex(const std::vector<int> &domainNum,
                        const int sendDom,
                        const int recvDom);
 

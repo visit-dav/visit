@@ -173,12 +173,12 @@ avtUnstructuredDomainBoundaries::Destruct(void *p)
 //  Modifications:
 //
 // ****************************************************************************
-size_t
+int
 avtUnstructuredDomainBoundaries::GetDomIndex(const std::vector<int> &domainNum,
                                              const int sendDom,
                                              const int recvDom)
 {
-    const size_t domIndex = [&]() -> size_t
+    const int domIndex = [&]() -> int
     {
         for (size_t domIndex = 0; domIndex < domainNum.size(); domIndex ++)
         {
@@ -1848,7 +1848,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
             if (domain2proc[sendDom] == rank && domain2proc[recvDom] == rank)
             {
                 // Find the index that corresponds to the sendDom.
-                const size_t domIndex = GetDomIndex(domainNum, sendDom, recvDom);
+                const size_t domIndex = static_cast<size_t>(GetDomIndex(domainNum, sendDom, recvDom));
                 
                 vtkUnstructuredGrid *givingUg = static_cast<vtkUnstructuredGrid*>(meshes[domIndex]);
 
@@ -1987,7 +1987,7 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                 }
 
                 // Find the index that corresponds to the sendDom.
-                const size_t domIndex = GetDomIndex(domainNum, sendDom, recvDom);
+                const size_t domIndex = static_cast<size_t>(GetDomIndex(domainNum, sendDom, recvDom));
 
                 vtkUnstructuredGrid *givingUg = (vtkUnstructuredGrid*)meshes[domIndex];
 
@@ -2148,7 +2148,7 @@ avtUnstructuredDomainBoundaries::CommunicateMixvarInformation(
             if (domain2proc[sendDom] == rank && domain2proc[recvDom] == rank)
             {
                 // Find the index that corresponds to the sendDom.
-                const size_t domIndex = GetDomIndex(domainNum, sendDom, recvDom);
+                const size_t domIndex = static_cast<size_t>(GetDomIndex(domainNum, sendDom, recvDom));
 
                 const int index = GetGivenIndex(sendDom, recvDom);
 
@@ -2238,7 +2238,7 @@ avtUnstructuredDomainBoundaries::CommunicateMixvarInformation(
                 }
                 
                 // Find the index that corresponds to the sendDom.
-                const size_t domIndex = GetDomIndex(domainNum, sendDom, recvDom);
+                const size_t domIndex = static_cast<size_t>(GetDomIndex(domainNum, sendDom, recvDom));
 
                 avtMixedVariable *givingVar = mixvars[domIndex];
 
@@ -2389,7 +2389,7 @@ avtUnstructuredDomainBoundaries::CommunicateMaterialInformation(
             if (domain2proc[sendDom] == rank && domain2proc[recvDom] == rank)
             {
                 // Find the index that corresponds to the sendDom.
-                const size_t domIndex = GetDomIndex(domainNum, sendDom, recvDom);
+                const size_t domIndex = static_cast<size_t>(GetDomIndex(domainNum, sendDom, recvDom));
 
                 const int index = GetGivenIndex(sendDom, recvDom);
 
@@ -2470,7 +2470,7 @@ avtUnstructuredDomainBoundaries::CommunicateMaterialInformation(
                 }
 
                 // Find the index that corresponds to the sendDom.
-                const size_t domIndex = GetDomIndex(domainNum, sendDom, recvDom);
+                const size_t domIndex = static_cast<size_t>(GetDomIndex(domainNum, sendDom, recvDom));
 
                 avtMaterial *givingMat = mats[domIndex];
 
@@ -2619,7 +2619,7 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
             if (domain2proc[sendDom] == rank && domain2proc[recvDom] == rank)
             {
                 // Find the index that corresponds to the sendDom.
-                const size_t domIndex = GetDomIndex(domainNum, sendDom, recvDom);
+                const size_t domIndex = static_cast<size_t>(GetDomIndex(domainNum, sendDom, recvDom));
 
                 const int index = GetGivenIndex(sendDom, recvDom);
 
@@ -2701,7 +2701,7 @@ avtUnstructuredDomainBoundaries::CommunicateDataInformation(
                 // Gather the data for sending
 
                 // Find the index that corresponds to the sendDom.
-                const size_t domIndex = GetDomIndex(domainNum, sendDom, recvDom);
+                const size_t domIndex = static_cast<size_t>(GetDomIndex(domainNum, sendDom, recvDom));
 
                 std::vector<T> dataArr(nTup * nComponents);
                 T *origPtr = static_cast<T *>(data[domIndex]->GetVoidPointer(0));
