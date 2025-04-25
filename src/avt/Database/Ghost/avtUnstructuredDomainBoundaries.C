@@ -448,7 +448,7 @@ avtUnstructuredDomainBoundaries::SetGivenCellsAndPoints(int fromDom, int toDom,
     if (index == -1)
     {
         index = static_cast<int>(giveIndex.size());
-        giveIndex.push_back(pair<int, int>(fromDom, toDom));
+        giveIndex.emplace_back(fromDom, toDom);
         givenCells.push_back(cells);
         // Use emplace_back to add a default-initialized std::vector<int> 
         // to the vector, avoiding creating a temporary object.
