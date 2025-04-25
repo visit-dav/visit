@@ -615,6 +615,11 @@ avtUnstructuredDomainBoundaries::ExchangeMeshT(vector<int>         domainNum,
     // Gather the information we need
     vector<int> domain2proc = CreateDomainToProcessorMap(domainNum);
 
+    // Instead of having many disparate pointers, we have grouped them into a
+    // single structure we are calling domaindata. There is one domaindata for
+    // every pair of domains, hence the map from "sendDom" indices to maps
+    // from "recvDom" indices to domaindata objects. So we can get domaindata
+    // for a pair of domains like so: domaindata[sendDom][recvDom].
     std::map<int, std::map<int, MeshDomainData<T>>> domaindata;
     CommunicateMeshInformation(domain2proc, domainNum, meshes, domaindata);
 
@@ -1068,6 +1073,11 @@ avtUnstructuredDomainBoundaries::ExchangeMixedMaterials(vector<int> domainNum,
 {
     vector<int> domain2proc = CreateDomainToProcessorMap(domainNum);
 
+    // Instead of having many disparate pointers, we have grouped them into a
+    // single structure we are calling domaindata. There is one domaindata for
+    // every pair of domains, hence the map from "sendDom" indices to maps
+    // from "recvDom" indices to domaindata objects. So we can get domaindata
+    // for a pair of domains like so: domaindata[sendDom][recvDom].
     std::map<int, std::map<int, MixedMaterialDomainData>> domaindata;
     CommunicateMaterialInformation(domain2proc, domainNum, mats, domaindata);
 
@@ -1311,6 +1321,11 @@ avtUnstructuredDomainBoundaries::ExchangeMixVar(std::vector<int>                
 {
     std::vector<int> domain2proc = CreateDomainToProcessorMap(domainNum);
 
+    // Instead of having many disparate pointers, we have grouped them into a
+    // single structure we are calling domaindata. There is one domaindata for
+    // every pair of domains, hence the map from "sendDom" indices to maps
+    // from "recvDom" indices to domaindata objects. So we can get domaindata
+    // for a pair of domains like so: domaindata[sendDom][recvDom].
     std::map<int, std::map<int, MixedVarDomainData>> domaindata;
     CommunicateMixvarInformation(domain2proc, domainNum, mats,
                                  mixvars, domaindata);
@@ -1583,6 +1598,11 @@ avtUnstructuredDomainBoundaries::ExchangeData(vector<int>         &domainNum,
     // Gather the needed information
     vector<int> domain2proc = CreateDomainToProcessorMap(domainNum);
     
+    // Instead of having many disparate pointers, we have grouped them into a
+    // single structure we are calling domaindata. There is one domaindata for
+    // every pair of domains, hence the map from "sendDom" indices to maps
+    // from "recvDom" indices to domaindata objects. So we can get domaindata
+    // for a pair of domains like so: domaindata[sendDom][recvDom].
     std::map<int, std::map<int, VarDomainData<T>>> domaindata;
     CommunicateDataInformation<T>(domain2proc, domainNum, data, isPointData,
                                   domaindata);
