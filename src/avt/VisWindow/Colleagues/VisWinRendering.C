@@ -347,8 +347,19 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
 #endif
 
 #ifdef HAVE_ANARI
-    // Change to VERBOSITY_INFO or VERBOSITY_WARNING to see more debug messages
-    vtkLogger::SetStderrVerbosity(vtkLogger::Verbosity::VERBOSITY_ERROR);
+    // For VisIt debug levels 1-3
+    auto vtkVerbosity = vtkLogger::Verbosity::VERBOSITY_ERROR;
+
+    if(DebugStream::Level4())
+    {
+        vtkVerbosity = vtkLogger::Verbosity::VERBOSITY_WARNING;
+    }
+    else if(DebugStream::Level5())
+    {
+        vtkVerbosity = vtkLogger::Verbosity::VERBOSITY_INFO;
+    }
+    
+    vtkLogger::SetStderrVerbosity(vtkVerbosity);
 
     anariRendering = false;
     anariSPP = 1;
