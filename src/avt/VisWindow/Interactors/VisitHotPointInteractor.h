@@ -32,7 +32,7 @@ class ZoomAxisArray;
 //   It keeps a set of other interactors around and delegates interaction
 //   responsibilities to them or to tools whose hotpoints are clicked.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Oct 2 13:57:17 PST 2001
@@ -41,11 +41,11 @@ class ZoomAxisArray;
 //    Hank Childs, Mon Mar 18 13:47:00 PST 2002
 //    Comply with new interface from base class for better buttonpress control.
 //
-//    Kathleen Bonnell, Tue Apr 16 15:07:38 PDT 2002  
+//    Kathleen Bonnell, Tue Apr 16 15:07:38 PDT 2002
 //    Added Lineout2D, ZoomCurve and Start/Stop CurveMode.
-//   
+//
 //    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
-//    Removed arguments from all ButtonAction methods and OnMouseMove, 
+//    Removed arguments from all ButtonAction methods and OnMouseMove,
 //    in order to match vtk's new interactor api.  Added SetInteractor method.
 //
 //    Eric Brugger, Wed Oct 15 17:32:48 PDT 2003
@@ -57,7 +57,7 @@ class ZoomAxisArray;
 //    Eric Brugger, Tue Dec 28 07:50:45 PST 2004
 //    Added Dolly3D interactor.
 //
-//    Kathleen Bonnell, Thu Jan 12 13:58:25 PST 2006 
+//    Kathleen Bonnell, Thu Jan 12 13:58:25 PST 2006
 //    Replaced Pick3D and Pick2D interactors with Pick.
 //
 //    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
@@ -86,7 +86,7 @@ public:
     virtual          ~VisitHotPointInteractor();
 
     virtual void      SetInteractor(vtkRenderWindowInteractor *rwi);
- 
+
     virtual void      StartLeftButtonAction();
     virtual void      EndLeftButtonAction();
     virtual void      AbortLeftButtonAction();
@@ -115,6 +115,7 @@ public:
     void              StopCurveMode();
     void              StopAxisArrayMode();
     void              StopParallelAxesMode();
+    void              SetAnariRendering(bool enabled);
 private:
     VisitInteractor  *currentInteractor;
 

@@ -3474,6 +3474,9 @@ ViewerWindowManager::SetViewExtentsType(avtExtentType viewType,
 //    Garrett Morrison, Fri May 11 17:57:47 PDT 2018
 //    Added options for ospray rendering
 //
+//    Kevin Griffin, Thu Mar 6 15:51:48 CST 2025
+//    Added options for ANARI rendering
+//
 // ****************************************************************************
 
 void
@@ -3615,6 +3618,53 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
             windows[index]->SetOsprayAO(ratts->GetOsprayAO());
         if (windows[index]->GetOsprayShadows() != ratts->GetOsprayShadows())
             windows[index]->SetOsprayShadows(ratts->GetOsprayShadows());
+#endif
+
+#ifdef HAVE_ANARI
+    if (windows[index]->GetAnariRendering() != ratts->GetAnariRendering())
+        windows[index]->SetAnariRendering(ratts->GetAnariRendering());
+    if (windows[index]->GetAnariSPP() != ratts->GetAnariSPP())
+        windows[index]->SetAnariSPP(ratts->GetAnariSPP());
+    if (windows[index]->GetAnariAO() != ratts->GetAnariAO())
+        windows[index]->SetAnariAO(ratts->GetAnariAO());
+    if (windows[index]->GetAnariLibraryName().compare(ratts->GetAnariLibrary()) != 0)
+        windows[index]->SetAnariLibraryName(ratts->GetAnariLibrary());
+    if (windows[index]->GetAnariLibrarySubtype().compare(ratts->GetAnariLibrarySubtype()) != 0)
+        windows[index]->SetAnariLibrarySubtype(ratts->GetAnariLibrarySubtype());
+    if (windows[index]->GetAnariRendererSubtype().compare(ratts->GetAnariRendererSubtype()) != 0)
+        windows[index]->SetAnariRendererSubtype(ratts->GetAnariRendererSubtype());
+    if (windows[index]->GetUseAnariDenoiser() != ratts->GetUseAnariDenoiser())
+        windows[index]->SetUseAnariDenoiser(ratts->GetUseAnariDenoiser());
+    if (windows[index]->GetAnariLightFalloff() != ratts->GetAnariLightFalloff())
+        windows[index]->SetAnariLightFalloff(ratts->GetAnariLightFalloff());
+    if (windows[index]->GetAnariLightFalloff() != ratts->GetAnariLightFalloff())
+        windows[index]->SetAnariLightFalloff(ratts->GetAnariLightFalloff());
+    if (windows[index]->GetAnariAmbientIntensity() != ratts->GetAnariAmbientIntensity())
+        windows[index]->SetAnariAmbientIntensity(ratts->GetAnariAmbientIntensity());
+    if (windows[index]->GetAnariMaxDepth() != ratts->GetAnariMaxDepth())
+        windows[index]->SetAnariMaxDepth(ratts->GetAnariMaxDepth());
+    if (windows[index]->GetAnariRValue() != ratts->GetAnariRValue())
+        windows[index]->SetAnariRValue(ratts->GetAnariRValue());
+    if (windows[index]->GetAnariDebugMethod() != ratts->GetAnariDebugMethod())
+        windows[index]->SetAnariDebugMethod(ratts->GetAnariDebugMethod());
+    if (windows[index]->GetUsdDir() != ratts->GetUsdDir())
+        windows[index]->SetUsdDir(ratts->GetUsdDir());
+    if (windows[index]->GetUsdAtCommit() != ratts->GetUsdAtCommit())
+        windows[index]->SetUsdAtCommit(ratts->GetUsdAtCommit());
+    if (windows[index]->GetUsdOutputBinary() != ratts->GetUsdOutputBinary())
+        windows[index]->SetUsdOutputBinary(ratts->GetUsdOutputBinary());
+    if (windows[index]->GetUsdOutputMaterial() != ratts->GetUsdOutputMaterial())
+        windows[index]->SetUsdOutputMaterial(ratts->GetUsdOutputMaterial());
+    if (windows[index]->GetUsdOutputPreviewSurface() != ratts->GetUsdOutputPreviewSurface())
+        windows[index]->SetUsdOutputPreviewSurface(ratts->GetUsdOutputPreviewSurface());
+    if (windows[index]->GetUsdOutputMDL() != ratts->GetUsdOutputMDL())
+        windows[index]->SetUsdOutputMDL(ratts->GetUsdOutputMDL());
+    if (windows[index]->GetUsdOutputMDLColors() != ratts->GetUsdOutputMDLColors())
+        windows[index]->SetUsdOutputMDLColors(ratts->GetUsdOutputMDLColors());
+    if (windows[index]->GetUsdOutputDisplayColors() != ratts->GetUsdOutputDisplayColors())
+            windows[index]->SetUsdOutputDisplayColors(ratts->GetUsdOutputDisplayColors());
+    if (windows[index]->GetUsingUsdDevice() != ratts->GetUsingUsdDevice())
+        windows[index]->SetUsingUsdDevice(ratts->GetUsingUsdDevice());
 #endif
 
         // If the updatesEnabled flag was true before we temporarily disabled
@@ -5224,6 +5274,9 @@ ViewerWindowManager::UpdateLightListAtts()
 //   Garrett Morrison, Fri May 11 17:57:47 PDT 2018
 //   Added ospray rendering properties
 //
+//   Kevin Griffin, Thu Mar 6 15:51:48 CST 2025
+//   Added ANARI rendering properties
+//
 // ****************************************************************************
 
 void
@@ -5276,6 +5329,30 @@ ViewerWindowManager::UpdateRenderingAtts(int windowIndex)
         GetViewerState()->GetRenderingAttributes()->SetOspraySPP(win->GetOspraySPP());
         GetViewerState()->GetRenderingAttributes()->SetOsprayAO(win->GetOsprayAO());
         GetViewerState()->GetRenderingAttributes()->SetOsprayShadows(win->GetOsprayShadows());
+#endif
+
+#ifdef HAVE_ANARI
+        GetViewerState()->GetRenderingAttributes()->SetAnariRendering(win->GetAnariRendering());
+        GetViewerState()->GetRenderingAttributes()->SetAnariSPP(win->GetAnariSPP());
+        GetViewerState()->GetRenderingAttributes()->SetAnariAO(win->GetAnariAO());
+        GetViewerState()->GetRenderingAttributes()->SetAnariLibrary(win->GetAnariLibraryName());
+        GetViewerState()->GetRenderingAttributes()->SetAnariLibrarySubtype(win->GetAnariLibrarySubtype());
+        GetViewerState()->GetRenderingAttributes()->SetAnariRendererSubtype(win->GetAnariRendererSubtype());
+        GetViewerState()->GetRenderingAttributes()->SetUseAnariDenoiser(win->GetUseAnariDenoiser());
+        GetViewerState()->GetRenderingAttributes()->SetAnariLightFalloff(win->GetAnariLightFalloff());
+        GetViewerState()->GetRenderingAttributes()->SetAnariAmbientIntensity(win->GetAnariAmbientIntensity());
+        GetViewerState()->GetRenderingAttributes()->SetAnariMaxDepth(win->GetAnariMaxDepth());
+        GetViewerState()->GetRenderingAttributes()->SetAnariRValue(win->GetAnariRValue());
+        GetViewerState()->GetRenderingAttributes()->SetAnariDebugMethod(win->GetAnariDebugMethod());
+        GetViewerState()->GetRenderingAttributes()->SetUsdDir(win->GetUsdDir());
+        GetViewerState()->GetRenderingAttributes()->SetUsdAtCommit(win->GetUsdAtCommit());
+        GetViewerState()->GetRenderingAttributes()->SetUsdOutputBinary(win->GetUsdOutputBinary());
+        GetViewerState()->GetRenderingAttributes()->SetUsdOutputMaterial(win->GetUsdOutputMaterial());
+        GetViewerState()->GetRenderingAttributes()->SetUsdOutputPreviewSurface(win->GetUsdOutputPreviewSurface());
+        GetViewerState()->GetRenderingAttributes()->SetUsdOutputMDL(win->GetUsdOutputMDL());
+        GetViewerState()->GetRenderingAttributes()->SetUsdOutputMDLColors(win->GetUsdOutputMDLColors());
+        GetViewerState()->GetRenderingAttributes()->SetUsdOutputDisplayColors(win->GetUsdOutputDisplayColors());
+        GetViewerState()->GetRenderingAttributes()->SetUsingUsdDevice(win->GetUsingUsdDevice());
 #endif
 
         // Tell the client about the new rendering information.
@@ -8244,6 +8321,29 @@ ViewerWindowManager::SetWindowAttributes(int windowIndex, bool copyAtts)
     w->SetOsprayShadows(GetViewerState()->GetRenderingAttributes()->GetOsprayShadows());
 #endif
 
+#ifdef HAVE_ANARI
+    w->SetAnariRendering(GetViewerState()->GetRenderingAttributes()->GetAnariRendering());
+    w->SetAnariSPP(GetViewerState()->GetRenderingAttributes()->GetAnariSPP());
+    w->SetAnariAO(GetViewerState()->GetRenderingAttributes()->GetAnariAO());
+    w->SetAnariLibraryName(GetViewerState()->GetRenderingAttributes()->GetAnariLibrary());
+    w->SetAnariLibrarySubtype(GetViewerState()->GetRenderingAttributes()->GetAnariLibrarySubtype());
+    w->SetAnariRendererSubtype(GetViewerState()->GetRenderingAttributes()->GetAnariRendererSubtype());
+    w->SetUseAnariDenoiser(GetViewerState()->GetRenderingAttributes()->GetUseAnariDenoiser());
+    w->SetAnariLightFalloff(GetViewerState()->GetRenderingAttributes()->GetAnariLightFalloff());
+    w->SetAnariAmbientIntensity(GetViewerState()->GetRenderingAttributes()->GetAnariAmbientIntensity());
+    w->SetAnariMaxDepth(GetViewerState()->GetRenderingAttributes()->GetAnariMaxDepth());
+    w->SetAnariRValue(GetViewerState()->GetRenderingAttributes()->GetAnariRValue());
+    w->SetAnariDebugMethod(GetViewerState()->GetRenderingAttributes()->GetAnariDebugMethod());
+    w->SetUsdDir(GetViewerState()->GetRenderingAttributes()->GetUsdDir());
+    w->SetUsdAtCommit(GetViewerState()->GetRenderingAttributes()->GetUsdAtCommit());
+    w->SetUsdOutputBinary(GetViewerState()->GetRenderingAttributes()->GetUsdOutputBinary());
+    w->SetUsdOutputMaterial(GetViewerState()->GetRenderingAttributes()->GetUsdOutputMaterial());
+    w->SetUsdOutputPreviewSurface(GetViewerState()->GetRenderingAttributes()->GetUsdOutputPreviewSurface());
+    w->SetUsdOutputMDL(GetViewerState()->GetRenderingAttributes()->GetUsdOutputMDL());
+    w->SetUsdOutputMDLColors(GetViewerState()->GetRenderingAttributes()->GetUsdOutputMDLColors());
+    w->SetUsdOutputDisplayColors(GetViewerState()->GetRenderingAttributes()->GetUsdOutputDisplayColors());
+    w->SetUsingUsdDevice(GetViewerState()->GetRenderingAttributes()->GetUsingUsdDevice());
+#endif
 }
 
 // ****************************************************************************
@@ -10116,4 +10216,3 @@ ViewerWindowManager::CheckForOSPRayRendering() const
     }
 #endif
 }
-

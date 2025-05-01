@@ -121,6 +121,7 @@ class PIPELINE_API avtCallback
     static bool                  GetUseOSPRay(void)
                                      { return useOSPRay; }
 #endif
+
     static void                  RegisterGetDatabaseCallback(
                                                   GetDatabaseCallback, void *);
     static ref_ptr<avtDatabase>  GetDatabase(const std::string &, int,
@@ -165,6 +166,7 @@ class PIPELINE_API avtCallback
 #if defined(HAVE_OSPRAY)
     static bool                  useOSPRay;
 #endif
+
     static bool                  safeMode;
 
     static GlobalAttributes::BackendType backendType;
@@ -183,5 +185,3 @@ class PIPELINE_API avtCallback
 
 
 #endif
-
-
