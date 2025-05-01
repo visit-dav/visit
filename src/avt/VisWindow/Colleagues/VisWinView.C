@@ -25,8 +25,8 @@
 //    Hank Childs, Wed Dec 27 14:32:17 PST 2000
 //    Added viewUp for view information.
 //
-//    Kathleen Bonnell, Mon Jan  8 11:56:50 PST 2001 
-//    Made use of newly defined method 'SetToDefault'. 
+//    Kathleen Bonnell, Mon Jan  8 11:56:50 PST 2001
+//    Made use of newly defined method 'SetToDefault'.
 //
 //    Eric Brugger, Mon Mar 12 14:52:31 PST 2001
 //    I removed the perspective projection from this class since it was
@@ -55,9 +55,9 @@ VisWinView::VisWinView(VisWindowColleagueProxy &p) : VisWinColleague(p)
 //    Hank Childs, Wed Dec 27 14:32:17 PST 2000
 //    Added viewUp for view information.
 //
-//    Kathleen Bonnell, Thu Jan  4 15:45:05 PST 2001 
-//    Removed code that set the data members of viewInfo, as this is now 
-//    contained in the avtViewInfo method 'SetViewFromCamera'. 
+//    Kathleen Bonnell, Thu Jan  4 15:45:05 PST 2001
+//    Removed code that set the data members of viewInfo, as this is now
+//    contained in the avtViewInfo method 'SetViewFromCamera'.
 //
 // ****************************************************************************
 
@@ -86,14 +86,19 @@ VisWinView::GetViewInfo(void)
 //    Hank Childs, Wed Dec 27 14:32:17 PST 2000
 //    Added viewUp and near/far for view information.
 //
-//    Kathleen Bonnell, Thu Jan  4 15:45:05 PST 2001 
-//    Made this method use avtViewInfo's assignment operator. 
+//    Kathleen Bonnell, Thu Jan  4 15:45:05 PST 2001
+//    Made this method use avtViewInfo's assignment operator.
 //
 //    Hank Childs, Fri Jan  5 17:55:42 PST 2001
 //    Pushed logic for antiquated method SetCameraToView into this routine.
 //
 //    Kathleen Bonnell, Thu Aug 29 09:49:36 PDT 2002
-//    Added call to UpdateLightPositions. 
+//    Added call to UpdateLightPositions.
+//
+//    Kevin Griffin, Wed Apr 02, 2025
+//    If ANARI exists, update the useAnari flag in view info. The useAnari
+//    flag will be true if ANARI rendering is enabled in the advanced
+//    rendering dialog.
 //
 // ****************************************************************************
 
@@ -101,6 +106,9 @@ void
 VisWinView::SetViewInfo(const avtViewInfo &vI)
 {
     viewInfo = vI;
+#ifdef HAVE_ANARI
+    viewInfo.useAnari = mediator.GetAnariRendering();
+#endif
     viewInfo.SetCameraFromView(mediator.GetCanvas()->GetActiveCamera());
 
     //
@@ -179,8 +187,8 @@ VisWinView::Stop2DMode(void)
 //    Takes the camera out of perspective projection because it doesn't make
 //    sense for Curve.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   May 8, 2002 
+//  Programmer: Kathleen Bonnell
+//  Creation:   May 8, 2002
 //
 // ****************************************************************************
 
@@ -202,8 +210,8 @@ VisWinView::StartCurveMode(void)
 //    Takes the camera back into perspective projection if it should be, but
 //    we disabled it for Curve mode.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   May 8, 2002 
+//  Programmer: Kathleen Bonnell
+//  Creation:   May 8, 2002
 //
 // ****************************************************************************
 
@@ -316,5 +324,3 @@ VisWinView::StopParallelAxesMode(void)
         camera->SetParallelProjection(0);
     }
 }
-
-

@@ -310,5 +310,3 @@ avtCallback::GetDatabase(const string &filename, int time, const char *format)
 
     return getDatabaseCallback(getDatabaseCallbackArgs, filename, time,format);
 }
-
-
