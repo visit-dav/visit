@@ -4,18 +4,14 @@
 
 #****************************************************************************
 # Modifications:
+#   Kathleen Biagas, Tue April 15, 2025
+#   Removed setting of HAVE_XLIB definition. No longer needed.
 #
 #****************************************************************************
 
 target_sources(avtqtviswindow PRIVATE
     vtkDashedXorGridMapper2D.C
     vtkRubberBandMapper2D.C)
-
-if(NOT APPLE AND X11_FOUND)
-    set_source_files_properties(
-        vtkDashedXorGridMapper2D.C  vtkRubberBandMapper2D.C
-        PROPERTIES COMPILE_FLAGS "-DHAVE_XLIB")
-endif()
 
 target_include_directories(avtqtviswindow PUBLIC .)
 

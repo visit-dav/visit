@@ -86,14 +86,15 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Changes to VisIt's expression language in version 3.5</font></b></p>
 <ul>
   <li>Fixed a bug causing the min, max, and divide expressions to crash the compute engine when given a single variable as input. Min and max now return the result of that single variable, and divide throws an error instead of crashing.</li>
-  <li>Expression Change 2</li>
+  <li>The Verdict mesh quality library that is builtin to VisIt was enhanced to handle degenerate hexahedra. This improves expressions and queries that use the Verdict library.</li>
 </ul>
 
 <a name="Query_changes"></a>
 <p><b><font size="4">Changes to VisIt's picks and queries in version 3.5</font></b></p>
 <ul>
   <li>The X Ray Image Query now clips results beyond the far clipping plane.</li>
-  <li>Query Change 2</li>
+  <li>The Verdict mesh quality library that is builtin to VisIt was enhanced to handle generate hexahedra. This improves expressions and queries that use the Verdict library.</li>
+</ul>
 </ul>
 
 <a name="Bugs_fixed"></a>
@@ -104,6 +105,9 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a crash in structured domain boundaries when exchanging mixed material data using local boundary data.</li>
   <li>Fixed a potential infinite loop in our internal string helper utilities.</li>
   <li>Fixed error in Command Recording of a Query, where python tuples weren't represented correctly.</li>
+  <li>3D Text Annotation's relative height widget has been fixed so that whether the value is changed via the spin box up/down arrows or a new value is typed, the widget will update and so will the height of the text.</li>
+  <li>View computations become garbled when Viewport Coordinate values are set outside the range of [0,1]. The docs specify the values should be in this range, and they are now automatically clamped to this range when being set via the GUI or CLI.</li>
+  <li>Fixed a bug crashing viewer if label tick spacing was too cramped exceeding a builtin threshold of 200 labels.</li>
 </ul>
 
 <a name="Build_features"></a>
@@ -112,6 +116,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Removed support for VTK-8.</li>
   <li>Added support for building <code>meson</code>, <code>ninja</code>, <code>xcb</code> and <code>xkbcommon</code> to <code>build_visit</code> to allow building VisIt with Qt6 on systems that do not have all the <code>xcb</code> and <code>xkbcommon</code> development packages installed. <code>xcb</code> and <code>xkbcommon</code> are used by Qt6. <code>meson</code> and <code>ninja</code> are used to build <code>xkbcommon</code>. By enabling all four of these packages, Qt6 can be built on systems that don't have <code>xcb</code> and <code>xkbcommon</code> installed on them.</li>
   <li>Added a patch to <code>build_visit</code> for building MPICH when building on a system that has a newer version of SLURM installed.</li>
+  <li>Fixed a bug where cloning and checking out VisIt could fail silently without providing error messages.</li>
   <li>Added support for building <code>anari</code> to <code>build_visit</code> to allow building VisIt with ANARI renderingsupport.</li>
   <li>Updated VTK build script, <code>bv_vtk.sh</code>, to enable ANARI rendering module in VTK.</li>
 </ul>

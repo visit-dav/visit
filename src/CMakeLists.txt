@@ -308,6 +308,7 @@ if(WIN32)
     include_visit_config_site()
 endif()
 
+include(${VISIT_SOURCE_DIR}/CMake/VisItOptions.cmake)
 include(${VISIT_SOURCE_DIR}/CMake/CheckMinimumCompilerVersion.cmake)
 include(${VISIT_SOURCE_DIR}/CMake/SystemChecks.cmake)
 include(${VISIT_SOURCE_DIR}/CMake/SetUpPlatformDefs.cmake)
@@ -346,7 +347,6 @@ set(CXX_TEST_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 #-----------------------------------------------------------------------------
 # configure options
 #-----------------------------------------------------------------------------
-include("${VISIT_SOURCE_DIR}/CMake/VisItOptions.cmake")
 
 # Set up placeholders for package vars: XXX_DIR
 foreach(pkg ADIOS ADIOS2 ADIOS2_PAR ADVIO BLOSC2 BOOST BOXLIB CFITSIO CGNS
@@ -1015,3 +1015,4 @@ add_custom_target(visit-dist
   COMMAND ${CMAKE_COMMAND} -E rm ${VISIT_SOURCE_DIR}/GIT_VERSION
   COMMAND ${CMAKE_COMMAND} -E rm -rf ${dist_name}
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DR})
+

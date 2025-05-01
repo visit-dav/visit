@@ -37,6 +37,9 @@ class QPushButton;
 //    to 'editingFinished' signal. nameTextChanged retains its arg as it
 //    can be called with the arg from another function.
 //
+//    Kathleen Biagas, Wed April 16, 2025
+//    Add no-arg nameTextChanged to match editingFinished signal.
+//
 // ****************************************************************************
 class XMLEditCode : public QFrame
 {
@@ -50,6 +53,7 @@ class XMLEditCode : public QFrame
     void UpdateWindowSensitivity();
     void UpdateWindowSingleItem();
     void targetTextChanged();
+    void nameTextChanged();
     void nameTextChanged(const QString&);
     void prefixChanged();
     void postfixChanged();
