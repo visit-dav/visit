@@ -8406,6 +8406,7 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
             continue;
 
           default:
+            std::cout << "varType: " << varType << std::endl;
             EXCEPTION1(VisItException, "Cannot exchange secondary "
                      "variables that aren't scalars, vectors, or species");
         }

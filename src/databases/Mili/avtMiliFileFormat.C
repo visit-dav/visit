@@ -2465,6 +2465,8 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
             }
             else if (vecSize == 6)
             {
+                std::cout << varPath << std::endl;
+                std::cout << "AVT_SYMMETRIC_TENSOR_VAR" << std::endl;
                 refAvtType = AVT_SYMMETRIC_TENSOR_VAR;
             }
             else if (vecSize == 9)
@@ -2488,6 +2490,8 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
             }
             else if (vecSize == 3)
             {
+                std::cout << varPath << std::endl;
+                std::cout << "AVT_SYMMETRIC_TENSOR_VAR" << std::endl;
                 refAvtType = AVT_SYMMETRIC_TENSOR_VAR;
             }
             else if (vecSize == 4)
