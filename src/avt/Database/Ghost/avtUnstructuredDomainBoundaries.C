@@ -692,17 +692,16 @@ avtUnstructuredDomainBoundaries::ExchangeMeshT(vector<int>         domainNum,
             MeshDomainData<T> &currDomainData = domaindata[sendDom][recvDom];
             std::vector<std::array<T, 3>> &gainedPoints   = currDomainData.gainedPoints;
             std::vector<int>              &origPointIds   = currDomainData.origPointIds;
-            int                           &nGainedPoints  = currDomainData.nGainedPoints;
+            const int                     &nGainedPoints  = currDomainData.nGainedPoints;
 
-            const int &nGainedPointsThisDomain = nGainedPoints;
-            if (nGainedPointsThisDomain == 0)
+            if (nGainedPoints == 0)
                 continue;
 
             // We need to remember what the point id for this exchange
             // of points is.
             startingPoint[std::make_pair(sendDom, recvDom)] = newId;
 
-            for (int gainedPtId = 0; gainedPtId < nGainedPointsThisDomain; gainedPtId ++)
+            for (int gainedPtId = 0; gainedPtId < nGainedPoints; gainedPtId ++)
             {
                 *(newcoord++) = gainedPoints[gainedPtId][0];
                 *(newcoord++) = gainedPoints[gainedPtId][1];
