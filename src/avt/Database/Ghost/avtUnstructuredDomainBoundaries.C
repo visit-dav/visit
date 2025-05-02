@@ -57,6 +57,23 @@ namespace
 
 #endif
 
+
+// ****************************************************************************
+//
+// Disambiguation:
+//
+// How does this all work? The Exchange functions are called in 
+// avtGenericDatabase and their purpose is to exchange data between all the 
+// processors. They are sharing data from every domain to every domain, so 
+// there is a 2D structure in each of the functions that is essentially a map
+// from sendDom id and recvDom id to data to be exchanged. That data takes the 
+// form of objects containing scalars and arrays, which have been defined below
+// in classes. Each of the exchange functions calls a corresponding 
+// "CommunicateXXXInformation" function that takes the maps to domain data to
+// be exchanged and iterates through all send/receive domain pairs, filling out
+// the maps to exchange data as they go.
+// ****************************************************************************
+
 // ****************************************************************************
 // A container for storing domain communication mesh data. There is one of 
 // these for each pair of domains.
