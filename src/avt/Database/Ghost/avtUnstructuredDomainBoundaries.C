@@ -228,6 +228,13 @@ avtUnstructuredDomainBoundaries::GetDomIndex(const std::vector<int> &domainNum,
 //       the number of materials in the zone for mixed zones.
 //       We are calculating Sum(F(C)) where Sum is taken over
 //       all zones along the boundary of the send and recv Doms.
+// 
+//  Notes:
+//       It may be simpler to simply compute an over-estimate nCells * nmats 
+//       where nmats is the total number of materials or perhaps a precomputed 
+//       max of materials in any one cell. But for now (05/02/25) we are
+//       maintaining the code as it originally functioned before the refactor
+//       that led to the creation of this function.
 //
 //  Arguments:
 //    nCells        the number of cells
