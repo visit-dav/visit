@@ -1032,4 +1032,3 @@ LogGlxAndXdpyInfo()
     }
 #endif
 }
-

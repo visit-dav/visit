@@ -194,3 +194,17 @@ Likewise, for a collection of points in just *one dimension*, we would have
 There are some
 `additional examples <https://www.visitusers.org/index.php?title=Reading_point_data#Using_Point3D_files>`_
 of Point3D files on the VisIt_ wiki pages.
+
+Degenerate Hexahedra
+~~~~~~~~~~~~~~~~~~~~
+
+Among the commonly used finite element shapes, hexahedra are frequently the only supported element type in many applications, particularly engineering applications.
+Sometimes, for developers of these applications it is easiest to support other element types such as tetrahedra, pyramids and/or prism/wedges, by simply handling them as *degenerate* hexahedra.
+This means that among the 8 nodes (e.g. corer points) of a hexahedron, some points are duplicated to *pinch off* or *collapse* an edge or face of a hexahedron to create the desired alternative shapes.
+
+Internally, VisIt_ mostly relies upon VTK to handle these *degenerate* hexahedra and it appears to handle them fine in most operations.
+However, for some operations, such as mesh quality expressions (which include *volume* calculations), VisIt_ relies upon an old version of the `Verdict library <https://github.com/sandialabs/verdict/tree/master>`__ which handles *degenerate* hexahedra but only if they are stored according to conventions illustrated below.
+
+.. _dgen_hex:
+
+.. figure:: images/verdict_degen_hex.png

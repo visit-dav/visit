@@ -81,5 +81,3 @@ class VISWINDOW_API VisWinView : public VisWinColleague
 
 
 #endif
-
-
