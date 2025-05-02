@@ -685,14 +685,14 @@ avtUnstructuredDomainBoundaries::ExchangeMeshT(vector<int>         domainNum,
         int newId = nOldPoints;
         for (int sendDom = 0; sendDom < nTotalDomains; sendDom ++)
         {
+            if (sendDom == recvDom)
+                continue;
+
             // create references for the domain data here
             MeshDomainData<T> &currDomainData = domaindata[sendDom][recvDom];
             std::vector<std::array<T, 3>> &gainedPoints   = currDomainData.gainedPoints;
             std::vector<int>              &origPointIds   = currDomainData.origPointIds;
             int                           &nGainedPoints  = currDomainData.nGainedPoints;
-
-            if (sendDom == recvDom)
-                continue;
 
             const int &nGainedPointsThisDomain = nGainedPoints;
             if (nGainedPointsThisDomain == 0)
@@ -717,15 +717,15 @@ avtUnstructuredDomainBoundaries::ExchangeMeshT(vector<int>         domainNum,
         // Put in the new cells
         for (int sendDom = 0; sendDom < nTotalDomains; ++sendDom)
         {
+            if (recvDom == sendDom)
+                continue;
+
             // create references for the domain data here
             MeshDomainData<T> &currDomainData = domaindata[sendDom][recvDom];
             std::vector<int>              &cellTypes      = currDomainData.cellTypes;
             std::vector<std::vector<int>> &cellPoints     = currDomainData.cellPoints;
             int                           &nGainedCells   = currDomainData.nGainedCells;
             std::vector<int>              &nPointsPerCell = currDomainData.nPointsPerCell;
-
-            if (recvDom == sendDom)
-                continue;
 
             const int &nGainedCellsThisDomain = nGainedCells;
 
@@ -1186,7 +1186,7 @@ avtUnstructuredDomainBoundaries::ExchangeMixedMaterials(vector<int> domainNum,
                         new_mix_zone[mixlen_cnt] = -1;
                         new_mix_next[mixlen_cnt] = (matId < nmats - 1 ? mixlen_cnt + 2 : 0);
                         lml ++;
-                        mixlen_cnt++;
+                        mixlen_cnt ++;
                     }
                 }
             }
@@ -1667,13 +1667,20 @@ avtUnstructuredDomainBoundaries::ExchangeData(vector<int>         &domainNum,
 
         for (int sendDom = 0; sendDom < nTotalDomains; sendDom ++)
         {
+            if (sendDom == recvDom)
+            {
+                continue;
+            }
+
             // create references for the domain data here
             VarDomainData<T> &currDomainData = domaindata[sendDom][recvDom];
             const std::vector<T> &gainedData    = currDomainData.gainedData;
             const int            &nGainedTuples = currDomainData.nGainedTuples;
 
-            if (sendDom == recvDom || 0 == nGainedTuples)
+            if (0 == nGainedTuples)
+            {
                 continue;
+            }
 
             const int refIndex = (isPointData ? startingPoint[pair<int,int>(sendDom, recvDom)]
                                               : startingCell[pair<int,int>(sendDom, recvDom)]);
