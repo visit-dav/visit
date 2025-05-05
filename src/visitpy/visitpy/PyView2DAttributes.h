@@ -23,9 +23,9 @@ VISITPY_API PyObject *     PyView2DAttributes_Wrap(const View2DAttributes *attr)
 void VISITPY_API           PyView2DAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyView2DAttributes_SetDefaults(const View2DAttributes *atts);
 std::string VISITPY_API    PyView2DAttributes_GetLogString();
-std::string VISITPY_API    PyView2DAttributes_ToString(const View2DAttributes *, const char *);
-VISITPY_API PyObject *     PyView2DAttributes_getattr(PyObject *self, char *name);
-int VISITPY_API            PyView2DAttributes_setattr(PyObject *self, char *name, PyObject *args);
+std::string VISITPY_API    PyView2DAttributes_ToString(const View2DAttributes *, const char *, const bool=false);
+VISITPY_API PyObject *     PyView2DAttributes_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyView2DAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyView2DAttributes_methods[VIEW2DATTRIBUTES_NMETH];
 
 #endif

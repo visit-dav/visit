@@ -31,6 +31,8 @@
 #include <memory.h>
 #include <algorithm>
 
+#include <degen_hex.h>
+
 //! the average volume of a hex
 VERDICT_REAL verdict_hex_size = 0;
 
@@ -587,6 +589,8 @@ VerdictVector calc_hex_efg( int efg_index, VerdictVector coordinates[8])
 */
 C_FUNC_DEF VERDICT_REAL v_hex_aspect (int /*num_nodes*/, VERDICT_REAL coordinates[][3])
 {
+  HANDLE_DGEN_TET(v_tet_aspect_beta); /* tet_aspect_beta is most like hex_aspect */
+
   double aspect;
   VerdictVector node_pos[8];
   make_hex_nodes ( coordinates, node_pos );
@@ -683,6 +687,8 @@ C_FUNC_DEF VERDICT_REAL v_hex_taper( int /*num_nodes*/, VERDICT_REAL coordinates
 */
 C_FUNC_DEF VERDICT_REAL v_hex_volume( int /*num_nodes*/, VERDICT_REAL coordinates[][3] )
 {
+  HANDLE_DGEN_ALL(v_tet_volume, v_pyramid_volume, v_wedge_volume);
+
   VerdictVector node_pos[8];
   make_hex_nodes ( coordinates, node_pos );
   
@@ -1134,6 +1140,8 @@ C_FUNC_DEF VERDICT_REAL v_hex_oddy( int /*num_nodes*/, VERDICT_REAL coordinates[
 C_FUNC_DEF VERDICT_REAL v_hex_condition( int /*num_nodes*/, VERDICT_REAL coordinates[][3] )
 {
 
+  HANDLE_DGEN_TET(v_tet_condition);
+
   VerdictVector node_pos[8];
   make_hex_nodes ( coordinates, node_pos );
 
@@ -1234,6 +1242,8 @@ C_FUNC_DEF VERDICT_REAL v_hex_condition( int /*num_nodes*/, VERDICT_REAL coordin
 */
 C_FUNC_DEF VERDICT_REAL v_hex_jacobian( int /*num_nodes*/, VERDICT_REAL coordinates[][3] )
 {
+
+  HANDLE_DGEN_TET(v_tet_jacobian);
   
   VerdictVector node_pos[8];
   make_hex_nodes ( coordinates, node_pos );
@@ -1334,6 +1344,8 @@ C_FUNC_DEF VERDICT_REAL v_hex_jacobian( int /*num_nodes*/, VERDICT_REAL coordina
 */
 C_FUNC_DEF VERDICT_REAL v_hex_scaled_jacobian( int /*num_nodes*/, VERDICT_REAL coordinates[][3] )
 {
+
+  HANDLE_DGEN_TET(v_tet_scaled_jacobian);
 
   double jacobi, min_norm_jac = VERDICT_DBL_MAX;  
   double min_jacobi = VERDICT_DBL_MAX;
@@ -1773,6 +1785,7 @@ C_FUNC_DEF VERDICT_REAL v_hex_shear( int /*num_nodes*/, VERDICT_REAL coordinates
 C_FUNC_DEF VERDICT_REAL v_hex_shape( int /*num_nodes*/, VERDICT_REAL coordinates[][3] )
 {
 
+  HANDLE_DGEN_TET(v_tet_shape);
 
   double det, shape;
   double min_shape = 1.0; 
@@ -1918,6 +1931,9 @@ C_FUNC_DEF VERDICT_REAL v_hex_shape( int /*num_nodes*/, VERDICT_REAL coordinates
 */
 C_FUNC_DEF VERDICT_REAL v_hex_relative_size_squared( int /*num_nodes*/, VERDICT_REAL coordinates[][3] )
 {
+
+  HANDLE_DGEN_TET(v_tet_relative_size_squared);
+
   double size = 0;
   double tau; 
 
@@ -2035,6 +2051,8 @@ C_FUNC_DEF VERDICT_REAL v_hex_relative_size_squared( int /*num_nodes*/, VERDICT_
 */
 C_FUNC_DEF VERDICT_REAL v_hex_shape_and_size( int num_nodes, VERDICT_REAL coordinates[][3] )
 {
+  HANDLE_DGEN_TET(v_tet_shape_and_size);
+
   double size = v_hex_relative_size_squared( num_nodes, coordinates );
   double shape = v_hex_shape( num_nodes, coordinates );
 
@@ -2071,6 +2089,8 @@ C_FUNC_DEF VERDICT_REAL v_hex_shear_and_size( int num_nodes, VERDICT_REAL coordi
 */
 VERDICT_REAL v_hex_distortion( int num_nodes, VERDICT_REAL coordinates[][3] )
 {
+
+   HANDLE_DGEN_TET(v_tet_distortion);
 
    //use 2x2 gauss points for linear hex and 3x3 for 2nd order hex
    int number_of_gauss_points=0;

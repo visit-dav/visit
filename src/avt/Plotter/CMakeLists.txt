@@ -74,6 +74,9 @@
 #   Kathleen Biagas, Tue Dec 13, 2022
 #   Moved setting of vtk sources to subdir.
 #
+#   Kevin Griffin, Mon 03 Mar 2025 04:23:27 PM CST
+#   Added VTK::RenderingAnari to link line if ANARI is enabled
+#
 #****************************************************************************
 
 add_subdirectory(vtk)
@@ -177,7 +180,8 @@ visit_append_list(
           VTK::RenderingCore
           VTK::RenderingFreeType
           VTK::RenderingOpenGL2
-          ${OPENGL_LIBRARIES})
+          ${OPENGL_LIBRARIES}
+          $<$<BOOL:${HAVE_ANARI}>:VTK::RenderingAnari>)
 
 if(TARGET VTK::RenderingRayTracing)
      # RenderingRayTracing available if VTK 9 was built with OSPRAY support
@@ -210,5 +214,4 @@ if(VISIT_PARALLEL)
                    avtfilters_par
                    avtpipeline_par)
 endif()
-
 

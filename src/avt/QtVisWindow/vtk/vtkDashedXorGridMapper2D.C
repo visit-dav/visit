@@ -29,28 +29,21 @@
 #include <QPixmap>
 #include <QPainter>
 #include <QLine>
-#if defined(HAVE_XLIB)
-#  include <QtX11Extras/QX11Info>
-#  include <X11/Intrinsic.h>
-#endif
 
 struct vtkDashedXorGridMapper2DPrivate
 {
     QWidget *widget;
-    int      bestRenderer;
     QLabel  *overlay;
 
     vtkDashedXorGridMapper2DPrivate()
     {
         widget = 0;
-        bestRenderer = -1;
         overlay = 0;
     }
 
     vtkDashedXorGridMapper2DPrivate(const vtkDashedXorGridMapper2DPrivate &obj)
     {
         widget = obj.widget;
-        bestRenderer = obj.bestRenderer;
         overlay = 0;
     }
 
@@ -62,7 +55,6 @@ struct vtkDashedXorGridMapper2DPrivate
     void operator = (const vtkDashedXorGridMapper2DPrivate &obj)
     {
         widget = obj.widget;
-        bestRenderer = obj.bestRenderer;
         overlay = 0;
     }
 
@@ -73,39 +65,6 @@ struct vtkDashedXorGridMapper2DPrivate
         if(overlay != 0)
             overlay->deleteLater();
         overlay = 0;
-    }
-
-    int SelectBestRenderer()
-    {
-        if(bestRenderer != -1)
-            return bestRenderer;
-
-#if defined(__APPLE__) || defined (_WIN32)
-        bestRenderer = 2;
-#elif defined(HAVE_XLIB)
-        bestRenderer = 1;
-#if 0
-// X is not creating the Qt overlay as transparent. Disable for now.
-        // See if we're displaying to Apple X11. If so we want Qt renderer.
-        int nExt = 0, appleDisplay = 0;
-        char **ext = XListExtensions(QX11Info::display(), &nExt);
-        for(int e = 0; e < nExt; ++e)
-        {
-            if(strcmp(ext[e], "Apple-DRI") == 0 ||
-               strcmp(ext[e], "Apple-WM") == 0)
-            {
-                appleDisplay++;
-            }
-        }
-        XFreeExtensionList(ext);
-        if(appleDisplay == 2)
-            bestRenderer = 2;
-#endif
-#else
-        bestRenderer = 2;
-#endif
-
-        return bestRenderer;
     }
 };
 
@@ -232,15 +191,7 @@ vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* actor
 {
     if(privateInstance->widget != 0)
     {
-        switch(privateInstance->SelectBestRenderer())
-        {
-        case 1:
-            RenderOverlay_X11(viewport, actor);
-            break;
-        case 2:
-            RenderOverlay_Qt(viewport, actor);
-            break;
-        }
+        RenderOverlay_Qt(viewport, actor);
     }
 }
 
@@ -254,63 +205,6 @@ vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* actor
 void
 vtkDashedXorGridMapper2D::RenderOverlay_X11(vtkViewport* viewport, vtkActor2D* actor)
 {
-#if defined(HAVE_XLIB)
-#define SET_FOREGROUND_D(rgba) \
-      aColor.red = (unsigned short) (rgba[0] * 65535.0); \
-      aColor.green = (unsigned short) (rgba[1] * 65535.0); \
-      aColor.blue = (unsigned short) (rgba[2] * 65535.0); \
-      XAllocColor(displayId, attr.colormap, &aColor); \
-      XSetForeground(displayId, gc, aColor.pixel); \
-      XSetFillStyle(displayId, gc, FillSolid);
-
-#define SET_FOREGROUND(rgba) \
-      aColor.red = (unsigned short) (rgba[0] * 256); \
-      aColor.green = (unsigned short) (rgba[1] * 256); \
-      aColor.blue = (unsigned short) (rgba[2] * 256); \
-      XAllocColor(displayId, attr.colormap, &aColor); \
-      XSetForeground(displayId, gc, aColor.pixel);
-
-#define DRAW_XOR_LINE(x1, y1, x2, y2) \
-      XDrawLine(displayId, drawable, xorGC, x1, y1, x2, y2);
-
-#define FLUSH_AND_SYNC() XFlush(displayId); XSync(displayId, False); \
-      XFreeGC(displayId, gc);
-
-#define CLEAN_UP() delete [] points;
-
-    XColor aColor;
-    XPoint *points = new XPoint [1024];
-
-    Display* displayId = (Display*) QX11Info::display();
-    Window windowId = (Window) privateInstance->widget->winId();
-
-    Screen *screen = XDefaultScreenOfDisplay(displayId);
-    int screenN = XScreenNumberOfScreen(screen);
-    unsigned long black = BlackPixel(displayId, screenN);
-    unsigned long white = WhitePixel(displayId, screenN);
-    XGCValues xgcvalues;
-    xgcvalues.foreground = black ^ white;
-    xgcvalues.background = 0;
-    xgcvalues.function = GXxor;
-    GC gc = XCreateGC(displayId, windowId, GCForeground | GCBackground | GCFunction,
-        &xgcvalues);
-    GC xorGC = XCreateGC(displayId, windowId, GCForeground | GCBackground | GCFunction,
-        &xgcvalues);
-
-    // Get the drawable to draw into
-    Drawable drawable = (Drawable) windowId;
-    if (!drawable) vtkErrorMacro(<<"Window returned NULL drawable!");
-  
-    // Set up the forground color
-    XWindowAttributes attr;
-    XGetWindowAttributes(displayId,windowId,&attr);
-
-    // Set the line color
-    double* actorColor = actor->GetProperty()->GetColor();
-    SET_FOREGROUND_D(actorColor);
-
-#include <vtkDashedXorGridMapper2D_body.C>
-#endif
 }
 
 // ****************************************************************************

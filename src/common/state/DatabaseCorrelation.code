@@ -687,3 +687,563 @@ DatabaseCorrelation::GetMethodNameFromMethod(int m)
     return "Unknown";
 }
 
+Target: xml2python
+Function: PyDatabaseCorrelation_ToString
+Declaration: PyDatabaseCorrelation_ToString
+Definition:
+std::string
+PyDatabaseCorrelation_ToString(const DatabaseCorrelation *atts, const char *prefix, const bool forLogging)
+{
+//
+// THIS METHOD IS CUSTOM CODED!!!!!!.
+// see .code file
+//
+    std::string str;
+    char tmpStr[1000];
+
+    // Make a reference.
+    const DatabaseCorrelation &correlation = *atts;
+
+    snprintf(tmpStr, 1000, "name = \"%s\"\n", atts->GetName().c_str());
+    str += tmpStr;
+    snprintf(tmpStr, 1000, "numStates = %d\n", atts->GetNumStates());
+    str += tmpStr;
+    const char *method_names = "IndexForIndexCorrelation, StretchedIndexCorrelation, TimeCorrelation, CycleCorrelation, UserDefinedCorrelation";
+    if(atts->GetMethod() == DatabaseCorrelation::IndexForIndexCorrelation)
+        {
+             snprintf(tmpStr, 1000, "method = IndexForIndexCorrelation  # %s\n", method_names);
+             str += tmpStr;
+        }
+    else if(atts->GetMethod() == DatabaseCorrelation::StretchedIndexCorrelation)
+        {
+             snprintf(tmpStr, 1000, "method = StretchedIndexCorrelation  # %s\n", method_names);
+             str += tmpStr;
+        }
+    else if(atts->GetMethod() == DatabaseCorrelation::TimeCorrelation)
+        {
+             snprintf(tmpStr, 1000, "method = TimeCorrelation  # %s\n", method_names);
+             str += tmpStr;
+        }
+    else if(atts->GetMethod() == DatabaseCorrelation::CycleCorrelation)
+        {
+             snprintf(tmpStr, 1000, "method = CycleCorrelation  # %s\n", method_names);
+             str += tmpStr;
+        }
+    else
+        {
+             snprintf(tmpStr, 1000, "method = UserDefinedCorrelation  # %s\n", method_names);
+             str += tmpStr;
+        }
+
+    size_t i, j, index = 0;
+    const stringVector &databaseNames = correlation.GetDatabaseNames();
+    for(i = 0; i < databaseNames.size(); ++i)
+    {
+        snprintf(tmpStr, 1000, "database[%ld]=%s\n", i, databaseNames[i].c_str());
+        str += tmpStr;
+        snprintf(tmpStr, 1000, "    numStates=%d\n", correlation.GetDatabaseNStates()[i]);
+        str += tmpStr;
+        str += "    times={";
+        for(j = 0; j < (size_t)correlation.GetDatabaseNStates()[i]; ++j)
+        {
+            snprintf(tmpStr, 1000, "%g, ", correlation.GetDatabaseTimes()[index+j]);
+            str += tmpStr;
+        }
+        str += "}\n";
+        str += "    cycles={";
+        for(j = 0; j < (size_t)correlation.GetDatabaseNStates()[i]; ++j)
+        {
+            snprintf(tmpStr, 1000, "%d, ", correlation.GetDatabaseCycles()[index+j]);
+            str += tmpStr;
+        }
+        str += "}\n";
+
+        index += correlation.GetDatabaseNStates()[i];
+
+        str += "    indices={";
+        for(j = 0; j < (size_t)correlation.GetNumStates(); ++j)
+        {
+            snprintf(tmpStr, 1000, "%d, ", correlation.GetIndices()[i*correlation.GetNumStates() + j]);
+            str += tmpStr;
+        }
+        str += "}\n";
+    }
+
+    {   const doubleVector &condensedTimes = atts->GetCondensedTimes();
+        snprintf(tmpStr, 1000, "condensedTimes = (");
+        str += tmpStr;
+        for(i = 0; i < condensedTimes.size(); ++i)
+        {
+            snprintf(tmpStr, 1000, "%g", condensedTimes[i]);
+            str += tmpStr;
+            if(i < condensedTimes.size() - 1)
+            {
+                snprintf(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        snprintf(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    {   const intVector &condensedCycles = atts->GetCondensedCycles();
+        snprintf(tmpStr, 1000, "condensedCycles = (");
+        str += tmpStr;
+        for(i = 0; i < condensedCycles.size(); ++i)
+        {
+            snprintf(tmpStr, 1000, "%d", condensedCycles[i]);
+            str += tmpStr;
+            if(i < condensedCycles.size() - 1)
+            {
+                snprintf(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        snprintf(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    return str;
+}
+
+Target: xml2python
+Function: DatabaseCorrelation_dir
+Declaration: DatabaseCorrelation_dir
+Definition:
+static PyObject *
+DatabaseCorrelation_dir(PyObject *self, PyObject *args)
+{
+//
+// THIS METHOD IS CUSTOM CODED!!!!!!.
+// see .code file
+//
+    static DatabaseCorrelation atts; // dummy to access field names
+
+    PyObject *dir_list = PyList_New(0);
+    if (!dir_list)
+    {
+        PyErr_NoMemory();
+        return NULL;
+    }
+
+    // Add methods from the methods table
+    for (PyMethodDef const *method = &PyDatabaseCorrelation_methods[0];
+         method && method->ml_name;
+         method++) {
+        if (!strncmp(method->ml_name, "__dir__", 7)) continue;
+        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));
+    }
+
+    // Add members using generic AttributeGroup interface
+    for (int i = 0; i < atts.NumAttributes(); i++) {
+        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
+    }
+
+    return dir_list;
+}   
+
+Target: xml2python
+Function: PyDatabaseCorrelation_getattro
+Declaration: PyDatabaseCorrelation_getattro
+Definition:
+PyObject *
+PyDatabaseCorrelation_getattro(PyObject *self, PyObject *attr_name)
+{
+//
+// THIS METHOD IS CUSTOM CODED!!!!!!.
+// see .code file
+//
+    const char *name = PyUnicode_AsUTF8(attr_name);
+    if (!name) return NULL;
+
+    if(strcmp(name, "name") == 0)
+        return DatabaseCorrelation_GetName(self, NULL);
+    if(strcmp(name, "numStates") == 0)
+        return DatabaseCorrelation_GetNumStates(self, NULL);
+    if(strcmp(name, "method") == 0)
+        return DatabaseCorrelation_GetMethod(self, NULL);
+    if(strcmp(name, "IndexForIndexCorrelation") == 0)
+        return PyInt_FromLong(long(DatabaseCorrelation::IndexForIndexCorrelation));
+    else if(strcmp(name, "StretchedIndexCorrelation") == 0)
+        return PyInt_FromLong(long(DatabaseCorrelation::StretchedIndexCorrelation));
+    else if(strcmp(name, "TimeCorrelation") == 0)
+        return PyInt_FromLong(long(DatabaseCorrelation::TimeCorrelation));
+    else if(strcmp(name, "CycleCorrelation") == 0)
+        return PyInt_FromLong(long(DatabaseCorrelation::CycleCorrelation));
+    else if(strcmp(name, "UserDefinedCorrelation") == 0)
+        return PyInt_FromLong(long(DatabaseCorrelation::UserDefinedCorrelation));
+
+    if(strcmp(name, "databaseNames") == 0)
+        return DatabaseCorrelation_GetDatabaseNames(self, NULL);
+    if(strcmp(name, "databaseNStates") == 0)
+        return DatabaseCorrelation_GetDatabaseNStates(self, NULL);
+
+    PyObject *meth = Py_FindMethod(PyDatabaseCorrelation_methods, self, (char*)name);
+    if (meth) return meth;
+
+    return PyObject_GenericGetAttr(self, attr_name);
+}
+
+Target: xml2python
+Function: PyDatabaseCorrelation_setattro
+Declaration: PyDatabaseCorrelation_setattro
+Definition:
+///////////////////////////////////////////////////////////////////////////////
+// REMOVED  PyDatabaseCorrelation_setattro
+///////////////////////////////////////////////////////////////////////////////
+
+Target: xml2python
+Function: DatabaseCorrelation_Notify
+Declaration: DatabaseCorrelation_Notify
+Definition:
+///////////////////////////////////////////////////////////////////////////////
+// REMOVED  DatabaseCorrelation_Notify
+///////////////////////////////////////////////////////////////////////////////
+
+Target: xml2python
+Function: DatabaseCorrelation_SetName
+Declaration: DatabaseCorrelation_SetName
+Definition:
+///////////////////////////////////////////////////////////////////////////////
+// REMOVED  DatabaseCorrelation_SetName
+///////////////////////////////////////////////////////////////////////////////
+
+Target: xml2python
+Function: DatabaseCorrelation_SetNumStates
+Declaration: DatabaseCorrelation_SetNumStates
+Definition:
+///////////////////////////////////////////////////////////////////////////////
+// REMOVED  DatabaseCorrelation_SetNumStates
+///////////////////////////////////////////////////////////////////////////////
+
+Target: xml2python
+Function: DatabaseCorrelation_SetMethod
+Declaration: DatabaseCorrelation_SetMethod
+Definition:
+///////////////////////////////////////////////////////////////////////////////
+// REMOVED  DatabaseCorrelation_SetMethod
+///////////////////////////////////////////////////////////////////////////////
+
+Target: xml2python
+Function: DatabaseCorrelation_SetDatabaseNames
+Declaration: DatabaseCorrelation_SetDatabaseNames
+Definition:
+///////////////////////////////////////////////////////////////////////////////
+// REMOVED  DatabaseCorrelation_SetDatabaseNames
+///////////////////////////////////////////////////////////////////////////////
+
+Target: xml2python
+Function: DatabaseCorrelation_SetDatabaseNStates
+Declaration: DatabaseCorrelation_SetDatabaseNStates
+Definition:
+///////////////////////////////////////////////////////////////////////////////
+// REMOVED  DatabaseCorrelation_SetDatabaseNStates
+///////////////////////////////////////////////////////////////////////////////
+
+Target: xml2python
+Function: DatabaseCorrelation_SetDatabaseTimes
+Declaration: DatabaseCorrelation_SetDatabaseTimes
+Definition:
+///////////////////////////////////////////////////////////////////////////////
+// REMOVED  DatabaseCorrelation_SetDatabaseTimes
+///////////////////////////////////////////////////////////////////////////////
+
+Target: xml2python
+Function: DatabaseCorrelation_SetDatabaseCycles
+Declaration: DatabaseCorrelation_SetDatabaseCycles
+Definition:
+///////////////////////////////////////////////////////////////////////////////
+// REMOVED  DatabaseCorrelation_SetDatabaseCycles
+///////////////////////////////////////////////////////////////////////////////
+
+Target: xml2python
+Function: DatabaseCorrelation_SetIndices
+Declaration: DatabaseCorrelation_SetIndices
+Definition:
+///////////////////////////////////////////////////////////////////////////////
+// REMOVED  DatabaseCorrelation_SetIndices
+///////////////////////////////////////////////////////////////////////////////
+
+Target: xml2python
+Function: DatabaseCorrelation_SetCondensedTimes
+Declaration: DatabaseCorrelation_SetCondensedTimes
+Definition:
+///////////////////////////////////////////////////////////////////////////////
+// REMOVED  DatabaseCorrelation_SetCondensedTimes
+///////////////////////////////////////////////////////////////////////////////
+
+Target: xml2python
+Function: DatabaseCorrelation_SetCondensedCycles
+Declaration: DatabaseCorrelation_SetCondensedCycles
+Definition:
+///////////////////////////////////////////////////////////////////////////////
+// REMOVED  DatabaseCorrelation_SetCondensedCycles
+///////////////////////////////////////////////////////////////////////////////
+
+
+Target: xml2python
+Function: DatabaseCorrelation_GetCorrelatedTimeStates
+Declaration: DatabaseCorrelation_GetCorrelatedTimeStates
+Definition:
+static PyObject *
+DatabaseCorrelation_GetCorrelatedTimeStates(PyObject *self, PyObject *args)
+{
+//
+// THIS METHOD IS CUSTOM USER_CODE!!!!!!.
+// see .code file
+//
+    PyDatabaseCorrelationObject *obj = (PyDatabaseCorrelationObject *)self;
+
+    int state = 0;
+    if (!PyArg_ParseTuple(args, "i", &state))
+        return NULL;
+
+    PyObject *retval = 0;
+    intVector states;
+    if(obj->data->GetCorrelatedTimeStates(state, states))
+    {
+        // Allocate a tuple the with enough entries to hold the correlated
+        // time states.
+        retval = PyTuple_New(states.size());
+        for(size_t i = 0; i < states.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyLong_FromLong(states[i]));
+    }
+    else
+        retval = PyTuple_New(0);
+
+    return retval;
+}
+
+Target: xml2python
+Function: DatabaseCorrelation_UsesDatabase
+Declaration: DatabaseCorrelation_UsesDatabase
+Definition:
+static PyObject *
+DatabaseCorrelation_UsesDatabase(PyObject *self, PyObject *args)
+{
+//
+// THIS METHOD IS CUSTOM USER_CODE!!!!!!.
+// see .code file
+//
+    PyDatabaseCorrelationObject *obj = (PyDatabaseCorrelationObject *)self;
+    char *name = 0;
+    if (!PyArg_ParseTuple(args, "s", &name))
+        return NULL;
+
+    bool val = obj->data->UsesDatabase(name);
+    return PyLong_FromLong(long(val ? 1 : 0));
+}
+
+Target: xml2python
+Function: DatabaseCorrelation_GetNumDatabases
+Declaration: DatabaseCorrelation_GetNumDatabases
+Definition:
+static PyObject *
+DatabaseCorrelation_GetNumDatabases(PyObject *self, PyObject *args)
+{
+//
+// THIS METHOD IS CUSTOM USER_CODE!!!!!!.
+// see .code file
+//
+    PyDatabaseCorrelationObject *obj = (PyDatabaseCorrelationObject *)self;
+    return PyLong_FromLong(long(obj->data->GetNumDatabases()));
+}
+
+Target: xml2python
+Function: DatabaseCorrelation_GetCorrelatedTimeState
+Declaration: DatabaseCorrelation_GetCorrelatedTimeState
+Definition:
+static PyObject *
+DatabaseCorrelation_GetCorrelatedTimeState(PyObject *self, PyObject *args)
+{
+//
+// THIS METHOD IS CUSTOM USER_CODE!!!!!!.
+// see .code file
+//
+    PyDatabaseCorrelationObject *obj = (PyDatabaseCorrelationObject *)self;
+    char *db = 0;
+    int state = 0;
+    if (!PyArg_ParseTuple(args, "si", &db, &state))
+        return NULL;
+
+    return PyLong_FromLong(long(obj->data->GetCorrelatedTimeState(db, state)));
+}
+
+Target: xml2python
+Function: DatabaseCorrelation_GetInverseCorrelatedTimeState
+Declaration: DatabaseCorrelation_GetInverseCorrelatedTimeState
+Definition:
+static PyObject *
+DatabaseCorrelation_GetInverseCorrelatedTimeState(PyObject *self, PyObject *args)
+{
+//
+// THIS METHOD IS CUSTOM USER_CODE!!!!!!.
+// see .code file
+//
+    PyDatabaseCorrelationObject *obj = (PyDatabaseCorrelationObject *)self;
+    char *db = 0;
+    int state = 0;
+    if (!PyArg_ParseTuple(args, "si", &db, &state))
+        return NULL;
+
+    return PyLong_FromLong(long(obj->data->GetInverseCorrelatedTimeState(db, state)));
+}
+
+Target: xml2python
+Function: DatabaseCorrelation_GetDatabaseCycleForState
+Declaration: DatabaseCorrelation_GetDatabaseCycleForState
+Definition:
+static PyObject *
+DatabaseCorrelation_GetDatabaseCycleForState(PyObject *self, PyObject *args)
+{
+//
+// THIS METHOD IS CUSTOM USER_CODE!!!!!!.
+// see .code file
+//
+    PyDatabaseCorrelationObject *obj = (PyDatabaseCorrelationObject *)self;
+    char *db = 0;
+    int state = 0;
+    if (!PyArg_ParseTuple(args, "si", &db, &state))
+        return NULL;
+
+    const intVector &cycles = obj->data->GetDatabaseCycles();
+    const stringVector &databaseNames = obj->data->GetDatabaseNames();
+    const intVector &nStates = obj->data->GetDatabaseNStates();
+    int retval = -1;
+    int index = 0;
+    if(state >= 0)
+    {
+        for(size_t i = 0; i < databaseNames.size(); ++i)
+        {
+            if(databaseNames[i] == db)
+            {
+                if(state < nStates[i])
+                    retval = cycles[index + state];
+                break;
+            }
+            index += nStates[i];
+        }
+    }
+
+    return PyLong_FromLong(long(retval));
+}
+
+Target: xml2python
+Function: DatabaseCorrelation_GetDatabaseTimeForState
+Declaration: DatabaseCorrelation_GetDatabaseTimeForState
+Definition:
+static PyObject *
+DatabaseCorrelation_GetDatabaseTimeForState(PyObject *self, PyObject *args)
+{
+//
+// THIS METHOD IS CUSTOM USER_CODE!!!!!!.
+// see .code file
+//
+    PyDatabaseCorrelationObject *obj = (PyDatabaseCorrelationObject *)self;
+    char *db = 0;
+    int state = 0;
+    if (!PyArg_ParseTuple(args, "si", &db, &state))
+        return NULL;
+
+    const doubleVector &times = obj->data->GetDatabaseTimes();
+    const stringVector &databaseNames = obj->data->GetDatabaseNames();
+    const intVector &nStates = obj->data->GetDatabaseNStates();
+    double retval = 0.;
+    int index = 0;
+    if(state >= 0)
+    {
+        for(size_t i = 0; i < databaseNames.size(); ++i)
+        {
+            if(databaseNames[i] == db)
+            {
+                if(state < nStates[i])
+                    retval = times[index + state];
+                break;
+            }
+            index += nStates[i];
+        }
+    }
+
+    return PyFloat_FromDouble(retval);
+}
+
+Target: xml2python
+Function: DatabaseCorrelation_GetCondensedCycleForState
+Declaration: DatabaseCorrelation_GetCondensedCycleForState
+Definition:
+static PyObject *
+DatabaseCorrelation_GetCondensedCycleForState(PyObject *self, PyObject *args)
+{
+//
+// THIS METHOD IS CUSTOM USER_CODE!!!!!!.
+// see .code file
+//
+    PyDatabaseCorrelationObject *obj = (PyDatabaseCorrelationObject *)self;
+    int state = 0;
+    if (!PyArg_ParseTuple(args, "i", &state))
+        return NULL;
+
+    return PyLong_FromLong(long(obj->data->GetCondensedCycleForState(state)));
+}
+
+Target: xml2python
+Function: DatabaseCorrelation_GetCondensedTimeForState
+Declaration: DatabaseCorrelation_GetCondensedTimeForState
+Definition:
+static PyObject *
+DatabaseCorrelation_GetCondensedTimeForState(PyObject *self, PyObject *args)
+{
+//
+// THIS METHOD IS CUSTOM USER_CODE!!!!!!.
+// see .code file
+//
+    PyDatabaseCorrelationObject *obj = (PyDatabaseCorrelationObject *)self;
+    int state = 0;
+    if (!PyArg_ParseTuple(args, "i", &state))
+        return NULL;
+
+    return PyFloat_FromDouble(obj->data->GetCondensedTimeForState(state));
+}
+
+Target: xml2python
+Function: PyDatabaseCorrelation_methods
+Declaration: PyDatabaseCorrelation_methods
+Definition:
+//
+// THIS METHOD IS CUSTOM CODED!!!!!!.
+// see .code file
+//
+PyMethodDef PyDatabaseCorrelation_methods[] = {
+    {"__dir__", DatabaseCorrelation_dir, METH_NOARGS},
+    {"GetName", DatabaseCorrelation_GetName, METH_VARARGS},
+    {"GetNumStates", DatabaseCorrelation_GetNumStates, METH_VARARGS},
+    {"GetMethod", DatabaseCorrelation_GetMethod, METH_VARARGS},
+    {"GetDatabaseNames", DatabaseCorrelation_GetDatabaseNames, METH_VARARGS},
+    {"GetDatabaseNStates", DatabaseCorrelation_GetDatabaseNStates, METH_VARARGS},
+
+    //
+    // User-defined functions that we've wrapped.
+    //
+    {"GetCorrelatedTimeStates", DatabaseCorrelation_GetCorrelatedTimeStates, METH_VARARGS},
+    {"UsesDatabase", DatabaseCorrelation_UsesDatabase, METH_VARARGS},
+    {"GetNumDatabases", DatabaseCorrelation_GetNumDatabases, METH_VARARGS},
+    {"GetCorrelatedTimeState", DatabaseCorrelation_GetCorrelatedTimeState, METH_VARARGS},
+    {"GetInverseCorrelatedTimeState", DatabaseCorrelation_GetInverseCorrelatedTimeState, METH_VARARGS},
+    {"GetDatabaseCycleForState", DatabaseCorrelation_GetDatabaseCycleForState, METH_VARARGS},
+    {"GetDatabaseTimeForState", DatabaseCorrelation_GetDatabaseTimeForState, METH_VARARGS},
+    {"GetCondensedCycleForState", DatabaseCorrelation_GetCondensedCycleForState, METH_VARARGS},
+    {"GetCondensedTimeForState", DatabaseCorrelation_GetCondensedTimeForState, METH_VARARGS},
+    {NULL, NULL}
+};
+
+Code: VISIT_PY_TYPE_OBJ
+Prefix:
+// Re-define tp slots for this custom object
+#undef VISIT_PY_TYPE_OBJ_TP_SLOTS
+#define VISIT_PY_TYPE_OBJ_TP_SLOTS(VSObjName)                          \
+    VISIT_PY_TYPE_OBJ_SLOT2(VSObjName, doc, purpose);                  \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, dealloc);                       \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, getattro);                      \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, str);                           \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, richcompare);                   \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, methods)
+
+Postfix:

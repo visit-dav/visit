@@ -325,7 +325,17 @@ XMLEditIncludes::BlockAllSignals(bool block)
 //    'editingFinished' signal, grab contents of file widget.
 //    Arg is only non-empty when this function called from targetTextChanged.
 //
+//    Kathleen Biagas, Wed April 16, 2025
+//    Add no-arg includeTextChanged to match editingFinished signal.
+//
 // ****************************************************************************
+
+void
+XMLEditIncludes::includeTextChanged()
+{
+    includeTextChanged(file->text());
+}
+
 void
 XMLEditIncludes::includeTextChanged(const QString &text)
 {
@@ -335,7 +345,7 @@ XMLEditIncludes::includeTextChanged(const QString &text)
         return;
     Include *n = a->includes[index];
 
-    QString newinclude = text.isEmpty() ? file->text().trimmed() : text.trimmed();
+    QString newinclude = text.trimmed();
     n->include = newinclude;
     if(CountIncludes(newinclude) > 1)
     {

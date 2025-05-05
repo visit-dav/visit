@@ -23,9 +23,9 @@ VISITPY_API PyObject *     PyView3DAttributes_Wrap(const View3DAttributes *attr)
 void VISITPY_API           PyView3DAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyView3DAttributes_SetDefaults(const View3DAttributes *atts);
 std::string VISITPY_API    PyView3DAttributes_GetLogString();
-std::string VISITPY_API    PyView3DAttributes_ToString(const View3DAttributes *, const char *);
-VISITPY_API PyObject *     PyView3DAttributes_getattr(PyObject *self, char *name);
-int VISITPY_API            PyView3DAttributes_setattr(PyObject *self, char *name, PyObject *args);
+std::string VISITPY_API    PyView3DAttributes_ToString(const View3DAttributes *, const char *, const bool=false);
+VISITPY_API PyObject *     PyView3DAttributes_getattro(PyObject *self, PyObject *attr_name);
+int VISITPY_API            PyView3DAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args);
 VISITPY_API extern PyMethodDef PyView3DAttributes_methods[VIEW3DATTRIBUTES_NMETH];
 
 #endif
