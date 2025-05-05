@@ -198,6 +198,17 @@
 //    Add 'FilterConditionalLibs' so that VTKM version can be appended to
 //    vtkm_ libraries when run outside dev environment (eg pluginVsInstall).
 //
+//    Kathleen Biagas, Mon May 5, 2025
+//    The plugin code has been modified to utilize new cmake functions:
+//    visit_add_plot_plugin, visit_add_operator_plugin,
+//    visit_add_database_plugin.  Thus most of the CMake logic resides
+//    there instead of here, where it can be hard to parse and make changes.
+//
+//    This generator also now supports a 'Verbatim' tag in code files which
+//    can specify specialized CMake logic that should be added 'Pre' or 'Post'
+//    calls to visit_add_xxx_plugin. As of this writing the Volume plot is the
+//    only plugin utilizing this functionality.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
