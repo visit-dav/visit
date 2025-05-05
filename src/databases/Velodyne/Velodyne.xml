@@ -4,12 +4,7 @@
       *.vld
       *.rst
     </FilePatterns>
-    <Files components="M">
-      avtVelodyneFileFormat.C
-      VelodyneReader.C
-    </Files>
-    <Files components="E">
-      avtVelodyneFileFormat.C
+    <Files components="M,E">
       VelodyneReader.C
     </Files>
     <LIBS>     

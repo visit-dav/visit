@@ -3,14 +3,6 @@
     <FilePatterns>
       *.geq
     </FilePatterns>
-    <Files components="M">
-      avtGeqdskFileFormat.C
-      avtGeqdskOptions.C
-    </Files>
-    <Files components="E">
-      avtGeqdskFileFormat.C
-      avtGeqdskOptions.C
-    </Files>
     <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>

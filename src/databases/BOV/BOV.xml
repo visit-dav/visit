@@ -7,16 +7,6 @@
       *.bov
       *.npy
     </FilePatterns>
-    <Files components="M">
-      avtBOVOptions.C
-      avtBOVWriter.C
-      avtBOVFileFormat.C
-    </Files>
-    <Files components="E">
-      avtBOVOptions.C
-      avtBOVWriter.C
-      avtBOVFileFormat.C
-    </Files>
     <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>

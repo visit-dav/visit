@@ -1,13 +1,10 @@
 <?xml version="1.0"?>
   <Plugin name="paraDIS_tecplot" type="database" label="paraDIS simulation dump metafile" version="1.0a1" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="false" filePatternsStrict="false">
-    <Files components="M,E">
-        avtparaDIS_tecplotFileFormat.C
-    </Files>
     <CXXFLAGS>
         -IRC_cpp_lib
     </CXXFLAGS>
     <DEFINES>
-        -DNO_BOOST
+        NO_BOOST
     </DEFINES>
     <FilePatterns>
         *.fld

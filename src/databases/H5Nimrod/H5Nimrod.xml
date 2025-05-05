@@ -7,12 +7,7 @@
       *.h5
       *.h5nimrod
     </FilePatterns>
-    <Files components="M">
-      avtH5NimrodFileFormat.C
-      H5utils.C
-    </Files>
-    <Files components="E">
-      avtH5NimrodFileFormat.C
+    <Files components="M,E">
       H5utils.C
     </Files>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">

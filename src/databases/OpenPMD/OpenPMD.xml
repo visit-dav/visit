@@ -8,19 +8,11 @@
       *.opmd
       *.h5
     </FilePatterns>
-    <Files components="M">
+    <Files components="M,E">
       OpenPMDClasses/PMDParticle.C
       OpenPMDClasses/PMDField.C
       OpenPMDClasses/PMDIteration.C
       OpenPMDClasses/PMDFile.C
-      avtOpenPMDFileFormat.C
-    </Files>
-    <Files components="E">
-      OpenPMDClasses/PMDParticle.C
-      OpenPMDClasses/PMDField.C
-      OpenPMDClasses/PMDIteration.C
-      OpenPMDClasses/PMDFile.C
-      avtOpenPMDFileFormat.C
     </Files>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>

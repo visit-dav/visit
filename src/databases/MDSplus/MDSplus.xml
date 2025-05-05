@@ -6,14 +6,7 @@
     <FilePatterns>
       *.mdsplus
     </FilePatterns>
-    <Files components="M">
-      avtMDSplusFileFormat.C
-      avtMDSplusOptions.C
-      mdsPlusAPI.C
-    </Files>
-    <Files components="E">
-      avtMDSplusFileFormat.C
-      avtMDSplusOptions.C
+    <Files components="M,E">
       mdsPlusAPI.C
     </Files>
     <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">

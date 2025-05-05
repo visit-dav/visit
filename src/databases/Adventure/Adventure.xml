@@ -9,14 +9,7 @@
       *.inp
       *.msh
     </FilePatterns>
-    <Files components="M">
-      avtAdventureFileFormat.C
-      AdvData.C
-      AdvDataSet.C
-      MshData.C
-    </Files>
-    <Files components="E">
-      avtAdventureFileFormat.C
+    <Files components="M,E">
       AdvData.C
       AdvDataSet.C
       MshData.C

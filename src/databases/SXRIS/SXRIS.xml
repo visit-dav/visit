@@ -6,12 +6,6 @@
     <FilePatterns>
       *.h5
     </FilePatterns>
-    <Files components="M">
-      avtSXRISFileFormat.C
-    </Files>
-    <Files components="E">
-      avtSXRISFileFormat.C
-    </Files>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>

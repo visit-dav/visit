@@ -12,14 +12,7 @@
       *.mfem_root
       *.mesh
     </FilePatterns>
-    <Files components="M">
-      avtMFEMFileFormat.C
-      avtMFEMOptions.C
-      JSONRoot.C
-    </Files>
-    <Files components="E">
-      avtMFEMFileFormat.C
-      avtMFEMOptions.C
+    <Files components="M,E">
       JSONRoot.C
     </Files>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">

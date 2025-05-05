@@ -10,16 +10,6 @@
       *.h5p
       *.h5block
     </FilePatterns>
-    <Files components="M">
-      avtH5PartFileFormat.C
-      avtH5PartOptions.C
-      avtH5PartWriter.C
-    </Files>
-    <Files components="E">
-      avtH5PartFileFormat.C
-      avtH5PartOptions.C
-      avtH5PartWriter.C
-    </Files>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>

@@ -7,13 +7,8 @@
       *.cgns.*.*
       *.cgns
     </FilePatterns>
-    <Files components="M">
+    <Files components="M,E">
       avtCGNSFileReader.C
-      avtCGNSFileFormat.C
-    </Files>
-    <Files components="E">
-      avtCGNSFileReader.C
-      avtCGNSFileFormat.C
     </Files>
     <Attribute name="" purpose="" persistent="true">
     </Attribute>

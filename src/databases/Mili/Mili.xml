@@ -10,15 +10,8 @@
       *.mili
       *.m
     </FilePatterns>
-    <Files components="M">
-      avtMiliFileFormat.C
+    <Files components="M,E">
       avtMiliMetaData.C
-      avtMiliOptions.C
-    </Files>
-    <Files components="E">
-      avtMiliFileFormat.C
-      avtMiliMetaData.C
-      avtMiliOptions.C
     </Files>
     <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>

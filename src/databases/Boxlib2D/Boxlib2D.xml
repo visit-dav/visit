@@ -7,13 +7,9 @@
       *.boxlib2d
       Header
     </FilePatterns>
-    <Files components="M">
-      avtBoxlibFileFormat.C
+    <Files components="M,E">
       BoxLibHelper.C
-    </Files>
-    <Files components="E">
       avtBoxlibFileFormat.C
-      BoxLibHelper.C
     </Files>
     <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
