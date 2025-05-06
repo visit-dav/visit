@@ -66,39 +66,6 @@ struct vtkDashedXorGridMapper2DPrivate
             overlay->deleteLater();
         overlay = 0;
     }
-
-    int SelectBestRenderer()
-    {
-        if(bestRenderer != -1)
-            return bestRenderer;
-
-#if defined(__APPLE__) || defined (_WIN32)
-        bestRenderer = 2;
-#elif defined(VISIT_HAS_LIBX11)
-        bestRenderer = 1;
-#if 0
-// X is not creating the Qt overlay as transparent. Disable for now.
-        // See if we're displaying to Apple X11. If so we want Qt renderer.
-        int nExt = 0, appleDisplay = 0;
-        char **ext = XListExtensions(QX11Info::display(), &nExt);
-        for(int e = 0; e < nExt; ++e)
-        {
-            if(strcmp(ext[e], "Apple-DRI") == 0 ||
-               strcmp(ext[e], "Apple-WM") == 0)
-            {
-                appleDisplay++;
-            }
-        }
-        XFreeExtensionList(ext);
-        if(appleDisplay == 2)
-            bestRenderer = 2;
-#endif
-#else
-        bestRenderer = 2;
-#endif
-
-        return bestRenderer;
-    }
 };
 
 vtkStandardNewMacro(vtkDashedXorGridMapper2D);

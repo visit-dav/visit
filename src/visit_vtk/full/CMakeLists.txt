@@ -90,11 +90,9 @@ set(visit_vtk_SOURCES
     vtkVisItPolyDataNormals.C
     vtkVisItPolyDataNormals2D.C
     vtkVisItProbeFilter.C
-    vtkVisItRectilinearGrid.C
     vtkVisItScalarTree.C
     vtkVisItSplitter.C
     vtkVisItSTLWriter.C
-    vtkVisItStructuredGrid.C
     vtkVisItStructuredGridNormals.C
     vtkVisItTensorGlyph.C
     vtkVisItTubeFilter.C
