@@ -173,7 +173,7 @@ VisWinRenderingWithoutWindow::RenderRenderWindow(void)
 #endif
 
 #if defined(__unix__) && !defined(__APPLE__) && defined(VISIT_HAS_LIBX11) && !defined(VISIT_HAS_OSMESA)
-#ifdef HAVE_ANARI
+#ifdef VISIT_HAS_ANARI
     if(GetAnariRendering())
     {
         if(!anariPassValid)

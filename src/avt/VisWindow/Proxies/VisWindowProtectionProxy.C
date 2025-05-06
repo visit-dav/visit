@@ -1237,7 +1237,7 @@ VisWindowProtectionProxy::ProxiedGetOsprayShadows()
 }
 #endif
 
-#ifdef HAVE_ANARI
+#ifdef VISIT_HAS_ANARI
 // ****************************************************************************
 // Method: VisWindowProtectionProxy::ProxiedGetAnariRendering
 //

@@ -262,7 +262,7 @@ class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
                              { return ProxiedGetOsprayShadows(); }
 #endif
 
-#ifdef HAVE_ANARI
+#ifdef VISIT_HAS_ANARI
     bool        GetAnariRendering()         { return ProxiedGetAnariRendering(); }
     int         GetAnariSPP()               { return ProxiedGetAnariSPP(); }
     int         GetAnariAO()                { return ProxiedGetAnariAO(); }

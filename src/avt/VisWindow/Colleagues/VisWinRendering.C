@@ -51,7 +51,7 @@
   #include <vtkVisItViewNodeFactory.h>
 #endif
 
-#ifdef HAVE_ANARI
+#ifdef VISIT_HAS_ANARI
     #include <vtkLogger.h>
     #include <vtkAnariRendererNode.h>
     #include <vtkAnariPass.h>
@@ -346,7 +346,7 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
                               vtkVisItViewNodeFactory::axis_act_maker);
 #endif
 
-#ifdef HAVE_ANARI
+#ifdef VISIT_HAS_ANARI
     // For VisIt debug levels 1-3
     auto vtkVerbosity = vtkLogger::Verbosity::VERBOSITY_ERROR;
 
@@ -430,7 +430,7 @@ VisWinRendering::~VisWinRendering()
         osprayPass = nullptr;
     }
 #endif
-#ifdef HAVE_ANARI
+#ifdef VISIT_HAS_ANARI
     if(anariPass != nullptr)
     {
         anariPass->Delete();
@@ -1348,7 +1348,7 @@ VisWinRendering::RenderRenderWindow(void)
     }
 #endif
 
-#ifdef HAVE_ANARI
+#ifdef VISIT_HAS_ANARI
     if(GetAnariRendering())
     {
         if(!anariPassValid)
@@ -3222,7 +3222,7 @@ VisWinRendering::SetOsprayShadows(bool enabled)
 }
 #endif
 
-#ifdef HAVE_ANARI
+#ifdef VISIT_HAS_ANARI
 
 // ****************************************************************************
 // Method: VisWinRendering::SetAnariRendering

@@ -88,7 +88,7 @@ if(VISIT_HAS_OSPRAY)
               ${CMAKE_CURRENT_SOURCE_DIR}/vtkVisItViewNodeFactory.h)
 endif()
 
-if(HAVE_ANARI)
+if(VISIT_HAS_ANARI)
     visit_append_list(
         NAME  avtplotter_ser_SOURCES
         ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/vtkAnariVisItCubeAxesActorNode.C

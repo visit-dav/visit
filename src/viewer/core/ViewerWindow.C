@@ -2416,7 +2416,7 @@ ViewerWindow::CopyGeneralAttributes(const ViewerWindow *source)
     SetOsprayAO(source->GetOsprayAO());
 #endif
 
-#ifdef HAVE_ANARI
+#ifdef VISIT_HAS_ANARI
     SetAnariRendering(source->GetAnariRendering());
     SetUseAnariDenoiser(source->GetUseAnariDenoiser());
     SetAnariSPP(source->GetAnariSPP());
@@ -6609,7 +6609,7 @@ debug5 << "GetWindowAttributes: size=" << size[0] << ", " << size[1] << endl;
     renderAtts.SetOsprayAO(GetOsprayAO());
 #endif
 
-#ifdef HAVE_ANARI
+#ifdef VISIT_HAS_ANARI
     renderAtts.SetAnariRendering(GetAnariRendering());
     renderAtts.SetUseAnariDenoiser(GetUseAnariDenoiser());
     renderAtts.SetAnariSPP(GetAnariSPP());
@@ -8755,7 +8755,7 @@ ViewerWindow::GetOsprayShadows() const
 }
 #endif
 
-#ifdef HAVE_ANARI
+#ifdef VISIT_HAS_ANARI
 // ****************************************************************************
 // Method:  ViewerWindow::SetAnariRendering
 //
@@ -9657,7 +9657,7 @@ ViewerWindow::CreateNode(DataNode *parentNode,
         windowNode->AddNode(new DataNode("osprayShadows", GetOsprayShadows()));
 #endif
 
-#ifdef HAVE_ANARI
+#ifdef VISIT_HAS_ANARI
         windowNode->AddNode(new DataNode("anariRendering", GetAnariRendering()));
         windowNode->AddNode(new DataNode("anariSPP", GetAnariSPP()));
         windowNode->AddNode(new DataNode("anariAO", GetAnariAO()));
@@ -10156,7 +10156,7 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
         SetOsprayShadows(node->AsBool());
 #endif
 
-#ifdef HAVE_ANARI
+#ifdef VISIT_HAS_ANARI
     if((node = windowNode->GetNode("anariRendering")) != 0)
         SetAnariRendering(node->AsBool());
     if((node = windowNode->GetNode("anariSPP")) != 0)

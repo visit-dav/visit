@@ -34,7 +34,7 @@ This will define the following variables:
 
 ``anari_FOUND``
   True if the system has the ANARI library.
-``HAVE_ANARI``
+``VISIT_HAS_ANARI``
   True if the ANARI library was found.
 ``HAVE_ANARI_EXAMPLE``
   True if the ANARI example back-end library (helide) was found.
@@ -65,8 +65,7 @@ if(EXISTS ${VISIT_ANARI_DIR})
 endif()
 
 if(anari_FOUND)
-    set(HAVE_ANARI TRUE)
-    add_definitions(-DHAVE_ANARI)
+    set(VISIT_HAS_ANARI TRUE)
 
     # Install Headers
     if(VISIT_INSTALL_THIRD_PARTY AND NOT VISIT_HEADERS_SKIP_INSTALL)

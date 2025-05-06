@@ -22,7 +22,7 @@
 #include <vtkOSPRayPass.h>
 #endif
 
-#ifdef HAVE_ANARI
+#ifdef VISIT_HAS_ANARI
 #include <vtkAnariPass.h>
 #endif
 
@@ -409,7 +409,7 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     bool                     Get3DView() const
                                  { return viewIs3D; }
 #endif
-#ifdef HAVE_ANARI
+#ifdef VISIT_HAS_ANARI
     void                    SetAnariRendering(const bool);
     bool                    GetAnariRendering() const { return anariRendering; }
     void                    SetAnariSPP(const int);
@@ -502,7 +502,7 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     vtkOSPRayPass                *osprayPass {nullptr};
     bool                          viewIs3D {true};
 #endif
-#ifdef HAVE_ANARI
+#ifdef VISIT_HAS_ANARI
     bool                        anariRendering;
     int                         anariSPP;
     int                         anariAO;

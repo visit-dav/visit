@@ -106,7 +106,7 @@ void
 VisWinView::SetViewInfo(const avtViewInfo &vI)
 {
     viewInfo = vI;
-#ifdef HAVE_ANARI
+#ifdef VISIT_HAS_ANARI
     viewInfo.useAnari = mediator.GetAnariRendering();
 #endif
     viewInfo.SetCameraFromView(mediator.GetCanvas()->GetActiveCamera());

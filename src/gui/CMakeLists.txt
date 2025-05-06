@@ -389,7 +389,7 @@ if(QWT_FOUND)
     list(APPEND GUILIB_HEADERS QvisStripChart.h)
 endif()
 
-if(HAVE_ANARI)
+if(VISIT_HAS_ANARI)
     list(APPEND GUILIB_SOURCES anari/AnariRenderingWidget.C)
     list(APPEND GUILIB_HEADERS anari/AnariRenderingWidget.h)
 endif()
@@ -432,10 +432,10 @@ visit_add_library(
     SOURCES     ${GUILIB_SOURCES}
     HEADERS     ${GUILIB_HEADERS}
     INCLUDES    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-                $<BUILD_INTERFACE:$<$<BOOL:${HAVE_ANARI}>:${CMAKE_CURRENT_SOURCE_DIR}/anari>>
+                $<BUILD_INTERFACE:$<$<BOOL:${VISIT_HAS_ANARI}>:${CMAKE_CURRENT_SOURCE_DIR}/anari>>
                 $<BUILD_INTERFACE:${VISIT_SOURCE_DIR}/common>
                 $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/gui>
-                $<INSTALL_INTERFACE:$<$<BOOL:${HAVE_ANARI}>:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/gui/anari>>
+                $<INSTALL_INTERFACE:$<$<BOOL:${VISIT_HAS_ANARI}>:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/gui/anari>>
     DEPENDS_ON  ${GUI_DEPENDS})
 
 

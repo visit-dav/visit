@@ -181,7 +181,7 @@ visit_append_list(
           VTK::RenderingFreeType
           VTK::RenderingOpenGL2
           ${OPENGL_LIBRARIES}
-          $<$<BOOL:${HAVE_ANARI}>:VTK::RenderingAnari>)
+          $<$<BOOL:${VISIT_HAS_ANARI}>:VTK::RenderingAnari>)
 
 if(TARGET VTK::RenderingRayTracing)
      # RenderingRayTracing available if VTK 9 was built with OSPRAY support

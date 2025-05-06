@@ -3620,7 +3620,7 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
             windows[index]->SetOsprayShadows(ratts->GetOsprayShadows());
 #endif
 
-#ifdef HAVE_ANARI
+#ifdef VISIT_HAS_ANARI
     if (windows[index]->GetAnariRendering() != ratts->GetAnariRendering())
         windows[index]->SetAnariRendering(ratts->GetAnariRendering());
     if (windows[index]->GetAnariSPP() != ratts->GetAnariSPP())
@@ -5331,7 +5331,7 @@ ViewerWindowManager::UpdateRenderingAtts(int windowIndex)
         GetViewerState()->GetRenderingAttributes()->SetOsprayShadows(win->GetOsprayShadows());
 #endif
 
-#ifdef HAVE_ANARI
+#ifdef VISIT_HAS_ANARI
         GetViewerState()->GetRenderingAttributes()->SetAnariRendering(win->GetAnariRendering());
         GetViewerState()->GetRenderingAttributes()->SetAnariSPP(win->GetAnariSPP());
         GetViewerState()->GetRenderingAttributes()->SetAnariAO(win->GetAnariAO());
@@ -8321,7 +8321,7 @@ ViewerWindowManager::SetWindowAttributes(int windowIndex, bool copyAtts)
     w->SetOsprayShadows(GetViewerState()->GetRenderingAttributes()->GetOsprayShadows());
 #endif
 
-#ifdef HAVE_ANARI
+#ifdef VISIT_HAS_ANARI
     w->SetAnariRendering(GetViewerState()->GetRenderingAttributes()->GetAnariRendering());
     w->SetAnariSPP(GetViewerState()->GetRenderingAttributes()->GetAnariSPP());
     w->SetAnariAO(GetViewerState()->GetRenderingAttributes()->GetAnariAO());

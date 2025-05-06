@@ -6789,7 +6789,7 @@ NetworkManager::RenderSetup(avtImageType imgT, int windowID, intVector& plotIds,
     renderState.window->SetOsprayShadows(renderAtts.GetOsprayShadows());
 #endif
 
-#ifdef HAVE_ANARI
+#ifdef VISIT_HAS_ANARI
     renderState.window->SetAnariRendering(renderAtts.GetAnariRendering());
     renderState.window->SetAnariSPP(renderAtts.GetAnariSPP());
     renderState.window->SetAnariAO(renderAtts.GetAnariAO());

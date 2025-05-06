@@ -3473,7 +3473,7 @@ VisWindow::GetToolUpdateMode() const
 void
 VisWindow::SetInteractor(VisitInteractor *i)
 {
-#ifdef HAVE_ANARI
+#ifdef VISIT_HAS_ANARI
     i->SetAnariRendering(rendering->GetAnariRendering());
 #endif
     rendering->SetInteractor(i);
@@ -6967,7 +6967,7 @@ VisWindow::GetOsprayShadows() const
 }
 #endif
 
-#ifdef HAVE_ANARI
+#ifdef VISIT_HAS_ANARI
 // ****************************************************************************
 // Method: VisWindow::SetAnariRendering
 //
