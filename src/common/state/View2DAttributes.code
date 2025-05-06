@@ -1,174 +1,3 @@
-Target: xml2python
-Code: PyView2DAttributes.C
-Prefix:
-/*
-PyNumberMethods struct differs between Python 2 and Python 3
-
-// Good ref on python 2 and 3 changes for PyNumberMethods
-// https://py3c.readthedocs.io/en/latest/ext-types.html#pynumbermethods
-
-// PYTHON 2 STRUCT FOR PyNumberMethods
-
-typedef struct {
-     binaryfunc nb_add;
-     binaryfunc nb_subtract;
-     binaryfunc nb_multiply;
-     binaryfunc nb_divide;  // MISSING IN PYTHON 3
-     binaryfunc nb_remainder;
-     binaryfunc nb_divmod;
-     ternaryfunc nb_power;
-     unaryfunc nb_negative;
-     unaryfunc nb_positive;
-     unaryfunc nb_absolute;
-     inquiry nb_nonzero;       // Used by PyObject_IsTrue 
-     unaryfunc nb_invert;
-     binaryfunc nb_lshift;
-     binaryfunc nb_rshift;
-     binaryfunc nb_and;
-     binaryfunc nb_xor;
-     binaryfunc nb_or;
-     coercion nb_coerce;     // MISSING IN PYTHON 3   // Used by the coerce() function 
-     unaryfunc nb_int;
-     unaryfunc nb_long;   // MUST BE NULL IN PYTHON 3
-     unaryfunc nb_float;
-     unaryfunc nb_oct;    // MISSING IN PYTHON 3
-     unaryfunc nb_hex;    // MISSING IN PYTHON 3
-
-     // Added in release 2.0 
-     binaryfunc nb_inplace_add;
-     binaryfunc nb_inplace_subtract;
-     binaryfunc nb_inplace_multiply;
-     binaryfunc nb_inplace_divide;  // MISSING IN PYTHON 3
-     binaryfunc nb_inplace_remainder;
-     ternaryfunc nb_inplace_power;
-     binaryfunc nb_inplace_lshift;
-     binaryfunc nb_inplace_rshift;
-     binaryfunc nb_inplace_and;
-     binaryfunc nb_inplace_xor;
-     binaryfunc nb_inplace_or;
-
-     // Added in release 2.2 
-     binaryfunc nb_floor_divide;
-     binaryfunc nb_true_divide;
-     binaryfunc nb_inplace_floor_divide;
-     binaryfunc nb_inplace_true_divide;
-
-     // Added in release 2.5 
-     unaryfunc nb_index;
-} PyNumberMethods;
-
-// PYTHON 3 STRUCT FOR PyNumberMethods
-
-typedef struct {
-     binaryfunc nb_add;
-     binaryfunc nb_subtract;
-     binaryfunc nb_multiply;
-     binaryfunc nb_remainder;
-     binaryfunc nb_divmod;
-     ternaryfunc nb_power;
-     unaryfunc nb_negative;
-     unaryfunc nb_positive;
-     unaryfunc nb_absolute;
-     inquiry nb_bool;
-     unaryfunc nb_invert;
-     binaryfunc nb_lshift;
-     binaryfunc nb_rshift;
-     binaryfunc nb_and;
-     binaryfunc nb_xor;
-     binaryfunc nb_or;
-     unaryfunc nb_int;
-     void *nb_reserved;
-     unaryfunc nb_float;
-
-     binaryfunc nb_inplace_add;
-     binaryfunc nb_inplace_subtract;
-     binaryfunc nb_inplace_multiply;
-     binaryfunc nb_inplace_remainder;
-     ternaryfunc nb_inplace_power;
-     binaryfunc nb_inplace_lshift;
-     binaryfunc nb_inplace_rshift;
-     binaryfunc nb_inplace_and;
-     binaryfunc nb_inplace_xor;
-     binaryfunc nb_inplace_or;
-
-     binaryfunc nb_floor_divide;
-     binaryfunc nb_true_divide;
-     binaryfunc nb_inplace_floor_divide;
-     binaryfunc nb_inplace_true_divide;
-
-     unaryfunc nb_index;
-
-     binaryfunc nb_matrix_multiply; // MISSING IN PYTHON 2
-     binaryfunc nb_inplace_matrix_multiply; // MISSING IN PYTHON 2
-} PyNumberMethods;
-
-*/
-
-//
-// The type description structure
-//
-static PyNumberMethods View2DAttributes_as_number = {
-    (binaryfunc)View2DAttributes_Add, /*nb_add*/
-    (binaryfunc)0, /*nb_subtract*/
-    (binaryfunc)View2DAttributes_Mul, /*nb_multiply*/
-#if !defined(IS_PY3K)
-// PYTHON 2 ONLY
-    (binaryfunc)0,     /*nb_divide*/ // MISSING IN PYTHON 3
-#endif
-    (binaryfunc)0,     /*nb_remainder*/
-    (binaryfunc)0,     /*nb_divmod*/
-    (ternaryfunc)0,    /*nb_power*/
-    (unaryfunc)0,     /*nb_negative*/
-    (unaryfunc)0,     /*nb_positive*/
-    (unaryfunc)0,     /*nb_absolute*/
-    (inquiry)0,       /*nb_bool*/
-    (unaryfunc)0,     /*nb_invert*/
-    (binaryfunc)0,    /*nb_lshift*/
-    (binaryfunc)0,    /*nb_rshift*/
-    (binaryfunc)0,    /*nb_and*/
-    (binaryfunc)0,    /*nb_xor*/
-    (binaryfunc)0,    /*nb_or*/
-#if !defined(IS_PY3K)
-// PYTHON 2 ONLY
-    (coercion)0,      /*nb_coerce*/ // MISSING IN PYTHON 3
-#endif
-    (unaryfunc)0,     /*nb_int*/
-    0,                /*nb_reserved*/
-    (unaryfunc)0,     /*nb_float*/
-#if !defined(IS_PY3K)
-// PYTHON 2 ONLY
-    (unaryfunc)0,  /*nb_oct*/    // MISSING IN PYTHON 3
-// PYTHON 2 ONLY
-    (unaryfunc)0, /*nb_hex */    // MISSING IN PYTHON 3
-#endif
-    0,            /*nb_inplace_add*/
-    0,            /*nb_inplace_subtract*/
-    0,            /*nb_inplace_multiply*/
-#if !defined(IS_PY3K)
-// PYTHON 2 ONLY
-    0,            /* nb_inplace_divide */ // MISSING IN PYTHON 3
-#endif
-    0,            /*nb_inplace_remainder*/
-    0,            /*nb_inplace_power*/
-    0,            /*nb_inplace_lshift*/
-    0,            /*nb_inplace_rshift*/
-    0,            /*nb_inplace_and*/
-    0,            /*nb_inplace_xor*/
-    0,            /*nb_inplace_or*/
-    (binaryfunc)0, /*nb_floor_divide;*/
-    (binaryfunc)0, /*nb_true_divide;*/
-    (binaryfunc)0, /*nb_inplace_floor_divide;*/
-    (binaryfunc)0, /*nb_inplace_true_divide;*/
-    (unaryfunc)0, /*nb_index;*/
-#if defined(IS_PY3K)
-// PYTHON3 ONLY
-    (binaryfunc)0, /*nb_matrix_multiply;*/
-    (binaryfunc)0 /*nb_inplace_matrix_multiply;*/
-#endif
-};
-
-Postfix:
-
 Target: xml2atts
 Constant: DEFAULT_FULL_FRAME_AUTO_THRESHOLD
 Declaration: static const double DEFAULT_FULL_FRAME_AUTO_THRESHOLD;
@@ -180,6 +9,82 @@ Constant: DEFAULT_FULL_FRAME_AUTO_THRESHOLD
 Declaration: DEFAULT_FULL_FRAME_AUTO_THRESHOLD
 Definition:
     public final static double DEFAULT_FULL_FRAME_AUTO_THRESHOLD = 100.0;
+
+Target: xml2atts
+Function: SetViewportCoords
+Declaration: void SetViewportCoords(const double *);
+Definition:
+#include <DebugStream.h>
+void
+View2DAttributes::SetViewportCoords(const double *viewportCoords_)
+{
+//
+// THIS METHOD IS CUSTOM CODED!!!
+// see .code file
+//
+    bool clamping = false;
+    if(viewportCoords_[0] < 0.)
+    {
+        clamping = true;
+        viewportCoords[0] = 0.;
+    }
+    else if(viewportCoords_[0] > 1.)
+    {
+        clamping = true;
+        viewportCoords[0] = 1.;
+    }
+    else
+    {
+        viewportCoords[0] = viewportCoords_[0];
+    }
+    if(viewportCoords_[1] > 1.)
+    {
+        clamping = true;
+        viewportCoords[1] = 1.;
+    }
+    else if(viewportCoords_[1] < 0.)
+    {
+        clamping = true;
+        viewportCoords[1] = 0.;
+    }
+    else
+    {
+        viewportCoords[1] = viewportCoords_[1];
+    }
+    if(viewportCoords_[2] < 0.)
+    {
+        clamping = true;
+        viewportCoords[2] = 0.;
+    }
+    else if(viewportCoords_[2] > 1.)
+    {
+        clamping = true;
+        viewportCoords[2] = 1.;
+    }
+    else
+    {
+        viewportCoords[2] = viewportCoords_[2];
+    }
+    if(viewportCoords_[3] > 1.)
+    {
+        clamping = true;
+        viewportCoords[3] = 1.;
+    }
+    else if(viewportCoords_[3] < 0.)
+    {
+        clamping = true;
+        viewportCoords[3] = 0.;
+    }
+    else
+    {
+        viewportCoords[3] = viewportCoords_[3];
+    }
+    if(clamping)
+    {
+        debug3 << "View2DAttributes::viewportCoords have been clamped to values between [0,1]." << endl;
+    }
+    Select(ID_viewportCoords, (void *)viewportCoords, 4);
+}
 
 
 Target: xml2atts
@@ -310,6 +215,10 @@ Definition:
 static PyObject *
 View2DAttributes_Add(PyObject *v, PyObject *w)
 {
+//
+// THIS METHOD IS CUSTOM CODED!!!!!!.
+// see .code file
+//
     bool arg1isObject = PyView2DAttributes_Check(v);
     bool arg2isObject = PyView2DAttributes_Check(w);
     if(!arg1isObject || !arg2isObject)
@@ -318,8 +227,8 @@ View2DAttributes_Add(PyObject *v, PyObject *w)
 
     PyObject *retval = NewView2DAttributes(0);
     View2DAttributes *c = PyView2DAttributes_FromPyObject(retval);
-    View2DAttributes *a = ((View2DAttributesObject *)v)->data;
-    View2DAttributes *b = ((View2DAttributesObject *)w)->data;
+    View2DAttributes *a = ((PyView2DAttributesObject *)v)->data;
+    View2DAttributes *b = ((PyView2DAttributesObject *)w)->data;
 
 
     c->GetWindowCoords()[0] = a->GetWindowCoords()[0] + b->GetWindowCoords()[0];
@@ -363,6 +272,10 @@ Definition:
 static PyObject *
 View2DAttributes_Mul(PyObject *v, PyObject *w)
 {
+//
+// THIS METHOD IS CUSTOM CODED!!!!!!.
+// see .code file
+//
     PyObject *retval = NewView2DAttributes(0);
     View2DAttributes *c = PyView2DAttributes_FromPyObject(retval);
 
@@ -385,12 +298,12 @@ View2DAttributes_Mul(PyObject *v, PyObject *w)
 
         if(arg1isObject)
         {
-            a = ((View2DAttributesObject *)v)->data;
+            a = ((PyView2DAttributesObject *)v)->data;
             num = w;
         }
         else
         {
-            a = ((View2DAttributesObject *)w)->data;
+            a = ((PyView2DAttributesObject *)w)->data;
             num = v;
         }
 
@@ -427,4 +340,193 @@ View2DAttributes_Mul(PyObject *v, PyObject *w)
     return retval;
 }
 
+Code: VISIT_PY_TYPE_OBJ
+Prefix:
+//
+// THIS SECTION IS CUSTOM CODED!!!
+// see .code file
+//
+/*
+PyNumberMethods struct differs between Python 2 and Python 3
+
+// Good ref on python 2 and 3 changes for PyNumberMethods
+// https://py3c.readthedocs.io/en/latest/ext-types.html#pynumbermethods
+
+// PYTHON 2 STRUCT FOR PyNumberMethods
+
+typedef struct {
+     binaryfunc nb_add;
+     binaryfunc nb_subtract;
+     binaryfunc nb_multiply;
+     binaryfunc nb_divide;  // MISSING IN PYTHON 3
+     binaryfunc nb_remainder;
+     binaryfunc nb_divmod;
+     ternaryfunc nb_power;
+     unaryfunc nb_negative;
+     unaryfunc nb_positive;
+     unaryfunc nb_absolute;
+     inquiry nb_nonzero;       // Used by PyObject_IsTrue 
+     unaryfunc nb_invert;
+     binaryfunc nb_lshift;
+     binaryfunc nb_rshift;
+     binaryfunc nb_and;
+     binaryfunc nb_xor;
+     binaryfunc nb_or;
+     coercion nb_coerce;     // MISSING IN PYTHON 3   // Used by the coerce() function 
+     unaryfunc nb_int;
+     unaryfunc nb_long;   // MUST BE NULL IN PYTHON 3
+     unaryfunc nb_float;
+     unaryfunc nb_oct;    // MISSING IN PYTHON 3
+     unaryfunc nb_hex;    // MISSING IN PYTHON 3
+
+     // Added in release 2.0 
+     binaryfunc nb_inplace_add;
+     binaryfunc nb_inplace_subtract;
+     binaryfunc nb_inplace_multiply;
+     binaryfunc nb_inplace_divide;  // MISSING IN PYTHON 3
+     binaryfunc nb_inplace_remainder;
+     ternaryfunc nb_inplace_power;
+     binaryfunc nb_inplace_lshift;
+     binaryfunc nb_inplace_rshift;
+     binaryfunc nb_inplace_and;
+     binaryfunc nb_inplace_xor;
+     binaryfunc nb_inplace_or;
+
+     // Added in release 2.2 
+     binaryfunc nb_floor_divide;
+     binaryfunc nb_true_divide;
+     binaryfunc nb_inplace_floor_divide;
+     binaryfunc nb_inplace_true_divide;
+
+     // Added in release 2.5 
+     unaryfunc nb_index;
+} PyNumberMethods;
+
+// PYTHON 3 STRUCT FOR PyNumberMethods
+
+typedef struct {
+     binaryfunc nb_add;
+     binaryfunc nb_subtract;
+     binaryfunc nb_multiply;
+     binaryfunc nb_remainder;
+     binaryfunc nb_divmod;
+     ternaryfunc nb_power;
+     unaryfunc nb_negative;
+     unaryfunc nb_positive;
+     unaryfunc nb_absolute;
+     inquiry nb_bool;
+     unaryfunc nb_invert;
+     binaryfunc nb_lshift;
+     binaryfunc nb_rshift;
+     binaryfunc nb_and;
+     binaryfunc nb_xor;
+     binaryfunc nb_or;
+     unaryfunc nb_int;
+     void *nb_reserved;
+     unaryfunc nb_float;
+
+     binaryfunc nb_inplace_add;
+     binaryfunc nb_inplace_subtract;
+     binaryfunc nb_inplace_multiply;
+     binaryfunc nb_inplace_remainder;
+     ternaryfunc nb_inplace_power;
+     binaryfunc nb_inplace_lshift;
+     binaryfunc nb_inplace_rshift;
+     binaryfunc nb_inplace_and;
+     binaryfunc nb_inplace_xor;
+     binaryfunc nb_inplace_or;
+
+     binaryfunc nb_floor_divide;
+     binaryfunc nb_true_divide;
+     binaryfunc nb_inplace_floor_divide;
+     binaryfunc nb_inplace_true_divide;
+
+     unaryfunc nb_index;
+
+     binaryfunc nb_matrix_multiply; // MISSING IN PYTHON 2
+     binaryfunc nb_inplace_matrix_multiply; // MISSING IN PYTHON 2
+} PyNumberMethods;
+
+*/
+
+//
+// The type description structure
+//
+static PyNumberMethods _PyView2DAttributes_as_number = {
+    (binaryfunc)View2DAttributes_Add, /*nb_add*/
+    (binaryfunc)0, /*nb_subtract*/
+    (binaryfunc)View2DAttributes_Mul, /*nb_multiply*/
+#if !defined(IS_PY3K)
+// PYTHON 2 ONLY
+    (binaryfunc)0,     /*nb_divide*/ // MISSING IN PYTHON 3
+#endif
+    (binaryfunc)0,     /*nb_remainder*/
+    (binaryfunc)0,     /*nb_divmod*/
+    (ternaryfunc)0,    /*nb_power*/
+    (unaryfunc)0,     /*nb_negative*/
+    (unaryfunc)0,     /*nb_positive*/
+    (unaryfunc)0,     /*nb_absolute*/
+    (inquiry)0,       /*nb_bool*/
+    (unaryfunc)0,     /*nb_invert*/
+    (binaryfunc)0,    /*nb_lshift*/
+    (binaryfunc)0,    /*nb_rshift*/
+    (binaryfunc)0,    /*nb_and*/
+    (binaryfunc)0,    /*nb_xor*/
+    (binaryfunc)0,    /*nb_or*/
+#if !defined(IS_PY3K)
+// PYTHON 2 ONLY
+    (coercion)0,      /*nb_coerce*/ // MISSING IN PYTHON 3
+#endif
+    (unaryfunc)0,     /*nb_int*/
+    0,                /*nb_reserved*/
+    (unaryfunc)0,     /*nb_float*/
+#if !defined(IS_PY3K)
+// PYTHON 2 ONLY
+    (unaryfunc)0,  /*nb_oct*/    // MISSING IN PYTHON 3
+// PYTHON 2 ONLY
+    (unaryfunc)0, /*nb_hex */    // MISSING IN PYTHON 3
+#endif
+    0,            /*nb_inplace_add*/
+    0,            /*nb_inplace_subtract*/
+    0,            /*nb_inplace_multiply*/
+#if !defined(IS_PY3K)
+// PYTHON 2 ONLY
+    0,            /* nb_inplace_divide */ // MISSING IN PYTHON 3
+#endif
+    0,            /*nb_inplace_remainder*/
+    0,            /*nb_inplace_power*/
+    0,            /*nb_inplace_lshift*/
+    0,            /*nb_inplace_rshift*/
+    0,            /*nb_inplace_and*/
+    0,            /*nb_inplace_xor*/
+    0,            /*nb_inplace_or*/
+    (binaryfunc)0, /*nb_floor_divide;*/
+    (binaryfunc)0, /*nb_true_divide;*/
+    (binaryfunc)0, /*nb_inplace_floor_divide;*/
+    (binaryfunc)0, /*nb_inplace_true_divide;*/
+    (unaryfunc)0, /*nb_index;*/
+#if defined(IS_PY3K)
+// PYTHON3 ONLY
+    (binaryfunc)0, /*nb_matrix_multiply;*/
+    (binaryfunc)0 /*nb_inplace_matrix_multiply;*/
+#endif
+};
+static PyNumberMethods *PyView2DAttributes_as_number = &_PyView2DAttributes_as_number;
+//
+// END CUSTOM CODED SECTION!!!
+//
+
+// Re-define tp slots for this custom object
+#undef VISIT_PY_TYPE_OBJ_TP_SLOTS
+#define VISIT_PY_TYPE_OBJ_TP_SLOTS(VSObjName)                          \
+    VISIT_PY_TYPE_OBJ_SLOT2(VSObjName, doc, purpose);                  \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, dealloc);                       \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, getattro);                      \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, setattro);                      \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, str);                           \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, richcompare);                   \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, as_number);                     \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, methods)
+
+Postfix:
 

@@ -27,29 +27,20 @@
 #include <QPainter>
 #include <QLine>
 
-#include <visit-config.h>
-#if defined(VISIT_HAS_LIBX11)
-#  include <QtX11Extras/QX11Info>
-#  include <X11/Intrinsic.h>
-#endif
-
 struct vtkRubberBandMapper2DPrivate
 {
     QWidget *widget;
-    int      bestRenderer;
     QLabel  *overlay;
 
     vtkRubberBandMapper2DPrivate()
     {
         widget = 0;
-        bestRenderer = -1;
         overlay = 0;
     }
 
     vtkRubberBandMapper2DPrivate(const vtkRubberBandMapper2DPrivate &obj)
     {
         widget = obj.widget;
-        bestRenderer = obj.bestRenderer;
         overlay = 0;
     }
 
@@ -61,7 +52,6 @@ struct vtkRubberBandMapper2DPrivate
     void operator = (const vtkRubberBandMapper2DPrivate &obj)
     {
         widget = obj.widget;
-        bestRenderer = obj.bestRenderer;
         overlay = 0;
     }
 
@@ -228,15 +218,7 @@ vtkRubberBandMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* actor)
 {
     if(privateInstance->widget != 0)
     {
-        switch(privateInstance->SelectBestRenderer())
-        {
-        case 1:
-            RenderOverlay_X11(viewport, actor);
-            break;
-        case 2:
-            RenderOverlay_Qt(viewport, actor);
-            break;
-        }
+        RenderOverlay_Qt(viewport, actor);
     }
 }
 

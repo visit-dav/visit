@@ -6,12 +6,6 @@
     <FilePatterns>
       *.case
     </FilePatterns>
-    <Files components="M">
-      avtEnSightFileFormat.C
-    </Files>
-    <Files components="E">
-      avtEnSightFileFormat.C
-    </Files>
     <Attribute name="" purpose="" persistent="false" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>

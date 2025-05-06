@@ -6,14 +6,6 @@
     <FilePatterns>
       .nc
     </FilePatterns>
-    <Files components="M">
-      avtMFIXCDFFileFormat.C
-      avtMFIXCDFOptions.C
-    </Files>
-    <Files components="E">
-      avtMFIXCDFFileFormat.C
-      avtMFIXCDFOptions.C
-    </Files>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>

@@ -6,19 +6,7 @@
     <LIBS>     
       hdf5
     </LIBS>
-    <Files components="M">
-      avtAMRFileFormat.C
-      EOS.C
-      AMRreaderInterface.C
-      AMRreader.C
-      AMRreaderLowRes.C
-      AMRreaderBlkConso.C
-      AMRreaderLowResBlkConso.C
-      AMRreaderWithLevels.C
-      OctKey.C
-    </Files>
-    <Files components="E">
-      avtAMRFileFormat.C
+    <Files components="M,E">
       EOS.C
       AMRreaderInterface.C
       AMRreader.C

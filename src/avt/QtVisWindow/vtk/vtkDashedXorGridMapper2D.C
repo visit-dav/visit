@@ -29,29 +29,21 @@
 #include <QPixmap>
 #include <QPainter>
 #include <QLine>
-#include <visit-config.h>
-#if defined(VISIT_HAS_LIBX11)
-#  include <QtX11Extras/QX11Info>
-#  include <X11/Intrinsic.h>
-#endif
 
 struct vtkDashedXorGridMapper2DPrivate
 {
     QWidget *widget;
-    int      bestRenderer;
     QLabel  *overlay;
 
     vtkDashedXorGridMapper2DPrivate()
     {
         widget = 0;
-        bestRenderer = -1;
         overlay = 0;
     }
 
     vtkDashedXorGridMapper2DPrivate(const vtkDashedXorGridMapper2DPrivate &obj)
     {
         widget = obj.widget;
-        bestRenderer = obj.bestRenderer;
         overlay = 0;
     }
 
@@ -63,7 +55,6 @@ struct vtkDashedXorGridMapper2DPrivate
     void operator = (const vtkDashedXorGridMapper2DPrivate &obj)
     {
         widget = obj.widget;
-        bestRenderer = obj.bestRenderer;
         overlay = 0;
     }
 
@@ -233,15 +224,7 @@ vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* actor
 {
     if(privateInstance->widget != 0)
     {
-        switch(privateInstance->SelectBestRenderer())
-        {
-        case 1:
-            RenderOverlay_X11(viewport, actor);
-            break;
-        case 2:
-            RenderOverlay_Qt(viewport, actor);
-            break;
-        }
+        RenderOverlay_Qt(viewport, actor);
     }
 }
 

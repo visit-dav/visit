@@ -9,26 +9,7 @@
       *.elev
       *.ncd
     </FilePatterns>
-    <Files components="M">
-      avtNETCDFFileFormat.C
-      avtBasicNETCDFFileFormat.C
-      avtADAPTFileFormat.C
-      avtBOUTFileFormat.C
-      avtLODIFileFormat.C
-      avtLODIParticleFileFormat.C
-      avtFVCOM_STSDFileFormat.C
-      avtFVCOMReader.C
-      avtFVCOMParticleFileFormat.C
-      avtFVCOM_MTSDFileFormat.C
-      avtFVCOM_MTMDFileFormat.C
-      avtCCSMFileFormat.C
-      avtCCSMReader.C
-      avtNETCDFReaderBase.C
-      avtBasicNETCDFReader.C
-      NETCDFFileObject.C
-    </Files>
-    <Files components="E">
-      avtNETCDFFileFormat.C
+    <Files components="M,E">
       avtBasicNETCDFFileFormat.C
       avtADAPTFileFormat.C
       avtBOUTFileFormat.C

@@ -13,9 +13,10 @@
 #       lassen     (LC, Linux, power9),
 #       rzwhippet  (LC, Linux, x86_64, toss4),
 #       rzvernal   (LC, Linux, x86_64, toss4-cray),
-#       crossroads (LANL, x86_64)
+#       crossroads (LANL, x86_64),
 #       tuolumne   (LC, Linux, x86_64, toss4-cray),
-#       rzadams    (LC, Linux, x86_64, toss4-cray)
+#       rzadams    (LC, Linux, x86_64, toss4-cray),
+#       elcap      (LC, Linux, x86_64, toss4-cray)
 #
 # Modifications:
 #    Eric Brugger, Fri Feb 17 09:36:29 PST 2023
@@ -73,6 +74,9 @@
 #
 #    Eric Brugger, Wed Dec  4 16:00:35 PST 2024
 #    Removed trinity and added crossroads.
+# 
+#    Justin Privitera, Wed Apr 16 14:01:51 PDT 2025
+#    Added elcap.
 #
 #-----------------------------------------------------------------------
 
@@ -136,6 +140,11 @@ do
          machine_name="rzadams"
          shift
          ;;
+      -elcap)
+         tuolumne=true
+         machine_name="elcap"
+         shift
+         ;;
       -v)
          version=$2
          shift 2
@@ -158,9 +167,10 @@ then
    echo "    lassen     (LC, Linux, power9),"
    echo "    rzwhippet  (LC, Linux, x86_64, toss4),"
    echo "    rzvernal   (LC, Linux, x86_64, toss4-cray),"
-   echo "    crossroads (LANL, Linux, x86_64)"
+   echo "    crossroads (LANL, Linux, x86_64),"
    echo "    tuolumne   (LC, Linux, x86_64, toss4-cray),"
-   echo "    rzadams    (LC, Linux, x86_64, toss4-cray)"
+   echo "    rzadams    (LC, Linux, x86_64, toss4-cray),"
+   echo "    elcap      (LC, Linux, x86_64, toss4-cray)"
    exit
 fi
 
@@ -319,8 +329,9 @@ then
    echo "    lassen     (LC, Linux, power9),"
    echo "    rzgenie    (LC, Linux, x86_64, toss3),"
    echo "    rzvernal   (LC, Linux, x86_64, toss4-cray),"
-   echo "    crossroads (LANL, Linux, x86_64)"
+   echo "    crossroads (LANL, Linux, x86_64),"
    echo "    tuolumne   (LC, Linux, x86_64, toss4-cray),"
    echo "    rzadams    (LC, Linux, x86_64, toss4-cray),"
+   echo "    elcap      (LC, Linux, x86_64, toss4-cray)"
    exit
 fi

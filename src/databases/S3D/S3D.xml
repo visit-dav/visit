@@ -7,12 +7,6 @@
     <FilePatterns>
       *.s3d
     </FilePatterns>
-    <Files components="M">
-      avtS3DFileFormat.C
-    </Files>
-    <Files components="E">
-      avtS3DFileFormat.C
-    </Files>
     <Attribute name="" purpose="" persistent="true" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>

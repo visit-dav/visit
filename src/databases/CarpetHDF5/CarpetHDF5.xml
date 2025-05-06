@@ -6,12 +6,7 @@
     <FilePatterns>
       *.h5
     </FilePatterns>
-    <Files components="M">
-      avtCarpetHDF5FileFormat.C
-      H5Index.C
-    </Files>
-    <Files components="E">
-      avtCarpetHDF5FileFormat.C
+    <Files components="M,E">
       H5Index.C
     </Files>
     <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="" codefile="CarpetHDF5.code">

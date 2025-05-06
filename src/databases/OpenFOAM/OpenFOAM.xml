@@ -4,15 +4,7 @@
       controlDict
       *.foam
     </FilePatterns>
-    <Files components="M">
-      avtOpenFOAMFileFormat.C
-      avtOpenFOAMOptions.C
-      visit_vtkOpenFOAMReader.cxx
-      visit_vtkPOpenFOAMReader.cxx
-    </Files>
-    <Files components="E">
-      avtOpenFOAMFileFormat.C
-      avtOpenFOAMOptions.C
+    <Files components="M,E">
       visit_vtkOpenFOAMReader.cxx
       visit_vtkPOpenFOAMReader.cxx
     </Files>

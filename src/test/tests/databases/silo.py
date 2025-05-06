@@ -758,6 +758,18 @@ def curvilinear_3d_surface():
 
     CloseDatabase(silo_data_path("specmix_quad.silo"))
 
+def degen_hex_metrics():
+    """Verdict metrics on meshes with degenerate hexahedra"""
+
+    OpenDatabase(silo_data_path("degen_hex.silo"))
+
+    AddPlot("Mesh","hex2")
+    ResetView()
+    DrawPlots()
+    SetQueryOutputToValue()
+    TestValueEQ("Volume of hex2 mesh", Query("Volume"), 4)
+
 curvilinear_3d_surface()
+degen_hex_metrics()
 
 Exit()

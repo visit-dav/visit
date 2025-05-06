@@ -148,6 +148,9 @@ VisWinRenderingWithoutWindow::GetRenderWindow(void)
 //    Added debug log statement to print the vtkRenderWindow classname being
 //    used. For debuging VTK-9.4 runtime choosing of the renderwindow type.
 //
+//    Kevin Griffin, Wed 05 Mar 2025 11:59:26 AM CST
+//    Added Anari support.
+//
 // ****************************************************************************
 
 void
@@ -170,6 +173,28 @@ VisWinRenderingWithoutWindow::RenderRenderWindow(void)
 #endif
 
 #if defined(__unix__) && !defined(__APPLE__) && defined(VISIT_HAS_LIBX11) && !defined(VISIT_HAS_OSMESA)
+#ifdef HAVE_ANARI
+    if(GetAnariRendering())
+    {
+        if(!anariPassValid)
+        {
+            if(anariPass != nullptr)
+            {
+                anariPass->Delete();
+            }
+
+            anariPass = CreateAnariPass();
+            canvas->SetPass(anariPass);
+            anariPassValid = true;
+        }
+    }
+    else
+    {
+        canvas->SetUseShadows(false);
+        canvas->SetPass(0);
+    }
+#endif
+
     if(displayStatus == DS_NOT_CHECKED)
     {
         // On X11 systems not using mangled mesa, make sure that the DISPLAY is set.
@@ -266,4 +291,3 @@ VisWinRenderingWithoutWindow::RealizeRenderWindow(void)
     // vtkOpenGLRenderWindow::ReportCapabilities()
 
 }
-

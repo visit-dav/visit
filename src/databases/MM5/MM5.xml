@@ -3,12 +3,7 @@
     <FilePatterns>
       *.mm5
     </FilePatterns>
-    <Files components="M">
-      avtMM5FileFormat.C
-      MM5.C
-    </Files>
-    <Files components="E">
-      avtMM5FileFormat.C
+    <Files components="M,E">
       MM5.C
     </Files>
     <Attribute name="" purpose="" persistent="false">

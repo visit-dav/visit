@@ -6,14 +6,7 @@
     <FilePatterns>
       *.h5
     </FilePatterns>
-    <Files components="M">
-      avtM3DC1FileFormat.C
-      avtM3DC1Options.C
-      avtM3DC1Field.C
-    </Files>
-    <Files components="E">
-      avtM3DC1FileFormat.C
-      avtM3DC1Options.C
+    <Files components="M,E">
       avtM3DC1Field.C
     </Files>
     <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
