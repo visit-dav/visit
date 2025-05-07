@@ -53,7 +53,7 @@ function bv_anari_info
     export ANARI_SHORT_VERSION=${ANARI_SHORT_VERSION:-"0.13"}
     export ANARI_FILE=${ANARI_FILE:-"ANARI-SDK-${ANARI_VERSION}.tar.gz"}
     export ANARI_COMPATIBILITY_VERSION=${ANARI_SHORT_VERSION}
-    export ANARI_URL=${ANARI_URL:-"https://github.com/KhronosGroup/ANARI-SDK/archive/refs/tags/v0.13.1.tar.gz"}
+    export ANARI_URL=""
     export ANARI_SRC_DIR=${ANARI_SRC_DIR:-"ANARI-SDK-${ANARI_VERSION}"}
     export ANARI_INSTALL_DIR=${ANARI_INSTALL_DIR:-"anari"}
     export ANARI_SHA256_CHECKSUM="b8979ab0dea22cf71c2eacf9421b0cf3fe5807224147c63686d6ed07e65873f4"
@@ -181,8 +181,7 @@ function build_anari
     cd ${ANARI_BUILD_DIR}
     rm -rf *
 
-    #CMAKE_BIN="${CMAKE_INSTALL}/cmake"
-    CMAKE_BIN=cmake
+    CMAKE_BIN="${CMAKE_INSTALL}/cmake"
 
     #
     # Several platforms have had problems with the VTK cmake configure command
