@@ -25,10 +25,10 @@ All rights reserved.
 #include <vtkCollection.h>
 #include <vtkProperty.h>
 #include <vtkViewport.h>
-
 #include <vtkVisItUtility.h>
 
-#include <algorithm>
+#include <vtkTextActor3D.h>
+
 
 using std::string;
 using std::vector;
@@ -103,16 +103,11 @@ vtkVisItAxisActor::vtkVisItAxisActor()
   this->LabelFormat = new char[8]; 
   snprintf(this->LabelFormat,8, "%s","%-#6.3g");
 
-  this->TitleVector = vtkMultiFontVectorText::New();
-  this->TitleMapper = vtkPolyDataMapper::New();
-  this->TitleMapper->SetInputConnection(this->TitleVector->GetOutputPort());
-  this->TitleActor = vtkFollower::New();
-  this->TitleActor->SetMapper(this->TitleMapper);
-
-  this->TitleTextProperty = vtkTextProperty::New();
-  this->TitleTextProperty->SetColor(0.,0.,0.);
-  this->TitleTextProperty->SetFontFamilyToArial();
-  vtkVisItUtility::AdjustPropsForNonFamilyFonts(this->TitleTextProperty);
+  this->TitleActor = vtkTextActor3D::New();
+  this->TitleActor->GetTextProperty()->SetColor(0.,0.,0.);
+  this->TitleActor->GetTextProperty()->SetFontFamilyToArial();
+  this->TitleActor->GetTextProperty()->SetFontSize(96);     
+  vtkVisItUtility::AdjustPropsForNonFamilyFonts(this->TitleActor->GetTextProperty());
 
   // to avoid deleting/rebuilding create once up front
   this->NumberOfLabelsBuilt = 0;
@@ -214,16 +209,6 @@ vtkVisItAxisActor::~vtkVisItAxisActor()
     this->LabelFormat = NULL;
     }
 
-  if (this->TitleVector)
-    {
-    this->TitleVector->Delete();
-    this->TitleVector = NULL;
-    }
-  if (this->TitleMapper)
-    {
-    this->TitleMapper->Delete();
-    this->TitleMapper = NULL;
-    }
   if (this->TitleActor)
     {
     this->TitleActor->Delete();
@@ -234,12 +219,6 @@ vtkVisItAxisActor::~vtkVisItAxisActor()
     {
     delete [] this->Title;
     this->Title = NULL;
-    }
-
-  if (this->TitleTextProperty)
-    {
-       this->TitleTextProperty->Delete();
-       this->TitleTextProperty = NULL;
     }
 
   if (this->LabelMappers != NULL)
@@ -502,11 +481,10 @@ void vtkVisItAxisActor::BuildAxis(vtkViewport *viewport, bool force)
 
   if (force || 
       this->GetProperty()->GetMTime() > this->BuildTime.GetMTime() ||
-      this->TitleTextProperty->GetMTime() > this->BuildTime.GetMTime()
+      this->TitleActor->GetTextProperty()->GetMTime() > this->BuildTime.GetMTime()
       )
     {
     vtkProperty *newProp = this->NewTitleProperty();
-    this->TitleActor->SetProperty(newProp);
     this->AxisActor->SetProperty(this->GetProperty());
     newProp->Delete();
     }
@@ -752,7 +730,7 @@ vtkVisItAxisActor::BuildTitle(bool force)
       this->BoundsTime.GetMTime() < this->BuildTime.GetMTime() &&
       this->AxisPosition == this->LastAxisPosition &&
       this->TitleTextTime.GetMTime() < this->BuildTime.GetMTime() &&
-      this->TitleTextProperty->GetMTime() < this->BuildTime.GetMTime())
+      this->TitleActor->GetTextProperty()->GetMTime() < this->BuildTime.GetMTime())
    {
    return;
    }
@@ -784,14 +762,18 @@ vtkVisItAxisActor::BuildTitle(bool force)
     labHeight = labBounds[3] - labBounds[2]; 
     maxHeight = (labHeight > maxHeight ? labHeight : maxHeight); 
     }
-  this->TitleVector->SetText(this->Title);
-  this->TitleVector->SetFontFamily(this->TitleTextProperty->GetFontFamily());
-  this->TitleVector->SetBold(this->TitleTextProperty->GetBold()?true:false);
-  this->TitleVector->SetItalic(this->TitleTextProperty->GetItalic()?true:false);
+  this->TitleActor->SetInput(this->Title);
+  this->TitleActor->GetTextProperty()->SetFontFamily(this->TitleTextProperty->GetFontFamily());
+  this->TitleActor->GetTextProperty()->SetBold(this->TitleTextProperty->GetBold()?true:false);
+  this->TitleActor->GetTextProperty()->SetItalic(this->TitleTextProperty->GetItalic()?true:false);
+  vtkVisItUtility::AdjustPropsForNonFamilyFonts(this->TitleActor->GetTextProperty());
 
-  this->TitleActor->SetCamera(this->Camera);
   this->TitleActor->SetPosition(p2[0], p2[1], p2[2]);
   this->TitleActor->GetBounds(titleBounds);
+printf("Got title bounds %g, %g, %g, %g, %g, %g\n",
+    titleBounds[0], titleBounds[1],
+    titleBounds[2], titleBounds[3],
+    titleBounds[4], titleBounds[5]);
   halfTitleWidth  = (titleBounds[1] - titleBounds[0]) * 0.5; 
   halfTitleHeight = (titleBounds[3] - titleBounds[2]) * 0.5; 
   
@@ -1434,10 +1416,8 @@ vtkVisItAxisActor::ComputeTitleLength(const double center[3])
   double pos[3], scale, len;
   this->TitleActor->GetPosition(pos);
   scale = this->TitleActor->GetScale()[0];
-  this->TitleVector->SetText(this->Title);
-  this->TitleActor->SetCamera(this->Camera);
+  this->TitleActor->SetInput(this->Title);
   vtkProperty *newProp = this->NewTitleProperty();
-  this->TitleActor->SetProperty(newProp);
   newProp->Delete();
   this->TitleActor->SetPosition(center[0], center[1] , center[2]);
   this->TitleActor->SetScale(1.);
@@ -1526,6 +1506,7 @@ vtkVisItAxisActor::SetTitle(const char *t)
     {
     this->Title = NULL;
     }
+  this->TitleActor->SetInput(Title);
   this->TitleTextTime.Modified();
   this->Modified();
 }
@@ -1558,6 +1539,8 @@ vtkVisItAxisActor::SetTitleTextProperty(vtkTextProperty *prop)
     if(prop != NULL)
         prop->Register(NULL);
     this->TitleTextProperty = prop;
+    this->TitleActor->SetTextProperty(this->TitleTextProperty);
+    this->TitleActor->GetTextProperty()->SetFontSize(96);
     vtkVisItUtility::AdjustPropsForNonFamilyFonts(this->TitleTextProperty);
     this->Modified();
 }

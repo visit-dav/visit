@@ -57,6 +57,7 @@ All rights reserved.
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkMultiFontVectorText.h>
+#include <vtkTextActor3D.h>
 #include <vtkTextProperty.h>
 
 #define VTK_MAX_LABELS    200
@@ -190,6 +191,7 @@ public:
   // Get axis title text property.
   void SetTitleTextProperty(vtkTextProperty *);
   vtkGetMacro(TitleTextProperty, vtkTextProperty *);
+  vtkGetMacro(TitleActor, vtkTextActor3D *);
 
   // Description:
   // Get axis labels text property.
@@ -393,9 +395,7 @@ private:
   vtkPoints         *majorTickPts;
   vtkPoints         *gridlinePts;
 
-  vtkMultiFontVectorText *TitleVector;
-  vtkPolyDataMapper      *TitleMapper;
-  vtkFollower            *TitleActor;
+  vtkTextActor3D         *TitleActor;
   vtkTextProperty        *TitleTextProperty;
 
   vtkMultiFontVectorText **LabelVectors;

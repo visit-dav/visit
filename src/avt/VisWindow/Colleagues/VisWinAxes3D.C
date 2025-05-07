@@ -312,6 +312,35 @@ VisWinAxes3D::AddAxes3DToWindow(void)
     mediator.GetCanvas()->AddViewProp(axes);
     mediator.GetCanvas()->AddActor(axesBox);
 
+#if 1
+    vtkVisItAxisActor **xaxes = axes->GetXAxes();
+    for (int i = 0; i < 4; i++)
+        mediator.GetCanvas()->AddActor(xaxes[i]->GetTitleActor());
+#endif
+
+#if 0
+{
+#include <vtkTextActor3D.h>
+
+    // Create a TextActor3D and set its text and properties
+    vtkTextActor3D *textActor = vtkTextActor3D::New();
+    textActor->SetInput("σ = ε₀E + Pᵢⱼⁿ");
+    
+    auto prop = textActor->GetTextProperty();
+    prop->SetFontSize(96);                        // Resolution of the text
+    prop->SetColor(1.0, 0.0, 0.0);                // Red text
+    prop->SetFontFamily(VTK_FONT_FILE);
+    prop->SetFontFile("/Users/miller86/visit/visit/34rc/src/resources/fonts/DejaVuSans.ttf");
+
+    textActor->SetScale(1.0);                     // Scale in world space
+    textActor->SetPosition(0.0, 0.0, 0.0);         // Place at origin
+    textActor->PrintSelf(std::cerr,vtkIndent(2));
+    textActor->DebugOn();
+    mediator.GetCanvas()->AddActor(textActor);
+}
+#endif
+
+
     addedAxes3D = true;
 }
 
@@ -1418,6 +1447,7 @@ VisWinAxes3D::UpdateLabelTextAttributes(double fr, double fg, double fb)
         axes->GetLabelTextProperty(i)->SetFontFamily((int)labelTextAttributes[i].font);
         axes->GetLabelTextProperty(i)->SetBold(labelTextAttributes[i].bold?1:0);
         axes->GetLabelTextProperty(i)->SetItalic(labelTextAttributes[i].italic?1:0);
+        vtkVisItUtility::AdjustPropsForNonFamilyFonts(axes->GetLabelTextProperty(i));
 
         // Pass the opacity in the line offset.
         axes->GetLabelTextProperty(i)->SetLineOffset(labelTextAttributes[i].color[3]);
