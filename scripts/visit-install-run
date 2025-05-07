@@ -256,6 +256,9 @@ set -e
 #   Justin Privitera, Thu Feb 13 15:17:44 PST 2025
 #   Move install location to a variable that can be set.
 #   Updated usage message.
+# 
+#   Justin Privitera, Wed Apr 16 17:01:19 PDT 2025
+#   Add elcap.
 #-----------------------------------------------------------------------
 
 test=no
@@ -308,6 +311,7 @@ magma=false
 sierra=false
 tuolumne=false
 rzadams=false # rzadams will piggyback off of tuolumne for the most part
+elcap=false
 rzansel=false # piggyback off of lassen
 
 ver=undefined
@@ -379,6 +383,14 @@ do
          network="llnl_closed"
          shift
          ;;
+      -elcap)
+         elcap=true
+         machine_name="elcap"
+         architecture="linux-x86_64-gfx942"
+         network="llnl_closed"
+         shift
+         ;;
+
       -v)
          ver=$2
          shift 2
@@ -393,7 +405,7 @@ if [ "$ver" = "undefined" ]
 then
    echo "Usage: [-<machine name>] -v <version>"
    echo "Valid machine names:"
-   echo "    poodle lassen rzwhippet magma sierra tuolumne rzadams rzansel"
+   echo "    poodle lassen rzwhippet magma sierra tuolumne rzadams rzansel elcap"
    echo "version should just be the version number (e.g. 3.4.9)"
    exit
 fi
@@ -418,7 +430,8 @@ ver=`echo $ver2 | tr "_" "."`
 # create the install script and call visit-install
 #
 if [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
-   [ "$magma" = true ] || [ "$sierra" = true ] || [ "$tuolumne" = true ]; then
+   [ "$magma" = true ] || [ "$sierra" = true ] || [ "$tuolumne" = true ] || \
+   [ "$elcap" = true ]; then
    rm -f machine_specific_install_script
    cat <<EOF > machine_specific_install_script
 #!/bin/sh
@@ -435,7 +448,8 @@ fi
 # resultlog
 #
 if [ "$poodle" = true ] || [ "$rzwhippet" = true ] || [ "$magma" = true ] || \
-   [ "$lassen" = true ] || [ "$sierra" = true ] || [ "$tuolumne" = true ]; then
+   [ "$lassen" = true ] || [ "$sierra" = true ] || [ "$tuolumne" = true ] || \
+   [ "$elcap" = true ]; then
    cat <<EOF >> machine_specific_install_script
 rm -f resultlog
 echo ""                                              > resultlog 2>&1
@@ -469,7 +483,8 @@ if [ "$rzadams" = true ]; then
 ln -s $install_location/$ver+/$architecture $install_location/$ver+/linux-x86_64-gfx90a
 EOF
 elif [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
-     [ "$magma" = true ] || [ "$sierra" = true ] || [ "$tuolumne" = true ]; then
+     [ "$magma" = true ] || [ "$sierra" = true ] || [ "$tuolumne" = true ] || \
+     [ "$elcap" = true ]; then
    # nothing to do for this case
    cat <<EOF >> machine_specific_install_script
 EOF
@@ -486,7 +501,7 @@ if [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
    cat <<EOF >> machine_specific_install_script
 mail -s "VisIt install ($ver): $machine_name" $emailName < resultlog.$machine_name
 EOF
-elif  [ "$magma" = true ] || [ "$sierra" = true ]; then
+elif  [ "$magma" = true ] || [ "$sierra" = true ] || [ "$elcap" = true ]; then
    # nothing to do for this case
    cat <<EOF >> machine_specific_install_script
 EOF

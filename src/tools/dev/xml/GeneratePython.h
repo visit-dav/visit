@@ -152,8 +152,13 @@ inline char toupper(char c)
 //    Kathleen Biagas, Thu Nov 17, 2022
 //    Added boolArray and boolVector.
 //
-//   Kathleen Biagas, Wed Mar 29 08:10:38 PDT 2023
-//   Replaced QRegExp in QSring::replace with QString.
+//    Kathleen Biagas, Wed Mar 29 08:10:38 PDT 2023
+//    Replaced QRegExp in QSring::replace with QString.
+//
+//    Kathleen Biagas, Thu Apr 17, 2025
+//    Allow user to override _Notify, _dir and _methods.
+//    Added check for Prefix logic associated with VISIT_PY_TYPE_OBJ so that
+//    custom SLOT logic could be located in code file.
 //
 // ****************************************************************************
 
@@ -3031,50 +3036,68 @@ class PythonGeneratorAttribute : public GeneratorBase
     void WritePyObjectMethods(QTextStream &c)
     {
         // Write the Notify method.
-        c << "static PyObject *" << Endl;
-        c << name << "_Notify(PyObject *self, PyObject *args)" << Endl;
-        c << "{" << Endl;
-        c << "    Py" << name << "Object *obj = (Py"<<name<<"Object *)self;" << Endl;
-        c << "    obj->data->Notify();" << Endl;
-        c << "    Py_INCREF(Py_None);" << Endl;
-        c << "    return Py_None;" << Endl;
-        c << "}" << Endl;
-        c << Endl;
+        QString mName(name + "_Notify");
+        if(HasFunction(mName))
+        {
+            PrintFunction(c, mName);
+            c << Endl;
+        }
+        else
+        {
+            c << "static PyObject *" << Endl;
+            c << name << "_Notify(PyObject *self, PyObject *args)" << Endl;
+            c << "{" << Endl;
+            c << "    Py" << name << "Object *obj = (Py"<<name<<"Object *)self;" << Endl;
+            c << "    obj->data->Notify();" << Endl;
+            c << "    Py_INCREF(Py_None);" << Endl;
+            c << "    return Py_None;" << Endl;
+            c << "}" << Endl;
+            c << Endl;
+        }
 
         // Write custom dir() method.
-        c << "static PyObject *" << Endl;
-        c << name << "_dir(PyObject *self, PyObject *args)" << Endl;
-        c << "{" << Endl;
-        c << "    static "<<name<<" atts; // dummy to access field names" << Endl;
-        c << Endl;
-        c << "    PyObject *dir_list = PyList_New(0);" << Endl; 
-        c << "    if (!dir_list)" << Endl;
-        c << "    {" << Endl;
-        c << "        PyErr_NoMemory();" << Endl;
-        c << "        return NULL;" << Endl;
-        c << "    }" << Endl;
-        c << Endl;
-        c << "    // Add methods from the methods table" << Endl;
-        c << "    for (PyMethodDef const *method = &Py"<<name<<"_methods[0];" << Endl;
-        c << "         method && method->ml_name;" << Endl;
-        c << "         method++) {" << Endl;
-        c << "        if (!strncmp(method->ml_name, \"__dir__\", 7)) continue;" << Endl;
-        c << "        if (!strncmp(method->ml_name, \"Notify\", 6)) continue;" << Endl;
-        c << "        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));" << Endl;
-        c << "    }" << Endl;
-        c << Endl;
-        c << "    // Add members using generic AttributeGroup interface" << Endl;
-        c << "    for (int i = 0; i < atts.NumAttributes(); i++) {" << Endl;
-        for(size_t i = 0; i < fields.size(); ++i)
+        mName = QString(name + "_dir");
+        if(HasFunction(mName))
         {
-            if(fields[i]->internal)
-                c << "        if (i == "<<i<<") continue; // internal field" << Endl;
+            PrintFunction(c, mName);
+            c << Endl;
         }
-        c << "        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));" << Endl;
-        c << "    }" << Endl;
-        c << Endl;
-        c << "    return dir_list;" << Endl;
-        c << "}" << Endl;
+        else
+        {
+            c << "static PyObject *" << Endl;
+            c << name << "_dir(PyObject *self, PyObject *args)" << Endl;
+            c << "{" << Endl;
+            c << "    static "<<name<<" atts; // dummy to access field names" << Endl;
+            c << Endl;
+            c << "    PyObject *dir_list = PyList_New(0);" << Endl; 
+            c << "    if (!dir_list)" << Endl;
+            c << "    {" << Endl;
+            c << "        PyErr_NoMemory();" << Endl;
+            c << "        return NULL;" << Endl;
+            c << "    }" << Endl;
+            c << Endl;
+            c << "    // Add methods from the methods table" << Endl;
+            c << "    for (PyMethodDef const *method = &Py"<<name<<"_methods[0];" << Endl;
+            c << "         method && method->ml_name;" << Endl;
+            c << "         method++) {" << Endl;
+            c << "        if (!strncmp(method->ml_name, \"__dir__\", 7)) continue;" << Endl;
+            c << "        if (!strncmp(method->ml_name, \"Notify\", 6)) continue;" << Endl;
+            c << "        PyList_Append(dir_list, PyUnicode_FromString(method->ml_name));" << Endl;
+            c << "    }" << Endl;
+            c << Endl;
+            c << "    // Add members using generic AttributeGroup interface" << Endl;
+            c << "    for (int i = 0; i < atts.NumAttributes(); i++) {" << Endl;
+            for(size_t i = 0; i < fields.size(); ++i)
+            {
+                if(fields[i]->internal)
+                    c << "        if (i == "<<i<<") continue; // internal field" << Endl;
+            }
+            c << "        PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));" << Endl;
+            c << "    }" << Endl;
+            c << Endl;
+            c << "    return dir_list;" << Endl;
+            c << "}" << Endl;
+        }
 
         // Write the rest of the methods.
         for(size_t i = 0; i < fields.size(); ++i)
@@ -3124,6 +3147,13 @@ class PythonGeneratorAttribute : public GeneratorBase
         int methCnt = 0;
         if (!countOnly)
         {
+            QString mName("Py" + name + "_methods");
+            if(HasFunction(mName))
+            {
+                PrintFunction(c, mName);
+                c << Endl;
+                return 0;
+            }
             c << Endl;
             c << "PyMethodDef Py"<<name<<"_methods["<<name.toUpper()<<"_NMETH] = {" << Endl;
             c << "    {\"__dir__\", " << name << "_dir, METH_NOARGS}," << Endl;
@@ -3394,6 +3424,12 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "// instantiating the type with VISIT_PY_TYPE_OBJ. Look for examples of" << Endl;
         c << "// such customization in src/avt/PythonFilters or src/visitpy/common." << Endl;
         c << "//" << Endl;
+        if(HasCode("VISIT_PY_TYPE_OBJ", 0))
+        {
+            c << Endl;
+            PrintCode(c, "VISIT_PY_TYPE_OBJ", 0);
+            c << Endl;
+        }
         c << "VISIT_PY_TYPE_OBJ("<<name<<");" << Endl << Endl;
  
         c << "//" << Endl;
