@@ -19,6 +19,8 @@ AMRreader::init()
     blktag_ = 0;
 
     ncvs_=5;
+    navs_=0;
+
     nblks_=0;
     blkdim_[0] = blkdim_[1] = blkdim_[2] = blkdim_[3] = 0;
     blksz_ = 0;
@@ -193,6 +195,7 @@ getAMRinfo( hid_t gid )
     H5Aclose(aid);
     debug2 << "Ncycles= " << ncycle_ << "\n";
 
+    // ncvs_ and navs_
     {
         const char* cvsname = "NVS";
         htri_t est = H5Aexists( gid, cvsname );
@@ -201,7 +204,16 @@ getAMRinfo( hid_t gid )
             H5Aread( aid, H5T_NATIVE_INT, &ncvs_ );
             H5Aclose(aid);
         }
+        const char* avsname="nAdditionalVariables";
+        est = H5Aexists( gid, avsname );
+        if( est>0 ) {
+            aid = H5Aopen_name( gid, avsname );
+            H5Aread( aid, H5T_NATIVE_INT, &navs_ );
+            H5Aclose(aid);
+        }
     }
+
+
     // eos
     htri_t est = H5Aexists( gid, amr_idealname );
     if( est>0 )

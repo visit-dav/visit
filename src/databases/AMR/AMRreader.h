@@ -133,6 +133,7 @@ protected:
     int     blktag_;
 
     int     ncvs_;
+    int     navs_;
     int     nblks_; // number of leaf blocks
     int     blkdim_[4];  // number of dimensions in each block
     int     blksz_;
