@@ -437,6 +437,13 @@ avtAMRFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         smd->hasUnits = false;
         md->Add(smd);
 
+        smd = new avtScalarMetaData;
+        smd->name = composeName( amr_name, "rootID");
+        smd->meshName = amr_name;
+        smd->centering = AVT_ZONECENT;
+        smd->hasUnits = false;
+        md->Add(smd);
+
         // vector
         avtVectorMetaData *vmd;
         vmd = new avtVectorMetaData;
@@ -758,6 +765,18 @@ avtAMRFileFormat::GetVar(int domain, const char *name)
             return var;
         }
 #endif
+	else if( varname.compare("rootID")==0 )
+	{
+            int sz = GetReader()->GetBlockSize( domain );
+            vtkFloatArray* var = vtkFloatArray::New();
+            var->SetNumberOfTuples( sz );
+
+            OctKey k = GetReader()->GetBlockKey(domain);
+	    int iroot = OctKey_ExtractRootIndex(k);
+            for(int i = 0; i < sz; ++i)
+                var->SetTuple1(i, iroot);
+            return var;
+	}
 	else if( varname.find("Species Density") != std::string::npos )
 	{
 	    int nspec = GetReader()->GetNumberOfSpecies();
