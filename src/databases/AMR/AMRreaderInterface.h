@@ -39,6 +39,7 @@ public:
   virtual int    GetNumberOfBlocks() const = 0;
   virtual int    GetBlockDimensions( int bid, int* dim ) const = 0;
   virtual int    GetBlockDefaultDimensions(int *dim) const = 0;
+  virtual int    GetNumberOfSpecies() const = 0;
 
   virtual int    GetNumberOfLevels() = 0;
   virtual int    GetBlockHierarchicalIndices(int bid, int *level,

@@ -413,6 +413,27 @@ avtAMRFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         // scalar
         avtScalarMetaData *smd;
 
+	int nspec = GetReader()->GetNumberOfSpecies();
+
+        for( int i=0; i<nspec; ++i ) {
+            std::string inm = std::to_string(i+1);
+            std::string vnm = composeName("Species Density", inm );
+            smd = new avtScalarMetaData;
+            smd->name = composeName( amr_name, vnm);
+            smd->meshName = amr_name;
+            smd->centering = AVT_ZONECENT;
+            smd->hasUnits = false;
+            md->Add(smd);
+
+            vnm = composeName("Species Mass Fraction", inm );
+            smd = new avtScalarMetaData;
+            smd->name = composeName( amr_name, vnm);
+            smd->meshName = amr_name;
+            smd->centering = AVT_ZONECENT;
+            smd->hasUnits = false;
+            md->Add(smd);
+        }
+
         smd = new avtScalarMetaData;
         smd->name = composeName( amr_name, "density");
         smd->meshName = amr_name;

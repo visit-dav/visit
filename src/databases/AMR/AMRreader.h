@@ -58,6 +58,10 @@ public:
         return 0;
     }
 
+    virtual int GetNumberOfSpecies() const
+    {
+	return nspec_;
+    }
     virtual int GetBlockHierarchicalIndices(int bid, int *level,
                                             int *ijk_start, int *ijk_end)
     {
