@@ -94,6 +94,7 @@ protected:
   static const char* amr_crdname;
   static const char* amr_stpname;
   static const char* amr_datname;
+  static const char* amr_adtname;
   static const char* amr_prename;
   static const char* amr_sndname;
   static const char* amr_tmpname;

@@ -142,6 +142,7 @@ protected:
     float*  blkdx_;
     OctKey *blkkey_;
     float*  datbuf_;
+    float*  adtbuf_;
     float*  prebuf_;
     float*  sndbuf_;
     float*  tmpbuf_;

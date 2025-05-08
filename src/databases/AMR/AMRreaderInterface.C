@@ -8,6 +8,7 @@ const char* AMRreaderInterface::amr_keyname="BlockKey";
 const char* AMRreaderInterface::amr_crdname="BlockCoord";
 const char* AMRreaderInterface::amr_stpname="BlockSteps";
 const char* AMRreaderInterface::amr_datname="BlockData";
+const char* AMRreaderInterface::amr_adtname="BlockAdditionalData";
 const char* AMRreaderInterface::amr_prename="BlockPressure";
 const char* AMRreaderInterface::amr_sndname="BlockSoundSpeed";
 const char* AMRreaderInterface::amr_tmpname="BlockTemperature";

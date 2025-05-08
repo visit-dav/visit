@@ -29,6 +29,7 @@ AMRreader::init()
     blkdx_ = NULL;
     blkkey_ = NULL;
     datbuf_ = NULL;
+    adtbuf_ = NULL;
     prebuf_ = NULL;
     sndbuf_ = NULL;
     tmpbuf_ = NULL;
@@ -50,6 +51,7 @@ AMRreader::freedata()
     AMRFREE( blkxs_ );
     AMRFREE( blkdx_ );
     AMRFREE( datbuf_ );
+    AMRFREE( adtbuf_ );
     AMRFREE( prebuf_ );
     AMRFREE( sndbuf_ );
     AMRFREE( tmpbuf_ );
@@ -506,6 +508,34 @@ readAMRdata()
                         retval = -5;
                     }
                     H5Dclose(datid);
+                }
+            }
+
+            if( navs_ > 0  ) {
+                adtbuf_ = (float*)malloc( navs_*blksz_*nblks_*sizeof(float) );
+
+                if( adtbuf_==NULL )
+                {
+                    debug1 << "Failed to allocate adtbuf_ for " << filename_ << ".\n";
+                    retval = -3;
+                }
+                else {
+                    hid_t datid = H5Dopen1( gid, amr_adtname );
+                    if( datid<0 )
+                    {
+                        debug1 << "Failed to open additional block data in " << filename_ << ".\n";
+                        retval = -4;
+                    }
+                    else
+                    {
+                        herr_t herr = H5Dread( datid, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, adtbuf_ );
+                        if( herr<0 )
+                        {
+                            debug1 << "Failed to read additional block data in " << filename_ << ".\n";
+                            retval = -5;
+                        }
+                        H5Dclose(datid);
+                    }
                 }
             }
             H5Gclose( gid );
