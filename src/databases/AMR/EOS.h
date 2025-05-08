@@ -216,4 +216,41 @@ protected:
     //char type[20];
 };
 
+class IdealTilEOS : public EOS
+{
+public:
+    IdealTilEOS()
+    {
+        /*strcpy(type, GenMixEOS_type ); */
+	avmap = {{"species internal energy gas", 6}, \
+	         {"sound speed gas", 7}, \
+	         {"species internal energy Til", 10}, \
+	         {"sound speed Til", 11}};
+    }
+    virtual ~IdealTilEOS() { }
+    //virtual const char* EOStype() const { return type; }
+    virtual int   EOStype() const
+    {
+        return IdealTilEOS_type;
+    }
+    virtual float p_from_r_e( float r, float e )
+    {
+        return 0.;
+    }
+    virtual float T_from_r_e( float r, float e )
+    {
+        return 0.;
+    }
+    virtual float a_from_r_e( float r, float e )
+    {
+        return 0.;
+    }
+
+    virtual bool p_from_av(){ return true; }
+    virtual bool T_from_av(){ return true; }
+    virtual bool a_from_av(){ return true; }
+
+protected:
+    //char type[20];
+};
 #endif

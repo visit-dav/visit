@@ -338,6 +338,19 @@ getAMRinfo( hid_t gid )
 	return 0;
     }
 
+    est = H5Aexists( gid, amr_idealtilname );
+    if( est>0 )
+    {
+	eos_ = new IdealTilEOS();
+	aid = H5Aopen_name( gid, amr_idealtilname );
+	H5Aclose(aid);
+
+	iavpres_ = 0;
+	iavtemp_ = 1;
+	iavsndv_ = 2;
+
+	return 0;
+    }
     eos_ = new IdealEOS( 1.4, 1.0 );
     return 0;
 }
