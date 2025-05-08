@@ -135,9 +135,9 @@ protected:
     int  comp_uvel( float*, float*, int sz );
     int  comp_vvel( float*, float*, int sz );
     int  comp_wvel( float*, float*, int sz );
-    int  comp_pres( float*, float*, int sz );
-    int  comp_temp( float*, float*, int sz );
-    int  comp_sndv( float*, float*, int sz );
+    int  comp_pres( float*, float*, float*, int sz );
+    int  comp_temp( float*, float*, float*, int sz );
+    int  comp_sndv( float*, float*, float*, int sz );
     int  comp_xmnt( float*, float*, int sz );
     int  comp_ymnt( float*, float*, int sz );
     int  comp_zmnt( float*, float*, int sz );

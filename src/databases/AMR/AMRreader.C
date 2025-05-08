@@ -960,13 +960,13 @@ compvar( int vid, float* blk, float* ablk, float* buf, int sz )
         comp_wvel( blk, buf, sz );
         break;
     case(v_pres):
-        comp_pres( blk, buf, sz );
+        comp_pres( blk, ablk, buf, sz );
         break;
     case(v_temp):
-        comp_temp( blk, buf, sz );
+        comp_temp( blk, ablk, buf, sz );
         break;
     case(v_sndv):
-        comp_sndv( blk, buf, sz );
+        comp_sndv( blk, ablk, buf, sz );
         break;
     case(v_xmnt):
         comp_xmnt( blk, buf, sz );
@@ -1071,7 +1071,7 @@ comp_wvel( float* blkdt, float* buf, int sz )
 }
 
 int AMRreader::
-comp_pres( float* blkdt, float* buf, int sz )
+comp_pres( float* blkdt, float* ablkdt, float* buf, int sz )
 {
     if( eos_->EOStype()==SesameEOS_type )
     {
@@ -1082,16 +1082,32 @@ comp_pres( float* blkdt, float* buf, int sz )
             buf[sft] = pbuf[sft];
         }
     }
+    else if( eos_->EOStype()==GenMixEOS_type )
+    {
+	for( int sft=0; sft<sz; sft++ )
+	{
+	    buf[sft] = blkdt[ncvs_*sft + icvpres_];
+	}
+    }
+    else if( eos_->p_from_av() && navs_ > 0 )
+    {
+	for( int sft=0; sft<sz; sft++ )
+	{
+	    buf[sft] = ablkdt[navs_*sft + iavpres_];
+	}
+    }
     else
     {
         for( int sft=0; sft<sz; sft++ )
         {
-            float rr = blkdt[5*sft];
-            float uu = blkdt[5*sft+1] / rr;
-            float vv = blkdt[5*sft+2] / rr;
-            float ww = blkdt[5*sft+3] / rr;
-            float et = blkdt[5*sft+4] / rr;
+            float rr = ComputeDens(blkdt, sft, ncvs_, nspec_);
+            float uu = blkdt[ncvs_*sft + icvmomx_] / rr;
+            float vv = blkdt[ncvs_*sft + icvmomy_] / rr;
+            float ww = blkdt[ncvs_*sft + icvmomz_] / rr;
+            float et = ComputeEner(blkdt, sft, ncvs_, icvener_, nspecener_) / rr;
             float ei = et - 0.5*( uu*uu + vv*vv + ww*ww );
+
+	    eos_->compute_mixture_props(&blkdt[sft*ncvs_]);
             buf[sft] = eos_->p_from_r_e( rr, ei );
         }
     }
@@ -1099,7 +1115,7 @@ comp_pres( float* blkdt, float* buf, int sz )
 }
 
 int AMRreader::
-comp_temp( float* blkdt, float* buf, int sz )
+comp_temp( float* blkdt, float* ablkdt, float* buf, int sz )
 {
     if( eos_->EOStype()==SesameEOS_type )
     {
@@ -1110,16 +1126,31 @@ comp_temp( float* blkdt, float* buf, int sz )
             buf[sft] = pbuf[sft];
         }
     }
+    else if( eos_->EOStype()==GenMixEOS_type )
+    {
+	for( int sft=0; sft<sz; sft++ )
+	{
+	    buf[sft] = blkdt[ncvs_*sft + icvtemp_];
+	}
+    }
+    else if( eos_->T_from_av() && navs_ > 0 )
+    {
+	for( int sft=0; sft<sz; sft++ )
+	{
+	    buf[sft] = ablkdt[navs_*sft + iavtemp_];
+	}
+    }
     else
     {
         for( int sft=0; sft<sz; sft++ )
         {
-            float rr = blkdt[5*sft];
-            float uu = blkdt[5*sft+1] / rr;
-            float vv = blkdt[5*sft+2] / rr;
-            float ww = blkdt[5*sft+3] / rr;
-            float et = blkdt[5*sft+4] / rr;
+            float rr = ComputeDens(blkdt, sft, ncvs_, nspec_);
+            float uu = blkdt[ncvs_*sft+icvmomx_] / rr;
+            float vv = blkdt[ncvs_*sft+icvmomy_] / rr;
+            float ww = blkdt[ncvs_*sft+icvmomz_] / rr;
+            float et = ComputeEner(blkdt, sft, ncvs_, icvener_, nspecener_) / rr;
             float ei = et - 0.5*( uu*uu + vv*vv + ww*ww );
+	    eos_->compute_mixture_props(&blkdt[sft*ncvs_]);
             buf[sft] = eos_->T_from_r_e( rr, ei );
         }
     }
@@ -1127,7 +1158,7 @@ comp_temp( float* blkdt, float* buf, int sz )
 }
 
 int AMRreader::
-comp_sndv( float* blkdt, float* buf, int sz )
+comp_sndv( float* blkdt, float* ablkdt, float* buf, int sz )
 {
     if( eos_->EOStype()==SesameEOS_type )
     {
@@ -1138,16 +1169,25 @@ comp_sndv( float* blkdt, float* buf, int sz )
             buf[sft] = pbuf[sft];
         }
     }
+    else if( eos_->a_from_av() && navs_ > 0 )
+    {
+	for( int sft=0; sft<sz; sft++ )
+	{
+	    buf[sft] = ablkdt[navs_*sft + iavsndv_];
+	}
+    }
     else
     {
         for( int sft=0; sft<sz; sft++ )
         {
-            float rr = blkdt[5*sft];
-            float uu = blkdt[5*sft+1] / rr;
-            float vv = blkdt[5*sft+2] / rr;
-            float ww = blkdt[5*sft+3] / rr;
-            float et = blkdt[5*sft+4] / rr;
+            float rr = ComputeDens(blkdt, sft, ncvs_, nspec_);
+            float uu = blkdt[ncvs_*sft + icvmomx_] / rr;
+            float vv = blkdt[ncvs_*sft + icvmomy_] / rr;
+            float ww = blkdt[ncvs_*sft + icvmomz_] / rr;
+            float et = ComputeEner(blkdt, sft, ncvs_, icvener_, nspecener_) / rr;
             float ei = et - 0.5*( uu*uu + vv*vv + ww*ww );
+
+	    eos_->compute_mixture_props(&blkdt[sft*ncvs_]);
             buf[sft] = eos_->a_from_r_e( rr, ei );
         }
     }
@@ -1199,11 +1239,11 @@ comp_eint( float* blkdt, float* buf, int sz )
 {
     for( int sft=0; sft<sz; sft++ )
     {
-        float rr = blkdt[5*sft];
-        float uu = blkdt[5*sft+1] / rr;
-        float vv = blkdt[5*sft+2] / rr;
-        float ww = blkdt[5*sft+3] / rr;
-        float et = blkdt[5*sft+4] / rr;
+        float rr = ComputeDens(blkdt, sft, ncvs_, nspec_);
+        float uu = blkdt[ncvs_*sft + icvmomx_] / rr;
+        float vv = blkdt[ncvs_*sft + icvmomy_] / rr;
+        float ww = blkdt[ncvs_*sft + icvmomz_] / rr;
+        float et = ComputeEner(blkdt, sft, ncvs_, icvener_, nspecener_) / rr;
         buf[sft] = et - 0.5*( uu*uu + vv*vv + ww*ww );
     }
     return 0;
