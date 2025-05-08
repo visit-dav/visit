@@ -137,6 +137,30 @@ public:
         return blktag_==1;
     }
 
+    virtual bool HasPressure() const
+    {
+	if (eos_->p_from_av() && iavpres_ >= navs_)
+	    return false;
+	else
+	    return true;
+    }
+
+    virtual bool HasTemperature() const
+    {
+	if (eos_->T_from_av() && iavtemp_ >= navs_)
+	    return false;
+	else
+	    return true;
+    }
+
+    virtual bool HasSNDV() const
+    {
+	if (eos_->a_from_av() && iavsndv_ >= navs_)
+	    return false;
+	else
+	    return true;
+    }
+
 
 protected:
     int getAMRinfo( hid_t gid );

@@ -367,26 +367,35 @@ avtAMRFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         smd->hasUnits = false;
         md->Add(smd);
 
-        smd = new avtScalarMetaData;
-        smd->name = composeName( amr_name, "pressure");
-        smd->meshName = amr_name;
-        smd->centering = AVT_ZONECENT;
-        smd->hasUnits = false;
-        md->Add(smd);
+	if (GetReader()->HasPressure())
+	{
+	    smd = new avtScalarMetaData;
+	    smd->name = composeName( amr_name, "pressure");
+	    smd->meshName = amr_name;
+	    smd->centering = AVT_ZONECENT;
+	    smd->hasUnits = false;
+	    md->Add(smd);
+	}
 
-        smd = new avtScalarMetaData;
-        smd->name = composeName( amr_name, "temperature");
-        smd->meshName = amr_name;
-        smd->centering = AVT_ZONECENT;
-        smd->hasUnits = false;
-        md->Add(smd);
+	if (GetReader()->HasTemperature())
+	{
+	    smd = new avtScalarMetaData;
+	    smd->name = composeName( amr_name, "temperature");
+	    smd->meshName = amr_name;
+	    smd->centering = AVT_ZONECENT;
+	    smd->hasUnits = false;
+	    md->Add(smd);
+	}
 
-        smd = new avtScalarMetaData;
-        smd->name = composeName( amr_name, "sound speed");
-        smd->meshName = amr_name;
-        smd->centering = AVT_ZONECENT;
-        smd->hasUnits = false;
-        md->Add(smd);
+	if (GetReader()->HasSNDV())
+	{
+	    smd = new avtScalarMetaData;
+	    smd->name = composeName( amr_name, "sound speed");
+	    smd->meshName = amr_name;
+	    smd->centering = AVT_ZONECENT;
+	    smd->hasUnits = false;
+	    md->Add(smd);
+	}
 
         smd = new avtScalarMetaData;
         smd->name = composeName( amr_name, "internal energy");

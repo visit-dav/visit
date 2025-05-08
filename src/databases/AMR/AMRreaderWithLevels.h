@@ -82,6 +82,16 @@ public:
   virtual int    GetInterfaceVariable( int vid, void* dat );
 
   virtual bool   HasTag() const;
+
+  virtual bool   HasPressure() const
+  { return reader->HasPressure(); }
+
+  virtual bool   HasTemperature() const
+  { return reader->HasTemperature(); }
+
+  virtual bool   HasSNDV() const
+  { return reader->HasSNDV(); }
+
 private:
   struct Patch
   {
