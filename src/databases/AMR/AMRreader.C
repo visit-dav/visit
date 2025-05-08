@@ -185,6 +185,21 @@ getAMRinfo( hid_t gid )
     }
     debug2 << "Number of blocks is " << nblks_ << "\n";
 
+    aid = H5Aopen_name( gid, "OctKeySetting" );
+    if( aid<0 )
+    {
+        nblks_=0;
+        debug1 << "Failed to find OctKeySetting.\n";
+        return -1;
+    }
+    else
+    {
+	int ibuf[3];
+        H5Aread( aid, H5T_NATIVE_INT, ibuf );
+	OctKey_SetRootLen(ibuf[1]+1);
+        H5Aclose(aid);
+    }
+
     aid = H5Aopen_name( gid, "OctreeRootID" );
     if( aid < 0)
     {
