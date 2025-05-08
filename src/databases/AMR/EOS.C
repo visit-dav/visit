@@ -178,3 +178,96 @@ float JwlBEOS::a_from_r_e( float r, float e ){
     return sqrt(std::max(dp_dv*dv_dr + dp_de*de_dr, eps));
 };
 
+MultiIdealEOS::MultiIdealEOS(int nsp, float gms[], float rs[])
+{
+        nspec = nsp;
+
+	gammas = new float[nspec];
+	gasRs  = new float[nspec];
+	
+	for( int i=0; i<nspec; i++ )
+	{
+	    gammas[i] = gms[i];
+	    gasRs[i] = rs[i];
+	}
+
+	computed_mixture_props = false;
+
+	singleEOS = nullptr;
+}
+
+MultiIdealEOS::~MultiIdealEOS()
+{
+    delete[] gammas;
+    delete[] gasRs;
+    delete singleEOS;
+}
+
+int MultiIdealEOS::compute_mixture_props(float ri[])
+{
+    computed_mixture_props = false;
+
+    float rmix  = 0.0;
+    float rr    = 0.0;
+    float Cvmix = 0.0;
+    float Cvi   = 0.0;
+
+    for( int i=0; i<nspec; i++ )
+    {
+        rmix += ri[i]*gasRs[i];
+
+        Cvi = gasRs[i]/(gammas[i] - 1.0);
+        Cvmix += ri[i]*Cvi;
+
+        rr += ri[i];
+    }
+    rmix = rmix / rr;
+    Cvmix = Cvmix / rr;
+
+    float gmix = rmix / Cvmix + 1.0;
+
+    delete singleEOS;
+    singleEOS = new IdealEOS(gmix, rmix);
+    computed_mixture_props = true;
+
+    return 1;
+}
+
+float MultiIdealEOS::p_from_r_e(float r, float e)
+{
+    if (computed_mixture_props)
+    {
+	computed_mixture_props = false;
+	return singleEOS->p_from_r_e(r, e);
+    }
+    else
+    {
+	return 0.0;
+    }
+}
+
+float MultiIdealEOS::T_from_r_e(float r, float e)
+{
+    if (computed_mixture_props)
+    {
+	computed_mixture_props = false;
+	return singleEOS->T_from_r_e(r, e);
+    }
+    else
+    {
+	return 0.0;
+    }
+}
+
+float MultiIdealEOS::a_from_r_e(float r, float e)
+{
+    if (computed_mixture_props)
+    {
+	computed_mixture_props = false;
+	return singleEOS->a_from_r_e(r, e);
+    }
+    else
+    {
+	return 0;
+    }
+}

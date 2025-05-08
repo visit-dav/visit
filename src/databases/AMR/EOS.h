@@ -253,4 +253,29 @@ public:
 protected:
     //char type[20];
 };
+
+class MultiIdealEOS : public EOS
+{
+public:
+    MultiIdealEOS(int nspec, float gms[], float rs[]);
+    virtual ~MultiIdealEOS();
+    //virtual const char* EOStype() const { return type; }
+    virtual int   EOStype() const
+    {
+        return MultiIdealEOS_type;
+    }
+    virtual float p_from_r_e( float r, float e );
+    virtual float T_from_r_e( float r, float e );
+    virtual float a_from_r_e( float r, float e );
+    virtual int   compute_mixture_props(float ri[]);
+
+protected:
+    int nspec;
+    float* gammas;
+    float* gasRs;
+    bool computed_mixture_props;
+    IdealEOS* singleEOS;
+    //char type[20];
+};
+
 #endif

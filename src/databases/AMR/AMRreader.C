@@ -351,6 +351,34 @@ getAMRinfo( hid_t gid )
 
 	return 0;
     }
+
+    est = H5Aexists( gid, amr_multiidealname );
+    if( est>0 )
+    {
+	aid = H5Aopen_name( gid, amr_multiidealname );
+	H5Aread( aid, H5T_NATIVE_FLOAT, rbuf );
+	H5Aclose(aid);
+
+	nspec_ = std::round(rbuf[0]);
+	float* gammas = new float[nspec_];
+	float* rs = new float[nspec_];
+
+	for( int i=0; i<nspec_; i++ )
+	{
+	    gammas[i] = rbuf[i*2 + 1];
+	    rs[i]     = rbuf[i*2 + 2];
+	}
+	eos_ = new MultiIdealEOS(nspec_, gammas, rs);
+
+	delete[] gammas;
+	delete[] rs;
+
+	iavpres_ = 0;
+	iavtemp_ = 1;
+	iavsndv_ = 2;
+
+	return 0;
+    }
     eos_ = new IdealEOS( 1.4, 1.0 );
     return 0;
 }
