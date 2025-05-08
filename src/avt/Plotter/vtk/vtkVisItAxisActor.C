@@ -27,6 +27,7 @@ All rights reserved.
 #include <vtkViewport.h>
 #include <vtkVisItUtility.h>
 
+#include <vtkBillboardTextActor3D.h>
 #include <vtkTextActor3D.h>
 
 
@@ -103,7 +104,9 @@ vtkVisItAxisActor::vtkVisItAxisActor()
   this->LabelFormat = new char[8]; 
   snprintf(this->LabelFormat,8, "%s","%-#6.3g");
 
-  this->TitleActor = vtkTextActor3D::New();
+  //this->TitleActor = vtkTextActor3D::New();
+  this->TitleActor = vtkBillboardTextActor3D::New();
+  this->TitleActor->SetInput("α = 3.14");
   this->TitleActor->GetTextProperty()->SetColor(0.,0.,0.);
   this->TitleActor->GetTextProperty()->SetFontFamilyToArial();
   this->TitleActor->GetTextProperty()->SetFontSize(96);     
@@ -485,7 +488,7 @@ void vtkVisItAxisActor::BuildAxis(vtkViewport *viewport, bool force)
       )
     {
     vtkProperty *newProp = this->NewTitleProperty();
-    this->AxisActor->SetProperty(this->GetProperty());
+    //this->AxisActor->SetProperty(this->GetProperty());
     newProp->Delete();
     }
 
@@ -763,9 +766,11 @@ vtkVisItAxisActor::BuildTitle(bool force)
     maxHeight = (labHeight > maxHeight ? labHeight : maxHeight); 
     }
   this->TitleActor->SetInput(this->Title);
+#if 0
   this->TitleActor->GetTextProperty()->SetFontFamily(this->TitleTextProperty->GetFontFamily());
   this->TitleActor->GetTextProperty()->SetBold(this->TitleTextProperty->GetBold()?true:false);
   this->TitleActor->GetTextProperty()->SetItalic(this->TitleTextProperty->GetItalic()?true:false);
+#endif
   vtkVisItUtility::AdjustPropsForNonFamilyFonts(this->TitleActor->GetTextProperty());
 
   this->TitleActor->SetPosition(p2[0], p2[1], p2[2]);
@@ -1534,6 +1539,11 @@ vtkVisItAxisActor::SetTitle(const char *t)
 void
 vtkVisItAxisActor::SetTitleTextProperty(vtkTextProperty *prop)
 {
+    this->TitleActor->GetTextProperty()->SetFontSize(96);
+    //vtkVisItUtility::AdjustPropsForNonFamilyFonts(this->TitleTextProperty);
+    this->Modified();
+    return;
+
     if(this->TitleTextProperty != NULL)
         this->TitleTextProperty->Delete();
     if(prop != NULL)
@@ -1600,6 +1610,8 @@ vtkProperty *
 vtkVisItAxisActor::NewTitleProperty()
 {
     vtkProperty *newProp = vtkProperty::New();
+    return newProp;
+
     newProp->DeepCopy(this->GetProperty());
     newProp->SetColor(this->TitleTextProperty->GetColor());
     // We pass the opacity in the line offset.

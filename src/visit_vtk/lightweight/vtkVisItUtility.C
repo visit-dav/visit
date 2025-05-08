@@ -1703,6 +1703,8 @@ vtkVisItUtility::AdjustPropsForNonFamilyFonts(vtkTextProperty *tprop)
     std::string fontFile = GetVisItResourcesDirectory(VISIT_RESOURCES_FONTS) +
                            VISIT_SLASH_STRING;
     
+    if (!tprop) return;
+
     // Treat Arial as the "Regular" form of DejaVuSans
     if (tprop->GetFontFamily() == VTK_ARIAL)
     {
