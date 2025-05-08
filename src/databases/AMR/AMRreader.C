@@ -38,6 +38,23 @@ AMRreader::init()
     nrect_ = nvert_ = 0;
 
     eos_ = NULL;
+
+    nspec_ = 1;
+    nspecener_ = 1;
+
+    icvdens_ = 0;
+    icvmomx_ = 1;
+    icvmomy_ = 2;
+    icvmomz_ = 3;
+    icvener_ = 4;
+
+    // only for GenMixEOS
+    icvpres_ = 0;
+    icvtemp_ = 0;
+
+    iavpres_ = 0;
+    iavtemp_ = 0;
+    iavsndv_ = 0;
 }
 
 // Modifications:

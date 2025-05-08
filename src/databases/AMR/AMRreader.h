@@ -151,6 +151,23 @@ protected:
     int  nrect_, nvert_;
 
     EOS* eos_;
+
+    int nspec_; // number of species
+    int nspecener_; // number of species energies stored
+    
+    // indices in the CV array
+    int icvdens_; // index of the first species density
+    int icvmomx_; // index of x momentum 
+    int icvmomy_; // index of y momentum
+    int icvmomz_; // index of z momentum
+    int icvener_; // index of the first species energy
+
+    int icvpres_; // index of pressure
+    int icvtemp_; // index of temperature
+
+    int iavpres_;
+    int iavtemp_;
+    int iavsndv_;
 };
 
 
