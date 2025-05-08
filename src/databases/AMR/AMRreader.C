@@ -483,7 +483,7 @@ readAMRdata()
         }
         else
         {
-            datbuf_ = (float*)malloc( 5*blksz_*nblks_*sizeof(float) );
+            datbuf_ = (float*)malloc( ncvs_*blksz_*nblks_*sizeof(float) );
             if( datbuf_==NULL )
             {
                 debug1 << "Failed to allocate datbuf_ for " << filename_ << ".\n";
