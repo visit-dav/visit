@@ -272,10 +272,11 @@ CombineScalarArray( float*bd[8], float* scl )
 int AMRreaderBlkConso::
 CombineData()
 {
+    int mxvs = std::max( ncvs_, navs_ );
     float* bd[8];
     for( int k=0; k<8; k++ )
     {
-        bd[k] = new float[5*blksz_];
+        bd[k] = new float[ mxvs*blksz_];
         if( bd[k]==NULL )
         {
             debug1 << "Failed to allocate memory for temperary kids node data.\n";
@@ -286,10 +287,15 @@ CombineData()
     for( int i=0; i<nbc_; i++ )
     {
         int bid = bcsft_[i];
-        float* src = datbuf_ + bid*5*blksz_;
         if( bid+8 == bcsft_[i+1] )
         {
-            CombineBlockData( 5, bd, src );
+            float* src = datbuf_ + bid*ncvs_*blksz_;
+            CombineBlockData( ncvs_, bd, src );
+
+            if( navs_ > 0 ) {
+                float* src = adtbuf_ + bid*navs_*blksz_;
+                CombineBlockData( navs_, bd, src );
+            }
         }
     }
 
@@ -309,4 +315,3 @@ CombineData()
         delete [] bd[k];
     return 0;
 }
-
