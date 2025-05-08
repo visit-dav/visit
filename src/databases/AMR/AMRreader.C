@@ -160,7 +160,7 @@ AMRreader::getInfo( const char* filename )
 int AMRreader::
 getAMRinfo( hid_t gid )
 {
-    float rbuf[20];
+    float rbuf[200];
 
     hid_t aid = H5Aopen_name( gid, "number" );
     if( aid<0 )
