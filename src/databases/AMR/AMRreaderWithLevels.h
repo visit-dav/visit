@@ -14,10 +14,10 @@
 //   Provides an AMRreader interface that uses one of the existing readers to
 //   read the AMR data. We also compute all of the intermediate layers in the
 //   AMR hierarchy so that we can serve up hierarchical AMR data but we retain
-//   the ability to combine patches via using the existing readers for the 
+//   the ability to combine patches via using the existing readers for the
 //   actual data reading.
 //
-// Notes:    
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri May 23 15:32:50 PDT 2014
@@ -29,92 +29,114 @@
 class AMRreaderWithLevels : public AMRreaderInterface
 {
 public:
-  AMRreaderWithLevels();
-  virtual ~AMRreaderWithLevels();
+    AMRreaderWithLevels();
+    virtual ~AMRreaderWithLevels();
 
-  virtual int    freedata();
+    virtual int    freedata();
 
-  virtual int    getInfo( const char* filename );
+    virtual int    getInfo( const char* filename );
 
-  virtual void   BuildMetaData();
+    virtual void   BuildMetaData();
 
-  virtual int    GetNumCycles() const;
-  virtual double GetSimuTime() const;
+    virtual int    GetNumCycles() const;
+    virtual double GetSimuTime() const;
 
-  virtual int    GetNumberOfBlocks() const;
-  virtual int    GetBlockDimensions( int bid, int* dim ) const;
-  virtual int    GetBlockDefaultDimensions(int *dim) const;
-  virtual int    GetNumberOfFieldVariables() const
-  { return reader->GetNumberOfFieldVariables(); }
+    virtual int    GetNumberOfBlocks() const;
+    virtual int    GetBlockDimensions( int bid, int* dim ) const;
+    virtual int    GetBlockDefaultDimensions(int *dim) const;
+    virtual int    GetNumberOfFieldVariables() const
+    {
+        return reader->GetNumberOfFieldVariables();
+    }
 
-  virtual int    GetNumberOfSpecies() const
-  { return reader->GetNumberOfSpecies(); }
+    virtual int    GetNumberOfSpecies() const
+    {
+        return reader->GetNumberOfSpecies();
+    }
 
-  virtual int    GetNumberOfConservedVariables() const
-  { return reader->GetNumberOfConservedVariables(); }
+    virtual int    GetNumberOfConservedVariables() const
+    {
+        return reader->GetNumberOfConservedVariables();
+    }
 
-  virtual int    GetRootDX(float dx[]) const
-  { return reader->GetRootDX(dx); }
+    virtual int    GetRootDX(float dx[]) const
+    {
+        return reader->GetRootDX(dx);
+    }
 
-  virtual int    GetRootXS(float xs[]) const
-  { return reader->GetRootXS(xs); }
+    virtual int    GetRootXS(float xs[]) const
+    {
+        return reader->GetRootXS(xs);
+    }
 
-  virtual int    GetRootDims(int dims[]) const
-  { return reader->GetRootDims(dims); }
+    virtual int    GetRootDims(int dims[]) const
+    {
+        return reader->GetRootDims(dims);
+    }
 
-  virtual int    GetRootID(int i, int j, int k) const
-  { return reader->GetRootID(i, j, k); }
+    virtual int    GetRootID(int i, int j, int k) const
+    {
+        return reader->GetRootID(i, j, k);
+    }
 
-  virtual std::map<std::string, int> GetAVMap()
-  { return reader->GetAVMap(); }
+    virtual std::map<std::string, int> GetAVMap()
+    {
+        return reader->GetAVMap();
+    }
 
-  virtual int    GetNumberOfLevels();
-  virtual int    GetBlockHierarchicalIndices(int bid, int *level,
-                                             int *ijk_start, int *ijk_end);
+    virtual int    GetNumberOfLevels();
+    virtual int    GetBlockHierarchicalIndices(int bid, int *level,
+            int *ijk_start, int *ijk_end);
 
-  virtual int    GetBlockSize( int bid ) const ;
-  virtual int    GetBlockMesh( int bid, float* xs, float* dx );
-  virtual int    GetBlockVariable( int bid, int vid, float* dat );
+    virtual int    GetBlockSize( int bid ) const ;
+    virtual int    GetBlockMesh( int bid, float* xs, float* dx );
+    virtual int    GetBlockVariable( int bid, int vid, float* dat );
 
-  virtual OctKey GetBlockKey(int bid);
+    virtual OctKey GetBlockKey(int bid);
 
-  virtual void   GetInterfaceSizes( int* np, int* ne ) const;
-  virtual int    GetInterfaceVariable( int vid, void* dat );
+    virtual void   GetInterfaceSizes( int* np, int* ne ) const;
+    virtual int    GetInterfaceVariable( int vid, void* dat );
 
-  virtual bool   HasTag() const;
+    virtual bool   HasTag() const;
 
-  virtual bool   HasPressure() const
-  { return reader->HasPressure(); }
+    virtual bool   HasPressure() const
+    {
+        return reader->HasPressure();
+    }
 
-  virtual bool   HasTemperature() const
-  { return reader->HasTemperature(); }
+    virtual bool   HasTemperature() const
+    {
+        return reader->HasTemperature();
+    }
 
-  virtual bool   HasSNDV() const
-  { return reader->HasSNDV(); }
+    virtual bool   HasSNDV() const
+    {
+        return reader->HasSNDV();
+    }
 
 private:
-  struct Patch
-  {
-      int    level;
-      int    ijk_start[3];
-      float  xs[3];
-      float  xe[3];
-      OctKey key;
-      int    fileBID; // The block id from the file or -1 if the block is not present in the file.
-  };
+    struct Patch
+    {
+        int    level;
+        int    ijk_start[3];
+        float  xs[3];
+        float  xe[3];
+        OctKey key;
+        int    fileBID; // The block id from the file or -1 if the block is not present in the file.
+    };
 
-  int  FindBlock(OctKey key);
-  int  MaxLevels();
-  void MakeOctTree();
-  void first_subdivide8(int *ijk_root, float xMin, float yMin, float zMin, float xMax, float yMax, float zMax, OctKey current, int maxLevels);
-  void subdivide8(int *ijk_start, int *ijk_end, float xMin, float yMin, float zMin, float xMax, float yMax, float zMax, OctKey current, int thisLevel, int maxLevels);
-  int  AssembleBlockVariable(int bid, int vid, float *dat, const int *dims);
-  int  BlockKeyToBID(const OctKey &k) const;
+    int  FindBlock(OctKey key);
+    int  MaxLevels();
+    void MakeOctTree();
+    void first_subdivide8(int *ijk_root, float xMin, float yMin, float zMin, float xMax, float yMax, float zMax, OctKey current, int maxLevels);
+    void subdivide8(int *ijk_start, int *ijk_end, float xMin, float yMin, float zMin, float xMax, float yMax, float zMax, OctKey current, int thisLevel, int maxLevels);
+    int  AssembleBlockVariable(int bid, int vid, float *dat, const int *dims);
+    int  BlockKeyToBID(const OctKey &k) const;
 
-  AMRreaderInterface  *reader;
-  bool                 patchesBuilt;
-  std::vector<Patch>   patches;
-  std::map<OctKey,int> blkkey2bid;
+    AMRreaderInterface  *reader;
+    bool                 patchesBuilt;
+    std::vector<Patch>   patches;
+    std::map<OctKey,int> blkkey2bid;
 };
 
 #endif

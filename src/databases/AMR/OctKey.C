@@ -5,10 +5,10 @@
 
 int OctKey_RootLen = 2;
 int OctKey_Len     = 64;
-int OctKey_GlobalMaxLevels(){
+int OctKey_GlobalMaxLevels() {
     return floor((OctKey_Len-OctKey_RootLen)/3.0)-1;
 }
-void OctKey_SetRootLen(int rl){
+void OctKey_SetRootLen(int rl) {
     OctKey_RootLen = rl;
 }
 
@@ -59,7 +59,7 @@ OctKey_NumLevels(const OctKey &key)
     {
         if((k & 7) > 0)
             nlevels = it;
-        k = k >> 3;    
+        k = k >> 3;
     }
     return nlevels;
 }
@@ -120,7 +120,7 @@ OctKey_Equal(const OctKey &k1, const OctKey &k2)
 OctKey
 OctKey_RemoveLevel(const OctKey &key)
 {
-    int shift = OctKey_Len - OctKey_RootLen; 
+    int shift = OctKey_Len - OctKey_RootLen;
     unsigned long int rk = ((key.eb >> shift) << shift);
     unsigned long int rm = (ROOT_MASK << (OctKey_RootLen)) >> (OctKey_RootLen);
 
@@ -142,7 +142,7 @@ OctKey_Inherits(const OctKey &key, const OctKey &parent)
     int kRoot = OctKey_ExtractRootIndex(key);
     int pRoot = OctKey_ExtractRootIndex(parent);
     if (kRoot != pRoot)
-	return false;
+        return false;
 
     bool retval = false;
     int kLevel = OctKey_NumLevels(key);

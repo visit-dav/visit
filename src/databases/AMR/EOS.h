@@ -31,13 +31,19 @@ public:
     virtual float p_from_r_e( float r, float e )=0;
     virtual float T_from_r_e( float r, float e )=0;
     virtual float a_from_r_e( float r, float e )=0;
-    virtual int compute_mixture_props( float ri[] ){
-	return 0;
+    virtual int compute_mixture_props( float ri[] ) {
+        return 0;
     }
 
-    virtual bool p_from_av(){ return false; }
-    virtual bool T_from_av(){ return false; }
-    virtual bool a_from_av(){ return false; }
+    virtual bool p_from_av() {
+        return false;
+    }
+    virtual bool T_from_av() {
+        return false;
+    }
+    virtual bool a_from_av() {
+        return false;
+    }
 
     std::map<std::string, int> avmap = {};
 };
@@ -134,7 +140,9 @@ protected:
     float rho0_;
     float Cv_;
 
-    virtual float comp_v(float r){ return rho0_/r; }
+    virtual float comp_v(float r) {
+        return rho0_/r;
+    }
     virtual float comp_lambda(float v);
     virtual float comp_dlambda_dv(float v);
     virtual float comp_alpha(float lambda, float v);
@@ -177,19 +185,19 @@ public:
     GenMixEOS(int nspec)
     {
         /*strcpy(type, GenMixEOS_type ); */
-	avmap = {};
+        avmap = {};
 
-	//for( int i=0; i<nspec; i++ )
-	//{
-	//    std::string name = "species density " + std::to_string(i+1);
-	//    avmap.insert({name, 6+i});
-	//}
+        //for( int i=0; i<nspec; i++ )
+        //{
+        //    std::string name = "species density " + std::to_string(i+1);
+        //    avmap.insert({name, 6+i});
+        //}
 
-	for( int i=0; i<nspec; i++ )
-	{
-	    std::string name = "volume fraction " + std::to_string(i+1);
-	    avmap.insert({name, 6+nspec + i});
-	}
+        for( int i=0; i<nspec; i++ )
+        {
+            std::string name = "volume fraction " + std::to_string(i+1);
+            avmap.insert({name, 6+nspec + i});
+        }
     }
     virtual ~GenMixEOS() { }
     //virtual const char* EOStype() const { return type; }
@@ -210,7 +218,9 @@ public:
         return 0.;
     }
 
-    virtual bool a_from_av(){ return true; }
+    virtual bool a_from_av() {
+        return true;
+    }
 
 protected:
     //char type[20];
@@ -222,10 +232,11 @@ public:
     IdealTilEOS()
     {
         /*strcpy(type, GenMixEOS_type ); */
-	avmap = {{"species internal energy gas", 6}, \
-	         {"sound speed gas", 7}, \
-	         {"species internal energy Til", 10}, \
-	         {"sound speed Til", 11}};
+        avmap = {{"species internal energy gas", 6}, \
+            {"sound speed gas", 7}, \
+            {"species internal energy Til", 10}, \
+            {"sound speed Til", 11}
+        };
     }
     virtual ~IdealTilEOS() { }
     //virtual const char* EOStype() const { return type; }
@@ -246,9 +257,15 @@ public:
         return 0.;
     }
 
-    virtual bool p_from_av(){ return true; }
-    virtual bool T_from_av(){ return true; }
-    virtual bool a_from_av(){ return true; }
+    virtual bool p_from_av() {
+        return true;
+    }
+    virtual bool T_from_av() {
+        return true;
+    }
+    virtual bool a_from_av() {
+        return true;
+    }
 
 protected:
     //char type[20];
@@ -284,10 +301,11 @@ public:
     JwlJwlEOS()
     {
         /*strcpy(type, GenMixEOS_type ); */
-	avmap = {{"species internal energy 1", 6}, \
-	         {"sound speed 1", 7}, \
-	         {"species internal energy 2", 10}, \
-	         {"sound speed 2", 11}};
+        avmap = {{"species internal energy 1", 6}, \
+            {"sound speed 1", 7}, \
+            {"species internal energy 2", 10}, \
+            {"sound speed 2", 11}
+        };
     }
     virtual ~JwlJwlEOS() { }
     //virtual const char* EOStype() const { return type; }
@@ -308,9 +326,15 @@ public:
         return 0.;
     }
 
-    virtual bool p_from_av(){ return true; }
-    virtual bool T_from_av(){ return true; }
-    virtual bool a_from_av(){ return true; }
+    virtual bool p_from_av() {
+        return true;
+    }
+    virtual bool T_from_av() {
+        return true;
+    }
+    virtual bool a_from_av() {
+        return true;
+    }
 
 
 protected:

@@ -54,7 +54,7 @@ public:
                                            const char *type, void *args,
                                            DestructorFunction &);
 
-    // 
+    //
     // This method sets the logical extents of the patches and boundaries
     virtual void         *SetLogicalExtents();
 

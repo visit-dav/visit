@@ -172,14 +172,14 @@ GetBlockVariable( int bid, int vid, float* dat )
         ierr = copyvar( tid, vid-v_fldv-1, dat, sz );
     else
     {
-	if( navs_ > 0 )
-	{
-	    ierr = compvar( vid, datbuf_+(tid*ncvs_*blksz_), adtbuf_+(tid*navs_*blksz_), dat, sz );
-	}
-	else
-	{
-	    ierr = compvar( vid, datbuf_+(tid*ncvs_*blksz_), datbuf_+(tid*ncvs_*blksz_), dat, sz );
-	}
+        if( navs_ > 0 )
+        {
+            ierr = compvar( vid, datbuf_+(tid*ncvs_*blksz_), adtbuf_+(tid*navs_*blksz_), dat, sz );
+        }
+        else
+        {
+            ierr = compvar( vid, datbuf_+(tid*ncvs_*blksz_), datbuf_+(tid*ncvs_*blksz_), dat, sz );
+        }
     }
     if( ierr!=0 )
     {

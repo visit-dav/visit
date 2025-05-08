@@ -106,7 +106,7 @@ AMRreader::getInfo( const char* filename )
     hid_t fapl_id = H5Pcreate(H5P_FILE_ACCESS);
     H5Pset_fclose_degree(fapl_id, H5F_CLOSE_SEMI);
     hid_t file_id = H5Fopen( filename, H5F_ACC_RDONLY, fapl_id );
-   // hid_t file_id = H5Fopen( filename, H5F_ACC_RDONLY, H5P_DEFAULT );
+    // hid_t file_id = H5Fopen( filename, H5F_ACC_RDONLY, H5P_DEFAULT );
     if( file_id<0 )
     {
         debug1 << "Failed to open AMR file: " << filename << ".\n";
@@ -194,49 +194,49 @@ getAMRinfo( hid_t gid )
     }
     else
     {
-	int ibuf[3];
+        int ibuf[3];
         H5Aread( aid, H5T_NATIVE_INT, ibuf );
-	OctKey_SetRootLen(ibuf[1]+1);
+        OctKey_SetRootLen(ibuf[1]+1);
         H5Aclose(aid);
     }
 
     aid = H5Aopen_name( gid, "OctreeRootID" );
     if( aid < 0)
     {
-	nroots_=1;
-	debug1 << "Failed to find number of roots. \n";
-	return -1;
+        nroots_=1;
+        debug1 << "Failed to find number of roots. \n";
+        return -1;
     }
     else
     {
-	hid_t did = H5Aget_space(aid);
-	hsize_t dims[3];
+        hid_t did = H5Aget_space(aid);
+        hsize_t dims[3];
 
-	dims[0] = 1;
-	dims[1] = 1;
-	dims[2] = 1;
+        dims[0] = 1;
+        dims[1] = 1;
+        dims[2] = 1;
 
-	if (did < 0) 
-	{
-	    nroots_ = 1;
-	    debug1 << "Failed to find dimensions of roots. \n";
-	    return -1;
-	}
-	else
-	{
+        if (did < 0)
+        {
+            nroots_ = 1;
+            debug1 << "Failed to find dimensions of roots. \n";
+            return -1;
+        }
+        else
+        {
 
-	    H5Sget_simple_extent_dims(did, dims, NULL);
-	    H5Sclose(did);
+            H5Sget_simple_extent_dims(did, dims, NULL);
+            H5Sclose(did);
 
-	    nroots_ = dims[0]*dims[1]*dims[2];
+            nroots_ = dims[0]*dims[1]*dims[2];
 
-	    // These are reversed intentionally
-	    rootdims_[0] = dims[2];
-	    rootdims_[1] = dims[1];
-	    rootdims_[2] = dims[0];
+            // These are reversed intentionally
+            rootdims_[0] = dims[2];
+            rootdims_[1] = dims[1];
+            rootdims_[2] = dims[0];
 
-	    delete[] rootids_;
-	    rootids_ = (int*)malloc( nroots_*sizeof(int) );
+            delete[] rootids_;
+            rootids_ = (int*)malloc( nroots_*sizeof(int) );
 
             if( rootids_==NULL )
             {
@@ -244,9 +244,9 @@ getAMRinfo( hid_t gid )
                 return -1;
             }
 
-	    H5Aread( aid, H5T_NATIVE_INT, rootids_ );
-	}
-	H5Aclose(aid);
+            H5Aread( aid, H5T_NATIVE_INT, rootids_ );
+        }
+        H5Aclose(aid);
     }
 
     aid = H5Aopen_name( gid, "OctreeRootXS" );
@@ -325,14 +325,14 @@ getAMRinfo( hid_t gid )
             H5Aread( aid, H5T_NATIVE_INT, &ncvs_ );
             H5Aclose(aid);
 
-	    int icvoffset = ncvs_ - 5;
-	    icvdens_  = 0;
-	    icvmomx_ += icvoffset;
-	    icvmomy_ += icvoffset;
-	    icvmomz_ += icvoffset;
-	    icvener_ += icvoffset;
+            int icvoffset = ncvs_ - 5;
+            icvdens_  = 0;
+            icvmomx_ += icvoffset;
+            icvmomy_ += icvoffset;
+            icvmomz_ += icvoffset;
+            icvener_ += icvoffset;
 
-	    nspec_ = icvoffset + 1;
+            nspec_ = icvoffset + 1;
         }
         const char* avsname="nAdditionalVariables";
         est = H5Aexists( gid, avsname );
@@ -374,29 +374,29 @@ getAMRinfo( hid_t gid )
         H5Aread( aid, H5T_NATIVE_FLOAT, rbuf );
         H5Aclose(aid);
 
-	float* A = &rbuf[0];
-	float* R = &rbuf[5];
-	float* Alam = &rbuf[10];
-	float* Blam = &rbuf[15];
-	float* Rlam = &rbuf[20];
+        float* A = &rbuf[0];
+        float* R = &rbuf[5];
+        float* Alam = &rbuf[10];
+        float* Blam = &rbuf[15];
+        float* Rlam = &rbuf[20];
 
-	float C = rbuf[25];
-	float omega = rbuf[26];
-	float rho0 = rbuf[27];
-	float Cv = rbuf[28];
+        float C = rbuf[25];
+        float omega = rbuf[26];
+        float rho0 = rbuf[27];
+        float Cv = rbuf[28];
 
         eos_ = new JwlBEOS(A, R, Alam, Blam, Rlam, C, omega, rho0, Cv);
 
-	nspec_ = 1;
-	icvdens_ = 0;
-	icvmomx_ = 1;
-	icvmomy_ = 2;
-	icvmomz_ = 3;
-	icvener_ = 4;
+        nspec_ = 1;
+        icvdens_ = 0;
+        icvmomx_ = 1;
+        icvmomy_ = 2;
+        icvmomz_ = 3;
+        icvener_ = 4;
 
-	iavpres_ = 1;
-	iavtemp_ = 2;
-	iavsndv_ = 3;
+        iavpres_ = 1;
+        iavtemp_ = 2;
+        iavsndv_ = 3;
 
         return 0;
     }
@@ -411,84 +411,84 @@ getAMRinfo( hid_t gid )
     est = H5Aexists( gid, amr_genmixname );
     if( est>0 )
     {
-	aid = H5Aopen_name( gid, amr_genmixname );
-	H5Aread( aid, H5T_NATIVE_FLOAT, rbuf );
-	H5Aclose(aid);
+        aid = H5Aopen_name( gid, amr_genmixname );
+        H5Aread( aid, H5T_NATIVE_FLOAT, rbuf );
+        H5Aclose(aid);
 
-	nspec_ = rbuf[0];
-	nspecener_ = nspec_;
+        nspec_ = rbuf[0];
+        nspecener_ = nspec_;
 
-	icvdens_ = 0;
-	icvener_ = nspec_;
+        icvdens_ = 0;
+        icvener_ = nspec_;
 
-	icvmomx_ = 2*nspec_;
-	icvmomy_ = icvmomx_+1;
-	icvmomz_ = icvmomx_+2;
+        icvmomx_ = 2*nspec_;
+        icvmomy_ = icvmomx_+1;
+        icvmomz_ = icvmomx_+2;
 
-	icvpres_ = icvmomz_+1;
-	icvtemp_ = icvmomz_+2;
+        icvpres_ = icvmomz_+1;
+        icvtemp_ = icvmomz_+2;
 
-	iavsndv_ = 4;
+        iavsndv_ = 4;
 
-	eos_ = new GenMixEOS(nspec_);
+        eos_ = new GenMixEOS(nspec_);
 
-	return 0;
+        return 0;
     }
 
     est = H5Aexists( gid, amr_idealtilname );
     if( est>0 )
     {
-	eos_ = new IdealTilEOS();
-	aid = H5Aopen_name( gid, amr_idealtilname );
-	H5Aclose(aid);
+        eos_ = new IdealTilEOS();
+        aid = H5Aopen_name( gid, amr_idealtilname );
+        H5Aclose(aid);
 
-	iavpres_ = 0;
-	iavtemp_ = 1;
-	iavsndv_ = 2;
+        iavpres_ = 0;
+        iavtemp_ = 1;
+        iavsndv_ = 2;
 
-	return 0;
+        return 0;
     }
 
     est = H5Aexists( gid, amr_multiidealname );
     if( est>0 )
     {
-	aid = H5Aopen_name( gid, amr_multiidealname );
-	H5Aread( aid, H5T_NATIVE_FLOAT, rbuf );
-	H5Aclose(aid);
+        aid = H5Aopen_name( gid, amr_multiidealname );
+        H5Aread( aid, H5T_NATIVE_FLOAT, rbuf );
+        H5Aclose(aid);
 
-	nspec_ = std::round(rbuf[0]);
-	float* gammas = new float[nspec_];
-	float* rs = new float[nspec_];
+        nspec_ = std::round(rbuf[0]);
+        float* gammas = new float[nspec_];
+        float* rs = new float[nspec_];
 
-	for( int i=0; i<nspec_; i++ )
-	{
-	    gammas[i] = rbuf[i*2 + 1];
-	    rs[i]     = rbuf[i*2 + 2];
-	}
-	eos_ = new MultiIdealEOS(nspec_, gammas, rs);
+        for( int i=0; i<nspec_; i++ )
+        {
+            gammas[i] = rbuf[i*2 + 1];
+            rs[i]     = rbuf[i*2 + 2];
+        }
+        eos_ = new MultiIdealEOS(nspec_, gammas, rs);
 
-	delete[] gammas;
-	delete[] rs;
+        delete[] gammas;
+        delete[] rs;
 
-	iavpres_ = 0;
-	iavtemp_ = 1;
-	iavsndv_ = 2;
+        iavpres_ = 0;
+        iavtemp_ = 1;
+        iavsndv_ = 2;
 
-	return 0;
+        return 0;
     }
 
     est = H5Aexists( gid, amr_jwljwlname );
     if( est>0 )
     {
-	eos_ = new JwlJwlEOS();
-	aid = H5Aopen_name( gid, amr_jwljwlname );
-	H5Aclose(aid);
+        eos_ = new JwlJwlEOS();
+        aid = H5Aopen_name( gid, amr_jwljwlname );
+        H5Aclose(aid);
 
-	iavpres_ = 0;
-	iavtemp_ = 1;
-	iavsndv_ = 2;
+        iavpres_ = 0;
+        iavtemp_ = 1;
+        iavsndv_ = 2;
 
-	return 0;
+        return 0;
     }
 
     eos_ = new IdealEOS( 1.4, 1.0 );
@@ -1043,19 +1043,19 @@ GetBlockVariable( int bid, int vid, float* dat )
     return 0;
 #endif
     if( vid > v_spec && vid < v_smas)
-	ierr = copyvar(bid,  vid-v_spec-1, dat, blksz_);
+        ierr = copyvar(bid,  vid-v_spec-1, dat, blksz_);
     else if( vid > v_fldv && vid < v_smas)
         ierr = copyvar( bid, vid-v_fldv-1, dat, blksz_ );
     else
     {
-	if ( navs_ > 0 )
-	{
-	    ierr = compvar( vid, datbuf_+(ncvs_*blksz_*bid), adtbuf_+(navs_*blksz_*bid), dat, blksz_ );
-	}
-	else
-	{
-	    ierr = compvar( vid, datbuf_+(ncvs_*blksz_*bid), datbuf_+(ncvs_*blksz_*bid), dat, blksz_ );
-	}
+        if ( navs_ > 0 )
+        {
+            ierr = compvar( vid, datbuf_+(ncvs_*blksz_*bid), adtbuf_+(navs_*blksz_*bid), dat, blksz_ );
+        }
+        else
+        {
+            ierr = compvar( vid, datbuf_+(ncvs_*blksz_*bid), datbuf_+(ncvs_*blksz_*bid), dat, blksz_ );
+        }
     }
     if( ierr!=0 )
     {
@@ -1155,8 +1155,8 @@ compvar( int vid, float* blk, float* ablk, float* buf, int sz )
 
     if (vid > v_smas)
     {
-	comp_smass( blk, buf, sz, vid-v_smas-1 );
-	return 0;
+        comp_smass( blk, buf, sz, vid-v_smas-1 );
+        return 0;
     }
 
     switch( vid )
@@ -1239,7 +1239,7 @@ comp_dens( float* blkdt, float* buf, int sz )
 {
     for( int sft=0; sft<sz; sft++ )
     {
-	buf[sft] = ComputeDens(blkdt, sft, ncvs_, nspec_);
+        buf[sft] = ComputeDens(blkdt, sft, ncvs_, nspec_);
     }
     return 0;
 }
@@ -1249,7 +1249,7 @@ comp_smass( float* blkdt, float* buf, int sz, int is )
 {
     for( int sft=0; sft<sz; sft++ )
     {
-	buf[sft] = blkdt[ncvs_*sft + icvdens_ + is] / ComputeDens(blkdt, sft, ncvs_, nspec_);
+        buf[sft] = blkdt[ncvs_*sft + icvdens_ + is] / ComputeDens(blkdt, sft, ncvs_, nspec_);
     }
     return 0;
 }
@@ -1298,17 +1298,17 @@ comp_pres( float* blkdt, float* ablkdt, float* buf, int sz )
     }
     else if( eos_->EOStype()==GenMixEOS_type )
     {
-	for( int sft=0; sft<sz; sft++ )
-	{
-	    buf[sft] = blkdt[ncvs_*sft + icvpres_];
-	}
+        for( int sft=0; sft<sz; sft++ )
+        {
+            buf[sft] = blkdt[ncvs_*sft + icvpres_];
+        }
     }
     else if( eos_->p_from_av() && navs_ > 0 )
     {
-	for( int sft=0; sft<sz; sft++ )
-	{
-	    buf[sft] = ablkdt[navs_*sft + iavpres_];
-	}
+        for( int sft=0; sft<sz; sft++ )
+        {
+            buf[sft] = ablkdt[navs_*sft + iavpres_];
+        }
     }
     else
     {
@@ -1321,7 +1321,7 @@ comp_pres( float* blkdt, float* ablkdt, float* buf, int sz )
             float et = ComputeEner(blkdt, sft, ncvs_, icvener_, nspecener_) / rr;
             float ei = et - 0.5*( uu*uu + vv*vv + ww*ww );
 
-	    eos_->compute_mixture_props(&blkdt[sft*ncvs_]);
+            eos_->compute_mixture_props(&blkdt[sft*ncvs_]);
             buf[sft] = eos_->p_from_r_e( rr, ei );
         }
     }
@@ -1342,17 +1342,17 @@ comp_temp( float* blkdt, float* ablkdt, float* buf, int sz )
     }
     else if( eos_->EOStype()==GenMixEOS_type )
     {
-	for( int sft=0; sft<sz; sft++ )
-	{
-	    buf[sft] = blkdt[ncvs_*sft + icvtemp_];
-	}
+        for( int sft=0; sft<sz; sft++ )
+        {
+            buf[sft] = blkdt[ncvs_*sft + icvtemp_];
+        }
     }
     else if( eos_->T_from_av() && navs_ > 0 )
     {
-	for( int sft=0; sft<sz; sft++ )
-	{
-	    buf[sft] = ablkdt[navs_*sft + iavtemp_];
-	}
+        for( int sft=0; sft<sz; sft++ )
+        {
+            buf[sft] = ablkdt[navs_*sft + iavtemp_];
+        }
     }
     else
     {
@@ -1364,7 +1364,7 @@ comp_temp( float* blkdt, float* ablkdt, float* buf, int sz )
             float ww = blkdt[ncvs_*sft+icvmomz_] / rr;
             float et = ComputeEner(blkdt, sft, ncvs_, icvener_, nspecener_) / rr;
             float ei = et - 0.5*( uu*uu + vv*vv + ww*ww );
-	    eos_->compute_mixture_props(&blkdt[sft*ncvs_]);
+            eos_->compute_mixture_props(&blkdt[sft*ncvs_]);
             buf[sft] = eos_->T_from_r_e( rr, ei );
         }
     }
@@ -1385,10 +1385,10 @@ comp_sndv( float* blkdt, float* ablkdt, float* buf, int sz )
     }
     else if( eos_->a_from_av() && navs_ > 0 )
     {
-	for( int sft=0; sft<sz; sft++ )
-	{
-	    buf[sft] = ablkdt[navs_*sft + iavsndv_];
-	}
+        for( int sft=0; sft<sz; sft++ )
+        {
+            buf[sft] = ablkdt[navs_*sft + iavsndv_];
+        }
     }
     else
     {
@@ -1401,7 +1401,7 @@ comp_sndv( float* blkdt, float* ablkdt, float* buf, int sz )
             float et = ComputeEner(blkdt, sft, ncvs_, icvener_, nspecener_) / rr;
             float ei = et - 0.5*( uu*uu + vv*vv + ww*ww );
 
-	    eos_->compute_mixture_props(&blkdt[sft*ncvs_]);
+            eos_->compute_mixture_props(&blkdt[sft*ncvs_]);
             buf[sft] = eos_->a_from_r_e( rr, ei );
         }
     }
@@ -1510,7 +1510,7 @@ float ComputeDens(float* blkdt, int istart, int ncvs, int nspec_)
     float dens = 0.0;
     for ( int i=0; i<nspec_; i++ )
     {
-	dens += blkdt[istart*ncvs + i];
+        dens += blkdt[istart*ncvs + i];
     }
 
     return dens;
@@ -1521,7 +1521,7 @@ float ComputeEner(float* blkdt, int istart, int ncvs, int icvener_, int nspecene
     float ener = 0.0;
     for ( int i=icvener_; i<icvener_+nspecener_; i++ )
     {
-	ener += blkdt[istart*ncvs + i];
+        ener += blkdt[istart*ncvs + i];
     }
 
     return ener;

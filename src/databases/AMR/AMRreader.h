@@ -59,27 +59,27 @@ public:
         return 0;
     }
 
-    virtual int GetRootXS(float xs[]) const{
-	xs[0] = rootxs_[0];
-	xs[1] = rootxs_[1];
-	xs[2] = rootxs_[2];
-	return 0;
+    virtual int GetRootXS(float xs[]) const {
+        xs[0] = rootxs_[0];
+        xs[1] = rootxs_[1];
+        xs[2] = rootxs_[2];
+        return 0;
     }
-    virtual int GetRootDX(float dx[]) const{
-	dx[0] = rootdx_[0];
-	dx[1] = rootdx_[1];
-	dx[2] = rootdx_[2];
-	return 0;
+    virtual int GetRootDX(float dx[]) const {
+        dx[0] = rootdx_[0];
+        dx[1] = rootdx_[1];
+        dx[2] = rootdx_[2];
+        return 0;
     }
-    virtual int GetRootDims(int dims[]) const{
-	dims[0] = rootdims_[0];
-	dims[1] = rootdims_[1];
-	dims[2] = rootdims_[2];
-	return 0;
+    virtual int GetRootDims(int dims[]) const {
+        dims[0] = rootdims_[0];
+        dims[1] = rootdims_[1];
+        dims[2] = rootdims_[2];
+        return 0;
     }
-    virtual int GetRootID(int i, int j, int k) const{
-	int index = k*rootdims_[0]*rootdims_[1] + j*rootdims_[0] + i;
-	return rootids_[index];
+    virtual int GetRootID(int i, int j, int k) const {
+        int index = k*rootdims_[0]*rootdims_[1] + j*rootdims_[0] + i;
+        return rootids_[index];
     }
 
     virtual int GetNumberOfFieldVariables() const
@@ -89,12 +89,12 @@ public:
 
     virtual int GetNumberOfConservedVariables() const
     {
-	return ncvs_;
+        return ncvs_;
     }
 
     virtual int GetNumberOfSpecies() const
     {
-	return nspec_;
+        return nspec_;
     }
 
     virtual int GetBlockHierarchicalIndices(int bid, int *level,
@@ -128,8 +128,8 @@ public:
     }
     virtual int GetInterfaceVariable( int vid, void* dat );
 
-    virtual std::map<std::string, int> GetAVMap(){
-	return eos_->avmap;
+    virtual std::map<std::string, int> GetAVMap() {
+        return eos_->avmap;
     }
 
     virtual bool HasTag() const
@@ -139,26 +139,26 @@ public:
 
     virtual bool HasPressure() const
     {
-	if (eos_->p_from_av() && iavpres_ >= navs_)
-	    return false;
-	else
-	    return true;
+        if (eos_->p_from_av() && iavpres_ >= navs_)
+            return false;
+        else
+            return true;
     }
 
     virtual bool HasTemperature() const
     {
-	if (eos_->T_from_av() && iavtemp_ >= navs_)
-	    return false;
-	else
-	    return true;
+        if (eos_->T_from_av() && iavtemp_ >= navs_)
+            return false;
+        else
+            return true;
     }
 
     virtual bool HasSNDV() const
     {
-	if (eos_->a_from_av() && iavsndv_ >= navs_)
-	    return false;
-	else
-	    return true;
+        if (eos_->a_from_av() && iavsndv_ >= navs_)
+            return false;
+        else
+            return true;
     }
 
 
@@ -229,10 +229,10 @@ protected:
 
     int nspec_; // number of species
     int nspecener_; // number of species energies stored
-    
+
     // indices in the CV array
     int icvdens_; // index of the first species density
-    int icvmomx_; // index of x momentum 
+    int icvmomx_; // index of x momentum
     int icvmomy_; // index of y momentum
     int icvmomz_; // index of z momentum
     int icvener_; // index of the first species energy
