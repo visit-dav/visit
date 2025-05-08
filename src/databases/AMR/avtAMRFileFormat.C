@@ -476,7 +476,7 @@ avtAMRFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         }
 
 
-        int nvs = GetReader()->GetNumberOfFieldVariables();
+        int nvs = GetReader()->GetNumberOfFieldVariables() - GetReader()->GetNumberOfConservedVariables();
 	if ( enableFieldVar && nvs > 0)
 	{
 	    std::map<std::string, int> avmap = GetReader()->GetAVMap();
