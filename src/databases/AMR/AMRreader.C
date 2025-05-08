@@ -18,6 +18,7 @@ AMRreader::init()
     tttttt_ = 0.;
     blktag_ = 0;
 
+    ncvs_=5;
     nblks_=0;
     blkdim_[0] = blkdim_[1] = blkdim_[2] = blkdim_[3] = 0;
     blksz_ = 0;
