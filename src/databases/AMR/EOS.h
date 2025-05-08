@@ -278,4 +278,43 @@ protected:
     //char type[20];
 };
 
+class JwlJwlEOS : public EOS
+{
+public:
+    JwlJwlEOS()
+    {
+        /*strcpy(type, GenMixEOS_type ); */
+	avmap = {{"species internal energy 1", 6}, \
+	         {"sound speed 1", 7}, \
+	         {"species internal energy 2", 10}, \
+	         {"sound speed 2", 11}};
+    }
+    virtual ~JwlJwlEOS() { }
+    //virtual const char* EOStype() const { return type; }
+    virtual int   EOStype() const
+    {
+        return JwlJwlEOS_type;
+    }
+    virtual float p_from_r_e( float r, float e )
+    {
+        return 0.;
+    }
+    virtual float T_from_r_e( float r, float e )
+    {
+        return 0.;
+    }
+    virtual float a_from_r_e( float r, float e )
+    {
+        return 0.;
+    }
+
+    virtual bool p_from_av(){ return true; }
+    virtual bool T_from_av(){ return true; }
+    virtual bool a_from_av(){ return true; }
+
+
+protected:
+    //char type[20];
+};
+
 #endif
