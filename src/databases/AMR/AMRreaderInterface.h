@@ -46,6 +46,10 @@ public:
   virtual int    GetNumberOfSpecies() const = 0;
   virtual int    GetNumberOfConservedVariables() const = 0;
 
+  virtual int    GetRootDX(float dx[]) const = 0;
+  virtual int    GetRootXS(float xs[]) const = 0;
+  virtual int    GetRootDims(int dims[]) const = 0;
+  virtual int    GetRootID(int i, int j, int k) const = 0;
 
   virtual int    GetNumberOfLevels() = 0;
   virtual int    GetBlockHierarchicalIndices(int bid, int *level,

@@ -59,6 +59,29 @@ public:
         return 0;
     }
 
+    virtual int GetRootXS(float xs[]) const{
+	xs[0] = rootxs_[0];
+	xs[1] = rootxs_[1];
+	xs[2] = rootxs_[2];
+	return 0;
+    }
+    virtual int GetRootDX(float dx[]) const{
+	dx[0] = rootdx_[0];
+	dx[1] = rootdx_[1];
+	dx[2] = rootdx_[2];
+	return 0;
+    }
+    virtual int GetRootDims(int dims[]) const{
+	dims[0] = rootdims_[0];
+	dims[1] = rootdims_[1];
+	dims[2] = rootdims_[2];
+	return 0;
+    }
+    virtual int GetRootID(int i, int j, int k) const{
+	int index = k*rootdims_[0]*rootdims_[1] + j*rootdims_[0] + i;
+	return rootids_[index];
+    }
+
     virtual int GetNumberOfFieldVariables() const
     {
         return ncvs_ + navs_;

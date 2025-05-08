@@ -53,6 +53,18 @@ public:
   virtual int    GetNumberOfConservedVariables() const
   { return reader->GetNumberOfConservedVariables(); }
 
+  virtual int    GetRootDX(float dx[]) const
+  { return reader->GetRootDX(dx); }
+
+  virtual int    GetRootXS(float xs[]) const
+  { return reader->GetRootXS(xs); }
+
+  virtual int    GetRootDims(int dims[]) const
+  { return reader->GetRootDims(dims); }
+
+  virtual int    GetRootID(int i, int j, int k) const
+  { return reader->GetRootID(i, j, k); }
+
   virtual std::map<std::string, int> GetAVMap()
   { return reader->GetAVMap(); }
 
