@@ -745,7 +745,7 @@ avtAMRFileFormat::GetVar(int domain, const char *name)
         else if( varname.compare( "cell tag")==0 )
             vid=AMRreaderInterface::v_tags;
 #if 1
-        else if( enableAMR && varname.compare( "level")==0 )
+        else if( varname.compare( "level")==0 )
         {
             int sz = GetReader()->GetBlockSize( domain );
             vtkFloatArray* var = vtkFloatArray::New();
