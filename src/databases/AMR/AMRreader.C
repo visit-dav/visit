@@ -222,6 +222,15 @@ getAMRinfo( hid_t gid )
             aid = H5Aopen_name( gid, cvsname );
             H5Aread( aid, H5T_NATIVE_INT, &ncvs_ );
             H5Aclose(aid);
+
+	    int icvoffset = ncvs_ - 5;
+	    icvdens_  = 0;
+	    icvmomx_ += icvoffset;
+	    icvmomy_ += icvoffset;
+	    icvmomz_ += icvoffset;
+	    icvener_ += icvoffset;
+
+	    nspec_ = icvoffset + 1;
         }
         const char* avsname="nAdditionalVariables";
         est = H5Aexists( gid, avsname );
@@ -230,6 +239,7 @@ getAMRinfo( hid_t gid )
             H5Aread( aid, H5T_NATIVE_INT, &navs_ );
             H5Aclose(aid);
         }
+        debug1 << "getAMRinfo(): ncvs = " << ncvs_ << ", navs = " << navs_ << "\n";
     }
 
 
