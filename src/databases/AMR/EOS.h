@@ -107,8 +107,39 @@ protected:
     //char type[20];
 };
 
+class JwlBEOS : public EOS
+{
+public:
+    JwlBEOS(float A[], float R[], float Alam[], float Blam[], float Rlam[], float C, float omega, float rho0, float Cv);
+    virtual ~JwlBEOS() { }
+    //virtual const char* EOStype() const { return type; }
+    virtual int   EOStype() const
+    {
+        return JwlBEOS_type;
+    }
+    virtual float p_from_r_e( float r, float e );
+    virtual float T_from_r_e( float r, float e );
+    virtual float a_from_r_e( float r, float e );
 
+protected:
+    //char type[20];
 
+    float A_[5];
+    float R_[5];
+    float Alam_[5];
+    float Blam_[5];
+    float Rlam_[5];
+    float C_;
+    float omega_;
+    float rho0_;
+    float Cv_;
+
+    virtual float comp_v(float r){ return rho0_/r; }
+    virtual float comp_lambda(float v);
+    virtual float comp_dlambda_dv(float v);
+    virtual float comp_alpha(float lambda, float v);
+    virtual float comp_dalpha_dv(float lambda, float dlambda_dv, float v);
+};
 
 class SesameEOS : public EOS
 {

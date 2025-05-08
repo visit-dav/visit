@@ -270,6 +270,40 @@ getAMRinfo( hid_t gid )
         return 0;
     }
 
+    est = H5Aexists( gid, amr_jwlbname );
+    if( est>0 )
+    {
+        aid = H5Aopen_name( gid, amr_jwlbname );
+        H5Aread( aid, H5T_NATIVE_FLOAT, rbuf );
+        H5Aclose(aid);
+
+	float* A = &rbuf[0];
+	float* R = &rbuf[5];
+	float* Alam = &rbuf[10];
+	float* Blam = &rbuf[15];
+	float* Rlam = &rbuf[20];
+
+	float C = rbuf[25];
+	float omega = rbuf[26];
+	float rho0 = rbuf[27];
+	float Cv = rbuf[28];
+
+        eos_ = new JwlBEOS(A, R, Alam, Blam, Rlam, C, omega, rho0, Cv);
+
+	nspec_ = 1;
+	icvdens_ = 0;
+	icvmomx_ = 1;
+	icvmomy_ = 2;
+	icvmomz_ = 3;
+	icvener_ = 4;
+
+	iavpres_ = 1;
+	iavtemp_ = 2;
+	iavsndv_ = 3;
+
+        return 0;
+    }
+
     est = H5Aexists( gid, amr_sesamename );
     if( est>0 )
     {
