@@ -94,10 +94,14 @@ AMRreader::getInfo( const char* filename )
 
     filename_ = filename;
 
-    hid_t file_id = H5Fopen( filename, H5F_ACC_RDONLY, H5P_DEFAULT );
+    hid_t fapl_id = H5Pcreate(H5P_FILE_ACCESS);
+    H5Pset_fclose_degree(fapl_id, H5F_CLOSE_SEMI);
+    hid_t file_id = H5Fopen( filename, H5F_ACC_RDONLY, fapl_id );
+   // hid_t file_id = H5Fopen( filename, H5F_ACC_RDONLY, H5P_DEFAULT );
     if( file_id<0 )
     {
         debug1 << "Failed to open AMR file: " << filename << ".\n";
+        H5Pclose(fapl_id);
         return -1;
     }
 
@@ -147,6 +151,7 @@ AMRreader::getInfo( const char* filename )
     }
 
     H5Fclose( file_id );
+    H5Pclose(fapl_id);
     return 0;
 }
 
@@ -369,7 +374,10 @@ readAMRmesh()
 {
     //if( blkxs_!=NULL ) return 0;
     int retval = 0;
-    hid_t file_id = H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
+    hid_t fapl_id = H5Pcreate(H5P_FILE_ACCESS);
+    H5Pset_fclose_degree(fapl_id, H5F_CLOSE_SEMI);
+    hid_t file_id = H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, fapl_id );
+    // hid_t file_id = H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
     if( file_id<0 )
     {
         debug1 << "Failed to open AMR file: " << filename_ << " when read in mesh.\n";
@@ -482,6 +490,7 @@ readAMRmesh()
         H5Fclose( file_id );
     }
 
+    H5Pclose(fapl_id);
     return retval;
 }
 
@@ -496,7 +505,10 @@ readAMRdata()
 {
     //  if( datbuf_!=NULL ) return 0;
     int retval = 0;
-    hid_t file_id = H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
+    hid_t fapl_id = H5Pcreate(H5P_FILE_ACCESS);
+    H5Pset_fclose_degree(fapl_id, H5F_CLOSE_SEMI);
+    hid_t file_id = H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, fapl_id );
+    // hid_t file_id = H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
     if( file_id<0 )
     {
         debug1 << "Failed to open AMR file: " << filename_ << " when read in mesh.\n";
@@ -570,6 +582,7 @@ readAMRdata()
         H5Fclose( file_id );
     }
 
+    H5Pclose(fapl_id);
     return retval;
 }
 
@@ -578,7 +591,10 @@ readAMRdata()
 int AMRreader::
 readAMRadditionData()
 {
-    hid_t file_id = H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
+    hid_t fapl_id = H5Pcreate(H5P_FILE_ACCESS);
+    H5Pset_fclose_degree(fapl_id, H5F_CLOSE_SEMI);
+    hid_t file_id = H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, fapl_id );
+    // hid_t file_id = H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
     if( file_id<0 )
     {
         debug1 << "Failed to open AMR file: " << filename_ << " when read in mesh.\n";
@@ -648,6 +664,7 @@ readAMRadditionData()
 
     H5Gclose( gid );
     H5Fclose( file_id );
+    H5Pclose(fapl_id);
     return 0;
 }
 
@@ -660,7 +677,10 @@ readAMRtagData()
 {
     if( blktag_!=1 ) return 0;
 
-    hid_t file_id = H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
+    hid_t fapl_id = H5Pcreate(H5P_FILE_ACCESS);
+    H5Pset_fclose_degree(fapl_id, H5F_CLOSE_SEMI);
+    hid_t file_id = H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, fapl_id );
+    // hid_t file_id = H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
     if( file_id<0 )
     {
         debug1 << "Failed to open AMR file: " << filename_ << " when read in mesh.\n";
@@ -697,6 +717,7 @@ readAMRtagData()
 
     H5Gclose( gid );
     H5Fclose( file_id );
+    H5Pclose(fapl_id);
     return 0;
 }
 
@@ -866,7 +887,10 @@ GetInterfaceVariable( int vid, void* dat )
     }
 
     int retval = 0;
-    hid_t file_id = H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
+    hid_t fapl_id = H5Pcreate(H5P_FILE_ACCESS);
+    H5Pset_fclose_degree(fapl_id, H5F_CLOSE_SEMI);
+    hid_t file_id = H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, fapl_id );
+    // hid_t file_id = H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
     if( file_id<0 )
     {
         debug1 << "Failed to open AMR file: " << filename_ << " when read in mesh.\n";
@@ -903,6 +927,7 @@ GetInterfaceVariable( int vid, void* dat )
         H5Fclose( file_id );
     }
 
+    H5Pclose(fapl_id);
     return retval;
 }
 
