@@ -862,61 +862,95 @@ AMRreaderWithLevels::BlockKeyToBID(const OctKey &k) const
 int
 AMRreaderWithLevels::GetBlockVariable(int bid, int vid, float *dat)
 {
+    debug1 << "AMRreaderWithLevels::GetBlockVariable(" << bid << ", " << vid  << ")\n";
     int retval = -1;
     if(bid >= 0 && bid < GetNumberOfBlocks())
     {
-        if(bid == 0)
+	OctKey bidkey = GetBlockKey(bid);
+	int root_index = OctKey_ExtractRootIndex(bidkey);
+	OctKey rk = OctKey_Root(root_index);
+	bool isroot = OctKey_Equal(bidkey, rk);
+        if(isroot)
         {
             // Get the dimensions of block 0
             int dims[3];
             GetBlockDimensions(bid, dims);
+            debug1 << "AMRreaderWithLevels::GetBlockVariable(): dims=[" << dims[0]
+                   << "," << dims[1] << "," << dims[2] <<  "]\n";
+
+	    int sz_root = dims[0]*dims[1]*dims[2];
+	    for (int i=0; i<sz_root; i++){
+		dat[i] = 0.0;
+	    }
+
+	    retval = 0;
 
             // Get the dimensions of the default block we'll use for level 2 blocks.
             int celldims[3];
             GetBlockDefaultDimensions(celldims);
-            int sz = celldims[0]*celldims[1]*celldims[2];
-            float *celldata = new float[sz];
 
-            // The level 0 mesh is made from all of the level 2 blocks.
-            OctKey root = OctKey_Root();
-            for(int l0 = 0; l0 < 8; ++l0)
-            {
-                OctKey k0 = OctKey_AddLevel(root, l0);
-                for(int l1 = 0; l1 < 8; ++l1)
-                {
-                    OctKey key = OctKey_AddLevel(k0, l1);
-                    int cellbid = BlockKeyToBID(key);
+	    int celldimsdef[3];
+            GetBlockDefaultDimensions(celldimsdef);
 
-                    // Get the data for the block identified by key.
-                    retval = AssembleBlockVariable(cellbid, vid, celldata, celldims);
+	    if (patches[bid].fileBID != -1){
+		celldims[0] = celldims[0]*2;
+		celldims[1] = celldims[1]*2;
+		celldims[2] = celldims[2]*2;
 
-                    // Get the patch for the key and use the logical extents
-                    // to compute the destination within the level 0 patch.
-                    int i_dest = patches[cellbid].ijk_start[0] / 2;
-                    int j_dest = patches[cellbid].ijk_start[1] / 2;
-                    int k_dest = patches[cellbid].ijk_start[2] / 2;
-                    for(int k = 0, kk = 0; k < celldims[2]; k += 2, kk++)
-                    {
-                        for(int j = 0, jj = 0; j < celldims[1]; j += 2, jj++)
-                        {
-                            for(int i = 0, ii = 0; i < celldims[0]; i += 2, ii++)
-                            {
-                                // Index within the src patch.
-                                int src_idx = k * celldims[0]*celldims[1] + j*celldims[0] + i;
+		retval = AssembleBlockVariable(bid, vid, dat, celldims);
+	    }
+	    else
+	    {
+		int sz = celldims[0]*celldims[1]*celldims[2];
+		float *celldata = new float[sz*8];
+		debug1 << "AMRreaderWithLevels::GetBlockVariable(): bid=" << bid << ", sz=" << sz << "\n";
 
-                                // Index within block 0.
-                                int dest_idx = (kk + k_dest) * dims[1]*dims[0] +
-                                               (jj + j_dest) * dims[0] +
-                                               (ii + i_dest);
+		// The level 0 mesh is made from all of the level 2 blocks.
+		OctKey root = OctKey_Root((unsigned long int)root_index);
+		int rbid = BlockKeyToBID(root);
+		for(int l0 = 0; l0 < 8; ++l0)
+		{
+		    OctKey k0 = OctKey_AddLevel(root, l0);
+		    int cellbid = BlockKeyToBID(k0);
 
-                                dat[dest_idx] = celldata[src_idx];
-                            }
-                        }
-                    }
-                }
-            }
+		    GetBlockDefaultDimensions(celldims);
+		    int fBID = patches[cellbid].fileBID;
+		    if (fBID != -1){
+			reader->GetBlockDimensions(fBID, celldims);
+		    }
 
-            delete [] celldata;
+		    //new
+		    retval = AssembleBlockVariable(cellbid, vid, celldata, celldims);
+		    int i_dest = patches[cellbid].ijk_start[0] - patches[rbid].ijk_start[0];
+		    int j_dest = patches[cellbid].ijk_start[1] - patches[rbid].ijk_start[1];
+		    int k_dest = patches[cellbid].ijk_start[2] - patches[rbid].ijk_start[2];
+
+		    for (int k=0; k<celldims[2]; k++)
+		    {
+			for (int j=0; j<celldims[1]; j++)
+			{
+			    for (int i=0; i<celldims[0]; i++)
+			    {
+				int src_idx = k*celldims[0]*celldims[1] + j*celldims[0] + i;
+
+				int dest_idx = (k_dest + k) * dims[0]*dims[1] +
+					       (j_dest + j) * dims[0] + 
+					       (i_dest + i);
+
+				dat[dest_idx] = celldata[src_idx];
+			    }
+			}
+		    }
+
+		    // in this case, the cells at this level were consolidated so we can skip the remaining iterations
+		    if (celldims[0] > celldimsdef[0] ||
+			    celldims[1] > celldimsdef[1] || 
+			    celldims[2] > celldimsdef[2])
+			break;
+		}
+
+		delete [] celldata;
+	    }
         }
         else
         {
