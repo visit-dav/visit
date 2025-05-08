@@ -16,6 +16,11 @@ const char* AMRreaderInterface::amr_tagname="BlockTag";
 const char* AMRreaderInterface::amr_idealname="IdealGasEOS";
 const char* AMRreaderInterface::amr_jwlname="JwlEOS";
 const char* AMRreaderInterface::amr_sesamename="SesameEOStable";
+const char* AMRreaderInterface::amr_genmixname="GeneralMixedEOS2";
+const char* AMRreaderInterface::amr_idealtilname="IdealTillotsonEOS";
+const char* AMRreaderInterface::amr_multiidealname="MultiGammaEOS";
+const char* AMRreaderInterface::amr_jwljwlname="JwlJwlEOS";
+const char* AMRreaderInterface::amr_jwlbname="JwlbEOS";
 
 
 const char* AMRreaderInterface::intf_grp_name="Interface";

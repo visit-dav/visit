@@ -7,9 +7,14 @@
 #include <map>
 #include <string>
 
-const int  IdealEOS_type = 1;
-const int  JwlEOS_type   = 2;
-const int  SesameEOS_type= 3;
+const int  IdealEOS_type      = 1;
+const int  JwlEOS_type        = 2;
+const int  SesameEOS_type     = 3;
+const int  GenMixEOS_type     = 4;
+const int  IdealTilEOS_type   = 5;
+const int  MultiIdealEOS_type = 6;
+const int  JwlJwlEOS_type     = 7;
+const int  JwlBEOS_type       = 8;
 
 /* const char IdealEOS_type[] ="IdealEOS"; */
 /* const char JwlEOS_type[]   ="JwlEOS"; */
@@ -26,6 +31,13 @@ public:
     virtual float p_from_r_e( float r, float e )=0;
     virtual float T_from_r_e( float r, float e )=0;
     virtual float a_from_r_e( float r, float e )=0;
+    virtual int compute_mixture_props( float ri[] ){
+	return 0;
+    }
+
+    virtual bool p_from_av(){ return false; }
+    virtual bool T_from_av(){ return false; }
+    virtual bool a_from_av(){ return false; }
 
     std::map<std::string, int> avmap = {};
 };

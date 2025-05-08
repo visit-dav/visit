@@ -118,6 +118,11 @@ protected:
   static const char* amr_idealname;
   static const char* amr_jwlname;
   static const char* amr_sesamename;
+  static const char* amr_genmixname;
+  static const char* amr_idealtilname;
+  static const char* amr_multiidealname;
+  static const char* amr_jwljwlname;
+  static const char* amr_jwlbname;
 
 
   static const char* intf_grp_name;
