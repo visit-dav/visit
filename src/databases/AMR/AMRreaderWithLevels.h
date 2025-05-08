@@ -44,9 +44,14 @@ public:
   virtual int    GetNumberOfBlocks() const;
   virtual int    GetBlockDimensions( int bid, int* dim ) const;
   virtual int    GetBlockDefaultDimensions(int *dim) const;
+  virtual int    GetNumberOfFieldVariables() const
+  { return reader->GetNumberOfFieldVariables(); }
+
   virtual int    GetNumberOfSpecies() const
   { return reader->GetNumberOfSpecies(); }
 
+  virtual std::map<std::string, int> GetAVMap()
+  { return reader->GetAVMap(); }
 
   virtual int    GetNumberOfLevels();
   virtual int    GetBlockHierarchicalIndices(int bid, int *level,

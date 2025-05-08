@@ -83,6 +83,7 @@ protected:
 
 private:
     // DATA MEMBERS
+    bool enableFieldVar;
     bool                enableAMR;
     AMRreaderInterface *reader_;
 };

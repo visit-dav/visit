@@ -100,6 +100,9 @@ avtAMRFileFormat::avtAMRFileFormat(const char *filename)
 {
     reader_ = NULL;
 
+    // Enable reading of field variables by default
+    enableFieldVar = getenv("AMRDISABLEFIELDVARIABLES")==NULL;
+    
     // Enable the new features by default unless we're purposefully disabling it.
     enableAMR = getenv("AMRDISABLENEW")==NULL;
 
@@ -525,8 +528,25 @@ avtAMRFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             smd->hasUnits = false;
             md->Add(smd);
         }
-    }
 
+
+        int nvs = GetReader()->GetNumberOfFieldVariables();
+	if ( enableFieldVar && nvs > 0)
+	{
+	    std::map<std::string, int> avmap = GetReader()->GetAVMap();
+	    std::for_each(avmap.cbegin(), avmap.cend(), [&smd, &md](const std::pair<const std::string, int> &pair){
+		std::string vnm = composeName("Additional", pair.first);
+
+                smd = new avtScalarMetaData;
+                smd->name = composeName( amr_name, vnm);
+                smd->meshName = amr_name;
+                smd->centering = AVT_ZONECENT;
+                smd->hasUnits = false;
+                md->Add(smd);
+	    });
+
+	}
+    }
 
 
     // interface

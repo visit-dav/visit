@@ -4,6 +4,8 @@
 
 #include <math.h>
 #include <string.h>
+#include <map>
+#include <string>
 
 const int  IdealEOS_type = 1;
 const int  JwlEOS_type   = 2;
@@ -24,6 +26,8 @@ public:
     virtual float p_from_r_e( float r, float e )=0;
     virtual float T_from_r_e( float r, float e )=0;
     virtual float a_from_r_e( float r, float e )=0;
+
+    std::map<std::string, int> avmap = {};
 };
 
 

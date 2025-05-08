@@ -6,6 +6,9 @@
 #include <OctKey.h>
 #include <AMRconfigure.h>
 
+#include <map>
+#include <string>
+
 // ****************************************************************************
 // Class: AMRreaderInterface
 //
@@ -39,6 +42,7 @@ public:
   virtual int    GetNumberOfBlocks() const = 0;
   virtual int    GetBlockDimensions( int bid, int* dim ) const = 0;
   virtual int    GetBlockDefaultDimensions(int *dim) const = 0;
+  virtual int    GetNumberOfFieldVariables() const = 0;
   virtual int    GetNumberOfSpecies() const = 0;
 
   virtual int    GetNumberOfLevels() = 0;
@@ -53,6 +57,11 @@ public:
 
   virtual void   GetInterfaceSizes( int* np, int* ne ) const = 0;
   virtual int    GetInterfaceVariable( int vid, void* dat ) = 0;
+
+  virtual std::map<std::string, int> GetAVMap()
+  {
+      return {};
+  }
 
   virtual bool   HasTag() const = 0;
 

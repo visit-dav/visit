@@ -8,6 +8,7 @@
 #include <hdf5.h>
 #include <visit-hdf5.h>
 #include <string>
+#include <map>
 
 class AMRreader : public AMRreaderInterface
 {
@@ -58,6 +59,11 @@ public:
         return 0;
     }
 
+    virtual int GetNumberOfFieldVariables() const
+    {
+        return ncvs_ + navs_;
+    }
+
     virtual int GetNumberOfSpecies() const
     {
 	return nspec_;
@@ -92,6 +98,10 @@ public:
         *ne = nrect_;
     }
     virtual int GetInterfaceVariable( int vid, void* dat );
+
+    virtual std::map<std::string, int> GetAVMap(){
+	return eos_->avmap;
+    }
 
     virtual bool HasTag() const
     {

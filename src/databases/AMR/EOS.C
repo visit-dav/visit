@@ -17,6 +17,8 @@ JwlEOS( float Ai, float Bi, float R1i, float R2i,
     or2 = omgi/(R2i*rho0i);
     rho_cf=0.;
     //strcpy(type, JwlEOS_type );
+
+    avmap = {};
 }
 
 
