@@ -554,13 +554,16 @@ AMRreaderWithLevels::GetBlockDimensions(int bid, int *dim) const
         {
             retval = reader->GetBlockDefaultDimensions(dim);
 
-            // The root domain will have 2x the default dimensions.
-            if(bid == 0)
-            {
-                dim[0] *= 2;
-                dim[1] *= 2;
-                dim[2] *= 2;
-            }
+	    // check if is root
+	    OctKey key = patches[bid].key;
+	    int iroot = OctKey_ExtractRootIndex(key);
+	    OctKey rk = OctKey_Root(iroot);
+
+	    if (OctKey_Equal(key, rk)){
+	        dim[0] *= 2;
+	        dim[1] *= 2;
+	        dim[2] *= 2;
+	    }
         }
     }
 
