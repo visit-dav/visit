@@ -160,6 +160,12 @@ protected:
     int     blkdim_[4];  // number of dimensions in each block
     int     blksz_;
 
+    int     nroots_; // number of roots
+    int     rootdims_[3];
+    float   rootxs_[3];
+    float   rootdx_[3];
+    int*    rootids_;
+
     float*  blkxs_;
     float*  blkdx_;
     OctKey *blkkey_;

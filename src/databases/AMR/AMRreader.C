@@ -25,6 +25,14 @@ AMRreader::init()
     blkdim_[0] = blkdim_[1] = blkdim_[2] = blkdim_[3] = 0;
     blksz_ = 0;
 
+    nroots_=1;
+    rootdims_[0]=1;
+    rootdims_[1]=0;
+    rootdims_[2]=0;
+    rootxs_[3]=0.0;
+    rootdx_[3]=0.0;
+    rootids_ = NULL;
+
     blkxs_ = NULL;
     blkdx_ = NULL;
     blkkey_ = NULL;
@@ -73,6 +81,7 @@ AMRreader::freedata()
     AMRFREE( sndbuf_ );
     AMRFREE( tmpbuf_ );
     AMRFREE( tagbuf_ );
+    AMRFREE( rootids_ );
     if( eos_!=NULL )
     {
         delete eos_;
@@ -175,6 +184,79 @@ getAMRinfo( hid_t gid )
         H5Aclose(aid);
     }
     debug2 << "Number of blocks is " << nblks_ << "\n";
+
+    aid = H5Aopen_name( gid, "OctreeRootID" );
+    if( aid < 0)
+    {
+	nroots_=1;
+	debug1 << "Failed to find number of roots. \n";
+	return -1;
+    }
+    else
+    {
+	hid_t did = H5Aget_space(aid);
+	hsize_t dims[3];
+
+	dims[0] = 1;
+	dims[1] = 1;
+	dims[2] = 1;
+
+	if (did < 0) 
+	{
+	    nroots_ = 1;
+	    debug1 << "Failed to find dimensions of roots. \n";
+	    return -1;
+	}
+	else
+	{
+
+	    H5Sget_simple_extent_dims(did, dims, NULL);
+	    H5Sclose(did);
+
+	    nroots_ = dims[0]*dims[1]*dims[2];
+
+	    // These are reversed intentionally
+	    rootdims_[0] = dims[2];
+	    rootdims_[1] = dims[1];
+	    rootdims_[2] = dims[0];
+
+	    delete[] rootids_;
+	    rootids_ = (int*)malloc( nroots_*sizeof(int) );
+
+            if( rootids_==NULL )
+            {
+                debug1 << "Failed to allocate rootids_. \n";
+                return -1;
+            }
+
+	    H5Aread( aid, H5T_NATIVE_INT, rootids_ );
+	}
+	H5Aclose(aid);
+    }
+
+    aid = H5Aopen_name( gid, "OctreeRootXS" );
+    if( aid<0 )
+    {
+        debug1 << "Failed to find root xs.\n";
+        return -2;
+    }
+    else
+    {
+        H5Aread( aid, H5T_NATIVE_FLOAT, rootxs_ );
+        H5Aclose(aid);
+    }
+
+    aid = H5Aopen_name( gid, "OctreeRootDX" );
+    if( aid<0 )
+    {
+        debug1 << "Failed to find root dx.\n";
+        return -2;
+    }
+    else
+    {
+        H5Aread( aid, H5T_NATIVE_FLOAT, rootdx_ );
+        H5Aclose(aid);
+    }
 
     aid = H5Aopen_name( gid, amr_dimname );
     if( aid<0 )
