@@ -311,6 +311,33 @@ getAMRinfo( hid_t gid )
         return 0;
     }
 
+    est = H5Aexists( gid, amr_genmixname );
+    if( est>0 )
+    {
+	aid = H5Aopen_name( gid, amr_genmixname );
+	H5Aread( aid, H5T_NATIVE_FLOAT, rbuf );
+	H5Aclose(aid);
+
+	nspec_ = rbuf[0];
+	nspecener_ = nspec_;
+
+	icvdens_ = 0;
+	icvener_ = nspec_;
+
+	icvmomx_ = 2*nspec_;
+	icvmomy_ = icvmomx_+1;
+	icvmomz_ = icvmomx_+2;
+
+	icvpres_ = icvmomz_+1;
+	icvtemp_ = icvmomz_+2;
+
+	iavsndv_ = 4;
+
+	eos_ = new GenMixEOS(nspec_);
+
+	return 0;
+    }
+
     eos_ = new IdealEOS( 1.4, 1.0 );
     return 0;
 }

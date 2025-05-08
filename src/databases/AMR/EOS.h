@@ -171,6 +171,49 @@ protected:
     //char type[20];
 };
 
+class GenMixEOS : public EOS
+{
+public:
+    GenMixEOS(int nspec)
+    {
+        /*strcpy(type, GenMixEOS_type ); */
+	avmap = {};
 
+	//for( int i=0; i<nspec; i++ )
+	//{
+	//    std::string name = "species density " + std::to_string(i+1);
+	//    avmap.insert({name, 6+i});
+	//}
+
+	for( int i=0; i<nspec; i++ )
+	{
+	    std::string name = "volume fraction " + std::to_string(i+1);
+	    avmap.insert({name, 6+nspec + i});
+	}
+    }
+    virtual ~GenMixEOS() { }
+    //virtual const char* EOStype() const { return type; }
+    virtual int   EOStype() const
+    {
+        return GenMixEOS_type;
+    }
+    virtual float p_from_r_e( float r, float e )
+    {
+        return 0.;
+    }
+    virtual float T_from_r_e( float r, float e )
+    {
+        return 0.;
+    }
+    virtual float a_from_r_e( float r, float e )
+    {
+        return 0.;
+    }
+
+    virtual bool a_from_av(){ return true; }
+
+protected:
+    //char type[20];
+};
 
 #endif
