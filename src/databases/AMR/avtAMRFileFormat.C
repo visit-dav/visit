@@ -48,6 +48,22 @@ composeName( const std::string& m, const std::string& v, const char app )
     return m+app+v;
 }
 
+std::pair<std::string,std::string> avtAMRFileFormat::
+splitName( const std::string& m, const char app )
+{
+    using size_type = typename std::string::size_type;
+    size_type sz = m.find(app);
+    if( sz==0 )
+        return std::make_pair<std::string,std::string>
+            ( std::string{}, std::string{m} );
+    else if( sz==std::string::npos )
+        return std::make_pair<std::string,std::string>
+            ( std::string{m}, std::string{} );
+    else
+        return std::make_pair<std::string,std::string>
+            ( m.substr(0,sz), m.substr(sz+1) );
+}
+
 
 void avtAMRFileFormat::
 decomposeName( const std::string& s, std::string& m, std::string& v )
@@ -818,6 +834,52 @@ avtAMRFileFormat::GetVar(int domain, const char *name)
             return var;
         }
 #endif
+	else if( varname.find("Species Density") != std::string::npos )
+	{
+	    int nspec = GetReader()->GetNumberOfSpecies();
+            std::string b1,b2;
+            std::tie(b1, b2) = splitName( varname );
+	    int idx = std::atoi(b2.c_str());
+	    if (idx > 0 && idx <= nspec)
+	    {
+		vid = AMRreaderInterface::v_spec + idx;
+	    }
+	    else
+	    {
+                std::string msg = "Unknown species density variable name:";
+                msg += varname;
+                EXCEPTION1( InvalidVariableException, msg );
+	    }
+	}
+	else if( varname.find("Species Mass Fraction") != std::string::npos )
+	{
+	    int nspec = GetReader()->GetNumberOfSpecies();
+            std::string b1,b2;
+            std::tie(b1, b2) = splitName( varname );
+	    int idx = std::atoi(b2.c_str());
+	    if (idx > 0 && idx <= nspec)
+	    {
+		vid = AMRreaderInterface::v_smas + idx;
+	    }
+	    else
+	    {
+                std::string msg = "Unknown species mass fraction variable name:";
+                msg += varname;
+                EXCEPTION1( InvalidVariableException, msg );
+	    }
+	}
+	else if( varname.find("Additional") != std::string::npos )
+	{
+	    int ncvs = GetReader()->GetNumberOfConservedVariables();
+
+            std::string b1,b2;
+            std::tie(b1, b2) = splitName( varname );
+
+	    std::map<std::string, int> avmap = GetReader()->GetAVMap();
+
+	    int idx = avmap.at(b2);
+	    vid = AMRreaderInterface::v_fldv + ncvs + idx;
+	}
         else
         {
             std::string msg = "Unknown scalar variable ";

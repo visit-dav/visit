@@ -50,6 +50,9 @@ public:
   virtual int    GetNumberOfSpecies() const
   { return reader->GetNumberOfSpecies(); }
 
+  virtual int    GetNumberOfConservedVariables() const
+  { return reader->GetNumberOfConservedVariables(); }
+
   virtual std::map<std::string, int> GetAVMap()
   { return reader->GetAVMap(); }
 

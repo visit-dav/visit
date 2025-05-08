@@ -166,7 +166,21 @@ GetBlockVariable( int bid, int vid, float* dat )
             }
     return 0;
 #endif
-    ierr = compvar( vid, datbuf_+(tid*5*blksz_), dat, sz );
+    if (vid > v_spec && vid < v_smas)
+        ierr = copyvar( tid, vid-v_spec-1, dat, sz );
+    else if( vid > v_fldv && vid < v_smas)
+        ierr = copyvar( tid, vid-v_fldv-1, dat, sz );
+    else
+    {
+	if( navs_ > 0 )
+	{
+	    ierr = compvar( vid, datbuf_+(tid*ncvs_*blksz_), adtbuf_+(tid*navs_*blksz_), dat, sz );
+	}
+	else
+	{
+	    ierr = compvar( vid, datbuf_+(tid*ncvs_*blksz_), datbuf_+(tid*ncvs_*blksz_), dat, sz );
+	}
+    }
     if( ierr!=0 )
     {
         debug1 << "Failed to compute requested variable: " << vid << " .\n";

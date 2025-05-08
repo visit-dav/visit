@@ -64,10 +64,16 @@ public:
         return ncvs_ + navs_;
     }
 
+    virtual int GetNumberOfConservedVariables() const
+    {
+	return ncvs_;
+    }
+
     virtual int GetNumberOfSpecies() const
     {
 	return nspec_;
     }
+
     virtual int GetBlockHierarchicalIndices(int bid, int *level,
                                             int *ijk_start, int *ijk_end)
     {
@@ -122,8 +128,10 @@ protected:
     /*   virtual int  readblk( int bid ); */
 
 protected:
-    int compvar( int vid, float* blk, float* buf, int sz );
+    int copyvar( int bid, int idx, float* buf, int sz );
+    int compvar( int vid, float* blk, float* ablk, float* buf, int sz );
     int  comp_dens( float*, float*, int sz );
+    int  comp_smass( float*, float*, int sz, int is );
     int  comp_uvel( float*, float*, int sz );
     int  comp_vvel( float*, float*, int sz );
     int  comp_wvel( float*, float*, int sz );
@@ -192,6 +200,8 @@ extern int isSeqEightSibling( const int* blkdim, const float*blkxs, const float*
 extern int ConsolidateBlocks(int nblks, const int* blkdim,
                              const float* blkxs, const float* blkdx,
                              int* ncb, int* sft );
+extern float ComputeDens(float* blkdt, int istart, int ncvs, int nspec_);
+extern float ComputeEner(float* blkdt, int istart, int ncvs, int icvener_, int nspecener_);
 
 
 #endif

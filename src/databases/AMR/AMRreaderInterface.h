@@ -44,6 +44,8 @@ public:
   virtual int    GetBlockDefaultDimensions(int *dim) const = 0;
   virtual int    GetNumberOfFieldVariables() const = 0;
   virtual int    GetNumberOfSpecies() const = 0;
+  virtual int    GetNumberOfConservedVariables() const = 0;
+
 
   virtual int    GetNumberOfLevels() = 0;
   virtual int    GetBlockHierarchicalIndices(int bid, int *level,
@@ -94,6 +96,10 @@ public:
   static const int kid2i[8];
   static const int kid2j[8];
   static const int kid2k[8];
+
+  static const int v_fldv=100;
+  static const int v_spec=200;
+  static const int v_smas=300;
 
 protected:
   static const char* amr_grpname;

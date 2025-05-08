@@ -807,7 +807,21 @@ GetBlockVariable( int bid, int vid, float* dat )
             }
     return 0;
 #endif
-    ierr = compvar( vid, datbuf_+(5*blksz_*bid), dat, blksz_ );
+    if( vid > v_spec && vid < v_smas)
+	ierr = copyvar(bid,  vid-v_spec-1, dat, blksz_);
+    else if( vid > v_fldv && vid < v_smas)
+        ierr = copyvar( bid, vid-v_fldv-1, dat, blksz_ );
+    else
+    {
+	if ( navs_ > 0 )
+	{
+	    ierr = compvar( vid, datbuf_+(ncvs_*blksz_*bid), adtbuf_+(navs_*blksz_*bid), dat, blksz_ );
+	}
+	else
+	{
+	    ierr = compvar( vid, datbuf_+(ncvs_*blksz_*bid), datbuf_+(ncvs_*blksz_*bid), dat, blksz_ );
+	}
+    }
     if( ierr!=0 )
     {
         debug1 << "Failed to compute requested variable: " << vid << " .\n";
@@ -897,8 +911,15 @@ GetInterfaceVariable( int vid, void* dat )
 
 
 int AMRreader::
-compvar( int vid, float* blk, float* buf, int sz )
+compvar( int vid, float* blk, float* ablk, float* buf, int sz )
 {
+
+    if (vid > v_smas)
+    {
+	comp_smass( blk, buf, sz, vid-v_smas-1 );
+	return 0;
+    }
+
     switch( vid )
     {
     case(v_dens):
@@ -955,18 +976,41 @@ compvar( int vid, float* blk, float* buf, int sz )
 }
 
 
+int AMRreader::
+copyvar( int bid, int idx, float* buf, int sz )
+{
+    if( idx < ncvs_ ) {
+        float* dat = datbuf_+(ncvs_*blksz_*bid) + idx;
+        for( int i=0; i<sz; ++i,dat+=ncvs_ )
+            buf[i] = *dat;
+    }
+    else {
+        idx -= ncvs_;
+        float* dat = adtbuf_+(navs_*blksz_*bid) + idx;
+        for( int i=0; i<sz; ++i,dat += navs_ )
+            buf[i] = *dat;
+    }
+    return 0;
+}
+
 
 
 int AMRreader::
 comp_dens( float* blkdt, float* buf, int sz )
 {
-//   for( int i=0; i<blkdim_[2]; i++ )
-//     for( int j=0; j<blkdim_[1]; j++ )
-//       for( int k=0; k<blkdim_[0]; k++ ) {
-//     int sft = k + ( j + i*blkdim_[1] )*blkdim_[0];
     for( int sft=0; sft<sz; sft++ )
     {
-        buf[sft] = blkdt[5*sft];
+	buf[sft] = ComputeDens(blkdt, sft, ncvs_, nspec_);
+    }
+    return 0;
+}
+
+int AMRreader::
+comp_smass( float* blkdt, float* buf, int sz, int is )
+{
+    for( int sft=0; sft<sz; sft++ )
+    {
+	buf[sft] = blkdt[ncvs_*sft + icvdens_ + is] / ComputeDens(blkdt, sft, ncvs_, nspec_);
     }
     return 0;
 }
@@ -976,7 +1020,7 @@ comp_uvel( float* blkdt, float* buf, int sz )
 {
     for( int sft=0; sft<sz; sft++ )
     {
-        buf[sft] = blkdt[5*sft+1] / blkdt[5*sft];
+        buf[sft] = blkdt[ncvs_*sft + icvmomx_] / ComputeDens(blkdt, sft, ncvs_, nspec_);
     }
     return 0;
 }
@@ -986,7 +1030,7 @@ comp_vvel( float* blkdt, float* buf, int sz )
 {
     for( int sft=0; sft<sz; sft++ )
     {
-        buf[sft] = blkdt[5*sft+2] / blkdt[5*sft];
+        buf[sft] = blkdt[ncvs_*sft + icvmomy_] / ComputeDens(blkdt, sft, ncvs_, nspec_);
     }
     return 0;
 }
@@ -996,7 +1040,7 @@ comp_wvel( float* blkdt, float* buf, int sz )
 {
     for( int sft=0; sft<sz; sft++ )
     {
-        buf[sft] = blkdt[5*sft+3] / blkdt[5*sft];
+        buf[sft] = blkdt[ncvs_*sft + icvmomz_] / ComputeDens(blkdt, sft, ncvs_, nspec_);
     }
     return 0;
 }
@@ -1090,7 +1134,7 @@ comp_xmnt( float* blkdt, float* buf, int sz )
 {
     for( int sft=0; sft<sz; sft++ )
     {
-        buf[sft] = blkdt[5*sft+1];
+        buf[sft] = blkdt[ncvs_*sft + icvmomx_];
     }
     return 0;
 }
@@ -1100,7 +1144,7 @@ comp_ymnt( float* blkdt, float* buf, int sz )
 {
     for( int sft=0; sft<sz; sft++ )
     {
-        buf[sft] = blkdt[5*sft+2];
+        buf[sft] = blkdt[ncvs_*sft + icvmomy_];
     }
     return 0;
 }
@@ -1110,7 +1154,7 @@ comp_zmnt( float* blkdt, float* buf, int sz )
 {
     for( int sft=0; sft<sz; sft++ )
     {
-        buf[sft] = blkdt[5*sft+3];
+        buf[sft] = blkdt[ncvs_*sft + icvmomz_];
     }
     return 0;
 }
@@ -1120,7 +1164,7 @@ comp_etot( float* blkdt, float* buf, int sz )
 {
     for( int sft=0; sft<sz; sft++ )
     {
-        buf[sft] = blkdt[5*sft+4];
+        buf[sft] = ComputeEner(blkdt, sft, ncvs_, icvener_, nspecener_);
     }
     return 0;
 }
@@ -1145,10 +1189,10 @@ comp_eknt( float* blkdt, float* buf, int sz )
 {
     for( int sft=0; sft<sz; sft++ )
     {
-        float rr = blkdt[5*sft];
-        float uu = blkdt[5*sft+1] / rr;
-        float vv = blkdt[5*sft+2] / rr;
-        float ww = blkdt[5*sft+3] / rr;
+        float rr = ComputeDens(blkdt, sft, ncvs_, nspec_);
+        float uu = blkdt[ncvs_*sft + icvmomx_] / rr;
+        float vv = blkdt[ncvs_*sft + icvmomy_] / rr;
+        float ww = blkdt[ncvs_*sft + icvmomz_] / rr;
         buf[sft] = 0.5*( uu*uu + vv*vv + ww*ww );
     }
     return 0;
@@ -1159,10 +1203,10 @@ comp_velo( float* blkdt, float* buf, int sz )
 {
     for( int sft=0; sft<sz; sft++ )
     {
-        float rr = blkdt[5*sft];
-        float uu = blkdt[5*sft+1] / rr;
-        float vv = blkdt[5*sft+2] / rr;
-        float ww = blkdt[5*sft+3] / rr;
+        float rr = ComputeDens(blkdt, sft, ncvs_, nspec_);
+        float uu = blkdt[ncvs_*sft + icvmomx_] / rr;
+        float vv = blkdt[ncvs_*sft + icvmomy_] / rr;
+        float ww = blkdt[ncvs_*sft + icvmomz_] / rr;
         buf[3*sft]   = uu;
         buf[3*sft+1] = vv;
         buf[3*sft+2] = ww;
@@ -1182,6 +1226,27 @@ comp_tags( float* blkdt, float* buf, int sz )
     return 0;
 }
 
+float ComputeDens(float* blkdt, int istart, int ncvs, int nspec_)
+{
+    float dens = 0.0;
+    for ( int i=0; i<nspec_; i++ )
+    {
+	dens += blkdt[istart*ncvs + i];
+    }
+
+    return dens;
+}
+
+float ComputeEner(float* blkdt, int istart, int ncvs, int icvener_, int nspecener_)
+{
+    float ener = 0.0;
+    for ( int i=icvener_; i<icvener_+nspecener_; i++ )
+    {
+	ener += blkdt[istart*ncvs + i];
+    }
+
+    return ener;
+}
 
 
 #define MeshEqual( x0, x1, dx )  ( fabs(x0-x1)<1.e-3*dx )
