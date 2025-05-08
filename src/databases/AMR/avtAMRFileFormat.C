@@ -403,6 +403,34 @@ avtAMRFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         md->Add(smd);
 
         smd = new avtScalarMetaData;
+        smd->name = composeName( amr_name, "total energy");
+        smd->meshName = amr_name;
+        smd->centering = AVT_ZONECENT;
+        smd->hasUnits = false;
+        md->Add(smd);
+
+        smd = new avtScalarMetaData;
+        smd->name = composeName( amr_name, "u momentum");
+        smd->meshName = amr_name;
+        smd->centering = AVT_ZONECENT;
+        smd->hasUnits = false;
+        md->Add(smd);
+
+        smd = new avtScalarMetaData;
+        smd->name = composeName( amr_name, "v momentum");
+        smd->meshName = amr_name;
+        smd->centering = AVT_ZONECENT;
+        smd->hasUnits = false;
+        md->Add(smd);
+
+        smd = new avtScalarMetaData;
+        smd->name = composeName( amr_name, "w momentum");
+        smd->meshName = amr_name;
+        smd->centering = AVT_ZONECENT;
+        smd->hasUnits = false;
+        md->Add(smd);
+
+        smd = new avtScalarMetaData;
         smd->name = composeName( amr_name, "level");
         smd->meshName = amr_name;
         smd->centering = AVT_ZONECENT;
@@ -696,6 +724,12 @@ avtAMRFileFormat::GetVar(int domain, const char *name)
             vid=AMRreaderInterface::v_vvel;
         else if( varname.compare("w velocity")==0 )
             vid=AMRreaderInterface::v_wvel;
+        else if( varname.compare("u momentum")==0 )
+            vid=AMRreaderInterface::v_xmnt;
+        else if( varname.compare("v momentum")==0 )
+            vid=AMRreaderInterface::v_ymnt;
+        else if( varname.compare("w momentum")==0 )
+            vid=AMRreaderInterface::v_zmnt;
         else if( varname.compare("pressure")==0 )
             vid=AMRreaderInterface::v_pres;
         else if( varname.compare("temperature")==0 )
@@ -706,6 +740,8 @@ avtAMRFileFormat::GetVar(int domain, const char *name)
             vid=AMRreaderInterface::v_eint;
         else if( varname.compare( "kinetic energy")==0 )
             vid=AMRreaderInterface::v_eknt;
+        else if( varname.compare( "total energy")==0 )
+            vid=AMRreaderInterface::v_etot;
         else if( varname.compare( "cell tag")==0 )
             vid=AMRreaderInterface::v_tags;
 #if 1
