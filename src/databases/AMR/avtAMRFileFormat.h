@@ -54,6 +54,10 @@ public:
                                            const char *type, void *args,
                                            DestructorFunction &);
 
+    // 
+    // This method sets the logical extents of the patches and boundaries
+    virtual void         *SetLogicalExtents();
+
     //
     // If you know the cycle number, overload this function.
     // Otherwise, VisIt will make up a reasonable one for you.

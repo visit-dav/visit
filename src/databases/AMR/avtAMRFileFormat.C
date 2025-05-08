@@ -252,34 +252,10 @@ avtAMRFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
         if(enableAMR)
         {
-            int nLevels = GetReader()->GetNumberOfLevels();
-#ifdef DEBUG_PRINT
-            debug1 << "Num levels: " << nLevels << endl;
-#endif
-            // Create ratios for avtStructuredDomainNesting.
-#ifdef DO_DOMAIN_NESTING
-            avtStructuredDomainNesting *dn = new avtStructuredDomainNesting(nblks, nLevels);
-            dn->SetNumDimensions(3);
-            bool *levelCSset = new bool[nLevels];
-            for(int level = 0; level < nLevels; ++level)
-            {
-                std::vector<int> ratios;
-                int r = (level == 0) ? 1 : 2;
-                ratios.push_back(r);
-                ratios.push_back(r);
-                ratios.push_back(r);
-                dn->SetLevelRefinementRatios(level, ratios);
-                levelCSset[level] = false;
-            }
-#endif
-#ifdef DO_DOMAIN_BOUNDARIES
-            // Create ratios for avtRectilinearDomainBoundaries
-            avtStructuredDomainBoundaries *sdb = new avtRectilinearDomainBoundaries(true);
-            sdb->SetNumDomains(nblks);
-#endif
-
             // Use information about each block to fill in metadata, domain nesting,
             // and domain boundaries.
+            int nLevels = std::max(GetReader()->GetNumberOfLevels(), 1);
+
             std::vector<int>         groupIds(nblks);
             std::vector<std::string> blockPieceNames(nblks);
             int localPatchNumber[20];
@@ -290,6 +266,7 @@ avtAMRFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 int level = 0, ijk_start[3] = {0,0,0}, ijk_end[3] = {0,0,0};
                 GetReader()->GetBlockHierarchicalIndices(bid, &level, ijk_start, ijk_end);
 
+		int iroot = OctKey_ExtractRootIndex(GetReader()->GetBlockKey(bid));
                 //
                 // Fill in some fields for the metadata.
                 // Use the level and local patch number to make up a name for the patch.
@@ -300,103 +277,9 @@ avtAMRFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 //
                 char tmpName[128];
                 groupIds[bid] = level;
-                snprintf(tmpName, 128, "level%02d,patch%04d", level, localPatchNumber[level]++);
+                snprintf(tmpName, 128, "root%08d,level%02d,patch%04d", iroot, level, localPatchNumber[level]++);
                 blockPieceNames[bid] = tmpName;
-#ifdef DEBUG_PRINT
-                debug1 << "Block " << bid << " level: " << groupIds[bid]
-                       << ", name: " << blockPieceNames[bid] << endl;
-#endif
-                //
-                // Fill in avtStructuredDomainNesting.
-                //
-#ifdef DO_DOMAIN_NESTING
-                if(!levelCSset[level])
-                {
-                    float xs[3], dx[3];
-                    GetReader()->GetBlockMesh(bid, xs, dx);
-                    std::vector<double> cs;
-                    cs.push_back(dx[0]);
-                    cs.push_back(dx[1]);
-                    cs.push_back(dx[2]);
-                    dn->SetLevelCellSizes(level, cs);
-                    levelCSset[level] = true;
-                }
-
-                std::vector<int> logicalExtents(6);
-                logicalExtents[0] = ijk_start[0];
-                logicalExtents[1] = ijk_start[1];
-                logicalExtents[2] = ijk_start[2];
-                logicalExtents[3] = ijk_end[0];
-                logicalExtents[4] = ijk_end[1];
-                logicalExtents[5] = ijk_end[2];
-#ifdef DEBUG_PRINT
-                debug1 << "Block " << bid << " logical indices: "
-                       << logicalExtents[0] << ", "
-                       << logicalExtents[1] << ", "
-                       << logicalExtents[2] << ", "
-                       << logicalExtents[3] << ", "
-                       << logicalExtents[4] << ", "
-                       << logicalExtents[5] << endl;
-#endif
-                // Get the child patches. The patches are not necessarily ordered in the list but
-                // all patches (except 0) will have a direct parent.
-                std::vector<int> childPatches;
-                if(bid == 0)
-                {
-                    for(int cbid = 1; cbid < nblks; ++cbid)
-                    {
-                        if(OctKey_NumLevels(GetReader()->GetBlockKey(cbid)) == 2)
-                            childPatches.push_back(cbid);
-                    }
-                }
-                else
-                {
-                    OctKey thisKey(GetReader()->GetBlockKey(bid));
-                    for(int cbid = 1; cbid < nblks; ++cbid)
-                    {
-                        if(cbid != bid && OctKey_HasImmediateParent(GetReader()->GetBlockKey(cbid), thisKey))
-                            childPatches.push_back(cbid);
-                    }
-                }
-#ifdef DEBUG_PRINT
-                debug1 << "Block " << bid << " child patches: ";
-                for(size_t q = 0; q < childPatches.size(); ++q)
-                    debug1 << childPatches[q] << ", ";
-                debug1 << endl;
-#endif
-                dn->SetNestingForDomain(bid, level, childPatches, logicalExtents);
-#endif
-
-                //
-                // Fill in avtRectilinearDomainBoundaries.
-                //
-#ifdef DO_DOMAIN_BOUNDARIES
-                int e[6];
-                e[0] = ijk_start[0];
-                e[1] = ijk_end[0] + 1;
-                e[2] = ijk_start[1];
-                e[3] = ijk_end[1] + 1;
-                e[4] = ijk_start[2];
-                e[5] = ijk_end[2] + 1;
-                sdb->SetIndicesForAMRPatch(bid, level, e);
-#endif
-            }
-
-#ifdef DO_DOMAIN_NESTING
-            delete [] levelCSset;
-            debug2 << "Caching domain nesting." << endl;
-            void_ref_ptr vr = void_ref_ptr(dn, avtStructuredDomainNesting::Destruct);
-            cache->CacheVoidRef(amr_name.c_str(), AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
-                                timestep, -1, vr);
-#endif
-#ifdef DO_DOMAIN_BOUNDARIES
-            debug2 << "Caching domain boundaries." << endl;
-            sdb->CalculateBoundaries();
-            void_ref_ptr vsdb = void_ref_ptr(sdb,avtStructuredDomainBoundaries::Destruct);
-            // HACK: VisIt won't use this information unless "any_mesh" is used.
-            cache->CacheVoidRef("any_mesh", AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
-                                timestep, -1, vsdb);
-#endif
+	    }
 
             // AMR mesh metadata
             mmd->blockTitle = "patches";
@@ -407,6 +290,9 @@ avtAMRFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             mmd->groupTitle = "levels";
             mmd->groupPieceName = "level";
             mmd->groupIds = groupIds;
+
+	    GetReader()->SetNeedSetLogicalExtents(true);
+	    SetLogicalExtents();
         }
 
         // Add the mesh metadata.
@@ -698,6 +584,8 @@ avtAMRFileFormat::GetMesh(int domain, const char *meshname)
             arr->Delete();
         }
 #endif
+
+	SetLogicalExtents();
 
         return grd;
     }
@@ -1145,4 +1033,162 @@ avtAMRFileFormat::GetAuxiliaryData(const char *var, int domain,
 
     return retval;
 
+}
+
+void* avtAMRFileFormat::SetLogicalExtents()
+{
+    void* retval = 0;
+    if(enableAMR && GetReader()->GetNeedSetLogicalExtents())
+    {
+	int nblks = GetReader()->GetNumberOfBlocks();
+	int nLevels = std::max(GetReader()->GetNumberOfLevels(), 1);
+#ifdef DEBUG_PRINT
+	debug1 << "Num levels: " << nLevels << endl;
+#endif
+	// Create ratios for avtStructuredDomainNesting.
+#ifdef DO_DOMAIN_NESTING
+	avtStructuredDomainNesting *dn = new avtStructuredDomainNesting(nblks, nLevels);
+	dn->SetNumDimensions(3);
+	bool *levelCSset = new bool[nLevels];
+	for(int level = 0; level < nLevels; ++level)
+	{
+	    std::vector<int> ratios;
+	    int r = (level == 0) ? 1 : 2;
+	    ratios.push_back(r);
+	    ratios.push_back(r);
+	    ratios.push_back(r);
+	    dn->SetLevelRefinementRatios(level, ratios);
+	    levelCSset[level] = false;
+	}
+#endif
+#ifdef DO_DOMAIN_BOUNDARIES
+	// Create ratios for avtRectilinearDomainBoundaries
+	avtStructuredDomainBoundaries *sdb = new avtRectilinearDomainBoundaries(true);
+	sdb->SetNumDomains(nblks);
+#endif
+
+	// Use information about each block to fill in metadata, domain nesting,
+	// and domain boundaries.
+	std::vector<int>         groupIds(nblks);
+	std::vector<std::string> blockPieceNames(nblks);
+	int localPatchNumber[20];
+	memset(localPatchNumber, 0, sizeof(int) * 20);
+	for(int bid = 0; bid < nblks; ++bid)
+	{
+	    // Get the level and level-appropriate IJK indexing for the block.
+	    int level = 0, ijk_start[3] = {0,0,0}, ijk_end[3] = {0,0,0};
+	    GetReader()->GetBlockHierarchicalIndices(bid, &level, ijk_start, ijk_end);
+
+	    int iroot = OctKey_ExtractRootIndex(GetReader()->GetBlockKey(bid));
+	    //
+	    // Fill in avtStructuredDomainNesting.
+	    //
+#ifdef DO_DOMAIN_NESTING
+	    if(!levelCSset[level])
+	    {
+		float xs[3], dx[3];
+		GetReader()->GetBlockMesh(bid, xs, dx);
+		std::vector<double> cs;
+		cs.push_back(dx[0]);
+		cs.push_back(dx[1]);
+		cs.push_back(dx[2]);
+		dn->SetLevelCellSizes(level, cs);
+		levelCSset[level] = true;
+	    }
+
+	    std::vector<int> logicalExtents(6);
+	    logicalExtents[0] = ijk_start[0];
+	    logicalExtents[1] = ijk_start[1];
+	    logicalExtents[2] = ijk_start[2];
+	    logicalExtents[3] = ijk_end[0];
+	    logicalExtents[4] = ijk_end[1];
+	    logicalExtents[5] = ijk_end[2];
+#ifdef DEBUG_PRINT
+	    debug1 << "Block " << bid << " logical indices: "
+		   << logicalExtents[0] << ", "
+		   << logicalExtents[1] << ", "
+		   << logicalExtents[2] << ", "
+		   << logicalExtents[3] << ", "
+		   << logicalExtents[4] << ", "
+		   << logicalExtents[5] << endl;
+#endif
+	    // Get the child patches. The patches are not necessarily ordered in the list but
+	    // all patches (except 0) will have a direct parent.
+	    //
+	    // This is no longer true with multiple roots - need to check each root individually
+	    std::vector<int> childPatches;
+
+	    OctKey key = GetReader()->GetBlockKey(bid);
+	    OctKey rk = OctKey_Root(iroot);
+	    bool isroot = OctKey_Equal(key, rk);
+
+	    if (isroot)
+	    {
+		for (int cbid = 1; cbid < nblks; cbid++)
+		{
+		    if (cbid == bid) continue;
+
+		    OctKey ckey = GetReader()->GetBlockKey(cbid);
+		    int ciroot = OctKey_ExtractRootIndex(ckey);
+		    if (ciroot = iroot){
+			int clevel = OctKey_NumLevels(ckey);
+			if (clevel == 1 || clevel == 2)
+			    childPatches.push_back(cbid);
+		    }
+		}
+
+	    }
+	    else
+	    {
+		//OctKey thisKey(GetReader()->GetBlockKey(bid));
+		for(int cbid = 1; cbid < nblks; ++cbid)
+		{
+		    if(cbid != bid && OctKey_HasImmediateParent(GetReader()->GetBlockKey(cbid), key))
+			childPatches.push_back(cbid);
+		}
+	    }
+#ifdef DEBUG_PRINT
+	    debug1 << "Block " << bid << " child patches: ";
+	    for(size_t q = 0; q < childPatches.size(); ++q)
+		debug1 << childPatches[q] << ", ";
+	    debug1 << endl;
+#endif
+	    dn->SetNestingForDomain(bid, level, childPatches, logicalExtents);
+#endif
+
+	    //
+	    // Fill in avtRectilinearDomainBoundaries.
+	    //
+#ifdef DO_DOMAIN_BOUNDARIES
+	    int e[6];
+	    e[0] = ijk_start[0];
+	    e[1] = ijk_end[0] + 1;
+	    e[2] = ijk_start[1];
+	    e[3] = ijk_end[1] + 1;
+	    e[4] = ijk_start[2];
+	    e[5] = ijk_end[2] + 1;
+	    sdb->SetIndicesForAMRPatch(bid, level, e);
+#endif
+	}
+
+#ifdef DO_DOMAIN_NESTING
+	delete [] levelCSset;
+	debug2 << "Caching domain nesting." << endl;
+	void_ref_ptr vr = void_ref_ptr(dn, avtStructuredDomainNesting::Destruct);
+	cache->CacheVoidRef(amr_name.c_str(), AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
+			    timestep, -1, vr);
+#endif
+#ifdef DO_DOMAIN_BOUNDARIES
+	debug2 << "Caching domain boundaries." << endl;
+	sdb->CalculateBoundaries();
+	void_ref_ptr vsdb = void_ref_ptr(sdb,avtStructuredDomainBoundaries::Destruct);
+	// HACK: VisIt won't use this information unless "any_mesh" is used.
+	cache->CacheVoidRef("any_mesh", AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
+			    timestep, -1, vsdb);
+#endif
+
+	GetReader()->SetNeedSetLogicalExtents(false);
+    }
+
+    return retval;
 }

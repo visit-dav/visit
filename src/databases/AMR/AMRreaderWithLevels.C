@@ -37,6 +37,7 @@ AMRreaderWithLevels::BuildMetaData()
     {
         MakeOctTree();
         patchesBuilt = true;
+	needSetLogicalExtents = true;
     }
 }
 

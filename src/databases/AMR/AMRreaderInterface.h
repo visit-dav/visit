@@ -64,6 +64,15 @@ public:
   virtual void   GetInterfaceSizes( int* np, int* ne ) const = 0;
   virtual int    GetInterfaceVariable( int vid, void* dat ) = 0;
 
+  virtual bool   GetNeedSetLogicalExtents(){
+      return needSetLogicalExtents;
+  }
+
+  virtual bool   SetNeedSetLogicalExtents(bool val){
+      needSetLogicalExtents = val;
+      return val;
+  }
+  
   virtual std::map<std::string, int> GetAVMap()
   {
       return {};
@@ -137,6 +146,8 @@ protected:
   static const char* intf_pres_name;
   static const char* intf_segt_name;
   static const char* intf_matl_name;
+
+  bool needSetLogicalExtents = true;
 };
 
 // Function to return instances of the various interfaces.
