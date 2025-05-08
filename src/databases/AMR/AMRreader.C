@@ -193,6 +193,15 @@ getAMRinfo( hid_t gid )
     H5Aclose(aid);
     debug2 << "Ncycles= " << ncycle_ << "\n";
 
+    {
+        const char* cvsname = "NVS";
+        htri_t est = H5Aexists( gid, cvsname );
+        if( est>0 ) {
+            aid = H5Aopen_name( gid, cvsname );
+            H5Aread( aid, H5T_NATIVE_INT, &ncvs_ );
+            H5Aclose(aid);
+        }
+    }
     // eos
     htri_t est = H5Aexists( gid, amr_idealname );
     if( est>0 )
