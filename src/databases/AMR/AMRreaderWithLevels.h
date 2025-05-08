@@ -96,7 +96,7 @@ private:
   int  FindBlock(OctKey key);
   int  MaxLevels();
   void MakeOctTree();
-  void first_subdivide8(float xMin, float yMin, float zMin, float xMax, float yMax, float zMax, OctKey current, int maxLevels);
+  void first_subdivide8(int *ijk_root, float xMin, float yMin, float zMin, float xMax, float yMax, float zMax, OctKey current, int maxLevels);
   void subdivide8(int *ijk_start, int *ijk_end, float xMin, float yMin, float zMin, float xMax, float yMax, float zMax, OctKey current, int thisLevel, int maxLevels);
   int  AssembleBlockVariable(int bid, int vid, float *dat, const int *dims);
   int  BlockKeyToBID(const OctKey &k) const;

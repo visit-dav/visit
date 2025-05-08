@@ -1,3 +1,4 @@
+#include <DebugStream.h>
 #include <AMRreaderWithLevels.h>
 
 #include <algorithm>
@@ -133,43 +134,62 @@ AMRreaderWithLevels::GetNumberOfLevels()
 void
 AMRreaderWithLevels::MakeOctTree()
 {
-    // Get the size of the entire box using the first and last blocks from the file.
-    int dim[3];
-    float xs[3], dx[3];
-    float xMin,  yMin, zMin, xMax, yMax, zMax;
-    reader->GetBlockMesh(0, xs, dx);
-    xMin = xs[0];
-    yMin = xs[1];
-    zMin = xs[2];
+    int rootdims[3]; GetRootDims(rootdims);
+    float rootxs[3]; GetRootXS(rootxs);
+    float rootdx[3]; GetRootDX(rootdx);
+    int defdim[3];   GetBlockDefaultDimensions(defdim);
 
-    int lastbid = reader->GetNumberOfBlocks()-1;
-    reader->GetBlockMesh(lastbid, xs, dx);
-    reader->GetBlockDimensions(lastbid, dim);
-    xMax = xs[0] + dim[0] * dx[0];
-    yMax = xs[1] + dim[1] * dx[1];
-    zMax = xs[2] + dim[2] * dx[2];
+    float dx[3];
+    for (int i=0; i<3; i++){
+	dx[i] = defdim[i]*rootdx[i];
+    }
 
-    // Make the root
-    Patch p;
-    p.level = 0;
-    p.ijk_start[0] = 0;
-    p.ijk_start[1] = 0;
-    p.ijk_start[2] = 0;
-    p.xs[0] = xMin;
-    p.xs[1] = yMin;
-    p.xs[2] = zMin;
-    p.xe[0] = xMax;
-    p.xe[1] = yMax;
-    p.xe[2] = zMax;
-    p.key = OctKey_Root();
-    p.fileBID = -1;
-    patches.push_back(p);
+    for(int kroot=0; kroot<rootdims[2]; kroot++)
+    for(int jroot=0; jroot<rootdims[1]; jroot++)
+    for(int iroot=0; iroot<rootdims[0]; iroot++)
+    {
+    {
+    {
+	int dim[3];
+	float xs[3];
+	float xMin,  yMin, zMin, xMax, yMax, zMax;
 
-    // Determine the maximum number of levels that we need to make.
-    int maxLevels = GetNumberOfLevels() - 1;
+	xMin = rootxs[0] + iroot*dx[0];
+	yMin = rootxs[1] + jroot*dx[1];
+	zMin = rootxs[2] + kroot*dx[2];
 
-    // Subdivide
-    first_subdivide8(xMin, yMin, zMin, xMax, yMax, zMax, p.key, maxLevels);
+	xMax = xMin + dx[0];
+	yMax = yMin + dx[1];
+	zMax = zMin + dx[2];
+
+	int rootid = GetRootID(iroot, jroot, kroot);
+
+	// Make the root
+	Patch p;
+	p.level = 0;
+	p.ijk_start[0] = iroot*defdim[0]*2;
+	p.ijk_start[1] = jroot*defdim[1]*2;
+	p.ijk_start[2] = kroot*defdim[2]*2;
+	p.xs[0] = xMin;
+	p.xs[1] = yMin;
+	p.xs[2] = zMin;
+	p.xe[0] = xMax;
+	p.xe[1] = yMax;
+	p.xe[2] = zMax;
+	p.key = OctKey_Root((unsigned long int)rootid);
+	p.fileBID = FindBlock(p.key);
+	patches.push_back(p);
+
+	// Determine the maximum number of levels that we need to make.
+	int maxLevels = GetNumberOfLevels() - 1;
+
+	// Subdivide
+	if (p.fileBID == -1){
+	    first_subdivide8(p.ijk_start, xMin, yMin, zMin, xMax, yMax, zMax, p.key, maxLevels);
+	}
+    }
+    }
+    }
 
     // Make a map of bid to key.
     for(int i = 0; i < (int) patches.size(); ++i)
@@ -198,7 +218,7 @@ AMRreaderWithLevels::MakeOctTree()
 // ****************************************************************************
 
 void
-AMRreaderWithLevels::first_subdivide8(float xMin, float yMin, float zMin, float xMax, float yMax, float zMax, OctKey current, int maxLevels)
+AMRreaderWithLevels::first_subdivide8(int* ijk_root, float xMin, float yMin, float zMin, float xMax, float yMax, float zMax, OctKey current, int maxLevels)
 {
     float halfX = (xMax - xMin) * 0.5f;
     float halfY = (yMax - yMin) * 0.5f;
@@ -206,6 +226,8 @@ AMRreaderWithLevels::first_subdivide8(float xMin, float yMin, float zMin, float 
 
     int dims[3];
     GetBlockDefaultDimensions(dims);
+
+    int thisLevel = 0;
 
     int cell = 0;
     for(int k = 0; k < 2; ++k)
@@ -222,18 +244,82 @@ AMRreaderWithLevels::first_subdivide8(float xMin, float yMin, float zMin, float 
                 p.xe[1] = yMin + float(j+1) * halfY;
                 p.xe[2] = zMin + float(k+1) * halfZ;
                 p.key = OctKey_AddLevel(current, cell);
+		p.level = thisLevel;
+                p.fileBID = FindBlock(p.key);
                 cell++;
 
                 // The start/end window for this area in level 1.
                 int ijk_start[3], ijk_end[3];
-                ijk_start[0] = i * dims[0]*2;
-                ijk_start[1] = j * dims[1]*2;
-                ijk_start[2] = k * dims[2]*2;
-                ijk_end[0]   = (i+1) * dims[0]*2 - 1;
-                ijk_end[1]   = (j+1) * dims[1]*2 - 1;
-                ijk_end[2]   = (k+1) * dims[2]*2 - 1;
+                ijk_start[0] = ijk_root[0] + i * dims[0];
+                ijk_start[1] = ijk_root[1] + j * dims[1];
+                ijk_start[2] = ijk_root[2] + k * dims[2];
+                ijk_end[0]   = ijk_root[0] + (i+1) * dims[0] - 1;
+                ijk_end[1]   = ijk_root[1] + (j+1) * dims[1] - 1;
+                ijk_end[2]   = ijk_root[2] + (k+1) * dims[2] - 1;
 
-                subdivide8(ijk_start, ijk_end, p.xs[0], p.xs[1], p.xs[2], p.xe[0], p.xe[1], p.xe[2], p.key, 1, maxLevels);
+		bool needRefinement = true;
+
+		// check if any of these blocks are already leaf
+		for (int ii=0; ii<3; ii++){
+		    p.ijk_start[ii] = ijk_start[ii];
+		}
+
+		patches.push_back(p);
+
+		if (p.fileBID != -1) {
+		    needRefinement = false;
+
+		    int defaultDims[3], dims[3];
+		    reader->GetBlockDefaultDimensions(defaultDims);
+		    reader->GetBlockDimensions(p.fileBID, dims);
+
+		    // this block can be combined with it's siblings at the same level
+		    if(dims[0] > defaultDims[0] ||
+			    dims[1] > defaultDims[1] ||
+			    dims[2] > defaultDims[2])
+		    {
+			return;
+		    }
+		}
+
+		// blocks are sometimes combined at this level
+		if (needRefinement){
+		    OctKey cell0 = OctKey_AddLevel(p.key, 0);
+		    int cell0_bid = FindBlock(cell0);
+		    if(cell0_bid != -1)
+		    {
+			int defaultDims[3], dims[3];
+			reader->GetBlockDefaultDimensions(defaultDims);
+			reader->GetBlockDimensions(cell0_bid, dims);
+
+			if(dims[0] > defaultDims[0] ||
+				dims[1] > defaultDims[1] ||
+				dims[2] > defaultDims[2])
+			{
+			    needRefinement = false;
+
+			    // We're not subdividing but we should add that
+			    // cell0 patch. That subpatch spans the space of
+			    // the patch we're in too but it's finer res.
+			    p.level = thisLevel+1;
+			    p.ijk_start[0] = ijk_start[0]*2;
+			    p.ijk_start[1] = ijk_start[1]*2;
+			    p.ijk_start[2] = ijk_start[2]*2;
+			    p.key = cell0;
+			    p.fileBID = cell0_bid;
+			    patches.push_back(p);
+			}
+		    }
+		}
+
+		if (needRefinement){
+		    for (int ii=0; ii<3; ii++){
+			ijk_start[ii] = ijk_start[ii]*2;
+			ijk_end[ii] = ijk_start[ii] + dims[ii]*2 - 1;
+		    }
+
+		    subdivide8(ijk_start, ijk_end, p.xs[0], p.xs[1], p.xs[2], p.xe[0], p.xe[1], p.xe[2], p.key, thisLevel+1, maxLevels);
+		}
             }
         }
     }
