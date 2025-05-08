@@ -176,13 +176,5 @@
             <lib name="ospray"/>
             <lib name="anari"/>
         </group>
-
-        <!--
-        # Releasibility of these libs is not yet understood
-        -->
-        <group name="advanced" comment="Must be manually downloaded" enabled="no">
-<!--        <lib name="mdsplus"/>    Removed for now by Allen Sanderson-->
-            <lib name="mili"/>
-        </group>
     </license>
 </modules>
