@@ -14,6 +14,8 @@
 //=========================================================================
 #include "vtkVisItScalarBarActor.h"
 
+#include <vtkVisItUtility.h>
+
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkObjectFactory.h>
@@ -402,6 +404,7 @@ void vtkVisItScalarBarActor::BuildTitle(vtkViewport *viewport)
   tprop->SetShadow(this->Shadow);
   tprop->SetFontFamily(this->FontFamily);
   tprop->SetColor(this->GetProperty()->GetColor());
+  vtkVisItUtility::AdjustPropsForNonFamilyFonts(tprop);
 
   //
   // Set the title position in reference to the legend origin as a
