@@ -5,12 +5,15 @@
 #include <QvisLegendAttributesInterface.h>
 #include <QCheckBox>
 #include <QComboBox>
+#include <QFontDatabase>
 #include <QFrame>
 #include <QHeaderView>
 #include <QLabel>
 #include <QLayout>
 #include <QPushButton>
 #include <QSpinBox>
+#include <QStandardItem>
+#include <QStandardItemModel>
 #include <QStringList>
 #include <QTabWidget>
 #include <QTableWidget>
@@ -312,10 +315,57 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent) :
 
     // Add controls to set the font family.
     fontFamilyComboBox = new QComboBox(this);
-    fontFamilyComboBox->addItem(tr("Arial"));
-    fontFamilyComboBox->addItem(tr("Courier"));
-    fontFamilyComboBox->addItem(tr("Times"));
-    fontFamilyComboBox->setEditable(false);
+
+    // Create a model to set font per item
+    QStandardItemModel *model = new QStandardItemModel(fontFamilyComboBox);
+
+    // Load font from file
+    int dejavuSansFontId = QFontDatabase::addApplicationFont("/Users/miller86/visit/visit/34rc/src/resources/fonts/DejaVuSans.ttf");
+    QFontDatabase::addApplicationFont("/Users/miller86/visit/visit/34rc/src/resources/fonts/DejaVuSans-Bold.ttf");
+    QFontDatabase::addApplicationFont("/Users/miller86/visit/visit/34rc/src/resources/fonts/DejaVuSans-Oblique.ttf");
+    QFontDatabase::addApplicationFont("/Users/miller86/visit/visit/34rc/src/resources/fonts/DejaVuSans-BoldOblique.ttf");
+    QString dejavuSansFamily = QFontDatabase::applicationFontFamilies(dejavuSansFontId).at(0);
+    QFont dejavuSansFont(dejavuSansFamily);
+
+    int dejavuMonoFontId = QFontDatabase::addApplicationFont("/Users/miller86/visit/visit/34rc/src/resources/fonts/DejaVuSansMono.ttf");
+    QFontDatabase::addApplicationFont("/Users/miller86/visit/visit/34rc/src/resources/fonts/DejaVuSansMono-Bold.ttf");
+    QFontDatabase::addApplicationFont("/Users/miller86/visit/visit/34rc/src/resources/fonts/DejaVuSansMono-Oblique.ttf");
+    QFontDatabase::addApplicationFont("/Users/miller86/visit/visit/34rc/src/resources/fonts/DejaVuSansMono-BoldOblique.ttf");
+    QString dejavuMonoFamily = QFontDatabase::applicationFontFamilies(dejavuMonoFontId).at(0);
+    QFont dejavuMonoFont(dejavuMonoFamily);
+
+    int dejavuSerifFontId = QFontDatabase::addApplicationFont("/Users/miller86/visit/visit/34rc/src/resources/fonts/DejaVuSerif.ttf");
+    QFontDatabase::addApplicationFont("/Users/miller86/visit/visit/34rc/src/resources/fonts/DejaVuSerif-Bold.ttf");
+    QFontDatabase::addApplicationFont("/Users/miller86/visit/visit/34rc/src/resources/fonts/DejaVuSerif-Italic.ttf");
+    QFontDatabase::addApplicationFont("/Users/miller86/visit/visit/34rc/src/resources/fonts/DejaVuSerif-BoldItalic.ttf");
+    QString dejavuSerifFamily = QFontDatabase::applicationFontFamilies(dejavuSerifFontId).at(0);
+    QFont dejavuSerifFont(dejavuSerifFamily);
+
+    int libertinusMathFontId = QFontDatabase::addApplicationFont("/Users/miller86/visit/visit/34rc/src/resources/fonts/LibertinusMath-Regular.ttf");
+    QString libertinusMathFamily = QFontDatabase::applicationFontFamilies(libertinusMathFontId).at(0);
+    QFont libertinusMathFont(libertinusMathFamily);
+
+    // Define font styles and their descriptions
+    struct FontStyle {
+        QString label;
+        QFont font;
+    };
+
+    QList<FontStyle> fonts = {
+        { "Modern (AaGgLlOo0I1)", dejavuSansFont },
+        { "Fixed (AaGgLlOo0I1)", dejavuMonoFont },
+        { "Classic (AaGgLlOo0I1)", dejavuSerifFont },
+        { "Math (AaGgLlOo0I1)", libertinusMathFont }
+    };
+
+    // Populate combo box with styled entries
+    for (FontStyle &style : fonts) {
+        QStandardItem *item = new QStandardItem(style.label);
+        item->setFont(style.font);
+        model->appendRow(item);
+    }
+    fontFamilyComboBox->setModel(model);
+
     connect(fontFamilyComboBox, SIGNAL(activated(int)),
             this, SLOT(fontFamilyChanged(int)));
     aLayout->addWidget(fontFamilyComboBox, row, 1, 1, 3);
@@ -1099,6 +1149,9 @@ QvisLegendAttributesInterface::boundingBoxOpacityChanged(int opacity)
 void
 QvisLegendAttributesInterface::fontFamilyChanged(int family)
 {
+    QFont font = fontFamilyComboBox->model()->
+        index(family, 0).data(Qt::FontRole).value<QFont>();
+    fontFamilyComboBox->setFont(font);
     annot->SetFontFamily((AnnotationObject::FontFamily)family);
     SetUpdate(false);
     Apply();
@@ -1206,6 +1259,21 @@ QvisLegendAttributesInterface::customTitleChanged()
 void
 QvisLegendAttributesInterface::boldToggled(bool val)
 {
+    // Make all items in font list appear with bold as specified
+    QAbstractItemModel *model = fontFamilyComboBox->model();
+    for (int row = 0; row < model->rowCount(); ++row) {
+        QModelIndex index = model->index(row, 0);
+        QFont font = index.data(Qt::FontRole).value<QFont>();
+        font.setBold(val);
+        model->setData(index, font, Qt::FontRole);
+    }
+
+    // Make selected item appear with bold as specified
+    QFont font = fontFamilyComboBox->model()->
+        index(fontFamilyComboBox->currentIndex(), 0).data(Qt::FontRole).value<QFont>();
+    font.setBold(val);
+    fontFamilyComboBox->setFont(font);
+
     annot->SetFontBold(val);
     SetUpdate(false);
     Apply();
