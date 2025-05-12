@@ -260,7 +260,7 @@ function add_extra_commandline_args
 #  Modifications: 
 #    Kathleen Biagas, Monday May 12, 2025
 #    Combined verify_required_module_exists and verify_optional_module_exists
-#    into one methd: verify_module exists to reduce code duplication
+#    into one method, verify_module_exists, to reduce code duplication
 #                                                                            
 # *************************************************************************** 
 

@@ -705,7 +705,7 @@ function strip_quotes
 # Modifications:
 #   Kathleen Biagas, Monday May 12, 2025
 #   Modified to test for actual group names and return early if possible.
-#   Don't allow 'extras' group to be 'enabled, print message and exit script.
+#   Don't allow 'extras' group to be 'enabled'. Print message and exit if so.
 #   Remove test for 'dbio-only'.
 #
 # *************************************************************************** 
