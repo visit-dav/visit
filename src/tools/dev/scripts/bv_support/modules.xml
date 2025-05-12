@@ -82,12 +82,10 @@
             <lib name="hdf5"/>
             <lib name="icet"/>
             <lib name="llvm"/>
-            <lib name="meson"/>
             <lib name="mfem"/>
             <lib name="mili"/>
             <lib name="moab"/>
             <lib name="netcdf"/>
-            <lib name="ninja"/>
             <lib name="openexr"/>
             <lib name="ospray"/>
             <lib name="anari"/>
@@ -97,9 +95,7 @@
             <lib name="silo"/>
             <lib name="szip"/>
             <lib name="vtkm"/>
-            <lib name="xcb"/>
             <lib name="xdmf"/>
-            <lib name="xkbcommon"/>
         </group>
 
         <group name="no-thirdparty" comment="Do not build required 3rd party libraries" enabled="no">
