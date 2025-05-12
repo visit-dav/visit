@@ -209,8 +209,7 @@ fi
 if [ "$poodle" = true ] || [ "$rzwhippet" = true ]; then
    dest_dir=/usr/workspace/visit/visit/thirdparty_shared/$version/toss4
 elif [ "$lassen" = true ]; then
-#   dest_dir=/usr/workspace/visit/visit/thirdparty_shared/$version/blueos
-   dest_dir=/usr/workspace/brugger/visit/thirdparty_shared/$version/blueos
+   dest_dir=/usr/workspace/visit/visit/thirdparty_shared/$version/blueos
 elif [ "$rzvernal" = true ]; then
    dest_dir=/usr/workspace/visit/visit/thirdparty_shared/$version/toss4-cray-gfx90a
 elif [ "$tuolumne" = true ]; then
