@@ -6,6 +6,10 @@
 # Modifications:
 #   Kathleen Biagas, Mon Dec 12, 2022
 #   Moved from ../CMakeLists.txt
+#
+#   Kevin Griffin, Mon 03 Mar 2025 04:23:27 PM CST
+#   Added support for ANARI
+#
 #****************************************************************************
 
 
@@ -84,6 +88,18 @@ if(HAVE_OSPRAY)
               ${CMAKE_CURRENT_SOURCE_DIR}/vtkVisItViewNodeFactory.h)
 endif()
 
+if(HAVE_ANARI)
+    visit_append_list(
+        NAME  avtplotter_ser_SOURCES
+        ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/vtkAnariVisItCubeAxesActorNode.C
+              ${CMAKE_CURRENT_SOURCE_DIR}/vtkAnariVisItAxisActorNode.C
+              ${CMAKE_CURRENT_SOURCE_DIR}/vtkAnariVisItViewNodeFactory.C)
+    visit_append_list(
+        NAME  avtplotter_ser_HEADERS
+        ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/vtkAnariVisItCubeAxesActorNode.h
+              ${CMAKE_CURRENT_SOURCE_DIR}/vtkAnariVisItAxisActorNode.h
+              ${CMAKE_CURRENT_SOURCE_DIR}/vtkAnariVisItViewNodeFactory.h)
+endif()
 
 visit_append_list(
     NAME  avtplotter_ser_INCLUDES

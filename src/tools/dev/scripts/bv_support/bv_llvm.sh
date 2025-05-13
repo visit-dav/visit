@@ -88,6 +88,9 @@ function bv_llvm_ensure
 {
     if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
         if [[ "$DO_LLVM" == "yes" ]] ; then
+            if [[ "$DOWNLOAD_ONLY" == "yes" ]] ; then
+                download_file ${BV_CLANG_FILE} ${BV_CLANG_URL}
+            fi
             ensure_built_or_ready "llvm"   $BV_LLVM_VERSION   $BV_LLVM_BUILD_DIR   $BV_LLVM_FILE $BV_LLVM_URL
             if [[ $? != 0 ]] ; then
                 return 1

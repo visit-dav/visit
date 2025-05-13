@@ -37,7 +37,11 @@ class QPushButton;
 //    Removed QString arg from targetTextChanged slot as it now connected
 //    to 'editingFinished' signal, and isn't called by another function.
 //
+//    Kathleen Biagas, Wed April 16, 2025
+//    Add no-arg includeTextChanged to match editingFinished signal.
+//
 // ****************************************************************************
+
 class XMLEditIncludes : public QFrame
 {
     Q_OBJECT
@@ -50,6 +54,7 @@ class XMLEditIncludes : public QFrame
     void UpdateWindowSensitivity();
     void UpdateWindowSingleItem();
     void targetTextChanged();
+    void includeTextChanged();
     void includeTextChanged(const QString&);
     void fileGroupChanged(int);
     void quotedGroupChanged(int);

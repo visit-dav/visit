@@ -50,6 +50,9 @@
 #   even if QWT isn't found. This will preserve the ability for simulations
 #   to use the StripChart callbacks and not crash.
 #
+#   Kevin Griffin, Wed 05 Mar 2025 03:46:12 PM CST
+#   Added anari/AnariRenderingWidget
+#
 #****************************************************************************
 
 set(GUILIB_SOURCES
@@ -386,7 +389,10 @@ if(QWT_FOUND)
     list(APPEND GUILIB_HEADERS QvisStripChart.h)
 endif()
 
-
+if(HAVE_ANARI)
+    list(APPEND GUILIB_SOURCES anari/AnariRenderingWidget.C)
+    list(APPEND GUILIB_HEADERS anari/AnariRenderingWidget.h)
+endif()
 
 set(GUI_DEPENDS
     viewerrpc
@@ -403,7 +409,8 @@ set(GUI_DEPENDS
     ${QT_QTNETWORK_LIBRARY} 
     ${QT_QTXML_LIBRARY} 
     ${QT_QTCORE_LIBRARY}
-    ${QT_QTPRINTSUPPORT_LIBRARY})
+    ${QT_QTPRINTSUPPORT_LIBRARY}
+    $<$<BOOL:${HAVE_ANARI}>:anari::anari>)
 
 if(QWT_FOUND)
     list(APPEND GUI_DEPENDS qwt)
@@ -428,6 +435,8 @@ visit_add_library(
     INCLUDES    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
                 $<BUILD_INTERFACE:${VISIT_SOURCE_DIR}/common>
                 $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/gui>
+                $<BOOL:${HAVE_ANARI}>:$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/anari>
+                $<BOOL:${HAVE_ANARI}>:$<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/gui/anari>
     DEPENDS_ON  ${GUI_DEPENDS})
 
 

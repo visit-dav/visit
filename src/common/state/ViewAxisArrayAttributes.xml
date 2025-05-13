@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="ViewAxisArrayAttributes" purpose="This class contains the axis array view attributes." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+  <Attribute name="ViewAxisArrayAttributes" purpose="This class contains the axis array view attributes." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="ViewAxisArrayAttributes.code">
     <Field name="domainCoords" label="domainCoords" type="doubleArray" length="2">
       0.000000
       1.000000
@@ -14,4 +14,6 @@
       0.100000
       0.850000
     </Field>
+    <Function name="SetViewportCoords" user="false" member="true">
+    </Function>
   </Attribute>

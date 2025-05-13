@@ -5,14 +5,11 @@
 #*****************************************************************************
 # Modifications:
 #
-#   Kevin Griffin, Mon 24 Feb 2025
-#   Added VISIT_ANARI cache variable
 #****************************************************************************
 
 
 option(VISIT_PARALLEL "Build VisIt's parallel compute engine." OFF)
 option(VISIT_SLIVR    "Build VisIt with support for the SLIVR volume rendering library." ON)
-option(VISIT_ANARI    "Build VisIt with support for the ANARI rendering SDK." OFF)
 option(VISIT_STATIC   "Build VisIt statically." OFF)
 if(VISIT_STATIC)
     add_definitions(-DVISIT_STATIC)

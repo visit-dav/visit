@@ -13,9 +13,10 @@
 #       lassen     (LC, Linux, power9),
 #       rzwhippet  (LC, Linux, x86_64, toss4),
 #       rzvernal   (LC, Linux, x86_64, toss4-cray),
-#       crossroads (LANL, x86_64)
+#       crossroads (LANL, x86_64),
 #       tuolumne   (LC, Linux, x86_64, toss4-cray),
-#       rzadams    (LC, Linux, x86_64, toss4-cray)
+#       rzadams    (LC, Linux, x86_64, toss4-cray),
+#       elcap      (LC, Linux, x86_64, toss4-cray)
 #
 # Modifications:
 #    Eric Brugger, Fri Feb 17 09:36:29 PST 2023
@@ -73,6 +74,12 @@
 #
 #    Eric Brugger, Wed Dec  4 16:00:35 PST 2024
 #    Removed trinity and added crossroads.
+# 
+#    Justin Privitera, Wed Apr 16 14:01:51 PDT 2025
+#    Added elcap.
+#
+#    Kathleen Biagas, Wed May 7, 2025
+#    Removed '--uintah' as it is now built when '--optional' specified.
 #
 #-----------------------------------------------------------------------
 
@@ -136,6 +143,11 @@ do
          machine_name="rzadams"
          shift
          ;;
+      -elcap)
+         tuolumne=true
+         machine_name="elcap"
+         shift
+         ;;
       -v)
          version=$2
          shift 2
@@ -158,9 +170,10 @@ then
    echo "    lassen     (LC, Linux, power9),"
    echo "    rzwhippet  (LC, Linux, x86_64, toss4),"
    echo "    rzvernal   (LC, Linux, x86_64, toss4-cray),"
-   echo "    crossroads (LANL, Linux, x86_64)"
+   echo "    crossroads (LANL, Linux, x86_64),"
    echo "    tuolumne   (LC, Linux, x86_64, toss4-cray),"
-   echo "    rzadams    (LC, Linux, x86_64, toss4-cray)"
+   echo "    rzadams    (LC, Linux, x86_64, toss4-cray),"
+   echo "    elcap      (LC, Linux, x86_64, toss4-cray)"
    exit
 fi
 
@@ -245,13 +258,13 @@ if [ "$poodle" = true ]; then
    env PAR_COMPILER=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/bin/mpicc \
        PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/bin/mpicxx \
        PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/include \
-       ./$build_visit_script --group ${dest_group} --required --optional --mesagl --uintah --parallel \
+       ./$build_visit_script --group ${dest_group} --required --optional --mesagl --parallel \
        --qt6 --qwt --no-pyside --no-visit --makeflags -j16 --thirdparty-path ${dest_dir}
 elif [ "$rzwhippet" = true ]; then
    env PAR_COMPILER=/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/bin/mpicc \
        PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/bin/mpicxx \
        PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/include \
-       ./$build_visit_script --group ${dest_group} --required --optional --mesagl --uintah --parallel \
+       ./$build_visit_script --group ${dest_group} --required --optional --mesagl --parallel \
         --qt6 --qwt --no-pyside --no-gdal --no-visit --makeflags -j20 \
         --thirdparty-path ${dest_dir}
 elif [ "$lassen" = true ]; then
@@ -259,7 +272,7 @@ elif [ "$lassen" = true ]; then
    env PAR_COMPILER=/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-8.3.1/bin/mpicc \
        PAR_COMPILER_CXX=/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-8.3.1/bin/mpicxx \
        PAR_INCLUDE=-I/usr/tce/packages/spectrum-mpi/ibm/spectrum-mpi-rolling-release/include \
-       ./${build_visit_script} --group ${dest_group} --required --optional --mesagl --uintah \
+       ./${build_visit_script} --group ${dest_group} --required --optional --mesagl \
        --no-gdal --no-openexr --no-embree --no-ispc --no-tbb --no-pidx \
        --no-ospray --parallel --qt --qwt --no-pyside --no-visit --no-boost --makeflags -j16 \
        --thirdparty-path ${dest_dir}
@@ -267,7 +280,7 @@ elif [ "$rzvernal" = true ]; then
    env PAR_COMPILER=/usr/tce/packages/cray-mpich/cray-mpich-8.1.28-gcc-12.2.1-magic/bin/mpicc \
        PAR_COMPILER_CXX=/usr/tce/packages/cray-mpich/cray-mpich-8.1.28-gcc-12.2.1-magic/bin/mpicxx \
        PAR_INCLUDE=-I/usr/tce/packages/cray-mpich/cray-mpich-8.1.28-gcc-12.2.1-magic/include \
-       ./$build_visit_script --group ${dest_group} --required --optional --mesagl --uintah --parallel \
+       ./$build_visit_script --group ${dest_group} --required --optional --mesagl --parallel \
        --qt6 --qwt --no-pyside --no-gdal --no-uintah --no-visit --makeflags -j24 --thirdparty-path ${dest_dir} 
 elif [ "$crossroads" = true ]; then
    env C_COMPILER=gcc \
@@ -319,8 +332,9 @@ then
    echo "    lassen     (LC, Linux, power9),"
    echo "    rzgenie    (LC, Linux, x86_64, toss3),"
    echo "    rzvernal   (LC, Linux, x86_64, toss4-cray),"
-   echo "    crossroads (LANL, Linux, x86_64)"
+   echo "    crossroads (LANL, Linux, x86_64),"
    echo "    tuolumne   (LC, Linux, x86_64, toss4-cray),"
    echo "    rzadams    (LC, Linux, x86_64, toss4-cray),"
+   echo "    elcap      (LC, Linux, x86_64, toss4-cray)"
    exit
 fi

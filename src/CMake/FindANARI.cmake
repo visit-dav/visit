@@ -4,6 +4,9 @@
 
 #****************************************************************************
 # Modifications:
+#   Kathleen Biagas, Tue May 6, 2025
+#   Libraries may be installed in 'lib64' or 'lib' so test for existence and
+#   set a temporary CMake var to hold the correct one.
 #
 #*****************************************************************************
 
@@ -34,6 +37,8 @@ This will define the following variables:
 
 ``anari_FOUND``
   True if the system has the ANARI library.
+``HAVE_ANARI``
+  True if the ANARI library was found.
 ``HAVE_ANARI_EXAMPLE``
   True if the ANARI example back-end library (helide) was found.
 
@@ -50,20 +55,26 @@ The following cache variables may also be set:
 #]=======================================================================]
 
 if(EXISTS ${VISIT_ANARI_DIR})
-    message(STATUS "Checking for ANARI in ${VISIT_ANARI_DIR}/lib/cmake/anari-${ANARI_VERSION}")
+    if(EXISTS ${VISIT_ANARI_DIR}/lib64)
+       set(anari_libdir "lib64")
+    else()
+       set(anari_libdir "lib")
+    endif()
+    message(STATUS "Checking for ANARI in ${VISIT_ANARI_DIR}/${anari_libdir}/cmake/anari-${ANARI_VERSION}")
 
     if(NOT DEFINED anari_DIR)
-        set(anari_DIR ${VISIT_ANARI_DIR}/lib/cmake/anari-${ANARI_VERSION}
+        set(anari_DIR ${VISIT_ANARI_DIR}/${anari_libdir}/cmake/anari-${ANARI_VERSION}
             CACHE PATH
             "The directory containing the ANARI config files."
             FORCE)
-    endif(NOT DEFINED anari_DIR)
+    endif()
 
     find_package(anari)
 endif()
 
 if(anari_FOUND)
-    add_definitions(-DVISIT_ANARI)
+    set(HAVE_ANARI TRUE)
+    add_definitions(-DHAVE_ANARI)
 
     # Install Headers
     if(VISIT_INSTALL_THIRD_PARTY AND NOT VISIT_HEADERS_SKIP_INSTALL)
@@ -83,7 +94,7 @@ if(anari_FOUND)
     # the install library logic will correctly install both the full
     # version and the .so symlink, so only the .so is needed to be
     # sent to the function.
-    file(GLOB ANARI_LIBRARIES ${VISIT_ANARI_DIR}/lib/lib*)
+    file(GLOB ANARI_LIBRARIES ${VISIT_ANARI_DIR}/${anari_libdir}/lib*)
 
     # Install libs
     foreach(l ${ANARI_LIBRARIES})
@@ -99,7 +110,7 @@ if(anari_FOUND)
      	  NAMES
           anari_library_helide
         PATHS
-          ${VISIT_ANARI_DIR}/lib
+          ${VISIT_ANARI_DIR}/${anari_libdir}
           ${_Example_DIR}/lib
     	  DOC "ANARI Example back-end library")
 
@@ -115,10 +126,14 @@ if(anari_FOUND)
     # so we need to make sure those libs exist in
     # ${VISIT_BINARY_DIR}/lib/
     # so developer builds can load them
-    file(COPY ${DLOPEN_LIBS}
-      DESTINATION ${VISIT_BINARY_DIR}/lib/
-      FILE_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
-                       GROUP_WRITE GROUP_READ GROUP_EXECUTE
-                                   WORLD_READ WORLD_EXECUTE
-      FOLLOW_SYMLINK_CHAIN)
-endif(anari_FOUND)
+
+    if(DLOPEN_LIBS)
+        file(COPY ${DLOPEN_LIBS}
+            DESTINATION ${VISIT_BINARY_DIR}/lib/
+            FILE_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
+                             GROUP_WRITE GROUP_READ GROUP_EXECUTE
+                                         WORLD_READ WORLD_EXECUTE
+            FOLLOW_SYMLINK_CHAIN)
+    endif()
+endif()
+

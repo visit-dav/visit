@@ -376,7 +376,17 @@ XMLEditFunctions::BlockAllSignals(bool block)
 //    'editingFinished' signal, grab contents of file widget.
 //    Arg is only non-empty when this function called from targetTextChanged.
 //
+//    Kathleen Biagas, Wed April 16, 2025
+//    Add no-arg nameTextChanged to match editingFinished signal.
+//
 // ****************************************************************************
+
+void
+XMLEditFunctions::nameTextChanged()
+{
+    nameTextChanged(name->text());
+}
+
 void
 XMLEditFunctions::nameTextChanged(const QString &text)
 {
@@ -386,7 +396,7 @@ XMLEditFunctions::nameTextChanged(const QString &text)
         return;
     Function *f = a->functions[index];
 
-    QString newname = text.isEmpty() ? name->text().trimmed() : text.trimmed();
+    QString newname = text.trimmed();
     f->name = newname;
     if(CountFunctions(newname) > 1)
     {
