@@ -81,6 +81,9 @@
 #    Eric Brugger, Tue May  6 10:45:27 PDT 2025
 #    Updated lassen and crossroads to use qt6.
 #
+#    Kathleen Biagas, Wed May 7, 2025
+#    Removed '--uintah' as it is now built when '--optional' specified.
+#
 #-----------------------------------------------------------------------
 
 #
@@ -258,13 +261,13 @@ if [ "$poodle" = true ]; then
    env PAR_COMPILER=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/bin/mpicc \
        PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/bin/mpicxx \
        PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/include \
-       ./$build_visit_script --group ${dest_group} --required --optional --mesagl --uintah --parallel \
+       ./$build_visit_script --group ${dest_group} --required --optional --mesagl --parallel \
        --qt6 --qwt --no-pyside --no-visit --makeflags -j16 --thirdparty-path ${dest_dir}
 elif [ "$rzwhippet" = true ]; then
    env PAR_COMPILER=/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/bin/mpicc \
        PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/bin/mpicxx \
        PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/include \
-       ./$build_visit_script --group ${dest_group} --required --optional --mesagl --uintah --parallel \
+       ./$build_visit_script --group ${dest_group} --required --optional --mesagl --parallel \
         --qt6 --qwt --no-pyside --no-gdal --no-visit --makeflags -j20 \
         --thirdparty-path ${dest_dir}
 elif [ "$lassen" = true ]; then
@@ -280,7 +283,7 @@ elif [ "$rzvernal" = true ]; then
    env PAR_COMPILER=/usr/tce/packages/cray-mpich/cray-mpich-8.1.28-gcc-12.2.1-magic/bin/mpicc \
        PAR_COMPILER_CXX=/usr/tce/packages/cray-mpich/cray-mpich-8.1.28-gcc-12.2.1-magic/bin/mpicxx \
        PAR_INCLUDE=-I/usr/tce/packages/cray-mpich/cray-mpich-8.1.28-gcc-12.2.1-magic/include \
-       ./$build_visit_script --group ${dest_group} --required --optional --mesagl --uintah --parallel \
+       ./$build_visit_script --group ${dest_group} --required --optional --mesagl --parallel \
        --qt6 --qwt --no-pyside --no-gdal --no-uintah --no-visit --makeflags -j24 --thirdparty-path ${dest_dir} 
 elif [ "$crossroads" = true ]; then
    env C_COMPILER=gcc \
