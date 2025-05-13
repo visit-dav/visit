@@ -51,7 +51,7 @@ function bv_mdsplus_host_profile
             "VISIT_OPTION_DEFAULT(VISIT_MDSPLUS_DIR \${VISITHOME}/mdsplus/$MDSPLUS_VERSION/\${VISITARCH})" \
             >> $HOSTCONF
         echo \
-            "VISIT_OPTION_DEFAULT(VISIT_MDSPLUS_LIBDEP HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP} TYPE STRING)" \
+            "VISIT_OPTION_DEFAULT(VISIT_MDSPLUS_LIBDEP hdf5 TYPE STRING)" \
             >> $HOSTCONF
     fi
 }
