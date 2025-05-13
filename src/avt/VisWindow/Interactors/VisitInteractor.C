@@ -40,6 +40,9 @@ ViewCallback   VisitInteractor::viewCallback     = NULL;
 //    Kathleen Biagas, Wed Aug 17, 2022
 //    Added useOSPray.
 //
+//    Kevin Griffin, Wed Apr 02, 2025
+//    Added useAnari.
+//
 // ****************************************************************************
 
 VisitInteractor::VisitInteractor(VisWindowInteractorProxy &p) : proxy(p)
@@ -61,6 +64,7 @@ VisitInteractor::VisitInteractor(VisWindowInteractorProxy &p) : proxy(p)
     spinNewX = 0;
     spinNewY = 0;
     useOSPRay = false;
+    useAnari = false;
 }
 
 // ****************************************************************************

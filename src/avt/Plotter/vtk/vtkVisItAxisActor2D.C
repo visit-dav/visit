@@ -529,6 +529,9 @@ void vtkVisItAxisActor2D::PrintSelf(ostream& os, vtkIndent indent)
 //   Move the logic to skip major tick marks when doing scientific
 //   notation from BuildAxis to ComputeLogTicks.
 //
+//   Mark C. Miller, Sun Apr 27 19:37:51 PDT 2025
+//   Fixed segv involving restricting labelCount<200 in loop variable around
+//   line 823.
 // ****************************************************************************
 
 void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
@@ -833,7 +836,7 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
       labelCount++;
       }
 
-    for (i = 0, labelCount = 0; i < numLabels; i++)
+    for (i = 0, labelCount = 0; i < numLabels && labelCount < 200; i++)
       {
       if (!useMinorForLabels && ticksize[i] != 1.0)
         {

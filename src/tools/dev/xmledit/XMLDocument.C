@@ -183,6 +183,9 @@ XMLDocument::open(const QString &file)
 //    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
 //    First pass at porting to Qt 4.4.0
 //
+//    Kathleen Biagas, Thu May 1, 2025
+//    Add error checking for empty 'subtype' for 'att' or 'attVector' type.
+//
 // ****************************************************************************
 void
 XMLDocument::save(const QString &file)
@@ -227,6 +230,14 @@ XMLDocument::save(const QString &file)
 
                 QMessageBox::warning(0,"Error",
                     QString("The enabler for field %1 must have at least one value.").arg(attribute->fields[i]->name));
+                return;
+            }
+            if ((attribute->fields[i]->type == "att" || 
+                 attribute->fields[i]->type == "attVector") &&
+                 attribute->fields[i]->GetSubtype().isEmpty())
+            {
+                QMessageBox::warning(0,"Error",
+                    QString("The subtype for field %1 must not be empty.").arg(attribute->fields[i]->name));
                 return;
             }
         }

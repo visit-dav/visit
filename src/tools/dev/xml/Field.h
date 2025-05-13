@@ -85,6 +85,9 @@
 //    Kathleen Biagas, Thu Nov 17, 2022
 //    Added boolArray and boolVector.
 //
+//    Kathleen Biagas, Wed Apr 30, 2025
+//    Prevent segv when SubType QString for Att or AttVector is empty.
+//
 // ****************************************************************************
 
 
@@ -1348,7 +1351,8 @@ class Att : public virtual Field
     {
         attType = t;
         AttType = t;
-        AttType[0] = AttType[0].toUpper();
+        if (!t.isEmpty())
+            AttType[0] = AttType[0].toUpper();
     };
     virtual QString GetSubtype()
     {
@@ -1358,7 +1362,8 @@ class Att : public virtual Field
     {
         attType = t;
         AttType = t;
-        AttType[0] = AttType[0].toUpper();
+        if (!t.isEmpty())
+            AttType[0] = AttType[0].toUpper();
     }
     virtual QString GetCPPName(bool, const QString &)
     {
@@ -1394,7 +1399,8 @@ class AttVector : public virtual Field
     {
         attType = t;
         AttType = t;
-        AttType[0] = AttType[0].toUpper();
+        if(!t.isEmpty())
+            AttType[0] = AttType[0].toUpper();
     };
     virtual QString GetSubtype()
     {
@@ -1404,7 +1410,8 @@ class AttVector : public virtual Field
     {
         attType = t;
         AttType = t;
-        AttType[0] = AttType[0].toUpper();
+        if(!t.isEmpty())
+            AttType[0] = AttType[0].toUpper();
     }
     virtual QString GetCPPName(bool, const QString &)
     {
