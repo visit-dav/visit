@@ -1904,7 +1904,11 @@ function build_vtk
     if [[ "$DO_ANARI" == "yes" ]] && [[ "$DO_VTK94" == "yes" ]] ; then
         vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingAnari:STRING=YES"
         vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_FiltersTexture:STRING=YES"
-        vopts="${vopts} -Danari_DIR=${VISITDIR}/anari/${ANARI_VERSION}/${VISITARCH}/lib/cmake/anari-${ANARI_VERSION}"
+       if [[ -d ${VISITDIR}/anari/${ANARI_VERSION}/${VISITARCH}/lib64 ]] ; then
+            vopts="${vopts} -Danari_DIR=${VISITDIR}/anari/${ANARI_VERSION}/${VISITARCH}/lib64/cmake/anari-${ANARI_VERSION}"
+        else
+            vopts="${vopts} -Danari_DIR=${VISITDIR}/anari/${ANARI_VERSION}/${VISITARCH}/lib/cmake/anari-${ANARI_VERSION}"
+        fi
 
         if [[ "$DO_ANARI_NVTX" == "yes" ]] ; then
             vopts="${vopts} -DVTK_ANARI_ENABLE_NVTX:BOOL=ON"
