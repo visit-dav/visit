@@ -23,6 +23,8 @@
 #include <QvisScreenPositionEdit.h>
 
 #include <AnnotationObject.h>
+#include <FontFileManager.h>
+#include <FontManager.h>
 #include <ViewerProxy.h>
 #include <legend_defines.h>
 
@@ -319,49 +321,16 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent) :
     // Create a model to set font per item
     QStandardItemModel *model = new QStandardItemModel(fontFamilyComboBox);
 
-    // Load font from file
-    int dejavuSansFontId = QFontDatabase::addApplicationFont("/Users/miller86/visit/visit/34rc/src/resources/fonts/DejaVuSans.ttf");
-    QFontDatabase::addApplicationFont("/Users/miller86/visit/visit/34rc/src/resources/fonts/DejaVuSans-Bold.ttf");
-    QFontDatabase::addApplicationFont("/Users/miller86/visit/visit/34rc/src/resources/fonts/DejaVuSans-Oblique.ttf");
-    QFontDatabase::addApplicationFont("/Users/miller86/visit/visit/34rc/src/resources/fonts/DejaVuSans-BoldOblique.ttf");
-    QString dejavuSansFamily = QFontDatabase::applicationFontFamilies(dejavuSansFontId).at(0);
-    QFont dejavuSansFont(dejavuSansFamily);
-
-    int dejavuMonoFontId = QFontDatabase::addApplicationFont("/Users/miller86/visit/visit/34rc/src/resources/fonts/DejaVuSansMono.ttf");
-    QFontDatabase::addApplicationFont("/Users/miller86/visit/visit/34rc/src/resources/fonts/DejaVuSansMono-Bold.ttf");
-    QFontDatabase::addApplicationFont("/Users/miller86/visit/visit/34rc/src/resources/fonts/DejaVuSansMono-Oblique.ttf");
-    QFontDatabase::addApplicationFont("/Users/miller86/visit/visit/34rc/src/resources/fonts/DejaVuSansMono-BoldOblique.ttf");
-    QString dejavuMonoFamily = QFontDatabase::applicationFontFamilies(dejavuMonoFontId).at(0);
-    QFont dejavuMonoFont(dejavuMonoFamily);
-
-    int dejavuSerifFontId = QFontDatabase::addApplicationFont("/Users/miller86/visit/visit/34rc/src/resources/fonts/DejaVuSerif.ttf");
-    QFontDatabase::addApplicationFont("/Users/miller86/visit/visit/34rc/src/resources/fonts/DejaVuSerif-Bold.ttf");
-    QFontDatabase::addApplicationFont("/Users/miller86/visit/visit/34rc/src/resources/fonts/DejaVuSerif-Italic.ttf");
-    QFontDatabase::addApplicationFont("/Users/miller86/visit/visit/34rc/src/resources/fonts/DejaVuSerif-BoldItalic.ttf");
-    QString dejavuSerifFamily = QFontDatabase::applicationFontFamilies(dejavuSerifFontId).at(0);
-    QFont dejavuSerifFont(dejavuSerifFamily);
-
-    int libertinusMathFontId = QFontDatabase::addApplicationFont("/Users/miller86/visit/visit/34rc/src/resources/fonts/LibertinusMath-Regular.ttf");
-    QString libertinusMathFamily = QFontDatabase::applicationFontFamilies(libertinusMathFontId).at(0);
-    QFont libertinusMathFont(libertinusMathFamily);
-
-    // Define font styles and their descriptions
-    struct FontStyle {
-        QString label;
-        QFont font;
-    };
-
-    QList<FontStyle> fonts = {
-        { "Modern (AaGgLlOo0I1)", dejavuSansFont },
-        { "Fixed (AaGgLlOo0I1)", dejavuMonoFont },
-        { "Classic (AaGgLlOo0I1)", dejavuSerifFont },
-        { "Math (AaGgLlOo0I1)", libertinusMathFont }
-    };
-
-    // Populate combo box with styled entries
-    for (FontStyle &style : fonts) {
-        QStandardItem *item = new QStandardItem(style.label);
-        item->setFont(style.font);
+    const std::map<std::string, FontFileManager::FontVariants>& fontFilesMap = FontFileManager::instance().fonts();
+    FontManager::instance().setupFonts(fontFilesMap);
+    const QMap<QString, QFont>& fontMap = FontManager::instance().fonts();
+    for (auto &pair : fontFilesMap) {
+        QString qfirst = QString::fromUtf8(pair.first);
+        if (fontMap.find(qfirst) == fontMap.end())
+            continue;
+        const FontFileManager::FontVariants& fv = pair.second;
+        QStandardItem *item = new QStandardItem(QString::fromUtf8(fv.guiName));
+        item->setFont(fontMap[qfirst]);
         model->appendRow(item);
     }
     fontFamilyComboBox->setModel(model);

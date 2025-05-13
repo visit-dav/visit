@@ -56,6 +56,7 @@ SET(GUILIB_SOURCES
 AccessViewerSession.C
 ColorTableObserver.C
 FileServerList.C
+FontManager.C
 GUIBase.C
 KeyframeData.C
 KeyframeDataModel.C

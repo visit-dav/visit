@@ -1,12 +1,6 @@
 <?xml version="1.0"?>
   <Attribute name="FontAttributes" purpose="Describes font properties that we can set through VTK" persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h">
-    <Enum name="FontName">
-      Arial
-      Courier
-      Times
-    </Enum>
-    <Field name="font" label="Font" type="enum" subtype="FontName">
-      Arial
+    <Field name="ttfBaseFileName" label="Name of regular .ttf file in set of 4 related files in resources/font directory" type="string">
     </Field>
     <Field name="scale" label="Scale" type="double">
       1.000000
