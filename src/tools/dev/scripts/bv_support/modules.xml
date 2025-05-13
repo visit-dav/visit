@@ -86,6 +86,7 @@
             <lib name="mfem"/>
             <lib name="mili"/>
             <lib name="moab"/>
+            <lib name="nektarpp"/>
             <lib name="netcdf"/>
             <lib name="ninja"/>
             <lib name="openexr"/>
@@ -96,6 +97,7 @@
             <lib name="qwt"/>
             <lib name="silo"/>
             <lib name="szip"/>
+            <lib name="uintah"/>
             <lib name="vtkm"/>
             <lib name="xcb"/>
             <lib name="xdmf"/>
