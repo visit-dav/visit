@@ -31,14 +31,28 @@ void FontManager::setupFonts(const std::map<std::string, FontFileManager::FontVa
         const FontFileManager::FontVariants &fv = pair.second;
         int const badFontId = QFontDatabase::addApplicationFont("/failed-font-file");
         int fontId = badFontId;
+
         if (!fv.regular.empty())
-            fontId = QFontDatabase::addApplicationFont(QString::fromUtf8(fv.regular));
-        if (fontId == badFontId && !fv.bold.empty())
-            fontId = QFontDatabase::addApplicationFont(QString::fromUtf8(fv.bold));
-        if (fontId == badFontId && !fv.italic.empty())
-            fontId = QFontDatabase::addApplicationFont(QString::fromUtf8(fv.italic));
-        if (fontId == badFontId && !fv.boldItalic.empty())
-            fontId = QFontDatabase::addApplicationFont(QString::fromUtf8(fv.boldItalic));
+        {
+            int fid = QFontDatabase::addApplicationFont(QString::fromUtf8(fv.regular));
+            if (fid != badFontId) fontId = fid;
+        }
+        if (!fv.bold.empty())
+        {
+            int fid = QFontDatabase::addApplicationFont(QString::fromUtf8(fv.bold));
+            if (fid != badFontId) fontId = fid;
+        }
+        if (!fv.italic.empty())
+        {
+            int fid = QFontDatabase::addApplicationFont(QString::fromUtf8(fv.italic));
+            if (fid != badFontId) fontId = fid;
+        }
+        if (!fv.boldItalic.empty())
+        {
+            int fid = QFontDatabase::addApplicationFont(QString::fromUtf8(fv.boldItalic));
+            if (fid != badFontId) fontId = fid;
+        }
+
         if (fontId != badFontId)
         {
             QString fontFamily = QFontDatabase::applicationFontFamilies(fontId).at(0);

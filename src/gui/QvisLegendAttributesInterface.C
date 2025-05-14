@@ -1257,6 +1257,21 @@ QvisLegendAttributesInterface::boldToggled(bool val)
 void
 QvisLegendAttributesInterface::italicToggled(bool val)
 {
+    // Make all items in font list appear with italic as specified
+    QAbstractItemModel *model = fontFamilyComboBox->model();
+    for (int row = 0; row < model->rowCount(); ++row) {
+        QModelIndex index = model->index(row, 0);
+        QFont font = index.data(Qt::FontRole).value<QFont>();
+        font.setItalic(val);
+        model->setData(index, font, Qt::FontRole);
+    }
+
+    // Make selected item appear with bold as specified
+    QFont font = fontFamilyComboBox->model()->
+        index(fontFamilyComboBox->currentIndex(), 0).data(Qt::FontRole).value<QFont>();
+    font.setItalic(val);
+    fontFamilyComboBox->setFont(font);
+
     annot->SetFontItalic(val);
     SetUpdate(false);
     Apply();
