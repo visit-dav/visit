@@ -2632,6 +2632,9 @@ VisWinRendering::SetRenderEventCallback(void(*callback)(void *,bool), void *data
 //   Kathleen Bonnell, Wed Dec  4 17:05:24 PST 2002
 //   Remove frames, perform antialiasing via line-smoothing.
 //
+//   Kathleen Biagas, Wed May 14, 2025
+//   Remove LineSmoothing, call SetMultiSamples instead.
+//
 // ****************************************************************************
 
 void
@@ -2640,7 +2643,8 @@ VisWinRendering::SetAntialiasing(bool enabled)
     if(enabled != antialiasing )
     {
         antialiasing = enabled;
-        GetRenderWindow()->SetLineSmoothing(enabled);
+        GetRenderWindow()->SetMultiSamples(enabled ? 4 : 0);
+        GetRenderWindow()->Render();
     }
 }
 
