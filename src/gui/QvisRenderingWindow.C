@@ -142,6 +142,9 @@ QvisRenderingWindow::~QvisRenderingWindow()
 //   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
 //   Support Qt6: buttonClicked -> idClicked.
 //
+//   Kathleen Biagas, Wed May 14, 2025
+//   Remove 'Requires restart' label form antialiasingToggle.
+//
 // ****************************************************************************
 
 QWidget *
@@ -158,11 +161,6 @@ QvisRenderingWindow::CreateBasicPage()
     connect(antialiasingToggle, SIGNAL(toggled(bool)),
             this, SLOT(antialiasingToggled(bool)));
     basicLayout->addWidget(antialiasingToggle, row, 0);
-    restartLabel = new QLabel(tr(" (Requires restart)"), basicOptions);
-    restartLabel->setToolTip(tr("When changing antialiasing, a VisIt restart is required\n"
-                                "before the changes can take effect."));
-    restartLabel->setEnabled(false);
-    basicLayout->addWidget(restartLabel, row, 1, 1, 2);
     row++;
 
     // create the order compositing widgets
