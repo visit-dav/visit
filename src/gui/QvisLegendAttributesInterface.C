@@ -331,6 +331,11 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent) :
     aLayout->addWidget(new QLabel(tr("Font family"), this), row, 0);
     ++row;
 
+    *previewText = new QLabel(QString::fromUtf8(FontManager::sampleText()));
+    aLayout->addWidget(previewText, row, 1, 1, 3);
+    aLayout->addWidget(new QLabel(tr("Sample text"), this), row, 0);
+    ++row;
+
     // Add controls for font properties.
     boldCheckBox = new QCheckBox(tr("Bold"), this);
     connect(boldCheckBox, SIGNAL(toggled(bool)),
@@ -1111,6 +1116,21 @@ QvisLegendAttributesInterface::fontFamilyChanged(int family)
     QFont font = fontFamilyComboBox->model()->
         index(family, 0).data(Qt::FontRole).value<QFont>();
     fontFamilyComboBox->setFont(font);
+
+    std::cerr << "Font family = \"" << font.family().toStdString() << "\"" << std::endl;
+
+    const FontManager::QtFontInfo& fi = FontManager::instance().fontInfo(font.family());
+
+    boldCheckBox->blockSignals(true);
+    boldCheckBox->setChecked(!fi.hasReg && fi.hasBold || font.bold());
+    boldCheckBox->blockSignals(false);
+    boldCheckBox->setEnabled(fi.hasReg && fi.hasBold);
+
+    italicCheckBox->blockSignals(true);
+    italicCheckBox->setChecked(!fi.hasReg && fi.hasItalic || font.italic());
+    italicCheckBox->blockSignals(false);
+    italicCheckBox->setEnabled(fi.hasReg && fi.hasItalic);
+
     annot->SetFontFamily((AnnotationObject::FontFamily)family);
     SetUpdate(false);
     Apply();

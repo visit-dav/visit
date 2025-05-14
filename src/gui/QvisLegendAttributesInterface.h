@@ -110,6 +110,7 @@ private:
     QvisColorButton        *textColorButton;
     QvisOpacitySlider      *textColorOpacity;
     QComboBox              *fontFamilyComboBox;
+    QLabel                 *previewText;
     QCheckBox              *boldCheckBox;
     QCheckBox              *italicCheckBox;
     QCheckBox              *shadowCheckBox;

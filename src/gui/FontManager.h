@@ -45,21 +45,33 @@
 #include <QStandardItemModel>
 #include <QString>
 
-
 class FontManager {
   public:
+
+    struct QtFontInfo {
+        QFont font;
+        QString family;
+        bool hasReg;
+        bool hasBold;
+        bool hasItalic;
+        bool hasBoldItalic;
+    };
+
+    static const std::string sampleText() {
+        return "Il1 O0 5S 2Z B8 G6 qg 9g 1l|!iIjJ"; }
     static FontManager& instance();
     void setupFonts(const std::map<std::string, FontFileManager::FontVariants>& fontFilesMap);
     void setupItemModel(QStandardItemModel *model,
              const std::map<std::string, FontFileManager::FontVariants>& fontFilesMap);
-    const QMap<QString, QFont>& fonts() const;
+    const QMap<QString, QtFontInfo>& fonts() const;
+    const QtFontInfo& fontInfo(QString family) const;
 
   private:
     FontManager() = default;
     FontManager(const FontManager&) = delete;
     FontManager& operator=(const FontManager&) = delete;
 
-    QMap<QString, QFont> _fontMap;
+    QMap<QString, QtFontInfo> _fontMap;
 };
 
 #endif // FONTMANAGER_H

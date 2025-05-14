@@ -53,7 +53,12 @@ static void gatherFontFileName(void* cb_data, const std::string &fontFileName, b
     if (to_lower(name).find(".ttf") == std::string::npos) return;
 
     std::string base = font_base(name);
+
+    // key is all lower-case, no spaces, dashes or underscores
     std::string key = to_lower(base);
+    key.erase(std::remove_if(key.begin(), key.end(), [](char c) {
+        return c==' '||c=='-'||c=='_'; }), key.end());
+
     FontStyle style = detect_style(name);
 
     FontFileManager::FontVariants &fv = fontMap[key];
