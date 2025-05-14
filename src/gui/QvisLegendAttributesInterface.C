@@ -3,6 +3,8 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include <QvisLegendAttributesInterface.h>
+
+#include <QApplication>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QFontDatabase>
@@ -23,7 +25,6 @@
 #include <QvisScreenPositionEdit.h>
 
 #include <AnnotationObject.h>
-#include <FontFileManager.h>
 #include <FontManager.h>
 #include <ViewerProxy.h>
 #include <legend_defines.h>
@@ -316,14 +317,13 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent) :
     ++row;
 
     // Setup font information
-    const std::map<std::string, FontFileManager::FontVariants>& fontFilesMap = FontFileManager::instance().fonts();
-    FontManager::instance().setupFonts(fontFilesMap);
+    FontManager::instance().setupFonts();
 
     // Add controls to set the font family.
     // Make it so options appear in the list in their actual font
     fontFamilyComboBox = new QComboBox(this);
     QStandardItemModel *model = new QStandardItemModel(fontFamilyComboBox);
-    FontManager::instance().setupItemModel(model, fontFilesMap);
+    FontManager::instance().setupItemModel(model);
     fontFamilyComboBox->setModel(model);
     connect(fontFamilyComboBox, SIGNAL(activated(int)),
             this, SLOT(fontFamilyChanged(int)));
@@ -331,7 +331,13 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent) :
     aLayout->addWidget(new QLabel(tr("Font family"), this), row, 0);
     ++row;
 
-    *previewText = new QLabel(QString::fromUtf8(FontManager::sampleText()));
+    // Set up some preview text using the currently selected font
+    // but increased slightly in size
+    previewText = new QLabel(QString::fromUtf8(FontManager::sampleText()));
+    int defaultPointSize = QApplication::font().pointSize();
+    QFont font = fontFamilyComboBox->model()->index(0, 0).data(Qt::FontRole).value<QFont>();
+    font.setPointSize(defaultPointSize+4);
+    previewText->setFont(font);
     aLayout->addWidget(previewText, row, 1, 1, 3);
     aLayout->addWidget(new QLabel(tr("Sample text"), this), row, 0);
     ++row;
@@ -1115,9 +1121,9 @@ QvisLegendAttributesInterface::fontFamilyChanged(int family)
 {
     QFont font = fontFamilyComboBox->model()->
         index(family, 0).data(Qt::FontRole).value<QFont>();
-    fontFamilyComboBox->setFont(font);
-
-    std::cerr << "Font family = \"" << font.family().toStdString() << "\"" << std::endl;
+    int defaultPointSize = QApplication::font().pointSize();
+    font.setPointSize(defaultPointSize+4);
+    previewText->setFont(font);
 
     const FontManager::QtFontInfo& fi = FontManager::instance().fontInfo(font.family());
 
@@ -1238,20 +1244,13 @@ QvisLegendAttributesInterface::customTitleChanged()
 void
 QvisLegendAttributesInterface::boldToggled(bool val)
 {
-    // Make all items in font list appear with bold as specified
-    QAbstractItemModel *model = fontFamilyComboBox->model();
-    for (int row = 0; row < model->rowCount(); ++row) {
-        QModelIndex index = model->index(row, 0);
-        QFont font = index.data(Qt::FontRole).value<QFont>();
-        font.setBold(val);
-        model->setData(index, font, Qt::FontRole);
-    }
-
     // Make selected item appear with bold as specified
     QFont font = fontFamilyComboBox->model()->
         index(fontFamilyComboBox->currentIndex(), 0).data(Qt::FontRole).value<QFont>();
+    int defaultPointSize = QApplication::font().pointSize();
+    font.setPointSize(defaultPointSize+4);
     font.setBold(val);
-    fontFamilyComboBox->setFont(font);
+    previewText->setFont(font);
 
     annot->SetFontBold(val);
     SetUpdate(false);
@@ -1277,20 +1276,13 @@ QvisLegendAttributesInterface::boldToggled(bool val)
 void
 QvisLegendAttributesInterface::italicToggled(bool val)
 {
-    // Make all items in font list appear with italic as specified
-    QAbstractItemModel *model = fontFamilyComboBox->model();
-    for (int row = 0; row < model->rowCount(); ++row) {
-        QModelIndex index = model->index(row, 0);
-        QFont font = index.data(Qt::FontRole).value<QFont>();
-        font.setItalic(val);
-        model->setData(index, font, Qt::FontRole);
-    }
-
     // Make selected item appear with bold as specified
     QFont font = fontFamilyComboBox->model()->
         index(fontFamilyComboBox->currentIndex(), 0).data(Qt::FontRole).value<QFont>();
+    int defaultPointSize = QApplication::font().pointSize();
+    font.setPointSize(defaultPointSize+4);
     font.setItalic(val);
-    fontFamilyComboBox->setFont(font);
+    previewText->setFont(font);
 
     annot->SetFontItalic(val);
     SetUpdate(false);

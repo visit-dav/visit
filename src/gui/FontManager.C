@@ -12,9 +12,6 @@
 #include <QStandardItemModel>
 #include <QString>
 
-#warning FIXME
-#include <iostream>
-
 FontManager& FontManager::instance() {
     static FontManager instance;
     return instance;
@@ -25,10 +22,13 @@ const QMap<QString, FontManager::QtFontInfo>& FontManager::fonts() const
     return _fontMap;
 }
 
-void FontManager::setupFonts(const std::map<std::string, FontFileManager::FontVariants>& fontFilesMap)
+void FontManager::setupFonts()
 {
     if (!_fontMap.empty())
         return;
+
+    const std::map<std::string, FontFileManager::FontVariants>& fontFilesMap = 
+        FontFileManager::instance().fonts();
 
     for (auto &pair : fontFilesMap)
     {
@@ -42,7 +42,7 @@ void FontManager::setupFonts(const std::map<std::string, FontFileManager::FontVa
         // files in a group of related files are all for the same basic font. So, typically,
         // only the font id for the "regular" style's id needs to be used to acquire the 
         // "family" name and then things like setBold and setItalic just work without having
-        // to further manipulate .ttf file names.
+        // to further introspect .ttf file names.
         //
         if (!fv.regular.empty())
         {
@@ -68,10 +68,10 @@ void FontManager::setupFonts(const std::map<std::string, FontFileManager::FontVa
         if (fontId != badFontId)
         {
             QString fontFamily = QFontDatabase::applicationFontFamilies(fontId).at(0);
-std::cerr << "key = \"" << pair.first << "\", family = \"" << fontFamily.toStdString() << "\"" << std::endl;
             _fontMap[QString::fromUtf8(pair.first)] = {
                 QFont(fontFamily),
                 fontFamily,
+                QString::fromUtf8(pair.second.guiName),
                 !fv.regular.empty(),
                 !fv.bold.empty(),
                 !fv.italic.empty(),
@@ -80,8 +80,7 @@ std::cerr << "key = \"" << pair.first << "\", family = \"" << fontFamily.toStdSt
     }
 }
 
-void FontManager::setupItemModel(QStandardItemModel *model,
-    const std::map<std::string, FontFileManager::FontVariants>& fontFilesMap)
+void FontManager::setupItemModel(QStandardItemModel *model)
 {
     // font keys for fonts VisIt will always have as part of its installation
     static const QList<QString> standardFontKeys = {
@@ -91,26 +90,21 @@ void FontManager::setupItemModel(QStandardItemModel *model,
     // Always put the standard fonts at the front of the list in the menus
     //
     for (auto &key : standardFontKeys) {
-        auto it = fontFilesMap.find(key.toStdString());
-        if (it == fontFilesMap.end()) continue;
-        const FontFileManager::FontVariants& fv = it->second;
-        QStandardItem *item = new QStandardItem(QString::fromUtf8(fv.guiName));
-        item->setFont(_fontMap[key].font);
+        auto it = _fontMap.find(key);
+        if (it == _fontMap.end()) continue;
+        QStandardItem *item = new QStandardItem(it.value().guiName);
+        item->setFont(it.value().font);
         model->appendRow(item);
     }
 
     //
     // Handle whatever other font files we may have found
     //
-    for (auto &pair : fontFilesMap) {
-        QString qfirst = QString::fromUtf8(pair.first);
-        if (_fontMap.find(qfirst) == _fontMap.end())
+    for (auto it = _fontMap.constBegin(); it != _fontMap.constEnd(); ++it) {
+        if (standardFontKeys.contains(it.key()))
             continue;
-        if (standardFontKeys.contains(qfirst))
-            continue;
-        const FontFileManager::FontVariants& fv = pair.second;
-        QStandardItem *item = new QStandardItem(QString::fromUtf8(fv.guiName));
-        item->setFont(_fontMap[qfirst].font);
+        QStandardItem *item = new QStandardItem(it.value().guiName);
+        item->setFont(it.value().font);
         model->appendRow(item);
     }
 }
@@ -120,14 +114,20 @@ const FontManager::QtFontInfo& FontManager::fontInfo(QString family) const
     static const FontManager::QtFontInfo bad =
         {QFont("family-not-found"), "family-not-found", 0,0,0,0};
 
-    // First, try standard lookup
+    // Try standard lookup...can fail if Qt's notion of the font's family name
+    // (which it can obtain from metadata in the .ttf file) doesn't, after massaging,
+    // match key we generate from .ttf file name.
     QString key = family.toLower();
     key.remove(QRegularExpression("[\\s\\-_]"));
     auto it = _fontMap.find(key);
     if (it != _fontMap.end())
         return it.value();
 
-    std::cerr << "Hitting bad case with family = \"" << family.toStdString() << "\"\n";
     // Otherwise, brute force search
+    for (auto it = _fontMap.constBegin(); it != _fontMap.constEnd(); ++it) {
+        if (it.value().family == family)
+            return it.value();
+    }
+
     return bad;
 }

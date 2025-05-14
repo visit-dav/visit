@@ -46,7 +46,8 @@ static FontStyle detect_style(const std::string &filename) {
 
 static void gatherFontFileName(void* cb_data, const std::string &fontFileName, bool, bool, long)
 {
-    std::map<std::string, FontFileManager::FontVariants> &fontMap = *((std::map<std::string, FontFileManager::FontVariants>*) cb_data);
+    std::map<std::string, FontFileManager::FontVariants> &fontMap =
+        *((std::map<std::string, FontFileManager::FontVariants>*) cb_data);
 
     std::string name = FileFunctions::Basename(fontFileName);
 
@@ -72,6 +73,17 @@ static void gatherFontFileName(void* cb_data, const std::string &fontFileName, b
     }
 }
 
+//
+//   There are some built-in fonts that should always be available in versions
+//   of VisIt 3.5.0 and newer. These are the DejaVu fonts (Sans, Serif and
+//   Monospace). Because most users are not converscent in font-speak, we don't
+//   use the sans-serif, serif and monospace terminology.Instead, we use
+//   proxies, Plain, Fancy and Code, respectively. So, there is special
+//   logic here to give those built-in fonts these pre-determined GUI names.
+//   Otherwise, the name of the displayed font in the GUI is just whatever the
+//   name of the file holding the *regular* style is without its `.ttf`
+//   extension.
+//
 static void scanFontFiles(std::map<std::string, FontFileManager::FontVariants>& fontMap)
 {
     // gather up font file names
