@@ -315,26 +315,16 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent) :
     aLayout->addWidget(new QLabel(tr("Font height"), this), row, 0);
     ++row;
 
-    // Add controls to set the font family.
-    fontFamilyComboBox = new QComboBox(this);
-
-    // Create a model to set font per item
-    QStandardItemModel *model = new QStandardItemModel(fontFamilyComboBox);
-
+    // Setup font information
     const std::map<std::string, FontFileManager::FontVariants>& fontFilesMap = FontFileManager::instance().fonts();
     FontManager::instance().setupFonts(fontFilesMap);
-    const QMap<QString, QFont>& fontMap = FontManager::instance().fonts();
-    for (auto &pair : fontFilesMap) {
-        QString qfirst = QString::fromUtf8(pair.first);
-        if (fontMap.find(qfirst) == fontMap.end())
-            continue;
-        const FontFileManager::FontVariants& fv = pair.second;
-        QStandardItem *item = new QStandardItem(QString::fromUtf8(fv.guiName));
-        item->setFont(fontMap[qfirst]);
-        model->appendRow(item);
-    }
-    fontFamilyComboBox->setModel(model);
 
+    // Add controls to set the font family.
+    // Make it so options appear in the list in their actual font
+    fontFamilyComboBox = new QComboBox(this);
+    QStandardItemModel *model = new QStandardItemModel(fontFamilyComboBox);
+    FontManager::instance().setupItemModel(model, fontFilesMap);
+    fontFamilyComboBox->setModel(model);
     connect(fontFamilyComboBox, SIGNAL(activated(int)),
             this, SLOT(fontFamilyChanged(int)));
     aLayout->addWidget(fontFamilyComboBox, row, 1, 1, 3);

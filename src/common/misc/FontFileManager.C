@@ -79,11 +79,11 @@ static void scanFontFiles(std::map<std::string, FontFileManager::FontVariants>& 
         FontFileManager::FontVariants &fv = pair.second;
 
         if (pair.first == "dejavusans")
-            fv.guiName = "Arial";
+            fv.guiName = "Plain";
         else if (pair.first == "dejavusansmono")
-            fv.guiName = "Courier";
+            fv.guiName = "Code";
         else if (pair.first == "dejavuserif")
-            fv.guiName = "Times";
+            fv.guiName = "Fancy";
         else if (pair.first == "libertinusmath")
             fv.guiName = "Math";
         else 

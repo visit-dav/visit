@@ -9,8 +9,7 @@
 // Class: FontManager
 //
 // Purpose:
-//   This class manages Qt fonts associated with .ttf files from
-//   FontFileManager.
+//   This class manages Qt fonts associated with .ttf files from FontFileManager.
 //
 //   Here in the GUI, the *only* reason to manage font files and *register*
 //   fonts with Qt is so that the GUI can display what the font actually looks
@@ -41,14 +40,18 @@
 
 #include <FontFileManager.h>
 
-#include <QString>
-#include <QMap>
 #include <QFont>
+#include <QMap>
+#include <QStandardItemModel>
+#include <QString>
+
 
 class FontManager {
   public:
     static FontManager& instance();
     void setupFonts(const std::map<std::string, FontFileManager::FontVariants>& fontFilesMap);
+    void setupItemModel(QStandardItemModel *model,
+             const std::map<std::string, FontFileManager::FontVariants>& fontFilesMap);
     const QMap<QString, QFont>& fonts() const;
 
   private:
