@@ -925,6 +925,10 @@ function prepare_build_dir
 #   Combined 'check_required_3rdparty' and 'check_optional_3rdparty' into one
 #   function to reduce code duplication.
 #
+#   Kathleen Biagas, Friday May 16, 2025
+#   Check for enabled status and continue loop without further processing
+#   if lib is disabled.
+#
 # ****************************************************************************
 
 function check_3rdparty
@@ -934,9 +938,16 @@ function check_3rdparty
     for (( bv_i=0; bv_i < ${#grouplibs_name[*]}; ++bv_i ))
     do
         groupname=${grouplibs_name[$bv_i]}
-        info "Building ${groupname} libs"
+        info "Checking ${groupname} libraries"
         for lib in `echo ${grouplibs_deps[$bv_i]}`;
         do
+            $"bv_${lib}_is_enabled"
+
+            #if not enabled then skip
+            if [[ $? == 0 ]]; then
+                continue
+            fi
+
             ensure="bv_${lib}_ensure"
             $ensure
             if [[ $? != 0 ]] ; then
@@ -1245,7 +1256,7 @@ function hostconf_library
 #   by CMake when CMAKE_BUILD_TYPE is selected.                               #
 #                                                                             #
 #   Kathleen Biagas, Monday May 12, 2025                                      #
-#   Loop over groups when writing individual libs host conf instead of         #
+#   Loop over groups when writing individual libs host conf instead of        #
 #   duplicating logic for reqlibs and optlibs.                                #
 #                                                                             #
 # *************************************************************************** #
