@@ -534,9 +534,6 @@ function initialize_build_visit()
     export DO_PARADIS="no"
     export PREVENT_ICET="no"
     verify="no"
-    export DO_OPTIONAL="yes"
-    export DO_OPTIONAL2="no"
-    export DO_MORE="no"
     export DO_DBIO_ONLY="no"
     export DO_ENGINE_ONLY="no"
     export DO_SERVER_COMPONENTS_ONLY="no"
@@ -552,6 +549,7 @@ function initialize_build_visit()
     export VISIT_INSTALL_NETWORK=""
     export DO_QT510="no"
     export DO_VTK94="no"
+    export DO_REQUIRED="yes"
     DOWNLOAD_ONLY="no"
     LIST_TPS="no"
 
@@ -808,6 +806,10 @@ function enable_dependent_libraries
 #   Process all groups in one loop, instead of duplicating
 #   logic for 'reqlibs' and 'optlibs' separately.
 #
+#   Kathleen Biagas, Friday May 16, 2025
+#   Disable libraries in the required group when DO_REQUIRED is 'no', e.g.
+#   when '--no-thirdparty' is added to command line.
+#
 # *************************************************************************** 
 #TODO: enable this feature and remove this from ensure..
 function initialize_module_variables
@@ -816,8 +818,15 @@ function initialize_module_variables
 
     for (( bv_i=0; bv_i < ${#grouplibs_name[*]}; ++bv_i ))
     do
+        groupname=${grouplibs_name[$bv_i]}
         for lib in `echo ${grouplibs_deps[$bv_i]}`;
         do
+            if [[ "$groupname" == "required" && $DO_REQUIRED == "no" ]] ; then
+                info "disabling ${lib}"
+                $"bv_${lib}_disable"
+                continue
+            fi
+
             $"bv_${lib}_is_enabled"
 
             #if not enabled then skip
@@ -1170,6 +1179,7 @@ function run_build_visit()
             --skip-opengl-context-check) DO_CONTEXT_CHECK="no";;
             # want to disable this check with VTK-94 (or write a new version)
             --vtk94) DO_CONTEXT_CHECK="no";;
+            --no-thirdparty) DO_REQUIRED="no";;
             *)
                 echo "Unrecognized option '${arg}'."
                 ANY_ERRORS="yes";;
