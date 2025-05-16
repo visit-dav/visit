@@ -1573,6 +1573,9 @@ function printvariables
 #   Add more comments or REQUIRED, OPTIONAL.
 #   Add 'EXTRAS'.
 #
+#   Kathleen Biagas, Friday Mat 16, 2026
+#   Remove 'GROUPING' section. Expand comments for each group instead.
+#
 # *************************************************************************** #
 function usage
 {
@@ -1618,21 +1621,7 @@ function usage
              somewhere like /usr/gapps/visit." "${THIRD_PARTY_PATH}"
 
     printf "\n"
-    printf "GROUPING\n"
-    printf "\n"
 
-    for (( bv_i=0; bv_i<${#grouplibs_name[*]}; ++bv_i ))
-    do
-        name=${grouplibs_name[$bv_i]}
-        comment=${grouplibs_comment[$bv_i]}
-        enabled=${grouplibs_enabled[$bv_i]}
-        if [[ "$name" != "extras" ]] ; then
-            printf "%-20s %s [%s]\n" "--$name" "$comment" "$enabled"
-        fi
-    done
-    printf "\n"
-
-    printf "\n"
     printf "VISIT-SPECIFIC OPTIONS\n"
     printf "\n"
     printf "%-20s %s [%s]\n" "--install-network" "Install specific network config files." "${VISIT_INSTALL_NETWORK}"
@@ -1649,8 +1638,10 @@ function usage
     printf "\n"
     printf "THIRD-PARTY LIBRARIES\n"
     printf "  A download attempt will be made for all files which do not exist.\n"
+    printf "  Enable individual libraries by using '--<name>', e.g. '--mpich'.\n"
+    printf "  Disable individual libraries by using '--no-<name>', e.g. '--no-python'.\n"
     printf "\n"
-    printf "  REQUIRED -- These are built by default unless '--no-<name>' flag is used, e.g. '--no-python'.\n"
+    printf "  REQUIRED -- These are built by default unless --no-thirdparty flag is used.\n"
     printf "\n"
 
     for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
@@ -1662,7 +1653,7 @@ function usage
     done
 
     printf "\n"
-    printf "  OPTIONAL -- All will be built with '--optional' flag. Individual libraries can be enabled with '--<name>' and disabled with '--no-<name>'.  e.g. '--silo' or '--optional --no-adios'.\n"
+    printf "  OPTIONAL -- Using '--optional' flag will enable all libraries in this group.\n"
     printf "\n"
 
     for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
@@ -1674,7 +1665,7 @@ function usage
     done
 
     printf "\n"
-    printf "  EXTRAS -- These are only built when '--<name>' flag is used, e.g. '---mpich'.\n"
+    printf "  EXTRAS -- These are only built when explicitly requested.\n"
     printf "\n"
 
     for (( bv_i=0; bv_i<${#extralibs[*]}; ++bv_i ))
