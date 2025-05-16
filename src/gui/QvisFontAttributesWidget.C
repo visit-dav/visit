@@ -62,6 +62,8 @@ QvisFontAttributesWidget::QvisFontAttributesWidget(QWidget *parent) :
     QStandardItemModel *model = new QStandardItemModel(fontFamilyComboBox);
     FontManager::instance().setupItemModel(model);
     fontFamilyComboBox->setModel(model);
+    fontFamilyComboBox->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
+    fontFamilyComboBox->setMinimumContentsLength(5);
     connect(fontFamilyComboBox, SIGNAL(activated(int)),
             this, SLOT(fontFamilyChanged(int)));
     gLayout->addWidget(new QLabel(tr("Font name"), this), row, 0);
@@ -75,22 +77,6 @@ QvisFontAttributesWidget::QvisFontAttributesWidget(QWidget *parent) :
     QLabel *fsLabel = new QLabel(tr("Font scale"), this);
     fsLabel->setBuddy(fontScale);
     gLayout->addWidget(fsLabel, row, 2);
-
-    boldCheckBox = new QCheckBox(tr("Bold"), this);
-    connect(boldCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(boldToggled(bool)));
-    gLayout->addWidget(boldCheckBox, row, 4);
-
-    italicCheckBox = new QCheckBox(tr("Italic"), this);
-    connect(italicCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(italicToggled(bool)));
-    gLayout->addWidget(italicCheckBox, row, 5);
-
-    shadowCheckBox = new QCheckBox(tr("Shadow"), this);
-    connect(shadowCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(shadowToggled(bool)));
-    gLayout->addWidget(shadowCheckBox, row, 6);
-    shadowCheckBox->setEnabled(false); // disable until working
     ++row;
 
     // Set up some preview text using the currently selected font
@@ -109,7 +95,24 @@ QvisFontAttributesWidget::QvisFontAttributesWidget(QWidget *parent) :
 #endif
 
     gLayout->addWidget(new QLabel(tr("Sample text"), this), row, 0);
-    gLayout->addWidget(previewText, row, 1, 1, 6);
+    gLayout->addWidget(previewText, row, 1, 1, 4);
+    ++row;
+
+    boldCheckBox = new QCheckBox(tr("Bold"), this);
+    connect(boldCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(boldToggled(bool)));
+    gLayout->addWidget(boldCheckBox, row, 0);
+
+    italicCheckBox = new QCheckBox(tr("Italic"), this);
+    connect(italicCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(italicToggled(bool)));
+    gLayout->addWidget(italicCheckBox, row, 1);
+
+    shadowCheckBox = new QCheckBox(tr("Shadow"), this);
+    connect(shadowCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(shadowToggled(bool)));
+    gLayout->addWidget(shadowCheckBox, row, 2);
+    shadowCheckBox->setEnabled(false); // disable until working
     ++row;
 
     useForegroundColorCheckBox = new QCheckBox(tr("Use foreground color"), this);
