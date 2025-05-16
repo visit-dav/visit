@@ -5,7 +5,8 @@
 #   Added 'extralibs' group.
 #   Removed 'parseXmlModules' as it was used to separately parse the non-group
 #   'required' and 'optional' tags that are no longer used.
-#    All libraries are listed in only one of the groups: 'required', 'optional' #    or 'extras' and are parsed in the 'parseXmlGroupModules' function.
+#    All libraries are listed in only one of the groups: 'required', 'optional'
+#    or 'extras' and are parsed in the 'parseXmlGroupModules' function.
 
 declare -a xmlp_filecontents
 declare -a xmlp_licenses
