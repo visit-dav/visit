@@ -10,6 +10,7 @@
 
 class QCheckBox;
 class QComboBox;
+class QLabel;
 class QNarrowLineEdit;
 class QvisColorButton;
 class QvisOpacitySlider;
@@ -59,6 +60,7 @@ private slots:
     void fontFamilyChanged(int);
     void boldToggled(bool);
     void italicToggled(bool);
+    void shadowToggled(bool);
     void useForegroundColorToggled(bool);
 private:
     void GetCurrentValues(FontAttributes &, int = -1);
@@ -71,8 +73,10 @@ private:
     QvisColorButton   *textColorButton;
     QvisOpacitySlider *textColorOpacity;
     QComboBox         *fontFamilyComboBox;
+    QLabel            *previewText;
     QCheckBox         *boldCheckBox;
     QCheckBox         *italicCheckBox;
+    QCheckBox         *shadowCheckBox;
     QCheckBox         *useForegroundColorCheckBox;
 };
 

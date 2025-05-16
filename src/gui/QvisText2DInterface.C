@@ -112,7 +112,7 @@ QvisText2DInterface::QvisText2DInterface(QWidget *parent) :
     connect(fontFamilyComboBox, SIGNAL(activated(int)),
             this, SLOT(fontFamilyChanged(int)));
     cLayout->addWidget(fontFamilyComboBox, 5, 1, 1, 3);
-    cLayout->addWidget(new QLabel(tr("Font family"), this), 5, 0);
+    cLayout->addWidget(new QLabel(tr("Font name"), this), 5, 0);
 
     // Add controls for font properties.
     boldCheckBox = new QCheckBox(tr("Bold"), this);

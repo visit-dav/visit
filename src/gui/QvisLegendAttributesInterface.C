@@ -328,7 +328,7 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent) :
     connect(fontFamilyComboBox, SIGNAL(activated(int)),
             this, SLOT(fontFamilyChanged(int)));
     aLayout->addWidget(fontFamilyComboBox, row, 1, 1, 3);
-    aLayout->addWidget(new QLabel(tr("Font family"), this), row, 0);
+    aLayout->addWidget(new QLabel(tr("Font name"), this), row, 0);
     ++row;
 
     // Set up some preview text using the currently selected font
@@ -1250,6 +1250,7 @@ QvisLegendAttributesInterface::boldToggled(bool val)
     int defaultPointSize = QApplication::font().pointSize();
     font.setPointSize(defaultPointSize+4);
     font.setBold(val);
+    font.setItalic(italicCheckBox->isChecked());
     previewText->setFont(font);
 
     annot->SetFontBold(val);
@@ -1282,6 +1283,7 @@ QvisLegendAttributesInterface::italicToggled(bool val)
     int defaultPointSize = QApplication::font().pointSize();
     font.setPointSize(defaultPointSize+4);
     font.setItalic(val);
+    font.setBold(boldCheckBox->isChecked());
     previewText->setFont(font);
 
     annot->SetFontItalic(val);
