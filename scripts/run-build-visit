@@ -293,7 +293,7 @@ elif [ "$crossroads" = true ]; then
        PAR_INCLUDE=-I/opt/cray/pe/mpich/8.1.28/ofi/intel/2022.1/include \
        PAR_LIBS="-L/opt/cray/pe/mpich/8.1.28/ofi/intel/2022.1/lib -Wl,-rpath=/opt/cray/pe/mpich/8.1.28/ofi/intel/intel/lib" \
        ./$build_visit_script --group ${dest_group} --required --optional --mesagl \
-       --no-adios --no-gdal --no-pyside \
+       --no-adios --no-anari --no-gdal --no-pyside \
        --meson --ninja --xcb --xkbcommon --qt6 --qwt --parallel \
        --no-visit --makeflags -j16 --thirdparty-path ${dest_dir}
 elif [ "$tuolumne" = true ]; then
