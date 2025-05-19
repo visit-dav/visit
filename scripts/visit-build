@@ -353,6 +353,10 @@ set -e
 # 
 #   Justin Privitera, Wed Apr 16 16:08:25 PDT 2025
 #   Added elcap.
+#
+#   Eric Brugger, Mon May 19 12:43:30 PDT 2025
+#   Added crossroads.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -406,6 +410,7 @@ tuolumne=false
 elcap=false
 magma=false
 sierra=false
+crossroads=false
 
 dist=undefined
 machine_name="unknown"
@@ -479,6 +484,12 @@ do
          config_site="sierra4358.cmake"
          shift
          ;;
+      -crossroads)
+         crossroads=true
+         machine_name="crossroads"
+         config_site="xr-fe1.cmake"
+         shift
+         ;;
       -d)
          dist=$2
          shift 2
@@ -496,6 +507,7 @@ then
    echo "    poodle lassen rzwhippet rzvernal tuolumne rzadams rzansel elcap"
    echo "    magma (LC, x86_64)"
    echo "    sierra (LC, ppc)"
+   echo "    crossroads (LANL, x86_64)"
    echo "distribution should be the name of the distribution file minus the '.tar.gz'"
    exit
 fi
@@ -526,7 +538,8 @@ fi
 #
 if [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
    [ "$rzvernal" = true ] || [ "$magma" = true ] || [ "$sierra" = true ] || \
-   [ "$tuolumne" = true ] || [ "$elcap" = true ]; then
+   [ "$tuolumne" = true ] || [ "$elcap" = true ] || \
+   [ "$crossroads" = true ]; then
    rm -f machine_specific_build_script
    cat <<EOF > machine_specific_build_script
 #!/bin/sh
@@ -568,6 +581,12 @@ XLOCALEDIR=/usr/lib/X11/locale
 PATH=/usr/bin/X11:\$PATH
 export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.2/toss4-cray-gfx942/cmake/3.24.3/linux-x86_64_gcc-12.2/bin/:\$PATH
 EOF
+elif [ "$crossroads" = true ]; then
+cat <<EOF >> machine_specific_build_script
+XLOCALEDIR=/usr/lib/X11/locale
+PATH=/usr/bin/X11:\$PATH
+export PATH=/usr/projects/views/visit/thirdparty_shared/3.5.0/cmake/3.24.3/linux-x86_64_gcc-12.2/bin/:\$PATH
+EOF
 else
    echo "case for $machine_name not implemented. Bailing out."
    exit
@@ -578,7 +597,8 @@ fi
 #
 if [ "$poodle" = true ] || [ "$magma" = true ] || [ "$rzvernal" = true ] || \
    [ "$rzwhippet" = true ] || [ "$lassen" = true ] || [ "$sierra" = true ] || \
-   [ "$tuolumne" = true ] || [ "$elcap" = true ]; then
+   [ "$tuolumne" = true ] || [ "$elcap" = true ] || \
+   [ "$crossroads" = true]; then
    cat <<EOF >> machine_specific_build_script
 if test ! -d /usr/tmp/$user/$machine_name ; then
    mkdir -p /usr/tmp/$user/$machine_name
@@ -603,7 +623,8 @@ fi
 # Actually build
 # 
 if [ "$poodle" = true ] || [ "$magma" = true ] || [ "$rzvernal" = true ] || \
-   [ "$rzwhippet" = true ] || [ "$tuolumne" = true ] || [ "$elcap" = true ]; then
+   [ "$rzwhippet" = true ] || [ "$tuolumne" = true ] || \
+   [ "$elcap" = true ] || [ "$crossroads" = true ]; then
    cat <<EOF >> machine_specific_build_script
 cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> buildlog 2>&1
 cmake --build build --target manuals >> buildlog 2>&1
@@ -625,7 +646,7 @@ fi
 # move things to result directory
 #
 if [ "$poodle" = true ] || [ "$rzwhippet" = true ] || [ "$rzvernal" = true ] || \
-   [ "$magma" = true ]; then
+   [ "$magma" = true ] || [ "$crossroads" = true ]; then
    cat <<EOF >> machine_specific_build_script
 rm -f $result_dir/buildlog.$machine_name
 cp buildlog $result_dir/buildlog.$machine_name
@@ -656,7 +677,8 @@ fi
 #
 if [ "$poodle" = true ] || [ "$magma" = true ] || [ "$rzvernal" = true ] || \
    [ "$rzwhippet" = true ] || [ "$lassen" = true ] || [ "$sierra" = true ] || \
-   [ "$tuolumne" = true ] || [ "$elcap" = true ]; then
+   [ "$tuolumne" = true ] || [ "$elcap" = true ] || \
+   [ "$crossroads" = true ]; then
    cat <<EOF >> machine_specific_build_script
 rm -f resultlog
 echo "        build of visit on $machine_name"       > resultlog 2>&1
@@ -686,7 +708,8 @@ if [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
    cat <<EOF >> machine_specific_build_script
 mail  -s "VisIt build ($dist): $machine_name" $emailName < resultlog
 EOF
-elif [ "$magma" = true ] || [ "$sierra" = true ] || [ "$elcap" = true ]; then
+elif [ "$magma" = true ] || [ "$sierra" = true ] || [ "$elcap" = true ] || \
+   [ "$crossroads" = true ]; then
    # nothing to do for this case
    cat <<EOF >> machine_specific_build_script
 EOF
