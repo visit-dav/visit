@@ -405,6 +405,11 @@ getAMRinfo( hid_t gid )
     if( est>0 )
     {
         eos_ = new SesameEOS();
+
+	iavpres_ = 0;
+	iavtemp_ = 1;
+	iavsndv_ = 2;
+
         return 0;
     }
 
@@ -1287,7 +1292,7 @@ comp_wvel( float* blkdt, float* buf, int sz )
 int AMRreader::
 comp_pres( float* blkdt, float* ablkdt, float* buf, int sz )
 {
-    if( eos_->EOStype()==SesameEOS_type )
+    if( eos_->EOStype()==SesameEOS_type && navs_ == 0 )
     {
         long off = (blkdt - datbuf_)/5;
         float* pbuf = prebuf_ + off;
@@ -1331,7 +1336,7 @@ comp_pres( float* blkdt, float* ablkdt, float* buf, int sz )
 int AMRreader::
 comp_temp( float* blkdt, float* ablkdt, float* buf, int sz )
 {
-    if( eos_->EOStype()==SesameEOS_type )
+    if( eos_->EOStype()==SesameEOS_type && navs_ == 0 )
     {
         long off = (blkdt - datbuf_)/5;
         float* pbuf = tmpbuf_ + off;
@@ -1374,7 +1379,7 @@ comp_temp( float* blkdt, float* ablkdt, float* buf, int sz )
 int AMRreader::
 comp_sndv( float* blkdt, float* ablkdt, float* buf, int sz )
 {
-    if( eos_->EOStype()==SesameEOS_type )
+    if( eos_->EOStype()==SesameEOS_type && navs_ == 0 )
     {
         long off = (blkdt - datbuf_)/5;
         float* pbuf = sndbuf_ + off;

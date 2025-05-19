@@ -175,6 +175,16 @@ public:
         return 0.;
     }
 
+    virtual bool p_from_av() {
+        return true;
+    }
+    virtual bool T_from_av() {
+        return true;
+    }
+    virtual bool a_from_av() {
+        return true;
+    }
+
 protected:
     //char type[20];
 };
