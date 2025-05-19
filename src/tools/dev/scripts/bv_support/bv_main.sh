@@ -549,7 +549,6 @@ function initialize_build_visit()
     export VISIT_INSTALL_NETWORK=""
     export DO_QT510="no"
     export DO_VTK94="no"
-    export DO_REQUIRED="yes"
     DOWNLOAD_ONLY="no"
     LIST_TPS="no"
 
@@ -706,6 +705,11 @@ function strip_quotes
 #   Don't allow 'extras' group to be 'enabled'. Print message and exit if so.
 #   Remove test for 'dbio-only'.
 #
+#   Kathleen Biagas, Monday May 19, 2025
+#   Allow --no-thirdparty as a way to disable required group. This preserves
+#   the purpose of the option even though the '--no-thirdparty' group no
+#   longer exists.
+#
 # *************************************************************************** 
 
 function bv_enable_group
@@ -719,8 +723,13 @@ function bv_enable_group
         exit
     fi
 
+    if [[ "$name" == "no-thirdparty" ]] ; then
+        name="no-required"
+    fi
+
     # can terminate early if $name isn't 'optional' or 'required'.
-    if [[ "$name" != "optional" && "$name" != "required" ]] ; then
+    if [[ "$name" != "optional" && "$name" != "required" &&
+          "$name" != "no-required" ]] ; then
         return 0
     fi
 
@@ -736,16 +745,17 @@ function bv_enable_group
                 match=1
                 for group_dep in `echo ${grouplibs_deps[$bv_i]}`;
                 do
-                    if [[ "$group_dep" == no-* ]]; then
-                        group_dep=${group_dep/no-}
-                        #info "disabling $group_dep"
-                        initializeFunc="bv_${group_dep}_disable"
-                        $initializeFunc
-                    else
-                        #info "enabling $group_dep"
-                        initializeFunc="bv_${group_dep}_enable"
-                        $initializeFunc
-                    fi
+                    info "bv_enable_group enabling $group_dep"
+                    initializeFunc="bv_${group_dep}_enable"
+                    $initializeFunc
+                done
+            elif [[ "no-$group" == "$name" ]]; then
+                match=1
+                for group_dep in `echo ${grouplibs_deps[$bv_i]}`;
+                do
+                   info "bv_enable_group disabling $group_dep"
+                   initializeFunc="bv_${group_dep}_disable"
+                   $initializeFunc
                 done
             fi
         done
@@ -806,10 +816,6 @@ function enable_dependent_libraries
 #   Process all groups in one loop, instead of duplicating
 #   logic for 'reqlibs' and 'optlibs' separately.
 #
-#   Kathleen Biagas, Friday May 16, 2025
-#   Disable libraries in the required group when DO_REQUIRED is 'no', e.g.
-#   when '--no-thirdparty' is added to command line.
-#
 # *************************************************************************** 
 #TODO: enable this feature and remove this from ensure..
 function initialize_module_variables
@@ -821,12 +827,6 @@ function initialize_module_variables
         groupname=${grouplibs_name[$bv_i]}
         for lib in `echo ${grouplibs_deps[$bv_i]}`;
         do
-            if [[ "$groupname" == "required" && $DO_REQUIRED == "no" ]] ; then
-                info "disabling ${lib}"
-                $"bv_${lib}_disable"
-                continue
-            fi
-
             $"bv_${lib}_is_enabled"
 
             #if not enabled then skip
@@ -1179,7 +1179,6 @@ function run_build_visit()
             --skip-opengl-context-check) DO_CONTEXT_CHECK="no";;
             # want to disable this check with VTK-94 (or write a new version)
             --vtk94) DO_CONTEXT_CHECK="no";;
-            --no-thirdparty) DO_REQUIRED="no";;
             *)
                 echo "Unrecognized option '${arg}'."
                 ANY_ERRORS="yes";;
