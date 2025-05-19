@@ -699,6 +699,10 @@ VisWinRendering::EnableDepthPeeling()
 //    Remove multi sampling related code when using VTK 9. This fixes a bug
 //    where the visualization window is black when using mesagl.
 //
+//    Kathleen Biagas, Monday May 19, 2025
+//    Ensure MultiSamples is set based on antialiasing flag, since it is
+//    turned off when DepthPeeling is enabled.
+//
 // ****************************************************************************
 void
 VisWinRendering::DisableDepthPeeling()
@@ -706,6 +710,7 @@ VisWinRendering::DisableDepthPeeling()
     // restore window settings
     vtkRenderWindow *rwin = GetRenderWindow();
     rwin->SetAlphaBitPlanes(0);
+    rwin->SetMultiSamples(antialiasing ? 4: 0);
 
     // configure renderer
     canvas->SetUseDepthPeeling(false);
@@ -2635,6 +2640,10 @@ VisWinRendering::SetRenderEventCallback(void(*callback)(void *,bool), void *data
 //   Kathleen Biagas, Wed May 14, 2025
 //   Remove LineSmoothing, call SetMultiSamples instead.
 //
+//   Kathleen Biagas, Monday May 19, 2025
+//   If using VTK 9.5 or above, turn off special transparency handler
+//   if antialias enabled, as the OIT will not honor MSAA.
+//
 // ****************************************************************************
 
 void
@@ -2644,6 +2653,10 @@ VisWinRendering::SetAntialiasing(bool enabled)
     {
         antialiasing = enabled;
         GetRenderWindow()->SetMultiSamples(enabled ? 4 : 0);
+#if LIB_VERSION_GE(VTK,9,5,0)
+        // disable special transparency handler when using MSAA
+        canvas->SetUseOIT(!enabled);
+#endif
         GetRenderWindow()->Render();
     }
 }
