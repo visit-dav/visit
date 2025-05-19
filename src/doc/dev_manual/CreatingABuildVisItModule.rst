@@ -17,6 +17,7 @@ Here is a list of all the functions that will be defined (listed in order of app
 
 bv_foo_initialize
     Initialize any variables controlled by command line options.
+    Only libraries in the ``required`` category should have `DO_FOO` set to `yes` in this function.
 
 bv_foo_enable
     Enables the module (sets `DO_FOO` to `yes`).
@@ -69,7 +70,13 @@ See ``bv_qt.sh`` as an example of allowing system or also an alternate (already 
 ``bv_qt_system_qt`` and ``bv_alt_qt_dir`` were added and other functions were modified to support this for qt.
 
 
-Once ``bv_foo.sh`` has been updated appropriately, add the module name to ``bv_support/modules.xml`` under the appropriate categories.
+Once ``bv_foo.sh`` has been updated appropriately, add the module name to ``bv_support/modules.xml`` under the appropriate group.
+The `required` group in ``bv_support/modules.xml`` is for libraries that are required for basic functioning of _VisIt.
+The `optional` group is for most i/o and other non-required support libraries.
+The `extras` group is for any library (and its dependencies) that should be explicitly requested.
+This could be libraries that are mutually exclusive such as `mesagl` and `osmesa`, or libraries that may not be needed on many systems such as `mpich`, `xcb` or `xkbcommon`.
+The `extras` group should also be used for any library that has proven to have a problematic build system.
+
 Then run the build_visit script to ensure that your module builds and installs correctly, and that the host profile entry is correct.
 
 
