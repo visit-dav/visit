@@ -698,7 +698,8 @@ function strip_quotes
 
 
 # *************************************************************************** 
-# Function: bv_enable_group                                                     #
+# Function: bv_enable_group
+#
 # Modifications:
 #   Kathleen Biagas, Monday May 12, 2025
 #   Modified to test for actual group names and return early if possible.
