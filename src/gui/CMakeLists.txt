@@ -216,7 +216,9 @@ set(GUILIB_SOURCES
     QvisXRayImageQueryWidget.C
     SimCommandSlots.C
     SplashScreen.C
-    WidgetDataNode.C)
+    WidgetDataNode.C
+    $<$<BOOL:${QWT_FOUND}>:QvisStripChart.C>
+    $<$<BOOL:${HAVE_ANARI}>:anari/AnariRenderingWidget.C>)
 
 set(GUILIB_HEADERS
     AccessViewerSession.h
@@ -382,17 +384,9 @@ set(GUILIB_HEADERS
     SplashScreen.h
     StatusSubject.h
     WidgetDataNode.h
-    gui_exports.h)
-
-if(QWT_FOUND)
-    list(APPEND GUILIB_SOURCES QvisStripChart.C)
-    list(APPEND GUILIB_HEADERS QvisStripChart.h)
-endif()
-
-if(HAVE_ANARI)
-    list(APPEND GUILIB_SOURCES anari/AnariRenderingWidget.C)
-    list(APPEND GUILIB_HEADERS anari/AnariRenderingWidget.h)
-endif()
+    gui_exports.h
+    $<$<BOOL:${QWT_FOUND}>:QvisStripChart.h>
+    $<$<BOOL:${HAVE_ANARI}>:anari/AnariRenderingWidget.h>)
 
 set(GUI_DEPENDS
     viewerrpc
@@ -410,11 +404,9 @@ set(GUI_DEPENDS
     ${QT_QTXML_LIBRARY} 
     ${QT_QTCORE_LIBRARY}
     ${QT_QTPRINTSUPPORT_LIBRARY}
+    $<$<BOOL:${QWT_FOUND}>:qwt>
     $<$<BOOL:${HAVE_ANARI}>:anari::anari>)
 
-if(QWT_FOUND)
-    list(APPEND GUI_DEPENDS qwt)
-endif()
 
 if(VISIT_STATIC)
     list(APPEND GUI_DEPENDS
@@ -435,9 +427,10 @@ visit_add_library(
     INCLUDES    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
                 $<BUILD_INTERFACE:${VISIT_SOURCE_DIR}/common>
                 $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/gui>
-                $<BOOL:${HAVE_ANARI}>:$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/anari>
-                $<BOOL:${HAVE_ANARI}>:$<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/gui/anari>
+                $<$<BOOL:${HAVE_ANARI}>:$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/anari>>
+                $<$<BOOL:${HAVE_ANARI}>:$<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/gui/anari>>
     DEPENDS_ON  ${GUI_DEPENDS})
+
 
 
 if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")

@@ -15,7 +15,13 @@
 #
 #****************************************************************************
 
-set(REQUIRED_VTK_LIBS
+if(NOT WIN32)
+    set(LIBDL dl)
+endif()
+
+set(osmesavtktest_DEPENDS
+    visitcommon
+    ${LIBDL}
     VTK::CommonCore
     VTK::CommonDataModel
     VTK::CommonExecutionModel
@@ -26,10 +32,11 @@ set(REQUIRED_VTK_LIBS
     VTK::RenderingCore
     VTK::RenderingOpenGL2
     VTK::RenderingFreeType
-    VTK::InteractionStyle)
+    VTK::InteractionStyle
+    Threads::Threads)
 
-if(NOT WIN32)
-    set(LIBDL dl)
+if(VTK_VERSION VERSION_LESS "9.4.0")
+   list(APPEND osmesavtktest_DEPENDS visit_vtk_offscreen)
 endif()
 
 visit_add_executable(
@@ -45,12 +52,11 @@ visit_add_executable(
     NAME        osmesavtktest_ser
     SOURCES     osmesavtktest.cpp
     INCLUDES    ${OSMESA_INCLUDE_DIR}
-    DEPENDS_ON  visit_vtk_offscreen
-                visitcommon
-                ${REQUIRED_VTK_LIBS}
-                ${LIBDL}
+    DEPENDS_ON  ${osmesavtktest_DEPENDS}
                 Threads::Threads
     FOLDER      tools/diagnostics)
+
+
 
 if(VISIT_PARALLEL)
     visit_add_parallel_executable(
@@ -66,11 +72,7 @@ if(VISIT_PARALLEL)
         NAME        osmesavtktest_par
         SOURCES     osmesavtktest.cpp
         INCLUDES    ${OSMESA_INCLUDE_DIR}
-        DEPENDS_ON  visit_vtk_offscreen
-                    visitcommon
-                    ${REQUIRED_VTK_LIBS}
-                    ${LIBDL}
-                    Threads::Threads
+        DEPENDS_ON  ${osmesavtktest_DEPENDS}
         FOLDER      tools/diagnostics)
 endif()
 
