@@ -10,12 +10,13 @@
 #include <stdlib.h>
 
 #include <QFileDialog>
+#include <QFont>
+#include <QFontDatabase>
 
 #include <QString>
 #include <QTextStream>
 QTextStream cOut(stdout), cErr(stderr);
 QString Endl("\n");
-
 
 // ****************************************************************************
 //  Main Function: XMLEditMain()
@@ -40,6 +41,12 @@ int
 XMLEditMain( int argc, char **argv )
 {
     QApplication *a = new QApplication(argc, argv);
+
+    QFontDatabase::addApplicationFont(VISIT_RESOURCES_FONT_DIR "/resources/fonts/DejaVuSerif.ttf"); // Times-like
+    QFontDatabase::addApplicationFont(VISIT_RESOURCES_FONT_DIR "/resources/fonts/DejaVuSansMono.ttf"); // Courier-like
+    QFont serif("DejaVu Serif"); // Make default for whole interface Times-like
+    a->setFont(serif);
+
     XMLEdit *w;
     if (argc > 1)
         w = new XMLEdit(argv[1], NULL);

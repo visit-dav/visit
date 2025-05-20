@@ -269,8 +269,9 @@ XMLEditFields::XMLEditFields(QWidget *p)
     topLayout->addWidget(new QLabel(tr("Initialization Values / Code"), this), row,0, 1,4);
     row++;
 
+    QFont monospaced("DejaVu Sans Mono"); // Courier-like
+
     values = new QTextEdit(this);
-    QFont monospaced("Courier");
     values->setFont(monospaced);
     values->setWordWrapMode(QTextOption::NoWrap);
     topLayout->addWidget(values, row,1, 1,4);
