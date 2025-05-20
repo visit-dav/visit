@@ -711,6 +711,11 @@ QvisExpressionsWindow::CreateWindowContents()
 // Creation:   Thu Feb 11 10:33:20 PST 2010
 //
 // Modifications:
+//    Cyrus Harrison, Tue May 20 09:11:37 PDT 2025
+//    Disabled rich text paste support in expression editor text box.
+//    Many folks are now copying and pasting from editors that embed
+//    formating (such as vscode). Embedded formatting creates a mess and
+//    is distracting, so it is now disabled.
 //
 // ****************************************************************************
 
