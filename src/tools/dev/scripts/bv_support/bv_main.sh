@@ -703,7 +703,7 @@ function strip_quotes
 # Modifications:
 #   Kathleen Biagas, Monday May 12, 2025
 #   Modified to test for actual group names and return early if possible.
-#   Don't allow 'extras' group to be 'enabled'. Print message and exit if so.
+#   Don't allow 'explicit' group to be 'enabled'. Print message and exit if so.
 #   Remove test for 'dbio-only'.
 #
 #   Kathleen Biagas, Monday May 19, 2025
@@ -718,9 +718,9 @@ function bv_enable_group
     local name=${1/--}
     local match=0
 
-    # don't want to allow enablement of 'extras' group.
-    if [[ "$name" == "extras" ]] ; then
-        info "Libraries in group 'extras' cannot be enabled via '--extras'. Each desired 'extra' library should be added separately, e.g. '--llvm --osmesa'."
+    # don't want to allow enablement of 'explicit' group.
+    if [[ "$name" == "explicit" ]] ; then
+        info "Libraries in group 'explicit' cannot be enabled via '--explicit'. Each desired 'explicit' library should be added separately, e.g. '--llvm --osmesa'."
         exit
     fi
 

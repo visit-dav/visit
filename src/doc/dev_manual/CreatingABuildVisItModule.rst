@@ -73,9 +73,9 @@ See ``bv_qt.sh`` as an example of allowing system or also an alternate (already 
 Once ``bv_foo.sh`` has been updated appropriately, add the module name to ``bv_support/modules.xml`` under the appropriate group.
 The `required` group in ``bv_support/modules.xml`` is for libraries that are required for basic functioning of _VisIt.
 The `optional` group is for most i/o and other non-required support libraries.
-The `extras` group is for any library (and its dependencies) that should be explicitly requested.
+The `explicit` group is for any library (and its dependencies) that should be explicitly requested.
 This could be libraries that are mutually exclusive such as `mesagl` and `osmesa`, or libraries that may not be needed on many systems such as `mpich`, `xcb` or `xkbcommon`.
-The `extras` group should also be used for any library that has proven to have a problematic build system.
+The `explicit` group should also be used for any library that has proven to have a problematic build system.
 
 Then run the build_visit script to ensure that your module builds and installs correctly, and that the host profile entry is correct.
 

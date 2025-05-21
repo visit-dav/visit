@@ -16,10 +16,10 @@
 #
 #   Modifications:
 #     Kathleen Biagas, Mon May 12, 2025
-#     Add support for 'extras' group (extralibs), to make it easier to list
-#     them separately from 'reqlibs' and 'optlibs' when needed.
+#     Add support for 'explicit' group (explicitlibs), to make it easier to
+#     list them separately from 'reqlibs' and 'optlibs' when needed.
 #     Where possible, perform work on all groups instead of duplicating the
-#     same code for 'reqlibs', 'optlibs' and 'extralibs'.
+#     same code for 'reqlibs', 'optlibs' and 'explicitlibs'.
 #
 # *****************************************************************************
 
@@ -70,7 +70,7 @@ declare -a reqlibs
 declare -a reqlibs_state
 declare -a optlibs
 declare -a optlibs_state
-declare -a extralibs
+declare -a explicitlibs
 declare -a grouplibs_name
 declare -a grouplibs_deps
 declare -a grouplibs_comment
@@ -289,7 +289,7 @@ do
     #copy xmlcontents to global variables
     reqlibs=(`echo "${reqlibs[@]} ${xmlp_reqlibs[@]}" | xargs -n 1 | sort -u | xargs`)
     optlibs=(`echo "${optlibs[@]} ${xmlp_optlibs[@]}" | xargs -n 1 | sort -u | xargs`)
-    extralibs=(`echo "${extralibs[@]} ${xmlp_extralibs[@]}" | xargs -n 1 | sort -u | xargs`)
+    explicitlibs=(`echo "${explicitlibs[@]} ${xmlp_explicitlibs[@]}" | xargs -n 1 | sort -u | xargs`)
 
     for (( bv_i = 0; bv_i < ${#xmlp_grouplibs_name[*]}; ++bv_i ))
     do
@@ -399,7 +399,7 @@ function bv_write_unified_file
 
     echo "declare -a reqlibs" >> $OUTPUT_bv_FILE
     echo "declare -a optlibs" >> $OUTPUT_bv_FILE
-    echo "declare -a extralibs" >> $OUTPUT_bv_FILE
+    echo "declare -a explicitlibs" >> $OUTPUT_bv_FILE
     echo "declare -a grouplibs_name" >> $OUTPUT_bv_FILE
     echo "declare -a grouplibs_deps" >> $OUTPUT_bv_FILE
     echo "declare -a grouplibs_comment" >> $OUTPUT_bv_FILE
@@ -442,7 +442,7 @@ function bv_write_unified_file
     echo "  parseXmlModuleContents \$license" >> $OUTPUT_bv_FILE
     echo "  reqlibs=(\`echo \"\${reqlibs[@]} \${xmlp_reqlibs[@]}\" | xargs -n 1 | sort -u | xargs\`)" >> $OUTPUT_bv_FILE
     echo "  optlibs=(\`echo \"\${optlibs[@]} \${xmlp_optlibs[@]}\" | xargs -n 1 | sort -u | xargs\`)" >> $OUTPUT_bv_FILE
-    echo "  extralibs=(\`echo \"\${extralibs[@]} \${xmlp_extralibs[@]}\" | xargs -n 1 | sort -u | xargs\`)" >> $OUTPUT_bv_FILE
+    echo "  explicitlibs=(\`echo \"\${explicitlibs[@]} \${xmlp_explicitlibs[@]}\" | xargs -n 1 | sort -u | xargs\`)" >> $OUTPUT_bv_FILE
 
     echo "for (( bv_i = 0; bv_i < \${#xmlp_grouplibs_name[*]}; ++bv_i ))" >> $OUTPUT_bv_FILE
     echo "do" >> $OUTPUT_bv_FILE

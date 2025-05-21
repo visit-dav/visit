@@ -2,11 +2,11 @@
 
 # Modifications:
 #   Kathleen Biagas, Monday May 12, 2025
-#   Added 'extralibs' group.
+#   Added 'explicitlibs' group.
 #   Removed 'parseXmlModules' as it was used to separately parse the non-group
 #   'required' and 'optional' tags that are no longer used.
 #    All libraries are listed in only one of the groups: 'required', 'optional'
-#    or 'extras' and are parsed in the 'parseXmlGroupModules' function.
+#    or 'explicit' and are parsed in the 'parseXmlGroupModules' function.
 
 declare -a xmlp_filecontents
 declare -a xmlp_licenses
@@ -15,7 +15,7 @@ declare -a xmlp_alllibs
 declare -a xmlp_tmp_array
 declare -a xmlp_reqlibs
 declare -a xmlp_optlibs
-declare -a xmlp_extralibs
+declare -a xmlp_explicitlibs
 declare -a xmlp_grouplibs_name
 declare -a xmlp_grouplibs_deps
 declare -a xmlp_grouplibs_comment
@@ -241,7 +241,7 @@ function parseXmlModuleContents
 
     xmlp_reqlibs=()
     xmlp_optlibs=()
-    xmlp_extralibs=()
+    xmlp_explicitlibs=()
     xmlp_grouplibs_name=()
     xmlp_grouplibs_deps=()
     xmlp_grouplibs_comment=()
@@ -289,8 +289,8 @@ function parseXmlModuleContents
             xmlp_reqlibs=( ${xmlp_grouplibs_deps[$i]} )
         elif [[ $groupname == "optional" ]] ; then
             xmlp_optlibs=( ${xmlp_grouplibs_deps[$i]} )
-        elif [[ $groupname == "extras" ]] ; then
-            xmlp_extralibs=( ${xmlp_grouplibs_deps[$i]} )
+        elif [[ $groupname == "explicit" ]] ; then
+            xmlp_explicitlibs=( ${xmlp_grouplibs_deps[$i]} )
         fi
         #echo "group name: $groupname"
         #echo "group deps: ${xmlp_grouplibs_deps[$i]}"
@@ -306,9 +306,9 @@ function parseXmlModuleContents
     #    echo "optional: ${xmlp_optlibs[$i]}"
     #done
 
-    #for (( i = 0; i < ${#xmlp_extralibs[*]}; ++i ))
+    #for (( i = 0; i < ${#xmlp_explicitlibs[*]}; ++i ))
     #do
-    #    echo "extra: ${xmlp_extralibs[$i]}"
+    #    echo "extra: ${xmlp_explicitlibs[$i]}"
 
     if [[   ${#xmlp_reqlibs[*]} == 0 || 
                 ${#xmlp_optlibs[*]} == 0 ]]; then

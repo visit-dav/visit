@@ -1568,12 +1568,7 @@ function printvariables
 
 # *************************************************************************** #
 # Modifications:
-#   Kathleen Biagas, Monday May 12, 2025
-#   For 'GROUPING' don't list 'extras'.
-#   Add more comments or REQUIRED, OPTIONAL.
-#   Add 'EXTRAS'.
-#
-#   Kathleen Biagas, Friday Mat 16, 2026
+#   Kathleen Biagas, Friday May 16, 2025
 #   Remove 'GROUPING' section. Expand comments for each group instead.
 #
 # *************************************************************************** #
@@ -1665,14 +1660,14 @@ function usage
     done
 
     printf "\n"
-    printf "  EXTRAS -- These are only built when explicitly requested.\n"
+    printf "  EXPLICIT -- These are only built when explicitly requested.\n"
     printf "\n"
 
-    for (( bv_i=0; bv_i<${#extralibs[*]}; ++bv_i ))
+    for (( bv_i=0; bv_i<${#explicitlibs[*]}; ++bv_i ))
     do
-        initializeFunc="bv_${extralibs[$bv_i]}_initialize"
+        initializeFunc="bv_${explicitlibs[$bv_i]}_initialize"
         $initializeFunc
-        printUsageFunc="bv_${extralibs[$bv_i]}_print_usage"
+        printUsageFunc="bv_${explicitlibs[$bv_i]}_print_usage"
         $printUsageFunc
     done
 

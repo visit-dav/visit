@@ -42,7 +42,7 @@
             <lib name="vtkm"/>
             <lib name="xdmf"/>
         </group>
-        <group name="extras" comment="Libraries that can only be enabled individually, the group cannot be enabled as a whole. This list can include mutually exclusive libraries like 'mesgal' and 'osmesa', or libraries only needed on specific platforms, or libraries with problematic builds." enabled="no">
+        <group name="explicit" comment="Libraries that can only be enabled individually, the group cannot be enabled as a whole. This list can include mutually exclusive libraries like 'mesgal' and 'osmesa', or libraries only needed on specific platforms, or libraries with problematic builds." enabled="no">
             <lib name="glu"/>
             <lib name="llvm"/>
             <lib name="mesagl"/>
