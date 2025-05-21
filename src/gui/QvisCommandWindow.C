@@ -149,6 +149,11 @@ QvisCommandWindow::~QvisCommandWindow()
 //   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
 //   Support Qt6: buttonClicked -> idClicked.
 //
+//   Cyrus Harrison, Tue May 20 09:11:37 PDT 2025
+//   Disabled rich text paste support in command editor text boxes.
+//   Many folks are now copying and pasting from editors that embed
+//   formating (such as vscode). Embedded formatting creates a mess and
+//   is distracting, so it is now disabled.
 // ****************************************************************************
 
 void
@@ -259,6 +264,7 @@ QvisCommandWindow::CreateWindowContents()
         editors[i]->setReadOnly(false);
         editors[i]->setFont(monospaced);
         editors[i]->setWordWrapMode(QTextOption::NoWrap);
+        editors[i]->setAcceptRichText(false);
 
         // hook up a python syntax highlighter
         highlighters[i] = new QvisPythonSyntaxHighlighter(editors[i]->document());
