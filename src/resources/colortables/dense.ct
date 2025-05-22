@@ -1026,6 +1026,6 @@
            <Field name="colors" type="unsignedCharArray" length="4">54 14 36 255</Field>
            <Field name="position" type="float">1.000000</Field>
        </Object>
-    <Field name="tags" type="stringVector">"cmocean" </Field>
+    <Field name="tags" type="stringVector">"CMOcean" "Continuous" "Color Blind Safe" "Sequential" </Field>
     </Object>
 </Object>
