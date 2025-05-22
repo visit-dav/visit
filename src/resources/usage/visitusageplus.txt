@@ -234,7 +234,7 @@
                              hang around, tying up parallel compute resources,
                              following an exit-triggering error condition on
                              any one process.
-        -python-log-file     A string for the name of the log file that visit
+        -python-log-file     A string for the name of the log file in which visit
                              records python cli methods (default=visitlog.py)
 
     Developer options (most for xml2... tools)
