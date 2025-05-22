@@ -18,7 +18,7 @@ function bv_xdmf_disable
 
 function bv_xdmf_depends_on
 {
-    echo "cmake vtk hdf5 zlib"
+    echo "cmake vtk95 hdf5 zlib"
 }
 
 function bv_xdmf_info
@@ -56,14 +56,14 @@ function bv_xdmf_host_profile
 
         xml64=""
         xmlsep="-"
-        if test -e $VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib64 ; then
+        if test -e $VISITDIR/${VTK95_INSTALL_DIR}/$VTK95_VERSION/$VISITARCH/lib64 ; then
             xml64="64"
         fi
-        if test -e $VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib${xml64}/libvtklibxml2.${VTK_SHORT_VERSION}.${SO_EXT}; then
+        if test -e $VISITDIR/${VTK95_INSTALL_DIR}/$VTK95_VERSION/$VISITARCH/lib${xml64}/libvtklibxml2.${VTK95_SHORT_VERSION}.${SO_EXT}; then
             xmlsep="."
         fi
         echo \
-            "VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} \${VISITHOME}/vtk/\${VTK_VERSION}/\${VISITARCH}/lib${xml64} vtklibxml2${xmlsep}\${VTK_MAJOR_VERSION}.\${VTK_MINOR_VERSION} TYPE STRING)"\
+            "VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} \${VISITHOME}/vtk/\${VTK95_VERSION}/\${VISITARCH}/lib${xml64} vtklibxml2${xmlsep}\${VTK95_MAJOR_VERSION}.\${VTK95_MINOR_VERSION} TYPE STRING)"\
                 >> $HOSTCONF
     fi
 }
@@ -233,14 +233,14 @@ function build_xdmf
 
     xml64=""
     xmlsep="-"
-    xmlinc=$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtklibxml2/include
-    if test -e $VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib64 ; then
+    xmlinc=$VISITDIR/${VTK95_INSTALL_DIR}/$VTK95_VERSION/$VISITARCH/include/vtk-${VTK95_SHORT_VERSION}/vtklibxml2/include
+    if test -e $VISITDIR/${VTK95_INSTALL_DIR}/$VTK95_VERSION/$VISITARCH/lib64 ; then
         xml64="64"
     fi
-    if test -e $VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib${xml64}/libvtklibxml2.${VTK_SHORT_VERSION}.${SO_EXT}; then
+    if test -e $VISITDIR/${VTK95_INSTALL_DIR}/$VTK95_VERSION/$VISITARCH/lib${xml64}/libvtklibxml2.${VTK95_SHORT_VERSION}.${SO_EXT}; then
         xmlsep="."
     fi
-    xmllib=$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib${xml64}/libvtklibxml2${xmlsep}${VTK_SHORT_VERSION}.${SO_EXT}
+    xmllib=$VISITDIR/${VTK95_INSTALL_DIR}/$VTK95_VERSION/$VISITARCH/lib${xml64}/libvtklibxml2${xmlsep}${VTK95_SHORT_VERSION}.${SO_EXT}
 
     set -x
     ${CMAKE_BIN} -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/Xdmf/${XDMF_VERSION}/${VISITARCH}"\
