@@ -362,8 +362,6 @@ set -e
 test=no
 
 user=`whoami`
-result_dir=/usr/workspace/visit/visit/_release_builds
-
 
 #
 # Set the user e-mail address.
@@ -523,6 +521,15 @@ then
 fi
 
 #
+# Determine the landing place for the results
+#
+if [ "$crossroads" = true ]; then
+    result_dir=/usr/projects/views/visit/_release_builds
+else
+    result_dir=/usr/workspace/visit/visit/_release_builds
+fi
+
+#
 # make sure landing place for results exist
 #
 if test ! -d $result_dir ; then
@@ -597,8 +604,7 @@ fi
 #
 if [ "$poodle" = true ] || [ "$magma" = true ] || [ "$rzvernal" = true ] || \
    [ "$rzwhippet" = true ] || [ "$lassen" = true ] || [ "$sierra" = true ] || \
-   [ "$tuolumne" = true ] || [ "$elcap" = true ] || \
-   [ "$crossroads" = true]; then
+   [ "$tuolumne" = true ] || [ "$elcap" = true ]; then
    cat <<EOF >> machine_specific_build_script
 if test ! -d /usr/tmp/$user/$machine_name ; then
    mkdir -p /usr/tmp/$user/$machine_name
@@ -607,6 +613,22 @@ rm -rf /usr/tmp/$user/$machine_name/visitbuild
 mkdir /usr/tmp/$user/$machine_name/visitbuild
 cp $machine_name_$dist.tar.gz /usr/tmp/$user/$machine_name/visitbuild/$dist.tar.gz
 cd /usr/tmp/$user/$machine_name/visitbuild
+tar -xzvf $dist.tar.gz > buildlog 2>&1
+ver=\`cat $dist/src/VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+echo "Version: \$ver"
+export CONFIG_SITE=\`readlink -f $dist/src/config-site/$config_site\`
+echo "CONFIG_SITE=\${CONFIG_SITE}"
+EOF
+elif [ "$crossroads" = true ]; then
+   cat <<EOF >> machine_specific_build_script
+if test ! -d /tmp/$user/$machine_name ; then
+   mkdir -p /tmp/$user/$machine_name
+fi
+rm -rf /tmp/$user/$machine_name/visitbuild
+mkdir /tmp/$user/$machine_name/visitbuild
+cp $machine_name_$dist.tar.gz /tmp/$user/$machine_name/visitbuild/$dist.tar.gz
+cd /tmp/$user/$machine_name/visitbuild
 tar -xzvf $dist.tar.gz > buildlog 2>&1
 ver=\`cat $dist/src/VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
