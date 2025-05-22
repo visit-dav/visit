@@ -434,8 +434,8 @@ fi
 # Determine the result and installation locations.
 #
 if [ "$crossroads" = true ]; then
-   result_dir=/usr/workspace/visit/visit/_release_builds
-   install_location=/usr/gapps/visit
+   result_dir=/usr/projects/views/visit/_release_builds
+   install_location=/usr/projects/views/visit
 else
    result_dir=/usr/workspace/visit/visit/_release_builds
    install_location=/usr/gapps/visit
