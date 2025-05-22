@@ -12,6 +12,7 @@
 
         <!-- optional libraries -->
         <optional>
+            <lib name="vtk95"/>
             <lib name="adios"/>
             <lib name="adios2"/>
             <lib name="advio"/>
