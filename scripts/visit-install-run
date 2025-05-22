@@ -259,13 +259,15 @@ set -e
 # 
 #   Justin Privitera, Wed Apr 16 17:01:19 PDT 2025
 #   Add elcap.
+# 
+#   Eric Brugger, Mon May 19 14:50:30 PDT 2025
+#   Added crossroads.
+# 
 #-----------------------------------------------------------------------
 
 test=no
 
 user=`whoami`
-result_dir=/usr/workspace/visit/visit/_release_builds
-install_location=/usr/gapps/visit
 
 #
 # Set the user e-mail address.
@@ -313,6 +315,7 @@ tuolumne=false
 rzadams=false # rzadams will piggyback off of tuolumne for the most part
 elcap=false
 rzansel=false # piggyback off of lassen
+crossroads=false
 
 ver=undefined
 machine_name="unknown"
@@ -390,6 +393,13 @@ do
          network="llnl_closed"
          shift
          ;;
+      -crossroads)
+         crossroads=true
+         machine_name="crossroads"
+         architecture="linux-x86_64"
+         network="llnl_closed"
+         shift
+         ;;
 
       -v)
          ver=$2
@@ -405,7 +415,8 @@ if [ "$ver" = "undefined" ]
 then
    echo "Usage: [-<machine name>] -v <version>"
    echo "Valid machine names:"
-   echo "    poodle lassen rzwhippet magma sierra tuolumne rzadams rzansel elcap"
+   echo "    poodle lassen rzwhippet magma sierra tuolumne rzadams rzansel"
+   echo "    elcap crossroads"
    echo "version should just be the version number (e.g. 3.4.9)"
    exit
 fi
@@ -417,6 +428,17 @@ if [ ! -e visit-install ]
 then
    echo "visit-install is missing."
    exit
+fi
+
+#
+# Determine the result and installation locations.
+#
+if [ "$crossroads" = true ]; then
+   result_dir=/usr/workspace/visit/visit/_release_builds
+   install_location=/usr/gapps/visit
+else
+   result_dir=/usr/workspace/visit/visit/_release_builds
+   install_location=/usr/gapps/visit
 fi
 
 ver2=`echo $ver | tr "." "_"`
@@ -439,6 +461,14 @@ set -e
 ./visit-install -private -c $network -g visit -b wbronze -gw -l \
 $ver ${architecture}-${machine_name} $install_location > installlog 2>&1
 EOF
+elif [ "$crossroads" = true ]; then
+   rm -f machine_specific_install_script
+   cat <<EOF > machine_specific_install_script
+#!/bin/sh
+set -e
+./visit-install -private -c $network -g viz -gw -l \
+$ver ${architecture}-${machine_name} $install_location > installlog 2>&1
+EOF
 else
    echo "case for $machine_name not implemented. Bailing out."
    exit
@@ -449,7 +479,7 @@ fi
 #
 if [ "$poodle" = true ] || [ "$rzwhippet" = true ] || [ "$magma" = true ] || \
    [ "$lassen" = true ] || [ "$sierra" = true ] || [ "$tuolumne" = true ] || \
-   [ "$elcap" = true ]; then
+   [ "$elcap" = true ] || [ "$crossroads" = true ]; then
    cat <<EOF >> machine_specific_install_script
 rm -f resultlog
 echo ""                                              > resultlog 2>&1
@@ -484,7 +514,7 @@ ln -s $install_location/$ver+/$architecture $install_location/$ver+/linux-x86_64
 EOF
 elif [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
      [ "$magma" = true ] || [ "$sierra" = true ] || [ "$tuolumne" = true ] || \
-     [ "$elcap" = true ]; then
+     [ "$elcap" = true ] || [ "$crossroads" = true ]; then
    # nothing to do for this case
    cat <<EOF >> machine_specific_install_script
 EOF
@@ -501,7 +531,8 @@ if [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
    cat <<EOF >> machine_specific_install_script
 mail -s "VisIt install ($ver): $machine_name" $emailName < resultlog.$machine_name
 EOF
-elif  [ "$magma" = true ] || [ "$sierra" = true ] || [ "$elcap" = true ]; then
+elif [ "$magma" = true ] || [ "$sierra" = true ] || [ "$elcap" = true ] || \
+     [ "$crossroads" = true ]; then
    # nothing to do for this case
    cat <<EOF >> machine_specific_install_script
 EOF
