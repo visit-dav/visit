@@ -53,6 +53,7 @@
 #define VTK_FOAMFILE_RECOGNIZE_LINEHEAD 0
 
 #include "visit_vtkOpenFOAMReader.h"
+#include <visit-config.h> // for LIB_VERSION_GE
 
 #include <algorithm>
 #include <vector>

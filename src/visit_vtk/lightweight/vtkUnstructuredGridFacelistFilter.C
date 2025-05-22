@@ -18,6 +18,7 @@
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
 
+#include <visit-config.h> // for LIB_VERSION_GE
 #include <vector>
 
 
