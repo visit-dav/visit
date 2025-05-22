@@ -3853,7 +3853,8 @@ CGetTopologicalDim(avtDataRepresentation &data, void *info, bool &success)
         {
             int localDim = -1;
             vtkStructuredGrid *sg = vtkStructuredGrid::SafeDownCast(ds);
-            int *dims = sg->GetDimensions();
+            int dims[3];
+            sg->GetDimensions(dims);
             if (dims[0] > 1 && dims[1] > 1 && dims[2] > 1)
             {
                 localDim = 3; // All 3 dims > 1 node thick

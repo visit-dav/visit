@@ -59,7 +59,6 @@ avtCellLocator::SetDataSet(vtkDataSet *ds)
     dataSet->Register( nullptr );
 
     cellPtr = nullptr;
-    strDimPtr  = nullptr;
     normal2D = false;
     normal3D = false;
 
@@ -69,10 +68,10 @@ avtCellLocator::SetDataSet(vtkDataSet *ds)
     }
     else if( vtkStructuredGrid* sg = vtkStructuredGrid::SafeDownCast( dataSet ) )
     {
-        strDimPtr = sg->GetDimensions();
-        if (strDimPtr[0] > 1 && strDimPtr[1] > 1 && strDimPtr[2] == 1)
+        sg->GetDimensions(strDim);
+        if (strDim[0] > 1 && strDim[1] > 1 && strDim[2] == 1)
             normal2D = true;
-        else if (strDimPtr[0] > 1 && strDimPtr[1] > 1 && strDimPtr[2] > 1)
+        else if (strDim[0] > 1 && strDim[1] > 1 && strDim[2] > 1)
             normal3D = true;
     }
 
@@ -131,7 +130,6 @@ avtCellLocator::ReleaseDataSet()
         dataSet = nullptr;
 
         cellPtr = nullptr;
-        strDimPtr  = nullptr;
         normal2D = false;
         normal3D = false;
 
@@ -261,17 +259,17 @@ void avtCellLocator::CopyCell( vtkIdType cellid, vtkIdType* ids,
 
         tmp->Delete();
     }
-    else if( strDimPtr )
+    else if( strDim[0] !=-1 )
     {
         if (normal3D)
         {
-            int i = cellid % (strDimPtr[0] - 1);
-            int j = (cellid / (strDimPtr[0] - 1)) % (strDimPtr[1] - 1);
-            int k = cellid / ((strDimPtr[0] - 1) * (strDimPtr[1] - 1));
+            int i = cellid % (strDim[0] - 1);
+            int j = (cellid / (strDim[0] - 1)) % (strDim[1] - 1);
+            int k = cellid / ((strDim[0] - 1) * (strDim[1] - 1));
 
-            int idx = i + j*strDimPtr[0] + k*strDimPtr[0]*strDimPtr[1];
-            int d0 = strDimPtr[0];
-            int d1 = strDimPtr[0]*strDimPtr[1];
+            int idx = i + j*strDim[0] + k*strDim[0]*strDim[1];
+            int d0 = strDim[0];
+            int d1 = strDim[0]*strDim[1];
 
             ids[0] = idx;
             ids[1] = idx+1;
@@ -287,11 +285,11 @@ void avtCellLocator::CopyCell( vtkIdType cellid, vtkIdType* ids,
         }
         else if (normal2D)
         {
-            int i = cellid % (strDimPtr[0] - 1);
-            int j = cellid / (strDimPtr[0] - 1);
+            int i = cellid % (strDim[0] - 1);
+            int j = cellid / (strDim[0] - 1);
 
-            int idx = i + j*strDimPtr[0];
-            int d0 = strDimPtr[0];
+            int idx = i + j*strDim[0];
+            int d0 = strDim[0];
             ids[0] = idx;
             ids[1] = idx+1;
             ids[2] = idx+1+d0;
@@ -301,21 +299,21 @@ void avtCellLocator::CopyCell( vtkIdType cellid, vtkIdType* ids,
         else
         {
             int idx, d0;
-            if (strDimPtr[0] == 1 && strDimPtr[1] > 1 && strDimPtr[2] > 1)
+            if (strDim[0] == 1 && strDim[1] > 1 && strDim[2] > 1)
             {
-                int j = cellid % (strDimPtr[1] - 1);
-                int k = cellid / (strDimPtr[1] - 1);
+                int j = cellid % (strDim[1] - 1);
+                int k = cellid / (strDim[1] - 1);
 
-                idx = j + k*strDimPtr[1];
-                d0 = strDimPtr[1];
+                idx = j + k*strDim[1];
+                d0 = strDim[1];
             }
-            else if (strDimPtr[0] > 1 && strDimPtr[1] == 1 && strDimPtr[2] > 1)
+            else if (strDim[0] > 1 && strDim[1] == 1 && strDim[2] > 1)
             {
-                int i = cellid % (strDimPtr[0] - 1);
-                int k = cellid / (strDimPtr[0] - 1);
+                int i = cellid % (strDim[0] - 1);
+                int k = cellid / (strDim[0] - 1);
 
-                idx = i + k*strDimPtr[0];
-                d0 = strDimPtr[0];
+                idx = i + k*strDim[0];
+                d0 = strDim[0];
             }
             else
             {
