@@ -9,11 +9,7 @@
 ## Setup VISITHOME & VISITARCH variables.
 ##
 
-if(USE_VTK94)
-    SET(VISITHOME /usr/workspace/visit/visit/thirdparty_shared/3.4.9-vtk94/toss4)
-else()
-    SET(VISITHOME /usr/workspace/visit/visit/thirdparty_shared/3.4.2/toss4)
-endif()
+SET(VISITHOME /usr/workspace/visit/visit/thirdparty_shared/3.5.0-vtk95/toss4)
 SET(VISITARCH linux-x86_64_gcc-10.3)
 
 ### NOTE: Modified from build_visit output
@@ -79,23 +75,10 @@ VISIT_OPTION_DEFAULT(VISIT_ZLIB_DIR ${VISITHOME}/zlib/${ZLIB_VERSION}/${VISITARC
 ##
 VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/3.9.18/${VISITARCH})
 
-if(USE_VTK94)
-    ##
-    ## OSMesa
-    ##
-    VISIT_OPTION_DEFAULT(VISIT_OSMESA_DIR ${VISITHOME}/osmesa/17.3.9/${VISITARCH})
-
-else()
-    ##
-    ## LLVM
-    ##
-    VISIT_OPTION_DEFAULT(VISIT_LLVM_DIR ${VISITHOME}/llvm/6.0.1/${VISITARCH})
-
-    ##
-    ## MesaGL
-    ##
-    VISIT_OPTION_DEFAULT(VISIT_MESAGL_DIR ${VISITHOME}/mesagl/17.3.9/${VISITARCH})
-endif()
+##
+## OSMesa
+##
+VISIT_OPTION_DEFAULT(VISIT_OSMESA_DIR ${VISITHOME}/osmesa/17.3.9/${VISITARCH})
 
 ##
 ## QT6
@@ -112,19 +95,14 @@ VISIT_OPTION_DEFAULT(VISIT_OSPRAY_DIR ${VISITHOME}/ospray/${OSPRAY_VERSION}/${VI
 ##
 ## ANARI
 ##
-if(USE_VTK94)
-    SETUP_APP_VERSION(ANARI 0.13.1)
-    VISIT_OPTION_DEFAULT(VISIT_ANARI_DIR ${VISITHOME}/anari/${ANARI_VERSION}/${VISITARCH})
-endif()
+# VisIt uses some vtkAnari headers that aren't available in 9.5
+#SETUP_APP_VERSION(ANARI 0.13.1)
+#VISIT_OPTION_DEFAULT(VISIT_ANARI_DIR ${VISITHOME}/anari/${ANARI_VERSION}/${VISITARCH})
 
 ##
 ## VTK
 ##
-if(USE_VTK94)
-    SETUP_APP_VERSION(VTK 9.4.1)
-else()
-    SETUP_APP_VERSION(VTK 9.2.6)
-endif()
+SETUP_APP_VERSION(VTK 9.5.0.rc1)
 VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/${VTK_VERSION}/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_VTK_INCDEP ZLIB_INCLUDE_DIR)
 VISIT_OPTION_DEFAULT(VISIT_VTK_LIBDEP ZLIB_LIBRARY)
