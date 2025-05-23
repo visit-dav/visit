@@ -16,7 +16,7 @@ add_subdirectory(exceptiontest)
 
 
 # OSMesa should always be available with VTK 9.4.1
-if(NOT WIN32 AND (HAVE_OSMESA OR VTK_VERSION VERSION_GREATER_EQUAL "9.4.1"))
+if(NOT WIN32 AND NOT APPLE AND (HAVE_OSMESA OR VTK_VERSION VERSION_GREATER_EQUAL "9.4.1"))
     add_subdirectory(osmesatest)
 endif()
 

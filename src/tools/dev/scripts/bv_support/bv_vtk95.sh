@@ -12,7 +12,11 @@ function bv_vtk95_enable
     DO_VTK94="no"
 
     if [[ "$DO_MESAGL" == "no" ]] ; then
-        bv_osmesa_enable
+        if [[ "$OPSYS" == "Darwin" ]]; then
+            # do nothing
+        else
+            bv_osmesa_enable
+        fi
     fi
 }
 
@@ -39,7 +43,7 @@ function bv_vtk95_depends_on
     if [[ "$DO_OSPRAY" == "yes" ]]; then
         depends_on="${depends_on} ospray"
     fi
-    
+
     if [[ "$DO_ANARI" == "yes" ]]; then
         depends_on="${depends_on} anari"
     fi
@@ -125,14 +129,14 @@ function apply_vtk95_vtkRectilinearGridReader_patch
 +        vtkFieldData* fd = this->ReadFieldData();
 +        fd->Delete();
 +      }
- 
+
 -      if (!strncmp(this->LowerCase(line), "dimensions", 10) && !dimsRead)
 +      else if (!strncmp(this->LowerCase(line), "dimensions", 10) && !dimsRead)
        {
          int dim[3];
          if (!(this->Read(dim) && this->Read(dim + 1) && this->Read(dim + 2)))
 @@ -116,6 +122,22 @@
- 
+
          dimsRead = true;
        }
 +
@@ -153,7 +157,7 @@ function apply_vtk95_vtkRectilinearGridReader_patch
 +
      }
    }
- 
+
 EOF
 
     if [[ $? != 0 ]] ; then
@@ -204,13 +208,13 @@ function apply_vtk95_vtkospray_patches
  class vtkVolumetricPass;
 +// Used by VisIt
 +class vtkViewNodeFactory;
- 
+
  class VTKRENDERINGRAYTRACING_EXPORT vtkOSPRayPass : public vtkRenderPass
  {
 @@ -65,6 +67,11 @@
     */
    virtual void RenderInternal(const vtkRenderState* s);
- 
+
 +  /**
 +   * Called by VisIt
 +   */
@@ -232,7 +236,7 @@ EOF
 +++ Rendering/RayTracing/vtkOSPRayPass.cxx	2025-05-15 13:55:50.006697000 -0700
 @@ -417,6 +417,12 @@
  }
- 
+
  //------------------------------------------------------------------------------
 +vtkViewNodeFactory* vtkOSPRayPass::GetViewNodeFactory()
 +{
@@ -541,7 +545,7 @@ function build_vtk95
             vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingRayTracing:STRING=NO"
         fi
     fi
-    
+
     # Use ANARI?
     if [[ "$DO_ANARI" == "yes" ]] ; then
         vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingAnari:STRING=YES"

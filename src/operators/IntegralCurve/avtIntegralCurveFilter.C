@@ -32,7 +32,7 @@
 
 #include <vector>
 #include <limits>
-
+#include <random>
 
 // from Filters/FlowPaths/vtkStreamer.h  (now deprecated, so defined here).
 #define VTK_INTEGRATE_FORWARD          0
@@ -1674,6 +1674,9 @@ avtIntegralCurveFilter::GenerateSeedPointsFromLine(std::vector<avtVector> &pts)
 //   Space the distance in the Y direction based on the second sample distance
 //   (we were doubling up the distance for the X-direction).
 //
+//   Cyrus Harrison Fri May 23 08:30:47 PDT 2025
+//   C++17: std::random_shuffle was removed, use std::shuffle w/ rng
+//
 // ****************************************************************************
 
 void
@@ -1696,6 +1699,7 @@ avtIntegralCurveFilter::GenerateSeedPointsFromPlane(std::vector<avtVector> &pts)
 
     if (randomSamples)
     {
+        std::mt19937 rng(std::time(nullptr));
         float dX = x1-x0, dY = y1-y0;
         if (!fill)
         {
@@ -1707,7 +1711,7 @@ avtIntegralCurveFilter::GenerateSeedPointsFromPlane(std::vector<avtVector> &pts)
             avtVector p;
             for (int i = 0; i < numSamplePoints; i++)
             {
-                random_shuffle(sides.begin(), sides.end());
+                std::shuffle(sides.begin(), sides.end(), rng);
                 if (sides[0] == 0) //Bottom side.
                     p.set(x0 + random01()*dX, y0, 0.0f);
                 else if (sides[0] == 1) //Top side.
@@ -1978,6 +1982,9 @@ avtIntegralCurveFilter::GenerateSeedPointsFromSphere(std::vector<avtVector> &pts
 //   Dave Pugmire, Wed Nov 10 09:20:32 EST 2010
 //   If box sampling is 1, use the mid value.
 //
+//   Cyrus Harrison Fri May 23 08:30:47 PDT 2025
+//   C++17: std::random_shuffle was removed, use std::shuffle w/ rng
+//
 // ****************************************************************************
 
 void
@@ -1995,6 +2002,7 @@ avtIntegralCurveFilter::GenerateSeedPointsFromBox(std::vector<avtVector> &pts)
 
     if (randomSamples)
     {
+
         if (fill)
         {
             for (int i = 0; i < numSamplePoints; i++)
@@ -2011,11 +2019,11 @@ avtIntegralCurveFilter::GenerateSeedPointsFromBox(std::vector<avtVector> &pts)
             std::vector<int> faces(6);
             for (int i = 0; i < 6; i++)
                 faces[i] = i;
-
+            std::mt19937 rng(std::time(nullptr));
             avtVector p;
             for (int i = 0; i < numSamplePoints; i++)
             {
-                random_shuffle(faces.begin(), faces.end());
+                std::shuffle(faces.begin(), faces.end(), rng);
                 if (faces[0] == 0) //X=0 face.
                     p.set(points[0].x,
                           points[0].y + (diff.y * random01()),
@@ -2136,6 +2144,8 @@ avtIntegralCurveFilter::GenerateSeedPointsFromPointList(std::vector<avtVector> &
 //  Creation:   December 3, 2009
 //
 //  Modifications:
+//   Cyrus Harrison Fri May 23 08:30:47 PDT 2025
+//   C++17: std::random_shuffle was removed, use std::shuffle w/ rng
 //
 // ****************************************************************************
 
@@ -2152,7 +2162,8 @@ avtIntegralCurveFilter::GenerateSeedPointsFromSelection(std::vector<avtVector> &
     sel->GetMatchingLocations(allPts);
     if (randomSamples)
     {
-        random_shuffle(allPts.begin(), allPts.end());
+        std::mt19937 rng(std::time(nullptr));
+        std::shuffle(allPts.begin(), allPts.end(), rng);
         for (int i = 0; i < numSamplePoints; i++)
             pts.push_back(allPts[i]);
     }
@@ -2593,6 +2604,9 @@ avtIntegralCurveFilter::ReportWarnings(std::vector<avtIntegralCurve *> &ics)
 //    I corrected several bugs with generation of normals for displaying
 //    the curves as ribbons.
 //
+//   Cyrus Harrison Fri May 23 08:30:47 PDT 2025
+//   C++17: std::random_shuffle was removed, use std::shuffle w/ rng
+//
 // ****************************************************************************
 void
 avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *> &ics)
@@ -2694,8 +2708,9 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
       for (int i = 0; i < numICs; i++)
         random_values[i] = i;
 
+      std::mt19937 rng(std::time(nullptr));
       // Now randomize the values.
-      std::random_shuffle ( random_values.begin(), random_values.end() );
+      std::shuffle ( random_values.begin(), random_values.end(), rng);
     }
 
     for (int i = 0; i < numICs; i++)
