@@ -8658,11 +8658,11 @@ static VisWinTextAttributes
 FontAttributes_To_VisWinTextAttributes(const FontAttributes &f)
 {
     VisWinTextAttributes atts;
-    if(f.GetFont() == FontAttributes::Arial)
+    if(f.GetFontAsLegacyEnum() == FontAttributes::Arial)
         atts.font = VisWinTextAttributes::Arial;
-    else if(f.GetFont() == FontAttributes::Courier)
+    else if(f.GetFontAsLegacyEnum() == FontAttributes::Courier)
         atts.font = VisWinTextAttributes::Courier;
-    else if(f.GetFont() == FontAttributes::Times)
+    else if(f.GetFontAsLegacyEnum() == FontAttributes::Times)
         atts.font = VisWinTextAttributes::Times;
 
     atts.scale = f.GetScale();

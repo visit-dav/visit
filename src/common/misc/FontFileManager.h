@@ -18,6 +18,16 @@ class FontFileManager {
 
     static FontFileManager& instance();
 
+    enum LegacyFontEnums {
+       Arial,
+       Courier,
+       Times,
+       Unknown
+    };
+
+    static const std::string& legacyFontKey(enum FontFileManager::LegacyFontEnums);
+    static const FontFileManager::LegacyFontEnums legacyFontEnum(const std::string&);
+
     struct FontVariants {
         std::string guiName;
         std::string base;
@@ -25,9 +35,12 @@ class FontFileManager {
         std::string bold;
         std::string italic;
         std::string boldItalic;
+        int index;
     };      
 
+    // These will construct map if not already present so cannot be const
     const std::map<std::string, FontFileManager::FontVariants>& fonts();
+    const std::map<int, std::string>& fontIndices();
 
   private:
 
@@ -36,6 +49,7 @@ class FontFileManager {
     FontFileManager& operator=(const FontFileManager&) = delete;
 
     std::map<std::string, FontVariants> _fontMap;
+    std::map<int, std::string> _indexedFonts;
 
 };
 

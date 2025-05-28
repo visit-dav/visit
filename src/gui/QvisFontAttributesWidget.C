@@ -5,6 +5,7 @@
 #include <QvisFontAttributesWidget.h>
 
 #include <FontManager.h>
+#include <FontFileManager.h>
 
 #include <QApplication>
 #include <QCheckBox>
@@ -269,7 +270,8 @@ QvisFontAttributesWidget::Update(int which_widget)
     if(doAll || which_widget == FontAttributes::ID_font)
     {
         fontFamilyComboBox->blockSignals(true);
-        fontFamilyComboBox->setCurrentIndex(int(atts.GetFont()));
+        int fontIndex = FontFileManager::instance().fonts().at(atts.GetFont()).index;
+        fontFamilyComboBox->setCurrentIndex(fontIndex);
         fontFamilyComboBox->blockSignals(false);
     }
 
@@ -467,7 +469,8 @@ QvisFontAttributesWidget::fontFamilyChanged(int value)
     italicCheckBox->blockSignals(false);
     italicCheckBox->setEnabled(fi.hasReg && fi.hasItalic);
 
-    atts.SetFont((FontAttributes::FontName)value);
+    std::string fontKey = FontFileManager::instance().fontIndices().at(value);
+    atts.SetFont(fontKey);
     Apply();
 }
 

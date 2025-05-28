@@ -5,44 +5,6 @@
 #include <FontAttributes.h>
 #include <DataNode.h>
 
-//
-// Enum conversion methods for FontAttributes::FontName
-//
-
-static const char *FontName_strings[] = {
-"Arial", "Courier", "Times"
-};
-
-std::string
-FontAttributes::FontName_ToString(FontAttributes::FontName t)
-{
-    int index = int(t);
-    if(index < 0 || index >= 3) index = 0;
-    return FontName_strings[index];
-}
-
-std::string
-FontAttributes::FontName_ToString(int t)
-{
-    int index = (t < 0 || t >= 3) ? 0 : t;
-    return FontName_strings[index];
-}
-
-bool
-FontAttributes::FontName_FromString(const std::string &s, FontAttributes::FontName &val)
-{
-    val = FontAttributes::Arial;
-    for(int i = 0; i < 3; ++i)
-    {
-        if(s == FontName_strings[i])
-        {
-            val = (FontName)i;
-            return true;
-        }
-    }
-    return false;
-}
-
 // ****************************************************************************
 // Method: FontAttributes::FontAttributes
 //
@@ -60,11 +22,17 @@ FontAttributes::FontName_FromString(const std::string &s, FontAttributes::FontNa
 
 void FontAttributes::Init()
 {
-    font = Arial;
+    font = "dejavusans";
     scale = 1;
     useForegroundColor = true;
     bold = false;
     italic = false;
+    shadow = false;
+    boldSupported = true;
+    italicSupported = true;
+    boldItalicSupported = true;
+    shadowSupported = true;
+    transparencySupported = true;
 
     FontAttributes::SelectAll();
 }
@@ -92,6 +60,12 @@ void FontAttributes::Copy(const FontAttributes &obj)
     color = obj.color;
     bold = obj.bold;
     italic = obj.italic;
+    shadow = obj.shadow;
+    boldSupported = obj.boldSupported;
+    italicSupported = obj.italicSupported;
+    boldItalicSupported = obj.boldItalicSupported;
+    shadowSupported = obj.shadowSupported;
+    transparencySupported = obj.transparencySupported;
 
     FontAttributes::SelectAll();
 }
@@ -256,7 +230,13 @@ FontAttributes::operator == (const FontAttributes &obj) const
             (useForegroundColor == obj.useForegroundColor) &&
             (color == obj.color) &&
             (bold == obj.bold) &&
-            (italic == obj.italic));
+            (italic == obj.italic) &&
+            (shadow == obj.shadow) &&
+            (boldSupported == obj.boldSupported) &&
+            (italicSupported == obj.italicSupported) &&
+            (boldItalicSupported == obj.boldItalicSupported) &&
+            (shadowSupported == obj.shadowSupported) &&
+            (transparencySupported == obj.transparencySupported));
 }
 
 // ****************************************************************************
@@ -400,12 +380,18 @@ FontAttributes::NewInstance(bool copy) const
 void
 FontAttributes::SelectAll()
 {
-    Select(ID_font,               (void *)&font);
-    Select(ID_scale,              (void *)&scale);
-    Select(ID_useForegroundColor, (void *)&useForegroundColor);
-    Select(ID_color,              (void *)&color);
-    Select(ID_bold,               (void *)&bold);
-    Select(ID_italic,             (void *)&italic);
+    Select(ID_font,                  (void *)&font);
+    Select(ID_scale,                 (void *)&scale);
+    Select(ID_useForegroundColor,    (void *)&useForegroundColor);
+    Select(ID_color,                 (void *)&color);
+    Select(ID_bold,                  (void *)&bold);
+    Select(ID_italic,                (void *)&italic);
+    Select(ID_shadow,                (void *)&shadow);
+    Select(ID_boldSupported,         (void *)&boldSupported);
+    Select(ID_italicSupported,       (void *)&italicSupported);
+    Select(ID_boldItalicSupported,   (void *)&boldItalicSupported);
+    Select(ID_shadowSupported,       (void *)&shadowSupported);
+    Select(ID_transparencySupported, (void *)&transparencySupported);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -441,7 +427,7 @@ FontAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
     if(completeSave || !FieldsEqual(ID_font, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("font", FontName_ToString(font)));
+        node->AddNode(new DataNode("font", font));
     }
 
     if(completeSave || !FieldsEqual(ID_scale, &defaultObject))
@@ -474,6 +460,42 @@ FontAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
     {
         addToParent = true;
         node->AddNode(new DataNode("italic", italic));
+    }
+
+    if(completeSave || !FieldsEqual(ID_shadow, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("shadow", shadow));
+    }
+
+    if(completeSave || !FieldsEqual(ID_boldSupported, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("boldSupported", boldSupported));
+    }
+
+    if(completeSave || !FieldsEqual(ID_italicSupported, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("italicSupported", italicSupported));
+    }
+
+    if(completeSave || !FieldsEqual(ID_boldItalicSupported, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("boldItalicSupported", boldItalicSupported));
+    }
+
+    if(completeSave || !FieldsEqual(ID_shadowSupported, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("shadowSupported", shadowSupported));
+    }
+
+    if(completeSave || !FieldsEqual(ID_transparencySupported, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("transparencySupported", transparencySupported));
     }
 
 
@@ -513,21 +535,7 @@ FontAttributes::SetFromNode(DataNode *parentNode)
 
     DataNode *node;
     if((node = searchNode->GetNode("font")) != 0)
-    {
-        // Allow enums to be int or string in the config file
-        if(node->GetNodeType() == INT_NODE)
-        {
-            int ival = node->AsInt();
-            if(ival >= 0 && ival < 3)
-                SetFont(FontName(ival));
-        }
-        else if(node->GetNodeType() == STRING_NODE)
-        {
-            FontName value;
-            if(FontName_FromString(node->AsString(), value))
-                SetFont(value);
-        }
-    }
+        SetFont(node->AsString());
     if((node = searchNode->GetNode("scale")) != 0)
         SetScale(node->AsDouble());
     if((node = searchNode->GetNode("useForegroundColor")) != 0)
@@ -538,6 +546,18 @@ FontAttributes::SetFromNode(DataNode *parentNode)
         SetBold(node->AsBool());
     if((node = searchNode->GetNode("italic")) != 0)
         SetItalic(node->AsBool());
+    if((node = searchNode->GetNode("shadow")) != 0)
+        SetShadow(node->AsBool());
+    if((node = searchNode->GetNode("boldSupported")) != 0)
+        SetBoldSupported(node->AsBool());
+    if((node = searchNode->GetNode("italicSupported")) != 0)
+        SetItalicSupported(node->AsBool());
+    if((node = searchNode->GetNode("boldItalicSupported")) != 0)
+        SetBoldItalicSupported(node->AsBool());
+    if((node = searchNode->GetNode("shadowSupported")) != 0)
+        SetShadowSupported(node->AsBool());
+    if((node = searchNode->GetNode("transparencySupported")) != 0)
+        SetTransparencySupported(node->AsBool());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -545,7 +565,7 @@ FontAttributes::SetFromNode(DataNode *parentNode)
 ///////////////////////////////////////////////////////////////////////////////
 
 void
-FontAttributes::SetFont(FontAttributes::FontName font_)
+FontAttributes::SetFont(const std::string &font_)
 {
     font = font_;
     Select(ID_font, (void *)&font);
@@ -586,14 +606,62 @@ FontAttributes::SetItalic(bool italic_)
     Select(ID_italic, (void *)&italic);
 }
 
+void
+FontAttributes::SetShadow(bool shadow_)
+{
+    shadow = shadow_;
+    Select(ID_shadow, (void *)&shadow);
+}
+
+void
+FontAttributes::SetBoldSupported(bool boldSupported_)
+{
+    boldSupported = boldSupported_;
+    Select(ID_boldSupported, (void *)&boldSupported);
+}
+
+void
+FontAttributes::SetItalicSupported(bool italicSupported_)
+{
+    italicSupported = italicSupported_;
+    Select(ID_italicSupported, (void *)&italicSupported);
+}
+
+void
+FontAttributes::SetBoldItalicSupported(bool boldItalicSupported_)
+{
+    boldItalicSupported = boldItalicSupported_;
+    Select(ID_boldItalicSupported, (void *)&boldItalicSupported);
+}
+
+void
+FontAttributes::SetShadowSupported(bool shadowSupported_)
+{
+    shadowSupported = shadowSupported_;
+    Select(ID_shadowSupported, (void *)&shadowSupported);
+}
+
+void
+FontAttributes::SetTransparencySupported(bool transparencySupported_)
+{
+    transparencySupported = transparencySupported_;
+    Select(ID_transparencySupported, (void *)&transparencySupported);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
 
-FontAttributes::FontName
+const std::string &
 FontAttributes::GetFont() const
 {
-    return FontName(font);
+    return font;
+}
+
+std::string &
+FontAttributes::GetFont()
+{
+    return font;
 }
 
 double
@@ -632,9 +700,51 @@ FontAttributes::GetItalic() const
     return italic;
 }
 
+bool
+FontAttributes::GetShadow() const
+{
+    return shadow;
+}
+
+bool
+FontAttributes::GetBoldSupported() const
+{
+    return boldSupported;
+}
+
+bool
+FontAttributes::GetItalicSupported() const
+{
+    return italicSupported;
+}
+
+bool
+FontAttributes::GetBoldItalicSupported() const
+{
+    return boldItalicSupported;
+}
+
+bool
+FontAttributes::GetShadowSupported() const
+{
+    return shadowSupported;
+}
+
+bool
+FontAttributes::GetTransparencySupported() const
+{
+    return transparencySupported;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
+
+void
+FontAttributes::SelectFont()
+{
+    Select(ID_font, (void *)&font);
+}
 
 void
 FontAttributes::SelectColor()
@@ -666,12 +776,18 @@ FontAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_font:               return "font";
-    case ID_scale:              return "scale";
-    case ID_useForegroundColor: return "useForegroundColor";
-    case ID_color:              return "color";
-    case ID_bold:               return "bold";
-    case ID_italic:             return "italic";
+    case ID_font:                  return "font";
+    case ID_scale:                 return "scale";
+    case ID_useForegroundColor:    return "useForegroundColor";
+    case ID_color:                 return "color";
+    case ID_bold:                  return "bold";
+    case ID_italic:                return "italic";
+    case ID_shadow:                return "shadow";
+    case ID_boldSupported:         return "boldSupported";
+    case ID_italicSupported:       return "italicSupported";
+    case ID_boldItalicSupported:   return "boldItalicSupported";
+    case ID_shadowSupported:       return "shadowSupported";
+    case ID_transparencySupported: return "transparencySupported";
     default:  return "invalid index";
     }
 }
@@ -696,12 +812,18 @@ FontAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_font:               return FieldType_enum;
-    case ID_scale:              return FieldType_double;
-    case ID_useForegroundColor: return FieldType_bool;
-    case ID_color:              return FieldType_color;
-    case ID_bold:               return FieldType_bool;
-    case ID_italic:             return FieldType_bool;
+    case ID_font:                  return FieldType_string;
+    case ID_scale:                 return FieldType_double;
+    case ID_useForegroundColor:    return FieldType_bool;
+    case ID_color:                 return FieldType_color;
+    case ID_bold:                  return FieldType_bool;
+    case ID_italic:                return FieldType_bool;
+    case ID_shadow:                return FieldType_bool;
+    case ID_boldSupported:         return FieldType_bool;
+    case ID_italicSupported:       return FieldType_bool;
+    case ID_boldItalicSupported:   return FieldType_bool;
+    case ID_shadowSupported:       return FieldType_bool;
+    case ID_transparencySupported: return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -726,12 +848,18 @@ FontAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_font:               return "enum";
-    case ID_scale:              return "double";
-    case ID_useForegroundColor: return "bool";
-    case ID_color:              return "color";
-    case ID_bold:               return "bool";
-    case ID_italic:             return "bool";
+    case ID_font:                  return "string";
+    case ID_scale:                 return "double";
+    case ID_useForegroundColor:    return "bool";
+    case ID_color:                 return "color";
+    case ID_bold:                  return "bool";
+    case ID_italic:                return "bool";
+    case ID_shadow:                return "bool";
+    case ID_boldSupported:         return "bool";
+    case ID_italicSupported:       return "bool";
+    case ID_boldItalicSupported:   return "bool";
+    case ID_shadowSupported:       return "bool";
+    case ID_transparencySupported: return "bool";
     default:  return "invalid index";
     }
 }
@@ -788,6 +916,36 @@ FontAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (italic == obj.italic);
         }
         break;
+    case ID_shadow:
+        {  // new scope
+        retval = (shadow == obj.shadow);
+        }
+        break;
+    case ID_boldSupported:
+        {  // new scope
+        retval = (boldSupported == obj.boldSupported);
+        }
+        break;
+    case ID_italicSupported:
+        {  // new scope
+        retval = (italicSupported == obj.italicSupported);
+        }
+        break;
+    case ID_boldItalicSupported:
+        {  // new scope
+        retval = (boldItalicSupported == obj.boldItalicSupported);
+        }
+        break;
+    case ID_shadowSupported:
+        {  // new scope
+        retval = (shadowSupported == obj.shadowSupported);
+        }
+        break;
+    case ID_transparencySupported:
+        {  // new scope
+        retval = (transparencySupported == obj.transparencySupported);
+        }
+        break;
     default: retval = false;
     }
 
@@ -797,4 +955,28 @@ FontAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 ///////////////////////////////////////////////////////////////////////////////
 // User-defined methods.
 ///////////////////////////////////////////////////////////////////////////////
+
+// ***************************************************************************** 
+// Purpose: Support old/legacy approach to specifying a font which was
+// one of three built in fonts identified by Arial, Courier or Times
+//
+// Mark C. Miller, Tue May 20 17:57:38 PDT 2025 
+// ***************************************************************************** 
+
+void FontAttributes::SetFont(FontAttributes::LegacyFontEnums e)
+{
+    SetFont(FontFileManager::legacyFontKey(e));
+}
+
+// ***************************************************************************** 
+// Purpose: Support old/legacy approach to specifying a font which was
+// one of three built in fonts identified by Arial, Courier or Times
+//
+// Mark C. Miller, Tue May 20 17:57:38 PDT 2025 
+// ***************************************************************************** 
+
+const FontAttributes::LegacyFontEnums FontAttributes::GetFontAsLegacyEnum() const
+{
+    return FontFileManager::legacyFontEnum(font);
+}
 

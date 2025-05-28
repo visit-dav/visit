@@ -262,7 +262,10 @@ class AttsGeneratorField : public virtual Field
         h << "    " << GetCPPNameW(w) << " " << name;
         if (isArray)
             h << "[" << length << "]";
-        h << ";" << Endl;
+        if (name.toLower() != label.toLower().remove(' '))
+            h << "; // " << label << Endl;
+        else
+            h << ";" << Endl;
     }
     // ------------------------------------------------------------------------
     virtual void WriteSourceIncludes(QTextStream &c)

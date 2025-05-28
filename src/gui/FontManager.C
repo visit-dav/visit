@@ -33,7 +33,7 @@ void FontManager::setupFonts()
     for (auto &pair : fontFilesMap)
     {
         const FontFileManager::FontVariants &fv = pair.second;
-        int const badFontId = QFontDatabase::addApplicationFont("/failed-font-file");
+        int const badFontId = -1;
         int fontId = badFontId;
 
         //

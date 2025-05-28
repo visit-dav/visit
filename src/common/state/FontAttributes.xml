@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
-  <Attribute name="FontAttributes" purpose="Describes font properties that we can set through VTK" persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h">
-    <Field name="ttfBaseFileName" label="Name of regular .ttf file in set of 4 related files in resources/font directory" type="string">
+  <Attribute name="FontAttributes" purpose="Describes font properties that we can set through VTK" persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="FontAttributes.code">
+    <Field name="font" label="Key within FontFileManager's font map" type="string">
+      dejavusans
     </Field>
     <Field name="scale" label="Scale" type="double">
       1.000000
@@ -20,4 +21,43 @@
     <Field name="italic" label="italic" type="bool">
       false
     </Field>
+    <Field name="shadow" label="shadow" type="bool">
+      false
+    </Field>
+    <Field name="boldSupported" label="Set false if bold is not supported" type="bool">
+      true
+    </Field>
+    <Field name="italicSupported" label="Set false if italic is not supported" type="bool">
+      true
+    </Field>
+    <Field name="boldItalicSupported" label="Set false if bold-italic is not supported" type="bool">
+      true
+    </Field>
+    <Field name="shadowSupported" label="Set false if shadows are not supported" type="bool">
+      true
+    </Field>
+    <Field name="transparencySupported" label="Set false if transparency is not supported" type="bool">
+      true
+    </Field>
+    <Function name="SetFont" user="true" member="true">
+    </Function>
+    <Function name="GetFontAsLegacyEnum" user="true" member="true">
+    </Function>
+    <Function name="GetBoldSupported" user="false" member="true">
+    </Function>
+    <Function name="GetItalicSupported" user="false" member="true">
+    </Function>
+    <Function name="GetBoldItalicSupported" user="false" member="true">
+    </Function>
+    <Constant name="LegacyFontEnums" member="true">
+    </Constant>
+    <Constant name="LegacyFontEnum_Arial" member="true">
+    </Constant>
+    <Constant name="LegacyFontEnum_Courier" member="true">
+    </Constant>
+    <Constant name="LegacyFontEnum_Times" member="true">
+    </Constant>
+    <Include file="header" quoted="false">
+      FontFileManager.h
+    </Include>
   </Attribute>

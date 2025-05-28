@@ -21,11 +21,11 @@
 #include <QTableWidget>
 #include <QNarrowLineEdit.h>
 #include <QvisColorButton.h>
+#include <QvisFontAttributesWidget.h>
 #include <QvisOpacitySlider.h>
 #include <QvisScreenPositionEdit.h>
 
 #include <AnnotationObject.h>
-#include <FontManager.h>
 #include <ViewerProxy.h>
 #include <legend_defines.h>
 
@@ -280,26 +280,11 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent) :
     aLayout->addWidget(splitter3, row, 0, 1, 4);
     ++row;
 
-    // Add controls for the text color.
-    textColorButton = new QvisColorButton(this);
-    connect(textColorButton, SIGNAL(selectedColor(const QColor &)),
-            this, SLOT(textColorChanged(const QColor &)));
-    textColorLabel = new QLabel(tr("Text color"), this);
-    aLayout->addWidget(textColorLabel, row, 2, Qt::AlignLeft);
-    aLayout->addWidget(textColorButton, row, 3);
-#ifdef TEXT_OPACITY_SUPPORTED
-    textColorOpacity = new QvisOpacitySlider(0, 255, 10, 0, this);
-    connect(textColorOpacity, SIGNAL(valueChanged(int)),
-            this, SLOT(textOpacityChanged(int)));
-    aLayout->addWidget(textColorOpacity, row, 2, 1, 2);
-    ++row;
-#endif
-
-    // Added a use foreground toggle
-    useForegroundColorCheckBox = new QCheckBox(tr("Use foreground color"), this);
-    connect(useForegroundColorCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(useForegroundColorToggled(bool)));
-    aLayout->addWidget(useForegroundColorCheckBox, row, 0, 1, 2);
+    legendFont = new QvisFontAttributesWidget(this);
+    connect(legendFont, SIGNAL(fontChanged(const FontAttributes &)),
+            this, SLOT(legendFontChanged(const FontAttributes &)));
+    //aLayout->addWidget(legendFont, 2, 0, 1, 2);
+    aLayout->addWidget(legendFont, row, 0, 1, 4);
     ++row;
 
     // Add controls for text format string.
@@ -308,57 +293,6 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent) :
             this, SLOT(textChanged()));
     aLayout->addWidget(formatString, row, 3);
     aLayout->addWidget(new QLabel(tr("Number format"), this), row, 2);
-    // Add control for text font height
-    fontHeight = new QNarrowLineEdit(this);
-    connect(fontHeight, SIGNAL(editingFinished()),
-            this, SLOT(fontHeightChanged()));
-    aLayout->addWidget(fontHeight, row, 1);
-    aLayout->addWidget(new QLabel(tr("Font height"), this), row, 0);
-    ++row;
-
-    // Setup font information
-    FontManager::instance().setupFonts();
-
-    // Add controls to set the font family.
-    // Make it so options appear in the list in their actual font
-    fontFamilyComboBox = new QComboBox(this);
-    QStandardItemModel *model = new QStandardItemModel(fontFamilyComboBox);
-    FontManager::instance().setupItemModel(model);
-    fontFamilyComboBox->setModel(model);
-    connect(fontFamilyComboBox, SIGNAL(activated(int)),
-            this, SLOT(fontFamilyChanged(int)));
-    aLayout->addWidget(fontFamilyComboBox, row, 1, 1, 3);
-    aLayout->addWidget(new QLabel(tr("Font name"), this), row, 0);
-    ++row;
-
-    // Set up some preview text using the currently selected font
-    // but increased slightly in size
-    previewText = new QLabel(QString::fromUtf8(FontManager::sampleText()));
-    int defaultPointSize = QApplication::font().pointSize();
-    QFont font = fontFamilyComboBox->model()->index(0, 0).data(Qt::FontRole).value<QFont>();
-    font.setPointSize(defaultPointSize+4);
-    previewText->setFont(font);
-    aLayout->addWidget(previewText, row, 1, 1, 3);
-    aLayout->addWidget(new QLabel(tr("Sample text"), this), row, 0);
-    ++row;
-
-    // Add controls for font properties.
-    boldCheckBox = new QCheckBox(tr("Bold"), this);
-    connect(boldCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(boldToggled(bool)));
-    aLayout->addWidget(boldCheckBox, row, 0);
-
-    italicCheckBox = new QCheckBox(tr("Italic"), this);
-    connect(italicCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(italicToggled(bool)));
-    aLayout->addWidget(italicCheckBox, row, 1);
-
-    shadowCheckBox = new QCheckBox(tr("Shadow"), this);
-    connect(shadowCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(shadowToggled(bool)));
-    aLayout->addWidget(shadowCheckBox, row, 2);
-    shadowCheckBox->setEnabled(false); // Until this works in the legend.
-    ++row;
 
     tabs->addTab(appearance, tr("Appearance"));
 }
@@ -589,27 +523,6 @@ QvisLegendAttributesInterface::UpdateControls()
     deleteRowButton->setEnabled(type == LEGEND_TYPE_VARIABLE &&
                                !GetBool(LEGEND_CONTROL_TICKS));
 
-    //
-    // Set the text color. If we're using the foreground color for the text
-    // color then make the button be white and only let the user change the
-    // opacity.
-    //
-#ifdef TEXT_OPACITY_SUPPORTED
-    textColorOpacity->blockSignals(true);
-#endif
-    QColor tc(annot->GetTextColor().Red(),
-              annot->GetTextColor().Green(),
-              annot->GetTextColor().Blue());
-    textColorButton->setButtonColor(tc);
-#ifdef TEXT_OPACITY_SUPPORTED
-    textColorOpacity->setGradientColor(tc);
-    textColorOpacity->setValue(annot->GetTextColor().Alpha());
-    textColorOpacity->blockSignals(false);
-    textColorOpacity->setEnabled(!annot->GetUseForegroundForTextColor());
-#endif
-    textColorButton->setEnabled(!annot->GetUseForegroundForTextColor());
-    textColorLabel->setEnabled(!annot->GetUseForegroundForTextColor());
-
     // Set the bounding box color.
     drawBoundingBoxCheckBox->blockSignals(true);
     drawBoundingBoxCheckBox->setChecked(GetBool(LEGEND_DRAW_BOX));
@@ -655,37 +568,6 @@ QvisLegendAttributesInterface::UpdateControls()
     drawMinmaxCheckBox->blockSignals(true);
     drawMinmaxCheckBox->setChecked(GetBool(LEGEND_DRAW_MINMAX));
     drawMinmaxCheckBox->blockSignals(false);
-
-    // Set the font height
-    // QString.arg  default format spec for double is '%g', so don't need
-    // to send format specifiers since that's what is wanted here.
-    QString fh = QString("%1").arg(annot->GetOptions().GetEntry("fontHeight")->AsDouble());
-    fontHeight->setText(fh);
-
-    // Set the use foreground color check box.
-    useForegroundColorCheckBox->blockSignals(true);
-    useForegroundColorCheckBox->setChecked(annot->GetUseForegroundForTextColor());
-    useForegroundColorCheckBox->blockSignals(false);
-
-    // Set the font family
-    fontFamilyComboBox->blockSignals(true);
-    fontFamilyComboBox->setCurrentIndex(int(annot->GetFontFamily()));
-    fontFamilyComboBox->blockSignals(false);
-
-    // Set the bold check box.
-    boldCheckBox->blockSignals(true);
-    boldCheckBox->setChecked(annot->GetFontBold());
-    boldCheckBox->blockSignals(false);
-
-    // Set the italic check box.
-    italicCheckBox->blockSignals(true);
-    italicCheckBox->setChecked(annot->GetFontItalic());
-    italicCheckBox->blockSignals(false);
-
-    // Set the shadow check box.
-    shadowCheckBox->blockSignals(true);
-    shadowCheckBox->setChecked(annot->GetFontShadow());
-    shadowCheckBox->blockSignals(false);
 }
 
 // ****************************************************************************
@@ -771,14 +653,6 @@ QvisLegendAttributesInterface::GetCurrentValues(int which_widget)
         pos2[1] = double(h) * (1. / WIDTH_HEIGHT_PRECISION);
         pos2[2] = annot->GetPosition2()[2];
         annot->SetPosition2(pos2);
-    }
-
-    if(which_widget == 4 || doAll)
-    {
-        bool okay;
-        double val = fontHeight->text().toDouble(&okay);
-        if(okay)
-            annot->GetOptions().GetEntry("fontHeight")->SetValue(val);
     }
 
     if (which_widget == 27 || doAll)
@@ -955,82 +829,6 @@ QvisLegendAttributesInterface::textChanged()
 }
 
 // ****************************************************************************
-// Class: QvisLegendAttributesInterface::fontHeightChanged
-//
-// Purpose:
-//   This is a Qt slot function that is called when return is pressed in the
-//   fontHeight line edit.
-//
-// Notes:
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Mar 21 09:27:24 PDT 2007
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-QvisLegendAttributesInterface::fontHeightChanged()
-{
-    GetCurrentValues(4);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisLegendAttributesInterface::textColorChanged
-//
-// Purpose:
-//   This is a Qt slot function that is called when a new start color is
-//   selected.
-//
-// Arguments:
-//   c : The new start color.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Mar 26 12:03:56 PDT 2007
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-QvisLegendAttributesInterface::textColorChanged(const QColor &c)
-{
-    int a = annot->GetTextColor().Alpha();
-    ColorAttribute tc(c.red(), c.green(), c.blue(), a);
-    annot->SetTextColor(tc);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisLegendAttributesInterface::textOpacityChanged
-//
-// Purpose:
-//   This is a Qt slot function that is called when a new start opacity is
-//   selected.
-//
-// Arguments:
-//   opacity : The new start opacity.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Mar 26 12:03:56 PDT 2007
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-QvisLegendAttributesInterface::textOpacityChanged(int opacity)
-{
-    ColorAttribute tc(annot->GetTextColor());
-    tc.SetAlpha(opacity);
-    annot->SetTextColor(tc);
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
 // Method: drawBoundingBoxToggled
 //
 // Programmer: Brad Whitlock
@@ -1096,48 +894,6 @@ QvisLegendAttributesInterface::boundingBoxOpacityChanged(int opacity)
     ColorAttribute c(annot->GetColor1());
     c.SetAlpha(opacity);
     annot->SetColor1(c);
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisLegendAttributesInterface::fontFamilyChanged
-//
-// Purpose:
-//   This is a Qt slot function that is called when the font family is changed.
-//
-// Arguments:
-//   family  : The new font family.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Mar 26 12:03:56 PDT 2007
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-QvisLegendAttributesInterface::fontFamilyChanged(int family)
-{
-    QFont font = fontFamilyComboBox->model()->
-        index(family, 0).data(Qt::FontRole).value<QFont>();
-    int defaultPointSize = QApplication::font().pointSize();
-    font.setPointSize(defaultPointSize+4);
-    previewText->setFont(font);
-
-    const FontManager::QtFontInfo& fi = FontManager::instance().fontInfo(font.family());
-
-    boldCheckBox->blockSignals(true);
-    boldCheckBox->setChecked(!fi.hasReg && fi.hasBold || font.bold());
-    boldCheckBox->blockSignals(false);
-    boldCheckBox->setEnabled(fi.hasReg && fi.hasBold);
-
-    italicCheckBox->blockSignals(true);
-    italicCheckBox->setChecked(!fi.hasReg && fi.hasItalic || font.italic());
-    italicCheckBox->blockSignals(false);
-    italicCheckBox->setEnabled(fi.hasReg && fi.hasItalic);
-
-    annot->SetFontFamily((AnnotationObject::FontFamily)family);
     SetUpdate(false);
     Apply();
 }
@@ -1225,121 +981,71 @@ QvisLegendAttributesInterface::customTitleChanged()
     Apply();
 }
 
-// ****************************************************************************
-// Method: QvisLegendAttributesInterface::boldToggled
-//
-// Purpose:
-//   This is a Qt slot function that is called when the bold checkbox is toggled.
-//
-// Arguments:
-//   val : The new bold flag.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Mar 26 12:03:56 PDT 2007
-//
-// Modifications:
-//
-// ****************************************************************************
-
 void
-QvisLegendAttributesInterface::boldToggled(bool val)
-{
-    // Make selected item appear with bold as specified
-    QFont font = fontFamilyComboBox->model()->
-        index(fontFamilyComboBox->currentIndex(), 0).data(Qt::FontRole).value<QFont>();
-    int defaultPointSize = QApplication::font().pointSize();
-    font.setPointSize(defaultPointSize+4);
-    font.setBold(val);
-    font.setItalic(italicCheckBox->isChecked());
-    previewText->setFont(font);
+QvisLegendAttributesInterface::legendFontChanged(const FontAttributes &f)
+{   
+    if (currentFontAttributes == f)
+        return;
 
-    annot->SetFontBold(val);
+    if ((f.GetBoldSupported() || f.GetBoldItalicSupported()) &&
+        (currentFontAttributes.GetBold() != f.GetBold()))
+        annot->SetFontBold(f.GetBold());
+
+    if ((f.GetItalicSupported() || f.GetBoldItalicSupported()) &&
+        (currentFontAttributes.GetItalic() != f.GetItalic()))
+        annot->SetFontItalic(f.GetItalic());
+
+    if (f.GetShadowSupported() && (currentFontAttributes.GetShadow() != f.GetShadow()))
+        annot->SetFontShadow(f.GetShadow());
+
+    if (f.GetTransparencySupported())
+    {
+        ColorAttribute currentColor = currentFontAttributes.GetColor();
+        ColorAttribute fColor = f.GetColor();
+
+        if (currentColor.Alpha() != fColor.Alpha())
+            annot->SetTextColor(fColor);
+    }
+
+    if (currentFontAttributes.GetScale() != f.GetScale())
+        annot->SetFontShadow(f.GetScale());
+
+    if (currentFontAttributes.GetFont() != f.GetFont())
+        annot->SetFont(f.GetFont());
+
+    if (currentFontAttributes.GetColor() != f.GetColor())
+    {
+        int a = currentFontAttributes.GetColor().Alpha();
+        ColorAttribute c = f.GetColor();
+        ColorAttribute tc(c.Red(), c.Green(), c.Blue(), a);
+        annot->SetTextColor(tc);
+    }
+
+    // take font name and look up index to set family for now
+
+    // font scale or font height?
+
+#if 0
+-    if(which_widget == 4 || doAll)
+-    {
+-        bool okay;
+-        double val = fontHeight->text().toDouble(&okay);
+-        if(okay)
+-            annot->GetOptions().GetEntry("fontHeight")->SetValue(val);
+-    }
+-
+ 
+-QvisLegendAttributesInterface::fontHeightChanged()
+-{
+-    GetCurrentValues(4);
+-    Apply();
+
+#endif
+
     SetUpdate(false);
     Apply();
+    currentFontAttributes = f;
 }
-
-// ****************************************************************************
-// Method: QvisLegendAttributesInterface::italicToggled
-//
-// Purpose:
-//   This is a Qt slot function that is called when the italic checkbox is toggled.
-//
-// Arguments:
-//   val : The new italic flag.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Mar 26 12:03:56 PDT 2007
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-QvisLegendAttributesInterface::italicToggled(bool val)
-{
-    // Make selected item appear with bold as specified
-    QFont font = fontFamilyComboBox->model()->
-        index(fontFamilyComboBox->currentIndex(), 0).data(Qt::FontRole).value<QFont>();
-    int defaultPointSize = QApplication::font().pointSize();
-    font.setPointSize(defaultPointSize+4);
-    font.setItalic(val);
-    font.setBold(boldCheckBox->isChecked());
-    previewText->setFont(font);
-
-    annot->SetFontItalic(val);
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisLegendAttributesInterface::shadowToggled
-//
-// Purpose:
-//   This is a Qt slot function that is called when the shadow checkbox is
-//   toggled.
-//
-// Arguments:
-//   val : The new shadow setting.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Mar 26 12:03:56 PDT 2007
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-QvisLegendAttributesInterface::shadowToggled(bool val)
-{
-    annot->SetFontShadow(val);
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisLegendAttributesInterface::useForegroundColorToggled
-//
-// Purpose:
-//   This is a Qt slot function that is called when the useForegroundColor
-//   check box is clicked.
-//
-// Arguments:
-//   val : The new setting for useForegroundColor
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Mar 26 12:03:56 PDT 2007
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-QvisLegendAttributesInterface::useForegroundColorToggled(bool val)
-{
-    annot->SetUseForegroundForTextColor(val);
-    Apply();
-}
-
 
 // ****************************************************************************
 // Method: QvisLegendAttributesInterface::tickControlToggled
