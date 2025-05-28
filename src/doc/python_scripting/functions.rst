@@ -8169,15 +8169,10 @@ return type : CLI_return_t
 
 **Description:**
 
-    The RestoreSession function is important for setting up complex
-    visualizations because you can design a VisIt session file, which is an XML
-    file that describes exactly how plots are set up, using the VisIt GUI and
-    then use that same session file in the CLI to generate movies in batch. The
-    RestoreSession function takes 2 arguments. The first argument specifies the
-    filename that contains the VisIt session to be restored. The second
-    argument determines whether the session file is assumed to be in the user's
-    VisIt directory. If the visitDir argument is set to 0 then the filename
-    argument must contain the absolute path to the session file.
+    The RestoreSession function is useful for setting up complex visualizations
+    because you can design a VisIt session file, which is an XML file that
+    describes exactly how plots are set up, using the VisIt GUI and then use
+    that same session file in the CLI to generate movies in batch.
 
 
 **Example:**
@@ -8187,7 +8182,7 @@ return type : CLI_return_t
   #% visit -cli
   # Restore my session file for a time-varying database from
   # my .visit directory.
-  RestoreSessionFile("visit.session", 1)
+  RestoreSession("visit.session", 1)
   for state in range(TimeSliderGetNStates()):
       SetTimeSliderState(state)
       SaveWindow()
@@ -8213,10 +8208,13 @@ visitDir : integer
     otherwise the filename must contain an absolute path.
 
 mapping : tuple
-    A tuple of strings representing the maping from sources as specified
+    A tuple of strings representing the mapping from sources as specified
     in the original session file to new sources. Sources in the original
     session file are numbered starting from 0. So, this tuple of strings
-    simply contains the new names for each of the sources, in order.
+    simply contains the new names for each of the sources, in order. The
+    order that the sources are numbered in the session file is not obvious,
+    so it is best to look at the list of sources in the "SourceMap" in the
+    session file to see the actual order.
 
 return type : CLI_return_t
     RestoreSession returns 1 on success and 0 on failure.
@@ -8224,15 +8222,11 @@ return type : CLI_return_t
 
 **Description:**
 
-    The RestoreSession function is important for setting up complex
-    visualizations because you can design a VisIt session file, which is an XML
-    file that describes exactly how plots are set up, using the VisIt GUI and
-    then use that same session file in the CLI to generate movies in batch. The
-    RestoreSession function takes 2 arguments. The first argument specifies the
-    filename that contains the VisIt session to be restored. The second
-    argument determines whether the session file is assumed to be in the user's
-    VisIt directory. If the visitDir argument is set to 0 then the filename
-    argument must contain the absolute path to the session file.
+    The RestoreSessionWithDifferentSources function is useful for setting up
+    complex visualizations because you can design a VisIt session file, which
+    is an XML file that describes exactly how plots are set up, using the
+    VisIt GUI and then use that same session file in the CLI as a template
+    for generating the same visualizations from other data files.
 
 
 **Example:**
@@ -8240,12 +8234,15 @@ return type : CLI_return_t
 ::
 
   #% visit -cli
-  # Restore my session file for a time-varying database from
-  # my .visit directory.
-  RestoreSessionFile("visit.session", 1)
-  for state in range(TimeSliderGetNStates()):
-      SetTimeSliderState(state)
-      SaveWindow()
+  # Restore a session file with a single source with a new source where the
+  # session file is in my .visit directory.
+  RestoreSessionWithDifferentSources("visit0000.session", 1, "rect3d.silo")
+  SaveWindow()
+
+  # Restore a session file with a two sources with two new sources where the
+  # session file is in my .visit directory.
+  RestoreSessionWithDifferentSources("visit0001.session", 1, ("noise.silo", "globe.silo"))
+  SaveWindow()
 
 
 SaveAttribute
