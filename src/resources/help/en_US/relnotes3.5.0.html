@@ -36,6 +36,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Added command recording for Annotation Objects.</li>
   <li>Added new surface rendering option using <a href="https://github.com/KhronosGroup/ANARI-SDK">ANARI</a>.</li>
+  <li><a href="https://matplotlib.org/cmocean/">cmocean</a> color maps were added.</li>
+  <li>Added '-python-log-file' command line option to control the name of the file used to log python methods (default='visitlog.py').</li>
 </ul>
 
 <a name="Advanced_features"></a>
@@ -50,6 +52,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Fixed an error appearing which states that the properties from a disabled light were modified even though no changes were made and "Apply" was pressed. Now, the error will only appear when a change was made and the light is still disabled as well as listing with all modified lights.</li>
   <li>Fixed bug with xmledit where changing a Field's type to 'att' or 'attvector' crashed the tool.</li>
+  <li>Disabled rich text paste support in the Commands Window and Expressions Editor. Avoids battles with cut and pasted text from editors that embed formatting, such as vscode.</li>
 </ul>
 
 <a name="CLI_changes"></a>
@@ -119,6 +122,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug where cloning and checking out VisIt could fail silently without providing error messages.</li>
   <li>Added support for building <code>anari</code> to <code>build_visit</code> to allow building VisIt with ANARI renderingsupport.</li>
   <li>Updated VTK build script, <code>bv_vtk.sh</code>, to enable ANARI rendering module in VTK.</li>
+  <li>The following command-line options were removed from the main build_visit script: <code>--all-io, --dbio-only, --nonio and  --advanced</code>.  This was done to simplify maintenance and addition of new modules.  <code>--optional</code> still turns on most optional libraries. <code>--no-thirdparty</code> still turns off the required libraries. Otherwise individual libraries can be enabled/disabled by <code>--</code> or <code>--no</code> syntax e.g. <code>--mpich --no-python</code>.  Please run <code>build_visit --help</code> for more information on available options.</li>
 </ul>
 
 <a name="Dev_changes"></a>

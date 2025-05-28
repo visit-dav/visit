@@ -14,6 +14,14 @@
 #   Please visit https://visit-help.llnl.gov to send feedback if you run into
 #   problems so that this script can be improved in the future.
 #
+#   Modifications:
+#     Kathleen Biagas, Mon May 12, 2025
+#     Add support for 'explicit' group (explicitlibs), to make it easier to
+#     list them separately from 'reqlibs' and 'optlibs' when needed.
+#     Where possible, perform work on all groups instead of duplicating the
+#     same code for 'reqlibs', 'optlibs' and 'explicitlibs'.
+#
+# *****************************************************************************
 
 # To create your own modular file, see the docs at
 # //https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/CreatingABuildVisItModule.html
@@ -62,6 +70,7 @@ declare -a reqlibs
 declare -a reqlibs_state
 declare -a optlibs
 declare -a optlibs_state
+declare -a explicitlibs
 declare -a grouplibs_name
 declare -a grouplibs_deps
 declare -a grouplibs_comment
@@ -280,6 +289,7 @@ do
     #copy xmlcontents to global variables
     reqlibs=(`echo "${reqlibs[@]} ${xmlp_reqlibs[@]}" | xargs -n 1 | sort -u | xargs`)
     optlibs=(`echo "${optlibs[@]} ${xmlp_optlibs[@]}" | xargs -n 1 | sort -u | xargs`)
+    explicitlibs=(`echo "${explicitlibs[@]} ${xmlp_explicitlibs[@]}" | xargs -n 1 | sort -u | xargs`)
 
     for (( bv_i = 0; bv_i < ${#xmlp_grouplibs_name[*]}; ++bv_i ))
     do
@@ -304,49 +314,14 @@ do
 done
 
 
-#import functions that that install required visit libraries
-for (( i = 0; i < ${#reqlibs[*]}; ++i ))
-do
-    . "${bv_PREFIX}/bv_${reqlibs[$i]}.sh"
-    verify_required_module_exists ${reqlibs[$i]}
-done
-
-#import functions that support optional visit dependencies
-#import functions that that install required visit libraries
-for (( i = 0; i < ${#optlibs[*]}; ++i ))
-do
-    . "${bv_PREFIX}/bv_${optlibs[$i]}.sh"
-    verify_optional_module_exists ${optlibs[$i]}
-done
-
-
-###################### Grouping libraries
-# The arrays listed below help group VisIt's set of libraries.
-# For example: --all-io uses the iolibs array to determine which modules to enable
-#options = no change, enable, disable
+#import functions that install libraries
 for (( bv_i=0; bv_i < ${#grouplibs_name[*]}; ++bv_i ))
 do
-    group_name=${grouplibs_name[$bv_i]}
-
-    for group_dep in `echo ${grouplibs_deps[$bv_i]}`;
+    for lib in `echo ${grouplibs_deps[$bv_i]}`;
     do
-        #echo "checking $group_name and $group_dep"
-        if [[ "$group_dep" == no-* ]]; then
-            group_dep=${group_dep/no-}
-        fi
-        declare -F "bv_${group_dep}_enable" &>/dev/null
-
-        if [[ $? != 0 ]] ; then
-            error "library ${group_dep} in ${group_name} not valid"
-        fi
-
-        declare -F "bv_${group_dep}_disable" &>/dev/null
-
-        if [[ $? != 0 ]] ; then
-            error "library ${group_dep} in ${group_name} not valid"
-        fi
+        . "${bv_PREFIX}/bv_${lib}.sh"
+        verify_module_exists ${lib}
     done
-
 done
 
 function check_default_args
@@ -424,6 +399,7 @@ function bv_write_unified_file
 
     echo "declare -a reqlibs" >> $OUTPUT_bv_FILE
     echo "declare -a optlibs" >> $OUTPUT_bv_FILE
+    echo "declare -a explicitlibs" >> $OUTPUT_bv_FILE
     echo "declare -a grouplibs_name" >> $OUTPUT_bv_FILE
     echo "declare -a grouplibs_deps" >> $OUTPUT_bv_FILE
     echo "declare -a grouplibs_comment" >> $OUTPUT_bv_FILE
@@ -466,6 +442,7 @@ function bv_write_unified_file
     echo "  parseXmlModuleContents \$license" >> $OUTPUT_bv_FILE
     echo "  reqlibs=(\`echo \"\${reqlibs[@]} \${xmlp_reqlibs[@]}\" | xargs -n 1 | sort -u | xargs\`)" >> $OUTPUT_bv_FILE
     echo "  optlibs=(\`echo \"\${optlibs[@]} \${xmlp_optlibs[@]}\" | xargs -n 1 | sort -u | xargs\`)" >> $OUTPUT_bv_FILE
+    echo "  explicitlibs=(\`echo \"\${explicitlibs[@]} \${xmlp_explicitlibs[@]}\" | xargs -n 1 | sort -u | xargs\`)" >> $OUTPUT_bv_FILE
 
     echo "for (( bv_i = 0; bv_i < \${#xmlp_grouplibs_name[*]}; ++bv_i ))" >> $OUTPUT_bv_FILE
     echo "do" >> $OUTPUT_bv_FILE
