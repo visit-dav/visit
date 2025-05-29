@@ -79,7 +79,7 @@ Uintah reader.
        PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-4.9.3/bin/mpicxx \
        PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-4.9.3/include \
        PAR_LIBS=-lmpl \
-   ./build_visit3_0_1 --required --optional --mesagl --uintah --parallel \
+   ./build_visit3_0_1 --required --optional --mesagl --parallel \
    --no-visit --thirdparty-path /usr/workspace/wsa/visit/visit/thirdparty_shared/3.0.1/toss3 \
    --makeflags -j16
 
@@ -260,7 +260,7 @@ Uintah reader.
        PAR_COMPILER_CXX=/opt/cray/pe/craype/2.5.15/bin/CC \
        PAR_INCLUDE=-I/opt/cray/pe/mpt/7.7.3/gni/mpich-gnu/7.1/include \
        PAR_LIBS="-L/opt/cray/pe/mpt/7.7.3/gni/mpich-gnu/7.1/lib -Wl,-rpath=/opt/cray/pe/mpt/7.7.3/gni/mpich-gnu/7.1/lib -lmpich" \
-    ./build_visit3_0_1 --required --optional --mesagl --uintah --parallel \
+    ./build_visit3_0_1 --required --optional --mesagl --parallel \
     --no-visit --thirdparty-path /project/projectdirs/visit/thirdparty_shared/3.0.1 \
     --makeflags -j8
 
