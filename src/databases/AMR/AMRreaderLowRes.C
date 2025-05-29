@@ -253,7 +253,7 @@ GetBlockVariable( int bid, int vid, float* dat )
         return ierr;
     }
 
-    ierr = compvar( vid, datbuf_+(5*blksz_*bid), dat, blksz_ );
+    ierr = compvar( vid, datbuf_+(5*blksz_*bid), datbuf_+(5*blksz_*bid), dat, blksz_ );
     if( ierr!=0 )
     {
         debug1 << "Failed to compute requested variable: " << vid << " .\n";
@@ -493,7 +493,7 @@ GetBlockVariable( int bid, int vid, float* dat )
         return ierr;
     }
 
-    ierr = compvar( vid, datbuf_+(5*blksz_*bid), dat, blksz_ );
+    ierr = compvar( vid, datbuf_+(5*blksz_*bid), datbuf_+(5*blksz_*bid), dat, blksz_ );
     if( ierr!=0 )
     {
         debug1 << "Failed to compute requested variable: " << vid << " .\n";

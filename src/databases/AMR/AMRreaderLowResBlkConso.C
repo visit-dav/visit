@@ -134,7 +134,7 @@ GetBlockVariable( int bid, int vid, float* dat )
     int tid = bcsft_[bid];
     if( tid+8 == bcsft_[bid+1] ) sz*=8;
 
-    ierr = compvar( vid, datbuf_+tid*5*blksz_, dat, sz );
+    ierr = compvar( vid, datbuf_+tid*5*blksz_, datbuf_+tid*5*blksz_, dat, sz );
     if( ierr!=0 )
     {
         debug1 << "Failed to compute requested variable: " << vid << " .\n";
@@ -395,7 +395,7 @@ GetBlockVariable( int bid, int vid, float* dat )
     int tid = bcsft_[bid];
     if( tid+8 == bcsft_[bid+1] ) sz*=8;
 
-    ierr = compvar( vid, datbuf_+tid*5*blksz_, dat, sz );
+    ierr = compvar( vid, datbuf_+tid*5*blksz_, datbuf_+tid*5*blksz_, dat, sz );
     if( ierr!=0 )
     {
         debug1 << "Failed to compute requested variable: " << vid << " .\n";
