@@ -470,9 +470,9 @@ The CMOcean color tables
 """"""""""""""""""""""""
 
 The `cmocean color maps <https://matplotlib.org/cmocean/>`_ are designed for oceanographic variables and analysis.
-These are the same set of color maps available in Python's ``cmocean`` module for `matplotlib`.
-These tables are all tagged with ``CMOcean`` tag and include sequential, diverging and cyclic tables.
-These tables are also designed to provide a large degree of color blind safety.
+These are the same set of color maps available in Python's ``cmocean`` module for ``matplotlib``.
+These tables are all tagged with ``CMOcean`` tag and include ``Sequential``, ``Diverging`` and/or ``Cyclic`` tags, as appropriate.
+These tables are also designed to provide some degree of (~50%) color blind safety so they are also tagged ``Color Blind Safe``.
 
 .. _Filtering_With_Tags:
 
