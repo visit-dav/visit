@@ -16,6 +16,8 @@
 #  Date:       Fri May  16 3:38:00 EDT 2025
 #
 #  Modifications:
+#    Justin Privitera Tue Jun  3 11:25:34 PDT 2025
+#    Relax image diff tolerance so tests pass in parallel.
 #
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("AMR")
