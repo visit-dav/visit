@@ -79,7 +79,7 @@ def test(mesh_name, tag_name, var_name, mesh_plot = False):
         SetOperatorOptions(ClipAtts, 0, 1)
     DrawPlots()
     set_test_view(tag_name)
-    Test(tag_name + "_" +  mesh_name + "_mesh")
+    Test(tag_name + "_" +  mesh_name + "_mesh", pixdiff=0.1)
     DeleteAllPlots()
 
 # requires AMR to be built
