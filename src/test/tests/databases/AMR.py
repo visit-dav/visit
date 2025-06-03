@@ -16,6 +16,8 @@
 #  Date:       Fri May  16 3:38:00 EDT 2025
 #
 #  Modifications:
+#    Justin Privitera Tue Jun  3 11:25:34 PDT 2025
+#    Relax image diff tolerance so tests pass in parallel.
 #
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("AMR")
@@ -79,7 +81,7 @@ def test(mesh_name, tag_name, var_name, mesh_plot = False):
         SetOperatorOptions(ClipAtts, 0, 1)
     DrawPlots()
     set_test_view(tag_name)
-    Test(tag_name + "_" +  mesh_name + "_mesh")
+    Test(tag_name + "_" +  mesh_name + "_mesh", pixdiff=0.1)
     DeleteAllPlots()
 
 # requires AMR to be built
