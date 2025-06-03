@@ -256,41 +256,31 @@ function add_extra_commandline_args
     extra_commandline_args[${#extra_commandline_args[*]}]="$enable_func"
 }
 
+# *************************************************************************** 
+#  Modifications: 
+#    Kathleen Biagas, Monday May 12, 2025
+#    Combined verify_required_module_exists and verify_optional_module_exists
+#    into one method, verify_module_exists, to reduce code duplication
+#                                                                            
+# *************************************************************************** 
 
-function verify_required_module_exists
+function verify_module_exists
 {
-    local reqlib=$1
+    local alib=$1
     #check if required functions exist..
-    declare -F "bv_${reqlib}_enable" &>/dev/null || errorFunc "${reqlib} enable not found"
-    declare -F "bv_${reqlib}_disable" &>/dev/null || errorFunc "${reqlib} disable not found"
-    declare -F "bv_${reqlib}_initialize" &>/dev/null || errorFunc "${reqlib} initialize not found"
-    declare -F "bv_${reqlib}_info" &>/dev/null || errorFunc "${reqlib} info not found"
-    declare -F "bv_${reqlib}_ensure" &>/dev/null || errorFunc "${reqlib} ensure not found"
-    declare -F "bv_${reqlib}_build" &>/dev/null || errorFunc "${reqlib} build not found"
-    declare -F "bv_${reqlib}_depends_on" &>/dev/null || errorFunc "${reqlib} depends_on not found"
-    declare -F "bv_${reqlib}_print" &>/dev/null || errorFunc "${reqlib} print not found"
-    declare -F "bv_${reqlib}_print_usage" &>/dev/null || errorFunc "${reqlib} print_usage not found"
-    declare -F "bv_${reqlib}_is_installed" &>/dev/null || errorFunc "${reqlib} is_installed not found"
-    declare -F "bv_${reqlib}_is_enabled" &>/dev/null || errorFunc "${reqlib} is_enabled not found"
+    declare -F "bv_${alib}_enable" &>/dev/null || errorFunc "${alib} enable not found"
+    declare -F "bv_${alib}_disable" &>/dev/null || errorFunc "${alib} disable not found"
+    declare -F "bv_${alib}_initialize" &>/dev/null || errorFunc "${alib} initialize not found"
+    declare -F "bv_${alib}_info" &>/dev/null || errorFunc "${alib} info not found"
+    declare -F "bv_${alib}_ensure" &>/dev/null || errorFunc "${alib} ensure not found"
+    declare -F "bv_${alib}_build" &>/dev/null || errorFunc "${alib} build not found"
+    declare -F "bv_${alib}_depends_on" &>/dev/null || errorFunc "${alib} depends_on not found"
+    declare -F "bv_${alib}_print" &>/dev/null || errorFunc "${alib} print not found"
+    declare -F "bv_${alib}_print_usage" &>/dev/null || errorFunc "${alib} print_usage not found"
+    declare -F "bv_${alib}_is_installed" &>/dev/null || errorFunc "${alib} is_installed not found"
+    declare -F "bv_${alib}_is_enabled" &>/dev/null || errorFunc "${alib} is_enabled not found"
 }
 
-
-function verify_optional_module_exists
-{
-    local optlib=$1
-    declare -F "bv_${optlib}_enable" &>/dev/null || errorFunc "${optlib} enable not found"
-    declare -F "bv_${optlib}_disable" &>/dev/null || errorFunc "${optlib} disable not found"
-    declare -F "bv_${optlib}_initialize" &>/dev/null || errorFunc "${optlib} info not found"
-    declare -F "bv_${optlib}_info" &>/dev/null || errorFunc "${optlib} info not found"
-    declare -F "bv_${optlib}_ensure" &>/dev/null || errorFunc "${optlib} ensure not found"
-    declare -F "bv_${optlib}_build" &>/dev/null || errorFunc "${optlib} build not found"
-    declare -F "bv_${optlib}_depends_on" &>/dev/null || errorFunc "${optlib} depends_on not found"
-    declare -F "bv_${optlib}_print" &>/dev/null || errorFunc "${optlib} print not found"
-    declare -F "bv_${optlib}_print_usage" &>/dev/null || errorFunc "${optlib} print_usage not found"
-    declare -F "bv_${optlib}_host_profile" &>/dev/null || errorFunc "${optlib} host_profile not found"
-    declare -F "bv_${optlib}_is_installed" &>/dev/null || errorFunc "${optlib} is_installed not found"
-    declare -F "bv_${optlib}_is_enabled" &>/dev/null || errorFunc "${optlib} is_enabled not found"
-}
 
 # *************************************************************************** #
 # Function: uncompress_untar
@@ -508,6 +498,8 @@ function verify_checksum_by_lookup
 #   I modified the routine to download the visit tar file and third party     #
 #   libraries from github.                                                    #
 #                                                                             #
+#   Kathleen Biagas, Monday May 12, 2025                                      #
+#   Return early if file to be downloaded is already present.                 #
 # *************************************************************************** #
 
 function download_file
@@ -516,6 +508,11 @@ function download_file
     # $2...$* [OPTIONAL] list of sites to obtain the file from
 
     typeset dfile=$1
+
+    if [[ -e ${dfile} ]] ; then
+        info "$dfile already downloaded."
+        return
+    fi
     info "Downloading $dfile . . ."
     shift
 
@@ -917,47 +914,46 @@ function prepare_build_dir
     return $untarred_src
 }
 
-# *************************************************************************** #
-#                   Function 1.3, check_optional_3rdparty                     #
-# --------------------------------------------------------------------------- #
-# This function will check to make sure that all of the necessary source      #
-# files for the optional 3rd party libraries actually exist.                  #
+# *************************************************************************** 
+# check_3rdparty
+# --------------------------------------------------------------------------- 
+# This function will check to make sure that all of the necessary files
+# for the third party libraries actually exist.
 #
-# *************************************************************************** #
+# Modifications:
+#   Kathleen Biagas, Monday May 12, 2025
+#   Combined 'check_required_3rdparty' and 'check_optional_3rdparty' into one
+#   function to reduce code duplication.
+#
+#   Kathleen Biagas, Friday May 16, 2025
+#   Check for enabled status and continue loop without further processing
+#   if lib is disabled.
+#
+# ****************************************************************************
 
-function check_optional_3rdparty
-{
-    info "Checking optional 3rd party libs"
-
-    for (( i = 0; i < ${#optlibs[*]}; ++i ))
-    do
-        ensure="bv_${optlibs[$i]}_ensure"
-        $ensure
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
-    done
-}
-
-
-# *************************************************************************** #
-#                    Function 1.1, check_required_3rdparty                    #
-# --------------------------------------------------------------------------- #
-# This function will check to make sure that all of the necessary files       #
-# for the required third party libraries actually exist.                      #
-# *************************************************************************** #
-
-function check_required_3rdparty
+function check_3rdparty
 {
     info "Checking for files . . ."
 
-    for (( i = 0; i < ${#reqlibs[*]}; ++i ))
+    for (( bv_i=0; bv_i < ${#grouplibs_name[*]}; ++bv_i ))
     do
-        ensure="bv_${reqlibs[$i]}_ensure"
-        $ensure
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
+        groupname=${grouplibs_name[$bv_i]}
+        info "Checking ${groupname} libraries"
+        for lib in `echo ${grouplibs_deps[$bv_i]}`;
+        do
+            $"bv_${lib}_is_enabled"
+
+            #if not enabled then skip
+            if [[ $? == 0 ]]; then
+                continue
+            fi
+
+            ensure="bv_${lib}_ensure"
+            $ensure
+            if [[ $? != 0 ]] ; then
+                return 1
+            fi
+        done
     done
 
     return 0
@@ -973,7 +969,7 @@ function check_required_3rdparty
 
 function check_files
 {
-    check_required_3rdparty
+    check_3rdparty
     if [[ $? != 0 ]]; then
         return 1
     fi
@@ -985,10 +981,6 @@ function check_files
         fi
     fi
 
-    check_optional_3rdparty
-    if [[ $? != 0 ]]; then
-        return 1
-    fi
     return 0
 }
 
@@ -1263,6 +1255,10 @@ function hostconf_library
 #   Don't put the C or CXX OPT_FLAGS in the host file. These will be handled  #
 #   by CMake when CMAKE_BUILD_TYPE is selected.                               #
 #                                                                             #
+#   Kathleen Biagas, Monday May 12, 2025                                      #
+#   Loop over groups when writing individual libs host conf instead of        #
+#   duplicating logic for reqlibs and optlibs.                                #
+#                                                                             #
 # *************************************************************************** #
 
 function build_hostconf
@@ -1491,16 +1487,15 @@ function build_hostconf
     echo \
 "##############################################################" >> $HOSTCONF
 
- for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
- do
-     hostconf_library ${reqlibs[$bv_i]}
- done
+    for (( bv_i=0; bv_i < ${#grouplibs_name[*]}; ++bv_i ))
+    do
+        for lib in `echo ${grouplibs_deps[$bv_i]}`;
+        do
+            hostconf_library ${lib}
+        done
+    done
 
- for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
- do
-     hostconf_library ${optlibs[$bv_i]}
- done
- echo >> $HOSTCONF
+    echo >> $HOSTCONF
 
  #
  # Patch for Ubuntu 11.04
@@ -1525,6 +1520,10 @@ function build_hostconf
 # Modifications:
 #   Eric Brugger, Fri Feb  1 14:56:58 PST 2019
 #   I modified it to work post git transition.
+#
+#   Kathleen Biagas, Monday May 12, 2025
+#   Loop over groups when printing individual libs instead of
+#   duplicating logic for reqlibs and optlibs.
 #
 # *************************************************************************** #
 
@@ -1556,19 +1555,23 @@ function printvariables
     printf "%s%s\n" "WGET_OPTS=" "${WGET_OPTS}"
 
     bv_visit_print
-    for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
-    do
-        initialize="bv_${reqlibs[$bv_i]}_print"
-        $initialize
-    done
 
-    for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
+    for (( bv_i=0; bv_i < ${#grouplibs_name[*]}; ++bv_i ))
     do
-        initialize="bv_${optlibs[$bv_i]}_print"
-        $initialize
+        for lib in `echo ${grouplibs_deps[$bv_i]}`;
+        do
+            initialize="bv_${lib}_print"
+            $initialize
+        done
     done
 }
 
+# *************************************************************************** #
+# Modifications:
+#   Kathleen Biagas, Friday May 16, 2025
+#   Remove 'GROUPING' section. Expand comments for each group instead.
+#
+# *************************************************************************** #
 function usage
 {
     initialize_build_visit
@@ -1613,19 +1616,7 @@ function usage
              somewhere like /usr/gapps/visit." "${THIRD_PARTY_PATH}"
 
     printf "\n"
-    printf "GROUPING\n"
-    printf "\n"
 
-    for (( bv_i=0; bv_i<${#grouplibs_name[*]}; ++bv_i ))
-    do
-        name=${grouplibs_name[$bv_i]}
-        comment=${grouplibs_comment[$bv_i]}
-        enabled=${grouplibs_enabled[$bv_i]}
-        printf "%-20s %s [%s]\n" "--$name" "$comment" "$enabled"
-    done
-    printf "\n"
-
-    printf "\n"
     printf "VISIT-SPECIFIC OPTIONS\n"
     printf "\n"
     printf "%-20s %s [%s]\n" "--install-network" "Install specific network config files." "${VISIT_INSTALL_NETWORK}"
@@ -1642,6 +1633,8 @@ function usage
     printf "\n"
     printf "THIRD-PARTY LIBRARIES\n"
     printf "  A download attempt will be made for all files which do not exist.\n"
+    printf "  Enable individual libraries by using '--<name>', e.g. '--mpich'.\n"
+    printf "  Disable individual libraries by using '--no-<name>', e.g. '--no-python'.\n"
     printf "\n"
     printf "  REQUIRED -- These are built by default unless --no-thirdparty flag is used.\n"
     printf "\n"
@@ -1655,7 +1648,7 @@ function usage
     done
 
     printf "\n"
-    printf "  OPTIONAL\n"
+    printf "  OPTIONAL -- Using '--optional' flag will enable all libraries in this group.\n"
     printf "\n"
 
     for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
@@ -1663,6 +1656,18 @@ function usage
         initializeFunc="bv_${optlibs[$bv_i]}_initialize"
         $initializeFunc
         printUsageFunc="bv_${optlibs[$bv_i]}_print_usage"
+        $printUsageFunc
+    done
+
+    printf "\n"
+    printf "  EXPLICIT -- These are only built when explicitly requested.\n"
+    printf "\n"
+
+    for (( bv_i=0; bv_i<${#explicitlibs[*]}; ++bv_i ))
+    do
+        initializeFunc="bv_${explicitlibs[$bv_i]}_initialize"
+        $initializeFunc
+        printUsageFunc="bv_${explicitlibs[$bv_i]}_print_usage"
         $printUsageFunc
     done
 
