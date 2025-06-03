@@ -1,14 +1,14 @@
-#/usr/projects/views/visit/thirdparty_shared/3.4.2/cmake/3.24.3/linux-x86_64_gcc-12.2/bin/cmake
+#/usr/projects/views/visit/thirdparty_shared/3.5.0/cmake/3.24.3/linux-x86_64_gcc-12.2/bin/cmake
 ##
-## ./build_visit3_4_2 generated host.cmake
-## created: Tue 11 Feb 2025 02:33:50 PM MST
+## ./build_visit3_5_0 generated host.cmake
+## created: Mon 19 May 2025 10:13:41 AM MDT
 ## system: Linux xr-fe1 5.14.21-150400.24.111_12.0.90-cray_shasta_c #1 SMP Fri Apr 19 23:37:58 UTC 2024 (18c041e) x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/projects/views/visit/thirdparty_shared/3.4.2)
+SET(VISITHOME /usr/projects/views/visit/thirdparty_shared/3.5.0)
 SET(VISITARCH linux-x86_64_gcc-12.2)
 
 ## Compiler flags.
@@ -227,6 +227,12 @@ VISIT_OPTION_DEFAULT(VISIT_PIDX_DIR ${VISITHOME}/pidx/${PIDX_VERSION}/${VISITARC
 ##
 SETUP_APP_VERSION(QWT 6.3.0)
 VISIT_OPTION_DEFAULT(VISIT_QWT_DIR ${VISITHOME}/qwt/${QWT_VERSION}/${VISITARCH})
+
+##
+## Uintah
+##
+SETUP_APP_VERSION(UINTAH 2.6.3)
+VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR ${VISITHOME}/uintah/${UINTAH_VERSION}/${VISITARCH})
 
 ##
 ## VTKM

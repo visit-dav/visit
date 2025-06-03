@@ -75,7 +75,7 @@
 //    Added minimum and maximum.
 //
 //    Hank Childs, Thu May 11 12:45:39 PDT 2006
-//    Added mean_curvature, gauss_curvature, compose vector, and compose 
+//    Added mean_curvature, gauss_curvature, compose vector, and compose
 //    tensor.
 //
 //    Hank Childs, Fri Oct  6 15:47:04 PDT 2006
@@ -168,21 +168,21 @@
 //    Chris Laganella, Fri Feb  4 19:18:01 EST 2022
 //    Added logical_nodeid, logial_zoneid, node_domain, zone_domain,
 //    and zone_centers under the Mesh menu
-// 
+//
 //    Justin Privitera, Fri 04 Mar 2022 02:03:33 PM PST
 //    Moved curl, divergence, gradient exprs, and laplacian
 //    from misc. submenu to vector submenu.
-// 
+//
 //    Justin Privitera, Wed Mar 30 12:50:59 PDT 2022
 //    Added "ghost_zoneid" expression under mesh submenu.
 //
 //    Kathleen Biagas, Wed Jun 15 2022
 //    Added crack_width to misc submenu.
-// 
+//
 //    Justin Privitera, Mon Oct 28 15:26:44 PDT 2024
-//    Added global mesh expressions: global_avg, global_max, global_min, 
+//    Added global mesh expressions: global_avg, global_max, global_min,
 //    global_rms, global_std_dev, global_sum, and global_variance.
-// 
+//
 //    Justin Privitera, Wed Nov  6 16:41:21 PST 2024
 //    Added displacement to vector expressions.
 //
@@ -438,9 +438,9 @@ const char *expr_time_iteration[] = {
     "last_cycle_when_condition_is_true",
     "last_time_when_condition_is_true",
     "last_time_index_when_condition_is_true",
-    "min_over_time", 
-    "max_over_time", 
-    "sum_over_time", 
+    "min_over_time",
+    "max_over_time",
+    "sum_over_time",
     "time_at_minimum",
     "time_at_maximum",
     "time_index_at_minimum",
@@ -469,12 +469,12 @@ ExprNameList exprlist[NUM_EXPRESSION_CATEGORIES];
 // ****************************************************************************
 // Method: QvisExpressionsWindow::QvisExpressionsWindow
 //
-// Purpose: 
+// Purpose:
 //   This is the constructor for the QvisExpressionsWindow class.
 //
 // Arguments:
 //   exprList_  The ExpressionList subject to observe
-//   
+//
 //
 // Programmer: Jeremy Meredith
 // Creation:   October 10, 2004
@@ -488,7 +488,7 @@ ExprNameList exprlist[NUM_EXPRESSION_CATEGORIES];
 //
 //   Hank Childs, Mon Jul  5 11:20:47 PDT 2010
 //   Enable Load and Save buttons.
-// 
+//
 //   Justin Privitera, Mon Oct 28 15:26:44 PDT 2024
 //   Added Global category.
 //
@@ -544,14 +544,14 @@ QvisExpressionsWindow::QvisExpressionsWindow(
 // ****************************************************************************
 // Method: QvisExpressionsWindow::~QvisExpressionsWindow
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the QvisExpressionsWindow class.
 //
 // Programmer: Jeremy Meredith
 // Creation:   October 10, 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 QvisExpressionsWindow::~QvisExpressionsWindow()
 {
@@ -561,7 +561,7 @@ QvisExpressionsWindow::~QvisExpressionsWindow()
 // ****************************************************************************
 // Method: QvisExpressionsWindow::CreateWindowContents
 //
-// Purpose: 
+// Purpose:
 //   Creates the widgets for the window.
 //
 // Programmer: Jeremy Meredith
@@ -585,7 +585,7 @@ QvisExpressionsWindow::~QvisExpressionsWindow()
 //    Hank Childs, Thu Jul 21 11:12:43 PDT 2005
 //    Add support for array mesh variables.
 //
-//    Kathleen Bonnell, Thu Aug  3 08:42:33 PDT 2006 
+//    Kathleen Bonnell, Thu Aug  3 08:42:33 PDT 2006
 //    Changed numtypes to 7 to support CurveMeshVar.
 //
 //    Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
@@ -711,6 +711,11 @@ QvisExpressionsWindow::CreateWindowContents()
 // Creation:   Thu Feb 11 10:33:20 PST 2010
 //
 // Modifications:
+//    Cyrus Harrison, Tue May 20 09:11:37 PDT 2025
+//    Disabled rich text paste support in expression editor text box.
+//    Many folks are now copying and pasting from editors that embed
+//    formating (such as vscode). Embedded formatting creates a mess and
+//    is distracting, so it is now disabled.
 //
 // ****************************************************************************
 
@@ -728,6 +733,7 @@ QvisExpressionsWindow::CreateStandardEditor()
     row++;
 
     stdDefinitionEdit = new QTextEdit(stdEditorWidget);
+    stdDefinitionEdit->setAcceptRichText(false);
     layout->addWidget(stdDefinitionEdit, row,0,1,4);
     row++;
 
@@ -894,7 +900,7 @@ QvisExpressionsWindow::CreatePythonFilterEditor()
 // ****************************************************************************
 // Method: QvisExpressionsWindow::UpdateWindow
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the window's subject is changed. The
 //   subject tells this window what attributes changed and we put the
 //   new values into those widgets.
@@ -1120,14 +1126,14 @@ QvisExpressionsWindow::BlockAllSignals(bool block)
 // ****************************************************************************
 // Method: QvisExpressionsWindow::Apply
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the Apply button is clicked.
 //
 // Programmer: Jeremy Meredith
 // Creation:   October 10, 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
 QvisExpressionsWindow::Apply(bool forceUpdate)
@@ -1141,7 +1147,7 @@ QvisExpressionsWindow::Apply(bool forceUpdate)
 // ****************************************************************************
 // Method: QvisExpressionsWindow::apply
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the window's Apply
 //   button is clicked.
 //
@@ -1187,7 +1193,7 @@ QvisExpressionsWindow::apply()
 // ****************************************************************************
 // Method: QvisExpressionsWindow::addExpression
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that adds a new expression that is empty.
 //
 // Programmer: Jeremy Meredith
@@ -1249,7 +1255,7 @@ QvisExpressionsWindow::addExpression()
 // ****************************************************************************
 // Method: QvisExpressionsWindow::delExpression
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called to delete an expression.
 //
 // Programmer: Jeremy Meredith
@@ -1265,7 +1271,7 @@ QvisExpressionsWindow::addExpression()
 //    Initial Qt4 Port.
 //
 //    Cyrus Harrison, Mon Jul 21 16:22:30 PDT 2008
-//    Fixed a crash when last expression was deleted. 
+//    Fixed a crash when last expression was deleted.
 //
 //    Eddie Rusu, Wed Jun 24 15:46:57 PDT 2020
 //    Adding and deleting expressions now only modifies the expressions window.
@@ -1725,7 +1731,7 @@ QvisExpressionsWindow::UpdateStandardExpressionEditor(const QString &expr_def)
 //  Method:  QvisExpressionsWindow::ExpandFunction
 //
 //  Purpose:
-//    Slot function when a function was selected for insertion by 
+//    Slot function when a function was selected for insertion by
 //    the popup menu.
 //
 //  Arguments:
@@ -1746,7 +1752,7 @@ QvisExpressionsWindow::UpdateStandardExpressionEditor(const QString &expr_def)
 //
 //    Hank Childs, Thu Jul  8 08:14:23 PDT 2010
 //    Added min_coord and max_coord.
-//    
+//
 //    Kathleen Bonnell, Thu May 19 15:57:50 PDT 2011
 //    Fixed value_for_material so it shows up correctly in windows.
 //    (was showing arguments first, then expression name).
@@ -1761,7 +1767,7 @@ QvisExpressionsWindow::UpdateStandardExpressionEditor(const QString &expr_def)
 //    Added divide expression with optional arguments.
 //
 //    Justin Privitera, Thu 03 Mar 2022 10:41:04 AM PST
-//    Removed angle brackets from constantvalue field 
+//    Removed angle brackets from constantvalue field
 //    in all 4 constant functions.
 //
 //    Kathleen Biagas, Wed Jun 15 2022
@@ -1847,7 +1853,7 @@ QvisExpressionsWindow::ExpandFunction(const QString &func_name)
         res += QString("(<var1>, <var2>, ..., <varN>, [b1, b2, ..., bN+1])");
         doParens = false;
     }
-    else if (func_name == "eq" || func_name == "ge" || func_name == "gt" || 
+    else if (func_name == "eq" || func_name == "ge" || func_name == "gt" ||
              func_name == "le" || func_name == "lt" || func_name == "ne")
     {
         res += QString("(<var-LHS>, <var-RHS>)");
@@ -1980,7 +1986,7 @@ QvisExpressionsWindow::ExpandFunction(const QString &func_name)
 //  Method:  QvisExpressionsWindow::stdInsertFunction
 //
 //  Purpose:
-//    Slot function when a function was selected for insertion by 
+//    Slot function when a function was selected for insertion by
 //    the popup menu.
 //
 //  Arguments:
@@ -2145,8 +2151,8 @@ QvisExpressionsWindow::QuoteVariable(const QString &var)
 // ****************************************************************************
 // Method: QvisExpressionWindow::stdInsertVariable
 //
-// Purpose: 
-//   This is a Qt slot function that inserts a variable name into the 
+// Purpose:
+//   This is a Qt slot function that inserts a variable name into the
 //   current variable definition.
 //
 // Arguments:
@@ -2243,7 +2249,7 @@ QvisExpressionsWindow::pyTemplateSelected(const QString &tname)
 // ****************************************************************************
 // Method: QvisExpressionsWindow::newExpression
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that can be called on the window to add a
 //   new expression and set the focus of the window to the name line edit
 //   and select all of its text.
@@ -2273,13 +2279,13 @@ QvisExpressionsWindow::newExpression()
 // ****************************************************************************
 // Method: QvisExpressionsWindow::loadSubject
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that gets called when the window's Load button
 //   is clicked.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
 // Note:       We append the expressions from the file to the list instead of
 //             replacing the ones in the list.
@@ -2288,7 +2294,7 @@ QvisExpressionsWindow::newExpression()
 // Creation:   Fri May  6 14:40:40 PDT 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2304,7 +2310,7 @@ QvisExpressionsWindow::loadSubject()
                                                        "All files (*)"));
     if (filename.isNull())
         return;
-    
+
     ExpressionList newExpressions;
     SingleAttributeConfigManager mgr(&newExpressions);
     mgr.Import(filename.toStdString());
