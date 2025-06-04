@@ -353,6 +353,9 @@ getAMRinfo( hid_t gid )
         aid = H5Aopen_name( gid, amr_idealname );
         H5Aread( aid, H5T_NATIVE_FLOAT, rbuf );
         H5Aclose(aid);
+        
+        nspec_ = 1;
+
         eos_ = new IdealEOS( rbuf[0], rbuf[1] );
         found_eos = true;
     }
@@ -363,6 +366,9 @@ getAMRinfo( hid_t gid )
         aid = H5Aopen_name( gid, amr_jwlname );
         H5Aread( aid, H5T_NATIVE_FLOAT, rbuf );
         H5Aclose(aid);
+
+        nspec_ = 1;
+
         eos_ = new JwlEOS( rbuf[0], rbuf[1], rbuf[2], rbuf[3],
                            rbuf[4], rbuf[5], rbuf[6] );
         found_eos = true;
@@ -406,6 +412,8 @@ getAMRinfo( hid_t gid )
     if( est>0 )
     {
         eos_ = new SesameEOS();
+
+        nspec_ = 1;
 
         iavpres_ = 0;
         iavtemp_ = 1;
@@ -458,6 +466,8 @@ getAMRinfo( hid_t gid )
         aid = H5Aopen_name( gid, amr_idealtilname );
         H5Aclose(aid);
 
+        nspec_ = 2;
+
         iavpres_ = 0;
         iavtemp_ = 1;
         iavsndv_ = 2;
@@ -499,6 +509,8 @@ getAMRinfo( hid_t gid )
         eos_ = new JwlJwlEOS();
         aid = H5Aopen_name( gid, amr_jwljwlname );
         H5Aclose(aid);
+
+        nspec_ = 2;
 
         iavpres_ = 0;
         iavtemp_ = 1;
