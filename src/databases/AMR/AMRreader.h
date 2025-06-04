@@ -149,7 +149,7 @@ public:
                 return true;
         }
         else
-            return HasDensity() && HasEnergy();
+            return HasDensity() && HasEnergy() && HasMomentum();
     }
 
     virtual bool HasTemperature() const
@@ -164,7 +164,7 @@ public:
                 return true;
         }
         else
-            return HasDensity() && HasEnergy();
+            return HasDensity() && HasEnergy() && HasMomentum();
     }
 
     virtual bool HasSNDV() const
@@ -179,7 +179,7 @@ public:
                 return true;
         }
         else
-            return HasDensity() && HasEnergy();
+            return HasDensity() && HasEnergy() && HasMomentum();
     }
 
     virtual bool HasDensity() const
