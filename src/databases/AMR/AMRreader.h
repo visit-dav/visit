@@ -139,23 +139,67 @@ public:
 
     virtual bool HasPressure() const
     {
-        if (eos_->p_from_av() && iavpres_ >= navs_)
-            return false;
+        if (eos_->EOStype() == SesameEOS_type) 
+            return sesame_haspres_ || (navs_ > 0 && iavpres_ != -1);
+        else if (eos_->p_from_av())
+        {
+            if (iavpres_ >= navs_ || iavpres_ == -1)
+                return false;
+            else
+                return true;
+        }
         else
-            return true;
+            return HasDensity() && HasEnergy();
     }
 
     virtual bool HasTemperature() const
     {
-        if (eos_->T_from_av() && iavtemp_ >= navs_)
+        if (eos_->EOStype() == SesameEOS_type) 
+            return sesame_hastemp_ || (navs_ > 0 && iavtemp_ != -1);
+        else if (eos_->T_from_av())
+        {
+            if (iavtemp_ >= navs_ || iavtemp_ == -1)
+                return false;
+            else
+                return true;
+        }
+        else
+            return HasDensity() && HasEnergy();
+    }
+
+    virtual bool HasSNDV() const
+    {
+        if (eos_->EOStype() == SesameEOS_type) 
+            return sesame_hassndv_ || (navs_ > 0 && iavsndv_ != -1);
+        else if (eos_->a_from_av())
+        {
+            if (iavsndv_ >= navs_ || iavsndv_ == -1)
+                return false;
+            else
+                return true;
+        }
+        else
+            return HasDensity() && HasEnergy();
+    }
+
+    virtual bool HasDensity() const
+    {
+        if (icvdens_ == -1) 
+            return false;
+        else
+            return true;
+    }
+    virtual bool HasMomentum() const
+    {
+        if (icvmomx_ == -1) 
             return false;
         else
             return true;
     }
 
-    virtual bool HasSNDV() const
+    virtual bool HasEnergy() const
     {
-        if (eos_->a_from_av() && iavsndv_ >= navs_)
+        if (icvener_ == -1) 
             return false;
         else
             return true;
@@ -243,6 +287,10 @@ protected:
     int iavpres_;
     int iavtemp_;
     int iavsndv_;
+
+    bool sesame_haspres_;
+    bool sesame_hastemp_;
+    bool sesame_hassndv_;
 };
 
 
