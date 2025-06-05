@@ -1,21 +1,20 @@
 <modules>
     <license name="bsd|mit|lgpl">
         <!-- required libraries -->
-        <required>
-            <lib name="cmake"/> <!-- cmake is here -->
+        <group name="required" comment="All required libraries, built by default. Entire group can be disabled by '--no-thirdparty'. Individual libraries in the group can be disabled via --no-name flag, e.g. --no-python." enabled="yes">
+            <lib name="cmake"/>
             <lib name="python"/>
-            <lib name="vtk"/> <!-- <lib name="vtk" reqdeps="cmake vtk" optdeps="qt mesagl"/> -->
+            <lib name="vtk"/> 
             <lib name="qt6"/>
             <lib name="qt"/>
             <lib name="zlib"/>
-        </required>
+        </group>
 
-        <!-- optional libraries -->
-        <optional>
-            <lib name="vtk95"/>
+        <group name="optional" comment="Optional libraries, the entire group is disabled by default, and can be enabled via --optional flag or. Individual libraries can be enabled via --name, e.g. --conduit." enabled="no">
             <lib name="adios"/>
             <lib name="adios2"/>
             <lib name="advio"/>
+            <lib name="anari"/>
             <lib name="blosc2"/>
             <lib name="boost"/>
             <lib name="boxlib"/>
@@ -24,257 +23,36 @@
             <lib name="conduit"/>
             <lib name="fms"/>
             <lib name="gdal"/>
-            <lib name="glu"/>
             <lib name="h5part"/>
             <lib name="hdf5"/>
             <lib name="icet"/>
+            <lib name="mfem"/>
+            <lib name="mili"/>
+            <lib name="moab"/>
+            <lib name="nektarpp"/>
+            <lib name="netcdf"/>
+            <lib name="openexr"/>
+            <lib name="ospray"/>
+            <lib name="pidx"/>
+            <lib name="qwt"/>
+            <lib name="silo"/>
+            <lib name="szip"/>
+            <lib name="uintah"/>
+            <lib name="vtkm"/>
+            <lib name="xdmf"/>
+        </group>
+        <group name="explicit" comment="Libraries that can only be enabled individually, the group cannot be enabled as a whole. This list can include mutually exclusive libraries like 'mesgal' and 'osmesa', or libraries only needed on specific platforms, or libraries with problematic builds." enabled="no">
+            <lib name="glu"/>
             <lib name="llvm"/>
-            <lib name="mdsplus"/>
             <lib name="mesagl"/>
             <lib name="meson"/>
-            <lib name="mfem"/>
-            <lib name="mili"/>
-            <lib name="moab"/>
             <lib name="mpich"/>
-            <lib name="nektarpp"/>
-            <lib name="netcdf"/>
             <lib name="ninja"/>
-            <lib name="openexr"/>
             <lib name="osmesa"/>
-            <lib name="ospray"/>
-            <lib name="anari"/>
-            <lib name="pidx"/>
             <lib name="pyside"/>
-            <lib name="qwt"/>
-            <lib name="silo"/>
-            <lib name="stripack"/>
-            <lib name="szip"/>
-            <lib name="uintah"/>
-            <lib name="vtkm"/>
+            <lib name="vtk95"/>
             <lib name="xcb"/>
-            <lib name="xdmf"/>
             <lib name="xkbcommon"/>
-        </optional>
-
-        <!-- thirdparty flag -->
-        <group name="required" comment="All required libraries" enabled="yes">
-            <lib name="cmake"/> <!-- cmake is here -->
-            <lib name="python"/>
-            <lib name="vtk"/> <!-- <lib name="vtk" reqdeps="cmake vtk" optdeps="qt mesagl"/> -->
-            <lib name="qt6"/>
-            <lib name="qt"/>
-            <lib name="zlib"/>
-        </group>
-
-        <group name="optional" comment="All optional libraries" enabled="no">
-            <lib name="adios"/>
-            <lib name="adios2"/>
-            <lib name="advio"/>
-            <lib name="blosc2"/>
-            <lib name="boost"/>
-            <lib name="boxlib"/>
-            <lib name="cfitsio"/>
-            <lib name="cgns"/>
-            <lib name="conduit"/>
-            <lib name="fms"/>
-            <lib name="gdal"/>
-            <lib name="glu"/>
-            <lib name="h5part"/>
-            <lib name="hdf5"/>
-            <lib name="icet"/>
-            <lib name="llvm"/>
-            <lib name="mfem"/>
-            <lib name="mili"/>
-            <lib name="moab"/>
-            <lib name="nektarpp"/>
-            <lib name="netcdf"/>
-            <lib name="openexr"/>
-            <lib name="ospray"/>
-            <lib name="anari"/>
-            <lib name="pidx"/>
-            <lib name="pyside"/>
-            <lib name="qwt"/>
-            <lib name="silo"/>
-            <lib name="szip"/>
-            <lib name="uintah"/>
-            <lib name="vtkm"/>
-            <lib name="xdmf"/>
-        </group>
-
-        <group name="no-thirdparty" comment="Do not build required 3rd party libraries" enabled="no">
-            <lib name="no-cmake"/>
-            <lib name="no-python"/>
-            <lib name="no-qt6" />
-            <lib name="no-qt" />
-            <lib name="no-vtk"/>
-            <lib name="no-zlib"/>
-        </group>
-
-        <!-- all io libraries -->
-        <group name="all-io" comment="Build all available I/O libraries" enabled="no">
-            <lib name="adios"/>
-            <lib name="adios2"/>
-<!--        <lib name="advio"/>    Removed by Allen Sanderson-->
-            <lib name="boost"/> <!-- required by nektarpp -->
-            <lib name="boxlib"/>
-            <lib name="cfitsio"/>
-            <lib name="conduit"/>
-            <lib name="mfem"/>
-            <lib name="cgns"/>
-            <lib name="fms"/>
-            <lib name="gdal"/>
-            <lib name="h5part"/>
-            <lib name="hdf5"/>
-            <lib name="netcdf"/>
-            <lib name="nektarpp"/>
-            <lib name="openexr"/>
-            <lib name="pidx"/>
-            <lib name="silo"/>
-            <lib name="szip"/>
-            <lib name="uintah"/>
-            <lib name="xdmf"/>
-            <lib name="zlib"/>
-        </group>
-
-        <!-- dbio-only-->
-        <group name="dbio-only" comment="Disables EVERYTHING but I/O." enabled="no">
-            <lib name="adios"/>
-            <lib name="adios2"/>
-            <lib name="advio"/>
-            <lib name="boost"/> <!-- required by nektarpp -->
-            <lib name="boxlib"/>
-            <lib name="cfitsio"/>
-            <lib name="conduit"/>
-            <lib name="mfem"/>
-            <lib name="cgns"/>
-            <lib name="fms"/>
-            <lib name="gdal"/>
-            <lib name="h5part"/>
-            <lib name="hdf5"/>
-            <lib name="netcdf"/>
-            <lib name="nektarpp"/>
-            <lib name="pidx"/>
-            <lib name="silo"/>
-            <lib name="szip"/>
-            <lib name="uintah"/>
-            <lib name="xdmf"/>
-            <lib name="zlib"/>
-            <lib name="no-qt6"/>
-            <lib name="no-qt"/>
-            <lib name="no-qwt"/>
-            <lib name="no-python"/>
-        </group>
-
-        <!--
-            #all the optional non io libraries
-        -->
-        <group name="nonio" comment="Build non I/O libraries" enabled="no">
-            <lib name="icet"/>
-            <lib name="ospray"/>
-            <lib name="anari"/>
-        </group>
-
-        <!--
-        # Releasibility of these libs is not yet understood
-        -->
-        <group name="advanced" comment="Must be manually downloaded" enabled="no">
-<!--        <lib name="mdsplus"/>    Removed for now by Allen Sanderson-->
-            <lib name="mili"/>
-        </group>
-    </license>
-
-    <!-- modules needed by gpl license -->
-    <license name="gpl">
-        <!--
-        <add-license name="lpgl" />
-        -->
-        <!-- required libraries -->
-        <required>
-            <lib name="cmake"/>
-            <lib name="python"/>
-            <lib name="vtk"/>
-            <lib name="qt6"/>
-            <lib name="qt"/>
-            <lib name="zlib"/>
-        </required>
-
-        <!-- optional libraries -->
-        <optional>
-            <lib name="boost"/>
-            <lib name="szip"/>
-            <lib name="netcdf"/>
-            <lib name="glu"/>
-            <lib name="hdf5"/>
-            <lib name="icet"/>
-            <lib name="llvm"/>
-            <lib name="mesagl"/>
-            <lib name="mpich"/>
-            <lib name="osmesa"/>
-            <lib name="pyqt"/>
-            <lib name="qwt"/>
-            <lib name="uintah"/>
-            <lib name="damaris"/>
-            <lib name="xercesc"/>
-            <lib name="xsd"/>
-        </optional>
-
-        <!-- thirdparty flag -->
-        <group name="required" comment="All required libraries" enabled="yes">
-            <lib name="cmake"/>
-            <lib name="python"/>
-            <lib name="vtk"/>
-            <lib name="qt6"/>
-            <lib name="qt"/>
-            <lib name="zlib"/>
-        </group>
-
-        <group name="optional" comment="All optional libraries" enabled="no">
-            <lib name="boost"/>
-            <lib name="hdf5"/>
-            <lib name="netcdf"/>
-            <lib name="mpich"/>
-            <lib name="qwt"/>
-            <lib name="szip"/>
-            <lib name="uintah"/>
-            <lib name="damaris"/>
-            <lib name="xercesc"/>
-            <lib name="xsd"/>
-        </group>
-
-
-        <group name="no-thirdparty" comment="Do not build required 3rd party libraries" enabled="no">
-            <lib name="no-cmake"/>
-            <lib name="no-python"/>
-            <lib name="no-qt6" />
-            <lib name="no-qt" />
-            <lib name="no-vtk"/>
-            <lib name="no-zlib"/>
-        </group>
-
-        <!-- nodbio flag -->
-        <group name="dbio-only" comment="Disables EVERYTHING but I/O." enabled="no">
-            <lib name="hdf5"/>
-            <lib name="netcdf"/>
-            <lib name="szip"/>
-            <lib name="zlib"/>
-            <lib name="uintah"/>
-            <lib name="no-python"/>
-            <lib name="no-qt6"/>
-            <lib name="no-qt"/>
-            <lib name="no-qwt"/>
-        </group>
-
-        <!-- all io libraries -->
-        <group name="all-io" comment="Build all available I/O libraries" enabled="no">
-            <lib name="hdf5"/>
-            <lib name="netcdf"/>
-            <lib name="szip"/>
-            <lib name="zlib"/>
-            <lib name="uintah"/>
-        </group>
-        <!-- #all the optional non io libraries -->
-        <group name="nonio" comment="Build non I/O libraries" enabled="no">
-            <lib name="icet"/>
         </group>
     </license>
 </modules>

@@ -285,13 +285,19 @@ function check_opengl_context()
 }
 
 
-# ************************************************************************** #
-#                       Section 1, setting up inputs                          #
-# --------------------------------------------------------------------------- #
-# This section sets up the inputs to the VisIt script.  This is where you can #
-# specify which compiler to use, which versions of the third party libraries, #
-# etc.  Note that this script is really only known to work with gcc.          #
-# *************************************************************************** #
+# *************************************************************************** 
+#                       Section 1, setting up inputs                          
+# --------------------------------------------------------------------------- 
+# This section sets up the inputs to the VisIt script.  This is where you can 
+# specify which compiler to use, which versions of the third party libraries, 
+# etc.  Note that this script is really only known to work with gcc.          
+#
+# Modifications:
+#   Kathleen Biagas, Monday May 12, 2025
+#   Process all groups in one loop when feasible, instead of duplicating
+#   logic for 'reqlibs' and 'optlibs' separately.
+#
+# *************************************************************************** 
 
 
 function initialize_build_visit()
@@ -498,18 +504,15 @@ function initialize_build_visit()
     #
     # OPTIONS
     #
-    #initialize required libraries..
+    #initialize all libraries..
 
-    for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
+    for (( bv_i=0; bv_i < ${#grouplibs_name[*]}; ++bv_i ))
     do
-        initializeFunc="bv_${reqlibs[$bv_i]}_initialize"
-        $initializeFunc
-    done
-
-    for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
-    do
-        initializeFunc="bv_${optlibs[$bv_i]}_initialize"
-        $initializeFunc
+        for lib in `echo ${grouplibs_deps[$bv_i]}`;
+        do
+            initializeFunc="bv_${lib}_initialize"
+            $initializeFunc
+        done
     done
 
     export DO_HOSTCONF="yes"
@@ -531,9 +534,6 @@ function initialize_build_visit()
     export DO_PARADIS="no"
     export PREVENT_ICET="no"
     verify="no"
-    export DO_OPTIONAL="yes"
-    export DO_OPTIONAL2="no"
-    export DO_MORE="no"
     export DO_DBIO_ONLY="no"
     export DO_ENGINE_ONLY="no"
     export DO_SERVER_COMPONENTS_ONLY="no"
@@ -610,18 +610,14 @@ function initialize_build_visit()
     fi
     export VISIT_FILE=${VISIT_FILE:-"visit${VISIT_VERSION}.tar.gz"}
 
-    for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
+    for (( bv_i=0; bv_i < ${#grouplibs_name[*]}; ++bv_i ))
     do
-        initializeFunc="bv_${reqlibs[$bv_i]}_info"
-        $initializeFunc
+        for lib in `echo ${grouplibs_deps[$bv_i]}`;
+        do
+            initializeFunc="bv_${lib}_info"
+            $initializeFunc
+        done
     done
-
-    for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
-    do
-        initializeFunc="bv_${optlibs[$bv_i]}_info"
-        $initializeFunc
-    done
-
 
     WRITE_UNIFIED_FILE=""
     VISIT_INSTALLATION_BUILD_DIR=""
@@ -700,10 +696,43 @@ function strip_quotes
     echo "${str}"
 }
 
+
+# *************************************************************************** 
+# Function: bv_enable_group
+#
+# Modifications:
+#   Kathleen Biagas, Monday May 12, 2025
+#   Modified to test for actual group names and return early if possible.
+#   Don't allow 'explicit' group to be 'enabled'. Print message and exit if so.
+#   Remove test for 'dbio-only'.
+#
+#   Kathleen Biagas, Monday May 19, 2025
+#   Allow --no-thirdparty as a way to disable required group. This preserves
+#   the purpose of the option even though the '--no-thirdparty' group no
+#   longer exists.
+#
+# *************************************************************************** 
+
 function bv_enable_group
 {
     local name=${1/--}
     local match=0
+
+    # don't want to allow enablement of 'explicit' group.
+    if [[ "$name" == "explicit" ]] ; then
+        info "Libraries in group 'explicit' cannot be enabled via '--explicit'. Each desired 'explicit' library should be added separately, e.g. '--llvm --osmesa'."
+        exit
+    fi
+
+    if [[ "$name" == "no-thirdparty" ]] ; then
+        name="no-required"
+    fi
+
+    # can terminate early if $name isn't 'optional' or 'required'.
+    if [[ "$name" != "optional" && "$name" != "required" &&
+          "$name" != "no-required" ]] ; then
+        return 0
+    fi
 
     for (( bv_i=0; bv_i < ${#grouplibs_name[*]}; ++bv_i ))
     do
@@ -714,22 +743,20 @@ function bv_enable_group
         do
             if [[ "$group" == "$name" ]]; then
                 echo "executing group $name"
-                if [[ "$group" == "dbio-only" ]]; then
-                    DO_DBIO_ONLY="yes"
-                fi
                 match=1
                 for group_dep in `echo ${grouplibs_deps[$bv_i]}`;
                 do
-                    if [[ "$group_dep" == no-* ]]; then
-                        group_dep=${group_dep/no-}
-                        #info "disabling $group_dep"
-                        initializeFunc="bv_${group_dep}_disable"
-                        $initializeFunc
-                    else
-                        #info "enabling $group_dep"
-                        initializeFunc="bv_${group_dep}_enable"
-                        $initializeFunc
-                    fi
+                    info "bv_enable_group enabling $group_dep"
+                    initializeFunc="bv_${group_dep}_enable"
+                    $initializeFunc
+                done
+            elif [[ "no-$group" == "$name" ]]; then
+                match=1
+                for group_dep in `echo ${grouplibs_deps[$bv_i]}`;
+                do
+                   info "bv_enable_group disabling $group_dep"
+                   initializeFunc="bv_${group_dep}_disable"
+                   $initializeFunc
                 done
             fi
         done
@@ -738,99 +765,83 @@ function bv_enable_group
     return $match
 }
 
+# *************************************************************************** 
+# Function: enable_dependent_libraries
+#
+# Modifications:
+#   Kathleen Biagas, Monday May 12, 2025
+#   Process all groups in one loop, instead of duplicating
+#   logic for 'reqlibs' and 'optlibs' separately.
+#
+# *************************************************************************** 
+
 function enable_dependent_libraries
 {
     local depends_on=""
 
-    for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
+    for (( bv_i=0; bv_i < ${#grouplibs_name[*]}; ++bv_i ))
     do
-        $"bv_${reqlibs[$bv_i]}_is_enabled"
-
-        #if not enabled then skip
-        if [[ $? == 0 ]]; then
-            continue
-        fi
-
-        #enabled library, check dependencies..
-        depends_on=$("bv_${reqlibs[$bv_i]}_depends_on")
-
-        #replace commas with spaces if there are any..
-        depends_on=${depends_on//,/ }
-
-        for depend_lib in `echo $depends_on`;
+        for lib in `echo ${grouplibs_deps[$bv_i]}`;
         do
-            $"bv_${depend_lib}_is_enabled"
+            $"bv_${lib}_is_enabled"
+
+            #if not enabled then skip
             if [[ $? == 0 ]]; then
-                error "ERROR: library ${depend_lib} was not set ${reqlibs[$bv_i]} depends on it, please enable"
-                #echo "library ${depend_lib} was not set but another library depends on it, enabling it"
-                #$"bv_${depend_lib}_enable"
+                continue
             fi
-        done
-    done
 
-    for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
-    do
-        $"bv_${optlibs[$bv_i]}_is_enabled"
+            #enabled library, check dependencies..
+            depends_on=$("bv_${lib}_depends_on")
 
-        #if not enabled then skip
-        if [[ $? == 0 ]]; then
-            continue
-        fi
+            #replace commas with spaces if there are any..
+            depends_on=${depends_on//,/ }
 
-        #enabled library, check dependencies..
-        depends_on=$("bv_${optlibs[$bv_i]}_depends_on")
-
-        #replace commas with spaces if there are any..
-        depends_on=${depends_on//,/ }
-
-        for depend_lib in `echo $depends_on`;
-        do
-            $"bv_${depend_lib}_is_enabled"
-            if [[ $? == 0 ]]; then
-                error "ERROR: library ${depend_lib} was not set ${optlibs[$bv_i]} depends on it, please enable"
-                echo "library ${depend_lib} was not set but another library depends on it, enabling it"
-                $"bv_${depend_lib}_enable"
-            fi
+            for depend_lib in `echo $depends_on`;
+            do
+                $"bv_${depend_lib}_is_enabled"
+                if [[ $? == 0 ]]; then
+                    error "ERROR: library ${depend_lib} was not set ${lib} depends on it, please enable"
+                    #echo "library ${depend_lib} was not set but another library depends on it, enabling it"
+                    #$"bv_${depend_lib}_enable"
+                fi
+            done
         done
     done
 }
 
+# *************************************************************************** 
+# Function: initialize_module_variables
+#
+# Modifications:
+#   Kathleen Biagas, Monday May 12, 2025
+#   Process all groups in one loop, instead of duplicating
+#   logic for 'reqlibs' and 'optlibs' separately.
+#
+# *************************************************************************** 
 #TODO: enable this feature and remove this from ensure..
 function initialize_module_variables
 {
     info "initializing module variables"
-    for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
+
+    for (( bv_i=0; bv_i < ${#grouplibs_name[*]}; ++bv_i ))
     do
-        $"bv_${reqlibs[$bv_i]}_is_enabled"
+        groupname=${grouplibs_name[$bv_i]}
+        for lib in `echo ${grouplibs_deps[$bv_i]}`;
+        do
+            $"bv_${lib}_is_enabled"
 
-        #if not enabled then skip
-        if [[ $? == 0 ]]; then
-            continue
-        fi
+            #if not enabled then skip
+            if [[ $? == 0 ]]; then
+                continue
+            fi
 
-        declare -F "bv_${reqlibs[$bv_i]}_initialize_vars" &>/dev/null
+            declare -F "bv_${lib}_initialize_vars" &>/dev/null
 
-        if [[ $? == 0 ]]; then
-            info "initialize module variables for ${reqlibs[$bv_i]}"
-            $"bv_${reqlibs[$bv_i]}_initialize_vars"
-        fi
-    done
-
-    for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
-    do
-        $"bv_${optlibs[$bv_i]}_is_enabled"
-
-        #if not enabled then skip
-        if [[ $? == 0 ]]; then
-            continue
-        fi
-
-        declare -F "bv_${optlibs[$bv_i]}_initialize_vars" &>/dev/null
-
-        if [[ $? == 0 ]]; then
-            info "initialize module variables for ${optlibs[$bv_i]}"
-            $"bv_${optlibs[$bv_i]}_initialize_vars"
-        fi
+            if [[ $? == 0 ]]; then
+                info "initialize module variables for ${lib}"
+                $"bv_${lib}_initialize_vars"
+            fi
+        done
     done
 }
 
@@ -873,133 +884,99 @@ function build_library
     $"bv_${build_lib}_build"
 }
 
+# *************************************************************************** 
+# Function: build_libraries_serial
+#
+# Modifications:
+#   Kathleen Biagas, Monday May 12, 2025
+#   Process all groups in one loop, instead of duplicating
+#   logic for 'reqlibs' and 'optlibs' separately.
+#
+# *************************************************************************** 
+
 function build_libraries_serial
 {
-    info "building required libraries"
-    for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
+    for (( bv_i=0; bv_i < ${#grouplibs_name[*]}; ++bv_i ))
     do
-        $"bv_${reqlibs[$bv_i]}_is_enabled"
+        groupname=${grouplibs_name[$bv_i]}
+        info "Building ${groupname} libraries"
+        for lib in `echo ${grouplibs_deps[$bv_i]}`;
+        do
+            $"bv_${lib}_is_enabled"
 
-        if [[ $? == 0 ]]; then
-            continue
-        fi
+            if [[ $? == 0 ]]; then
+                continue
+            fi
 
-        $"bv_${reqlibs[$bv_i]}_is_installed"
+            $"bv_${lib}_is_installed"
 
-        if [[ $? == 0 ]]; then
-            cd "$START_DIR"
-            build_library ${reqlibs[$bv_i]}
-        else
-            info "${reqlibs[$bv_i]} already installed, skipping"
-        fi
-    done
-
-    info "building optional libraries"
-    for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
-    do
-        $"bv_${optlibs[$bv_i]}_is_enabled"
-
-        if [[ $? == 0 ]]; then
-            continue
-        fi
-
-        $"bv_${optlibs[$bv_i]}_is_installed"
-
-        if [[ $? == 0 ]]; then
-            cd "$START_DIR"
-            build_library ${optlibs[$bv_i]}
-        else
-            info "${optlibs[$bv_i]} already installed, skipping"
-        fi
+            if [[ $? == 0 ]]; then
+                cd "$START_DIR"
+                build_library ${lib}
+            else
+                info "${lib} already installed, skipping"
+            fi
+        done
     done
 }
+
+# *************************************************************************** 
+# Function: build_libraries_parallel
+#
+# Modifications:
+#   Kathleen Biagas, Monday May 12, 2025
+#   Process all groups in one loop, instead of duplicating
+#   logic for 'reqlibs' and 'optlibs' separately.
+#
+# *************************************************************************** 
 
 function build_libraries_parallel
 {
     #launch all non dependent libraries in parallel..
-    info "building parallel required libraries"
-    for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
+
+    for (( bv_i=0; bv_i < ${#grouplibs_name[*]}; ++bv_i ))
     do
-        $"bv_${reqlibs[$bv_i]}_is_enabled"
+        groupname=${grouplibs_name[$bv_i]}
+        info "Building parallel ${groupname} libraries"
+        for lib in `echo ${grouplibs_deps[$bv_i]}`;
+        do
+            $"bv_${lib}_is_enabled"
 
-        if [[ $? == 0 ]]; then
-            continue
-        fi
-
-        $"bv_${reqlibs[$bv_i]}_is_installed"
-        if [[ $? == 0 ]]; then
-
-            depends_on=$("bv_${reqlibs[$bv_i]}_depends_on")
-            if [[ "$depends_on" == "" ]]; then
-                (cd "$START_DIR" && build_library ${reqlibs[$bv_i]}) &
+            if [[ $? == 0 ]]; then
+                continue
             fi
-        else
-            info "${reqlibs[$bv_i]} already installed, skipping"
-        fi
-    done
 
-    wait
-
-    #load the serial ones..
-    for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
-    do
-        $"bv_${reqlibs[$bv_i]}_is_enabled"
-
-        if [[ $? == 0 ]]; then
-            continue
-        fi
-
-        $"bv_${reqlibs[$bv_i]}_is_installed"
-
-        if [[ $? == 0 ]]; then
-            cd "$START_DIR"
-            build_library ${reqlibs[$bv_i]}
-        else
-            info "${reqlibs[$bv_i]} already installed, skipping"
-        fi
-    done
-
-    info "building parallel optional libraries"
-    for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
-    do
-        $"bv_${optlibs[$bv_i]}_is_enabled"
-
-        if [[ $? == 0 ]]; then
-            continue
-        fi
-        $"bv_${optlibs[$bv_i]}_is_installed"
-        if [[ $? == 0 ]]; then
-
-            depends_on=$("bv_${optlibs[$bv_i]}_depends_on")
-            if [[ "$depends_on" == "" ]]; then
-                (cd "$START_DIR" && build_library ${optlibs[$bv_i]}) &
+            $"bv_${lib}_is_installed"
+            if [[ $? == 0 ]]; then
+                depends_on=$("bv_${lib}_depends_on")
+                if [[ "$depends_on" == "" ]]; then
+                    (cd "$START_DIR" && build_library ${lib}) &
+                fi
+            else
+                info "${lib} already installed, skipping"
             fi
-        else
-            info "${optlibs[$bv_i]} already installed, skipping"
-        fi
+        done
+
+        wait
+
+        for lib in `echo ${grouplibs_deps[$bv_i]}`;
+        do
+            $"bv_${lib}_is_enabled"
+
+            if [[ $? == 0 ]]; then
+                continue
+            fi
+
+            $"bv_${lib}_is_installed"
+
+            if [[ $? == 0 ]]; then
+                cd "$START_DIR"
+                build_library ${lib}
+            else
+                info "${lib} already installed, skipping"
+            fi
+        done
     done
-
-    wait
-
-    #load serial
-    for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
-    do
-        $"bv_${optlibs[$bv_i]}_is_enabled"
-
-        if [[ $? == 0 ]]; then
-            continue
-        fi
-
-        $"bv_${optlibs[$bv_i]}_is_installed"
-
-        if [[ $? == 0 ]]; then
-            cd "$START_DIR"
-            build_library ${optlibs[$bv_i]}
-        else
-            info "${optlibs[$bv_i]} already installed, skipping"
-        fi
-    done
-
 }
 
 # *************************************************************************** #
