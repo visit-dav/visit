@@ -53,7 +53,7 @@
 
 #ifdef HAVE_ANARI
     #include <vtkLogger.h>
-    #include <vtkAnariRendererNode.h>
+    #include <vtkAnariSceneGraph.h>
     #include <vtkAnariPass.h>
     #include <vtkAnariVisItViewNodeFactory.h>
     #include <vtkViewNodeFactory.h>
@@ -362,27 +362,14 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
     vtkLogger::SetStderrVerbosity(vtkVerbosity);
 
     anariRendering = false;
-    anariSPP = 1;
-    anariAO = 0;
     anariLibraryName = "";
     anariLibrarySubtype = "default";
     anariRendererSubtype = "default";
-    useAnariDenoiser  = false;
-    anariLightFalloff = 1.f;
-    anariAmbientIntensity = 1.f;
-    anariMaxDepth = 0;
-    anariRValue = 1.f;
-    usdAtCommit = false;
-    usdOutputBinary = true;
-    usdOutputMaterial = true;
-    usdOutputPreviewSurface = true;
-    usdOutputMDL = true;
-    usdOutputMDLColors = true;
-    usdOutputDisplayColors = true;
+    anariRendererParameters = stringVector();
+    anariUSDParameters = stringVector();
     usingUsdDevice = false;
 
     anariPass = CreateAnariPass();
-    anariPassValid = true;
 #endif
 }
 
@@ -1351,17 +1338,7 @@ VisWinRendering::RenderRenderWindow(void)
 #ifdef HAVE_ANARI
     if(GetAnariRendering())
     {
-        if(!anariPassValid)
-        {
-            if(anariPass != nullptr)
-            {
-                anariPass->Delete();
-            }
-
-            anariPass = CreateAnariPass();
-            canvas->SetPass(anariPass);
-            anariPassValid = true;
-        }
+        canvas->SetPass(anariPass);
     }
     else
     {
@@ -3257,79 +3234,6 @@ VisWinRendering::SetAnariRendering(const bool enabled)
 }
 
 // ****************************************************************************
-// Method: VisWinRendering::SetUseAnariDenoiser
-//
-// Purpose:
-//   Sets the ANARI denoiser flag
-//
-// Arguments:
-//   enabled : true if the denoiser is enabled for rendering
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-void
-VisWinRendering::SetUseAnariDenoiser(const bool enabled)
-{
-    if(enabled != useAnariDenoiser)
-    {
-        useAnariDenoiser = enabled;
-        int value = enabled ? 1 : 0;
-        vtkAnariRendererNode::SetUseDenoiser(value, canvas);
-    }
-}
-
-// ****************************************************************************
-// Method: VisWinRendering::SetAnariSPP
-//
-// Purpose:
-//   Sets the ANARI samples per pixel
-//
-// Arguments:
-//   val : The new number of samples per pixel
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-void
-VisWinRendering::SetAnariSPP(const int val)
-{
-    if(val != anariSPP)
-    {
-        anariSPP = val;
-        vtkAnariRendererNode::SetSamplesPerPixel(val, canvas);
-    }
-}
-
-// ****************************************************************************
-// Method: VisWinRendering::SetAnariAO
-//
-// Purpose:
-//   Sets the ANARI ambient occlusion samples
-//
-// Arguments:
-//   val : the new number of ambient occlusion samples
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-void
-VisWinRendering::SetAnariAO(const int val)
-{
-    if(val != anariAO)
-    {
-        anariAO = val;
-        vtkAnariRendererNode::SetAmbientSamples(val, canvas);
-    }
-}
-
-// ****************************************************************************
 // Method: VisWinRendering::SetAnariLibraryName
 //
 // Purpose:
@@ -3349,9 +3253,9 @@ VisWinRendering::SetAnariLibraryName(const std::string name)
     if(anariLibraryName != name)
     {
         anariLibraryName = name;
-        vtkAnariRendererNode::SetLibraryName(name.c_str(), canvas);
+        auto* ad = anariPass->GetAnariDevice();
+        ad->SetupAnariDeviceFromLibrary(name.c_str(), anariLibrarySubtype.c_str());
         debug5 << "Back-end Name: " << name.c_str() << std::endl;
-        anariPassValid = false;
     }
 }
 
@@ -3375,9 +3279,9 @@ VisWinRendering::SetAnariLibrarySubtype(const std::string subtype)
     if(anariLibrarySubtype != subtype)
     {
         anariLibrarySubtype = subtype;
-        vtkAnariRendererNode::SetDeviceSubtype(subtype.c_str(), canvas);
-        std::cout << "Back-end subtype: " << subtype.c_str() << std::endl;
-        anariPassValid = false;
+        auto* ad = anariPass->GetAnariDevice();
+        ad->SetupAnariDeviceFromLibrary(anariLibraryName.c_str(), subtype.c_str());
+        debug5 << "Back-end subtype: " << subtype.c_str() << std::endl;
     }
 }
 
@@ -3401,18 +3305,20 @@ VisWinRendering::SetAnariRendererSubtype(const std::string subtype)
     if(anariRendererSubtype != subtype)
     {
         anariRendererSubtype = subtype;
-        vtkAnariRendererNode::SetRendererSubtype(subtype.c_str(), canvas);
+        auto* ar = anariPass->GetAnariRenderer();
+        ar->SetSubtype(subtype.c_str());
+        debug5 << "Renderer subtype: " << subtype.c_str() << std::endl;
     }
 }
 
 // ****************************************************************************
-// Method: VisWinRendering::SetAnariLightFalloff
+// Method: VisWinRendering::SetAnariRendererParameters
 //
 // Purpose:
-//   Sets the light falloff value used by the back-end renderer
+//   Sets the vector of param:value strings used to set ANARI renderer params.
 //
 // Arguments:
-//   val    the light falloff value
+//   rendererParams  The list of param:value strings
 //
 // Programmer:  Kevin Griffin
 // Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
@@ -3420,23 +3326,132 @@ VisWinRendering::SetAnariRendererSubtype(const std::string subtype)
 // ****************************************************************************
 
 void
-VisWinRendering::SetAnariLightFalloff(const float val)
+VisWinRendering::SetAnariRendererParameters(const stringVector &rendererParams)
 {
-    if(val != anariLightFalloff)
+    if(anariRendererParameters != rendererParams)
     {
-        anariLightFalloff = val;
-        vtkAnariRendererNode::SetLightFalloff(val, canvas);
+        auto anariDevice = this->anariPass->GetAnariDevice()->GetHandle();
+        auto anariRenderer = this->anariPass->GetAnariRenderer()->GetHandle();
+
+        if(anariDevice == nullptr || anariRenderer == nullptr)
+        {
+            debug5 << "[ANARI::SetAnariRendererParameters] ANARI handle is NULL" << std::endl;
+            return;
+        }
+
+        anariRendererParameters = rendererParams;
+        const ANARIParameter *parameterList =
+                static_cast<const ANARIParameter*>(anariGetObjectInfo(anariDevice,
+                                                                      ANARI_RENDERER,
+                                                                      anariRendererSubtype.c_str(),
+                                                                      "parameter",
+                                                                      ANARI_PARAMETER_LIST));
+
+        for (const auto& rendererParam : rendererParams)
+        {
+            std::string key = rendererParam.substr(0, rendererParam.find(";"));
+            std::string value = rendererParam.substr(rendererParam.find(";") + 1);
+            std::istringstream iss(value);
+            anari::DataType dataType = ANARI_UNKNOWN;
+
+            for (const ANARIParameter *param = parameterList; param && param->name != nullptr; ++param)
+            {
+                if (key == param->name)
+                {
+                    dataType = param->type;
+                }
+            }
+
+            switch (dataType)
+            {
+            case ANARI_BOOL: case ANARI_INT32: case ANARI_FLOAT32: case ANARI_FLOAT64:
+                if (dataType == ANARI_BOOL)
+                {
+                    int intVal;
+                    iss >> intVal;
+                    bool boolVal = (intVal == 1);
+                    anari::setParameter(anariDevice, anariRenderer, key.c_str(), boolVal);
+                }
+                else if (dataType == ANARI_INT32)
+                {
+                    int intVal;
+                    iss >> intVal;
+                    anari::setParameter(anariDevice, anariRenderer, key.c_str(), intVal);
+                }
+                else if (dataType == ANARI_FLOAT32)
+                {
+                    float floatVal;
+                    iss >> floatVal;
+                    anari::setParameter(anariDevice, anariRenderer, key.c_str(), floatVal);
+                }
+                else if (dataType == ANARI_FLOAT64)
+                {
+                    double doubleVal;
+                    iss >> doubleVal;
+                    anari::setParameter(anariDevice, anariRenderer, key.c_str(), doubleVal);
+                }
+                break;
+            case ANARI_INT32_VEC3: case ANARI_FLOAT32_VEC3: case ANARI_FLOAT64_VEC3:
+                if (dataType == ANARI_INT32_VEC3)
+                {
+                    int intVals[3];
+                    iss >> intVals[0] >> intVals[1] >> intVals[2];
+                    anari::setParameter(anariDevice, anariRenderer, key.c_str(), ANARI_INT32_VEC3, intVals);
+                }
+                else if (dataType == ANARI_FLOAT32_VEC3)
+                {
+                    float floatVals[3];
+                    iss >> floatVals[0] >> floatVals[1] >> floatVals[2];
+                    anari::setParameter(anariDevice, anariRenderer, key.c_str(), ANARI_FLOAT32_VEC3, floatVals);
+                }
+                else if (dataType == ANARI_FLOAT64_VEC3)
+                {
+                    double doubleVals[3];
+                    iss >> doubleVals[0] >> doubleVals[1] >> doubleVals[2];
+                    anari::setParameter(anariDevice, anariRenderer, key.c_str(), ANARI_FLOAT64_VEC3, doubleVals);
+                }
+                break;
+            case ANARI_INT32_VEC4: case ANARI_FLOAT32_VEC4: case ANARI_FLOAT64_VEC4:
+                if (dataType == ANARI_INT32_VEC4)
+                {
+                    int intVals[4];
+                    iss >> intVals[0] >> intVals[1] >> intVals[2] >> intVals[3];
+                    anari::setParameter(anariDevice, anariRenderer, key.c_str(), ANARI_INT32_VEC4, intVals);
+                }
+                else if (dataType == ANARI_FLOAT32_VEC4)
+                {
+                    float floatVals[4];
+                    iss >> floatVals[0] >> floatVals[1] >> floatVals[2] >> floatVals[3];
+                    anari::setParameter(anariDevice, anariRenderer, key.c_str(), ANARI_FLOAT32_VEC4, floatVals);
+                }
+                else if (dataType == ANARI_FLOAT64_VEC4)
+                {
+                    double doubleVals[4];
+                    iss >> doubleVals[0] >> doubleVals[1] >> doubleVals[2] >> doubleVals[3];
+                    anari::setParameter(anariDevice, anariRenderer, key.c_str(), ANARI_FLOAT64_VEC4, doubleVals);
+                }
+                break;
+            case ANARI_STRING:
+                anari::setParameter(anariDevice, anariRenderer, key.c_str(), value.c_str());
+                break;
+            default:
+                debug5 << "ANARI Datatype (" << dataType << ") Not Supported: " << key << " = " << value << std::endl;
+                break;
+            }
+        }
+
+        anari::commitParameters(anariDevice, anariRenderer);
     }
 }
 
 // ****************************************************************************
-// Method: VisWinRendering::SetAnariAmbientIntensity
+// Method: VisWinRendering::SetAnariUSDParameters
 //
 // Purpose:
-//   Sets the ambient intensity value used by the back-end renderer.
+//   Sets the vector of param:value strings used to set ANARI USD parameters
 //
 // Arguments:
-//   val    the ambient intensity value
+//   usdParams  The list of param:value strings
 //
 // Programmer:  Kevin Griffin
 // Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
@@ -3444,286 +3459,84 @@ VisWinRendering::SetAnariLightFalloff(const float val)
 // ****************************************************************************
 
 void
-VisWinRendering::SetAnariAmbientIntensity(const float val)
+VisWinRendering::SetAnariUSDParameters(const stringVector &usdParams)
 {
-    if(val != anariAmbientIntensity)
+    if(anariUSDParameters != usdParams)
     {
-        anariAmbientIntensity = val;
-        vtkAnariRendererNode::SetAmbientIntensity(val, canvas);
+        auto anariDevice = this->anariPass->GetAnariDevice()->GetHandle();
+
+        if(anariDevice == nullptr)
+        {
+            debug5 << "[ANARI::SetAnariUSDParameters] Device is NULL" << std::endl;
+            return;
+        }
+
+        anariUSDParameters = usdParams;
+        const ANARIParameter *parameterList =
+                static_cast<const ANARIParameter*>(anariGetObjectInfo(anariDevice,
+                                                                      ANARI_DEVICE,
+                                                                      anariLibrarySubtype.c_str(),
+                                                                      "parameter",
+                                                                      ANARI_PARAMETER_LIST));
+
+        for (const auto& usdParam : usdParams)
+        {
+            std::string key = usdParam.substr(0, usdParam.find(";"));
+            std::string value = usdParam.substr(usdParam.find(";") + 1);
+            std::istringstream iss(value);
+            anari::DataType dataType = ANARI_UNKNOWN;
+
+            debug5 << "USD Device Parameter: " << key << " = " << value << std::endl;
+
+            for (const ANARIParameter *param = parameterList; param && param->name != nullptr; ++param)
+            {
+                if (key == param->name)
+                {
+                    dataType = param->type;
+                }
+            }
+
+            switch (dataType)
+            {
+            case ANARI_BOOL: case ANARI_INT32: case ANARI_FLOAT32: case ANARI_FLOAT64:
+                if (dataType == ANARI_BOOL)
+                {
+                    int intVal;
+                    iss >> intVal;
+                    bool boolVal = (intVal == 1);
+                    anari::setParameter(anariDevice, anariDevice, key.c_str(), boolVal);
+                }
+                else if (dataType == ANARI_INT32)
+                {
+                    int intVal;
+                    iss >> intVal;
+                    anari::setParameter(anariDevice, anariDevice, key.c_str(), intVal);
+                }
+                else if (dataType == ANARI_FLOAT32)
+                {
+                    float floatVal;
+                    iss >> floatVal;
+                    anari::setParameter(anariDevice, anariDevice, key.c_str(), floatVal);
+                }
+                else if (dataType == ANARI_FLOAT64)
+                {
+                    double doubleVal;
+                    iss >> doubleVal;
+                    anari::setParameter(anariDevice, anariDevice, key.c_str(), doubleVal);
+                }
+                break;
+            case ANARI_STRING:
+                anari::setParameter(anariDevice, anariDevice, key.c_str(), dataType, value.c_str());
+                break;
+            default:
+                debug5 << "ANARI Datatype (" << dataType << ") Not Supported: " << key << " = " << value << std::endl;
+                break;
+            }
+        }
+
+        anari::commitParameters(anariDevice, anariDevice);
     }
 }
-
-// ****************************************************************************
-// Method: VisWinRendering::SetAnariMaxDepth
-//
-// Purpose:
-//   Sets the max depth value used by the back-end renderer.
-//
-// Arguments:
-//   val    the max depth value
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-void
-VisWinRendering::SetAnariMaxDepth(const int val)
-{
-    if(val != anariMaxDepth)
-    {
-        anariMaxDepth = val;
-        vtkAnariRendererNode::SetMaxDepth(val, canvas);
-    }
-}
-
-// ****************************************************************************
-// Method: VisWinRendering::SetAnariRValue
-//
-// Purpose:
-//   Sets the R value used by the back-end renderer.
-//
-// Arguments:
-//   val    the R value
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
- void
- VisWinRendering::SetAnariRValue(const float val)
- {
-    if(val != anariRValue)
-    {
-        anariRValue = val;
-        vtkAnariRendererNode::SetROptionValue(val, canvas);
-    }
- }
-
-// ****************************************************************************
-// Method: VisWinRendering::SetAnariDebugMethod
-//
-// Purpose:
-//   Sets the debug method to use by the back-end debug renderer.
-//
-// Arguments:
-//   method     the debug method
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-void
-VisWinRendering::SetAnariDebugMethod(const std::string method)
-{
-    if(anariDebugMethod != method)
-    {
-        anariDebugMethod = method;
-        vtkAnariRendererNode::SetDebugMethod(method.c_str(), canvas);
-    }
-}
-
-// ****************************************************************************
-// Method: VisWinRendering::SetUsdDir
-//
-// Purpose:
-//   Sets the directory for saving USD output from the USD back-end.
-//
-// Arguments:
-//   dir        the output directory
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-void
-VisWinRendering::SetUsdDir(const std::string dir)
-{
-    if(usdDir != dir)
-    {
-        usdDir = dir;
-        vtkAnariRendererNode::SetUsdDirectory(usdDir.c_str(), canvas);
-    }
-}
-
-// ****************************************************************************
-// Method: VisWinRendering::SetUsdAtCommit
-//
-// Purpose:
-//   Sets the output USD at anariCommit flag for the USD back-end.
-//
-// Arguments:
-//   val    true if USD output is created when anariCommit is called,
-//          otherwise USD output is created when anariRenderFrame is called
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
- void
- VisWinRendering::SetUsdAtCommit(const bool val)
- {
-    if(val != usdAtCommit)
-    {
-        usdAtCommit = val;
-        vtkAnariRendererNode::SetUsdAtCommit(val, canvas);
-    }
- }
-
-// ****************************************************************************
-// Method: VisWinRendering::SetUsdOutputBinary
-//
-// Purpose:
-//   Sets the output USD in binary format flag for the USD back-end.
-//
-// Arguments:
-//   val    true if USD output will be binary, otherwise USD output is text.
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
- void
- VisWinRendering::SetUsdOutputBinary(const bool val)
- {
-    if(val != usdOutputBinary)
-    {
-        usdOutputBinary = val;
-        vtkAnariRendererNode::SetUsdOutputBinary(val, canvas);
-    }
- }
-
-// ****************************************************************************
-// Method: VisWinRendering::SetUsdOutputMaterial
-//
-// Purpose:
-//   Sets the output USD material objects flag for the USD back-end.
-//
-// Arguments:
-//   val    true if USD material objects should be output, otherwise false
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
- void
- VisWinRendering::SetUsdOutputMaterial(const bool val)
- {
-    if(val != usdOutputMaterial)
-    {
-        usdOutputMaterial = val;
-        vtkAnariRendererNode::SetUsdOutputMaterial(val, canvas);
-    }
- }
-
-// ****************************************************************************
-// Method: VisWinRendering::SetUsdOutputPreviewSurface
-//
-// Purpose:
-//   Sets the output USD preview surface prims for material objects flag for
-//   the USD back-end.
-//
-// Arguments:
-//   val    true if USD previewsurface shader prims should be output for material
-//          objects, otherwise false
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
- void
- VisWinRendering::SetUsdOutputPreviewSurface(const bool val)
- {
-    if(val != usdOutputPreviewSurface)
-    {
-        usdOutputPreviewSurface = val;
-        vtkAnariRendererNode::SetUsdOutputPreviewSurface(val, canvas);
-    }
- }
-
-// ****************************************************************************
-// Method: VisWinRendering::SetUsdOutputMDL
-//
-// Purpose:
-//   Sets the output USD mdl shader prims for material objects flag for the USD
-//   back-end.
-//
-// Arguments:
-//   val    true if USD mdl shader prims should be output for material objects,
-//          otherwise false
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
- void
- VisWinRendering::SetUsdOutputMDL(const bool val)
- {
-    if(val != usdOutputMDL)
-    {
-        usdOutputMDL = val;
-        vtkAnariRendererNode::SetUsdOutputMDL(val, canvas);
-    }
- }
-
-// ****************************************************************************
-// Method: VisWinRendering::SetUsdOutputMDLColors
-//
-// Purpose:
-//   Sets the output USD mdl colors for material objects flag for the USD
-//   back-end.
-//
-// Arguments:
-//   val    true if USD mdl colors should be included in the output for
-//          material objects, otherwise false
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
- void
- VisWinRendering::SetUsdOutputMDLColors(const bool val)
- {
-    if(val != usdOutputMDLColors)
-    {
-        usdOutputMDLColors = val;
-        vtkAnariRendererNode::SetUsdOutputMDLColors(val, canvas);
-    }
- }
-
-// ****************************************************************************
-// Method: VisWinRendering::SetUsdOutputDisplayColors
-//
-// Purpose:
-//   Sets the output USD display colors flag for the USD back-end.
-//
-// Arguments:
-//   val    true if USD display colors should be included in the output,
-//          otherwise false
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
- void
- VisWinRendering::SetUsdOutputDisplayColors(const bool val)
- {
-    if(val != usdOutputDisplayColors)
-    {
-        usdOutputDisplayColors = val;
-        vtkAnariRendererNode::SetUsdOutputDisplayColors(val, canvas);
-    }
- }
 
 // ****************************************************************************
 // Method: VisWinRendering::SetUsingUsdDevice
@@ -3745,8 +3558,6 @@ VisWinRendering::SetUsdDir(const std::string dir)
     if(val != usingUsdDevice)
     {
         usingUsdDevice = val;
-        // Implemented in a newer version of VTK
-        // vtkAnariRendererNode::SetUsingUsdDevice(val, canvas);
     }
  }
 
@@ -3771,20 +3582,20 @@ VisWinRendering::CreateAnariPass()
     vtkViewNodeFactory *factory = anariPass->GetViewNodeFactory();
 
     factory->RegisterOverride("vtkVisItDataSetMapper",
-                            vtkAnariVisItViewNodeFactory::pd_maker);
+        vtkAnariVisItViewNodeFactory::pd_maker);
     factory->RegisterOverride("vtkPointGlyphMapper",
-                            vtkAnariVisItViewNodeFactory::pd_maker);
+            vtkAnariVisItViewNodeFactory::pd_maker);
     factory->RegisterOverride("vtkMultiRepMapper",
-                            vtkAnariVisItViewNodeFactory::pd_maker);
+            vtkAnariVisItViewNodeFactory::pd_maker);
     factory->RegisterOverride("vtkMeshPlotMapper",
-                            vtkAnariVisItViewNodeFactory::pd_maker);
+            vtkAnariVisItViewNodeFactory::pd_maker);
     factory->RegisterOverride("vtkOpenGLMeshPlotMapper",
-                            vtkAnariVisItViewNodeFactory::pd_maker);
+            vtkAnariVisItViewNodeFactory::pd_maker);
     factory->RegisterOverride("vtkVisItCubeAxesActor",
-                            vtkAnariVisItViewNodeFactory::cube_axes_act_maker);
+            vtkAnariVisItViewNodeFactory::cube_axes_act_maker);
     factory->RegisterOverride("vtkVisItAxisActor",
-                            vtkAnariVisItViewNodeFactory::axis_act_maker);
-
+            vtkAnariVisItViewNodeFactory::axis_act_maker);
+            
     return anariPass;
 }
 #endif

@@ -12,10 +12,8 @@ function bv_vtk95_enable
     DO_VTK94="no"
 
     if [[ "$DO_MESAGL" == "no" ]] ; then
-        if [[ "$OPSYS" == "Darwin" ]]; then
-            # do nothing
-        else
-            bv_osmesa_enable
+        if [[ "$OPSYS" != "Darwin" ]] ; then
+            bv_osmesa_enable            
         fi
     fi
 }
