@@ -287,6 +287,7 @@ protected:
     int iavpres_;
     int iavtemp_;
     int iavsndv_;
+    int iavvf_;
 
     bool sesame_haspres_;
     bool sesame_hastemp_;

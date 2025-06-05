@@ -63,6 +63,7 @@ AMRreader::init()
     iavpres_ = 0;
     iavtemp_ = 0;
     iavsndv_ = 0;
+    iavvf_   = 0;
 }
 
 // Modifications:
@@ -344,10 +345,33 @@ getAMRinfo( hid_t gid )
         debug1 << "getAMRinfo(): ncvs = " << ncvs_ << ", navs = " << navs_ << "\n";
     }
 
+    // Check for prescribed indices for the AVs
+    htri_t est = H5Aexists( gid, "index_av" );
+    int index_av[4];
+    bool read_index_av = false;
+    if (est > 0)
+    {
+        aid = H5Aopen_name( gid, "index_av" );
+        if( aid<0 )
+        {
+            debug1 << "Did not find index_av, using defaults.\n";
+        }
+        else
+        {
+            H5Aread( aid, H5T_NATIVE_INT, index_av );
+            read_index_av = true;
+            iavpres_ = index_av[0];
+            iavtemp_ = index_av[1];
+            iavsndv_ = index_av[2];
+            iavvf_   = index_av[3];
+            H5Aclose(aid);
+        }
+    }
+
     bool found_eos = false;
 
     // eos
-    htri_t est = H5Aexists( gid, amr_idealname );
+    est = H5Aexists( gid, amr_idealname );
     if( est>0 )
     {
         aid = H5Aopen_name( gid, amr_idealname );
@@ -452,9 +476,13 @@ getAMRinfo( hid_t gid )
         icvpres_ = icvmomz_+1;
         icvtemp_ = icvmomz_+2;
 
-        iavsndv_ = 4;
+        if (!read_index_av)
+        {
+            iavsndv_ = 4;
+            iavvf_ = 5+nspec_;
+        }
 
-        eos_ = new GenMixEOS(nspec_);
+        eos_ = new GenMixEOS(nspec_, iavvf_);
 
         found_eos = true;
     }
@@ -506,7 +534,7 @@ getAMRinfo( hid_t gid )
     est = H5Aexists( gid, amr_jwljwlname );
     if( est>0 )
     {
-        eos_ = new JwlJwlEOS();
+        eos_ = new JwlJwlEOS(navs_);
         aid = H5Aopen_name( gid, amr_jwljwlname );
         H5Aclose(aid);
 
@@ -559,24 +587,12 @@ getAMRinfo( hid_t gid )
         }
     }
 
-    // Check for prescribed indices for the AVs
-    est = H5Aexists( gid, "index_av" );
-    if (est > 0)
+    if (read_index_av) 
     {
-        aid = H5Aopen_name( gid, "index_av" );
-        if( aid<0 )
-        {
-            debug1 << "Did not find index_av, using defaults.\n";
-        }
-        else
-        {
-            int ibuf[3];
-            H5Aread( aid, H5T_NATIVE_INT, ibuf );
-            iavpres_ = ibuf[0];
-            iavtemp_ = ibuf[1];
-            iavsndv_ = ibuf[2];
-            H5Aclose(aid);
-        }
+        iavpres_ = index_av[0];
+        iavtemp_ = index_av[1];
+        iavsndv_ = index_av[2];
+        iavvf_   = index_av[3];
     }
 
 
