@@ -1828,6 +1828,13 @@ TecplotFEConnectivity::NewInstance() const
     return new TecplotFEConnectivity(*this);
 }
 
+// ****************************************************************************
+// Modifications:
+//   Kathleen Biagas, Wed June 4, 2025.
+//   Reduce likelihood of arithmetic overflow by casting to long long.
+//
+// ****************************************************************************
+
 bool
 TecplotFEConnectivity::Read(FILE *f, const TecplotZone &zone, 
     const TecplotDataRecord *data)
@@ -1836,8 +1843,8 @@ TecplotFEConnectivity::Read(FILE *f, const TecplotZone &zone,
     if(data->zoneNumberForConnectivity == -1)
     {
         zoneConnectivityOffset = FTELL(f);
-        zoneConnectivitySize = zone.GetNumElements() * 
-                               TecplotNumNodesForZoneType(zone.zoneType) * 4;
+        zoneConnectivitySize = static_cast<long long>(zone.GetNumElements()) * 
+                               static_cast<long long>(TecplotNumNodesForZoneType(zone.zoneType)) * 4;
         FSEEK(f, zoneConnectivitySize, SEEK_CUR);
     }
 
@@ -1845,8 +1852,8 @@ TecplotFEConnectivity::Read(FILE *f, const TecplotZone &zone,
        zone.rawLocalFaceNeighbors > 0)
     {
         raw1to1FaceNeighborOffset = FTELL(f);
-        raw1to1FaceNeighborSize = zone.GetNumElements() *
-                                  TecplotNumFacesForZoneType(zone.zoneType) * 4;
+        raw1to1FaceNeighborSize = static_cast<long long>(zone.GetNumElements()) *
+                                  static_cast<long long>(TecplotNumFacesForZoneType(zone.zoneType)) * 4;
         FSEEK(f, raw1to1FaceNeighborSize, SEEK_CUR);
     }
 
@@ -1854,8 +1861,8 @@ TecplotFEConnectivity::Read(FILE *f, const TecplotZone &zone,
        zone.numUserDefinedNeighborConnections != 0)
     {
         faceNeighborConnectionOffset = FTELL(f);
-        faceNeighborConnectionSize = zone.numUserDefinedNeighborConnections *
-                                     TecplotNumNodesForZoneType(zone.zoneType) * 4;
+        faceNeighborConnectionSize = static_cast<long long>(zone.numUserDefinedNeighborConnections) *
+                                     static_cast<long long>(TecplotNumNodesForZoneType(zone.zoneType)) * 4;
         FSEEK(f, faceNeighborConnectionSize, SEEK_CUR);
     }
 
