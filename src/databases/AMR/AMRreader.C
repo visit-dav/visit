@@ -377,7 +377,7 @@ getAMRinfo( hid_t gid )
         aid = H5Aopen_name( gid, amr_idealname );
         H5Aread( aid, H5T_NATIVE_FLOAT, rbuf );
         H5Aclose(aid);
-        
+
         nspec_ = 1;
 
         eos_ = new IdealEOS( rbuf[0], rbuf[1] );
@@ -566,9 +566,9 @@ getAMRinfo( hid_t gid )
             int ibuf[5];
             H5Aread( aid, H5T_NATIVE_INT, ibuf );
             icvdens_ = ibuf[0];
-            icvmomx_ = ibuf[1]; 
+            icvmomx_ = ibuf[1];
 
-            if (icvmomx_ == -1) 
+            if (icvmomx_ == -1)
             {
                 icvmomy_ = -1;
                 icvmomz_ = -1;
@@ -587,7 +587,7 @@ getAMRinfo( hid_t gid )
         }
     }
 
-    if (read_index_av) 
+    if (read_index_av)
     {
         iavpres_ = index_av[0];
         iavtemp_ = index_av[1];
@@ -981,7 +981,7 @@ readAMRadditionData()
     }
 
     if (sesame_hastemp_)
-        {
+    {
         datid = H5Dopen1( gid, amr_tmpname );
         if( datid<0 )
         {
