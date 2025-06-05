@@ -162,6 +162,40 @@ def test_amr_multi_root():
     test(mesh_name, tag_name, var_name, do_mesh_plot)
     CloseDatabase(data)
 
+def test_amr_partial_data_gen_mix():
+    TestSection("AMR General Mixture Incomplete Data")
+    data = data_path(pjoin(AMR_test_dir,"partial/gen_mix.amr"))
+    OpenDatabase(data, 0, "AMR")
+    mesh_name = "AMR"
+    tag_name = "GenMix_icp_ss"
+    var_name = "AMR/sound speed"
+    do_mesh_plot = False
+    test(mesh_name, tag_name, var_name, do_mesh_plot)
+
+    tag_name = "GenMix_icp_vf"
+    var_name = "AMR/Additional/volume fraction 3"
+    do_mesh_plot = False
+    test(mesh_name, tag_name, var_name, do_mesh_plot)
+
+    CloseDatabase(data)
+
+def test_amr_partial_data_multi_ideal():
+    TestSection("AMR Multiple Ideal Gas Incomplete Data")
+    data = data_path(pjoin(AMR_test_dir,"partial/multi_ideal.amr"))
+    OpenDatabase(data, 0, "AMR")
+    mesh_name = "AMR"
+    tag_name = "Multi_ideal_te"
+    var_name = "AMR/total energy"
+    do_mesh_plot = False
+    test(mesh_name, tag_name, var_name, do_mesh_plot)
+
+    tag_name = "Multi_ideal_rho2"
+    var_name = "AMR/Species Density/2"
+    do_mesh_plot = False
+    test(mesh_name, tag_name, var_name, do_mesh_plot)
+
+    CloseDatabase(data)
+
 def main():
     test_amr_ideal_gas()
     test_amr_jwlbtd()
@@ -170,6 +204,8 @@ def main():
     test_amr_igtil()
     test_amr_genmix()
     test_amr_multi_root()
+    test_amr_partial_data_gen_mix()
+    test_amr_partial_data_multi_ideal()
 
 main()
 Exit()
