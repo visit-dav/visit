@@ -326,8 +326,8 @@ Values in Range   Map to this Color
 +0.95...+inf           red
 ===============   =================
 
-Banded Coloring with Continous Color Table
-""""""""""""""""""""""""""""""""""""""""""
+Banded Coloring with Continuous Color Table
+"""""""""""""""""""""""""""""""""""""""""""
 
 The input variable's range is ``[-1...+1]`` and this range needs to be mapped into the color-table range ``[0...1]``.
 This results in color table *positions* for the four colors to be used in the mapping table above...
@@ -465,6 +465,14 @@ The Crameri color tables define five broad classes of color tables...
 In addition, *discrete* versions consisting of 10 colors from their associated *main* color table are defined.
 
 These color tables all have the ``Color Blind Safe`` and ``Crameri`` tags and are named ``<name>-<class>-<count>`` where ``<name>`` is the specific color table in the Crameri set of color tables, ``<class>`` is one of the five classes defined above and ``<count>`` is defined only for discrete color tables and indicates the number of colors in the table.
+
+The CMOcean color tables
+""""""""""""""""""""""""
+
+The `cmocean color maps <https://matplotlib.org/cmocean/>`_ are designed for oceanographic variables and analysis.
+These are the same set of color maps available in Python's ``cmocean`` module for ``matplotlib``.
+These tables are all tagged with ``CMOcean`` tag and include ``Sequential``, ``Diverging`` and/or ``Cyclic`` tags, as appropriate.
+These tables are also designed to provide some degree of (~50%) color blind safety so they are also tagged ``Color Blind Safe``.
 
 .. _Filtering_With_Tags:
 

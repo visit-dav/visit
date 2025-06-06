@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# Modifications:
+#   Kathleen Biagas, Monday May 12, 2025
+#   Added 'explicitlibs' group.
+#   Removed 'parseXmlModules' as it was used to separately parse the non-group
+#   'required' and 'optional' tags that are no longer used.
+#    All libraries are listed in only one of the groups: 'required', 'optional'
+#    or 'explicit' and are parsed in the 'parseXmlGroupModules' function.
+
 declare -a xmlp_filecontents
 declare -a xmlp_licenses
 declare -a xmlp_licenses_range
@@ -7,6 +15,7 @@ declare -a xmlp_alllibs
 declare -a xmlp_tmp_array
 declare -a xmlp_reqlibs
 declare -a xmlp_optlibs
+declare -a xmlp_explicitlibs
 declare -a xmlp_grouplibs_name
 declare -a xmlp_grouplibs_deps
 declare -a xmlp_grouplibs_comment
@@ -102,37 +111,6 @@ function readXmlModuleFile
     done
 
     return 1
-}
-
-function parseXmlModules
-{
-    local startReading=0
-    local x=0
-    local startPattern=$1
-    local endPattern=$2
-    local lstart=$3
-    local lend=$4
-
-    xmlp_tmp_array=()
-    #find required tag and parse all its parameters..
-    for (( i=$lstart; i < $lend; ++i ))
-    do
-        if [[ ${xmlp_filecontents[$i]} == *$endPattern* ]]; then
-            startReading=0
-        fi
-
-        if [[ $startReading == 1 ]]; then
-            #remove everything to first string..
-            local tmp="${xmlp_filecontents[$i]}"
-            tmp=`echo $tmp | sed -e s/^.*=\"// -e s/\".*$//`
-            xmlp_tmp_array[$x]="$tmp"
-            let x++
-        fi
-
-        if [[ ${xmlp_filecontents[$i]} == *$startPattern* ]]; then
-            startReading=1
-        fi
-    done
 }
 
 function parseXmlGroupModules
@@ -259,9 +237,11 @@ function parseXmlModuleContents
     local lstart=-1
     local lend=-1
     local i=0
+    local groupname=""
 
     xmlp_reqlibs=()
     xmlp_optlibs=()
+    xmlp_explicitlibs=()
     xmlp_grouplibs_name=()
     xmlp_grouplibs_deps=()
     xmlp_grouplibs_comment=()
@@ -299,38 +279,42 @@ function parseXmlModuleContents
 
     #echo "parsing license $license, start=$lstart, end=$lend"
 
-    #parse required
-    parseXmlModules "<required>" "</required>" $lstart $lend
-    xmlp_reqlibs=( "${xmlp_tmp_array[@]}" )
-
-    #parse optional
-    parseXmlModules "<optional>" "</optional>" $lstart $lend
-    xmlp_optlibs=( "${xmlp_tmp_array[@]}" )
-
-    #parse any groups
+    #parse all groups
     parseXmlGroupModules $lstart $lend
 
-    if [[   ${#xmlp_reqlibs[*]} == 0 || 
-                ${#xmlp_optlibs[*]} == 0 ]]; then
-        echo "Required and Optional Modules not present in module files"
-        return 0
-    fi
+    for (( i = 0; i < ${#xmlp_grouplibs_name[*]}; ++i ))
+    do
+        groupname=${xmlp_grouplibs_name[$i]}
+        if [[ $groupname == "required" ]] ; then
+            xmlp_reqlibs=( ${xmlp_grouplibs_deps[$i]} )
+        elif [[ $groupname == "optional" ]] ; then
+            xmlp_optlibs=( ${xmlp_grouplibs_deps[$i]} )
+        elif [[ $groupname == "explicit" ]] ; then
+            xmlp_explicitlibs=( ${xmlp_grouplibs_deps[$i]} )
+        fi
+        #echo "group name: $groupname"
+        #echo "group deps: ${xmlp_grouplibs_deps[$i]}"
+    done
 
     #for (( i = 0; i < ${#xmlp_reqlibs[*]}; ++i ))
     #do
     #    echo "required: ${xmlp_reqlibs[$i]}"
     #done
 
-    #for (( i = 0; i < ${#xml_optlibs[*]}; ++i ))
+    #for (( i = 0; i < ${#xmlp_optlibs[*]}; ++i ))
     #do
     #    echo "optional: ${xmlp_optlibs[$i]}"
     #done
 
-    #for (( i = 0; i < ${#xmlp_grouplibs_name[*]}; ++i ))
+    #for (( i = 0; i < ${#xmlp_explicitlibs[*]}; ++i ))
     #do
-    #    echo "group names: ${xmlp_grouplibs_name[$i]}"
-    #    echo "group deps: ${xmlp_grouplibs_deps[$i]}"
-    #done
+    #    echo "extra: ${xmlp_explicitlibs[$i]}"
+
+    if [[   ${#xmlp_reqlibs[*]} == 0 || 
+                ${#xmlp_optlibs[*]} == 0 ]]; then
+        echo "Required and Optional Modules not present in module files"
+        return 0
+    fi
     return 1
 }
 

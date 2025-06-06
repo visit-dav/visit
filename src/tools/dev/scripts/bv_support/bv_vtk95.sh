@@ -12,8 +12,8 @@ function bv_vtk95_enable
     DO_VTK94="no"
 
     if [[ "$DO_MESAGL" == "no" ]] ; then
-        if [[ "$OPSYS" != "Darwin" ]] ; then
-            bv_osmesa_enable            
+        if [[ "$OPSYS" == "Linux" ]]; then
+            bv_osmesa_enable
         fi
     fi
 }
@@ -504,7 +504,10 @@ function build_vtk95
     vopts="${vopts} -DOPENGL_EGL_INCLUDE_DIR:PATH=\"\""
     vopts="${vopts} -DOPENGL_egl_LIBRARY:FILEPATH=\"\""
     vopts="${vopts} -DVTK_OPENGL_HAS_EGL:BOOL=OFF"
-    vopts="${vopts} -DVTK_USE_X:BOOL=ON"
+
+    if [[ "$OPSYS" == "Linux" ]]; then
+        vopts="${vopts} -DVTK_USE_X:BOOL=ON"
+    fi
 
     # Use Mesa as GL?
     if [[ "$DO_MESAGL" == "yes" ]] ; then

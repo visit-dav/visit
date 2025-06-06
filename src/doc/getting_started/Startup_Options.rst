@@ -40,7 +40,7 @@ USAGE: visit [options]::
         -launchengine <host> Launch an engine at startup. The <host> parameter
                              is optional. If it is not specified, the engine
                              will be launched on the local host. If you wish
-                             to launch an engine on a remote host, specify 
+                             to launch an engine on a remote host, specify
                              the host's name as the <host> parameter.
         -nosplash            Do not display the splash screen at startup.
 
@@ -73,7 +73,7 @@ USAGE: visit [options]::
                              page-flipping, or 'CrystalEyes' mode.
         -nowindowmetrics     Prevents X11 from grabbing and moving a test
                              widget used in calculating window borders. This
-                             option can be useful if VisIt hangs when 
+                             option can be useful if VisIt hangs when
                              displaying to an Apple X-server.
 
     Version options
@@ -100,7 +100,7 @@ USAGE: visit [options]::
     Parallel launch options
     ---------------------------------------------------------------------------
         Notes: All of these options are ordinarily obtained from host profiles.
-        However, the command line options override anything in the profiles. 
+        However, the command line options override anything in the profiles.
 
         When parallel arguments are added but the engine is not the
         component being launched, -launchengine is implied.  Explicitly
@@ -131,7 +131,7 @@ USAGE: visit [options]::
     ---------------------------------------------------------------------------
         Notes: These options should only be used with parallel clusters that
         have graphics cards.  If you are using a serial version of VisIt, you
-        are already getting hardware acceleration and these options are not 
+        are already getting hardware acceleration and these options are not
         needed.  Furthermore, you must be in scalable rendering mode for VisIt
         to utilize a cluster's GPUs.  By default, VisIt is configured to
         switch into scalable rendering mode when rendering complexity exceeds
@@ -168,9 +168,9 @@ USAGE: visit [options]::
                              by the same processor but can also lead to poor
                              balance when only a subset of domains is selected.
         -lb-random           Randomly assign domains to processors.
-        -allowdynamic        Dedicate one processor to spreading the work 
+        -allowdynamic        Dedicate one processor to spreading the work
                              dynamically among the other processors.  This mode
-                             has limitations in the types of queries it can 
+                             has limitations in the types of queries it can
                              perform.  Under development.
         -lb-stream           Similar to -lb-block, but have the domains travel
                              down the pipeline one at a time, instead of all
@@ -203,7 +203,7 @@ USAGE: visit [options]::
 
         Note that the differences VisIt will compute in this mode are single
         precision. This is true regardless of whether the input data is itself
-        double precision. VisIt will convert double precision to single 
+        double precision. VisIt will convert double precision to single
         precision before processing it. Although this is a result of earlier
         visualization-specific design requirements and constraints, the intention
         is that eventually double precision will be supported.
@@ -240,15 +240,15 @@ USAGE: visit [options]::
         -noint               Disable interruption capability.
         -nopty               Run without PTYs.
         -norun <compname>    Don't run the specified component, but instead
-                             print the environment variables to set and the 
-                             command to run when launching a specific 
+                             print the environment variables to set and the
+                             command to run when launching a specific
                              component. For example, '-norun engine_par' will
-                             show the full launch command for the parallel 
+                             show the full launch command for the parallel
                              engine without executing it.
         -verbose             Prints status information during pipeline
                              execution.
         -dir <directory>     Run a version of VisIt in the specified directory.
-                             The directory argument should specify the 
+                             The directory argument should specify the
                              path to a VisIt installation directory.
                              /bin is automatically appended to this path.
         -forceversion <ver>  Force the given version.  Overrides all
@@ -280,7 +280,7 @@ USAGE: visit [options]::
                              is used as the cycle number. Do a 'man 7 regex'
                              to get more information on regular expression
                              syntax.
-        -ui-bcast-thresholds <int1> <int2> 
+        -ui-bcast-thresholds <int1> <int2>
                              Two integers controlling behavior of parallel
                              engine waiting in a broadcast for the next RPC
                              from the viewer. VisIt used to rely solely upon
@@ -326,7 +326,9 @@ USAGE: visit [options]::
                              hang around, tying up parallel compute resources,
                              following an exit-triggering error condition on
                              any one process.
-                     
+        -python-log-file     A string for the name of the log file in which visit
+                             records python cli methods (default=visitlog.py)
+
     Developer options (most for xml2... tools)
     ---------------------------------------------------------------------------
         -public              xml2cmake: force install plugins publicly
@@ -339,7 +341,7 @@ USAGE: visit [options]::
 
     Debugging options
     ---------------------------------------------------------------------------
-        Note: Debugging options may degrade performance 
+        Note: Debugging options may degrade performance
     ---------------------------------------------------------------------------
         -debug <level>       Run with <level> levels of output logging.
                              <level> must be between 1 and 5. This will generate
@@ -388,11 +390,11 @@ USAGE: visit [options]::
         -env                 Print env. variables VisIt will use when run.
         -dump (dump_dir)     Dump intermediate results from AVT filters,
                              scalably rendered images, and html pages.
-                             Takes an optional argument that specifies the 
+                             Takes an optional argument that specifies the
                              directory for -dump output files.
-        -info-dump (dump_dir) 
-                             Dump html pages only. 
-                             Takes an optional argument that specifies the 
+        -info-dump (dump_dir)
+                             Dump html pages only.
+                             Takes an optional argument that specifies the
                              directory for -info-dump output files.
         -gdb <args> <comp>   Run gdb with <args> on component <comp>.
                              Default <args> is whitespace.
@@ -444,7 +446,7 @@ USAGE: visit [options]::
                              Run with MallocDebug:
                              Perl does not seem to be happy with libMallocDebug
                              so you can run the GUI like this:
-                             % visit -cli 
+                             % visit -cli
                              >>> OpenGUI('-debug-malloc', 'MallocDebug', 'gui')
                              Connect to the gui with MallocDebug and do your
                              sampling.

@@ -36,6 +36,9 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Added command recording for Annotation Objects.</li>
   <li>Added new surface rendering option using <a href="https://github.com/KhronosGroup/ANARI-SDK">ANARI</a>.</li>
+  <li>Added support to the AMR plugin for reading multiple AMR roots, multiple species, and mixtrue equations of state.</li>
+  <li><a href="https://matplotlib.org/cmocean/">cmocean</a> color maps were added.</li>
+  <li>Added '-python-log-file' command line option to control the name of the file used to log python methods (default='visitlog.py').</li>
 </ul>
 
 <a name="Advanced_features"></a>
@@ -109,6 +112,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>3D Text Annotation's relative height widget has been fixed so that whether the value is changed via the spin box up/down arrows or a new value is typed, the widget will update and so will the height of the text.</li>
   <li>View computations become garbled when Viewport Coordinate values are set outside the range of [0,1]. The docs specify the values should be in this range, and they are now automatically clamped to this range when being set via the GUI or CLI.</li>
   <li>Fixed a bug crashing viewer if label tick spacing was too cramped exceeding a builtin threshold of 200 labels.</li>
+  <li>Fixed a Tecplot reader bug that crashed the engine.</li>
 </ul>
 
 <a name="Build_features"></a>
@@ -120,6 +124,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug where cloning and checking out VisIt could fail silently without providing error messages.</li>
   <li>Added support for building <code>anari</code> to <code>build_visit</code> to allow building VisIt with ANARI renderingsupport.</li>
   <li>Updated VTK build script, <code>bv_vtk.sh</code>, to enable ANARI rendering module in VTK.</li>
+  <li>The following command-line options were removed from the main build_visit script: <code>--all-io, --dbio-only, --nonio and  --advanced</code>.  This was done to simplify maintenance and addition of new modules.  <code>--optional</code> still turns on most optional libraries. <code>--no-thirdparty</code> still turns off the required libraries. Otherwise individual libraries can be enabled/disabled by <code>--</code> or <code>--no</code> syntax e.g. <code>--mpich --no-python</code>.  Please run <code>build_visit --help</code> for more information on available options.</li>
 </ul>
 
 <a name="Dev_changes"></a>
