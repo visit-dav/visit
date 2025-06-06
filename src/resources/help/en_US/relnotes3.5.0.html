@@ -113,6 +113,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>3D Text Annotation's relative height widget has been fixed so that whether the value is changed via the spin box up/down arrows or a new value is typed, the widget will update and so will the height of the text.</li>
   <li>View computations become garbled when Viewport Coordinate values are set outside the range of [0,1]. The docs specify the values should be in this range, and they are now automatically clamped to this range when being set via the GUI or CLI.</li>
   <li>Fixed a bug crashing viewer if label tick spacing was too cramped exceeding a builtin threshold of 200 labels.</li>
+  <li>Fixed a Tecplot reader bug that crashed the engine.</li>
 </ul>
 
 <a name="Build_features"></a>
