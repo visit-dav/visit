@@ -3584,17 +3584,17 @@ VisWinRendering::CreateAnariPass()
     factory->RegisterOverride("vtkVisItDataSetMapper",
         vtkAnariVisItViewNodeFactory::pd_maker);
     factory->RegisterOverride("vtkPointGlyphMapper",
-            vtkAnariVisItViewNodeFactory::pd_maker);
+        vtkAnariVisItViewNodeFactory::pd_maker);
     factory->RegisterOverride("vtkMultiRepMapper",
-            vtkAnariVisItViewNodeFactory::pd_maker);
+        vtkAnariVisItViewNodeFactory::pd_maker);
     factory->RegisterOverride("vtkMeshPlotMapper",
-            vtkAnariVisItViewNodeFactory::pd_maker);
+        vtkAnariVisItViewNodeFactory::pd_maker);
     factory->RegisterOverride("vtkOpenGLMeshPlotMapper",
-            vtkAnariVisItViewNodeFactory::pd_maker);
+        vtkAnariVisItViewNodeFactory::pd_maker);
     factory->RegisterOverride("vtkVisItCubeAxesActor",
-            vtkAnariVisItViewNodeFactory::cube_axes_act_maker);
+        vtkAnariVisItViewNodeFactory::cube_axes_act_maker);
     factory->RegisterOverride("vtkVisItAxisActor",
-            vtkAnariVisItViewNodeFactory::axis_act_maker);
+        vtkAnariVisItViewNodeFactory::axis_act_maker);
             
     return anariPass;
 }
