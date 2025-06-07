@@ -1034,15 +1034,9 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
 
     if (md->GetMesh(meshname) != NULL && md->GetMesh(meshname)->hasExtraGhostInfo)
     {
-#ifdef PARALLEL
-        std::cout << "rank " << PAR_Rank() << " AugmentGhostData" << std::endl;
-#endif
         // unconditionally add ghost data if the database provided extra ghost information
         AugmentGhostData(datasetCollection, spec, src);
     }
-#ifdef PARALLEL
-    std::cout << "rank " << PAR_Rank() << " ========================================" << std::endl;
-#endif
 
     //
     // Finally, do the material selection.
