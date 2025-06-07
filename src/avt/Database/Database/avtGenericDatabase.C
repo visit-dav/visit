@@ -1034,9 +1034,15 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
 
     if (md->GetMesh(meshname) != NULL && md->GetMesh(meshname)->hasExtraGhostInfo)
     {
+#ifdef PARALLEL
+        std::cout << "rank " << PAR_Rank() << " AugmentGhostData" << std::endl;
+#endif
         // unconditionally add ghost data if the database provided extra ghost information
         AugmentGhostData(datasetCollection, spec, src);
     }
+#ifdef PARALLEL
+    std::cout << "rank " << PAR_Rank() << " ========================================" << std::endl;
+#endif
 
     //
     // Finally, do the material selection.
@@ -8037,6 +8043,11 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
     const char *varname = spec->GetVariable();
     avtVarType type  = md->DetermineVarType(varname);
     string meshname  = md->MeshForVar(varname);
+#ifdef PARALLEL
+    std::cout << "rank " << PAR_Rank() << " varname: " << varname << std::endl;
+    std::cout << "rank " << PAR_Rank() << " meshname: " << meshname << std::endl;
+    std::cout << "rank " << PAR_Rank() << " type: " << type << std::endl;
+#endif
 
     bool post_ghost = spec->NeedPostGhostMaterialInfo();
 
