@@ -1801,6 +1801,11 @@ avtUnstructuredDomainBoundaries::CreateDomainToProcessorMap(
 //    Use STL containers where possible.
 //    Rely on new helpers.
 //    Error checking.
+// 
+//    Justin Privitera, Fri Jun  6 17:58:02 PDT 2025
+//    Fixed a bug causing incorrect indexing into a received point IDs array
+//    when writing cell point IDs in the parallel receiving case. I added an
+//    offset to compute the index correctly.
 //
 // ****************************************************************************
 
