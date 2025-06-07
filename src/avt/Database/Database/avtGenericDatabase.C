@@ -8037,11 +8037,6 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
     const char *varname = spec->GetVariable();
     avtVarType type  = md->DetermineVarType(varname);
     string meshname  = md->MeshForVar(varname);
-#ifdef PARALLEL
-    std::cout << "rank " << PAR_Rank() << " varname: " << varname << std::endl;
-    std::cout << "rank " << PAR_Rank() << " meshname: " << meshname << std::endl;
-    std::cout << "rank " << PAR_Rank() << " type: " << type << std::endl;
-#endif
 
     bool post_ghost = spec->NeedPostGhostMaterialInfo();
 
