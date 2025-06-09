@@ -1801,6 +1801,11 @@ avtUnstructuredDomainBoundaries::CreateDomainToProcessorMap(
 //    Use STL containers where possible.
 //    Rely on new helpers.
 //    Error checking.
+// 
+//    Justin Privitera, Fri Jun  6 17:58:02 PDT 2025
+//    Fixed a bug causing incorrect indexing into a received point IDs array
+//    when writing cell point IDs in the parallel receiving case. I added an
+//    offset to compute the index correctly.
 //
 // ****************************************************************************
 
@@ -1975,13 +1980,15 @@ avtUnstructuredDomainBoundaries::CommunicateMeshInformation(
                          fRank, mpiCellPointIdsTag, VISIT_MPI_COMM, &stat);
 
                 // Move over the point ids
+                int offset = 0;
                 for (int cellId = 0; cellId < nCells; cellId ++)
                 {
                     for (int ptId = 0; ptId < nPointsPerCell[cellId]; ptId ++)
                     {
-                        const int pntIdIndex = ptId + cellId * nPointsPerCell[cellId];
+                        const int pntIdIndex = ptId + offset;
                         cellPoints[cellId][ptId] = pntIds[pntIdIndex];
                     }
+                    offset += nPointsPerCell[cellId];
                 }
             }
             // If this process owns the sending domain, we send information.
