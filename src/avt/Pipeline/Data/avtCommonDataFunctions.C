@@ -473,6 +473,8 @@ CGetNumberOfOriginalZones(avtDataRepresentation &data, void *arg, bool &)
 //    Kathleen Biagas, Wed Apr 13 16:25:44 PDT 2022
 //    Don't use vtkGeometryFilter if input has no cells.
 //
+//    Mark C. Miller, Mon Jun  9 00:58:39 PDT 2025
+//    Extend logic to remove/add singletons to include cell data singletons.
 // ****************************************************************************
 
 void
@@ -494,7 +496,7 @@ CConvertUnstructuredGridToPolyData(avtDataRepresentation &data, void *dataAndKey
         // Easiest fix at the moment seems to be to remove the singletons before using
         // vtkGeometryFilter and replace them aftewards.
 
-        std::vector<vtkDataArray*> singletons;
+        std::vector<vtkDataArray*> pdsingletons;
         vtkPointData *pd = ds->GetPointData();
         vtkIdType nPts = ds->GetNumberOfPoints();
         if (nPts > 1)
@@ -506,19 +508,36 @@ CConvertUnstructuredGridToPolyData(avtDataRepresentation &data, void *dataAndKey
                 {
                     // ensure the array isn't deleted when removed from pd
                     array->Register(NULL);
-                    singletons.push_back(array);
+                    pdsingletons.push_back(array);
                     pd->RemoveArray(i);
                 }
             }
         }
+
+        std::vector<vtkDataArray*> cdsingletons;
+        vtkCellData *cd = ds->GetCellData();
+        for (int i = 0; i < cd->GetNumberOfArrays(); ++i)
+        {
+            vtkDataArray *array = cd->GetArray(i);
+            if (array->GetNumberOfTuples() == 1)
+            {
+                // ensure the array isn't deleted when removed from pd
+                array->Register(NULL);
+                cdsingletons.push_back(array);
+                cd->RemoveArray(i);
+            }
+        }
+
         vtkNew<vtkGeometryFilter> geoFilter;
         geoFilter->SetInputData(ds);
         geoFilter->Update();
         vtkPolyData *out_pd = geoFilter->GetOutput();
         out_pd->Register(NULL);
 
-        for(size_t i = 0; i < singletons.size(); ++i)
-            out_pd->GetPointData()->AddArray(singletons[i]); 
+        for(size_t i = 0; i < pdsingletons.size(); ++i)
+            out_pd->GetPointData()->AddArray(pdsingletons[i]); 
+        for(size_t i = 0; i < cdsingletons.size(); ++i)
+            out_pd->GetCellData()->AddArray(cdsingletons[i]); 
 
         avtDataRepresentation new_data(out_pd, data.GetDomain(), data.GetLabel());
         data = new_data;
