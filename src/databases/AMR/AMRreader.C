@@ -18,14 +18,26 @@ AMRreader::init()
     tttttt_ = 0.;
     blktag_ = 0;
 
+    ncvs_=5;
+    navs_=0;
+
     nblks_=0;
     blkdim_[0] = blkdim_[1] = blkdim_[2] = blkdim_[3] = 0;
     blksz_ = 0;
+
+    nroots_=1;
+    rootdims_[0]=1;
+    rootdims_[1]=0;
+    rootdims_[2]=0;
+    rootxs_[3]=0.0;
+    rootdx_[3]=0.0;
+    rootids_ = NULL;
 
     blkxs_ = NULL;
     blkdx_ = NULL;
     blkkey_ = NULL;
     datbuf_ = NULL;
+    adtbuf_ = NULL;
     prebuf_ = NULL;
     sndbuf_ = NULL;
     tmpbuf_ = NULL;
@@ -34,6 +46,23 @@ AMRreader::init()
     nrect_ = nvert_ = 0;
 
     eos_ = NULL;
+
+    nspec_ = 1;
+    nspecener_ = 1;
+
+    icvdens_ = 0;
+    icvmomx_ = 1;
+    icvmomy_ = 2;
+    icvmomz_ = 3;
+    icvener_ = 4;
+
+    // only for GenMixEOS
+    icvpres_ = 0;
+    icvtemp_ = 0;
+
+    iavpres_ = 0;
+    iavtemp_ = 0;
+    iavsndv_ = 0;
 }
 
 // Modifications:
@@ -47,10 +76,12 @@ AMRreader::freedata()
     AMRFREE( blkxs_ );
     AMRFREE( blkdx_ );
     AMRFREE( datbuf_ );
+    AMRFREE( adtbuf_ );
     AMRFREE( prebuf_ );
     AMRFREE( sndbuf_ );
     AMRFREE( tmpbuf_ );
     AMRFREE( tagbuf_ );
+    AMRFREE( rootids_ );
     if( eos_!=NULL )
     {
         delete eos_;
@@ -72,10 +103,14 @@ AMRreader::getInfo( const char* filename )
 
     filename_ = filename;
 
-    hid_t file_id = H5Fopen( filename, H5F_ACC_RDONLY, H5P_DEFAULT );
+    hid_t fapl_id = H5Pcreate(H5P_FILE_ACCESS);
+    H5Pset_fclose_degree(fapl_id, H5F_CLOSE_SEMI);
+    hid_t file_id = H5Fopen( filename, H5F_ACC_RDONLY, fapl_id );
+    // hid_t file_id = H5Fopen( filename, H5F_ACC_RDONLY, H5P_DEFAULT );
     if( file_id<0 )
     {
         debug1 << "Failed to open AMR file: " << filename << ".\n";
+        H5Pclose(fapl_id);
         return -1;
     }
 
@@ -125,6 +160,7 @@ AMRreader::getInfo( const char* filename )
     }
 
     H5Fclose( file_id );
+    H5Pclose(fapl_id);
     return 0;
 }
 
@@ -133,7 +169,7 @@ AMRreader::getInfo( const char* filename )
 int AMRreader::
 getAMRinfo( hid_t gid )
 {
-    float rbuf[20];
+    float rbuf[200];
 
     hid_t aid = H5Aopen_name( gid, "number" );
     if( aid<0 )
@@ -148,6 +184,94 @@ getAMRinfo( hid_t gid )
         H5Aclose(aid);
     }
     debug2 << "Number of blocks is " << nblks_ << "\n";
+
+    aid = H5Aopen_name( gid, "OctKeySetting" );
+    if( aid<0 )
+    {
+        nblks_=0;
+        debug1 << "Failed to find OctKeySetting.\n";
+        return -1;
+    }
+    else
+    {
+        int ibuf[3];
+        H5Aread( aid, H5T_NATIVE_INT, ibuf );
+        OctKey_SetRootLen(ibuf[1]+1);
+        H5Aclose(aid);
+    }
+
+    aid = H5Aopen_name( gid, "OctreeRootID" );
+    if( aid < 0)
+    {
+        nroots_=1;
+        debug1 << "Failed to find number of roots. \n";
+        return -1;
+    }
+    else
+    {
+        hid_t did = H5Aget_space(aid);
+        hsize_t dims[3];
+
+        dims[0] = 1;
+        dims[1] = 1;
+        dims[2] = 1;
+
+        if (did < 0)
+        {
+            nroots_ = 1;
+            debug1 << "Failed to find dimensions of roots. \n";
+            return -1;
+        }
+        else
+        {
+
+            H5Sget_simple_extent_dims(did, dims, NULL);
+            H5Sclose(did);
+
+            nroots_ = dims[0]*dims[1]*dims[2];
+
+            // These are reversed intentionally
+            rootdims_[0] = dims[2];
+            rootdims_[1] = dims[1];
+            rootdims_[2] = dims[0];
+
+            delete[] rootids_;
+            rootids_ = (int*)malloc( nroots_*sizeof(int) );
+
+            if( rootids_==NULL )
+            {
+                debug1 << "Failed to allocate rootids_. \n";
+                return -1;
+            }
+
+            H5Aread( aid, H5T_NATIVE_INT, rootids_ );
+        }
+        H5Aclose(aid);
+    }
+
+    aid = H5Aopen_name( gid, "OctreeRootXS" );
+    if( aid<0 )
+    {
+        debug1 << "Failed to find root xs.\n";
+        return -2;
+    }
+    else
+    {
+        H5Aread( aid, H5T_NATIVE_FLOAT, rootxs_ );
+        H5Aclose(aid);
+    }
+
+    aid = H5Aopen_name( gid, "OctreeRootDX" );
+    if( aid<0 )
+    {
+        debug1 << "Failed to find root dx.\n";
+        return -2;
+    }
+    else
+    {
+        H5Aread( aid, H5T_NATIVE_FLOAT, rootdx_ );
+        H5Aclose(aid);
+    }
 
     aid = H5Aopen_name( gid, amr_dimname );
     if( aid<0 )
@@ -192,6 +316,35 @@ getAMRinfo( hid_t gid )
     H5Aclose(aid);
     debug2 << "Ncycles= " << ncycle_ << "\n";
 
+    // ncvs_ and navs_
+    {
+        const char* cvsname = "NVS";
+        htri_t est = H5Aexists( gid, cvsname );
+        if( est>0 ) {
+            aid = H5Aopen_name( gid, cvsname );
+            H5Aread( aid, H5T_NATIVE_INT, &ncvs_ );
+            H5Aclose(aid);
+
+            int icvoffset = ncvs_ - 5;
+            icvdens_  = 0;
+            icvmomx_ += icvoffset;
+            icvmomy_ += icvoffset;
+            icvmomz_ += icvoffset;
+            icvener_ += icvoffset;
+
+            nspec_ = icvoffset + 1;
+        }
+        const char* avsname="nAdditionalVariables";
+        est = H5Aexists( gid, avsname );
+        if( est>0 ) {
+            aid = H5Aopen_name( gid, avsname );
+            H5Aread( aid, H5T_NATIVE_INT, &navs_ );
+            H5Aclose(aid);
+        }
+        debug1 << "getAMRinfo(): ncvs = " << ncvs_ << ", navs = " << navs_ << "\n";
+    }
+
+
     // eos
     htri_t est = H5Aexists( gid, amr_idealname );
     if( est>0 )
@@ -214,10 +367,132 @@ getAMRinfo( hid_t gid )
         return 0;
     }
 
+    est = H5Aexists( gid, amr_jwlbname );
+    if( est>0 )
+    {
+        aid = H5Aopen_name( gid, amr_jwlbname );
+        H5Aread( aid, H5T_NATIVE_FLOAT, rbuf );
+        H5Aclose(aid);
+
+        float* A = &rbuf[0];
+        float* R = &rbuf[5];
+        float* Alam = &rbuf[10];
+        float* Blam = &rbuf[15];
+        float* Rlam = &rbuf[20];
+
+        float C = rbuf[25];
+        float omega = rbuf[26];
+        float rho0 = rbuf[27];
+        float Cv = rbuf[28];
+
+        eos_ = new JwlBEOS(A, R, Alam, Blam, Rlam, C, omega, rho0, Cv);
+
+        nspec_ = 1;
+        icvdens_ = 0;
+        icvmomx_ = 1;
+        icvmomy_ = 2;
+        icvmomz_ = 3;
+        icvener_ = 4;
+
+        iavpres_ = 1;
+        iavtemp_ = 2;
+        iavsndv_ = 3;
+
+        return 0;
+    }
+
     est = H5Aexists( gid, amr_sesamename );
     if( est>0 )
     {
         eos_ = new SesameEOS();
+
+	iavpres_ = 0;
+	iavtemp_ = 1;
+	iavsndv_ = 2;
+
+        return 0;
+    }
+
+    est = H5Aexists( gid, amr_genmixname );
+    if( est>0 )
+    {
+        aid = H5Aopen_name( gid, amr_genmixname );
+        H5Aread( aid, H5T_NATIVE_FLOAT, rbuf );
+        H5Aclose(aid);
+
+        nspec_ = rbuf[0];
+        nspecener_ = nspec_;
+
+        icvdens_ = 0;
+        icvener_ = nspec_;
+
+        icvmomx_ = 2*nspec_;
+        icvmomy_ = icvmomx_+1;
+        icvmomz_ = icvmomx_+2;
+
+        icvpres_ = icvmomz_+1;
+        icvtemp_ = icvmomz_+2;
+
+        iavsndv_ = 4;
+
+        eos_ = new GenMixEOS(nspec_);
+
+        return 0;
+    }
+
+    est = H5Aexists( gid, amr_idealtilname );
+    if( est>0 )
+    {
+        eos_ = new IdealTilEOS();
+        aid = H5Aopen_name( gid, amr_idealtilname );
+        H5Aclose(aid);
+
+        iavpres_ = 0;
+        iavtemp_ = 1;
+        iavsndv_ = 2;
+
+        return 0;
+    }
+
+    est = H5Aexists( gid, amr_multiidealname );
+    if( est>0 )
+    {
+        aid = H5Aopen_name( gid, amr_multiidealname );
+        H5Aread( aid, H5T_NATIVE_FLOAT, rbuf );
+        H5Aclose(aid);
+
+        nspec_ = std::round(rbuf[0]);
+        float* gammas = new float[nspec_];
+        float* rs = new float[nspec_];
+
+        for( int i=0; i<nspec_; i++ )
+        {
+            gammas[i] = rbuf[i*2 + 1];
+            rs[i]     = rbuf[i*2 + 2];
+        }
+        eos_ = new MultiIdealEOS(nspec_, gammas, rs);
+
+        delete[] gammas;
+        delete[] rs;
+
+        iavpres_ = 0;
+        iavtemp_ = 1;
+        iavsndv_ = 2;
+
+        return 0;
+    }
+
+    est = H5Aexists( gid, amr_jwljwlname );
+    if( est>0 )
+    {
+        eos_ = new JwlJwlEOS();
+        aid = H5Aopen_name( gid, amr_jwljwlname );
+        H5Aclose(aid);
+
+        iavpres_ = 0;
+        iavtemp_ = 1;
+        iavsndv_ = 2;
+
         return 0;
     }
 
@@ -318,7 +593,10 @@ readAMRmesh()
 {
     //if( blkxs_!=NULL ) return 0;
     int retval = 0;
-    hid_t file_id = H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
+    hid_t fapl_id = H5Pcreate(H5P_FILE_ACCESS);
+    H5Pset_fclose_degree(fapl_id, H5F_CLOSE_SEMI);
+    hid_t file_id = H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, fapl_id );
+    // hid_t file_id = H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
     if( file_id<0 )
     {
         debug1 << "Failed to open AMR file: " << filename_ << " when read in mesh.\n";
@@ -431,6 +709,7 @@ readAMRmesh()
         H5Fclose( file_id );
     }
 
+    H5Pclose(fapl_id);
     return retval;
 }
 
@@ -445,7 +724,10 @@ readAMRdata()
 {
     //  if( datbuf_!=NULL ) return 0;
     int retval = 0;
-    hid_t file_id = H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
+    hid_t fapl_id = H5Pcreate(H5P_FILE_ACCESS);
+    H5Pset_fclose_degree(fapl_id, H5F_CLOSE_SEMI);
+    hid_t file_id = H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, fapl_id );
+    // hid_t file_id = H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
     if( file_id<0 )
     {
         debug1 << "Failed to open AMR file: " << filename_ << " when read in mesh.\n";
@@ -461,7 +743,7 @@ readAMRdata()
         }
         else
         {
-            datbuf_ = (float*)malloc( 5*blksz_*nblks_*sizeof(float) );
+            datbuf_ = (float*)malloc( ncvs_*blksz_*nblks_*sizeof(float) );
             if( datbuf_==NULL )
             {
                 debug1 << "Failed to allocate datbuf_ for " << filename_ << ".\n";
@@ -486,11 +768,40 @@ readAMRdata()
                     H5Dclose(datid);
                 }
             }
+
+            if( navs_ > 0  ) {
+                adtbuf_ = (float*)malloc( navs_*blksz_*nblks_*sizeof(float) );
+
+                if( adtbuf_==NULL )
+                {
+                    debug1 << "Failed to allocate adtbuf_ for " << filename_ << ".\n";
+                    retval = -3;
+                }
+                else {
+                    hid_t datid = H5Dopen1( gid, amr_adtname );
+                    if( datid<0 )
+                    {
+                        debug1 << "Failed to open additional block data in " << filename_ << ".\n";
+                        retval = -4;
+                    }
+                    else
+                    {
+                        herr_t herr = H5Dread( datid, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, adtbuf_ );
+                        if( herr<0 )
+                        {
+                            debug1 << "Failed to read additional block data in " << filename_ << ".\n";
+                            retval = -5;
+                        }
+                        H5Dclose(datid);
+                    }
+                }
+            }
             H5Gclose( gid );
         }
         H5Fclose( file_id );
     }
 
+    H5Pclose(fapl_id);
     return retval;
 }
 
@@ -499,7 +810,10 @@ readAMRdata()
 int AMRreader::
 readAMRadditionData()
 {
-    hid_t file_id = H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
+    hid_t fapl_id = H5Pcreate(H5P_FILE_ACCESS);
+    H5Pset_fclose_degree(fapl_id, H5F_CLOSE_SEMI);
+    hid_t file_id = H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, fapl_id );
+    // hid_t file_id = H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
     if( file_id<0 )
     {
         debug1 << "Failed to open AMR file: " << filename_ << " when read in mesh.\n";
@@ -569,6 +883,7 @@ readAMRadditionData()
 
     H5Gclose( gid );
     H5Fclose( file_id );
+    H5Pclose(fapl_id);
     return 0;
 }
 
@@ -581,7 +896,10 @@ readAMRtagData()
 {
     if( blktag_!=1 ) return 0;
 
-    hid_t file_id = H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
+    hid_t fapl_id = H5Pcreate(H5P_FILE_ACCESS);
+    H5Pset_fclose_degree(fapl_id, H5F_CLOSE_SEMI);
+    hid_t file_id = H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, fapl_id );
+    // hid_t file_id = H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
     if( file_id<0 )
     {
         debug1 << "Failed to open AMR file: " << filename_ << " when read in mesh.\n";
@@ -618,6 +936,7 @@ readAMRtagData()
 
     H5Gclose( gid );
     H5Fclose( file_id );
+    H5Pclose(fapl_id);
     return 0;
 }
 
@@ -728,7 +1047,21 @@ GetBlockVariable( int bid, int vid, float* dat )
             }
     return 0;
 #endif
-    ierr = compvar( vid, datbuf_+(5*blksz_*bid), dat, blksz_ );
+    if( vid > v_spec && vid < v_smas)
+        ierr = copyvar(bid,  vid-v_spec-1, dat, blksz_);
+    else if( vid > v_fldv && vid < v_smas)
+        ierr = copyvar( bid, vid-v_fldv-1, dat, blksz_ );
+    else
+    {
+        if ( navs_ > 0 )
+        {
+            ierr = compvar( vid, datbuf_+(ncvs_*blksz_*bid), adtbuf_+(navs_*blksz_*bid), dat, blksz_ );
+        }
+        else
+        {
+            ierr = compvar( vid, datbuf_+(ncvs_*blksz_*bid), datbuf_+(ncvs_*blksz_*bid), dat, blksz_ );
+        }
+    }
     if( ierr!=0 )
     {
         debug1 << "Failed to compute requested variable: " << vid << " .\n";
@@ -773,7 +1106,10 @@ GetInterfaceVariable( int vid, void* dat )
     }
 
     int retval = 0;
-    hid_t file_id = H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
+    hid_t fapl_id = H5Pcreate(H5P_FILE_ACCESS);
+    H5Pset_fclose_degree(fapl_id, H5F_CLOSE_SEMI);
+    hid_t file_id = H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, fapl_id );
+    // hid_t file_id = H5Fopen( filename_.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT );
     if( file_id<0 )
     {
         debug1 << "Failed to open AMR file: " << filename_ << " when read in mesh.\n";
@@ -810,6 +1146,7 @@ GetInterfaceVariable( int vid, void* dat )
         H5Fclose( file_id );
     }
 
+    H5Pclose(fapl_id);
     return retval;
 }
 
@@ -818,8 +1155,15 @@ GetInterfaceVariable( int vid, void* dat )
 
 
 int AMRreader::
-compvar( int vid, float* blk, float* buf, int sz )
+compvar( int vid, float* blk, float* ablk, float* buf, int sz )
 {
+
+    if (vid > v_smas)
+    {
+        comp_smass( blk, buf, sz, vid-v_smas-1 );
+        return 0;
+    }
+
     switch( vid )
     {
     case(v_dens):
@@ -835,13 +1179,13 @@ compvar( int vid, float* blk, float* buf, int sz )
         comp_wvel( blk, buf, sz );
         break;
     case(v_pres):
-        comp_pres( blk, buf, sz );
+        comp_pres( blk, ablk, buf, sz );
         break;
     case(v_temp):
-        comp_temp( blk, buf, sz );
+        comp_temp( blk, ablk, buf, sz );
         break;
     case(v_sndv):
-        comp_sndv( blk, buf, sz );
+        comp_sndv( blk, ablk, buf, sz );
         break;
     case(v_xmnt):
         comp_xmnt( blk, buf, sz );
@@ -876,18 +1220,41 @@ compvar( int vid, float* blk, float* buf, int sz )
 }
 
 
+int AMRreader::
+copyvar( int bid, int idx, float* buf, int sz )
+{
+    if( idx < ncvs_ ) {
+        float* dat = datbuf_+(ncvs_*blksz_*bid) + idx;
+        for( int i=0; i<sz; ++i,dat+=ncvs_ )
+            buf[i] = *dat;
+    }
+    else {
+        idx -= ncvs_;
+        float* dat = adtbuf_+(navs_*blksz_*bid) + idx;
+        for( int i=0; i<sz; ++i,dat += navs_ )
+            buf[i] = *dat;
+    }
+    return 0;
+}
+
 
 
 int AMRreader::
 comp_dens( float* blkdt, float* buf, int sz )
 {
-//   for( int i=0; i<blkdim_[2]; i++ )
-//     for( int j=0; j<blkdim_[1]; j++ )
-//       for( int k=0; k<blkdim_[0]; k++ ) {
-//     int sft = k + ( j + i*blkdim_[1] )*blkdim_[0];
     for( int sft=0; sft<sz; sft++ )
     {
-        buf[sft] = blkdt[5*sft];
+        buf[sft] = ComputeDens(blkdt, sft, ncvs_, nspec_);
+    }
+    return 0;
+}
+
+int AMRreader::
+comp_smass( float* blkdt, float* buf, int sz, int is )
+{
+    for( int sft=0; sft<sz; sft++ )
+    {
+        buf[sft] = blkdt[ncvs_*sft + icvdens_ + is] / ComputeDens(blkdt, sft, ncvs_, nspec_);
     }
     return 0;
 }
@@ -897,7 +1264,7 @@ comp_uvel( float* blkdt, float* buf, int sz )
 {
     for( int sft=0; sft<sz; sft++ )
     {
-        buf[sft] = blkdt[5*sft+1] / blkdt[5*sft];
+        buf[sft] = blkdt[ncvs_*sft + icvmomx_] / ComputeDens(blkdt, sft, ncvs_, nspec_);
     }
     return 0;
 }
@@ -907,7 +1274,7 @@ comp_vvel( float* blkdt, float* buf, int sz )
 {
     for( int sft=0; sft<sz; sft++ )
     {
-        buf[sft] = blkdt[5*sft+2] / blkdt[5*sft];
+        buf[sft] = blkdt[ncvs_*sft + icvmomy_] / ComputeDens(blkdt, sft, ncvs_, nspec_);
     }
     return 0;
 }
@@ -917,15 +1284,15 @@ comp_wvel( float* blkdt, float* buf, int sz )
 {
     for( int sft=0; sft<sz; sft++ )
     {
-        buf[sft] = blkdt[5*sft+3] / blkdt[5*sft];
+        buf[sft] = blkdt[ncvs_*sft + icvmomz_] / ComputeDens(blkdt, sft, ncvs_, nspec_);
     }
     return 0;
 }
 
 int AMRreader::
-comp_pres( float* blkdt, float* buf, int sz )
+comp_pres( float* blkdt, float* ablkdt, float* buf, int sz )
 {
-    if( eos_->EOStype()==SesameEOS_type )
+    if( eos_->EOStype()==SesameEOS_type && navs_ == 0 )
     {
         long off = (blkdt - datbuf_)/5;
         float* pbuf = prebuf_ + off;
@@ -934,16 +1301,32 @@ comp_pres( float* blkdt, float* buf, int sz )
             buf[sft] = pbuf[sft];
         }
     }
+    else if( eos_->EOStype()==GenMixEOS_type )
+    {
+        for( int sft=0; sft<sz; sft++ )
+        {
+            buf[sft] = blkdt[ncvs_*sft + icvpres_];
+        }
+    }
+    else if( eos_->p_from_av() && navs_ > 0 )
+    {
+        for( int sft=0; sft<sz; sft++ )
+        {
+            buf[sft] = ablkdt[navs_*sft + iavpres_];
+        }
+    }
     else
     {
         for( int sft=0; sft<sz; sft++ )
         {
-            float rr = blkdt[5*sft];
-            float uu = blkdt[5*sft+1] / rr;
-            float vv = blkdt[5*sft+2] / rr;
-            float ww = blkdt[5*sft+3] / rr;
-            float et = blkdt[5*sft+4] / rr;
+            float rr = ComputeDens(blkdt, sft, ncvs_, nspec_);
+            float uu = blkdt[ncvs_*sft + icvmomx_] / rr;
+            float vv = blkdt[ncvs_*sft + icvmomy_] / rr;
+            float ww = blkdt[ncvs_*sft + icvmomz_] / rr;
+            float et = ComputeEner(blkdt, sft, ncvs_, icvener_, nspecener_) / rr;
             float ei = et - 0.5*( uu*uu + vv*vv + ww*ww );
+
+            eos_->compute_mixture_props(&blkdt[sft*ncvs_]);
             buf[sft] = eos_->p_from_r_e( rr, ei );
         }
     }
@@ -951,9 +1334,9 @@ comp_pres( float* blkdt, float* buf, int sz )
 }
 
 int AMRreader::
-comp_temp( float* blkdt, float* buf, int sz )
+comp_temp( float* blkdt, float* ablkdt, float* buf, int sz )
 {
-    if( eos_->EOStype()==SesameEOS_type )
+    if( eos_->EOStype()==SesameEOS_type && navs_ == 0 )
     {
         long off = (blkdt - datbuf_)/5;
         float* pbuf = tmpbuf_ + off;
@@ -962,16 +1345,31 @@ comp_temp( float* blkdt, float* buf, int sz )
             buf[sft] = pbuf[sft];
         }
     }
+    else if( eos_->EOStype()==GenMixEOS_type )
+    {
+        for( int sft=0; sft<sz; sft++ )
+        {
+            buf[sft] = blkdt[ncvs_*sft + icvtemp_];
+        }
+    }
+    else if( eos_->T_from_av() && navs_ > 0 )
+    {
+        for( int sft=0; sft<sz; sft++ )
+        {
+            buf[sft] = ablkdt[navs_*sft + iavtemp_];
+        }
+    }
     else
     {
         for( int sft=0; sft<sz; sft++ )
         {
-            float rr = blkdt[5*sft];
-            float uu = blkdt[5*sft+1] / rr;
-            float vv = blkdt[5*sft+2] / rr;
-            float ww = blkdt[5*sft+3] / rr;
-            float et = blkdt[5*sft+4] / rr;
+            float rr = ComputeDens(blkdt, sft, ncvs_, nspec_);
+            float uu = blkdt[ncvs_*sft+icvmomx_] / rr;
+            float vv = blkdt[ncvs_*sft+icvmomy_] / rr;
+            float ww = blkdt[ncvs_*sft+icvmomz_] / rr;
+            float et = ComputeEner(blkdt, sft, ncvs_, icvener_, nspecener_) / rr;
             float ei = et - 0.5*( uu*uu + vv*vv + ww*ww );
+            eos_->compute_mixture_props(&blkdt[sft*ncvs_]);
             buf[sft] = eos_->T_from_r_e( rr, ei );
         }
     }
@@ -979,9 +1377,9 @@ comp_temp( float* blkdt, float* buf, int sz )
 }
 
 int AMRreader::
-comp_sndv( float* blkdt, float* buf, int sz )
+comp_sndv( float* blkdt, float* ablkdt, float* buf, int sz )
 {
-    if( eos_->EOStype()==SesameEOS_type )
+    if( eos_->EOStype()==SesameEOS_type && navs_ == 0 )
     {
         long off = (blkdt - datbuf_)/5;
         float* pbuf = sndbuf_ + off;
@@ -990,16 +1388,25 @@ comp_sndv( float* blkdt, float* buf, int sz )
             buf[sft] = pbuf[sft];
         }
     }
+    else if( eos_->a_from_av() && navs_ > 0 )
+    {
+        for( int sft=0; sft<sz; sft++ )
+        {
+            buf[sft] = ablkdt[navs_*sft + iavsndv_];
+        }
+    }
     else
     {
         for( int sft=0; sft<sz; sft++ )
         {
-            float rr = blkdt[5*sft];
-            float uu = blkdt[5*sft+1] / rr;
-            float vv = blkdt[5*sft+2] / rr;
-            float ww = blkdt[5*sft+3] / rr;
-            float et = blkdt[5*sft+4] / rr;
+            float rr = ComputeDens(blkdt, sft, ncvs_, nspec_);
+            float uu = blkdt[ncvs_*sft + icvmomx_] / rr;
+            float vv = blkdt[ncvs_*sft + icvmomy_] / rr;
+            float ww = blkdt[ncvs_*sft + icvmomz_] / rr;
+            float et = ComputeEner(blkdt, sft, ncvs_, icvener_, nspecener_) / rr;
             float ei = et - 0.5*( uu*uu + vv*vv + ww*ww );
+
+            eos_->compute_mixture_props(&blkdt[sft*ncvs_]);
             buf[sft] = eos_->a_from_r_e( rr, ei );
         }
     }
@@ -1011,7 +1418,7 @@ comp_xmnt( float* blkdt, float* buf, int sz )
 {
     for( int sft=0; sft<sz; sft++ )
     {
-        buf[sft] = blkdt[5*sft+1];
+        buf[sft] = blkdt[ncvs_*sft + icvmomx_];
     }
     return 0;
 }
@@ -1021,7 +1428,7 @@ comp_ymnt( float* blkdt, float* buf, int sz )
 {
     for( int sft=0; sft<sz; sft++ )
     {
-        buf[sft] = blkdt[5*sft+2];
+        buf[sft] = blkdt[ncvs_*sft + icvmomy_];
     }
     return 0;
 }
@@ -1031,7 +1438,7 @@ comp_zmnt( float* blkdt, float* buf, int sz )
 {
     for( int sft=0; sft<sz; sft++ )
     {
-        buf[sft] = blkdt[5*sft+3];
+        buf[sft] = blkdt[ncvs_*sft + icvmomz_];
     }
     return 0;
 }
@@ -1041,7 +1448,7 @@ comp_etot( float* blkdt, float* buf, int sz )
 {
     for( int sft=0; sft<sz; sft++ )
     {
-        buf[sft] = blkdt[5*sft+4];
+        buf[sft] = ComputeEner(blkdt, sft, ncvs_, icvener_, nspecener_);
     }
     return 0;
 }
@@ -1051,11 +1458,11 @@ comp_eint( float* blkdt, float* buf, int sz )
 {
     for( int sft=0; sft<sz; sft++ )
     {
-        float rr = blkdt[5*sft];
-        float uu = blkdt[5*sft+1] / rr;
-        float vv = blkdt[5*sft+2] / rr;
-        float ww = blkdt[5*sft+3] / rr;
-        float et = blkdt[5*sft+4] / rr;
+        float rr = ComputeDens(blkdt, sft, ncvs_, nspec_);
+        float uu = blkdt[ncvs_*sft + icvmomx_] / rr;
+        float vv = blkdt[ncvs_*sft + icvmomy_] / rr;
+        float ww = blkdt[ncvs_*sft + icvmomz_] / rr;
+        float et = ComputeEner(blkdt, sft, ncvs_, icvener_, nspecener_) / rr;
         buf[sft] = et - 0.5*( uu*uu + vv*vv + ww*ww );
     }
     return 0;
@@ -1066,10 +1473,10 @@ comp_eknt( float* blkdt, float* buf, int sz )
 {
     for( int sft=0; sft<sz; sft++ )
     {
-        float rr = blkdt[5*sft];
-        float uu = blkdt[5*sft+1] / rr;
-        float vv = blkdt[5*sft+2] / rr;
-        float ww = blkdt[5*sft+3] / rr;
+        float rr = ComputeDens(blkdt, sft, ncvs_, nspec_);
+        float uu = blkdt[ncvs_*sft + icvmomx_] / rr;
+        float vv = blkdt[ncvs_*sft + icvmomy_] / rr;
+        float ww = blkdt[ncvs_*sft + icvmomz_] / rr;
         buf[sft] = 0.5*( uu*uu + vv*vv + ww*ww );
     }
     return 0;
@@ -1080,10 +1487,10 @@ comp_velo( float* blkdt, float* buf, int sz )
 {
     for( int sft=0; sft<sz; sft++ )
     {
-        float rr = blkdt[5*sft];
-        float uu = blkdt[5*sft+1] / rr;
-        float vv = blkdt[5*sft+2] / rr;
-        float ww = blkdt[5*sft+3] / rr;
+        float rr = ComputeDens(blkdt, sft, ncvs_, nspec_);
+        float uu = blkdt[ncvs_*sft + icvmomx_] / rr;
+        float vv = blkdt[ncvs_*sft + icvmomy_] / rr;
+        float ww = blkdt[ncvs_*sft + icvmomz_] / rr;
         buf[3*sft]   = uu;
         buf[3*sft+1] = vv;
         buf[3*sft+2] = ww;
@@ -1103,6 +1510,27 @@ comp_tags( float* blkdt, float* buf, int sz )
     return 0;
 }
 
+float ComputeDens(float* blkdt, int istart, int ncvs, int nspec_)
+{
+    float dens = 0.0;
+    for ( int i=0; i<nspec_; i++ )
+    {
+        dens += blkdt[istart*ncvs + i];
+    }
+
+    return dens;
+}
+
+float ComputeEner(float* blkdt, int istart, int ncvs, int icvener_, int nspecener_)
+{
+    float ener = 0.0;
+    for ( int i=icvener_; i<icvener_+nspecener_; i++ )
+    {
+        ener += blkdt[istart*ncvs + i];
+    }
+
+    return ener;
+}
 
 
 #define MeshEqual( x0, x1, dx )  ( fabs(x0-x1)<1.e-3*dx )

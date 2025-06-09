@@ -166,7 +166,21 @@ GetBlockVariable( int bid, int vid, float* dat )
             }
     return 0;
 #endif
-    ierr = compvar( vid, datbuf_+(tid*5*blksz_), dat, sz );
+    if (vid > v_spec && vid < v_smas)
+        ierr = copyvar( tid, vid-v_spec-1, dat, sz );
+    else if( vid > v_fldv && vid < v_smas)
+        ierr = copyvar( tid, vid-v_fldv-1, dat, sz );
+    else
+    {
+        if( navs_ > 0 )
+        {
+            ierr = compvar( vid, datbuf_+(tid*ncvs_*blksz_), adtbuf_+(tid*navs_*blksz_), dat, sz );
+        }
+        else
+        {
+            ierr = compvar( vid, datbuf_+(tid*ncvs_*blksz_), datbuf_+(tid*ncvs_*blksz_), dat, sz );
+        }
+    }
     if( ierr!=0 )
     {
         debug1 << "Failed to compute requested variable: " << vid << " .\n";
@@ -258,10 +272,11 @@ CombineScalarArray( float*bd[8], float* scl )
 int AMRreaderBlkConso::
 CombineData()
 {
+    int mxvs = std::max( ncvs_, navs_ );
     float* bd[8];
     for( int k=0; k<8; k++ )
     {
-        bd[k] = new float[5*blksz_];
+        bd[k] = new float[ mxvs*blksz_];
         if( bd[k]==NULL )
         {
             debug1 << "Failed to allocate memory for temperary kids node data.\n";
@@ -272,10 +287,15 @@ CombineData()
     for( int i=0; i<nbc_; i++ )
     {
         int bid = bcsft_[i];
-        float* src = datbuf_ + bid*5*blksz_;
         if( bid+8 == bcsft_[i+1] )
         {
-            CombineBlockData( 5, bd, src );
+            float* src = datbuf_ + bid*ncvs_*blksz_;
+            CombineBlockData( ncvs_, bd, src );
+
+            if( navs_ > 0 ) {
+                float* src = adtbuf_ + bid*navs_*blksz_;
+                CombineBlockData( navs_, bd, src );
+            }
         }
     }
 
@@ -295,4 +315,3 @@ CombineData()
         delete [] bd[k];
     return 0;
 }
-
