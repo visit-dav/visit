@@ -43,7 +43,6 @@ SetView3D(v)
 Test("exodus_01")
 
 s = SILRestriction()
-print(s)
 sets = s.SetsInCategory("ElementBlock")
 s.TurnOffSet(sets[0])
 s.TurnOffSet(sets[1])
