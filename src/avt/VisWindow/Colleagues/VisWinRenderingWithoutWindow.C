@@ -175,17 +175,7 @@ VisWinRenderingWithoutWindow::RenderRenderWindow(void)
 #ifdef HAVE_ANARI
     if(GetAnariRendering())
     {
-        if(!anariPassValid)
-        {
-            if(anariPass != nullptr)
-            {
-                anariPass->Delete();
-            }
-
-            anariPass = CreateAnariPass();
-            canvas->SetPass(anariPass);
-            anariPassValid = true;
-        }
+        canvas->SetPass(anariPass);
     }
     else
     {

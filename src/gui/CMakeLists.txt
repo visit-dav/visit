@@ -53,6 +53,9 @@
 #   Kevin Griffin, Wed 05 Mar 2025 03:46:12 PM CST
 #   Added anari/AnariRenderingWidget
 #
+#   Kevin Griffin, Thu 05 Jun 2025
+#   Added anari/AnariParameterInfo
+#
 #****************************************************************************
 
 SET(GUILIB_SOURCES
@@ -245,7 +248,8 @@ ${VISIT_SOURCE_DIR}/third_party_builtin
 
 if(HAVE_ANARI)
     list(APPEND GUILIB_SOURCES
-            anari/AnariRenderingWidget.C)
+            anari/AnariRenderingWidget.C
+            anari/AnariParameterInfo.C)
     include_directories(AFTER ${CMAKE_CURRENT_SOURCE_DIR}/anari)
 endif(HAVE_ANARI)
 
