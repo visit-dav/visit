@@ -126,6 +126,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Added support for building <code>anari</code> to <code>build_visit</code> to allow building VisIt with ANARI renderingsupport.</li>
   <li>Updated VTK build script, <code>bv_vtk.sh</code>, to enable ANARI rendering module in VTK.</li>
   <li>The following command-line options were removed from the main build_visit script: <code>--all-io, --dbio-only, --nonio and  --advanced</code>.  This was done to simplify maintenance and addition of new modules.  <code>--optional</code> still turns on most optional libraries. <code>--no-thirdparty</code> still turns off the required libraries. Otherwise individual libraries can be enabled/disabled by <code>--</code> or <code>--no</code> syntax e.g. <code>--mpich --no-python</code>.  Please run <code>build_visit --help</code> for more information on available options.</li>
+  <li>A patch was added to bv_mili.sh that allows successful compilation on RockyLinux 8 and 9.</li>
 </ul>
 
 <a name="Dev_changes"></a>
