@@ -19453,7 +19453,7 @@ InitializeViewerProxy(ViewerProxy* proxy)
         }
     }
 #ifdef _WIN32
-    std::string log_filename = GetUserVisItDirectory() + "\\" + log_filename;
+    log_filename = GetUserVisItDirectory() + "\\" + log_filename;
 #endif
 
     if(!viewerEmbedded)
