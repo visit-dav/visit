@@ -2,15 +2,19 @@
 #define OCTKEY_H
 #include <iostream>
 
+// Modifications:
+//   Kathleen Biagas, Wed Jun 11, 2025
+//   Use uint64_t for eb since unsigned long is 32 bit on windows.
+
 typedef union {
     unsigned int fv[2]; // force 64-bit?
-    unsigned long eb;
+    uint64_t eb;
 } OctKey;
 
 OctKey OctKey_new();
-OctKey OctKey_new(unsigned long val);
+OctKey OctKey_new(uint64_t val);
 OctKey OctKey_Root();
-OctKey OctKey_Root(unsigned long iroot);
+OctKey OctKey_Root(uint64_t iroot);
 OctKey OctKey_AddLevel(const OctKey &key, int cell);
 OctKey OctKey_RemoveLevel(const OctKey &key);
 bool   OctKey_HasImmediateParent(const OctKey &key, const OctKey &parent);
