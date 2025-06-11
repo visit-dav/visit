@@ -94,6 +94,12 @@ def test_amr_ideal_gas():
     var_name = "AMR/density"
     do_mesh_plot = False
     test(mesh_name, tag_name, var_name, do_mesh_plot)
+
+    tag_name = "ideal_gas_vel_mag_3d"
+    var_name = "AMR/velocity_magnitude"
+    do_mesh_plot = False
+    test(mesh_name, tag_name, var_name, do_mesh_plot)
+
     CloseDatabase(ideal_gas_data)
 
 def test_amr_jwlbtd():
