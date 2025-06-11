@@ -1138,6 +1138,7 @@ PreprocessData()
 int AMRreader::
 GetBlockVariable( int bid, int vid, float* dat )
 {
+    debug1 << "AMRreader::GetBlockVariable(): bid = " << bid << "  vid = " << vid << "\n";
     int ierr = PreprocessData();
     if( ierr!=0 )
     {
