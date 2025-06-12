@@ -8917,11 +8917,7 @@ QvisGUIApplication::GetCrashFilePIDs(const QFileInfoList &fileList, intVector &o
     for(int i=0; i<fileList.size(); i++)
     {
         QString fn = fileList.at(i).fileName();
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        QStringList tokens = fn.split(".", QString::SkipEmptyParts);
-#else
         QStringList tokens = fn.split(".", Qt::SkipEmptyParts);
-#endif
         if(tokens.size() > 2) {
             bool ok;
             int pid = tokens[1].toInt(&ok, 10);
@@ -8967,11 +8963,7 @@ QvisGUIApplication::GetSystemPIDs(std::vector<int> &outPIDs)
     while(fgets(buf, 2048, f) != NULL)
     {
         QString pidStr(buf);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        QStringList tokens = pidStr.split(QRegularExpression("\\s+"), QString::SkipEmptyParts); // whitespace character
-#else
         QStringList tokens = pidStr.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts); // whitespace character
-#endif
 
         int pid = tokens[0].toInt(&ok, 10);
 

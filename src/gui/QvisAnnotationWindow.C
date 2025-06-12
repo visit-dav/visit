@@ -1147,13 +1147,8 @@ QvisAnnotationWindow::CreateColorTab()
     QLabel *backgroundStyleLabel = new QLabel(tr("Background style"), pageColor);
     cLayout->addWidget(backgroundStyleLabel, row, 0);
     backgroundStyleButtons = new QButtonGroup(pageColor);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(backgroundStyleButtons, SIGNAL(buttonClicked(int)),
-            this, SLOT(backgroundStyleChanged(int)));
-#else
     connect(backgroundStyleButtons, SIGNAL(idClicked(int)),
             this, SLOT(backgroundStyleChanged(int)));
-#endif
     QGridLayout *mLayout = new QGridLayout(0);
     cLayout->addLayout(mLayout, row, 1, 1, 4);
     QRadioButton *solid = new QRadioButton(tr("Solid"), pageColor);
@@ -1312,13 +1307,8 @@ QvisAnnotationWindow::CreateObjectsTab()
     objButtonLayout->setContentsMargins(10,10,10,10);
     objButtonLayout->setSpacing(5);
     objButtonGroup = new QButtonGroup(newObjectGroup);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(objButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(addNewAnnotationObject(int)));
-#else
     connect(objButtonGroup, SIGNAL(idClicked(int)),
             this, SLOT(addNewAnnotationObject(int)));
-#endif
 
     //
     // Create the annotation object list and controls to do things to them.

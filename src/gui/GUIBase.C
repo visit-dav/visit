@@ -1520,11 +1520,7 @@ GUIBase::QStringToDoubles(const QString &str, double *vals, int maxVals)
     if(!str.isEmpty())
     {
         bool okay = true;
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        QStringList s = str.split(" ", QString::SkipEmptyParts);
-#else
         QStringList s = str.split(" ", Qt::SkipEmptyParts);
-#endif
 
         for(int i = 0; i < maxVals && okay; ++i)
         {
@@ -1571,11 +1567,7 @@ GUIBase::QStringToDoubles(const QString &str, doubleVector &vals, int maxVals)
     if(!str.isEmpty())
     {
         bool okay = true;
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        QStringList s = str.split(" ", QString::SkipEmptyParts);
-#else
         QStringList s = str.split(" ", Qt::SkipEmptyParts);
-#endif
         for(int i = 0; i < s.size() && okay; ++i)
         {
             if(maxVals == -1 || i < maxVals)
@@ -1621,11 +1613,7 @@ GUIBase::QStringToFloats(const QString &str, float *vals, int maxVals)
     if(!str.isEmpty())
     {
         bool okay = true;
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        QStringList s = str.split(" ", QString::SkipEmptyParts);
-#else
         QStringList s = str.split(" ", Qt::SkipEmptyParts);
-#endif
         for(int i = 0; i < maxVals && okay; ++i)
         {
             if(i < s.size())
@@ -1647,11 +1635,7 @@ GUIBase::QStringToFloats(const QString &str, floatVector &vals, int maxVals)
     if(!str.isEmpty())
     {
         bool okay = true;
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        QStringList s = str.split(" ", QString::SkipEmptyParts);
-#else
         QStringList s = str.split(" ", Qt::SkipEmptyParts);
-#endif
         for(int i = 0; i < s.size() && okay; ++i)
         {
             if(maxVals == -1 || i < maxVals)
@@ -1697,11 +1681,7 @@ GUIBase::QStringToInts(const QString &str, int *vals, int maxVals)
     if(!str.isEmpty())
     {
         bool okay = true;
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        QStringList s = str.split(" ", QString::SkipEmptyParts);
-#else
         QStringList s = str.split(" ", Qt::SkipEmptyParts);
-#endif
         for(int i = 0; i < maxVals && okay; ++i)
         {
             if(i < s.size())
@@ -1747,11 +1727,7 @@ GUIBase::QStringToInts(const QString &str, intVector &vals, int maxVals)
     if(!str.isEmpty())
     {
         bool okay = true;
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        QStringList s = str.split(" ", QString::SkipEmptyParts);
-#else
         QStringList s = str.split(" ", Qt::SkipEmptyParts);
-#endif
         for(int i = 0; i < s.size() && okay; ++i)
         {
             if(maxVals == -1 || i < maxVals)
@@ -1808,11 +1784,7 @@ GUIBase::QStringToBools(const QString &str, bool *vals, int maxVals)
     if(!str.isEmpty())
     {
         bool okay = true;
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        QStringList s = str.split(" ", QString::SkipEmptyParts);
-#else
         QStringList s = str.split(" ", Qt::SkipEmptyParts);
-#endif
         for(int i = 0; i < maxVals && okay; ++i)
         {
             if(i < s.size())
@@ -1858,11 +1830,7 @@ GUIBase::QStringToBools(const QString &str, boolVector &vals, int maxVals)
     if(!str.isEmpty())
     {
         bool okay = true;
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        QStringList s = str.split(" ", QString::SkipEmptyParts);
-#else
         QStringList s = str.split(" ", Qt::SkipEmptyParts);
-#endif
         for(int i = 0; i < s.size() && okay; ++i)
         {
             if(maxVals == -1 || i < maxVals)

@@ -1077,11 +1077,7 @@ QvisExpressionsWindow::UpdateWindowSensitivity()
 
     SetStandardEditorReadOnly(read_only);
     // we don't have db defined python exprs
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    editorTabs->setTabEnabled(1,!read_only);
-#else
     editorTabs->setTabVisible(1,!read_only);
-#endif
 
     // calling setTableEnbled with a value of false seems to change the
     // current index, so capture that information and reset it after.

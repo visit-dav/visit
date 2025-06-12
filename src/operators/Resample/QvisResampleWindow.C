@@ -177,13 +177,8 @@ QvisResampleWindow::CreateWindowContents()
     QRadioButton *tieResolverTieResolversmallest = new QRadioButton(tr("smallest"), tieResolverWidget);
     tieResolver->addButton(tieResolverTieResolversmallest,2);
     tieResolverLayout->addWidget(tieResolverTieResolversmallest);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(tieResolver, SIGNAL(buttonClicked(int)),
-            this, SLOT(tieResolverChanged(int)));
-#else
     connect(tieResolver, SIGNAL(idClicked(int)),
             this, SLOT(tieResolverChanged(int)));
-#endif
     mainLayout->addWidget(tieResolverWidget, 11,1);
 
     tieResolverVariableLabel = new QLabel(tr("Variable to resolve ties"), central);

@@ -337,13 +337,8 @@ QvisCinemaWizard::CreateMainPage()
     dbTypeLabel->setToolTip(tr("The specification determines the type of Cinema database that will be created."));
     dbLayout->addWidget(dbTypeLabel, 1, 0);
     page0_specification = new QButtonGroup(gbDB);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(page0_specification, SIGNAL(buttonClicked(int)),
-            this, SLOT(page0_specificationChanged(int)));
-#else
     connect(page0_specification, SIGNAL(idClicked(int)),
             this, SLOT(page0_specificationChanged(int)));
-#endif
     QRadioButton *rb0 = new QRadioButton(tr("A"), gbDB);
     page0_specification->addButton(rb0, 0);
     dbLayout->addWidget(rb0, 1, 1);

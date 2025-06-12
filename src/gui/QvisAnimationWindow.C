@@ -124,13 +124,8 @@ QvisAnimationWindow::CreateWindowContents()
     rb = new QRadioButton(tr("Swing"), central);
     playbackModeButtonGroup->addButton(rb, 2);
     animLayout->addWidget(rb, 2, 3);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(playbackModeButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(playbackModeChanged(int)));
-#else
     connect(playbackModeButtonGroup, SIGNAL(idClicked(int)),
             this, SLOT(playbackModeChanged(int)));
-#endif
 
     // The animation increment
     animationIncrement = new QSpinBox(central);

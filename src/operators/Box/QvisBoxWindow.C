@@ -96,13 +96,8 @@ QvisBoxWindow::CreateWindowContents()
     QRadioButton *amountAmountAll = new QRadioButton(tr("All"), amount);
     amountButtonGroup->addButton(amountAmountAll,1);
     amountLayout->addWidget(amountAmountAll);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(amountButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(amountChanged(int)));
-#else
     connect(amountButtonGroup, SIGNAL(idClicked(int)),
             this, SLOT(amountChanged(int)));
-#endif
     mainLayout->addWidget(amount, 0,1);
 
     minxLabel = new QLabel(tr("X-Minimum"), central);

@@ -222,13 +222,8 @@ QvisScatterPlotWindow::CreateWindowContents()
     dataLayout->addWidget(rb, 0, 3);
 
     // Each time a radio button is clicked, call the scale clicked slot.
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(var1Scaling, SIGNAL(buttonClicked(int)),
-            this, SLOT(var1ScalingChanged(int)));
-#else
     connect(var1Scaling, SIGNAL(idClicked(int)),
             this, SLOT(var1ScalingChanged(int)));
-#endif
 
     // Create the skew factor line edit    
     var1SkewFactor = new QLineEdit(central);
@@ -343,13 +338,8 @@ QvisScatterPlotWindow::CreateWindowContents()
     dataLayout->addWidget(rb, 0, 3);
 
     // Each time a radio button is clicked, call the scale clicked slot.
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(var2Scaling, SIGNAL(buttonClicked(int)),
-            this, SLOT(var2ScalingChanged(int)));
-#else
     connect(var2Scaling, SIGNAL(idClicked(int)),
             this, SLOT(var2ScalingChanged(int)));
-#endif
 
     // Create the skew factor line edit    
     var2SkewFactor = new QLineEdit(central);
@@ -465,13 +455,8 @@ QvisScatterPlotWindow::CreateWindowContents()
     dataLayout->addWidget(rb, 0, 3);
 
     // Each time a radio button is clicked, call the scale clicked slot.
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(var3Scaling, SIGNAL(buttonClicked(int)),
-            this, SLOT(var3ScalingChanged(int)));
-#else
     connect(var3Scaling, SIGNAL(idClicked(int)),
             this, SLOT(var3ScalingChanged(int)));
-#endif
 
     // Create the skew factor line edit    
     var3SkewFactor = new QLineEdit(central);
@@ -588,13 +573,8 @@ QvisScatterPlotWindow::CreateWindowContents()
     dataLayout->addWidget(rb, 0, 3);
 
     // Each time a radio button is clicked, call the scale clicked slot.
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(var4Scaling, SIGNAL(buttonClicked(int)),
-            this, SLOT(var4ScalingChanged(int)));
-#else
     connect(var4Scaling, SIGNAL(idClicked(int)),
             this, SLOT(var4ScalingChanged(int)));
-#endif
 
     // Create the skew factor line edit    
     var4SkewFactor = new QLineEdit(central);
@@ -683,13 +663,8 @@ QvisScatterPlotWindow::CreateWindowContents()
     // Create the mode buttons that determine if the window is in single
     // or multiple color mode.
     colorModeButtons = new QButtonGroup(colorGroup);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(colorModeButtons, SIGNAL(buttonClicked(int)),
-            this, SLOT(colorModeChanged(int)));
-#else
     connect(colorModeButtons, SIGNAL(idClicked(int)),
             this, SLOT(colorModeChanged(int)));
-#endif
 
     rb = new QRadioButton(tr("Foreground Color"), colorGroup);
     colorModeButtons->addButton(rb, 0);

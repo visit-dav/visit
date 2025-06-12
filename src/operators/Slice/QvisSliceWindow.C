@@ -142,13 +142,8 @@ QvisSliceWindow::CreateWindowContents()
     normalLayout->setSpacing(5);
 
     normalTypeGroup = new QButtonGroup(normalBox);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(normalTypeGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(normalTypeChanged(int)));
-#else
     connect(normalTypeGroup, SIGNAL(idClicked(int)),
             this, SLOT(normalTypeChanged(int)));
-#endif
 
     //    Orthogonal
     normalLayout->addWidget(new QLabel(tr("Orthogonal"), normalBox), 1,0);
@@ -214,14 +209,8 @@ QvisSliceWindow::CreateWindowContents()
     topLayout->addWidget(originBox);
 
     originTypeGroup = new QButtonGroup(originBox);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(originTypeGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(originTypeChanged(int)));
-#else
     connect(originTypeGroup, SIGNAL(idClicked(int)),
             this, SLOT(originTypeChanged(int)));
-#endif
-
 
     QGridLayout *originLayout = new QGridLayout(originBox);
 

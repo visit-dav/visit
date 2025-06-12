@@ -125,13 +125,8 @@ QvisSubsetPlotWindow::CreateWindowContents()
     // Create the mode buttons that determine if the window is in single
     // or multiple color mode.
     colorModeButtons = new QButtonGroup(subsetColorGroup);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(colorModeButtons, SIGNAL(buttonClicked(int)),
-            this, SLOT(colorModeChanged(int)));
-#else
     connect(colorModeButtons, SIGNAL(idClicked(int)),
             this, SLOT(colorModeChanged(int)));
-#endif
 
     QRadioButton *rb = new QRadioButton(tr("Color table"), subsetColorGroup);
     colorModeButtons->addButton(rb, 0);
@@ -288,13 +283,8 @@ QvisSubsetPlotWindow::CreateWindowContents()
 
     // Create the smoothing level buttons
     smoothingLevelButtons = new QButtonGroup(central);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(smoothingLevelButtons, SIGNAL(buttonClicked(int)),
-            this, SLOT(smoothingLevelChanged(int)));
-#else
     connect(smoothingLevelButtons, SIGNAL(idClicked(int)),
             this, SLOT(smoothingLevelChanged(int)));
-#endif
 
     rb = new QRadioButton(tr("None"), central);
     smoothingLevelButtons->addButton(rb, 0);

@@ -172,13 +172,8 @@ QvisIsosurfaceWindow::CreateWindowContents()
     scalingButtons->button(0)->setChecked(true);
     
     // Each time a radio button is clicked, call the scaleClicked slot.
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(scalingButtons, SIGNAL(buttonClicked(int)),
-            this, SLOT(scaleClicked(int)));
-#else
     connect(scalingButtons, SIGNAL(idClicked(int)),
             this, SLOT(scaleClicked(int)));
-#endif
 }
 
 
