@@ -639,9 +639,6 @@ endif()
 
 set(VISIT_INCLUDE_DIR ${VISIT_SOURCE_DIR}  CACHE INTERNAL "Path to VisIt's includes")
 
-# This include sets up vars that contains lists of include directories
-include(${VISIT_SOURCE_DIR}/CMake/VisItIncludeVars.cmake)
-
 # macros/defines needed by CMake/VisItMacros.cmake
 if(NOT DEFINED VISIT_REPLACE_DEBUG_FLAGS)
     set(VISIT_REPLACE_DEBUG_FLAGS TRUE)
