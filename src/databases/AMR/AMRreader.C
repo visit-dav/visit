@@ -57,12 +57,13 @@ AMRreader::init()
     icvener_ = 4;
 
     // only for GenMixEOS
-    icvpres_ = 0;
-    icvtemp_ = 0;
+    icvpres_ = -1;
+    icvtemp_ = -1;
 
     iavpres_ = 0;
     iavtemp_ = 0;
     iavsndv_ = 0;
+    iavvf_   = 0;
 }
 
 // Modifications:
@@ -344,16 +345,43 @@ getAMRinfo( hid_t gid )
         debug1 << "getAMRinfo(): ncvs = " << ncvs_ << ", navs = " << navs_ << "\n";
     }
 
+    // Check for prescribed indices for the AVs
+    htri_t est = H5Aexists( gid, "index_av" );
+    int index_av[4];
+    bool read_index_av = false;
+    if (est > 0)
+    {
+        aid = H5Aopen_name( gid, "index_av" );
+        if( aid<0 )
+        {
+            debug1 << "Did not find index_av, using defaults.\n";
+        }
+        else
+        {
+            H5Aread( aid, H5T_NATIVE_INT, index_av );
+            read_index_av = true;
+            iavpres_ = index_av[0];
+            iavtemp_ = index_av[1];
+            iavsndv_ = index_av[2];
+            iavvf_   = index_av[3];
+            H5Aclose(aid);
+        }
+    }
+
+    bool found_eos = false;
 
     // eos
-    htri_t est = H5Aexists( gid, amr_idealname );
+    est = H5Aexists( gid, amr_idealname );
     if( est>0 )
     {
         aid = H5Aopen_name( gid, amr_idealname );
         H5Aread( aid, H5T_NATIVE_FLOAT, rbuf );
         H5Aclose(aid);
+
+        nspec_ = 1;
+
         eos_ = new IdealEOS( rbuf[0], rbuf[1] );
-        return 0;
+        found_eos = true;
     }
 
     est = H5Aexists( gid, amr_jwlname );
@@ -362,9 +390,12 @@ getAMRinfo( hid_t gid )
         aid = H5Aopen_name( gid, amr_jwlname );
         H5Aread( aid, H5T_NATIVE_FLOAT, rbuf );
         H5Aclose(aid);
+
+        nspec_ = 1;
+
         eos_ = new JwlEOS( rbuf[0], rbuf[1], rbuf[2], rbuf[3],
                            rbuf[4], rbuf[5], rbuf[6] );
-        return 0;
+        found_eos = true;
     }
 
     est = H5Aexists( gid, amr_jwlbname );
@@ -398,7 +429,7 @@ getAMRinfo( hid_t gid )
         iavtemp_ = 2;
         iavsndv_ = 3;
 
-        return 0;
+        found_eos = true;
     }
 
     est = H5Aexists( gid, amr_sesamename );
@@ -406,11 +437,23 @@ getAMRinfo( hid_t gid )
     {
         eos_ = new SesameEOS();
 
-	iavpres_ = 0;
-	iavtemp_ = 1;
-	iavsndv_ = 2;
+        nspec_ = 1;
 
-        return 0;
+        iavpres_ = 0;
+        iavtemp_ = 1;
+        iavsndv_ = 2;
+
+        // check for existence of pressure, temperature, and sndv in file (not in AV)
+        est = H5Lexists(gid, amr_prename, H5P_DEFAULT);
+        sesame_haspres_ = est>0;
+
+        est = H5Lexists(gid, amr_tmpname, H5P_DEFAULT);
+        sesame_hastemp_ = est>0;
+
+        est = H5Lexists(gid, amr_sndname, H5P_DEFAULT);
+        sesame_hassndv_ = est>0;
+
+        found_eos = true;
     }
 
     est = H5Aexists( gid, amr_genmixname );
@@ -433,11 +476,15 @@ getAMRinfo( hid_t gid )
         icvpres_ = icvmomz_+1;
         icvtemp_ = icvmomz_+2;
 
-        iavsndv_ = 4;
+        if (!read_index_av)
+        {
+            iavsndv_ = 4;
+            iavvf_ = 5+nspec_;
+        }
 
-        eos_ = new GenMixEOS(nspec_);
+        eos_ = new GenMixEOS(nspec_, iavvf_);
 
-        return 0;
+        found_eos = true;
     }
 
     est = H5Aexists( gid, amr_idealtilname );
@@ -447,11 +494,13 @@ getAMRinfo( hid_t gid )
         aid = H5Aopen_name( gid, amr_idealtilname );
         H5Aclose(aid);
 
+        nspec_ = 2;
+
         iavpres_ = 0;
         iavtemp_ = 1;
         iavsndv_ = 2;
 
-        return 0;
+        found_eos = true;
     }
 
     est = H5Aexists( gid, amr_multiidealname );
@@ -479,24 +528,74 @@ getAMRinfo( hid_t gid )
         iavtemp_ = 1;
         iavsndv_ = 2;
 
-        return 0;
+        found_eos = true;
     }
 
     est = H5Aexists( gid, amr_jwljwlname );
     if( est>0 )
     {
-        eos_ = new JwlJwlEOS();
+        eos_ = new JwlJwlEOS(navs_);
         aid = H5Aopen_name( gid, amr_jwljwlname );
         H5Aclose(aid);
+
+        nspec_ = 2;
 
         iavpres_ = 0;
         iavtemp_ = 1;
         iavsndv_ = 2;
 
-        return 0;
+        found_eos = true;
     }
 
-    eos_ = new IdealEOS( 1.4, 1.0 );
+    if (!found_eos)
+    {
+        eos_ = new IdealEOS( 1.4, 1.0 );
+    }
+
+    // Check for prescribed indices for the CVs
+    est = H5Aexists( gid, "index_cv" );
+    if (est > 0)
+    {
+        aid = H5Aopen_name( gid, "index_cv" );
+        if( aid<0 )
+        {
+            debug1 << "Did not find index_cv, using defaults.\n";
+        }
+        else
+        {
+            int ibuf[5];
+            H5Aread( aid, H5T_NATIVE_INT, ibuf );
+            icvdens_ = ibuf[0];
+            icvmomx_ = ibuf[1];
+
+            if (icvmomx_ == -1)
+            {
+                icvmomy_ = -1;
+                icvmomz_ = -1;
+            }
+            else
+            {
+                icvmomy_ = icvmomx_+1;
+                icvmomz_ = icvmomx_+2;
+            }
+
+            icvener_ = ibuf[2];
+
+            icvpres_ = ibuf[3];
+            icvtemp_ = ibuf[4];
+            H5Aclose(aid);
+        }
+    }
+
+    if (read_index_av)
+    {
+        iavpres_ = index_av[0];
+        iavtemp_ = index_av[1];
+        iavsndv_ = index_av[2];
+        iavvf_   = index_av[3];
+    }
+
+
     return 0;
 }
 
@@ -839,46 +938,66 @@ readAMRadditionData()
         return -3;
     }
 
-    hid_t datid = H5Dopen1( gid, amr_prename );
-    if( datid<0 )
+    hid_t datid;
+    herr_t herr;
+    if (sesame_haspres_)
     {
-        debug1 << "Failed to open " << amr_prename << " data in " << filename_ << ".\n";
-        return -4;
-    }
-    herr_t herr = H5Dread( datid, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, prebuf_ );
-    H5Dclose(datid);
-    if( herr<0 )
-    {
-        debug1 << "Failed to read " << amr_prename << " in " << filename_ << ".\n";
-        return -5;
-    }
-
-    datid = H5Dopen1( gid, amr_sndname );
-    if( datid<0 )
-    {
-        debug1 << "Failed to open " << amr_sndname << " data in " << filename_ << ".\n";
-        return -4;
-    }
-    herr = H5Dread( datid, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, sndbuf_ );
-    H5Dclose(datid);
-    if( herr<0 )
-    {
-        debug1 << "Failed to read " << amr_sndname << " in " << filename_ << ".\n";
-        return -5;
+        datid = H5Dopen1( gid, amr_prename );
+        if( datid<0 )
+        {
+            debug1 << "Failed to open " << amr_prename << " data in " << filename_ << ".\n";
+            return -4;
+        }
+        else
+        {
+            herr = H5Dread( datid, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, prebuf_ );
+            if( herr<0 )
+            {
+                debug1 << "Failed to read " << amr_prename << " in " << filename_ << ".\n";
+                return -5;
+            }
+        }
+        H5Dclose(datid);
     }
 
-    datid = H5Dopen1( gid, amr_tmpname );
-    if( datid<0 )
+    if (sesame_hassndv_)
     {
-        debug1 << "Failed to open " << amr_tmpname << " data in " << filename_ << ".\n";
-        return -4;
+        datid = H5Dopen1( gid, amr_sndname );
+        if( datid<0 )
+        {
+            debug1 << "Failed to open " << amr_sndname << " data in " << filename_ << ".\n";
+            return -4;
+        }
+        else
+        {
+            herr = H5Dread( datid, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, sndbuf_ );
+            if( herr<0 )
+            {
+                debug1 << "Failed to read " << amr_sndname << " in " << filename_ << ".\n";
+                return -5;
+            }
+        }
+        H5Dclose(datid);
     }
-    herr = H5Dread( datid, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, tmpbuf_ );
-    H5Dclose(datid);
-    if( herr<0 )
+
+    if (sesame_hastemp_)
     {
-        debug1 << "Failed to read " << amr_tmpname << " in " << filename_ << ".\n";
-        return -5;
+        datid = H5Dopen1( gid, amr_tmpname );
+        if( datid<0 )
+        {
+            debug1 << "Failed to open " << amr_tmpname << " data in " << filename_ << ".\n";
+            return -4;
+        }
+        else
+        {
+            herr = H5Dread( datid, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, tmpbuf_ );
+            if( herr<0 )
+            {
+                debug1 << "Failed to read " << amr_tmpname << " in " << filename_ << ".\n";
+                return -5;
+            }
+        }
+        H5Dclose(datid);
     }
 
     H5Gclose( gid );
@@ -1019,6 +1138,7 @@ PreprocessData()
 int AMRreader::
 GetBlockVariable( int bid, int vid, float* dat )
 {
+    debug1 << "AMRreader::GetBlockVariable(): bid = " << bid << "  vid = " << vid << "\n";
     int ierr = PreprocessData();
     if( ierr!=0 )
     {
