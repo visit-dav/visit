@@ -63,11 +63,11 @@ add_subdirectory(Sources)
 visit_append_list(
     NAME  avtpipeline_ser_INCLUDES
     ITEMS $<BUILD_INTERFACE:${VISIT_SOURCE_DIR}/avt/Database/Database>
-          $<INSTALL_INTERFACE:${VISTI_INSTALLED_VERSION_INCLUDE}/visit/avt/Database/Database>
+          $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/Database/Database>
           $<BUILD_INTERFACE:${VISIT_SOURCE_DIR}/avt/Database/Ghost>
-          $<INSTALL_INTERFACE:${VISTI_INSTALLED_VERSION_INCLUDE}/visit/avt/Database/Ghost>
+          $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/Database/Ghost>
           $<BUILD_INTERFACE:${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow>
-          $<INSTALL_INTERFACE:${VISTI_INSTALLED_VERSION_INCLUDE}/visit/avt/VisWindow/VisWindow>)
+          $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/VisWindow/VisWindow>)
 
 visit_append_list(
     NAME  avtpipeline_ser_DEPENDS

@@ -25,10 +25,10 @@ visit_add_parallel_library(
                 ${CMAKE_CURRENT_SOURCE_DIR}/src/cog/bool.h
                 ${CMAKE_CURRENT_SOURCE_DIR}/src/cog/types.h
     INCLUDES    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
-                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cog>
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/cog>
                 $<BUILD_INTERFACE:${VISIT_BINARY_DIR}/include>
-                $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/thirdparty_builtin/src>
-                $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/thirdparty_builtin/src/cog>
+                $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/third_party_builtin/cognomen/src>
+                $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/third_party_builtin/cognomen/src/cog>
     DEFINES     IN_COGNOMEN
     SHARED      ${is_shared}
     FOLDER      thirdparty_builtin/cognomen)

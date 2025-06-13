@@ -20,7 +20,7 @@ set(avtwriter_HEADERS
 
 set(avtwriter_INCLUDES
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-    $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERISON_INCLUDE}/visit/avt/FileWriter>)
+    $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/FileWriter>)
 
 set(avtwriter_DEPENDS
     visitcommon

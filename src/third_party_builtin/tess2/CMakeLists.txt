@@ -33,6 +33,6 @@ visit_add_library(
     SOURCES  ${TESS2_SOURCES}
     HEADERS  ${TESS2_HEADERS}
     INCLUDES $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-             $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/thirdparty_builtin/tess2>
+             $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/third_party_builtin/tess2>
     FOLDER   thirdparty_builtin/tess2)
 

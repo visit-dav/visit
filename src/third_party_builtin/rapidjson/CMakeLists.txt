@@ -47,6 +47,6 @@ visit_add_library(
              msinttypes/stdint.h
              internal/swap.h
     INCLUDES $<BUILD_INTERFACE:${VISIT_SOURCE_DIR}/third_party_builtin>
-             $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/third_party_builtin>
+             $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/third_party_builtin>
     FOLDER   thirdparty_builtin/rapidjson)
 
