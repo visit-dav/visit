@@ -8,6 +8,9 @@
 #   Libraries may be installed in 'lib64' or 'lib' so test for existence and
 #   set a temporary CMake var to hold the correct one.
 #
+#   Kathleen Biagas, Friday June 13, 2025
+#   Ensure libraries are installed on Windows, needs a different 'glob'.
+#
 #*****************************************************************************
 
 #[=======================================================================[.rst:
@@ -94,8 +97,11 @@ if(anari_FOUND)
     # the install library logic will correctly install both the full
     # version and the .so symlink, so only the .so is needed to be
     # sent to the function.
-    file(GLOB ANARI_LIBRARIES ${VISIT_ANARI_DIR}/${anari_libdir}/lib*)
-
+    if(WIN32)
+        file(GLOB ANARI_LIBRARIES ${VISIT_ANARI_DIR}/${anari_libdir}/*.lib)
+    else()
+        file(GLOB ANARI_LIBRARIES ${VISIT_ANARI_DIR}/${anari_libdir}/lib*)
+    endif()
     # Install libs
     foreach(l ${ANARI_LIBRARIES})
       get_filename_component(_name_ ${l} NAME_WE)

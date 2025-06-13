@@ -69,38 +69,6 @@ function bv_mili_ensure
 #                          Function 8.2, build_mili                           #
 # *************************************************************************** #
 
-function apply_mili_221_path_length_patch
-{
-    info "Applying Mili 22.1 max path length patch."
-    patch -p0 << \EOF
-diff -c mili-22.1/src/mili.h mili-22.1/src/mili.h.pathlenpatch 
-*** mili-22.1/src/mili.h    Wed Jun  1 15:21:14 2022
---- mili-22.1/src/mili.h.pathlenpatch   Mon Sep 12 13:39:59 2022
-***************
-*** 200,206 ****
-  /*
-   * Miscellaneous limits
-   */
-! #define M_MAX_NAME_LEN   (300) /* Longest name length */
-  #define M_MAX_ARRAY_DIMS (6)   /* Maximum number of array dimensions */
-  #define M_MAX_STRING_LEN (512) /* Maximum string length */
-  
---- 200,206 ----
-  /*
-   * Miscellaneous limits
-   */
-! #define M_MAX_NAME_LEN   (4096) /* Longest name length */
-  #define M_MAX_ARRAY_DIMS (6)   /* Maximum number of array dimensions */
-  #define M_MAX_STRING_LEN (512) /* Maximum string length */
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "Unable to apply max path length patch to Mili 22.1"
-        return 1
-    fi
-
-    return 0
-}
-
 function apply_mili_2302_darwin_patch1
 {
     info "Applying Mili 23.02 darwin patch 1."
@@ -148,185 +116,6 @@ function apply_mili_2302_darwin_patch2
 EOF
     if [[ $? != 0 ]] ; then
         warn "Unable to apply Darwin patch 2 to Mili 23.02"
-        return 1
-    fi
-
-    return 0
-}
-
-function apply_mili_221_cflags_patch
-{
-    info "Applying Mili 22.1 CFLAGS patch."
-    patch -p0 << \EOF
-diff -u mili-22.1/configure.orig mili-22.1/configure
---- mili-22.1/configure.orig    2022-06-01 15:21:14.000000000 -0700
-+++ mili-22.1/configure         2022-11-04 09:17:02.890687000 -0700
-@@ -4361,24 +4361,28 @@
- 
-     case $CC in
-       *icc)
--        CC_FLAGS_DEBUG="-g $WORD_SIZE "
--        CC_FLAGS_OPT="-O3 $WORD_SIZE "
--        CC_FLAGS_LD_DEBUG="-g $WORD_SIZE"
--        CC_FLAGS_LD_OPT="-O3 $WORD_SIZE"
-+        CC_FLAGS_DEBUG="$CFLAGS -g $WORD_SIZE "
-+        CC_FLAGS_OPT="$CFLAGS -O3 $WORD_SIZE "
-+        CC_FLAGS_LD_DEBUG="$CFLAGS -g $WORD_SIZE"
-+        CC_FLAGS_LD_OPT="$CFLAGS -O3 $WORD_SIZE"
-         ;;
-       *xlc)
--        CC_FLAGS_DEBUG="-g $WORD_SIZE "
--        CC_FLAGS_OPT="-O4 $WORD_SIZE "
--        CC_FLAGS_LD_DEBUG="-g $WORD_SIZE"
--        CC_FLAGS_LD_OPT="-O4"
-+        CC_FLAGS_DEBUG="$CFLAGS -g $WORD_SIZE "
-+        CC_FLAGS_OPT="$CFLAGS -O4 $WORD_SIZE "
-+        CC_FLAGS_LD_DEBUG="$CFLAGS -g $WORD_SIZE"
-+        CC_FLAGS_LD_OPT="$CFLAGS -O4"
-         ;;
-       *gcc)
--        CC_FLAGS_DEBUG="-g $WORD_SIZE "
--        CC_FLAGS_OPT="-O4 $WORD_SIZE "
--        CC_FLAGS_LD_DEBUG="-g $WORD_SIZE"
--        CC_FLAGS_LD_OPT="-O4 $WORD_SIZE"
--        ;;
--      *cc)
-+        CC_FLAGS_DEBUG="$CFLAGS -g $WORD_SIZE "
-+        CC_FLAGS_OPT="$CFLAGS -O4 $WORD_SIZE "
-+        CC_FLAGS_LD_DEBUG="$CFLAGS -g $WORD_SIZE"
-+        CC_FLAGS_LD_OPT="$CFLAGS -O4 $WORD_SIZE"
-+        ;;
-+      *)
-+        CC_FLAGS_DEBUG="$CFLAGS -g $WORD_SIZE "
-+        CC_FLAGS_OPT="$CFLAGS -O3 $WORD_SIZE "
-+        CC_FLAGS_LD_DEBUG="$CFLAGS -g $WORD_SIZE"
-+        CC_FLAGS_LD_OPT="$CFLAGS -O3 $WORD_SIZE"
-         ;;
-     esac
-     case $F77 in
-@@ -4395,12 +4399,16 @@
-         FC_FLAGS_LD_OPT="-O3 $WORD_SIZE -WF,-DAIX"
-         ;;
-       *gfortran)
--        CC_FLAGS_DEBUG="-g $WORD_SIZE "
--        CC_FLAGS_OPT="-O3 $WORD_SIZE "
--        CC_FLAGS_LD_DEBUG="-g $WORD_SIZE"
--        CC_FLAGS_LD_OPT="-O3 $WORD_SIZE"
-+        FC_FLAGS_DEBUG="-g $WORD_SIZE "
-+        FC_FLAGS_OPT="-O3 $WORD_SIZE "
-+        FC_FLAGS_LD_DEBUG="-g $WORD_SIZE"
-+        FC_FLAGS_LD_OPT="-O3 $WORD_SIZE"
-         ;;
--      *cc)
-+      *)
-+        FC_FLAGS_DEBUG="-g $WORD_SIZE "
-+        FC_FLAGS_OPT="-O3 $WORD_SIZE "
-+        FC_FLAGS_LD_DEBUG="-g $WORD_SIZE"
-+        FC_FLAGS_LD_OPT="-O3 $WORD_SIZE"
-         ;;
-     esac
-     SHELL="/bin/sh"
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "Unable to apply CFLAGS patch to Mili 22.1"
-        return 1
-    fi
-
-    return 0
-}
-
-function apply_mili_221_blueos_patch
-{
-    info "Applying Mili 22.1 blueos patch."
-    patch -p0 << \EOF
-diff -c mili-22.1/src/eprtf.c.orig mili-22.1/src/eprtf.c
-*** mili-22.1/src/eprtf.c.orig	Wed Jun 15 16:38:26 2022
---- mili-22.1/src/eprtf.c	Wed Jun 15 16:38:51 2022
-***************
-*** 89,115 ****
-  #include "win32-regex.h"
-  #endif
-  
-! #include "mili_enum.h"
-  #include "eprtf.h"
-  
-  static char destbuf[CMAX];
-  static char *p_cur;
-  static int cur_len;
-  static va_list val;
-- #ifdef HAVE_EPRINT
-  static char *t_pattern = "%([0-9]+|[*])t";
-  static regex_t all_re;
-  static char *all_pattern =
-     "%[0 -+#]*([0-9]*|[*])([.]([0-9]*|[*]))?[hlL]?[dioxXucsfeEgGpn%]";
-  
-- #endif
-  static regex_t t_re;
-  static regmatch_t t_match[1];
-  
-  
-- #ifdef NOOPTERON
-  static regmatch_t all_match[1];
-- #endif
-  
-  
-  /*****************************************************************
---- 89,111 ----
-  #include "win32-regex.h"
-  #endif
-  
-! #include "mili_internal.h"
-  #include "eprtf.h"
-  
-  static char destbuf[CMAX];
-  static char *p_cur;
-  static int cur_len;
-  static va_list val;
-  static char *t_pattern = "%([0-9]+|[*])t";
-  static regex_t all_re;
-  static char *all_pattern =
-     "%[0 -+#]*([0-9]*|[*])([.]([0-9]*|[*]))?[hlL]?[dioxXucsfeEgGpn%]";
-  
-  static regex_t t_re;
-  static regmatch_t t_match[1];
-  
-  
-  static regmatch_t all_match[1];
-  
-  
-  /*****************************************************************
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "Unable to apply blueos patch to Mili 22.1"
-        return 1
-    fi
-
-    return 0
-}
-
-function apply_mili_221_write_funcs_patch
-{
-    #
-    # write_funcs is not needed and having it in the header leads to
-    # multiple definitions, which gcc 10.2 on Debian 11 doesn't like.
-    #
-    patch -p0 << \EOF
-diff -c mili-22.1/src/mili_internal.h.orig mili-22.1/src/mili_internal.h
-*** mili-22.1/src/mili_internal.h.orig  Tue Jul 12 10:49:05 2022
---- mili-22.1/src/mili_internal.h       Tue Jul 12 10:49:29 2022
-***************
-*** 674,680 ****
-  /* dep.c - routines for handling architecture dependencies. */
-  Return_value set_default_io_routines( Mili_family *fam );
-  Return_value set_state_data_io_routines( Mili_family *fam );
-- void (*write_funcs[QTY_PD_ENTRY_TYPES + 1])();
-  
-  /* svar.c - routines for managing state variables. */
-  Bool_type valid_svar_data( Aggregate_type atype, char *name,
---- 674,679 ----
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "Unable to apply write funcs patch to Mili 22.1"
         return 1
     fi
 
@@ -487,6 +276,32 @@ EOF
     return 0
 }
 
+function apply_mili_2302_buildinfo_patch
+{
+    info "Applying Mili 23.02 buildinfo patch."
+    patch -p0 << \EOF
+diff -u mili-23.02/src/buildinfo.c.orig mili-23.02/src/buildinfo.c
+--- mili-23.02/src/buildinfo.c.orig	2025-06-05 15:24:33.266799000 -0700
++++ mili-23.02/src/buildinfo.c	2025-06-05 15:25:22.203867000 -0700
+@@ -120,7 +120,7 @@
+ 
+    fprintf(outfile, "#define BI_CONFIG \"%s\"\n",
+            CONFIG_CMD);
+-   fp = popen( "module 2> /dev/null", "r");
++   fp = NULL; /*popen( "module 2> /dev/null", "r");*/
+    if (fp == NULL)
+    {
+       fprintf(outfile, "#define BI_MODULES \"none\"\n");
+
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Unable to apply buildinfo patch to Mili 23.02"
+        return 1
+    fi
+
+    return 0
+}
+
 function apply_mili_patch
 {
     if [[ "$OPSYS" == "Darwin" ]]; then
@@ -500,38 +315,22 @@ function apply_mili_patch
         fi
     fi
 
-    if [[ ${MILI_VERSION} == 22.1 ]] ; then
-        apply_mili_221_cflags_patch
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
-        apply_mili_221_blueos_patch
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
-        apply_mili_221_write_funcs_patch
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
-        apply_mili_221_path_length_patch
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
+    apply_mili_2302_cflags_patch
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+    apply_mili_2302_blueos_patch
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+    apply_mili_2302_write_funcs_patch
+    if [[ $? != 0 ]] ; then
+        return 1
     fi
 
-    if [[ ${MILI_VERSION} == 23.02 ]] ; then
-        apply_mili_2302_cflags_patch
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
-        apply_mili_2302_blueos_patch
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
-        apply_mili_2302_write_funcs_patch
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
+    apply_mili_2302_buildinfo_patch
+    if [[ $? != 0 ]] ; then
+        return 1
     fi
 
     return 0
@@ -606,6 +405,7 @@ EOF
     ./${config_script} CXX="$CXX_COMPILER" CC="$C_COMPILER" \
                 CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
                 ac_cv_prog_FOUND_GMAKE=make $extra_ac_flags $F77_ARG $TYPEDEFS_ARG \
+                LDFLAGS="-lm" \
                 --prefix="$VISITDIR/mili/$MILI_VERSION/$VISITARCH"
     set +x
     if [[ $? != 0 ]] ; then
