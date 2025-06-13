@@ -54,11 +54,9 @@ function bv_h5part_host_profile
             "VISIT_OPTION_DEFAULT(VISIT_H5PART_DIR \${VISITHOME}/h5part/\${H5PART_VERSION}/\${VISITARCH})" \
             >> $HOSTCONF
         echo \
-            "VISIT_OPTION_DEFAULT(VISIT_H5PART_LIBDEP HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP} TYPE STRING)" \
+            "VISIT_OPTION_DEFAULT(VISIT_H5PART_LIBDEP hdf5 TYPE STRING)" \
             >> $HOSTCONF
-
     fi
-
 }
 
 function bv_h5part_ensure

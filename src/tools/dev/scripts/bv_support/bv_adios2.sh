@@ -91,15 +91,22 @@ function bv_adios2_host_profile
             echo "SETUP_APP_VERSION(ADIOS2 $ADIOS2_VERSION)" >> $HOSTCONF
             echo "VISIT_OPTION_DEFAULT(VISIT_ADIOS2_DIR $ADIOS2_INSTALL_DIR)" >> $HOSTCONF
         else
+            libdep="blosc2"
+            if [[ "$DO_HDF5" == "yes" ]] ; then
+                libdep="blosc2 hdf5"
+            fi
+
             echo "SETUP_APP_VERSION(ADIOS2 $ADIOS2_VERSION)" >> $HOSTCONF
             echo \
                 "VISIT_OPTION_DEFAULT(VISIT_ADIOS2_DIR \${VISITHOME}/adios2-ser/\${ADIOS2_VERSION}/\${VISITARCH})" \
                 >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(VISIT_ADIOS2_LIBDEP ${libdep})" >> $HOSTCONF
 
             if [[ "$parallel" == "yes" ]] ; then
                 echo "## (configured w/ mpi compiler wrapper)" >> $HOSTCONF
                 echo "VISIT_OPTION_DEFAULT(VISIT_ADIOS2_PAR_DIR \${VISITHOME}/adios2-par/\${ADIOS2_VERSION}/\${VISITARCH})" \
                 >> $HOSTCONF
+                echo "VISIT_OPTION_DEFAULT(VISIT_ADIOS2_PAR_LIBDEP ${libdep})" >> $HOSTCONF
             fi
         fi
     fi

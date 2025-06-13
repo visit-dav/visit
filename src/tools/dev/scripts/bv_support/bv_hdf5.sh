@@ -101,22 +101,23 @@ function bv_hdf5_host_profile
                     >> $HOSTCONF 
             fi
 
-            ZLIB_LIBDEP=""
+            LIBDEP=""
             if [[ "$DO_ZLIB" == "yes" ]] ; then
-                ZLIB_LIBDEP="\${VISITHOME}/zlib/\${ZLIB_VERSION}/\${VISITARCH}/lib z"
+                LIBDEP="zlib"
             fi
-            SZIP_LIBDEP=""
             if [[ "$DO_SZIP" == "yes" ]] ; then
-                SZIP_LIBDEP="\${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH}/lib sz"
+                LIBDEP="$LIBDEP szip"
             fi
             
-            echo \
-                "VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP $SZIP_LIBDEP $ZLIB_LIBDEP TYPE STRING)" \
-                    >> $HOSTCONF
-            if [[ -n "$HDF5_MPI_INSTALL_DIR" ]]; then
+            if [[ "$LIBDEP" != "" ]] ; then
                 echo \
-                    "VISIT_OPTION_DEFAULT(VISIT_HDF5_MPI_LIBDEP $SZIP_LIBDEP $ZLIB_LIBDEP TYPE STRING)" \
+                    "VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP $LIBDEP TYPE STRING)" \
                         >> $HOSTCONF
+                if [[ -n "$HDF5_MPI_INSTALL_DIR" ]]; then
+                    echo \
+                        "VISIT_OPTION_DEFAULT(VISIT_HDF5_MPI_LIBDEP $LIBDEP TYPE STRING)" \
+                            >> $HOSTCONF
+                fi
             fi
         fi
     fi

@@ -34,11 +34,6 @@ function bv_silo_depends_on
         depends_on="$depends_on hdf5"
     fi
     
-    if [[ "$DO_SZIP" == "yes" ]] ; then
-        depends_on="$depends_on szip"
-    fi
-
-
     echo $depends_on
 }
 
@@ -77,10 +72,12 @@ function bv_silo_host_profile
             >> $HOSTCONF
 
         libdep=""
-        if [[ "$DO_HDF5" == "yes" ]] ; then
-            libdep="HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP}"
+        if [[ "$DO_ZLIB" == "yes" ]] ; then
+            libdep="zlib"
         fi
-        libdep="$libdep ZLIB_LIBRARY_DIR z"
+        if [[ "$DO_HDF5" == "yes" ]] ; then
+            libdep="$libdep hdf5"
+        fi
         if [[ -n "$libdep" ]]; then
             echo \
                 "VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP $libdep TYPE STRING)" \
