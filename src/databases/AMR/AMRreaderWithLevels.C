@@ -668,6 +668,14 @@ AMRreaderWithLevels::AssembleBlockVariable(int bid, int vid, float *dat, const i
 {
     int retval = -1;
 
+    debug5 << "AMRreaderWithLevels::AssembleBlockVariable() bid=" << bid << " vid=" << vid << "\n";
+
+    int ncomponents = 1;
+    if (vid == v_velo)
+    {
+        ncomponents = 3;
+    }
+
     // If the bid has data in the file, return it.
     if(patches[bid].fileBID != -1)
     {
@@ -699,7 +707,8 @@ AMRreaderWithLevels::AssembleBlockVariable(int bid, int vid, float *dat, const i
                 // for the cell.
                 int celldims[3];
                 GetBlockDimensions(cellbid, celldims);
-                int cellsz = celldims[0] * celldims[1] * celldims[2];
+                int cellsz = celldims[0] * celldims[1] * celldims[2] * ncomponents;
+
                 if(cellsz != celldataSize)
                 {
                     delete [] celldata;
@@ -765,7 +774,10 @@ AMRreaderWithLevels::AssembleBlockVariable(int bid, int vid, float *dat, const i
                                                (j_off + j) * dims[0] +
                                                (i_off + i);
 
-                                dat[dest_idx] = celldata[cell_idx];
+                                for(int icomp=0; icomp<ncomponents; ++icomp)
+                                {
+                                    dat[ncomponents*dest_idx + icomp] = celldata[ncomponents*cell_idx + icomp];
+                                }
                             }
                         }
                     }
@@ -793,7 +805,10 @@ AMRreaderWithLevels::AssembleBlockVariable(int bid, int vid, float *dat, const i
                                            (j_off + j) * dims[0] +
                                            (i_off + i);
 
-                            dat[dest_idx] = 0;
+                            for(int icomp=0; icomp<ncomponents; ++icomp)
+                            {
+                                dat[ncomponents*dest_idx + icomp] = 0;
+                            }
                         }
                     }
                 }
@@ -808,6 +823,7 @@ AMRreaderWithLevels::AssembleBlockVariable(int bid, int vid, float *dat, const i
         retval = 0;
     }
 
+    debug5 << "finished AMRreaderWithLevels::AssembleBlockVariable() bid=" << bid << " vid=" << vid << " retval=" << retval << "\n";
     return retval;
 }
 
@@ -871,6 +887,12 @@ AMRreaderWithLevels::GetBlockVariable(int bid, int vid, float *dat)
     int retval = -1;
     if(bid >= 0 && bid < GetNumberOfBlocks())
     {
+        int ncomponents = 1;
+        if (vid == v_velo) 
+        {
+            ncomponents = 3;
+        }
+
         OctKey bidkey = GetBlockKey(bid);
         int root_index = OctKey_ExtractRootIndex(bidkey);
         OctKey rk = OctKey_Root(root_index);
@@ -883,7 +905,7 @@ AMRreaderWithLevels::GetBlockVariable(int bid, int vid, float *dat)
             debug1 << "AMRreaderWithLevels::GetBlockVariable(): dims=[" << dims[0]
                    << "," << dims[1] << "," << dims[2] <<  "]\n";
 
-            int sz_root = dims[0]*dims[1]*dims[2];
+            int sz_root = dims[0]*dims[1]*dims[2]*ncomponents;
             for (int i=0; i<sz_root; i++) {
                 dat[i] = 0.0;
             }
@@ -906,13 +928,15 @@ AMRreaderWithLevels::GetBlockVariable(int bid, int vid, float *dat)
             }
             else
             {
-                int sz = celldims[0]*celldims[1]*celldims[2];
+                int sz = celldims[0]*celldims[1]*celldims[2]*ncomponents;
                 float *celldata = new float[sz*8];
                 debug1 << "AMRreaderWithLevels::GetBlockVariable(): bid=" << bid << ", sz=" << sz << "\n";
 
                 // The level 0 mesh is made from all of the level 2 blocks.
                 OctKey root = OctKey_Root((uint64_t)root_index);
                 int rbid = BlockKeyToBID(root);
+
+                debug5 << "AMRreaderWithLevels::GetBlockVariable() looping over children\n";
                 for(int l0 = 0; l0 < 8; ++l0)
                 {
                     OctKey k0 = OctKey_AddLevel(root, l0);
@@ -942,7 +966,10 @@ AMRreaderWithLevels::GetBlockVariable(int bid, int vid, float *dat)
                                                (j_dest + j) * dims[0] +
                                                (i_dest + i);
 
-                                dat[dest_idx] = celldata[src_idx];
+                                for(int icomp=0; icomp<ncomponents; icomp++)
+                                {
+                                    dat[ncomponents*dest_idx + icomp] = celldata[ncomponents*src_idx + icomp];
+                                }
                             }
                         }
                     }
@@ -953,12 +980,15 @@ AMRreaderWithLevels::GetBlockVariable(int bid, int vid, float *dat)
                             celldims[2] > celldimsdef[2])
                         break;
                 }
+                debug5 << "AMRreaderWithLevels::GetBlockVariable() done looping over children\n";
 
                 delete [] celldata;
             }
         }
         else
         {
+            debug1 << "AMRreaderWithLevels::GetBlockVariable() not a root\n";
+
             // The block dimensions and the size of the dat array should
             // match already.
             int dims[3];
@@ -967,6 +997,7 @@ AMRreaderWithLevels::GetBlockVariable(int bid, int vid, float *dat)
         }
     }
 
+    debug1 << "Finished AMRreaderWithLevels::GetBlockVariable()\n";
     return retval;
 }
 
