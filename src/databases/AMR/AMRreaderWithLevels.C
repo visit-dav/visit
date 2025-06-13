@@ -181,7 +181,7 @@ AMRreaderWithLevels::MakeOctTree()
                         p.xe[0] = xMax;
                         p.xe[1] = yMax;
                         p.xe[2] = zMax;
-                        p.key = OctKey_Root((unsigned long int)rootid);
+                        p.key = OctKey_Root((uint64_t)rootid);
                         p.fileBID = FindBlock(p.key);
                         patches.push_back(p);
 
@@ -911,7 +911,7 @@ AMRreaderWithLevels::GetBlockVariable(int bid, int vid, float *dat)
                 debug1 << "AMRreaderWithLevels::GetBlockVariable(): bid=" << bid << ", sz=" << sz << "\n";
 
                 // The level 0 mesh is made from all of the level 2 blocks.
-                OctKey root = OctKey_Root((unsigned long int)root_index);
+                OctKey root = OctKey_Root((uint64_t)root_index);
                 int rbid = BlockKeyToBID(root);
                 for(int l0 = 0; l0 < 8; ++l0)
                 {
