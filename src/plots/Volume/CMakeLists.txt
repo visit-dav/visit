@@ -11,14 +11,13 @@ if(HAVE_ICET)
 endif()
 
 
-
 set(Volume_DEFINES)
 if(VISIT_SLIVR)
     list(APPEND Volume_DEFINES VISIT_SLIVR)
 endif()
 
 if(HAVE_ICET)
-    set(Volume_ELibs  ${ICET_LIBS})
+    set(Volume_ELibs ${ICET_LIBS})
 endif()
 
 visit_add_plot_plugin(

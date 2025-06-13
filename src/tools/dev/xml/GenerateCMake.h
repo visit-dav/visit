@@ -202,12 +202,14 @@
 //    The plugin code has been modified to utilize new cmake functions:
 //    visit_add_plot_plugin, visit_add_operator_plugin,
 //    visit_add_database_plugin.  Thus most of the CMake logic resides
-//    there instead of here, where it can be hard to parse and make changes.
+//    there instead of here, where it can be hard to parse to make changes.
 //
 //    This generator also now supports a 'Verbatim' tag in code files which
-//    can specify specialized CMake logic that should be added 'Pre' or 'Post'
+//    can specify specialized CMake logic that should be add 'Pre' or 'Post'
 //    calls to visit_add_xxx_plugin. As of this writing the Volume plot is the
 //    only plugin utilizing this functionality.
+//
+//    Removed no-longer used code.
 //
 // ****************************************************************************
 
@@ -219,51 +221,10 @@ class CMakeGeneratorPlugin : public Plugin
         bool hw, bool ho, bool hl, bool onlyengine, bool noengine) :
         Plugin(n,l,t,vt,dt,v,ifile,hw,ho,hl,onlyengine,noengine)
     {
-        defaultgfiles.clear();
-        defaultsfiles.clear();
-        defaultvfiles.clear();
-        defaultmfiles.clear();
-        defaultefiles.clear();
-        if (type == "database")
-        {
-            QString filter = QString("avt") + name + "FileFormat.C";
-            defaultmfiles.push_back(filter);
-            defaultefiles.push_back(filter);
-            if (haswriter)
-                defaultefiles.push_back(QString("avt") + name + "Writer.C");
-            if (hasoptions)
-            {
-                QString options = QString("avt") + name + QString("Options.C");
-                defaultmfiles.push_back(options);
-                defaultefiles.push_back(options);
-            }
-        }
-        else if (type == "plot")
-        {
-            QString filter = QString("avt") + name + "Filter.C";
-            defaultvfiles.push_back(filter);
-            defaultefiles.push_back(filter);
-        }
-        else if (type == "operator")
-        {
-            QString filter = QString("avt") + name + "Filter.C";
-            defaultefiles.push_back(filter);
-        }
     }
 
     virtual ~CMakeGeneratorPlugin()
     {
-    }
-
-    void
-    GetFilesWith(const QString &name, const std::vector<QString> &input,
-                 std::set<QString> &output)
-    {
-         for(size_t i = 0; i < input.size(); ++i)
-         {
-             if(input[i].indexOf(name) != -1)
-                 output.insert(input[i]);
-         }
     }
 
     QString
@@ -479,40 +440,6 @@ class CMakeGeneratorPlugin : public Plugin
         }
     }
 
-    void WriteCMake_ConditionalTargetLinks(QTextStream &out, const QString &target, const char *libType, const QString &plugType, const char *indent)
-    {
-        QString c(libType);
-        c += "LinkLibraries:";
-        QStringList conditions, links;
-        if (GetCondition(c, conditions, links))
-        {
-            for (int i = 0; i < conditions.size(); ++i)
-            {
-                out << indent << "if(" << conditions[i] << ")" << Endl;
-                out << indent << "    target_link_libraries(" << libType << target << plugType << " " << links[i] << ")" << Endl;
-                out << indent << "endif()" << Endl;
-                out << Endl;
-            }
-        }
-    }
-
-    void WriteCMake_ConditionalSources(QTextStream &out, const char *libType, const char *indent)
-    {
-        QString c(libType);
-        c += "Sources:";
-        QStringList conditions, srcs;
-        if (GetCondition(c, conditions, srcs))
-        {
-            for (int i = 0; i < conditions.size(); ++i)
-            {
-                out << indent << "if(" << conditions[i] << ")" << Endl;
-                out << indent << "    set(LIB" << libType << "_SOURCES ${LIB" << libType << "_SOURCES} " << srcs[i] << ")" << Endl;
-                out << indent << "endif()" << Endl;
-                out << Endl;
-            }
-        }
-    }
-
     void
     WriteCMake_AdditionalCode(QTextStream &out)
     {
@@ -535,102 +462,6 @@ class CMakeGeneratorPlugin : public Plugin
                 }
             }
         }
-    }
-
-    void CMakeAdd_EngineTargets(QTextStream &out)
-    {
-        QString ptype = type;
-        ptype[0] = type[0].toUpper();
-        out << "ADD_LIBRARY(E"<<name<<ptype << "_ser ${LIBE_SOURCES}";
-        if (customwefiles)
-            out << " ${LIBE_WIN32_SOURCES}";
-        out << ")" << Endl;
-        if(!edefsSer.empty())
-        {
-            CMakeWrite_TargetDefines(out, "", "E", "_ser", edefsSer);
-        }
-        if(!ecxxflagsSer.empty())
-        {
-            CMakeWrite_TargetIncludes(out, "", "E", "_ser", ecxxflagsSer);
-        }
-        if(!ecxxflagsSer.empty())
-        {
-            CMakeWrite_TargetLinkDirs(out, "", "E", "_ser", eldflagsSer);
-        }
-        if (!vtk9_elibsSer.empty())
-        {
-            out << "set(vtk_elibsSer " << ToString(vtk9_elibsSer) << ")" << Endl;
-        }
-        out << "TARGET_LINK_LIBRARIES(E"<<name<<ptype<<"_ser visitcommon avtpipeline_ser";
-        if(type == "plot")
-            out << " avtplotter_ser ";
-        else if (type == "operator")
-            out << " avtexpressions_ser avtfilters_ser ";
-        else
-            out << " avtdatabase_ser ";
-        out << ToString(libs) << ToString(elibsSer);
-        if (!vtk9_libs.empty())
-            out << "${vtk_libs} ";
-        if (!vtk9_elibsSer.empty())
-            out << "${vtk_elibsSer} ";
-        out << ")" << Endl;
-        WriteCMake_ConditionalTargetLinks(out, name, "E", (ptype+"_ser"), "");
-        if (type != "operator" || hasEngineSpecificCode)
-            out << "ADD_TARGET_DEFINITIONS(E"<<name<<ptype<<"_ser ENGINE)" << Endl;
-        out << "SET(INSTALLTARGETS ${INSTALLTARGETS} E"<<name<<ptype<<"_ser)" << Endl;
-        out << Endl;
-        out << "IF(VISIT_PARALLEL)" << Endl;
-        out << "    ADD_PARALLEL_LIBRARY(E"<<name<<ptype<<"_par ${LIBE_SOURCES})" << Endl;
-        if(!edefsPar.empty())
-        {
-            CMakeWrite_TargetDefines(out, "    ", "E", "_par", edefsPar);
-        }
-        if(!ecxxflagsPar.empty())
-        {
-            CMakeWrite_TargetIncludes(out, "    ", "E", "_par", ecxxflagsPar);
-        }
-        if(!eldflagsPar.empty())
-        {
-            CMakeWrite_TargetLinkDirs(out, "    ", "E", "_par", eldflagsPar);
-        }
-        if (!vtk9_elibsPar.empty())
-        {
-            out << "    set(vtk_elibsPar " << ToString(vtk9_elibsPar) << ")" << Endl;
-        }
-        out << "    TARGET_LINK_LIBRARIES(E"<<name<<ptype<<"_par visitcommon avtpipeline_par";
-        if(type == "plot")
-            out << " avtplotter_par ";
-        else if (type == "operator")
-            out << " avtexpressions_par avtfilters_par ";
-        else
-            out << " avtdatabase_par ";
-        out << ToString(libs) << ToString(elibsPar);
-        if (!vtk9_libs.empty())
-            out << "${vtk_libs} ";
-        if (!vtk9_elibsPar.empty())
-            out << "${vtk_elibsPar} ";
-        out << ")" << Endl;
-        WriteCMake_ConditionalTargetLinks(out, name, "E", (ptype+"_par"), "    ");
-        if (type != "operator" || hasEngineSpecificCode)
-            out << "    ADD_TARGET_DEFINITIONS(E"<<name<<ptype<<"_par ENGINE)" << Endl;
-        out << "    SET(INSTALLTARGETS ${INSTALLTARGETS} E"<<name<<ptype<<"_par)" << Endl;
-        out << "ENDIF(VISIT_PARALLEL)" << Endl;
-        out << Endl;
-    }
-
-    bool CustomFilesUseFortran(const std::vector<QString> &files) const
-    {
-        const char *ext[] = {".f", ".f77", ".f90", ".f95", ".for",
-                             ".F", ".F77", ".F90", ".F95", ".FOR"};
-        for(size_t i = 0; i < files.size(); ++i)
-        {
-            for(int j = 0; j < 10; ++j)
-            {
-                if(files[i].endsWith(ext[j]))
-                    return true;
-            }
-        }
-        return false;
     }
 
     void WriteCMake_PluginSources(QTextStream &out,
@@ -826,6 +657,7 @@ class CMakeGeneratorPlugin : public Plugin
 
         WriteCMake_PluginVerbatim(out, "Post");
     }
+
     void WriteCMake_DatabasePlugin(QTextStream &out)
     {
         bool useFortran = false;
