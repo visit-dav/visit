@@ -784,36 +784,6 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${VISIT_EXE_LINKER_FLAGS}"
 # Top-level subdirectories
 #-----------------------------------------------------------------------------
 
-
-#
-# We pull in a few libs using VisIt's setup third party logic
-# that we want to use in the engine beyond the just DB plugins.
-#
-# Conduit and MFEM are examples of this.
-#
-# The the libsim runtime and engine example programs all need to follow
-# the same linking rules as the engine. Specifically, they need
-# the linking dirs for any dependencies introduced.
-# (For example, for conduit this includes conduit, hdf5, zlib, etc dirs)
-#
-# To simplify the logic needed downstream, we provide AVT_REQUIRED_LIB_DIR
-
-# Ideally in the future with proper imported cmake targets,
-# we would simply rely on cmake to propgate transitive dependency details.
-#
-
-set(__AVT_REQUIRED_LIB_DIR_LIST "")
-if(CONDUIT_FOUND)
-    list(APPEND __AVT_REQUIRED_LIB_DIR_LIST ${CONDUIT_LIBRARY_DIR})
-endif()
-
-if(MFEM_FOUND)
-    list(APPEND __AVT_REQUIRED_LIB_DIR_LIST ${MFEM_LIBRARY_DIR})
-endif()
-
-
-set(AVT_REQUIRED_LIB_DIR "${__AVT_REQUIRED_LIB_DIR_LIST}" CACHE INTERNAL "Engine AVT Required I/O lib dirs")
-
 add_subdirectory(third_party_builtin)
 add_subdirectory(common)
 add_subdirectory(visit_vtk)

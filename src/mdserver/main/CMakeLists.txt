@@ -145,7 +145,7 @@ visit_add_executable(
     DEPENDS_ON ${mdserver_DEPENDS})
 
 if(VISIT_STATIC)
-   target_link_directoris(mdserver PRIVATE ${ALL_THIRDPARTY_IO_LIBRARY_DIR})
+   target_link_directories(mdserver PRIVATE ${ALL_THIRDPARTY_IO_LIBRARY_DIR})
 endif()
 
 if(WIN32 AND MSVC)

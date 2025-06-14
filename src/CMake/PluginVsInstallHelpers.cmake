@@ -21,11 +21,14 @@
 #   Kathleen Biagas, Wed Jun  8 2022
 #   Install VisItIncludeVars.cmake.
 #
-#   Kathleen Biagas, Tue Jan 31, 2023 
+#   Kathleen Biagas, Tue Jan 31, 2023
 #   Change python_include_relative_path (add 'include' at end) for Windows.
 #
-#   Kathleen Biagas, Fri Mar 10, 2023 
+#   Kathleen Biagas, Fri Mar 10, 2023
 #   Replaced VTKh logic with VTKm.
+#
+#   Kathleen Biagas, Fri Jun 13 2025
+#   Remove VisItIncludeVars.cmake.
 #
 #******************************************************************************
 
@@ -48,13 +51,6 @@ install(FILES ${VISIT_SOURCE_DIR}/CMake/VisItMacros.cmake
         )
 
 install(FILES ${VISIT_SOURCE_DIR}/CMake/CheckMinimumCompilerVersion.cmake
-        DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}
-        PERMISSIONS OWNER_READ OWNER_WRITE
-                    GROUP_READ GROUP_WRITE
-                    WORLD_READ
-        )
-
-install(FILES ${VISIT_SOURCE_DIR}/CMake/VisItIncludeVars.cmake
         DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}
         PERMISSIONS OWNER_READ OWNER_WRITE
                     GROUP_READ GROUP_WRITE

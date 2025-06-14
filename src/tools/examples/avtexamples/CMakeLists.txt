@@ -31,10 +31,6 @@
 #****************************************************************************
 
 
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY}
-${AVT_REQUIRED_LIB_DIR}
-${ALL_THIRDPARTY_IO_LIBRARY_DIR}
-)
 
 set(avtexamples_COMMON_DEPENDS
     ${engine_ser_exe_IDatabase}
@@ -129,7 +125,6 @@ visit_add_executable(
                 ${OPENGL_LIBRARIES}
     FOLDER      tools/examples/avtexamples)
  
-
 # qtvtkExample
 visit_add_executable(
     NAME        qtvtkExample
@@ -174,5 +169,12 @@ visit_add_executable(
 
 if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
     qt6_disable_unicode_defines(qtviswinExample)
+endif()
+
+if(VISIT_STATIC)
+    set_target_properties( avtFilterExample avtRenderExample avtPluginExample
+        avtPlotPluginExample networkManagerExample qvtkopenglExample
+        qtvtkExample qtvtkExample qtviswinExample
+        PROPERTIES LINK_DIRECTORIES ${ALL_THIRDPARTY_IO_LIBRARY_DIR})
 endif()
 
