@@ -24,66 +24,63 @@
 
 # See ../CMakeLists.txt for LIBSIM_SOURCES
 
-SET(FORTRAN_LIBSIM_SOURCES visitfortransimV2interface.c)
-
-INCLUDE_DIRECTORIES(
-${CMAKE_CURRENT_SOURCE_DIR}
-${VISIT_BINARY_DIR}/include
-)
-
-IF(NOT WIN32 AND NOT VISIT_STATIC)
-  # Allinea Software:
-  # Create a libsimV2.so shared library for the standard VisIt
-  # interface (normally provided by statically linking with libsimV2.a).
-  # -fvisibility is set to default (it is normally hidden).
-  # Preferred solution would be to tag each function to be exposed in
-  # the shared library individually instead of exposing everything,
-  # but this will do for now. Also provide debug info.
-  ADD_DEFINITIONS(-g -fvisibility=default)
-  ADD_LIBRARY(simV2dyn SHARED ${LIBSIM_SOURCES})
-  SET(LIBSIM_DYN simV2dyn)
-ENDIF(NOT WIN32 AND NOT VISIT_STATIC)
-
-ADD_LIBRARY(simV2 STATIC ${LIBSIM_SOURCES})
-ADD_LIBRARY(simV2f STATIC ${FORTRAN_LIBSIM_SOURCES})
+set(FORTRAN_LIBSIM_SOURCES visitfortransimV2interface.c)
+set(FORTRAN_LIBSIM_HEADERS visitfortransimV2interface.inc)
 
 
-INSTALL(TARGETS simV2 simV2f ${LIBSIM_DYN}
+if(NOT WIN32 AND NOT VISIT_STATIC)
+    # Allinea Software:
+    # Create a libsimV2.so shared library for the standard VisIt
+    # interface (normally provided by statically linking with libsimV2.a).
+    # -fvisibility is set to default (it is normally hidden).
+    # Preferred solution would be to tag each function to be exposed in
+    # the shared library individually instead of exposing everything,
+    # but this will do for now. Also provide debug info.
+    visit_add_library(
+        NAME     simV2dyn 
+        SOURCES  ${LIBSIM_SOURCES}
+        HEADERS  ${LIBSIM_HEADERS}
+        INCLUDES $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+                 $<BUILD_INTERFACE:${VISIT_BINARY_DIR}/include>
+        SKIP_INSTALL)
+
+    set_target_properties(simV2dyn PROPERTIES
+        COMPILE_OPTIONS "-g;-fvisibility=default")
+
+    set(LIBSIM_DYN simV2dyn)
+endif()
+
+# Use SKIP_INSTALL so that the libraries can be installed to a different
+# location than other visit libraries.
+
+visit_add_library(
+    NAME     simV2
+    SOURCES  ${LIBSIM_SOURCES}
+    HEADERS  ${LIBSIM_HEADERS}
+    INCLUDES $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+             $<BUILD_INTERFACE:${VISIT_BINARY_DIR}/include>
+    FORCE_STATIC 
+    SKIP_INSTALL)
+
+visit_add_library(
+    NAME     simV2f
+    SOURCES  ${FORTRAN_LIBSIM_SOURCES}
+    HEADERS  ${FORTRAN_LIBSIM_HEADERS}
+    INCLUDES $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+             $<BUILD_INTERFACE:${VISIT_BINARY_DIR}/include>
+    FORCE_STATIC
+    SKIP_INSTALL)
+
+install(TARGETS simV2 simV2f ${LIBSYM_DYN}
     ARCHIVE DESTINATION ${VISIT_INSTALLED_VERSION}/libsim/V2/lib
     LIBRARY DESTINATION ${VISIT_INSTALLED_VERSION}/libsim/V2/lib
-    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-)
-INSTALL(FILES 
-VisItControlInterface_V2.h
-VisItControlInterface_V2_plotting.h
-VisItDataInterface_V2.h
-VisItInterfaceTypes_V2.h
-VisIt_CSGMesh.h
-VisIt_CommandMetaData.h
-VisIt_CurveData.h
-VisIt_CurveMetaData.h
-VisIt_CurvilinearMesh.h
-VisIt_DomainBoundaries.h
-VisIt_DomainList.h
-VisIt_DomainNesting.h
-VisIt_ExpressionMetaData.h
-VisIt_MaterialData.h
-VisIt_MaterialMetaData.h
-VisIt_MeshMetaData.h
-VisIt_MessageMetaData.h
-VisIt_NameList.h
-VisIt_OptionList.h
-VisIt_PointMesh.h
-VisIt_RectilinearMesh.h
-VisIt_SimulationMetaData.h
-VisIt_SpeciesData.h
-VisIt_SpeciesMetaData.h
-VisIt_UnstructuredMesh.h
-VisIt_VariableData.h
-VisIt_VariableMetaData.h
-VisIt_View2D.h
-VisIt_View3D.h
-visitfortransimV2interface.inc
+    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                 WORLD_READ            WORLD_EXECUTE)
+
+install(FILES  ${LIBSIM_HEADERS} ${FORTRAN_LIBSIM_HEADERS}}
     DESTINATION ${VISIT_INSTALLED_VERSION}/libsim/V2/include
-    PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ 
-)
+    PERMISSIONS OWNER_READ OWNER_WRITE
+                GROUP_READ GROUP_WRITE
+                WORLD_READ)
+

@@ -383,6 +383,7 @@ endmacro()
 #    OUTPUT_NAME  [name]                     OPTIONAL
 #    FEATURES     [feat1 [feat2 ...]]        OPTIONAL
 #    FOLDER       [name]                     OPTIONAL
+#    FORCE_STATIC                            OPTIONAL (visit only)
 #    SKIP_INSTALL                            OPTIONAL (visit only)
 #
 # Modifications:
@@ -392,7 +393,7 @@ endmacro()
 ##############################################################################
 
 macro(visit_add_library)
-    set(options SKIP_INSTALL)
+    set(options FORCE_STATIC SKIP_INSTALL)
     set(singleValueArgs NAME OUTPUT_NAME FOLDER)
     set(multiValueArgs SOURCES HEADERS INCLUDES DEFINES DEPENDS_ON FEATURES)
 
@@ -408,14 +409,26 @@ macro(visit_add_library)
         message(FATAL_ERROR "visit_add_library(NAME ${val_NAME} ...) called with no given sources or headers (at least one is required).")
     endif()
 
-    blt_add_library(
-        NAME       ${val_NAME}
-        SOURCES    ${val_SOURCES}
-        HEADERS    ${val_HEADERS}
-        INCLUDES   ${val_INCLUDES}
-        DEFINES    ${val_DEFINES}
-        DEPENDS_ON ${val_DEPENDS_ON}
-        FOLDER     ${val_FOLDER})
+    if(${val_FORCE_STATIC})
+        blt_add_library(
+            NAME       ${val_NAME}
+            SOURCES    ${val_SOURCES}
+            HEADERS    ${val_HEADERS}
+            INCLUDES   ${val_INCLUDES}
+            DEFINES    ${val_DEFINES}
+            DEPENDS_ON ${val_DEPENDS_ON}
+            SHARED     OFF
+            FOLDER     ${val_FOLDER})
+    else()
+        blt_add_library(
+            NAME       ${val_NAME}
+            SOURCES    ${val_SOURCES}
+            HEADERS    ${val_HEADERS}
+            INCLUDES   ${val_INCLUDES}
+            DEFINES    ${val_DEFINES}
+            DEPENDS_ON ${val_DEPENDS_ON}
+            FOLDER     ${val_FOLDER})
+    endif()
 
     # currently not a part of blt_add_library, and causes a CMake
     # error if we call blt_add_library(${ARGV})
