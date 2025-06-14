@@ -283,13 +283,8 @@ QvisClipWindow::CreateWindowContents()
     qualityLayout->addWidget(accurateQuality);
     
     topLayout->addWidget(qualityWidget);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(qualityGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(qualityChanged(int)));
-#else
     connect(qualityGroup, SIGNAL(idClicked(int)),
             this, SLOT(qualityChanged(int)));
-#endif
 
     // Clip type
     QWidget *typeWidget = new QWidget(central);
@@ -308,13 +303,8 @@ QvisClipWindow::CreateWindowContents()
     typeGroup->addButton(planeType,0);
     typeGroup->addButton(sphereType,1);
     
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(typeGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(sliceTypeChanged(int)));
-#else
     connect(typeGroup, SIGNAL(idClicked(int)),
             this, SLOT(sliceTypeChanged(int)));
-#endif
 
     // Crinkle clip
     QWidget *crinkleWidget = new QWidget(central);
@@ -399,13 +389,8 @@ QvisClipWindow::CreateWindowContents()
     planeToolControlledClipPlane->addButton(planeToolControlledClipPlaneWhichClipPlanePlane2,2);
     planeToolControlledClipPlane->addButton(planeToolControlledClipPlaneWhichClipPlanePlane3,3);
     
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(planeToolControlledClipPlane, SIGNAL(buttonClicked(int)),
-            this, SLOT(planeToolControlledClipPlaneChanged(int)));
-#else
     connect(planeToolControlledClipPlane, SIGNAL(idClicked(int)),
             this, SLOT(planeToolControlledClipPlaneChanged(int)));
-#endif
  
     // 
     // Sphere widgets

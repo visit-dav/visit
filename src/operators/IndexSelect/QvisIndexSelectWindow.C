@@ -128,13 +128,8 @@ QvisIndexSelectWindow::CreateWindowContents()
     QRadioButton *dimDimensionThreeD = new QRadioButton(tr("3D"), dimWidget);
     dimLayout->addWidget(dimDimensionThreeD);
     dim->addButton(dimDimensionThreeD,2);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(dim, SIGNAL(buttonClicked(int)),
-            this, SLOT(dimChanged(int)));
-#else
     connect(dim, SIGNAL(idClicked(int)),
             this, SLOT(dimChanged(int)));
-#endif
     mainLayout->addWidget(dimWidget, row, 1, 1, 3);
 
     ++row;

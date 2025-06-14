@@ -166,13 +166,8 @@ QvisModelFitWindow::CreateWindowContents()
     iSpaceType->addButton(pSpace, 3);
     iSpaceLayout->addWidget(pSpace);
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(iSpaceType, SIGNAL(buttonClicked(int)), this,
-        SLOT(inputSpaceChanged(int)));
-#else
     connect(iSpaceType, SIGNAL(idClicked(int)), this,
         SLOT(inputSpaceChanged(int)));
-#endif
     
     QGroupBox *selectionBox = new QGroupBox(tr("Select Calculation Space:"));
     calculationLayout->addWidget(selectionBox);
@@ -194,13 +189,8 @@ QvisModelFitWindow::CreateWindowContents()
     selectType->addButton(probSpace, 3);
     selectionLayout->addWidget(probSpace);
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(selectType, SIGNAL(buttonClicked(int)), this,
-        SLOT(selectTypeChanged(int)));
-#else
     connect(selectType, SIGNAL(idClicked(int)), this,
         SLOT(selectTypeChanged(int)));
-#endif
 
     distanceBox = new QGroupBox(tr("Distance Selections:"));
     calculationLayout->addWidget(distanceBox);
@@ -222,13 +212,8 @@ QvisModelFitWindow::CreateWindowContents()
     invisible->setEnabled(false);
     distanceLayout->addWidget(invisible);
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(distanceType, SIGNAL(buttonClicked(int)), this,
-        SLOT(distanceTypeChanged(int)));
-#else
     connect(distanceType, SIGNAL(idClicked(int)), this,
         SLOT(distanceTypeChanged(int)));
-#endif
         
     QGroupBox *ModelFitBox = new QGroupBox();
     ModelFitBox->setTitle(tr("Define Models"));

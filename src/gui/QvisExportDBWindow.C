@@ -350,13 +350,8 @@ QvisExportDBWindow::CreateWindowContents()
     varLayout->addWidget(rb0, 0, 1);
     varLayout->addWidget(rb1, 0, 2);
     rb0->setChecked(true);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(delimGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(delimiterChanged(int)));
-#else
     connect(delimGroup, SIGNAL(idClicked(int)),
             this, SLOT(delimiterChanged(int)));
-#endif
 
     varsButton = new QvisVariableButton(true, false, true, -1,varGroup);
     varsButton->setText(tr("Add variable"));
@@ -714,11 +709,7 @@ QvisExportDBWindow::GetCurrentValues(int which_widget)
         QString temp;
         stringVector vars;
         temp = varsLineEdit->displayText().simplified();
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        QStringList lst = temp.split(Delimiter(),QString::SkipEmptyParts);
-#else
         QStringList lst = temp.split(Delimiter(),Qt::SkipEmptyParts);
-#endif
         
         QStringListIterator it(lst);
         while(it.hasNext())

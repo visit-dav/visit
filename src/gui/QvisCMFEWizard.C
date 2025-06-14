@@ -647,13 +647,8 @@ QvisCMFEWizard::CreateDonorTypePage(void)
 
 
     pageLayout->addStretch(10);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(donorTypeSelect, SIGNAL(buttonClicked(int)),
-            this, SLOT(donorTypeChanged(int)));
-#else
     connect(donorTypeSelect, SIGNAL(idClicked(int)),
             this, SLOT(donorTypeChanged(int)));
-#endif
 
     // Add the page.
     setPage(Page_DonorType, page0);
@@ -853,13 +848,8 @@ QvisCMFEWizard::CreateTimeSpecificationPage(void)
     absVsRelTimeSelect->addButton(r2, 1);
     pageLayout->addWidget(r2);
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(absVsRelTimeSelect, SIGNAL(buttonClicked(int)),
-            this, SLOT(absVsRelTimeChanged(int)));
-#else
     connect(absVsRelTimeSelect, SIGNAL(idClicked(int)),
             this, SLOT(absVsRelTimeChanged(int)));
-#endif
 
     QFrame *hline2 = new QFrame(main_widget);
     hline2->setFrameStyle(QFrame::HLine | QFrame::Sunken);
@@ -907,13 +897,8 @@ QvisCMFEWizard::CreateTimeSpecificationPage(void)
     QLabel *descLabel = new QLabel(tr("(Time index is the most robust and works in all circumstances)"), main_widget);
     pageLayout->addWidget(descLabel);
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(timeTypeSelect, SIGNAL(buttonClicked(int)),
-            this, SLOT(timeTypeChanged(int)));
-#else
     connect(timeTypeSelect, SIGNAL(idClicked(int)),
             this, SLOT(timeTypeChanged(int)));
-#endif
 
     QFrame *hline1 = new QFrame(main_widget);
     hline1->setFrameStyle(QFrame::HLine | QFrame::Sunken);
@@ -1004,13 +989,8 @@ QvisCMFEWizard::CreateInterpSelectionPage(void)
     posLabel4->setAlignment(Qt::AlignLeft);
     glayout->addWidget(posLabel4, 7, 1);
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(interpSelect, SIGNAL(buttonClicked(int)),
-            this, SLOT(interpChanged(int)));
-#else
     connect(interpSelect, SIGNAL(idClicked(int)),
             this, SLOT(interpChanged(int)));
-#endif
 
     QFrame *hline1 = new QFrame(main_widget);
     hline1->setFrameStyle(QFrame::HLine | QFrame::Sunken);
@@ -1046,13 +1026,8 @@ QvisCMFEWizard::CreateInterpSelectionPage(void)
     connect(nonOverlapVar, SIGNAL(activated(const QString &)),
             this, SLOT(nonOverlapVarChanged(const QString &)));
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(nonOverlapSelect, SIGNAL(buttonClicked(int)),
-            this, SLOT(nonOverlapChanged(int)));
-#else
     connect(nonOverlapSelect, SIGNAL(idClicked(int)),
             this, SLOT(nonOverlapChanged(int)));
-#endif
 
     // Add the page.
     setPage(Page_InterpSelection, page3);
@@ -1128,13 +1103,8 @@ QvisCMFEWizard::CreateActivityPage(void)
     exprTypeSelect->addButton(r1, 1);
     glayout2->addWidget(r1, 0, 0);
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(exprTypeSelect, SIGNAL(buttonClicked(int)),
-            this, SLOT(exprTypeChanged(int)));
-#else
     connect(exprTypeSelect, SIGNAL(idClicked(int)),
             this, SLOT(exprTypeChanged(int)));
-#endif
 
     exprDiffVar = new QvisVariableButton(false, false, false,
                                          QvisBaseVariableButton::Scalars |
@@ -1179,13 +1149,8 @@ QvisCMFEWizard::CreateActivityPage(void)
     exprDiffTypeSelect->addButton(r23, 7);
     glayout2->addWidget(r23, 3, 3);
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(exprDiffTypeSelect, SIGNAL(buttonClicked(int)),
-            this, SLOT(exprDiffTypeChanged(int)));
-#else
     connect(exprDiffTypeSelect, SIGNAL(idClicked(int)),
             this, SLOT(exprDiffTypeChanged(int)));
-#endif
 
     // Add the page.
     setPage(Page_ActivityDescription, page4);

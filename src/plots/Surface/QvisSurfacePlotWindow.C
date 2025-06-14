@@ -154,13 +154,8 @@ QvisSurfacePlotWindow::CreateWindowContents()
     dataLayout->addWidget(rb, 0, 3);
 
     // Each time a radio button is clicked, call the scale clicked slot.
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(scalingButtons, SIGNAL(buttonClicked(int)),
-            this, SLOT(scaleClicked(int)));
-#else
     connect(scalingButtons, SIGNAL(idClicked(int)),
             this, SLOT(scaleClicked(int)));
-#endif
 
     // Create the skew factor line edit    
     skewLineEdit = new QLineEdit(central);
@@ -225,13 +220,8 @@ QvisSurfacePlotWindow::CreateWindowContents()
     surfaceLayout->setColumnStretch(1, 10);
 
     colorModeButtons = new QButtonGroup(surfaceGroup);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(colorModeButtons, SIGNAL(buttonClicked(int)),
-            this, SLOT(colorModeChanged(int)));
-#else
     connect(colorModeButtons, SIGNAL(idClicked(int)),
             this, SLOT(colorModeChanged(int)));
-#endif
 
     rb = new QRadioButton(tr("Color by Z value"), surfaceGroup);
     colorModeButtons->addButton(rb, 0);

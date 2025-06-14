@@ -126,13 +126,8 @@ XMLEditFunctions::XMLEditFunctions(QWidget *p)
             this, SLOT(UpdateWindowSingleItem()));
     connect(name, SIGNAL(editingFinished()),
             this, SLOT(nameTextChanged()));
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(typeGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(typeGroupChanged(int)));
-#else
     connect(typeGroup, SIGNAL(idClicked(int)),
             this, SLOT(typeGroupChanged(int)));
-#endif
     connect(member, SIGNAL(clicked()),
             this, SLOT(memberChanged()));
     connect(target, SIGNAL(editingFinished()),

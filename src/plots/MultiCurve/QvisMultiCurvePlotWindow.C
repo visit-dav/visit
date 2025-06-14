@@ -118,13 +118,8 @@ QvisMultiCurvePlotWindow::CreateWindowContents()
     // Create the mode buttons that determine if the window is in single
     // or multiple color mode.
     colorModeButtons = new QButtonGroup(0);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(colorModeButtons, SIGNAL(buttonClicked(int)),
-            this, SLOT(colorModeChanged(int)));
-#else
     connect(colorModeButtons, SIGNAL(idClicked(int)),
             this, SLOT(colorModeChanged(int)));
-#endif
     QGridLayout *colorLayout = new QGridLayout(curveColorGroup);
     colorLayout->setSpacing(10);
     colorLayout->setColumnStretch(2, 1000);

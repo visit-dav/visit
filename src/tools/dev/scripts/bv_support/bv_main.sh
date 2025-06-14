@@ -90,10 +90,7 @@ function check_minimum_compiler_version()
    if [[ "$CXX_COMPILER" == "g++" ]] ; then
         VERSION=$(get_version_digits g++)
         echo "g++ version $VERSION"
-        gccv=7.3
-        if [[ "$DO_QT6" == "yes" ]] ; then
-            gccv=8.1
-        fi
+        gccv=8.1
         testvercomp $VERSION $gccv '<'
         if [[ $? == 0 ]] ; then
             echo "Need g++ version >= $gccv"
@@ -547,7 +544,6 @@ function initialize_build_visit()
     export CREATE_RPM="no"
     export DO_CONTEXT_CHECK="yes"
     export VISIT_INSTALL_NETWORK=""
-    export DO_QT510="no"
     export DO_VTK94="no"
     DOWNLOAD_ONLY="no"
     LIST_TPS="no"
@@ -585,15 +581,6 @@ function initialize_build_visit()
     # be arguments that affect the version of a package being built.
     #
     for arg in "$@" ; do
-        case $arg in
-            --qt510) DO_QT510="yes"; DO_QT6="no"; DO_QT="yes";;
-        esac
-        case $arg in
-            --qt) DO_QT6="no"; DO_QT="yes";;
-        esac
-        case $arg in
-            --qt6) DO_QT6="yes"; DO_QT="no";;
-        esac
         case $arg in
             --vtk94) DO_VTK94="yes"; DO_VTK="yes";;
         esac
@@ -1388,28 +1375,8 @@ function run_build_visit()
         elif [[ "$DO_SERVER_COMPONENTS_ONLY" == "yes" ]] ; then
            info "disabling qt, qwt because --server-components-only used"
         fi
-        bv_qt_disable
         bv_qt6_disable
         bv_qwt_disable
-    fi
-
-    #
-    # Later we will build Qt.  We are going to bypass their licensing agreement,
-    # so echo it here.
-    #
-    if [[ "$USE_SYSTEM_QT" != "yes" && "$DO_QT" == "yes" ]]; then
-        BYPASS_QT_LICENSE="no"
-        check_if_installed "qt" $QT_VERSION
-        if [[ $? == 0 ]] ; then
-            BYPASS_QT_LICENSE="yes"
-        fi
-
-        if [[ "$BYPASS_QT_LICENSE" == "no" && "$DOWNLOAD_ONLY" == "no" ]] ; then
-            qt_license_prompt
-            if [[ $? != 0 ]] ;then
-                error "Qt4 Open Source Edition License Declined. Bailing out."
-            fi
-        fi
     fi
 
     #

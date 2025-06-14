@@ -531,11 +531,7 @@ QvisAnnotationWidget::QStringToDoubles(const QString &str, double *vals, int max
     if(!str.isEmpty())
     {
         bool okay = true;
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        QStringList s = str.split(" ", QString::SkipEmptyParts);
-#else
         QStringList s = str.split(" ", Qt::SkipEmptyParts);
-#endif
         for(int i = 0; i < maxVals && okay; ++i)
         {
             if(i < s.size())

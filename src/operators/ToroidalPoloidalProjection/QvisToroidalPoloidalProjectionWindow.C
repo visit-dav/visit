@@ -110,13 +110,8 @@ QvisToroidalPoloidalProjectionWindow::CreateWindowContents()
     QRadioButton *centroidSourceCentroidSourceAuto = new QRadioButton(tr("Auto"), centroidSource);
     centroidSourceButtonGroup->addButton(centroidSourceCentroidSourceAuto,1);
     centroidSourceLayout->addWidget(centroidSourceCentroidSourceAuto);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(centroidSourceButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(centroidSourceChanged(int)));
-#else
     connect(centroidSourceButtonGroup, SIGNAL(idClicked(int)),
             this, SLOT(centroidSourceChanged(int)));
-#endif
     mainLayout->addWidget(centroidSource, 2,1);
 
     centroidLabel = new QLabel(tr("Centroid (R,phi,Z)"), central);
@@ -130,7 +125,6 @@ QvisToroidalPoloidalProjectionWindow::CreateWindowContents()
     connect(project2D, SIGNAL(toggled(bool)),
             this, SLOT(project2DChanged(bool)));
     mainLayout->addWidget(project2D, 4,0);
-
 }
 
 

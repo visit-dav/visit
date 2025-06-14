@@ -582,11 +582,7 @@ QvisOpacitySlider::drawTicks( QPainter *p, const QPalette& g, int dist,
 int
 QvisOpacitySlider::textPadding() const
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     return fontMetrics().horizontalAdvance("0") / 2;
-#else
-    return fontMetrics().width("0") / 2;
-#endif
 }
 
 // ****************************************************************************
@@ -610,11 +606,7 @@ QvisOpacitySlider::textPadding() const
 int
 QvisOpacitySlider::imageWidth() const
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     return width() - fontMetrics().horizontalAdvance("100%") - textPadding();
-#else
-    return width() - fontMetrics().width("100%") - textPadding();
-#endif
 }
 
 // ****************************************************************************
