@@ -425,11 +425,11 @@ def test8(datapath):
 # between it and an expression for the expected gradient. If the dimension ordering
 # is mixed up, the magnitude of diffs will be large and the ValueLT test will fail.
 #
-# Note that in both Xdmf `Dimensions` attributes and HDF5 datasets, dimensions are
-# ordered ZYX. That is, for the dimensions tuple 5 7 11, Nz=5, Ny=7 and Nx=11.
+# Note that in both Xdmf `Dimensions` attributes and HDF5 datasets, dimensions tuples
+# are ordered ZYX. That is, for the dimensions tuple 5 7 11, Nz=5, Ny=7 and Nx=11.
 # Writing a dimensions tuple in the C programming language works identically as ZYX.
-# In a C code array of dimensions, int dims[3] = {5,7,11}, dims[2] is for Z,
-# dims[1] for Y and dims[0] for X.
+# In a C code tuple of dimensions, int dims[3] = {5,7,11}, ultimately being passed
+# to HDF5 for dataset dimensions, dims[2] is for Z, dims[1] for Y and dims[0] for X.
 #
 def test9(datapath):
     TestSection("Uniform Dimension Ordering")
