@@ -123,27 +123,27 @@ avtOriginalDataSpatialExtentsQuery::PerformQuery(QueryAttributes *qA)
     int dim = input->GetInfo().GetAttributes().GetSpatialDimension();
     if (dim == 1)
     {
-        format = "The original extents are (" + floatFormat + ", " 
+        format = "The original extents are (Xmin=" + floatFormat + ", Xmax=" 
                                               + floatFormat + ")";
         snprintf(msg, 1024,format.c_str(), 
                 extents[0], extents[1]);
     }
     else if (dim == 2)
     {
-        format = "The original extents are (" + floatFormat + ", " 
-                                              + floatFormat + ", " 
-                                              + floatFormat + ", " 
+        format = "The original extents are (Xmin=" + floatFormat + ", XMax=" 
+                                              + floatFormat + ", Ymin=" 
+                                              + floatFormat + ", Ymax=" 
                                               + floatFormat + ")";
         snprintf(msg, 1024, format.c_str(), 
             extents[0], extents[1], extents[2], extents[3]);
     }
     else if (dim == 3)
     {
-        format = "The original extents are (" + floatFormat + ", " 
-                                              + floatFormat + ", " 
-                                              + floatFormat + ", " 
-                                              + floatFormat + ", " 
-                                              + floatFormat + ", " 
+        format = "The original extents are (XMin=" + floatFormat + ", XMax=" 
+                                              + floatFormat + ", Ymin=" 
+                                              + floatFormat + ", Ymax=" 
+                                              + floatFormat + ", Zmin=" 
+                                              + floatFormat + ", ZMax=" 
                                               + floatFormat + ")";
        snprintf(msg, 1024, format.c_str(),
         extents[0], extents[1], extents[2], extents[3], extents[4], extents[5]);
