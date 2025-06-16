@@ -4800,6 +4800,8 @@ std::string ViewerQueryManager::GetNextPickLabel()
 //    Cyrus Harrison, Wed Sep 19 08:34:46 PDT 2007
 //    Added support for user settable floating point format string
 //
+//    Mark C. Miller, Mon Jun 16 15:37:09 PDT 2025
+//    Label extents strings with axis information.
 // ****************************************************************************
 
 string

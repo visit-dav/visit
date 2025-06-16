@@ -227,6 +227,8 @@ sort_extents_record(const void *a, const void *b)
 //
 // Modifications:
 //
+//    Mark C. Miller, Mon Jun 16 15:37:09 PDT 2025
+//    Label grid info strings with axis information.
 // ****************************************************************************
 
 void
