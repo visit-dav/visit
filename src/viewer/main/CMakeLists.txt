@@ -194,10 +194,7 @@ ENDIF(VISIT_STATIC)
 
 set(vtkqtlib VTK::GUISupportQt)
 
-
-if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
-    qt6_disable_unicode_defines(viewer)
-endif()
+qt6_disable_unicode_defines(viewer)
 
 TARGET_LINK_LIBRARIES(viewer 
 viewerrpc

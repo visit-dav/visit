@@ -220,31 +220,16 @@ QvisCommandWindow::CreateWindowContents()
     topLayout->addWidget(tabWidget, 1000);
 
     executeButtonsGroup = new QButtonGroup(central);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(executeButtonsGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(executeClicked(int)));
-#else
     connect(executeButtonsGroup, SIGNAL(idClicked(int)),
             this, SLOT(executeClicked(int)));
-#endif
 
     clearButtonsGroup = new QButtonGroup(central);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(clearButtonsGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(clearClicked(int)));
-#else
     connect(clearButtonsGroup, SIGNAL(idClicked(int)),
             this, SLOT(clearClicked(int)));
-#endif
 
     addMacroButtonsGroup = new QButtonGroup(central);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(addMacroButtonsGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(macroCreate(int)));
-#else
     connect(addMacroButtonsGroup, SIGNAL(idClicked(int)),
             this, SLOT(macroCreate(int)));
-#endif
 
     // Create the tabs that let us edit command scripts.
     editors       = new QTextEdit*[MAXTABS];

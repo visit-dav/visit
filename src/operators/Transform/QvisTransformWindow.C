@@ -159,13 +159,8 @@ QvisTransformWindow::CreateWindowContents()
     QRadioButton *rotateTypeAngleTypeRad = new QRadioButton(tr("Rad"),rotateTypeWidget);
     rotateType->addButton(rotateTypeAngleTypeRad, 1);
     rotateTypeLayout->addWidget(rotateTypeAngleTypeRad);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(rotateType, SIGNAL(buttonClicked(int)),
-            this, SLOT(rotateTypeChanged(int)));
-#else
     connect(rotateType, SIGNAL(idClicked(int)),
             this, SLOT(rotateTypeChanged(int)));
-#endif
     mainLayout->addWidget(rotateTypeWidget, 3, 4, 1, 3);
 
     // ---------------
@@ -302,17 +297,10 @@ QvisTransformWindow::CreateWindowContents()
 
     secondPageLayout->addStretch(100);
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(inputCoord, SIGNAL(buttonClicked(int)),
-            this, SLOT(inputCoordChanged(int)));
-    connect(outputCoord, SIGNAL(buttonClicked(int)),
-            this, SLOT(outputCoordChanged(int)));
-#else
     connect(inputCoord, SIGNAL(idClicked(int)),
             this, SLOT(inputCoordChanged(int)));
     connect(outputCoord, SIGNAL(idClicked(int)),
             this, SLOT(outputCoordChanged(int)));
-#endif
 
     // ----------------------------------------------------------------------
     // Third page

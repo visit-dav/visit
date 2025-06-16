@@ -114,6 +114,21 @@ public:
         return reader->HasSNDV();
     }
 
+    virtual bool   HasDensity() const
+    {
+        return reader->HasDensity();
+    }
+
+    virtual bool   HasMomentum() const
+    {
+        return reader->HasMomentum();
+    }
+
+    virtual bool   HasEnergy() const
+    {
+        return reader->HasEnergy();
+    }
+
 private:
     struct Patch
     {

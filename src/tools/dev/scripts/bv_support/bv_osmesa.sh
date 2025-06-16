@@ -6,6 +6,7 @@ function bv_osmesa_initialize
 function bv_osmesa_enable
 {
     DO_OSMESA="yes"
+    bv_llvm_enable
 }
 
 function bv_osmesa_disable

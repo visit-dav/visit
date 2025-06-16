@@ -94,15 +94,9 @@ QvisSurfaceNormalWindow::CreateWindowContents()
     QRadioButton *centeringCenteringCell = new QRadioButton(tr("Cell"), centering);
     centeringButtonGroup->addButton(centeringCenteringCell,1);
     centeringLayout->addWidget(centeringCenteringCell);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(centeringButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(centeringChanged(int)));
-#else
     connect(centeringButtonGroup, SIGNAL(idClicked(int)),
             this, SLOT(centeringChanged(int)));
-#endif
     mainLayout->addWidget(centering, 0,1);
-
 }
 
 

@@ -734,13 +734,8 @@ QvisSaveMovieWizard::CreateMovieTypePage()
 
     pageLayout->addStretch(10);
     r2->setChecked(true);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(page0_buttongroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(page0_movieTypeChanged(int)));
-#else
     connect(page0_buttongroup, SIGNAL(idClicked(int)),
             this, SLOT(page0_movieTypeChanged(int)));
-#endif
 
     // Add the page.
     setPage(Page_MovieType, page0);
@@ -799,13 +794,8 @@ QvisSaveMovieWizard::CreateNewTemplatePromptPage()
     buttonLayout->addWidget(r3);
 
     pageLayout->addStretch(10);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(page1_buttongroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(page1_newTemplateChanged(int)));
-#else
     connect(page1_buttongroup, SIGNAL(idClicked(int)),
             this, SLOT(page1_newTemplateChanged(int)));
-#endif
 
     // Add the page.
     setPage(Page_TemplateAction, page1);
@@ -1001,13 +991,8 @@ QvisSaveMovieWizard::CreateViewportPage()
     viewportLayout->addWidget(new QLabel(tr("Compositing"), viewportProps), 2, 0);
 
     page4_compositingMode = new QButtonGroup(this);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(page4_compositingMode, SIGNAL(buttonClicked(int)),
-            this, SLOT(page4_compositingModeChanged(int)));
-#else
     connect(page4_compositingMode, SIGNAL(idClicked(int)),
             this, SLOT(page4_compositingModeChanged(int)));
-#endif
     QRadioButton *rb0 = new QRadioButton(tr("Overlay"), viewportProps);
     page4_compositingMode->addButton(rb0, 0);
     viewportLayout->addWidget(rb0, 3, 0);
@@ -1311,13 +1296,8 @@ QvisSaveMovieWizard::CreateSettingsOkayPage()
     buttonLayout->addStretch(5);
 
     page8_buttongroup = new QButtonGroup(this);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(page8_buttongroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(page8_settingsOkayChanged(int)));
-#else
     connect(page8_buttongroup, SIGNAL(idClicked(int)),
             this, SLOT(page8_settingsOkayChanged(int)));
-#endif
 
     QRadioButton *r1 = new QRadioButton(tr("Yes"), page8);
     page8_buttongroup->addButton(r1, 0);
@@ -1429,13 +1409,8 @@ QvisSaveMovieWizard::CreateFormatPage()
     f2layout->setRowMinimumHeight(1, 15);
 
     page9_sizeTypeButtonGroup = new QButtonGroup(page9);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(page9_sizeTypeButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(page9_sizeTypeChanged(int)));
-#else
     connect(page9_sizeTypeButtonGroup, SIGNAL(idClicked(int)),
             this, SLOT(page9_sizeTypeChanged(int)));
-#endif
     QRadioButton *rb = new QRadioButton(tr("Use current window size"),
         formatAndResolution);
     page9_sizeTypeButtonGroup->addButton(rb, 0);
@@ -1764,13 +1739,8 @@ QvisSaveMovieWizard::CreateEmailPage()
     buttonLayout->addStretch(5);
     buttonLayout->setSpacing(5);
     page12_buttongroup = new QButtonGroup(this);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(page12_buttongroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(page12_emailNotificationChanged(int)));
-#else
     connect(page12_buttongroup, SIGNAL(idClicked(int)),
             this, SLOT(page12_emailNotificationChanged(int)));
-#endif
     QRadioButton *r1 = new QRadioButton(tr("Yes"), page12);
     page12_buttongroup->addButton(r1, 0);
     buttonLayout->addWidget(r1);
@@ -1846,13 +1816,8 @@ QvisSaveMovieWizard::CreateGenerationMethodPage()
     hCenterLayout->addStretch(5);
     buttonLayout->setSpacing(5);
     page13_buttongroup = new QButtonGroup(this);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(page13_buttongroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(page13_generationMethodChanged(int)));
-#else
     connect(page13_buttongroup, SIGNAL(idClicked(int)),
             this, SLOT(page13_generationMethodChanged(int)));
-#endif
     QRadioButton *r1 = new QRadioButton(tr("Now, use currently allocated processors"),
         page13);
     page13_buttongroup->addButton(r1, 0);
@@ -1914,11 +1879,7 @@ QvisSaveMovieWizard::CreateYesNoPage(QWizardPage **page, QButtonGroup **bg,
     buttonLayout->addStretch(5);
 
     *bg = new QButtonGroup(this);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(*bg, SIGNAL(buttonClicked(int)), this, slot);
-#else
     connect(*bg, SIGNAL(idClicked(int)), this, slot);
-#endif
 
     QRadioButton *r1 = new QRadioButton(tr("Yes"), *page);
     (*bg)->addButton(r1, 0);

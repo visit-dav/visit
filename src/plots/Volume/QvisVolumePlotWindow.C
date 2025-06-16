@@ -273,11 +273,7 @@ QvisVolumePlotWindow::CreateWindowContents()
 {
     // Figure out the max width that we want to allow for some simple
     // line edit widgets.
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     int maxWidth = fontMetrics().horizontalAdvance("0");
-#else
-    int maxWidth = fontMetrics().width("0");
-#endif
 
     // Create a tab widget so we can put the transfer functions on their
     // own tabs.
@@ -549,13 +545,8 @@ QvisVolumePlotWindow::CreateColorGroup(QWidget *parent, QVBoxLayout *pLayout,
     dataLayout->addWidget(rb, 0, 3);
 
     // Each time a radio button is clicked, call the scale clicked slot.
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(scalingButtons, SIGNAL(buttonClicked(int)),
-            this, SLOT(scaleClicked(int)));
-#else
     connect(scalingButtons, SIGNAL(idClicked(int)),
             this, SLOT(scaleClicked(int)));
-#endif
 
     // Create the skew factor line edit
     skewLineEdit = new QLineEdit(central);
@@ -657,13 +648,8 @@ QvisVolumePlotWindow::CreateOpacityGroup(QWidget *parent, QVBoxLayout *pLayout,
 
     // Create the interaction mode button group.
     modeButtonGroup = new QButtonGroup(opacityWidgetGroup);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(modeButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(interactionModeChanged(int)));
-#else
     connect(modeButtonGroup, SIGNAL(idClicked(int)),
             this, SLOT(interactionModeChanged(int)));
-#endif
 
     QRadioButton *rb= new QRadioButton(tr("Freeform"), opacityWidgetGroup);
     modeButtonGroup->addButton(rb, 0);
@@ -1030,11 +1016,7 @@ void QvisVolumePlotWindow::CreateSamplingGroups(QWidget *parent, QLayout *pLayou
         rendererSamplesLabel->setBuddy(rendererSamples);
         connect(rendererSamples,     SIGNAL(valueChanged(double)),  this, SLOT(rendererSamplesChanged(double)));
         connect(samplesPerRay,       SIGNAL(valueChanged(int)),     this, SLOT(samplesPerRayChanged(int)));
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        connect(samplingButtonGroup, SIGNAL(buttonClicked(int)),    this, SLOT(samplingTypeChanged(int)));
-#else
         connect(samplingButtonGroup, SIGNAL(idClicked(int)),    this, SLOT(samplingTypeChanged(int)));
-#endif
         rsLayout->addWidget(rendererSamplesLabel);
         rsLayout->addWidget(rendererSamples,Qt::AlignLeft);
         rsLayout->addStretch(QSizePolicy::Maximum);
@@ -1266,13 +1248,8 @@ QvisVolumePlotWindow::CreateRendererOptionsGroup(int maxWidth)
     QHBoxLayout *methodsLayout = new QHBoxLayout(methodsGroup);
     methodsLayout->addWidget(new QLabel(tr("Gradient method")));
     gradientButtonGroup = new QButtonGroup(methodsGroup);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(gradientButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(gradientTypeChanged(int)));
-#else
     connect(gradientButtonGroup, SIGNAL(idClicked(int)),
             this, SLOT(gradientTypeChanged(int)));
-#endif
     centeredDiffButton = new QRadioButton(tr("Centered differences"),methodsGroup);
     gradientButtonGroup->addButton(centeredDiffButton, 0);
     methodsLayout->addWidget(centeredDiffButton);

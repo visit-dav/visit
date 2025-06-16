@@ -37,6 +37,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Added command recording for Annotation Objects.</li>
   <li>Added new surface rendering option using <a href="https://github.com/KhronosGroup/ANARI-SDK">ANARI</a>.</li>
   <li>Added support to the AMR plugin for reading multiple AMR roots, multiple species, and mixtrue equations of state.</li>
+  <li>Added support to the AMR plugin for reading files with only selected variables. </li>
   <li><a href="https://matplotlib.org/cmocean/">cmocean</a> color maps were added.</li>
   <li>Added '-python-log-file' command line option to control the name of the file used to log python methods (default='visitlog.py').</li>
 </ul>
@@ -98,6 +99,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>The X Ray Image Query now clips results beyond the far clipping plane.</li>
   <li>The Verdict mesh quality library that is builtin to VisIt was enhanced to handle generate hexahedra. This improves expressions and queries that use the Verdict library.</li>
+  <li>Fixed a bug with the X Ray Image Query where VisIt would in some rare instances either crash or create an image that was too dark when running in parallel.</li>
 </ul>
 </ul>
 
@@ -114,6 +116,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug crashing viewer if label tick spacing was too cramped exceeding a builtin threshold of 200 labels.</li>
   <li><a href="https://github.com/visit-dav/visit/issues/20396">[#20396]</a> Fixed bug in Exodus reader where simple expressions involving some Exodus variables may wind up getting garbage data.</li>
   <li>Fixed a Tecplot reader bug that crashed the engine.</li>
+  <li>Fixed a memory bug in AMR plugin when reading velocity magnitude.</li>
 </ul>
 
 <a name="Build_features"></a>

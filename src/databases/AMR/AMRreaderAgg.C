@@ -11,7 +11,7 @@ const int kid2i[8] = {0,1,0,1,0,1,0,1};
 const int kid2j[8] = {0,0,1,1,0,0,1,1};
 const int kid2k[8] = {0,0,0,0,1,1,1,1};
 
-const unsigned long LeafTemp=0x7;
+const uint64_t LeafTemp=0x7;
 
 
 #define WP(x,y,z)  << x << "  " << y << "  " << z << "\n"
@@ -180,7 +180,7 @@ genAggInfo()
         return -1;
     }
 
-    unsigned long pk,ck;
+    uint64_t pk,ck;
     int pos=0;
     int cnt=0;
     while(pos+7<nblks_)

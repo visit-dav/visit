@@ -179,13 +179,8 @@ QvisLabelPlotWindow::CreateWindowContents()
     depthTestButtonGroup->addButton(rb, 2);
     dtLayout->addWidget(rb);
     
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(depthTestButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(depthTestButtonGroupChanged(int)));
-#else
     connect(depthTestButtonGroup, SIGNAL(idClicked(int)),
             this, SLOT(depthTestButtonGroupChanged(int)));
-#endif
     selLayout->addWidget(new QLabel(tr("Depth test mode"), selectionGroupBox), 3, 0);
     selLayout->addLayout(dtLayout, 3, 1, 1, 2);
 

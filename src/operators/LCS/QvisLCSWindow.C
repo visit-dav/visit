@@ -193,13 +193,8 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     rb = new QRadioButton(tr("Subset"));
     UseDataSetStart->addButton(rb, 1);
     rgridLayout->addWidget(rb, 1,2);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(UseDataSetStart, SIGNAL(buttonClicked(int)), this,
-            SLOT(UseDataSetStartChanged(int)));
-#else
     connect(UseDataSetStart, SIGNAL(idClicked(int)), this,
             SLOT(UseDataSetStartChanged(int)));
-#endif
 
     StartPosition = new QLineEdit();
     connect(StartPosition, SIGNAL(returnPressed()),
@@ -218,13 +213,8 @@ QvisLCSWindow::CreateIntegrationTab(QWidget *pageIntegration)
     rb = new QRadioButton(tr("Subset"));
     UseDataSetEnd->addButton(rb, 1);
     rgridLayout->addWidget(rb, 2,2);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(UseDataSetEnd, SIGNAL(buttonClicked(int)), this,
-            SLOT(UseDataSetEndChanged(int)));
-#else
     connect(UseDataSetEnd, SIGNAL(idClicked(int)), this,
             SLOT(UseDataSetEndChanged(int)));
-#endif
 
     EndPosition = new QLineEdit();
     connect(EndPosition, SIGNAL(returnPressed()),
@@ -518,11 +508,7 @@ QvisLCSWindow::CreateLCSTab(QWidget *pageLCS)
     terminationTypeButtonGroup->addButton(rb, 2);
     terminationLayout->addWidget(rb, 4, 0, 1, 2);
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(terminationTypeButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(terminationTypeButtonGroupChanged(int)));
-#else
     connect(terminationTypeButtonGroup, SIGNAL(idClicked(int)), this, SLOT(terminationTypeButtonGroupChanged(int)));
-#endif
 
     // Check box termination type
     limitMaxTime = new QCheckBox(tr("Limit maximum advection time"), terminationGroup);
@@ -648,11 +634,7 @@ QvisLCSWindow::CreateAppearanceTab(QWidget *pageAppearance)
     icButtonGroup->addButton(pathlineButton, 1);
     icGrpLayout->addWidget(streamlineButton, 1, 0);
     icGrpLayout->addWidget(pathlineButton, 2, 0);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(icButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(icButtonGroupChanged(int)));
-#else
     connect(icButtonGroup, SIGNAL(idClicked(int)), this, SLOT(icButtonGroupChanged(int)));
-#endif
 
     // Pathline Options
     QGroupBox *pathlineOptionsGrp = new QGroupBox(icGrp);
@@ -700,12 +682,7 @@ QvisLCSWindow::CreateAppearanceTab(QWidget *pageAppearance)
     pathlineCMFEButtonGroup->addButton(posButton, 1);
     cmfeOptionsGrpLayout->addWidget(connButton, 2, 0, 1, 5);
     cmfeOptionsGrpLayout->addWidget(posButton, 3, 0, 1, 5);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(pathlineCMFEButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(pathlineCMFEButtonGroupChanged(int)));
-#else
     connect(pathlineCMFEButtonGroup, SIGNAL(idClicked(int)), this, SLOT(pathlineCMFEButtonGroupChanged(int)));
-#endif
-
 }
 
 // ****************************************************************************
