@@ -58,58 +58,6 @@ function(DETECT_MPI_SETTINGS COMP mlibs mflags mlflags mrpath)
 endfunction()
 
 
-function(ADD_PARALLEL_EXECUTABLE target)
-    add_executable(${target} ${ARGN})
-
-    if(UNIX)
-      if(VISIT_PARALLEL_CXXFLAGS)
-        set_target_properties(${target} PROPERTIES
-            COMPILE_FLAGS ${VISIT_PARALLEL_CXXFLAGS})
-      endif()
-      target_compile_definitions(${target} PRIVATE ${VISIT_PARALLEL_DEFINES})
-
-      if(VISIT_PARALLEL_LINK_FLAGS)
-          set_target_properties(${target} PROPERTIES
-                LINK_FLAGS ${VISIT_PARALLEL_LINK_FLAGS})
-      endif()
-      if(VISIT_PARALLEL_LINK_DIRS)
-          set_target_properties(${target} PROPERTIES
-                LINK_DIRECTORIES ${VISIT_PARALLEL_LINK_DIRS})
-      endif()
-
-      if(VISIT_PARALLEL_RPATH)
-          set_target_properties(${target} PROPERTIES
-              INSTALL_RPATH "${VISIT_PARALLEL_RPATH};${CMAKE_INSTALL_RPATH}") 
-      endif()
-    else()
-        target_include_directories(${target} PRIVATE ${VISIT_PARALLEL_INCLUDE})
-        target_compile_definitions(${target} PRIVATE ${VISIT_PARALLEL_DEFINES})
-        target_link_libraries(${target} PRIVATE ${VISIT_PARALLEL_LINK_LIBS})
-    endif()
-
-    # If we're on doing this "nolink mpi" option, we rely on the
-    # PARALLEL_TARGET_LINK_LIBRARIES function to actually link the
-    # target with MPI.
-    if(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES) # This is a new if test
-        target_link_libraries(${target} ${VISIT_EXE_LINKER_FLAGS} ${VISIT_PARALLEL_LIBS})
-    endif()
-endfunction()
-
-
-
-function(PARALLEL_EXECUTABLE_LINK_LIBRARIES target)
-    if(VISIT_NOLINK_MPI_WITH_LIBRARIES)
-        target_link_libraries(${target} ${ARGN} link_mpi_libs)
-    else()
-        if(VISIT_STATIC)
-            target_link_libraries(${target} ${ARGN} ${VISIT_PARALLEL_LIBS})
-        else()
-            target_link_libraries(${target} ${ARGN})
-        endif()
-    endif()
-endfunction()
-
-
 set(VISIT_PARALLEL_DEFINES "PARALLEL;MPICH_IGNORE_CXX_SEEK;MPICH_SKIP_MPICXX;OMPI_SKIP_MPICXX;MPI_NO_CPPBIND" CACHE STRING "Parallel compiler defines")
 
 if(VISIT_MPI_COMPILER)

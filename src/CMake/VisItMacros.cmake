@@ -30,59 +30,6 @@ if(WIN32)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 endif()
 
-function(ADD_TARGET_INCLUDE target)
-      set_property(TARGET ${target}
-                   APPEND
-                   PROPERTY INCLUDE_DIRECTORIES ${ARGN})
-endfunction()
-
-function(ADD_TARGET_DEFINITIONS target newDefs)
-        set_property(TARGET ${target}
-                     APPEND
-                     PROPERTY COMPILE_DEFINITIONS ${newDefs})
-endfunction()
-
-function(ADD_PARALLEL_LIBRARY target)
-    add_library(${target} ${ARGN})
-
-    if(UNIX)
-      if(VISIT_PARALLEL_CXXFLAGS)
-        set(PAR_COMPILE_FLAGS "")
-        foreach(X ${VISIT_PARALLEL_CXXFLAGS})
-            set(PAR_COMPILE_FLAGS "${PAR_COMPILE_FLAGS} ${X}")
-        endforeach()
-        set_property(TARGET ${target}
-                     APPEND PROPERTY COMPILE_FLAGS ${PAR_COMPILE_FLAGS})
-        if(VISIT_PARALLEL_LINKER_FLAGS)
-            set(PAR_LINK_FLAGS "")
-            foreach(X ${VISIT_PARALLEL_LINKER_FLAGS})
-                set(PAR_LINK_FLAGS "${PAR_LINK_FLAGS} ${X}")
-            endforeach()
-            set_property(TARGET ${target}
-                     APPEND PROPERTY LINK_FLAGS ${PAR_LINK_FLAGS})
-        endif()
-
-        if(VISIT_PARALLEL_RPATH)
-            set(PAR_RPATHS "")
-            foreach(X ${CMAKE_INSTALL_RPATH})
-                set(PAR_RPATHS "${PAR_RPATHS} ${X}")
-            endforeach()
-            foreach(X ${VISIT_PARALLEL_RPATH})
-                set(PAR_RPATHS "${PAR_RPATHS} ${X}")
-            endforeach()
-            set_property(TARGET ${target}
-                     APPEND PROPERTY INSTALL_RPATH "${PAR_RPATHS}")
-        endif()
-      endif()
-
-    else()
-      ADD_TARGET_INCLUDE(${target} ${VISIT_PARALLEL_INCLUDE})
-      ADD_TARGET_DEFINITIONS(${target} ${VISIT_PARALLEL_DEFINES})
-    endif()
-    if(NOT VISIT_NOLINK_MPI_WITH_LIBRARIES)
-        target_link_libraries(${target} ${VISIT_PARALLEL_LIBS})
-    endif()
-endfunction()
 
 macro(VISIT_PLUGIN_TARGET_OUTPUT_DIR type)
     if(WIN32)

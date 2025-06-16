@@ -13,6 +13,9 @@
 #   Cleaned up find_package call that is necessary to pick up the nektar++
 #   defined CMakeVariables. 
 #
+#   Kathleen Biagas, Mon Jun 16, 2025
+#   Use visit_import_third_party instead of SET_UP_THIRD_PARTY.
+#
 #****************************************************************************/
 
 # Use the NEKTAR++_DIR hint from the config-site .cmake file 
@@ -64,10 +67,9 @@ if(DEFINED VISIT_NEKTAR++_DIR AND EXISTS ${VISIT_NEKTAR++_DIR})
   # message(STATUS "  NEKTAR++_DEFINITIONS=${NEKTAR++_DEFINITIONS}")
 
   # this will 'find' the Nektar++ libraries and also set them up for installation
-  SET_UP_THIRD_PARTY(NEKTAR++
+  visit_import_third_party(NEKTAR++
       INCDIR include/nektar++
-      LIBS ${NEKTAR++_LIBRARIES}
-    )
+      LIBS ${NEKTAR++_LIBRARIES})
 
   if(NEKTAR++_FOUND)
       set(HAVE_NEKTAR_PP true CACHE BOOL "Have Nektar++ lib")

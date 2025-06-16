@@ -38,6 +38,9 @@
 #   Python could find the shiboken2 module when the directory containing
 #   the PySide2 build was no longer accessible.
 #
+#   Kathleen Biagas, Mon Jun 16, 2025
+#   Changed SET_UP_THIRD_PARTY to visit_import_third_party.
+#
 #****************************************************************************/
 
 
@@ -231,12 +234,12 @@ if(NOT PySide_FOUND)
             # for pyside with python3, libnames are very verbose, so lets
             # retrieve them from XXX_LIBRARY vars set above by the find
 
-            # SET_UP_THIRD_PARTY needs the library name without extension
+            # visit_import_third_party needs the library name without extension
             get_filename_component(pyside_lib_name ${PYSIDE_LIBRARY} NAME)
             get_filename_component(shiboken_lib_name ${SHIBOKEN_LIBRARY} NAME)
 
-            # Is this call to SET_UP_THIRD_PARTY still needed?
-            SET_UP_THIRD_PARTY(PYSIDE LIBS ${pyside_lib_name} ${shiboken_lib_name} ${SHIBOKEN_LIBRARY_SO})
+            # Is this call to visit_import_third_party still needed?
+            visit_import_third_party(PYSIDE LIBS ${pyside_lib_name} ${shiboken_lib_name} ${SHIBOKEN_LIBRARY_SO})
 
             # Install the pyside and shiboken python site-packages
             install(DIRECTORY ${PYSIDE_PYTHONPATH}
