@@ -88,10 +88,6 @@
 #    Removed '--qt6' as it is part of the required group and we no
 #    longer support other versions.
 #
-#    Eric Brugger, Mon Jun 16 11:23:50 PDT 2025
-#    Added '--llvm' wherever '--mesagl' was used since mesagl depends on
-#    llvm and llvm is no longer part of the optional group.
-#
 #-----------------------------------------------------------------------
 
 #
@@ -269,13 +265,13 @@ if [ "$poodle" = true ]; then
    env PAR_COMPILER=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/bin/mpicc \
        PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/bin/mpicxx \
        PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/include \
-       ./$build_visit_script --group ${dest_group} --required --optional --llvm --mesagl --parallel \
+       ./$build_visit_script --group ${dest_group} --required --optional --mesagl --parallel \
        --qwt --no-pyside --no-visit --makeflags -j16 --thirdparty-path ${dest_dir}
 elif [ "$rzwhippet" = true ]; then
    env PAR_COMPILER=/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/bin/mpicc \
        PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/bin/mpicxx \
        PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/include \
-       ./$build_visit_script --group ${dest_group} --required --optional --llvm --mesagl --parallel \
+       ./$build_visit_script --group ${dest_group} --required --optional --mesagl --parallel \
         --qwt --no-pyside --no-gdal --no-visit --makeflags -j20 \
         --thirdparty-path ${dest_dir}
 elif [ "$lassen" = true ]; then
@@ -283,7 +279,7 @@ elif [ "$lassen" = true ]; then
    env PAR_COMPILER=/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-8.3.1/bin/mpicc \
        PAR_COMPILER_CXX=/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-8.3.1/bin/mpicxx \
        PAR_INCLUDE=-I/usr/tce/packages/spectrum-mpi/ibm/spectrum-mpi-rolling-release/include \
-       ./${build_visit_script} --group ${dest_group} --required --optional --llvm --mesagl \
+       ./${build_visit_script} --group ${dest_group} --required --optional --mesagl \
        --no-anari --no-boost --no-gdal --no-openexr --no-ospray --no-pidx --no-pyside \
        --meson --ninja --xcb --xkbcommon --qwt --parallel \
        --no-visit --makeflags -j16 --thirdparty-path ${dest_dir}
@@ -291,7 +287,7 @@ elif [ "$rzvernal" = true ]; then
    env PAR_COMPILER=/usr/tce/packages/cray-mpich/cray-mpich-8.1.28-gcc-12.2.1-magic/bin/mpicc \
        PAR_COMPILER_CXX=/usr/tce/packages/cray-mpich/cray-mpich-8.1.28-gcc-12.2.1-magic/bin/mpicxx \
        PAR_INCLUDE=-I/usr/tce/packages/cray-mpich/cray-mpich-8.1.28-gcc-12.2.1-magic/include \
-       ./$build_visit_script --group ${dest_group} --required --optional --llvm --mesagl --parallel \
+       ./$build_visit_script --group ${dest_group} --required --optional --mesagl --parallel \
        --qwt --no-pyside --no-gdal --no-uintah --no-visit --makeflags -j24 --thirdparty-path ${dest_dir}
 elif [ "$crossroads" = true ]; then
    env C_COMPILER=gcc \
@@ -300,7 +296,7 @@ elif [ "$crossroads" = true ]; then
        PAR_COMPILER_CXX=mpic++ \
        PAR_INCLUDE=-I/opt/cray/pe/mpich/8.1.28/ofi/intel/2022.1/include \
        PAR_LIBS="-L/opt/cray/pe/mpich/8.1.28/ofi/intel/2022.1/lib -Wl,-rpath=/opt/cray/pe/mpich/8.1.28/ofi/intel/intel/lib" \
-       ./$build_visit_script --group ${dest_group} --required --optional --llvm --mesagl \
+       ./$build_visit_script --group ${dest_group} --required --optional --mesagl \
        --no-adios --no-anari --no-gdal --no-nektarpp --no-pyside \
        --meson --ninja --xcb --xkbcommon --qwt --parallel \
        --no-visit --makeflags -j16 --thirdparty-path ${dest_dir}
@@ -309,7 +305,7 @@ elif [ "$tuolumne" = true ]; then
        CXX=g++ \
        PAR_COMPILER=cc \
        PAR_COMPILER_CXX=CC \
-       ./$build_visit_script --group ${dest_group} --required --optional --llvm --mesagl --parallel --no-moab --no-icet \
+       ./$build_visit_script --group ${dest_group} --required --optional --mesagl --parallel --no-moab --no-icet \
        --qwt --no-pyside --no-gdal --no-uintah --no-pidx --no-visit --makeflags -j24 --thirdparty-path ${dest_dir}
 else
    echo "case for $machine_name not implemented. Bailing out."
