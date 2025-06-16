@@ -36,7 +36,7 @@ elseif(VISIT_QWT_DIR)
         NO_DEFAULT_PATH)
 
     find_library(_qwt_LIBRARY
-        NAMES qwt 
+        NAMES qwt
         PATHS ${QWT_DIR}
         PATH_SUFFIXES lib lib64
         NO_DEFAULT_PATH)
@@ -56,7 +56,7 @@ if(QWT_FOUND)
     blt_import_library(
         NAME        qwt
         INCLUDES    $<BUILD_INTERFACE:${_qwt_INCLUDE_DIR}>
-                    $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/qwt/include>
+                    $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/qwt>
         LIBRARIES   $<BUILD_INTERFACE:${_qwt_LIBRARY}>
         EXPORTABLE  ON)
 
@@ -75,22 +75,10 @@ if(QWT_FOUND)
         $<INSTALL_INTERFACE:\${_IMPORT_PREFIX}/${VISIT_INSTALLED_VERSION_LIB}/${lib_qwt}>)
 
     target_compile_definitions(qwt INTERFACE HAVE_QWT)
-
     # install and export
     if(VISIT_INSTALL_THIRD_PARTY)
         visit_install_export_targets(qwt)
-
-        # headers aren't being installed. Perhaps because it is INTERFACE lib?
-        # There is a PUBLIC_HEADER property for INTERFACE libraries
-        # that will allow the installation of the headers in a normal
-        # install(TARGETS) command (like the one being used by
-        # visit_install_export_targets).
-        # However, you cannot specifiy a directory as PUBLIC_HEADER
-        # property, but must instead list them all, so using this
-        # property would require a file(glob). Do we want to do that?
-        # I think it is easier to install the directory the way we do
-        # for TP libs in the following function:
-
+        THIRD_PARTY_INSTALL_LIBRARY(${_qwt_LIBRARY})
         THIRD_PARTY_INSTALL_INCLUDE(qwt ${_qwt_INCLUDE_DIR})
     endif()
     if(WIN32)

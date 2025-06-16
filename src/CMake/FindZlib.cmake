@@ -43,7 +43,7 @@ if(ZLIB_DIR)
               NO_DEFAULT_PATH)
 
     find_library(_zlib_LIBRARY
-             NAMES zlib zlib1 z
+             NAMES z zlib zlib1
              PATHS ${ZLIB_DIR}
              PATH_SUFFIXES lib lib64
              NO_DEFAULT_PATH)
@@ -61,7 +61,7 @@ if(ZLIB_DIR)
         blt_import_library(
             NAME        zlib
             INCLUDES    $<BUILD_INTERFACE:${_zlib_INCLUDE_DIR}>
-                        $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/zlib/include>
+                        $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/zlib>
             LIBRARIES   $<BUILD_INTERFACE:${_zlib_LIBRARY}>
             EXPORTABLE  ON)
 
@@ -73,7 +73,7 @@ if(ZLIB_DIR)
         # install and export
         if(VISIT_INSTALL_THIRD_PARTY)
             visit_install_export_targets(zlib)
-
+            THIRD_PARTY_INSTALL_LIBRARY(${_zlib_LIBRARY})
             THIRD_PARTY_INSTALL_INCLUDE(zlib ${_zlib_INCLUDE_DIR})
         endif()
 

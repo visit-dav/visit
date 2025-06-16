@@ -32,10 +32,10 @@
 #   Eric Brugger, Wed Sep  4 10:31:31 PT 2024
 #   Modified the logic to also install static libraries. I also fixed a
 #   bug that prevented installing dependent libraries.
-# 
+#
 #****************************************************************************/
 
-IF (VISIT_VTKM_DIR)
+if (VISIT_VTKM_DIR)
    file(GLOB VTKm_DIR "${VISIT_VTKM_DIR}/lib/cmake/vtkm-*")
    if(NOT VTKm_DIR)
       message(FATAL_ERROR "Failed to find VTKm at VTKM_DIR=${VTKM_DIR}/lib/cmake/vtk-*")
@@ -45,13 +45,13 @@ IF (VISIT_VTKM_DIR)
    set(VTKM_FOUND true CACHE BOOL "VTKM library found" FORCE)
    set("HAVE_VTKM" true CACHE BOOL "Have VTKM library" FORCE)
 
-   MESSAGE(STATUS "  VTKM_DIR = ${VTKM_DIR}")
-   MESSAGE(STATUS "  VTKM_FOUND = ${VTKM_FOUND}")
-   MESSAGE(STATUS "  VTKm_VERSION_MAJOR = ${VTKm_VERSION_MAJOR}")
-   MESSAGE(STATUS "  VTKm_VERSION_MINOR = ${VTKm_VERSION_MINOR}")
-   MESSAGE(STATUS "  VTKm_VERSION_PATCH = ${VTKm_VERSION_PATCH}")
-   MESSAGE(STATUS "  VTKm_VERSION_FULL = ${VTKm_VERSION_FULL}")
-   MESSAGE(STATUS "  VTKm_VERSION = ${VTKm_VERSION}")
+   message(STATUS "  VTKM_DIR = ${VTKM_DIR}")
+   message(STATUS "  VTKM_FOUND = ${VTKM_FOUND}")
+   message(STATUS "  VTKm_VERSION_MAJOR = ${VTKm_VERSION_MAJOR}")
+   message(STATUS "  VTKm_VERSION_MINOR = ${VTKm_VERSION_MINOR}")
+   message(STATUS "  VTKm_VERSION_PATCH = ${VTKm_VERSION_PATCH}")
+   message(STATUS "  VTKm_VERSION_FULL = ${VTKm_VERSION_FULL}")
+   message(STATUS "  VTKm_VERSION = ${VTKm_VERSION}")
 
    set(VTKm_INCLUDE_DIRS "${VTKM_DIR}/include/vtkm-${VTKm_VERSION_MAJOR}.${VTKm_VERSION_MINOR}"
                          "${VTKM_DIR}/include/vtkm-${VTKm_VERSION_MAJOR}.${VTKm_VERSION_MINOR}/vtkm/thirdparty/diy/vtkmdiy/include"
@@ -104,5 +104,5 @@ IF (VISIT_VTKM_DIR)
    if(VISIT_INSTALL_THIRD_PARTY AND NOT VISIT_HEADERS_SKIP_INSTALL)
        THIRD_PARTY_INSTALL_INCLUDE(vtkm ${VTKM_DIR}/include)
    endif()
-ENDIF()
+endif()
 
