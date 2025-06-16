@@ -129,13 +129,8 @@ QvisOnionPeelWindow::CreateWindowContents()
     //
     mainLayout->addWidget(new QLabel(tr("Adjacency"), central),0,0);
     adjacencyType = new QButtonGroup(central);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(adjacencyType, SIGNAL(buttonClicked(int)),
-            this, SLOT(adjacencyTypeChanged(int)));
-#else
     connect(adjacencyType, SIGNAL(idClicked(int)),
             this, SLOT(adjacencyTypeChanged(int)));
-#endif
 
     QRadioButton *rb = new QRadioButton(tr("Node"), central);
     adjacencyType->addButton(rb, 0);
@@ -163,13 +158,8 @@ QvisOnionPeelWindow::CreateWindowContents()
     //
     mainLayout->addWidget(new QLabel(tr("Seed"), central),2,0);
     seedType = new QButtonGroup(central);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(seedType, SIGNAL(buttonClicked(int)),
-            this, SLOT(seedTypeChanged(int)));
-#else
     connect(seedType, SIGNAL(idClicked(int)),
             this, SLOT(seedTypeChanged(int)));
-#endif
 
     rb = new QRadioButton(tr("Cell"), central);
     seedType->addButton(rb, 0);

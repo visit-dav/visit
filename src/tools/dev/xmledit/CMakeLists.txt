@@ -73,9 +73,7 @@ visit_add_executable(
 
 set_target_properties(xmledit PROPERTIES AUTOMOC ON)
 
-if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
-    qt6_disable_unicode_defines(xmledit)
-endif()
+qt6_disable_unicode_defines(xmledit)
 
 if(APPLE)
     set_target_properties(xmledit PROPERTIES MACOSX_BUNDLE TRUE)

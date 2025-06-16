@@ -128,10 +128,8 @@ visit_add_executable(
 
 set_target_properties(embedded multiwindow PROPERTIES AUTOMOC ON)
 
-if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
-    qt6_disable_unicode_defines(embedded)
-    qt6_disable_unicode_defines(multiwindow)
-endif()
+qt6_disable_unicode_defines(embedded)
+qt6_disable_unicode_defines(multiwindow)
 
 if(APPLE)
     if(VISIT_STATIC)
@@ -144,6 +142,4 @@ if(APPLE)
         MACOSX_BUNDLE TRUE
         LINK_FLAGS "-framework Carbon")
 endif()
-
-
 

@@ -149,6 +149,11 @@ QvisCommandWindow::~QvisCommandWindow()
 //   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
 //   Support Qt6: buttonClicked -> idClicked.
 //
+//   Cyrus Harrison, Tue May 20 09:11:37 PDT 2025
+//   Disabled rich text paste support in command editor text boxes.
+//   Many folks are now copying and pasting from editors that embed
+//   formating (such as vscode). Embedded formatting creates a mess and
+//   is distracting, so it is now disabled.
 // ****************************************************************************
 
 void
@@ -215,31 +220,16 @@ QvisCommandWindow::CreateWindowContents()
     topLayout->addWidget(tabWidget, 1000);
 
     executeButtonsGroup = new QButtonGroup(central);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(executeButtonsGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(executeClicked(int)));
-#else
     connect(executeButtonsGroup, SIGNAL(idClicked(int)),
             this, SLOT(executeClicked(int)));
-#endif
 
     clearButtonsGroup = new QButtonGroup(central);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(clearButtonsGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(clearClicked(int)));
-#else
     connect(clearButtonsGroup, SIGNAL(idClicked(int)),
             this, SLOT(clearClicked(int)));
-#endif
 
     addMacroButtonsGroup = new QButtonGroup(central);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(addMacroButtonsGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(macroCreate(int)));
-#else
     connect(addMacroButtonsGroup, SIGNAL(idClicked(int)),
             this, SLOT(macroCreate(int)));
-#endif
 
     // Create the tabs that let us edit command scripts.
     editors       = new QTextEdit*[MAXTABS];
@@ -259,6 +249,7 @@ QvisCommandWindow::CreateWindowContents()
         editors[i]->setReadOnly(false);
         editors[i]->setFont(monospaced);
         editors[i]->setWordWrapMode(QTextOption::NoWrap);
+        editors[i]->setAcceptRichText(false);
 
         // hook up a python syntax highlighter
         highlighters[i] = new QvisPythonSyntaxHighlighter(editors[i]->document());

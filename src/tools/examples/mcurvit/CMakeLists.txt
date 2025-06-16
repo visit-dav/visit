@@ -95,9 +95,7 @@ visit_add_executable(
 
 set_target_properties(mcurvit PROPERTIES AUTOMOC ON)
 
-if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
-    qt6_disable_unicode_defines(mcurvit)
-endif()
+qt6_disable_unicode_defines(mcurvit)
 
 if(APPLE)
     set_target_properties(mcurvit PROPERTIES MACOSX_BUNDLE TRUE)

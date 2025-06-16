@@ -1398,19 +1398,11 @@ SpreadsheetTable::updateColumnWidths()
     QString lengthProbeString;
     lengthProbeString.asprintf(MODEL->getFormatString().toStdString().c_str(),
         -3.33333333333333333333);
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     int columnWidth = fm.horizontalAdvance(lengthProbeString);
     if(MODEL->numSelectedCellLabels() > 0)
         columnWidth += fm.horizontalAdvance(" AA=");
     else
         columnWidth += fm.horizontalAdvance(" ");
-#else
-    int columnWidth = fm.width(lengthProbeString);
-    if(MODEL->numSelectedCellLabels() > 0)
-        columnWidth += fm.width(" AA=");
-    else
-        columnWidth += fm.width(" ");
-#endif
     for (int i=0; i < model()->columnCount(); ++i)
         setColumnWidth(i, columnWidth);
 }

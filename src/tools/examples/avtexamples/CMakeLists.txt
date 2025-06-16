@@ -167,9 +167,7 @@ visit_add_executable(
                 VTK::GUISupportQt
     FOLDER      tools/examples/avtexamples)
 
-if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
-    qt6_disable_unicode_defines(qtviswinExample)
-endif()
+qt6_disable_unicode_defines(qtviswinExample)
 
 if(VISIT_STATIC)
     set_target_properties( avtFilterExample avtRenderExample avtPluginExample

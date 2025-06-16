@@ -57,7 +57,7 @@
 #]====]
 
 if(NOT QT_VERSION)
-  set(QT_MINIMUM_VERSION "5.10.1")
+  set(QT_MINIMUM_VERSION "6.4.2")
   if(VISIT_QT_VERSION)
       if(${VISIT_QT_VERSION} VERSION_LESS ${QT_MINIMUM_VERSION})
           message(FATAL_ERROR "QT version must be at least ${QT_MINIMUM_VERSION}")
@@ -73,18 +73,7 @@ if(NOT DEFINED VISIT_QT_DIR)
     message(FATAL_ERROR "Qt installation directory not specified")
 endif()
 
-set(visit_qt_modules Core Concurrent Gui Widgets OpenGL Network PrintSupport Svg Xml UiTools)
-
-if(${QT_MAJOR_VERSION} EQUAL 5)
-    list(APPEND visit_qt_modules Qml)
-
-    if(LINUX)
-        list(APPEND visit_qt_modules X11Extras)
-    endif()
-else()
-    list(APPEND visit_qt_modules OpenGLWidgets)
-endif()
-
+set(visit_qt_modules Core Concurrent Gui Widgets OpenGL Network PrintSupport Svg Xml UiTools OpenGLWidgets)
 
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${VISIT_QT_DIR}/lib/cmake)
 find_package (Qt${QT_MAJOR_VERSION} REQUIRED ${visit_qt_modules})
@@ -98,12 +87,7 @@ set(QT_QTPRINTSUPPORT_LIBRARY ${Qt${QT_MAJOR_VERSION}PrintSupport_LIBRARIES})
 set(QT_QTUITOOLS_LIBRARY      ${Qt${QT_MAJOR_VERSION}UiTools_LIBRARIES})
 set(QT_QTWIDGETS_LIBRARY      ${Qt${QT_MAJOR_VERSION}Widgets_LIBRARIES})
 set(QT_QTXML_LIBRARY          ${Qt${QT_MAJOR_VERSION}Xml_LIBRARIES})
-
-if(${QT_MAJOR_VERSION} EQUAL 5 AND LINUX)
-    set(QT_QTX11EXTRAS_LIBRARY ${Qt5X11Extras_LIBRARIES})
-elseif(${QT_MAJOR_VERSION} EQUAL 6)
-    set(QT_QTOPENGLWIDGETS_LIBRARY ${Qt${QT_MAJOR_VERSION}OpenGLWidgets_LIBRARIES})
-endif()
+set(QT_QTOPENGLWIDGETS_LIBRARY ${Qt${QT_MAJOR_VERSION}OpenGLWidgets_LIBRARIES})
 
 if(NOT VISIT_QT_SKIP_INSTALL)
     # moc

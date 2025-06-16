@@ -45,7 +45,6 @@ if(HAVE_OSMESA)
     list(APPEND vtkqt_DEPENDS ${OSMESA_LIBRARIES})
 endif()
 
-
 visit_add_library(
     NAME        vtkqt
     SOURCES     ${vtkqt_SOURCES}
@@ -55,9 +54,7 @@ visit_add_library(
                 $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/visit/vtkqt>
     DEPENDS_ON  ${vtkqt_DEPENDS})
 
-if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
-    qt6_disable_unicode_defines(vtkqt)
-endif()
+qt6_disable_unicode_defines(vtkqt)
 
 if(APPLE)
     set_target_properties(vtkqt PROPERTIES LINK_FLAGS "-framework Cocoa")

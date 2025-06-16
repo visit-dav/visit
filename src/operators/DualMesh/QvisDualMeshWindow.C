@@ -100,13 +100,8 @@ QvisDualMeshWindow::CreateWindowContents()
     QRadioButton *modeConversionModeZonesToNodes = new QRadioButton(tr("Zones to Nodes"), modeWidget);
     mode->addButton(modeConversionModeZonesToNodes,2);
     modeLayout->addWidget(modeConversionModeZonesToNodes);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(mode, SIGNAL(buttonClicked(int)), this, SLOT(modeChanged(int)));
-#else
     connect(mode, SIGNAL(idClicked(int)), this, SLOT(modeChanged(int)));
-#endif
     mainLayout->addWidget(modeWidget, 0,1);
-
 }
 
 

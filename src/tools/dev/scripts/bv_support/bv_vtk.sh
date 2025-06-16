@@ -83,8 +83,6 @@ function bv_vtk_depends_on
             if [[ "$DO_SERVER_COMPONENTS_ONLY" != "yes" ]]; then
                 if [[ "$DO_QT6" == "yes" ]]; then
                     depends_on="${depends_on} qt6"
-                else
-                    depends_on="${depends_on} qt"
                 fi
             fi
         fi
@@ -1818,8 +1816,6 @@ function build_vtk
                     vopts="${vopts} -DQt6CoreTools_DIR:PATH=${QT6_INSTALL_DIR}/lib/cmake/Qt6CoreTools"
                     vopts="${vopts} -DQt6GuiTools_DIR:PATH=${QT6_INSTALL_DIR}/lib/cmake/Qt6GuiTools"
                     vopts="${vopts} -DQt6WidgetsTools_DIR:PATH=${QT6_INSTALL_DIR}/lib/cmake/Qt6WidgetsTools"
-                else
-                    vopts="${vopts} -DQt5_DIR:FILEPATH=${QT_INSTALL_DIR}/lib/cmake/Qt5"
                 fi
             fi
         fi

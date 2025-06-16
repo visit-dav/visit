@@ -154,13 +154,8 @@ QvisContourPlotWindow::CreateWindowContents()
     dataLayout->addWidget(rb, 0, 2);
 
     // Each time a radio button is clicked, call the scale clicked slot.
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(scalingButtons, SIGNAL(buttonClicked(int)),
-            this, SLOT(scaleClicked(int)));
-#else
     connect(scalingButtons, SIGNAL(idClicked(int)),
             this, SLOT(scaleClicked(int)));
-#endif
 
     //
     // Create the Limits stuff
@@ -225,13 +220,8 @@ QvisContourPlotWindow::CreateWindowContents()
     // Create the mode buttons that determine if the window is in single,
     // multiple, or color table color mode.
     colorModeButtons = new QButtonGroup(contourColorGroup);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(colorModeButtons, SIGNAL(buttonClicked(int)),
-            this, SLOT(colorModeChanged(int)));
-#else
     connect(colorModeButtons, SIGNAL(idClicked(int)),
             this, SLOT(colorModeChanged(int)));
-#endif
 
     rb = new QRadioButton(tr("Color table"), contourColorGroup);
     colorModeButtons->addButton(rb, 0);

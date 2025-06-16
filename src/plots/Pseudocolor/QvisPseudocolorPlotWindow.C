@@ -275,13 +275,8 @@ QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
     dataLayout->addWidget(rb, 0, 3);
 
     // Each time a radio button is clicked, call the scale clicked slot.
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(scalingButtons, SIGNAL(buttonClicked(int)),
-            this, SLOT(scaleClicked(int)));
-#else
     connect(scalingButtons, SIGNAL(idClicked(int)),
             this, SLOT(scaleClicked(int)));
-#endif
 
     // Create the skew factor line edit
     skewLineEdit = new QLineEdit(central);
@@ -371,13 +366,8 @@ QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
     dataLayout->addWidget(rb, 3, 3);
     centeringButtons->addButton(rb, 2);
     // Each time a radio button is clicked, call the centeringClicked slot.
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(centeringButtons, SIGNAL(buttonClicked(int)),
-            this, SLOT(centeringClicked(int)));
-#else
     connect(centeringButtons, SIGNAL(idClicked(int)),
             this, SLOT(centeringClicked(int)));
-#endif
     //
     // Create the color stuff
     //
@@ -481,13 +471,8 @@ QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
     // colorLayout->addWidget(rb, gRow, 2);
 
     // // Each time a radio button is clicked, call the scale clicked slot.
-//#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    // connect(opacityButtons, SIGNAL(buttonClicked(int)),
-    //         this, SLOT(setOpaacityClicked(int)));
-//#else 
     // connect(opacityButtons, SIGNAL(idClicked(int)),
     //         this, SLOT(setOpaacityClicked(int)));
-//#endif 
 
     // gRow++;
 
@@ -792,13 +777,8 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
 
     // Create the smoothing level buttons
     smoothingLevelButtons = new QButtonGroup(central);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(smoothingLevelButtons, SIGNAL(buttonClicked(int)),
-            this, SLOT(smoothingLevelChanged(int)));
-#else
     connect(smoothingLevelButtons, SIGNAL(idClicked(int)),
             this, SLOT(smoothingLevelChanged(int)));
-#endif
 
     QRadioButton* rb = new QRadioButton(tr("None"), central);
     smoothingLevelButtons->addButton(rb, 0);

@@ -433,9 +433,7 @@ visit_add_library(
 
 
 
-if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
-    qt6_disable_unicode_defines(gui)
-endif()
+qt6_disable_unicode_defines(gui)
 
 set_target_properties(gui PROPERTIES AUTOMOC ON)
 

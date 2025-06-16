@@ -290,11 +290,7 @@ QvisXRayImageQueryWidget::GetDoubleValues(int whichWidget, doubleVector &pt)
 
     if(okay)
     {
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        QStringList s = temp.split(" ", QString::SkipEmptyParts);
-#else
         QStringList s = temp.split(" ", Qt::SkipEmptyParts);
-#endif
         for (int i = 0; okay && i < s.size(); ++i)
         {
             double val = s[i].toDouble(&okay);

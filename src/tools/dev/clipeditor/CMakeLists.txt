@@ -80,7 +80,5 @@ visit_add_executable(
 
 set_target_properties(clipeditor PROPERTIES AUTOMOC ON)
 
-if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
-    qt6_disable_unicode_defines(clipeditor)
-endif()
+qt6_disable_unicode_defines(clipeditor)
 

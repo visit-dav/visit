@@ -29,8 +29,6 @@ visit_add_library(
                ${QT_QTCORE_LIBRARY}
                ${QT_QTGUI_LIBRARY})
 
-if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
-    qt6_disable_unicode_defines(avtqtviswindow)
-endif()
+qt6_disable_unicode_defines(avtqtviswindow)
 
 add_subdirectory(vtk)

@@ -334,13 +334,8 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p)
 
     xmldoc = NULL;
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(attpluginGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(attpluginGroupChanged(int)));
-#else
     connect(attpluginGroup, SIGNAL(idClicked(int)),
             this, SLOT(attpluginGroupChanged(int)));
-#endif
     connect(name, SIGNAL(editingFinished()),
             this,  SLOT(nameTextChanged()));
     connect(label, SIGNAL(editingFinished()),

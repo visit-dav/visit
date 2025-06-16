@@ -38,7 +38,11 @@ using namespace std;
 // Creation:   Thu Feb 11 09:35:54 PST 2010
 //
 // Modifications:
-//
+//    Cyrus Harrison, Tue May 20 09:11:37 PDT 2025
+//    Disabled rich text paste support in expression editor text box.
+//    Many folks are now copying and pasting from editors that embed
+//    formating (such as vscode). Embedded formatting creates a mess and
+//    is distracting, so it is now disabled.
 // ****************************************************************************
 
 QvisPythonFilterEditor::QvisPythonFilterEditor(QWidget *parent)
@@ -47,6 +51,7 @@ QvisPythonFilterEditor::QvisPythonFilterEditor(QWidget *parent)
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setContentsMargins(0,0,0,0);
     editor = new QTextEdit(this);
+    editor->setAcceptRichText(false);
     highlighter = new QvisPythonSyntaxHighlighter(editor->document());
 
     QHBoxLayout *button_layout = new QHBoxLayout();

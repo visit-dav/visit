@@ -1825,11 +1825,7 @@ QvisQueryWindow::GetVars(stringVector &vars)
     QString temp(varsLineEdit->displayText().trimmed());
 
     // Split the variable list using the spaces.
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    QStringList sList = temp.split(" ",QString::SkipEmptyParts);
-#else
     QStringList sList = temp.split(" ",Qt::SkipEmptyParts);
-#endif
 
     QStringList::Iterator it;
 

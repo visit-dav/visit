@@ -1,3 +1,4 @@
+#include <DebugStream.h>
 #include <AMRreaderWithLevels.h>
 
 #include <algorithm>
@@ -36,6 +37,7 @@ AMRreaderWithLevels::BuildMetaData()
     {
         MakeOctTree();
         patchesBuilt = true;
+        needSetLogicalExtents = true;
     }
 }
 
@@ -133,43 +135,66 @@ AMRreaderWithLevels::GetNumberOfLevels()
 void
 AMRreaderWithLevels::MakeOctTree()
 {
-    // Get the size of the entire box using the first and last blocks from the file.
-    int dim[3];
-    float xs[3], dx[3];
-    float xMin,  yMin, zMin, xMax, yMax, zMax;
-    reader->GetBlockMesh(0, xs, dx);
-    xMin = xs[0];
-    yMin = xs[1];
-    zMin = xs[2];
+    int rootdims[3];
+    GetRootDims(rootdims);
+    float rootxs[3];
+    GetRootXS(rootxs);
+    float rootdx[3];
+    GetRootDX(rootdx);
+    int defdim[3];
+    GetBlockDefaultDimensions(defdim);
 
-    int lastbid = reader->GetNumberOfBlocks()-1;
-    reader->GetBlockMesh(lastbid, xs, dx);
-    reader->GetBlockDimensions(lastbid, dim);
-    xMax = xs[0] + dim[0] * dx[0];
-    yMax = xs[1] + dim[1] * dx[1];
-    zMax = xs[2] + dim[2] * dx[2];
+    float dx[3];
+    for (int i=0; i<3; i++) {
+        dx[i] = defdim[i]*rootdx[i];
+    }
 
-    // Make the root
-    Patch p;
-    p.level = 0;
-    p.ijk_start[0] = 0;
-    p.ijk_start[1] = 0;
-    p.ijk_start[2] = 0;
-    p.xs[0] = xMin;
-    p.xs[1] = yMin;
-    p.xs[2] = zMin;
-    p.xe[0] = xMax;
-    p.xe[1] = yMax;
-    p.xe[2] = zMax;
-    p.key = OctKey_Root();
-    p.fileBID = -1;
-    patches.push_back(p);
+    for(int kroot=0; kroot<rootdims[2]; kroot++)
+        for(int jroot=0; jroot<rootdims[1]; jroot++)
+            for(int iroot=0; iroot<rootdims[0]; iroot++)
+            {
+                {
+                    {
+                        int dim[3];
+                        float xs[3];
+                        float xMin,  yMin, zMin, xMax, yMax, zMax;
 
-    // Determine the maximum number of levels that we need to make.
-    int maxLevels = GetNumberOfLevels() - 1;
+                        xMin = rootxs[0] + iroot*dx[0];
+                        yMin = rootxs[1] + jroot*dx[1];
+                        zMin = rootxs[2] + kroot*dx[2];
 
-    // Subdivide
-    first_subdivide8(xMin, yMin, zMin, xMax, yMax, zMax, p.key, maxLevels);
+                        xMax = xMin + dx[0];
+                        yMax = yMin + dx[1];
+                        zMax = zMin + dx[2];
+
+                        int rootid = GetRootID(iroot, jroot, kroot);
+
+                        // Make the root
+                        Patch p;
+                        p.level = 0;
+                        p.ijk_start[0] = iroot*defdim[0]*2;
+                        p.ijk_start[1] = jroot*defdim[1]*2;
+                        p.ijk_start[2] = kroot*defdim[2]*2;
+                        p.xs[0] = xMin;
+                        p.xs[1] = yMin;
+                        p.xs[2] = zMin;
+                        p.xe[0] = xMax;
+                        p.xe[1] = yMax;
+                        p.xe[2] = zMax;
+                        p.key = OctKey_Root((uint64_t)rootid);
+                        p.fileBID = FindBlock(p.key);
+                        patches.push_back(p);
+
+                        // Determine the maximum number of levels that we need to make.
+                        int maxLevels = GetNumberOfLevels() - 1;
+
+                        // Subdivide
+                        if (p.fileBID == -1) {
+                            first_subdivide8(p.ijk_start, xMin, yMin, zMin, xMax, yMax, zMax, p.key, maxLevels);
+                        }
+                    }
+                }
+            }
 
     // Make a map of bid to key.
     for(int i = 0; i < (int) patches.size(); ++i)
@@ -198,7 +223,7 @@ AMRreaderWithLevels::MakeOctTree()
 // ****************************************************************************
 
 void
-AMRreaderWithLevels::first_subdivide8(float xMin, float yMin, float zMin, float xMax, float yMax, float zMax, OctKey current, int maxLevels)
+AMRreaderWithLevels::first_subdivide8(int* ijk_root, float xMin, float yMin, float zMin, float xMax, float yMax, float zMax, OctKey current, int maxLevels)
 {
     float halfX = (xMax - xMin) * 0.5f;
     float halfY = (yMax - yMin) * 0.5f;
@@ -206,6 +231,8 @@ AMRreaderWithLevels::first_subdivide8(float xMin, float yMin, float zMin, float 
 
     int dims[3];
     GetBlockDefaultDimensions(dims);
+
+    int thisLevel = 0;
 
     int cell = 0;
     for(int k = 0; k < 2; ++k)
@@ -222,18 +249,82 @@ AMRreaderWithLevels::first_subdivide8(float xMin, float yMin, float zMin, float 
                 p.xe[1] = yMin + float(j+1) * halfY;
                 p.xe[2] = zMin + float(k+1) * halfZ;
                 p.key = OctKey_AddLevel(current, cell);
+                p.level = thisLevel;
+                p.fileBID = FindBlock(p.key);
                 cell++;
 
                 // The start/end window for this area in level 1.
                 int ijk_start[3], ijk_end[3];
-                ijk_start[0] = i * dims[0]*2;
-                ijk_start[1] = j * dims[1]*2;
-                ijk_start[2] = k * dims[2]*2;
-                ijk_end[0]   = (i+1) * dims[0]*2 - 1;
-                ijk_end[1]   = (j+1) * dims[1]*2 - 1;
-                ijk_end[2]   = (k+1) * dims[2]*2 - 1;
+                ijk_start[0] = ijk_root[0] + i * dims[0];
+                ijk_start[1] = ijk_root[1] + j * dims[1];
+                ijk_start[2] = ijk_root[2] + k * dims[2];
+                ijk_end[0]   = ijk_root[0] + (i+1) * dims[0] - 1;
+                ijk_end[1]   = ijk_root[1] + (j+1) * dims[1] - 1;
+                ijk_end[2]   = ijk_root[2] + (k+1) * dims[2] - 1;
 
-                subdivide8(ijk_start, ijk_end, p.xs[0], p.xs[1], p.xs[2], p.xe[0], p.xe[1], p.xe[2], p.key, 1, maxLevels);
+                bool needRefinement = true;
+
+                // check if any of these blocks are already leaf
+                for (int ii=0; ii<3; ii++) {
+                    p.ijk_start[ii] = ijk_start[ii];
+                }
+
+                patches.push_back(p);
+
+                if (p.fileBID != -1) {
+                    needRefinement = false;
+
+                    int defaultDims[3], dims[3];
+                    reader->GetBlockDefaultDimensions(defaultDims);
+                    reader->GetBlockDimensions(p.fileBID, dims);
+
+                    // this block can be combined with it's siblings at the same level
+                    if(dims[0] > defaultDims[0] ||
+                            dims[1] > defaultDims[1] ||
+                            dims[2] > defaultDims[2])
+                    {
+                        return;
+                    }
+                }
+
+                // blocks are sometimes combined at this level
+                if (needRefinement) {
+                    OctKey cell0 = OctKey_AddLevel(p.key, 0);
+                    int cell0_bid = FindBlock(cell0);
+                    if(cell0_bid != -1)
+                    {
+                        int defaultDims[3], dims[3];
+                        reader->GetBlockDefaultDimensions(defaultDims);
+                        reader->GetBlockDimensions(cell0_bid, dims);
+
+                        if(dims[0] > defaultDims[0] ||
+                                dims[1] > defaultDims[1] ||
+                                dims[2] > defaultDims[2])
+                        {
+                            needRefinement = false;
+
+                            // We're not subdividing but we should add that
+                            // cell0 patch. That subpatch spans the space of
+                            // the patch we're in too but it's finer res.
+                            p.level = thisLevel+1;
+                            p.ijk_start[0] = ijk_start[0]*2;
+                            p.ijk_start[1] = ijk_start[1]*2;
+                            p.ijk_start[2] = ijk_start[2]*2;
+                            p.key = cell0;
+                            p.fileBID = cell0_bid;
+                            patches.push_back(p);
+                        }
+                    }
+                }
+
+                if (needRefinement) {
+                    for (int ii=0; ii<3; ii++) {
+                        ijk_start[ii] = ijk_start[ii]*2;
+                        ijk_end[ii] = ijk_start[ii] + dims[ii]*2 - 1;
+                    }
+
+                    subdivide8(ijk_start, ijk_end, p.xs[0], p.xs[1], p.xs[2], p.xe[0], p.xe[1], p.xe[2], p.key, thisLevel+1, maxLevels);
+                }
             }
         }
     }
@@ -468,9 +559,12 @@ AMRreaderWithLevels::GetBlockDimensions(int bid, int *dim) const
         {
             retval = reader->GetBlockDefaultDimensions(dim);
 
-            // The root domain will have 2x the default dimensions.
-            if(bid == 0)
-            {
+            // check if is root
+            OctKey key = patches[bid].key;
+            int iroot = OctKey_ExtractRootIndex(key);
+            OctKey rk = OctKey_Root(iroot);
+
+            if (OctKey_Equal(key, rk)) {
                 dim[0] *= 2;
                 dim[1] *= 2;
                 dim[2] *= 2;
@@ -574,6 +668,14 @@ AMRreaderWithLevels::AssembleBlockVariable(int bid, int vid, float *dat, const i
 {
     int retval = -1;
 
+    debug5 << "AMRreaderWithLevels::AssembleBlockVariable() bid=" << bid << " vid=" << vid << "\n";
+
+    int ncomponents = 1;
+    if (vid == v_velo)
+    {
+        ncomponents = 3;
+    }
+
     // If the bid has data in the file, return it.
     if(patches[bid].fileBID != -1)
     {
@@ -605,7 +707,8 @@ AMRreaderWithLevels::AssembleBlockVariable(int bid, int vid, float *dat, const i
                 // for the cell.
                 int celldims[3];
                 GetBlockDimensions(cellbid, celldims);
-                int cellsz = celldims[0] * celldims[1] * celldims[2];
+                int cellsz = celldims[0] * celldims[1] * celldims[2] * ncomponents;
+
                 if(cellsz != celldataSize)
                 {
                     delete [] celldata;
@@ -671,7 +774,10 @@ AMRreaderWithLevels::AssembleBlockVariable(int bid, int vid, float *dat, const i
                                                (j_off + j) * dims[0] +
                                                (i_off + i);
 
-                                dat[dest_idx] = celldata[cell_idx];
+                                for(int icomp=0; icomp<ncomponents; ++icomp)
+                                {
+                                    dat[ncomponents*dest_idx + icomp] = celldata[ncomponents*cell_idx + icomp];
+                                }
                             }
                         }
                     }
@@ -699,7 +805,10 @@ AMRreaderWithLevels::AssembleBlockVariable(int bid, int vid, float *dat, const i
                                            (j_off + j) * dims[0] +
                                            (i_off + i);
 
-                            dat[dest_idx] = 0;
+                            for(int icomp=0; icomp<ncomponents; ++icomp)
+                            {
+                                dat[ncomponents*dest_idx + icomp] = 0;
+                            }
                         }
                     }
                 }
@@ -714,6 +823,7 @@ AMRreaderWithLevels::AssembleBlockVariable(int bid, int vid, float *dat, const i
         retval = 0;
     }
 
+    debug5 << "finished AMRreaderWithLevels::AssembleBlockVariable() bid=" << bid << " vid=" << vid << " retval=" << retval << "\n";
     return retval;
 }
 
@@ -773,64 +883,112 @@ AMRreaderWithLevels::BlockKeyToBID(const OctKey &k) const
 int
 AMRreaderWithLevels::GetBlockVariable(int bid, int vid, float *dat)
 {
+    debug1 << "AMRreaderWithLevels::GetBlockVariable(" << bid << ", " << vid  << ")\n";
     int retval = -1;
     if(bid >= 0 && bid < GetNumberOfBlocks())
     {
-        if(bid == 0)
+        int ncomponents = 1;
+        if (vid == v_velo) 
+        {
+            ncomponents = 3;
+        }
+
+        OctKey bidkey = GetBlockKey(bid);
+        int root_index = OctKey_ExtractRootIndex(bidkey);
+        OctKey rk = OctKey_Root(root_index);
+        bool isroot = OctKey_Equal(bidkey, rk);
+        if(isroot)
         {
             // Get the dimensions of block 0
             int dims[3];
             GetBlockDimensions(bid, dims);
+            debug1 << "AMRreaderWithLevels::GetBlockVariable(): dims=[" << dims[0]
+                   << "," << dims[1] << "," << dims[2] <<  "]\n";
+
+            int sz_root = dims[0]*dims[1]*dims[2]*ncomponents;
+            for (int i=0; i<sz_root; i++) {
+                dat[i] = 0.0;
+            }
+
+            retval = 0;
 
             // Get the dimensions of the default block we'll use for level 2 blocks.
             int celldims[3];
             GetBlockDefaultDimensions(celldims);
-            int sz = celldims[0]*celldims[1]*celldims[2];
-            float *celldata = new float[sz];
 
-            // The level 0 mesh is made from all of the level 2 blocks.
-            OctKey root = OctKey_Root();
-            for(int l0 = 0; l0 < 8; ++l0)
+            int celldimsdef[3];
+            GetBlockDefaultDimensions(celldimsdef);
+
+            if (patches[bid].fileBID != -1) {
+                celldims[0] = celldims[0]*2;
+                celldims[1] = celldims[1]*2;
+                celldims[2] = celldims[2]*2;
+
+                retval = AssembleBlockVariable(bid, vid, dat, celldims);
+            }
+            else
             {
-                OctKey k0 = OctKey_AddLevel(root, l0);
-                for(int l1 = 0; l1 < 8; ++l1)
+                int sz = celldims[0]*celldims[1]*celldims[2]*ncomponents;
+                float *celldata = new float[sz*8];
+                debug1 << "AMRreaderWithLevels::GetBlockVariable(): bid=" << bid << ", sz=" << sz << "\n";
+
+                // The level 0 mesh is made from all of the level 2 blocks.
+                OctKey root = OctKey_Root((uint64_t)root_index);
+                int rbid = BlockKeyToBID(root);
+
+                debug5 << "AMRreaderWithLevels::GetBlockVariable() looping over children\n";
+                for(int l0 = 0; l0 < 8; ++l0)
                 {
-                    OctKey key = OctKey_AddLevel(k0, l1);
-                    int cellbid = BlockKeyToBID(key);
+                    OctKey k0 = OctKey_AddLevel(root, l0);
+                    int cellbid = BlockKeyToBID(k0);
 
-                    // Get the data for the block identified by key.
+                    GetBlockDefaultDimensions(celldims);
+                    int fBID = patches[cellbid].fileBID;
+                    if (fBID != -1) {
+                        reader->GetBlockDimensions(fBID, celldims);
+                    }
+
+                    //new
                     retval = AssembleBlockVariable(cellbid, vid, celldata, celldims);
+                    int i_dest = patches[cellbid].ijk_start[0] - patches[rbid].ijk_start[0];
+                    int j_dest = patches[cellbid].ijk_start[1] - patches[rbid].ijk_start[1];
+                    int k_dest = patches[cellbid].ijk_start[2] - patches[rbid].ijk_start[2];
 
-                    // Get the patch for the key and use the logical extents
-                    // to compute the destination within the level 0 patch.
-                    int i_dest = patches[cellbid].ijk_start[0] / 2;
-                    int j_dest = patches[cellbid].ijk_start[1] / 2;
-                    int k_dest = patches[cellbid].ijk_start[2] / 2;
-                    for(int k = 0, kk = 0; k < celldims[2]; k += 2, kk++)
+                    for (int k=0; k<celldims[2]; k++)
                     {
-                        for(int j = 0, jj = 0; j < celldims[1]; j += 2, jj++)
+                        for (int j=0; j<celldims[1]; j++)
                         {
-                            for(int i = 0, ii = 0; i < celldims[0]; i += 2, ii++)
+                            for (int i=0; i<celldims[0]; i++)
                             {
-                                // Index within the src patch.
-                                int src_idx = k * celldims[0]*celldims[1] + j*celldims[0] + i;
+                                int src_idx = k*celldims[0]*celldims[1] + j*celldims[0] + i;
 
-                                // Index within block 0.
-                                int dest_idx = (kk + k_dest) * dims[1]*dims[0] +
-                                               (jj + j_dest) * dims[0] +
-                                               (ii + i_dest);
+                                int dest_idx = (k_dest + k) * dims[0]*dims[1] +
+                                               (j_dest + j) * dims[0] +
+                                               (i_dest + i);
 
-                                dat[dest_idx] = celldata[src_idx];
+                                for(int icomp=0; icomp<ncomponents; icomp++)
+                                {
+                                    dat[ncomponents*dest_idx + icomp] = celldata[ncomponents*src_idx + icomp];
+                                }
                             }
                         }
                     }
-                }
-            }
 
-            delete [] celldata;
+                    // in this case, the cells at this level were consolidated so we can skip the remaining iterations
+                    if (celldims[0] > celldimsdef[0] ||
+                            celldims[1] > celldimsdef[1] ||
+                            celldims[2] > celldimsdef[2])
+                        break;
+                }
+                debug5 << "AMRreaderWithLevels::GetBlockVariable() done looping over children\n";
+
+                delete [] celldata;
+            }
         }
         else
         {
+            debug1 << "AMRreaderWithLevels::GetBlockVariable() not a root\n";
+
             // The block dimensions and the size of the dat array should
             // match already.
             int dims[3];
@@ -839,6 +997,7 @@ AMRreaderWithLevels::GetBlockVariable(int bid, int vid, float *dat)
         }
     }
 
+    debug1 << "Finished AMRreaderWithLevels::GetBlockVariable()\n";
     return retval;
 }
 
