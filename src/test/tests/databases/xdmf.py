@@ -420,15 +420,16 @@ def test8(datapath):
 # is a mixup in the dimensions of data in the Xdmf HDF5 file vs. the dimensions
 # of the Xdmf mesh in the .xmf file. The input data, `mydata`, in the HDF5 file
 # has dimension sizes which are prime numbers together with deltas that define
-# a uniform grid. The data defines the function x^2+y^2+z^2 which has gradient
+# a uniform cube. The data are samples of the function x^2+y^2+z^2 which has gradient
 # {2x,2y,2z}. So, we compute the gradient of the input data and take the difference
 # between it and an expression for the expected gradient. If the dimension ordering
 # is mixed up, the magnitude of diffs will be large and the ValueLT test will fail.
 #
 # Note that in both Xdmf `Dimensions` attributes and HDF5 datasets, dimensions are
-# ordered ZYX. That is, for the dimensions in order 5 7 11, Nz=5, Ny=7 and Nx=11.
-# In C code, an array of dimensions, int dims[3], dims[0] is for X, dims[1] for Y
-# and dims[2] for Z.
+# ordered ZYX. That is, for the dimensions tuple 5 7 11, Nz=5, Ny=7 and Nx=11.
+# Writing a dimensions tuple in the C programming language works identically as ZYX.
+# In a C code array of dimensions, int dims[3] = {5,7,11}, dims[2] is for Z,
+# dims[1] for Y and dims[0] for X.
 #
 def test9(datapath):
     TestSection("Uniform Dimension Ordering")
