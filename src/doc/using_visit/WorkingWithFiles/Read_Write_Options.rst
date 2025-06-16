@@ -340,7 +340,7 @@ Search for ANNOTATION_INT (and friends)
 """""""""""""""""""""""""""""""""""""""
 The ``ANNOTATION_INT`` (and friends) objects are generic containers sometimes
 used to store mesh-specific data using Silo_'s
-`compound array <>https://silo.readthedocs.io/generic.html#dbputcompoundarray`__.
+`compound array <https://silo.readthedocs.io/generic.html#dbputcompoundarray>`__.
 However, because there is no multi-block analog for Silo_ compound arrays, in
 order to handle them VisIt_ needs to be forced to go searching for their
 existance in all the files comprising a multi-block database. Thus, enabling

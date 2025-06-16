@@ -866,7 +866,7 @@ Example for associating new axis labels and units with a mesh:
     c Free the option list
         err = dbfreeoptlist(optlistid)
 
-Another intersting feature of Silo_ related to structured and unstructured meshes is its ability to apply various compression algorithms including FPZIP, HZIP and ZFP to the mesh as well as its variables. See the documentation on ``DBSetCompression()`` in the `Silo user's manual <>https://silo.readthedocs.io/globals.html#dbsetcompression`__ for more information.
+Another intersting feature of Silo_ related to structured and unstructured meshes is its ability to apply various compression algorithms including FPZIP, HZIP and ZFP to the mesh as well as its variables. See the documentation on ``DBSetCompression()`` in the `Silo user's manual <https://silo.readthedocs.io/globals.html#dbsetcompression>`__ for more information.
 
 Writing a scalar variable
 ~~~~~~~~~~~~~~~~~~~~~~~~~
