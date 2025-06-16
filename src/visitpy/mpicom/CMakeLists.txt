@@ -22,58 +22,56 @@
 #
 #****************************************************************************
 
-SET(MPICOM_PY_SOURCES py_src/__init__.py
+set(MPICOM_PY_SOURCES py_src/__init__.py
                       py_src/mpistub.py)
 
 # if we have a parallel build - create the mpicom python C module.
-IF(VISIT_PARALLEL)
-    SET(MPICOM_SOURCES
+if(VISIT_PARALLEL)
+    set(MPICOM_SOURCES
         src/mpicom.C
         src/Buffer.C)
-
-    INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/src/
-                        ${VISIT_SOURCE_DIR}/visitpy/common
-                        ${PYTHON_INCLUDE_PATH})
-
-    LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
-
 
     # Create the mpicom
     PYTHON_ADD_HYBRID_MODULE(NAME mpicom
                              DEST_DIR site-packages
                              PY_MODULE_DIR mpicom
                              PY_SETUP_FILE setup.py
-                             PY_SOURCES "${MPICOM_PY_SOURCES}"
+                             PY_SOURCES ${MPICOM_PY_SOURCES}
                              SOURCES ${MPICOM_SOURCES})
 
-    IF(UNIX)
-        SET_TARGET_PROPERTIES(mpicom PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing")
-        IF(VISIT_PARALLEL_CXXFLAGS)
-            SET(PAR_COMPILE_FLAGS "-fno-strict-aliasing")
-            FOREACH (X ${VISIT_PARALLEL_CXXFLAGS})
-                SET(PAR_COMPILE_FLAGS "${PAR_COMPILE_FLAGS} ${X}")
-            ENDFOREACH (X ${VISIT_PARALLEL_CXXFLAGS})
-            SET_TARGET_PROPERTIES(mpicom PROPERTIES
-                                  COMPILE_FLAGS ${PAR_COMPILE_FLAGS})
-        ENDIF(VISIT_PARALLEL_CXXFLAGS)
-        IF(VISIT_PARALLEL_LINKER_FLAGS)
-            SET(PAR_LINK_FLAGS "")
-            FOREACH (X ${VISIT_PARALLEL_LINKER_FLAGS})
-                SET(PAR_LINK_FLAGS "${PAR_LINK_FLAGS} ${X}")
-            ENDFOREACH (X ${VISIT_PARALLEL_LINKER_FLAGS})
-            SET_TARGET_PROPERTIES(mpicom PROPERTIES
-                              LINK_FLAGS ${PAR_LINK_FLAGS})
-        ENDIF(VISIT_PARALLEL_LINKER_FLAGS)
-    ELSE(UNIX)
-        ADD_TARGET_INCLUDE(mpicom ${VISIT_PARALLEL_INCLUDE})
-        ADD_TARGET_DEFINITIONS(mpicom ${VISIT_PARALLEL_DEFINES})
-    ENDIF(UNIX)
+    target_include_directories(mpicom PRIVATE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/>
+        $<BUILD_INTERFACE:${VISIT_SOURCE_DIR}/visitpy/common>
+        $<BUILD_INTERFACE:${PYTHON_INCLUDE_PATH}>)
 
-    TARGET_LINK_LIBRARIES(mpicom PRIVATE
+    if(UNIX)
+        set_target_properties(mpicom PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing")
+        if(VISIT_PARALLEL_CXXFLAGS)
+            set(PAR_COMPILE_FLAGS "-fno-strict-aliasing")
+            foreach(X ${VISIT_PARALLEL_CXXFLAGS})
+                set(PAR_COMPILE_FLAGS "${PAR_COMPILE_FLAGS} ${X}")
+            endforeach()
+            set_target_properties(mpicom PROPERTIES
+                                  COMPILE_FLAGS ${PAR_COMPILE_FLAGS})
+        endif()
+        if(VISIT_PARALLEL_LINKER_FLAGS)
+            set(PAR_LINK_FLAGS "")
+            foreach(X ${VISIT_PARALLEL_LINKER_FLAGS})
+                set(PAR_LINK_FLAGS "${PAR_LINK_FLAGS} ${X}")
+            endforeach()
+            set_target_properties(mpicom PROPERTIES
+                              LINK_FLAGS ${PAR_LINK_FLAGS})
+        endif()
+    else()
+        target_include_directories(mpicom PRIVATE ${VISIT_PARALLEL_INCLUDE})
+        target_compile_definitions(mpicom PRIVATE ${VISIT_PARALLEL_DEFINES})
+    endif()
+
+    target_link_libraries(mpicom PRIVATE
                           ${PYTHON_LIBRARY}
                           ${VISIT_PARALLEL_LIBS})
 
-ELSE(VISIT_PARALLEL)
+else()
     # we still need to build the module w/ the mpi stub
     PYTHON_ADD_PIP_SETUP(NAME mpicom_py_setup
                          DEST_DIR site-packages
@@ -82,5 +80,5 @@ ELSE(VISIT_PARALLEL)
                          PY_SOURCES ${MPICOM_PY_SOURCES})
 
 # add to main target?
-ENDIF(VISIT_PARALLEL)
+endif()
 

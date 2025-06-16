@@ -1,8 +1,6 @@
 <?xml version="1.0"?>
   <Plugin name="paraDIS" type="database" label="paraDIS simulation dump metafile" version="2.3.4" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="true">
     <Files components="E,M">
-      avtparaDISFileFormat.C
-      avtparaDISOptions.C
       parallelParaDIS.C
       Dumpfile.C
       paraDIS_lib/paradis.C
@@ -19,7 +17,7 @@
       boost
     </LIBS>
     <DEFINES>
-      -DRC_CPP_VISIT_BUILD
+      RC_CPP_VISIT_BUILD
     </DEFINES>
     <FilePatterns>
       *.prds

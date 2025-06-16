@@ -12,28 +12,24 @@
 #
 #****************************************************************************
 
-SET(WRITER_SOURCES
-visit_writer.c
-py_visit_writer.c
-)
+set(WRITER_SOURCES
+    visit_writer.c
+    py_visit_writer.c)
 
-INCLUDE_DIRECTORIES(
-${CMAKE_CURRENT_SOURCE_DIR}
-${PYTHON_INCLUDE_PATH}
-# for python 2 + 3 helper header
-${VISIT_INCLUDE_DIR}/visitpy/common
-)
-
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 
 # Create the visit_writer module
-PYTHON_ADD_MODULE(visit_writer
-${WRITER_SOURCES}
-)
-SET_TARGET_PROPERTIES(visit_writer PROPERTIES PREFIX "")
-TARGET_LINK_LIBRARIES(visit_writer PRIVATE
-${PYTHON_LIBRARY}
-)
+PYTHON_ADD_MODULE(visit_writer ${WRITER_SOURCES})
+
+set_target_properties(visit_writer PROPERTIES PREFIX "")
+
+target_include_directories(visit_writer PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${PYTHON_INCLUDE_PATH}
+    # for python 2 + 3 helper header
+    ${VISIT_INCLUDE_DIR}/visitpy/common)
+
+target_link_libraries(visit_writer PRIVATE ${PYTHON_LIBRARY})
 
 VISIT_INSTALL_TARGETS(visit_writer)
 VISIT_DATA_ADD_FOLDER(visit_writer)
+

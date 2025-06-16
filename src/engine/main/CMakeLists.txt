@@ -227,8 +227,12 @@ endif()
 
 if(VISIT_PARALLEL)
     if(VISIT_NOLINK_MPI_WITH_LIBRARIES)
-        add_library(link_mpi_libs STATIC empty.c)
-        target_link_libraries(link_mpi_libs ${VISIT_PARALLEL_LIBS})
+        visit_add_library(
+            NAME link_mpi_libs
+            SOURCES empty.c
+            DEPENDS_ON ${VISIT_PARALLEL_LIBS}
+            FORCE_STATIC
+            SKIP_INSTALL)
     endif()
 
     # For static builds with icet, don't add the parallel libs automatically. We

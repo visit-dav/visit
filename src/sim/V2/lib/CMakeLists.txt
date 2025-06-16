@@ -25,7 +25,7 @@
 # See ../CMakeLists.txt for LIBSIM_SOURCES
 
 set(FORTRAN_LIBSIM_SOURCES visitfortransimV2interface.c)
-set(FORTRAN_LIBSIM_HEADERS visitfortransimV2interface.inc)
+set(FORTRAN_LIBSIM_HEADERS VisItFortran.h)
 
 
 if(NOT WIN32 AND NOT VISIT_STATIC)
@@ -78,7 +78,8 @@ install(TARGETS simV2 simV2f ${LIBSYM_DYN}
                 GROUP_READ GROUP_WRITE GROUP_EXECUTE
                  WORLD_READ            WORLD_EXECUTE)
 
-install(FILES  ${LIBSIM_HEADERS} ${FORTRAN_LIBSIM_HEADERS}}
+install(FILES  ${LIBSIM_HEADERS} ${FORTRAN_LIBSIM_HEADERS}
+               visitfortransimV2interface.inc
     DESTINATION ${VISIT_INSTALLED_VERSION}/libsim/V2/include
     PERMISSIONS OWNER_READ OWNER_WRITE
                 GROUP_READ GROUP_WRITE

@@ -793,6 +793,14 @@ class XMLParser
                         comps_current |= COMP_MDSERVER;
                         currentPlugin->custommlibs = true;
                     }
+                    else if (comps_split[i] == "E")
+                    {
+                        comps_current |= COMP_ENGINE;
+                        currentPlugin->elibsSer.clear();
+                        currentPlugin->customelibsSer = true;
+                        currentPlugin->elibsPar.clear();
+                        currentPlugin->customelibsPar = true;
+                    }
                     else if (comps_split[i] == "ESer")
                     {
                         currentPlugin->elibsSer.clear();

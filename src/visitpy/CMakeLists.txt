@@ -96,7 +96,7 @@
 # Metadata Objects
 #####################
 
-SET(PY_GEN_METADATA_OBJECTS
+set(PY_GEN_METADATA_OBJECTS
     avtArrayMetaData
     avtBaseVarMetaData
     avtCurveMetaData
@@ -125,7 +125,7 @@ SET(PY_GEN_METADATA_OBJECTS
 # State Objects that we can't Code-Gen, or have customizations:
 #####################
 
-SET(PY_GEN_STATE_OBJECTS
+set(PY_GEN_STATE_OBJECTS
     AnimationAttributes
     AnnotationAttributes
     Axes2D
@@ -192,7 +192,7 @@ SET(PY_GEN_STATE_OBJECTS
 # RPC Objects
 #######
 
-SET(PY_GEN_RPC_OBJECTS ViewerRPC)
+set(PY_GEN_RPC_OBJECTS ViewerRPC)
 
 
 #########################################################
