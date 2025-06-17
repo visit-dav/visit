@@ -112,13 +112,8 @@ SimpleVisApp::SimpleVisApp(VisItViewer *v, int *argc, char ***argv)
     rb = new QRadioButton(tr("Contour"), plotTypeWidget);
     plotType->addButton(rb, 1);
     ptLayout->addWidget(rb);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(plotType, SIGNAL(buttonClicked(int)),
-            this, SLOT(changePlotType(int)));
-#else
     connect(plotType, SIGNAL(idClicked(int)),
             this, SLOT(changePlotType(int)));
-#endif
 
     contourWidget = new QWidget(central);
     leftLayout->addWidget(contourWidget);

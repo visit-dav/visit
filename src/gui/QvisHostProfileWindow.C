@@ -858,13 +858,8 @@ QvisHostProfileWindow::CreateMachineSettingsGroup()
     cRow++;
 
     clientHostNameMethod = new QButtonGroup(connectionGroup);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(clientHostNameMethod, SIGNAL(buttonClicked(int)),
-            this, SLOT(clientHostNameMethodChanged(int)));
-#else
     connect(clientHostNameMethod, SIGNAL(idClicked(int)),
             this, SLOT(clientHostNameMethodChanged(int)));
-#endif
     chnMachineName = new QRadioButton(tr("Use local machine name"), connectionGroup);
     chnParseFromSSHClient = new QRadioButton(tr("Parse from SSH_CLIENT environment variable"),
                                              connectionGroup);

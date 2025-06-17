@@ -95,11 +95,7 @@ QvisFileInformationWindow::CreateWindowContents()
 {
     // Create a multi line edit to display the text.
     outputText = new QTextEdit(central);
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     int w = fontMetrics().horizontalAdvance(titleSeparator);
-#else
-    int w = fontMetrics().width(titleSeparator);
-#endif
     outputText->setMinimumSize(w, w);
     outputText->setLineWrapMode(QTextEdit::NoWrap);
     outputText->setReadOnly(true);

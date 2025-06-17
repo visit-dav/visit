@@ -42,9 +42,7 @@ add_library(vtkqt ${VTKQT_SOURCES})
 set(vtklibs VTK::CommonCore VTK::GUISupportQt VTK::IOImage
         VTK::RenderingOpenGL2 VTK::RenderingFreeType)
 
-if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
-    qt6_disable_unicode_defines(vtkqt)
-endif()
+qt6_disable_unicode_defines(vtkqt)
 
 target_link_libraries(vtkqt ${vtklibs} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY}
     ${QT_QTOPENGL_LIBRARY} ${QT_QTPRINTSUPPORT_LIBRARY} ${OPENGL_LIBRARIES})

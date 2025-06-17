@@ -83,6 +83,9 @@ public:
     virtual bool   HasPressure() const = 0;
     virtual bool   HasTemperature() const = 0;
     virtual bool   HasSNDV() const = 0;
+    virtual bool   HasDensity() const = 0;
+    virtual bool   HasMomentum() const = 0;
+    virtual bool   HasEnergy() const = 0;
 
 public:
     static const int v_dens = 0;

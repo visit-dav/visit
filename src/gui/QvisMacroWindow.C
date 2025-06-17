@@ -96,13 +96,8 @@ QvisMacroWindow::CreateWindowContents()
 
     // Create the button group.
     macroButtons = new QButtonGroup(macroGroup);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(macroButtons, SIGNAL(buttonClicked(int)),
-            this, SLOT(invokeMacro(int)));
-#else
     connect(macroButtons, SIGNAL(idClicked(int)),
             this, SLOT(invokeMacro(int)));
-#endif
 }
 
 

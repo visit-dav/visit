@@ -53,9 +53,7 @@ ADD_LIBRARY(winutil ${WINUTIL_SOURCES})
 
 set_target_properties(winutil PROPERTIES AUTOMOC ON)
 
-if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
-    qt6_disable_unicode_defines(avtqtviswindow)
-endif()
+qt6_disable_unicode_defines(avtqtviswindow)
 
 # Specify the libraries to link against on Windows & Mac
 TARGET_LINK_LIBRARIES(winutil visitcommon avtdbatts ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTWIDGETS_LIBRARY})

@@ -126,13 +126,8 @@ QvisHistogramPlotWindow::CreateWindowContents()
     basedOnGroup->addButton(basedOnBasedOnManyVarsForSingleZone,0);
     basedOnGroup->addButton(basedOnBasedOnManyZonesForSingleVar,1);
     
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(basedOnGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(basedOnChanged(int)));
-#else
     connect(basedOnGroup, SIGNAL(idClicked(int)),
             this, SLOT(basedOnChanged(int)));
-#endif
 
     mainLayout->addWidget(basedOnWidget, 0,1);
     basedOnLabel->setEnabled(false);
@@ -182,13 +177,8 @@ QvisHistogramPlotWindow::CreateWindowContents()
     binScaleLayout->addWidget(binLogScale);
     binScaleLayout->addWidget(binSqrtScale);
     
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(binScaleGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(binScaleChanged(int)));
-#else
     connect(binScaleGroup, SIGNAL(idClicked(int)),
             this, SLOT(binScaleChanged(int)));
-#endif
 
     hgLayout->addWidget(binScaleWidget, 1, 1, 1, 2);
 
@@ -213,13 +203,8 @@ QvisHistogramPlotWindow::CreateWindowContents()
     histogramTypeLayout->addWidget(histogramTypeBinContributionFrequency);
     histogramTypeLayout->addWidget(histogramTypeBinContributionWeighted);
     
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(histogramTypeGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(histogramTypeChanged(int)));
-#else
     connect(histogramTypeGroup, SIGNAL(idClicked(int)),
             this, SLOT(histogramTypeChanged(int)));
-#endif
 
     hgLayout->addWidget(histogramTypeWidget, 2, 1, 1, 2);
 
@@ -252,13 +237,8 @@ QvisHistogramPlotWindow::CreateWindowContents()
     weightTypeLayout->addWidget(weightTypeVolumeArea);
     weightTypeLayout->addWidget(weightTypeVariable);
     
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(weightTypeGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(weightTypeChanged(int)));
-#else
     connect(weightTypeGroup, SIGNAL(idClicked(int)),
             this, SLOT(weightTypeChanged(int)));
-#endif
     weightingLayout->addWidget(weightTypeWidget, 1,1);
 
     weightVariableLabel = new QLabel(tr("Variable to Weight By"), histGroupBox);
@@ -325,13 +305,8 @@ QvisHistogramPlotWindow::CreateWindowContents()
     dataLayout->addWidget(rb, 0, 3);
 
     // Each time a radio button is clicked, call the scale clicked slot.
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(dataScaleGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(dataScaleChanged(int)));
-#else
     connect(dataScaleGroup, SIGNAL(idClicked(int)),
             this, SLOT(dataScaleChanged(int)));
-#endif
 
     //
     // Create the Limits stuff
@@ -433,13 +408,8 @@ QvisHistogramPlotWindow::CreateWindowContents()
     outputTypeLayout->addWidget(outputTypeOutputTypeCurve);
     outputTypeLayout->addWidget(outputTypeOutputTypeBlock,1);
     
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(outputTypeGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(outputTypeChanged(int)));
-#else
     connect(outputTypeGroup, SIGNAL(idClicked(int)),
             this, SLOT(outputTypeChanged(int)));
-#endif
 
     sgLayout->addWidget(outputTypeWidget, 0,1);
 

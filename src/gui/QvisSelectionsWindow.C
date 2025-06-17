@@ -272,13 +272,8 @@ QvisSelectionsWindow::CreatePropertiesTab(QWidget *parent)
     idVariableType->addButton(b3, 3);
     iLayout->addWidget(b3, 0, 3);
     b0->setChecked(true);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(idVariableType, SIGNAL(buttonClicked(int)),
-            this, SLOT(idVariableTypeChanged(int)));
-#else
     connect(idVariableType, SIGNAL(idClicked(int)),
             this, SLOT(idVariableTypeChanged(int)));
-#endif
     idVariableButton = new QvisVariableButton(f2);
     idVariableButton->setVarTypes(QvisVariableButton::Scalars);
     idVariableButton->setAddDefault(false);
@@ -530,13 +525,8 @@ QvisSelectionsWindow::CreateCQHistogramControls(QWidget *parent)
     QRadioButton *matches = new QRadioButton(tr("Matches"), axisGroup);
     cqHistogramVariableButton = new QRadioButton(tr("Variable"), axisGroup);
     cqHistogramType = new QButtonGroup(axisGroup);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(cqHistogramType, SIGNAL(buttonClicked(int)),
-            this, SLOT(histogramTypeChanged(int)));
-#else
     connect(cqHistogramType, SIGNAL(idClicked(int)),
             this, SLOT(histogramTypeChanged(int)));
-#endif
     cqHistogramType->addButton(timeSlice,0);
     cqHistogramType->addButton(matches,1);
     cqHistogramType->addButton(id,2);

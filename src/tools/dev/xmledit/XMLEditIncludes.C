@@ -107,17 +107,10 @@ XMLEditIncludes::XMLEditIncludes(QWidget *p)
 
     connect(includelist, SIGNAL(currentRowChanged(int)),
             this, SLOT(UpdateWindowSingleItem()));
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(fileGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(fileGroupChanged(int)));
-    connect(quotedGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(quotedGroupChanged(int)));
-#else
     connect(fileGroup, SIGNAL(idClicked(int)),
             this, SLOT(fileGroupChanged(int)));
     connect(quotedGroup, SIGNAL(idClicked(int)),
             this, SLOT(quotedGroupChanged(int)));
-#endif
     connect(file, SIGNAL(editingFinished()),
             this, SLOT(includeTextChanged()));
     connect(target, SIGNAL(editingFinished()),

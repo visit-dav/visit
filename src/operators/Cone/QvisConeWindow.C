@@ -123,13 +123,8 @@ QvisConeWindow::CreateWindowContents()
     QRadioButton *representationRepresentationR_Theta = new QRadioButton(tr("Cylindrical"), representationWidget);
     representation->addButton(representationRepresentationR_Theta,2);
     representationLayout->addWidget(representationRepresentationR_Theta);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(representation, SIGNAL(buttonClicked(int)),
-            this, SLOT(representationChanged(int)));
-#else
     connect(representation, SIGNAL(idClicked(int)),
             this, SLOT(representationChanged(int)));
-#endif
     mainLayout->addWidget(representationWidget, 3,1);
 
     upAxisLabel = new QLabel(tr("Up Axis"), central);

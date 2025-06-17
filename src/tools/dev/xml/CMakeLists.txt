@@ -39,9 +39,7 @@ foreach(tool xml2atts xml2avt xml2cmake xml2info xml2java xml2python xml2sim
              xmltest xml2window)
     add_executable(${tool} ${tool}.C)
     target_link_libraries(${tool}  ${RELEVANT_QT_LIBS})
-    if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
-        qt6_disable_unicode_defines(${tool})
-    endif()
+    qt6_disable_unicode_defines(${tool})
 endforeach()
 
 target_compile_definitions(xml2cmake PRIVATE VTK_MAJ=${VTK_MAJOR_VERSION} VTK_MIN=${VTK_MINOR_VERSION})

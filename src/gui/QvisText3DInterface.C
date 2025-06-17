@@ -91,13 +91,8 @@ QvisText3DInterface::QvisText3DInterface(QWidget *parent) :
 
     // Add controls for the height.
     heightMode = new QButtonGroup(this);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(heightMode, SIGNAL(buttonClicked(int)),
-            this, SLOT(heightModeChanged(int)));
-#else
     connect(heightMode, SIGNAL(idClicked(int)),
             this, SLOT(heightModeChanged(int)));
-#endif
     cLayout->addWidget(new QLabel(tr("Height"), this), row, 0);
     QRadioButton *rb = new QRadioButton(tr("Relative"), this);
     heightMode->addButton(rb, 0);

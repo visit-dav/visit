@@ -65,9 +65,7 @@ endif()
 
 add_library(guiwrapper SHARED ${guiwrapper_sources})
 
-if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
-    qt6_disable_unicode_defines(guiwrapper)
-endif()
+qt6_disable_unicode_defines(guiwrapper)
 
 target_link_libraries(guiwrapper ${guiwrapper_link_libs})
 

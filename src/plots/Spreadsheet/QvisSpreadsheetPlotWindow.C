@@ -156,13 +156,8 @@ QvisSpreadsheetPlotWindow::CreateWindowContents()
     QRadioButton *normalNormalAxisZ = new QRadioButton(tr("Z"), normalWidget);
     normal->addButton(normalNormalAxisZ, 2);
     normalLayout->addWidget(normalNormalAxisZ);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(normal, SIGNAL(buttonClicked(int)),
-            this, SLOT(normalChanged(int)));
-#else
     connect(normal, SIGNAL(idClicked(int)),
             this, SLOT(normalChanged(int)));
-#endif
     mainLayout->addWidget(normalWidget, 2,1);
 
     formatStringLabel = new QLabel(tr("Format string"), central);

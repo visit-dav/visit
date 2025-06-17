@@ -28,7 +28,6 @@
             <lib name="mfem"/>
             <lib name="mili"/>
             <lib name="moab"/>
-            <lib name="nektarpp"/>
             <lib name="netcdf"/>
             <lib name="openexr"/>
             <lib name="ospray"/>
@@ -46,6 +45,7 @@
             <lib name="mesagl"/>
             <lib name="meson"/>
             <lib name="mpich"/>
+            <lib name="nektarpp"/>
             <lib name="ninja"/>
             <lib name="osmesa"/>
             <lib name="pyside"/>

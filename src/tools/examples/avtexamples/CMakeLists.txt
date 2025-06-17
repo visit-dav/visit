@@ -285,7 +285,5 @@ ${QT_QTCORE_LIBRARY}
 ${vtkqtlib}
 )
 
-if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
-    qt6_disable_unicode_defines(qtviswinExample)
-endif()
+qt6_disable_unicode_defines(qtviswinExample)
 
