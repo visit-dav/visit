@@ -60,7 +60,7 @@ if(JPEG_DIR)
         # install and export
         if(VISIT_INSTALL_THIRD_PARTY)
             visit_install_export_targets(jpeg)
-            THIRD_PARTY_INSTALL_LIBRARY(jpeg ${_jpeg_LIBRARY})
+            THIRD_PARTY_INSTALL_LIBRARY(${_jpeg_LIBRARY})
             THIRD_PARTY_INSTALL_INCLUDE(jpeg ${_jpeg_INCLUDE_DIR})
         endif()
 

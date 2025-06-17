@@ -228,7 +228,7 @@ function(THIRD_PARTY_INSTALL_INCLUDE pkg incdir)
         if(VISIT_INSTALL_THIRD_PARTY AND NOT VISIT_HEADERS_SKIP_INSTALL)
             string(TOLOWER ${pkg} lcpkg)
 #            message("***INSTALL ${incdir} -> ${VISIT_INSTALLED_VERSION_INCLUDE}/${lcpkg}")
-            install(DIRECTORY ${incdir}
+            install(DIRECTORY ${incdir}/
                 DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/${lcpkg}
                 DIRECTORY_PERMISSIONS ${VISIT_TP_PERMS}
                 FILE_PERMISSIONS ${VISIT_TP_PERMS}
