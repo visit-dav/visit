@@ -9,7 +9,7 @@ Primitive Var _number_0 -- Max = 80 (zone 1106 in patch level2,patch0 at coord <
 
 The total Surface Area is 4118
 The total Volume is 12000
-The original extents are (0, 30, 0, 20, 0, 20)
-The actual extents are (0, 30, 0, 20, 0, 20)
+The original extents are (Xmin=0, Xmax=30, Ymin=0, Ymax=20, Zmin=0, Zmax=20)
+The actual extents are (Xmin=0, Xmax=30, Ymin=0, Ymax=20, Zmin=0, Zmax=20)
 The actual number of nodes is 10992.
 The actual number of zones is 9060.

@@ -42,8 +42,8 @@ u -- Max = 1 (node 13 in domain 1 at coord <2.09353, 0.164764, 0>)
 
 The total Surface Area is 625.615 cm^2
 The total Volume is 659.056 cm^3
-The original extents are (-5, 5, -5.20548e-06, 5, 0, 20)
-The actual extents are (-5, 5, -5.20548e-06, 5, 0, 20)
+The original extents are (Xmin=-5, Xmax=5, Ymin=-5.20548e-06, Ymax=5, Zmin=0, Zmax=20)
+The actual extents are (Xmin=-5, Xmax=5, Ymin=-5.20548e-06, Ymax=5, Zmin=0, Zmax=20)
 Exts from vector are [-4.999997-4.999997, -0.000005-4.999997, 0.000000-19.999998]
 The original number of nodes is 47916.
 The number of ghost nodes is 20534.
@@ -57,8 +57,8 @@ The number of ghost zones is 17176.
 AFTER APPLYING SIL RESTRICTION:
 The total Surface Area is 77.3114 cm^2
 The total Volume is 67.9978 cm^3
-The original extents are (-5, 5, -5.20548e-06, 5, 0, 20)
-The actual extents are (-3, 5, -3.12329e-06, 4, 0, 6.66667)
+The original extents are (Xmin=-5, Xmax=5, Ymin=-5.20548e-06, Ymax=5, Zmin=0, Zmax=20)
+The actual extents are (Xmin=-3, Xmax=5, Ymin=-3.12329e-06, Ymax=4, Zmin=0, Zmax=6.66667)
 The original number of nodes is 47916.
 The number of ghost nodes is 20534.
 The actual number of nodes is 5324.

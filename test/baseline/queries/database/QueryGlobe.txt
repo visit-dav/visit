@@ -7,16 +7,16 @@ u -- Max = 10 (node 332 at coord <0, 10, 7.10543e-14>)
 
 The total Surface Area is 1685.63
 The total Volume is 3997.28
-The original extents are (-10, 10, -10, 10, -10, 10)
-The actual extents are (-10, 10, -10, 10, -10, 10)
+The original extents are (Xmin=-10, Xmax=10, Ymin=-10, Ymax=10, Zmin=-10, Zmax=10)
+The actual extents are (Xmin=-10, Xmax=10, Ymin=-10, Ymax=10, Zmin=-10, Zmax=10)
 The actual number of nodes is 1093.
 The actual number of zones is 1200.
 
 AFTER CLIPPING:
 The total Surface Area is 952.842
 The total Volume is 2158.32
-The original extents are (-10, 10, -10, 10, -10, 10)
-The actual extents are (-10, 8.33085, -10, 8.33085, -10, 8.36281)
+The original extents are (Xmin=-10, Xmax=10, Ymin=-10, Ymax=10, Zmin=-10, Zmax=10)
+The actual extents are (Xmin=-10, Xmax=8.33085, Ymin=-10, Ymax=8.33085, Zmin=-10, Zmax=8.36281)
 The original number of nodes is 1093.
 The actual number of nodes is 953.
 The original number of zones is 1200.
