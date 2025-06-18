@@ -1302,6 +1302,8 @@ ConvertVTKmToVTK(avtVtkmDataSet *data)
             //
             if (strcmp(fieldName, "sliceScalars") == 0)
                 continue;
+            if (strcmp(fieldName, "coordinates") == 0)
+                continue;
 
             //
             // Use the field's association to try and attach the data to
