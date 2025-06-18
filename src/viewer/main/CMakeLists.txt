@@ -191,7 +191,7 @@ set(vtkqtlib VTK::GUISupportQt)
 
 qt6_disable_unicode_defines(viewer)
 
-TARGET_LINK_LIBRARIES(viewere
+TARGET_LINK_LIBRARIES(viewer
 viewerrpc
 viewercore_ser
 visitcommon
@@ -226,7 +226,7 @@ ELSE(NOT APPLE)
     )
 
     ADD_EXECUTABLE(viewer_exe MACOSX_BUNDLE viewer.C ${VIEWER_STATIC_SOURCES} ${VISIT_SOURCE_DIR}/common/icons/${VIEWER_ICON_FILE})
-e
+
     SET_TARGET_PROPERTIES( viewer_exe PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${VISIT_SOURCE_DIR}/include/ViewerInfo.plist.in)
     SET(MACOSX_BUNDLE_BUNDLE_NAME          "VisIt Viewer ${VISIT_VERSION}")
     SET(MACOSX_BUNDLE_INFO_STRING          "Graphical viewer for VisIt")
@@ -236,7 +236,7 @@ e
     SET(MACOSX_BUNDLE_SHORT_VERSION_STRING "VisIt ${VISIT_VERSION}")
     SET(MACOSX_BUNDLE_BUNDLE_VERSION       ${VISIT_VERSION})
     SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2025, Lawrence Livermore National Security, LLC")
-e
+
     IF(VISIT_STATIC)
         MAC_NIB_INSTALL(viewer)
     ENDIF(VISIT_STATIC)
