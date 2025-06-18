@@ -32,8 +32,12 @@
 #  Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
 #  Change CMAKE_THREAD_LIBS to Threads::Threads.
 #
-#   Kathleen Biagas, Tue Sep 5, 2023 
-#   Remove untested, unused EGL logic.
+#  Kathleen Biagas, Tue Sep 5, 2023e
+#  Remove untested, unused EGL logic.
+#
+#  Kathleen Biagas, Wed Jun 18, 2025
+#  Remove visit_vtk_offscreen, no longer needed (VTK 9.5).
+#  Remove unnecessary call to LINK_DIRECTORIES with LIBRARY_OUTPUT_DIRECTORY.
 #
 #****************************************************************************
 
@@ -158,15 +162,6 @@ ${VTK_INCLUDE_DIRS}
 )
 
 
-if(VTK_VERSION VERSION_LESS "9.4.0")
-if(HAVE_OSMESA)
-    include_directories(${VISIT_SOURCE_DIR}/visit_vtk/offscreen)
-endif()
-endif()
-
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
-
-
 #*************************** The viewer library ******************************
 ADD_LIBRARY(viewer ${VIEWERLIB_SOURCES})
 
@@ -176,14 +171,14 @@ IF (WIN32)
     SET_TARGET_PROPERTIES(viewer PROPERTIES OUTPUT_NAME viewerlib)
 ENDIF (WIN32)
 
-SET(VIEWER_QT_LIBS 
+SET(VIEWER_QT_LIBSe
 ${QT_QTGUI_LIBRARY}
 ${QT_QTOPENGL_LIBRARY}
 ${QT_QTCORE_LIBRARY}
 ${QT_QTNETWORK_LIBRARY}
 )
 IF(VISIT_STATIC)
-    SET(VIEWER_QT_LIBS 
+    SET(VIEWER_QT_LIBSe
         ${VIEWER_QT_LIBS}
         ${QT_QTGUI_LIB_DEPENDENCIES}
         ${QT_QTOPENGL_LIB_DEPENDENCIES}
@@ -196,7 +191,7 @@ set(vtkqtlib VTK::GUISupportQt)
 
 qt6_disable_unicode_defines(viewer)
 
-TARGET_LINK_LIBRARIES(viewer 
+TARGET_LINK_LIBRARIES(viewere
 viewerrpc
 viewercore_ser
 visitcommon
@@ -221,12 +216,6 @@ Threads::Threads
 ${vtkqtlib}
 )
 
-if(VTK_VERSION VERSION_LESS "9.4.0")
-if(HAVE_OSMESA)
-    target_link_libraries(viewer visit_vtk_offscreen)
-endif()
-endif()
-
 #*************************** The viewer executable ***************************
 IF(NOT APPLE)
     ADD_EXECUTABLE(viewer_exe ${VISIT_APPLICATION_STYLE} viewer.C ${VIEWER_STATIC_SOURCES} ${VISIT_VIEWER_RESOURCE_FILE})
@@ -237,7 +226,7 @@ ELSE(NOT APPLE)
     )
 
     ADD_EXECUTABLE(viewer_exe MACOSX_BUNDLE viewer.C ${VIEWER_STATIC_SOURCES} ${VISIT_SOURCE_DIR}/common/icons/${VIEWER_ICON_FILE})
-    
+e
     SET_TARGET_PROPERTIES( viewer_exe PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${VISIT_SOURCE_DIR}/include/ViewerInfo.plist.in)
     SET(MACOSX_BUNDLE_BUNDLE_NAME          "VisIt Viewer ${VISIT_VERSION}")
     SET(MACOSX_BUNDLE_INFO_STRING          "Graphical viewer for VisIt")
@@ -247,7 +236,7 @@ ELSE(NOT APPLE)
     SET(MACOSX_BUNDLE_SHORT_VERSION_STRING "VisIt ${VISIT_VERSION}")
     SET(MACOSX_BUNDLE_BUNDLE_VERSION       ${VISIT_VERSION})
     SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2025, Lawrence Livermore National Security, LLC")
-    
+e
     IF(VISIT_STATIC)
         MAC_NIB_INSTALL(viewer)
     ENDIF(VISIT_STATIC)
