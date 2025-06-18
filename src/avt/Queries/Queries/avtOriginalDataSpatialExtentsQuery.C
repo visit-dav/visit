@@ -98,6 +98,8 @@ avtOriginalDataSpatialExtentsQuery::ApplyFilters(avtDataObject_p inData)
 //    Kathleen Biagas, Thu Feb 13 15:04:58 PST 2014
 //    Add Xml results.
 //
+//    Mark C. Miller, Mon Jun 16 15:37:09 PDT 2025
+//    Label extents strings with axis information.
 // ****************************************************************************
 
 void
@@ -123,27 +125,27 @@ avtOriginalDataSpatialExtentsQuery::PerformQuery(QueryAttributes *qA)
     int dim = input->GetInfo().GetAttributes().GetSpatialDimension();
     if (dim == 1)
     {
-        format = "The original extents are (" + floatFormat + ", " 
+        format = "The original extents are (Xmin=" + floatFormat + ", Xmax=" 
                                               + floatFormat + ")";
         snprintf(msg, 1024,format.c_str(), 
                 extents[0], extents[1]);
     }
     else if (dim == 2)
     {
-        format = "The original extents are (" + floatFormat + ", " 
-                                              + floatFormat + ", " 
-                                              + floatFormat + ", " 
+        format = "The original extents are (Xmin=" + floatFormat + ", Xmax=" 
+                                              + floatFormat + ", Ymin=" 
+                                              + floatFormat + ", Ymax=" 
                                               + floatFormat + ")";
         snprintf(msg, 1024, format.c_str(), 
             extents[0], extents[1], extents[2], extents[3]);
     }
     else if (dim == 3)
     {
-        format = "The original extents are (" + floatFormat + ", " 
-                                              + floatFormat + ", " 
-                                              + floatFormat + ", " 
-                                              + floatFormat + ", " 
-                                              + floatFormat + ", " 
+        format = "The original extents are (Xmin=" + floatFormat + ", Xmax=" 
+                                              + floatFormat + ", Ymin=" 
+                                              + floatFormat + ", Ymax=" 
+                                              + floatFormat + ", Zmin=" 
+                                              + floatFormat + ", Zmax=" 
                                               + floatFormat + ")";
        snprintf(msg, 1024, format.c_str(),
         extents[0], extents[1], extents[2], extents[3], extents[4], extents[5]);
