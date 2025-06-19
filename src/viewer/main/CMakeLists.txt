@@ -32,7 +32,7 @@
 #  Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
 #  Change CMAKE_THREAD_LIBS to Threads::Threads.
 #
-#  Kathleen Biagas, Tue Sep 5, 2023e
+#  Kathleen Biagas, Tue Sep 5, 2023
 #  Remove untested, unused EGL logic.
 #
 #  Kathleen Biagas, Wed Jun 18, 2025
@@ -171,14 +171,14 @@ IF (WIN32)
     SET_TARGET_PROPERTIES(viewer PROPERTIES OUTPUT_NAME viewerlib)
 ENDIF (WIN32)
 
-SET(VIEWER_QT_LIBSe
+SET(VIEWER_QT_LIBS
 ${QT_QTGUI_LIBRARY}
 ${QT_QTOPENGL_LIBRARY}
 ${QT_QTCORE_LIBRARY}
 ${QT_QTNETWORK_LIBRARY}
 )
 IF(VISIT_STATIC)
-    SET(VIEWER_QT_LIBSe
+    SET(VIEWER_QT_LIBS
         ${VIEWER_QT_LIBS}
         ${QT_QTGUI_LIB_DEPENDENCIES}
         ${QT_QTOPENGL_LIB_DEPENDENCIES}
