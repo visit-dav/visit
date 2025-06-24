@@ -15,19 +15,21 @@
 // Creation:
 //
 // Modifications:
+//   Kathleen Biagas, Tue Jun 24, 2025
+//   Replace vtkVisItDataSetMapper with vtkDataSetMapper.
 //
 // ****************************************************************************
 
 #include "vtkOSPRayVisItDataSetMapperNode.h"
 
 #include "vtkActor.h"
+#include "vtkDataSetMapper.h"
 #include "vtkDataSetSurfaceFilter.h"
 #include "vtkOSPRayActorNode.h"
 #include "vtkOSPRayRendererNode.h"
 #include "vtkPolyDataMapper.h"
 #include "vtkProperty.h"
 
-#include "vtkVisItDataSetMapper.h"
 
 //============================================================================
 vtkStandardNewMacro(vtkOSPRayVisItDataSetMapperNode);
@@ -75,8 +77,8 @@ void vtkOSPRayVisItDataSetMapperNode::Render(bool prepass)
         this->ClearGeometricModels();
 
         vtkPolyData* poly = nullptr;
-        vtkVisItDataSetMapper* mapper =
-            vtkVisItDataSetMapper::SafeDownCast(act->GetMapper());
+        vtkDataSetMapper* mapper =
+            vtkDataSetMapper::SafeDownCast(act->GetMapper());
 
         if (mapper && mapper->GetNumberOfInputPorts() > 0)
         {

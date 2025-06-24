@@ -60,11 +60,11 @@ function bv_vtk95_depends_on
 
 function bv_vtk95_info
 {
-    info "setting up vtk for version 9.5.0.rc3"
-    export VTK95_VERSION=${VTK95_VERSION:-"9.5.0.rc3"}
+    info "setting up vtk for version 9.5.0"
+    export VTK95_VERSION=${VTK95_VERSION:-"9.5.0"}
     export VTK95_SHORT_VERSION=${VTK95_SHORT_VERSION:-"9.5"}
-    export VTK95_SHA256_CHECKSUM="73b86d23b83abdc014360408f29aeefce060232e41b8eda8486a2f494795c700"
-    export VTK95_URL="https://vtk.org/files/release/${VTK95_SHORT_VERSION}/"
+    export VTK95_SHA256_CHECKSUM="04ae86246b9557c6b61afbc534a6df099244fbc8f3937f82e6bc0570953af87d"
+    export VTK95_URL=""
     export VTK95_FILE=${VTK95_FILE:-"VTK-${VTK95_VERSION}.tar.gz"}
     export VTK95_COMPATIBILITY_VERSION=${VTK95_SHORT_VERSION}
     export VTK95_BUILD_DIR=${VTK95_BUILD_DIR:-"VTK-${VTK95_VERSION}"}

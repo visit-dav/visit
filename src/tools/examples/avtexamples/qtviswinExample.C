@@ -22,7 +22,6 @@ using std::vector;
 #include <vtkVersion.h>
 
 #include <vtkVisItCellDataToPointData.h>
-#include <vtkVisItDataSetMapper.h>
 
 #include <vtkOpenGLPointMapper.h>
 
@@ -49,6 +48,11 @@ VTK_MODULE_INIT(vtkRenderingOpenGL2)
 // with a sub-class of that object.
 // This combines the factories from InitVTK and InitVTKRendering.
 //
+// Modifications:
+//   Kathleen Biagas, Tue Jun 24, 2025
+//   Remove vtkVisItDataSetMapper override, it no longer exists.
+//
+
 class vtkVisItGraphicsFactory : public vtkObjectFactory
 {
   public:
@@ -71,7 +75,6 @@ vtkStandardNewMacro(vtkVisItGraphicsFactory)
 //
 // Necessary for each object that will override a vtkObject.
 //
-VTK_CREATE_CREATE_FUNCTION(vtkVisItDataSetMapper);
 VTK_CREATE_CREATE_FUNCTION(vtkOpenGLPointMapper);
 VTK_CREATE_CREATE_FUNCTION(vtkVisItCellDataToPointData);
 
@@ -83,10 +86,6 @@ vtkVisItGraphicsFactory::GetVTKSourceVersion()
 
 vtkVisItGraphicsFactory::vtkVisItGraphicsFactory()
 {
-  this->RegisterOverride("vtkDataSetMapper", "vtkVisItDataSetMapper",
-                         "vtkVisItDataSetMapper override vtkDataSetMapper",
-                         1,
-                         vtkObjectFactoryCreatevtkVisItDataSetMapper);
   this->RegisterOverride("vtkPointMapper", "vtkOpenGLPointMapper",
                          "vtkOpenGLPointMapper override vtkPointMapper",
                          1,

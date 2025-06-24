@@ -10,11 +10,14 @@
 
 #include <vtkCallbackCommand.h>
 #include <vtkCullerCollection.h>
+#include <vtkDataSetMapper.h>
 #include <vtkFloatArray.h>
 #include <vtkImageData.h>
 #include <vtkInformation.h>
 #include <vtkInteractorStyle.h>
+#include <vtkLookupTable.h>
 #include <vtkMapper.h>
+#include <vtkNew.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRenderer.h>
@@ -40,7 +43,6 @@
 // We'd do it another way in VTK8
 #define VALUE_IMAGE_RENDERING_PRE_VTK8
 #ifdef VALUE_IMAGE_RENDERING_PRE_VTK8
-#include <vtkVisItDataSetMapper.h>
 #include <vtkProperty.h>
 #endif
 
@@ -274,6 +276,9 @@ vtkStandardNewMacro(vtkBackgroundPass);
 //   Kathleen Biagas, Tue Jun 24, 2025
 //   Make anariRendering and osprayRendering ivars available always.
 //
+//   Kathleen Biagas, Tue Jun 24, 2025
+//   Replace vtkVisItDataSetMapper with vtkDataSetMapper for ospray overrides.
+//
 // ****************************************************************************
 
 VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
@@ -329,11 +334,7 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
 
     vtkOSPRayRendererNode::SetRendererType("scivis", canvas);
 
-    // vtkOSPRayVisItDataSetMapper overrides vtkVisItDataSetMapper
-    // which normally overrides vtkDataSetMapper.  If the use of
-    // vtkVisItDataSetMapper as a general override of vtkDataSetMapper
-    // is removed this code will need to be changed.
-    factory->RegisterOverride("vtkVisItDataSetMapper",
+    factory->RegisterOverride("vtkDataSetMapper",
                               vtkVisItViewNodeFactory::ds_maker);
     factory->RegisterOverride("vtkPointGlyphMapper",
                               vtkVisItViewNodeFactory::ds_maker);
@@ -1512,6 +1513,11 @@ VisWinRendering::GetCaptureRegion(int& r0, int& c0, int& w, int& h,
 //    to the back buffer instead of the front buffer. The behavior changed
 //    with VTK9.
 //
+//    Kathleen Biagas, Tue Jun 24, 2025
+//    vtkVisItDataSetMapper was previously used to setup and utilize allwhite
+//    and grayscale vtkLookupTables based on the avtImageType.  Now create
+//    the necessary vtkLookupTables here.
+//
 // ****************************************************************************
 
 void
@@ -1553,11 +1559,8 @@ VisWinRendering::ScreenRender(avtImageType imgT,
     bool *actorLighting = NULL;
     double *actorAmbient = NULL;
     double *actorDiffuse = NULL;
-    if(imgT == ColorRGBImage || imgT == ColorRGBAImage)
-        vtkVisItDataSetMapper::SetRenderingMode(vtkVisItDataSetMapper::RENDERING_MODE_NORMAL);
-    else if(imgT == LuminanceImage)
+    if(imgT == LuminanceImage)
     {
-        vtkVisItDataSetMapper::SetRenderingMode(vtkVisItDataSetMapper::RENDERING_MODE_LUMINANCE);
         background->GetBackground(oldBG);
         background->SetBackground(0.,0.,0.);
         // TODO: Turn off gradient background.
@@ -1569,6 +1572,16 @@ VisWinRendering::ScreenRender(avtImageType imgT,
         vtkActor *actor = NULL;
         while((actor = actors->GetNextActor()) != NULL)
         {
+            vtkMapper *mapper = actor->GetMapper();
+            if(mapper != nullptr)
+            {
+                vtkNew<vtkLookupTable> allwhite;
+                allwhite->SetNumberOfColors(10);
+                for(int i = 0; i < 10; ++i)
+                    allwhite->SetTableValue(i, 1.,1.,1.,1.);
+                allwhite->SetRange(mapper->GetScalarRange());
+                mapper->SetLookupTable(allwhite);
+            }
             // Save the color and opacity.
             actor->GetProperty()->GetColor(actorColors[4*i],actorColors[4*i+1],actorColors[4*i+2]);
             actorColors[4*i+3] = actor->GetProperty()->GetOpacity();
@@ -1581,7 +1594,6 @@ VisWinRendering::ScreenRender(avtImageType imgT,
     }
     else if(imgT == ValueImage)
     {
-        vtkVisItDataSetMapper::SetRenderingMode(vtkVisItDataSetMapper::RENDERING_MODE_VALUE);
         background->GetBackground(oldBG);
         background->SetBackground(0.,0.,0.);
         // TODO: Turn off gradient background.
@@ -1596,6 +1608,20 @@ VisWinRendering::ScreenRender(avtImageType imgT,
         vtkActor *actor = NULL;
         while((actor = actors->GetNextActor()) != NULL)
         {
+            vtkMapper *mapper = actor->GetMapper();
+            if(mapper != nullptr)
+            {
+                vtkNew<vtkLookupTable> grayscale;
+                grayscale->SetNumberOfColors(1024);
+                for(int i = 0; i < 1024; ++i)
+                {
+                    double t = double(i)/double(1024-1);
+                    grayscale->SetTableValue(i, t,t,t,1.);
+                }
+                grayscale->SetRange(mapper->GetScalarRange());
+                mapper->SetLookupTable(grayscale);
+            }
+
             // Save the lighting.
             actor->GetProperty()->GetLighting();
             actorLighting[i] = actor->GetProperty()->GetOpacity();
@@ -3573,6 +3599,9 @@ VisWinRendering::SetAnariUSDParameters(const stringVector &usdParams)
 // Programmer:  Kevin Griffin
 // Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
 //
+// Modifications:
+//   Replace vtkVisItDataSetMapper with vtkDataSetMapper in overrides.
+//
 // ****************************************************************************
 
 vtkAnariPass *
@@ -3581,7 +3610,7 @@ VisWinRendering::CreateAnariPass()
     vtkAnariPass *anariPass = vtkAnariPass::New();
     vtkViewNodeFactory *factory = anariPass->GetViewNodeFactory();
 
-    factory->RegisterOverride("vtkVisItDataSetMapper",
+    factory->RegisterOverride("vtkDataSetMapper",
         vtkAnariVisItViewNodeFactory::pd_maker);
     factory->RegisterOverride("vtkPointGlyphMapper",
         vtkAnariVisItViewNodeFactory::pd_maker);
