@@ -147,38 +147,37 @@ VisWinRenderingWithoutWindow::GetRenderWindow(void)
 //    Kevin Griffin, Wed 05 Mar 2025 11:59:26 AM CST
 //    Added Anari support.
 //
+//    Kathleen Biagas, Tue June 24, 2025
+//    Move if-tests for ospray/anariRenderingoutside of #ifdef logic so that
+//    anari logic setting pass to nullptr would not override ospray setting
+//    pass to osprayPass
+//
 // ****************************************************************************
 
 void
 VisWinRenderingWithoutWindow::RenderRenderWindow(void)
 {
-#if defined(HAVE_OSPRAY)
     if (osprayRendering && viewIs3D)
     {
-        if (canvas->GetPass() == NULL)
+#ifdef HAVE_OSPRAY
+        if (canvas->GetPass() == nullptr)
         {
             canvas->SetUseShadows(osprayShadows);
             canvas->SetPass(osprayPass);
         }
-    }
-    else
-    {
-        canvas->SetUseShadows(false);
-        canvas->SetPass(0);
-    }
 #endif
-
+    }
+    else if(anariRendering)
+    {
 #ifdef HAVE_ANARI
-    if(GetAnariRendering())
-    {
         canvas->SetPass(anariPass);
+#endif
     }
     else
     {
         canvas->SetUseShadows(false);
-        canvas->SetPass(0);
+        canvas->SetPass(nullptr);
     }
-#endif
 
 #if defined(__unix__) && !defined(__APPLE__) && defined(HAVE_LIBX11) && !defined(HAVE_OSMESA)
     if(displayStatus == DS_NOT_CHECKED)

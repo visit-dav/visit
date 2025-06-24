@@ -271,6 +271,9 @@ vtkStandardNewMacro(vtkBackgroundPass);
 //   Kevin Griffin, Wed 05 Mar 2025 11:59:26 AM CST
 //   Added initialization of Anari parameters.
 //
+//   Kathleen Biagas, Tue Jun 24, 2025
+//   Make anariRendering and osprayRendering ivars available always.
+//
 // ****************************************************************************
 
 VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
@@ -296,17 +299,17 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
 {
     background = vtkRenderer::New();
     background->SetInteractive(0);
-    background->SetPass(0);
+    background->SetPass(nullptr);
     background->SetLayer(0);
 
     canvas = vtkRenderer::New();
     canvas->SetInteractive(1);
-    canvas->SetPass(0);
+    canvas->SetPass(nullptr);
     canvas->SetLayer(1);
 
     foreground = vtkRenderer::New();
     foreground->SetInteractive(0);
-    foreground->SetPass(0);
+    foreground->SetPass(nullptr);
     foreground->SetLayer(2);
 
     RemoveCullers(background);
@@ -315,14 +318,14 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
 
     curRenderTimes[0] = curRenderTimes[1] = curRenderTimes[2] = 0.0;
 
-#if defined(HAVE_OSPRAY)
     osprayRendering = false;
+    viewIs3D = true;
+#if defined(HAVE_OSPRAY)
     ospraySPP = 1;
     osprayAO = 0;
     osprayShadows = false;
     osprayPass = vtkOSPRayPass::New();
     vtkViewNodeFactory* factory = osprayPass->GetViewNodeFactory();
-    viewIs3D = true;
 
     vtkOSPRayRendererNode::SetRendererType("scivis", canvas);
 
@@ -346,6 +349,7 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
                               vtkVisItViewNodeFactory::axis_act_maker);
 #endif
 
+    anariRendering = false;
 #ifdef HAVE_ANARI
     // For VisIt debug levels 1-3
     auto vtkVerbosity = vtkLogger::Verbosity::VERBOSITY_ERROR;
@@ -358,10 +362,9 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
     {
         vtkVerbosity = vtkLogger::Verbosity::VERBOSITY_INFO;
     }
-    
+
     vtkLogger::SetStderrVerbosity(vtkVerbosity);
 
-    anariRendering = false;
     anariLibraryName = "";
     anariLibrarySubtype = "default";
     anariRendererSubtype = "default";
@@ -1317,36 +1320,33 @@ VisWinRendering::Realize(void)
 //    Kevin Griffin, Wed 05 Mar 2025 11:59:26 AM CST
 //    Added Anari support.
 //
+//    Kathleen Biagas, Tue June 24, 2025
+//    Move if-tests outside of #ifdef logic so that anari logic setting
+//    pass to nullptr would not override ospray setting pass to osprayPass.
+//
 // ****************************************************************************
 
 void
 VisWinRendering::RenderRenderWindow(void)
 {
-#if defined(HAVE_OSPRAY)
     if (osprayRendering && viewIs3D)
     {
+#ifdef HAVE_OSPRAY
         canvas->SetUseShadows(osprayShadows);
         canvas->SetPass(osprayPass);
-    }
-    else
-    {
-        canvas->SetUseShadows(false);
-        canvas->SetPass(0);
-    }
 #endif
-
+    }
+    else if(anariRendering)
+    {
 #ifdef HAVE_ANARI
-    if(GetAnariRendering())
-    {
         canvas->SetPass(anariPass);
+#endif
     }
     else
     {
         canvas->SetUseShadows(false);
-        canvas->SetPass(0);
+        canvas->SetPass(nullptr);
     }
-#endif
-
     GetRenderWindow()->Render();
 
     debug1 << "VisWinRendering, vtkRenderWindow classname: " << GetRenderWindow()->GetClassName() << endl;
@@ -3108,7 +3108,7 @@ VisWinRendering::SetOsprayRendering(bool enabled)
     else
     {
         canvas->SetUseShadows(false);
-        canvas->SetPass(0);
+        canvas->SetPass(nullptr);
     }
 }
 
@@ -3228,7 +3228,7 @@ VisWinRendering::SetAnariRendering(const bool enabled)
         }
         else
         {
-            canvas->SetPass(0);
+            canvas->SetPass(nullptr);
         }
     }
 }
@@ -3595,7 +3595,7 @@ VisWinRendering::CreateAnariPass()
         vtkAnariVisItViewNodeFactory::cube_axes_act_maker);
     factory->RegisterOverride("vtkVisItAxisActor",
         vtkAnariVisItViewNodeFactory::axis_act_maker);
-            
+
     return anariPass;
 }
 #endif

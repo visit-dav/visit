@@ -220,6 +220,9 @@ class VisWindowColleagueProxy;
 //    Kevin Griffin, Tue 04 Mar 2025 05:53:41 PM CST
 //    Added support for ANARI.
 //
+//    Kathleen Biagas, Tue Jun 24, 2025
+//    Make anariRendering and osprayRendering ivars available always.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRendering : public VisWinColleague
@@ -467,23 +470,24 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     bool                          depthPeeling;
     double                        occlusionRatio;
     int                           numberOfPeels;
-#if defined(HAVE_OSPRAY)
+
     bool                          osprayRendering {false};
+    bool                          viewIs3D {true};
+#if defined(HAVE_OSPRAY)
     int                           ospraySPP {1};
     int                           osprayAO {0};
     bool                          osprayShadows {false};
     vtkOSPRayPass                *osprayPass {nullptr};
-    bool                          viewIs3D {true};
 #endif
+    bool                        anariRendering {false};
 #ifdef HAVE_ANARI
-    bool                        anariRendering;
     std::string                 anariLibraryName;
     std::string                 anariLibrarySubtype;
     std::string                 anariRendererSubtype;
     stringVector                anariRendererParameters;
     stringVector                anariUSDParameters;
     bool                        usingUsdDevice;
-    vtkAnariPass                *anariPass;
+    vtkAnariPass                *anariPass {nullptr};
 #endif
 
     void                          (*renderInfo)(void *);
