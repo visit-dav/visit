@@ -1,11 +1,11 @@
- 
+
 function bv_qt6_initialize
 {
     export DO_QT6="yes"
 }
 
 function bv_qt6_enable
-{ 
+{
     if [[ "$DO_QT" == "no" ]] ; then
         DO_QT6="yes"
     else
@@ -118,11 +118,107 @@ function apply_qt6_base_patch
             return 1
         fi
 
+        qt6_macos_15_opengl_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+
     fi
+
     qt6_xkbcommon_patch
     if [[ $? != 0 ]] ; then
         return 1
     fi
+
+    qt6_libpng_patch
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+}
+
+function qt6_macos_15_opengl_patch
+{
+    info "Patching qt 6 for macos opengl linking issue"
+    patch -p0 << \EOF
+    From 0efea8020c1d221635aaa0a71529edb392cfe3cc Mon Sep 17 00:00:00 2001
+From: Joerg Bornemann <joerg.bornemann@qt.io>
+Date: Mon, 11 Sep 2023 14:48:32 +0200
+Subject: [PATCH] CMake: Fix build with CMake 3.28 on macOS
+
+FindWrapOpenGL.cmake assumed that IMPORTED_LOCATION is the absolute path
+of the library within the framework. That's not the case with CMake 3.28
+anymore. There, IMPORTED_LOCATION is the absolute path of the framework
+directory.
+
+The relevant upstream CMake change is
+6b01a27f901b5eb392955fea322cde44a1b782a3.
+
+Pick-to: 6.2 6.5 6.6
+Change-Id: I6b702a28318e0978c56dec83c398965aa77ef020
+Reviewed-by: Alexandru Croitor <alexandru.croitor@qt.io>
+---
+ qtbase-everywhere-src-6.4.2/cmake/FindWrapOpenGL.cmake | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git qtbase-everywhere-src-6.4.2/cmake/FindWrapOpenGL.cmake qtbase-everywhere-src-6.4.2/cmake/FindWrapOpenGL.cmake
+index 3e6abaf4dda7..7295a159caf6 100644
+--- qtbase-everywhere-src-6.4.2/cmake/FindWrapOpenGL.cmake
++++ qtbase-everywhere-src-6.4.2/cmake/FindWrapOpenGL.cmake
+@@ -17,14 +17,18 @@ if (OpenGL_FOUND)
+
+     add_library(WrapOpenGL::WrapOpenGL INTERFACE IMPORTED)
+     if(APPLE)
++        # CMake 3.27 and older:
+         # On Darwin platforms FindOpenGL sets IMPORTED_LOCATION to the absolute path of the library
+         # within the framework. This ends up as an absolute path link flag, which we don't want,
+         # because that makes our .prl files un-relocatable.
+         # Extract the framework path instead, and use that in INTERFACE_LINK_LIBRARIES,
+-        # which CMake ends up transforming into a reloctable -framework flag.
++        # which CMake ends up transforming into a relocatable -framework flag.
+         # See https://gitlab.kitware.com/cmake/cmake/-/issues/20871 for details.
++        #
++        # CMake 3.28 and above:
++        # IMPORTED_LOCATION is the absolute path the the OpenGL.framework folder.
+         get_target_property(__opengl_fw_lib_path OpenGL::GL IMPORTED_LOCATION)
+-        if(__opengl_fw_lib_path)
++        if(__opengl_fw_lib_path AND NOT __opengl_fw_lib_path MATCHES "/([^/]+)\\.framework$")
+             get_filename_component(__opengl_fw_path "${__opengl_fw_lib_path}" DIRECTORY)
+         endif()
+EOF
+
+}
+
+function qt6_libpng_patch
+{
+    info "Patching qt 6 for libpng header issue"
+    patch -p0 << \EOF
+diff --git qtbase-everywhere-src-6.4.2/src/3rdparty/libpng/pngpriv.h qtbase-everywhere-src-6.4.2/src/3rdparty/libpng//pngpriv.h
+index 6c7280cf53..190eb85cbf 100644
+--- qtbase-everywhere-src-6.4.2/src/3rdparty/libpng/a/pngpriv.h
++++ qtbase-everywhere-src-6.4.2/src/3rdparty/libpng//pngpriv.h
+@@ -556,18 +556,8 @@
+     */
+ #  include <float.h>
+
+-#  if (defined(__MWERKS__) && defined(macintosh)) || defined(applec) || \
+-    defined(THINK_C) || defined(__SC__) || defined(TARGET_OS_MAC)
+-   /* We need to check that <math.h> hasn't already been included earlier
+-    * as it seems it doesn't agree with <fp.h>, yet we should really use
+-    * <fp.h> if possible.
+-    */
+-#    if !defined(__MATH_H__) && !defined(__MATH_H) && !defined(__cmath__)
+-#      include <fp.h>
+-#    endif
+-#  else
+-#    include <math.h>
+-#  endif
++#  include <math.h>
++
+ #  if defined(_AMIGA) && defined(__SASC) && defined(_M68881)
+    /* Amiga SAS/C: We must include builtin FPU functions when compiling using
+     * MATH=68881
+EOF
+
 }
 
 function qt6_xkbcommon_patch
@@ -146,7 +242,7 @@ function qt6_xkbcommon_patch
          Xkb2Qt<XKB_KEY_dead_belowverticalline,  Qt::Key_Dead_Belowverticalline>,
          Xkb2Qt<XKB_KEY_dead_longsolidusoverlay, Qt::Key_Dead_Longsolidusoverlay>,
 +#endif
- 
+
          // Special keys from X.org - This include multimedia keys,
          // wireless/bluetooth/uwb keys, special launcher keys, etc.
          Xkb2Qt<XKB_KEY_XF86Back,                Qt::Key_Back>,
@@ -170,9 +266,9 @@ diff -crB qtbase-everywhere-src-6.4.2/src/corelib/tools/qduplicatetracker_p.h qt
 --- qtbase-everywhere-src-6.4.2-patched/src/corelib/tools/qduplicatetracker_p.h	Wed Oct 25 13:14:40 2023
 ***************
 *** 16,33 ****
-  
+
   #include <private/qglobal_p.h>
-  
+
 ! #if __has_include(<memory_resource>)
 ! #  include <unordered_set>
 ! #  include <memory_resource>
@@ -180,18 +276,18 @@ diff -crB qtbase-everywhere-src-6.4.2/src/corelib/tools/qduplicatetracker_p.h qt
 ! #else
 ! #  include <qset.h>
 ! #endif
-  
+
   QT_BEGIN_NAMESPACE
-  
+
   template <typename T, size_t Prealloc = 32>
   class QDuplicateTracker {
   #ifdef __cpp_lib_memory_resource
       template <typename HT>
       struct QHasher {
 --- 16,38 ----
-  
+
   #include <private/qglobal_p.h>
-  
+
 ! // Only supported on macOS 14 and iOS 17
 ! // #if __has_include(<memory_resource>)
 ! // #  include <unordered_set>
@@ -200,12 +296,12 @@ diff -crB qtbase-everywhere-src-6.4.2/src/corelib/tools/qduplicatetracker_p.h qt
 ! // #else
 ! // #  include <qset.h>
 ! // #endif
-  
+
 + #undef __cpp_lib_memory_resource // Only supported on macOS 14 and iOS 17
 + #include <qset.h>
-+ 
++
   QT_BEGIN_NAMESPACE
-  
+
   template <typename T, size_t Prealloc = 32>
   class QDuplicateTracker {
 + #undef __cpp_lib_memory_resource // Only supported on macOS 14 and iOS 17
@@ -240,7 +336,7 @@ diff -crB qtbase-everywhere-src-6.4.2/src/gui/image/qxpmhandler.cpp qtbase-every
 --- 1078,1084 ----
       else
           image = sourceImage;
-  
+
 + #undef __cpp_lib_memory_resource
   #ifdef __cpp_lib_memory_resource
       char buffer[1024];
@@ -280,7 +376,7 @@ index 0040b6c..bfad10d 100644
 @@ -411,7 +414,7 @@
          QMAKE_DEFAULT_INCDIRS = $$split(INCLUDE, $$QMAKE_DIRLIST_SEP)
      }
- 
+
 -    unix:if(!cross_compile|host_build) {
 +    unix:!darwin:if(!cross_compile|host_build) {
          isEmpty(QMAKE_DEFAULT_INCDIRS): QMAKE_DEFAULT_INCDIRS = /usr/include /usr/local/include
@@ -340,7 +436,7 @@ function build_qt6_base
     #
 
     #
-    # Select the proper value for QT_PLATFORM 
+    # Select the proper value for QT_PLATFORM
     #
     # Question: Could qt auto detect this via the CC and CXX env vars?
     #
@@ -352,7 +448,7 @@ function build_qt6_base
     #
 
 
-    if [[ "$OPSYS" == "Darwin" ]]; then       
+    if [[ "$OPSYS" == "Darwin" ]]; then
         QT_PLATFORM="macx-clang"
     elif [[ "$OPSYS" == "Linux" ]] ; then
         if [[ "$C_COMPILER" == "clang" ]]; then
@@ -494,7 +590,7 @@ function build_qt6_tools
             warn "Could not extract ${QT6_TOOLS_FILE}"
             return 1
         fi
-    fi 
+    fi
 
     # Make a build directory for an out-of-source build.
     QT6_TOOLS_BUILD_DIR="${QT6_TOOLS_SOURCE_DIR}-build"
@@ -504,7 +600,7 @@ function build_qt6_tools
     fi
 
     cd ${QT6_TOOLS_BUILD_DIR}
-   
+
     info "Configuring Qt6 tools . . . "
     env CC="${C_COMPILER}" CXX="${CXX_COMPILER}"  \
         ${QT6_INSTALL_DIR}/bin/qt-configure-module  ../${QT6_TOOLS_SOURCE_DIR}
@@ -538,7 +634,7 @@ function build_qt6_svg
             warn "Could not extract ${QT6_SVG_FILE}"
             return 1
         fi
-    fi 
+    fi
 
     # Make a build directory for an out-of-source build.
     QT6_SVG_BUILD_DIR="${QT6_SVG_SOURCE_DIR}-build"
@@ -580,11 +676,11 @@ function bv_qt6_is_installed
     # check submodules
 
     if ! test -f ${QT6_INSTALL_DIR}/modules/Tools.json ; then
-        return 0 
+        return 0
     fi
 
     if ! test -f ${QT6_INSTALL_DIR}/modules/Svg.json ; then
-        return 0 
+        return 0
     fi
     return 1
 }
@@ -598,7 +694,7 @@ function bv_qt6_build
         bv_qt6_is_installed
         if [[ $? == 1 ]] ; then
              info "Skipping Qt6 build.  Qt6 is already installed."
-        else 
+        else
 
             # check qt proper, then submodules
             check_if_installed "qt" $QT6_VERSION
