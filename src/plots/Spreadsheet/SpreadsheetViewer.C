@@ -198,13 +198,8 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent) :
     layout3D->addWidget(normalLabel, 1, 0);
 
     normalButtonGroup = new QButtonGroup (0);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(normalButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(normalChanged(int)));
-#else
     connect(normalButtonGroup, SIGNAL(idClicked(int)),
             this, SLOT(normalChanged(int)));
-#endif
     normalRadioButtons = new QWidget(controls3D);
     QHBoxLayout *nLayout = new QHBoxLayout(normalRadioButtons);
     nLayout->setContentsMargins(0,0,0,0);

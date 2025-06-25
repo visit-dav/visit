@@ -371,11 +371,7 @@ QvisReflectWidget::redrawScene2D(QPainter *painter)
     painter->setPen(palette().windowText().color());
     const char *x = "+X";
     painter->drawText((int) x0.x, (int) (x0.y + h), "-X");
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     int wx = fontMetrics().horizontalAdvance(x);
-#else
-    int wx = fontMetrics().width(x);
-#endif
     painter->drawText((int) (x1.x - wx), (int) (x1.y + h), x);
     painter->drawText((int) (y0.x + 5), (int) (y0.y + h), "+Y");
     painter->drawText((int) (y1.x + 5), (int) (y1.y), "-Y");

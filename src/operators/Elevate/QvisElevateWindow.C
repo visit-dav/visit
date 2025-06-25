@@ -106,13 +106,8 @@ QvisElevateWindow::CreateWindowContents()
     QRadioButton *useXYLimitsScalingModeAlways = new QRadioButton(tr("Always"), useXYLimitsWidget);
     useXYLimits->addButton(useXYLimitsScalingModeAlways,2);
     useXYLimitsLayout->addWidget(useXYLimitsScalingModeAlways);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(useXYLimits, SIGNAL(buttonClicked(int)),
-            this, SLOT(useXYLimitsChanged(int)));
-#else
     connect(useXYLimits, SIGNAL(idClicked(int)),
             this, SLOT(useXYLimitsChanged(int)));
-#endif
     mainLayout->addWidget(useXYLimitsWidget, 0, 1);
 
     limitsModeLabel = new QLabel(tr("Limits Mode"), central);
@@ -128,13 +123,8 @@ QvisElevateWindow::CreateWindowContents()
     QRadioButton *limitsModeLimitsModeCurrentPlot = new QRadioButton(tr("Current Plot"), limitsModeWidget);
     limitsMode->addButton(limitsModeLimitsModeCurrentPlot,1);
     limitsModeLayout->addWidget(limitsModeLimitsModeCurrentPlot);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(limitsMode, SIGNAL(buttonClicked(int)),
-            this, SLOT(limitsModeChanged(int)));
-#else
     connect(limitsMode, SIGNAL(idClicked(int)),
             this, SLOT(limitsModeChanged(int)));
-#endif
     mainLayout->addWidget(limitsModeWidget, 1,1);
 
     scalingLabel = new QLabel(tr("Scale"), central);
@@ -153,13 +143,8 @@ QvisElevateWindow::CreateWindowContents()
     QRadioButton *scalingScalingSkew = new QRadioButton(tr("Skew"), scalingWidget);
     scaling->addButton(scalingScalingSkew,2);
     scalingLayout->addWidget(scalingScalingSkew);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(scaling, SIGNAL(buttonClicked(int)),
-            this, SLOT(scalingChanged(int)));
-#else
     connect(scaling, SIGNAL(idClicked(int)),
             this, SLOT(scalingChanged(int)));
-#endif
     mainLayout->addWidget(scalingWidget, 2,1);
 
     skewFactorLabel = new QLabel(tr("Skew factor"), central);

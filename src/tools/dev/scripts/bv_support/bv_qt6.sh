@@ -10,7 +10,6 @@ function bv_qt6_enable
         DO_QT6="yes"
     else
         DO_QT6="no"
-    fi
 }
 
 function bv_qt6_disable

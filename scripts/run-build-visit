@@ -44,37 +44,37 @@
 #
 #    Cyrus Harrison, Tue Feb 20 16:56:21 PST 2024
 #    Various updates for lassen and toss4, removed stripack
-# 
+#
 #    Justin Privitera, Thu Mar  7 14:44:01 PST 2024
 #    Changed /usr/workspace/wsa/visit/visit/... to
 #    /usr/workspace/visit/visit/... for poodle.
-# 
+#
 #    Justin Privitera, Wed Mar 13 16:07:44 PDT 2024
 #    Changed /usr/workspace/wsa/visit/visit/... to
 #    /usr/workspace/visit/visit/... for lassen.
 #
 #    Eric Brugger, 05/22/24
 #    Added support for building on rzvernal.
-# 
+#
 #    Justin Privitera, Fri Sep  6 20:42:29 PDT 2024
 #    Completely reworked this script to have no more duplication.
-# 
+#
 #    Justin Privitera, Tue Sep 10 16:23:34 PDT 2024
 #    Removed rztopaz.
 #
 #    Eric Brugger, Mon Oct  7 09:03:43 PDT 2024
 #    Added support for building on tuolumne.
-# 
+#
 #    Justin Privitera, Wed Nov  6 16:11:16 PST 2024
-#    Added support for building on rzadams (secretly the same as 
+#    Added support for building on rzadams (secretly the same as
 #    tuolumne).
-# 
+#
 #    Justin Privitera, Fri Nov 22 16:40:46 PST 2024
 #    Removed kickit with extreme prejudice.
 #
 #    Eric Brugger, Wed Dec  4 16:00:35 PST 2024
 #    Removed trinity and added crossroads.
-# 
+#
 #    Justin Privitera, Wed Apr 16 14:01:51 PDT 2025
 #    Added elcap.
 #
@@ -83,6 +83,10 @@
 #
 #    Kathleen Biagas, Wed May 7, 2025
 #    Removed '--uintah' as it is now built when '--optional' specified.
+#
+#    Kathleen Biagas, Fri Jun 13, 2025
+#    Removed '--qt6' as it is part of the required group and we no
+#    longer support other versions.
 #
 #-----------------------------------------------------------------------
 
@@ -106,7 +110,7 @@ ran_build_visit=false
 #
 # The loop is executed once for each symbol on the execute line. This means
 # that $1 may be blank for later executions of the loop if any "shift 2"
-# commands are executed. The variable abc is not used in the loop.  
+# commands are executed. The variable abc is not used in the loop.
 #
 for abc
 do
@@ -262,13 +266,13 @@ if [ "$poodle" = true ]; then
        PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/bin/mpicxx \
        PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/include \
        ./$build_visit_script --group ${dest_group} --required --optional --mesagl --parallel \
-       --qt6 --qwt --no-pyside --no-visit --makeflags -j16 --thirdparty-path ${dest_dir}
+       --qwt --no-pyside --no-visit --makeflags -j16 --thirdparty-path ${dest_dir}
 elif [ "$rzwhippet" = true ]; then
    env PAR_COMPILER=/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/bin/mpicc \
        PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/bin/mpicxx \
        PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/include \
        ./$build_visit_script --group ${dest_group} --required --optional --mesagl --parallel \
-        --qt6 --qwt --no-pyside --no-gdal --no-visit --makeflags -j20 \
+        --qwt --no-pyside --no-gdal --no-visit --makeflags -j20 \
         --thirdparty-path ${dest_dir}
 elif [ "$lassen" = true ]; then
    module load gcc/8.3.1
@@ -277,14 +281,14 @@ elif [ "$lassen" = true ]; then
        PAR_INCLUDE=-I/usr/tce/packages/spectrum-mpi/ibm/spectrum-mpi-rolling-release/include \
        ./${build_visit_script} --group ${dest_group} --required --optional --mesagl \
        --no-anari --no-boost --no-gdal --no-openexr --no-ospray --no-pidx --no-pyside \
-       --meson --ninja --xcb --xkbcommon --qt6 --qwt --parallel \
+       --meson --ninja --xcb --xkbcommon --qwt --parallel \
        --no-visit --makeflags -j16 --thirdparty-path ${dest_dir}
 elif [ "$rzvernal" = true ]; then
    env PAR_COMPILER=/usr/tce/packages/cray-mpich/cray-mpich-8.1.28-gcc-12.2.1-magic/bin/mpicc \
        PAR_COMPILER_CXX=/usr/tce/packages/cray-mpich/cray-mpich-8.1.28-gcc-12.2.1-magic/bin/mpicxx \
        PAR_INCLUDE=-I/usr/tce/packages/cray-mpich/cray-mpich-8.1.28-gcc-12.2.1-magic/include \
        ./$build_visit_script --group ${dest_group} --required --optional --mesagl --parallel \
-       --qt6 --qwt --no-pyside --no-gdal --no-uintah --no-visit --makeflags -j24 --thirdparty-path ${dest_dir} 
+       --qwt --no-pyside --no-gdal --no-uintah --no-visit --makeflags -j24 --thirdparty-path ${dest_dir}
 elif [ "$crossroads" = true ]; then
    env C_COMPILER=gcc \
        CXX_COMPILER=g++ \
@@ -294,7 +298,7 @@ elif [ "$crossroads" = true ]; then
        PAR_LIBS="-L/opt/cray/pe/mpich/8.1.28/ofi/intel/2022.1/lib -Wl,-rpath=/opt/cray/pe/mpich/8.1.28/ofi/intel/intel/lib" \
        ./$build_visit_script --group ${dest_group} --required --optional --mesagl \
        --no-adios --no-anari --no-gdal --no-nektarpp --no-pyside \
-       --meson --ninja --xcb --xkbcommon --qt6 --qwt --parallel \
+       --meson --ninja --xcb --xkbcommon --qwt --parallel \
        --no-visit --makeflags -j16 --thirdparty-path ${dest_dir}
 elif [ "$tuolumne" = true ]; then
    env CC=gcc \
@@ -302,7 +306,7 @@ elif [ "$tuolumne" = true ]; then
        PAR_COMPILER=cc \
        PAR_COMPILER_CXX=CC \
        ./$build_visit_script --group ${dest_group} --required --optional --mesagl --parallel --no-moab --no-icet \
-       --qt6 --qwt --no-pyside --no-gdal --no-uintah --no-pidx --no-visit --makeflags -j24 --thirdparty-path ${dest_dir} 
+       --qwt --no-pyside --no-gdal --no-uintah --no-pidx --no-visit --makeflags -j24 --thirdparty-path ${dest_dir}
 else
    echo "case for $machine_name not implemented. Bailing out."
    exit

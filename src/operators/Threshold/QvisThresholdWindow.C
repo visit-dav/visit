@@ -182,11 +182,7 @@ QvisThresholdWindow::CreateWindowContents()
     boundsInputType->addButton(customRadioButton,1);
     boundsInputWidgetLayout->addWidget(customRadioButton);
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(boundsInputType, SIGNAL(buttonClicked(int)), this, SLOT(boundsInputTypeChanged(int)));
-#else
     connect(boundsInputType, SIGNAL(idClicked(int)), this, SLOT(boundsInputTypeChanged(int)));
-#endif
     threshVarsLayout->addWidget(boundsInputWidget, 5, 1, 1, 2);
 
 
@@ -212,13 +208,8 @@ QvisThresholdWindow::CreateWindowContents()
     outputMeshType->addButton(pointMesh,1);
     outputMeshWidgetLayout->addWidget(pointMesh);
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(outputMeshType, SIGNAL(buttonClicked(int)),
-            this, SLOT(outputMeshTypeChanged(int)));
-#else
     connect(outputMeshType, SIGNAL(idClicked(int)),
             this, SLOT(outputMeshTypeChanged(int)));
-#endif
     forAllVarsLayout->addWidget(outputMeshWidget, 1, 1, 1, 2);
 }
 
@@ -530,11 +521,7 @@ QvisThresholdWindow::GetCurrentValues(int which_widget)
 
             if(!boundsText.trimmed().isEmpty() && IsSimpleBounds(boundsText))
             {
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                QStringList minmaxTokens = boundsText.split(":", QString::SkipEmptyParts);
-#else
                 QStringList minmaxTokens = boundsText.split(":", Qt::SkipEmptyParts);
-#endif
 
                 if(minmaxTokens.length() == 1)
                 {
@@ -644,11 +631,7 @@ QvisThresholdWindow::IsSimpleBounds(const QString &boundsText)
         return true;
     }
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    QStringList tokens = boundsText.split(":", QString::SkipEmptyParts);
-#else
     QStringList tokens = boundsText.split(":", Qt::SkipEmptyParts);
-#endif
     return (tokens.length() <= 2);
 }
 

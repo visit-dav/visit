@@ -670,6 +670,10 @@ avtXRayFilter::SetOutputRayBounds(bool flag)
 //    Eric Brugger, Wed May 27 10:10:28 PDT 2015
 //    I modified the filter to also output the path length field.
 //
+//    Eric Brugger, Thu Jun 12 11:37:36 PDT 2025
+//    I corrected the setting of pixelsForFirstPassLastProc and
+//    pixelsForLastPassLastProc.
+//
 // ****************************************************************************
 
 void
@@ -689,15 +693,11 @@ avtXRayFilter::Execute(void)
     while (PAR_Size() > 1 && (pixelsForFirstPassFirstProc + 1) * (PAR_Size() - 1) < pixelsForFirstPass)
         pixelsForFirstPassFirstProc++;
     pixelsForFirstPassLastProc =
-        ((pixelsForFirstPass % pixelsForFirstPassFirstProc) == 0) ?
-        pixelsForFirstPassFirstProc :
         pixelsForFirstPass - (pixelsForFirstPassFirstProc * (PAR_Size() - 1));
     pixelsForLastPassFirstProc = pixelsForLastPass / PAR_Size();
     while (PAR_Size() > 1 && (pixelsForLastPassFirstProc + 1) * (PAR_Size() - 1) < pixelsForLastPass)
         pixelsForLastPassFirstProc++;
     pixelsForLastPassLastProc =
-        ((pixelsForLastPass % pixelsForLastPassFirstProc) == 0) ?
-        pixelsForLastPassFirstProc :
         pixelsForLastPass - (pixelsForLastPassFirstProc * (PAR_Size() - 1));
 
     numPasses = numPixels / actualPixelsPerIteration;

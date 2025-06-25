@@ -79,11 +79,7 @@ QvisMessageWindow::QvisMessageWindow(MessageAttributes *msgAttr,
     messageText->setWordWrapMode(QTextOption::WordWrap);
     messageText->setReadOnly(true);
     QString cm("Closed the compute engine on host sunburn.llnl.gov.  ");
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     int w = fontMetrics().horizontalAdvance(cm);
-#else
-    int w = fontMetrics().width(cm);
-#endif
     messageText->setMinimumWidth(3 * w / 2);
     messageText->setMinimumHeight(8 * fontMetrics().lineSpacing());
     severityLabel = new QLabel(tr("Message"), central);

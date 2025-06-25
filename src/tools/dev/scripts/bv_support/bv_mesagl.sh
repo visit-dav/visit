@@ -7,6 +7,7 @@ function bv_mesagl_enable
 {
     DO_MESAGL="yes"
     bv_glu_enable
+    bv_llvm_enable
 }
 
 function bv_mesagl_disable

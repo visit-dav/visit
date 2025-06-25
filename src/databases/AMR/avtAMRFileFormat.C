@@ -320,52 +320,61 @@ avtAMRFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
         int nspec = GetReader()->GetNumberOfSpecies();
 
-        for( int i=0; i<nspec; ++i ) {
-            std::string inm = std::to_string(i+1);
-            std::string vnm = composeName("Species Density", inm );
-            smd = new avtScalarMetaData;
-            smd->name = composeName( amr_name, vnm);
-            smd->meshName = amr_name;
-            smd->centering = AVT_ZONECENT;
-            smd->hasUnits = false;
-            md->Add(smd);
+        if (GetReader()->HasDensity())
+        {
+            for( int i=0; i<nspec; ++i ) {
+                std::string inm = std::to_string(i+1);
+                std::string vnm = composeName("Species Density", inm );
+                smd = new avtScalarMetaData;
+                smd->name = composeName( amr_name, vnm);
+                smd->meshName = amr_name;
+                smd->centering = AVT_ZONECENT;
+                smd->hasUnits = false;
+                md->Add(smd);
 
-            vnm = composeName("Species Mass Fraction", inm );
+                vnm = composeName("Species Mass Fraction", inm );
+                smd = new avtScalarMetaData;
+                smd->name = composeName( amr_name, vnm);
+                smd->meshName = amr_name;
+                smd->centering = AVT_ZONECENT;
+                smd->hasUnits = false;
+                md->Add(smd);
+            }
+        }
+
+        if (GetReader()->HasDensity())
+        {
             smd = new avtScalarMetaData;
-            smd->name = composeName( amr_name, vnm);
+            smd->name = composeName( amr_name, "density");
             smd->meshName = amr_name;
             smd->centering = AVT_ZONECENT;
             smd->hasUnits = false;
             md->Add(smd);
         }
 
-        smd = new avtScalarMetaData;
-        smd->name = composeName( amr_name, "density");
-        smd->meshName = amr_name;
-        smd->centering = AVT_ZONECENT;
-        smd->hasUnits = false;
-        md->Add(smd);
+        if (GetReader()->HasDensity() && GetReader()->HasMomentum())
+        {
+            smd = new avtScalarMetaData;
+            smd->name = composeName( amr_name, "u velocity");
+            smd->meshName = amr_name;
+            smd->centering = AVT_ZONECENT;
+            smd->hasUnits = false;
+            md->Add(smd);
 
-        smd = new avtScalarMetaData;
-        smd->name = composeName( amr_name, "u velocity");
-        smd->meshName = amr_name;
-        smd->centering = AVT_ZONECENT;
-        smd->hasUnits = false;
-        md->Add(smd);
+            smd = new avtScalarMetaData;
+            smd->name = composeName( amr_name, "v velocity");
+            smd->meshName = amr_name;
+            smd->centering = AVT_ZONECENT;
+            smd->hasUnits = false;
+            md->Add(smd);
 
-        smd = new avtScalarMetaData;
-        smd->name = composeName( amr_name, "v velocity");
-        smd->meshName = amr_name;
-        smd->centering = AVT_ZONECENT;
-        smd->hasUnits = false;
-        md->Add(smd);
-
-        smd = new avtScalarMetaData;
-        smd->name = composeName( amr_name, "w velocity");
-        smd->meshName = amr_name;
-        smd->centering = AVT_ZONECENT;
-        smd->hasUnits = false;
-        md->Add(smd);
+            smd = new avtScalarMetaData;
+            smd->name = composeName( amr_name, "w velocity");
+            smd->meshName = amr_name;
+            smd->centering = AVT_ZONECENT;
+            smd->hasUnits = false;
+            md->Add(smd);
+        }
 
         if (GetReader()->HasPressure())
         {
@@ -397,47 +406,59 @@ avtAMRFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             md->Add(smd);
         }
 
-        smd = new avtScalarMetaData;
-        smd->name = composeName( amr_name, "internal energy");
-        smd->meshName = amr_name;
-        smd->centering = AVT_ZONECENT;
-        smd->hasUnits = false;
-        md->Add(smd);
+        if (GetReader()->HasDensity() && GetReader()->HasMomentum() && GetReader()->HasEnergy())
+        {
+            smd = new avtScalarMetaData;
+            smd->name = composeName( amr_name, "internal energy");
+            smd->meshName = amr_name;
+            smd->centering = AVT_ZONECENT;
+            smd->hasUnits = false;
+            md->Add(smd);
+        }
 
-        smd = new avtScalarMetaData;
-        smd->name = composeName( amr_name, "kinetic energy");
-        smd->meshName = amr_name;
-        smd->centering = AVT_ZONECENT;
-        smd->hasUnits = false;
-        md->Add(smd);
+        if (GetReader()->HasDensity() && GetReader()->HasMomentum())
+        {
+            smd = new avtScalarMetaData;
+            smd->name = composeName( amr_name, "kinetic energy");
+            smd->meshName = amr_name;
+            smd->centering = AVT_ZONECENT;
+            smd->hasUnits = false;
+            md->Add(smd);
+        }
 
-        smd = new avtScalarMetaData;
-        smd->name = composeName( amr_name, "total energy");
-        smd->meshName = amr_name;
-        smd->centering = AVT_ZONECENT;
-        smd->hasUnits = false;
-        md->Add(smd);
+        if (GetReader()->HasEnergy())
+        {
+            smd = new avtScalarMetaData;
+            smd->name = composeName( amr_name, "total energy");
+            smd->meshName = amr_name;
+            smd->centering = AVT_ZONECENT;
+            smd->hasUnits = false;
+            md->Add(smd);
+        }
 
-        smd = new avtScalarMetaData;
-        smd->name = composeName( amr_name, "u momentum");
-        smd->meshName = amr_name;
-        smd->centering = AVT_ZONECENT;
-        smd->hasUnits = false;
-        md->Add(smd);
+        if (GetReader()->HasMomentum())
+        {
+            smd = new avtScalarMetaData;
+            smd->name = composeName( amr_name, "u momentum");
+            smd->meshName = amr_name;
+            smd->centering = AVT_ZONECENT;
+            smd->hasUnits = false;
+            md->Add(smd);
 
-        smd = new avtScalarMetaData;
-        smd->name = composeName( amr_name, "v momentum");
-        smd->meshName = amr_name;
-        smd->centering = AVT_ZONECENT;
-        smd->hasUnits = false;
-        md->Add(smd);
+            smd = new avtScalarMetaData;
+            smd->name = composeName( amr_name, "v momentum");
+            smd->meshName = amr_name;
+            smd->centering = AVT_ZONECENT;
+            smd->hasUnits = false;
+            md->Add(smd);
 
-        smd = new avtScalarMetaData;
-        smd->name = composeName( amr_name, "w momentum");
-        smd->meshName = amr_name;
-        smd->centering = AVT_ZONECENT;
-        smd->hasUnits = false;
-        md->Add(smd);
+            smd = new avtScalarMetaData;
+            smd->name = composeName( amr_name, "w momentum");
+            smd->meshName = amr_name;
+            smd->centering = AVT_ZONECENT;
+            smd->hasUnits = false;
+            md->Add(smd);
+        }
 
         smd = new avtScalarMetaData;
         smd->name = composeName( amr_name, "level");
@@ -453,16 +474,19 @@ avtAMRFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         smd->hasUnits = false;
         md->Add(smd);
 
-        // vector
-        avtVectorMetaData *vmd;
-        vmd = new avtVectorMetaData;
-        vmd->name = composeName( amr_name, "velocity");
-        vmd->meshName = amr_name;
-        vmd->centering = AVT_ZONECENT;
-        vmd->hasUnits = false;
-        // ??? is it necessary
-        //vmd->varDim = 3;
-        md->Add(vmd);
+        if (GetReader()->HasDensity() && GetReader()->HasMomentum())
+        {
+            // vector
+            avtVectorMetaData *vmd;
+            vmd = new avtVectorMetaData;
+            vmd->name = composeName( amr_name, "velocity");
+            vmd->meshName = amr_name;
+            vmd->centering = AVT_ZONECENT;
+            vmd->hasUnits = false;
+            // ??? is it necessary
+            //vmd->varDim = 3;
+            md->Add(vmd);
+        }
 
         //tag
         if( GetReader()->HasTag() )

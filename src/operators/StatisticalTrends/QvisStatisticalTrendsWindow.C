@@ -107,13 +107,8 @@ QvisStatisticalTrendsWindow::CreateWindowContents()
     QRadioButton *startTrendTypeTrendTypeEnumRelative = new QRadioButton(tr("Relative"), startTrendType);
     startTrendTypeButtonGroup->addButton(startTrendTypeTrendTypeEnumRelative, 1);
     startTrendTypeLayout->addWidget(startTrendTypeTrendTypeEnumRelative);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(startTrendTypeButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(startTrendTypeChanged(int)));
-#else
     connect(startTrendTypeButtonGroup, SIGNAL(idClicked(int)),
             this, SLOT(startTrendTypeChanged(int)));
-#endif
     timeLayout->addWidget(startTrendType, 0,1);
 
     startIndexLabel = new QLabel(tr("Index of first time slice"), central);
@@ -137,13 +132,8 @@ QvisStatisticalTrendsWindow::CreateWindowContents()
     QRadioButton *stopTrendTypeTrendTypeEnumRelative = new QRadioButton(tr("Relative"), stopTrendType);
     stopTrendTypeButtonGroup->addButton(stopTrendTypeTrendTypeEnumRelative, 1);
     stopTrendTypeLayout->addWidget(stopTrendTypeTrendTypeEnumRelative);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(stopTrendTypeButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(stopTrendTypeChanged(int)));
-#else
     connect(stopTrendTypeButtonGroup, SIGNAL(idClicked(int)),
             this, SLOT(stopTrendTypeChanged(int)));
-#endif
     timeLayout->addWidget(stopTrendType, 2,1);
 
     stopIndexLabel = new QLabel(tr("Index of last time slice"), central);
@@ -200,14 +190,8 @@ QvisStatisticalTrendsWindow::CreateWindowContents()
 
     r1->setChecked(true);
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(statisticTypeButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(statisticTypeChanged(int)));
-#else
     connect(statisticTypeButtonGroup, SIGNAL(idClicked(int)),
             this, SLOT(statisticTypeChanged(int)));
-#endif
-
 
     // Trend axis
     trendAxisGroup = new QGroupBox(central);
@@ -232,13 +216,8 @@ QvisStatisticalTrendsWindow::CreateWindowContents()
     trendAxisButtonGroup->addButton(trendAxisCycle,2);
     trendAxisLayout->addWidget(trendAxisCycle, 0, 2);
 
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(trendAxisButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(trendAxisChanged(int)));
-#else
     connect(trendAxisButtonGroup, SIGNAL(idClicked(int)),
             this, SLOT(trendAxisChanged(int)));
-#endif
 }
 
 

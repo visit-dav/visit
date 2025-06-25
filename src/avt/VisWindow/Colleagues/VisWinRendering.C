@@ -10,11 +10,14 @@
 
 #include <vtkCallbackCommand.h>
 #include <vtkCullerCollection.h>
+#include <vtkDataSetMapper.h>
 #include <vtkFloatArray.h>
 #include <vtkImageData.h>
 #include <vtkInformation.h>
 #include <vtkInteractorStyle.h>
+#include <vtkLookupTable.h>
 #include <vtkMapper.h>
+#include <vtkNew.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRenderer.h>
@@ -40,7 +43,6 @@
 // We'd do it another way in VTK8
 #define VALUE_IMAGE_RENDERING_PRE_VTK8
 #ifdef VALUE_IMAGE_RENDERING_PRE_VTK8
-#include <vtkVisItDataSetMapper.h>
 #include <vtkProperty.h>
 #endif
 
@@ -271,6 +273,12 @@ vtkStandardNewMacro(vtkBackgroundPass);
 //   Kevin Griffin, Wed 05 Mar 2025 11:59:26 AM CST
 //   Added initialization of Anari parameters.
 //
+//   Kathleen Biagas, Tue Jun 24, 2025
+//   Make anariRendering and osprayRendering ivars available always.
+//
+//   Kathleen Biagas, Tue Jun 24, 2025
+//   Replace vtkVisItDataSetMapper with vtkDataSetMapper for ospray overrides.
+//
 // ****************************************************************************
 
 VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
@@ -296,17 +304,17 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
 {
     background = vtkRenderer::New();
     background->SetInteractive(0);
-    background->SetPass(0);
+    background->SetPass(nullptr);
     background->SetLayer(0);
 
     canvas = vtkRenderer::New();
     canvas->SetInteractive(1);
-    canvas->SetPass(0);
+    canvas->SetPass(nullptr);
     canvas->SetLayer(1);
 
     foreground = vtkRenderer::New();
     foreground->SetInteractive(0);
-    foreground->SetPass(0);
+    foreground->SetPass(nullptr);
     foreground->SetLayer(2);
 
     RemoveCullers(background);
@@ -315,22 +323,18 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
 
     curRenderTimes[0] = curRenderTimes[1] = curRenderTimes[2] = 0.0;
 
-#if defined(HAVE_OSPRAY)
     osprayRendering = false;
+    viewIs3D = true;
+#if defined(HAVE_OSPRAY)
     ospraySPP = 1;
     osprayAO = 0;
     osprayShadows = false;
     osprayPass = vtkOSPRayPass::New();
     vtkViewNodeFactory* factory = osprayPass->GetViewNodeFactory();
-    viewIs3D = true;
 
     vtkOSPRayRendererNode::SetRendererType("scivis", canvas);
 
-    // vtkOSPRayVisItDataSetMapper overrides vtkVisItDataSetMapper
-    // which normally overrides vtkDataSetMapper.  If the use of
-    // vtkVisItDataSetMapper as a general override of vtkDataSetMapper
-    // is removed this code will need to be changed.
-    factory->RegisterOverride("vtkVisItDataSetMapper",
+    factory->RegisterOverride("vtkDataSetMapper",
                               vtkVisItViewNodeFactory::ds_maker);
     factory->RegisterOverride("vtkPointGlyphMapper",
                               vtkVisItViewNodeFactory::ds_maker);
@@ -346,6 +350,7 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
                               vtkVisItViewNodeFactory::axis_act_maker);
 #endif
 
+    anariRendering = false;
 #ifdef HAVE_ANARI
     // For VisIt debug levels 1-3
     auto vtkVerbosity = vtkLogger::Verbosity::VERBOSITY_ERROR;
@@ -358,10 +363,9 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
     {
         vtkVerbosity = vtkLogger::Verbosity::VERBOSITY_INFO;
     }
-    
+
     vtkLogger::SetStderrVerbosity(vtkVerbosity);
 
-    anariRendering = false;
     anariLibraryName = "";
     anariLibrarySubtype = "default";
     anariRendererSubtype = "default";
@@ -1317,36 +1321,33 @@ VisWinRendering::Realize(void)
 //    Kevin Griffin, Wed 05 Mar 2025 11:59:26 AM CST
 //    Added Anari support.
 //
+//    Kathleen Biagas, Tue June 24, 2025
+//    Move if-tests outside of #ifdef logic so that anari logic setting
+//    pass to nullptr would not override ospray setting pass to osprayPass.
+//
 // ****************************************************************************
 
 void
 VisWinRendering::RenderRenderWindow(void)
 {
-#if defined(HAVE_OSPRAY)
     if (osprayRendering && viewIs3D)
     {
+#ifdef HAVE_OSPRAY
         canvas->SetUseShadows(osprayShadows);
         canvas->SetPass(osprayPass);
-    }
-    else
-    {
-        canvas->SetUseShadows(false);
-        canvas->SetPass(0);
-    }
 #endif
-
+    }
+    else if(anariRendering)
+    {
 #ifdef HAVE_ANARI
-    if(GetAnariRendering())
-    {
         canvas->SetPass(anariPass);
+#endif
     }
     else
     {
         canvas->SetUseShadows(false);
-        canvas->SetPass(0);
+        canvas->SetPass(nullptr);
     }
-#endif
-
     GetRenderWindow()->Render();
 
     debug1 << "VisWinRendering, vtkRenderWindow classname: " << GetRenderWindow()->GetClassName() << endl;
@@ -1512,6 +1513,11 @@ VisWinRendering::GetCaptureRegion(int& r0, int& c0, int& w, int& h,
 //    to the back buffer instead of the front buffer. The behavior changed
 //    with VTK9.
 //
+//    Kathleen Biagas, Tue Jun 24, 2025
+//    vtkVisItDataSetMapper was previously used to setup and utilize allwhite
+//    and grayscale vtkLookupTables based on the avtImageType.  Now create
+//    the necessary vtkLookupTables here.
+//
 // ****************************************************************************
 
 void
@@ -1553,11 +1559,8 @@ VisWinRendering::ScreenRender(avtImageType imgT,
     bool *actorLighting = NULL;
     double *actorAmbient = NULL;
     double *actorDiffuse = NULL;
-    if(imgT == ColorRGBImage || imgT == ColorRGBAImage)
-        vtkVisItDataSetMapper::SetRenderingMode(vtkVisItDataSetMapper::RENDERING_MODE_NORMAL);
-    else if(imgT == LuminanceImage)
+    if(imgT == LuminanceImage)
     {
-        vtkVisItDataSetMapper::SetRenderingMode(vtkVisItDataSetMapper::RENDERING_MODE_LUMINANCE);
         background->GetBackground(oldBG);
         background->SetBackground(0.,0.,0.);
         // TODO: Turn off gradient background.
@@ -1569,6 +1572,16 @@ VisWinRendering::ScreenRender(avtImageType imgT,
         vtkActor *actor = NULL;
         while((actor = actors->GetNextActor()) != NULL)
         {
+            vtkMapper *mapper = actor->GetMapper();
+            if(mapper != nullptr)
+            {
+                vtkNew<vtkLookupTable> allwhite;
+                allwhite->SetNumberOfColors(10);
+                for(int i = 0; i < 10; ++i)
+                    allwhite->SetTableValue(i, 1.,1.,1.,1.);
+                allwhite->SetRange(mapper->GetScalarRange());
+                mapper->SetLookupTable(allwhite);
+            }
             // Save the color and opacity.
             actor->GetProperty()->GetColor(actorColors[4*i],actorColors[4*i+1],actorColors[4*i+2]);
             actorColors[4*i+3] = actor->GetProperty()->GetOpacity();
@@ -1581,7 +1594,6 @@ VisWinRendering::ScreenRender(avtImageType imgT,
     }
     else if(imgT == ValueImage)
     {
-        vtkVisItDataSetMapper::SetRenderingMode(vtkVisItDataSetMapper::RENDERING_MODE_VALUE);
         background->GetBackground(oldBG);
         background->SetBackground(0.,0.,0.);
         // TODO: Turn off gradient background.
@@ -1596,6 +1608,20 @@ VisWinRendering::ScreenRender(avtImageType imgT,
         vtkActor *actor = NULL;
         while((actor = actors->GetNextActor()) != NULL)
         {
+            vtkMapper *mapper = actor->GetMapper();
+            if(mapper != nullptr)
+            {
+                vtkNew<vtkLookupTable> grayscale;
+                grayscale->SetNumberOfColors(1024);
+                for(int i = 0; i < 1024; ++i)
+                {
+                    double t = double(i)/double(1024-1);
+                    grayscale->SetTableValue(i, t,t,t,1.);
+                }
+                grayscale->SetRange(mapper->GetScalarRange());
+                mapper->SetLookupTable(grayscale);
+            }
+
             // Save the lighting.
             actor->GetProperty()->GetLighting();
             actorLighting[i] = actor->GetProperty()->GetOpacity();
@@ -3108,7 +3134,7 @@ VisWinRendering::SetOsprayRendering(bool enabled)
     else
     {
         canvas->SetUseShadows(false);
-        canvas->SetPass(0);
+        canvas->SetPass(nullptr);
     }
 }
 
@@ -3228,7 +3254,7 @@ VisWinRendering::SetAnariRendering(const bool enabled)
         }
         else
         {
-            canvas->SetPass(0);
+            canvas->SetPass(nullptr);
         }
     }
 }
@@ -3573,6 +3599,9 @@ VisWinRendering::SetAnariUSDParameters(const stringVector &usdParams)
 // Programmer:  Kevin Griffin
 // Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
 //
+// Modifications:
+//   Replace vtkVisItDataSetMapper with vtkDataSetMapper in overrides.
+//
 // ****************************************************************************
 
 vtkAnariPass *
@@ -3581,7 +3610,7 @@ VisWinRendering::CreateAnariPass()
     vtkAnariPass *anariPass = vtkAnariPass::New();
     vtkViewNodeFactory *factory = anariPass->GetViewNodeFactory();
 
-    factory->RegisterOverride("vtkVisItDataSetMapper",
+    factory->RegisterOverride("vtkDataSetMapper",
         vtkAnariVisItViewNodeFactory::pd_maker);
     factory->RegisterOverride("vtkPointGlyphMapper",
         vtkAnariVisItViewNodeFactory::pd_maker);
@@ -3595,7 +3624,7 @@ VisWinRendering::CreateAnariPass()
         vtkAnariVisItViewNodeFactory::cube_axes_act_maker);
     factory->RegisterOverride("vtkVisItAxisActor",
         vtkAnariVisItViewNodeFactory::axis_act_maker);
-            
+
     return anariPass;
 }
 #endif

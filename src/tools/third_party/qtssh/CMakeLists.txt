@@ -134,9 +134,7 @@ set_target_properties(qtssh PROPERTIES AUTOMOC ON)
 be_list(qtssh QTSSH SSH SERIAL OTHERBACKENDS)
 
 
-if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
-    qt6_disable_unicode_defines(qtssh)
-endif()
+qt6_disable_unicode_defines(qtssh)
 
 target_link_libraries(qtssh
   eventloop noterminal console sshclient otherbackends settings network crypto

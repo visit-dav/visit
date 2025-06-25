@@ -10,7 +10,7 @@
 
 typedef union {
     unsigned int fb[2];
-    unsigned long eb;
+    uint64_t eb;
 } OctKey;
 
 

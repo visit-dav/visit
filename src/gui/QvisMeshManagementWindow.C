@@ -154,14 +154,9 @@ QvisMeshManagementWindow::CreateWindowContents()
     discretizeModeLabel = new QLabel(tr("Discretization mode"), pageCSGGroup);
     layoutCSGGroup->addWidget(discretizeModeLabel, 2, 0);
     discretizationMode = new QButtonGroup(pageCSGGroup);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(discretizationMode, SIGNAL(buttonClicked(int)),
-            this, SLOT(discretizationModeChanged(int)));
-#else
     connect(discretizationMode, SIGNAL(idClicked(int)),
             this, SLOT(discretizationModeChanged(int)));
-#endif
-            
+
     discretizeUniform = new QRadioButton(tr("Uniform"), pageCSGGroup);
     discretizationMode->addButton(discretizeUniform,0);
     layoutCSGGroup->addWidget(discretizeUniform, 2, 1);

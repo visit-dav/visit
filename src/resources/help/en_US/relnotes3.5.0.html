@@ -37,6 +37,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Added command recording for Annotation Objects.</li>
   <li>Added new surface rendering option using <a href="https://github.com/KhronosGroup/ANARI-SDK">ANARI</a>.</li>
   <li>Added support to the AMR plugin for reading multiple AMR roots, multiple species, and mixtrue equations of state.</li>
+  <li>Added support to the AMR plugin for reading files with only selected variables. </li>
   <li><a href="https://matplotlib.org/cmocean/">cmocean</a> color maps were added.</li>
   <li>Added '-python-log-file' command line option to control the name of the file used to log python methods (default='visitlog.py').</li>
 </ul>
@@ -98,6 +99,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>The X Ray Image Query now clips results beyond the far clipping plane.</li>
   <li>The Verdict mesh quality library that is builtin to VisIt was enhanced to handle generate hexahedra. This improves expressions and queries that use the Verdict library.</li>
+  <li>Fixed a bug with the X Ray Image Query where VisIt would in some rare instances either crash or create an image that was too dark when running in parallel.</li>
 </ul>
 </ul>
 
@@ -112,7 +114,9 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>3D Text Annotation's relative height widget has been fixed so that whether the value is changed via the spin box up/down arrows or a new value is typed, the widget will update and so will the height of the text.</li>
   <li>View computations become garbled when Viewport Coordinate values are set outside the range of [0,1]. The docs specify the values should be in this range, and they are now automatically clamped to this range when being set via the GUI or CLI.</li>
   <li>Fixed a bug crashing viewer if label tick spacing was too cramped exceeding a builtin threshold of 200 labels.</li>
+  <li><a href="https://github.com/visit-dav/visit/issues/20396">[#20396]</a> Fixed bug in Exodus reader where simple expressions involving some Exodus variables may wind up getting garbage data.</li>
   <li>Fixed a Tecplot reader bug that crashed the engine.</li>
+  <li>Fixed a memory bug in AMR plugin when reading velocity magnitude.</li>
 </ul>
 
 <a name="Build_features"></a>
@@ -125,6 +129,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Added support for building <code>anari</code> to <code>build_visit</code> to allow building VisIt with ANARI renderingsupport.</li>
   <li>Updated VTK build script, <code>bv_vtk.sh</code>, to enable ANARI rendering module in VTK.</li>
   <li>The following command-line options were removed from the main build_visit script: <code>--all-io, --dbio-only, --nonio and  --advanced</code>.  This was done to simplify maintenance and addition of new modules.  <code>--optional</code> still turns on most optional libraries. <code>--no-thirdparty</code> still turns off the required libraries. Otherwise individual libraries can be enabled/disabled by <code>--</code> or <code>--no</code> syntax e.g. <code>--mpich --no-python</code>.  Please run <code>build_visit --help</code> for more information on available options.</li>
+  <li>A patch was added to bv_mili.sh that allows successful compilation on RockyLinux 8 and 9.</li>
 </ul>
 
 <a name="Dev_changes"></a>

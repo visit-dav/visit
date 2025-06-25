@@ -144,13 +144,8 @@ QvisInteractorWindow::CreateWindowContents()
     navigationVBoxLayout->addLayout(navigationLayout);
 
     navigationMode = new QButtonGroup(navigationGroup);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(navigationMode, SIGNAL(buttonClicked(int)),
-            this, SLOT(navigationModeChanged(int)));
-#else
     connect(navigationMode, SIGNAL(idClicked(int)),
             this, SLOT(navigationModeChanged(int)));
-#endif
     QRadioButton *trackball = new QRadioButton(tr("Trackball"), navigationGroup);
     navigationMode->addButton(trackball,0);
     navigationLayout->addWidget(trackball, 1, 1);
@@ -174,13 +169,8 @@ QvisInteractorWindow::CreateWindowContents()
     boundingBoxVBoxLayout->addLayout(boundingBoxLayout);
 
     boundingBoxMode = new QButtonGroup(boundingBoxGroup);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(boundingBoxMode, SIGNAL(buttonClicked(int)),
-            this, SLOT(boundingBoxModeChanged(int)));
-#else
     connect(boundingBoxMode, SIGNAL(idClicked(int)),
             this, SLOT(boundingBoxModeChanged(int)));
-#endif
     QRadioButton *always = new QRadioButton(tr("Always"), boundingBoxGroup);
     boundingBoxMode->addButton(always,0);
     boundingBoxLayout->addWidget(always, 1, 1);

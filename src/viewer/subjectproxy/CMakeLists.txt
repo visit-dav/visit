@@ -95,11 +95,7 @@ IF(VISIT_STATIC)
     )
 ENDIF(VISIT_STATIC)
 
-
-if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
-    qt6_disable_unicode_defines(viewersubjectproxy)
-endif()
-
+qt6_disable_unicode_defines(viewersubjectproxy)
 
 TARGET_LINK_LIBRARIES(viewersubjectproxy
 viewer

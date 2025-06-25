@@ -60,11 +60,11 @@ function bv_vtk95_depends_on
 
 function bv_vtk95_info
 {
-    info "setting up vtk for version 9.5.0.rc1"
-    export VTK95_VERSION=${VTK95_VERSION:-"9.5.0.rc1"}
+    info "setting up vtk for version 9.5.0"
+    export VTK95_VERSION=${VTK95_VERSION:-"9.5.0"}
     export VTK95_SHORT_VERSION=${VTK95_SHORT_VERSION:-"9.5"}
-    export VTK95_SHA256_CHECKSUM="9448005d378bd7036b22155d572f08ac6561975060af3df229ada70d71cfbe87"
-    export VTK95_URL="https://vtk.org/files/release/${VTK95_SHORT_VERSION}/"
+    export VTK95_SHA256_CHECKSUM="04ae86246b9557c6b61afbc534a6df099244fbc8f3937f82e6bc0570953af87d"
+    export VTK95_URL=""
     export VTK95_FILE=${VTK95_FILE:-"VTK-${VTK95_VERSION}.tar.gz"}
     export VTK95_COMPATIBILITY_VERSION=${VTK95_SHORT_VERSION}
     export VTK95_BUILD_DIR=${VTK95_BUILD_DIR:-"VTK-${VTK95_VERSION}"}
@@ -176,7 +176,7 @@ function apply_vtk95_vtkdatawriter_patch
        {
          unsigned char* cptr = static_cast<vtkBitArray*>(data)->GetPointer(0);
 -        fp->write(reinterpret_cast<char*>(cptr), (sizeof(unsigned char)) * ((num - 1) / 8 + 1));
-+        fp->write(reinterpret_cast<char*>(cptr), (sizeof(unsigned char)) * ((numComp*numComp+7)/8));
++        fp->write(reinterpret_cast<char*>(cptr), (sizeof(unsigned char)) * ((num*numComp+7)/8));
        }
        *fp << "\n";
      }

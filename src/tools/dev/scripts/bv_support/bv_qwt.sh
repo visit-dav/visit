@@ -36,11 +36,7 @@ function bv_qwt_depends_on
     if [[ "$USE_SYSTEM_QWT" == "yes" || "$USE_ALT_QWT" == "yes" ]]; then
         echo ""
     else
-        if [[ "$DO_QT6" == "no" ]]; then
-            echo "qt"
-        else
-            echo "qt6"
-        fi
+        echo "qt6"
     fi
 }
 
@@ -53,19 +49,11 @@ function bv_qwt_initialize_vars
 
 function bv_qwt_info
 {
-    if [[ "$DO_QT6" == "no" ]]; then
-        export QWT_FILE=${QWT_FILE:-"qwt-6.1.2.tar.bz2"}
-        export QWT_VERSION=${QWT_VERSION:-"6.1.2"}
-        export QWT_COMPATIBILITY_VERSION=${QWT_COMPATIBILITY_VERSION:-"6.0"}
-        export QWT_BUILD_DIR=${QWT_BUILD_DIR:-"qwt-6.1.2"}
-        export QWT_SHA256_CHECKSUM="2b08f18d1d3970e7c3c6096d850f17aea6b54459389731d3ce715d193e243d0c"
-    else
-        export QWT_FILE=${QWT_FILE:-"qwt-git-d3706f6e7f0351d278be2d989a4caaf92b399bbd.tar.xz"}
-        export QWT_VERSION=${QWT_VERSION:-"6.3.0"}
-        export QWT_COMPATIBILITY_VERSION=${QWT_COMPATIBILITY_VERSION:-"6.3"}
-        export QWT_BUILD_DIR=${QWT_BUILD_DIR:-"qwt-6.3.0"}
-        export QWT_SHA256_CHECKSUM="39839f3aa83f41d09109296d41659e04bb234d9e41ab551af9f4e9b4fceed251"
-    fi
+    export QWT_FILE=${QWT_FILE:-"qwt-git-d3706f6e7f0351d278be2d989a4caaf92b399bbd.tar.xz"}
+    export QWT_VERSION=${QWT_VERSION:-"6.3.0"}
+    export QWT_COMPATIBILITY_VERSION=${QWT_COMPATIBILITY_VERSION:-"6.3"}
+    export QWT_BUILD_DIR=${QWT_BUILD_DIR:-"qwt-6.3.0"}
+    export QWT_SHA256_CHECKSUM="39839f3aa83f41d09109296d41659e04bb234d9e41ab551af9f4e9b4fceed251"
 }
 
 function bv_qwt_print
@@ -317,13 +305,8 @@ function build_qwt
     # Build Qwt
     #
     info "Configuring Qwt . . . (~1 minute)"
-    if [[ "$DO_QT6" == "yes" ]]; then
-        info "qt6 is being used"
-        ${QT6_BIN_DIR}/qmake qwt.pro
-    else
-        info "qt6 is being used"
-        ${QT_BIN_DIR}/qmake qwt.pro
-    fi
+    ${QT6_BIN_DIR}/qmake qwt.pro
+
     if [[ $? != 0 ]] ; then
         warn "Qwt project build failed.  Giving up"
         return 1

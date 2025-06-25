@@ -200,11 +200,7 @@ QvisFileSelectionWindow::CreateWindowContents()
     directoryVBox->addWidget(new QLabel(tr("Directories"), directoryWidget));
     directoryList = new QListWidget(directoryWidget);
     directoryVBox->addWidget(directoryList);
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     int minColumnWidth = fontMetrics().horizontalAdvance("X");
-#else
-    int minColumnWidth = fontMetrics().width("X");
-#endif
     directoryList->setMinimumWidth(minColumnWidth * 20);
     
     connect(directoryList, SIGNAL(itemDoubleClicked(QListWidgetItem *)),

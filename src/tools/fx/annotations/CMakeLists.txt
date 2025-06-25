@@ -22,7 +22,6 @@ ${VISIT_SOURCE_DIR}/common/utility
 ${VTK_INCLUDE_DIRS}
 )
 
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} )
 
 ADD_EXECUTABLE(text2polys text2polys.C arial_font.C)
 ADD_EXECUTABLE(time_annotation time_annotation.C arial_font.C)
@@ -33,10 +32,6 @@ TARGET_LINK_LIBRARIES(text2polys VTK::IOLegacy)
 TARGET_LINK_LIBRARIES(time_annotation
         VTK::RenderingOpenGL2 VTK::RenderingFreeType VTK::InteractionStyle
         VTK::vtksys VTK::IOImage)
-
-if(HAVE_OSMESA)
-    target_link_libraries(time_annotation ${OSMESA_LIBRARIES})
-endif()
 
 VISIT_INSTALL_TARGETS(text2polys time_annotation)
 VISIT_FX_ADD_FOLDER(annotations text2polys time_annotation)

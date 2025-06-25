@@ -6,6 +6,7 @@
 #include <string.h>
 #include <map>
 #include <string>
+#include <iostream>
 
 const int  IdealEOS_type      = 1;
 const int  JwlEOS_type        = 2;
@@ -192,7 +193,7 @@ protected:
 class GenMixEOS : public EOS
 {
 public:
-    GenMixEOS(int nspec)
+    GenMixEOS(int nspec, int iavvf)
     {
         /*strcpy(type, GenMixEOS_type ); */
         avmap = {};
@@ -203,10 +204,13 @@ public:
         //    avmap.insert({name, 6+i});
         //}
 
-        for( int i=0; i<nspec; i++ )
+        if (iavvf != -1) 
         {
-            std::string name = "volume fraction " + std::to_string(i+1);
-            avmap.insert({name, 6+nspec + i});
+            for( int i=0; i<nspec; i++ )
+            {
+                std::string name = "volume fraction " + std::to_string(i+1);
+                avmap.insert({name, iavvf + i + 1});
+            }
         }
     }
     virtual ~GenMixEOS() { }
@@ -308,14 +312,17 @@ protected:
 class JwlJwlEOS : public EOS
 {
 public:
-    JwlJwlEOS()
+    JwlJwlEOS(int nav)
     {
         /*strcpy(type, GenMixEOS_type ); */
-        avmap = {{"species internal energy 1", 6}, \
-            {"sound speed 1", 7}, \
-            {"species internal energy 2", 10}, \
-            {"sound speed 2", 11}
-        };
+        if (nav > 3) 
+        {
+            avmap = {{"species internal energy 1", 6}, \
+                {"sound speed 1", 7}, \
+                {"species internal energy 2", 10}, \
+                {"sound speed 2", 11}
+            };
+        }
     }
     virtual ~JwlJwlEOS() { }
     //virtual const char* EOStype() const { return type; }

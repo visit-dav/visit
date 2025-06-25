@@ -231,11 +231,7 @@ QvisPlotListBoxItem::height(const QListWidget *lb) const
 int
 QvisPlotListBoxItem::width(const QListWidget *lb) const
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     return lb ? lb->fontMetrics().horizontalAdvance(text()) + 6 : 0;
-#else
-    return lb ? lb->fontMetrics().width(text()) + 6 : 0;
-#endif
 }
 
 // ****************************************************************************
@@ -449,11 +445,7 @@ void QvisPlotListBoxItem::paint(QPainter *painter)
             // The prefix is a database name.
             dbName = prefix;
         }
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
         int expandX = x + fm.horizontalAdvance("9") / 2;
-#else
-        int expandX = x + fm.width("9") / 2;
-#endif
         int expandY = y2 + 2;
 
         // Draw the database name and the variable.

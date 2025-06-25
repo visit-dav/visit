@@ -144,13 +144,8 @@ QvisLightingWindow::CreateWindowContents()
     gLayout->addWidget(modeLabel, 0, 0);
 
     modeButtons = new QButtonGroup(central);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(modeButtons, SIGNAL(buttonClicked(int)),
-            this, SLOT(modeClicked(int)));
-#else
     connect(modeButtons, SIGNAL(idClicked(int)),
             this, SLOT(modeClicked(int)));
-#endif
     QRadioButton *rb = new QRadioButton(tr("Edit"), central);
     modeButtons->addButton(rb, 0);
     gLayout->addWidget(rb, 0, 1, Qt::AlignLeft);

@@ -76,9 +76,7 @@ ENDIF(VISIT_STATIC)
 
 TARGET_LINK_LIBRARIES(xmledit ${RELEVANT_QT_LIBS})
 
-if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
-    qt6_disable_unicode_defines(xmledit)
-endif()
+qt6_disable_unicode_defines(xmledit)
 
 VISIT_INSTALL_TARGETS(xmledit)
 VISIT_TOOLS_ADD_FOLDER(xml xmledit)
