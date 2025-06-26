@@ -6,10 +6,7 @@ function bv_qt6_initialize
 
 function bv_qt6_enable
 {
-    if [[ "$DO_QT" == "no" ]] ; then
-        DO_QT6="yes"
-    else
-        DO_QT6="no"
+    DO_QT6="yes"
 }
 
 function bv_qt6_disable
