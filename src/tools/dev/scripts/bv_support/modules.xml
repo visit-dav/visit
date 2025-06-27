@@ -5,7 +5,7 @@
             <lib name="cmake"/>
             <lib name="python"/>
             <lib name="vtk"/>
-            <lib name="qt6"/>
+            <lib name="qt"/>
             <lib name="zlib"/>
         </group>
 
