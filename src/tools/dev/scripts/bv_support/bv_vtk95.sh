@@ -449,6 +449,10 @@ function build_vtk95
     vopts="${vopts} -DVTK_GROUP_ENABLE_Qt:STRING=DONT_WANT"
     vopts="${vopts} -DVTK_GROUP_ENABLE_Rendering:STRING=DONT_WANT"
     vopts="${vopts} -DVTK_GROUP_ENABLE_StandAlone:STRING=DONT_WANT"
+    # one of the vtk modules introduced this case for StandALone
+    # Probably a mistake, but guard against it anyways as it shows up
+    # in the Cache.
+    vopts="${vopts} -DVTK_GROUP_ENABLE_STANDALONE:STRING=DONT_WANT"
     vopts="${vopts} -DVTK_GROUP_ENABLE_Views:STRING=DONT_WANT"
     vopts="${vopts} -DVTK_GROUP_ENABLE_Web:STRING=DONT_WANT"
 
