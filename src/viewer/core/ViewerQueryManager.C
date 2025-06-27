@@ -4800,6 +4800,8 @@ std::string ViewerQueryManager::GetNextPickLabel()
 //    Cyrus Harrison, Wed Sep 19 08:34:46 PDT 2007
 //    Added support for user settable floating point format string
 //
+//    Mark C. Miller, Mon Jun 16 15:37:09 PDT 2025
+//    Label extents strings with axis information.
 // ****************************************************************************
 
 string
@@ -4812,7 +4814,7 @@ CreateExtentsString(const double * extents,
     char msg[1024];
     if (dim == 1)
     {
-        format = "The %s extents are (" + float_format + ", "
+        format = "The %s extents are (Xmin=" + float_format + ", Xmax="
                                         + float_format  +")";
 
         snprintf(msg, 1024, format.c_str(), type,
@@ -4820,20 +4822,21 @@ CreateExtentsString(const double * extents,
     }
     else if (dim == 2)
     {
-        format = "The %s extents are (" + float_format + ", "
-                                        + float_format + ", "
-                                        + float_format + ", "
+        format = "The %s extents are (Xmin=" + float_format + ", Xmax="
+                                        + float_format + ", Ymin="
+                                        + float_format + ", Ymax="
                                         + float_format  +")";
         snprintf(msg, 1024, format.c_str(), type,
             extents[0], extents[1], extents[2], extents[3]);
     }
     else if (dim == 3)
     {
-        format = "The %s extents are (" + float_format + ", "
-                                        + float_format + ", "
-                                        + float_format + ", "
-                                        + float_format + ", "
-                                        + float_format + ", "                                                                          + float_format  +")";
+        format = "The %s extents are (Xmin=" + float_format + ", Xmax="
+                                        + float_format + ", Ymin="
+                                        + float_format + ", Ymax="
+                                        + float_format + ", Zmin="
+                                        + float_format + ", Zmax="
+                                        + float_format  +")";
         snprintf(msg, 1024, format.c_str(), type,
             extents[0], extents[1], extents[2], extents[3], extents[4], extents[5]);
     }
