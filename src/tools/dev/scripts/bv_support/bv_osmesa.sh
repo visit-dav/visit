@@ -1,6 +1,16 @@
 function bv_osmesa_initialize
 {
-    export DO_OSMESA="no"
+    # osmesa is needed for VTK at runtime, either through
+    # Mesagl or stand-alone osmesa.
+    if [[ "$DO_VTK" == "yes" &&
+          "$DO_MESAGL" == "no" &&
+          "$OPSYS" == "Linux" ]]; then
+            export DO_OSMESA="yes"
+            export DO_LLVM="yes"
+    else
+        export DO_OSMESA="no"
+    fi
+
 }
 
 function bv_osmesa_enable

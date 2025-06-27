@@ -9,11 +9,6 @@ function bv_vtk_enable
     info "bv_vtk_enable"
     DO_VTK="yes"
 
-    if [[ "$DO_MESAGL" == "no" ]] ; then
-        if [[ "$OPSYS" == "Linux" ]]; then
-            bv_osmesa_enable
-        fi
-    fi
 }
 
 function bv_vtk_disable
