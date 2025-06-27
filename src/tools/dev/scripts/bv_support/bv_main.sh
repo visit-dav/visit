@@ -1375,7 +1375,7 @@ function run_build_visit()
         elif [[ "$DO_SERVER_COMPONENTS_ONLY" == "yes" ]] ; then
            info "disabling qt, qwt because --server-components-only used"
         fi
-        bv_qt6_disable
+        bv_qt_disable
         bv_qwt_disable
     fi
 

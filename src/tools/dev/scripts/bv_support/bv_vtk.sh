@@ -48,7 +48,7 @@ function bv_vtk_depends_on
     if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
         if [[ "$DO_ENGINE_ONLY" != "yes" ]]; then
             if [[ "$DO_SERVER_COMPONENTS_ONLY" != "yes" ]]; then
-                depends_on="${depends_on} qt6"
+                depends_on="${depends_on} qt"
             fi
         fi
     fi
