@@ -478,12 +478,12 @@ function build_vtk
 
     # Tell VTK where to locate qmake if we're building graphical support. We
     # do not add graphical support for server-only builds.
-    if [[ "$DO_QT6" == "yes" ]] ; then
+    if [[ "$DO_QT" == "yes" ]] ; then
         vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_GUISupportQt:STRING=YES"
-        vopts="${vopts} -DQt6_DIR:PATH=${QT6_INSTALL_DIR}/lib/cmake/Qt6"
-        vopts="${vopts} -DQt6CoreTools_DIR:PATH=${QT6_INSTALL_DIR}/lib/cmake/Qt6CoreTools"
-        vopts="${vopts} -DQt6GuiTools_DIR:PATH=${QT6_INSTALL_DIR}/lib/cmake/Qt6GuiTools"
-        vopts="${vopts} -DQt6WidgetsTools_DIR:PATH=${QT6_INSTALL_DIR}/lib/cmake/Qt6WidgetsTools"
+        vopts="${vopts} -DQt6_DIR:PATH=${QT_INSTALL_DIR}/lib/cmake/Qt6"
+        vopts="${vopts} -DQt6CoreTools_DIR:PATH=${QT_INSTALL_DIR}/lib/cmake/Qt6CoreTools"
+        vopts="${vopts} -DQt6GuiTools_DIR:PATH=${QT_INSTALL_DIR}/lib/cmake/Qt6GuiTools"
+        vopts="${vopts} -DQt6WidgetsTools_DIR:PATH=${QT_INSTALL_DIR}/lib/cmake/Qt6WidgetsTools"
     fi
 
     # Add python wrapping
