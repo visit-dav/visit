@@ -1,15 +1,13 @@
-function bv_vtk95_initialize
+function bv_vtk_initialize
 {
-    info "bv_vtk95_initialize"
-    export DO_VTK95="yes"
+    info "bv_vtk_initialize"
+    export DO_VTK="yes"
 }
 
-function bv_vtk95_enable
+function bv_vtk_enable
 {
-    info "bv_vtk95_enable"
-    DO_VTK95="yes"
-    bv_vtk_disable
-    DO_VTK94="no"
+    info "bv_vtk_enable"
+    DO_VTK="yes"
 
     if [[ "$DO_MESAGL" == "no" ]] ; then
         if [[ "$OPSYS" == "Linux" ]]; then
@@ -18,13 +16,13 @@ function bv_vtk95_enable
     fi
 }
 
-function bv_vtk95_disable
+function bv_vtk_disable
 {
-    DO_VTK95="no"
+    DO_VTK="no"
 }
 
 
-function bv_vtk95_depends_on
+function bv_vtk_depends_on
 {
     depends_on="cmake zlib"
 
@@ -58,51 +56,51 @@ function bv_vtk95_depends_on
     echo ${depends_on}
 }
 
-function bv_vtk95_info
+function bv_vtk_info
 {
     info "setting up vtk for version 9.5.0"
-    export VTK95_VERSION=${VTK95_VERSION:-"9.5.0"}
-    export VTK95_SHORT_VERSION=${VTK95_SHORT_VERSION:-"9.5"}
-    export VTK95_SHA256_CHECKSUM="04ae86246b9557c6b61afbc534a6df099244fbc8f3937f82e6bc0570953af87d"
-    export VTK95_URL=""
-    export VTK95_FILE=${VTK95_FILE:-"VTK-${VTK95_VERSION}.tar.gz"}
-    export VTK95_COMPATIBILITY_VERSION=${VTK95_SHORT_VERSION}
-    export VTK95_BUILD_DIR=${VTK95_BUILD_DIR:-"VTK-${VTK95_VERSION}"}
-    export VTK95_INSTALL_DIR=${VTK95_INSTALL_DIR:-"vtk"}
+    export VTK_VERSION=${VTK_VERSION:-"9.5.0"}
+    export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"9.5"}
+    export VTK_SHA256_CHECKSUM="04ae86246b9557c6b61afbc534a6df099244fbc8f3937f82e6bc0570953af87d"
+    export VTK_URL=""
+    export VTK_FILE=${VTK_FILE:-"VTK-${VTK_VERSION}.tar.gz"}
+    export VTK_COMPATIBILITY_VERSION=${VTK_SHORT_VERSION}
+    export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK-${VTK_VERSION}"}
+    export VTK_INSTALL_DIR=${VTK_INSTALL_DIR:-"vtk"}
 }
 
-function bv_vtk95_print
+function bv_vtk_print
 {
-    printf "%s%s\n" "VTK95_FILE=" "${VTK95_FILE}"
-    printf "%s%s\n" "VTK95_VERSION=" "${VTK95_VERSION}"
-    printf "%s%s\n" "VTK95_BUILD_DIR=" "${VTK95_BUILD_DIR}"
+    printf "%s%s\n" "VTK_FILE=" "${VTK_FILE}"
+    printf "%s%s\n" "VTK_VERSION=" "${VTK_VERSION}"
+    printf "%s%s\n" "VTK_BUILD_DIR=" "${VTK_BUILD_DIR}"
 }
 
-function bv_vtk95_print_usage
+function bv_vtk_print_usage
 {
-    printf "%-20s %s\n" "--vtk95" "Build VTK (9.5.x)"
+    printf "%-20s %s\n" "--vtk" "Build VTK"
 }
 
-function bv_vtk95_host_profile
+function bv_vtk_host_profile
 {
     echo >> $HOSTCONF
     echo "##" >> $HOSTCONF
     echo "## VTK" >> $HOSTCONF
     echo "##" >> $HOSTCONF
 
-    echo "SETUP_APP_VERSION(VTK $VTK95_VERSION)" >> $HOSTCONF
-    echo "VISIT_OPTION_DEFAULT(VISIT_VTK_DIR \${VISITHOME}/${VTK95_INSTALL_DIR}/\${VTK95_VERSION}/\${VISITARCH})" >> $HOSTCONF
+    echo "SETUP_APP_VERSION(VTK $VTK_VERSION)" >> $HOSTCONF
+    echo "VISIT_OPTION_DEFAULT(VISIT_VTK_DIR \${VISITHOME}/${VTK_INSTALL_DIR}/\${VTK_VERSION}/\${VISITARCH})" >> $HOSTCONF
 }
 
-function bv_vtk95_initialize_vars
+function bv_vtk_initialize_vars
 {
-    info "initalizing vtk95 vars"
+    info "initalizing vtk vars"
 }
 
-function bv_vtk95_ensure
+function bv_vtk_ensure
 {
-    if [[ "$DO_VTK95" == "yes" ]] ; then
-        ensure_built_or_ready $VTK95_INSTALL_DIR $VTK95_VERSION $VTK95_BUILD_DIR $VTK95_FILE $VTK95_URL
+    if [[ "$DO_VTK" == "yes" ]] ; then
+        ensure_built_or_ready $VTK_INSTALL_DIR $VTK_VERSION $VTK_BUILD_DIR $VTK_FILE $VTK_URL
         if [[ $? != 0 ]] ; then
             return 1
         fi
@@ -223,7 +221,7 @@ function apply_vtk95_vtkospray_patches
     * Wrapper around ospray's init and shutdown that protect
 EOF
     if [[ $? != 0 ]] ; then
-        warn "vtk95 patch ${current_patch}/${count_patches} for vtkOSPRayPass.h failed."
+        warn "vtk 9.5 patch ${current_patch}/${count_patches} for vtkOSPRayPass.h failed."
         return 1
     fi
 
@@ -248,7 +246,7 @@ EOF
 EOF
 
     if [[ $? != 0 ]] ; then
-        warn "vtk95 patch ${current_patch}/${count_patches} for vtkOSPRayPass.cxx failed."
+        warn "vtk 9.5 patch ${current_patch}/${count_patches} for vtkOSPRayPass.cxx failed."
         return 1
     fi
 
@@ -270,51 +268,53 @@ EOF
    this->InternalRenderer->SetBackground(ren->GetBackground());
 EOF
     if [[ $? != 0 ]] ; then
-        warn "vtk95 patch $current_patch/$count_patches for vtkOSPRayVolumeMapper.cxx failed."
+        warn "vtk 9.5 patch $current_patch/$count_patches for vtkOSPRayVolumeMapper.cxx failed."
         return 1
     fi
 }
 
-function apply_vtk95_patch
+function apply_vtk_patch
 {
-    apply_vtk95_vtkospray_patches
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
+    if [[ ${VTK_VERSION} == 9.5.0 ]] ; then
+        apply_vtk95_vtkospray_patches
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
 
-    apply_vtk95_vtkdatawriter_patch
-    if [[ $? != 0 ]] ; then
-       return 1
-    fi
+        apply_vtk95_vtkdatawriter_patch
+        if [[ $? != 0 ]] ; then
+           return 1
+        fi
 
-    # should submit a ticket to kitware
-    apply_vtk95_vtkRectilinearGridReader_patch
-    if [[ $? != 0 ]] ; then
-        return 1
+        # should submit a ticket to kitware
+        apply_vtk95_vtkRectilinearGridReader_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
     fi
 
     return 0
 }
 
-function build_vtk95
+function build_vtk
 {
     # Extract the sources
-    if [[ -d $VTK95_BUILD_DIR ]] ; then
-        if [[ ! -f $VTK95_FILE ]] ; then
+    if [[ -d $VTK_BUILD_DIR ]] ; then
+        if [[ ! -f $VTK_FILE ]] ; then
             warn "The directory VTK exists, deleting before uncompressing"
-            rm -Rf $VTK95_BUILD_DIR
-            ensure_built_or_ready $VTK95_INSTALL_DIR    $VTK95_VERSION    $VTK95_BUILD_DIR    $VTK95_FILE
+            rm -Rf $VTK_BUILD_DIR
+            ensure_built_or_ready $VTK_INSTALL_DIR    $VTK_VERSION    $VTK_BUILD_DIR    $VTK_FILE
         fi
     fi
 
     #
     # Prepare the build dir using src file.
     #
-    prepare_build_dir $VTK95_BUILD_DIR $VTK95_FILE
-    untarred_vtk95=$?
+    prepare_build_dir $VTK_BUILD_DIR $VTK_FILE
+    untarred_vtk=$?
     # 0, already exists, 1 untarred src, 2 error
 
-    if [[ $untarred_vtk95 == -1 ]] ; then
+    if [[ $untarred_vtk == -1 ]] ; then
         warn "Unable to prepare VTK build directory. Giving Up!"
         return 1
     fi
@@ -323,10 +323,10 @@ function build_vtk95
     # Apply patches
     #
     info "Patching VTK . . ."
-    cd $VTK95_BUILD_DIR || error "Can't cd to VTK build dir."
-    apply_vtk95_patch
+    cd $VTK_BUILD_DIR || error "Can't cd to VTK build dir."
+    apply_vtk_patch
     if [[ $? != 0 ]] ; then
-        if [[ $untarred_vtk95 == 1 ]] ; then
+        if [[ $untarred_vtk == 1 ]] ; then
             warn "Giving up on VTK build because the patch failed."
             return 1
         else
@@ -346,19 +346,19 @@ function build_vtk95
     info "Configuring VTK . . ."
 
     # Make a build directory for an out-of-source build. Change the
-    # VTK95_BUILD_DIR variable to represent the out-of-source build directory.
-    VTK95_SRC_DIR=$VTK95_BUILD_DIR
-    VTK95_BUILD_DIR="${VTK95_SRC_DIR}-build"
-    if [[ ! -d $VTK95_BUILD_DIR ]] ; then
-        echo "Making build directory $VTK95_BUILD_DIR"
-        mkdir $VTK95_BUILD_DIR
+    # VTK_BUILD_DIR variable to represent the out-of-source build directory.
+    VTK_SRC_DIR=$VTK_BUILD_DIR
+    VTK_BUILD_DIR="${VTK_SRC_DIR}-build"
+    if [[ ! -d $VTK_BUILD_DIR ]] ; then
+        echo "Making build directory $VTK_BUILD_DIR"
+        mkdir $VTK_BUILD_DIR
     fi
 
     #
     # Remove the CMakeCache.txt files ... existing files sometimes prevent
     # fields from getting overwritten properly.
     #
-    rm -Rf ${VTK95_BUILD_DIR}/CMakeCache.txt ${VTK95_BUILD_DIR}/*/CMakeCache.txt
+    rm -Rf ${VTK_BUILD_DIR}/CMakeCache.txt ${VTK_BUILD_DIR}/*/CMakeCache.txt
 
     #
     # Setup paths and libs for python for the VTK build.
@@ -371,22 +371,22 @@ function build_vtk95
         export LD_LIBRARY_PATH="${VISIT_PYTHON_DIR}/lib/:$LD_LIBRARY_PATH"
     fi
 
-    export VTK95_PY_LIBS="-lpthread"
+    export VTK_PY_LIBS="-lpthread"
     if [[ "$OPSYS" == "Linux" ]]; then
-        export VTK95_PY_LIBS="$VTK95_PY_LIBS -ldl -lutil -lm"
+        export VTK_PY_LIBS="$VTK_PY_LIBS -ldl -lutil -lm"
     fi
 
     vopts=""
     vtk_build_mode="${VISIT_BUILD_MODE}"
-    vtk_inst_path="${VISITDIR}/${VTK95_INSTALL_DIR}/${VTK95_VERSION}/${VISITARCH}"
+    vtk_inst_path="${VISITDIR}/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}"
     vtk_debug_leaks="false"
 
     # Some linker flags.
     lf=""
     if test "${OPSYS}" = "Darwin" ; then
         lf="-Wl,-headerpad_max_install_names"
-        lf="${lf},-compatibility_version,${VTK95_COMPATIBILITY_VERSION}"
-        lf="${lf},-current_version,${VTK95_VERSION}"
+        lf="${lf},-compatibility_version,${VTK_COMPATIBILITY_VERSION}"
+        lf="${lf},-current_version,${VTK_VERSION}"
     fi
     # normal stuff
     vopts="${vopts} -DCMAKE_BUILD_TYPE:STRING=${vtk_build_mode}"
@@ -576,7 +576,7 @@ function build_vtk95
     fi
 
     CMAKE_BIN="${CMAKE_INSTALL}/cmake"
-    cd ${VTK95_BUILD_DIR}
+    cd ${VTK_BUILD_DIR}
 
     if [[ "$DO_MESAGL" == "yes" || "$DO_OSMESA" == "yes"  ]] ; then
         export LD_LIBRARY_PATH="${LLVM_LIB_DIR}:$LD_LIBRARY_PATH"
@@ -594,7 +594,7 @@ function build_vtk95
     if test -e bv_run_cmake.sh ; then
         rm -f bv_run_cmake.sh
     fi
-    echo "\"${CMAKE_BIN}\"" ${vopts} ../${VTK95_SRC_DIR} > bv_run_cmake.sh
+    echo "\"${CMAKE_BIN}\"" ${vopts} ../${VTK_SRC_DIR} > bv_run_cmake.sh
     cat bv_run_cmake.sh
     issue_command bash bv_run_cmake.sh || error "VTK configuration failed."
 
@@ -609,54 +609,54 @@ function build_vtk95
     $MAKE install || error "VTK did not install correctly."
 
     # Filter out an include that references the user's VTK build directory
-    configdir="${vtk_inst_path}/lib/cmake/vtk-${VTK95_SHORT_VERSION}"
+    configdir="${vtk_inst_path}/lib/cmake/vtk-${VTK_SHORT_VERSION}"
     cat ${configdir}/VTKConfig.cmake | grep -v "vtkTestingMacros" > ${configdir}/VTKConfig.cmake.new
     mv ${configdir}/VTKConfig.cmake.new ${configdir}/VTKConfig.cmake
 
-    chmod -R ug+w,a+rX ${VISITDIR}/${VTK95_INSTALL_DIR}
+    chmod -R ug+w,a+rX ${VISITDIR}/${VTK_INSTALL_DIR}
     if [[ "$DO_GROUP" == "yes" ]] ; then
-        chgrp -R ${GROUP} "$VISITDIR/${VTK95_INSTALL_DIR}"
+        chgrp -R ${GROUP} "$VISITDIR/${VTK_INSTALL_DIR}"
     fi
     cd "$START_DIR"
     info "Done with VTK"
     return 0
 }
 
-function bv_vtk95_is_enabled
+function bv_vtk_is_enabled
 {
-    if [[ $DO_VTK95 == "yes" ]]; then
+    if [[ $DO_VTK == "yes" ]]; then
         return 1
     fi
     return 0
 }
 
-function bv_vtk95_is_installed
+function bv_vtk_is_installed
 {
-    check_if_installed "$VTK95_INSTALL_DIR" $VTK95_VERSION
+    check_if_installed "$VTK_INSTALL_DIR" $VTK_VERSION
     if [[ $? == 0 ]] ; then
         return 1
     fi
     return 0
 }
 
-function bv_vtk95_build
+function bv_vtk_build
 {
     #
     # Build VTK
     #
     cd "$START_DIR"
 
-    if [[ "$DO_VTK95" == "yes" ]] ; then
-        check_if_installed $VTK95_INSTALL_DIR $VTK95_VERSION
+    if [[ "$DO_VTK" == "yes" ]] ; then
+        check_if_installed $VTK_INSTALL_DIR $VTK_VERSION
         if [[ $? == 0 ]] ; then
-            info "Skipping VTK95 build.  VTK95 is already installed."
+            info "Skipping VTK build.  VTK is already installed."
         else
-            info "Building VTK95 (~20 minutes)"
-            build_vtk95
+            info "Building VTK (~20 minutes)"
+            build_vtk
             if [[ $? != 0 ]] ; then
-                error "Unable to build or install VTK95.  Bailing out."
+                error "Unable to build or install VTK.  Bailing out."
             fi
         fi
-        info "Done building VTK95"
+        info "Done building VTK"
     fi
 }

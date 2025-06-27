@@ -4,7 +4,7 @@
         <group name="required" comment="All required libraries, built by default. Entire group can be disabled by '--no-thirdparty'. Individual libraries in the group can be disabled via --no-name flag, e.g. --no-python." enabled="yes">
             <lib name="cmake"/>
             <lib name="python"/>
-            <lib name="vtk95"/>
+            <lib name="vtk"/>
             <lib name="qt6"/>
             <lib name="zlib"/>
         </group>
