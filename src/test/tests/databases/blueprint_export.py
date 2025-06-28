@@ -84,7 +84,7 @@ def test_name(case, i):
     return case + "_" + str(i) + "_"
 
 # Export DB as bp data set
-def export_mesh_bp(case_name, varname, varname2 = "", dirname="."):
+def export_mesh_bp(case_name, varname, varname2 = "", dirname=".", output_type = "HDF5"):
     export_name = case_name
     e = ExportDBAttributes()
     e.db_type = "Blueprint"
@@ -95,7 +95,9 @@ def export_mesh_bp(case_name, varname, varname2 = "", dirname="."):
         e.variables = (varname,)
     if dirname != ".":
         e.dirname = dirname
-    ExportDatabase(e)
+    opts = GetExportOptions("Blueprint")
+    opts["Output type"] = output_type
+    ExportDatabase(e, opts)
     time.sleep(1)
     return export_name
 
@@ -495,35 +497,36 @@ truncate: \"false\""""
     CloseDatabase("multi_rect2d_override_target_1.root")
 
 def basic_test_case(case_name, varname = "d", dirname = "."):
-    OpenDatabase(silo_data_path(case_name))
-    AddPlot("Pseudocolor",varname)
-    DrawPlots()
-    Test("basic_" + case_name + "_input" + ("_output_dir" if dirname != "." else ""))
-    # export default
-    export_rfile_default = export_mesh_bp(case_name + "_default", varname, dirname=dirname) + ".cycle_000048.root"
-    # export post isosurface
-    AddOperator("Isosurface")
-    DrawPlots()
-    Test("basic_" + case_name + "_isosurface" + ("_output_dir" if dirname != "." else ""))
-    export_rfile_isos = export_mesh_bp(case_name + "_isosurface", varname, dirname=dirname) + ".cycle_000048.root"
-    DeleteAllPlots()
-    CloseDatabase(silo_data_path(case_name))
+    for out_type in ["HDF5", "YAML", "JSON"]:
+        OpenDatabase(silo_data_path(case_name))
+        AddPlot("Pseudocolor",varname)
+        DrawPlots()
+        Test("basic_" + case_name + "_input_" + out_type + ("_output_dir" if dirname != "." else ""))
+        # export default
+        export_rfile_default = export_mesh_bp(case_name + "_default", varname, dirname=dirname, output_type=out_type) + ".cycle_000048.root"
+        # export post isosurface
+        AddOperator("Isosurface")
+        DrawPlots()
+        Test("basic_" + case_name + "_isosurface_" + out_type + ("_output_dir" if dirname != "." else ""))
+        export_rfile_isos = export_mesh_bp(case_name + "_isosurface", varname, dirname=dirname, output_type=out_type) + ".cycle_000048.root"
+        DeleteAllPlots()
+        CloseDatabase(silo_data_path(case_name))
 
-    OpenDatabase(export_rfile_default)
-    # bp var names are qualified by topo
-    AddPlot("Pseudocolor","mesh_topo/" + varname)
-    DrawPlots()
-    Test("basic_" + case_name + "_default_exported" + ("_output_dir" if dirname != "." else ""))
-    DeleteAllPlots()
-    CloseDatabase(export_rfile_default)
+        OpenDatabase(export_rfile_default)
+        # bp var names are qualified by topo
+        AddPlot("Pseudocolor","mesh_topo/" + varname)
+        DrawPlots()
+        Test("basic_" + case_name + "_default_exported_" + out_type + ("_output_dir" if dirname != "." else ""))
+        DeleteAllPlots()
+        CloseDatabase(export_rfile_default)
 
-    OpenDatabase(export_rfile_isos)
-    # bp var names are qualified by topo
-    AddPlot("Pseudocolor", "mesh_topo/" + varname)
-    DrawPlots()
-    Test("basic_" + case_name + "_isosurface_exported" + ("_output_dir" if dirname != "." else ""))
-    DeleteAllPlots()
-    CloseDatabase(export_rfile_isos)
+        OpenDatabase(export_rfile_isos)
+        # bp var names are qualified by topo
+        AddPlot("Pseudocolor", "mesh_topo/" + varname)
+        DrawPlots()
+        Test("basic_" + case_name + "_isosurface_exported_" + out_type + ("_output_dir" if dirname != "." else ""))
+        DeleteAllPlots()
+        CloseDatabase(export_rfile_isos)
 
 def basic_test_case_extra_options(case_name, varname = "d"):
     OpenDatabase(silo_data_path(case_name))
@@ -795,7 +798,6 @@ def roundtrip_braid_mixed(mixed_topo, export_name, test_name):
 
 RequiredDatabasePlugin("Blueprint")
 test_basic()
-# TODO add tests for json and yaml output when https://github.com/LLNL/conduit/issues/1291 is fixed
 test_partition()
 test_flatten()
 
