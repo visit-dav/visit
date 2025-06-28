@@ -195,6 +195,9 @@ blueprint_writer_plugin_error_handler(const std::string &msg,
 //    https://github.com/LLNL/conduit/issues/1291 is addressed.
 //    Load special options for partitioning and flattening and regular options
 //    for relay::io::blueprint.
+// 
+//    Justin Privitera, Fri Jun 27 18:52:37 PDT 2025
+//    Added yaml and json options.
 //
 // ****************************************************************************
 
