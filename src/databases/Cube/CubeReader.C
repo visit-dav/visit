@@ -10,6 +10,8 @@
 
 #include <InvalidFilesException.h>
 #include <DebugStream.h>
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
 
 #include <sstream>
 #include <iterator>
@@ -141,10 +143,10 @@ CubeReader::readMetaData(bool keepFileOpen)
     copy(istream_iterator<string>(iss), istream_iterator<string>(), back_inserter<vector<string> >(tokens));
     if(tokens.size() >= 4)
     {
-        natoms   = atoi(tokens[0].c_str());
-        x_origin = atof(tokens[1].c_str());
-        y_origin = atof(tokens[2].c_str());
-        z_origin = atof(tokens[3].c_str());
+        natoms   = vstrtonum<int>(tokens[0].c_str());
+        x_origin = vstrtonum<float>(tokens[1].c_str());
+        y_origin = vstrtonum<float>(tokens[2].c_str());
+        z_origin = vstrtonum<float>(tokens[3].c_str());
     }
     else
     {
@@ -176,10 +178,10 @@ CubeReader::readMetaData(bool keepFileOpen)
     copy(istream_iterator<string>(iss), istream_iterator<string>(), back_inserter<vector<string> >(tokens));
     if(tokens.size() >= 4)
     {
-        x_size = atoi(tokens[0].c_str());
-        dx[0]  = atof(tokens[1].c_str());
-        dx[1]  = atof(tokens[2].c_str());
-        dx[2]  = atof(tokens[3].c_str());
+        x_size = vstrtonum<int>(tokens[0].c_str());
+        dx[0]  = vstrtonum<float>(tokens[1].c_str());
+        dx[1]  = vstrtonum<float>(tokens[2].c_str());
+        dx[2]  = vstrtonum<float>(tokens[3].c_str());
     }
     else
     {
@@ -204,10 +206,10 @@ CubeReader::readMetaData(bool keepFileOpen)
     copy(istream_iterator<string>(iss), istream_iterator<string>(), back_inserter<vector<string> >(tokens));
     if(tokens.size() >= 4)
     {
-        y_size = atoi(tokens[0].c_str());
-        dy[0]  = atof(tokens[1].c_str());
-        dy[1]  = atof(tokens[2].c_str());
-        dy[2]  = atof(tokens[3].c_str());
+        y_size = vstrtonum<int>(tokens[0].c_str());
+        dy[0]  = vstrtonum<float>(tokens[1].c_str());
+        dy[1]  = vstrtonum<float>(tokens[2].c_str());
+        dy[2]  = vstrtonum<float>(tokens[3].c_str());
     }
     else
     {
@@ -231,10 +233,10 @@ CubeReader::readMetaData(bool keepFileOpen)
     copy(istream_iterator<string>(iss), istream_iterator<string>(), back_inserter<vector<string> >(tokens));
     if(tokens.size() >= 4)
     {
-        z_size = atoi(tokens[0].c_str());
-        dz[0]  = atof(tokens[1].c_str());
-        dz[1]  = atof(tokens[2].c_str());
-        dz[2]  = atof(tokens[3].c_str());
+        z_size = vstrtonum<int>(tokens[0].c_str());
+        dz[0]  = vstrtonum<float>(tokens[1].c_str());
+        dz[1]  = vstrtonum<float>(tokens[2].c_str());
+        dz[2]  = vstrtonum<float>(tokens[3].c_str());
     }
     else
     {
@@ -275,11 +277,11 @@ CubeReader::readMetaData(bool keepFileOpen)
         copy(istream_iterator<string>(iss), istream_iterator<string>(), back_inserter<vector<string> >(tokens));
         if(tokens.size() >= 5)
         {
-            atom_types.push_back(atoi(tokens[0].c_str()));
-            //isotope = atof( tokens[1].c_str() );
-            atom_locations.push_back(atof(tokens[2].c_str()));
-            atom_locations.push_back(atof(tokens[3].c_str()));
-            atom_locations.push_back(atof(tokens[4].c_str()));
+            atom_types.push_back(vstrtonum<int>(tokens[0].c_str()));
+            //isotope = vstrtonum<float>( tokens[1].c_str() );
+            atom_locations.push_back(vstrtonum<float>(tokens[2].c_str()));
+            atom_locations.push_back(vstrtonum<float>(tokens[3].c_str()));
+            atom_locations.push_back(vstrtonum<float>(tokens[4].c_str()));
         }
         else
         {
@@ -309,7 +311,7 @@ CubeReader::readMetaData(bool keepFileOpen)
     }
     if(!tokens.empty())
     {
-        int norbitals = atoi(tokens[0].c_str());
+        int norbitals = vstrtonum<int>(tokens[0].c_str());
         if(tokens.size() < (norbitals+1))
         {
             errorString = "Cube reader: Number of orbitals does not match the number of orbitals given.";
@@ -320,7 +322,7 @@ CubeReader::readMetaData(bool keepFileOpen)
         debug4 << "Found " << norbitals << " orbitals" << endl;
         for (int o = 1; o <= norbitals; o++)
         {
-            orbitals.push_back(atoi(tokens[o].c_str()));
+            orbitals.push_back(vstrtonum<int>(tokens[o].c_str()));
             debug4 << "        "<< orbitals[o-1] << endl;
         }
     }
@@ -490,7 +492,7 @@ CubeReader::GetOrbitalValues(float* vals, const char* varname)
     string keyword = "orbital_";
     string num_str = var.substr(keyword.length(), var.length()-keyword.length());
     debug4 << "num_str = " << num_str;
-    int orbital_num = atoi(num_str.c_str());
+    int orbital_num = vstrtonum<int>(num_str.c_str());
     debug4 << "determined target orbital_num to be " << orbital_num << endl;
 
     int index = -1;

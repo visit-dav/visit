@@ -5,8 +5,10 @@
 #include <iostream>
 #include <cstdlib>
 #include <cstdio>
-#include <SocketBridge.h>
 #include <unistd.h>
+
+#include <SocketBridge.h>
+#include <StringHelpers.h>
 
 
 // ****************************************************************************
@@ -22,7 +24,8 @@
 // Creation:   Thu Jan 14 15:21:38 PST 2010
 //
 // Modifications:
-//
+//    Mark C. Miller, Fri Jan 12 17:04:46 PST 2024
+//    Replace atoi with vstrtonum
 // ****************************************************************************
 
 int main(int argc, const char* argv[])
@@ -34,7 +37,7 @@ int main(int argc, const char* argv[])
     }
 
     const char *remoteHost = argv[1];
-    int remotePort = std::atoi(argv[2]);
+    int remotePort = StringHelpers::vstrtonum<int>(argv[2]);
 
     // Like in the component launcher we pick a random port and assume that
     // it is available.

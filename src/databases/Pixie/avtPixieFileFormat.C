@@ -29,12 +29,17 @@
 #include <avtDatabaseMetaData.h>
 #include <avtParallel.h>
 #include <DebugStream.h>
+using DebugStream::Level4;
+using DebugStream::Stream4;
 #include <DBOptionsAttributes.h>
 #include <Expression.h>
 #include <InvalidVariableException.h>
 #include <InvalidDBTypeException.h>
 #include <InvalidFilesException.h>
 #include <InvalidTimeStepException.h>
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
+using StringHelpers::NO_OSTREAM;
 
 // Define this symbol BEFORE including hdf5.h to indicate the HDF5 code
 // in this file uses version 1.6 of the HDF5 API. This is harmless for
@@ -2308,9 +2313,9 @@ avtPixieFileFormat::GetVariableList(hid_t group, const char *name,
 
             int cycle;
             if (varName[9] == '_')
-                cycle = atoi(varName.substr(10).c_str());
+                cycle = vstrtonum<int>(varName.substr(10).c_str(),10,0,Level4()?Stream4():NO_OSTREAM);
             else
-                cycle = atoi(varName.substr(9).c_str());
+                cycle = vstrtonum<int>(varName.substr(9).c_str(),10,0,Level4()?Stream4():NO_OSTREAM);
             info->This->cycles.push_back(cycle);
         }
 

@@ -26,6 +26,8 @@
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
 #include <NonCompliantFileException.h>
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
 
 #include <vtkTriangulationTables.h>
 
@@ -545,7 +547,7 @@ avtXSFFileFormat::ReadAtomsForTimestep(int ts)
         Atom &a = currentAtoms[i];
         string species;
         in >> species;
-        a.e = atoi(species.c_str());
+        a.e = vstrtonum<int>(species.c_str());
         if (a.e == 0)
             a.e = ElementNameToAtomicNumber(species.c_str());
         in >> a.x >> a.y >> a.z;

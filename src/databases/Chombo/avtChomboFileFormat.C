@@ -46,6 +46,8 @@
 #include <BadDomainException.h>
 #include <ImproperUseException.h>
 #include <DebugStream.h>
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
 #include <InvalidDBTypeException.h>
 #include <InvalidFilesException.h>
 #include <InvalidVariableException.h>
@@ -416,6 +418,8 @@ static hid_t OpenHDF5File(char const *fname)
 //    Mark C. Miller, Wed Feb  9 13:37:12 PST 2022
 //    Use new method, OpenHDF5File, to open the file.
 //
+//    Mark C. Miller, Fri Jan 12 17:04:46 PST 2024
+//    Replace atoX/strtoX with vstrtonum
 void
 avtChomboFileFormat::InitializeReader(void)
 {
@@ -1376,7 +1380,7 @@ avtChomboFileFormat::InitializeReader(void)
     {
         if (varnames[i].find("fraction-") == 0)
         {
-            int val = atoi(varnames[i].c_str()+9) + 1;
+            int val = vstrtonum<int>(varnames[i].c_str()+9) + 1;
 
             if (val > nMaterials)
                 nMaterials = val;

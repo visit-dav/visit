@@ -44,6 +44,7 @@
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
 #include <StringHelpers.h>
+using StringHelpers::vstrtonum;
 
 #include <vtkVisItUtility.h>
 
@@ -1100,7 +1101,7 @@ avtVTKFileReader::GetVar(int domain, const char *real_name)
     if (strstr(var, VARNAME) != NULL)
     {
         const char *numstr = var + strlen(VARNAME);
-        int num = atoi(numstr);
+        int num = vstrtonum<int>(numstr);
         int npointvars = dataset->GetPointData()->GetNumberOfArrays();
         if (num < npointvars)
         {

@@ -21,6 +21,8 @@
 #include <InvalidFilesException.h>
 #include <InvalidVariableException.h>
 #include <InvalidTimeStepException.h>
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
 
 #include <visit-hdf5.h>
 
@@ -339,6 +341,9 @@ avtTetradFileFormat::GetVar(int ts, const char *var)
 //
 //    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
 //    Added timeState argument
+//
+//    Mark C. Miller, Fri Jan 12 17:04:46 PST 2024
+//    Replace atoX/strtoX with vstrtonum
 // ****************************************************************************
 
 void
@@ -366,7 +371,7 @@ avtTetradFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         time_index_pair *pairs = new time_index_pair[ntimes];
         for (i = 0 ; i < ntimes ; i++)
         {
-            pairs[i].dtime  = atof(timesteps[i].c_str());
+            pairs[i].dtime  = vstrtonum<double>(timesteps[i].c_str());
             pairs[i].index = i;
         }
         qsort(pairs, ntimes, sizeof(time_index_pair), TimeIndexPairSorter);
@@ -386,7 +391,7 @@ avtTetradFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     vector<double> dtimesteps;
     for (i = 0 ; i < timesteps.size() ; i++)
     {
-        dtimesteps.push_back(atof(timesteps[i].c_str()));
+        dtimesteps.push_back(vstrtonum<double>(timesteps[i].c_str()));
     }
     md->SetTimes(dtimesteps);
     md->SetTimesAreAccurate(true);

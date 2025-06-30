@@ -23,6 +23,8 @@
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
 #include <AtomicProperties.h>
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
 
 using     std::string;
 
@@ -431,7 +433,7 @@ avtXYZFileFormat::ReadTimeStep(int timestep)
 
         e[timestep][a] = ElementNameToAtomicNumber(element);
         if (e[timestep][a] <= 0)
-            e[timestep][a] = atoi(element);
+            e[timestep][a] = vstrtonum<int>(element);
         if (e[timestep][a] < 0 || e[timestep][a] > MAX_ELEMENT_NUMBER)
             e[timestep][a] = 0; // not valid; 0==unknown
     }
@@ -488,7 +490,7 @@ avtXYZFileFormat::ReadAllMetaData()
         file_positions.push_back(current_pos);
 
         // we expect the first line to be a number for a simple XYZ file
-        int natoms_tmp = atoi(buff);
+        int natoms_tmp = vstrtonum<int>(buff);
 
         // if that failed, it's not a simple XYZ file
         if (natoms_tmp != 0)

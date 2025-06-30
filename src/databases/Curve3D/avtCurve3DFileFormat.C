@@ -37,12 +37,13 @@
 #include <DebugStream.h>
 #include <DBOptionsAttributes.h>
 #include <StringHelpers.h>
+using StringHelpers::vstrtonum;
+using StringHelpers::NO_OSTREAM;
 #include <InvalidFilesException.h>
 #include <InvalidVariableException.h>
 
 #include "visit_gzstream.h"
 
-#include <errno.h>
 #include <float.h>
 #include <stdlib.h>
 
@@ -300,6 +301,9 @@ avtCurve3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //  Copied from Curve2D plugin as of Jul 5, 2022 and adjusted for 3D
 //  and make a global mesh with materials out of the figures.
 //
+//  Modifications:
+//    Mark C. Miller, Fri Jan 12 17:04:46 PST 2024
+//    Replace atoX/strtoX with vstrtonum
 // ****************************************************************************
 
 #define INVALID_POINT_WARNING(X)                                        \
@@ -445,9 +449,7 @@ avtCurve3DFileFormat::ReadFile(bool clearData = false)
                 {
                     string tStr = headerName.substr(timePos+4);
                     char *endstr = NULL;
-                    curveTime = strtod(tStr.c_str(), &endstr);
-                    if (strcmp(endstr, tStr.c_str()) == 0)
-                        curveTime = INVALID_TIME;
+                    curveTime = vstrtonum<double>(tStr.c_str(),10,INVALID_TIME);
                 }
                 else
                 {
@@ -456,9 +458,7 @@ avtCurve3DFileFormat::ReadFile(bool clearData = false)
                     {
                         string cyStr = headerName.substr(cyclePos+5);
                         char *endstr = NULL;
-                        curveCycle = (int)strtod(cyStr.c_str(), &endstr);
-                        if (strcmp(endstr, cyStr.c_str()) == 0)
-                            curveCycle = INVALID_CYCLE;
+                        curveCycle = vstrtonum<int>(cyStr.c_str(),10,INVALID_CYCLE);
                     }
                 }
             }
@@ -563,9 +563,7 @@ avtCurve3DFileFormat::ReadFile(bool clearData = false)
         {
             string tStr = headerName.substr(timePos+4);
             char *endstr = NULL;
-            curveTime = strtod(tStr.c_str(), &endstr);
-            if (strcmp(endstr, tStr.c_str()) == 0)
-                curveTime = INVALID_TIME;
+            curveTime = vstrtonum<double>(tStr.c_str(),10,INVALID_TIME);
         }
         else
         {
@@ -574,9 +572,7 @@ avtCurve3DFileFormat::ReadFile(bool clearData = false)
             {
                 string cyStr = headerName.substr(cyclePos+5);
                 char *endstr = NULL;
-                curveCycle = (int)strtod(cyStr.c_str(), &endstr);
-                if (strcmp(endstr, cyStr.c_str()) == 0)
-                    curveCycle = INVALID_CYCLE;
+                curveCycle = vstrtonum<int>(cyStr.c_str(),10,INVALID_CYCLE);
             }
         }
     }
@@ -748,6 +744,9 @@ avtCurve3DFileFormat::ReadFile(bool clearData = false)
 //  Copied from Curve2D plugin as of Aug 31, 2018 and adjusted for 3D
 //  and make a global mesh with materials out of the figures.
 //
+//  Modifications:
+//    Mark C. Miller, Fri Jan 12 17:04:46 PST 2024
+//    Replace atoX/strtoX with vstrtonum
 // ****************************************************************************
 
 Curve3DToken
@@ -820,9 +819,8 @@ avtCurve3DFileFormat::GetPoint(istream &ifile, double &x, double &y, double &z, 
     char *ystr = NULL;
     char *tmpstr;
 
-    errno = 0;
-    x = strtod(line, &ystr);
-    if (((x == 0.0) && (ystr == line)) || (errno == ERANGE))
+    x = vstrtonum<double>(line,10,0,NO_OSTREAM,&ystr);
+    if ((x == 0.0) && (ystr == line))
     {
         return INVALID_POINT;
     }
@@ -839,9 +837,8 @@ avtCurve3DFileFormat::GetPoint(istream &ifile, double &x, double &y, double &z, 
     // Get past the space.
     ystr++;
 
-    errno = 0;
-    y = strtod(ystr, &tmpstr);
-    if (((y == 0.0) && (tmpstr == ystr)) || (errno == ERANGE))
+    y = vstrtonum<double>(ystr,10,0,NO_OSTREAM,&tmpstr);
+    if ((y == 0.0) && (tmpstr == ystr))
     {
         return INVALID_POINT;
     }
@@ -858,9 +855,8 @@ avtCurve3DFileFormat::GetPoint(istream &ifile, double &x, double &y, double &z, 
     // Get past the space.
     ystr++;
 
-    errno = 0;
-    z = strtod(ystr, &tmpstr);
-    if (((z == 0.0) && (tmpstr == ystr)) || (errno == ERANGE))
+    z = vstrtonum<double>(ystr,10,0,NO_OSTREAM,&tmpstr);
+    if ((z == 0.0) && (tmpstr == ystr))
     {
         return INVALID_POINT;
     }

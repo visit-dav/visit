@@ -38,6 +38,8 @@
 #include <InvalidFilesException.h>
 #include <InvalidVariableException.h>
 #include <InvalidDBTypeException.h>
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
 
 using std::string;
 using std::vector; 
@@ -624,7 +626,7 @@ avtMirandaFileFormat::GetFortranDouble( ifstream &f )
           s[ii] = 'e';
         }
     }
-  double r = atof(s.c_str());
+  double r = vstrtonum<double>(s.c_str());
   return r;
 }
 

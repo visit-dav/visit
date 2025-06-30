@@ -22,6 +22,8 @@
 
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
 #include <VisItStreamUtil.h>
 #include <vtkTIFFReader.h>
 
@@ -449,7 +451,8 @@ avtTCGAFileFormat::GetVectorVar(int domain, const char *varname)
 // Creation:    November  5, 2014
 //
 // Modifications:
-//
+//    Mark C. Miller, Fri Jan 12 17:04:46 PST 2024
+//    Replace atoX/strtoX with vstrtonum
 //****************************************************************************
 
 static void
@@ -461,6 +464,6 @@ extractXY(const string &str, const string &suffix, int &x, int &y)
     string yStr = str.substr(i1+1, (i0-i1-1));
     string xStr = str.substr(i2+1, (i1-i2-1));
     
-    x = atoi(xStr.c_str());
-    y = atoi(yStr.c_str());
+    x = vstrtonum<int>(xStr.c_str());
+    y = vstrtonum<int>(yStr.c_str());
 }

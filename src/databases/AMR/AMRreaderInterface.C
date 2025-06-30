@@ -52,6 +52,11 @@ AMRreaderInterface::~AMRreaderInterface()
 #include <AMRreaderLowResBlkConso.h>
 
 #include <DebugStream.h>
+using DebugStream::Level1;
+using DebugStream::Stream1;
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
+using StringHelpers::NO_OSTREAM;
 #include <cstdlib>
 
 AMRreaderInterface *
@@ -60,7 +65,7 @@ InstantiateAMRreader()
     int typ=0;
     char* amrlvl=getenv("AMRLEVEL");
     if( amrlvl )
-        typ = atoi(amrlvl);
+        typ = vstrtonum<int>(amrlvl,10,0,Level1()?Stream1():NO_OSTREAM);
 
     AMRreaderInterface *reader = NULL;
     switch(typ)

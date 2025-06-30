@@ -27,6 +27,9 @@
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
 
+#include <StringHelpers.h>
+using StringHelpers::vstrtonum;
+
 
 using std::string;
 using std::pair;
@@ -475,7 +478,7 @@ avtPuReMDFileFormat::ReadAllMetaData()
 
         if (strncmp(line, "number_of_atoms:", 16) == 0)
         {
-            nAtoms = atoi(line+16);
+            nAtoms = vstrtonum<int>(line+16);
         }
         else if (strncmp(line, "atom_info:", 10) == 0)
         {
@@ -570,7 +573,7 @@ avtPuReMDFileFormat::ReadAllMetaData()
                 break;
 
             if (strncmp(line, "step:", 5) == 0)
-                step = atoi(line+5);
+                step = vstrtonum<int>(line+5);
             else if (strncmp(line, "time_in_ps:", 11) == 0)
                 time_in_ps = strtod(line+11,NULL);
             else if (strncmp(line, "box_dimensions:", 15) == 0)
