@@ -88,6 +88,7 @@ private:
     QWidget *MakeWidgetFromParameterInfo(const AnariParameterInfo &);
     void UpdateRenderingAttributes(const bool);
     void ClearAnariParameterAttributes();
+    void UpdateLibraryUI(anari::Library, const std::string &);
 
     QvisRenderingWindow *renderingWindow;
     RenderingAttributes *renderingAttributes;
