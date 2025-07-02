@@ -1116,8 +1116,14 @@ AnariRenderingWidget::libraryChanged()
 
     if(anariLibrary)
     {
+        // Get ANARI_LIBRARY environment variable
+        if(libname == "environment")
+        {
+            libname = std::string(getenv("ANARI_LIBRARY"));
+        }
+        
         libraryName->blockSignals(true);
-        libraryName->setText("environment");
+        libraryName->setText(libname.c_str());
         libraryName->blockSignals(false);
         
         UpdateLibraryUI(anariLibrary, libname);
@@ -1135,8 +1141,8 @@ AnariRenderingWidget::libraryChanged()
         }
         else
         {
-            message.append(tr("%1 is not a valid back-end name or not on your library path. ") + 
-                           tr("Using default back-end (helide)").arg(libname.c_str()));
+            message.append(tr("%1 is not a valid back-end name or not on your library path. ").arg(libname.c_str()) + 
+                           tr("Using default back-end (helide)"));
         }
 
         QMessageBox::critical(this, tr("ANARI"), message);
@@ -1148,7 +1154,7 @@ AnariRenderingWidget::libraryChanged()
         if(anariLibrary)
         {
             libraryName->blockSignals(true);
-            libraryName->setText("helide");
+            libraryName->setText(libname.c_str());
             libraryName->blockSignals(false);
         
             UpdateLibraryUI(anariLibrary, libname);
