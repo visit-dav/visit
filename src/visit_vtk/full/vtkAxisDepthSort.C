@@ -120,13 +120,13 @@ vtkAxisDepthSort::GetMinusZOutput(void)
 //    Modified to inherit from vtkPolyDataAlgorithm.
 //
 //    Kathleen Biagas, Wed Jul 2, 2025
-//    When creating the Plus/Minus vtkPolyData's, wwap use of
+//    When creating the Plus/Minus vtkPolyData's, swap use of
 //    'Allocate(input)', which allocates a default of 1000 cells, for use of
-//    'AllocateCopy(input)' which sets the new dataset up to have the same
-//    number of cells as 'input'.  This prevents a crash when calling
+//    'AllocateCopy(input)' which allocates memory for the same number of
+//    cells as its 'input' argument.  This prevents a crash when calling
 //    'InsertNextCell' when number of cells is much greater than '1000'.
-//    Crash was evidenced in a use-case of < 40000 cells, and it crashed at
-//    '2000'.
+//    Crash was evidenced in a use-case of more than 40000 cells, and it
+//    crashed at the 2000th cell.
 //
 // ****************************************************************************
 
