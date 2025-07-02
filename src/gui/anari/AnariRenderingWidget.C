@@ -1076,13 +1076,23 @@ AnariRenderingWidget::renderingToggled(bool val)
 {
     renderingAttributes->SetAnariRendering(val);
     renderingWindow->SetUpdateApply(false);
+    
+    if(val) 
+    {
+        // Allows VisIt to check if a valid back-end is available before trying
+        // to render with ANARI.
+        this->libraryChanged();
+    }
 }
 
 // ****************************************************************************
 // Method: AnariRenderingWidget::libraryChanged
 //
 // Purpose:
-//      Triggered when ANARI Back-end rendering library has changed.
+//      Triggered when ANARI Back-end rendering library has changed. If no
+//      library is specified, it will first look to see if the ANARI_LIBRARY 
+//      environment variable is set. If not, the default library (helide) will 
+//      be used.
 //
 // Programmer:  Kevin Griffin
 // Creation:    Fri Mar 11 12:27:45 PDT 2022
@@ -1095,113 +1105,83 @@ void
 AnariRenderingWidget::libraryChanged()
 {
     renderingAttributes->SetUsingUsdDevice(false);
-    auto libname = libraryName->text().trimmed().toStdString();
+    std::string libname = libraryName->text().trimmed().toStdString();
+    
+    if(libname.empty())
+    {
+        libname = "environment";
+    }
+    
     auto anariLibrary = anari::loadLibrary(libname.c_str(), anari_visit::StatusCallback);
 
     if(anariLibrary)
     {
-        renderingAttributes->SetAnariLibrary(libname);
-        auto backendType = GetBackendType(libraryName->text().trimmed().toStdString());
-
-        if(backendType == BackendType::USD)
-        {
-            renderingAttributes->SetUsingUsdDevice(true);
-        }
-        else
-        {
-            renderingAttributes->SetUsingUsdDevice(false);
-        }
-
-        // Update back-end subtypes
-        librarySubtypes->blockSignals(true);
-        librarySubtypes->clear();
-        const char **devices = anariGetDeviceSubtypes(anariLibrary);
-
-        if(devices)
-        {
-            for(const char **d = devices; *d != NULL; d++)
-            {
-                librarySubtypes->addItem(*d);
-            }
-        }
-        else
-        {
-            librarySubtypes->addItem("default");
-        }
-
-        librarySubtypes->blockSignals(false);
-        auto libSubtype =  librarySubtypes->currentText().toStdString();
-        renderingAttributes->SetAnariLibrarySubtype(libSubtype);
-
-        auto anariDevice = anari::newDevice(anariLibrary, libSubtype.c_str());
-
-        // Update renderers
-        rendererSubtypes->blockSignals(true);
-        rendererSubtypes->clear();
-
-        const char **renderers = anariGetObjectSubtypes(anariDevice, ANARI_RENDERER);
-
-        if(renderers)
-        {
-            for(const char **d = renderers; *d != NULL; d++)
-            {
-                rendererSubtypes->addItem(*d);
-            }
-        }
-        else
-        {
-            rendererSubtypes->addItem("default");
-        }
-
-        auto rendererSubtype = rendererSubtypes->currentText().toStdString();
-        renderingAttributes->SetAnariRendererSubtype(rendererSubtype);
-        rendererSubtypes->blockSignals(false);
-
-        // Create Dynamic Widget
-        std::string key = libname + ":" + libSubtype + ":" + rendererSubtype;
-        CreateDynamicWidget(anariDevice, rendererSubtype.c_str(), key, backendType == BackendType::USD);
-
-        // Clean-up
-        anari::release(anariDevice, anariDevice);
+        libraryName->blockSignals(true);
+        libraryName->setText("environment");
+        libraryName->blockSignals(false);
+        
+        UpdateLibraryUI(anariLibrary, libname);
         anariUnloadLibrary(anariLibrary);
-
         UpdateRenderingAttributes(false);
     }
     else
     {
         QString message;
 
-        if(libraryName->text().trimmed() == "environment")
+        if(libname == "environment")
         {
-            message.append(tr("ANARI_LIBRARY not set or set incorrectly."));
+            message.append(tr("ANARI_LIBRARY environment variable not set or set incorrectly. ") +
+                           tr("Using default back-end (helide)"));
         }
         else
         {
-            message.append(tr("%1 is not a valid back-end name or not on your library path.").arg(libname.c_str()));
+            message.append(tr("%1 is not a valid back-end name or not on your library path. ") + 
+                           tr("Using default back-end (helide)").arg(libname.c_str()));
         }
 
         QMessageBox::critical(this, tr("ANARI"), message);
-        debug1 << "Could not load the ANARI library (" << libname << ") to update the Rendering UI." << std::endl;
+        debug1 << "Could not load the ANARI library (" << libname << ") using default back-end (helide)." << std::endl;
+        
+        libname = "helide";        
+        anariLibrary = anari::loadLibrary(libname.c_str(), anari_visit::StatusCallback);
+        
+        if(anariLibrary)
+        {
+            libraryName->blockSignals(true);
+            libraryName->setText("helide");
+            libraryName->blockSignals(false);
+        
+            UpdateLibraryUI(anariLibrary, libname);
+            anariUnloadLibrary(anariLibrary);
+            UpdateRenderingAttributes(false);
+        }
+        else
+        {
+            QString message1 = tr("Could not load the default ANARI library (helide). ") +
+                               tr("Disabling ANARI rendering.");
+            QMessageBox::critical(this, tr("ANARI"), message1);
+            debug1 << "Could not load the default ANARI library (helide)." << std::endl;        
+        
+            // Reset Back-end Subtype and Renderer to "default"
+            librarySubtypes->blockSignals(true);
+            librarySubtypes->clear();
+            librarySubtypes->addItem("default");
+            librarySubtypes->blockSignals(false);
+            auto libSubtype =  librarySubtypes->currentText().toStdString();
+            renderingAttributes->SetAnariLibrarySubtype(libSubtype);
 
-        // Reset Back-end Subtype and Renderer to "default"
-        librarySubtypes->blockSignals(true);
-        librarySubtypes->clear();
-        librarySubtypes->addItem("default");
-        librarySubtypes->blockSignals(false);
-        auto libSubtype =  librarySubtypes->currentText().toStdString();
-        renderingAttributes->SetAnariLibrarySubtype(libSubtype);
+            rendererSubtypes->blockSignals(true);
+            rendererSubtypes->clear();
+            rendererSubtypes->addItem("default");
+            rendererSubtypes->blockSignals(false);
+            auto rendererSubtype = rendererSubtypes->currentText().toStdString();
+            renderingAttributes->SetAnariRendererSubtype(rendererSubtype);
 
-        rendererSubtypes->blockSignals(true);
-        rendererSubtypes->clear();
-        rendererSubtypes->addItem("default");
-        rendererSubtypes->blockSignals(false);
-        auto rendererSubtype = rendererSubtypes->currentText().toStdString();
-        renderingAttributes->SetAnariRendererSubtype(rendererSubtype);
-
-        // Reset to blank widget
-        emit currentBackendChanged(0);
-        ClearAnariParameterAttributes();
-        renderingWindow->SetUpdateApply(false);
+            // Reset to blank widget
+            emit currentBackendChanged(0);
+            ClearAnariParameterAttributes();
+            renderingGroup->setChecked(false);
+        }
     }
 }
 
@@ -1535,4 +1515,89 @@ void AnariRenderingWidget::ClearAnariParameterAttributes()
     stringVector params;
     renderingAttributes->SetAnariRendererParameters(params);
     renderingAttributes->SetAnariUSDParameters(params);
+}
+
+// ****************************************************************************
+// Method: AnariRenderingWidget::UpdateLibraryUI
+//
+// Purpose:
+//      Updates the UI elements related to the ANARI rendering library.
+// 
+// Arguments:
+//      anariLibrary the ANARI library
+//      libname     the name of the ANARI library
+//
+// Programmer:  Kevin Griffin
+// Creation:    Fri Mar 11 12:27:45 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+AnariRenderingWidget::UpdateLibraryUI(anari::Library anariLibrary, const std::string &libname)
+{
+    renderingAttributes->SetAnariLibrary(libname);
+    auto backendType = GetBackendType(libname);
+
+    if(backendType == BackendType::USD)
+    {
+        renderingAttributes->SetUsingUsdDevice(true);
+    }
+    else
+    {
+        renderingAttributes->SetUsingUsdDevice(false);
+    }
+
+    // Update back-end subtypes
+    librarySubtypes->blockSignals(true);
+    librarySubtypes->clear();
+    const char **devices = anariGetDeviceSubtypes(anariLibrary);
+
+    if(devices)
+    {
+        for(const char **d = devices; *d != NULL; d++)
+        {
+            librarySubtypes->addItem(*d);
+        }
+    }
+    else
+    {
+        librarySubtypes->addItem("default");
+    }
+
+    librarySubtypes->blockSignals(false);
+    auto libSubtype =  librarySubtypes->currentText().toStdString();
+    renderingAttributes->SetAnariLibrarySubtype(libSubtype);
+
+    auto anariDevice = anari::newDevice(anariLibrary, libSubtype.c_str());
+
+    // Update renderers
+    rendererSubtypes->blockSignals(true);
+    rendererSubtypes->clear();
+
+    const char **renderers = anariGetObjectSubtypes(anariDevice, ANARI_RENDERER);
+
+    if(renderers)
+    {
+        for(const char **d = renderers; *d != NULL; d++)
+        {
+            rendererSubtypes->addItem(*d);
+        }
+    }
+    else
+    {
+        rendererSubtypes->addItem("default");
+    }
+
+    auto rendererSubtype = rendererSubtypes->currentText().toStdString();
+    renderingAttributes->SetAnariRendererSubtype(rendererSubtype);
+    rendererSubtypes->blockSignals(false);
+
+    // Create Dynamic Widget
+    std::string key = libname + ":" + libSubtype + ":" + rendererSubtype;
+    CreateDynamicWidget(anariDevice, rendererSubtype.c_str(), key, backendType == BackendType::USD);
+
+    // Clean-up
+    anari::release(anariDevice, anariDevice);
 }
