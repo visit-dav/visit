@@ -127,6 +127,7 @@ vtkAxisDepthSort::GetMinusZOutput(void)
 //    'InsertNextCell' when number of cells is much greater than '1000'.
 //    Crash was evidenced in a use-case of more than 40000 cells, and it
 //    crashed at the 2000th cell.
+//    Add Squeeze calls to free up extra allocated memory.
 //
 // ****************************************************************************
 
@@ -319,6 +320,13 @@ vtkAxisDepthSort::RequestData(
     //
     // Clean up memory.
     //
+
+    plusX->Squeeze();
+    plusY->Squeeze();
+    plusZ->Squeeze();
+    minusX->Squeeze();
+    minusY->Squeeze();
+    minusZ->Squeeze();
     delete [] loc;
     delete [] pairs;
 
