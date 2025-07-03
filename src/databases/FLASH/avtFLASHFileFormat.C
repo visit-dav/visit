@@ -217,11 +217,7 @@ avtFLASHFileFormat::avtFLASHFileFormat(const char* cfilename, const DBOptionsAtt
   showProcessors = opts->GetBool("Show generating processor instead of refinement level");
   newStyleCurves = opts->GetBool("Use new style curve generation");
   addStructuredDomainBoundaries = opts->GetBool("Set up patch abutment information");
-  std::cout << __FILE__ << " " << __LINE__ << std::endl;
-  std::cout << "**************** FIX ME. Attribute problem." << std::endl;
-  std::cout << __FILE__ << " " << __LINE__ << std::endl;
-  this->isFlashX = opts->GetBool("FlashX format");
-  this->isFlashX = true;
+  this->isFlashX = opts->GetBool("Logarithmic grid");
 
   // do HDF5 library initialization on consturction of first instance
   if (avtFLASHFileFormat::objcnt == 0)

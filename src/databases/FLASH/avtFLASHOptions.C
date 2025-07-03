@@ -36,7 +36,7 @@ DBOptionsAttributes* GetFLASHReadOptions(void)
   rv->SetBool("Show generating processor instead of refinement level", false);
   rv->SetBool("Use new style curve generation", true);
   rv->SetBool("Set up patch abutment information", true);
-  rv->SetBool("FlashX format", false);
+  rv->SetBool("Logarithmic grid", false);
   return rv;
 }
 
