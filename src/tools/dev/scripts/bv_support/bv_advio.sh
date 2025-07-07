@@ -66,7 +66,7 @@ function bv_advio_ensure
     fi
 }
 
-function apply_advio_12_darwin_patch
+function apply_advio_12_configure_patch
 {
     patch -p0 << \EOF
 --- AdvIO-1.2/configure	2006-02-14 05:19:56.000000000 -0800
@@ -230,7 +230,7 @@ function apply_advio_12_darwin_patch
  #  subdirs="${subdirs} Compo"
 EOF
     if [[ $? != 0 ]] ; then
-        echo "Failed applying Darwin patch"
+        echo "Failed applying AdvIO configure patch"
         return 1
     fi
 
@@ -239,9 +239,7 @@ EOF
 
 function apply_advio_12_patch
 {
-    if [[ "$OPSYS" == "Darwin" ]] ; then
-        apply_advio_12_darwin_patch
-    fi
+    apply_advio_12_configure_patch
 
     return $?
 }
