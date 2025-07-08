@@ -243,7 +243,7 @@ protected:
   bool showProcessors;
   bool newStyleCurves;
   bool addStructuredDomainBoundaries;
-  bool isFlashX = false;
+  bool logarithmicGrid = false;
 };
 
 

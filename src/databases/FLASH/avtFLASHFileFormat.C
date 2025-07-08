@@ -214,8 +214,8 @@ avtFLASHFileFormat::avtFLASHFileFormat(const char* cfilename, const DBOptionsAtt
   showProcessors = opts->GetBool("Show generating processor instead of refinement level");
   newStyleCurves = opts->GetBool("Use new style curve generation");
   addStructuredDomainBoundaries = opts->GetBool("Set up patch abutment information");
-  this->isFlashX = opts->GetBool("Logarithmic grid");
-  debug5 << "FLASH with logarithmic grid= " << this->isFlashX << std::endl;
+  this->logarithmicGrid = opts->GetBool("Logarithmic grid");
+  debug5 << "FLASH with logarithmic grid= " << this->logarithmicGrid << std::endl;
 
   // do HDF5 library initialization on consturction of first instance
   if (avtFLASHFileFormat::objcnt == 0)
@@ -732,7 +732,7 @@ vtkDataSet* avtFLASHFileFormat::GetMesh(int domain, const char* meshname)
   if (string(meshname) == "amr_mesh")
   {
     int theRealDomain = visitIdToFLASHId[domain];
-    if (this->isFlashX)
+    if (this->logarithmicGrid)
       theRealDomain = domain;
 
     // rectilinear mesh
@@ -1451,7 +1451,7 @@ vtkDataArray* avtFLASHFileFormat::GetVar(int visitDomain, const char* vname)
     //
     // It's a grid variable
     //
-    if (this->isFlashX)
+    if (this->logarithmicGrid)
     {
       //Read in the variable.
       hid_t varId = H5Dopen(fileId, vn_substr.c_str());
@@ -1876,7 +1876,7 @@ void avtFLASHFileFormat::ReadProcessorNumbers()
     hsize_t procnum_dims[1];
     hsize_t procnum_ndims = H5Sget_simple_extent_dims(procnumSpaceId, procnum_dims, NULL);
 
-    if (!this->isFlashX)
+    if (!this->logarithmicGrid)
     {
       if (procnum_ndims != 1 || procnum_dims[0] != (hsize_t)numBlocks)
       {
@@ -1895,7 +1895,7 @@ void avtFLASHFileFormat::ReadProcessorNumbers()
     int pnum = procnum_array[0];
     for (int b = 0; b < numBlocks; b++)
     {
-      if (!this->isFlashX)
+      if (!this->logarithmicGrid)
         pnum = procnum_array[b];
       if (pnum > highProcessor)
       {
@@ -1949,7 +1949,7 @@ void avtFLASHFileFormat::ReadProcessorNumbers()
 void avtFLASHFileFormat::ReadCoordinates()
 {
   //It looks like the coords are only used for morton curves.
-  if (this->isFlashX)
+  if (this->logarithmicGrid)
   {
     return;
   }
@@ -2062,7 +2062,7 @@ void avtFLASHFileFormat::ReadNodeTypes()
   hsize_t nodetype_dims[1];
   hsize_t nodetype_ndims = H5Sget_simple_extent_dims(nodetypeSpaceId, nodetype_dims, NULL);
 
-  if (!this->isFlashX)
+  if (!this->logarithmicGrid)
   {
     if (nodetype_ndims != 1 || nodetype_dims[0] != (hsize_t)numBlocks)
     {
@@ -2080,7 +2080,7 @@ void avtFLASHFileFormat::ReadNodeTypes()
   for (int b = 0; b < numBlocks; b++)
   {
     int ntype;
-    if (this->isFlashX)
+    if (this->logarithmicGrid)
       ntype = nodetype_array[0];
     else
       ntype = nodetype_array[b];
@@ -2159,7 +2159,7 @@ void avtFLASHFileFormat::ReadBlockStructure()
   }
 
   //DRP
-  if (this->isFlashX)
+  if (this->logarithmicGrid)
     this->numBlocks = this->simParams.iprocs * this->simParams.jprocs * this->simParams.kprocs;
   else
     numBlocks = gid_dims[0];
@@ -2305,7 +2305,7 @@ void avtFLASHFileFormat::ReadBlockExtents()
   }
   else if (fileFormatVersion == FLASH3_FFV9)
   {
-    if (this->isFlashX)
+    if (this->logarithmicGrid)
     {
       if (bbox_ndims != 3 || bbox_dims[0] != 1 || bbox_dims[1] != (hsize_t)MDIM || bbox_dims[2] != 2)
       {
@@ -2457,7 +2457,7 @@ void avtFLASHFileFormat::ReadRefinementLevels()
   hsize_t refinement_dims[1];
   hsize_t refinement_ndims = H5Sget_simple_extent_dims(refinementSpaceId, refinement_dims, NULL);
 
-  if (!this->isFlashX)
+  if (!this->logarithmicGrid)
   {
     if (refinement_ndims != 1 || refinement_dims[0] != (hsize_t)numBlocks)
     {
@@ -2474,7 +2474,7 @@ void avtFLASHFileFormat::ReadRefinementLevels()
   for (int b = 0; b < numBlocks; b++)
   {
     int level;
-    if (this->isFlashX)
+    if (this->logarithmicGrid)
       level = refinement_array[0];
     else
       level = refinement_array[b];
@@ -2882,7 +2882,7 @@ void avtFLASHFileFormat::DetermineGlobalLogicalExtentsForAllBlocks()
 
 void avtFLASHFileFormat::BuildDomainNesting()
 {
-  if (this->isFlashX)
+  if (this->logarithmicGrid)
     return;
 
   if (numBlocks <= 1 || avtDatabase::OnlyServeUpMetaData())
@@ -3366,7 +3366,7 @@ void avtFLASHFileFormat::ReadIntegerScalars(hid_t file_id)
       simParams.total_blocks = is[i].value;
     else if (strncmp(is[i].name, "nstep", 5) == 0)
       simParams.nsteps = is[i].value;
-    if (this->isFlashX)
+    if (this->logarithmicGrid)
     {
       //sneo: store the number of cores in the x-direction
       if (strncmp(is[i].name, "iprocs", 6) == 0)
@@ -3377,7 +3377,7 @@ void avtFLASHFileFormat::ReadIntegerScalars(hid_t file_id)
         simParams.kprocs = is[i].value;
     }
   }
-  if (this->isFlashX)
+  if (this->logarithmicGrid)
   {
     simParams.total_blocks = simParams.iprocs * simParams.jprocs * simParams.kprocs;
     simParams.nxb /= simParams.iprocs;
