@@ -143,11 +143,9 @@ void avtFLASHFileFormat::Block::Print(ostream& out)
 void avtFLASHFileFormat::InitializeHDF5(void)
 {
   debug5 << "Initializing HDF5 Library" << endl;
-  std::cout << __FILE__ << " " << __LINE__ << std::endl;
 
   H5open();
   H5Eset_auto(NULL, NULL);
-  std::cout << __FILE__ << " " << __LINE__ << std::endl;
 }
 
 // ****************************************************************************
@@ -204,7 +202,6 @@ void avtFLASHFileFormat::FinalizeHDF5(void)
 avtFLASHFileFormat::avtFLASHFileFormat(const char* cfilename, const DBOptionsAttributes* opts)
   : avtSTMDFileFormat(&cfilename, 1)
 {
-  std::cout << __FILE__ << " " << __LINE__ << std::endl;
   filename = cfilename;
   fileId = -1;
   dimension = 0;
@@ -218,12 +215,12 @@ avtFLASHFileFormat::avtFLASHFileFormat(const char* cfilename, const DBOptionsAtt
   newStyleCurves = opts->GetBool("Use new style curve generation");
   addStructuredDomainBoundaries = opts->GetBool("Set up patch abutment information");
   this->isFlashX = opts->GetBool("Logarithmic grid");
+  debug5 << "FLASH with logarithmic grid= " << this->isFlashX << std::endl;
 
   // do HDF5 library initialization on consturction of first instance
   if (avtFLASHFileFormat::objcnt == 0)
     InitializeHDF5();
   avtFLASHFileFormat::objcnt++;
-  std::cout << __FILE__ << " " << __LINE__ << std::endl;
 }
 
 
@@ -406,12 +403,8 @@ void avtFLASHFileFormat::FreeUpResources(void)
 
 void avtFLASHFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData* md)
 {
-  std::cout << __FILE__ << " " << __LINE__ << std::endl;
   ReadAllMetaData();
-  std::cout << __FILE__ << " " << __LINE__ << std::endl;
-
   BuildDomainNesting();
-  std::cout << __FILE__ << " " << __LINE__ << std::endl;
 
   // grids
   //    for block and level SIL categories
@@ -735,12 +728,13 @@ static int QsortCurveSorter(const void* arg1, const void* arg2)
 vtkDataSet* avtFLASHFileFormat::GetMesh(int domain, const char* meshname)
 {
   ReadAllMetaData();
-  //std::cout<<__FILE__<<std::endl;
-  //std::cout<<"GetMesh: "<<meshname<<" domain= "<<domain<<std::endl;
 
   if (string(meshname) == "amr_mesh")
   {
     int theRealDomain = visitIdToFLASHId[domain];
+    if (this->isFlashX)
+      theRealDomain = domain;
+
     // rectilinear mesh
     vtkFloatArray* coords[3];
     for (int c = 0; c < 3; c++)
@@ -753,14 +747,13 @@ vtkDataSet* avtFLASHFileFormat::GetMesh(int domain, const char* meshname)
       //DRP This fixes the 2D case.
       if (this->dimension == 2 && c == 2)
         dc = 0.0;
-      std::cout << "  " << c << ": " << minExt << " " << maxExt << " dc= " << dc << " block_ndims= " << block_ndims[c] << std::endl;
       for (int i = 0; i < this->block_ndims[c]; i++)
       {
         double val = minExt + double(i) * dc;
         coords[c]->SetValue(i, val);
-        std::cout << "coord[" << c << "] [" << i << "]= " << val << std::endl;
       }
     }
+    /*
     std::cout << " FLASH4 GetMesh(" << theRealDomain << ") dims= " << block_ndims[0] << " " << block_ndims[1] << " " << block_ndims[2] << std::endl;
     std::cout << "      xyz: [";
     std::cout << blocks[theRealDomain].minSpatialExtents[0] << " ";
@@ -772,7 +765,7 @@ vtkDataSet* avtFLASHFileFormat::GetMesh(int domain, const char* meshname)
     std::cout << coords[0]->GetValue(0) << " : " << coords[0]->GetValue(block_ndims[0] - 1) << std::endl;
     std::cout << coords[1]->GetValue(0) << " : " << coords[1]->GetValue(block_ndims[1] - 1) << std::endl;
     std::cout << coords[2]->GetValue(0) << " : " << coords[2]->GetValue(block_ndims[2] - 1) << std::endl;
-
+    */
 
     vtkRectilinearGrid* rGrid = vtkRectilinearGrid::New();
     rGrid->SetDimensions(block_ndims);
@@ -1482,7 +1475,6 @@ vtkDataArray* avtFLASHFileFormat::GetVar(int visitDomain, const char* vname)
       auto status = H5Sselect_hyperslab(spaceId, H5S_SELECT_SET, start, stride, count, NULL);
       if (status < 0)
       {
-        std::cout << "Error reading data." << std::endl;
         return NULL;
       }
       //create memspace for the subset.
@@ -1583,7 +1575,6 @@ vtkDataArray* avtFLASHFileFormat::GetVar(int visitDomain, const char* vname)
       count[1] = dims[1];
       count[2] = dims[2];
       count[3] = dims[3];
-      std::cout << "*************** FLASH: Read: " << count[0] << " " << count[1] << " " << count[2] << " " << count[3] << std::endl;
 
       hid_t dataspace = H5Screate_simple(4, dims, NULL);
       H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, start, stride, count, NULL);
@@ -1740,25 +1731,18 @@ vtkDataArray* avtFLASHFileFormat::GetVectorVar(int visitDomain, const char* varn
 
 void avtFLASHFileFormat::ReadAllMetaData()
 {
-  std::cout << __FILE__ << " " << __LINE__ << std::endl;
-
   if (fileId >= 0)
   {
     return;
   }
 
-  std::cout << __FILE__ << " " << __LINE__ << std::endl;
-  std::cout << filename << " " << fileId << std::endl;
   fileId = H5Fopen(filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
-  std::cout << __FILE__ << " " << __LINE__ << std::endl;
   if (fileId < 0)
   {
     EXCEPTION1(InvalidFilesException, filename.c_str());
   }
 
-  std::cout << __FILE__ << " " << __LINE__ << std::endl;
   ReadVersionInfo(fileId);
-  std::cout << __FILE__ << " " << __LINE__ << std::endl;
 
   if (fileFormatVersion < FLASH3_FFV8)
   {
@@ -1967,7 +1951,6 @@ void avtFLASHFileFormat::ReadCoordinates()
   //It looks like the coords are only used for morton curves.
   if (this->isFlashX)
   {
-    std::cout << "Fix me. FlashX doesn't do ReadCoordinates()" << std::endl;
     return;
   }
   //
@@ -2180,7 +2163,6 @@ void avtFLASHFileFormat::ReadBlockStructure()
     this->numBlocks = this->simParams.iprocs * this->simParams.jprocs * this->simParams.kprocs;
   else
     numBlocks = gid_dims[0];
-  std::cout << " *********** gid_dims: numBlocks= " << this->numBlocks << std::endl;
   switch (gid_dims[1])
   {
     case 5:
@@ -2325,16 +2307,12 @@ void avtFLASHFileFormat::ReadBlockExtents()
   {
     if (this->isFlashX)
     {
-      std::cout << ":: " << bbox_ndims << " " << bbox_dims[0] << " " << bbox_dims[1] << " " << bbox_dims[2] << std::endl;
       if (bbox_ndims != 3 || bbox_dims[0] != 1 || bbox_dims[1] != (hsize_t)MDIM || bbox_dims[2] != 2)
       {
         EXCEPTION1(InvalidFilesException, filename.c_str());
       }
       double* bbox_array = new double[1 * MDIM * 2];
       H5Dread(bboxId, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, bbox_array);
-      std::cout << "Read bbox_array" << std::endl;
-      for (int i = 0; i < 1 * MDIM * 2; i++)
-        std::cout << i << ": " << bbox_array[i] << std::endl;
 
       double xmin = bbox_array[0], xmax = bbox_array[1];
       double ymin = bbox_array[2], ymax = bbox_array[3];
@@ -2355,8 +2333,6 @@ void avtFLASHFileFormat::ReadBlockExtents()
       int nxCells = this->simParams.nxb / this->simParams.iprocs;
       int nyCells = this->simParams.nyb / this->simParams.jprocs;
       int nzCells = this->simParams.nzb / this->simParams.kprocs;
-      std::cout << "nxyzCells= " << nxCells << " " << nyCells << " " << nzCells << std::endl;
-      std::cout << " ijk= " << simParams.iprocs << " " << simParams.jprocs << " " << simParams.kprocs << std::endl;
       //EXCEPTION1(InvalidFilesException, "STOP");
 
 
@@ -2402,9 +2378,6 @@ void avtFLASHFileFormat::ReadBlockExtents()
             maxSpatialExtents[d] = this->blocks[b].minSpatialExtents[d];
         }
       }
-      std::cout << "MinSE: " << minSpatialExtents[0] << " " << minSpatialExtents[1] << " " << minSpatialExtents[2] << std::endl;
-      std::cout << "MaxSE: " << maxSpatialExtents[0] << " " << maxSpatialExtents[1] << " " << maxSpatialExtents[2] << std::endl;
-      //EXCEPTION1(InvalidFilesException, "STOP");
       // Delete the raw array
       delete[] bbox_array;
     }
@@ -2909,8 +2882,6 @@ void avtFLASHFileFormat::DetermineGlobalLogicalExtentsForAllBlocks()
 
 void avtFLASHFileFormat::BuildDomainNesting()
 {
-  //DRP
-  //std::cout << "Skipping BuildDomainNesting. Fix me!!" << std::endl;
   if (this->isFlashX)
     return;
 
@@ -2971,7 +2942,6 @@ void avtFLASHFileFormat::BuildDomainNesting()
           // if this is allowed to be 1-origin, the "-1" here
           // needs to be removed
           int cid = blocks[i].childrenIDs[j];
-          std::cout << "     child= " << j << " = " << cid << " mapsz= " << this->FLASHIdToVisitId.size() << std::endl;
 
           auto a = blocks[i];
           auto b = blocks[i].childrenIDs[j];
@@ -3347,7 +3317,6 @@ void avtFLASHFileFormat::ReadIntegerScalars(hid_t file_id)
 {
   // Should only be used for FLASH3 files
 
-  std::cout << "**********ReadIntegerScalars: " << fileFormatVersion << std::endl;
   if (fileFormatVersion < FLASH3_FFV8)
     return;
 
@@ -3385,10 +3354,8 @@ void avtFLASHFileFormat::ReadIntegerScalars(hid_t file_id)
 
   H5Dread(intScalarsId, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, is);
 
-  std::cout << "ReadIntegerScalars: nscalars= " << nScalars << std::endl;
   for (int i = 0; i < nScalars; i++)
   {
-    std::cout << " " << i << " scalar: " << is[i].name << "= " << is[i].value << std::endl;
     if (strncmp(is[i].name, "nxb", 3) == 0)
       simParams.nxb = is[i].value;
     else if (strncmp(is[i].name, "nyb", 3) == 0)

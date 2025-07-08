@@ -31,7 +31,6 @@
 
 DBOptionsAttributes* GetFLASHReadOptions(void)
 {
-  std::cout << __FILE__ << " " << __LINE__ << std::endl;
   DBOptionsAttributes* rv = new DBOptionsAttributes;
   rv->SetBool("Show generating processor instead of refinement level", false);
   rv->SetBool("Use new style curve generation", true);
