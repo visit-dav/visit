@@ -1424,7 +1424,7 @@ ReadTiedSetSlaveBlockMesh( int nb, vector<float>& crd )
 
 
 void PVLD_Reader::
-ReadTiedSetMasterBlockMesh( int nb, vector<float>& crd )
+ReadTiedSetManagerBlockMesh( int nb, vector<float>& crd )
 {
     try
     {
@@ -1432,13 +1432,13 @@ ReadTiedSetMasterBlockMesh( int nb, vector<float>& crd )
         if( nb >= nblks ) return;
 
         hid_t fid = OpenFile();
-        ReadTiedSetMasterBlockMesh( fid, nb, crd );
+        ReadTiedSetManagerBlockMesh( fid, nb, crd );
         CloseFile( fid );
     }
     catch( std::exception& e )
     {
         string msg = e.what();
-        msg += "Failure in PVLD_Reader::ReadTiedSetMasterBlockMesh()\n";
+        msg += "Failure in PVLD_Reader::ReadTiedSetManagerBlockMesh()\n";
         throw std::runtime_error(msg);
     }
 }
@@ -1526,7 +1526,7 @@ ReadContactSlaveBlockMesh( int nb, vector<float>& crd )
 
 
 void PVLD_Reader::
-ReadContactMasterBlockMesh( int nb, vector<float>& crd )
+ReadContactManagerBlockMesh( int nb, vector<float>& crd )
 {
     try
     {
@@ -1534,13 +1534,13 @@ ReadContactMasterBlockMesh( int nb, vector<float>& crd )
         if( nb >= nblks ) return;
 
         hid_t fid = OpenFile();
-        ReadContactMasterBlockMesh( fid, nb, crd );
+        ReadContactManagerBlockMesh( fid, nb, crd );
         CloseFile( fid );
     }
     catch( std::exception& e )
     {
         string msg = e.what();
-        msg += "Failure in PVLD_Reader::ReadContactMasterBlockMesh()\n";
+        msg += "Failure in PVLD_Reader::ReadContactManagerBlockMesh()\n";
         throw std::runtime_error(msg);
     }
 }
@@ -2894,12 +2894,12 @@ ReadTiedSetSlaveBlockMesh( hid_t fid, int nb, vector<float>& crd )
 
 
 void PVLD_Reader::
-ReadTiedSetMasterBlockMesh( hid_t fid, int nb, vector<float>& crd )
+ReadTiedSetManagerBlockMesh( hid_t fid, int nb, vector<float>& crd )
 {
     if( std::find( tdst_dsname_.begin(),
                    tdst_dsname_.end(),
-                   "XMaster" ) == tdst_dsname_.end() )
-        throw std::runtime_error( "No element definition is found in PVLD_Reader::ReadTiedSetMasterBlockMesh()\n" );
+                   "XManager" ) == tdst_dsname_.end() )
+        throw std::runtime_error( "No element definition is found in PVLD_Reader::ReadTiedSetManagerBlockMesh()\n" );
 
     hsize_t sft[2],len[2];
     sft[1] = 0;
@@ -2909,7 +2909,7 @@ ReadTiedSetMasterBlockMesh( hid_t fid, int nb, vector<float>& crd )
 
     hsize_t nd = len[0]*len[1];
     crd.resize( nd );
-    ReadGroupDataSet( fid, tiedset_name.c_str(), "XMaster",
+    ReadGroupDataSet( fid, tiedset_name.c_str(), "XManager",
                       H5T_NATIVE_FLOAT, crd.data(), 2, sft, len );
 }
 
@@ -3045,12 +3045,12 @@ ReadContactSlaveBlockMesh( hid_t fid, int nb, vector<float>& crd )
 
 
 void PVLD_Reader::
-ReadContactMasterBlockMesh( hid_t fid, int nb, vector<float>& crd )
+ReadContactManagerBlockMesh( hid_t fid, int nb, vector<float>& crd )
 {
     if( std::find( cntt_dsname_.begin(),
                    cntt_dsname_.end(),
-                   "XMaster" ) == cntt_dsname_.end() )
-        throw std::runtime_error( "No element definition is found in PVLD_Reader::ReadContactMasterBlockMesh()\n" );
+                   "XManager" ) == cntt_dsname_.end() )
+        throw std::runtime_error( "No element definition is found in PVLD_Reader::ReadContactManagerBlockMesh()\n" );
 
     hsize_t sft[2],len[2];
     sft[1] = 0;
@@ -3060,7 +3060,7 @@ ReadContactMasterBlockMesh( hid_t fid, int nb, vector<float>& crd )
 
     hsize_t nd = len[0]*len[1];
     crd.resize( nd );
-    ReadGroupDataSet( fid, contact_name.c_str(), "XMaster",
+    ReadGroupDataSet( fid, contact_name.c_str(), "XManager",
                       H5T_NATIVE_FLOAT, crd.data(), 2, sft, len );
 }
 
