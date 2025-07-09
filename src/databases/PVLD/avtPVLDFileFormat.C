@@ -16,6 +16,7 @@
 #include <vtkCommand.h>
 #include <vtkIntArray.h>
 #include <vtkFloatArray.h>
+#include <vtkDoubleArray.h>
 #include <vtkCellType.h>
 #include <vtkUnstructuredGrid.h>
 
@@ -23,6 +24,7 @@
 #include <avtMaterial.h>
 #include <avtVariableCache.h>
 
+#include <DBOptionsAttributes.h>
 #include <Expression.h>
 
 #include <InvalidVariableException.h>
@@ -35,6 +37,8 @@
 #include <algorithm>
 #include <stdexcept>
 
+#include<stdio.h>
+
 using     std::vector;
 using     std::string;
 
@@ -44,11 +48,10 @@ static PVLD_Reader *
 InstantiateReader()
 {
     PVLD_Reader *r = NULL;
-    if(getenv("ELEMENT_PARTITION_VLD") == NULL)
-        r = new PVLD_Part_Reader;
-    else
+    if(getenv("VISIT_VLD_ELEMENT_PARTITIONING") != NULL)
         r = new PVLD_Reader;
-
+    else
+        r = new PVLD_Part_Reader;
     return r;
 }
 
@@ -70,12 +73,13 @@ avtPVLDFileFormat::avtPVLDFileFormat(const char *filename)
 {
     debug5 << "creating reader( \"" << filename << "\")...\n";
 
-    {
-        const char *spt = getenv("ADD_MISSING_PARTS_VLD");
-        add_missing_parts_ = spt!=NULL;
-    }
+    // {
+    //     const char *spt = getenv("ADD_MISSING_PARTS_VLD");
+    //     add_missing_parts_ = spt!=NULL;
+    // }
+    add_missing_parts_ = true;
 
-    enablePVLD = (getenv("PVLDDISABLENEW") == NULL);
+    enablePVLD = true; //(getenv("PVLDDISABLENEW") == NULL);
     hasTOCread_ = false;
     preader_ = InstantiateReader();
     preader_->SetFileName( filename );
@@ -189,6 +193,7 @@ avtPVLDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         AddSphMesh( md );
         AddTiedSetMesh( md );
         AddContactMesh( md );
+        AddDEMesh(  md );
 
         AddSolidVariables( md );
         AddShellVariables( md );
@@ -197,6 +202,7 @@ avtPVLDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         AddSphVariables( md );
         AddTiedSetVariables( md );
         AddContactVariables( md );
+        AddDEVariables(  md );
 
         AddSolidMaterial( md );
         AddShellMaterial( md );
@@ -205,6 +211,7 @@ avtPVLDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         AddSphMaterial( md );
 
         AddSolidIndexVariables( md );
+        AddShellIndexVariables( md );
     }
     CATCH2( std::exception, e )
     {
@@ -334,6 +341,12 @@ avtPVLDFileFormat::GetMesh(int domain, const char *meshname)
                 return ds;
             }
         }
+        else if( PVLD_Reader::de_name == meshname )
+        {
+            preader_->CheckNumberOfEngines( preader_->GetNumOfDEBlocks() );
+            preader_->ReadDEBlockMesh( domain, crd, ele );
+            if( ele.size()>0 ) return GenerateBeamMesh( crd, ele );
+        }
         else if( PVLD_Reader::surface_name == meshname )
         {
             preader_->CheckNumberOfEngines( preader_->GetNumOfSurfaceBlocks() );
@@ -376,19 +389,19 @@ avtPVLDFileFormat::GetMesh(int domain, const char *meshname)
                 }
                 else if( vs[1] == "Master" )
                 {
-                    preader_->ReadTiedSetManagerBlockMesh( domain, crd );
+                    preader_->ReadTiedSetMasterBlockMesh( domain, crd );
                     if( crd.size()>0 ) return GeneratePointMesh( crd );
                 }
                 else if( vs[1] == "Slave" )
                 {
-                    preader_->ReadTiedSetWorkerBlockMesh( domain, crd );
+                    preader_->ReadTiedSetSlaveBlockMesh( domain, crd );
                     if( crd.size()>0 ) return GeneratePointMesh( crd );
                 }
                 else if( vs[1] == "Bond" )
                 {
                     vector<float> crd2;
-                    preader_->ReadTiedSetManagerBlockMesh( domain, crd );
-                    preader_->ReadTiedSetWorkerBlockMesh( domain, crd2 );
+                    preader_->ReadTiedSetMasterBlockMesh( domain, crd );
+                    preader_->ReadTiedSetSlaveBlockMesh( domain, crd2 );
                     if( crd.size()>0 ) return GenerateBondMesh( crd, crd2 );
                 }
             }
@@ -401,19 +414,19 @@ avtPVLDFileFormat::GetMesh(int domain, const char *meshname)
                 }
                 else if( vs[1] == "Master" )
                 {
-                    preader_->ReadContactManagerBlockMesh( domain, crd );
+                    preader_->ReadContactMasterBlockMesh( domain, crd );
                     if( crd.size()>0 ) return GeneratePointMesh( crd );
                 }
                 else if( vs[1] == "Slave" )
                 {
-                    preader_->ReadContactWorkerBlockMesh( domain, crd );
+                    preader_->ReadContactSlaveBlockMesh( domain, crd );
                     if( crd.size()>0 ) return GeneratePointMesh( crd );
                 }
                 else if( vs[1] == "Bond" )
                 {
                     vector<float> crd2;
-                    preader_->ReadContactManagerBlockMesh( domain, crd );
-                    preader_->ReadContactWorkerBlockMesh( domain, crd2 );
+                    preader_->ReadContactMasterBlockMesh( domain, crd );
+                    preader_->ReadContactSlaveBlockMesh( domain, crd2 );
                     if( crd.size()>0 ) return GenerateBondMesh( crd, crd2 );
                 }
             }
@@ -463,46 +476,86 @@ avtPVLDFileFormat::GetVar(int domain, const char *varname)
 
         vector<int> dims;
         vector<float> data;
+        vector<double> ddata;
+        vector<int>  idata;
         if( mname == PVLD_Reader::solid_name )
         {
             if( vecname.size()==2 )
-                preader_->ReadSolidBlockData( vname.c_str(), domain, dims, data );
+                preader_->ReadSolidBlockData( vname.c_str(), domain, dims, data, idata );
             else
                 preader_->ReadSolidBlockIndexVariable( vname, vecname[2], domain, dims, data );
-            preader_->AppendMissingMaterialData( PVLD_Reader::solid_elmt_type, domain, dims, data );
-            if( data.size()>0 ) return GenerateVariable( dims, data );
+            if( data.size()>0 ) {
+                preader_->AppendMissingMaterialData( PVLD_Reader::solid_elmt_type, domain, dims, data );
+                return GenerateVariable( dims, data );
+            }
+            else if( idata.size()>0 ) {
+                debug1 << "export \"" << varname << "\" as integer array!\n";
+                preader_->AppendMissingMaterialData( PVLD_Reader::solid_elmt_type, domain, dims, idata );
+                return GenerateVariable( dims, idata );
+            }
         }
         else if( mname == PVLD_Reader::shell_name )
         {
             if( vecname.size()==2 )
-                preader_->ReadShellBlockData( vname.c_str(), domain, dims, data );
+                preader_->ReadShellBlockData( vname.c_str(), domain, dims, data, idata );
             else
                 preader_->ReadShellBlockIndexVariable( vname, vecname[2], domain, dims, data );
-            preader_->AppendMissingMaterialData( PVLD_Reader::shell_elmt_type, domain, dims, data );
-            if( data.size()>0 ) return GenerateVariable( dims, data );
+            if( data.size()>0 ) {
+                preader_->AppendMissingMaterialData( PVLD_Reader::shell_elmt_type, domain, dims, data );
+                return GenerateVariable( dims, data );
+            }
+            else if( idata.size()>0 ) {
+                preader_->AppendMissingMaterialData( PVLD_Reader::shell_elmt_type, domain, dims, idata );
+                return GenerateVariable( dims, idata );
+            }
         }
         else if( mname == PVLD_Reader::beam_name )
         {
             if( vecname.size()==2 )
-                preader_->ReadBeamBlockData( vname.c_str(), domain, dims, data );
+                preader_->ReadBeamBlockData( vname.c_str(), domain, dims, data, idata );
             else
                 //preader_->ReadBeamBlockIndexVariable( vname, vecname[2], domain, dims, data );
                 throw std::runtime_error( "No IndexVariable support in Beam!\n" );
-            preader_->AppendMissingMaterialData( PVLD_Reader::beam_elmt_type, domain, dims, data );
-            if( data.size()>0 ) return GenerateVariable( dims, data );
+            if( data.size()>0 ) {
+                preader_->AppendMissingMaterialData( PVLD_Reader::beam_elmt_type, domain, dims, data );
+                return GenerateVariable( dims, data );
+            }
+            else if( idata.size()>0 ) {
+                preader_->AppendMissingMaterialData( PVLD_Reader::beam_elmt_type, domain, dims, idata );
+                return GenerateVariable( dims, idata );
+            }
+        }
+        else if( mname == PVLD_Reader::de_name )
+        {
+            debug5 << "getvar() : de: " << vname << "\n";
+            if( vecname.size()==2 )
+                preader_->ReadDEBlockData( vname.c_str(), domain, dims, data, idata );
+            if( data.size()>0 )
+                return GenerateVariable( dims, data );
+            else if( idata.size()>0 )
+                return GenerateVariable( dims, idata );
         }
         else if( mname == PVLD_Reader::surface_name )
         {
-            preader_->ReadSurfaceBlockData( vname.c_str(), domain, dims, data );
-            if( data.size()>0 ) return GenerateVariable( dims, data );
+            preader_->ReadSurfaceBlockData( vname.c_str(), domain, dims, data, idata );
+            if( data.size()>0 )
+                return GenerateVariable( dims, data );
+            else if( idata.size()>0 )
+                return GenerateVariable( dims, idata );
         }
         else if( mname == PVLD_Reader::sph_name )
         {
             TRY
             {
-                preader_->ReadSphBlockData( vname.c_str(), domain, dims, data );
-                preader_->AppendMissingMaterialData( PVLD_Reader::sph_elmt_type, domain, dims, data );
-                if( data.size()>0 ) return GenerateVariable( dims, data );
+                preader_->ReadSphBlockData( vname.c_str(), domain, dims, data, idata );
+                if( data.size()>0 ) {
+                    preader_->AppendMissingMaterialData( PVLD_Reader::sph_elmt_type, domain, dims, data );
+                    return GenerateVariable( dims, data );
+                }
+                else if( idata.size()>0 ) {
+                    preader_->AppendMissingMaterialData( PVLD_Reader::sph_elmt_type, domain, dims, idata );
+                    return GenerateVariable( dims, idata );
+                }
             }
             CATCH(std::exception)
             {
@@ -515,14 +568,20 @@ avtPVLDFileFormat::GetVar(int domain, const char *varname)
         else if( mname == PVLD_Reader::tiedset_name )
         {
             string& vn = vecname[2];
-            preader_->ReadTiedSetBlockData( vn.c_str(), domain, dims, data );
-            if( data.size()>0 ) return GenerateVariable( dims, data );
+            preader_->ReadTiedSetBlockData( vn.c_str(), domain, dims, data, idata );
+            if( data.size()>0 )
+                return GenerateVariable( dims, data );
+            else if( idata.size()>0 )
+                return GenerateVariable( dims, idata );
         }
         else if( mname == PVLD_Reader::contact_name )
         {
             string& vn = vecname[2];
-            preader_->ReadContactBlockData( vn.c_str(), domain, dims, data );
-            if( data.size()>0 ) return GenerateVariable( dims, data );
+            preader_->ReadContactBlockData( vn.c_str(), domain, dims, data, idata );
+            if( data.size()>0 )
+                return GenerateVariable( dims, data );
+            else if( idata.size()>0 )
+                return GenerateVariable( dims, idata );
         }
     }
     CATCH2( std::exception, e )
@@ -562,14 +621,20 @@ avtPVLDFileFormat::GetVectorVar(int domain, const char *varname)
            << domain << ", " << varname << ")\n";
     TRY
     {
-        string mname, vname;
-        PVLD_Reader::DecomposeNames( varname, mname, vname );
+        vector<string> vecname;
+        PVLD_Reader::DecomposeNames( varname, vecname );
+        string& mname = vecname[0];
+        string& vname = vecname[1];
 
         vector<int> dims;
         vector<float> data;
+        vector<int>  idata;
         if( mname == PVLD_Reader::solid_name )
         {
-            preader_->ReadSolidBlockData( vname.c_str(), domain, dims, data );
+            if( vecname.size()==2 )
+                preader_->ReadSolidBlockData( vname.c_str(), domain, dims, data, idata );
+            else
+                preader_->ReadSolidBlockIndexVariable( vname, vecname[2], domain, dims, data );
             preader_->AppendMissingMaterialData( PVLD_Reader::solid_elmt_type, domain, dims, data );
             if( data.size()>0 )
             {
@@ -581,7 +646,10 @@ avtPVLDFileFormat::GetVectorVar(int domain, const char *varname)
         }
         else if( mname == PVLD_Reader::shell_name )
         {
-            preader_->ReadShellBlockData( vname.c_str(), domain, dims, data );
+            if( vecname.size()==2 )
+                preader_->ReadShellBlockData( vname.c_str(), domain, dims, data, idata );
+            else
+                preader_->ReadShellBlockIndexVariable( vname, vecname[2], domain, dims, data );
             preader_->AppendMissingMaterialData( PVLD_Reader::shell_elmt_type, domain, dims, data );
             if( data.size()>0 )
             {
@@ -593,7 +661,7 @@ avtPVLDFileFormat::GetVectorVar(int domain, const char *varname)
         }
         else if( mname == PVLD_Reader::beam_name )
         {
-            preader_->ReadBeamBlockData( vname.c_str(), domain, dims, data );
+            preader_->ReadBeamBlockData( vname.c_str(), domain, dims, data, idata );
             preader_->AppendMissingMaterialData( PVLD_Reader::beam_elmt_type, domain, dims, data );
             if( data.size()>0 )
             {
@@ -603,9 +671,15 @@ avtPVLDFileFormat::GetVectorVar(int domain, const char *varname)
                     return GenerateVariable( dims, data );
             }
         }
+        else if( mname == PVLD_Reader::de_name )
+        {
+            preader_->ReadDEBlockData( vname.c_str(), domain, dims, data, idata );
+            if( data.size()>0 )
+                return GenerateVariable( dims, data );
+        }
         else if( mname == PVLD_Reader::surface_name )
         {
-            preader_->ReadSurfaceBlockData( vname.c_str(), domain, dims, data );
+            preader_->ReadSurfaceBlockData( vname.c_str(), domain, dims, data, idata );
             if( data.size()>0 )
             {
                 if( dims.size()==2 && dims[1]==6 )
@@ -618,17 +692,17 @@ avtPVLDFileFormat::GetVectorVar(int domain, const char *varname)
         {
             TRY
             {
-                preader_->ReadSphBlockData( vname.c_str(), domain, dims, data );
-                preader_->AppendMissingMaterialData( PVLD_Reader::sph_elmt_type, domain, dims, data );
+                preader_->ReadSphBlockData( vname.c_str(), domain, dims, data, idata );
                 if( data.size()>0 )
                 {
+                    preader_->AppendMissingMaterialData( PVLD_Reader::sph_elmt_type, domain, dims, data );
                     if( dims.size()==2 && dims[1]==6 )
                         return GenerateSphStressTensor( dims, data );
                     else
                         return GenerateVariable( dims, data );
                 }
             }
-            CATCH(std::exception)
+            CATCH2(std::exception, e)
             {
                 char msg[512];
                 snprintf(msg, 512, "SPH data may not be available at time step %d", timestep);
@@ -671,6 +745,7 @@ GetAuxiliaryData( const char *varname, int domain,
             vector<int> mat;
             vector<int> ddms;
             vector<float> data;
+            //vector<int> idata;
             if( mname == PVLD_Reader::solid_name )
             {
                 preader_->ReadSolidMaterial();
@@ -711,7 +786,9 @@ GetAuxiliaryData( const char *varname, int domain,
             {
                 TRY
                 {
-                    preader_->ReadSphMaterial(false);
+
+                    if( preader_->HasSPH() )
+                        preader_->ReadSphMaterial(false);
                     mat = preader_->GetSphMaterial();
                     const vector<int> &msm = preader_->GetMissingSphMaterial();
                     mat.insert( mat.end(), msm.begin(), msm.end() );
@@ -749,12 +826,12 @@ GetAuxiliaryData( const char *varname, int domain,
 
                     int ndims=1;
                     int dims[1];
-                    dims[0]=(int)mid.size();
+                    dims[0]=mid.size();
                     avtMaterial *amat = new avtMaterial(
-                        (int)mat.size(), &mat[0],
+                        mat.size(), mat.data(),
                         mnames,
                         ndims, dims,
-                        0, &mid[0],
+                        0, mid.data(),
                         0, // length of mix arrays
                         0, // mix_mat array
                         0, // mix_next array
@@ -1002,6 +1079,22 @@ avtPVLDFileFormat::AddBeamMesh( avtDatabaseMetaData *md )
     }
 }
 
+void
+avtPVLDFileFormat::AddDEMesh( avtDatabaseMetaData *md )
+{
+    if( preader_->HasDEs() )
+    {
+        avtMeshMetaData *mmd = new avtMeshMetaData;
+        mmd->name = PVLD_Reader::de_name;
+        mmd->spatialDimension = 3;
+        mmd->topologicalDimension = 1;
+        mmd->meshType = AVT_UNSTRUCTURED_MESH;
+        mmd->numBlocks = preader_->GetNumOfDEBlocks();
+        md->Add(mmd);
+        debug1 << "number of DE blocks: " << preader_->GetNumOfDEBlocks() << "\n";
+    }
+}
+
 
 void
 avtPVLDFileFormat::AddSurfaceMesh( avtDatabaseMetaData *md )
@@ -1195,7 +1288,6 @@ avtPVLDFileFormat::AddSolidVariables( avtDatabaseMetaData *md )
                     tensor->meshName = meshname;
                     tensor->centering = zc;
                     tensor->hasUnits = false;
-                    //tensor->dim = 9; //(int)dims[1];
                     md->Add(tensor);
 
                     if( name == "Stress" )
@@ -1211,29 +1303,52 @@ avtPVLDFileFormat::AddSolidVariables( avtDatabaseMetaData *md )
                         md->AddExpression(pre);
                         delete pre;
 
-                        Expression *pst= new Expression;
-                        string pstname = PVLD_Reader::ComposeNames( meshname,"Principal_stress" );
-                        pst->SetName( pstname );
-                        pst->SetDefinition( "principal_tensor(<" + orgname + ">)" );
-                        pst->SetType( Expression::VectorMeshVar );
-                        pst->SetHidden( false );
-                        md->AddExpression(pst);
-                        delete pst;
-
                         Expression *vms= new Expression;
                         string vmsname = PVLD_Reader::ComposeNames( meshname,"von_Mises_Criterion" );
                         vms->SetName( vmsname );
-                        vms->SetDefinition( "sqrt( 0.5*( (<" +
-                                            pstname + ">[0]-<" +
-                                            pstname + ">[1])^2 + (<" +
-                                            pstname + ">[1]-<" +
-                                            pstname + ">[2])^2 + (<" +
-                                            pstname + ">[2]-<" +
-                                            pstname + ">[0])^2 ))");
+                        vms->SetDefinition("sqrt(0.5*( (<" + orgname + ">[0][0]-<" + orgname + ">[1][1])^2 + " +
+                                           "(<" + orgname + ">[1][1]-<" + orgname + ">[2][2])^2 + " +
+                                           "(<" + orgname + ">[0][0]-<" + orgname + ">[2][2])^2 + " +
+                                           "6.0*( <" + orgname + ">[1][0]^2 +" +
+                                           "<" + orgname + ">[2][0]^2 +" +
+                                           "<" + orgname + ">[2][1]^2) ))" );
                         vms->SetType( Expression::ScalarMeshVar );
                         vms->SetHidden( false );
                         md->AddExpression(vms);
                         delete vms;
+
+                        const char *cmpnames[]= {"11","22","33", "12","23","13" };
+                        int cmpidx[]= {0,4,8,1,5,2};
+                        for( int i=0; i<6; i++ ) {
+                            char buf[100];
+                            sprintf(buf,"%d",cmpidx[i]);
+                            Expression *exp= new Expression;
+                            exp->SetName( varname+"_"+cmpnames[i] );
+                            exp->SetDefinition( "array_decompose(<"+varname+">,"+buf+")");
+                            exp->SetType( Expression::ScalarMeshVar );
+                            exp->SetHidden( false );
+                            md->AddExpression(exp);
+                            delete exp;
+                        }
+                    }
+
+                    if (name=="DeformGradient")
+                    {
+
+                        tensor->dim = 9; //(int)dims[1];
+                        const char *cmpnames[]= {"11","12","13","21","22","23","31","32","33"};
+                        int cmpidx[]= {0,1,2,3,4,5,6,7,8};
+                        for( int i=0; i<9; i++ ) {
+                            char buf[100];
+                            sprintf(buf,"%d",cmpidx[i]);
+                            Expression *exp= new Expression;
+                            exp->SetName( varname+"_"+cmpnames[i] );
+                            exp->SetDefinition( "array_decompose(<"+varname+">,"+buf+")");
+                            exp->SetType( Expression::ScalarMeshVar );
+                            exp->SetHidden( false );
+                            md->AddExpression(exp);
+                            delete exp;
+                        }
                     }
                 }
             }
@@ -1340,25 +1455,15 @@ avtPVLDFileFormat::AddShellVariables( avtDatabaseMetaData *md )
                         md->AddExpression(pre);
                         delete pre;
 
-                        Expression *pst= new Expression;
-                        string pstname = PVLD_Reader::ComposeNames( meshname,"Principal_stress" );
-                        pst->SetName( pstname );
-                        pst->SetDefinition( "principal_tensor(<" + orgname + ">)" );
-                        pst->SetType( Expression::VectorMeshVar );
-                        pst->SetHidden( false );
-                        md->AddExpression(pst);
-                        delete pst;
-
                         Expression *vms= new Expression;
                         string vmsname = PVLD_Reader::ComposeNames( meshname,"von_Mises_Criterion" );
                         vms->SetName( vmsname );
-                        vms->SetDefinition( "sqrt( 0.5*( (<" +
-                                            pstname + ">[0]-<" +
-                                            pstname + ">[1])^2 + (<" +
-                                            pstname + ">[1]-<" +
-                                            pstname + ">[2])^2 + (<" +
-                                            pstname + ">[2]-<" +
-                                            pstname + ">[0])^2 ))");
+                        vms->SetDefinition("sqrt(0.5*( (<" + orgname + ">[0][0]-<" + orgname + ">[1][1])^2 + " +
+                                           "(<" + orgname + ">[1][1]-<" + orgname + ">[2][2])^2 + " +
+                                           "(<" + orgname + ">[0][0]-<" + orgname + ">[2][2])^2 + " +
+                                           "6.0*( <" + orgname + ">[1][0]^2 +" +
+                                           "<" + orgname + ">[2][0]^2 +" +
+                                           "<" + orgname + ">[2][1]^2) ))" );
                         vms->SetType( Expression::ScalarMeshVar );
                         vms->SetHidden( false );
                         md->AddExpression(vms);
@@ -1469,25 +1574,15 @@ avtPVLDFileFormat::AddBeamVariables( avtDatabaseMetaData *md )
                         md->AddExpression(pre);
                         delete pre;
 
-                        Expression *pst= new Expression;
-                        string pstname = PVLD_Reader::ComposeNames( meshname,"Principal_stress" );
-                        pst->SetName( pstname );
-                        pst->SetDefinition( "principal_tensor(<" + orgname + ">)" );
-                        pst->SetType( Expression::VectorMeshVar );
-                        pst->SetHidden( false );
-                        md->AddExpression(pst);
-                        delete pst;
-
                         Expression *vms= new Expression;
                         string vmsname = PVLD_Reader::ComposeNames( meshname,"von_Mises_Criterion" );
                         vms->SetName( vmsname );
-                        vms->SetDefinition( "sqrt( 0.5*( (<" +
-                                            pstname + ">[0]-<" +
-                                            pstname + ">[1])^2 + (<" +
-                                            pstname + ">[1]-<" +
-                                            pstname + ">[2])^2 + (<" +
-                                            pstname + ">[2]-<" +
-                                            pstname + ">[0])^2 ))");
+                        vms->SetDefinition("sqrt(0.5*( (<" + orgname + ">[0][0]-<" + orgname + ">[1][1])^2 + " +
+                                           "(<" + orgname + ">[1][1]-<" + orgname + ">[2][2])^2 + " +
+                                           "(<" + orgname + ">[0][0]-<" + orgname + ">[2][2])^2 + " +
+                                           "6.0*( <" + orgname + ">[1][0]^2 +" +
+                                           "<" + orgname + ">[2][0]^2 +" +
+                                           "<" + orgname + ">[2][1]^2) ))" );
                         vms->SetType( Expression::ScalarMeshVar );
                         vms->SetHidden( false );
                         md->AddExpression(vms);
@@ -1517,6 +1612,89 @@ avtPVLDFileFormat::AddBeamVariables( avtDatabaseMetaData *md )
         }
 
         if( preader_->HasNode() ) AddNodeVariables( meshname, md );
+    }
+}
+
+
+
+void
+avtPVLDFileFormat::AddDEVariables( avtDatabaseMetaData *md )
+{
+    if( preader_->HasDEs() )
+    {
+        avtCentering zc = AVT_ZONECENT;
+        const string & meshname = PVLD_Reader::de_name;
+
+        // debug5 << "de variables: " << preader_->GetNumOfDEVariables() << std::endl;
+        for( int i=0; i<preader_->GetNumOfDEVariables(); i++ )
+        {
+            const string& name = preader_->GetDEVariableName(i);
+            const vector<int>& dims = preader_->GetDEVariableDims(i);
+            // debug5 << "de_proc "<< i << ", name=" << name << ", dims.size()=" << dims.size() <<" : [ "<< dims[0];
+            // if( dims.size()>1 ) debug5 << ", "<< dims[1];
+            // if( dims.size()>2 ) debug5 << ", "<< dims[2];
+            // debug5 << " ]\n";
+
+            if( name == "Nodes" ) continue; // this is nothing
+            if( name == PVLD_Reader::de_hv_name ) continue;
+            if( name == PVLD_Reader::de_crd_name ) continue;
+
+            string varname = PVLD_Reader::ComposeNames( meshname, name );
+
+            if( dims.size()==1 )
+            {
+                avtScalarMetaData *smd = new avtScalarMetaData;
+                smd->name = varname;
+                smd->meshName = meshname;
+                smd->centering = zc;
+                smd->hasUnits = false;
+                md->Add(smd);
+            }
+            else if( dims.size()==2 )
+            {
+                if( dims[1]<=3 )
+                {
+                    avtVectorMetaData *vmd = new avtVectorMetaData;
+                    vmd->name = varname;
+                    vmd->meshName = meshname;
+                    vmd->centering = zc;
+                    vmd->hasUnits = false;
+                    md->Add(vmd);
+
+                    for( int d=0; d<dims[1]; d++ )
+                    {
+                        char buf[100];
+                        sprintf(buf,"%d",d);
+                        Expression *exp= new Expression;
+                        exp->SetName( varname+"_"+buf );
+                        exp->SetDefinition( "array_decompose(<"+varname+">,"+buf+")");
+                        exp->SetType( Expression::ScalarMeshVar );
+                        exp->SetHidden( false );
+                        md->AddExpression(exp);
+                        delete exp;
+                    }
+                }
+            }
+        }
+
+        if( preader_->HasDEHistoryVariables() )
+        {
+            int mx = preader_->MaxDEHistoryVariables();
+            for( int i=0; i<mx; i++ )
+            {
+                std::stringstream buf;
+                buf << PVLD_Reader::de_hv_name << "_" << (i+1);
+                string name = buf.str();
+                string varname = PVLD_Reader::ComposeNames( meshname, name );
+
+                avtScalarMetaData *smd = new avtScalarMetaData;
+                smd->name = varname;
+                smd->meshName = meshname;
+                smd->centering = zc;
+                smd->hasUnits = false;
+                md->Add(smd);
+            }
+        }
     }
 }
 
@@ -1596,25 +1774,15 @@ avtPVLDFileFormat::AddSurfaceVariables( avtDatabaseMetaData *md )
                         md->AddExpression(pre);
                         delete pre;
 
-                        Expression *pst= new Expression;
-                        string pstname = PVLD_Reader::ComposeNames( meshname,"Principal_stress" );
-                        pst->SetName( pstname );
-                        pst->SetDefinition( "principal_tensor(<" + orgname + ">)" );
-                        pst->SetType( Expression::VectorMeshVar );
-                        pst->SetHidden( false );
-                        md->AddExpression(pst);
-                        delete pst;
-
                         Expression *vms= new Expression;
                         string vmsname = PVLD_Reader::ComposeNames( meshname,"von_Mises_Criterion" );
                         vms->SetName( vmsname );
-                        vms->SetDefinition( "sqrt( 0.5*( (<" +
-                                            pstname + ">[0]-<" +
-                                            pstname + ">[1])^2 + (<" +
-                                            pstname + ">[1]-<" +
-                                            pstname + ">[2])^2 + (<" +
-                                            pstname + ">[2]-<" +
-                                            pstname + ">[0])^2 ))");
+                        vms->SetDefinition("sqrt(0.5*( (<" + orgname + ">[0][0]-<" + orgname + ">[1][1])^2 + " +
+                                           "(<" + orgname + ">[1][1]-<" + orgname + ">[2][2])^2 + " +
+                                           "(<" + orgname + ">[0][0]-<" + orgname + ">[2][2])^2 + " +
+                                           "6.0*( <" + orgname + ">[1][0]^2 +" +
+                                           "<" + orgname + ">[2][0]^2 +" +
+                                           "<" + orgname + ">[2][1]^2) ))" );
                         vms->SetType( Expression::ScalarMeshVar );
                         vms->SetHidden( false );
                         md->AddExpression(vms);
@@ -1702,25 +1870,15 @@ avtPVLDFileFormat::AddNodeVariables( const string& meshname, avtDatabaseMetaData
                     md->AddExpression(pre);
                     delete pre;
 
-                    Expression *pst= new Expression;
-                    string pstname = PVLD_Reader::ComposeNames( meshname,"Principal_stress" );
-                    pst->SetName( pstname );
-                    pst->SetDefinition( "principal_tensor(<" + orgname + ">)" );
-                    pst->SetType( Expression::VectorMeshVar );
-                    pst->SetHidden( false );
-                    md->AddExpression(pst);
-                    delete pst;
-
                     Expression *vms= new Expression;
                     string vmsname = PVLD_Reader::ComposeNames( meshname,"von_Mises_Criterion" );
                     vms->SetName( vmsname );
-                    vms->SetDefinition( "sqrt( 0.5*( (<" +
-                                        pstname + ">[0]-<" +
-                                        pstname + ">[1])^2 + (<" +
-                                        pstname + ">[1]-<" +
-                                        pstname + ">[2])^2 + (<" +
-                                        pstname + ">[2]-<" +
-                                        pstname + ">[0])^2 ))");
+                    vms->SetDefinition("sqrt(0.5*( (<" + orgname + ">[0][0]-<" + orgname + ">[1][1])^2 + " +
+                                       "(<" + orgname + ">[1][1]-<" + orgname + ">[2][2])^2 + " +
+                                       "(<" + orgname + ">[0][0]-<" + orgname + ">[2][2])^2 + " +
+                                       "6.0*( <" + orgname + ">[1][0]^2 +" +
+                                       "<" + orgname + ">[2][0]^2 +" +
+                                       "<" + orgname + ">[2][1]^2) ))" );
                     vms->SetType( Expression::ScalarMeshVar );
                     vms->SetHidden( false );
                     md->AddExpression(vms);
@@ -1749,7 +1907,7 @@ avtPVLDFileFormat::AddSphVariables( avtDatabaseMetaData *md )
             const string& name = preader_->GetSphVariableName(i);
             const vector<int>& dims = preader_->GetSphVariableDims(i);
 
-            if( name == "Coordinate" ) continue; // this is connectivity
+            //if( name == "Coordinate" ) continue; // this is connectivity
             if( name == PVLD_Reader::number_of_history_name ) continue;
             if( name == PVLD_Reader::history_name ) continue;
 
@@ -1806,31 +1964,21 @@ avtPVLDFileFormat::AddSphVariables( avtDatabaseMetaData *md )
                         Expression *pre= new Expression;
                         string prename = PVLD_Reader::ComposeNames( meshname,"Pressure" );
                         pre->SetName( prename );
-                        pre->SetDefinition( "-0.33333*trace(<" + orgname + ">)" );
+                        pre->SetDefinition( "trace(<" + orgname + ">)/-3.0" );
                         pre->SetType( Expression::ScalarMeshVar );
                         pre->SetHidden( false );
                         md->AddExpression(pre);
                         delete pre;
 
-                        Expression *pst= new Expression;
-                        string pstname = PVLD_Reader::ComposeNames( meshname,"Principal_stress" );
-                        pst->SetName( pstname );
-                        pst->SetDefinition( "principal_tensor(<" + orgname + ">)" );
-                        pst->SetType( Expression::VectorMeshVar );
-                        pst->SetHidden( false );
-                        md->AddExpression(pst);
-                        delete pst;
-
                         Expression *vms= new Expression;
                         string vmsname = PVLD_Reader::ComposeNames( meshname,"von_Mises_Criterion" );
                         vms->SetName( vmsname );
-                        vms->SetDefinition( "sqrt( 0.5*( (<" +
-                                            pstname + ">[0]-<" +
-                                            pstname + ">[1])^2 + (<" +
-                                            pstname + ">[1]-<" +
-                                            pstname + ">[2])^2 + (<" +
-                                            pstname + ">[2]-<" +
-                                            pstname + ">[0])^2 ))");
+                        vms->SetDefinition("sqrt(0.5*( (<" + orgname + ">[0][0]-<" + orgname + ">[1][1])^2 + " +
+                                           "(<" + orgname + ">[1][1]-<" + orgname + ">[2][2])^2 + " +
+                                           "(<" + orgname + ">[0][0]-<" + orgname + ">[2][2])^2 + " +
+                                           "6.0*( <" + orgname + ">[1][0]^2 +" +
+                                           "<" + orgname + ">[2][0]^2 +" +
+                                           "<" + orgname + ">[2][1]^2) ))" );
                         vms->SetType( Expression::ScalarMeshVar );
                         vms->SetHidden( false );
                         md->AddExpression(vms);
@@ -2005,7 +2153,7 @@ AddSolidMaterial( avtDatabaseMetaData* md )
                 avtMaterialMetaData *matmd = new avtMaterialMetaData;
                 matmd->name = PVLD_Reader::ComposeNames( meshname, "mat", "_" );
                 matmd->meshName = meshname;
-                matmd->numMaterials = (int)mat.size();
+                matmd->numMaterials = mat.size();
                 // std::for_each( mat.begin(), mat.end(),
                 //            [&]( const int& m ) {
                 //          auto& mt = preader_->GetMaterialName( m );
@@ -2052,7 +2200,7 @@ AddShellMaterial( avtDatabaseMetaData* md )
                 avtMaterialMetaData *matmd = new avtMaterialMetaData;
                 matmd->name = PVLD_Reader::ComposeNames( meshname, "mat", "_" );
                 matmd->meshName = meshname;
-                matmd->numMaterials = (int)mat.size();
+                matmd->numMaterials = mat.size();
                 // std::for_each( mat.begin(), mat.end(),
                 //            [&]( const int& m ) {
                 //          auto& mt = preader_->GetMaterialName( m );
@@ -2099,7 +2247,7 @@ AddBeamMaterial( avtDatabaseMetaData* md )
                 avtMaterialMetaData *matmd = new avtMaterialMetaData;
                 matmd->name = PVLD_Reader::ComposeNames( meshname, "mat", "_" );
                 matmd->meshName = meshname;
-                matmd->numMaterials = (int)mat.size();
+                matmd->numMaterials = mat.size();
                 // std::for_each( mat.begin(), mat.end(),
                 //            [&]( const int& m ) {
                 //          auto& mt = preader_->GetMaterialName( m );
@@ -2142,7 +2290,7 @@ AddSurfaceMaterial( avtDatabaseMetaData* md )
                 avtMaterialMetaData *matmd = new avtMaterialMetaData;
                 matmd->name = PVLD_Reader::ComposeNames( meshname, "mat", "_" );
                 matmd->meshName = meshname;
-                matmd->numMaterials = (int)mat.size();
+                matmd->numMaterials = mat.size();
                 // std::for_each( mat.begin(), mat.end(),
                 //            [&]( const int& m ) {
                 //          auto& mt = preader_->GetMaterialName( m );
@@ -2191,7 +2339,7 @@ AddSphMaterial( avtDatabaseMetaData* md )
                 avtMaterialMetaData *matmd = new avtMaterialMetaData;
                 matmd->name = PVLD_Reader::ComposeNames( meshname, "mat", "_" );
                 matmd->meshName = meshname;
-                matmd->numMaterials = (int)mat.size();
+                matmd->numMaterials = mat.size();
                 // std::for_each( mat.begin(), mat.end(),
                 //            [&]( const int& m ) {
                 //          auto& mt = preader_->GetMaterialName( m );
@@ -2326,7 +2474,7 @@ avtPVLDFileFormat::MakePoints(vector<float> &crd)
     }
     else
     {
-        int nvrt = (int)crd.size() / 3;
+        int nvrt = crd.size() / 3;
         pts->SetNumberOfPoints(nvrt);
         float *pt = (float *) pts->GetVoidPointer(0);
         for( size_t i=0; i<crd.size(); i++ )
@@ -2362,8 +2510,9 @@ avtPVLDFileFormat::MakePoints(vector<float> &crd)
 vtkUnstructuredGrid*
 avtPVLDFileFormat::GenerateSolidMesh( vector<float>& crd, const vector<int>& elm )
 {
-    int nvrt = (int)crd.size()/3; (void) nvrt;
-    int nele = (int)elm.size()/8;
+    int nvrt = crd.size()/3;
+    (void) nvrt;
+    int nele = elm.size()/8;
 
     vtkPoints *pts = MakePoints(crd);
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
@@ -2372,7 +2521,7 @@ avtPVLDFileFormat::GenerateSolidMesh( vector<float>& crd, const vector<int>& elm
     pts->Delete();
 
     vtkIdType verts[8];
-    const int* cnt=&elm[0];
+    const int* cnt=elm.data();
     for( int i=0; i<nele; i++ )
     {
         for( int j=0; j<8; j++ )
@@ -2402,7 +2551,7 @@ avtPVLDFileFormat::GenerateSolidMesh( vector<float>& crd, const vector<int>& elm
 vtkUnstructuredGrid*
 avtPVLDFileFormat::GenerateShellMesh( vector<float>& crd, const vector<int>& elm )
 {
-    int nele = (int)elm.size()/4;
+    int nele = elm.size()/4;
 
     vtkPoints *pts = MakePoints(crd);
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
@@ -2411,7 +2560,7 @@ avtPVLDFileFormat::GenerateShellMesh( vector<float>& crd, const vector<int>& elm
     pts->Delete();
 
     vtkIdType verts[4];
-    const int* cnt=&elm[0];
+    const int* cnt=elm.data();
     for( int i=0; i<nele; i++ )
     {
         for( int j=0; j<4; j++ )
@@ -2426,7 +2575,7 @@ avtPVLDFileFormat::GenerateShellMesh( vector<float>& crd, const vector<int>& elm
 vtkUnstructuredGrid*
 avtPVLDFileFormat::GenerateBeamMesh( vector<float>& crd, const vector<int>& elm )
 {
-    int nele = (int)elm.size()/2;
+    int nele = elm.size()/2;
 
     vtkPoints *pts = MakePoints(crd);
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
@@ -2435,7 +2584,7 @@ avtPVLDFileFormat::GenerateBeamMesh( vector<float>& crd, const vector<int>& elm 
     pts->Delete();
 
     vtkIdType verts[2];
-    const int* cnt=&elm[0];
+    const int* cnt=elm.data();
     for( int i=0; i<nele; i++ )
     {
         for( int j=0; j<2; j++ )
@@ -2451,7 +2600,7 @@ avtPVLDFileFormat::GenerateBeamMesh( vector<float>& crd, const vector<int>& elm 
 vtkUnstructuredGrid*
 avtPVLDFileFormat::GenerateSphMesh( vector<float>& crd, const vector<int>& elm )
 {
-    int nele = (int)elm.size();
+    int nele = elm.size();
 
     vtkPoints *pts = MakePoints(crd);
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
@@ -2460,7 +2609,7 @@ avtPVLDFileFormat::GenerateSphMesh( vector<float>& crd, const vector<int>& elm )
     pts->Delete();
 
     vtkIdType verts[1];
-    const int* cnt=&elm[0];
+    const int* cnt=elm.data();
     for( int i=0; i<nele; i++ )
     {
         verts[0] = *cnt++;
@@ -2475,7 +2624,7 @@ avtPVLDFileFormat::GenerateSphMesh( vector<float>& crd, const vector<int>& elm )
 vtkUnstructuredGrid*
 avtPVLDFileFormat::GeneratePointMesh( vector<float>& crd )
 {
-    int nvrt = (int)crd.size()/3;
+    int nvrt = crd.size()/3;
 
     vtkPoints *pts = MakePoints(crd);
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
@@ -2496,7 +2645,7 @@ avtPVLDFileFormat::GeneratePointMesh( vector<float>& crd )
 vtkUnstructuredGrid*
 avtPVLDFileFormat::GenerateBondMesh( const vector<float>& crd1, const vector<float>& crd2 )
 {
-    int nvrt = (int)crd1.size()/3;
+    int nvrt = crd1.size()/3;
 
     vtkPoints *pts = vtkPoints::New();
     pts->SetNumberOfPoints(2*nvrt);
@@ -2556,13 +2705,37 @@ avtPVLDFileFormat::GenerateVariable( const vector<int>& dims, vector<float>& dat
         var->SetNumberOfTuples( msz );
 
         float *des = (float *)var->GetVoidPointer(0);
-        const float *src = &dat[0];
+        const float *src = dat.data();
         for( int i=0; i<msz*ncmp; i++ )
             *des++ = *src++;
     }
 
     return var;
 }
+
+
+///vtkIntArray*
+vtkDoubleArray*
+avtPVLDFileFormat::GenerateVariable( const vector<int>& dims, vector<int>& dat )
+{
+    int ncmp = 1;
+    for( size_t i=1; i<dims.size(); i++ )
+        ncmp *= dims[i];
+    int msz  = dims[0];
+
+    vtkDoubleArray *var = NULL;
+    var = vtkDoubleArray::New();
+    var->SetNumberOfComponents(ncmp);
+    var->SetNumberOfTuples( msz );
+
+    double *des = (double*)var->GetVoidPointer(0);
+    const int *src = dat.data();
+    for( int i=0; i<msz*ncmp; i++ )
+        *des++ = double(*src++);
+
+    return var;
+}
+
 
 
 vtkFloatArray*
@@ -2575,7 +2748,7 @@ avtPVLDFileFormat::GenerateDyna3dStressTensor( const vector<int>& dims, const ve
     var->SetNumberOfTuples( msz );
 
     float *des = (float *)var->GetVoidPointer(0);
-    const float *src = &dat[0];
+    const float *src = dat.data();
     for( int i=0; i<msz; i++ )
     {
         PVLD_Reader::ConvDyna3dStreeTensor( src, des );
@@ -2598,7 +2771,7 @@ GenerateSphStressTensor( const vector<int>& dims, const vector<float>& dat )
     var->SetNumberOfTuples( msz );
 
     float *des = (float *)var->GetVoidPointer(0);
-    const float *src = &dat[0];
+    const float *src = dat.data();
     for( int i=0; i<msz; i++ )
     {
         PVLD_Reader::ConvSphStreeTensor( src, des );
@@ -2607,29 +2780,6 @@ GenerateSphStressTensor( const vector<int>& dims, const vector<float>& dat )
     }
     return var;
 }
-
-
-// vtkFloatArray*
-// avtPVLDFileFormat::GenerateTiedSetVariable( const vector<int>& dims, const vector<float>& dat )
-// {
-//   int ncmp = 1;
-//   for( int i=1; i<dims.size(); i++ )
-//     ncmp *= dims[i];
-//   int msz  = dims[0];
-
-//   vtkFloatArray* var = vtkFloatArray::New();
-//   var->SetNumberOfComponents( ncmp );
-//   var->SetNumberOfTuples( msz );
-
-//   float *des = (float *)var->GetVoidPointer(0);
-//   const float *src = &dat[0];
-//   for( int i=0; i<msz*ncmp; i++ ) {
-//     *des++ = *src++;
-//   }
-//   return var;
-// }
-
-
 
 
 void
@@ -2732,4 +2882,3 @@ AddIndexVariables( const string& meshname,
         }
     }
 }
-

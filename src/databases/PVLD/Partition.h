@@ -8,4 +8,7 @@ using std::vector;
 void PartitionWeights( const vector<int>& wlst,  // weight list
                        int npart, vector< vector<int> >& part );
 
+void PartitionWeights_alt( const vector<int>& wlst,  // weight list
+                       int npart, vector< vector<int> >& part );
+
 #endif

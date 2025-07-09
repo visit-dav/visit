@@ -80,3 +80,24 @@ void PartitionWeights( const vector<int>& wlst,
 }
 
 
+
+void PartitionWeights_alt( const vector<int>& wlst,
+                           int npart, vector< vector<int> >& part )
+{
+    int tot=wlst.size();
+    int avg=tot/npart;
+    int res=tot - avg*npart;
+
+    part.clear();
+    part.resize( npart );
+
+    int cnt=0;
+    for( int ii=0; ii<npart; ii++ ) {
+        int len = ii<res ? avg+1 : avg;
+        part[ii].resize( len );
+        for( int jj=0; jj<len; jj++ )
+            part[ii][jj] = cnt++;
+    }
+}
+
+
