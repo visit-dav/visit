@@ -443,14 +443,14 @@ public:
 
 
     void ReadTiedSetBlockMesh( int nb, std::vector<float>& vcrd, std::vector<int>& elmt );
-    void ReadTiedSetSlaveBlockMesh( int blkInd, std::vector<float>& crd );
+    void ReadTiedSetWorkerBlockMesh( int blkInd, std::vector<float>& crd );
     void ReadTiedSetManagerBlockMesh( int blkInd, std::vector<float>& crd );
     bool ReadTiedSetBlockData( const char* varname, int nb,
                                std::vector<int>& dims, std::vector<float>& data,
 			       std::vector<int>& idata );
 
     void ReadContactBlockMesh( int nb, std::vector<float>& vcrd, std::vector<int>& elmt );
-    void ReadContactSlaveBlockMesh( int blkInd, std::vector<float>& crd );
+    void ReadContactWorkerBlockMesh( int blkInd, std::vector<float>& crd );
     void ReadContactManagerBlockMesh( int blkInd, std::vector<float>& crd );
     bool ReadContactBlockData( const char* varname, int nb,
                                std::vector<int>& dims, std::vector<float>& data,
@@ -573,7 +573,7 @@ protected:
 
     void ReadTiedSetBlockMesh( hid_t file_id, int blkInd,
                                std::vector<int>& vmap, std::vector<float>& vcrd, std::vector<int>& elmt );
-    void ReadTiedSetSlaveBlockMesh( hid_t file_id, int blkInd, std::vector<float>& crd );
+    void ReadTiedSetWorkerBlockMesh( hid_t file_id, int blkInd, std::vector<float>& crd );
     void ReadTiedSetManagerBlockMesh( hid_t file_id, int blkInd, std::vector<float>& crd );
     void ReadTiedSetBlockData( hid_t file_id, int varInd, int blkInd,
                                std::vector<int>& dims, std::vector<float>& edat );
@@ -582,7 +582,7 @@ protected:
 
     void ReadContactBlockMesh( hid_t file_id, int blkInd,
                                std::vector<int>& vmap, std::vector<float>& vcrd, std::vector<int>& elmt );
-    void ReadContactSlaveBlockMesh( hid_t file_id, int blkInd, std::vector<float>& crd );
+    void ReadContactWorkerBlockMesh( hid_t file_id, int blkInd, std::vector<float>& crd );
     void ReadContactManagerBlockMesh( hid_t file_id, int blkInd, std::vector<float>& crd );
     void ReadContactBlockData( hid_t file_id, int varInd, int blkInd,
                                std::vector<int>& dims, std::vector<float>& edat );
