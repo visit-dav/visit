@@ -1113,6 +1113,8 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
 //  Creation:   Mon Sep 17 14:13:41 PDT 2018
 //
 //  Modifications:
+//    Eric Brugger, Wed Jul  9 11:44:32 PDT 2025
+//    Added logic to not use VTKm if the input is an unstructured mesh.
 //
 // ****************************************************************************
 
@@ -1124,10 +1126,28 @@ avtSliceFilter::ExecuteData(avtDataRepresentation *in_dr)
         return NULL;
     }
 
-    avtDataRepresentation *out_dr = NULL;
+    //
+    // Determine if we should use VTKm.
+    //
+    bool useVTKm = false;
     if ((in_dr->GetDataRepType() == DATA_REP_TYPE_VTKM ||
-         avtCallback::GetBackendType() == GlobalAttributes::VTKM) &&
-        !atts.GetProject2d())
+         avtCallback::GetBackendType() == GlobalAttributes::VTKM))
+    {
+        useVTKm = true;
+
+        vtkDataSet *in_ds = in_dr->GetDataVTK();
+	if (atts.GetProject2d())
+        {
+            useVTKm = false;
+        }
+	else if(in_ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
+        {
+            useVTKm = false;
+        }
+    }
+
+    avtDataRepresentation *out_dr = NULL;
+    if (useVTKm)
     {
         out_dr = this->ExecuteData_VTKM(in_dr);
     }
