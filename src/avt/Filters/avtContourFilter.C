@@ -501,6 +501,10 @@ avtContourFilter::PreExecute(void)
 //    Eric Brugger, Wed Dec  9 09:12:27 PST 2020
 //    Updated to a newer VTKm.
 //
+//    Eric Brugger, Wed Jul  9 10:38:46 PDT 2025
+//    Disable the VTKm contour filter with unstructured grids since it
+//    doesn't work with VTKm 2.3.0.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -572,6 +576,7 @@ avtContourFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
         //
         else if (in_ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
         {
+#if 0
             vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) in_ds;
             vtkIdType nCells = ugrid->GetCells()->GetNumberOfCells();
             vtkUnsignedCharArray *cellTypes = ugrid->GetCellTypesArray();
@@ -590,6 +595,11 @@ avtContourFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
             {
                 useVTKm = false;
             }
+#else
+	    // Disable VTKm for unstructured grids because of a bug
+	    // in VTKm 2.3.0 (VTKm 1.9.0 worked properly).
+            useVTKm = false;
+#endif
         }
     }
 
