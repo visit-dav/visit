@@ -390,12 +390,14 @@ ConvertVTKToVTKm(vtkDataSet *data)
         }
 
         vtkm::cont::CellSetExplicit<> cs;
-        cs.Fill(nCellsActual, shapes, connectivity, offsets);
+        cs.Fill(nPoints, shapes, connectivity, offsets);
         ds.SetCellSet(cs);
 
         // Add the coordinate system.
         if (points->GetDataType() == VTK_FLOAT)
         {
+#if 0
+            // Old way we set coordinates.
             float *pts = static_cast<float*>(points->GetVoidPointer(0));
             vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float32,3> > coordinates;
             coordinates.Allocate(nPoints);
@@ -408,10 +410,33 @@ ConvertVTKToVTKm(vtkDataSet *data)
 
             ds.AddCoordinateSystem(
                 vtkm::cont::CoordinateSystem("coordinates", coordinates));
+#else
+            // The way Ascent sets the coordinates.
+            float *pts = static_cast<float*>(points->GetVoidPointer(0));
+            vtkm::cont::ArrayHandle<vtkm::Float32> x_coords;
+            vtkm::cont::ArrayHandle<vtkm::Float32> y_coords;
+            vtkm::cont::ArrayHandle<vtkm::Float32> z_coords;
+            x_coords.Allocate(nPoints);
+            y_coords.Allocate(nPoints);
+            z_coords.Allocate(nPoints);
+
+            for (vtkm::Id i = 0; i < nPoints; ++i)
+            {
+                x_coords.WritePortal().Set(i, pts[i*3]);
+                y_coords.WritePortal().Set(i, pts[i*3+1]);
+                z_coords.WritePortal().Set(i, pts[i*3+2]);
+            }
+
+            ds.AddCoordinateSystem(
+                vtkm::cont::CoordinateSystem("coordinates",
+                    make_ArrayHandleSOA(x_coords, y_coords, z_coords)));
+#endif
         }
         else if (points->GetDataType() == VTK_DOUBLE)
         {
-            double *pts = static_cast<double*>(points->GetVoidPointer(0));
+#if 0
+            // Old way we set coordinates.
+            float *pts = static_cast<float*>(points->GetVoidPointer(0));
             vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float64,3> > coordinates;
             coordinates.Allocate(nPoints);
 
@@ -423,6 +448,27 @@ ConvertVTKToVTKm(vtkDataSet *data)
 
             ds.AddCoordinateSystem(
                 vtkm::cont::CoordinateSystem("coordinates", coordinates));
+#else
+            // The way Ascent sets the coordinates.
+            double *pts = static_cast<double*>(points->GetVoidPointer(0));
+            vtkm::cont::ArrayHandle<vtkm::Float64> x_coords;
+            vtkm::cont::ArrayHandle<vtkm::Float64> y_coords;
+            vtkm::cont::ArrayHandle<vtkm::Float64> z_coords;
+            x_coords.Allocate(nPoints);
+            y_coords.Allocate(nPoints);
+            z_coords.Allocate(nPoints);
+
+            for (vtkm::Id i = 0; i < nPoints; ++i)
+            {
+                x_coords.WritePortal().Set(i, pts[i*3]);
+                y_coords.WritePortal().Set(i, pts[i*3+1]);
+                z_coords.WritePortal().Set(i, pts[i*3+2]);
+            }
+
+            ds.AddCoordinateSystem(
+                vtkm::cont::CoordinateSystem("coordinates",
+                    make_ArrayHandleSOA(x_coords, y_coords, z_coords)));
+#endif
         }
         else
         {
@@ -1300,9 +1346,11 @@ ConvertVTKmToVTK(avtVtkmDataSet *data)
             // in vtkm worklets, so if the name matches one of the known
             // internally generated fields, skip it.
             //
-            if (strcmp(fieldName, "sliceScalars") == 0)
-                continue;
             if (strcmp(fieldName, "coordinates") == 0)
+                continue;
+            if (strcmp(fieldName, "normals") == 0)
+                continue;
+            if (strcmp(fieldName, "sliceScalars") == 0)
                 continue;
 
             //
