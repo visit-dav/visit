@@ -96,10 +96,39 @@ EOF
 
 }
 
+function apply_cfitsio_configure_patch
+{
+    # fixes configure error on Fedora40 with gcc 14.
+    patch -p0 << \EOF
+diff -u cfitsio/configure.orig cfitsio/configure
+--- cfitsio/configure.orig	2025-07-07 15:51:29.700266000 -0700
++++ cfitsio/configure	2025-07-07 15:51:39.430265000 -0700
+@@ -764,7 +764,7 @@
+ #line 765 "configure"
+ #include "confdefs.h"
+ 
+-main(){return(0);}
++int main(){return(0);}
+ EOF
+ if { (eval echo configure:770: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+   ac_cv_prog_cc_works=yes
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "CFITSIO configure patch failed."
+        return 1
+    fi
+
+    return 0;
+}
 
 function apply_cfitsio_patch
 {
     apply_mv_vs_cp_patch
+    if [[ $? != 0 ]]; then
+        return 1
+    fi
+
+    apply_cfitsio_configure_patch
     if [[ $? != 0 ]]; then
         return 1
     fi
