@@ -4593,27 +4593,43 @@ QvisGUIApplication::SaveSession()
 void
 QvisGUIApplication::SaveSessionAs()
 {
-    // Create the name of a VisIt session file to use.
+    std::cout << "QvisGUIApplication::SaveSessionAs()" << std::endl;
     QString defaultFile;
-    if(sessionHost.empty())
+
+    bool keepTrying = true;
+
+    while (keepTrying)
     {
-        defaultFile = QString("%1visit%2.session")
-            .arg(sessionDir.c_str())
-            .arg(sessionCount,4,10,QLatin1Char('0'));
-    }
-    else
-    {
-#ifdef _WIN32
-        if (sessionDir.substr(0,2) == "\\\\")
+        keepTrying = false;
+
+        // Create the name of a VisIt session file to use.
+        if(sessionHost.empty())
+        {
             defaultFile = QString("%1visit%2.session")
                 .arg(sessionDir.c_str())
                 .arg(sessionCount,4,10,QLatin1Char('0'));
+        }
         else
-#endif
-        defaultFile = QString("%1:%2visit%3.session")
-                .arg(sessionHost.c_str())
-                .arg(sessionDir.c_str())
-                .arg(sessionCount,4,10,QLatin1Char('0'));
+        {
+    #ifdef _WIN32
+            if (sessionDir.substr(0,2) == "\\\\")
+                defaultFile = QString("%1visit%2.session")
+                    .arg(sessionDir.c_str())
+                    .arg(sessionCount,4,10,QLatin1Char('0'));
+            else
+    #endif
+            defaultFile = QString("%1:%2visit%3.session")
+                    .arg(sessionHost.c_str())
+                    .arg(sessionDir.c_str())
+                    .arg(sessionCount,4,10,QLatin1Char('0'));
+        }
+
+        ifstream ifile(defaultFile.toStdString());
+        if (!ifile.fail())
+        {
+            sessionCount ++;
+            keepTrying = true;
+        }
     }
 
     // Get the name of the file that the user saved.
