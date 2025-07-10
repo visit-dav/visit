@@ -54,6 +54,7 @@ function bv_openexr_host_profile
         echo "## OpenEXR" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
+            "VISIT_OPTION_DEFAULT(OPENEXR_VERSION $OPENEXR_VERSION)"
             "VISIT_OPTION_DEFAULT(VISIT_OPENEXR_DIR \${VISITHOME}/openexr/$OPENEXR_VERSION/\${VISITARCH})" \
             >> $HOSTCONF
     fi
