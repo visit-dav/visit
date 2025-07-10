@@ -16,10 +16,6 @@ using std::map;
 
 #include <hdf5.h>
 
-// typedef enum {
-//   integer_type,
-//   float_type
-// } variable_type;
 
 
 
