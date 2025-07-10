@@ -853,7 +853,7 @@ public:
     static const std::string tiedset_name;
     static const std::string tiedset_worker_name;
     static const std::string contact_name;
-    static const std::string contact_slave_name;
+    static const std::string contact_worker_name;
     static const std::string node_index_name;
     static const std::string number_of_history_name;
     static const std::string history_name;
