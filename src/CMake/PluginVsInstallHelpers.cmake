@@ -27,6 +27,9 @@
 #   Kathleen Biagas, Fri Mar 10, 2023 
 #   Replaced VTKh logic with VTKm.
 #
+#   Kathleen Biagas, Thu July 10, 2025
+#   Support OPENEXR libs in 'lib64'.
+#
 #******************************************************************************
 
 
@@ -65,6 +68,9 @@ install(FILES ${VISIT_SOURCE_DIR}/CMake/VisItIncludeVars.cmake
 set(check_libs SILO XDMF OPENEXR)
 foreach(cl ${check_libs})
     string(REPLACE "${VISIT_${cl}_DIR}/lib/" ""
+                    ${cl}_LIB
+                    "${${cl}_LIB}")
+    string(REPLACE "${VISIT_${cl}_DIR}/lib64/" ""
                     ${cl}_LIB
                     "${${cl}_LIB}")
 
