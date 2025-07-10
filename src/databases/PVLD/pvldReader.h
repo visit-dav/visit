@@ -851,7 +851,7 @@ public:
     static const std::string surface_name;
     static const std::string sph_name;
     static const std::string tiedset_name;
-    static const std::string tiedset_slave_name;
+    static const std::string tiedset_worker_name;
     static const std::string contact_name;
     static const std::string contact_slave_name;
     static const std::string node_index_name;
