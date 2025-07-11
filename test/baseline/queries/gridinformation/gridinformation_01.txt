@@ -1,5 +1,5 @@
-Grid 0: type=AVT_UNSTRUCTURED_MESH, dims={1093,1200,0}
+Grid 0: type=AVT_UNSTRUCTURED_MESH, dims={Nx=1093,Ny=1200,Nz=0}
 =================================================
-Grid 0: type=AVT_UNSTRUCTURED_MESH, dims={1093,1200,0}, extents={-10,10,-10,10,-10,10}
+Grid 0: type=AVT_UNSTRUCTURED_MESH, dims={Nx=1093,Ny=1200,Nz=0}, extents={Xmin=-10,Xmax=10,Ymin=-10,Ymax=10,Zmin=-10,Zmax=10}
 =================================================
-Grid 0: type=AVT_UNSTRUCTURED_MESH, dims={1093,1200,0}, extents={-10,10,-10,10,-10,10}, ghosttypes=0={}
+Grid 0: type=AVT_UNSTRUCTURED_MESH, dims={Nx=1093,Ny=1200,Nz=0}, extents={Xmin=-10,Xmax=10,Ymin=-10,Ymax=10,Zmin=-10,Zmax=10}, ghosttypes=0={}
