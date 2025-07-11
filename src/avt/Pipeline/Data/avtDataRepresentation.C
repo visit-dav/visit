@@ -324,19 +324,15 @@ ConvertVTKToVTKm(vtkDataSet *data)
 
         // Add the unstructured cell set.
         vtkm::cont::ArrayHandle<vtkm::Id> connectivity;
-        vtkm::cont::ArrayHandle<vtkm::IdComponent> nIndices;
         vtkm::cont::ArrayHandle<vtkm::UInt8> shapes;
         vtkm::cont::ArrayHandle<vtkm::Id> offsets;
 
         connectivity.Allocate(nConnectivity - nCells);
-        nIndices.Allocate(nCells);
         shapes.Allocate(nCells);
         offsets.Allocate(nCells+1);
 
         vtkm::cont::ArrayHandle<vtkm::Id>::WritePortalType
             connectivityPortal = connectivity.WritePortal();
-        vtkm::cont::ArrayHandle<vtkm::IdComponent>::WritePortalType
-            nIndicesPortal = nIndices.WritePortal();
         vtkm::cont::ArrayHandle<vtkm::UInt8>::WritePortalType shapesPortal =
             shapes.WritePortal();
         vtkm::cont::ArrayHandle<vtkm::Id>::WritePortalType offsetsPortal =
@@ -366,7 +362,6 @@ ConvertVTKToVTKm(vtkDataSet *data)
               case vtkm::CELL_SHAPE_PYRAMID:
               case vtkm::CELL_SHAPE_WEDGE:
               case vtkm::CELL_SHAPE_HEXAHEDRON:
-                nIndicesPortal.Set(nCellsActual, nInds);
                 offsetsPortal.Set(nCellsActual, connInd);
                 for (vtkm::IdComponent j = 0; j < nInds; ++j, ++connInd)
                 {
@@ -386,8 +381,8 @@ ConvertVTKToVTKm(vtkDataSet *data)
         if (nCellsActual < nCells)
         {
             connectivity.Allocate(connInd, vtkm::CopyFlag::On);
-            nIndices.Allocate(nCellsActual, vtkm::CopyFlag::On);
             shapes.Allocate(nCellsActual, vtkm::CopyFlag::On);
+            offsets.Allocate(nCellsActual+1, vtkm::CopyFlag::On);
         }
 
         vtkm::cont::CellSetExplicit<> cs;
