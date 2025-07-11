@@ -696,6 +696,9 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
 
     if((node = searchNode->GetNode("tagListNames")) != 0)
     {
+        std::cout << "before set from node" << std::endl;
+        PrintTagList();
+
         stringVector tagListNamesFromNode = node->AsStringVector();
         for (auto tagname : tagListNamesFromNode)
             CreateTagListEntry(tagname, false, 0, false);
@@ -2340,6 +2343,7 @@ ColorTableAttributes::CreateTagListEntry(const std::string tagname,
 {
     if (! CheckTagInTagList(tagname))
     {
+        std::cout << "creating new tag " << tagname << std::endl;
         tagListNames.push_back(tagname);
         tagListActive.push_back(active);
         tagListNumRefs.push_back(numrefs);
@@ -2365,6 +2369,7 @@ ColorTableAttributes::CreateTagListEntry(const std::string tagname,
 void
 ColorTableAttributes::RemoveTagListEntry(const int index)
 {
+    std::cout << "erasing tag with index " << index << std::endl;
     if (index >= 0 && index < tagListNames.size())
     {
         auto namesItr = tagListNames.begin();
@@ -2981,6 +2986,7 @@ void
 ColorTableAttributes::SetTagTableItemFlag(const int index,
                                           const bool tagTableItemExists)
 {
+    std::cout << "setting SetTagTableItemFlag for index " << index  << " to " << (tagTableItemExists ? "true" : "false") << std::endl;
     if (index >= 0 && index < tagListTableItemFlag.size())
         tagListTableItemFlag[index] = tagTableItemExists;
     SelectTagList();
@@ -3005,6 +3011,7 @@ ColorTableAttributes::GetTagTableItemFlag(const std::string tagname)
     if (index >= 0 && index < tagListTableItemFlag.size())
         return tagListTableItemFlag[index];
     // the tag is unlikely to have a tag table item if it doesn't exist
+    std::cout << "tag doesn't exist THIS IS BAD" << std::endl;
     return false;
 }
 
@@ -3023,6 +3030,7 @@ ColorTableAttributes::GetTagTableItemFlag(const std::string tagname)
 bool
 ColorTableAttributes::CheckTagInTagList(const std::string tagname)
 {
+    // std::cout << "GetIndexOfTag(tagname) " << GetIndexOfTag(tagname) << std::endl;
     return GetIndexOfTag(tagname) >= 0;
 }
 
@@ -3060,6 +3068,8 @@ ColorTableAttributes::RemoveUnusedTagsFromTagTable()
             if (*tableitemflagItr)
                 removedTags.push_back(*namesItr);
             // else - there is no tag table entry to delete so we can continue
+
+            std::cout << "remove unused tag " << *namesItr << std::endl;
 
             // remove this entry from the tag list
             namesItr = tagListNames.erase(namesItr);

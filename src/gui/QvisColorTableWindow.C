@@ -983,6 +983,9 @@ QvisColorTableWindow::UpdateTagTable()
         });
 
     tagTable->sortByColumn(1, Qt::AscendingOrder);
+
+    std::cout << "after update tagTable" << std::endl;
+    colorAtts->PrintTagList();
 }
 
 
