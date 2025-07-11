@@ -4587,6 +4587,10 @@ QvisGUIApplication::SaveSession()
 //
 //   Kathleen Biagas, Thu Jan 21, 2021
 //   Replace QString::asprintf with QString.arg as suggested by Qt docs.
+// 
+//   Justin Privitera, Fri Jul 11 13:20:38 PDT 2025
+//   We take existing files in the directory we are going to save into account,
+//   updating the session count as needed.
 //
 // ****************************************************************************
 
