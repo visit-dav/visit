@@ -101,14 +101,39 @@ function bv_pidx_ensure
     fi
 }
 
+function apply_pidx_variable_patch
+{
+    info "Patching PIDX 0.9.3 variable. "
+    patch -p0 << \EOF
+diff -u pidx/PIDX_variable.c.orig pidx/PIDX_variable.c
+--- pidx/PIDX_variable.c.orig	2025-07-07 15:21:43.184915000 -0700
++++ pidx/PIDX_variable.c	2025-07-07 15:22:13.144941000 -0700
+@@ -216,7 +216,7 @@
+   memcpy(variable->sim_patch[variable->sim_patch_count]->physical_offset, offset, PIDX_MAX_DIMENSIONS * sizeof(double));
+   memcpy(variable->sim_patch[variable->sim_patch_count]->physical_size, dims, PIDX_MAX_DIMENSIONS * sizeof(double));
+ 
+-  variable->sim_patch[variable->sim_patch_count]->read_particle_buffer = write_to_this_buffer;
++  variable->sim_patch[variable->sim_patch_count]->read_particle_buffer = (unsigned char**)(write_to_this_buffer);
+   variable->sim_patch[variable->sim_patch_count]->read_particle_buffer_capacity = 0;
+   *number_of_particles = 0;
+   variable->sim_patch[variable->sim_patch_count]->read_particle_count = number_of_particles;
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "PIDX variable patch failed."
+        return 1
+    fi
+
+    return 0;
+}
+
 function apply_pidx_patch
 {
-    #    if [[ "${PIDX_VERSION}" == 4.0.0 ]] ; then
-    #        apply_pidx_XXX_patch
-    #        if [[ $? != 0 ]]; then
-    #           return 1
-    #        fi
-    #    fi
+    if [[ "${PIDX_VERSION}" == 0.9.3 ]] ; then
+        apply_pidx_variable_patch
+        if [[ $? != 0 ]]; then
+            return 1
+        fi
+    fi
 
     return 0
 }
