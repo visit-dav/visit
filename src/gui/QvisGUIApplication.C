@@ -4624,12 +4624,12 @@ QvisGUIApplication::SaveSessionAs()
                     .arg(sessionCount,4,10,QLatin1Char('0'));
         }
 
-        ifstream ifile(defaultFile.toStdString());
-        if (!ifile.fail())
-        {
-            sessionCount ++;
-            keepTrying = true;
-        }
+        // ifstream ifile(defaultFile.toStdString());
+        // if (!ifile.fail())
+        // {
+        //     sessionCount ++;
+        //     keepTrying = true;
+        // }
     }
 
     // Get the name of the file that the user saved.

@@ -778,6 +778,8 @@ QvisFileOpenWindow::selectFileChanged(void)
         }
     }
 
+    std::cout << "selectFileChanged" << std::endl;
+
     if (count)
         okButton->setEnabled(true);
     else
@@ -1029,6 +1031,8 @@ QvisFileOpenWindow::SetShowFilename(bool value)
 void 
 QvisFileOpenWindow::filenameEditChanged()
 {
+    std::cout << "filenameEditChanged" << std::endl;
+
     if(hideFileFormat)
         fileList->clearSelection();
     QString text(filenameEdit->text());
