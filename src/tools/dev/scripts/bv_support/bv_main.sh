@@ -128,6 +128,11 @@ function check_minimum_compiler_version()
 
 # --------------------------------------------------------------------------- #
 #   checking opengl context creation (minimum required is 3.2)
+#
+#   Modifications:
+#     Kathleen Biagas, Fri Jul 11, 2025
+#     First try to compile with libOpenGL, fallback to libGL.
+#
 # --------------------------------------------------------------------------- #
 
 function check_opengl_context()
@@ -261,12 +266,19 @@ function check_opengl_context()
     echo "  return 0;" >> checkogl.cpp
     echo "}" >> checkogl.cpp
 
-    $CXX_COMPILER checkogl.cpp -Wl,-lGL -lSM -lICE -lX11 -lXext
+    # first try to compile with libOpenGL
+    $CXX_COMPILER checkogl.cpp -Wl,-lOpenGL -lGLX -lSM -lICE -lX11 -lXext
     if [[ $? != 0 ]]; then
-        echo "failed to compile checkogl.cpp"
-        rm -f checkogl.cpp
+        echo "failed to compile checkogl.cpp with libOpenGL, trying lGL"
         rm -f a.out
-        exit 1
+        # if libOpenGL not available, compile with libGL.
+        $CXX_COMPILER checkogl.cpp -Wl,-lGL -lSM -lICE -lX11 -lXext
+        if [[ $? != 0 ]]; then
+            echo "failed to compile checkogl.cpp"
+            rm -f checkogl.cpp
+            rm -f a.out
+            exit 1
+        fi
     fi
     ./a.out 
     if [[ $? != 0 ]]; then
