@@ -1131,6 +1131,10 @@ avtSliceFilter::ExecuteData(avtDataRepresentation *in_dr)
     {
         out_dr = this->ExecuteData_VTKM(in_dr);
     }
+    else
+    {
+        out_dr = this->ExecuteData_VTK(in_dr);
+    }
 
     return out_dr;
 }
