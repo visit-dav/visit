@@ -16,7 +16,7 @@ SET(SET_UP_THIRD_PARTY_FULL_PATH ON)
 
 if(OPENEXR_VERSION AND OPENEXR_VERSION GREATER_EQUAL(3.3.4))
     SET_UP_THIRD_PARTY(OPENEXR
-        LIBS Iex-3_3 IlmThread-3_3 Imath-3_1 OpenEXR-3_3) 
+        LIBS Iex-3_3 IlmThread-3_3 Imath-3_1 OpenEXR-3_3 OpenEXRCore-3_3) 
 else()
 
     if(WIN32)
