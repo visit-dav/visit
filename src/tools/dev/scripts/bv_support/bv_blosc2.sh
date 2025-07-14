@@ -96,7 +96,7 @@ function build_blosc2
     # Build Blosc2
     #
     info "Building Blosc2 . . . (~5 minutes)"
-    $MAKE $MAKE_OPT_FLAGS
+    ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS 
     if [[ $? != 0 ]] ; then
         warn "Blosc2 build failed.  Giving up"
         return 1
@@ -106,7 +106,7 @@ function build_blosc2
     # Install into the VisIt third party location.
     #
     info "Installing Blosc2"
-    $MAKE install
+    ${CMAKE_COMMAND} install .
     if [[ $? != 0 ]] ; then
         warn "Blosc2 install failed.  Giving up"
         return 1
