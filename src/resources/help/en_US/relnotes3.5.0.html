@@ -55,6 +55,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed an error appearing which states that the properties from a disabled light were modified even though no changes were made and "Apply" was pressed. Now, the error will only appear when a change was made and the light is still disabled as well as listing with all modified lights.</li>
   <li>Fixed bug with xmledit where changing a Field's type to 'att' or 'attvector' crashed the tool.</li>
   <li>Disabled rich text paste support in the Commands Window and Expressions Editor. Avoids battles with cut and pasted text from editors that embed formatting, such as vscode.</li>
+  <li>Save session file now takes existing session file names into account to avoid naming collisions.</li>
 </ul>
 
 <a name="CLI_changes"></a>
@@ -72,6 +73,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The VTK database reader was modified to support GEOS flavor of .pvd and .vtm files.</li>
   <li>Updated Conduit to 0.9.4.</li>
   <li>Updated MFEM to 4.8.</li>
+  <li>The Blueprint writer now supports YAML and JSON exports.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -118,6 +120,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li><a href="https://github.com/visit-dav/visit/issues/20396">[#20396]</a> Fixed bug in Exodus reader where simple expressions involving some Exodus variables may wind up getting garbage data.</li>
   <li>Fixed a Tecplot reader bug that crashed the engine.</li>
   <li>Fixed a memory bug in AMR plugin when reading velocity magnitude.</li>
+  <li>Fixed a viewer crash with transparency.</li>
 </ul>
 
 <a name="Build_features"></a>
@@ -134,6 +137,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Updated VTK build script, <code>bv_vtk.sh</code>, to enable ANARI rendering module in VTK.</li>
   <li>The following command-line options were removed from the main build_visit script: <code>--all-io, --dbio-only, --nonio and  --advanced</code>.  This was done to simplify maintenance and addition of new modules.  <code>--optional</code> still turns on most optional libraries. <code>--no-thirdparty</code> still turns off the required libraries. Otherwise individual libraries can be enabled/disabled by <code>--</code> or <code>--no</code> syntax e.g. <code>--mpich --no-python</code>.  Please run <code>build_visit --help</code> for more information on available options.</li>
   <li>A patch was added to bv_mili.sh that allows successful compilation on RockyLinux 8 and 9.</li>
+  <li>Patches were added to bv_pidx.sh, bv_advio.sh and bv_cfitsio.sh that allow successful compilation on Fedora40 with gcc14.</li>
+  <li>Updated build_visit to build VTK-m 2.3.0.</li>
 </ul>
 
 <a name="Dev_changes"></a>

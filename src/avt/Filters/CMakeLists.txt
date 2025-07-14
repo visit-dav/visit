@@ -64,6 +64,9 @@
 #   Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
 #   Change pthread to Threads::Threads.
 #
+#   Eric Brugger, Mon Jun 16 13:38:54 PDT 2025
+#   Replace "vtkm_" libraries with "vtkm::".
+#
 #****************************************************************************/
 
 SET(AVTFILTERS_SOURCES
@@ -168,7 +171,7 @@ LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 ADD_LIBRARY(avtfilters_ser ${AVTFILTERS_SOURCES})
 TARGET_LINK_LIBRARIES(avtfilters_ser visitcommon lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_ser avtdatabase_ser avtdbatts ${vtklibs})
 if(HAVE_LIBVTKM)
-    target_link_libraries(avtfilters_ser vtkm_cont vtkm_filter_contour vtkm_filter_entity_extraction vtkm_filter_field_conversion)
+    target_link_libraries(avtfilters_ser vtkm::cont vtkm::filter_contour vtkm::filter_entity_extraction vtkm::filter_field_conversion)
     if(NOT WIN32)
         target_link_libraries(avtfilters_ser Threads::Threads)
     endif()
@@ -183,7 +186,7 @@ IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(avtfilters_par ${AVTFILTERS_SOURCES})
     TARGET_LINK_LIBRARIES(avtfilters_par visitcommon lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_par avtdatabase_par avtdbatts ${vtklibs})
     if(HAVE_LIBVTKM)
-        target_link_libraries(avtfilters_par vtkm_cont vtkm_filter_contour vtkm_filter_entity_extraction vtkm_filter_field_conversion)
+        target_link_libraries(avtfilters_par vtkm::cont vtkm::filter_contour vtkm::filter_entity_extraction vtkm::filter_field_conversion)
         if(NOT WIN32)
             target_link_libraries(avtfilters_par Threads::Threads)
         endif()
