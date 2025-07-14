@@ -39,10 +39,10 @@ function bv_vtkm_initialize_vars
 
 function bv_vtkm_info
 {
-    export VTKM_VERSION=${VTKM_VERSION:-"v1.9.0"}
+    export VTKM_VERSION=${VTKM_VERSION:-"v2.3.0"}
     export VTKM_FILE=${VTKM_FILE:-"vtk-m-${VTKM_VERSION}.tar.gz"}
     export VTKM_BUILD_DIR=${VTKM_BUILD_DIR:-"vtk-m-${VTKM_VERSION}"}
-    export VTKM_SHA256_CHECKSUM="12355dea1a24ec32767260068037adeb71abb3df2f9f920c92ce483f35ff46e4"
+    export VTKM_SHA256_CHECKSUM="63f1a0273227463a1be38c046630ea6f606ed958543fe6ff64eb6bb6513a6013"
 }
 
 function bv_vtkm_print
