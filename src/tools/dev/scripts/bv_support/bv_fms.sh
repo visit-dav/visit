@@ -121,7 +121,7 @@ function build_fms
     # Build FMS
     #
     info "Building FMS . . . (~2 minutes)"
-    ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS 
+    ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
         warn "FMS build failed.  Giving up"
         return 1

@@ -277,7 +277,7 @@ function build_xdmf
     #
     info "Building Xdmf . . . (~3 minutes)"
 
-    ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS 
+    ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
         warn "Xdmf build failed.  Giving up"
         return 1

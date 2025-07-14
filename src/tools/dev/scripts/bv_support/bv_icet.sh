@@ -162,7 +162,7 @@ function build_icet
     # Now build IceT.
     #
     info "Building IceT . . . (~2 minutes)"
-    ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS 
+    ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
         warn "IceT did not build correctly.  Giving up."
         return 1

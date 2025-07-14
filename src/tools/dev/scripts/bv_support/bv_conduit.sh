@@ -285,7 +285,7 @@ function build_conduit
     # Build Conduit
     #
     info "Building Conduit . . . (~5 minutes)"
-    ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS 
+    ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
         warn "Conduit build failed.  Giving up"
         return 1

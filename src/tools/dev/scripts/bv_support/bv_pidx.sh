@@ -285,7 +285,7 @@ function build_pidx
     # Build PIDX
     #
     info "Making pidx . . ."
-    ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS 
+    ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
         warn "pidx build failed.  Giving up"
         return 1
