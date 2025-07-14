@@ -119,6 +119,16 @@ vtkAxisDepthSort::GetMinusZOutput(void)
 //    Eric Brugger, Wed Jan  9 11:20:53 PST 2013
 //    Modified to inherit from vtkPolyDataAlgorithm.
 //
+//    Kathleen Biagas, Wed Jul 2, 2025
+//    When creating the Plus/Minus vtkPolyData's, swap use of
+//    'Allocate(input)', which allocates a default of 1000 cells, for use of
+//    'AllocateCopy(input)' which allocates memory for the same number of
+//    cells as its 'input' argument.  This prevents a crash when calling
+//    'InsertNextCell' when number of cells is much greater than '1000'.
+//    Crash was evidenced in a use-case of more than 40000 cells, and it
+//    crashed at the 2000th cell.
+//    Add Squeeze calls to free up extra allocated memory.
+//
 // ****************************************************************************
 
 int
@@ -181,7 +191,7 @@ vtkAxisDepthSort::RequestData(
     //
     vtkPolyData *minusX = GetMinusXOutput();
     minusX->SetPoints(input->GetPoints());
-    minusX->Allocate(input);
+    minusX->AllocateCopy(input);
     outPD = minusX->GetPointData();
     outCD = minusX->GetCellData();
     outPD->PassData(inPD);
@@ -198,7 +208,7 @@ vtkAxisDepthSort::RequestData(
 
     vtkPolyData *plusX = GetPlusXOutput();
     plusX->SetPoints(input->GetPoints());
-    plusX->Allocate(input);
+    plusX->AllocateCopy(input);
     outPD = plusX->GetPointData();
     outCD = plusX->GetCellData();
     outPD->PassData(inPD);
@@ -228,7 +238,7 @@ vtkAxisDepthSort::RequestData(
     //
     vtkPolyData *minusY = GetMinusYOutput();
     minusY->SetPoints(input->GetPoints());
-    minusY->Allocate(input);
+    minusY->AllocateCopy(input);
     outPD = minusY->GetPointData();
     outCD = minusY->GetCellData();
     outPD->PassData(inPD);
@@ -245,7 +255,7 @@ vtkAxisDepthSort::RequestData(
 
     vtkPolyData *plusY = GetPlusYOutput();
     plusY->SetPoints(input->GetPoints());
-    plusY->Allocate(input);
+    plusY->AllocateCopy(input);
     outPD = plusY->GetPointData();
     outCD = plusY->GetCellData();
     outPD->PassData(inPD);
@@ -275,7 +285,7 @@ vtkAxisDepthSort::RequestData(
     //
     vtkPolyData *minusZ = GetMinusZOutput();
     minusZ->SetPoints(input->GetPoints());
-    minusZ->Allocate(input);
+    minusZ->AllocateCopy(input);
     outPD = minusZ->GetPointData();
     outCD = minusZ->GetCellData();
     outPD->PassData(inPD);
@@ -292,7 +302,7 @@ vtkAxisDepthSort::RequestData(
 
     vtkPolyData *plusZ = GetPlusZOutput();
     plusZ->SetPoints(input->GetPoints());
-    plusZ->Allocate(input);
+    plusZ->AllocateCopy(input);
     outPD = plusZ->GetPointData();
     outCD = plusZ->GetCellData();
     outPD->PassData(inPD);
@@ -310,6 +320,13 @@ vtkAxisDepthSort::RequestData(
     //
     // Clean up memory.
     //
+
+    plusX->Squeeze();
+    plusY->Squeeze();
+    plusZ->Squeeze();
+    minusX->Squeeze();
+    minusY->Squeeze();
+    minusZ->Squeeze();
     delete [] loc;
     delete [] pairs;
 
