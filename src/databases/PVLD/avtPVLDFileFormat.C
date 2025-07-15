@@ -2035,8 +2035,8 @@ avtPVLDFileFormat::AddTiedSetVariables( avtDatabaseMetaData *md )
             const vector<int>& dims = preader_->GetTiedSetVariableDims(i);
 
             if( name == "MstSeg"  ) continue;
-            if( name == "XManager" ) continue;
-            if( name == "XWorker"  ) continue;
+            if( name == "XMaster" ) continue;
+            if( name == "XSlave"  ) continue;
 
             if( dims.size()==1 )
             {
@@ -2091,8 +2091,8 @@ avtPVLDFileFormat::AddContactVariables( avtDatabaseMetaData *md )
             const vector<int>& dims = preader_->GetContactVariableDims(i);
 
             if( name == "MstSeg"  ) continue;
-            if( name == "XManager" ) continue;
-            if( name == "XWorker"  ) continue;
+            if( name == "XMaster" ) continue;
+            if( name == "XSlave"  ) continue;
 
             if( dims.size()==1 )
             {

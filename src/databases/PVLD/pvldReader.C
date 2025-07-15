@@ -2888,7 +2888,7 @@ ReadTiedSetWorkerBlockMesh( hid_t fid, int nb, vector<float>& crd )
 {
     if( std::find( tdst_dsname_.begin(),
                    tdst_dsname_.end(),
-                   "XWorker" ) == tdst_dsname_.end() )
+                   "XSlave" ) == tdst_dsname_.end() )
         throw std::runtime_error( "No element definition is found in PVLD_Reader::ReadTiedSetWorkerBlockMesh()\n" );
 
     hsize_t sft[2],len[2];
@@ -2899,7 +2899,7 @@ ReadTiedSetWorkerBlockMesh( hid_t fid, int nb, vector<float>& crd )
 
     hsize_t nd = len[0]*len[1];
     crd.resize( nd );
-    ReadGroupDataSet( fid, tiedset_name.c_str(), "XWorker",
+    ReadGroupDataSet( fid, tiedset_name.c_str(), "XSlave",
                       H5T_NATIVE_FLOAT, crd.data(), 2, sft, len );
 }
 
@@ -2910,7 +2910,7 @@ ReadTiedSetManagerBlockMesh( hid_t fid, int nb, vector<float>& crd )
 {
     if( std::find( tdst_dsname_.begin(),
                    tdst_dsname_.end(),
-                   "XManager" ) == tdst_dsname_.end() )
+                   "XMaster" ) == tdst_dsname_.end() )
         throw std::runtime_error( "No element definition is found in PVLD_Reader::ReadTiedSetManagerBlockMesh()\n" );
 
     hsize_t sft[2],len[2];
@@ -2921,7 +2921,7 @@ ReadTiedSetManagerBlockMesh( hid_t fid, int nb, vector<float>& crd )
 
     hsize_t nd = len[0]*len[1];
     crd.resize( nd );
-    ReadGroupDataSet( fid, tiedset_name.c_str(), "XManager",
+    ReadGroupDataSet( fid, tiedset_name.c_str(), "XMaster",
                       H5T_NATIVE_FLOAT, crd.data(), 2, sft, len );
 }
 
@@ -3040,7 +3040,7 @@ ReadContactWorkerBlockMesh( hid_t fid, int nb, vector<float>& crd )
 {
     if( std::find( cntt_dsname_.begin(),
                    cntt_dsname_.end(),
-                   "XWorker" ) == cntt_dsname_.end() )
+                   "XSlave" ) == cntt_dsname_.end() )
         throw std::runtime_error( "No element definition is found in PVLD_Reader::ReadContactWorkerBlockMesh()\n" );
 
     hsize_t sft[2],len[2];
@@ -3051,7 +3051,7 @@ ReadContactWorkerBlockMesh( hid_t fid, int nb, vector<float>& crd )
 
     hsize_t nd = len[0]*len[1];
     crd.resize( nd );
-    ReadGroupDataSet( fid, contact_name.c_str(), "XWorker",
+    ReadGroupDataSet( fid, contact_name.c_str(), "XSlave",
                       H5T_NATIVE_FLOAT, crd.data(), 2, sft, len );
 }
 
@@ -3061,7 +3061,7 @@ ReadContactManagerBlockMesh( hid_t fid, int nb, vector<float>& crd )
 {
     if( std::find( cntt_dsname_.begin(),
                    cntt_dsname_.end(),
-                   "XManager" ) == cntt_dsname_.end() )
+                   "XMaster" ) == cntt_dsname_.end() )
         throw std::runtime_error( "No element definition is found in PVLD_Reader::ReadContactManagerBlockMesh()\n" );
 
     hsize_t sft[2],len[2];
@@ -3072,7 +3072,7 @@ ReadContactManagerBlockMesh( hid_t fid, int nb, vector<float>& crd )
 
     hsize_t nd = len[0]*len[1];
     crd.resize( nd );
-    ReadGroupDataSet( fid, contact_name.c_str(), "XManager",
+    ReadGroupDataSet( fid, contact_name.c_str(), "XMaster",
                       H5T_NATIVE_FLOAT, crd.data(), 2, sft, len );
 }
 
