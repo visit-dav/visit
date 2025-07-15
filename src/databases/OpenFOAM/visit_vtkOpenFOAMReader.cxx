@@ -53,7 +53,6 @@
 #define VTK_FOAMFILE_RECOGNIZE_LINEHEAD 0
 
 #include "visit_vtkOpenFOAMReader.h"
-#include <visit-config.h> // for LIB_VERSION_GE
 
 #include <algorithm>
 #include <vector>
@@ -6419,11 +6418,7 @@ void visit_vtkOpenFOAMReaderPrivate::InterpolateCellToPoint(vtkFloatArray *pData
   vtkCellLinks *cl = NULL;
   if (ug)
     {
-#if LIB_VERSION_GE(VTK,9,5,0)
     cl = vtkCellLinks::SafeDownCast(ug->GetLinks());
-#else
-    cl = vtkCellLinks::SafeDownCast(ug->GetCellLinks());
-#endif
     }
 
   const int nComponents = iData->GetNumberOfComponents();
