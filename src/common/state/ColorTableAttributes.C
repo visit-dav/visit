@@ -119,6 +119,7 @@ void ColorTableAttributes::Copy(const ColorTableAttributes &obj)
     tagListNames = obj.tagListNames;
     tagListActive = obj.tagListActive;
     tagListNumRefs = obj.tagListNumRefs;
+    std::cout << "I'm doing a copy from " << &obj << " to " << this << std::endl;
     tagListTableItemFlag = obj.tagListTableItemFlag;
     tagChangesTag = obj.tagChangesTag;
     tagChangesType = obj.tagChangesType;
@@ -2018,7 +2019,10 @@ void
 ColorTableAttributes::SetColorTableActiveFlag(int index, bool val)
 {
     if (index >= 0 && index < colorTableActiveFlags.size())
+    {
         colorTableActiveFlags[index] = val;
+        Select(ID_colorTableActiveFlags, (void *)&colorTableActiveFlags);
+    }
 }
 
 // ****************************************************************************
@@ -2343,7 +2347,6 @@ ColorTableAttributes::CreateTagListEntry(const std::string tagname,
 {
     if (! CheckTagInTagList(tagname))
     {
-        std::cout << "creating new tag " << tagname << std::endl;
         tagListNames.push_back(tagname);
         tagListActive.push_back(active);
         tagListNumRefs.push_back(numrefs);
@@ -2369,7 +2372,6 @@ ColorTableAttributes::CreateTagListEntry(const std::string tagname,
 void
 ColorTableAttributes::RemoveTagListEntry(const int index)
 {
-    std::cout << "erasing tag with index " << index << std::endl;
     if (index >= 0 && index < tagListNames.size())
     {
         auto namesItr = tagListNames.begin();
@@ -2986,7 +2988,6 @@ void
 ColorTableAttributes::SetTagTableItemFlag(const int index,
                                           const bool tagTableItemExists)
 {
-    std::cout << "setting SetTagTableItemFlag for index " << index  << " to " << (tagTableItemExists ? "true" : "false") << std::endl;
     if (index >= 0 && index < tagListTableItemFlag.size())
         tagListTableItemFlag[index] = tagTableItemExists;
     SelectTagList();
@@ -3011,7 +3012,6 @@ ColorTableAttributes::GetTagTableItemFlag(const std::string tagname)
     if (index >= 0 && index < tagListTableItemFlag.size())
         return tagListTableItemFlag[index];
     // the tag is unlikely to have a tag table item if it doesn't exist
-    std::cout << "tag doesn't exist THIS IS BAD" << std::endl;
     return false;
 }
 
@@ -3030,7 +3030,6 @@ ColorTableAttributes::GetTagTableItemFlag(const std::string tagname)
 bool
 ColorTableAttributes::CheckTagInTagList(const std::string tagname)
 {
-    // std::cout << "GetIndexOfTag(tagname) " << GetIndexOfTag(tagname) << std::endl;
     return GetIndexOfTag(tagname) >= 0;
 }
 
@@ -3069,8 +3068,6 @@ ColorTableAttributes::RemoveUnusedTagsFromTagTable()
                 removedTags.push_back(*namesItr);
             // else - there is no tag table entry to delete so we can continue
 
-            std::cout << "remove unused tag " << *namesItr << std::endl;
-
             // remove this entry from the tag list
             namesItr = tagListNames.erase(namesItr);
             activeItr = tagListActive.erase(activeItr);
@@ -3085,6 +3082,8 @@ ColorTableAttributes::RemoveUnusedTagsFromTagTable()
             tableitemflagItr ++;
         }
     }
+
+    SelectTagList();
 
     return removedTags;
 }
@@ -3220,6 +3219,8 @@ ColorTableAttributes::PrintTagList()
     auto numrefsItr = tagListNumRefs.begin();
     auto tableitemflagItr = tagListTableItemFlag.begin();
 
+    std::cout << this << std::endl;
+
     // these four vectors are all the same length so we can get away with this
     while (namesItr != tagListNames.end())
     {
@@ -3233,6 +3234,8 @@ ColorTableAttributes::PrintTagList()
         numrefsItr ++;
         tableitemflagItr ++;
     }
+
+    std::cout << "=====================" << std::endl;
 }
 
 // ****************************************************************************

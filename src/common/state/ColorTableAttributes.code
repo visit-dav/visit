@@ -2011,9 +2011,9 @@ Definition:
 bool
 ColorTableAttributes::GetTagTableItemFlag(const std::string tagname)
 {
-    int index = GetIndexOfTag(tagname);
+    const int index = GetIndexOfTag(tagname);
     if (index >= 0 && index < tagListTableItemFlag.size())
-        return tagListTableItemFlag[index];
+        return static_cast<bool>(tagListTableItemFlag[index]);
     // the tag is unlikely to have a tag table item if it doesn't exist
     return false;
 }
