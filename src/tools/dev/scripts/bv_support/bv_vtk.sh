@@ -27,8 +27,8 @@ function bv_vtk_depends_on
 
     if [[ "$DO_MESAGL" == "yes" ]]; then
         depends_on="${depends_on} mesagl glu"
-    elif [[ "$DO_OSMESA" == "yes" ]]; then
-        depends_on="${depends_on} osmesa"
+    #elif [[ "$DO_OSMESA" == "yes" ]]; then
+    #    depends_on="${depends_on} osmesa"
     fi
 
     if [[ "$DO_OSPRAY" == "yes" ]]; then
