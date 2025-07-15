@@ -147,6 +147,10 @@ class QvisNoDefaultColorTableButton;
 //   Justin Privitera, Wed Oct 11 19:25:42 PDT 2023
 //   Added colorValueChanged and changed the argument name for
 //   alphaValueChanged.
+// 
+//   Justin Privitera, Tue Jul 15 14:04:58 PDT 2025
+//   Added `actuallyUpdateWindow` to give greater control over when we want the
+//   window to be updated.
 // ****************************************************************************
 
 class GUI_API QvisColorTableWindow : public QvisPostableWindowObserver
