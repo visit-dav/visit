@@ -4587,33 +4587,51 @@ QvisGUIApplication::SaveSession()
 //
 //   Kathleen Biagas, Thu Jan 21, 2021
 //   Replace QString::asprintf with QString.arg as suggested by Qt docs.
+// 
+//   Justin Privitera, Fri Jul 11 13:20:38 PDT 2025
+//   We take existing files in the directory we are going to save into account,
+//   updating the session count as needed.
 //
 // ****************************************************************************
 
 void
 QvisGUIApplication::SaveSessionAs()
 {
-    // Create the name of a VisIt session file to use.
     QString defaultFile;
-    if(sessionHost.empty())
+
+    bool keepTrying = true;
+    while (keepTrying)
     {
-        defaultFile = QString("%1visit%2.session")
-            .arg(sessionDir.c_str())
-            .arg(sessionCount,4,10,QLatin1Char('0'));
-    }
-    else
-    {
-#ifdef _WIN32
-        if (sessionDir.substr(0,2) == "\\\\")
+        keepTrying = false;
+
+        // Create the name of a VisIt session file to use.
+        if(sessionHost.empty())
+        {
             defaultFile = QString("%1visit%2.session")
                 .arg(sessionDir.c_str())
                 .arg(sessionCount,4,10,QLatin1Char('0'));
+        }
         else
-#endif
-        defaultFile = QString("%1:%2visit%3.session")
-                .arg(sessionHost.c_str())
-                .arg(sessionDir.c_str())
-                .arg(sessionCount,4,10,QLatin1Char('0'));
+        {
+    #ifdef _WIN32
+            if (sessionDir.substr(0,2) == "\\\\")
+                defaultFile = QString("%1visit%2.session")
+                    .arg(sessionDir.c_str())
+                    .arg(sessionCount,4,10,QLatin1Char('0'));
+            else
+    #endif
+            defaultFile = QString("%1:%2visit%3.session")
+                    .arg(sessionHost.c_str())
+                    .arg(sessionDir.c_str())
+                    .arg(sessionCount,4,10,QLatin1Char('0'));
+        }
+
+        ifstream ifile(defaultFile.toStdString());
+        if (!ifile.fail())
+        {
+            sessionCount ++;
+            keepTrying = true;
+        }
     }
 
     // Get the name of the file that the user saved.
