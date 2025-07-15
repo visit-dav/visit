@@ -1,6 +1,6 @@
 function bv_llvm_initialize
 {
-    export DO_LLVM="no"
+    export DO_LLVM="yes"
 }
 
 function bv_llvm_enable

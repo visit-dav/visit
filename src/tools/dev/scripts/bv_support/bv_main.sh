@@ -1173,12 +1173,7 @@ function run_build_visit()
             --thirdparty-path) next_arg="thirdparty-path";;
             --version) next_arg="version";;
             --xdb) DO_XDB="yes";;
-            # "--qt510" is actually handled elsewhere, but it is also here
-            # to prevent it triggering an "Urecognized option" error.
-            --qt510) ;;
             --skip-opengl-context-check) DO_CONTEXT_CHECK="no";;
-            # want to disable this check with VTK-94 (or write a new version)
-            --vtk94) DO_CONTEXT_CHECK="no";;
             *)
                 echo "Unrecognized option '${arg}'."
                 ANY_ERRORS="yes";;
@@ -1375,6 +1370,22 @@ function run_build_visit()
     # initialize module variables, since all of VisIt's variables should
     # be set by now..
     initialize_module_variables
+
+
+    # OSMESA is on by default (required), so that it can serve as fallback
+    # at runtime for offscreen rendering if VTK cannot otherwise generate
+    # a good context.  However, if user needs MESAGL for on-screen context
+    # (opengl_context_check tests this), then we want to turn off OSMESA
+    # since it will be available with the MESGL build.
+    if [[ "$DO_MESAGL" == "yes" && "$DO_OSMESA" == "yes" ]] ; then
+        bv_osmesa_disable
+    fi
+
+    # LLVM is on by default (since OSMESA is required),
+    # If neither OSMESA nor MESAGL are being used, disable LLVM
+    if [[ "$DO_MESAGL" == "no" &&  "$DO_OSMESA" == "no" ]] ; then
+        bv_llvm_disable
+    fi
 
     #
     # Disable qt,qwt if it is not needed
