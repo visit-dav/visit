@@ -137,12 +137,26 @@ QvisFileOpenWindow::SetHideFileFormat(bool value)
     hideFileFormat = value;
 }
 
+// ****************************************************************************
+// Method: QvisFileOpenWindow::SetFilename
+//
+// Modifications:
+//   Kathleen Biagas, Fri Jul 11, 2025
+//   Enable okButton if passed-in filename isn't empty.
+//
+// ****************************************************************************
+
 void
 QvisFileOpenWindow::SetFilename(const QString &f)
 {
     if(showFilename)
     {
         filenameEdit->setText(f);
+        // This could be managed by connecting the textChanged signal to the
+        // filenameEditChanged SLOT, but that signal is emitted with every
+        // keystroke as well as when the text is changed programatically as is
+        // done in this method.  Trying to avoid every keystroke round trips.
+        okButton->setEnabled(!f.isEmpty());
     }
 }
 

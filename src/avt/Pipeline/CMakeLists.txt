@@ -51,6 +51,9 @@
 #   Cyrus Harrison, Thu Mar  9 11:30:26 PST 2023
 #   Fixed typo in vtk-m link for avtpipeline_par
 #
+#   Eric Brugger, Mon Jun 16 13:38:54 PDT 2025
+#   Replace "vtkm_" libraries with "vtkm::".
+#
 #****************************************************************************/
 
 add_library(avtpipeline_ser)
@@ -95,7 +98,7 @@ target_link_libraries(avtpipeline_ser
                       visit_vtk lightweight_visit_vtk ${vtklibs}
                       ${ZLIB_LIBRARY})
 if(HAVE_LIBVTKM)
-    target_link_libraries(avtpipeline_ser vtkm_cont vtkm_filter_contour vtkm_filter_entity_extraction)
+    target_link_libraries(avtpipeline_ser vtkm::cont vtkm::filter_contour vtkm::filter_entity_extraction)
     if(VTKm_ENABLE_KOKKOS)
         target_link_libraries(avtpipeline_ser amdhip64)
     endif()
@@ -110,7 +113,7 @@ if(VISIT_PARALLEL)
                           visit_vtk lightweight_visit_vtk ${vtklibs}
                           ${ZLIB_LIBRARY})
     if(HAVE_LIBVTKM)
-        target_link_libraries(avtpipeline_par vtkm_cont vtkm_filter_contour vtkm_filter_entity_extraction)
+        target_link_libraries(avtpipeline_par vtkm::cont vtkm::filter_contour vtkm::filter_entity_extraction)
         if(VTKm_ENABLE_KOKKOS)
             target_link_libraries(avtpipeline_par amdhip64)
         endif()
