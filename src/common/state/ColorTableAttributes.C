@@ -2317,7 +2317,7 @@ ColorTableAttributes::GetIndexOfTag(const std::string tagname)
     for (size_t i = 0; i < tagListNames.size(); i ++)
     {
         if (tagListNames[i] == tagname)
-            return i;
+            return static_cast<int>(i);
     }
     return -1;
 }
@@ -3004,9 +3004,9 @@ ColorTableAttributes::SetTagTableItemFlag(const int index,
 bool
 ColorTableAttributes::GetTagTableItemFlag(const std::string tagname)
 {
-    int index = GetIndexOfTag(tagname);
+    const int index = GetIndexOfTag(tagname);
     if (index >= 0 && index < tagListTableItemFlag.size())
-        return tagListTableItemFlag[index];
+        return static_cast<bool>(tagListTableItemFlag[index]);
     // the tag is unlikely to have a tag table item if it doesn't exist
     return false;
 }
@@ -3079,7 +3079,10 @@ ColorTableAttributes::RemoveUnusedTagsFromTagTable()
         }
     }
 
-    SelectTagList();
+    if (!removedTags.empty())
+    {
+        SelectTagList();
+    }
 
     return removedTags;
 }

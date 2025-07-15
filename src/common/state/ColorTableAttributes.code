@@ -969,7 +969,10 @@ void
 ColorTableAttributes::SetColorTableActiveFlag(int index, bool val)
 {
     if (index >= 0 && index < colorTableActiveFlags.size())
+    {
         colorTableActiveFlags[index] = val;
+        Select(ID_colorTableActiveFlags, (void *)&colorTableActiveFlags);
+    }
 }
 
 Function: GetColorTableActiveFlag
@@ -2136,6 +2139,11 @@ ColorTableAttributes::RemoveUnusedTagsFromTagTable()
             numrefsItr ++;
             tableitemflagItr ++;
         }
+    }
+
+    if (!removedTags.empty())
+    {
+        SelectTagList();
     }
 
     return removedTags;
