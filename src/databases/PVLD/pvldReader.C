@@ -2003,6 +2003,11 @@ ReadInfo( hid_t file_id, const char* name,
     herr_t herr;
     (void) herr;
 
+    int nengines = 1;
+#ifdef PARALLEL
+    nengines = PAR_Size();
+#endif
+
     try
     {
         dsname.clear();
@@ -2017,23 +2022,30 @@ ReadInfo( hid_t file_id, const char* name,
         int npart;
         if( num!=0 )
         {
+            bool repartition = true;
             if( H5Aexists( gid, "partition" )>0 )
             {
                 hid_t aid = OpenAttribute( gid, "partition" );
                 int ndim=1;
                 hsize_t dims[1];
                 GetAttributeSize( aid, ndim, dims );
-                part.resize( dims[0] );
-                ReadAttribute( aid, H5T_NATIVE_INT, part.data() );
-                CloseAttribute( aid );
-                npart = dims[0]-1;
+                if (dims[0] >= nengines) // add this to avoid error in CheckNumberOfEngines
+                {
+                    part.resize( dims[0] );
+                    ReadAttribute( aid, H5T_NATIVE_INT, part.data() );
+                    CloseAttribute( aid );
+                    npart = dims[0]-1;
+                    repartition = false;
+                }
             }
-            else
+            
+            if (repartition)
             {
-                npart = default_number_of_partitions;
+                npart = nengines; //default_number_of_partitions;
                 part.resize( npart+1 );
                 EquallyPartition( npart, num, part.data() );
             }
+
             if( part.back() != num )
                 throw std::runtime_error("Inconsistency is found in partition info!\n");
 
