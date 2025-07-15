@@ -474,13 +474,18 @@ ELSE(VISIT_STATIC)
 ENDIF(VISIT_STATIC)
 
 #
-# For module setup of the pure python parts of the visit module
+# visitmodule.so needs to land in /site-packages/visit, make sure that dir is
+# created with proper cmake target dependency order
 #
-ADD_SUBDIRECTORY(visitmodule)
-# the visitmodule subdir added above creates the visitmodule_py_setup target
-# visitmodule needs to depend on it so it is built after the py module,
-# otherwise pip install will overwrite the directory and delete visitmodule.so
-target_link_libraries(visitmodule PRIVATE visitmodule_py_setup)
+add_custom_target(create_visit_module_dir ALL
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/site-packages/visit")
+
+add_dependencies(visitmodule create_visit_module_dir)
+
+#
+# For module setup pure python visit modules
+#
+ADD_SUBDIRECTORY(visit_launcher)
 ADD_SUBDIRECTORY(visit_utils)
 ADD_SUBDIRECTORY(visit_flow)
 

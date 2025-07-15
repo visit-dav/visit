@@ -4,7 +4,7 @@
 
 ###############################################################################
 # file: setup.py
-# Purpose: disutils setup for the visit module.
+# Purpose: python setup for the visit_launcher module.
 #
 # Programmer: Cyrus Harrison
 # Creation: Tue Apr  3 13:40:18 PDT
@@ -18,9 +18,9 @@
 
 from setuptools import setup
 
-setup (name = 'visit',
-       description = 'visit',
-       package_dir = {'visit':'py_src'},
-       packages=['visit'])
+setup (name = 'visit_launcher',
+       description = 'visit_launcher',
+       package_dir = {'visit_launcher':'py_src'},
+       packages=['visit_launcher'])
 
 

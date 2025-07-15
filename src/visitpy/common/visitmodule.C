@@ -20159,12 +20159,12 @@ static struct PyModuleDef visitmodule_def =
 #if defined(IS_PY3K)
 //---------------------------------------------------------------------------//
 //---------------------------------------------------------------------------//
-PyObject *PyInit_visit()
+PyMODINIT_FUNC PyInit_visit()
 {
     return initialize_visit_python_module();
 }
 //---------------------------------------------------------------------------//
-PyObject * PyInit_visitmodule(void)
+PyMODINIT_FUNC PyInit_visitmodule(void)
 {
     return initialize_visit_python_module();
 }

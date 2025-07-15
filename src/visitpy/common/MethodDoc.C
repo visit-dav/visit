@@ -87,8 +87,8 @@ const char *visit_AddArgument_doc =
 "\n"
 "Example:\n"
 "\n"
-"import visit\n"
-"visit.AddArgument(\"-nowin\") # Add the -nowin argument to the viewer.\n"
+"import visit_launcher\n"
+"visit_launcher.AddArgument(\"-nowin\") # Add the -nowin argument to the viewer.\n"
 ;
 const char *visit_AddMachineProfile_doc = 
 "AddMachineProfile\n"
@@ -231,8 +231,9 @@ const char *visit_AddWindow_doc =
 "\n"
 "Example:\n"
 "\n"
+"import visit_launcher\n"
+"visit_launcher.Launch()\n"
 "import visit\n"
-"visit.Launch()\n"
 "visit.AddWindow() # Create window #2\n"
 "visit.AddWindow() # Create window #3\n"
 ;
@@ -835,8 +836,9 @@ const char *visit_Close_doc =
 "\n"
 "Example:\n"
 "\n"
+"import visit_launcher\n"
+"visit_launcher.Launch()\n"
 "import visit\n"
-"visit.Launch()\n"
 "visit.Close() # Close the viewer\n"
 ;
 const char *visit_CloseComputeEngine_doc = 
@@ -5110,10 +5112,10 @@ const char *visit_Launch_doc =
 "\n"
 "Example:\n"
 "\n"
+"import visit_launcher\n"
+"visit_launcher.AddArgument(\"-nowin\")\n"
+"visit_launcher.Launch()\n"
 "import visit\n"
-"import visit\n"
-"visit.AddArgument(\"-nowin\")\n"
-"visit.Launch()\n"
 ;
 const char *visit_LaunchNowin_doc = 
 "LaunchNowin\n"
@@ -5150,10 +5152,11 @@ const char *visit_LaunchNowin_doc =
 "\n"
 "Example:\n"
 "\n"
+"import visit_launcher\n"
+"visit_launcher.AddArgument(\"-geometry\")\n"
+"visit_launcher.AddArgument(\"1024x1024\")\n"
+"visit_launcher.LaunchNowin()\n"
 "import visit\n"
-"visit.AddArgument(\"-geometry\")\n"
-"visit.AddArgument(\"1024x1024\")\n"
-"visit.LaunchNowin()\n"
 ;
 const char *visit_Lineout_doc = 
 "Lineout\n"
@@ -10835,8 +10838,9 @@ const char *visit_SetWindowArea_doc =
 "\n"
 "Example:\n"
 "\n"
+"import visit_launcher\n"
+"visit_launcher.Launch()\n"
 "import visit\n"
-"visit.Launch()\n"
 "visit.SetWindowArea(0, 0, 600, 600)\n"
 "visit.SetWindowLayout(4)\n"
 ;
@@ -10947,8 +10951,9 @@ const char *visit_ShowAllWindows_doc =
 "Example:\n"
 "\n"
 "#% python\n"
+"import visit_launcher\n"
+"visit_launcher.Launch()\n"
 "import visit\n"
-"visit.Launch()\n"
 "visit.ShowAllWindows()\n"
 ;
 const char *visit_ShowToolbars_doc = 

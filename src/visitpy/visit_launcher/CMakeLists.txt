@@ -19,9 +19,9 @@
 #
 #****************************************************************************
 
-PYTHON_ADD_PIP_SETUP(NAME visitmodule_py_setup
+PYTHON_ADD_PIP_SETUP(NAME visit_launcher_py_setup
                      DEST_DIR site-packages
-                     PY_MODULE_DIR visit
+                     PY_MODULE_DIR visit_launcher
                      PY_SETUP_FILE setup.py
                      PY_SOURCES  py_src/__init__.py
                                  py_src/frontend.py)
