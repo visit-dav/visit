@@ -803,7 +803,7 @@ Engine::InitializeCompute()
 #endif
     if (avtCallback::GetSoftwareRendering())
     {
-        // any message?
+        debug1 << mName << "Setting up for offscreen rendering." << endl;
     }
     else
     {
