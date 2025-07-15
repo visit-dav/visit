@@ -119,7 +119,6 @@ void ColorTableAttributes::Copy(const ColorTableAttributes &obj)
     tagListNames = obj.tagListNames;
     tagListActive = obj.tagListActive;
     tagListNumRefs = obj.tagListNumRefs;
-    std::cout << "I'm doing a copy from " << &obj << " to " << this << std::endl;
     tagListTableItemFlag = obj.tagListTableItemFlag;
     tagChangesTag = obj.tagChangesTag;
     tagChangesType = obj.tagChangesType;
@@ -697,9 +696,6 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
 
     if((node = searchNode->GetNode("tagListNames")) != 0)
     {
-        std::cout << "before set from node" << std::endl;
-        PrintTagList();
-
         stringVector tagListNamesFromNode = node->AsStringVector();
         for (auto tagname : tagListNamesFromNode)
             CreateTagListEntry(tagname, false, 0, false);
@@ -3219,8 +3215,6 @@ ColorTableAttributes::PrintTagList()
     auto numrefsItr = tagListNumRefs.begin();
     auto tableitemflagItr = tagListTableItemFlag.begin();
 
-    std::cout << this << std::endl;
-
     // these four vectors are all the same length so we can get away with this
     while (namesItr != tagListNames.end())
     {
@@ -3234,8 +3228,6 @@ ColorTableAttributes::PrintTagList()
         numrefsItr ++;
         tableitemflagItr ++;
     }
-
-    std::cout << "=====================" << std::endl;
 }
 
 // ****************************************************************************

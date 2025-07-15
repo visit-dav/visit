@@ -104,6 +104,7 @@ QvisColorTableWindow::QvisColorTableWindow(
     colorTableTypeGroup = 0;
     searchTerm = QString("");
     tagEdit = QString("");
+    actuallyUpdateWindow = true;
 }
 
 // ****************************************************************************
@@ -729,6 +730,11 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
 void
 QvisColorTableWindow::UpdateWindow(bool doAll)
 {
+    if (!actuallyUpdateWindow)
+    {
+        return;
+    }
+
     bool updateNames = false;
     bool updateColorPoints = false;
 
@@ -984,8 +990,24 @@ QvisColorTableWindow::UpdateTagTable()
 
     tagTable->sortByColumn(1, Qt::AscendingOrder);
 
-    std::cout << "after update tagTable" << std::endl;
-    colorAtts->PrintTagList();
+    // Why do we need to do this? The Color Table Window (CTWindow) modifies 
+    // the Color Table Attributes (CTAtts) by calling 
+    //     colorAtts->SetTagTableItemFlag(currtag, true);
+    // up above, which tells the CTAtts that a tag table item exists for a 
+    // given tag. We need to notify all the CTAtts observers that the CTAtts 
+    // has changed so they can update accordingly. Thus we call 
+    //     colorAtts->Notify();
+    // However, the CTWindow is itself a CTAtts watcher, and notifying the 
+    // observers that the CTAtts have changed has the unwanted effect of 
+    // causing the CTWindow to update itself, leading to this function being
+    // called, which again calls Notify(), which leads to infinite recursion.
+    // We do need the observers to know about these changes, but we need the 
+    // CTWindow to not react, since it is making the changes, so we need a 
+    // switch to control whether or not the CTWindow should actually get 
+    // updated. We turn it off, call Notify(), and then turn it back on.
+    actuallyUpdateWindow = false;
+    colorAtts->Notify();
+    actuallyUpdateWindow = true;
 }
 
 

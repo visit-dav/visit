@@ -221,6 +221,7 @@ private:
     bool                     sliding;
     QString                  searchTerm;
     QString                  tagEdit;
+    bool                     actuallyUpdateWindow;
 
     // a map from tag names to tab table item pointers
     std::map<std::string, QTreeWidgetItem*> tagTableItems;
