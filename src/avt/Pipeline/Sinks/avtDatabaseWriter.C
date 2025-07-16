@@ -1046,6 +1046,7 @@ avtDatabaseWriter::Write(const std::string &plotName,
     debug5 << line << endl << endl;
 }
 
+
 // ****************************************************************************
 // Method: avtDatabaseWriter::GroupWrite
 //
@@ -1062,6 +1063,9 @@ avtDatabaseWriter::Write(const std::string &plotName,
 // Creation:   Thu Aug  6 16:34:16 PDT 2015
 //
 // Modifications:
+//
+//    Cyrus Harrison, Wed Jul 16 09:18:14 PDT 2025
+//    Added call to remove unsued points for the non combined case
 //
 // ****************************************************************************
 void
@@ -1246,9 +1250,19 @@ avtDatabaseWriter::GroupWrite(const std::string &plotName,
                 vtkDataSet *in_ds = dt->GetDataRepresentation().GetDataVTK();
                 int domainId = dt->GetDataRepresentation().GetDomain();
                 std::string label(dt->GetDataRepresentation().GetLabel());
+                ReleventPointsFilter();
+                // RemoveUnusedPoints returns input dataset or new cleaned dataset
+                vtkDataSet *clean_ds = RemoveUnusedPoints(in_ds);
+
                 WriteChunk(in_ds, chunkID, domainId, label);
                 chunkID++;
                 ++nWritten;
+
+                // clean up the clean_ds if RemoveUnusedPoints created new dataset
+                if(clean_ds != in_ds)
+                {
+                    clean_ds->Delete()
+                }
             }
         }
 
@@ -1896,4 +1910,57 @@ void
 avtDatabaseWriter::SetContractToUse(avtContract_p ps)
 {
     savedContract = ps;
+}
+
+// ****************************************************************************
+// Method: avtDatabaseWriter::RemoveUnusedPoints
+//
+// Purpose:
+//   Cleans up unused points vtkDataset
+//
+// Arguments:
+//
+// Returns:
+//
+// Programmer: Cyrus Harrison
+// Creation:   Wed Jul 16 09:15:44 PDT 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+vtkDataSet *
+avtDatabaseWriter::RemoveUnusedPoints(vtkDataSet *ds)
+{
+    vtkDataSet *res = nullptr;
+    switch(ds->GetDataObjectType())
+    {
+        case VTK_POLY_DATA:
+        {
+            vtkPolyDataRelevantPointsFilter *rpfPD = vtkPolyDataRelevantPointsFilter::New();
+            rpfPD->SetInputData((vtkPolyData*)ds);
+            out_pd = vtkPolyData::New();
+            rpfPD->SetOutput(out_pd);
+            rpfPD->Update();
+            rpfPD->Delete();
+            res = out_pd;
+            break;
+        }
+        case VTK_UNSTRUCTURED_GRID:
+        {
+            vtkUnstructuredGridRelevantPointsFilter *rpfUG = vtkUnstructuredGridRelevantPointsFilter::New();
+            rpfUG->SetInputData((vtkUnstructuredGrid*)ds);
+            out_ug = vtkUnstructuredGrid::New();
+            rpfUG->SetOutput(out_ug);
+            rpfUG->Update();
+            rpfUG->Delete();
+            res = out_pd;
+            break;
+        }
+        default: // we should not need to filter points for other dataset types
+        {
+            break;
+        }
+    }
+
+    return res;
 }
