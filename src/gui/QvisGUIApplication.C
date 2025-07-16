@@ -122,8 +122,6 @@
 
 #include <QvisWizard.h>
 
-#include <QvisVisItUpdate.h>
-
 #include <SplashScreen.h>
 #include <WindowMetrics.h>
 
@@ -637,6 +635,9 @@ GUI_LogQtMessages(QtMsgType type, const QMessageLogContext &context, const QStri
 //   Kathleen Biagas, Wed Apr  5 12:46:04 PDT 2023
 //   Remove commented out section around obsolete function setColorSpec.
 //
+//   Cyrus Harrison, Wed Jul 16 09:27:32 PDT 2025
+//   Finished removal of VisIt Update GUI option related logic.
+//
 // ****************************************************************************
 
 QvisGUIApplication::QvisGUIApplication(int &argc, char **argv, ViewerProxy *proxy) :
@@ -697,7 +698,6 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv, ViewerProxy *prox
     allowSocketRead = false;
     keepAliveTimer = 0;
     allowFileSelectionChange = true;
-    visitUpdate = 0;
     saveMovieWizard = 0;
     setupCMFEWizard = 0;
     interpreter = 0;

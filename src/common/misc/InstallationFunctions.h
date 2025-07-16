@@ -14,10 +14,6 @@ typedef enum {CONFIGSTATE_IOERROR,
 // Installation directory functions
 std::string MISC_API GetVisItInstallationDirectory();
 std::string MISC_API GetVisItInstallationDirectory(const char *version);
-bool        MISC_API ReadInstallationInfo(std::string &distName, 
-                                          std::string &configName, 
-                                          std::string &bankName);
-
 std::string MISC_API GetVisItArchitectureDirectory();
 std::string MISC_API GetVisItArchitectureDirectory(const char *version);
 std::string MISC_API GetVisItLauncher();
