@@ -2007,15 +2007,21 @@ ColorTableAttributes::SelectColorTablesList()
 //    Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
 //    Added guard to prevent index out of bound errors.
 // 
-//   Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
-//   Changed ColorTableAttributes `active` to `colorTableActiveFlags`.
+//    Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
+//    Changed ColorTableAttributes `active` to `colorTableActiveFlags`.
+// 
+//    Justin Privitera, Tue Jul 15 14:04:58 PDT 2025
+//    Select the colorTableActiveFlags since it has changed.
 // ****************************************************************************
 
 void
 ColorTableAttributes::SetColorTableActiveFlag(int index, bool val)
 {
     if (index >= 0 && index < colorTableActiveFlags.size())
+    {
         colorTableActiveFlags[index] = val;
+        Select(ID_colorTableActiveFlags, (void *)&colorTableActiveFlags);
+    }
 }
 
 // ****************************************************************************
@@ -2306,6 +2312,8 @@ ColorTableAttributes::EnableDisableAllTags(bool enable)
 // Creation:   08/10/23
 //
 // Modifications:
+//    Justin Privitera, Tue Jul 15 14:04:58 PDT 2025
+//    Explicitly cast the return value.
 //
 // ****************************************************************************
 int
@@ -2314,7 +2322,9 @@ ColorTableAttributes::GetIndexOfTag(const std::string tagname)
     for (size_t i = 0; i < tagListNames.size(); i ++)
     {
         if (tagListNames[i] == tagname)
-            return i;
+        {
+            return static_cast<int>(i);
+        }
     }
     return -1;
 }
@@ -2996,14 +3006,18 @@ ColorTableAttributes::SetTagTableItemFlag(const int index,
 // Creation:   06/27/23
 //
 // Modifications:
+//    Justin Privitera, Tue Jul 15 14:04:58 PDT 2025
+//    Add `const` and explicitly cast the return value.
 //
 // ****************************************************************************
 bool
 ColorTableAttributes::GetTagTableItemFlag(const std::string tagname)
 {
-    int index = GetIndexOfTag(tagname);
+    const int index = GetIndexOfTag(tagname);
     if (index >= 0 && index < tagListTableItemFlag.size())
-        return tagListTableItemFlag[index];
+    {
+        return static_cast<bool>(tagListTableItemFlag[index]);
+    }
     // the tag is unlikely to have a tag table item if it doesn't exist
     return false;
 }
@@ -3039,6 +3053,8 @@ ColorTableAttributes::CheckTagInTagList(const std::string tagname)
 // Creation:   06/27/23
 //
 // Modifications:
+//    Justin Privitera, Tue Jul 15 14:04:58 PDT 2025
+//    Select the tag list if it has been changed.
 //
 // ****************************************************************************
 std::vector<std::string>
@@ -3074,6 +3090,11 @@ ColorTableAttributes::RemoveUnusedTagsFromTagTable()
             numrefsItr ++;
             tableitemflagItr ++;
         }
+    }
+
+    if (!removedTags.empty())
+    {
+        SelectTagList();
     }
 
     return removedTags;
