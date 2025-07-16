@@ -1952,7 +1952,7 @@ function build_vtk
     # Now build VTK.
     #
     info "Building VTK . . . (~20 minutes)"
-    env DYLD_LIBRARY_PATH=`pwd`/bin ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS || \
+    env DYLD_LIBRARY_PATH=`pwd`/bin ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS || \
         error "VTK did not build correctly.  Giving up."
 
     info "Installing VTK . . . "

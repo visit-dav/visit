@@ -228,7 +228,7 @@ function build_vtkm
     # Build vtkm
     #
     info "Building VTKm . . . (~2 minutes)"
-    ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS || error "VTKm did not build correctly. Giving up."
+    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS || error "VTKm did not build correctly. Giving up."
 
     info "Installing VTKm . . . (~2 minutes)"
     ${CMAKE_COMMAND} install . || error "VTKm did not install correctly."
