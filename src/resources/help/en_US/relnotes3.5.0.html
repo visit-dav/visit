@@ -40,6 +40,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Added support to the AMR plugin for reading files with only selected variables. </li>
   <li><a href="https://matplotlib.org/cmocean/">cmocean</a> color maps were added.</li>
   <li>Added '-python-log-file' command line option to control the name of the file used to log python methods (default='visitlog.py').</li>
+  <li>Add individual stress components to the PVLD plugin metadata.</li>
   <li>Refactored how to import visit into a stand alone python module. This is now done via the 'visit_launcher' module, avoiding module namespace issues.</li>
 </ul>
 
@@ -56,6 +57,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed an error appearing which states that the properties from a disabled light were modified even though no changes were made and "Apply" was pressed. Now, the error will only appear when a change was made and the light is still disabled as well as listing with all modified lights.</li>
   <li>Fixed bug with xmledit where changing a Field's type to 'att' or 'attvector' crashed the tool.</li>
   <li>Disabled rich text paste support in the Commands Window and Expressions Editor. Avoids battles with cut and pasted text from editors that embed formatting, such as vscode.</li>
+  <li>Fixed a bug causing Color Table Window tags to be duplicated when loading a session file.</li>
   <li>Save session file now takes existing session file names into account to avoid naming collisions.</li>
 </ul>
 
@@ -121,6 +123,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li><a href="https://github.com/visit-dav/visit/issues/20396">[#20396]</a> Fixed bug in Exodus reader where simple expressions involving some Exodus variables may wind up getting garbage data.</li>
   <li>Fixed a Tecplot reader bug that crashed the engine.</li>
   <li>Fixed a memory bug in AMR plugin when reading velocity magnitude.</li>
+  <li>In the PVLD plugin, show SPH in metadata at the first time step even when there are no SPH particles initially.</li>
   <li>Fixed a viewer crash with transparency.</li>
 </ul>
 

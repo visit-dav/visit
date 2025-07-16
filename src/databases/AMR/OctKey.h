@@ -1,6 +1,7 @@
 #ifndef OCTKEY_H
 #define OCTKEY_H
 #include <iostream>
+#include <cstdint>
 
 // Modifications:
 //   Kathleen Biagas, Wed Jun 11, 2025
