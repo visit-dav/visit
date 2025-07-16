@@ -41,7 +41,6 @@ class QvisPluginWindow;
 class QvisPreferencesWindow;
 class QvisSaveMovieWizard;
 class QvisSessionFileDatabaseLoader;
-class QvisVisItUpdate;
 class SplashScreen;
 
 // ****************************************************************************
@@ -569,7 +568,6 @@ protected:
 
     // Important objects
     QvisInterpreter              *interpreter;
-    QvisVisItUpdate              *visitUpdate;
     QvisSessionFileDatabaseLoader *sessionFileHelper;
 
     // Contains pointers to all of the plot windows.
