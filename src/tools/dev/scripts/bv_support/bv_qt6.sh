@@ -446,7 +446,7 @@ function build_qt6_base
     # Build Qt. Config options above make sure we only build the libs & tools.
     #
     info "Building Qt6 base . . . "
-    ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS
+    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS
 
     if [[ $? != 0 ]] ; then
         warn "Qt6 base build failed.  Giving up"
@@ -506,7 +506,7 @@ function build_qt6_tools
         ${QT6_INSTALL_DIR}/bin/qt-configure-module  ../${QT6_TOOLS_SOURCE_DIR}
 
     info "Building Qt6 tools . . . "
-    ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS
+    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS
 
     info "Installing Qt6 tools . . . "
     ${CMAKE_COMMAND} --install .
@@ -550,7 +550,7 @@ function build_qt6_svg
         ${QT6_INSTALL_DIR}/bin/qt-configure-module  ../${QT6_SVG_SOURCE_DIR}
 
     info "Building Qt6 svg . . . "
-    ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS
+    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS
 
     info "Installing Qt6 svg . . . "
     ${CMAKE_COMMAND} --install .
