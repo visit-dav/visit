@@ -352,7 +352,7 @@ function build_nektarpp
     # Build NEKTAR_PLUS_PLUS
     #
     info "Making Nektar++ . . ."
-    $MAKE $MAKE_OPT_FLAGS
+    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
         warn "Nektar++ build failed.  Giving up"
         return 1
@@ -362,7 +362,7 @@ function build_nektarpp
     # Install into the VisIt third party location.
     #
     info "Installing Nektar++ . . ."
-    $MAKE install
+    ${CMAKE_COMMAND} install .
     if [[ $? != 0 ]] ; then
         warn "Nektar++ install failed.  Giving up"
         return 1

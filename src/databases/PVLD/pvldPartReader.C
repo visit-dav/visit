@@ -45,6 +45,8 @@ FreeResource()
     FreeVector( solid_elmdef_ );
     solid_elmvar_.clear();
     FreeVector( solid_elmvar_ );
+    solid_elmvari_.clear();
+    FreeVector( solid_elmvari_ );
     solid_hvesft_.clear();
     FreeVector( solid_hvesft_ );
     solid_varnam_="";
@@ -55,6 +57,8 @@ FreeResource()
     FreeVector( shell_elmdef_ );
     shell_elmvar_.clear();
     FreeVector( shell_elmvar_ );
+    shell_elmvari_.clear();
+    FreeVector( shell_elmvari_ );
     shell_hvesft_.clear();
     FreeVector( shell_hvesft_ );
     shell_varnam_="";
@@ -65,6 +69,8 @@ FreeResource()
     FreeVector( surf_elmdef_ );
     surf_elmvar_.clear();
     FreeVector( surf_elmvar_ );
+    surf_elmvari_.clear();
+    FreeVector( surf_elmvari_ );
     surf_varnam_="";
 }
 
@@ -261,7 +267,43 @@ ReadSolidBlockData( hid_t fid, int varInd, int blkInd,
         edat[i]= solid_elmvar_[ sft+i ];
 }
 
+void PVLD_Part_Reader::
+ReadSolidBlockData( hid_t fid, int varInd, int blkInd,
+                    vector<int>& dims, vector<int>& edat )
+{
+    if( solid_matidx_.size()==0 )
+        ReadElementIndex( fid, solid_name.c_str(),
+                          nsolid_, solid_matid_, solid_matsft_,
+                          solid_matidx_ );
 
+    if( solid_varnam_ != solid_dsname_[varInd] )
+    {
+        ReadRawData( fid, solid_name.c_str(),
+                     solid_dsname_[varInd].c_str(), solid_dsdims_[varInd],
+                     solid_matidx_, solid_elmvari_ );
+        solid_varnam_ = solid_dsname_[varInd];
+    }
+
+    int sft  = solid_part_.at(blkInd);
+    int len  = solid_part_.at(blkInd+1) - sft;
+
+    const vector<int>& dd = solid_dsdims_[varInd];
+    int ndim = dd.size();
+    dims.resize( ndim );
+    dims[0] = len;
+    int esz = 1;
+    for( int d=1; d<ndim; d++ )
+    {
+        esz *= dd[d];
+        dims[d] = dd[d];
+    }
+
+    sft *= esz;
+    len *= esz;
+    edat.resize( len );
+    for( int i=0; i<len; i++ )
+        edat[i]= solid_elmvari_[ sft+i ];
+}
 
 
 void PVLD_Part_Reader::
@@ -428,6 +470,44 @@ ReadShellBlockData( hid_t fid, int varInd, int blkInd,
     edat.resize( len );
     for( int i=0; i<len; i++ )
         edat[i]= shell_elmvar_[ sft+i ];
+}
+
+void PVLD_Part_Reader::
+ReadShellBlockData( hid_t fid, int varInd, int blkInd,
+                    vector<int>& dims, vector<int>& edat )
+{
+    if( shell_matidx_.size()==0 )
+        ReadElementIndex( fid, shell_name.c_str(),
+                          nshell_, shell_matid_, shell_matsft_,
+                          shell_matidx_ );
+
+    if( shell_varnam_ != shell_dsname_[varInd] )
+    {
+        ReadRawData( fid, shell_name.c_str(),
+                     shell_dsname_[varInd].c_str(), shell_dsdims_[varInd],
+                     shell_matidx_, shell_elmvari_ );
+        shell_varnam_ = shell_dsname_[varInd];
+    }
+
+    int sft  = shell_part_.at(blkInd);
+    int len  = shell_part_.at(blkInd+1) - sft;
+
+    const vector<int>& dd = shell_dsdims_[varInd];
+    int ndim = dd.size();
+    dims.resize( ndim );
+    dims[0] = len;
+    int esz = 1;
+    for( int d=1; d<ndim; d++ )
+    {
+        esz *= dd[d];
+        dims[d] = dd[d];
+    }
+
+    sft *= esz;
+    len *= esz;
+    edat.resize( len );
+    for( int i=0; i<len; i++ )
+        edat[i]= shell_elmvari_[ sft+i ];
 }
 
 
@@ -599,6 +679,44 @@ ReadSurfaceBlockData( hid_t fid, int varInd, int blkInd,
         edat[i]= surf_elmvar_[ sft+i ];
 }
 
+void PVLD_Part_Reader::
+ReadSurfaceBlockData( hid_t fid, int varInd, int blkInd,
+                      vector<int>& dims, vector<int>& edat )
+{
+    if( surf_matidx_.size()==0 )
+        ReadElementIndex( fid, surface_name.c_str(),
+                          nsurf_, surf_matid_, surf_matsft_,
+                          surf_matidx_ );
+
+    if( surf_varnam_ != surf_dsname_[varInd] )
+    {
+        ReadRawData( fid, surface_name.c_str(),
+                     surf_dsname_[varInd].c_str(), surf_dsdims_[varInd],
+                     surf_matidx_, surf_elmvari_ );
+        surf_varnam_ = surf_dsname_[varInd];
+    }
+
+    int sft  = surf_part_.at(blkInd);
+    int len  = surf_part_.at(blkInd+1) - sft;
+
+    const vector<int>& dd = surf_dsdims_[varInd];
+    int ndim = dd.size();
+    dims.resize( ndim );
+    dims[0] = len;
+    int esz = 1;
+    for( int d=1; d<ndim; d++ )
+    {
+        esz *= dd[d];
+        dims[d] = dd[d];
+    }
+
+    sft *= esz;
+    len *= esz;
+    edat.resize( len );
+    for( int i=0; i<len; i++ )
+        edat[i]= surf_elmvari_[ sft+i ];
+}
+
 
 
 void PVLD_Part_Reader::
@@ -669,7 +787,7 @@ ReadMaterialInfo( hid_t fid, const char* grpname,
     {
         vector<int> mdat( ne );
         ReadGroupDataSet( fid, grpname, "Material",
-                          H5T_NATIVE_INT, &mdat[0] );
+                          H5T_NATIVE_INT, mdat.data() );
 
         vector<int> mcnt( nmmat_ );
         std::fill( mcnt.begin(), mcnt.end(), 0 );
@@ -706,7 +824,8 @@ ReadMaterialInfo( hid_t fid, const char* grpname,
         //ShowVector( "wlst", wlst );
 
         vector< vector<int> > matprt;
-        PartitionWeights( wlst, npart, matprt );
+        //PartitionWeights( wlst, npart, matprt );
+        PartitionWeights_alt( wlst, npart, matprt );
         //debug1 << "matprt.size()= " << matprt.size() << "\n";
 
         cnt=0;
@@ -763,27 +882,27 @@ ReadMaterialInfo( hid_t fid, const char* grpname,
         len = part.size();
         BroadcastInt( len );
         part.resize(len);
-        BroadcastIntArray( &part[0], len );
+        BroadcastIntArray( part.data(), len );
 
         len = prtsft.size();
         BroadcastInt( len );
         prtsft.resize(len);
-        BroadcastIntArray( &prtsft[0], len );
+        BroadcastIntArray( prtsft.data(), len );
 
         len = mat.size();
         BroadcastInt( len );
         mat.resize(len);
-        BroadcastIntArray( &mat[0], len );
+        BroadcastIntArray( mat.data(), len );
 
         len = matsft.size();
         BroadcastInt( len );
         matsft.resize(len);
-        BroadcastIntArray( &matsft[0], len );
+        BroadcastIntArray( matsft.data(), len );
 
         len = matidx.size();
         BroadcastInt( len );
         matidx.resize(len);
-        BroadcastIntArray( &matidx[0], len );
+        BroadcastIntArray( matidx.data(), len );
     }
 #endif
 }
@@ -800,7 +919,7 @@ ReadHistoryDataInfo( hid_t fid, const char* meshname, const vector<int>& part, i
         int ne = part[np];
         vector<int> cnt(ne);
         ReadGroupDataSet( fid, meshname, number_of_history_name.c_str(),
-                          H5T_NATIVE_INT, &cnt[0] );
+                          H5T_NATIVE_INT, cnt.data() );
         mxnb = *(std::max_element( cnt.begin(), cnt.end() ));
     }
 #ifdef PARALLEL
@@ -843,7 +962,7 @@ ReadRawData( hid_t fid,
 #endif
     {
         vector<int> tem( ne*sz );
-        ReadGroupDataSet( fid, grpname, varname, H5T_NATIVE_INT, &tem[0] );
+        ReadGroupDataSet( fid, grpname, varname, H5T_NATIVE_INT, tem.data() );
 
         for( int i=0; i<ne; i++ )
         {
@@ -855,7 +974,7 @@ ReadRawData( hid_t fid,
     }
 #ifdef PARALLEL
     {
-        BroadcastIntArray( &data[0], ne*sz );
+        BroadcastIntArray( data.data(), ne*sz );
     }
 #endif
 }
@@ -891,11 +1010,11 @@ ReadRawData( hid_t fid,
     if( PAR_Rank()==0 )
 #endif
     {
-        ReadGroupDataSet( fid, grpname, varname, H5T_NATIVE_DOUBLE, &tem[0] );
+        ReadGroupDataSet( fid, grpname, varname, H5T_NATIVE_DOUBLE, tem.data() );
     }
 #ifdef PARALLEL
     {
-        BroadcastDoubleArray( &tem[0], ne*sz );
+        BroadcastDoubleArray( tem.data(), ne*sz );
     }
 #endif
     for( int i=0; i<ne; i++ )
@@ -927,7 +1046,7 @@ ReadRawHistoryData( hid_t fid,
     {
         vector<int> cnt(ne);
         ReadGroupDataSet( fid, grpname, number_of_history_name.c_str(),
-                          H5T_NATIVE_INT, &cnt[0] );
+                          H5T_NATIVE_INT, cnt.data() );
 
         vector<int> dsp(ne+1);
         dsp[0]=0;
@@ -935,7 +1054,7 @@ ReadRawHistoryData( hid_t fid,
             dsp[i+1] = dsp[i] + cnt[i];
 
         vector<double> tem( dsp[ne] );
-        ReadGroupDataSet( fid, grpname, history_name.c_str(), H5T_NATIVE_DOUBLE, &tem[0] );
+        ReadGroupDataSet( fid, grpname, history_name.c_str(), H5T_NATIVE_DOUBLE, tem.data() );
 
         tgt.resize( dsp[ne] );
         sft.resize(ne+1);
@@ -956,11 +1075,11 @@ ReadRawHistoryData( hid_t fid,
         len = sft.size();
         BroadcastInt( len );
         sft.resize(len);
-        BroadcastIntArray( &sft[0], len );
+        BroadcastIntArray( sft.data(), len );
         len = tgt.size();
         BroadcastInt( len );
         tgt.resize(len);
-        BroadcastDoubleArray( &tgt[0], len );
+        BroadcastDoubleArray( tgt.data(), len );
     }
 #endif
 
@@ -986,7 +1105,7 @@ ReadElementIndex( hid_t fid,
     {
         vector<int> mdat( ne );
         ReadGroupDataSet( fid, grpname, "Material",
-                          H5T_NATIVE_INT, &mdat[0] );
+                          H5T_NATIVE_INT, mdat.data() );
 
         vector<int> mmap( nmmat_ );
         std::fill( mmap.begin(), mmap.end(), 0 );
@@ -1006,7 +1125,7 @@ ReadElementIndex( hid_t fid,
     }
 #ifdef PARALLEL
     {
-        BroadcastIntArray( &matidx[0], ne );
+        BroadcastIntArray( matidx.data(), ne );
     }
 #endif
 }

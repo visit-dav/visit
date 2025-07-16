@@ -14,7 +14,9 @@
 #include <pvldReader.h>
 #include <pvldPartReader.h>
 
+class vtkIntArray;
 class vtkFloatArray;
+class vtkDoubleArray;
 class vtkPoints;
 class vtkUnstructuredGrid;
 
@@ -48,10 +50,18 @@ public:
                                         DestructorFunction &);
 
 
+    virtual bool      ReturnsValidCycle() const
+    {
+        return true;
+    };
     virtual int       GetCycle(void)
     {
         return preader_->GetCycle();
     }
+    virtual bool      ReturnsValidTime() const
+    {
+        return true;
+    };
     virtual double    GetTime(void)
     {
         return preader_->GetTime();
@@ -98,6 +108,7 @@ protected:
     void AddSphMesh( avtDatabaseMetaData *md );
     void AddTiedSetMesh( avtDatabaseMetaData *md );
     void AddContactMesh( avtDatabaseMetaData *md );
+    void AddDEMesh(  avtDatabaseMetaData *md );
 
     void AddSolidVariables( avtDatabaseMetaData *md );
     void AddShellVariables( avtDatabaseMetaData *md );
@@ -107,6 +118,7 @@ protected:
     void AddSphVariables( avtDatabaseMetaData *md );
     void AddTiedSetVariables( avtDatabaseMetaData *md );
     void AddContactVariables( avtDatabaseMetaData *md );
+    void AddDEVariables(  avtDatabaseMetaData *md );
 
     void AddSolidMaterial( avtDatabaseMetaData *md );
     void AddShellMaterial( avtDatabaseMetaData *md );
@@ -125,6 +137,7 @@ protected:
 
     void CreateGlobalNodeIds(int domain, const char *meshname, const std::vector<int> &vmap);
 
+    vtkDoubleArray*   GenerateVariable( const std::vector<int>& dim, std::vector<int>& dat );
     vtkFloatArray* GenerateVariable( const std::vector<int>& dim, std::vector<float>& dat );
     vtkFloatArray* GenerateDyna3dStressTensor( const std::vector<int>& dims, const std::vector<float>& dat );
     vtkFloatArray* GenerateSphStressTensor( const std::vector<int>& dims, const std::vector<float>& dat );

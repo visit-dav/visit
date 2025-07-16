@@ -277,7 +277,7 @@ function build_xdmf
     #
     info "Building Xdmf . . . (~3 minutes)"
 
-    $MAKE
+    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
         warn "Xdmf build failed.  Giving up"
         return 1
@@ -285,7 +285,7 @@ function build_xdmf
 
     # Install Xdmf
     info "Installing Xdmf"
-    $MAKE install
+    ${CMAKE_COMMAND} install .
     if [[ $? != 0 ]] ; then
         warn "Xdmf install failed.  Giving up"
         return 1

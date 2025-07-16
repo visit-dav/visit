@@ -42,7 +42,7 @@ PVLDCommonPluginInfo::GetDatabaseType()
 // ****************************************************************************
 avtDatabase *
 PVLDCommonPluginInfo::SetupDatabase(const char *const *list,
-                                   int nList, int nBlock)
+                                    int nList, int nBlock)
 {
     avtSTMDFileFormat **ffl = new avtSTMDFileFormat*[nList];
     for (int i = 0; i < nList; i++)
@@ -50,6 +50,6 @@ PVLDCommonPluginInfo::SetupDatabase(const char *const *list,
         ffl[i] = new avtPVLDFileFormat(list[i]);
     }
     avtSTMDFileFormatInterface *inter
-           = new avtSTMDFileFormatInterface(ffl, nList);
+        = new avtSTMDFileFormatInterface(ffl, nList);
     return new avtGenericDatabase(inter);
 }

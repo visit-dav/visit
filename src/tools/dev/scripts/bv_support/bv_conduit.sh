@@ -285,7 +285,7 @@ function build_conduit
     # Build Conduit
     #
     info "Building Conduit . . . (~5 minutes)"
-    $MAKE $MAKE_OPT_FLAGS
+    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
         warn "Conduit build failed.  Giving up"
         return 1
@@ -295,7 +295,7 @@ function build_conduit
     # Install into the VisIt third party location.
     #
     info "Installing Conduit"
-    $MAKE install
+    ${CMAKE_COMMAND} install .
     if [[ $? != 0 ]] ; then
         warn "Conduit install failed.  Giving up"
         return 1
