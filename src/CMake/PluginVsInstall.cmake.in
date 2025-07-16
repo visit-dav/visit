@@ -133,6 +133,9 @@
 #   Added NEKTAR++ vars, neeed for libraries that link with avtivp when
 #   Nektar++ is enabled. RadialResample operator is an example
 #
+#   Kathleen Biagas, Thu July 10, 2025
+#   Add support for OpenEXR 3.3.4.
+#
 #****************************************************************************/
 
 ##
@@ -369,7 +372,11 @@ set(MFEM_INCLUDE_DIR  ${VISIT_ROOT_INCLUDE_DIR}/mfem/include;${CONDUIT_INCLUDE_D
 set(MFEM_LIBRARY_DIR  ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(MFEM_LIB @MFEM_LIB@)
 
+if(OPENEXR_VERSION AND OPENEXR_VERSION VERSION_EQUAL 3.3.4)
+    set(OPENEXR_INCLUDE_DIR  ${VISIT_ROOT_INCLUDE_DIR}/openexr)
+else()
 set(OPENEXR_INCLUDE_DIR  ${VISIT_ROOT_INCLUDE_DIR}/openexr/OpenEXR)
+endif()
 set(OPENEXR_LIBRARY_DIR  ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(OPENEXR_LIB @OPENEXR_LIB@)
 

@@ -542,8 +542,8 @@ function build_qt_base
    #
     # Build Qt. Config options above make sure we only build the libs & tools.
     #
-    info "Building Qt base . . . "
-    ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS
+    info "Building Qt6 base . . . "
+    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS
 
     if [[ $? != 0 ]] ; then
         warn "Qt base build failed.  Giving up"
@@ -602,8 +602,8 @@ function build_qt_tools
     env CC="${C_COMPILER}" CXX="${CXX_COMPILER}"  \
         ${QT_INSTALL_DIR}/bin/qt-configure-module  ../${QT_TOOLS_SOURCE_DIR}
 
-    info "Building Qt tools . . . "
-    ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS
+    info "Building Qt6 tools . . . "
+    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS
 
     info "Installing Qt tools . . . "
     ${CMAKE_COMMAND} --install .
@@ -646,8 +646,8 @@ function build_qt_svg
     env CC="${C_COMPILER}" CXX="${CXX_COMPILER}"  \
         ${QT_INSTALL_DIR}/bin/qt-configure-module  ../${QT_SVG_SOURCE_DIR}
 
-    info "Building Qt svg . . . "
-    ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS
+    info "Building Qt6 svg . . . "
+    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS
 
     info "Installing Qt svg . . . "
     ${CMAKE_COMMAND} --install .

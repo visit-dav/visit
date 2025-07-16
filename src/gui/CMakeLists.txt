@@ -212,7 +212,6 @@ QvisVariableListLimiter.C
 QvisVCRControl.C
 QvisViewWindow.C
 QvisViewportWidget.C
-QvisVisItUpdate.C
 QvisWindowBase.C
 QvisWizard.C
 QvisXRayImageQueryWidget.C

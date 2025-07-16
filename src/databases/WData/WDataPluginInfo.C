@@ -48,7 +48,7 @@ WDataGeneralPluginInfo::GetName() const
 const char *
 WDataGeneralPluginInfo::GetVersion() const
 {
-    return "0.2.0";
+    return "0.3.0";
 }
 
 // ****************************************************************************
@@ -67,7 +67,7 @@ WDataGeneralPluginInfo::GetVersion() const
 const char *
 WDataGeneralPluginInfo::GetID() const
 {
-    return "WData_0.2.0";
+    return "WData_0.3.0";
 }
 // ****************************************************************************
 //  Method: WDataGeneralPluginInfo::EnabledByDefault

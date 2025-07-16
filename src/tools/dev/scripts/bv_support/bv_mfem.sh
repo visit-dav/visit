@@ -240,7 +240,7 @@ function build_mfem
     # Build mfem
     #
     info "Building mfem . . . (~2 minutes)"
-    $MAKE $MAKE_OPT_FLAGS
+    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
         warn "mfem build failed.  Giving up"
         return 1
@@ -250,7 +250,7 @@ function build_mfem
     # Install into the VisIt third party location.
     #
     info "Installing mfem"
-    $MAKE install
+    ${CMAKE_COMMAND} install .
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
         chmod -R ug+w,a+rX "$VISITDIR/mfem"
