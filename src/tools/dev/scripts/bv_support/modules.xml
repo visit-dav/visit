@@ -14,7 +14,6 @@
             <lib name="adios"/>
             <lib name="adios2"/>
             <lib name="advio"/>
-            <lib name="anari"/>
             <lib name="blosc2"/>
             <lib name="boost"/>
             <lib name="boxlib"/>
@@ -41,6 +40,7 @@
             <lib name="xdmf"/>
         </group>
         <group name="explicit" comment="Libraries that can only be enabled individually, the group cannot be enabled as a whole. This list can include mutually exclusive libraries like 'mesgal' and 'osmesa', or libraries only needed on specific platforms, or libraries with problematic builds." enabled="no">
+            <lib name="anari"/>
             <lib name="glu"/>
             <lib name="llvm"/>
             <lib name="mesagl"/>
