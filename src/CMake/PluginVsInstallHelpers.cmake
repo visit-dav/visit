@@ -27,6 +27,9 @@
 #   Kathleen Biagas, Fri Mar 10, 2023 
 #   Replaced VTKh logic with VTKm.
 #
+#   Eric Brugger, Mon Jun 16 13:38:54 PDT 2025
+#   Replace vtkm_filter with vtkm::filter.
+#
 #   Kathleen Biagas, Thu July 10, 2025
 #   Support OPENEXR libs in 'lib64'.
 #
@@ -160,8 +163,8 @@ if(VTKM_FOUND)
     endmacro()
 
     # find the link dependencies for vtkm
-    list(APPEND vtkm_deps vtkm_filter)
-    get_lib_dep(vtkm_filter vtkm_deps)
+    list(APPEND vtkm_deps vtkm::filter)
+    get_lib_dep(vtkm::filter vtkm_deps)
 
     # find the interface includes for all vtkm link dependencies
     set(ii_inc_dep "")
