@@ -243,6 +243,9 @@ function(FILTER_VISIT_LIB_DEPENDENCIES filename)
             elseif(${token} MATCHES "icet")
               # Static libs, not necessary to be listed as a dependency here
               continue()
+            elseif(${token} MATCHES "vtkm::")
+              # Static libs, not necessary to be listed as a dependency here
+              continue()
             elseif(${token} MATCHES "vtkm_")
               # Static libs, not necessary to be listed as a dependency here
               continue()
