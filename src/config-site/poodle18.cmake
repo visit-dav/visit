@@ -9,7 +9,7 @@
 ## Setup VISITHOME & VISITARCH variables.
 ##
 
-SET(VISITHOME /usr/workspace/visit/visit/thirdparty_shared/3.5.0/toss4)
+SET(VISITHOME /usr/WS1/visit/visit/thirdparty_shared/3.5.0/toss4)
 SET(VISITARCH linux-x86_64_gcc-10.3)
 
 ### NOTE: Modified from build_visit output

@@ -34,6 +34,9 @@
 #    Kathleen Biagas, Wed May 7, 2025
 #    Adjust filtering of boost lib dir.
 #
+#    Kathleen Biagas, Wed July 16, 2026
+#    Adjust filtering of vtkm libraries (due to new version of vtkm).
+#
 #****************************************************************************/
 cmake_policy(SET CMP0011 NEW)
 cmake_policy(SET CMP0057 NEW)
@@ -243,7 +246,7 @@ function(FILTER_VISIT_LIB_DEPENDENCIES filename)
             elseif(${token} MATCHES "icet")
               # Static libs, not necessary to be listed as a dependency here
               continue()
-            elseif(${token} MATCHES "vtkm_")
+            elseif(${token} MATCHES "vtkm::")
               # Static libs, not necessary to be listed as a dependency here
               continue()
             elseif(${token} MATCHES "OSMesa")
