@@ -199,7 +199,7 @@
 //    vtkm_ libraries when run outside dev environment (eg pluginVsInstall).
 //
 //    Eric Brugger, Wed Jul 16 15:29:56 PDT 2025
-//    Modify 'FilterConditionalLibs` for VTKM 2.3.0.
+//    Modify 'FilterConditionalLibs` for VTKm 2.3.0.
 //
 // ****************************************************************************
 
