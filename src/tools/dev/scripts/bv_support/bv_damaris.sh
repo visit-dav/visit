@@ -163,7 +163,7 @@ function build_damaris
     #
     # Building Damaris
     #
-    ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS
+    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS
 
     if [[ $? != 0 ]] ; then
         warn "Failed to build Damaris.  Giving up."

@@ -96,7 +96,7 @@ function build_blosc2
     # Build Blosc2
     #
     info "Building Blosc2 . . . (~5 minutes)"
-    ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS
+    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
         warn "Blosc2 build failed.  Giving up"
         return 1

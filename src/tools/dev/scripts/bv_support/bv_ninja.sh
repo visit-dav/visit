@@ -121,7 +121,7 @@ function build_ninja
     # Build ninja
     #
     info "Building ninja . . . (~2 minutes)"
-    ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS  || error "Ninja did not build correctly. Giving up."
+    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS  || error "Ninja did not build correctly. Giving up."
 
     info "Installing Ninja . . . (~2 minutes)"
     ${CMAKE_COMMAND} install . || error "Ninja did not install correctly."

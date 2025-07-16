@@ -240,7 +240,7 @@ function build_mfem
     # Build mfem
     #
     info "Building mfem . . . (~2 minutes)"
-    ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS
+    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
         warn "mfem build failed.  Giving up"
         return 1

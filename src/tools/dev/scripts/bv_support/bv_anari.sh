@@ -198,7 +198,7 @@ function build_anari
     # Now build ANARI
     #
     info "Building ANARI . . ."
-    env DYLD_LIBRARY_PATH=`pwd`/bin ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS || \
+    env DYLD_LIBRARY_PATH=`pwd`/bin ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS || \
         error "ANARI did not build correctly.  Giving up."
 
     info "Installing ANARI . . . "

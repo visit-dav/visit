@@ -213,7 +213,7 @@ function build_ospray_in_source
     # Now build OSPRay
     #
     info "Building OSPRay (~10 minute)"
-    env DYLD_LIBRARY_PATH=`pwd`/bin {CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS || \
+    env DYLD_LIBRARY_PATH=`pwd`/bin ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS || \
         error "OSPRay did not build correctly.  Giving up."
 
     info "Installing OSPRay . . . "
@@ -320,7 +320,7 @@ function build_ospray
     # Now build OSPRAY.
     #
     info "Building OSPRAY . . . (~5 minutes)"
-    ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS 
+    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS
 
     #
     # On Darwin, the build can fail in a cmake -E copy_directory due to
@@ -335,7 +335,7 @@ function build_ospray
             ln -sf ../../../tbb/src/lib/libtbb.12.dylib .
             ln -sf ../../../tbb/src/lib/libtbb.dylib .
             popd 1>/dev/null 2>&1
-            ${CMAKE_BIN} --build .
+            ${CMAKE_COMMAND} --build .
             if [[ $? != 0 ]] ; then
                 warn "OSPRAY build failed. Giving up"
                 return 1

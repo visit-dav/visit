@@ -256,7 +256,7 @@ function build_adios2
         # Build ADIOS2
         #
         info "Building ADIOS2-$bt . . . (~5 minutes)"
-        ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS
+        ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS
         if [[ $? != 0 ]] ; then
             warn "ADIOS2 build failed.  Giving up"
             return 1
