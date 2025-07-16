@@ -89,6 +89,7 @@ const char *visit_AddArgument_doc =
 "\n"
 "import visit_launcher\n"
 "visit_launcher.AddArgument(\"-nowin\") # Add the -nowin argument to the viewer.\n"
+"import visit\n"
 ;
 const char *visit_AddMachineProfile_doc = 
 "AddMachineProfile\n"
@@ -5404,9 +5405,10 @@ const char *visit_LocalNameSpace_doc =
 "\n"
 "Example:\n"
 "\n"
+"import visit_launcher\n"
+"visit_launcher.LocalNameSpace()\n"
+"visit_launcher.Launch()\n"
 "import visit\n"
-"visit.LocalNameSpace()\n"
-"visit.Launch()\n"
 ;
 const char *visit_LongFileName_doc = 
 "LongFileName\n"
