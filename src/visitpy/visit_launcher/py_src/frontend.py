@@ -57,7 +57,6 @@
 import sys
 import subprocess
 import os
-import imp
 
 from os.path import join as pjoin
 
