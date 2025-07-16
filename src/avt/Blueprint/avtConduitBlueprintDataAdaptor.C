@@ -661,15 +661,15 @@ ExplicitCoordsToVTKPoints(const Node &n_coords, const Node &n_topo)
     points->SetDataTypeToDouble();
 
     int n_elems = npts;
-    if (n_topo["type"].as_string() == "unstructured" &&
-        n_topo.has_path("elements/shape") &&
-        n_topo["elements/shape"].as_string() == "point" &&
-        n_topo["elements/connectivity"].dtype().number_of_elements() != npts)
-    {
-        n_elems = n_topo["elements/connectivity"].dtype().number_of_elements();
-        points->SetNumberOfPoints(n_elems);
-    }
-    else
+    // if (n_topo["type"].as_string() == "unstructured" &&
+    //     n_topo.has_path("elements/shape") &&
+    //     n_topo["elements/shape"].as_string() == "point" &&
+    //     n_topo["elements/connectivity"].dtype().number_of_elements() != npts)
+    // {
+    //     n_elems = n_topo["elements/connectivity"].dtype().number_of_elements();
+    //     points->SetNumberOfPoints(n_elems);
+    // }
+    // else
     {
         points->SetNumberOfPoints(npts);
     }
@@ -698,20 +698,20 @@ ExplicitCoordsToVTKPoints(const Node &n_coords, const Node &n_topo)
     }
     else // default, simplest case
     {
-        // we need to look at the topo to decide what points to write
-        // we are in the unstructured case
-        if (npts != n_elems)
-        {
-            int_accessor conn = n_topo["elements/connectivity"].value();
-            for (vtkIdType i = 0; i < n_elems; i++)
-            {
-                double x = x_vals[conn[i]];
-                double y = have_y ? y_vals[conn[i]] : 0;
-                double z = have_z ? z_vals[conn[i]] : 0;
-                points->SetPoint(i, x, y, z);
-            }
-        }
-        else
+        // // we need to look at the topo to decide what points to write
+        // // we are in the unstructured case
+        // if (npts != n_elems)
+        // {
+        //     int_accessor conn = n_topo["elements/connectivity"].value();
+        //     for (vtkIdType i = 0; i < n_elems; i++)
+        //     {
+        //         double x = x_vals[conn[i]];
+        //         double y = have_y ? y_vals[conn[i]] : 0;
+        //         double z = have_z ? z_vals[conn[i]] : 0;
+        //         points->SetPoint(i, x, y, z);
+        //     }
+        // }
+        // else
         {
             for (vtkIdType i = 0; i < npts; i++)
             {
