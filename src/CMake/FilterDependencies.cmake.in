@@ -37,6 +37,9 @@
 #    Kathleen Biagas, Thu July 10, 2025 
 #    Adjust filtering of OPENEXR with version 3.3.4, Add OPENEXR_VZERSION.
 #
+#    Eric Brugger, Wed Jul 16 15:29:56 PDT 2025
+#    Update for VTKm 2.3.0.
+#
 #****************************************************************************/
 cmake_policy(SET CMP0011 NEW)
 cmake_policy(SET CMP0057 NEW)
@@ -255,6 +258,9 @@ function(FILTER_VISIT_LIB_DEPENDENCIES filename)
               set(skip_next_token TRUE)
               continue()
             elseif(${token} MATCHES "icet")
+              # Static libs, not necessary to be listed as a dependency here
+              continue()
+            elseif(${token} MATCHES "vtkm::")
               # Static libs, not necessary to be listed as a dependency here
               continue()
             elseif(${token} MATCHES "vtkm_")
