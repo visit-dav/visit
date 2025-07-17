@@ -626,12 +626,7 @@ if(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 
     include(${VISIT_SOURCE_DIR}/CMake/FindNetcdf.cmake)
 
-    if(VTK_VERSION VERSION_LESS "9.5.0")
-        # linking with vtk 9.5 imposes c++17, and there
-        # are headers in OpenEXR that cause compilation
-        # to fail with c++17
-        include(${VISIT_SOURCE_DIR}/CMake/FindOpenEXR.cmake)
-    endif()
+    include(${VISIT_SOURCE_DIR}/CMake/FindOpenEXR.cmake)
 
     include(${VISIT_SOURCE_DIR}/CMake/FindSilo.cmake)
 

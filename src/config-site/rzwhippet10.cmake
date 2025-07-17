@@ -8,7 +8,7 @@
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/workspace/visit/visit/thirdparty_shared/3.5.0/toss4)
+SET(VISITHOME /usr/WS1/visit/visit/thirdparty_shared/3.5.0/toss4)
 SET(VISITARCH linux-x86_64_gcc-10.3)
 
 ## Compiler flags.
@@ -216,7 +216,8 @@ VISIT_OPTION_DEFAULT(VISIT_NETCDF_LIBDEP HDF5_LIBRARY_DIR hdf5_hl HDF5_LIBRARY_D
 ##
 ## OpenEXR
 ##
-VISIT_OPTION_DEFAULT(VISIT_OPENEXR_DIR ${VISITHOME}/openexr/2.2.0/${VISITARCH})
+SETUP_APP_VERSION(OPENEXR 3.3.4)
+VISIT_OPTION_DEFAULT(VISIT_OPENEXR_DIR ${VISITHOME}/openexr/3.3.4/${VISITARCH})
 
 ##
 ## PIDX
