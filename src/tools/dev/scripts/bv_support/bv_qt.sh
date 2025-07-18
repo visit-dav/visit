@@ -1,97 +1,97 @@
- 
-function bv_qt6_initialize
+
+function bv_qt_initialize
 {
-    export DO_QT6="yes"
+    export DO_QT="yes"
 }
 
-function bv_qt6_enable
-{ 
-    DO_QT6="yes"
+function bv_qt_enable
+{
+    DO_QT="yes"
 }
 
-function bv_qt6_disable
+function bv_qt_disable
 {
-    DO_QT6="no"
+    DO_QT="no"
 }
 
-function bv_qt6_depends_on
+function bv_qt_depends_on
 {
-    QT6_DEPENDS=""
+    QT_DEPENDS=""
     if [[ "$DO_MESAGL" == "yes" ]] ; then
-        QT6_DEPENDS="mesagl glu"
+        QT_DEPENDS="mesagl glu"
     fi
     if [[ "$DO_XKBCOMMON" == "yes" ]] ; then
-        QT6_DEPENDS="$QT6_DEPENDS xkbcommon"
+        QT_DEPENDS="$QT_DEPENDS xkbcommon"
     fi
     if [[ "$DO_XCB" == "yes" ]] ; then
-        QT6_DEPENDS="$QT6_DEPENDS xcb"
+        QT_DEPENDS="$QT_DEPENDS xcb"
     fi
 
-    echo $QT6_DEPENDS
+    echo $QT_DEPENDS
 }
 
-function bv_qt6_info
+function bv_qt_info
 {
-    export QT6_VERSION=${QT6_VERSION:-"6.4.2"}
-    export QT6_SHORT_VERSION=${QT6_SHORT_VERSION:-"6.4"}
-    export QT6_BASE_FILE=${QT6_BASE_FILE:-"qtbase-everywhere-src-${QT6_VERSION}.tar.xz"}
-    export QT6_BASE_SOURCE_DIR=${QT6_BASE_SOURCE_DIR:-"qtbase-everywhere-src-${QT6_VERSION}"}
-    export QT6_BASE_SHA256_CHECKSUM="a88bc6cedbb34878a49a622baa79cace78cfbad4f95fdbd3656ddb21c705525d"
+    export QT_VERSION=${QT_VERSION:-"6.4.2"}
+    export QT_SHORT_VERSION=${QT_SHORT_VERSION:-"6.4"}
+    export QT_BASE_FILE=${QT_BASE_FILE:-"qtbase-everywhere-src-${QT_VERSION}.tar.xz"}
+    export QT_BASE_SOURCE_DIR=${QT_BASE_SOURCE_DIR:-"qtbase-everywhere-src-${QT_VERSION}"}
+    export QT_BASE_SHA256_CHECKSUM="a88bc6cedbb34878a49a622baa79cace78cfbad4f95fdbd3656ddb21c705525d"
 
     # Other submodules
-    export QT6_TOOLS_FILE=${QT6_TOOLS_FILE:-"qttools-everywhere-src-${QT6_VERSION}.tar.xz"}
-    export QT6_TOOLS_SOURCE_DIR=${QT6_TOOLS_SOURCE_DIR:-"qttools-everywhere-src-${QT6_VERSION}"}
-    export QT6_TOOLS_SHA256_CHECKSUM="a31387916184e4a5ef522d3ea841e8e931cc0f88be0824a7a354a572d5826c68"
-    export QT6_SVG_FILE=${QT6_SVG_FILE:-"qtsvg-everywhere-src-${QT6_VERSION}.tar.xz"}
-    export QT6_SVG_SOURCE_DIR=${QT6_SVG_SOURCE_DIR:-"qtsvg-everywhere-src-${QT6_VERSION}"}
-    export QT6_SVG_SHA256_CHECKSUM="b746af3cb1793621d8ed7eae38d9ad5a15541dc2742031069f2ae3fe87590314"
+    export QT_TOOLS_FILE=${QT_TOOLS_FILE:-"qttools-everywhere-src-${QT_VERSION}.tar.xz"}
+    export QT_TOOLS_SOURCE_DIR=${QT_TOOLS_SOURCE_DIR:-"qttools-everywhere-src-${QT_VERSION}"}
+    export QT_TOOLS_SHA256_CHECKSUM="a31387916184e4a5ef522d3ea841e8e931cc0f88be0824a7a354a572d5826c68"
+    export QT_SVG_FILE=${QT_SVG_FILE:-"qtsvg-everywhere-src-${QT_VERSION}.tar.xz"}
+    export QT_SVG_SOURCE_DIR=${QT_SVG_SOURCE_DIR:-"qtsvg-everywhere-src-${QT_VERSION}"}
+    export QT_SVG_SHA256_CHECKSUM="b746af3cb1793621d8ed7eae38d9ad5a15541dc2742031069f2ae3fe87590314"
 }
 
-function bv_qt6_print
+function bv_qt_print
 {
-    printf "%s%s\n" "QT6_BASE_FILE=" "${QT6_BASE_FILE}"
-    printf "%s%s\n" "QT6_VERSION=" "${QT6_VERSION}"
-    printf "%s%s\n" "QT6_SHORT_VERSION=" "${QT6_SHORT_VERSION}"
-    printf "%s%s\n" "QT6_BASE_SOURCE_DIR=" "${QT6_BASE_SOURCE_DIR}"
+    printf "%s%s\n" "QT_BASE_FILE=" "${QT_BASE_FILE}"
+    printf "%s%s\n" "QT_VERSION=" "${QT_VERSION}"
+    printf "%s%s\n" "QT_SHORT_VERSION=" "${QT_SHORT_VERSION}"
+    printf "%s%s\n" "QT_BASE_SOURCE_DIR=" "${QT_BASE_SOURCE_DIR}"
 }
 
-function bv_qt6_print_usage
+function bv_qt_print_usage
 {
-    printf "%-20s %s [%s]\n" "--qt6"   "Build QT6" "$DO_QT6"
+    printf "%-20s %s [%s]\n" "--qt"   "Build QT" "$DO_QT"
 }
 
-function bv_qt6_host_profile
+function bv_qt_host_profile
 {
     # bv_qt_host_profile has tests for ENGINE_ONLY etc, but if any of those conditions
-    # are set, then DO_QT6 is "no", so no need to test for them here.
-    if [[ "$DO_QT6" == "yes" ]] ; then
+    # are set, then DO_QT is "no", so no need to test for them here.
+    if [[ "$DO_QT" == "yes" ]] ; then
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
-        echo "## QT6" >> $HOSTCONF
+        echo "## QT" >> $HOSTCONF
         echo "##" >> $HOSTCONF
-        echo "SETUP_APP_VERSION(QT $QT6_VERSION)" >> $HOSTCONF
-        echo "VISIT_OPTION_DEFAULT(VISIT_QT_DIR \${VISITHOME}/qt/$QT6_VERSION/\${VISITARCH})" >> $HOSTCONF
+        echo "SETUP_APP_VERSION(QT $QT_VERSION)" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_QT_DIR \${VISITHOME}/qt/$QT_VERSION/\${VISITARCH})" >> $HOSTCONF
      fi
 }
 
-function bv_qt6_initialize_vars
+function bv_qt_initialize_vars
 {
-    info "initializing qt6 vars"
-    QT6_INSTALL_DIR="${VISITDIR}/qt/${QT6_VERSION}/${VISITARCH}"
-    QT6_BIN_DIR="$QT6_INSTALL_DIR/bin"
-    QT6_INCLUDE_DIR="$QT6_INSTALL_DIR/include"
-    info "qt6_BIN dir ${QT6_BIN_DIR}"
+    info "initializing qt vars"
+    QT_INSTALL_DIR="${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}"
+    QT_BIN_DIR="$QT_INSTALL_DIR/bin"
+    QT_INCLUDE_DIR="$QT_INSTALL_DIR/include"
+    info "qt_BIN dir ${QT_BIN_DIR}"
 }
 
 #prepare the module and check whether it is built or is ready to be built.
-function bv_qt6_ensure
+function bv_qt_ensure
 {
-    if [[ "$DO_QT6" == "yes" ]]; then
+    if [[ "$DO_QT" == "yes" ]]; then
         if [[ "$DOWNLOAD_ONLY" == "yes" ]] ; then
-            download_file ${QT6_TOOLS_FILE} ${QT6_URL}
-            download_file ${QT6_SVG_FILE} ${QT6_URL}
+            download_file ${QT_TOOLS_FILE} ${QT_URL}
+            download_file ${QT_SVG_FILE} ${QT_URL}
         fi
-        ensure_built_or_ready "qt"     $QT6_VERSION    $QT6_BASE_SOURCE_DIR    $QT6_BASE_FILE    $QT6_URL
+        ensure_built_or_ready "qt"     $QT_VERSION    $QT_BASE_SOURCE_DIR    $QT_BASE_FILE    $QT_URL
         if [[ $? != 0 ]] ; then
             return 1
         fi
@@ -100,25 +100,122 @@ function bv_qt6_ensure
 }
 
 
-function apply_qt6_base_patch
+function apply_qt_base_patch
 {
-     if [[ "$OPSYS" == "Darwin" ]]; then
+    if [[ ${QT_VERSION} == 6.4.2 ]] ; then
+        if [[ "$OPSYS" == "Darwin" ]] ; then
 
-        qt6_macos_13_cpp_stdlib_issue_patch
+            qt6_macos_13_cpp_stdlib_issue_patch
+            if [[ $? != 0 ]] ; then
+                return 1
+            fi
+
+            qt6_macos_14_xcode_15_patch
+            if [[ $? != 0 ]] ; then
+                return 1
+            fi
+
+            qt6_macos_15_opengl_patch
+            if [[ $? != 0 ]] ; then
+                return 1
+            fi
+        fi
+
+        qt6_xkbcommon_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi
 
-        qt6_macos_14_xcode_15_patch
+        qt6_libpng_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi
+    fi
+}
 
-    fi
-    qt6_xkbcommon_patch
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
+function qt6_macos_15_opengl_patch
+{
+    info "Patching qt 6 for macos opengl linking issue"
+    patch -p0 << \EOF
+    From 0efea8020c1d221635aaa0a71529edb392cfe3cc Mon Sep 17 00:00:00 2001
+From: Joerg Bornemann <joerg.bornemann@qt.io>
+Date: Mon, 11 Sep 2023 14:48:32 +0200
+Subject: [PATCH] CMake: Fix build with CMake 3.28 on macOS
+
+FindWrapOpenGL.cmake assumed that IMPORTED_LOCATION is the absolute path
+of the library within the framework. That's not the case with CMake 3.28
+anymore. There, IMPORTED_LOCATION is the absolute path of the framework
+directory.
+
+The relevant upstream CMake change is
+6b01a27f901b5eb392955fea322cde44a1b782a3.
+
+Pick-to: 6.2 6.5 6.6
+Change-Id: I6b702a28318e0978c56dec83c398965aa77ef020
+Reviewed-by: Alexandru Croitor <alexandru.croitor@qt.io>
+---
+ qtbase-everywhere-src-6.4.2/cmake/FindWrapOpenGL.cmake | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git qtbase-everywhere-src-6.4.2/cmake/FindWrapOpenGL.cmake qtbase-everywhere-src-6.4.2/cmake/FindWrapOpenGL.cmake
+index 3e6abaf4dda7..7295a159caf6 100644
+--- qtbase-everywhere-src-6.4.2/cmake/FindWrapOpenGL.cmake
++++ qtbase-everywhere-src-6.4.2/cmake/FindWrapOpenGL.cmake
+@@ -17,14 +17,18 @@ if (OpenGL_FOUND)
+
+     add_library(WrapOpenGL::WrapOpenGL INTERFACE IMPORTED)
+     if(APPLE)
++        # CMake 3.27 and older:
+         # On Darwin platforms FindOpenGL sets IMPORTED_LOCATION to the absolute path of the library
+         # within the framework. This ends up as an absolute path link flag, which we don't want,
+         # because that makes our .prl files un-relocatable.
+         # Extract the framework path instead, and use that in INTERFACE_LINK_LIBRARIES,
+-        # which CMake ends up transforming into a reloctable -framework flag.
++        # which CMake ends up transforming into a relocatable -framework flag.
+         # See https://gitlab.kitware.com/cmake/cmake/-/issues/20871 for details.
++        #
++        # CMake 3.28 and above:
++        # IMPORTED_LOCATION is the absolute path the the OpenGL.framework folder.
+         get_target_property(__opengl_fw_lib_path OpenGL::GL IMPORTED_LOCATION)
+-        if(__opengl_fw_lib_path)
++        if(__opengl_fw_lib_path AND NOT __opengl_fw_lib_path MATCHES "/([^/]+)\\.framework$")
+             get_filename_component(__opengl_fw_path "${__opengl_fw_lib_path}" DIRECTORY)
+         endif()
+EOF
+
+}
+
+function qt6_libpng_patch
+{
+    info "Patching qt 6 for libpng header issue"
+    patch -p0 << \EOF
+diff --git qtbase-everywhere-src-6.4.2/src/3rdparty/libpng/pngpriv.h qtbase-everywhere-src-6.4.2/src/3rdparty/libpng//pngpriv.h
+index 6c7280cf53..190eb85cbf 100644
+--- qtbase-everywhere-src-6.4.2/src/3rdparty/libpng/a/pngpriv.h
++++ qtbase-everywhere-src-6.4.2/src/3rdparty/libpng//pngpriv.h
+@@ -556,18 +556,8 @@
+     */
+ #  include <float.h>
+
+-#  if (defined(__MWERKS__) && defined(macintosh)) || defined(applec) || \
+-    defined(THINK_C) || defined(__SC__) || defined(TARGET_OS_MAC)
+-   /* We need to check that <math.h> hasn't already been included earlier
+-    * as it seems it doesn't agree with <fp.h>, yet we should really use
+-    * <fp.h> if possible.
+-    */
+-#    if !defined(__MATH_H__) && !defined(__MATH_H) && !defined(__cmath__)
+-#      include <fp.h>
+-#    endif
+-#  else
+-#    include <math.h>
+-#  endif
++#  include <math.h>
++
+ #  if defined(_AMIGA) && defined(__SASC) && defined(_M68881)
+    /* Amiga SAS/C: We must include builtin FPU functions when compiling using
+     * MATH=68881
+EOF
+
 }
 
 function qt6_xkbcommon_patch
@@ -142,7 +239,7 @@ function qt6_xkbcommon_patch
          Xkb2Qt<XKB_KEY_dead_belowverticalline,  Qt::Key_Dead_Belowverticalline>,
          Xkb2Qt<XKB_KEY_dead_longsolidusoverlay, Qt::Key_Dead_Longsolidusoverlay>,
 +#endif
- 
+
          // Special keys from X.org - This include multimedia keys,
          // wireless/bluetooth/uwb keys, special launcher keys, etc.
          Xkb2Qt<XKB_KEY_XF86Back,                Qt::Key_Back>,
@@ -166,9 +263,9 @@ diff -crB qtbase-everywhere-src-6.4.2/src/corelib/tools/qduplicatetracker_p.h qt
 --- qtbase-everywhere-src-6.4.2-patched/src/corelib/tools/qduplicatetracker_p.h	Wed Oct 25 13:14:40 2023
 ***************
 *** 16,33 ****
-  
+
   #include <private/qglobal_p.h>
-  
+
 ! #if __has_include(<memory_resource>)
 ! #  include <unordered_set>
 ! #  include <memory_resource>
@@ -176,18 +273,18 @@ diff -crB qtbase-everywhere-src-6.4.2/src/corelib/tools/qduplicatetracker_p.h qt
 ! #else
 ! #  include <qset.h>
 ! #endif
-  
+
   QT_BEGIN_NAMESPACE
-  
+
   template <typename T, size_t Prealloc = 32>
   class QDuplicateTracker {
   #ifdef __cpp_lib_memory_resource
       template <typename HT>
       struct QHasher {
 --- 16,38 ----
-  
+
   #include <private/qglobal_p.h>
-  
+
 ! // Only supported on macOS 14 and iOS 17
 ! // #if __has_include(<memory_resource>)
 ! // #  include <unordered_set>
@@ -196,12 +293,12 @@ diff -crB qtbase-everywhere-src-6.4.2/src/corelib/tools/qduplicatetracker_p.h qt
 ! // #else
 ! // #  include <qset.h>
 ! // #endif
-  
+
 + #undef __cpp_lib_memory_resource // Only supported on macOS 14 and iOS 17
 + #include <qset.h>
-+ 
++
   QT_BEGIN_NAMESPACE
-  
+
   template <typename T, size_t Prealloc = 32>
   class QDuplicateTracker {
 + #undef __cpp_lib_memory_resource // Only supported on macOS 14 and iOS 17
@@ -236,7 +333,7 @@ diff -crB qtbase-everywhere-src-6.4.2/src/gui/image/qxpmhandler.cpp qtbase-every
 --- 1078,1084 ----
       else
           image = sourceImage;
-  
+
 + #undef __cpp_lib_memory_resource
   #ifdef __cpp_lib_memory_resource
       char buffer[1024];
@@ -276,7 +373,7 @@ index 0040b6c..bfad10d 100644
 @@ -411,7 +414,7 @@
          QMAKE_DEFAULT_INCDIRS = $$split(INCLUDE, $$QMAKE_DIRLIST_SEP)
      }
- 
+
 -    unix:if(!cross_compile|host_build) {
 +    unix:!darwin:if(!cross_compile|host_build) {
          isEmpty(QMAKE_DEFAULT_INCDIRS): QMAKE_DEFAULT_INCDIRS = /usr/include /usr/local/include
@@ -290,15 +387,15 @@ EOF
 }
 
 
-function build_qt6_base
+function build_qt_base
 {
     echo "Build Qt 6 base module"
-    prepare_build_dir $QT6_BASE_SOURCE_DIR $QT6_BASE_FILE
+    prepare_build_dir $QT_BASE_SOURCE_DIR $QT_BASE_FILE
 
-    untarred_qt6=$?
+    untarred_qt=$?
     # 0, already exists, 1 untarred src, 2 error
 
-    if [[ $untarred_qt6 == -1 ]] ; then
+    if [[ $untarred_qt == -1 ]] ; then
         warn "Unable to prepare Qt 6 build directory. Giving Up!"
         return 1
     fi
@@ -306,12 +403,12 @@ function build_qt6_base
     #
     # Apply patches
     #
-    info "Patching qt6 . . ."
+    info "Patching qt . . ."
 
-    apply_qt6_base_patch
+    apply_qt_base_patch
     if [[ $? != 0 ]] ; then
         if [[ $untarred_qt == 1 ]] ; then
-            warn "Giving up on Qt6 build because the patch failed."
+            warn "Giving up on Qt build because the patch failed."
             return 1
         else
             warn "Patch failed, but continuing.  I believe that this script\n" \
@@ -321,22 +418,22 @@ function build_qt6_base
         fi
     fi
 
-    QT6_BASE_BUILD_DIR="${QT6_BASE_SOURCE_DIR}-build"
-    if ! test -f $QT6_BASE_BUILD_DIR ; then
-        echo "Making build directory $QT6_BASE_BUILD_DIR"
-        mkdir $QT6_BASE_BUILD_DIR
+    QT_BASE_BUILD_DIR="${QT_BASE_SOURCE_DIR}-build"
+    if ! test -f $QT_BASE_BUILD_DIR ; then
+        echo "Making build directory $QT_BASE_BUILD_DIR"
+        mkdir $QT_BASE_BUILD_DIR
     fi
 
-    # Qt6 has a check for symlinks in its build dir,
+    # Qt has a check for symlinks in its build dir,
     # so use 'cd -P' to resolve them if they are present
-    cd -P ${QT6_BASE_BUILD_DIR}
+    cd -P ${QT_BASE_BUILD_DIR}
 
     #
     # Platform specific configuration
     #
 
     #
-    # Select the proper value for QT_PLATFORM 
+    # Select the proper value for QT_PLATFORM
     #
     # Question: Could qt auto detect this via the CC and CXX env vars?
     #
@@ -348,7 +445,7 @@ function build_qt6_base
     #
 
 
-    if [[ "$OPSYS" == "Darwin" ]]; then       
+    if [[ "$OPSYS" == "Darwin" ]]; then
         QT_PLATFORM="macx-clang"
     elif [[ "$OPSYS" == "Linux" ]] ; then
         if [[ "$C_COMPILER" == "clang" ]]; then
@@ -389,8 +486,8 @@ function build_qt6_base
         export PKG_CONFIG_PATH=$XCB_INSTALL_DIR/lib/pkgconfig:$PKG_CONFIG_PATH
     fi
 
-    QT6_CFLAGS="${CFLAGS} ${C_OPT_FLAGS}"
-    QT6_CXXFLAGS="${CXXFLAGS} ${CXX_OPT_FLAGS}"
+    QT_CFLAGS="${CFLAGS} ${C_OPT_FLAGS}"
+    QT_CXXFLAGS="${CXXFLAGS} ${CXX_OPT_FLAGS}"
 
     qt_flags=""
     qt_flags="${qt_flags} -no-dbus"
@@ -428,17 +525,17 @@ function build_qt6_base
         qt_cmake_flags="${qt_cmake_flags} -DOPENGL_glu_LIBRARY:STRING=${MESAGL_GLU_LIB}"
         qt_cmake_flags="${qt_cmake_flags} -DOpenGL_GL_PREFERENCE:STRING=LEGACY"
     fi
-    info "Configuring Qt6 base: . . . "
+    info "Configuring Qt base: . . . "
     set -x
     (echo "o"; echo "yes") | env PATH="${CMAKE_INSTALL}:$PATH" \
-                             CFLAGS="${QT6_CFLAGS}" CXXFLAGS="${QT6_CXXFLAGS}"  \
+                             CFLAGS="${QT_CFLAGS}" CXXFLAGS="${QT_CXXFLAGS}"  \
                              CC="${C_COMPILER}" CXX="${CXX_COMPILER}"  \
-                             ../${QT6_BASE_SOURCE_DIR}/configure \
-                             -prefix ${QT6_INSTALL_DIR} ${qt_flags} \
+                             ../${QT_BASE_SOURCE_DIR}/configure \
+                             -prefix ${QT_INSTALL_DIR} ${qt_flags} \
                              ${qt_cmake_flags} | tee qt.config.out
     set +x
     if [[ $? != 0 ]] ; then
-        warn "Qt6 base configure failed. Giving up."
+        warn "Qt base configure failed. Giving up."
         return 1
     fi
 
@@ -446,184 +543,184 @@ function build_qt6_base
     # Build Qt. Config options above make sure we only build the libs & tools.
     #
     info "Building Qt6 base . . . "
-    ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS
+    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS
 
     if [[ $? != 0 ]] ; then
-        warn "Qt6 base build failed.  Giving up"
+        warn "Qt base build failed.  Giving up"
         return 1
     fi
 
-    info "Installing Qt6  base . . . "
+    info "Installing Qt  base . . . "
     ${CMAKE_COMMAND} --install .
 
     # Qt screws up permissions in some cases.  Try to fix that.
-    chmod -R a+rX ${VISITDIR}/qt/${QT6_VERSION}
+    chmod -R a+rX ${VISITDIR}/qt/${QT_VERSION}
    if [[ "$DO_GROUP" == "yes" ]] ; then
         chmod -R ug+w,a+rX "$VISITDIR/qt"
         chgrp -R ${GROUP} "$VISITDIR/qt"
     fi
 
     cd "$START_DIR"
-    info "Done with Qt6 base "
+    info "Done with Qt base "
 
     return 0
 }
 
 
-function build_qt6_tools
+function build_qt_tools
 {
     cd "$START_DIR"
     echo "Build Qt 6 tools module"
 
-    if ! test -f ${QT6_TOOLS_FILE} ; then
-        download_file ${QT6_TOOLS_FILE} ${QT6_URL}
+    if ! test -f ${QT_TOOLS_FILE} ; then
+        download_file ${QT_TOOLS_FILE} ${QT_URL}
         if [[ $? != 0 ]] ; then
-            warn "Could not download ${QT6_TOOLS_FILE}"
+            warn "Could not download ${QT_TOOLS_FILE}"
             return 1
         fi
     fi
 
-    if ! test -d ${QT6_TOOLS_SOURCE_DIR} ; then
-        info "Extracting qt6 tools ..."
-        uncompress_untar ${QT6_TOOLS_FILE}
+    if ! test -d ${QT_TOOLS_SOURCE_DIR} ; then
+        info "Extracting qt tools ..."
+        uncompress_untar ${QT_TOOLS_FILE}
         if test $? -ne 0 ; then
-            warn "Could not extract ${QT6_TOOLS_FILE}"
+            warn "Could not extract ${QT_TOOLS_FILE}"
             return 1
         fi
-    fi 
+    fi
 
     # Make a build directory for an out-of-source build.
-    QT6_TOOLS_BUILD_DIR="${QT6_TOOLS_SOURCE_DIR}-build"
-    if [[ ! -d $QT6_TOOLS_BUILD_DIR ]] ; then
-        echo "Making build directory $QT6_TOOLS_BUILD_DIR"
-        mkdir $QT6_TOOLS_BUILD_DIR
+    QT_TOOLS_BUILD_DIR="${QT_TOOLS_SOURCE_DIR}-build"
+    if [[ ! -d $QT_TOOLS_BUILD_DIR ]] ; then
+        echo "Making build directory $QT_TOOLS_BUILD_DIR"
+        mkdir $QT_TOOLS_BUILD_DIR
     fi
 
-    cd ${QT6_TOOLS_BUILD_DIR}
-   
-    info "Configuring Qt6 tools . . . "
+    cd ${QT_TOOLS_BUILD_DIR}
+
+    info "Configuring Qt tools . . . "
     env CC="${C_COMPILER}" CXX="${CXX_COMPILER}"  \
-        ${QT6_INSTALL_DIR}/bin/qt-configure-module  ../${QT6_TOOLS_SOURCE_DIR}
+        ${QT_INSTALL_DIR}/bin/qt-configure-module  ../${QT_TOOLS_SOURCE_DIR}
 
     info "Building Qt6 tools . . . "
-    ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS
+    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS
 
-    info "Installing Qt6 tools . . . "
+    info "Installing Qt tools . . . "
     ${CMAKE_COMMAND} --install .
 
     return 0;
 }
 
-function build_qt6_svg
+function build_qt_svg
 {
     cd "$START_DIR"
     echo "Build Qt 6 svg module"
 
-    if ! test -f ${QT6_SVG_FILE} ; then
-        download_file ${QT6_SVG_FILE} ${QT6_URL}
+    if ! test -f ${QT_SVG_FILE} ; then
+        download_file ${QT_SVG_FILE} ${QT_URL}
         if [[ $? != 0 ]] ; then
-            warn "Could not download ${QT6_SVG_FILE}"
+            warn "Could not download ${QT_SVG_FILE}"
             return 1
         fi
     fi
 
-    if ! test -d ${QT6_SVG_SOURCE_DIR} ; then
-        info "Extracting qt6 svg ..."
-        uncompress_untar ${QT6_SVG_FILE}
+    if ! test -d ${QT_SVG_SOURCE_DIR} ; then
+        info "Extracting qt svg ..."
+        uncompress_untar ${QT_SVG_FILE}
         if test $? -ne 0 ; then
-            warn "Could not extract ${QT6_SVG_FILE}"
+            warn "Could not extract ${QT_SVG_FILE}"
             return 1
         fi
-    fi 
+    fi
 
     # Make a build directory for an out-of-source build.
-    QT6_SVG_BUILD_DIR="${QT6_SVG_SOURCE_DIR}-build"
-    if [[ ! -d $QT6_SVG_BUILD_DIR ]] ; then
-        echo "Making build directory $QT6_SVG_BUILD_DIR"
-        mkdir $QT6_SVG_BUILD_DIR
+    QT_SVG_BUILD_DIR="${QT_SVG_SOURCE_DIR}-build"
+    if [[ ! -d $QT_SVG_BUILD_DIR ]] ; then
+        echo "Making build directory $QT_SVG_BUILD_DIR"
+        mkdir $QT_SVG_BUILD_DIR
     fi
 
-    cd ${QT6_SVG_BUILD_DIR}
+    cd ${QT_SVG_BUILD_DIR}
 
-    info "Configuring Qt6 svg . . . "
+    info "Configuring Qt svg . . . "
     env CC="${C_COMPILER}" CXX="${CXX_COMPILER}"  \
-        ${QT6_INSTALL_DIR}/bin/qt-configure-module  ../${QT6_SVG_SOURCE_DIR}
+        ${QT_INSTALL_DIR}/bin/qt-configure-module  ../${QT_SVG_SOURCE_DIR}
 
     info "Building Qt6 svg . . . "
-    ${CMAKE_COMMAND} --build . --parallel $MAKE_OPT_FLAGS
+    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS
 
-    info "Installing Qt6 svg . . . "
+    info "Installing Qt svg . . . "
     ${CMAKE_COMMAND} --install .
 
     return 0;
 }
 
-function bv_qt6_is_enabled
+function bv_qt_is_enabled
 {
-    if [[ $DO_QT6 == "yes" ]]; then
+    if [[ $DO_QT == "yes" ]]; then
         return 1
     fi
     return 0
 }
 
-function bv_qt6_is_installed
+function bv_qt_is_installed
 {
-    check_if_installed "qt" $QT6_VERSION
+    check_if_installed "qt" $QT_VERSION
     if [[ $? != 0 ]] ; then
         return 0
     fi
 
     # check submodules
 
-    if ! test -f ${QT6_INSTALL_DIR}/modules/Tools.json ; then
-        return 0 
+    if ! test -f ${QT_INSTALL_DIR}/modules/Tools.json ; then
+        return 0
     fi
 
-    if ! test -f ${QT6_INSTALL_DIR}/modules/Svg.json ; then
-        return 0 
+    if ! test -f ${QT_INSTALL_DIR}/modules/Svg.json ; then
+        return 0
     fi
     return 1
 }
 
-function bv_qt6_build
+function bv_qt_build
 {
     cd "$START_DIR"
-    if [[ "$DO_QT6" == "yes" ]] ; then
+    if [[ "$DO_QT" == "yes" ]] ; then
 
         # checks if qtbase and all required modules are installed
-        bv_qt6_is_installed
+        bv_qt_is_installed
         if [[ $? == 1 ]] ; then
-             info "Skipping Qt6 build.  Qt6 is already installed."
-        else 
+             info "Skipping Qt build.  Qt is already installed."
+        else
 
             # check qt proper, then submodules
-            check_if_installed "qt" $QT6_VERSION
+            check_if_installed "qt" $QT_VERSION
             if [[ $? != 0 ]] ; then
-                info "Building QT6 base (~10 minutes)"
-                build_qt6_base
+                info "Building QT base (~10 minutes)"
+                build_qt_base
                 if [[ $? != 0 ]] ; then
-                    error "Unable to build or install QT6.  Bailing out."
+                    error "Unable to build or install QT.  Bailing out."
                 fi
-                info "Done building Qt6 base"
+                info "Done building Qt base"
             else
-                info "Qt6 base already exists"
+                info "Qt base already exists"
             fi
 
 
             # tools submodule
-            if test -f ${QT6_INSTALL_DIR}/modules/Tools.json ; then
+            if test -f ${QT_INSTALL_DIR}/modules/Tools.json ; then
                 info "Qt 6 submodule tools already exists"
             else
-                info "Building QT6 tools (~4 minutes)"
-                build_qt6_tools
+                info "Building QT tools (~4 minutes)"
+                build_qt_tools
             fi
 
             # svg submodule
-            if test -f ${QT6_INSTALL_DIR}/modules/Svg.json ; then
+            if test -f ${QT_INSTALL_DIR}/modules/Svg.json ; then
                 info "Qt 6 submodule svg already exists"
             else
-                info "Building QT6 svg (~2 minutes)"
-                build_qt6_svg
+                info "Building QT svg (~2 minutes)"
+                build_qt_svg
            fi
         fi
     fi

@@ -7,7 +7,7 @@
 // ************************************************************************* //
 
 #include <Python.h> // this must be the first include
-#include <Py2and3Support.h> 
+#include <Py2and3Support.h>
 #include <avtPythonQuery.h>
 
 #include <string>
@@ -323,7 +323,7 @@ avtPythonQuery::PerformQuery(QueryAttributes *qatts)
 //
 // ****************************************************************************
 
-void 
+void
 avtPythonQuery::GetSecondaryVariables(std::vector<std::string> &res)
 {
     // varNames contains all vars, fill res w/ varNames[1:]
@@ -514,7 +514,8 @@ avtPythonQuery::PreExecute()
 //  Creation:   April 17, 2009
 //
 //  Modifications:
-//
+//    Cyrus Harrison, Mon Jun  9 07:05:59 PDT 2025
+//    Added error checking of VTK python wrap result.
 //
 // ****************************************************************************
 
@@ -544,12 +545,23 @@ avtPythonQuery::Execute()
     // hand data_sets and domain_ids to the python query
     for(int i = 0; i < nsets ; i++)
     {
-        if(PyTuple_SetItem(py_dsets,i,pyEnv->WrapVTKObject(data_sets[i],"vtkDataSet")) != 0)
+        PyObject *py_dset = pyEnv->WrapVTKObject(data_sets[i],"vtkDataSet");
+        if(py_dset == NULL)
+        {
+            PYQUERY_ERROR("avtPythonQuery::Execute Error - "
+                          "failed to wrap vtkDataSet into python environment");
+        }
+
+        if(PyTuple_SetItem(py_dsets,i,py_dset) != 0)
+        {
             PYQUERY_ERROR("avtPythonQuery::Execute Error - "
                           "Unable to add data set to execution input list");
+        }
         if(PyTuple_SetItem(py_domids,i,PyInt_FromLong(domain_ids[i])) != 0)
+        {
             PYQUERY_ERROR("avtPythonQuery::Execute Error - "
                           "Unable to add domain id to execution input list");
+        }
     }
 
     // Free the memory from the GetAllLeaves function call.
@@ -566,10 +578,12 @@ avtPythonQuery::Execute()
     if(py_exe == NULL)
         PYQUERY_ERROR("avtPythonQuery::Execute Error - "
                      "Error preparing for call of 'execute' method.");
+
     // call with py_dsets, py_domids
     PyObject *py_exe_res = PyObject_CallMethodObjArgs(py_filter,
                                                       py_exe,
-                                                      py_dsets,py_domids,
+                                                      py_dsets,
+                                                      py_domids,
                                                       NULL);
     if(py_exe_res == NULL)
         PYQUERY_ERROR("avtPythonQuery::Execute Error - "

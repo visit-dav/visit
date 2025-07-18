@@ -22,11 +22,11 @@ function bv_zlib_depends_on
 
 function bv_zlib_info
 {
-    export ZLIB_VERSION=${ZLIB_VERSION:-"1.2.13"}
+    export ZLIB_VERSION=${ZLIB_VERSION:-"1.3.1"}
     export ZLIB_FILE=${ZLIB_FILE:-"zlib-${ZLIB_VERSION}.tar.xz"}
-    export ZLIB_COMPATIBILITY_VERSION=${ZLIB_COMPATIBILITY_VERSION:-"1.2"}
+    export ZLIB_COMPATIBILITY_VERSION=${ZLIB_COMPATIBILITY_VERSION:-"1.3"}
     export ZLIB_BUILD_DIR=${ZLIB_BUILD_DIR:-"zlib-${ZLIB_VERSION}"}
-    export ZLIB_SHA256_CHECKSUM="d14c38e313afc35a9a8760dadf26042f51ea0f5d154b0630a31da0540107fb98"
+    export ZLIB_SHA256_CHECKSUM="38ef96b8dfe510d42707d9c781877914792541133e1870841463bfa73f883e32"
 }
 
 function bv_zlib_print
@@ -91,7 +91,7 @@ function build_zlib
         warn "Unable to prepare ZLIB build directory. Giving Up!"
         return 1
     fi
-    
+
     #
     # Call configure
     #
@@ -149,7 +149,7 @@ function build_zlib
 function bv_zlib_is_enabled
 {
     if [[ $DO_ZLIB == "yes" ]]; then
-        return 1    
+        return 1
     fi
     return 0
 }

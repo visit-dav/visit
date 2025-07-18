@@ -1347,6 +1347,8 @@ vtkPLOT3DReader::GetFunction(PLOT3DFunctions<DataType> &P3DF_helper, const char 
     return VTK_ERROR;
     }
 
+  int dims[3]={0,0,0};
+  this->output->GetDimensions(dims);
   bool finished = false;
   if (sFName == "Momentum")
     {
@@ -1379,7 +1381,7 @@ vtkPLOT3DReader::GetFunction(PLOT3DFunctions<DataType> &P3DF_helper, const char 
         numPts, f, 
         (DataType*)this->output->GetPoints()->GetData()->GetVoidPointer(0),
         velocity,
-        this->output->GetDimensions());
+        dims);
 
     delete [] velocity;
     finished = true;
@@ -1395,7 +1397,7 @@ vtkPLOT3DReader::GetFunction(PLOT3DFunctions<DataType> &P3DF_helper, const char 
         numPts, vorticity, 
         (DataType*)this->output->GetPoints()->GetData()->GetVoidPointer(0),
         velocity,
-        this->output->GetDimensions());
+        dims);
    
     P3DF_helper.ComputeSwirl(
         numPts, f, 
@@ -1416,7 +1418,7 @@ vtkPLOT3DReader::GetFunction(PLOT3DFunctions<DataType> &P3DF_helper, const char 
         numPts, f, 
         (DataType*)this->output->GetPoints()->GetData()->GetVoidPointer(0),
         velocity,
-        this->output->GetDimensions());
+        dims);
 
     delete [] velocity;
     finished = true;
@@ -1484,7 +1486,7 @@ vtkPLOT3DReader::GetFunction(PLOT3DFunctions<DataType> &P3DF_helper, const char 
         numPts, f, 
         (DataType*)this->output->GetPoints()->GetData()->GetVoidPointer(0),
         pressure,
-        this->output->GetDimensions());
+        dims);
 
     delete [] pressure;
     finished = true; 
