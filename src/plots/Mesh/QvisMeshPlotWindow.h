@@ -69,6 +69,9 @@ class QvisOpacitySlider;
 //   Kathleen Biagas, Thu Apr 23 13:12:22 PDT 2015
 //   Removed never-implemented outlineOnly and errorTolerance widgets.
 // 
+//   Cyrus Harrison, Thu Jul 17 07:55:39 PDT 2025
+//   Added toogle to show generated zones.
+//
 // ****************************************************************************
 
 class QvisMeshPlotWindow : public QvisPostableWindowObserver
@@ -93,6 +96,7 @@ private slots:
     void lineWidthChanged(int newWidth);
     void legendToggled(bool val);
     void showInternalToggled(bool val);
+    void showGeneratedToggled(bool val);
     void meshColorChanged(const QColor &color);
     void opaqueModeChanged(int val);
     void opaqueColorChanged(const QColor &color);
@@ -115,6 +119,7 @@ private:
     QButtonGroup           *opaqueModeGroup;
     QCheckBox              *legendToggle;
     QCheckBox              *showInternalToggle;
+    QCheckBox              *showGeneratedToggle;
     QButtonGroup           *meshColorButtons;
     QvisColorButton        *meshColor;
     QLabel                 *opaqueColorLabel;

@@ -132,6 +132,9 @@ QvisMeshPlotWindow::~QvisMeshPlotWindow()
 //   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
 //   Support Qt6: buttonClicked -> idClicked.
 //
+//   Cyrus Harrison, Thu Jul 17 07:55:39 PDT 2025
+//   Added showGeneratedToggle.
+//
 // ****************************************************************************
 
 void
@@ -153,6 +156,12 @@ QvisMeshPlotWindow::CreateWindowContents()
     connect(showInternalToggle, SIGNAL(toggled(bool)),
             this, SLOT(showInternalToggled(bool)));
     zoneLayout->addWidget(showInternalToggle, 0, 0, 1, 2);
+
+    // Create the showGenerated toggle
+    showGeneratedToggle = new QCheckBox(tr("Show generated zones"), central);
+    connect(showGeneratedToggle, SIGNAL(toggled(bool)),
+            this, SLOT(showGeneratedToggled(bool)));
+    zoneLayout->addWidget(showGeneratedToggle, 0, 0, 1, 2);
 
     //
     // Create the color stuff
@@ -585,6 +594,12 @@ QvisMeshPlotWindow::UpdateWindow(bool doAll)
             showInternalToggle->setChecked(meshAtts->GetShowInternal());
             showInternalToggle->blockSignals(false);
             break;
+        // TODO TODO TODO TODO
+        // case MeshAttributes::ID_showGenerated:
+        //     showGeneratedToggle->blockSignals(true);
+        //     showGeneratedToggle->setChecked(meshAtts->GetShowGenerated());
+        //     showGeneratedToggle->blockSignals(false);
+        //     break;
         case MeshAttributes::ID_pointSizePixels:
             pointControl->blockSignals(true);
             pointControl->SetPointSizePixels(meshAtts->GetPointSizePixels());
@@ -825,6 +840,33 @@ QvisMeshPlotWindow::showInternalToggled(bool val)
     SetUpdate(false);
     Apply();
 }
+
+
+// ****************************************************************************
+// Method: QvisMeshPlotWindow::showGenerated
+//
+// Purpose:
+//   This is a Qt slot function that is called when the showGenerated toggle is
+//   toggled.
+//
+// Arguments:
+//   val : The new showGenerated toggle state.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Thu Jul 17 07:55:39 PDT 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisMeshPlotWindow::showGeneratedToggled(bool val)
+{
+    meshAtts->SetShowGenerated(val);
+    SetUpdate(false);
+    Apply();
+}
+
 
 
 // ****************************************************************************

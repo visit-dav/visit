@@ -186,6 +186,7 @@ void MeshAttributes::Init()
     pointType = Point;
     opaqueMeshIsAppropriate = true;
     showInternal = false;
+    showGenerated = false;
     pointSizePixels = 2;
     opacity = 1;
 
@@ -223,6 +224,7 @@ void MeshAttributes::Copy(const MeshAttributes &obj)
     pointType = obj.pointType;
     opaqueMeshIsAppropriate = obj.opaqueMeshIsAppropriate;
     showInternal = obj.showInternal;
+    showGenerated = obj.showGenerated;
     pointSizePixels = obj.pointSizePixels;
     opacity = obj.opacity;
 
@@ -400,6 +402,7 @@ MeshAttributes::operator == (const MeshAttributes &obj) const
             (pointType == obj.pointType) &&
             (opaqueMeshIsAppropriate == obj.opaqueMeshIsAppropriate) &&
             (showInternal == obj.showInternal) &&
+            (showGenerated == obj.showGenerated) &&
             (pointSizePixels == obj.pointSizePixels) &&
             (opacity == obj.opacity));
 }
@@ -570,6 +573,7 @@ MeshAttributes::SelectAll()
     Select(ID_pointType,               (void *)&pointType);
     Select(ID_opaqueMeshIsAppropriate, (void *)&opaqueMeshIsAppropriate);
     Select(ID_showInternal,            (void *)&showInternal);
+    Select(ID_showGenerated,           (void *)&showGenerated);
     Select(ID_pointSizePixels,         (void *)&pointSizePixels);
     Select(ID_opacity,                 (void *)&opacity);
 }
@@ -690,6 +694,12 @@ MeshAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
     {
         addToParent = true;
         node->AddNode(new DataNode("showInternal", showInternal));
+    }
+
+    if(completeSave || !FieldsEqual(ID_showGenerated, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showGenerated", showGenerated));
     }
 
     if(completeSave || !FieldsEqual(ID_pointSizePixels, &defaultObject))
@@ -838,6 +848,8 @@ MeshAttributes::SetFromNode(DataNode *parentNode)
         SetOpaqueMeshIsAppropriate(node->AsBool());
     if((node = searchNode->GetNode("showInternal")) != 0)
         SetShowInternal(node->AsBool());
+    if((node = searchNode->GetNode("showGenerated")) != 0)
+        SetShowGenerated(node->AsBool());
     if((node = searchNode->GetNode("pointSizePixels")) != 0)
         SetPointSizePixels(node->AsInt());
     if((node = searchNode->GetNode("opacity")) != 0)
@@ -944,6 +956,13 @@ MeshAttributes::SetShowInternal(bool showInternal_)
 {
     showInternal = showInternal_;
     Select(ID_showInternal, (void *)&showInternal);
+}
+
+void
+MeshAttributes::SetShowGenerated(bool showGenerated_)
+{
+    showGenerated = showGenerated_;
+    Select(ID_showGenerated, (void *)&showGenerated);
 }
 
 void
@@ -1066,6 +1085,12 @@ MeshAttributes::GetShowInternal() const
     return showInternal;
 }
 
+bool
+MeshAttributes::GetShowGenerated() const
+{
+    return showGenerated;
+}
+
 int
 MeshAttributes::GetPointSizePixels() const
 {
@@ -1138,6 +1163,7 @@ MeshAttributes::GetFieldName(int index) const
     case ID_pointType:               return "pointType";
     case ID_opaqueMeshIsAppropriate: return "opaqueMeshIsAppropriate";
     case ID_showInternal:            return "showInternal";
+    case ID_showGenerated:           return "showGenerated";
     case ID_pointSizePixels:         return "pointSizePixels";
     case ID_opacity:                 return "opacity";
     default:  return "invalid index";
@@ -1178,6 +1204,7 @@ MeshAttributes::GetFieldType(int index) const
     case ID_pointType:               return FieldType_glyphtype;
     case ID_opaqueMeshIsAppropriate: return FieldType_bool;
     case ID_showInternal:            return FieldType_bool;
+    case ID_showGenerated:           return FieldType_bool;
     case ID_pointSizePixels:         return FieldType_int;
     case ID_opacity:                 return FieldType_opacity;
     default:  return FieldType_unknown;
@@ -1218,6 +1245,7 @@ MeshAttributes::GetFieldTypeName(int index) const
     case ID_pointType:               return "glyphtype";
     case ID_opaqueMeshIsAppropriate: return "bool";
     case ID_showInternal:            return "bool";
+    case ID_showGenerated:           return "bool";
     case ID_pointSizePixels:         return "int";
     case ID_opacity:                 return "opacity";
     default:  return "invalid index";
@@ -1314,6 +1342,11 @@ MeshAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_showInternal:
         {  // new scope
         retval = (showInternal == obj.showInternal);
+        }
+        break;
+    case ID_showGenerated:
+        {  // new scope
+        retval = (showGenerated == obj.showGenerated);
         }
         break;
     case ID_pointSizePixels:
