@@ -155,13 +155,13 @@ QvisMeshPlotWindow::CreateWindowContents()
     showInternalToggle = new QCheckBox(tr("Show internal zones"), central);
     connect(showInternalToggle, SIGNAL(toggled(bool)),
             this, SLOT(showInternalToggled(bool)));
-    zoneLayout->addWidget(showInternalToggle, 0, 0, 1, 2);
+    zoneLayout->addWidget(showInternalToggle, 0, 0, 1, 1);
 
     // Create the showGenerated toggle
     showGeneratedToggle = new QCheckBox(tr("Show generated zones"), central);
     connect(showGeneratedToggle, SIGNAL(toggled(bool)),
             this, SLOT(showGeneratedToggled(bool)));
-    zoneLayout->addWidget(showGeneratedToggle, 0, 0, 1, 2);
+    zoneLayout->addWidget(showGeneratedToggle, 0, 1, 1, 1);
 
     //
     // Create the color stuff
@@ -594,12 +594,11 @@ QvisMeshPlotWindow::UpdateWindow(bool doAll)
             showInternalToggle->setChecked(meshAtts->GetShowInternal());
             showInternalToggle->blockSignals(false);
             break;
-        // TODO TODO TODO TODO
-        // case MeshAttributes::ID_showGenerated:
-        //     showGeneratedToggle->blockSignals(true);
-        //     showGeneratedToggle->setChecked(meshAtts->GetShowGenerated());
-        //     showGeneratedToggle->blockSignals(false);
-        //     break;
+        case MeshAttributes::ID_showGenerated:
+            showGeneratedToggle->blockSignals(true);
+            showGeneratedToggle->setChecked(meshAtts->GetShowGenerated());
+            showGeneratedToggle->blockSignals(false);
+            break;
         case MeshAttributes::ID_pointSizePixels:
             pointControl->blockSignals(true);
             pointControl->SetPointSizePixels(meshAtts->GetPointSizePixels());
@@ -684,7 +683,7 @@ QvisMeshPlotWindow::Apply(bool ignore)
 {
     if(AutoUpdate() || ignore)
     {
-        // Get the current aslice attributes and tell the other
+        // Get the current mesh plot attributes and tell the other
         // observers about them.
         GetCurrentValues(-1);
         meshAtts->Notify();
