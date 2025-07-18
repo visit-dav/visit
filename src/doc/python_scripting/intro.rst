@@ -10,11 +10,13 @@ You can invoke VisIt_'s Python scripting interface from the command line by typi
 
     visit -cli 
 
-VisIt_ provides a separate Python module if you instead wish to include VisIt functions in an existing Python script.
-In that case, you must first import the VisIt_ module into Python and then call the ``Launch()`` function to make VisIt_ launch and dynamically load the rest of the VisIt_ functions into the Python namespace.
-VisIt_ adopts this somewhat unusual approach to module loading since the lightweight front-end module, named ``visit``, can be installed as one of your Python's site packages yet still dynamically load the real control functions from different versions of VisIt_ selected by the user.
+VisIt_ provides a Python module if you instead to import VisIt functions in an existing Python script.
+In that case, you must first import the `visit_launcher` module into Python and then call the ``Launch()`` function to make VisIt_ launch and dynamically load the rest of the VisIt_. 
+After ``visit_launcher.Launch()`` you can access the full visit module using ``import visit``. 
 
-If you do not install the ``visit`` module as a Python site package, you can tell the Python interpreter where it is located either by appending a new path to the ``sys.path`` variable as in ::
+.. danger:: The visit_launcher module was introduced in VisIt 3.5.0. It is the strategy for python importing of VisIt 3.5.0 and newer. It is not compatible with older VisIt installs. 
+
+You can tell the Python interpreter where visit is located either by appending a new path to the ``sys.path`` variable as in ::
 
     import sys
     sys.path.append("/path/to/visit/<version>/<architecture>/lib/site-packages")
@@ -26,16 +28,16 @@ or by setting the ``PYTHONPATH`` environment variable as in ::
 Here is how to import all functions into the global Python namespace:
 
 ::
-
+    import visit_launcher
+    visit_launcher.Launch()
     from visit import *
-    Launch()
 
 Here is how to import all functions into a "visit" module namespace:
 
 ::
 
-    import visit
-    visit.Launch()
+    import visit_launcher
+    visit_launcher.Launch()
     import visit
 
 
@@ -44,10 +46,10 @@ To avoid confusion, you should use:
 
 ::
 
-    import visit
-    visit.AddArgument("-v")
-    visit.AddArgument("<version>") # for example: "3.2.0"
-    visit.Launch()
+    import visit_launcher
+    visit_launcher.AddArgument("-v")
+    visit_launcher.AddArgument("<version>") # for example: "3.5.0"
+    visit_launcher.Launch()
     import visit
 
 
