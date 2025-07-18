@@ -62,8 +62,9 @@ from os.path import join as pjoin
 
 __all__ = ["Launch",
            "LaunchNowin",
-           "LaunchWithProxy",
-           "AddArgument","SetDebugLevel","GetDebugLevel"]
+           "AddArgument",
+           "SetDebugLevel",
+           "GetDebugLevel"]
 
 def GetVDir(vdir):
     if sys.platform.startswith("win") and vdir==None and 'VISITLOC' in os.environ:
@@ -125,6 +126,14 @@ class VisItModuleState(object):
     @classmethod
     def __prime_visitmodule(cls,mod_file):
         mod_path = os.path.split(mod_file)[0]
+        visit_site_pkgs_dir = os.path.split(mod_path)[0]
+        if not os.path.isdir(pjoin(visit_site_pkgs_dir,"visit")):
+            print("ERROR: visit module is missing from %s" %visit_site_pkgs_dir)
+        sys.path.insert(0,visit_site_pkgs_dir)
+        #
+        # # for debugging
+        # print(sys.path)
+        #
         # If VisIt is installed, preemptively try to dlopen the libraries 
         # upon which the visitmodule depends. During package creation, VisIt
         # libraries get their rpath stripped so the path to the various

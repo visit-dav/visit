@@ -14,6 +14,8 @@ VisIt_ provides a Python module if you instead to import VisIt functions in an e
 In that case, you must first import the `visit_launcher` module into Python and then call the ``Launch()`` function to make VisIt_ launch and dynamically load the rest of the VisIt_. 
 After ``visit_launcher.Launch()`` you can access the full visit module using ``import visit``. 
 
+.. danger:: The visit_launcher module was introduced in VisIt 3.5.0. It is the strategy for python importing of VisIt 3.5.0 and newer. It is not compatible with older VisIt installs. 
+
 You can tell the Python interpreter where visit is located either by appending a new path to the ``sys.path`` variable as in ::
 
     import sys
