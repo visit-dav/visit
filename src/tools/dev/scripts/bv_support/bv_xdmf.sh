@@ -63,7 +63,7 @@ function bv_xdmf_host_profile
             xmlsep="."
         fi
         echo \
-            "VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} \${VISITHOME}/vtk/\${VTK_VERSION}/\${VISITARCH}/lib${xml64} vtklibxml2${xmlsep}\${VTK_MAJOR_VERSION}.\${VTK_MINOR_VERSION} TYPE STRING)"\
+            "VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} \${VISIT_VTK_DIR}/lib${xml64} vtklibxml2${xmlsep}\${VTK_MAJOR_VERSION}.\${VTK_MINOR_VERSION} TYPE STRING)"\
                 >> $HOSTCONF
     fi
 }

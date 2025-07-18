@@ -21,17 +21,7 @@
 // not be clipped.
 // ---------------------------------------------------------------------------
 
-AlwaysNegative *AlwaysNegative::New()
-{
-  // First try to create the object from the vtkObjectFactory
-  vtkObject* ret = vtkObjectFactory::CreateInstance("AlwaysNegative");
-  if(ret)
-    {
-    return (AlwaysNegative*)ret;
-    }
-  // If the factory was unable to create the object, then create it here.
-  return new AlwaysNegative;
-}
+vtkStandardNewMacro(AlwaysNegative);
 
 AlwaysNegative::AlwaysNegative()
 {

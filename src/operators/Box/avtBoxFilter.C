@@ -82,18 +82,7 @@ protected:
   bool Inverse;
 };
 
-
-vtkBoxFilter *vtkBoxFilter::New()
-{
-  // First try to create the object from the vtkObjectFactory
-  vtkObject* ret = vtkObjectFactory::CreateInstance("vtkBoxFilter");
-  if(ret)
-    {
-    return (vtkBoxFilter*)ret;
-    }
-  // If the factory was unable to create the object, then create it here.
-  return new vtkBoxFilter;
-}
+vtkStandardNewMacro(vtkBoxFilter);
 
 vtkBoxFilter::vtkBoxFilter()
 {

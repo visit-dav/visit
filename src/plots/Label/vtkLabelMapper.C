@@ -12,7 +12,6 @@
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkMatrix4x4.h>
-#include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRenderer.h>
@@ -78,8 +77,6 @@ matrix_mul_point(double out[4], const double M[4][4], const double pt[4])
     out[3] = pt[0]*M[0][3] + pt[1]*M[1][3] + pt[2]*M[2][3] + pt[3]*M[3][3];
 }
 
-//vtkStandardNewMacro(vtkLabelMapper);
-#if 1
 vtkLabelMapper *
 vtkLabelMapper::New()
 {
@@ -87,7 +84,6 @@ vtkLabelMapper::New()
     result->InitializeObjectBase();
     return result;
 }
-#endif
 
 // ****************************************************************************
 // Method: vtkLabelMapper::vtkLabelMapper

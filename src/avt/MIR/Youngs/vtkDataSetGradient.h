@@ -39,7 +39,6 @@ Modifications history :
 //const static char * VTK_DATA_SET_GRADIENT_H_SCCS_ID = "%Z% DSSI/SNEC/LDDC %M%   %I%     %G%";
 #endif /*SWIG*/
 
-#include <vtkObjectFactory.h>
 #include <vtkSetGet.h>
 #include <vtkDataSetAlgorithm.h>
 #include <vtkInformation.h>

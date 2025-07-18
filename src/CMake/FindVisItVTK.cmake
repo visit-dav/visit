@@ -4,6 +4,9 @@
 
 #****************************************************************************
 # Modifications:
+#   Kathleen Biagas, Thu Jun 19, 2025
+#   Make the minimum version 9.5.0.
+#
 #****************************************************************************/
 #[=[
 # If the config-site file did not set a VTK version, then set a
@@ -21,10 +24,10 @@ if(NOT VTK_VERSION)
   endif()
 endif()
 
-if(VTK_VERSION VERSION_GREATER_EQUAL "9.2.6")
+if(VTK_VERSION VERSION_GREATER_EQUAL "9.5.0")
     include(${VISIT_SOURCE_DIR}/CMake/FindVTK9.cmake)
 else()
-    message(FATAL_ERROR "Only VTK version >= 9.2.6 is supported")
+    message(FATAL_ERROR "Only VTK version >= 9.5.0 is supported")
 endif()
 
 if(VTK_FOUND)
