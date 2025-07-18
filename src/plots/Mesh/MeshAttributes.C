@@ -1397,6 +1397,9 @@ MeshAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 //    Kathleen Biagas, Wed Jun  10 10:00:03 PDT 2020
 //    Added test for changing point type.
 //
+//    Cyrus Harrison, Fri Jul 18 14:30:07 PDT 2025
+//    Added test for changing show generated.
+//
 // ****************************************************************************
 
 bool
@@ -1418,6 +1421,7 @@ MeshAttributes::ChangesRequireRecalculation(const MeshAttributes &obj,
 
     return ( needSecondaryVar || changingPointType ||
             (smoothingLevel != obj.smoothingLevel) ||
+            (showGenerated != obj.showGenerated) ||
             (showInternal != obj.showInternal && spatDim == 3));
 }
 
