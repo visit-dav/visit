@@ -86,6 +86,7 @@ argument : string
 
   import visit_launcher
   visit_launcher.AddArgument("-nowin") # Add the -nowin argument to the viewer.
+  visit_launcher.Launch()
   import visit
 
 

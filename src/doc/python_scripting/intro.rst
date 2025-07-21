@@ -10,7 +10,7 @@ You can invoke VisIt_'s Python scripting interface from the command line by typi
 
     visit -cli 
 
-VisIt_ provides a Python module if you instead to import VisIt functions in an existing Python script.
+VisIt_ provides a Python module if you instead wish to import VisIt functions in an existing Python script.
 In that case, you must first import the `visit_launcher` module into Python and then call the ``Launch()`` function to make VisIt_ launch and dynamically load the rest of the VisIt_. 
 After ``visit_launcher.Launch()`` you can access the full visit module using ``import visit``. 
 
