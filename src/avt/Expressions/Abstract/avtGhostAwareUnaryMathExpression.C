@@ -105,11 +105,7 @@ avtGhostAwareUnaryMathExpression::IdentifyGhostedNodes(vtkDataSet *in_ds,
             if (0 == ghostZones->GetComponent(cellId, 0))
             {
                 vtkIdType numCellPoints = 0;
-#if LIB_VERSION_LE(VTK,8,1,0)
-                vtkIdType *cellPoints = NULL;
-#else
                 const vtkIdType *cellPoints = nullptr;
-#endif
                 vtkIdList *ptIds = vtkIdList::New();
                 // we get the points for this zone
                 in_ds->GetCellPoints(cellId, numCellPoints, cellPoints, ptIds);

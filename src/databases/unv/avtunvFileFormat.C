@@ -3237,7 +3237,6 @@ avtunvFileFormat::GetMesh(const char *meshname)
             return NULL ;
         // Computes the lowest nodes number:
         int nbn = avtunvFileFormat::getNbverticesFreeFaces(); // Number of nodes for the structure
-        fprintf(stdout,"Number of free nodes=%d\n",nbn);
 #if INTERACTIVEPLOT
         if (debuglevel >= 2) fprintf(stdout,"Number of free nodes=%d\n",nbn);
 #else

@@ -416,7 +416,7 @@ function build_visit
     # Install VisIt
     #
     if [[ "${VISIT_INSTALL_PREFIX}" != "" ]] ; then
-        ${CMAKE_COMMAND} install .
+        ${CMAKE_COMMAND} --install .
         if [[ $? != 0 ]] ; then
             warn "VisIt installation failed.  Giving up"
             return 1

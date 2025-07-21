@@ -81,6 +81,7 @@ vtkVisItCellDataToPointData.C
 vtkVisItClipper.C
 vtkVisItContourFilter.C
 vtkVisItCutter.C
+vtkVisItDataSetWriter.C
 vtkVisItExtractGrid.C
 vtkVisItExtractRectilinearGrid.C
 vtkVisItFeatureEdges.C
@@ -100,13 +101,6 @@ vtkVolumeFromVolume.C
 ${OPENEXR_SRC}
 )
 
-if(VTK_VERSION VERSION_LESS "9.4.0")
-    list(APPEND VISIT_VTK_SOURCES
-         vtkVisItRectilinearGrid.C
-         vtkVisItStructuredGrid.C)
-else()
-    list(APPEND VISIT_VTK_SOURCES vtkVisItDataSetWriter.C)
-endif()
 
 INCLUDE_DIRECTORIES(
 ${VISIT_BINARY_DIR}/include

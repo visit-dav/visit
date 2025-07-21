@@ -217,7 +217,7 @@ function build_ospray_in_source
         error "OSPRay did not build correctly.  Giving up."
 
     info "Installing OSPRay . . . "
-    ${CMAKE_COMMAND} install . || error "OSPRay did not install correctly."
+    ${CMAKE_COMMAND} --install . || error "OSPRay did not install correctly."
 }
 
 function build_ospray

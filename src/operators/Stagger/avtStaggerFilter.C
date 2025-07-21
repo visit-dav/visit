@@ -172,7 +172,8 @@ avtStaggerFilter::ExecuteData(avtDataRepresentation *in_dr)
       newPoints->SetNumberOfPoints(numPoints);
       newGrid->SetPoints(newPoints);
       
-      int* dims = newGrid->GetDimensions();
+      int dims[3];
+      newGrid->GetDimensions(dims);
       int mulSizes[3];
       debug5 <<"avtStaggerFilter::ExecuteData() - mesh has dimensions " <<dims[0] <<", " <<dims[1] <<", " <<dims[2] <<std::endl;
       mulSizes[0] = 1;

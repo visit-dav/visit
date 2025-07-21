@@ -6418,7 +6418,7 @@ void visit_vtkOpenFOAMReaderPrivate::InterpolateCellToPoint(vtkFloatArray *pData
   vtkCellLinks *cl = NULL;
   if (ug)
     {
-    cl = vtkCellLinks::SafeDownCast(ug->GetCellLinks());
+    cl = vtkCellLinks::SafeDownCast(ug->GetLinks());
     }
 
   const int nComponents = iData->GetNumberOfComponents();

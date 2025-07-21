@@ -34,7 +34,6 @@
 #include <vtkFloatArray.h>
 #include <vtkIdList.h>
 #include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
 #include <vtkPoints.h>
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
