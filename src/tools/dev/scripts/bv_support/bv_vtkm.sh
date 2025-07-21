@@ -231,7 +231,7 @@ function build_vtkm
     ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS || error "VTKm did not build correctly. Giving up."
 
     info "Installing VTKm . . . (~2 minutes)"
-    ${CMAKE_COMMAND} install . || error "VTKm did not install correctly."
+    ${CMAKE_COMMAND} --install . || error "VTKm did not install correctly."
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
         chmod -R ug+w,a+rX "$VISITDIR/vtkm"

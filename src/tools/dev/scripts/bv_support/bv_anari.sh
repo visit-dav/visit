@@ -203,7 +203,7 @@ function build_anari
         error "ANARI did not build correctly.  Giving up."
 
     info "Installing ANARI . . . "
-    ${CMAKE_COMMAND} install . || error "ANARI did not install correctly."
+    ${CMAKE_COMMAND} --install . || error "ANARI did not install correctly."
 
     chmod -R ug+w,a+rX ${VISITDIR}/${ANARI_INSTALL_DIR}
 
