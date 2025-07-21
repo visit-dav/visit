@@ -109,6 +109,9 @@ avtLineScanTransformQuery::PreExecute(void)
 //    Add XML results, and ResultValues, allowing them to be set even if
 //    output file could not be opened.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 void
@@ -116,7 +119,7 @@ avtLineScanTransformQuery::PostExecute(void)
 {
     int times = 0;
     char name[1024];
-    sprintf(name, "lst%d.ult", times++);
+    snprintf(name, 1024, "lst%d.ult", times++);
 
     if (PAR_Rank() == 0)
     {
@@ -127,7 +130,7 @@ avtLineScanTransformQuery::PostExecute(void)
             if (ifile.fail())
                 lookingForUnused = false;
             else
-                sprintf(name, "lst%d.ult", times++);
+                snprintf(name, 1024, "lst%d.ult", times++);
         }
     }
 
@@ -140,9 +143,10 @@ avtLineScanTransformQuery::PostExecute(void)
     SumIntArrayAcrossAllProcessors( &numLineIntersections, &totalNumLineIntersections, 1);
     
     char msg[1024];
-    sprintf(msg, "The line scan transform has been outputted as an "
-                 "Ultra file (%s), which can then be imported into VisIt."
-                 "There were %d total line intersections.", name, totalNumLineIntersections);
+    snprintf(msg, 1024,
+                  "The line scan transform has been outputted as an "
+                  "Ultra file (%s), which can then be imported into VisIt."
+                  "There were %d total line intersections.", name, totalNumLineIntersections);
     SetResultMessage(msg);
     SetResultValue(0.);
 
@@ -151,7 +155,7 @@ avtLineScanTransformQuery::PostExecute(void)
         ofstream ofile(name);
         if (ofile.fail())
         {
-            sprintf(msg, "Unable to write out file containing distribution.");
+            snprintf(msg, 1024, "Unable to write out file containing distribution.");
             SetResultMessage(msg);
         }
         if (!ofile.fail())

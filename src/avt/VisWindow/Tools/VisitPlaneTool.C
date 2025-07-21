@@ -1060,6 +1060,9 @@ VisitPlaneTool::RemoveRadiusText()
 //   Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
 //   Account for 3D axis scaling (3D equivalent of full-frame mode).
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 void
@@ -1092,14 +1095,14 @@ VisitPlaneTool::UpdateText()
         up.normalize();
     }
 
-    sprintf(str, "Origin <%1.3g %1.3g %1.3g>",
+    snprintf(str, 100, "Origin <%1.3g %1.3g %1.3g>",
             origin.x, origin.y, origin.z);
     originTextActor->SetInput(str);
     avtVector originScreen = ComputeWorldToDisplay(hotPoints[0].pt);
     double pt[3] = {originScreen.x, originScreen.y, 0.};
     originTextActor->GetPositionCoordinate()->SetValue(pt);
 
-    sprintf(str, "Normal <%1.3g %1.3g %1.3g>", normal.x, normal.y, normal.z);
+    snprintf(str, 100, "Normal <%1.3g %1.3g %1.3g>", normal.x, normal.y, normal.z);
     normalTextActor->SetInput(str);
     avtVector normalScreen = ComputeWorldToDisplay(hotPoints[3].pt);
     double pt2[3] = {normalScreen.x, normalScreen.y, 0.};
@@ -1107,7 +1110,7 @@ VisitPlaneTool::UpdateText()
 
     // Create a normalized up vector.
     up.normalize();
-    sprintf(str, "Up <%1.3g %1.3g %1.3g>", up.x, up.y, up.z);
+    snprintf(str, 100, "Up <%1.3g %1.3g %1.3g>", up.x, up.y, up.z);
     upAxisTextActor->SetInput(str);
     avtVector upAxisScreen = ComputeWorldToDisplay(hotPoints[1].pt);
     double pt3[3] = {upAxisScreen.x, upAxisScreen.y, 0.};
@@ -1126,7 +1129,10 @@ VisitPlaneTool::UpdateText()
 // Modifications:
 //   Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002
 //   Replace mapper with actor.
-//   
+//
+//   Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//   sprintf to snprintf
+//
 // ****************************************************************************
 
 void
@@ -1134,7 +1140,7 @@ VisitPlaneTool::UpdateRadiusText()
 {
     char str[100];
     double rad = (hotPoints[4].pt - hotPoints[0].pt).norm();
-    sprintf(str, "Radius = %g", rad);
+    snprintf(str, 100, "Radius = %g", rad);
     radiusTextActor->SetInput(str);
     avtVector radiusScreen = ComputeWorldToDisplay(hotPoints[4].pt);
     double pt3[3] = {radiusScreen.x, radiusScreen.y, 0.};

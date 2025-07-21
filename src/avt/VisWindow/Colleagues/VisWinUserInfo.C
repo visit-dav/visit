@@ -304,6 +304,9 @@ VisWinUserInfo::SetVisibility(bool val)
 //   If we can't get the username, use the string "user" as the username so
 //   the code doesn't crash.
 //
+//   Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//   sprintf to snprintf
+//
 // ****************************************************************************
 
 void
@@ -340,9 +343,10 @@ VisWinUserInfo::UpdateUserText()
         // makes relative positioning _much_ easier.
         //
         delete [] infoString;
-        infoString = new char[strlen("user: ") + strlen(user) + strlen("\n") 
-                              + strlen(current_time) + 1];
-        sprintf(infoString, "user: %s\n%s", user, current_time);
+        size_t infoStringLen = strlen("user: ") + strlen(user) + strlen("\n") 
+                               + strlen(current_time) + 1;
+        infoString = new char[infoStringLen];
+        snprintf(infoString, infoStringLen, "user: %s\n%s", user, current_time);
         infoActor->SetInput(infoString);
 
         // Place the user info based on its size.

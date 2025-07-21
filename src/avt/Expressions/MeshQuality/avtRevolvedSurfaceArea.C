@@ -255,6 +255,11 @@ avtRevolvedSurfaceArea::DeriveVariable(vtkDataSet *in_ds, int currentDomainsInde
 //  Programmer: Kathleen Bonnell 
 //  Creation:   February 7, 2006 
 //
+//  Modifications:
+//
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
  
 double
@@ -266,7 +271,7 @@ avtRevolvedSurfaceArea::GetCellArea(vtkCell *cell)
         if (!haveIssuedWarning)
         {
            char msg[1024];
-           sprintf(msg, "The revolved surface area is only supported for "
+           snprintf(msg, 1024, "The revolved surface area is only supported for "
                         " line segments.  %d is an invalid cell type.",
                          cellType);
            avtCallback::IssueWarning(msg);

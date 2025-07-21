@@ -132,6 +132,9 @@ avtLineSamplerInfoQuery::PreExecute()
 //
 //  Modifications:
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 void
@@ -188,17 +191,17 @@ avtLineSamplerInfoQuery::PostExecute()
 
         if( cordLength > 0 )
         {
-          sprintf( str, "LineSample %d:  Number of samples %d  ",
+          snprintf( str, 128, "LineSample %d:  Number of samples %d  ",
                    lsIdx, nSamples );
           msg += str;
 
           if( dumpCoordinates )
-            sprintf(str, "Cord length %f  \n", cordLength );
+            snprintf(str, 128, "Cord length %f  \n", cordLength );
           else
-            sprintf(str, "\n" );
+            snprintf(str, 128, "\n" );
         }
         else
-          sprintf(str, "LineSample vertices:  Number of vertices %d \n",
+          snprintf(str, 128, "LineSample vertices:  Number of vertices %d \n",
                   nSamples );
 
         msg += str;
@@ -209,7 +212,7 @@ avtLineSamplerInfoQuery::PostExecute()
             {
                 if (dumpCoordinates)
                 {
-                  sprintf(str, "%f %f %f",
+                  snprintf(str, 128, "%f %f %f",
                           lsData[i], lsData[i+1], lsData[i+2]);
                   i += 3;
                   msg += str;
@@ -217,12 +220,12 @@ avtLineSamplerInfoQuery::PostExecute()
 
                 if (dumpValues)
                 {
-                  sprintf(str, "    %f", lsData[i] );
+                  snprintf(str, 128, "    %f", lsData[i] );
                   i += 1;
                   msg += str;
                 }
 
-                sprintf(str, "\n" );
+                snprintf(str, 128, "\n" );
                 msg += str;
             }
         }

@@ -123,6 +123,9 @@ avtConnCMFEExpression::PerformCMFE(avtDataTree_p in1, avtDataTree_p in2,
 //    cell data from a polyhedral mesh onto a point mesh when the mesh was
 //    material selected.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -345,7 +348,7 @@ avtConnCMFEExpression::ExecuteTree(avtDataTree_p in1, avtDataTree_p in2,
         }
         if (var2 == NULL)
         {
-            sprintf(msg, "The databases cannot be compared because variable "
+            snprintf(msg, 1024, "The databases cannot be compared because variable "
                          " \"%s\" cannot be located.", invar.c_str());
             EXCEPTION1(InvalidMergeException, msg);
         }
@@ -376,7 +379,7 @@ avtConnCMFEExpression::ExecuteTree(avtDataTree_p in1, avtDataTree_p in2,
                     // Append '2' to the name so not to have any name
                     // conflicts.
                     char name[128];
-                    sprintf( name, "%s2", name1);
+                    snprintf( name, 128, "%s2", name1);
 
                     fp->SetName(name);
                     in_ds1->GetFieldData()->AddArray(fp);

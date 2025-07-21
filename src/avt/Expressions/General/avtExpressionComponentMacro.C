@@ -70,6 +70,11 @@ avtExpressionComponentMacro::SetMacro(const std::string &e, int c)
 //  Programmer: Hank Childs
 //  Creation:   June 30, 2005
 //
+//  Modifications:
+//
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 void
@@ -80,7 +85,7 @@ avtExpressionComponentMacro::GetMacro(std::vector<std::string> &args,
         EXCEPTION0(ImproperUseException);
 
     char new_expr[1024];
-    sprintf(new_expr, "%s(%s)[%d]", expr.c_str(), args[0].c_str(), comp);
+    snprintf(new_expr, 1024, "%s(%s)[%d]", expr.c_str(), args[0].c_str(), comp);
     ne = new_expr;
     type = Expression::ScalarMeshVar;
 }

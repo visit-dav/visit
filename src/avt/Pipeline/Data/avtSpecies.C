@@ -6,7 +6,7 @@
 //                                  avtSpecies.C                             //
 // ************************************************************************* //
 
-#include <stdio.h>         // for sprintf
+#include <stdio.h>
 #include <avtSpecies.h>
 
 #include <BadDomainException.h>
@@ -36,6 +36,9 @@ using namespace std;
 //    Hank Childs, Wed Dec 19 20:54:36 PST 2001
 //    Added a vector resize.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 avtSpecies::avtSpecies(int nm, const int *ns,
@@ -52,7 +55,7 @@ avtSpecies::avtSpecies(int nm, const int *ns,
         for (int s = 0 ; s < ns[m] ; s++)
         {
             char name[256];
-            sprintf(name, "%d", s+1);
+            snprintf(name, 256,"%d", s+1);
             specnames[m].push_back(name);
         }
     }

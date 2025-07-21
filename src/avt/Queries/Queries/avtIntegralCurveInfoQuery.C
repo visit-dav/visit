@@ -138,6 +138,9 @@ avtIntegralCurveInfoQuery::PreExecute()
 //    Kathleen Biagas, Wed Feb 26 10:22:56 PST 2014
 //    Add XML results.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 void
 avtIntegralCurveInfoQuery::PostExecute()
@@ -205,8 +208,8 @@ avtIntegralCurveInfoQuery::PostExecute()
         sl_res_seed.push_back(z);
         sl_res_node["seed"] = sl_res_seed;
         sl_res_node["arcLength"] = arcLength;
-        sprintf(str, "IntegralCurve %d: Seed %lf %lf %lf, Arclength %lf",
-                slIdx, x, y, z, arcLength );
+        snprintf(str, 128, "IntegralCurve %d: Seed %lf %lf %lf, Arclength %lf",
+                 slIdx, x, y, z, arcLength );
         msg += str;
 
         if (dumpIndex || dumpCoordinates || dumpArcLength || dumpValues)
@@ -214,7 +217,7 @@ avtIntegralCurveInfoQuery::PostExecute()
             unsigned int numSteps = (unsigned int) slData[i++];
             sl_res_node["numSteps"] = (int) numSteps;
 
-            sprintf(str, ", Steps %d\n", numSteps);
+            snprintf(str, 128, ", Steps %d\n", numSteps);
             msg += str;
 
             doubleVector sl_steps;
@@ -226,7 +229,7 @@ avtIntegralCurveInfoQuery::PostExecute()
               if (dumpIndex) // Index
               {
                 sl_steps.push_back(j);
-                sprintf(str, "%s  %i", str, j);
+                snprintf(str, 128, "%s  %i", str, j);
               }
 
               if (dumpCoordinates) // Coordinates
@@ -236,7 +239,7 @@ avtIntegralCurveInfoQuery::PostExecute()
                 sl_steps.push_back(x);
                 sl_steps.push_back(y);
                 sl_steps.push_back(z);
-                sprintf(str, "%s  %lf %lf %lf", str, x, y, z);
+                snprintf(str, 128, "%s  %lf %lf %lf", str, x, y, z);
               }
 
               if (dumpArcLength) // Arc Length
@@ -244,7 +247,7 @@ avtIntegralCurveInfoQuery::PostExecute()
                 arcLength = slData[i++];
 
                 sl_steps.push_back(arcLength);
-                sprintf(str, "%s  %lf", str, arcLength);
+                snprintf(str, 128, "%s  %lf", str, arcLength);
               }
 
               if (dumpValues) // Value
@@ -252,25 +255,25 @@ avtIntegralCurveInfoQuery::PostExecute()
                 value = slData[i++];
 
                 sl_steps.push_back(value);
-                sprintf(str, "%s  %lf", str, value);
+                snprintf(str, 128, "%s  %lf", str, value);
               }
 
-              sprintf(str, "%s\n", str);
+              snprintf(str, 128,"%s\n", str);
               msg += str;
             }
 
             sl_res_node["steps"] = sl_steps;
 
-            sprintf(str, "\n");
+            snprintf(str, 128, "\n");
             msg += str;
         }
         else
         {
-          sprintf(str, "\n");
+          snprintf(str, 128, "\n");
           msg += str;
         }
 
-        sprintf(str, "IntegralCurve %d", slIdx);
+        snprintf(str, 128, "IntegralCurve %d", slIdx);
         result_node[str] = sl_res_node;
         ++slIdx;
     }

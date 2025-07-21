@@ -282,6 +282,9 @@ class IVP_API ICStatus
 //   Dave Pugmire, Mon Dec 15 11:00:23 EST 2014
 //   Return number of steps taken.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 class IVP_API avtIntegralCurve
@@ -374,7 +377,7 @@ class IVP_API avtIntegralCurve
     void InitTrk()
     {
         char tmp[64];
-        sprintf(tmp, "IC_%d.txt", (int)id);
+        snprintf(tmp, 64, "IC_%d.txt", (int)id);
         trk.open(tmp, ofstream::out);
         trk<<"Init: ID= "<<id<<endl;
     }

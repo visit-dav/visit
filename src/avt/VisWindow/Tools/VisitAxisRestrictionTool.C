@@ -384,6 +384,9 @@ VisitAxisRestrictionTool::RemoveText()
 //
 // Modifications:
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 void
@@ -393,7 +396,7 @@ VisitAxisRestrictionTool::UpdateText()
     {
         int axis = int(i/2);
         char str[100];
-        sprintf(str, "<%1.5g>",
+        snprintf(str, 100, "<%1.5g>",
                 origHotPoints[i].pt.y * (axesMax[axis]-axesMin[axis])
                 + axesMin[axis]);
         posTextActors[i]->SetInput(str);

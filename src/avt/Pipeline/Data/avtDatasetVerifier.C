@@ -143,6 +143,9 @@ avtDatasetVerifier::VerifyDatasets(int nlist, vtkDataSet **list,
 //    Hank Childs, Fri Dec 31 12:07:05 PST 2010
 //    Add support for safe mode.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 void
@@ -233,10 +236,10 @@ avtDatasetVerifier::VerifyDataset(vtkDataSet *ds, int dom)
             if (! issuedWarningForVarMismatch)
             {
                 char msg[1024];
-                sprintf(msg, "Your dimensions were declared to be %d x %d x %d, "
-                             "which should mean %d points.  But your point "
-                             "variables have %d points.  This is an unrecoverable "
-                             "error.", dims[0], dims[1], dims[2], dimsnpts, nPts);
+                snprintf(msg, 1024, "Your dimensions were declared to be %d x %d x %d, "
+                              "which should mean %d points.  But your point "
+                              "variables have %d points.  This is an unrecoverable "
+                              "error.", dims[0], dims[1], dims[2], dimsnpts, nPts);
                 avtCallback::IssueWarning(msg);
                 issuedWarningForVarMismatch = true;
             }
@@ -246,7 +249,7 @@ avtDatasetVerifier::VerifyDataset(vtkDataSet *ds, int dom)
             if (! issuedWarningForVarMismatch)
             {
                 char msg[1024];
-                sprintf(msg, "Your dimensions were declared to be %d x %d x %d, "
+                snprintf(msg, 1024, "Your dimensions were declared to be %d x %d x %d, "
                              "which should mean %d cells.  But your cell "
                              "variables have %d cells.  This is an unrecoverable "
                              "error.", dims[0], dims[1], dims[2], dimsncells, nCells);
@@ -327,6 +330,11 @@ avtDatasetVerifier::VerifyDataset(vtkDataSet *ds, int dom)
 //  Programmer: Hank Childs
 //  Creation:   January 1, 2011
 //
+//  Modifications:
+//
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 void
@@ -345,14 +353,16 @@ avtDatasetVerifier::CheckArray(int dom, vtkDataArray *arr, const char *name)
                 {
                     char msg[1024];
                     if (ncomps > 1)
-                        sprintf(msg, "In domain %d, array \"%s\" at location (%d, %d), "
-                                     "you have a non-finite value (%f).  Note that "
-                                     "only the first error encountered is reported.",
+                        snprintf(msg, 1024, 
+                                      "In domain %d, array \"%s\" at location (%d, %d), "
+                                      "you have a non-finite value (%f).  Note that "
+                                      "only the first error encountered is reported.",
                                        dom, name, i, j, vals[j]);
                     else
-                        sprintf(msg, "In domain %d, array \"%s\" at location %d, "
-                                     "you have a non-finite value (%f).  Note that "
-                                     "only the first error encountered is reported.",
+                        snprintf(msg, 1024, 
+                                      "In domain %d, array \"%s\" at location %d, "
+                                      "you have a non-finite value (%f).  Note that "
+                                      "only the first error encountered is reported.",
                                        dom, name, i, vals[j]);
                     avtCallback::IssueWarning(msg);
                     issuedSafeModeWarning = true;
@@ -377,6 +387,10 @@ avtDatasetVerifier::CheckArray(int dom, vtkDataArray *arr, const char *name)
 //    Kathleen Biagas, Thu Aug 11, 2022
 //    Support VTK9: Use vtkCellArrayIterator.
 //
+//
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 void
@@ -387,7 +401,7 @@ avtDatasetVerifier::CheckConnectivity(int dom, int nTotalPts,
     if (!arr->IsValid())
     {
         char msg[1024];
-        sprintf(msg, "In domain %d, connectivity data is in an invalid state. "
+        snprintf(msg, 1024, "In domain %d, connectivity data is in an invalid state. "
                  "Unrecoverable error.", dom);
         avtCallback::IssueWarning(msg);
         return;
@@ -407,7 +421,7 @@ avtDatasetVerifier::CheckConnectivity(int dom, int nTotalPts,
                 if (!issuedSafeModeWarning)
                 {
                     char msg[1024];
-                    sprintf(msg, "In domain %d, your connectivity array (%s) "
+                    snprintf(msg, 1024, "In domain %d, your connectivity array (%s) "
                                  "has a bad value. Cell %lld references point %lld "
                                  "and the maximum value is %d.  Note that "
                                  "only the first error encountered is reported.",
@@ -450,6 +464,9 @@ avtDatasetVerifier::CheckConnectivity(int dom, int nTotalPts,
 //    Hank Childs, Tue Jul  5 16:18:02 PDT 2005
 //    Added variable name. ['6368]
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 void
@@ -468,7 +485,7 @@ avtDatasetVerifier::IssueVarMismatchWarning(int nVars, int nUnits,bool isPoint,
                           : "Some values were removed");
 
     char msg[1024];
-    sprintf(msg, "In domain %d, your %s variable \"%s\" has %d values, but it "
+    snprintf(msg, 1024, "In domain %d, your %s variable \"%s\" has %d values, but it "
                  "should have %d.  %s to ensure VisIt runs smoothly.",
                  dom, unit_string, vname, nVars, nUnits, action);
     avtCallback::IssueWarning(msg);

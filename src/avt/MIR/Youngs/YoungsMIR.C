@@ -71,6 +71,9 @@ YoungsMIR::~YoungsMIR()
 //    Kathleen Biagas, Mon Jan 28 10:35:29 PST 2013
 //    Call update on the filter not the data object.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 bool
 YoungsMIR::ReconstructMesh(vtkDataSet *orig_ds, avtMaterial *orig_mat, int dim)
@@ -98,7 +101,7 @@ YoungsMIR::ReconstructMesh(vtkDataSet *orig_ds, avtMaterial *orig_mat, int dim)
         vf[m]->SetNumberOfTuples(ncells);
         vf[m]->SetNumberOfComponents(1);
         char str[256];
-        sprintf(str, "material%05d", mapUsedMatToMat[m]);
+        snprintf(str, 256, "material%05d", mapUsedMatToMat[m]);
         //vf[m]->SetName(matNames[m].c_str());
         vf[m]->SetName(str);
         ds->GetCellData()->AddArray(vf[m]);
@@ -130,14 +133,14 @@ YoungsMIR::ReconstructMesh(vtkDataSet *orig_ds, avtMaterial *orig_mat, int dim)
         grad->SetInputData(ds);
 
         char str[256];
-        sprintf(str, "material%05d", mapUsedMatToMat[m]);
+        snprintf(str, 256, "material%05d", mapUsedMatToMat[m]);
         ds->GetCellData()->SetActiveScalars(str);
         // KSB: VTK (as of version 9) complains if this isn't set, because the
         // grad filter calls GetInputArrayToProcess
         grad->SetInputArrayToProcess(0,0,0,vtkDataObject::FIELD_ASSOCIATION_CELLS, str);
 
         char str2[256];
-        sprintf(str2, "grad%05d", mapUsedMatToMat[m]);
+        snprintf(str2, 256, "grad%05d", mapUsedMatToMat[m]);
         grad->SetGradientArrayName(str2);
 
         grad->Update();
@@ -164,8 +167,8 @@ YoungsMIR::ReconstructMesh(vtkDataSet *orig_ds, avtMaterial *orig_mat, int dim)
     for (int m=0; m<nmats; m++)
     {
         char str1[256], str2[256];
-        sprintf(str1, "material%05d", mapUsedMatToMat[m]);
-        sprintf(str2, "grad%05d", mapUsedMatToMat[m]);
+        snprintf(str1, 256, "material%05d", mapUsedMatToMat[m]);
+        snprintf(str2, 256, "grad%05d", mapUsedMatToMat[m]);
 
         youngs->AddMaterial(str1,str2,str1);
     }
@@ -183,7 +186,7 @@ YoungsMIR::ReconstructMesh(vtkDataSet *orig_ds, avtMaterial *orig_mat, int dim)
         char str[1024];
         static int val =0;
         val++;
-        sprintf(str, "ZZ_input%04d.vtk", val);
+        snprintf(str, "ZZ_input%04d.vtk", val);
         wrtr->SetFileName(str);
         wrtr->SetInput(ds);
         wrtr->Write();
@@ -195,7 +198,7 @@ YoungsMIR::ReconstructMesh(vtkDataSet *orig_ds, avtMaterial *orig_mat, int dim)
         char str[1024];
         static int val = 0;
         val++;
-        sprintf(str, "ZZ_output%04d.vtk", val);
+        snprintf(str, 1024, "ZZ_output%04d.vtk", val);
         wrtr->SetFileName(str);
         cerr << "output[m] = "<<output[m]<<endl;
         wrtr->SetInput(output[m]);

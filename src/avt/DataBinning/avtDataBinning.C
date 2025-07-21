@@ -315,6 +315,9 @@ avtDataBinning::ApplyFunction(vtkDataSet *ds)
 //    Fixed bug with output for 1D grids. For each curve(grid) point we do
 //    have a correspdong bin value. We don't need to average grid points.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 void
@@ -330,7 +333,7 @@ avtDataBinning::OutputDataBinning(const std::string &ddfname)
     {
         vtkDataSetWriter *wrtr = vtkDataSetWriter::New();
         char str[1024];
-        sprintf(str, "%s.vtk", ddfname.c_str());
+        snprintf(str, 1024, "%s.vtk", ddfname.c_str());
         wrtr->SetFileName(str);
         wrtr->SetInputData(g);
         wrtr->Write();
@@ -344,7 +347,7 @@ avtDataBinning::OutputDataBinning(const std::string &ddfname)
         vtkDataArray *s = r->GetPointData()->GetArray(0);
         vtkDataArray *x = r->GetXCoordinates();
         char str[1024];
-        sprintf(str, "%s.ultra", ddfname.c_str());
+        snprintf(str, 1024, "%s.ultra", ddfname.c_str());
         ofstream ofile(str);
         ofile << "# DataBinning " << ddfname << endl;
         for (int j = 0 ; j < dims[0] ; j++)

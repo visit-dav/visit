@@ -27,6 +27,9 @@
  *    Jeremy Meredith, Tue Jun  5 13:23:18 EDT 2007
  *    Added copyright notice.
  *
+ *    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+ *    sprintf to snprintf
+ *
  *---------------------------------------------------------------------------*/
 #include <visitstream.h>
 #include <stdio.h>
@@ -171,7 +174,7 @@ printrow(int n, float v[8], bool comma=true)
 
     for (int i=0; i<n; i++)
     {
-        sprintf(s,"%.6f", v[i]);
+        snprintf(s, 100,"%.6f", v[i]);
         outc << s;
         if (i+1 < n)
             outc << ",";
@@ -249,7 +252,7 @@ void quad_3()
                 node[quad_face_table[f][(e+i)%4]] = 1;
 
                 char s[100];
-                sprintf(s,"tet %d -- face %d  edge %d  node %d",t,f,e,i);
+                snprintf(s, 100, "tet %d -- face %d  edge %d  node %d",t,f,e,i);
                 outc << "{ " << comment(s) << endl;
 
                 printrow(8,zone);
@@ -302,7 +305,7 @@ void quad_2()
             node2[quad_face_table[f][(e+1)%4]] = 1;
 
             char s[100];
-            sprintf(s,"tet %d -- face %d  edge %d",t,f,e);
+            snprintf(s, 100,"tet %d -- face %d  edge %d",t,f,e);
             outc << "{ " << comment(s) << endl;
 
             printrow(8,zone);
@@ -350,7 +353,7 @@ void quad_1()
         node[3][d] = 1;
 
         char s[100];
-        sprintf(s,"tet %d",t);
+        snprintf(s, 100, "tet %d",t);
         outc << "{ " << comment(s) << endl;
 
         printrow(8,node[0]);
@@ -457,7 +460,7 @@ void hex_3()
                 node[ucd_face_table_hex[f][(e+i)%4]] = 1;
 
                 char s[100];
-                sprintf(s,"tet %d -- face %d  edge %d  node %d",t,f,e,i);
+                snprintf(s, 100, "tet %d -- face %d  edge %d  node %d",t,f,e,i);
                 outc << "{ " << comment(s) << endl;
 
                 printrow(8,zone);
@@ -510,7 +513,7 @@ void hex_2()
             node2[ucd_face_table_hex[f][(e  )%4]] = 1;
 
             char s[100];
-            sprintf(s,"tet %d -- face %d  edge %d",t,f,e);
+            snprintf(s, 100, "tet %d -- face %d  edge %d",t,f,e);
             outc << "{ " << comment(s) << endl;
 
             printrow(8,zone);
@@ -889,7 +892,7 @@ void tet_3()
                 node[ucd_face_table_tet[f][(e+i)%3]] = 1;
 
                 char s[100];
-                sprintf(s,"tet %d -- face %d  edge %d  node %d",t,f,e,i);
+                snprintf(s, 100, "tet %d -- face %d  edge %d  node %d",t,f,e,i);
                 outc << "{ " << comment(s) << endl;
 
                 printrow(4,zone);
@@ -942,7 +945,7 @@ void tet_2()
             node2[ucd_face_table_tet[f][(e  )%3]] = 1;
 
             char s[100];
-            sprintf(s,"tet %d -- face %d  edge %d",t,f,e);
+            snprintf(s, 100, "tet %d -- face %d  edge %d",t,f,e);
             outc << "{ " << comment(s) << endl;
 
             printrow(4,zone);
@@ -1022,7 +1025,7 @@ void pyr_3()
                 node[ucd_face_table_tet[f][(e+i)%nedges]] = 1;
 
                 char s[100];
-                sprintf(s,"tet %d -- face %d  edge %d  node %d",t,f,e,i);
+                snprintf(s, 100, "tet %d -- face %d  edge %d  node %d",t,f,e,i);
                 outc << "{ " << comment(s) << endl;
 
                 printrow(5,zone);
@@ -1075,7 +1078,7 @@ void pyr_2()
             node2[ucd_face_table_pyr[f][(e  )%nedges]] = 1;
 
             char s[100];
-            sprintf(s,"tet %d -- face %d  edge %d",t,f,e);
+            snprintf(s, 100, "tet %d -- face %d  edge %d",t,f,e);
             outc << "{ " << comment(s) << endl;
 
             printrow(5,zone);
@@ -1205,7 +1208,7 @@ void prism_3()
                 node[ucd_face_table_tet[f][(e+i)%nedges]] = 1;
 
                 char s[100];
-                sprintf(s,"tet %d -- face %d  edge %d  node %d",t,f,e,i);
+                snprintf(s, 100, "tet %d -- face %d  edge %d  node %d",t,f,e,i);
                 outc << "{ " << comment(s) << endl;
 
                 printrow(6,zone);
@@ -1259,7 +1262,7 @@ void prism_2()
             node2[ucd_face_table_prism[f][(e  )%nedges]] = 1;
 
             char s[100];
-            sprintf(s,"tet %d -- face %d  edge %d",t,f,e);
+            snprintf(s, 100,"tet %d -- face %d  edge %d",t,f,e);
             outc << "{ " << comment(s) << endl;
 
             printrow(6,zone);

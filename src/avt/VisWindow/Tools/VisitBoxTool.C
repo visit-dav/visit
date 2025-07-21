@@ -649,12 +649,16 @@ VisitBoxTool::RemoveText()
 // Modifications:
 //   Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
 //   Account for 3D axis scaling (3D equivalent of full-frame mode).
-//   
+//
+//   Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//   sprintf to snprintf
+//
 // ****************************************************************************
-
 void
-VisitBoxTool::GetHotPointLabel(int index, char *str)
+VisitBoxTool::GetHotPointLabel(int index, char *str, size_t str_len)
 {
+    // NOTE: From calling pattern we assume the size of str is 100
+   
     double px = hotPoints[index].pt.x;
     double py = hotPoints[index].pt.y;
     double pz = hotPoints[index].pt.z;
@@ -668,22 +672,22 @@ VisitBoxTool::GetHotPointLabel(int index, char *str)
     }
 
     if(index == 0)
-        sprintf(str, " Origin<%1.3g %1.3g %1.3g>",
+        snprintf(str, str_len, " Origin<%1.3g %1.3g %1.3g>",
             px, py, pz);
     else if(index == 1)
-        sprintf(str, " Xmin = %1.3g", px);
+        snprintf(str, str_len, " Xmin = %1.3g", px);
     else if(index == 2)
-        sprintf(str, " Xmax = %1.3g", px);
+        snprintf(str, str_len, " Xmax = %1.3g", px);
     else if(index == 3)
-        sprintf(str, " Ymin = %1.3g", py);
+        snprintf(str, str_len, " Ymin = %1.3g", py);
     else if(index == 4)
-        sprintf(str, " Ymax = %1.3g", py);
+        snprintf(str, str_len, " Ymax = %1.3g", py);
     else if(index == 5)
-        sprintf(str, " Zmin = %1.3g", pz);
+        snprintf(str, str_len, " Zmin = %1.3g", pz);
     else if(index == 6)
-        sprintf(str, " Zmax = %1.3g", pz);
+        snprintf(str, str_len, " Zmax = %1.3g", pz);
     else
-        sprintf(str, " XYZ<%1.3g %1.3g %1.3g>",
+        snprintf(str, str_len," XYZ<%1.3g %1.3g %1.3g>",
             px, py, pz);
 }
 
@@ -707,13 +711,16 @@ VisitBoxTool::GetHotPointLabel(int index, char *str)
 //   Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
 //   Account for 3D axis scaling (3D equivalent of full-frame mode).
 //
+//   Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//   sprintf to snprintf
+//
 // ****************************************************************************
 
 void
 VisitBoxTool::UpdateText()
 {
     char str[100];
-    GetHotPointLabel(0, str);
+    GetHotPointLabel(0, str, 100);
     originTextActor->SetInput(str);
     avtVector originScreen = ComputeWorldToDisplay(hotPoints[0].pt);
     double pt[3] = {originScreen.x, originScreen.y, 0.};
@@ -742,7 +749,7 @@ VisitBoxTool::UpdateText()
 
     for(int i = 0; i < NUM_TEXT_ACTORS; ++i)
     {
-        GetHotPointLabel(i+1, str);
+        GetHotPointLabel(i+1, str, 100);
         labelTextActor[i]->SetInput(str);
         avtVector originScreen = ComputeWorldToDisplay(hotPoints[i+1].pt);
         double pt[3] = {originScreen.x, originScreen.y, 0.};
@@ -1143,7 +1150,7 @@ VisitBoxTool::UpdateOutline()
         // Update the text along the edge of the outline.
         //
         char str[100];
-        GetHotPointLabel(activeHotPoint, str);
+        GetHotPointLabel(activeHotPoint, str, 100);
         for(int i = 0; i < 4; ++i)
         {
             outlineTextActor[i]->SetInput(str);

@@ -100,6 +100,9 @@ avtAggregateChordLengthDistributionQuery::PreExecute(void)
 //    Add XML results, and ResultValues, allowing them to be set even if
 //    output file could not be opened.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 void
@@ -109,7 +112,7 @@ avtAggregateChordLengthDistributionQuery::PostExecute(void)
 
     int times = 0;
     char name[1024];
-    sprintf(name, "cld_a%d.ult", times++);
+    snprintf(name, 1024, "cld_a%d.ult", times++);
 
     if (PAR_Rank() == 0)
     {
@@ -120,12 +123,12 @@ avtAggregateChordLengthDistributionQuery::PostExecute(void)
             if (ifile.fail())
                 lookingForUnused = false;
             else
-                sprintf(name, "cld_a%d.ult", times++);
+                snprintf(name, 1024, "cld_a%d.ult", times++);
         }
     }
 
     char msg[1024];
-    sprintf(msg, "The aggregate chord length distribution has been outputted "
+    snprintf(msg, 1024, "The aggregate chord length distribution has been outputted "
             "as an Ultra file (%s), which can then be imported into VisIt.", 
             name);
     SetResultMessage(msg);
@@ -144,7 +147,7 @@ avtAggregateChordLengthDistributionQuery::PostExecute(void)
             totalArea += binWidth*numChords[i];
         if (totalArea == 0.)
         {
-            sprintf(msg, "The chord length distribution could not be "
+            snprintf(msg, 1024, "The chord length distribution could not be "
                     "calculated because none of the lines intersected the data"
                     " set.  If you have used a fairly large number of lines, "
                     "then this may be indicative of an error state.");
@@ -155,7 +158,7 @@ avtAggregateChordLengthDistributionQuery::PostExecute(void)
         ofstream ofile(name);
         if (ofile.fail())
         {
-            sprintf(msg, "Unable to write out file containing distribution.");
+            snprintf(msg, 1024, "Unable to write out file containing distribution.");
             SetResultMessage(msg);
         }
         if (!ofile.fail())

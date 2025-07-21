@@ -219,6 +219,11 @@ avtSILMatrix::Print(ostream &out) const
 //  Programmer: Hank Childs
 //  Creation:   November 14, 2002
 //
+//  Modifications:
+//
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 avtSILSet_p
@@ -230,7 +235,7 @@ avtSILMatrix::GetSILSet(int index) const
     avtSILSet_p s1 = sil->GetSILSet(set1[row]);
     avtSILSet_p s2 = sil->GetSILSet(set2[column]);
     char name[1024];
-    sprintf(name, "%s, %s", s1->GetName().c_str(), s2->GetName().c_str());
+    snprintf(name, 1024, "%s, %s", s1->GetName().c_str(), s2->GetName().c_str());
 
     avtSILSet_p rv = new avtSILSet(name, s1->GetIdentifier());
 

@@ -1956,6 +1956,9 @@ avtMeshMetaData::Print(ostream &out, int indent) const
 //    Hank Childs, Mon Jun 14 14:27:16 PDT 2010
 //    Fix crash for nlevels == 1 && patchs -> patches.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 void
@@ -1993,11 +1996,11 @@ avtMeshMetaData::SetAMRInfo(const std::string &levelName,
     for (i = 1 ; i < nlevels ; i++)
         numbelow[i] = numbelow[i-1]+patchesPerLevel[i-1];
     char str[128];
-    sprintf(str, "@%s%%d,%s%%d@", levelName.c_str(), patchName.c_str());
+    snprintf(str, 128, "@%s%%d,%s%%d@", levelName.c_str(), patchName.c_str());
     std::string base_string = str;
     for (i = 1 ; i < nlevels ; i++)
     {
-        sprintf(str, "(n/%d)", numbelow[i]);
+        snprintf(str, 128, "(n/%d)", numbelow[i]);
         base_string += str;
         if (i != (nlevels-1))
             base_string += "?(";
@@ -2005,16 +2008,16 @@ avtMeshMetaData::SetAMRInfo(const std::string &levelName,
     for (i = nlevels-1 ; i >= 0 ; i--)
     {
         if (i == (nlevels-1))
-            sprintf(str, "?%d", i+origin);
+            snprintf(str, 128, "?%d", i+origin);
         else if (i > 0)
-            sprintf(str, ":%d:)", i+origin);
+            snprintf(str, 128, ":%d:)", i+origin);
         else
-            sprintf(str, ":%d:@", i+origin);
+            snprintf(str, 128, ":%d:@", i+origin);
         base_string += str;
     }
     for (i = 1 ; i < nlevels ; i++)
     {
-        sprintf(str, "(n/%d)", numbelow[i]);
+        snprintf(str, 128, "(n/%d)", numbelow[i]);
         base_string += str;
         if (i != (nlevels-1))
             base_string += "?(";
@@ -2024,17 +2027,17 @@ avtMeshMetaData::SetAMRInfo(const std::string &levelName,
     for (i = nlevels-1 ; i >= 0 ; i--)
     {
         if (i == (nlevels-1))
-            sprintf(str, "n+%d-%d", origin, numbelow[i]);
+            snprintf(str, 128, "n+%d-%d", origin, numbelow[i]);
         else if (i > 0)
-            sprintf(str, ":n+%d-%d:)", origin, numbelow[i]);
+            snprintf(str, 128, ":n+%d-%d:)", origin, numbelow[i]);
         else
-            sprintf(str, ":n+%d:", origin);
+            snprintf(str, 128, ":n+%d:", origin);
         base_string += str;
     }
     if (nlevels <= 1)
     {
         // logic above doesn't work for nlevels == 1, just override
-        sprintf(str, "@%s%d,%s%%d@n+%d:", levelName.c_str(), origin,
+        snprintf(str, 128, "@%s%d,%s%%d@n+%d:", levelName.c_str(), origin,
                                           patchName.c_str(), origin);
         base_string = str;
     }

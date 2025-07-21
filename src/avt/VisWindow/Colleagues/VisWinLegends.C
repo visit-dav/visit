@@ -517,6 +517,9 @@ VisWinLegends::CreateDatabaseInfo(char *info,
                                   const std::string &dbname,
                                   avtDataAttributes &atts)
 {
+    // TODO: We do not know the size of info, so we cant easily convert to
+    //       snprintf.
+
     bool hasTime = false;
     sprintf(info, "DB: %s\n", dbname.c_str());
     if (timeVisible && atts.CycleIsAccurate())

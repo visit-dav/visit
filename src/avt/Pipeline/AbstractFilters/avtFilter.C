@@ -1410,7 +1410,6 @@ avtFilter::InitializeWebpage(void)
             << "." 
             << PAR_Rank()
             << ".html";    
-        //sprintf(name, "filt%d.%d.html", filter_id, rank);
     }
     else
     {
@@ -1488,6 +1487,9 @@ avtFilter::FinalizeWebpage(void)
 //    Brad Whitlock, Thu Mar 12 13:58:59 PST 2009
 //    I changed before/after to input/output in the constructed prefix.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 void
@@ -1518,7 +1520,7 @@ avtFilter::DumpDataObject(avtDataObject_p dob, const char *prefix)
 
         std::string input_string;
         char prefix[128];
-        sprintf(prefix, "input.%s", GetType());
+        snprintf(prefix, 128, "input.%s", GetType());
         webpage->AddSectionForLinks("input_data_object");
         webpage->AddHeading("INPUT DATA OBJECT");
         dob->DebugDump(webpage, prefix);
@@ -1528,7 +1530,7 @@ avtFilter::DumpDataObject(avtDataObject_p dob, const char *prefix)
  
         std::string output_string;
         char prefix[128];
-        sprintf(prefix, "output.%s", GetType());
+        snprintf(prefix, 128, "output.%s", GetType());
         webpage->AddSectionForLinks("output_data_object");
         webpage->AddHeading("OUTPUT DATA OBJECT");
         dob->DebugDump(webpage, prefix);

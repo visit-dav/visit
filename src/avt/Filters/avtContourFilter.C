@@ -1400,6 +1400,9 @@ avtContourFilter::CreateNIsoValues(double min, double max)
 //    Change print format to "%g", don't know what I was thinking using
 //    "%f".
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 void
@@ -1419,7 +1422,7 @@ avtContourFilter::CreateLabels()
 
     for (size_t i = 0; i < isoValues.size(); i++)
     {
-        sprintf(temp, "%g", isoValues[i]);
+        snprintf(temp, 48, "%g", isoValues[i]);
         isoLabels.push_back(temp);
     }
 }

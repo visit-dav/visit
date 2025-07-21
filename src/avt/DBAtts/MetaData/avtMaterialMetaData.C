@@ -563,6 +563,12 @@ avtMaterialMetaData::avtMaterialMetaData(const std::string &n,
 //
 //  Programmer: Mark C. Miller
 //  Creation:   Wed May 13 14:05:26 PDT 2009
+//
+//  Modifications:
+//
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 avtMaterialMetaData::avtMaterialMetaData(const std::string &n,
@@ -574,7 +580,7 @@ avtMaterialMetaData::avtMaterialMetaData(const std::string &n,
     for (int i = 0; i < numMaterials; i++)
     {
         char tmpn[32];
-        sprintf(tmpn, "mat_%d", i);
+        snprintf(tmpn, 32, "mat_%d", i);
         materialNames.push_back(tmpn);
     }
 }

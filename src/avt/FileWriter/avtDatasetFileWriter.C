@@ -1333,6 +1333,9 @@ TakeOffPolyLine(int *seg_list,int start_pt,std::vector< std::vector<int> > &ls)
 //    Justin Privitera, Mon Aug 21 15:54:50 PDT 2023
 //    Changed ColorTableAttributes `names` to `colorTableNames`.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 void
@@ -1443,7 +1446,7 @@ avtDatasetFileWriter::WritePOVRayFamily(const char *filename)
     // And make a .pov file with initial values for the user to play with
     //
     char masterfilename[1024];
-    sprintf(masterfilename, "%s.pov", basename);
+    snprintf(masterfilename, 1024, "%s.pov", basename);
     ofstream masterfile(masterfilename);
     masterfile << "#include \"colortables.inc\"" << endl;
     masterfile << "#include \"atomicproperties.inc\"" << endl;
@@ -1564,7 +1567,7 @@ avtDatasetFileWriter::WritePOVRayFamily(const char *filename)
     for (int i = 0 ; i < nChunks ; i++)
     {
         char name[1024];
-        sprintf(name, "%s.%04d.inc", basename, i);
+        snprintf(name,  1024, "%s.%04d.inc", basename, i);
         masterfile << "#include \"" << name << "\"" << endl;
     }
     masterfile << endl;
@@ -1572,7 +1575,7 @@ avtDatasetFileWriter::WritePOVRayFamily(const char *filename)
     for (int i = 0 ; i < nChunks ; i++)
     {
         char idxstr[1024];
-        sprintf(idxstr, "%04d", i);
+        snprintf(idxstr, 1024, "%04d", i);
         masterfile << "#if (nverts"<<idxstr<<" > 0) object { vertex_geometry"<<idxstr<<" }  #end" << endl;
         masterfile << "#if (nvecs"<<idxstr<<"  > 0) object { vector_geometry"<<idxstr<<" }  #end" << endl;
         masterfile << "#if (nlines"<<idxstr<<" > 0) object { line_geometry"<<idxstr<<"   }  #end" << endl;
@@ -1604,6 +1607,11 @@ avtDatasetFileWriter::WritePOVRayFamily(const char *filename)
 //  Programmer: Jeremy Meredith
 //  Creation:   April  5, 2007
 //
+//  Modifications:
+//
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 int
@@ -1623,7 +1631,7 @@ avtDatasetFileWriter::WritePOVRayTree(avtDataTree_p dt, int idx,
         avtDataRepresentation &rep = dt->GetDataRepresentation();
         vtkDataSet *ds = rep.GetDataVTK();
         char filename[1024];
-        sprintf(filename, "%s.%04d.inc", basename, idx);
+        snprintf(filename, 1024, "%s.%04d.inc", basename, idx);
         WritePOVRayFile(ds, filename, idx, spatialextents, dataextents);
         totalWritten = 1;
     }
@@ -1686,6 +1694,9 @@ avtDatasetFileWriter::WritePOVRayTree(avtDataTree_p dt, int idx,
 //    Check for degenerate cylinders (line segments with the same
 //    start and end points).  POV-Ray will bail if it encounters one.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 void
@@ -1709,7 +1720,7 @@ avtDatasetFileWriter::WritePOVRayFile(vtkDataSet *ds,
     char df3name[256];
     if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
     {
-        sprintf(df3name, "%s.df3", filename);
+        snprintf(df3name, 256, "%s.df3", filename);
         densityWritten = WritePOVRayDF3File((vtkRectilinearGrid*)ds,
                                             df3name, densityExtents);
     }
@@ -1802,7 +1813,7 @@ avtDatasetFileWriter::WritePOVRayFile(vtkDataSet *ds,
     // Write the array sizes.
     //
     char idxstr[20];
-    sprintf(idxstr, "%04d", idx);
+    snprintf(idxstr, 20, "%04d", idx);
     out << "#declare npts"<<idxstr<<"   = "<<numPoints<<";"<<endl;
     out << "#declare ncells"<<idxstr<<" = "<<numCells<<";"<<endl;
     out << "#declare nverts"<<idxstr<<" = "<<numVerts<<";"<<endl;

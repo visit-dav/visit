@@ -29,6 +29,11 @@ using     std::string;
 //  Programmer: Hank Childs
 //  Creation:   August 30, 2002
 //
+//  Modifications:
+//
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 avtSummationFilter::avtSummationFilter()
@@ -38,7 +43,8 @@ avtSummationFilter::avtSummationFilter()
     issueWarning = true;
     sum = 0.;
     sumType = "";
-    strcpy(descriptionBuffer, "Summing up variable");
+    // this buffer is declared to be 1024 chars
+    strncpy(descriptionBuffer, "Summing up variable", 1024);
 }
 
 
@@ -88,13 +94,19 @@ avtSummationFilter::SetVariableName(string &vn)
 //  Programmer: Hank Childs
 //  Creation:   August 30, 2002
 //
+//  Modifications:
+//
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 void
 avtSummationFilter::SetSumType(string &vn)
 {
     sumType = vn;
-    sprintf(descriptionBuffer, "Summing up %s", sumType.c_str());
+    // this buffer is declared to be 1024 chars
+    snprintf(descriptionBuffer, 1024, "Summing up %s", sumType.c_str());
 }
 
 
@@ -192,6 +204,11 @@ avtSummationFilter::PreExecute(void)
 //  Programmer: Hank Childs
 //  Creation:   August 30, 2002
 //
+//  Modifications:
+//
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 void
@@ -204,7 +221,7 @@ avtSummationFilter::PostExecute(void)
     sum = newSum;
 
     char str[1024];
-    sprintf(str, "The total %s is %f", sumType.c_str(), sum);
+    snprintf(str, 1024, "The total %s is %f", sumType.c_str(), sum);
     if (issueWarning)
     {
         avtCallback::IssueWarning(str);

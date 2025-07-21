@@ -2058,7 +2058,7 @@ avtDataRequest::DebugDump(avtWebpage *webpage)
     webpage->StartTable();
     webpage->AddTableHeader2("Field", "Value");
 
-    sprintf(str, "%d", timestep);
+    snprintf(str, 1024, "%d", timestep);
     webpage->AddTableEntry2("Timestep", str);
     webpage->AddTableEntry2("Variable", variable);
     if (secondaryVariables.size() > 0)
@@ -2085,23 +2085,23 @@ avtDataRequest::DebugDump(avtWebpage *webpage)
                                     YesOrNo(getSimplifiedNestingRep));
     webpage->AddTableEntry2("needValidFaceConnectivity", YesOrNo(needValidFaceConnectivity));
     webpage->AddTableEntry2("needStructuredIndices", YesOrNo(needStructuredIndices));
-    sprintf(str, "%d", needAMRIndices);
+    snprintf(str, 1024, "%d", needAMRIndices);
     webpage->AddTableEntry2("needAMRIndices", str);
     webpage->AddTableEntry2("needMixedVariableReconstruction", YesOrNo(needMixedVariableReconstruction));
     webpage->AddTableEntry2("needSmoothMaterialInterfaces", YesOrNo(needSmoothMaterialInterfaces));
     webpage->AddTableEntry2("needCleanZonesOnly", YesOrNo(needCleanZonesOnly));
-    sprintf(str, "%d (0=Tet 1=Zoo 2=Isovolume 3=Youngs)", mirAlgorithm);
+    snprintf(str, 1024, "%d (0=Tet 1=Zoo 2=Isovolume 3=Youngs)", mirAlgorithm);
     webpage->AddTableEntry2("mirAlgorithm", str);
-    sprintf(str, "%d", mirNumIterations);
+    snprintf(str, 1024, "%d", mirNumIterations);
     webpage->AddTableEntry2("mirNumIterations", str);
-    sprintf(str, "%f", mirIterationDamping);
+    snprintf(str, 1024, "%f", mirIterationDamping);
     webpage->AddTableEntry2("mirIterationDamping", str);
-    sprintf(str, "%f", isovolumeMIRVF);
+    snprintf(str, 1024, "%f", isovolumeMIRVF);
     webpage->AddTableEntry2("isovolumeMIRVF", str);
-    sprintf(str, "%d", annealingTime);
+    snprintf(str, 1024, "%d", annealingTime);
     webpage->AddTableEntry2("annealingTime", str);
     webpage->AddTableEntry2("simplifyHeavilyMixedZones", YesOrNo(simplifyHeavilyMixedZones));
-    sprintf(str, "%d", maxMatsPerZone);
+    snprintf(str, 1024, "%d", maxMatsPerZone);
     webpage->AddTableEntry2("maxMatsPerZone", str);
     webpage->AddTableEntry2("maintainOriginalConnectivity", YesOrNo(maintainOriginalConnectivity));
     webpage->AddTableEntry2("needNativePrecision", YesOrNo(needNativePrecision));
@@ -2130,9 +2130,9 @@ avtDataRequest::DebugDump(avtWebpage *webpage)
         break;
     }
     webpage->AddTableEntry2("Ghost Data", str);
-    sprintf(str, "%f", discTol);
+    snprintf(str, 1024, "%f", discTol);
     webpage->AddTableEntry2("discTol", str);
-    sprintf(str, "%f", flatTol);
+    snprintf(str, 1024, "%f", flatTol);
     webpage->AddTableEntry2("flatTol", str);
     webpage->AddTableEntry2("discBoundaryOnly", YesOrNo(discBoundaryOnly));
     webpage->AddTableEntry2("passNativeCSG", YesOrNo(passNativeCSG));

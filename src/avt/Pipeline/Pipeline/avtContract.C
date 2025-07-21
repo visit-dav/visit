@@ -379,7 +379,7 @@ avtContract::DebugDump(avtWebpage *webpage)
     webpage->AddSubheading("Pipeline attributes");
     webpage->StartTable();
     webpage->AddTableHeader2("Field", "Value");
-    sprintf(str, "%d", pipelineIndex);
+    snprintf(str, 1024, "%d", pipelineIndex);
     webpage->AddTableEntry2("Pipeline index", str);
     webpage->AddTableEntry2("Can do streaming", 
                             YesOrNo(canDoStreaming));
@@ -407,7 +407,7 @@ avtContract::DebugDump(avtWebpage *webpage)
         }
     }
     webpage->AddTableEntry2("Variables to calculate extents for", str);
-    sprintf(str, "%d", nFilters);
+    snprintf(str, 1024, "%d", nFilters);
     webpage->AddTableEntry2("Number of known filters", str);
     webpage->EndTable();
 

@@ -671,6 +671,9 @@ avtConnComponentsSummaryQuery::VerifyInput(void)
 //    Cyrus Harrison, Mon Jun  6 17:05:47 PDT 2011
 //    Support 1D case (line length).
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 void
@@ -688,7 +691,7 @@ avtConnComponentsSummaryQuery::SaveComponentResults(std::string fname)
 
     if(!outs.is_open())
     {
-        sprintf(msg, "Unable to save component summary output to %s",fname.c_str());
+        snprintf(msg, 1024, "Unable to save component summary output to %s",fname.c_str());
         SetResultMessage(std::string(msg));
         return;
     }

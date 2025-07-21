@@ -141,6 +141,9 @@ avtStrainExpression::HexPartialDerivative
 //
 //  Modifications:
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -173,7 +176,7 @@ avtStrainExpression::CalculateEvolOrRelvol(vtkDataSet *in_ds,
     vtkDataArray *coord_data = in_ds->GetPointData()->GetArray(varnames[1]);
     if (coord_data == NULL)
     {
-        sprintf(msg, "The strain expression "
+        snprintf(msg, 1024, "The strain expression "
             "could not extract the data array for: %s", varnames[1]);
         EXCEPTION2(ExpressionException, outputVariableName, msg);
     }
