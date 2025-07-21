@@ -173,7 +173,7 @@ function build_damaris
     #
     # Installing Damaris
     #
-    ${CMAKE_COMMAND} install .
+    ${CMAKE_COMMAND} --install .
 
     if [[ $? != 0 ]] ; then
         warn "Failed to install Damaris.  Giving up."

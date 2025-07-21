@@ -106,7 +106,7 @@ function build_blosc2
     # Install into the VisIt third party location.
     #
     info "Installing Blosc2"
-    ${CMAKE_COMMAND} install .
+    ${CMAKE_COMMAND} --install .
     if [[ $? != 0 ]] ; then
         warn "Blosc2 install failed.  Giving up"
         return 1

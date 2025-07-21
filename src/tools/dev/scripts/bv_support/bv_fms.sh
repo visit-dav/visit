@@ -131,7 +131,7 @@ function build_fms
     # Install into the VisIt third party location.
     #
     info "Installing FMS"
-    ${CMAKE_COMMAND} install .
+    ${CMAKE_COMMAND} --install .
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
         chmod -R ug+w,a+rX "$VISITDIR/fms"

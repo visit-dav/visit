@@ -170,7 +170,7 @@ function build_icet
 
     info "Installing IceT . . ."
 
-    ${CMAKE_COMMAND} install .
+    ${CMAKE_COMMAND} --install .
     if [[ $? != 0 ]] ; then
         warn "IceT: 'make install' failed.  Giving up"
         return 1

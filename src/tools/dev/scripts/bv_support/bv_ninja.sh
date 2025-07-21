@@ -124,7 +124,7 @@ function build_ninja
     ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS  || error "Ninja did not build correctly. Giving up."
 
     info "Installing Ninja . . . (~2 minutes)"
-    ${CMAKE_COMMAND} install . || error "Ninja did not install correctly."
+    ${CMAKE_COMMAND} --install . || error "Ninja did not install correctly."
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
         chmod -R ug+w,a+rX "$VISITDIR/ninja"
