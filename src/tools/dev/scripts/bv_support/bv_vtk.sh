@@ -601,7 +601,7 @@ function build_vtk
         error "VTK did not build correctly.  Giving up."
 
     info "Installing VTK . . . "
-    ${CMAKE_COMMAND} --install . install || error "VTK did not install correctly."
+    ${CMAKE_COMMAND} --install . || error "VTK did not install correctly."
 
     # Filter out an include that references the user's VTK build directory
     configdir="${vtk_inst_path}/lib/cmake/vtk-${VTK_SHORT_VERSION}"
