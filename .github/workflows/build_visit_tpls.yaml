@@ -16,5 +16,6 @@ jobs:
 
     - name: Test build_visit
       run: |
-        cd scripts/ci/docker && python3 build_docker_visit_ci.py
+        cd scripts/ci/docker
+        python3 build_docker_visit_ci.py
 
