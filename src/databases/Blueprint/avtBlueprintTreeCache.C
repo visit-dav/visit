@@ -601,7 +601,7 @@ avtBlueprintTreeCache::IO::LoadSidreView(Node &sidre_meta_view,
             //  hdf5 doesn't support byte level striding.
 
             if(
-                tree_cache.Read(file_path,
+               !tree_cache.Read(file_path,
                                 buffer_data_fetch_path,
                                 view_schema.dtype(),
                                 out)
