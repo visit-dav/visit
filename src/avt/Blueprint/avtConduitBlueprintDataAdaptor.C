@@ -848,22 +848,22 @@ HomogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
     vtkCellArray *ca = vtkCellArray::New();
     vtkIdTypeArray *ida = vtkIdTypeArray::New();
 
-    // TODO, I don't think we need this logic any more
-    // Handle empty and point topology
-    if (!n_topo.has_path("elements/connectivity") ||
-        (n_topo.has_path("elements/shape") &&
-         n_topo["elements/shape"].as_string() == "point"))
-    {
-        ida->SetNumberOfTuples(2*npts);
-        for (int i = 0 ; i < npts; i++)
-        {
-            ida->SetComponent(2*i  , 0, VTK_VERTEX);
-            ida->SetComponent(2*i+1, 0, i);
-        }
-        ca->SetCells(npts, ida);
-        ida->Delete();
-    }
-    else
+    // // TODO, I don't think we need this logic any more
+    // // Handle empty and point topology
+    // if (!n_topo.has_path("elements/connectivity") ||
+    //     (n_topo.has_path("elements/shape") &&
+    //      n_topo["elements/shape"].as_string() == "point"))
+    // {
+    //     ida->SetNumberOfTuples(2*npts);
+    //     for (int i = 0 ; i < npts; i++)
+    //     {
+    //         ida->SetComponent(2*i  , 0, VTK_VERTEX);
+    //         ida->SetComponent(2*i+1, 0, i);
+    //     }
+    //     ca->SetCells(npts, ida);
+    //     ida->Delete();
+    // }
+    // else
     {
 
         int ctype = ElementShapeNameToVTKCellType(n_topo["elements/shape"].as_string());
