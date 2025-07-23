@@ -44,6 +44,9 @@
 //    For osx w/o mesa, 'vtkCocoaRenderWindow' needs OffscreenRendering set,
 //    as well.
 //
+//    Kathleen Biagas, Wed Jul 23, 2025
+//    Removed displayStatus, no longer needed.
+//
 // ****************************************************************************
 
 VisWinRenderingWithoutWindow::VisWinRenderingWithoutWindow(
@@ -60,8 +63,6 @@ VisWinRenderingWithoutWindow::VisWinRenderingWithoutWindow(
 
     renWin->OffScreenRenderingOn();
     InitializeRenderWindow(renWin);
-
-    displayStatus = DS_NOT_CHECKED;
 }
 
 
@@ -152,6 +153,9 @@ VisWinRenderingWithoutWindow::GetRenderWindow(void)
 //    anari logic setting pass to nullptr would not override ospray setting
 //    pass to osprayPass
 //
+//    Kathleen Biagas, Wed Jul 23, 2025
+//    Removed displayStatus check, no longer needed.
+//
 // ****************************************************************************
 
 void
@@ -179,35 +183,7 @@ VisWinRenderingWithoutWindow::RenderRenderWindow(void)
         canvas->SetPass(nullptr);
     }
 
-#if defined(__unix__) && !defined(__APPLE__) && defined(HAVE_LIBX11) && !defined(HAVE_OSMESA)
-    if(displayStatus == DS_NOT_CHECKED)
-    {
-        // On X11 systems not using mangled mesa, make sure that the DISPLAY is set.
-        if(Environment::get("DISPLAY").empty())
-            displayStatus = DS_NOT_AVAILABLE;
-        else
-            displayStatus = DS_AVAILABLE;
-    }
-
-    if(displayStatus == DS_AVAILABLE)
-    {
-        GetRenderWindow()->Render();
-    }
-    else
-    {
-        avtCallback::IssueWarning("VisIt was not built with support for "
-            "software-based offscreen rendering. This is often the case when "
-            "the --mesa flag was not passed to the build_visit script.\n\n"
-            "This means that the DISPLAY environment variable must be set to a "
-            "valid X-server display in order to render an image. If you are running "
-            "client/server, you may be able to work around this issue by -X to the "
-            "SSH arguments in the host profile for the remote computer. The best"
-            "alternative is to rebuild VisIt with --mesa support on the remote "
-            "computer.");
-    }
-#else
     GetRenderWindow()->Render();
-#endif
 
     debug1 << "VisWinRenderingWithoutWindow, vtkRenderWindow classname: " << GetRenderWindow()->GetClassName() << endl;
 }
