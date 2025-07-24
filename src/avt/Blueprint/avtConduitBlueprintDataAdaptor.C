@@ -487,6 +487,10 @@ StructuredTopologyOffsetsAndOffsets(const conduit::Node n_topo,
 
 
 // ****************************************************************************
+//  Modifications:
+//    Justin Privitera, Thu Jul 24 16:02:50 PDT 2025
+//    Removed old special case logic for unstructured points.
+// ****************************************************************************
 vtkPoints *
 ExplicitCoordsToVTKPoints(const Node &n_coords, const Node &n_topo)
 {
@@ -811,6 +815,9 @@ HeterogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
 //
 //    Brad Whitlock, Mon Aug 26 13:42:59 PDT 2024
 //    Use offsets if they are present.
+//
+//    Justin Privitera, Thu Jul 24 16:02:50 PDT 2025
+//    Removed old special case logic for unstructured points.
 //
 // ****************************************************************************
 
