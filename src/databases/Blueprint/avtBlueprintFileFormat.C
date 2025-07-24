@@ -2849,7 +2849,8 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
             else
             {
                 // low-order case, use vtk
-                res = avtConduitBlueprintDataAdaptor::BlueprintToVTK::FieldToVTK(*topo_ptr,
+                res = avtConduitBlueprintDataAdaptor::BlueprintToVTK::FieldToVTK(n_coords,
+                                                                                 *topo_ptr,
                                                                                  *field_ptr);
             }
         }

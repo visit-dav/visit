@@ -1905,6 +1905,7 @@ avtConduitBlueprintDataAdaptor::BlueprintToVTK::MeshToVTK(int domain,
 // ****************************************************************************
 vtkDataArray *
 avtConduitBlueprintDataAdaptor::BlueprintToVTK::FieldToVTK(
+        const conduit::Node &coords,
         const conduit::Node &topo,
         const conduit::Node &field)
 {
@@ -2047,6 +2048,74 @@ avtConduitBlueprintDataAdaptor::BlueprintToVTK::FieldToVTK(
         }
 
         res = ConduitArrayToVTKDataArray(field["values"],num_tuples,src_idxs_vals);
+    }
+    else if (field["association"].as_string() == "vertex" &&
+             topo["type"].as_string() == "unstructured" &&
+             topo.has_path("elements/shape") &&
+             topo["elements/shape"].as_string() == "point")
+    {
+        const int ncomps = field["values"].number_of_children();
+        const bool multi_comp = ncomps > 0;
+        const DataType vals_dtype = [&]() -> DataType
+        {
+            if (multi_comp)
+            {
+                return field["values"][0].dtype();
+            }
+            else
+            {
+                return field["values"].dtype();
+            }
+        }();
+        const int num_coord_pts = conduit::blueprint::mesh::coordset::length(coords);
+        const int num_topo_pts = topo["elements/connectivity"].dtype().number_of_elements();
+        const int num_field_points = vals_dtype.number_of_elements();
+
+        // we need to pad the field values
+        if (num_coord_pts != num_topo_pts &&
+            num_topo_pts == num_field_points)
+        {
+            const int_accessor topo_conn = topo["elements/connectivity"].value();
+            DataType vals_dtype;
+
+            Node new_field_values;
+            if (multi_comp)
+            {
+                for (int comp_id = 0; comp_id < ncomps; comp_id ++)
+                {
+                    const std::string compname = field["values"][comp_id].name();
+
+                    const double_accessor old_field_values = field["values"][comp_id].value();
+
+                    // it is all being converted to doubles anyway
+                    new_field_values[compname].set(DataType::float64(num_coord_pts));
+                    double_array new_field_vals_arr = new_field_values[compname].value();
+                    new_field_vals_arr.fill(0.0);
+                    for (index_t i = 0; i < old_field_values.number_of_elements(); i ++)
+                    {
+                        new_field_vals_arr[topo_conn[i]] = old_field_values[i];
+                    }
+                }
+            }
+            else
+            {
+                const double_accessor old_field_values = field["values"].value();
+
+                // it is all being converted to doubles anyway
+                new_field_values.set(DataType::float64(num_coord_pts));
+                double_array new_field_vals_arr = new_field_values.value();
+                new_field_vals_arr.fill(0.0);
+                for (index_t i = 0; i < old_field_values.number_of_elements(); i ++)
+                {
+                    new_field_vals_arr[topo_conn[i]] = old_field_values[i];
+                }
+            }
+            res = ConduitArrayToVTKDataArray(new_field_values);
+        }
+        else
+        {
+            res = ConduitArrayToVTKDataArray(field["values"]);
+        }
     }
     else
     {

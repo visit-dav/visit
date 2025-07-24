@@ -68,7 +68,8 @@ public:
         /// for structured grids, we may have fields that provide
         /// optional offsets and strides relative to the topology,
         /// so topology rides along to help with those cases
-        static vtkDataArray*  FieldToVTK(const conduit::Node &topo,
+        static vtkDataArray*  FieldToVTK(const conduit::Node &coords,
+                                         const conduit::Node &topo,
                                          const conduit::Node &field);
 
         /// support 1D meshes
