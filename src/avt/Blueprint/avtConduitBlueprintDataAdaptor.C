@@ -1857,6 +1857,13 @@ avtConduitBlueprintDataAdaptor::BlueprintToVTK::MeshToVTK(int domain,
 }
 
 // ****************************************************************************
+//  Modifications:
+//
+//  Justin Privitera, Thu Jul 24 16:02:50 PDT 2025
+//  Handle the unstructured points vertex-associated field with num values
+//  equal to topo points case.
+//
+// ****************************************************************************
 vtkDataArray *
 avtConduitBlueprintDataAdaptor::BlueprintToVTK::FieldToVTK(
         const conduit::Node &coords,
@@ -2003,6 +2010,15 @@ avtConduitBlueprintDataAdaptor::BlueprintToVTK::FieldToVTK(
 
         res = ConduitArrayToVTKDataArray(field["values"],num_tuples,src_idxs_vals);
     }
+    // This is the unstructured points case. If our topology doesn't
+    // use all of the points in the coordinate set, we should be able
+    // to support the case where the number of field values is equal to
+    // the number of vertices in the coordset and also the case where
+    // the number oif field values is equal to the number of elements
+    // (points) in the topology. If the number of field values is equal
+    // to the number of points in the topology and it is vertex 
+    // associated, we need to pad the field values so it is the length
+    // of the coordinate set.
     else if (field["association"].as_string() == "vertex" &&
              topo["type"].as_string() == "unstructured" &&
              topo.has_path("elements/shape") &&
@@ -2010,27 +2026,25 @@ avtConduitBlueprintDataAdaptor::BlueprintToVTK::FieldToVTK(
     {
         const int ncomps = field["values"].number_of_children();
         const bool multi_comp = ncomps > 0;
-        const DataType vals_dtype = [&]() -> DataType
+        const int num_coord_pts = conduit::blueprint::mesh::coordset::length(coords);
+        const int num_topo_pts = topo["elements/connectivity"].dtype().number_of_elements();
+        const int num_field_points = [&]() -> int
         {
             if (multi_comp)
             {
-                return field["values"][0].dtype();
+                return field["values"][0].dtype().number_of_elements();
             }
             else
             {
-                return field["values"].dtype();
+                return field["values"].dtype().number_of_elements();
             }
         }();
-        const int num_coord_pts = conduit::blueprint::mesh::coordset::length(coords);
-        const int num_topo_pts = topo["elements/connectivity"].dtype().number_of_elements();
-        const int num_field_points = vals_dtype.number_of_elements();
 
         // we need to pad the field values
         if (num_coord_pts != num_topo_pts &&
             num_topo_pts == num_field_points)
         {
             const int_accessor topo_conn = topo["elements/connectivity"].value();
-            DataType vals_dtype;
 
             Node new_field_values;
             if (multi_comp)
@@ -2066,6 +2080,7 @@ avtConduitBlueprintDataAdaptor::BlueprintToVTK::FieldToVTK(
             }
             res = ConduitArrayToVTKDataArray(new_field_values);
         }
+        // we can do the standard case
         else
         {
             res = ConduitArrayToVTKDataArray(field["values"]);
