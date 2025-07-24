@@ -821,60 +821,41 @@ HomogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
     vtkCellArray *ca = vtkCellArray::New();
     vtkIdTypeArray *ida = vtkIdTypeArray::New();
 
-    // // TODO, I don't think we need this logic any more
-    // // Handle empty and point topology
-    // if (!n_topo.has_path("elements/connectivity") ||
-    //     (n_topo.has_path("elements/shape") &&
-    //      n_topo["elements/shape"].as_string() == "point"))
-    // {
-    //     ida->SetNumberOfTuples(2*npts);
-    //     for (int i = 0 ; i < npts; i++)
-    //     {
-    //         ida->SetComponent(2*i  , 0, VTK_VERTEX);
-    //         ida->SetComponent(2*i+1, 0, i);
-    //     }
-    //     ca->SetCells(npts, ida);
-    //     ida->Delete();
-    // }
-    // else
+    int ctype = ElementShapeNameToVTKCellType(n_topo["elements/shape"].as_string());
+    int csize = VTKCellTypeSize(ctype);
+    int ncells = n_topo["elements/connectivity"].dtype().number_of_elements() / csize;
+    ida->SetNumberOfTuples(ncells * (csize + 1));
+
+    const int_accessor topo_conn = n_topo["elements/connectivity"].as_int_accessor();
+    vtkIdType output = 0;
+    if(n_topo.has_path("elements/offsets"))
     {
-
-        int ctype = ElementShapeNameToVTKCellType(n_topo["elements/shape"].as_string());
-        int csize = VTKCellTypeSize(ctype);
-        int ncells = n_topo["elements/connectivity"].dtype().number_of_elements() / csize;
-        ida->SetNumberOfTuples(ncells * (csize + 1));
-
-        const int_accessor topo_conn = n_topo["elements/connectivity"].as_int_accessor();
-        vtkIdType output = 0;
-        if(n_topo.has_path("elements/offsets"))
+        // There are offsets so use them.
+        const int_accessor topo_offsets = n_topo["elements/offsets"].value();
+        for (int i = 0 ; i < ncells; i++)
         {
-            // There are offsets so use them.
-            const int_accessor topo_offsets = n_topo["elements/offsets"].value();
-            for (int i = 0 ; i < ncells; i++)
+            const int offset = topo_offsets[i];
+            ida->SetComponent(output++, 0, csize);
+            for (int j = 0; j < csize; j++)
             {
-                const int offset = topo_offsets[i];
-                ida->SetComponent(output++, 0, csize);
-                for (int j = 0; j < csize; j++)
-                {
-                    ida->SetComponent(output++, 0, topo_conn[offset + j]);
-                }
+                ida->SetComponent(output++, 0, topo_conn[offset + j]);
             }
         }
-        else
-        {
-            for (int i = 0 ; i < ncells; i++)
-            {
-                ida->SetComponent(output++, 0, csize);
-                const int offset = i * csize;
-                for (int j = 0; j < csize; j++)
-                {
-                    ida->SetComponent(output++, 0, topo_conn[offset + j]);
-                }
-            }
-        }
-        ca->SetCells(ncells, ida);
-        ida->Delete();
     }
+    else
+    {
+        for (int i = 0 ; i < ncells; i++)
+        {
+            ida->SetComponent(output++, 0, csize);
+            const int offset = i * csize;
+            for (int j = 0; j < csize; j++)
+            {
+                ida->SetComponent(output++, 0, topo_conn[offset + j]);
+            }
+        }
+    }
+    ca->SetCells(ncells, ida);
+    ida->Delete();
     return ca;
 }
 
