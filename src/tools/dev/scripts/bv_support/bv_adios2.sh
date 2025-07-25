@@ -256,7 +256,7 @@ function build_adios2
         # Build ADIOS2
         #
         info "Building ADIOS2-$bt . . . (~5 minutes)"
-        $MAKE $MAKE_OPT_FLAGS
+        ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS
         if [[ $? != 0 ]] ; then
             warn "ADIOS2 build failed.  Giving up"
             return 1
@@ -266,7 +266,7 @@ function build_adios2
         # Install into the VisIt third party location.
         #
         info "Installing ADIOS2-$bt"
-        $MAKE install
+        ${CMAKE_COMMAND} --install .
         if [[ $? != 0 ]] ; then
             warn "ADIOS2 install failed.  Giving up"
             return 1

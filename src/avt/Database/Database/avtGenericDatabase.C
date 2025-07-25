@@ -5363,7 +5363,8 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
     int topoDim = mmd->topologicalDimension;
     if (ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
     {
-        int *dims = ((vtkStructuredGrid*)ds)->GetDimensions();
+        int dims[3];
+        ((vtkStructuredGrid*)ds)->GetDimensions(dims);
         if ((dims[0] == 1 && dims[1] > 1 && dims[2] > 1) ||
             (dims[1] == 1 && dims[0] > 1 && dims[2] > 1) ||
             (dims[2] == 1 && dims[0] > 1 && dims[1] > 1))
@@ -5399,7 +5400,8 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
     vtkIntArray *origDims = NULL;
     if (ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
     {
-        int *dims = ((vtkStructuredGrid*)ds)->GetDimensions();
+        int dims[3];
+        ((vtkStructuredGrid*)ds)->GetDimensions(dims);
         origDims = vtkIntArray::New();
         origDims->SetName("vtkOriginalDimensions");
         origDims->SetNumberOfComponents(1);

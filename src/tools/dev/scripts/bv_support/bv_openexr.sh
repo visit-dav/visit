@@ -15,22 +15,22 @@ function bv_openexr_disable
 
 function bv_openexr_depends_on
 {
-    echo ""
+    echo "cmake"
 }
 
 function bv_openexr_info
 {
-    export OPENEXR_FILE=${OPENEXR_FILE:-"openexr-2.2.0.tar.gz"}
-    export OPENEXR_VERSION=${OPENEXR_VERSION:-"2.2.0"}
-    export OPENEXR_COMPATIBILITY_VERSION=${OPENEXR_COMPATIBILITY_VERSION:-"2.2.0"}
-    export OPENEXR_BUILD_DIR=${OPENEXR_BUILD_DIR:-"openexr-2.2.0"}
-    export OPENEXR_SHA256_CHECKSUM="36a012f6c43213f840ce29a8b182700f6cf6b214bea0d5735594136b44914231"
+    export OPENEXR_VERSION=${OPENEXR_VERSION:-"3.3.4"}
+    export OPENEXR_FILE=${OPENEXR_FILE:-"openexr-${OPENEXR_VERSION}.tar.gz"}
+    export OPENEXR_COMPATIBILITY_VERSION=${OPENEXR_COMPATIBILITY_VERSION:-"3.3"}
+    export OPENEXR_BUILD_DIR=${OPENEXR_BUILD_DIR:-"openexr-${OPENEXR_VERSION}"}
+    export OPENEXR_SHA256_CHECKSUM="73a6d83edcc68333afb95e133f6e12012073815a854bc41abc1a01c1db5f124c"
 
-    export ILMBASE_FILE=${ILMBASE_FILE:-"ilmbase-2.2.0.tar.gz"}
-    export ILMBASE_VERSION=${ILMBASE_VERSION:-"2.2.0"}
-    export ILMBASE_COMPATIBILITY_VERSION=${OPENEXR_COMPATIBILITY_VERSION:-"2.2.0"}
-    export ILMBASE_BUILD_DIR=${ILMBASE_BUILD_DIR:-"ilmbase-2.2.0"}
-    export ILMBASE_SHA256_CHECKSUM="ecf815b60695555c1fbc73679e84c7c9902f4e8faa6e8000d2f905b8b86cedc7"
+    export IMATH_VERSION=${IMATH_VERSION:-"3.1.12"}
+    export IMATH_FILE=${IMATH_FILE:-"Imath-${IMATH_VERSION}.tar.gz"}
+    export IMATH_COMPATIBILITY_VERSION=${IMATH_COMPATIBILITY_VERSION:-"3.1"}
+    export IMATH_BUILD_DIR=${IMATH_BUILD_DIR:-"Imath-${IMATH_VERSION}"}
+    export IMATH_SHA256_CHECKSUM="cb8ca9ca77ac4338ebbee911fc90c886011ac5b00088630bacf8ef6c6e522f0a"
 }
 
 function bv_openexr_print
@@ -40,10 +40,10 @@ function bv_openexr_print
     printf "%s%s\n" "OPENEXR_COMPATIBILITY_VERSION=" "${OPENEXR_COMPATIBILITY_VERSION}"
     printf "%s%s\n" "OPENEXR_BUILD_DIR=" "${OPENEXR_BUILD_DIR}"
 
-    printf "%s%s\n" "ILMBASE_FILE=" "${ILMBASE_FILE}"
-    printf "%s%s\n" "ILMBASE_VERSION=" "${ILMBASE_VERSION}"
-    printf "%s%s\n" "ILMBASE_COMPATIBILITY_VERSION=" "${ILMBASE_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "ILMBASE_BUILD_DIR=" "${ILMBASE_BUILD_DIR}"
+    printf "%s%s\n" "IMATH_FILE=" "${IMATH_FILE}"
+    printf "%s%s\n" "IMATH_VERSION=" "${IMATH_VERSION}"
+    printf "%s%s\n" "IMATH_COMPATIBILITY_VERSION=" "${IMATH_COMPATIBILITY_VERSION}"
+    printf "%s%s\n" "IMATH_BUILD_DIR=" "${IMATH_BUILD_DIR}"
 }
 
 function bv_openexr_host_profile
@@ -53,6 +53,7 @@ function bv_openexr_host_profile
         echo "##" >> $HOSTCONF
         echo "## OpenEXR" >> $HOSTCONF
         echo "##" >> $HOSTCONF
+        echo "SETUP_APP_VERSION(OPENEXR $OPENEXR_VERSION)" >> $HOSTCONF
         echo \
             "VISIT_OPTION_DEFAULT(VISIT_OPENEXR_DIR \${VISITHOME}/openexr/$OPENEXR_VERSION/\${VISITARCH})" \
             >> $HOSTCONF
@@ -74,87 +75,95 @@ function bv_openexr_ensure
             DO_OPENEXR="no"
             error "Unable to build OpenEXR.  ${OPENEXR_FILE} not found."
         fi
-        ensure_built_or_ready "openexr" $ILMBASE_VERSION $ILMBASE_BUILD_DIR $ILMBASE_FILE
+        ensure_built_or_ready "openexr" $IMATH_VERSION $IMATH_BUILD_DIR $IMATH_FILE
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_OPENEXR="no"
-            error "Unable to build OpenEXR.  ${ILMBASE_FILE} not found."
+            error "Unable to build OpenEXR.  ${IMATH_FILE} not found."
         fi
     fi
 }
 
 # ***************************************************************************
-# build_ilmbase
+# build_imath
 #
 # Modifications:
 #
 # ***************************************************************************
 
-function build_ilmbase
+function build_imath
 {
     #
     # Prepare build dir
     #
-    prepare_build_dir $ILMBASE_BUILD_DIR $ILMBASE_FILE
-    untarred_ilmbase=$?
+    prepare_build_dir $IMATH_BUILD_DIR $IMATH_FILE
+    untarred_imath=$?
     # 0, already exists, 1 untarred src, 2 error
 
-    if [[ $untarred_ilmbase == -1 ]] ; then
-        warn "Unable to prepare ILMBase Build Directory. Giving Up"
+    if [[ $untarred_imath == -1 ]] ; then
+        warn "Unable to prepare Imath Build Directory. Giving Up"
         return 1
     fi
-    
+
+    # Make a build directory for an out-of-source build. Change the
+    # IMATH_BUILD_DIR variable to represent the out-of-source build directory.
+    IMATH_SRC_DIR=$IMATH_BUILD_DIR
+    IMATH_BUILD_DIR="${IMATH_SRC_DIR}-build"
+    if [[ ! -d $IMATH_BUILD_DIR ]] ; then
+        echo "Making build directory $IMATH_BUILD_DIR"
+        mkdir $IMATH_BUILD_DIR
+    fi
+
+   
     #
-    # Configure ILMBase
+    # Configure Imath
     #
-    cd $ILMBASE_BUILD_DIR || error "Can't cd to ILMBase build dir."
-    if [[ "$DO_STATIC_BUILD" == "yes" || "$OPSYS" == "Linux"  ]]; then
-        DISABLE_BUILDTYPE="--disable-shared"
+    cd $IMATH_BUILD_DIR || error "Can't cd to Imath build dir."
+
+    #
+    # Remove the CMakeCache.txt files ... existing files sometimes prevent
+    # fields from getting overwritten properly.
+    #
+    rm -Rf ${IMATH_BUILD_DIR}/CMakeCache.txt 
+
+    imathopts=""
+    imathopts="${imathopts} -DCMAKE_BUILD_TYPE:STRING=${VISIT_BUILD_MODE}"
+
+    if test "x${DO_STATIC_BUILD}" == "xyes" ; then
+        imathopts="${imathopts} -DBUILD_SHARED_LIBS:BOOL=OFF"
     else
-        DISABLE_BUILDTYPE="--disable-static"
-    fi
-    info "Configuring ILMBase . . ."
-    EXTRA_AC_FLAGS=""
-    # detect NVIDIA Grace CPU (ARM) systems, which older versions of autoconf don't detect
-    if [[ "$(uname -m)" == "aarch64" ]] ; then
-         EXTRA_AC_FLAGS="ac_cv_build=aarch64-unknown-linux-gnu"
+        imathopts="${imathopts} -DBUILD_SHARED_LIBS:BOOL=ON"
     fi
 
-    # Open EXR does not suport c++17, a few examples of errors:
-    #
-    #  ISO C++17 does not allow dynamic exception specifications
-    #  ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
-    #
-    # If c++17 s the compiler default it will fail to build
-    # Use --std=c++14 to avoid problems while building/
-    #
-    OPENEXR_EXTRA_CXX_FLAGS="--std=c++14"
+    imathopts="${imathopts} -DBUILD_TESTING:BOOL=OFF"
+    imathopts="${imathopts} -DCMAKE_INSTALL_PREFIX:PATH=${VISITDIR}/openexr/${OPENEXR_VERSION}/${VISITARCH}"
 
-    set -x
-    ./configure ${OPTIONAL} CXX="$CXX_COMPILER" \
-                CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS $OPENEXR_EXTRA_CXX_FLAGS" \
-                $EXTRA_AC_FLAGS --prefix="$VISITDIR/openexr/$ILMBASE_VERSION/$VISITARCH" $DISABLE_BUILDTYPE
-    set +x
-    if [[ $? != 0 ]] ; then
-        warn "ILMBase configure failed.  Giving up"
-        return 1
+    imathopts="${imathopts} -DIMATH_CXX_STANDARD:STRING=17"
+    imathopts="${imathopts} -DIMATH_OUTPUT_SUBDIR:STRING="
+    imathopts="${imathopts} -DIMATH_INSTALL_PKG_CONFIG:BOOL=OFF"
+
+    if test -e bv_run_cmake.sh ; then
+        rm -f bv_run_cmake.sh
     fi
+    echo "\"${CMAKE_INSTALL}/cmake\"" ${imathopts} ../${IMATH_SRC_DIR} > bv_run_cmake.sh
+    cat bv_run_cmake.sh
+    issue_command bash bv_run_cmake.sh || error "Imath configuration failed."
 
     #
-    # Build ILMBase
+    # Build Imath
     #
-    info "Building ILMBase . . . (~1 minutes)"
+    info "Building Imath . . . (~1 minutes)"
 
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-        warn "ILMBase build failed.  Giving up"
+        warn "Imath build failed.  Giving up"
         return 1
     fi
-    info "Installing ILMBase . . ."
+    info "Installing Imath . . ."
 
     $MAKE install
     if [[ $? != 0 ]] ; then
-        warn "ILMBase build (make install) failed.  Giving up"
+        warn "Imath build (make install) failed.  Giving up"
         return 1
     fi
 
@@ -163,7 +172,7 @@ function build_ilmbase
         chgrp -R ${GROUP} "$VISITDIR/openexr"
     fi
     cd "$START_DIR"
-    info "Done with ILMBase"
+    info "Done with Imath"
     return 0
 }
 
@@ -173,6 +182,49 @@ function build_ilmbase
 # Modifications:
 #
 # ***************************************************************************
+
+
+function apply_openexr_cmakelists_patch
+{
+    info "Patching OpenEXR to disable website/src which fails to compile with gcc 10"
+    patch -p0 << \EOF
+--- CMakeLists.txt.orig	2025-07-07 08:28:50.888000000 -0700
++++ CMakeLists.txt	2025-07-07 08:28:18.097045000 -0700
+@@ -146,10 +146,10 @@
+   add_subdirectory(website)
+ endif()
+ 
+-if (OPENEXR_BUILD_LIBS AND NOT OPENEXR_IS_SUBPROJECT)
++#if (OPENEXR_BUILD_LIBS AND NOT OPENEXR_IS_SUBPROJECT)
+   # Even if not building the website, still make sure the website example code compiles.
+-  add_subdirectory(website/src)
+-endif()
++#  add_subdirectory(website/src)
++#endif()
+ 
+ if (OPENEXR_BUILD_PYTHON AND OPENEXR_BUILD_LIBS AND NOT OPENEXR_IS_SUBPROJECT)
+   add_subdirectory(src/wrappers/python)
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "OpenEXR patch for CMakeLists.txt failed."
+        return 1
+    fi
+
+    return 0;
+}
+
+function apply_openexr_patch
+{
+    if [[ ${OPENEXR_VERSION} == 3.3.4 ]] ; then
+        apply_openexr_cmakelists_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+    fi
+
+    return 0;
+}
+
 
 function build_openexr
 {
@@ -187,43 +239,83 @@ function build_openexr
         warn "Unable to prepare OpenEXR Build Directory. Giving Up"
         return 1
     fi
-    
+
+    #
+    # Apply patches
+    #
+    info "Patching OpenEXR . . ."
+    cd $OPENEXR_BUILD_DIR
+    apply_openexr_patch
+
+    if [[ $? != 0 ]] ; then
+        if [[ $untarred_openexr == 1 ]] ; then
+            warn "Giving up on OpenEXR build because the patch failed."
+            return 1
+        else
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, the patch is\n" \
+                 "failing harmlessly on a second application."
+        fi
+    fi
+    cd ../
+
+    # Make a build directory for an out-of-source build. Change the
+    # OPENEXR_BUILD_DIR variable to represent the out-of-source build directory.
+    OPENEXR_SRC_DIR=$OPENEXR_BUILD_DIR
+    OPENEXR_BUILD_DIR="${OPENEXR_SRC_DIR}-build"
+    if [[ ! -d $OPENEXR_BUILD_DIR ]] ; then
+        echo "Making build directory $OPENEXR_BUILD_DIR"
+        mkdir $OPENEXR_BUILD_DIR
+    fi
+
+   
     #
     # Configure OpenEXR
     #
-    cd $OPENEXR_BUILD_DIR || error "Can't cd to OpenEXR build dir."
-    if [[ "$DO_STATIC_BUILD" == "yes" || "$OPSYS" == "Linux" ]]; then
-        DISABLE_BUILDTYPE="--disable-shared"
+    cd $OPENEXR_BUILD_DIR || error "Can't cd to Imath build dir."
+
+    #
+    # Remove the CMakeCache.txt files ... existing files sometimes prevent
+    # fields from getting overwritten properly.
+    #
+    rm -Rf ${OPENEXR_BUILD_DIR}/CMakeCache.txt 
+
+    openexr_dir="${VISITDIR}/openexr/${OPENEXR_VERSION}/${VISITARCH}"
+    openexropts="-DCMAKE_BUILD_TYPE:STRING=${VISIT_BUILD_MODE}"
+
+    if test "x${DO_STATIC_BUILD}" = "xyes"; then
+        openexropts="${openexropts} -DBUILD_SHARED_LIBS:BOOL=OFF"
     else
-        DISABLE_BUILDTYPE="--disable-static"
+        openexropts="${openexropts} -DBUILD_SHARED_LIBS:BOOL=ON"
     fi
-    info "Configuring OpenEXR . . ."
-    EXTRA_AC_FLAGS=""
-    # detect NVIDIA Grace CPU (ARM) system, which older versions of autoconf don't detect
-    if [[ "$(uname -m)" == "aarch64" ]] ; then
-         EXTRA_AC_FLAGS="ac_cv_build=aarch64-unknown-linux-gnu"
-    fi
+    openexropts="${openexropts} -DBUILD_TESTING:BOOL=OFF"
+    openexropts="${openexropts} -DCMAKE_INSTALL_PREFIX:PATH=${openexr_dir}"
 
-    # Open EXR does not suport c++17, a few examples of errors:
-    #
-    #  ISO C++17 does not allow dynamic exception specifications
-    #  ISO C++17 does not allow ‘register’ storage class specifier [-Wregister]
-    #
-    # If c++17 s the compiler default it will fail to build
-    # Use --std=c++14 to avoid problems while building/
-    #
-    OPENEXR_EXTRA_CXX_FLAGS="--std=c++14"
+    openexropts="${openexropts} -DOPENEXR_BUILD_EXAMPLES:BOOL=OFF"
+    openexropts="${openexropts} -DOPENEXR_BUILD_TOOLS:BOOL=OFF"
+    openexropts="${openexropts} -DOPENEXR_BUILD_TOOLS:BOOL=OFF"
+    openexropts="${openexropts} -DOPENEXR_INSTALL_PKG_CONFIG:BOOL=OFF"
+    openexropts="${openexropts} -DOPENEXR_INSTALL_TOOLS:BOOL=OFF"
+    openexropts="${openexropts} -DOPENEXR_OUTPUT_SUBDIR:STRING="
+    openexropts="${openexropts} -DOPENEXR_TEST_LIBRARIES:BOOL=OFF"
+    openexropts="${openexropts} -DOPENEXR_TEST_PYTHON:BOOL=OFF"
+    openexropts="${openexropts} -DOPENEXR_TEST_TOOLS:BOOL=OFF"
 
-    ./configure ${OPTIONAL} CXX="$CXX_COMPILER" \
-                CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS $OPENEXR_EXTRA_CXX_FLAGS" \
-                $EXTRA_AC_FLAGS --prefix="$VISITDIR/openexr/$OPENEXR_VERSION/$VISITARCH" \
-                --with-ilmbase-prefix="$VISITDIR/openexr/$OPENEXR_VERSION/$VISITARCH" \
-                --with-pic --enable-imfexamples $DISABLE_BUILDTYPE
-    if [[ $? != 0 ]] ; then
-        warn "openexr configure failed.  Giving up"
-        return 1
+    openexropts="${openexropts} -DFETCHCONTENT_FULL_DISCONNECTED:BOOL=ON"
+    if [[ -d ${openexr_dir}/lib64/cmake ]] ; then
+        openexropts="${openexropts} -DImath_DIR:PATH=${openexr_dir}/lib64/cmake"
+    else
+        openexropts="${openexropts} -DImath_DIR:PATH=${openexr_dir}/lib/cmake"
     fi
 
+    if test -e bv_run_cmake.sh ; then
+        rm -f bv_run_cmake.sh
+    fi
+    echo "\"${CMAKE_INSTALL}/cmake\"" ${openexropts} ../${OPENEXR_SRC_DIR} > bv_run_cmake.sh
+    cat bv_run_cmake.sh
+    issue_command bash bv_run_cmake.sh || error "OpenEXR configuration failed."
+    
     #
     # Build OpenEXR
     #
@@ -275,11 +367,11 @@ function bv_openexr_build
         if [[ $? == 0 ]] ; then
             info "Skipping build of OpenEXR"
         else
-            build_ilmbase
+            build_imath
             if [[ $? != 0 ]] ; then
-                error "Unable to build or install ILMBase for OpenEXR.  Bailing out."
+                error "Unable to build or install Imath for OpenEXR.  Bailing out."
             fi
-            info "Done building ILMBase"
+            info "Done building Imath"
             build_openexr
             if [[ $? != 0 ]] ; then
                 error "Unable to build or install OpenEXR.  Bailing out."

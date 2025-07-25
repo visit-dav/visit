@@ -21,6 +21,7 @@
 #define getcwd _getcwd
 #define chdir _chdir
 #endif
+#include <stdint.h>
 // #include <complex.h>
 #include <ctype.h>
 
@@ -29,6 +30,28 @@
 #define MAX_REC_LEN 1024
 
 #define WRKDIR_SET 123987
+
+void wdata_reset_metadata(wdata_metadata *md)
+{
+    md->nx = 0;
+    md->ny = 0;
+    md->nz = 0;
+    md->dx = 0.0;
+    md->dy = 0.0;
+    md->dz = 0.0;
+    md->x0 = 0.0;
+    md->y0 = 0.0;
+    md->z0 = 0.0;
+    md->datadim = 0;
+    strcpy(md->prefix, "");
+    md->cycles = 0;
+    md->t0 = 0.0;
+    md->dt = 0.0;
+    md->nvar = 0;
+    md->nlink = 0;
+    md->nconsts = 0;
+    md->ntxt = 0;
+}
 
 /**
  * Basic functions for extracting lattice
@@ -46,6 +69,9 @@ void wdata_setnz(wdata_metadata *md, int nz) { md->nz = nz; }
 void wdata_setdx(wdata_metadata *md, double dx) { md->dx = dx; }
 void wdata_setdy(wdata_metadata *md, double dy) { md->dy = dy; }
 void wdata_setdz(wdata_metadata *md, double dz) { md->dz = dz; }
+void wdata_setx0(wdata_metadata *md, double x0) { md->x0 = x0; }
+void wdata_sety0(wdata_metadata *md, double y0) { md->y0 = y0; }
+void wdata_setz0(wdata_metadata *md, double z0) { md->z0 = z0; }
 void wdata_setprefix(wdata_metadata *md, const char *prefix) { strcpy(md->prefix, prefix); }
 
 int wdata_set_lattice(wdata_metadata *md, int nx, int ny, int nz, double dx, double dy, double dz)
@@ -56,11 +82,14 @@ int wdata_set_lattice(wdata_metadata *md, int nx, int ny, int nz, double dx, dou
     md->dx = dx;
     md->dy = dy;
     md->dz = dz;
-    return 0;
+    md->x0 = 0.0;
+    md->y0 = 0.0;
+    md->z0 = 0.0;
+    return WDATA_OK;
 }
 
 char __wdata__basedir[MAX_REC_LEN];
-void wdata_goto_wrkdir(wdata_metadata *md)
+void wdata_goto_wrkdir(const wdata_metadata *md)
 {
     if (md->issetwrkdir == WRKDIR_SET)
     {
@@ -70,7 +99,7 @@ void wdata_goto_wrkdir(wdata_metadata *md)
     }
 }
 
-void wdata_goback_wrkdir(wdata_metadata *md)
+void wdata_goback_wrkdir(const wdata_metadata *md)
 {
     if (md->issetwrkdir == WRKDIR_SET)
     {
@@ -81,7 +110,7 @@ void wdata_goback_wrkdir(wdata_metadata *md)
 
 static char *str_tolower(char *str)
 {
-    int str_len = int(strlen(str)) + 1;
+    int str_len = (int)(strlen(str)) + 1;
     int j;
 
     for (j = 0; j < str_len; j++)
@@ -275,6 +304,7 @@ int wdata_parse_metadata_file(const char *file_name, wdata_metadata *md)
     md->nvar = 0;
     md->nlink = 0;
     md->nconsts = 0;
+    md->ntxt = 0;
 
     // buffers
     char s[MAX_REC_LEN];
@@ -288,6 +318,9 @@ int wdata_parse_metadata_file(const char *file_name, wdata_metadata *md)
     md->dx = 0.0;
     md->dy = 0.0;
     md->dz = 0.0;
+    md->x0 = 0.0;
+    md->y0 = 0.0;
+    md->z0 = 0.0;
     md->datadim = 0;
     md->prefix[0] = '\0';
 
@@ -314,11 +347,19 @@ int wdata_parse_metadata_file(const char *file_name, wdata_metadata *md)
             sscanf(s, "%s %lf %*s", tag, &md->dy);
         else if (strcmp(tag, "dz") == 0)
             sscanf(s, "%s %lf %*s", tag, &md->dz);
+        else if (strcmp(tag, "x0") == 0)
+            sscanf(s, "%s %lf %*s", tag, &md->x0);
+        else if (strcmp(tag, "y0") == 0)
+            sscanf(s, "%s %lf %*s", tag, &md->y0);
+        else if (strcmp(tag, "z0") == 0)
+            sscanf(s, "%s %lf %*s", tag, &md->z0);
         else if (strcmp(tag, "datadim") == 0)
             sscanf(s, "%s %d %*s", tag, &md->datadim);
         else if (strcmp(tag, "prefix") == 0)
             sscanf(s, "%s %s %*s", tag, md->prefix);
         else if (strcmp(tag, "cycles") == 0)
+            sscanf(s, "%s %d %*s", tag, &md->cycles);
+        else if (strcmp(tag, "nt") == 0)
             sscanf(s, "%s %d %*s", tag, &md->cycles);
         else if (strcmp(tag, "dt") == 0)
             sscanf(s, "%s %lf %*s", tag, &md->dt);
@@ -373,7 +414,7 @@ int wdata_parse_metadata_file(const char *file_name, wdata_metadata *md)
                     }
                 }
                 replace_str(s, ptag, " ");
-                //                 printf("itag: %d", itag);
+//                 printf("itag: %d", itag);
                 itag++;
             }
             if (itag < 2)
@@ -386,6 +427,9 @@ int wdata_parse_metadata_file(const char *file_name, wdata_metadata *md)
                 sprintf(md->var[md->nvar].unit, "none");
                 sprintf(md->var[md->nvar].format, "wdat");
             }
+
+            str_tolower(md->var[md->nvar].type); // type to lower case
+
             md->nvar++;
         }
 
@@ -425,6 +469,13 @@ int wdata_parse_metadata_file(const char *file_name, wdata_metadata *md)
                 sprintf(md->consts[md->nconsts].unit, "none");
             md->nconsts++;
         }
+
+        // txt
+        else if (strcmp(tag, "txt") == 0)
+        {
+            sscanf(s, "%s %s %*s", tag, md->txt[md->ntxt].filename);
+            md->ntxt++;
+        }
     }
 
     fclose(fp);
@@ -458,35 +509,64 @@ void wdata_print_metadata(wdata_metadata *md, FILE *out)
     fprintf(out, "nx %24d   # lattice\n", md->nx);
     fprintf(out, "ny %24d   # lattice\n", md->ny);
     fprintf(out, "nz %24d   # lattice\n", md->nz);
-    fprintf(out, "dx %24g   # spacing\n", md->dx);
-    fprintf(out, "dy %24g   # spacing\n", md->dy);
-    fprintf(out, "dz %24g   # spacing\n", md->dz);
+    if(md->dx>=0.0) fprintf(out, "dx %24g   # spacing\n", md->dx);
+    else            fprintf(out, "dx %24g   # varying x coordinate in prefix__x.wdat file\n", md->dx);
+    if(md->dy>=0.0) fprintf(out, "dy %24g   # spacing\n", md->dy);
+    else            fprintf(out, "dy %24g   # varying y coordinate in prefix__y.wdat file\n", md->dy);
+    if(md->dz>=0.0) fprintf(out, "dz %24g   # spacing\n", md->dz);
+    else            fprintf(out, "dz %24g   # varying z coordinate in prefix__z.wdat file\n", md->dz);
+    if(md->x0!=0.0) fprintf(out, "x0 %24g   # origin of x-axis\n", md->x0);
+    if(md->y0!=0.0) fprintf(out, "y0 %24g   # origin of y-axis\n", md->y0);
+    if(md->z0!=0.0) fprintf(out, "z0 %24g   # origin of z-axis\n", md->z0);
     fprintf(out, "datadim %19d   # dimension of block size: 1=nx, 2=nx*ny, 3=nx*ny*nz\n", md->datadim);
-    fprintf(out, "prefix %20s   # prefix for files belonging to this data set, binary files have names `prefix_variable-name.format`\n", md->prefix);
+    if(strlen(md->prefix)>20)
+        fprintf(out, "prefix %s   # prefix for files belonging to this data set`\n", md->prefix);
+    else
+        fprintf(out, "prefix %20s   # prefix for files belonging to this data set`\n", md->prefix);
     fprintf(out, "cycles %20d   # number of cycles (measurements)\n", md->cycles);
     fprintf(out, "t0 %24g   # time value for the first cycle\n", md->t0);
-    fprintf(out, "dt %24g   # time interval between cycles. If `dt` negative then time step is varying and is read from binary file `prefix__t.wdata`\n", md->dt);
+    if(md->dt>=0.0) fprintf(out, "dt %24g   # time interval between cycles\n", md->dt);
+    else            fprintf(out, "dt %24g   # varying time in prefix__t.wdat file\n", md->dt);
 
     // variables
-    fprintf(out, "\n");
-    fprintf(out, "# variables\n");
-    fprintf(out, "# tag                  name                    type                    unit                  format\n");
-    for (i = 0; i < md->nvar; i++)
-        wdata_print_variable(&md->var[i], out);
+    if(md->nvar>0)
+    {
+        fprintf(out, "\n");
+        fprintf(out, "# variables\n");
+        fprintf(out, "# tag                  name                    type                    unit                  format\n");
+        for (i = 0; i < md->nvar; i++)
+            wdata_print_variable(&md->var[i], out);
+    }
 
     // links
-    fprintf(out, "\n");
-    fprintf(out, "# links\n");
-    fprintf(out, "# tag                  name                 link-to\n");
-    for (i = 0; i < md->nlink; i++)
-        wdata_print_link(&md->link[i], out);
+    if(md->nlink>0)
+    {
+        fprintf(out, "\n");
+        fprintf(out, "# links\n");
+        fprintf(out, "# tag                  name                 link-to\n");
+        for (i = 0; i < md->nlink; i++)
+            wdata_print_link(&md->link[i], out);
+    }
 
     // consts
-    fprintf(out, "\n");
-    fprintf(out, "# consts\n");
-    fprintf(out, "# tag                  name                   value                    unit\n");
-    for (i = 0; i < md->nconsts; i++)
-        wdata_print_const(&md->consts[i], out);
+    if(md->nconsts>0)
+    {
+        fprintf(out, "\n");
+        fprintf(out, "# consts\n");
+        fprintf(out, "# tag                  name                   value                    unit\n");
+        for (i = 0; i < md->nconsts; i++)
+            wdata_print_const(&md->consts[i], out);
+    }
+
+    // txt
+    if(md->ntxt>0)
+    {
+        fprintf(out, "\n");
+        fprintf(out, "# txt\n");
+        fprintf(out, "# tag              filename\n");
+        for (i = 0; i < md->ntxt; i++)
+            wdata_print_txt(&md->txt[i], out);
+    }
 
     fprintf(out, "\n");
 }
@@ -504,6 +584,11 @@ void wdata_print_link(wdata_link *md, FILE *out)
 void wdata_print_const(wdata_const *md, FILE *out)
 {
     fprintf(out, "const%22s%24g%24s\n", md->name, md->value, md->unit);
+}
+
+void wdata_print_txt(wdata_txt *md, FILE *out)
+{
+    fprintf(out, "txt%24s\n", md->filename);
 }
 
 void wdata_add_variable(wdata_metadata *md, wdata_variable *var)
@@ -540,6 +625,311 @@ void wdata_add_const(wdata_metadata *md, wdata_const *_const)
     md->nconsts++;
 }
 
+void wdata_add_txt(wdata_metadata *md, wdata_txt *txt)
+{
+    md->txt[md->ntxt] = *txt;
+    md->ntxt++;
+}
+
+int wdata_add_time(const wdata_metadata *md, const int icycle, double *time)
+{
+    wdata_goto_wrkdir(md);
+
+    char file_name[MD_CHAR_LGTH];
+    sprintf(file_name, "%s_%s.wdat", md->prefix, "_t");
+    const size_t count = 1;
+
+    FILE *pFile;
+
+    pFile = fopen(file_name, "ab");
+    if (pFile == NULL)
+        return WDATA_ERROR_CANNOT_OPEN__T; // cannot open
+
+    size_t test_ele = fwrite(time, sizeof(double), count, pFile);
+    if (test_ele != count)
+        return WDATA_ERROR_CANNOT_WRIT__T; // data not written
+
+    fclose(pFile);
+
+    wdata_goback_wrkdir(md);
+
+    return WDATA_OK;
+}
+
+int wdata_add_x(const wdata_metadata *md, double *x)
+{
+    wdata_goto_wrkdir(md);
+
+    char file_name[MD_CHAR_LGTH];
+    sprintf(file_name, "%s_%s.wdat", md->prefix, "_x");
+    const size_t count = 1;
+
+    FILE *pFile;
+
+    pFile = fopen(file_name, "ab");
+    if (pFile == NULL)
+        return WDATA_ERROR_CANNOT_OPEN__T; // cannot open
+
+    size_t test_ele = fwrite(x, sizeof(double), count, pFile);
+    if (test_ele != count)
+        return WDATA_ERROR_CANNOT_WRIT__T; // data not written
+
+    fclose(pFile);
+
+    wdata_goback_wrkdir(md);
+
+    return WDATA_OK;
+}
+
+int wdata_add_y(const wdata_metadata *md, double *y)
+{
+    wdata_goto_wrkdir(md);
+
+    char file_name[MD_CHAR_LGTH];
+    sprintf(file_name, "%s_%s.wdat", md->prefix, "_y");
+    const size_t count = 1;
+
+    FILE *pFile;
+
+    pFile = fopen(file_name, "ab");
+    if (pFile == NULL)
+        return WDATA_ERROR_CANNOT_OPEN__T; // cannot open
+
+    size_t test_ele = fwrite(y, sizeof(double), count, pFile);
+    if (test_ele != count)
+        return WDATA_ERROR_CANNOT_WRIT__T; // data not written
+
+    fclose(pFile);
+
+    wdata_goback_wrkdir(md);
+
+    return WDATA_OK;
+}
+
+int wdata_add_z(const wdata_metadata *md, double *z)
+{
+    wdata_goto_wrkdir(md);
+
+    char file_name[MD_CHAR_LGTH];
+    sprintf(file_name, "%s_%s.wdat", md->prefix, "_z");
+    const size_t count = 1;
+
+    FILE *pFile;
+
+    pFile = fopen(file_name, "ab");
+    if (pFile == NULL)
+        return WDATA_ERROR_CANNOT_OPEN__T; // cannot open
+
+    size_t test_ele = fwrite(z, sizeof(double), count, pFile);
+    if (test_ele != count)
+        return WDATA_ERROR_CANNOT_WRIT__T; // data not written
+
+    fclose(pFile);
+
+    wdata_goback_wrkdir(md);
+
+    return WDATA_OK;
+}
+
+
+int wdata_get_time(const wdata_metadata *md, const int icycle, double *current_time)
+{
+    if (md->dt >= 0)
+    {
+        *current_time = md->t0 + md->dt * icycle;
+        return WDATA_OK;
+    }
+    else
+    {
+        wdata_goto_wrkdir(md);
+
+        char file_name[MD_CHAR_LGTH];
+        sprintf(file_name, "%s_%s.wdat", md->prefix, "_t");
+        const size_t count = 1;
+
+        FILE *pFile;
+
+        pFile = fopen(file_name, "rb");
+        if (pFile == NULL)
+            return WDATA_ERROR_CANNOT_OPEN__T; // cannot open
+
+        fseek(pFile, sizeof(double) * icycle, SEEK_SET);
+
+        size_t test_ele = fread(current_time, sizeof(double), count, pFile);
+        if (test_ele != count)
+            return WDATA_ERROR_CANNOT_READ__T; // data not written
+
+        fclose(pFile);
+
+        wdata_goback_wrkdir(md);
+
+        return WDATA_OK;
+    }
+}
+
+int wdata_get_x(const wdata_metadata *md, const int ix, double *x)
+{
+    if(ix<0 || ix>=md->nx)
+        return WDATA_ERROR_OUT_OF_DOMAIN;
+
+    if (md->dx >= 0)
+    {
+        *x=md->x0 + md->dx*ix;
+        return WDATA_OK;
+    }
+    else
+    {
+        wdata_goto_wrkdir(md);
+
+        char file_name[MD_CHAR_LGTH];
+        sprintf(file_name, "%s_%s.wdat", md->prefix, "_x");
+        const size_t count = 1;
+
+        FILE *pFile;
+
+        pFile = fopen(file_name, "rb");
+        if (pFile == NULL)
+            return WDATA_ERROR_CANNOT_OPEN__X; // cannot open
+
+        fseek(pFile, sizeof(double) * ix, SEEK_SET);
+
+        size_t test_ele = fread(x, sizeof(double), count, pFile);
+        if (test_ele != count)
+            return WDATA_ERROR_CANNOT_READ__X; // data not written
+
+        fclose(pFile);
+
+        wdata_goback_wrkdir(md);
+
+        return WDATA_OK;
+    }
+}
+
+int wdata_get_y(const wdata_metadata *md, const int iy, double *y)
+{
+    if(iy<0 || iy>=md->ny)
+        return WDATA_ERROR_OUT_OF_DOMAIN;
+
+    if (md->dy >= 0)
+    {
+        *y=md->y0 + md->dy*iy;
+        return WDATA_OK;
+    }
+    else
+    {
+        wdata_goto_wrkdir(md);
+
+        char file_name[MD_CHAR_LGTH];
+        sprintf(file_name, "%s_%s.wdat", md->prefix, "_y");
+        const size_t count = 1;
+
+        FILE *pFile;
+
+        pFile = fopen(file_name, "rb");
+        if (pFile == NULL)
+            return WDATA_ERROR_CANNOT_OPEN__Y; // cannot open
+
+        fseek(pFile, sizeof(double) * iy, SEEK_SET);
+
+        size_t test_ele = fread(y, sizeof(double), count, pFile);
+        if (test_ele != count)
+            return WDATA_ERROR_CANNOT_READ__Y; // data not written
+
+        fclose(pFile);
+
+        wdata_goback_wrkdir(md);
+
+        return WDATA_OK;
+    }
+}
+
+int wdata_get_z(const wdata_metadata *md, const int iz, double *z)
+{
+    if(iz<0 || iz>=md->nz)
+        return WDATA_ERROR_OUT_OF_DOMAIN;
+
+    if (md->dy >= 0)
+    {
+        *z=md->z0 + md->dz*iz;
+        return WDATA_OK;
+    }
+    else
+    {
+        wdata_goto_wrkdir(md);
+
+        char file_name[MD_CHAR_LGTH];
+        sprintf(file_name, "%s_%s.wdat", md->prefix, "_z");
+        const size_t count = 1;
+
+        FILE *pFile;
+
+        pFile = fopen(file_name, "rb");
+        if (pFile == NULL)
+            return WDATA_ERROR_CANNOT_OPEN__Z; // cannot open
+
+        fseek(pFile, sizeof(double) * iz, SEEK_SET);
+
+        size_t test_ele = fread(z, sizeof(double), count, pFile);
+        if (test_ele != count)
+            return WDATA_ERROR_CANNOT_READ__Z; // data not written
+
+        fclose(pFile);
+
+        wdata_goback_wrkdir(md);
+
+        return WDATA_OK;
+    }
+}
+
+int wdata_vectorvar_decompose(wdata_variable *var, char *type, int *dim)
+{
+    char name[MD_CHAR_LGTH];
+    int number = 3;
+
+    // Find the last '(' and ')'
+    char *open = strrchr(var->type, '(');
+    char *close = strrchr(var->type, ')');
+
+    if (open && close && close > open && close[1] == '\0') {
+        // Check if everything between ( and ) is a number
+        int valid = 1;
+        for (char *p = open + 1; p < close; ++p) {
+            if (!isdigit((unsigned char)*p)) {
+                valid = 0;
+                break;
+            }
+        }
+        if (valid) {
+            // Copy the name part
+            size_t len = open - var->type;
+            strncpy(name, var->type, len);
+            name[len] = '\0';
+            // Get the number
+            number = atoi(open + 1);
+        }
+        else
+            return WDATA_ERROR_VECTOR_TYPE;
+    }
+    else
+    {
+        strncpy(name, var->type, strlen(var->type));
+        name[strlen(var->type)] = '\0';
+    }
+
+    // copy reults
+    *dim = number;
+    strncpy(type, name, strlen(name));
+    type[strlen(name)] = '\0';
+
+    if(type[0]!='v')
+    {
+        *dim=0;
+        return WDATA_ERROR_NOT_VECTOR;
+    }
+
+    return WDATA_OK;
+}
+
 int wdata_get_blocklength(wdata_metadata *md)
 {
     if (md->datadim == 3)
@@ -551,83 +941,68 @@ int wdata_get_blocklength(wdata_metadata *md)
     return -1; // error!!!
 }
 
-int wdata_set_time(const wdata_metadata *md, const int icycle, double *current_time)
+int wdata_get_blocklength_full(wdata_metadata *md, wdata_variable *var)
 {
-    if (md->dt >= 0)
+    if (var->type[0]=='r') // real
+        return wdata_get_blocklength(md);
+    if (var->type[0]=='c') // complex(re,im)
+        return wdata_get_blocklength(md)*2;
+
+    if (var->type[0]=='v') // vector
     {
-        *current_time = md->t0 + md->dt * icycle;
-        return 0;
+    // vector types
+        char vtype[MD_CHAR_LGTH];
+        int vdim;
+        wdata_vectorvar_decompose(var, vtype, &vdim);
+        return wdata_get_blocklength(md)*vdim;
     }
-    else
-    {
-        char file_name[MD_CHAR_LGTH];
-        sprintf(file_name, "%s_%s.wdat", md->prefix, "_t");
-        const size_t count = 1;
 
-        FILE *pFile;
-
-        pFile = fopen(file_name, "ab");
-        if (pFile == NULL)
-            return 1; // cannot open
-
-        size_t test_ele = fwrite(current_time, sizeof(double), count, pFile);
-        if (test_ele != count)
-            return 2; // data not written
-
-        fclose(pFile);
-
-        return 0;
-    }
+    return 0;
 }
 
-int wdata_get_time(const wdata_metadata *md, const int icycle, double *current_time)
+char wdata_get_var_precision(wdata_variable *var)
 {
-    if (md->dt >= 0)
-    {
-        *current_time = md->t0 + md->dt * icycle;
-        return 0;
-    }
-    else
-    {
-        char file_name[MD_CHAR_LGTH];
-        sprintf(file_name, "%s_%s.wdat", md->prefix, "_t");
-        const size_t count = 1;
+    // float cases
+    if (strncmp(var->type, "real4", 5) == 0) return 'f';
+    if (strncmp(var->type, "complex8", 8) == 0) return 'f';
+    if (strncmp(var->type, "vector4", 7) == 0) return 'f';
 
-        FILE *pFile;
-
-        pFile = fopen(file_name, "rb");
-        if (pFile == NULL)
-            return 1; // cannot open
-
-        fseek(pFile, sizeof(double) * icycle, SEEK_SET);
-
-        size_t test_ele = fread(current_time, sizeof(double), count, pFile);
-        if (test_ele != count)
-            return 2; // data not written
-
-        fclose(pFile);
-
-        return 0;
-    }
+    // everything else is double
+    return 'd';
 }
 
 size_t wdata_get_blocksize(wdata_metadata *md, wdata_variable *var)
 {
-    if (strcmp(var->type, "real") == 0 || strcmp(var->type, "real8") == 0)
-        return sizeof(double) * wdata_get_blocklength(md);
-    if (strcmp(var->type, "real4") == 0)
-        return sizeof(float) * wdata_get_blocklength(md);
-    if (strcmp(var->type, "complex") == 0 || strcmp(var->type, "complex16") == 0)
-        return sizeof(double) * wdata_get_blocklength(md) * 2;
-    if (strcmp(var->type, "complex8") == 0)
-        return sizeof(float) * wdata_get_blocklength(md) * 2;
-    if (strcmp(var->type, "vector") == 0 || strcmp(var->type, "vector8") == 0)
-        return sizeof(double) * wdata_get_blocklength(md) * 3;
-    if (strcmp(var->type, "vector4") == 0)
-        return sizeof(float) * wdata_get_blocklength(md) * 3;
+    int bf = wdata_get_blocklength_full(md, var);
+    char prec=wdata_get_var_precision(var);
+    if(prec=='d')
+        return sizeof(double)*bf;
+    else
+        return sizeof(float)*bf;
 
-    return 0; // error
+    // if (strcmp(var->type, "real") == 0 || strcmp(var->type, "real8") == 0)
+    //     return sizeof(double) * wdata_get_blocklength(md);
+    // if (strcmp(var->type, "real4") == 0)
+    //     return sizeof(float) * wdata_get_blocklength(md);
+    // if (strcmp(var->type, "complex") == 0 || strcmp(var->type, "complex16") == 0)
+    //     return sizeof(double) * wdata_get_blocklength(md) * 2;
+    // if (strcmp(var->type, "complex8") == 0)
+    //     return sizeof(float) * wdata_get_blocklength(md) * 2;
+    //
+    // // vector types
+    // char vtype[MD_CHAR_LGTH];
+    // int vdim;
+    // int ierr = wdata_vectorvar_decompose(var, vtype, &vdim);
+    // if(ierr!=WDATA_OK) return ierr; // error
+    //
+    // if (strcmp(vtype, "vector") == 0 || strcmp(vtype, "vector8") == 0)
+    //     return sizeof(double) * wdata_get_blocklength(md) * vdim;
+    // if (strcmp(vtype, "vector4") == 0)
+    //     return sizeof(float) * wdata_get_blocklength(md) * vdim;
+    //
+    // return WDATA_OK; // error code
 }
+
 
 int wdata_add_datablock(wdata_metadata *md, wdata_variable *var, void *data)
 {
@@ -656,25 +1031,25 @@ int wdata_add_datablock_wdat(wdata_metadata *md, wdata_variable *var, void *data
 
     pFile = fopen(file_name, "ab");
     if (pFile == NULL)
-        return 1; // cannot open
+        return WDATA_ERROR_CANNOT_OPEN_WDAT; // cannot open
 
     size_t test_ele = fwrite(data, wdata_get_blocksize(md, var), 1, pFile);
     if (test_ele != 1)
-        return 2; // data not written
+        return WDATA_ERROR_CANNOT_WRIT_WDAT; // data not written
 
     fclose(pFile);
 
-    return 0;
+    return WDATA_OK;
 }
 
 int wdata_add_datablock_dpca(wdata_metadata *md, wdata_variable *var, void *data)
 {
-    return -99; // pdca format is deprecated, thus writing files in this format is no longer supported!
+    return WDATA_ERROR_FORMAT_WRITE_NOT_SUPPORTED; // pdca format is deprecated, thus writing files in this format is no longer supported!
 }
 
 int wdata_add_datablock_npy(wdata_metadata *md, wdata_variable *var, void *data)
 {
-    return -99; // TODO
+    return WDATA_ERROR_FORMAT_WRITE_NOT_SUPPORTED;
 }
 
 int wdata_load_datablock(wdata_metadata *md, wdata_variable *var, int cycle, void *data)
@@ -704,19 +1079,19 @@ int wdata_load_datablock_wdat(wdata_metadata *md, wdata_variable *var, int cycle
 
     pFile = fopen(file_name, "rb");
     if (pFile == NULL)
-        return 1; // cannot open
+        return WDATA_ERROR_CANNOT_OPEN_WDAT; // cannot open
 
     // set pointer to correct location
     if (fseek(pFile, wdata_get_blocksize(md, var) * cycle, SEEK_SET) != 0)
-        return 3; // cannot seek pointer
+        return WDATA_ERROR_CANNOT_READ_WDAT; // cannot seek pointer
 
     size_t test_ele = fread(data, wdata_get_blocksize(md, var), 1, pFile);
     if (test_ele != 1)
-        return 2; // data not read
+        return WDATA_ERROR_CANNOT_READ_WDAT; // data not read
 
     fclose(pFile);
 
-    return 0;
+    return WDATA_OK;
 }
 
 int wdata_load_datablock_dpca(wdata_metadata *md, wdata_variable *var, int cycle, void *data)
@@ -744,12 +1119,59 @@ int wdata_load_datablock_dpca(wdata_metadata *md, wdata_variable *var, int cycle
 
     fclose(pFile);
 
-    return 0;
+    return WDATA_OK;
 }
 
 int wdata_load_datablock_npy(wdata_metadata *md, wdata_variable *var, int cycle, void *data)
 {
-    return -99; // TODO
+    char file_name[MD_CHAR_LGTH];
+    wdata_get_filename(md, var, file_name);
+    //     printf("wdata_read_cycle: Reading from file %s\n", file_name);
+
+    FILE *pFile;
+
+    pFile = fopen(file_name, "rb");
+    if (pFile == NULL)
+        return WDATA_ERROR_CANNOT_OPEN_NPY; // cannot open
+
+    char magic[6];
+    uint8_t major, minor;
+    uint16_t header_len16;
+    uint32_t header_len32;
+    size_t header_size;
+
+    // Read magic string
+    fread(magic, 1, 6, pFile);
+
+    // Read version
+    fread(&major, 1, 1, pFile);
+    fread(&minor, 1, 1, pFile);
+
+    // Read header length and skip header accordingly
+    if (major == 1 || major == 2) {
+        fread(&header_len16, 2, 1, pFile); // little-endian
+        header_size = 6 + 2 + 2 + header_len16;
+    } else if (major == 3) {
+        fread(&header_len32, 4, 1, pFile); // little-endian
+        header_size = 6 + 2 + 4 + header_len32;
+    } else {
+        return WDATA_ERROR_FORMAT_READ_NOT_SUPPORTED;
+    }
+
+    // Set file pointer to start of array data
+    fseek(pFile, header_size, SEEK_SET);
+
+    // set pointer to correct location
+    if (fseek(pFile, header_size + wdata_get_blocksize(md, var) * cycle, SEEK_SET) != 0)
+        return WDATA_ERROR_CANNOT_READ_NPY; // cannot seek pointer
+
+    size_t test_ele = fread(data, wdata_get_blocksize(md, var), 1, pFile);
+    if (test_ele != 1)
+        return WDATA_ERROR_CANNOT_READ_NPY; // data not read
+
+    fclose(pFile);
+
+    return WDATA_OK;
 }
 
 int wdata_write_cycle(wdata_metadata *md, const char *varname, void *data)
@@ -763,6 +1185,56 @@ int wdata_write_cycle(wdata_metadata *md, const char *varname, void *data)
     return wdata_add_datablock(md, &var, data);
 }
 
+int wdata_write_cycle_d(wdata_metadata *md, const char *varname, double *data)
+{
+    int ierr;
+    wdata_variable var;
+    ierr = wdata_get_variable(md, varname, &var);
+    if (ierr > 0)
+        return 10 + ierr;
+
+    char prec = wdata_get_var_precision(&var);
+
+    if(prec=='d')
+    {
+        return wdata_add_datablock(md, &var, data);
+    }
+    else // downgrade precision to float
+    {
+        int bf = wdata_get_blocklength_full(md, &var);
+        float * data_f = (float *)malloc(sizeof(float)*bf);
+        for(int i=0; i<bf; i++) data_f[i]=(float)data[i];
+        ierr = wdata_add_datablock(md, &var, data_f);
+        free(data_f);
+        return ierr;
+    }
+}
+
+int wdata_write_cycle_f(wdata_metadata *md, const char *varname, float *data)
+{
+    int ierr;
+    wdata_variable var;
+    ierr = wdata_get_variable(md, varname, &var);
+    if (ierr > 0)
+        return 10 + ierr;
+
+    char prec = wdata_get_var_precision(&var);
+
+    if(prec=='f')
+    {
+        return wdata_add_datablock(md, &var, data);
+    }
+    else // upgrade precision to double
+    {
+        int bf = wdata_get_blocklength_full(md, &var);
+        double * data_d = (double *)malloc(sizeof(double)*bf);
+        for(int i=0; i<bf; i++) data_d[i]=(double)data[i];
+        ierr = wdata_add_datablock(md, &var, data_d);
+        free(data_d);
+        return ierr;
+    }
+}
+
 int wdata_write_cycle_many(wdata_metadata *md, const wdata_variable_many *var_many, void *data[])
 {
     int i, ierr;
@@ -771,18 +1243,75 @@ int wdata_write_cycle_many(wdata_metadata *md, const wdata_variable_many *var_ma
     for (i = 0; i < md->nvar; i++)
     {
         ierr = wdata_get_variable(md, var_many->names[i], &var);
-        if (ierr > 0)
+        if (ierr != 0) return WDATA_ERROR_WDATA_GET_VARIABLE_WCM;
+
+        ierr = wdata_add_datablock(md, &var, data[i]);
+        if (ierr != 0) return WDATA_ERROR_WDATA_ADD_DATABLOCK_WCM;
+
+    }
+    return WDATA_OK;
+}
+
+int wdata_write_cycle_many_d(wdata_metadata *md, const wdata_variable_many *var_many, double *data[])
+{
+    int i, ierr;
+    wdata_variable var;
+
+    for (i = 0; i < md->nvar; i++)
+    {
+        ierr = wdata_get_variable(md, var_many->names[i], &var);
+        if (ierr != 0) return WDATA_ERROR_WDATA_GET_VARIABLE_WCM;
+
+        char prec = wdata_get_var_precision(&var);
+
+        if(prec=='d')
         {
-            fprintf(stderr, "Problem with `wdata_get_variable()` in `wdata_write_cycle_many()` function with ERROR: %d. Varname: %s\n", ierr, var_many->names[i]);
-            return WDATA_ERROR_WDATA_GET_VARIABLE_WCM;
+            ierr = wdata_add_datablock(md, &var, data[i]);
+            if (ierr != 0) return WDATA_ERROR_WDATA_ADD_DATABLOCK_WCM;
         }
-        if (wdata_add_datablock(md, &var, data[i]))
+        else // downgrade precision to float
         {
-            fprintf(stderr, "Problem with `wdata_add_datablock()` in `wdata_write_cycle_many()` function with ERROR: %d. Varname: %s\n", ierr, var_many->names[i]);
-            return WDATA_ERROR_WDATA_ADD_DATABLOCK_WCM;
+            int bf = wdata_get_blocklength_full(md, &var);
+            float * data_f = (float *)malloc(sizeof(float)*bf);
+            for(int ii=0; ii<bf; ii++) data_f[ii]=(float)data[i][ii];
+            ierr = wdata_add_datablock(md, &var, data_f);
+            free(data_f);
+            if (ierr != 0) return WDATA_ERROR_WDATA_ADD_DATABLOCK_WCM;
         }
     }
-    return EXIT_SUCCESS;
+
+    return WDATA_OK;
+}
+
+int wdata_write_cycle_many_f(wdata_metadata *md, const wdata_variable_many *var_many, float *data[])
+{
+    int i, ierr;
+    wdata_variable var;
+
+    for (i = 0; i < md->nvar; i++)
+    {
+        ierr = wdata_get_variable(md, var_many->names[i], &var);
+        if (ierr != 0) return WDATA_ERROR_WDATA_GET_VARIABLE_WCM;
+
+        char prec = wdata_get_var_precision(&var);
+
+        if(prec=='f')
+        {
+            ierr = wdata_add_datablock(md, &var, data[i]);
+            if (ierr != 0) return WDATA_ERROR_WDATA_ADD_DATABLOCK_WCM;
+        }
+        else // upgrade precision to double
+        {
+            int bf = wdata_get_blocklength_full(md, &var);
+            double * data_d = (double *)malloc(sizeof(double)*bf);
+            for(int ii=0; ii<bf; ii++) data_d[ii]=(double)data[i][ii];
+            ierr = wdata_add_datablock(md, &var, data_d);
+            free(data_d);
+            if (ierr != 0) return WDATA_ERROR_WDATA_ADD_DATABLOCK_WCM;
+        }
+    }
+
+    return WDATA_OK;
 }
 
 int wdata_read_cycle(wdata_metadata *md, const char *varname, int cycle, void *data)
@@ -794,6 +1323,56 @@ int wdata_read_cycle(wdata_metadata *md, const char *varname, int cycle, void *d
         return 10 + ierr;
 
     return wdata_load_datablock(md, &var, cycle, data);
+}
+
+int wdata_read_cycle_d(wdata_metadata *md, const char *varname, int cycle, double *data)
+{
+    int ierr;
+    wdata_variable var;
+    ierr = wdata_get_variable(md, varname, &var);
+    if (ierr > 0)
+        return 10 + ierr;
+
+    char prec = wdata_get_var_precision(&var);
+
+    if(prec=='d')
+    {
+        return wdata_load_datablock(md, &var, cycle, data);
+    }
+    else // upgrade precision to double
+    {
+        int bf = wdata_get_blocklength_full(md, &var);
+        float * data_f = (float *)malloc(sizeof(float)*bf);
+        ierr = wdata_load_datablock(md, &var, cycle, data_f);
+        for(int i=0; i<bf; i++) data[i]=(double)data_f[i];
+        free(data_f);
+        return ierr;
+    }
+}
+
+int wdata_read_cycle_f(wdata_metadata *md, const char *varname, int cycle, float *data)
+{
+    int ierr;
+    wdata_variable var;
+    ierr = wdata_get_variable(md, varname, &var);
+    if (ierr > 0)
+        return 10 + ierr;
+
+    char prec = wdata_get_var_precision(&var);
+
+    if(prec=='f')
+    {
+        return wdata_load_datablock(md, &var, cycle, data);
+    }
+    else // downgrade precision to float
+    {
+        int bf = wdata_get_blocklength_full(md, &var);
+        double * data_d = (double *)malloc(sizeof(double)*bf);
+        ierr = wdata_load_datablock(md, &var, cycle, data_d);
+        for(int i=0; i<bf; i++) data[i]=(float)data_d[i];
+        free(data_d);
+        return ierr;
+    }
 }
 
 int wdata_add_cycle(wdata_metadata *md)
@@ -918,7 +1497,7 @@ int wdata_file_exists(wdata_metadata *md, const char *varname)
     wdata_variable var;
     ierr = wdata_get_variable(md, varname, &var);
     if (ierr != 0)
-        return 0;
+        return WDATA_OK;
 
     char file_name[MD_CHAR_LGTH];
     wdata_get_filename(md, &var, file_name);
@@ -932,7 +1511,7 @@ int wdata_file_exists(wdata_metadata *md, const char *varname)
 
     wdata_goback_wrkdir(md);
 
-    return 0;
+    return WDATA_OK;
 }
 
 void wdata_clear_file(wdata_metadata *md, const char *varname)
@@ -959,6 +1538,30 @@ void wdata_clear_database(wdata_metadata *md)
         remove(file_name);
     }
     md->cycles = 0;
+
+    if(md->dt<0) // varying t
+    {
+        sprintf(file_name, "%s__t.wdat", md->prefix);
+        remove(file_name);
+    }
+
+    if(md->dx<0) // varying x
+    {
+        sprintf(file_name, "%s__x.wdat", md->prefix);
+        remove(file_name);
+    }
+
+    if(md->dy<0) // varying y
+    {
+        sprintf(file_name, "%s__y.wdat", md->prefix);
+        remove(file_name);
+    }
+
+    if(md->dz<0) // varying z
+    {
+        sprintf(file_name, "%s__z.wdat", md->prefix);
+        remove(file_name);
+    }
 
     wdata_goback_wrkdir(md);
 }
@@ -996,7 +1599,7 @@ int wdata_add_var_to_metadata_file(const char *file_name, wdata_variable *var)
         return 1;
     wdata_print_variable(var, fout);
     fclose(fout);
-    return 0;
+    return WDATA_OK;
 }
 
 int wdata_add_link_to_metadata_file(const char *file_name, wdata_link *link)
@@ -1006,7 +1609,7 @@ int wdata_add_link_to_metadata_file(const char *file_name, wdata_link *link)
         return 1;
     wdata_print_link(link, fout);
     fclose(fout);
-    return 0;
+    return WDATA_OK;
 }
 
 int wdata_add_const_to_metadata_file(const char *file_name, wdata_const *_const)
@@ -1016,7 +1619,17 @@ int wdata_add_const_to_metadata_file(const char *file_name, wdata_const *_const)
         return 1;
     wdata_print_const(_const, fout);
     fclose(fout);
-    return 0;
+    return WDATA_OK;
+}
+
+int wdata_add_txt_to_metadata_file(const char *file_name, wdata_txt *txt)
+{
+    FILE *fout = fopen(file_name, "a");
+    if (fout == NULL)
+        return 1;
+    wdata_print_txt(txt, fout);
+    fclose(fout);
+    return WDATA_OK;
 }
 
 int wdata_add_comment_to_metadata_file(const char *file_name, const char *comment)
@@ -1026,7 +1639,7 @@ int wdata_add_comment_to_metadata_file(const char *file_name, const char *commen
         return 1;
     fprintf(fout, "# %s\n", comment);
     fclose(fout);
-    return 0;
+    return WDATA_OK;
 }
 
 int wdata_has_variable(wdata_metadata *md, const char *varname)
@@ -1053,6 +1666,29 @@ int wdata_has_link(wdata_metadata *md, const char *linkname)
 
     // cannot find variable
     return 0;
+}
+
+int wdata_has_txt(wdata_metadata *md, const char *filename)
+{
+    int i;
+
+    // find variable
+    for (i = 0; i < md->ntxt; i++)
+        if (strcmp(md->txt[i].filename, filename) == 0)
+            return 1;
+
+    // cannot find variable
+    return 0;
+}
+
+int wdata_get_txt_fullname(wdata_metadata *md, const char *filename, char *fullname)
+{
+    sprintf(fullname, "%s_%s", md->prefix, filename);
+
+    int test = wdata_has_txt(md, filename);
+    if(test==0) return WDATA_ERROR_CANNOT_GET_TXT_FULLNAME;
+
+    return WDATA_OK;
 }
 
 int wdata_has_const(wdata_metadata *md, const char *constname)

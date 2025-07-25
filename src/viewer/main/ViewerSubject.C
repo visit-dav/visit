@@ -165,13 +165,6 @@ static int nConfigArgs = 1;
 #include <algorithm>
 #include <sstream>
 
-#include <visit-config.h>
-#if LIB_VERSION_LE(VTK,9,2,6)
-#ifdef HAVE_OSMESA
-#  include <vtkOffScreenRenderingFactory.h>
-#endif
-#endif
-
 // We do this so that the strings command on the .o file
 // can tell us whether or not DEBUG_MEMORY_LEAKS was turned on
 #ifdef DEBUG_MEMORY_LEAKS
@@ -2362,6 +2355,9 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
 //    Kathleen Biagas, Wed Aug 17, 2022
 //    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9.
 //
+//    Kathleen Biagas, Wed Jun 18, 2025
+//    Remove use of vtkOffScreenRenderingFactory, no longer needed (VTK 9.5).
+//
 // ****************************************************************************
 
 void
@@ -2609,11 +2605,6 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
         }
         else if (strcmp(argv[i], "-nowin") == 0)
         {
-#if LIB_VERSION_LE(VTK,9,2,6)
-#ifdef HAVE_OSMESA
-            vtkOffScreenRenderingFactory::ForceOffScreen();
-#endif
-#endif
             RemoteProcess::DisablePTY();
             SetNowinMode(true);
         }

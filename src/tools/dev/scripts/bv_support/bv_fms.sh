@@ -121,7 +121,7 @@ function build_fms
     # Build FMS
     #
     info "Building FMS . . . (~2 minutes)"
-    $MAKE $MAKE_OPT_FLAGS
+    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
         warn "FMS build failed.  Giving up"
         return 1
@@ -131,7 +131,7 @@ function build_fms
     # Install into the VisIt third party location.
     #
     info "Installing FMS"
-    $MAKE install
+    ${CMAKE_COMMAND} --install .
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
         chmod -R ug+w,a+rX "$VISITDIR/fms"

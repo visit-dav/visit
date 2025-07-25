@@ -1,12 +1,11 @@
 function bv_osmesa_initialize
 {
-    export DO_OSMESA="no"
+    export DO_OSMESA="yes"
 }
 
 function bv_osmesa_enable
 {
     DO_OSMESA="yes"
-    bv_llvm_enable
 }
 
 function bv_osmesa_disable

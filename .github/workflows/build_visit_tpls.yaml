@@ -1,0 +1,21 @@
+name: Test build_visit creation of ci tpl container
+
+on:
+  pull_request:
+    paths:
+      - 'src/tools/dev/scripts/bv_support/*'
+      - 'src/tools/dev/scripts/build_visit'
+
+jobs:
+  test-build_visit_tpls:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Test build_visit
+      run: |
+        cd scripts/ci/docker
+        python3 build_docker_visit_ci.py
+
