@@ -47,6 +47,9 @@ class     vtkRenderWindow;
 //      Burlen Loring, Fri Oct 16 15:42:50 PDT 2015
 //      Fix a couple of compiler warnings
 //
+//      Kathleen Biagas, Wed Jul 23, 2025
+//      Removed displayStatus, no longer needed.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRenderingWithoutWindow : public VisWinRendering
@@ -68,7 +71,6 @@ class VISWINDOW_API VisWinRenderingWithoutWindow : public VisWinRendering
 
   protected:
     vtkRenderWindow                   *renWin;
-    int                                displayStatus;
 
     virtual vtkRenderWindow           *GetRenderWindow(void);
     virtual vtkRenderWindowInteractor *GetRenderWindowInteractor(void)
