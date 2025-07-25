@@ -63,9 +63,8 @@ int vtkVisItCutter::RequestData(
       // correctly for these cell types.
       this->UnstructuredGridCutter(input, output);
   }
-  else if (vtkPolyData::SafeDownCast(input))
+  else if (vtkPolyData *pd = vtkPolyData::SafeDownCast(input))
   {
-      vtkPolyData *pd = vtkPolyData::SafeDownCast(input);
       if(pd->GetNumberOfVerts() == pd->GetNumberOfCells())
       {
           // call vtkCutter::RequestData to handle the data for a pointset.
