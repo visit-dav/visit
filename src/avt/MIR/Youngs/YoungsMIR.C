@@ -186,7 +186,7 @@ YoungsMIR::ReconstructMesh(vtkDataSet *orig_ds, avtMaterial *orig_mat, int dim)
         char str[1024];
         static int val =0;
         val++;
-        snprintf(str, "ZZ_input%04d.vtk", val);
+        snprintf(str, 1024, "ZZ_input%04d.vtk", val);
         wrtr->SetFileName(str);
         wrtr->SetInput(ds);
         wrtr->Write();
