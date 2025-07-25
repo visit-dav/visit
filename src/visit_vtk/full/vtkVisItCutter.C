@@ -63,6 +63,22 @@ int vtkVisItCutter::RequestData(
       // correctly for these cell types.
       this->UnstructuredGridCutter(input, output);
   }
+  else if (vtkPolyData::SafeDownCast(input))
+  {
+      vtkPolyData *pd = vtkPolyData::SafeDownCast(input);
+      if(pd->GetNumberOfVerts() == pd->GetNumberOfCells())
+      {
+          // call vtkCutter::RequestData to handle the data for a pointset.
+          return this->Superclass::RequestData(request, inputVector, outputVector);
+      }
+      else
+      {
+          // bypasses the 'executePlaneCutter' for PolyData, due to failure
+          // when slice plane lies along boundary of the data,
+          this->DataSetCutter(input, output);
+      }
+
+  }
   else
   {
       // call vtkCutter::RequestData to handle the data.
