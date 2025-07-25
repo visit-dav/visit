@@ -86,7 +86,7 @@ avtPythonFilterEnvironment::~avtPythonFilterEnvironment()
 //    Retrieve VISITARCHHOME via GetVisItArchitectureDirectory.
 //    Remove slash from end of paths passed to AddSystemPath.
 //
-//    Kathleen Biagas, Fri May 4 14:08:12 PDT 2012 
+//    Kathleen Biagas, Fri May 4 14:08:12 PDT 2012
 //    Call GetVisItLibraryDirectory instead of GetVisItArchitectureDirectory.
 //
 //    Cyrus Harrison, Thu Feb 18 16:06:46 PST 2021
@@ -98,6 +98,10 @@ avtPythonFilterEnvironment::~avtPythonFilterEnvironment()
 //    Kathleen Biagas, Wed Jan 24, 2024
 //    When running a dev version on Windows, add ThirdParty directory
 //    to dll directory.
+//
+//    Cyrus Harrison, Fri Jun  6 17:36:37 PDT 2025
+//     Update import style to allow wrapping vtkDataSets
+//     See: https://discourse.vtk.org/t/vtk-9-5-q-what-is-proper-way-to-create-python-vtkdataset-object-from-c-address/15712
 //
 // ****************************************************************************
 
@@ -127,9 +131,18 @@ avtPythonFilterEnvironment::Initialize()
             return false;
     }
 #endif
-    // import pyavt and vtk
+    // import pyavt
     if(!pyi->RunScript("from pyavt.filters import *\n"))
         return false;
+
+    // import vtk, but first disable automatic vtk data object overrides
+    // https://discourse.vtk.org/t/why-is-vtkmodules-util-data-model-overriding-by-default/14924
+    if(!pyi->RunScript("import vtkmodules\n"))
+        return false;
+
+    if(!pyi->RunScript("vtkmodules.MODULE_MAPPER = {}\n"))
+        return false;
+
     if(!pyi->RunScript("import vtk\n"))
         return false;
 
@@ -232,6 +245,9 @@ avtPythonFilterEnvironment::LoadFilter(const string &py_script)
 //    Check for existence of '0x' at beginning of obj address before attempting
 //    to remove it.
 //
+//    Cyrus Harrison, Fri Jun  6 17:36:37 PDT 2025
+//    Update address name style of VTK 9.4/9.5
+//
 // ****************************************************************************
 PyObject *
 avtPythonFilterEnvironment::WrapVTKObject(void *obj,
@@ -241,21 +257,31 @@ avtPythonFilterEnvironment::WrapVTKObject(void *obj,
     string addy_str;
     // vtk constructor needs a string of the objects address.
     oss << (void *) obj;
-    // remove 0x from front of string
 
-    if (oss.str().substr(0, 2) == "0x")   
-        addy_str = oss.str().substr(2);
-    else 
-        addy_str = oss.str();
+    // remove 0x from front of string,
+    if (oss.str().substr(0, 2) == "0x")
+        addy_str = "_" + oss.str().substr(2) + "_p_vtkDataSet";
+    else
+        addy_str = "_" + oss.str() + "_vtkDataSet_p";
 
     if(!pyi->RunScript("_vtkobj = vtk." + obj_type + "('" + addy_str + "')\n"))
+    {
         return NULL;
+    }
+
     PyObject *res=pyi->GetGlobalObject("_vtkobj");
     if(res == NULL)
+    {
         return NULL;
+    }
+
     Py_INCREF(res);
+
     if(!pyi->RunScript("del _vtkobj"))
+    {
         return NULL;
+    }
+
     return res;
 }
 
@@ -264,7 +290,7 @@ avtPythonFilterEnvironment::WrapVTKObject(void *obj,
 //  Method: avtPythonFilterEnvironment::UnwrapVTKObject
 //
 //  Purpose:
-//      Unwrap a vtk python object of given type and return C++ address. 
+//      Unwrap a vtk python object of given type and return C++ address.
 //
 //  Programmer:   Cyrus Harrison
 //  Creation:     Tue Feb  2 13:14:44 PST 2010
@@ -272,7 +298,7 @@ avtPythonFilterEnvironment::WrapVTKObject(void *obj,
 //  Modifications:
 //    Kathleen Biagas, Thu Mar  8 16:58:03 MST 2018
 //    On Win32, also check py_add_int as long, change addy type to long long.
-// 
+//
 // ****************************************************************************
 void *
 avtPythonFilterEnvironment::UnwrapVTKObject(PyObject *obj,
@@ -283,6 +309,7 @@ avtPythonFilterEnvironment::UnwrapVTKObject(PyObject *obj,
     if(!pyi->RunScript("_vtkaddy = _vtkobj.GetAddressAsString('"
                    + obj_type + "')\n"))
         return NULL;
+
     if(!pyi->RunScript("_vtkaddy = int(_vtkaddy[5:],16)\n"))
         return NULL;
 
@@ -435,7 +462,7 @@ avtPythonFilterEnvironment::PickleInit()
 
         pickleDumps  = PyDict_GetItemString(pickleDict, "dumps"); // borrowed
         pickleLoads  = PyDict_GetItemString(pickleDict, "loads"); // borrowed
-        Py_INCREF(pickleDumps); 
+        Py_INCREF(pickleDumps);
         Py_INCREF(pickleLoads);
 
         Py_DECREF(pickleModule);

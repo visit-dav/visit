@@ -362,7 +362,7 @@ function build_nektarpp
     # Install into the VisIt third party location.
     #
     info "Installing Nektar++ . . ."
-    ${CMAKE_COMMAND} install .
+    ${CMAKE_COMMAND} --install .
     if [[ $? != 0 ]] ; then
         warn "Nektar++ install failed.  Giving up"
         return 1

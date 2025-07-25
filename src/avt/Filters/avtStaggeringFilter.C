@@ -124,7 +124,8 @@ avtStaggeringFilter::ExecuteData(avtDataRepresentation *inDR)
       newPoints->SetNumberOfPoints(numPoints);
       newGrid->SetPoints(newPoints);
       
-      int* dims = newGrid->GetDimensions();
+      int dims[3];
+      newGrid->GetDimensions(dims);
       int mulSizes[3];
       mulSizes[0] = 1;
       mulSizes[1] = dims[0];

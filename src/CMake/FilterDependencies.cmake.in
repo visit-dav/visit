@@ -34,8 +34,12 @@
 #    Kathleen Biagas, Wed May 7, 2025
 #    Adjust filtering of boost lib dir.
 #
-#    Kathleen Biagas, Thu July 10, 2025 
-#    Adjust filtering of OPENEXR with version 3.3.4, Add OPENEXR_VZERSION.
+#    Eric Brugger, Wed Jul 16 15:29:56 PDT 2025
+#    Update for VTKm 2.3.0.
+#
+#    Kathleen Biagas, Thu July 17, 2025
+#    Adjust filtering of OPENEXR with version 3.3.4, Add OPENEXR_VERSION,
+#    remove support for older OPENEXR.
 #
 #****************************************************************************/
 cmake_policy(SET CMP0011 NEW)
@@ -128,16 +132,6 @@ function(FILTER_VISIT_LIB_DEPENDENCIES filename)
                 string(REPLACE "${VISIT_OPENEXR_DIR}/${libdir}"
                                "\${VISIT_LIBRARY_DIR}"
                                 line "${line}")
-            else()
-                if(APPLE) # built as dynamic on apple and window
-                    string(REPLACE "${VISIT_OPENEXR_DIR}/lib"
-                                   "\${VISIT_LIBRARY_DIR}"
-                                    line "${line}")
-                elseif(UNIX) # built as static on linux
-                    string(REPLACE "${VISIT_OPENEXR_DIR}/lib"
-                                   "\${VISIT_ARCHIVE_DIR}"
-                                    line "${line}")
-                endif()
             endif()
         endif()
         if(VISIT_MESAGL_DIR)
@@ -255,6 +249,9 @@ function(FILTER_VISIT_LIB_DEPENDENCIES filename)
               set(skip_next_token TRUE)
               continue()
             elseif(${token} MATCHES "icet")
+              # Static libs, not necessary to be listed as a dependency here
+              continue()
+            elseif(${token} MATCHES "vtkm::")
               # Static libs, not necessary to be listed as a dependency here
               continue()
             elseif(${token} MATCHES "vtkm_")

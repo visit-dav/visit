@@ -22,13 +22,6 @@ using std::vector;
 #include <vtkVersion.h>
 
 #include <vtkVisItCellDataToPointData.h>
-#if LIB_VERSION_LE(VTK,9,2,6)
-#include <vtkVisItRectilinearGrid.h>
-#include <vtkVisItStructuredGrid.h>
-#include <vtkRectilinearGrid.h>
-#include <vtkStructuredGrid.h>
-#endif 
-#include <vtkVisItDataSetMapper.h>
 
 #include <vtkOpenGLPointMapper.h>
 
@@ -55,6 +48,11 @@ VTK_MODULE_INIT(vtkRenderingOpenGL2)
 // with a sub-class of that object.
 // This combines the factories from InitVTK and InitVTKRendering.
 //
+// Modifications:
+//   Kathleen Biagas, Tue Jun 24, 2025
+//   Remove vtkVisItDataSetMapper override, it no longer exists.
+//
+
 class vtkVisItGraphicsFactory : public vtkObjectFactory
 {
   public:
@@ -77,11 +75,6 @@ vtkStandardNewMacro(vtkVisItGraphicsFactory)
 //
 // Necessary for each object that will override a vtkObject.
 //
-VTK_CREATE_CREATE_FUNCTION(vtkVisItDataSetMapper);
-#if LIB_VERSION_LE(VTK,9,2,6)
-VTK_CREATE_CREATE_FUNCTION(vtkVisItRectilinearGrid);
-VTK_CREATE_CREATE_FUNCTION(vtkVisItStructuredGrid);
-#endif
 VTK_CREATE_CREATE_FUNCTION(vtkOpenGLPointMapper);
 VTK_CREATE_CREATE_FUNCTION(vtkVisItCellDataToPointData);
 
@@ -93,20 +86,6 @@ vtkVisItGraphicsFactory::GetVTKSourceVersion()
 
 vtkVisItGraphicsFactory::vtkVisItGraphicsFactory()
 {
-  this->RegisterOverride("vtkDataSetMapper", "vtkVisItDataSetMapper",
-                         "vtkVisItDataSetMapper override vtkDataSetMapper",
-                         1,
-                         vtkObjectFactoryCreatevtkVisItDataSetMapper);
-#if LIB_VERSION_LE(VTK,9,2,6)
-  this->RegisterOverride("vtkRectilinearGrid", "vtkVisItRectilinearGrid",
-                         "vtkVisItRectilinearGrid override vtkRectilinearGrid",
-                         1,
-                         vtkObjectFactoryCreatevtkVisItRectilinearGrid);
-  this->RegisterOverride("vtkStructuredGrid", "vtkVisItStructuredGrid",
-                         "vtkVisItStructuredGrid override vtkStructuredGrid",
-                         1,
-                         vtkObjectFactoryCreatevtkVisItStructuredGrid);
-#endif
   this->RegisterOverride("vtkPointMapper", "vtkOpenGLPointMapper",
                          "vtkOpenGLPointMapper override vtkPointMapper",
                          1,
