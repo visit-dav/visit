@@ -701,7 +701,12 @@ VisWinRendering::DisableDepthPeeling()
     // restore window settings
     vtkRenderWindow *rwin = GetRenderWindow();
     rwin->SetAlphaBitPlanes(0);
-    rwin->SetMultiSamples(antialiasing ? 4: 0);
+
+    // ensure anti-alias settings are reset.
+    if (rwin->IsA("vtkOSOpenGLRenderWindow"))
+        rwin->SetUseFXAA(antialiasing);
+    else
+        rwin->SetMultiSamples(antialiasing ? 4: 0);
 
     // configure renderer
     canvas->SetUseDepthPeeling(false);
@@ -2647,6 +2652,10 @@ VisWinRendering::SetRenderEventCallback(void(*callback)(void *,bool), void *data
 //   If using VTK 9.5 or above, turn off special transparency handler
 //   if antialias enabled, as the OIT will not honor MSAA.
 //
+//   Kathleen Biagas, Monday July 28, 2025
+//   Work around MSAA problem with vtkOSOpenGLRenderWindow.
+//   Remove logic for VTK-9 version.
+//
 // ****************************************************************************
 
 void
@@ -2655,11 +2664,25 @@ VisWinRendering::SetAntialiasing(bool enabled)
     if(enabled != antialiasing )
     {
         antialiasing = enabled;
-        GetRenderWindow()->SetMultiSamples(enabled ? 4 : 0);
-#if LIB_VERSION_GE(VTK,9,5,0)
-        // disable special transparency handler when using MSAA
-        canvas->SetUseOIT(!enabled);
-#endif
+        vtkRenderWindow *renWin = GetRenderWindow();
+
+        // The problem with MSAA and vtkOSOpenGLRenderWindow might be due to
+        // the very old version of OSMesa we use, so this workaround is
+        // temporary until a multi-modal anti-aliasing option is implemented
+        // allowing user to choose between MSAA and FXAA.
+        if(renWin->IsA("vtkOSOpenGLRenderWindow"))
+        {
+            canvas->SetUseFXAA(enabled);
+            renWin->SetMultiSamples(0);
+        }
+        else
+        {
+            canvas->SetUseFXAA(false);
+            renWin->SetMultiSamples(enabled ? 4 : 0);
+            // disable special transparency handler when using MSAA
+            canvas->SetUseOIT(!enabled);
+        }
+
         GetRenderWindow()->Render();
     }
 }
