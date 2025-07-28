@@ -155,8 +155,8 @@ stages:
            curl -O https://www.ascent-dav.org/mirror/visit/silo_hdf5_test_data.tar.xz
            curl -O https://www.ascent-dav.org/mirror/visit/silo_pdb_test_data.tar.xz
            curl -O https://www.ascent-dav.org/mirror/visit/silo_sph_test_data.tar.xz
+           cd ../
            # skip pulling baselines for now ...
-           # cd ../
            #git lfs pull  --include test/baseline/databases/silo
            #git lfs pull  --include test/baseline/databases/blueprint
            #git lfs pull  --include test/baseline/databases/blueprint_export
