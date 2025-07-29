@@ -373,7 +373,8 @@ def testNFaceElements(datapath):
 def main():
     # Draw antialiased lines
     r = GetRenderingAttributes()
-    r.antialiasing = 1
+    # Use FXAA, since MSAA doesn't work in our testing mode
+    r.antialiasing = r.FXAA
     SetRenderingAttributes(r)
 
     datapath = data_path("CGNS_test_data")

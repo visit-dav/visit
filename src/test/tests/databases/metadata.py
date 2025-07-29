@@ -101,7 +101,8 @@ def test1():
 def main():
     # Draw antialiased lines
     r = GetRenderingAttributes()
-    r.antialiasing = 1
+    # use FXAA since MSAA doesn't work in our testing mode
+    r.antialiasing = r.FXAA
     SetRenderingAttributes(r)
 
     test0()
