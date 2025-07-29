@@ -43,11 +43,25 @@ PyRenderingAttributes_ToString(const RenderingAttributes *atts, const char *pref
     std::string str;
     char tmpStr[1000];
 
-    if(atts->GetAntialiasing())
-        snprintf(tmpStr, 1000, "%santialiasing = 1\n", prefix);
-    else
-        snprintf(tmpStr, 1000, "%santialiasing = 0\n", prefix);
-    str += tmpStr;
+    const char *antialiasing_names = "NONE, MSAA, FXAA";
+    switch (atts->GetAntialiasing())
+    {
+      case RenderingAttributes::None:
+          snprintf(tmpStr, 1000, "%santialiasing = %sNONE  # %s\n", prefix, prefix, antialiasing_names);
+          str += tmpStr;
+          break;
+      case RenderingAttributes::MSAA:
+          snprintf(tmpStr, 1000, "%santialiasing = %sMSAA  # %s\n", prefix, prefix, antialiasing_names);
+          str += tmpStr;
+          break;
+      case RenderingAttributes::FXAA:
+          snprintf(tmpStr, 1000, "%santialiasing = %sFXAA  # %s\n", prefix, prefix, antialiasing_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     if(atts->GetOrderComposite())
         snprintf(tmpStr, 1000, "%sorderComposite = 1\n", prefix);
     else
@@ -387,24 +401,31 @@ RenderingAttributes_SetAntialiasing(PyObject *self, PyObject *args)
     }
 
     long val = PyLong_AsLong(args);
-    bool cval = bool(val);
+    int cval = int(val);
 
-    if (val == -1 && PyErr_Occurred())
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
-        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
-    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+
+    if (cval < 0 || cval >= 3)
     {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+        std::stringstream ss;
+        ss << "An invalid antialiasing value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " None";
+        ss << ", MSAA";
+        ss << ", FXAA";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
     Py_XDECREF(packaged_args);
 
     // Set the antialiasing in the object.
-    obj->data->SetAntialiasing(cval);
+    obj->data->SetAntialiasing(RenderingAttributes::AAMode(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -414,7 +435,7 @@ RenderingAttributes_SetAntialiasing(PyObject *self, PyObject *args)
 RenderingAttributes_GetAntialiasing(PyObject *self, PyObject *args)
 {
     PyRenderingAttributesObject *obj = (PyRenderingAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetAntialiasing()?1L:0L);
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetAntialiasing()));
     return retval;
 }
 
@@ -3069,6 +3090,15 @@ PyRenderingAttributes_getattro(PyObject *self, PyObject *attr_name)
 
     if(strcmp(name, "antialiasing") == 0)
         return RenderingAttributes_GetAntialiasing(self, NULL);
+    if(strcmp(name, "None") == 0)
+        return PyInt_FromLong(long(RenderingAttributes::None));
+    if(strcmp(name, "NONE") == 0)
+        return PyInt_FromLong(long(RenderingAttributes::None));
+    if(strcmp(name, "MSAA") == 0)
+        return PyInt_FromLong(long(RenderingAttributes::MSAA));
+    if(strcmp(name, "FXAA") == 0)
+        return PyInt_FromLong(long(RenderingAttributes::FXAA));
+
     if(strcmp(name, "orderComposite") == 0)
         return RenderingAttributes_GetOrderComposite(self, NULL);
     if(strcmp(name, "depthCompositeThreads") == 0)

@@ -48,6 +48,12 @@ public:
         Always,
         Auto
     };
+    enum AAMode
+    {
+        None,
+        MSAA,
+        FXAA
+    };
     static const int DEFAULT_SCALABLE_AUTO_THRESHOLD;
     static const int DEFAULT_SCALABLE_ACTIVATION_MODE;
     static const int DEFAULT_COMPACT_DOMAINS_ACTIVATION_MODE;
@@ -88,7 +94,7 @@ public:
     void SelectAnariUSDParameters();
 
     // Property setting methods
-    void SetAntialiasing(bool antialiasing_);
+    void SetAntialiasing(AAMode antialiasing_);
     void SetOrderComposite(bool orderComposite_);
     void SetDepthCompositeThreads(int depthCompositeThreads_);
     void SetDepthCompositeBlocking(int depthCompositeBlocking_);
@@ -132,7 +138,7 @@ public:
     void SetAnariUSDParameters(const stringVector &anariUSDParameters_);
 
     // Property getting methods
-    bool                 GetAntialiasing() const;
+    AAMode               GetAntialiasing() const;
     bool                 GetOrderComposite() const;
     int                  GetDepthCompositeThreads() const;
     int                  GetDepthCompositeBlocking() const;
@@ -203,6 +209,11 @@ public:
 protected:
     static std::string TriStateMode_ToString(int);
 public:
+    static std::string AAMode_ToString(AAMode);
+    static bool AAMode_FromString(const std::string &, AAMode &);
+protected:
+    static std::string AAMode_ToString(int);
+public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -262,7 +273,7 @@ public:
     };
 
 private:
-    bool           antialiasing;
+    int            antialiasing;
     bool           orderComposite;
     int            depthCompositeThreads;
     int            depthCompositeBlocking;
@@ -309,6 +320,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define RENDERINGATTRIBUTES_TMFS "bbiiiibdibfibibiibffabdbbDDibiibiibbsssbs*s*"
+#define RENDERINGATTRIBUTES_TMFS "ibiiiibdibfibibiibffabdbbDDibiibiibbsssbs*s*"
 
 #endif

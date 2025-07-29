@@ -16,8 +16,13 @@
       Always
       Auto
     </Enum>
-    <Field name="antialiasing" label="antialiasing" type="bool">
-      false
+    <Enum name="AAMode">
+      None
+      MSAA
+      FXAA
+    </Enum>
+    <Field name="antialiasing" label="antialiasing" type="enum" subtype="AAMode">
+      None
     </Field>
     <Field name="orderComposite" label="Order Composite" type="bool">
       true

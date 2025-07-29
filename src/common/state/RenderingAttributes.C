@@ -128,6 +128,44 @@ RenderingAttributes::TriStateMode_FromString(const std::string &s, RenderingAttr
     return false;
 }
 
+//
+// Enum conversion methods for RenderingAttributes::AAMode
+//
+
+static const char *AAMode_strings[] = {
+"None", "MSAA", "FXAA"
+};
+
+std::string
+RenderingAttributes::AAMode_ToString(RenderingAttributes::AAMode t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 3) index = 0;
+    return AAMode_strings[index];
+}
+
+std::string
+RenderingAttributes::AAMode_ToString(int t)
+{
+    int index = (t < 0 || t >= 3) ? 0 : t;
+    return AAMode_strings[index];
+}
+
+bool
+RenderingAttributes::AAMode_FromString(const std::string &s, RenderingAttributes::AAMode &val)
+{
+    val = RenderingAttributes::None;
+    for(int i = 0; i < 3; ++i)
+    {
+        if(s == AAMode_strings[i])
+        {
+            val = (AAMode)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // ****************************************************************************
 // Method: RenderingAttributes::RenderingAttributes
 //
@@ -145,7 +183,7 @@ RenderingAttributes::TriStateMode_FromString(const std::string &s, RenderingAttr
 
 void RenderingAttributes::Init()
 {
-    antialiasing = false;
+    antialiasing = None;
     orderComposite = true;
     depthCompositeThreads = 2;
     depthCompositeBlocking = 65536;
@@ -687,7 +725,7 @@ RenderingAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
     if(completeSave || !FieldsEqual(ID_antialiasing, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("antialiasing", antialiasing));
+        node->AddNode(new DataNode("antialiasing", AAMode_ToString(antialiasing)));
     }
 
     if(completeSave || !FieldsEqual(ID_orderComposite, &defaultObject))
@@ -975,7 +1013,21 @@ RenderingAttributes::SetFromNode(DataNode *parentNode)
 
     DataNode *node;
     if((node = searchNode->GetNode("antialiasing")) != 0)
-        SetAntialiasing(node->AsBool());
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 3)
+                SetAntialiasing(AAMode(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            AAMode value;
+            if(AAMode_FromString(node->AsString(), value))
+                SetAntialiasing(value);
+        }
+    }
     if((node = searchNode->GetNode("orderComposite")) != 0)
         SetOrderComposite(node->AsBool());
     if((node = searchNode->GetNode("depthCompositeThreads")) != 0)
@@ -1135,7 +1187,7 @@ RenderingAttributes::SetFromNode(DataNode *parentNode)
 ///////////////////////////////////////////////////////////////////////////////
 
 void
-RenderingAttributes::SetAntialiasing(bool antialiasing_)
+RenderingAttributes::SetAntialiasing(RenderingAttributes::AAMode antialiasing_)
 {
     antialiasing = antialiasing_;
     Select(ID_antialiasing, (void *)&antialiasing);
@@ -1436,10 +1488,10 @@ RenderingAttributes::SetAnariUSDParameters(const stringVector &anariUSDParameter
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
 
-bool
+RenderingAttributes::AAMode
 RenderingAttributes::GetAntialiasing() const
 {
-    return antialiasing;
+    return AAMode(antialiasing);
 }
 
 bool
@@ -1878,7 +1930,7 @@ RenderingAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_antialiasing:                 return FieldType_bool;
+    case ID_antialiasing:                 return FieldType_enum;
     case ID_orderComposite:               return FieldType_bool;
     case ID_depthCompositeThreads:        return FieldType_int;
     case ID_depthCompositeBlocking:       return FieldType_int;
@@ -1944,7 +1996,7 @@ RenderingAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_antialiasing:                 return "bool";
+    case ID_antialiasing:                 return "enum";
     case ID_orderComposite:               return "bool";
     case ID_depthCompositeThreads:        return "int";
     case ID_depthCompositeBlocking:       return "int";

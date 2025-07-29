@@ -39,6 +39,10 @@ public class RenderingAttributes extends AttributeSubject
     public final static int TRISTATEMODE_ALWAYS = 1;
     public final static int TRISTATEMODE_AUTO = 2;
 
+    public final static int AAMODE_NONE = 0;
+    public final static int AAMODE_MSAA = 1;
+    public final static int AAMODE_FXAA = 2;
+
     // Constants
 public final static int DEFAULT_SCALABLE_AUTO_THRESHOLD = 2000000;
 
@@ -53,7 +57,7 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
     {
         super(RenderingAttributes_numAdditionalAtts);
 
-        antialiasing = false;
+        antialiasing = AAMODE_NONE;
         orderComposite = true;
         depthCompositeThreads = 2;
         depthCompositeBlocking = 65536;
@@ -107,7 +111,7 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
     {
         super(RenderingAttributes_numAdditionalAtts + nMoreFields);
 
-        antialiasing = false;
+        antialiasing = AAMODE_NONE;
         orderComposite = true;
         depthCompositeThreads = 2;
         depthCompositeBlocking = 65536;
@@ -311,7 +315,7 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
     }
 
     // Property setting methods
-    public void SetAntialiasing(boolean antialiasing_)
+    public void SetAntialiasing(int antialiasing_)
     {
         antialiasing = antialiasing_;
         Select(0);
@@ -584,7 +588,7 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
     }
 
     // Property getting methods
-    public boolean        GetAntialiasing() { return antialiasing; }
+    public int            GetAntialiasing() { return antialiasing; }
     public boolean        GetOrderComposite() { return orderComposite; }
     public int            GetDepthCompositeThreads() { return depthCompositeThreads; }
     public int            GetDepthCompositeBlocking() { return depthCompositeBlocking; }
@@ -631,7 +635,7 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
     public void WriteAtts(CommunicationBuffer buf)
     {
         if(WriteSelect(0, buf))
-            buf.WriteBool(antialiasing);
+            buf.WriteInt(antialiasing);
         if(WriteSelect(1, buf))
             buf.WriteBool(orderComposite);
         if(WriteSelect(2, buf))
@@ -721,7 +725,7 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         switch(index)
         {
         case 0:
-            SetAntialiasing(buf.ReadBool());
+            SetAntialiasing(buf.ReadInt());
             break;
         case 1:
             SetOrderComposite(buf.ReadBool());
@@ -853,7 +857,14 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
     public String toString(String indent)
     {
         String str = new String();
-        str = str + boolToString("antialiasing", antialiasing, indent) + "\n";
+        str = str + indent + "antialiasing = ";
+        if(antialiasing == AAMODE_NONE)
+            str = str + "AAMODE_NONE";
+        if(antialiasing == AAMODE_MSAA)
+            str = str + "AAMODE_MSAA";
+        if(antialiasing == AAMODE_FXAA)
+            str = str + "AAMODE_FXAA";
+        str = str + "\n";
         str = str + boolToString("orderComposite", orderComposite, indent) + "\n";
         str = str + intToString("depthCompositeThreads", depthCompositeThreads, indent) + "\n";
         str = str + intToString("depthCompositeBlocking", depthCompositeBlocking, indent) + "\n";
@@ -937,7 +948,7 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
 
 
     // Attributes
-    private boolean        antialiasing;
+    private int            antialiasing;
     private boolean        orderComposite;
     private int            depthCompositeThreads;
     private int            depthCompositeBlocking;
