@@ -375,7 +375,7 @@ avtMFIXFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
     // The actual variables go here
     for (int i =0; i <= this->VariableNames->GetMaxId(); ++i) {
-        const char *name = this->VariableNames->GetValue(i);
+        const char *name = this->VariableNames->GetValue(i).c_str();
         if (this->VariableComponents->GetValue(i) == 1)
             AddScalarVarToMetaData(md, name, "Mesh", AVT_ZONECENT);
         else if (this->VariableComponents->GetValue(i) == 3)
@@ -608,7 +608,7 @@ int
 avtMFIXFileFormat::get_var_index(const char *varname)
 {
     for (int i = 0; i <= this->VariableNames->GetMaxId(); ++i)
-        if (strcmp(VariableNames->GetValue(i), varname) == 0)
+        if (strcmp(VariableNames->GetValue(i).c_str(), varname) == 0)
             return (i);
     EXCEPTION1(InvalidVariableException, varname);
 }
@@ -816,9 +816,9 @@ avtMFIXFileFormat::GetVectorVar(int timestate, int domain, const char *varname)
 
     int vidx = get_var_index(varname);
 
-    vtkDataArray *xarr = GetVar(timestate, domain, VariableNames->GetValue(vidx - 3));
-    vtkDataArray *yarr = GetVar(timestate, domain, VariableNames->GetValue(vidx - 2));
-    vtkDataArray *zarr = GetVar(timestate, domain, VariableNames->GetValue(vidx - 1));
+    vtkDataArray *xarr = GetVar(timestate, domain, VariableNames->GetValue(vidx - 3).c_str());
+    vtkDataArray *yarr = GetVar(timestate, domain, VariableNames->GetValue(vidx - 2).c_str());
+    vtkDataArray *zarr = GetVar(timestate, domain, VariableNames->GetValue(vidx - 1).c_str());
     float *xdata = (float *)xarr->GetVoidPointer(0);
     float *ydata = (float *)yarr->GetVoidPointer(0);
     float *zdata = (float *)zarr->GetVoidPointer(0);

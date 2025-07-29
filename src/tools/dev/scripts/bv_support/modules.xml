@@ -3,13 +3,14 @@
         <!-- required libraries -->
         <group name="required" comment="All required libraries, built by default. Entire group can be disabled by '--no-thirdparty'. Individual libraries in the group can be disabled via --no-name flag, e.g. --no-python." enabled="yes">
             <lib name="cmake"/>
-            <lib name="python"/>
-            <lib name="vtk"/> 
-            <lib name="qt6"/>
             <lib name="zlib"/>
+            <lib name="python"/>
+            <lib name="qt"/>
+            <lib name="vtk"/>
+            <lib name="osmesa"/>
+            <lib name="llvm"/>
         </group>
 
-        <!-- optional libraries -->
         <group name="optional" comment="Optional libraries, the entire group is disabled by default, and can be enabled via --optional flag or. Individual libraries can be enabled via --name, e.g. --conduit." enabled="no">
             <lib name="adios"/>
             <lib name="adios2"/>
@@ -42,13 +43,11 @@
         <group name="explicit" comment="Libraries that can only be enabled individually, the group cannot be enabled as a whole. This list can include mutually exclusive libraries like 'mesgal' and 'osmesa', or libraries only needed on specific platforms, or libraries with problematic builds." enabled="no">
             <lib name="anari"/>
             <lib name="glu"/>
-            <lib name="llvm"/>
             <lib name="mesagl"/>
             <lib name="meson"/>
             <lib name="mpich"/>
             <lib name="nektarpp"/>
             <lib name="ninja"/>
-            <lib name="osmesa"/>
             <lib name="pyside"/>
             <lib name="xcb"/>
             <lib name="xkbcommon"/>

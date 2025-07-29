@@ -134,9 +134,6 @@ ELSE()
         Threads::Threads
         ${ZLIB_LIBRARY}
     )
-    if(HAVE_OSMESA)
-        target_link_libraries(visitconvert_ser ${OSMESA_LIBRARIES})
-    endif()
 ENDIF()
 
 # If we're building statically then convert can't be linked until the plugin
@@ -195,9 +192,6 @@ IF(VISIT_PARALLEL)
             Threads::Threads
             ${ZLIB_LIBRARY}
         )
-        if(HAVE_OSMESA)
-            target_link_libraries(visitconvert_par ${OSMESA_LIBRARIES})
-        endif()
     ENDIF()
 
     # If we're building statically then visitconvert_par can't be linked until the 

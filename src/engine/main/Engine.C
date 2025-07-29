@@ -90,13 +90,6 @@
 #include <vtkm/cont/Initialize.h>
 #endif
 
-#include <visit-config.h>
-#if LIB_VERSION_LE(VTK,9,2,6)
-#ifdef HAVE_OSMESA
-#  include <vtkOffScreenRenderingFactory.h>
-#endif
-#endif
-
 #include <string>
 using std::string;
 #include <vector>
@@ -777,12 +770,15 @@ public:
 //
 //   Alok Hota, Tue Feb 23 19:10:32 PST 2016
 //   Add support for OSPRay.
-// 
+//
 //   Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
 //   Call `avtConduitBlueprintDataAdaptor::Initialize();`.
 //
 //   Eric Brugger, Fri Feb 24 14:57:15 PST 2023
 //   I replaced vtkh with vtkm.
+//
+//   Kathleen Biagas, Wed June 18, 2025
+//   Remove vtkOffScreenRenderingFactory, no longer needed (VTK 9.5)
 //
 // ****************************************************************************
 
@@ -807,15 +803,7 @@ Engine::InitializeCompute()
 #endif
     if (avtCallback::GetSoftwareRendering())
     {
-        // Install factory for  VisIt's OffScreen Render Window overrides
-#if LIB_VERSION_LE(VTK,9,2,6)
-#ifdef HAVE_OSMESA
-        debug1 << mName << "Offscreen rendering will use offscreen factory." << endl;
-        vtkOffScreenRenderingFactory::ForceOffScreen();
-#else
-        debug1 << mName << "Offscreen rendering will use GL." << endl;
-#endif
-#endif
+        debug1 << mName << "Setting up for offscreen rendering." << endl;
     }
     else
     {

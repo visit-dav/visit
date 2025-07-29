@@ -72,11 +72,6 @@
             "extra ';'": 0
         }
     }, 
-    "visit_vtk/full/vtkVisItStructuredGrid.C": {
-        "0": {
-            "extra ';'": 0
-        }
-    }, 
     "common/misc/ConfigureInfo.h": {
         "0": {
             "extra ';'": 0
@@ -152,11 +147,6 @@
             "extra ';'": 0
         }
     }, 
-    "avt/Plotter/vtk/vtkStructuredGridMapper.h": {
-        "0": {
-            "extra ';'": 0
-        }
-    }, 
     "visit_vtk/full/vtkPPMWriter.h": {
         "0": {
             "extra ';'": 0
@@ -227,11 +217,6 @@
             "extra ';'": 0
         }
     }, 
-    "avt/Plotter/vtk/vtkOpenGLRectilinearGridMapper.h": {
-        "0": {
-            "extra ';'": 0
-        }
-    }, 
     "avt/Pipeline/Pipeline/avtDataRequest.C": {
         "0": {
             "extra ';'": 0
@@ -248,11 +233,6 @@
         }
     }, 
     "visit_vtk/lightweight/vtkDebugStream.C": {
-        "0": {
-            "extra ';'": 0
-        }
-    }, 
-    "visit_vtk/osmesa/vtkVisItOSMesaRenderingFactory.C": {
         "0": {
             "extra ';'": 0
         }
@@ -318,11 +298,6 @@
         }
     }, 
     "databases/paraDIS/paraDIS_lib/paradis.C": {
-        "0": {
-            "extra ';'": 0
-        }
-    }, 
-    "avt/Plotter/avtOpenGLExtensionManager.h": {
         "0": {
             "extra ';'": 0
         }
@@ -487,11 +462,6 @@
             "extra ';'": 0
         }
     }, 
-    "avt/Plotter/vtk/vtkVisItDataSetMapper.C": {
-        "0": {
-            "extra ';'": 0
-        }
-    }, 
     "visit_vtk/lightweight/vtkVisItCellLocator.h": {
         "0": {
             "extra ';'": 0
@@ -528,11 +498,6 @@
         }
     }, 
     "avt/Plotter/vtk/vtkTriad2D.h": {
-        "0": {
-            "extra ';'": 0
-        }
-    }, 
-    "avt/Plotter/vtk/vtkVisItDataSetMapper.h": {
         "0": {
             "extra ';'": 0
         }
@@ -622,11 +587,6 @@
             "extra ';'": 0
         }
     }, 
-    "visit_vtk/osmesa/vtkOSMesaGLExtensionManager.h": {
-        "0": {
-            "extra ';'": 0
-        }
-    }, 
     "databases/MFIX/vtkMFIXReader.C": {
         "0": {
             "extra ';'": 0
@@ -673,11 +633,6 @@
         }
     }, 
     "databases/MFIX/vtkMFIXReader.h": {
-        "0": {
-            "extra ';'": 0
-        }
-    }, 
-    "visit_vtk/osmesa/vtkOSMesaGLExtensionManager.C": {
         "0": {
             "extra ';'": 0
         }
@@ -832,22 +787,12 @@
             "extra ';'": 0
         }
     }, 
-    "visit_vtk/full/vtkVisItStructuredGrid.h": {
-        "0": {
-            "extra ';'": 0
-        }
-    }, 
     "visit_vtk/full/vtkVisItClipper.h": {
         "0": {
             "extra ';'": 0
         }
     }, 
     "operators/Box/avtBoxFilter.C": {
-        "0": {
-            "extra ';'": 0
-        }
-    }, 
-    "avt/Plotter/vtk/vtkStructuredGridMapper.C": {
         "0": {
             "extra ';'": 0
         }
@@ -877,17 +822,7 @@
             "extra ';'": 0
         }
     }, 
-    "avt/Plotter/avtOpenGLExtensionManager.C": {
-        "0": {
-            "extra ';'": 0
-        }
-    }, 
     "vtkqt/vtkQtImagePrinter.h": {
-        "0": {
-            "extra ';'": 0
-        }
-    }, 
-    "visit_vtk/osmesa/vtkOSMesaGLRenderWindow.h": {
         "0": {
             "extra ';'": 0
         }
@@ -957,11 +892,6 @@
             "extra ';'": 0
         }
     }, 
-    "visit_vtk/osmesa/vtkOSMesaGLRenderWindow.C": {
-        "0": {
-            "extra ';'": 0
-        }
-    }, 
     "avt/Plotter/vtk/vtkVisItCubeAxesActor.h": {
         "0": {
             "extra ';'": 0
@@ -1007,26 +937,6 @@
             "extra ';'": 0
         }
     }, 
-    "visit_vtk/full/vtkVisItRectilinearGrid.h": {
-        "0": {
-            "extra ';'": 0
-        }
-    }, 
-    "avt/Plotter/vtk/vtkOpenGLRectilinearGridMapper.C": {
-        "0": {
-            "extra ';'": 0
-        }
-    }, 
-    "avt/Plotter/vtk/vtkRectilinearGridMapper.C": {
-        "0": {
-            "extra ';'": 0
-        }
-    }, 
-    "avt/Plotter/vtk/vtkOpenGLStructuredGridMapper.C": {
-        "0": {
-            "extra ';'": 0
-        }
-    }, 
     "sim/V2/runtime/simv2_TypeTraits.hxx": {
         "0": {
             "extra ';'": 0
@@ -1063,11 +973,6 @@
         }
     }, 
     "visit_vtk/lightweight/vtkPolyDataRelevantPointsFilter.h": {
-        "0": {
-            "extra ';'": 0
-        }
-    }, 
-    "visit_vtk/full/vtkVisItRectilinearGrid.C": {
         "0": {
             "extra ';'": 0
         }
@@ -1112,14 +1017,4 @@
             "extra ';'": 0
         }
     }, 
-    "avt/Plotter/vtk/vtkOpenGLStructuredGridMapper.h": {
-        "0": {
-            "extra ';'": 0
-        }
-    }, 
-    "avt/Plotter/vtk/vtkRectilinearGridMapper.h": {
-        "0": {
-            "extra ';'": 0
-        }
-    }
 }

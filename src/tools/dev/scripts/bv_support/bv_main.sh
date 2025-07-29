@@ -128,6 +128,11 @@ function check_minimum_compiler_version()
 
 # --------------------------------------------------------------------------- #
 #   checking opengl context creation (minimum required is 3.2)
+#
+#   Modifications:
+#     Kathleen Biagas, Fri Jul 11, 2025
+#     First try to compile with libOpenGL, fallback to libGL.
+#
 # --------------------------------------------------------------------------- #
 
 function check_opengl_context()
@@ -261,12 +266,19 @@ function check_opengl_context()
     echo "  return 0;" >> checkogl.cpp
     echo "}" >> checkogl.cpp
 
-    $CXX_COMPILER checkogl.cpp -Wl,-lGL -lSM -lICE -lX11 -lXext
+    # first try to compile with libOpenGL
+    $CXX_COMPILER checkogl.cpp -Wl,-lOpenGL -lGLX -lSM -lICE -lX11 -lXext
     if [[ $? != 0 ]]; then
-        echo "failed to compile checkogl.cpp"
-        rm -f checkogl.cpp
+        echo "failed to compile checkogl.cpp with libOpenGL, trying lGL"
         rm -f a.out
-        exit 1
+        # if libOpenGL not available, compile with libGL.
+        $CXX_COMPILER checkogl.cpp -Wl,-lGL -lSM -lICE -lX11 -lXext
+        if [[ $? != 0 ]]; then
+            echo "failed to compile checkogl.cpp"
+            rm -f checkogl.cpp
+            rm -f a.out
+            exit 1
+        fi
     fi
     ./a.out 
     if [[ $? != 0 ]]; then
@@ -1161,12 +1173,7 @@ function run_build_visit()
             --thirdparty-path) next_arg="thirdparty-path";;
             --version) next_arg="version";;
             --xdb) DO_XDB="yes";;
-            # "--qt510" is actually handled elsewhere, but it is also here
-            # to prevent it triggering an "Urecognized option" error.
-            --qt510) ;;
             --skip-opengl-context-check) DO_CONTEXT_CHECK="no";;
-            # want to disable this check with VTK-94 (or write a new version)
-            --vtk94) DO_CONTEXT_CHECK="no";;
             *)
                 echo "Unrecognized option '${arg}'."
                 ANY_ERRORS="yes";;
@@ -1364,6 +1371,22 @@ function run_build_visit()
     # be set by now..
     initialize_module_variables
 
+
+    # OSMESA is on by default (required), so that it can serve as fallback
+    # at runtime for offscreen rendering if VTK cannot otherwise generate
+    # a good context.  However, if user needs MESAGL for on-screen context
+    # (opengl_context_check tests this), then we want to turn off OSMESA
+    # since it will be available with the MESGL build.
+    if [[ "$DO_MESAGL" == "yes" && "$DO_OSMESA" == "yes" ]] ; then
+        bv_osmesa_disable
+    fi
+
+    # LLVM is on by default (since OSMESA is required),
+    # If neither OSMESA nor MESAGL are being used, disable LLVM
+    if [[ "$DO_MESAGL" == "no" &&  "$DO_OSMESA" == "no" ]] ; then
+        bv_llvm_disable
+    fi
+
     #
     # Disable qt,qwt if it is not needed
     #
@@ -1375,7 +1398,7 @@ function run_build_visit()
         elif [[ "$DO_SERVER_COMPONENTS_ONLY" == "yes" ]] ; then
            info "disabling qt, qwt because --server-components-only used"
         fi
-        bv_qt6_disable
+        bv_qt_disable
         bv_qwt_disable
     fi
 

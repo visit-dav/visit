@@ -44,9 +44,7 @@ public:
 
   int Triangulate(int index, vtkIdList *ptIds, vtkPoints *pts) override;
 
-#if LIB_VERSION_GE(VTK,9,4,0)
   int TriangulateLocalIds(int, vtkIdList*) override { return 0; }
-#endif
 
   int CellBoundary(int subId, const double pcoords[3], vtkIdList *pts) override
       { return 0; }

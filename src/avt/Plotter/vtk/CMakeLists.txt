@@ -10,6 +10,9 @@
 #   Kevin Griffin, Mon 03 Mar 2025 04:23:27 PM CST
 #   Added support for ANARI
 #
+#   Kathleen Biagas, Tue Jun 24, 2025
+#   Removed vtkVisItDataSetMapper.
+#
 #****************************************************************************
 
 
@@ -31,7 +34,6 @@ set(AVTPLOTTER_VTK_SOURCES
     vtkVisItAxisActor.C
     vtkVisItAxisActor2D.C
     vtkVisItCubeAxesActor.C
-    vtkVisItDataSetMapper.C
     vtkVisItFullFrameMapper2D.C
     vtkVisItScalarBarActor.C
     vtkVisItScalarBarWithOpacityActor.C
