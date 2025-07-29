@@ -5247,6 +5247,9 @@ ViewerWindowManager::UpdateLightListAtts()
 //   Kevin Griffin, Thu Mar 6 15:51:48 CST 2025
 //   Added ANARI rendering properties
 //
+//   Kathleen Biagas, Monday July 28, 2025.
+//   Antialiasing is now an int (enum).
+//
 // ****************************************************************************
 
 void
@@ -5267,7 +5270,7 @@ ViewerWindowManager::UpdateRenderingAtts(int windowIndex)
         // If new rendering attributes are introduced ALL of the above
         // classes (in multiple places) must be updated.
 
-        GetViewerState()->GetRenderingAttributes()->SetAntialiasing(win->GetAntialiasing());
+        GetViewerState()->GetRenderingAttributes()->SetAntialiasing((RenderingAttributes::AAMode) win->GetAntialiasing());
         GetViewerState()->GetRenderingAttributes()->SetMultiresolutionMode(win->GetMultiresolutionMode());
         GetViewerState()->GetRenderingAttributes()->SetMultiresolutionCellSize(win->GetMultiresolutionCellSize());
         GetViewerState()->GetRenderingAttributes()->SetGeometryRepresentation(

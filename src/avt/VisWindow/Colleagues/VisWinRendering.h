@@ -223,6 +223,9 @@ class VisWindowColleagueProxy;
 //    Kathleen Biagas, Tue Jun 24, 2025
 //    Make anariRendering and osprayRendering ivars available always.
 //
+//    Kathleen Biagas, Monday July 28, 2025
+//    Antialiasing is now an int.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRendering : public VisWinColleague
@@ -316,9 +319,9 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
 
     void                     SetRenderInfoCallback(void(*callback)(void *), void *);
     void                     SetRenderEventCallback(void(*callback)(void *,bool), void *);
-    void                     SetAntialiasing(bool enabled);
-    bool                     GetAntialiasing() const
-                                 { return antialiasing; };
+    void                     SetAntialiasing(int aaMode);
+    int                      GetAntialiasing() const
+                                 { return antialiasing; }
     void                     GetRenderTimes(double times[6]) const;
     void                     SetStereoRendering(bool enabled, int type);
     bool                     GetStereo() const
@@ -453,7 +456,7 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     vtkRenderer                  *foreground {nullptr};
     bool                          needsUpdate;
     bool                          realized;
-    bool                          antialiasing;
+    int                           antialiasing;
     bool                          stereo;
     int                           stereoType;
     int                           surfaceRepresentation;

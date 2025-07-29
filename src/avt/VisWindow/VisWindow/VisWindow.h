@@ -441,6 +441,9 @@ class VisitInteractor;
 //    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9:
 //    add initialization of nullptr to pointer ivars.
 //
+//    Kathleen Biagas, Monday July 28, 2025
+//    Antialiasing is now an int (enum).
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -664,8 +667,8 @@ public:
     // Rendering options.
     void                 SetRenderInfoCallback(VisCallback *cb, void *data);
     void                 SetRenderEventCallback(void (*cb)(void *, bool), void *data);
-    void                 SetAntialiasing(bool enabled);
-    bool                 GetAntialiasing() const;
+    void                 SetAntialiasing(int aaMode);
+    int                  GetAntialiasing() const;
     void                 SetOrderComposite(bool enabled);
     bool                 GetOrderComposite() const;
     void                 SetDepthCompositeThreads(size_t n);

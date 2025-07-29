@@ -6459,14 +6459,17 @@ RotateAroundY(const avtView3D &curView, double angle,
 //   Jeremy Meredith, Fri Apr 30 14:39:07 EDT 2010
 //   Added automatic depth cueing mode.
 //
-//    Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
-//    Add compact domain options.
+//   Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
+//   Add compact domain options.
 //
-//    Eric Brugger, Thu Oct 27 15:47:36 PDT 2011
-//    I added a multi resolution display capability for 2d.
+//   Eric Brugger, Thu Oct 27 15:47:36 PDT 2011
+//   I added a multi resolution display capability for 2d.
 //
-//    Kevin Griffin, Thu Mar 6 15:51:48 CST 2025
-//    Added ANARI
+//   Kevin Griffin, Thu Mar 6 15:51:48 CST 2025
+//   Added ANARI
+//
+//   Kathleen Biagas, Monday July 28, 2025.
+//   Antialiasing is now an int (enum).
 //
 // ****************************************************************************
 
@@ -6549,7 +6552,7 @@ debug5 << "GetWindowAttributes: size=" << size[0] << ", " << size[1] << endl;
     renderAtts.SetCompactDomainsAutoThreshold(GetCompactDomainsAutoThreshold());
     renderAtts.SetCompactDomainsActivationMode((RenderingAttributes::TriStateMode) GetCompactDomainsActivationMode());
 
-    renderAtts.SetAntialiasing(GetAntialiasing());
+    renderAtts.SetAntialiasing((RenderingAttributes::AAMode) GetAntialiasing());
 
     renderAtts.SetOrderComposite(GetOrderComposite());
 
@@ -7367,12 +7370,15 @@ ViewerWindow::UpdateVisualCueList(VisualCueList& visCues) const
 //   Kathleen Bonnell, Wed Dec  4 17:38:27 PST 2002
 //   Removed frames argument, no longer needed.
 //
+//   Kathleen Biagas, Monday July 28, 2025.
+//   Antialiasing is now an int (enum).
+//
 // ****************************************************************************
 
 void
-ViewerWindow::SetAntialiasing(bool enabled)
+ViewerWindow::SetAntialiasing(int aaMode)
 {
-    visWindow->SetAntialiasing(enabled);
+    visWindow->SetAntialiasing(aaMode);
 }
 
 // ****************************************************************************
@@ -7385,10 +7391,12 @@ ViewerWindow::SetAntialiasing(bool enabled)
 // Creation:   Mon Sep 23 14:39:11 PST 2002
 //
 // Modifications:
+//    Kathleen Biagas, Monday July 28, 2025.
+//    Antialiasing is now an int (enum).
 //
 // ****************************************************************************
 
-bool
+int
 ViewerWindow::GetAntialiasing() const
 {
     return visWindow->GetAntialiasing();
@@ -9388,6 +9396,9 @@ ViewerWindow::CreateNode(DataNode *parentNode,
 //   Kevin Griffin, Thu Mar 6 15:51:48 CST 2025
 //   Added ANARI
 //
+//   Kathleen Biagas, Monday July 28, 2025.
+//   Antialiasing is now an int (enum).
+//
 // ****************************************************************************
 
 bool
@@ -9517,7 +9528,7 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
     // classes (in multiple places) must be updated.
 
     if((node = windowNode->GetNode("antialiasing")) != 0)
-        SetAntialiasing(node->AsBool());
+        SetAntialiasing(node->AsInt());
     if((node = windowNode->GetNode("orderComposite")) != 0)
         SetOrderComposite(node->AsBool());
     if((node = windowNode->GetNode("depthCompositeThreads")) != 0)

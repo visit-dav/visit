@@ -6120,14 +6120,17 @@ size_t VisWindow::GetAlphaCompositeBlocking() const
 //   Kathleen Bonnell, Mon Sep 29 13:15:20 PDT 2003
 //   Added call to RecalculateRenderOrder.
 //
+//   Kathleen Biagas, Monday July 28, 2025
+//   Antialiasing is now an int (enum).
+//
 // ****************************************************************************
 
 void
-VisWindow::SetAntialiasing(bool enabled)
+VisWindow::SetAntialiasing(int aaMode)
 {
-    if (enabled != rendering->GetAntialiasing())
+    if (aaMode != rendering->GetAntialiasing())
     {
-        rendering->SetAntialiasing(enabled);
+        rendering->SetAntialiasing(aaMode);
         RecalculateRenderOrder();
     }
 }
@@ -6144,10 +6147,12 @@ VisWindow::SetAntialiasing(bool enabled)
 // Creation:   Mon Sep 23 14:06:46 PST 2002
 //
 // Modifications:
+//   Kathleen Biagas, Monday July 28, 2025
+//   Antialiasing is now an int (enum).
 //
 // ****************************************************************************
 
-bool
+int
 VisWindow::GetAntialiasing() const
 {
     return rendering->GetAntialiasing();

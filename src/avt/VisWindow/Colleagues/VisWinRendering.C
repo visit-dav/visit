@@ -702,11 +702,8 @@ VisWinRendering::DisableDepthPeeling()
     vtkRenderWindow *rwin = GetRenderWindow();
     rwin->SetAlphaBitPlanes(0);
 
-    // ensure anti-alias settings are reset.
-    if (rwin->IsA("vtkOSOpenGLRenderWindow"))
-        rwin->SetUseFXAA(antialiasing);
-    else
-        rwin->SetMultiSamples(antialiasing ? 4: 0);
+    // ensure MSAA settings are reset if necessary.
+    rwin->SetMultiSamples((antialiasing == RenderingAttributes::MSAA) ? 4: 0);
 
     // configure renderer
     canvas->SetUseDepthPeeling(false);
@@ -2628,6 +2625,8 @@ VisWinRendering::SetRenderEventCallback(void(*callback)(void *,bool), void *data
     renderEvent = callback;
     renderEventData = data;
 }
+
+
 // ****************************************************************************
 // Method: VisWinRendering::SetAntialiasing
 //
@@ -2653,35 +2652,21 @@ VisWinRendering::SetRenderEventCallback(void(*callback)(void *,bool), void *data
 //   if antialias enabled, as the OIT will not honor MSAA.
 //
 //   Kathleen Biagas, Monday July 28, 2025
-//   Work around MSAA problem with vtkOSOpenGLRenderWindow.
-//   Remove logic for VTK-9 version.
+//   Set FXAA/MSAA bases on aaMode.
 //
 // ****************************************************************************
 
 void
-VisWinRendering::SetAntialiasing(bool enabled)
+VisWinRendering::SetAntialiasing(int aaMode)
 {
-    if(enabled != antialiasing )
+    if(aaMode != antialiasing )
     {
-        antialiasing = enabled;
+        antialiasing = aaMode;
         vtkRenderWindow *renWin = GetRenderWindow();
 
-        // The problem with MSAA and vtkOSOpenGLRenderWindow might be due to
-        // the very old version of OSMesa we use, so this workaround is
-        // temporary until a multi-modal anti-aliasing option is implemented
-        // allowing user to choose between MSAA and FXAA.
-        if(renWin->IsA("vtkOSOpenGLRenderWindow"))
-        {
-            canvas->SetUseFXAA(enabled);
-            renWin->SetMultiSamples(0);
-        }
-        else
-        {
-            canvas->SetUseFXAA(false);
-            renWin->SetMultiSamples(enabled ? 4 : 0);
-            // disable special transparency handler when using MSAA
-            canvas->SetUseOIT(!enabled);
-        }
+        canvas->SetUseFXAA((aaMode == RenderingAttributes::FXAA));
+        renWin->SetMultiSamples((aaMode == RenderingAttributes::MSAA) ? 4 : 0);
+        canvas->SetUseOIT((aaMode != RenderingAttributes::MSAA));
 
         GetRenderWindow()->Render();
     }

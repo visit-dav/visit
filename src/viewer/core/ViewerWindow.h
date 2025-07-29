@@ -465,6 +465,9 @@ class ViewerPlotList;
 //    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9:
 //    Initialize to nullptr all pointer ivars.
 //
+//    Kathleen Biagas, Monday July 28, 2025.
+//    Antialiasing is now an int (enum).
+//
 // ****************************************************************************
 
 class VIEWERCORE_API ViewerWindow : public ViewerBase
@@ -666,8 +669,8 @@ public:
                               avtImageType imgT, bool needZBuffer);
 
     // Rendering options.
-    void SetAntialiasing(bool enabled);
-    bool GetAntialiasing() const;
+    void SetAntialiasing(int aaMode);
+    int  GetAntialiasing() const;
     void SetOrderComposite(bool enabled);
     bool GetOrderComposite() const;
     void SetDepthCompositeThreads(int n);

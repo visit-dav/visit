@@ -799,9 +799,13 @@ VisWindowProtectionProxy::ProxiedReAddColleaguesToRenderWindow()
 // Programmer:  Kathleen Bonnell
 // Creation:    May 28, 2003
 //
+// Modifications:
+//   Kathleen Biagas, Mon July 28, 2025
+//   Antialiasing is now an int (enum).
+//
 // ****************************************************************************
 
-bool
+int
 VisWindowProtectionProxy::ProxiedGetAntialiasing()
 {
     return viswin->GetAntialiasing();
