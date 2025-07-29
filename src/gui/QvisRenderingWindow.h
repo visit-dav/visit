@@ -104,6 +104,10 @@ class AnariRenderingWidget;
 //   Added ANARI widget for setting ANARI device, usd, and rendering
 //   parameters.
 //
+//   Kathleen Biagas, Mon Jul 28, 2025
+//   Change antialiasingToggle to antialiasingMode, a button group to hold
+//   the different antialiasing modes. Update slot accordingly.
+//
 // ****************************************************************************
 
 class GUI_API QvisRenderingWindow : public QvisPostableWindowSimpleObserver
@@ -131,7 +135,7 @@ protected:
     void GetCurrentValues();
     void UpdateWindowSensitivity();
 private slots:
-    void antialiasingToggled(bool);
+    void antialiasingChanged(int);
     void updateOrderedComposite();
     void updateDepthCompositeThreads();
     void updateDepthCompositeBlocking();
@@ -173,8 +177,7 @@ private:
     WindowInformation   *windowInfo;
 
     // Basic controls
-    QCheckBox         *antialiasingToggle;
-    QLabel            *restartLabel;
+    QButtonGroup      *antialiasingMode;
     QCheckBox         *orderedComposite;
     QLabel            *compositeLabel;
     QLabel            *depthCompositeThreadsLabel;

@@ -143,7 +143,11 @@ QvisRenderingWindow::~QvisRenderingWindow()
 //   Support Qt6: buttonClicked -> idClicked.
 //
 //   Kathleen Biagas, Wed May 14, 2025
-//   Remove 'Requires restart' label form antialiasingToggle.
+//   Remove 'Requires restart' label from antialiasingToggle.
+//
+//   Kathleen Biagas, Mon Jul 28, 205
+//   Change antialiasingToggle checkbox to antialiasingMode buttonGroup
+//   to hold the different Antialiasing modes.
 //
 // ****************************************************************************
 
@@ -157,10 +161,23 @@ QvisRenderingWindow::CreateBasicPage()
     basicLayout->setContentsMargins(10,10,10,10);
 
     // Create the antialiasing widgets.
-    antialiasingToggle = new QCheckBox(tr("Antialiasing"), basicOptions);
-    connect(antialiasingToggle, SIGNAL(toggled(bool)),
-            this, SLOT(antialiasingToggled(bool)));
-    basicLayout->addWidget(antialiasingToggle, row, 0);
+
+    QLabel *aaLabel = new QLabel(tr("Antialiasing (MSAA has no effect if Depth Peeling also selected)"), basicOptions);
+    basicLayout->addWidget(aaLabel, row, 0, 1, 3);
+    antialiasingMode = new QButtonGroup(basicOptions);
+    connect(antialiasingMode, SIGNAL(idClicked(int)),
+            this, SLOT(antialiasingChanged(int)));
+    row++;
+
+    QRadioButton *aaNone = new QRadioButton(tr("None"), basicOptions);
+    antialiasingMode->addButton(aaNone, 0);
+    basicLayout->addWidget(aaNone, row, 1);
+    QRadioButton *aaFXAA = new QRadioButton(tr("FXAA"), basicOptions);
+    antialiasingMode->addButton(aaFXAA, 1);
+    basicLayout->addWidget(aaFXAA, row, 2);
+    QRadioButton *aaMSAA = new QRadioButton(tr("MSAA"), basicOptions);
+    antialiasingMode->addButton(aaMSAA, 2);
+    basicLayout->addWidget(aaMSAA, row, 3);
     row++;
 
     // create the order compositing widgets
@@ -873,6 +890,9 @@ QvisRenderingWindow::UpdateWindow(bool doAll)
 //   Kevin Griffin, Wed Mar 05 2025 11:59:26 AM CST
 //   ANARI Integration
 //
+//   Kathleen Biagas, Monday July 28, 2025
+//   Update handling of antialiasing.
+//
 // ****************************************************************************
 
 void
@@ -896,9 +916,10 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
         switch(i)
         {
         case RenderingAttributes::ID_antialiasing:
-            antialiasingToggle->blockSignals(true);
-            antialiasingToggle->setChecked(renderAtts->GetAntialiasing());
-            antialiasingToggle->blockSignals(false);
+            itmp = (int)renderAtts->GetAntialiasing();
+            antialiasingMode->blockSignals(true);
+            antialiasingMode->button(itmp)->setChecked(true);
+            antialiasingMode->blockSignals(false);
             break;
         case RenderingAttributes::ID_multiresolutionMode:
             multiresolutionModeToggle->blockSignals(true);
@@ -1472,10 +1493,10 @@ QvisRenderingWindow::apply()
 }
 
 // ****************************************************************************
-// Method: QvisRenderingWindow::antialiasingToggled
+// Method: QvisRenderingWindow::antialiasingChanged
 //
 // Purpose:
-//   This Qt slot function is called when the antialiasing checkbox is clicked.
+//   Slot function called when an antialiasing radio button is clicked.
 //
 // Arguments:
 //   val : The new AA value.
@@ -1484,13 +1505,15 @@ QvisRenderingWindow::apply()
 // Creation:   Mon Sep 23 14:52:07 PST 2002
 //
 // Modifications:
+//   Kathleen Biagas, Monday July 28, 2025
+//   Changed from antialiasToggled to antialiasingChanged.
 //
 // ****************************************************************************
 
 void
-QvisRenderingWindow::antialiasingToggled(bool val)
+QvisRenderingWindow::antialiasingChanged(int val)
 {
-    renderAtts->SetAntialiasing(val);
+    renderAtts->SetAntialiasing(RenderingAttributes::AAMode(val));
     SetUpdate(false);
     Apply();
 }
