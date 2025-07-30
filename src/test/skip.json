@@ -45,6 +45,7 @@
                     {"category":"databases","file":"diff.py"},
                     {"category":"databases","file":"exodus.py","cases":["exodus_13a","exodus_13b"]},
                     {"category":"databases","file":"pixie.py","cases":["pixie_04"]},
+                    {"category":"databases","file":"PLVD.py"},
                     {"category":"databases","file":"silo.py","cases":["silo_curvilinear_3d_surface_3"]},
                     {"category":"databases","file":"zipwrapper.py"},
                     {"category":"hybrid","file":"clonecopy.py"},
