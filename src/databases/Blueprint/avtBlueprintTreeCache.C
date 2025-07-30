@@ -502,6 +502,11 @@ avtBlueprintTreeCache::IO::LoadBlueprintTree(avtBlueprintTreeCache &tree_cache,
 
 
 //----------------------------------------------------------------------------/
+// Modifications:
+//    Justin Privitera, Wed Jul 30 16:40:33 PDT 2025
+//    Fix buffer slab read conditional such that the successful read case
+//    does not trigger the failure result.
+//----------------------------------------------------------------------------/
 // TODO CONST FOR INPUT 
 void
 avtBlueprintTreeCache::IO::LoadSidreView(Node &sidre_meta_view,
