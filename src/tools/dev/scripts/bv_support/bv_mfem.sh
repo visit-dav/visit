@@ -250,7 +250,7 @@ function build_mfem
     # Install into the VisIt third party location.
     #
     info "Installing mfem"
-    ${CMAKE_COMMAND} install .
+    ${CMAKE_COMMAND} --install .
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
         chmod -R ug+w,a+rX "$VISITDIR/mfem"

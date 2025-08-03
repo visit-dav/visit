@@ -771,11 +771,6 @@ vtkSlicer::SliceDataset(vtkDataSet *in_ds, vtkPolyData *out_pd,
     plane->SetNormal(Normal[0], Normal[1], Normal[2]);
 
     vtkVisItCutter *cutter = vtkVisItCutter::New();
-    // the flag 'useVTKFilter' doesn't really make sense here
-    // We want to tell the cutter to use an unstructured-grid specific
-    // cutting method instead of passing along to vtkPlaneCutter which
-    // garbles CellData when polygonal/polyhedral cells are present.
-    // The flag should be renamed when we strip support for VTK 9.2.6
     cutter->SetUnstructuredGridBypass(useUGridBypass);
     cutter->SetCutFunction(plane);
     cutter->SetInputData(in_ds);

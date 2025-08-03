@@ -487,6 +487,10 @@ StructuredTopologyOffsetsAndOffsets(const conduit::Node n_topo,
 
 
 // ****************************************************************************
+//  Modifications:
+//    Justin Privitera, Thu Jul 24 16:02:50 PDT 2025
+//    Removed old special case logic for unstructured points.
+// ****************************************************************************
 vtkPoints *
 ExplicitCoordsToVTKPoints(const Node &n_coords, const Node &n_topo)
 {
@@ -661,18 +665,7 @@ ExplicitCoordsToVTKPoints(const Node &n_coords, const Node &n_topo)
     points->SetDataTypeToDouble();
 
     int n_elems = npts;
-    if (n_topo["type"].as_string() == "unstructured" &&
-        n_topo.has_path("elements/shape") &&
-        n_topo["elements/shape"].as_string() == "point" &&
-        n_topo["elements/connectivity"].dtype().number_of_elements() != npts)
-    {
-        n_elems = n_topo["elements/connectivity"].dtype().number_of_elements();
-        points->SetNumberOfPoints(n_elems);
-    }
-    else
-    {
-        points->SetNumberOfPoints(npts);
-    }
+    points->SetNumberOfPoints(npts);
 
     if(ndstrided) // strided case
     {
@@ -698,28 +691,12 @@ ExplicitCoordsToVTKPoints(const Node &n_coords, const Node &n_topo)
     }
     else // default, simplest case
     {
-        // we need to look at the topo to decide what points to write
-        // we are in the unstructured case
-        if (npts != n_elems)
+        for (vtkIdType i = 0; i < npts; i++)
         {
-            int_accessor conn = n_topo["elements/connectivity"].value();
-            for (vtkIdType i = 0; i < n_elems; i++)
-            {
-                double x = x_vals[conn[i]];
-                double y = have_y ? y_vals[conn[i]] : 0;
-                double z = have_z ? z_vals[conn[i]] : 0;
-                points->SetPoint(i, x, y, z);
-            }
-        }
-        else
-        {
-            for (vtkIdType i = 0; i < npts; i++)
-            {
-                double x = x_vals[i];
-                double y = have_y ? y_vals[i] : 0;
-                double z = have_z ? z_vals[i] : 0;
-                points->SetPoint(i, x, y, z);
-            }
+            double x = x_vals[i];
+            double y = have_y ? y_vals[i] : 0;
+            double z = have_z ? z_vals[i] : 0;
+            points->SetPoint(i, x, y, z);
         }
     }
 
@@ -839,6 +816,9 @@ HeterogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
 //    Brad Whitlock, Mon Aug 26 13:42:59 PDT 2024
 //    Use offsets if they are present.
 //
+//    Justin Privitera, Thu Jul 24 16:02:50 PDT 2025
+//    Removed old special case logic for unstructured points.
+//
 // ****************************************************************************
 
 vtkCellArray *
@@ -848,60 +828,41 @@ HomogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
     vtkCellArray *ca = vtkCellArray::New();
     vtkIdTypeArray *ida = vtkIdTypeArray::New();
 
-    // TODO, I don't think we need this logic any more
-    // Handle empty and point topology
-    if (!n_topo.has_path("elements/connectivity") ||
-        (n_topo.has_path("elements/shape") &&
-         n_topo["elements/shape"].as_string() == "point"))
+    int ctype = ElementShapeNameToVTKCellType(n_topo["elements/shape"].as_string());
+    int csize = VTKCellTypeSize(ctype);
+    int ncells = n_topo["elements/connectivity"].dtype().number_of_elements() / csize;
+    ida->SetNumberOfTuples(ncells * (csize + 1));
+
+    const int_accessor topo_conn = n_topo["elements/connectivity"].as_int_accessor();
+    vtkIdType output = 0;
+    if(n_topo.has_path("elements/offsets"))
     {
-        ida->SetNumberOfTuples(2*npts);
-        for (int i = 0 ; i < npts; i++)
+        // There are offsets so use them.
+        const int_accessor topo_offsets = n_topo["elements/offsets"].value();
+        for (int i = 0 ; i < ncells; i++)
         {
-            ida->SetComponent(2*i  , 0, VTK_VERTEX);
-            ida->SetComponent(2*i+1, 0, i);
+            const int offset = topo_offsets[i];
+            ida->SetComponent(output++, 0, csize);
+            for (int j = 0; j < csize; j++)
+            {
+                ida->SetComponent(output++, 0, topo_conn[offset + j]);
+            }
         }
-        ca->SetCells(npts, ida);
-        ida->Delete();
     }
     else
     {
-
-        int ctype = ElementShapeNameToVTKCellType(n_topo["elements/shape"].as_string());
-        int csize = VTKCellTypeSize(ctype);
-        int ncells = n_topo["elements/connectivity"].dtype().number_of_elements() / csize;
-        ida->SetNumberOfTuples(ncells * (csize + 1));
-
-        const int_accessor topo_conn = n_topo["elements/connectivity"].as_int_accessor();
-        vtkIdType output = 0;
-        if(n_topo.has_path("elements/offsets"))
+        for (int i = 0 ; i < ncells; i++)
         {
-            // There are offsets so use them.
-            const int_accessor topo_offsets = n_topo["elements/offsets"].value();
-            for (int i = 0 ; i < ncells; i++)
+            ida->SetComponent(output++, 0, csize);
+            const int offset = i * csize;
+            for (int j = 0; j < csize; j++)
             {
-                const int offset = topo_offsets[i];
-                ida->SetComponent(output++, 0, csize);
-                for (int j = 0; j < csize; j++)
-                {
-                    ida->SetComponent(output++, 0, topo_conn[offset + j]);
-                }
+                ida->SetComponent(output++, 0, topo_conn[offset + j]);
             }
         }
-        else
-        {
-            for (int i = 0 ; i < ncells; i++)
-            {
-                ida->SetComponent(output++, 0, csize);
-                const int offset = i * csize;
-                for (int j = 0; j < csize; j++)
-                {
-                    ida->SetComponent(output++, 0, topo_conn[offset + j]);
-                }
-            }
-        }
-        ca->SetCells(ncells, ida);
-        ida->Delete();
     }
+    ca->SetCells(ncells, ida);
+    ida->Delete();
     return ca;
 }
 
@@ -1903,8 +1864,16 @@ avtConduitBlueprintDataAdaptor::BlueprintToVTK::MeshToVTK(int domain,
 }
 
 // ****************************************************************************
+//  Modifications:
+//
+//  Justin Privitera, Thu Jul 24 16:02:50 PDT 2025
+//  Handle the unstructured points vertex-associated field with num values
+//  equal to topo points case.
+//
+// ****************************************************************************
 vtkDataArray *
 avtConduitBlueprintDataAdaptor::BlueprintToVTK::FieldToVTK(
+        const conduit::Node &coords,
         const conduit::Node &topo,
         const conduit::Node &field)
 {
@@ -2047,6 +2016,82 @@ avtConduitBlueprintDataAdaptor::BlueprintToVTK::FieldToVTK(
         }
 
         res = ConduitArrayToVTKDataArray(field["values"],num_tuples,src_idxs_vals);
+    }
+    // This is the unstructured points case. If our topology doesn't
+    // use all of the points in the coordinate set, we should be able
+    // to support the case where the number of field values is equal to
+    // the number of vertices in the coordset and also the case where
+    // the number oif field values is equal to the number of elements
+    // (points) in the topology. If the number of field values is equal
+    // to the number of points in the topology and it is vertex 
+    // associated, we need to pad the field values so it is the length
+    // of the coordinate set.
+    else if (field["association"].as_string() == "vertex" &&
+             topo["type"].as_string() == "unstructured" &&
+             topo.has_path("elements/shape") &&
+             topo["elements/shape"].as_string() == "point")
+    {
+        const int ncomps = field["values"].number_of_children();
+        const bool multi_comp = ncomps > 0;
+        const int num_coord_pts = conduit::blueprint::mesh::coordset::length(coords);
+        const int num_topo_pts = topo["elements/connectivity"].dtype().number_of_elements();
+        const int num_field_points = [&]() -> int
+        {
+            if (multi_comp)
+            {
+                return field["values"][0].dtype().number_of_elements();
+            }
+            else
+            {
+                return field["values"].dtype().number_of_elements();
+            }
+        }();
+
+        // we need to pad the field values
+        if (num_coord_pts != num_topo_pts &&
+            num_topo_pts == num_field_points)
+        {
+            const int_accessor topo_conn = topo["elements/connectivity"].value();
+
+            Node new_field_values;
+            if (multi_comp)
+            {
+                for (int comp_id = 0; comp_id < ncomps; comp_id ++)
+                {
+                    const std::string compname = field["values"][comp_id].name();
+
+                    const double_accessor old_field_values = field["values"][comp_id].value();
+
+                    // it is all being converted to doubles anyway
+                    new_field_values[compname].set(DataType::float64(num_coord_pts));
+                    double_array new_field_vals_arr = new_field_values[compname].value();
+                    new_field_vals_arr.fill(0.0);
+                    for (index_t i = 0; i < old_field_values.number_of_elements(); i ++)
+                    {
+                        new_field_vals_arr[topo_conn[i]] = old_field_values[i];
+                    }
+                }
+            }
+            else
+            {
+                const double_accessor old_field_values = field["values"].value();
+
+                // it is all being converted to doubles anyway
+                new_field_values.set(DataType::float64(num_coord_pts));
+                double_array new_field_vals_arr = new_field_values.value();
+                new_field_vals_arr.fill(0.0);
+                for (index_t i = 0; i < old_field_values.number_of_elements(); i ++)
+                {
+                    new_field_vals_arr[topo_conn[i]] = old_field_values[i];
+                }
+            }
+            res = ConduitArrayToVTKDataArray(new_field_values);
+        }
+        // we can do the standard case
+        else
+        {
+            res = ConduitArrayToVTKDataArray(field["values"]);
+        }
     }
     else
     {

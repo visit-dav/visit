@@ -295,7 +295,7 @@ function build_conduit
     # Install into the VisIt third party location.
     #
     info "Installing Conduit"
-    ${CMAKE_COMMAND} install .
+    ${CMAKE_COMMAND} --install .
     if [[ $? != 0 ]] ; then
         warn "Conduit install failed.  Giving up"
         return 1

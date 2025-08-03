@@ -295,7 +295,7 @@ function build_pidx
     # Install into the VisIt third party location.
     #
     info "Installing pidx . . ."
-    ${CMAKE_COMMAND} install .
+    ${CMAKE_COMMAND} --install .
     if [[ $? != 0 ]] ; then
         warn "pidx install failed.  Giving up"
         return 1
