@@ -1508,7 +1508,7 @@ DefineArrayExpression
 
 
 variableName : string or list of strings
-    The name of the variable to be created or a list of names of variables to be created.
+    The name of the variable to create or a list of names of variables to create.
 
 expression : string or list of strings
     The expression definition or a list of expression definitions.
@@ -1585,7 +1585,7 @@ DefineCurveExpression
 
 
 variableName : string or list of strings
-    The name of the variable to be created or a list of names of variables to be created.
+    The name of the variable to create or a list of names of variables to create.
 
 expression : string or list of strings
     The expression definition or a list of expression definitions.
@@ -1646,7 +1646,7 @@ DefineMaterialExpression
 
 
 variableName : string or list of strings
-    The name of the variable to be created or a list of names of variables to be created.
+    The name of the variable to create or a list of names of variables to create.
 
 expression : string or list of strings
     The expression definition or a list of expression definitions.
@@ -1681,7 +1681,7 @@ DefineMeshExpression
 
 
 variableName : string or list of strings
-    The name of the variable to be created or a list of names of variables to be created.
+    The name of the variable to create or a list of names of variables to create.
 
 expression : string or list of strings
     The expression definition or a list of expression definitions.
@@ -1754,7 +1754,7 @@ DefineScalarExpression
 
 
 variableName : string or list of strings
-    The name of the variable to be created or a list of names of variables to be created.
+    The name of the variable to create or a list of names of variables to create.
 
 expression : string or list of strings
     The expression definition or a list of expression definitions.
@@ -1813,7 +1813,7 @@ DefineSpeciesExpression
 
 
 variableName : string or list of strings
-    The name of the variable to be created or a list of names of variables to be created.
+    The name of the variable to create or a list of names of variables to create.
 
 expression : string or list of strings
     The expression definition or a list of expression definitions.
@@ -1847,7 +1847,7 @@ DefineTensorExpression
 
 
 variableName : string or list of strings
-    The name of the variable to be created or a list of names of variables to be created.
+    The name of the variable to create or a list of names of variables to create.
 
 expression : string or list of strings
     The expression definition or a list of expression definitions.
@@ -1920,7 +1920,7 @@ DefineVectorExpression
 
 
 variableName : string or list of strings
-    The name of the variable to be created or a list of names of variables to be created.
+    The name of the variable to create or a list of names of variables to create.
 
 expression : string or list of strings
     The expression definition or a list of expression definitions.
