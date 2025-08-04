@@ -1524,15 +1524,14 @@ return type : CLI_return_t
     All the variables must have the same centering and only scalar variables are supported, for example, no vector, tensor or material variables.
     Array variables are used in the Label plot.
 
-    The variable name argument is a string that contains the name of the variable to define.
-    The variable name can also be a list of strings with the names of the variables to define.
+    The variableName argument is either a string that contains the name of the variable to define or a list of strings with the names of the variables to define.
     If you are going to define more than about a hundred expressions you should use the list version to get good performance.
     If you use the list version the number of variable names must match the number of definitions.
     If you pass the name of an existing expression it will replace the current definition.
     The expression argument is a string that contains the definition of the new variable in terms of :ref:`built-in expressions <Built-in_expressions>` and pre-existing variable names using VisIt_'s :ref:`expression grammar <Expression_grammar>`.
     If you run into problems defining your expression you might want to read the section on :ref:`expression compatibility gotchas <Expression_Compatibility_Gotchas>`.
 
-    The function will throw an exception if the list of strings is incorrectly formed, as well as when the number of variable names does not match the number of definitions.
+    The function will throw an exception if the list of strings is incorrectly formed or when the number of variable names does not match the number of definitions.
 
 
 **Example:**
@@ -1541,19 +1540,18 @@ return type : CLI_return_t
 
   #% visit -cli
   OpenDatabase("/usr/gapps/visit/data/curv3d.silo")
-  DefineScalarExpression("d1", 'recenter(d, "zonal")')
-  DefineScalarExpression("p1", 'recenter(p, "zonal")')
   # Define 2 array variables, each from 2 scalars. Here, we
   # reuse the same scalars twice for illustrative purposes
   # only. Normally, the scalars are different.
-  DefineArrayExpression("da", "array_compose(d1, d1)")
-  DefineArrayExpression("pa", "array_compose(p1, p1)")
+  DefineArrayExpression("da", "array_compose(d, d)")
+  DefineArrayExpression("pa", "array_compose(p, p)")
   # Create a plot to use for performing an XRay Image query.
-  AddPlot("Pseudocolor", "d1")
+  AddPlot("Pseudocolor", "d")
   DrawPlots()
   # Do the query.
-  params = GetQueryParameters("XRay Image")
-  params['output_type'] ="png"
+  params = dict()
+  params['output_type'] = "png"
+  params['output_dir'] = "."
   params['divide_emis_by_absorb'] = 1
   params['origin'] = (0.0, 2.5, 10.0)
   params['up_vector'] = (0, 1, 0)
@@ -1564,6 +1562,17 @@ return type : CLI_return_t
   params['image_size'] = (300, 300)
   params['vars'] = ("da", "pa")
   Query("XRay Image", params)
+
+  # Repeat the query using lists of variables and definitions
+  myvars = []
+  mydefs = []
+  myvars.append("da")
+  mydefs.append("array_compose(d, d)")
+  myvars.append("pa")
+  mydefs.append("array_compose(p, p)")
+  DefineArrayExpression(myvars, mydefs)
+  Query("XRay Image", params)
+
 
 DefineCurveExpression
 ---------------------
@@ -1591,15 +1600,14 @@ return type : CLI_return_t
     Curve variables are a collection of X - Y coordinates that form a curve.
     Curve variables are used in the Curve, Parallel Coordinates, Scatter and Spreadsheet plots.
 
-    The variable name argument is a string that contains the name of the variable to define.
-    The variable name can also be a list of strings with the names of the variables to define.
+    The variableName argument is either a string that contains the name of the variable to define or a list of strings with the names of the variables to define.
     If you are going to define more than about a hundred expressions you should use the list version to get good performance.
     If you use the list version the number of variable names must match the number of definitions.
     If you pass the name of an existing expression it will replace the current definition.
     The expression argument is a string that contains the definition of the new variable in terms of :ref:`built-in expressions <Built-in_expressions>` and pre-existing variable names using VisIt_'s :ref:`expression grammar <Expression_grammar>`.
     If you run into problems defining your expression you might want to read the section on :ref:`expression compatibility gotchas <Expression_Compatibility_Gotchas>`.
 
-    The function will throw an exception if the list of strings is incorrectly formed, as well as when the number of variable names does not match the number of definitions.
+    The function will throw an exception if the list of strings is incorrectly formed or when the number of variable names does not match the number of definitions.
 
 
 **Example:**
@@ -1612,6 +1620,18 @@ return type : CLI_return_t
   DefineCurveExpression("myvar", "2 * curve1")
   # Plot the curve variable.
   AddPlot("Curve", "myvar")
+  DrawPlots()
+
+  # Define more expressions using lists of variables and definitions
+  myvars = []
+  mydefs = []
+  myvars.append("myvar1")
+  mydefs.append("3 * curve1")
+  myvars.append("myvar2")
+  mydefs.append("4 * curve1")
+  DefineCurveExpression(myvars, mydefs)
+  AddPlot("Curve", "myvar1")
+  AddPlot("Curve", "myvar2")
   DrawPlots()
 
 
@@ -1640,9 +1660,14 @@ return type : CLI_return_t
     DefineMaterialExpression creates new material variables.
     Material variables are special variables that store material information for mesh and scalar variables.
     Material variables are used by the Boundary and Filled Boundary plots.
+
+    The variableName argument is either a string that contains the name of the variable to define or a list of strings with the names of the variables to define.
+    If you are going to define more than about a hundred expressions you should use the list version to get good performance.
+    If you use the list version the number of variable names must match the number of definitions.
+    If you pass the name of an existing expression it will replace the current definition.
     Currently there are no built-in expressions that create material variables.
 
-    The function will throw an exception if the list of strings is incorrectly formed, as well as when the number of variable names does not match the number of definitions.
+    The function will throw an exception if the list of strings is incorrectly formed or when the number of variable names does not match the number of definitions.
 
 
 DefineMeshExpression
@@ -1670,9 +1695,14 @@ return type : CLI_return_t
     DefineMeshExpression creates new mesh variables.
     Mesh variables define the coordinates and connectivity of a mesh.
     Mesh variables are used by the Label, Mesh and Subset plots.
+
+    The variableName argument is either a string that contains the name of the variable to define or a list of strings with the names of the variables to define.
+    If you are going to define more than about a hundred expressions you should use the list version to get good performance.
+    If you use the list version the number of variable names must match the number of definitions.
+    If you pass the name of an existing expression it will replace the current definition.
     Currently there are no built-in expressions that create mesh variables.
 
-    The function will throw an exception if the list of strings is incorrectly formed, as well as when the number of variable names does not match the number of definitions.
+    The function will throw an exception if the list of strings is incorrectly formed or when the number of variable names does not match the number of definitions.
 
 
 DefinePythonExpression
@@ -1738,15 +1768,14 @@ return type : CLI_return_t
     DefineScalarExpression creates new scalar variables.
     Scalar variables define a scalar field over a mesh and are used by plots that take scalar variables.
 
-    The variable name argument is a string that contains the name of the variable to define.
-    The variable name can also be a list of strings with the names of the variables to define.
+    The variableName argument is either a string that contains the name of the variable to define or a list of strings with the names of the variables to define.
     If you are going to define more than about a hundred expressions you should use the list version to get good performance.
     If you use the list version the number of variable names must match the number of definitions.
     If you pass the name of an existing expression it will replace the current definition.
     The expression argument is a string that contains the definition of the new variable in terms of :ref:`built-in expressions <Built-in_expressions>` and pre-existing variable names using VisIt_'s :ref:`expression grammar <Expression_grammar>`.
     If you run into problems defining your expression you might want to read the section on :ref:`expression compatibility gotchas <Expression_Compatibility_Gotchas>`.
 
-    The function will throw an exception if the list of strings is incorrectly formed, as well as when the number of variable names does not match the number of definitions.
+    The function will throw an exception if the list of strings is incorrectly formed or when the number of variable names does not match the number of definitions.
 
 
 **Example:**
@@ -1760,16 +1789,18 @@ return type : CLI_return_t
   AddPlot("Pseudocolor", "myvar")
   DrawPlots()
 
-  myvars = ["myvar1", "myvar2"]
-  mydefs = ["2 * (sin(u) + cos(w))", "3 * (sin(u) + cos(w))"]
+  # Define more expressions using lists of variables and definitions
+  myvars = []
+  mydefs = []
+  myvars.append("myvar1")
+  mydefs.append("nodal_constant(mesh1, 2.) * (sin(u) + cos(w))")
+  myvars.append("myvar2")
+  mydefs.append("nodal_constant(mesh1, 3.) * (sin(u) + cos(w))")
   DefineScalarExpression(myvars, mydefs)
+  AddPlot("Pseudocolor", "myvar1")
+  AddPlot("Pseudocolor", "myvar2")
+  DrawPlots()
 
-  myvars2 = []
-  mydefs2 = []
-  myvars2.append("myvar3")
-  mydefs2.append("2 * (sin(u) + cos(w))")
-  myvars2.append("myvar4")
-  mydefs2.append("3 * (sin(u) + cos(w))")
 
 DefineSpeciesExpression
 -----------------------
@@ -1795,9 +1826,14 @@ return type : CLI_return_t
 
     DefineSpeciesExpression creates new species variables.
     Species variables are special variables that are associated with material variables that store species information for scalar variables.
+
+    The variableName argument is either a string that contains the name of the variable to define or a list of strings with the names of the variables to define.
+    If you are going to define more than about a hundred expressions you should use the list version to get good performance.
+    If you use the list version the number of variable names must match the number of definitions.
+    If you pass the name of an existing expression it will replace the current definition.
     Currently there are no built-in expressions that create species variables.
 
-    The function will throw an exception if the list of strings is incorrectly formed, as well as when the number of variable names does not match the number of definitions.
+    The function will throw an exception if the list of strings is incorrectly formed or when the number of variable names does not match the number of definitions.
 
 
 DefineTensorExpression
@@ -1830,15 +1866,15 @@ return type : CLI_return_t
     For a 2D symmetric tensor, the components would be supplied as {{Sxx, Syx}, {Syx, Syy}}.
     For a 3D symmetric tensor, the components would be supplied as {{Sxx, Syx, Szx}, {Syx, Syy, Szy}, {Szx, Szy, Szz}}.
 
-    The variable name argument is a string that contains the name of the variable to define.
-    The variable name can also be a list of strings with the names of the variables to define.
+    The variableName argument is either a string that contains the name of the variable to define or a list of strings with the names of the variables to define.
     If you are going to define more than about a hundred expressions you should use the list version to get good performance.
     If you use the list version the number of variable names must match the number of definitions.
     If you pass the name of an existing expression it will replace the current definition.
     The expression argument is a string that contains the definition of the new variable in terms of :ref:`built-in expressions <Built-in_expressions>` and pre-existing variable names using VisIt_'s :ref:`expression grammar <Expression_grammar>`.
     If you run into problems defining your expression you might want to read the section on :ref:`expression compatibility gotchas <Expression_Compatibility_Gotchas>`.
 
-    The function will throw an exception if the list of strings is incorrectly formed, as well as when the number of variable names does not match the number of definitions.
+    The function will throw an exception if the list of strings is incorrectly formed or when the number of variable names does not match the number of definitions.
+
 
 **Example:**
 
@@ -1849,6 +1885,27 @@ return type : CLI_return_t
   # Plot a tensor variable.
   DefineTensorExpression("myten", "{{u,v,w},{u,v,w},{u,v,w}}")
   AddPlot("Tensor", "myten")
+  DrawPlots()
+
+  # Defining more expressions using lists of variables and definitions
+  myvars = []
+  mydefs = []
+  myvars.append("zero")
+  mydefs.append("nodal_constant(mesh1, 0.)")
+  myvars.append("one")
+  mydefs.append("nodal_constant(mesh1, 1.)")
+  myvars.append("two")
+  mydefs.append("nodal_constant(mesh1, 2.)")
+  DefineScalarExpression(myvars, mydefs)
+  myvars2 = []
+  mydefs2 = []
+  myvars2.append("myten1")
+  mydefs2.append("{{one, zero, zero},{zero, one, zero},{zero, zero, one}}")
+  myvars2.append("myten2")
+  mydefs2.append("{{one, zero, zero},{zero, two, zero},{zero, zero, one}}")
+  DefineTensorExpression(myvars2, mydefs2)
+  AddPlot("Tensor", "myten1")
+  AddPlot("Tensor", "myten2")
   DrawPlots()
 
 
@@ -1879,15 +1936,15 @@ return type : CLI_return_t
     A 2D vector would consist of 2 components.
     A 3D vector would consist of 3 components.
 
-    The variable name argument is a string that contains the name of the variable to define.
-    The variable name can also be a list of strings with the names of the variables to define.
+    The variableName argument is either a string that contains the name of the variable to define or a list of strings with the names of the variables to define.
     If you are going to define more than about a hundred expressions you should use the list version to get good performance.
     If you use the list version the number of variable names must match the number of definitions.
     If you pass the name of an existing expression it will replace the current definition.
     The expression argument is a string that contains the definition of the new variable in terms of :ref:`built-in expressions <Built-in_expressions>` and pre-existing variable names using VisIt_'s :ref:`expression grammar <Expression_grammar>`.
     If you run into problems defining your expression you might want to read the section on :ref:`expression compatibility gotchas <Expression_Compatibility_Gotchas>`.
 
-    The function will throw an exception if the list of strings is incorrectly formed, as well as when the number of variable names does not match the number of definitions.
+    The function will throw an exception if the list of strings is incorrectly formed or when the number of variable names does not match the number of definitions.
+
 
 **Example:**
 
@@ -1898,6 +1955,27 @@ return type : CLI_return_t
   # Plot a vector variable.
   DefineVectorExpression("myvec", "{u,v,w}")
   AddPlot("Vector", "myvec")
+  DrawPlots()
+
+  # Defining more expressions using lists of variables and definitions
+  myvars = []
+  mydefs = []
+  myvars.append("zero")
+  mydefs.append("nodal_constant(mesh1, 0.)")
+  myvars.append("one")
+  mydefs.append("nodal_constant(mesh1, 1.)")
+  myvars.append("two")
+  mydefs.append("nodal_constant(mesh1, 2.)")
+  DefineScalarExpression(myvars, mydefs)
+  myvars2 = []
+  mydefs2 = []
+  myvars2.append("myvec1")
+  mydefs2.append("{one, zero, zero}")
+  myvars2.append("myvec2")
+  mydefs2.append("{zero, two, zero}")
+  DefineVectorExpression(myvars2, mydefs2)
+  AddPlot("Vector", "myvec1")
+  AddPlot("Vector", "myvec2")
   DrawPlots()
 
 
