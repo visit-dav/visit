@@ -1563,7 +1563,7 @@ return type : CLI_return_t
   params['vars'] = ("da", "pa")
   Query("XRay Image", params)
 
-  # Repeat the query using lists of variables and definitions
+  # Repeat the query using lists of variables and definitions.
   myvars = []
   mydefs = []
   myvars.append("da")
@@ -1622,7 +1622,7 @@ return type : CLI_return_t
   AddPlot("Curve", "myvar")
   DrawPlots()
 
-  # Define more expressions using lists of variables and definitions
+  # Define more expressions using lists of variables and definitions.
   myvars = []
   mydefs = []
   myvars.append("myvar1")
@@ -1789,7 +1789,7 @@ return type : CLI_return_t
   AddPlot("Pseudocolor", "myvar")
   DrawPlots()
 
-  # Define more expressions using lists of variables and definitions
+  # Define more expressions using lists of variables and definitions.
   myvars = []
   mydefs = []
   myvars.append("myvar1")
@@ -1887,7 +1887,7 @@ return type : CLI_return_t
   AddPlot("Tensor", "myten")
   DrawPlots()
 
-  # Defining more expressions using lists of variables and definitions
+  # Define more expressions using lists of variables and definitions.
   myvars = []
   mydefs = []
   myvars.append("zero")
@@ -1957,7 +1957,7 @@ return type : CLI_return_t
   AddPlot("Vector", "myvec")
   DrawPlots()
 
-  # Defining more expressions using lists of variables and definitions
+  # Define more expressions using lists of variables and definitions.
   myvars = []
   mydefs = []
   myvars.append("zero")
