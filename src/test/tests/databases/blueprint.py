@@ -68,6 +68,9 @@
 #    Justin Privitera, Wed Oct 30 14:18:31 PDT 2024
 #    Added tests that ensure periodic meshes fall back to legacy LOR when
 #    new LOR is requested.
+# 
+#    Justin Privitera, Thu Jul 24 16:02:50 PDT 2025
+#    Added more robust unstructured points test.
 #
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("Blueprint")
@@ -86,10 +89,10 @@ bp_rz_test_dir = "blueprint_v0.8.6_rz_examples"
 bp_1d_curve_test_dir = "blueprint_v0.8.6_1d_curve_examples"
 bp_venn_modded_matnos_dir = "blueprint_v0.8.7_venn_modded_matnos_example"
 bp_poly_no_offsets_dir = "blueprint_v0.8.7_polytopal_mesh_no_offsets"
-bp_unstructured_points_dir = "blueprint_v0.8.7_unstructured_points"
 bp_unstructured_uniform_dir = "blueprint_v0.9.1_uniform_coords_unstructured_topo"
 bp_mixed_topos_dir = "blueprint_v0.9.2_mixed_topo_data"
 bp_specset_dir = "blueprint_v0.9.2_specset_example"
+bp_unstructured_points_dir = "blueprint_v0.9.4_unstructured_points"
 
 braid_2d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_2d_examples.blueprint_root_hdf5"))
 braid_3d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_3d_examples.blueprint_root_hdf5"))
@@ -112,7 +115,7 @@ poly_3d_yaml_root = data_path(pjoin(bp_poly_test_dir,"polytess_3d_example_yaml.r
 
 uniform_root = data_path(pjoin(bp_test_dir,"uniform.cycle_001038.root"))
 
-unstructured_points = data_path(pjoin(bp_unstructured_points_dir,"unstructured_points.cycle_000100.root"))
+unstructured_points = data_path(pjoin(bp_unstructured_points_dir,"unstructured_points_example.root"))
 
 uniform_unstructured = data_path(pjoin(bp_unstructured_uniform_dir,"partition.root"))
 
@@ -838,32 +841,6 @@ def test_blueprint_0_8_7():
     DeleteAllPlots()
     ResetView()
     CloseDatabase(polytopal_mesh_no_offsets_root)
-
-    TestSection("Blueprint Unstructured Points not using the entire coordset, 0.8.7")
-    OpenDatabase(unstructured_points)
-    AddPlot("Pseudocolor", "mesh_mesh/braid", 1, 1)
-    SetActivePlots(0)
-    PseudocolorAtts = PseudocolorAttributes()
-    PseudocolorAtts.pointSizePixels = 20
-    SetPlotOptions(PseudocolorAtts)
-    AddPlot("Label", "mesh_mesh/braid", 1, 1)
-    DrawPlots()
-    View3DAtts = View3DAttributes()
-    View3DAtts.viewNormal = (-0.64536, -0.104723, 0.756666)
-    View3DAtts.focus = (10, 0, 0)
-    View3DAtts.viewUp = (-0.0863273, 0.994211, 0.0639709)
-    View3DAtts.viewAngle = 30
-    View3DAtts.parallelScale = 14.1421
-    View3DAtts.nearPlane = -28.2843
-    View3DAtts.farPlane = 28.2843
-    View3DAtts.centerOfRotationSet = 0
-    View3DAtts.centerOfRotation = (10, 0, 0)
-    SetView3D(View3DAtts)
-    DrawPlots()
-    Test("Unstructured_points_not_using_entire_coordset")
-    DeleteAllPlots()
-    ResetView()
-    CloseDatabase(unstructured_points)
  
 def test_blueprint_0_9_1():
     TestSection("Blueprint Uniform Coordset + Unstructured Topo, 0.9.1")
@@ -968,6 +945,23 @@ def test_blueprint_0_9_2():
     DeleteAllPlots()
     CloseDatabase(misc_specsets)
 
+def test_blueprint_0_9_4():
+    TestSection("Blueprint Unstructured Points not using the entire coordset, 0.9.4")
+    OpenDatabase(unstructured_points)
+    for field_name in ["zonal", "nodal", "valid_nodal"]:
+        AddPlot("Pseudocolor", "mesh_mesh/" + field_name)
+        SetActivePlots(0)
+        PseudocolorAtts = PseudocolorAttributes()
+        PseudocolorAtts.limitsMode = PseudocolorAtts.ActualData  # OriginalData, ActualData
+        PseudocolorAtts.pointSizePixels = 50
+        SetPlotOptions(PseudocolorAtts)
+        AddPlot("Label", "mesh_mesh/" + field_name)
+        DrawPlots()
+        Test("Unstructured_points_not_using_entire_coordset_" + field_name)
+        DeleteAllPlots()
+        ResetView()
+    CloseDatabase(unstructured_points)
+
 def main():
     test_blueprint_json_hdf5()
     test_blueprint_MFEM()
@@ -979,6 +973,7 @@ def main():
     test_blueprint_0_8_7()
     test_blueprint_0_9_1()
     test_blueprint_0_9_2()
+    test_blueprint_0_9_4()
 
 main()
 Exit()
