@@ -1010,6 +1010,10 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
 //    Always insert the ghost zone and facelist filter.  It will figure out
 //    whether or not we should remove ghosts.
 //
+//    Kathleen Biagas, Thu Aug 7, 2025
+//    Remove setting of avtCondenseDatasetFilter's 'BypassHeuristic', it is no
+//    longer available.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -1039,8 +1043,6 @@ avtPlot::ReduceGeometry(avtDataObject_p curDS)
     rv = ghostZoneAndFacelistFilter->GetOutput();
 
     condenseDatasetFilter->SetInput(rv);
-    if (atts.GetTopologicalDimension() == 0)
-        condenseDatasetFilter->BypassHeuristic(true);
     rv = condenseDatasetFilter->GetOutput();
 
     //

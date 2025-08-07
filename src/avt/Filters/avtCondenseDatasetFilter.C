@@ -21,25 +21,27 @@
 // ****************************************************************************
 //  Method: avtCondenseDatasetFilter constructor
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   November 07, 2000
 //
 //  Modifications:
 //    Kathleen Bonnell, Wed Nov 12 18:26:21 PST 2003
 //    Initialize keepAVTandVTK.
 //
-//    Kathleen Bonnell, Wed Apr 14 17:51:36 PDT 2004 
+//    Kathleen Bonnell, Wed Apr 14 17:51:36 PDT 2004
 //    Initialize bypassHeuristic.
 //
 //    David Camp, Thu May 23 12:52:53 PDT 2013
 //    Removed the rpfPD and rpfUG variables for thread safety.
+//
+//    Kathleen Biagas, Thu Aug 7, 2025
+//    Remove bypassHeursistic.
 //
 // ****************************************************************************
 
 avtCondenseDatasetFilter::avtCondenseDatasetFilter()
 {
     keepAVTandVTK = false;
-    bypassHeuristic = false;
 }
 
 
@@ -72,15 +74,15 @@ avtCondenseDatasetFilter::~avtCondenseDatasetFilter()
 //
 //  Returns:       The output data representation.
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   November 07, 2000
 //
 //  Modifications:
 //    Kathleen Bonnell, Fri Mar  2 17:31:01 PST 2001
 //    Added check for input datasets with no cells
 //
-//    Kathleen Bonnell, Tue Apr 10 10:49:10 PDT 2001 
-//    Renamed method from ExecuteDomain to ExecuteData. 
+//    Kathleen Bonnell, Tue Apr 10 10:49:10 PDT 2001
+//    Renamed method from ExecuteDomain to ExecuteData.
 //
 //    Hank Childs, Thu Sep 20 17:53:57 PDT 2001
 //    Added heuristic to not apply the filter when it won't rule out very many
@@ -92,12 +94,12 @@ avtCondenseDatasetFilter::~avtCondenseDatasetFilter()
 //    Hank Childs, Fri Jul 25 21:25:31 PDT 2003
 //    Removed unneeded variables.
 //
-//    Kathleen Bonnell, Wed Nov 12 18:26:21 PST 2003 
-//    Allow AVT and VTK variables to be kept if requested. 
+//    Kathleen Bonnell, Wed Nov 12 18:26:21 PST 2003
+//    Allow AVT and VTK variables to be kept if requested.
 //
-//    Kathleen Bonnell, Wed Apr 14 17:51:36 PDT 2004 
+//    Kathleen Bonnell, Wed Apr 14 17:51:36 PDT 2004
 //    Allow execution of relevant points filter to be forced, bypassing
-//    heurisitic. 
+//    heurisitic.
 //
 //    Kathleen Bonnell, Tue Oct 12 16:06:20 PDT 2004
 //    Allow avtOriginalNodeNumbers and avtOriginalCellNumbers to be kept
@@ -105,7 +107,7 @@ avtCondenseDatasetFilter::~avtCondenseDatasetFilter()
 //    Vector Plots and Point Meshes.
 //
 //    Brad Whitlock, Wed Dec 22 11:20:42 PDT 2004
-//    Added an heuristic to skip relevant points for line data that has 
+//    Added an heuristic to skip relevant points for line data that has
 //    many more points than cells. Also set the flag to skip relevant points
 //    for point meshes so it agrees with the debug log message about skipping
 //    relevant points.
@@ -127,6 +129,9 @@ avtCondenseDatasetFilter::~avtCondenseDatasetFilter()
 //    I removed the heuristic to skip relevant points removal for line
 //    data that has many more points than cells since I believe it no
 //    longer applies.
+//
+//    Kathleen Biagas, Thu Aug 7, 2025
+//    Remove heurisitic altogether.
 //
 // ****************************************************************************
 
@@ -166,7 +171,7 @@ avtCondenseDatasetFilter::ExecuteData(avtDataRepresentation *in_dr)
 
         if (!keepAVTandVTK)
         {
-            bool keepNodeZone = 
+            bool keepNodeZone =
             GetInput()->GetInfo().GetAttributes().GetKeepNodeZoneArrays();
             for (i = no_vars->GetPointData()->GetNumberOfArrays()-1 ; i >= 0 ; i--)
             {
@@ -178,7 +183,7 @@ avtCondenseDatasetFilter::ExecuteData(avtDataRepresentation *in_dr)
                     no_vars->GetPointData()->RemoveArray(name);
                 else if (strstr(name, "avt") != NULL)
                 {
-                    if (keepNodeZone && 
+                    if (keepNodeZone &&
                         ((strcmp(name, "avtOriginalNodeNumbers") == 0) ||
                          (strcmp(name, "avtOriginalCellNumbers") == 0)))
                         continue;
@@ -205,7 +210,7 @@ avtCondenseDatasetFilter::ExecuteData(avtDataRepresentation *in_dr)
                     no_vars->GetCellData()->RemoveArray(name);
                 else if (strstr(name, "avt") != NULL)
                 {
-                    if (keepNodeZone && 
+                    if (keepNodeZone &&
                         ((strcmp(name, "avtOriginalNodeNumbers") == 0) ||
                          (strcmp(name, "avtOriginalCellNumbers") == 0)))
                         continue;
@@ -224,92 +229,58 @@ avtCondenseDatasetFilter::ExecuteData(avtDataRepresentation *in_dr)
             }
         }
     }
- 
+
     //
     // Decide whether or not we need to determine the relevant points.
     //
     int  nPoints = no_vars->GetNumberOfPoints();
     int  nCells  = no_vars->GetNumberOfCells();
-    bool shouldTakeRelevantPoints = true;
-    if (!bypassHeuristic && 2*nCells > nPoints)
-    {
-        debug5 << "Relevant points filter stopped by heuristic.  Points = "
-               << nPoints << ", cells = " << nCells << endl;
-        shouldTakeRelevantPoints = false;
-    }
-    else if (!bypassHeuristic &&
-             GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() 
-             == 0)
-    {
-        debug5 << "Not taking relevant points because we have a point mesh."
-               << endl;
-        shouldTakeRelevantPoints = false;
-    }
-    else
-    {
-        if (!bypassHeuristic)
-        {
-            debug5 << "Relevant points filter allowed to execute by heuristic.  " 
-                   << "Points = " << nPoints << ", cells = " << nCells << endl;
-        }
-        else 
-        {
-            debug5 << "Relevant points filter forced to execute." << endl; 
-        }
-    }
-
-    vtkDataSet *out_ds = NULL;  
+    vtkDataSet *out_ds = NULL;
     bool needToDeleteOutDs = false;
-    if (shouldTakeRelevantPoints)
-    {
-        vtkPolyData *out_pd = NULL;
-        vtkUnstructuredGrid *out_ug = NULL;
 
-        if (no_vars->GetNumberOfCells() == 0)
-        {
-            out_ds = no_vars;
-        }
-        else
-        {
-            switch(no_vars->GetDataObjectType())
-            {
-                case VTK_POLY_DATA:
-                {
-                    vtkPolyDataRelevantPointsFilter *rpfPD = vtkPolyDataRelevantPointsFilter::New();
-                    rpfPD->SetInputData((vtkPolyData*)no_vars);
-                    out_pd = vtkPolyData::New();
-                    rpfPD->SetOutput(out_pd);
-                    rpfPD->Update();
-                    rpfPD->Delete();
-                    out_ds = (vtkDataSet*)out_pd;
-                    needToDeleteOutDs = true;
-                    break;
-                }
-    
-                case VTK_UNSTRUCTURED_GRID:
-                {
-                    vtkUnstructuredGridRelevantPointsFilter *rpfUG = vtkUnstructuredGridRelevantPointsFilter::New();
-                    rpfUG->SetInputData((vtkUnstructuredGrid*)no_vars);
-                    out_ug = vtkUnstructuredGrid::New();
-                    rpfUG->SetOutput(out_ug);
-                    rpfUG->Update();
-                    rpfUG->Delete();
-                    out_ds = (vtkDataSet*)out_ug;
-                    needToDeleteOutDs = true;
-                    break;
-                }
-    
-                default :
-                // We don't know what type this is.  It is probably a mistake that
-                // this was called, so minimize the damage by passing this through.
-                    out_ds = no_vars;
-                    break;
-            }
-        }
-    }
-    else
+    vtkPolyData *out_pd = NULL;
+    vtkUnstructuredGrid *out_ug = NULL;
+
+    if (no_vars->GetNumberOfCells() == 0)
     {
         out_ds = no_vars;
+    }
+    else
+    {
+        switch(no_vars->GetDataObjectType())
+        {
+            case VTK_POLY_DATA:
+            {
+                vtkPolyDataRelevantPointsFilter *rpfPD = vtkPolyDataRelevantPointsFilter::New();
+                rpfPD->SetInputData((vtkPolyData*)no_vars);
+                out_pd = vtkPolyData::New();
+                rpfPD->SetOutput(out_pd);
+                rpfPD->Update();
+                rpfPD->Delete();
+                out_ds = (vtkDataSet*)out_pd;
+                needToDeleteOutDs = true;
+                break;
+            }
+
+            case VTK_UNSTRUCTURED_GRID:
+            {
+                vtkUnstructuredGridRelevantPointsFilter *rpfUG = vtkUnstructuredGridRelevantPointsFilter::New();
+                rpfUG->SetInputData((vtkUnstructuredGrid*)no_vars);
+                out_ug = vtkUnstructuredGrid::New();
+                rpfUG->SetOutput(out_ug);
+                rpfUG->Update();
+                rpfUG->Delete();
+                out_ds = (vtkDataSet*)out_ug;
+                needToDeleteOutDs = true;
+                break;
+            }
+
+            default :
+            // We don't know what type this is.  It is probably a mistake that
+            // this was called, so minimize the damage by passing this through.
+                out_ds = no_vars;
+                break;
+        }
     }
 
     avtDataRepresentation *out_dr = new avtDataRepresentation(out_ds,

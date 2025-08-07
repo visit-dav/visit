@@ -30,13 +30,16 @@ using     std::string;
 //    Kathleen Bonnell, Thu Mar  2 15:05:17 PST 2006
 //    Add condense filter.
 //
+//    Kathleen Biagas, Thu Aug 7, 2025
+//    Remove setting of avtCondenseDatasetFilter's 'BypassHeuristic', it is no
+//    longer available.
+//
 // ****************************************************************************
 
 avtVariableSummationQuery::avtVariableSummationQuery() : avtSummationQuery()
 {
     condense = new avtCondenseDatasetFilter;
     condense->KeepAVTandVTK(true);
-    condense->BypassHeuristic(true);
 }
 
 
