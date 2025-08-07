@@ -66,7 +66,7 @@ function bv_advio_ensure
     fi
 }
 
-function apply_advio_12_darwin_patch
+function apply_advio_12_configure_patch
 {
     patch -p0 << \EOF
 --- AdvIO-1.2/configure	2006-02-14 05:19:56.000000000 -0800
@@ -230,7 +230,7 @@ function apply_advio_12_darwin_patch
  #  subdirs="${subdirs} Compo"
 EOF
     if [[ $? != 0 ]] ; then
-        echo "Failed applying Darwin patch"
+        echo "Failed applying AdvIO configure patch"
         return 1
     fi
 
@@ -239,9 +239,7 @@ EOF
 
 function apply_advio_12_patch
 {
-    if [[ "$OPSYS" == "Darwin" ]] ; then
-        apply_advio_12_darwin_patch
-    fi
+    apply_advio_12_configure_patch
 
     return $?
 }
@@ -311,9 +309,11 @@ function build_advio
     mv c2 configure
     chmod 750 ./configure
     info "Invoking command to configure AdvIO"
-    ADVIO_DARWIN=""
+    ADVIO_HOST=""
     if [[ "$OPSYS" == "Darwin" ]]; then
-        ADVIO_DARWIN="--host=darwin"
+        ADVIO_HOST="--host=darwin"
+    elif [[ "$OPSYS" == "Linux" ]]; then
+        ADVIO_HOST="--host=Linux"
     fi
     ADVIO_DEBUG=""
     if [[ "$VISIT_BUILD_MODE" == "Debug" ]]; then
@@ -323,7 +323,7 @@ function build_advio
     set -x
     env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-        ./configure --prefix="$VISITDIR/AdvIO/$ADVIO_VERSION/$VISITARCH" --disable-gtktest $ADVIO_DARWIN $ADVIO_DEBUG
+        ./configure --prefix="$VISITDIR/AdvIO/$ADVIO_VERSION/$VISITARCH" --disable-gtktest $ADVIO_HOST $ADVIO_DEBUG
     set +x
     if [[ $? != 0 ]] ; then
         warn "AdvIO configure failed.  Giving up"

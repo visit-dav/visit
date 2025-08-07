@@ -227,6 +227,8 @@ sort_extents_record(const void *a, const void *b)
 //
 // Modifications:
 //
+//    Mark C. Miller, Mon Jun 16 15:37:09 PDT 2025
+//    Label grid info strings with axis information.
 // ****************************************************************************
 
 void
@@ -422,16 +424,17 @@ avtGridInformationQuery::PostExecute(void)
                 for(int j = 0; j < 6; ++j)
                     resultValues.push_back(ext[j+1]);
 
-                snprintf(msg, 1024, "Grid %d: type=%s, dims={%d,%d,%d}%s, extents={%lg,%lg,%lg,%lg,%lg,%lg}%s\n", 
-                         rec[0], mt, rec[2], rec[3], rec[4], handed,
-                         ext[1], ext[2], ext[3], ext[4], ext[5], ext[6], gt);
+                snprintf(msg, 1024, "Grid %d: type=%s, dims={Nx=%d,Ny=%d,Nz=%d}%s, "
+                    "extents={Xmin=%lg,Xmax=%lg,Ymin=%lg,Ymax=%lg,Zmin=%lg,Zmax=%lg}%s\n", 
+                    rec[0], mt, rec[2], rec[3], rec[4], handed,
+                    ext[1], ext[2], ext[3], ext[4], ext[5], ext[6], gt);
                 resultMsg.append(msg);
 
                 ext += 7;
             }
             else
             {
-                snprintf(msg, 1024, "Grid %d: type=%s, dims={%d,%d,%d}%s%s\n", 
+                snprintf(msg, 1024, "Grid %d: type=%s, dims={Nx=%d,Ny=%d,Nz=%d}%s%s\n", 
                          rec[0], mt, rec[2], rec[3], rec[4], handed, gt);
                 resultMsg.append(msg);
             }

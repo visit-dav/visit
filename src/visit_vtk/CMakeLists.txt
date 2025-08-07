@@ -7,17 +7,13 @@
 #   Kathleen Biagas, Tue Sep 5, 2023 
 #   Remove untested, unused EGL logic.
 #
+#   Kathleen Biagas, Wed June 18, 2025
+#   Remove offscreen.
+#
 #****************************************************************************
 
 project(visit_vtk)
 
 add_subdirectory(lightweight)
 add_subdirectory(full)
-
-# if osmesa is enabled, add our offscreen rendering factory
-if(VTK_VERSION LESS "9.4.0")
-if(HAVE_OSMESA)
-    add_subdirectory(offscreen)
-endif()
-endif()
 

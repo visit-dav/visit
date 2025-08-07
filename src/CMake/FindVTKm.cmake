@@ -33,6 +33,9 @@
 #   Modified the logic to also install static libraries. I also fixed a
 #   bug that prevented installing dependent libraries.
 # 
+#   Eric Brugger, Mon Jun 16 13:38:54 PDT 2025
+#   Replace vtkm_filter with vtkm::filter.
+#
 #****************************************************************************/
 
 IF (VISIT_VTKM_DIR)
@@ -79,9 +82,12 @@ IF (VISIT_VTKM_DIR)
        endif()
    endfunction()
 
-   get_target_property(VTKM_INT_LL vtkm_filter INTERFACE_LINK_LIBRARIES)
+   get_target_property(VTKM_INT_LL vtkm::filter INTERFACE_LINK_LIBRARIES)
+   # pluginVsInstall test for Slice on Windows revealed need for this module
+   # and its link dependencies to be installed, too.
+   get_target_property(VTKM_DIY_LL vtkm::diy INTERFACE_LINK_LIBRARIES)
    set(addl_ll)
-   foreach(vtkmll ${VTKM_INT_LL})
+   foreach(vtkmll ${VTKM_INT_LL} ${VTKM_DIY_LL})
        get_lib_loc_and_install(${vtkmll})
        get_target_property(VTKM_LL_DEP ${vtkmll} INTERFACE_LINK_LIBRARIES)
        if(VTKM_LL_DEP)

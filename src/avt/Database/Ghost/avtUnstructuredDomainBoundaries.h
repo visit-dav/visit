@@ -15,11 +15,18 @@
 #include <map>
 #include <vector>
 #include <utility>
+#include <cstddef>
 
 class vtkDataSet;
 class vtkDataArray;
 class avtMixedVariable;
 class avtMaterial;
+template <typename T>
+class MeshDomainData;
+class MixedMaterialDomainData;
+class MixedVarDomainData;
+template <typename T>
+class VarDomainData;
 
 // ****************************************************************************
 //  Class:  avtUnstructuredDomainBoundaries
@@ -56,6 +63,18 @@ class avtMaterial;
 //    Kevin Griffin, Tue Apr 21 17:41:51 PDT 2015
 //    Added the ExchangeVector method to call the correct Exchange*Vector method
 //    based on the underlying data. (* = Float, Double, etc)
+// 
+//    Justin Privitera, Wed Apr 23 17:39:24 PDT 2025
+//    Removed private method ExchangeFloatVector as it is no longer needed.
+//    Removed private method ExchangeDoubleVector as it is no longer needed.
+//    Removed private method ExchangeIntVector as it is no longer needed.
+//    Added private helper method GetDomIndex.
+//    Added private helper method GetNMixLen.
+//    Added private helper method TransferMatInfo.
+//    Changed communication methods so that they take a map of class objects
+//    instead of large numbers of quadruple, triple, and double pointers.
+//    Forward declared the aforementioned class objects at the top of the file.
+//    Added a dependency on cstddef so that we can use size_t here.
 //
 // ****************************************************************************
 
@@ -150,27 +169,20 @@ class DATABASE_API avtUnstructuredDomainBoundaries : public avtDomainBoundaries
                                const std::vector<int> &domain2proc,
                                const std::vector<int> &domainNum,
                                const std::vector<vtkDataSet *> &,
-                               T ***&gainedPoints,
-                               int ***&cellTypes,
-                               int ****&cellPoints,
-                               int ***&origPointIds,
-                               int **&nGainedPoints,
-                               int **&nGainedCells,
-                               int ***&nPointsPerCell);
+                               std::map<int, std::map<int, MeshDomainData<T>>> &domaindata);
 
     void            CommunicateMaterialInformation(
                                const std::vector<int> &domain2proc,
                                const std::vector<int> &domainNum,
                                const std::vector<avtMaterial*> &,
-                               int **&, int **&, int ***&,
-                               int ***&, float ***&);
+                               std::map<int, std::map<int, MixedMaterialDomainData>> &domaindata);
 
     void            CommunicateMixvarInformation(
                                const std::vector<int> &domain2proc,
                                const std::vector<int> &domainNum,
                                const std::vector<avtMaterial*> &,
                                const std::vector<avtMixedVariable *> &,
-                               int **&, float ***&);
+                               std::map<int, std::map<int, MixedVarDomainData>> &domaindata);
                       
 
     template <class T>
@@ -178,26 +190,29 @@ class DATABASE_API avtUnstructuredDomainBoundaries : public avtDomainBoundaries
                                const std::vector<int> &domain2proc,
                                const std::vector<int> &domainNum,
                                const std::vector<vtkDataArray *>&,
-                               bool isPointData,
-                               T ***&gainedData,
-                               int **&nGainedTuples);
-    
+                               const bool isPointData,
+                               std::map<int, std::map<int, VarDomainData<T>>> &domaindata);
+
 private:
-    
-    virtual std::vector<vtkDataArray*>  ExchangeFloatVector(
-                                                            std::vector<int> domainNum,
-                                                            bool isPointData,
-                                                            std::vector<vtkDataArray*> vectors);
-    
-    virtual std::vector<vtkDataArray*>  ExchangeDoubleVector(
-                                                             std::vector<int> domainNum,
-                                                             bool isPointData,
-                                                             std::vector<vtkDataArray*> vectors);
-    
-    virtual std::vector<vtkDataArray*>  ExchangeIntVector(
-                                                          std::vector<int> domainNum,
-                                                          bool isPointData,
-                                                          std::vector<vtkDataArray*> vectors);
+    int    GetDomIndex(const std::vector<int> &domainNum,
+                       const int sendDom,
+                       const int recvDom);
+
+    int    GetNMixLen(const size_t nCells,
+                      const int index,
+                      const int *matlist,
+                      const int *mix_next,
+                      const int sendDom);
+
+    void   TransferMatInfo(const size_t nCells,
+                           const int index,
+                           const int *matlist,
+                           const int *mix_mat,
+                           const float *mix_vf,
+                           const int *mix_next,
+                           std::vector<int> &out_matlist,
+                           std::vector<int> &out_mix_mat,
+                           std::vector<float> &out_mix_vf);
 };
 
 #endif

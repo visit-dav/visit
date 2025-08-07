@@ -29,7 +29,7 @@ function cmake_set_vars_helper
     CMAKE_BUILD_DIR=`"${CMAKE_COMMAND}" --system-information 2>& 1 | grep _CMAKE_INSTALL_DIR | grep -v _CMAKE_INSTALL_DIR:INTERNAL | sed -e s/\"//g -e s/_CMAKE_INSTALL_DIR//g`
     CMAKE_BUILD_DIR=`echo $CMAKE_BUILD_DIR`
     CMAKE_INSTALL="$CMAKE_BUILD_DIR/bin"
-    CMAKE_ROOT=`"$CMAKE_COMMAND" --system-information 2>&1 | grep CMAKE_ROOT | grep -v CMAKE_ROOT:INTERNAL | sed -e s/\"//g -e s/CMAKE_ROOT//g` 
+    CMAKE_ROOT=`"$CMAKE_COMMAND" --system-information 2>&1 | grep CMAKE_ROOT | grep -v CMAKE_ROOT:INTERNAL | sed -e s/\"//g -e s/CMAKE_ROOT//g`
     CMAKE_ROOT=`echo "$CMAKE_ROOT"`
     CMAKE_ROOT=`echo $CMAKE_ROOT`
 
@@ -42,11 +42,11 @@ function bv_cmake_system_cmake
 
     TEST=`which cmake`
     [ $? != 0 ] && error "System CMake not found"
-    
+
     bv_cmake_enable
-    
+
     USE_SYSTEM_CMAKE="yes"
-    
+
     CMAKE_COMMAND="cmake"
     CMAKE_FILE=""
     cmake_set_vars_helper #set vars..
@@ -85,10 +85,10 @@ function bv_cmake_bin_cmake_dir
 
 function bv_cmake_info
 {
-    export CMAKE_VERSION=${CMAKE_VERSION:-"3.24.3"}
+    export CMAKE_VERSION=${CMAKE_VERSION:-"3.31.8"}
     export CMAKE_FILE=${CMAKE_FILE:-"cmake-${CMAKE_VERSION}.tar.gz"}
     export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-${CMAKE_VERSION}"}
-    export CMAKE_SHA256_CHECKSUM="b53aa10fa82bff84ccdb59065927b72d3bee49f4d86261249fc0984b3b367291"
+    export CMAKE_SHA256_CHECKSUM="e3cde3ca83dc2d3212105326b8f1b565116be808394384007e7ef1c253af6caa"
 }
 
 function bv_cmake_print
@@ -114,7 +114,7 @@ function bv_cmake_host_profile
 
 function bv_cmake_initialize_vars
 {
-    if [[ "$USE_SYSTEM_CMAKE" != "yes" ]]; then 
+    if [[ "$USE_SYSTEM_CMAKE" != "yes" ]]; then
         if [[ "$DO_CMAKE" == "yes" || "$DO_VTK" == "yes" ]] ; then
             #initialize variables where cmake should exist..
             CMAKE_INSTALL=${CMAKE_INSTALL:-"$VISITDIR/cmake/${CMAKE_VERSION}/${VISITARCH}/bin"}
@@ -127,7 +127,7 @@ function bv_cmake_initialize_vars
 
 function bv_cmake_ensure
 {
-    if [[ "$USE_SYSTEM_CMAKE" != "yes" ]]; then 
+    if [[ "$USE_SYSTEM_CMAKE" != "yes" ]]; then
         if [[ "$DO_CMAKE" == "yes" || "$DO_VTK" == "yes" ]] ; then
             ensure_built_or_ready "cmake"  $CMAKE_VERSION  $CMAKE_BUILD_DIR  $CMAKE_FILE $CMAKE_URL
             if [[ $? != 0 ]] ; then
@@ -207,7 +207,7 @@ function build_cmake
 function bv_cmake_is_enabled
 {
     if [[ $DO_CMAKE == "yes" ]]; then
-        return 1    
+        return 1
     fi
     return 0
 }

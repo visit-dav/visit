@@ -5,7 +5,7 @@
 #include "vtkAnariVisItCubeAxesActorNode.h"
 #include "vtkVisItCubeAxesActor.h"
 
-#include <vtkAnariRendererNode.h>
+#include <vtkAnariSceneGraph.h>
 #include <vtkRenderer.h>
 
 //============================================================================
@@ -18,11 +18,11 @@ void vtkAnariVisItCubeAxesActorNode::Build(bool prepass)
   {
     vtkVisItCubeAxesActor* cubeAxesActor = vtkVisItCubeAxesActor::SafeDownCast
       (this->GetRenderable());
-     vtkAnariRendererNode* anariRenderer = static_cast<vtkAnariRendererNode*>(
-        this->GetFirstAncestorOfType("vtkAnariRendererNode"));
-    vtkRenderer* ren = anariRenderer->GetRenderer();
-
+     vtkAnariSceneGraph* anariSceneGraph = static_cast<vtkAnariSceneGraph*>(
+        this->GetFirstAncestorOfType("vtkAnariSceneGraph"));
+    vtkRenderer* ren = anariSceneGraph->GetRenderer();
     vtkCollection* objCollection = vtkCollection::New();
+
     cubeAxesActor->BuildGeometry(ren, objCollection);
     this->PrepareNodes();
     this->AddMissingNodes(objCollection);

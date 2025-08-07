@@ -55,6 +55,10 @@ public:
                                            DestructorFunction &);
 
     //
+    // This method sets the logical extents of the patches and boundaries
+    virtual void         *SetLogicalExtents();
+
+    //
     // If you know the cycle number, overload this function.
     // Otherwise, VisIt will make up a reasonable one for you.
     virtual int           GetCycle(void);
@@ -81,8 +85,12 @@ protected:
     static std::string composeName( const std::string& m, const std::string& v, const char app='/' );
     static void decomposeName( const std::string& s, std::string& m, std::string& v );
 
+    static std::pair<std::string,std::string>
+    splitName( const std::string& m, const char app='/' );
+
 private:
     // DATA MEMBERS
+    bool enableFieldVar;
     bool                enableAMR;
     AMRreaderInterface *reader_;
 };

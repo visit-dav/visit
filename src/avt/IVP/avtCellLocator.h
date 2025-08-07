@@ -43,6 +43,10 @@ typedef std::vector<avtInterpolationWeight> avtInterpolationWeights;
 //    Changed the SetDataSet function to virtual. You may need to reset
 //    pointer to the new dataset.
 //
+//    Kathleen Biagas, Thu May 15, 2025
+//    Changed strDimPtr to strDim (sized array) to comply with VTK-9.5
+//    API change to how Dimensions are retrieved from vtkStructuredGrids.
+//
 // ************************************************************************* //
 
 class IVP_API avtCellLocator
@@ -80,7 +84,7 @@ class IVP_API avtCellLocator
 
     vtkDataSet*    dataSet {nullptr};
     vtkCellArray*  cellPtr {nullptr};
-    int*           strDimPtr {nullptr};
+    int            strDim[3]={-1,-1,-1};
     bool           normal2D;
     bool           normal3D;
     float*         fCoordPtr {nullptr};

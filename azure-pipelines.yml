@@ -14,7 +14,7 @@
 # consistent with those same files listed in the paths trigger
 #####
 variables:
-  container_tag: visitdav/visit-ci-develop:2024-10-15-shac4fd59
+  container_tag: visitdav/visit-ci-develop:2025-07-14-shaf0cf7c
   python_test_files: >
     ../../src/test/tests/databases/silo.py
     ../../src/test/tests/databases/blueprint.py
@@ -72,6 +72,7 @@ stages:
 - stage: Consistency
   jobs:
   - job: BLT_Time_Travel_Check
+    condition: ne(variables['System.PullRequest.IsDraft'], 'True')
     pool:
       vmImage: 'ubuntu-latest'
     steps:
@@ -93,6 +94,7 @@ stages:
 - stage: Main
   jobs:
   - job: Main_Build
+    condition: ne(variables['System.PullRequest.IsDraft'], 'True')
     pool:
       vmImage: 'ubuntu-latest'
     timeoutInMinutes: 0

@@ -1,110 +1,110 @@
-Grid 0: type=AVT_CURVILINEAR_MESH, dims={11,11,11}
-Grid 1: type=AVT_CURVILINEAR_MESH, dims={11,11,11}
-Grid 2: type=AVT_CURVILINEAR_MESH, dims={11,11,11}
-Grid 3: type=AVT_CURVILINEAR_MESH, dims={11,11,11}
-Grid 4: type=AVT_CURVILINEAR_MESH, dims={11,11,11}
-Grid 5: type=AVT_CURVILINEAR_MESH, dims={11,11,11}
-Grid 6: type=AVT_CURVILINEAR_MESH, dims={11,11,11}
-Grid 7: type=AVT_CURVILINEAR_MESH, dims={11,11,11}
-Grid 8: type=AVT_CURVILINEAR_MESH, dims={11,11,11}
-Grid 9: type=AVT_CURVILINEAR_MESH, dims={11,11,11}
-Grid 10: type=AVT_CURVILINEAR_MESH, dims={11,11,11}
-Grid 11: type=AVT_CURVILINEAR_MESH, dims={11,11,11}
-Grid 12: type=AVT_CURVILINEAR_MESH, dims={11,11,11}
-Grid 13: type=AVT_CURVILINEAR_MESH, dims={11,11,11}
-Grid 14: type=AVT_CURVILINEAR_MESH, dims={11,11,11}
-Grid 15: type=AVT_CURVILINEAR_MESH, dims={11,11,11}
-Grid 16: type=AVT_CURVILINEAR_MESH, dims={11,11,11}
-Grid 17: type=AVT_CURVILINEAR_MESH, dims={11,11,11}
-Grid 18: type=AVT_CURVILINEAR_MESH, dims={11,11,11}
-Grid 19: type=AVT_CURVILINEAR_MESH, dims={11,11,11}
-Grid 20: type=AVT_CURVILINEAR_MESH, dims={11,11,11}
-Grid 21: type=AVT_CURVILINEAR_MESH, dims={11,11,11}
-Grid 22: type=AVT_CURVILINEAR_MESH, dims={11,11,11}
-Grid 23: type=AVT_CURVILINEAR_MESH, dims={11,11,11}
-Grid 24: type=AVT_CURVILINEAR_MESH, dims={11,11,11}
-Grid 25: type=AVT_CURVILINEAR_MESH, dims={11,11,11}
-Grid 26: type=AVT_CURVILINEAR_MESH, dims={11,11,11}
-Grid 27: type=AVT_CURVILINEAR_MESH, dims={11,11,11}
-Grid 28: type=AVT_CURVILINEAR_MESH, dims={11,11,11}
-Grid 29: type=AVT_CURVILINEAR_MESH, dims={11,11,11}
-Grid 30: type=AVT_CURVILINEAR_MESH, dims={11,11,11}
-Grid 31: type=AVT_CURVILINEAR_MESH, dims={11,11,11}
-Grid 32: type=AVT_CURVILINEAR_MESH, dims={11,11,11}
-Grid 33: type=AVT_CURVILINEAR_MESH, dims={11,11,11}
-Grid 34: type=AVT_CURVILINEAR_MESH, dims={11,11,11}
-Grid 35: type=AVT_CURVILINEAR_MESH, dims={11,11,11}
+Grid 0: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}
+Grid 1: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}
+Grid 2: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}
+Grid 3: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}
+Grid 4: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}
+Grid 5: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}
+Grid 6: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}
+Grid 7: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}
+Grid 8: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}
+Grid 9: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}
+Grid 10: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}
+Grid 11: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}
+Grid 12: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}
+Grid 13: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}
+Grid 14: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}
+Grid 15: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}
+Grid 16: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}
+Grid 17: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}
+Grid 18: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}
+Grid 19: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}
+Grid 20: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}
+Grid 21: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}
+Grid 22: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}
+Grid 23: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}
+Grid 24: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}
+Grid 25: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}
+Grid 26: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}
+Grid 27: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}
+Grid 28: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}
+Grid 29: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}
+Grid 30: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}
+Grid 31: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}
+Grid 32: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}
+Grid 33: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}
+Grid 34: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}
+Grid 35: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}
 =================================================
-Grid 0: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-2.75,-1,-2.40413e-07,2.38157,0,10}
-Grid 1: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-1.375,1.375,1.73205,2.75,0,10}
-Grid 2: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={0.999998,2.75,2.41399e-06,2.38157,0,10}
-Grid 3: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-3.5,-1.375,-3.0598e-07,3.03109,0,10}
-Grid 4: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-1.75,1.75,2.38157,3.5,0,10}
-Grid 5: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={1.375,3.5,3.31923e-06,3.03109,0,10}
-Grid 6: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-4.25,-1.75,-3.71547e-07,3.68061,0,10}
-Grid 7: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-2.125,2.125,3.03109,4.25,0,10}
-Grid 8: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={1.75,4.25,4.22448e-06,3.68061,0,10}
-Grid 9: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-5,-2.125,-4.37114e-07,4.33012,0,10}
-Grid 10: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-2.5,2.49999,3.68061,5,0,10}
-Grid 11: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={2.125,5,5.12973e-06,4.33013,0,10}
-Grid 12: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-2.75,-1,-2.40413e-07,2.38157,10,20}
-Grid 13: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-1.375,1.375,1.73205,2.75,10,20}
-Grid 14: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={0.999998,2.75,2.41399e-06,2.38157,10,20}
-Grid 15: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-3.5,-1.375,-3.0598e-07,3.03109,10,20}
-Grid 16: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-1.75,1.75,2.38157,3.5,10,20}
-Grid 17: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={1.375,3.5,3.31923e-06,3.03109,10,20}
-Grid 18: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-4.25,-1.75,-3.71547e-07,3.68061,10,20}
-Grid 19: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-2.125,2.125,3.03109,4.25,10,20}
-Grid 20: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={1.75,4.25,4.22448e-06,3.68061,10,20}
-Grid 21: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-5,-2.125,-4.37114e-07,4.33012,10,20}
-Grid 22: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-2.5,2.49999,3.68061,5,10,20}
-Grid 23: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={2.125,5,5.12973e-06,4.33013,10,20}
-Grid 24: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-2.75,-1,-2.40413e-07,2.38157,20,30}
-Grid 25: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-1.375,1.375,1.73205,2.75,20,30}
-Grid 26: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={0.999998,2.75,2.41399e-06,2.38157,20,30}
-Grid 27: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-3.5,-1.375,-3.0598e-07,3.03109,20,30}
-Grid 28: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-1.75,1.75,2.38157,3.5,20,30}
-Grid 29: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={1.375,3.5,3.31923e-06,3.03109,20,30}
-Grid 30: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-4.25,-1.75,-3.71547e-07,3.68061,20,30}
-Grid 31: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-2.125,2.125,3.03109,4.25,20,30}
-Grid 32: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={1.75,4.25,4.22448e-06,3.68061,20,30}
-Grid 33: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-5,-2.125,-4.37114e-07,4.33012,20,30}
-Grid 34: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-2.5,2.49999,3.68061,5,20,30}
-Grid 35: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={2.125,5,5.12973e-06,4.33013,20,30}
+Grid 0: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-2.75,Xmax=-1,Ymin=-2.40413e-07,Ymax=2.38157,Zmin=0,Zmax=10}
+Grid 1: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-1.375,Xmax=1.375,Ymin=1.73205,Ymax=2.75,Zmin=0,Zmax=10}
+Grid 2: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=0.999998,Xmax=2.75,Ymin=2.41399e-06,Ymax=2.38157,Zmin=0,Zmax=10}
+Grid 3: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-3.5,Xmax=-1.375,Ymin=-3.0598e-07,Ymax=3.03109,Zmin=0,Zmax=10}
+Grid 4: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-1.75,Xmax=1.75,Ymin=2.38157,Ymax=3.5,Zmin=0,Zmax=10}
+Grid 5: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=1.375,Xmax=3.5,Ymin=3.31923e-06,Ymax=3.03109,Zmin=0,Zmax=10}
+Grid 6: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-4.25,Xmax=-1.75,Ymin=-3.71547e-07,Ymax=3.68061,Zmin=0,Zmax=10}
+Grid 7: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-2.125,Xmax=2.125,Ymin=3.03109,Ymax=4.25,Zmin=0,Zmax=10}
+Grid 8: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=1.75,Xmax=4.25,Ymin=4.22448e-06,Ymax=3.68061,Zmin=0,Zmax=10}
+Grid 9: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-5,Xmax=-2.125,Ymin=-4.37114e-07,Ymax=4.33012,Zmin=0,Zmax=10}
+Grid 10: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-2.5,Xmax=2.49999,Ymin=3.68061,Ymax=5,Zmin=0,Zmax=10}
+Grid 11: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=2.125,Xmax=5,Ymin=5.12973e-06,Ymax=4.33013,Zmin=0,Zmax=10}
+Grid 12: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-2.75,Xmax=-1,Ymin=-2.40413e-07,Ymax=2.38157,Zmin=10,Zmax=20}
+Grid 13: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-1.375,Xmax=1.375,Ymin=1.73205,Ymax=2.75,Zmin=10,Zmax=20}
+Grid 14: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=0.999998,Xmax=2.75,Ymin=2.41399e-06,Ymax=2.38157,Zmin=10,Zmax=20}
+Grid 15: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-3.5,Xmax=-1.375,Ymin=-3.0598e-07,Ymax=3.03109,Zmin=10,Zmax=20}
+Grid 16: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-1.75,Xmax=1.75,Ymin=2.38157,Ymax=3.5,Zmin=10,Zmax=20}
+Grid 17: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=1.375,Xmax=3.5,Ymin=3.31923e-06,Ymax=3.03109,Zmin=10,Zmax=20}
+Grid 18: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-4.25,Xmax=-1.75,Ymin=-3.71547e-07,Ymax=3.68061,Zmin=10,Zmax=20}
+Grid 19: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-2.125,Xmax=2.125,Ymin=3.03109,Ymax=4.25,Zmin=10,Zmax=20}
+Grid 20: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=1.75,Xmax=4.25,Ymin=4.22448e-06,Ymax=3.68061,Zmin=10,Zmax=20}
+Grid 21: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-5,Xmax=-2.125,Ymin=-4.37114e-07,Ymax=4.33012,Zmin=10,Zmax=20}
+Grid 22: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-2.5,Xmax=2.49999,Ymin=3.68061,Ymax=5,Zmin=10,Zmax=20}
+Grid 23: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=2.125,Xmax=5,Ymin=5.12973e-06,Ymax=4.33013,Zmin=10,Zmax=20}
+Grid 24: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-2.75,Xmax=-1,Ymin=-2.40413e-07,Ymax=2.38157,Zmin=20,Zmax=30}
+Grid 25: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-1.375,Xmax=1.375,Ymin=1.73205,Ymax=2.75,Zmin=20,Zmax=30}
+Grid 26: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=0.999998,Xmax=2.75,Ymin=2.41399e-06,Ymax=2.38157,Zmin=20,Zmax=30}
+Grid 27: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-3.5,Xmax=-1.375,Ymin=-3.0598e-07,Ymax=3.03109,Zmin=20,Zmax=30}
+Grid 28: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-1.75,Xmax=1.75,Ymin=2.38157,Ymax=3.5,Zmin=20,Zmax=30}
+Grid 29: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=1.375,Xmax=3.5,Ymin=3.31923e-06,Ymax=3.03109,Zmin=20,Zmax=30}
+Grid 30: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-4.25,Xmax=-1.75,Ymin=-3.71547e-07,Ymax=3.68061,Zmin=20,Zmax=30}
+Grid 31: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-2.125,Xmax=2.125,Ymin=3.03109,Ymax=4.25,Zmin=20,Zmax=30}
+Grid 32: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=1.75,Xmax=4.25,Ymin=4.22448e-06,Ymax=3.68061,Zmin=20,Zmax=30}
+Grid 33: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-5,Xmax=-2.125,Ymin=-4.37114e-07,Ymax=4.33012,Zmin=20,Zmax=30}
+Grid 34: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-2.5,Xmax=2.49999,Ymin=3.68061,Ymax=5,Zmin=20,Zmax=30}
+Grid 35: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=2.125,Xmax=5,Ymin=5.12973e-06,Ymax=4.33013,Zmin=20,Zmax=30}
 =================================================
-Grid 0: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-2.75,-1,-2.40413e-07,2.38157,0,10}, ghosttypes=0={}
-Grid 1: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-1.375,1.375,1.73205,2.75,0,10}, ghosttypes=0={}
-Grid 2: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={0.999998,2.75,2.41399e-06,2.38157,0,10}, ghosttypes=0={}
-Grid 3: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-3.5,-1.375,-3.0598e-07,3.03109,0,10}, ghosttypes=0={}
-Grid 4: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-1.75,1.75,2.38157,3.5,0,10}, ghosttypes=0={}
-Grid 5: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={1.375,3.5,3.31923e-06,3.03109,0,10}, ghosttypes=0={}
-Grid 6: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-4.25,-1.75,-3.71547e-07,3.68061,0,10}, ghosttypes=0={}
-Grid 7: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-2.125,2.125,3.03109,4.25,0,10}, ghosttypes=0={}
-Grid 8: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={1.75,4.25,4.22448e-06,3.68061,0,10}, ghosttypes=0={}
-Grid 9: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-5,-2.125,-4.37114e-07,4.33012,0,10}, ghosttypes=0={}
-Grid 10: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-2.5,2.49999,3.68061,5,0,10}, ghosttypes=0={}
-Grid 11: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={2.125,5,5.12973e-06,4.33013,0,10}, ghosttypes=0={}
-Grid 12: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-2.75,-1,-2.40413e-07,2.38157,10,20}, ghosttypes=0={}
-Grid 13: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-1.375,1.375,1.73205,2.75,10,20}, ghosttypes=0={}
-Grid 14: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={0.999998,2.75,2.41399e-06,2.38157,10,20}, ghosttypes=0={}
-Grid 15: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-3.5,-1.375,-3.0598e-07,3.03109,10,20}, ghosttypes=0={}
-Grid 16: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-1.75,1.75,2.38157,3.5,10,20}, ghosttypes=0={}
-Grid 17: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={1.375,3.5,3.31923e-06,3.03109,10,20}, ghosttypes=0={}
-Grid 18: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-4.25,-1.75,-3.71547e-07,3.68061,10,20}, ghosttypes=0={}
-Grid 19: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-2.125,2.125,3.03109,4.25,10,20}, ghosttypes=0={}
-Grid 20: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={1.75,4.25,4.22448e-06,3.68061,10,20}, ghosttypes=0={}
-Grid 21: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-5,-2.125,-4.37114e-07,4.33012,10,20}, ghosttypes=0={}
-Grid 22: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-2.5,2.49999,3.68061,5,10,20}, ghosttypes=0={}
-Grid 23: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={2.125,5,5.12973e-06,4.33013,10,20}, ghosttypes=0={}
-Grid 24: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-2.75,-1,-2.40413e-07,2.38157,20,30}, ghosttypes=0={}
-Grid 25: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-1.375,1.375,1.73205,2.75,20,30}, ghosttypes=0={}
-Grid 26: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={0.999998,2.75,2.41399e-06,2.38157,20,30}, ghosttypes=0={}
-Grid 27: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-3.5,-1.375,-3.0598e-07,3.03109,20,30}, ghosttypes=0={}
-Grid 28: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-1.75,1.75,2.38157,3.5,20,30}, ghosttypes=0={}
-Grid 29: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={1.375,3.5,3.31923e-06,3.03109,20,30}, ghosttypes=0={}
-Grid 30: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-4.25,-1.75,-3.71547e-07,3.68061,20,30}, ghosttypes=0={}
-Grid 31: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-2.125,2.125,3.03109,4.25,20,30}, ghosttypes=0={}
-Grid 32: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={1.75,4.25,4.22448e-06,3.68061,20,30}, ghosttypes=0={}
-Grid 33: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-5,-2.125,-4.37114e-07,4.33012,20,30}, ghosttypes=0={}
-Grid 34: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={-2.5,2.49999,3.68061,5,20,30}, ghosttypes=0={}
-Grid 35: type=AVT_CURVILINEAR_MESH, dims={11,11,11}, extents={2.125,5,5.12973e-06,4.33013,20,30}, ghosttypes=0={}
+Grid 0: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-2.75,Xmax=-1,Ymin=-2.40413e-07,Ymax=2.38157,Zmin=0,Zmax=10}, ghosttypes=0={}
+Grid 1: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-1.375,Xmax=1.375,Ymin=1.73205,Ymax=2.75,Zmin=0,Zmax=10}, ghosttypes=0={}
+Grid 2: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=0.999998,Xmax=2.75,Ymin=2.41399e-06,Ymax=2.38157,Zmin=0,Zmax=10}, ghosttypes=0={}
+Grid 3: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-3.5,Xmax=-1.375,Ymin=-3.0598e-07,Ymax=3.03109,Zmin=0,Zmax=10}, ghosttypes=0={}
+Grid 4: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-1.75,Xmax=1.75,Ymin=2.38157,Ymax=3.5,Zmin=0,Zmax=10}, ghosttypes=0={}
+Grid 5: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=1.375,Xmax=3.5,Ymin=3.31923e-06,Ymax=3.03109,Zmin=0,Zmax=10}, ghosttypes=0={}
+Grid 6: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-4.25,Xmax=-1.75,Ymin=-3.71547e-07,Ymax=3.68061,Zmin=0,Zmax=10}, ghosttypes=0={}
+Grid 7: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-2.125,Xmax=2.125,Ymin=3.03109,Ymax=4.25,Zmin=0,Zmax=10}, ghosttypes=0={}
+Grid 8: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=1.75,Xmax=4.25,Ymin=4.22448e-06,Ymax=3.68061,Zmin=0,Zmax=10}, ghosttypes=0={}
+Grid 9: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-5,Xmax=-2.125,Ymin=-4.37114e-07,Ymax=4.33012,Zmin=0,Zmax=10}, ghosttypes=0={}
+Grid 10: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-2.5,Xmax=2.49999,Ymin=3.68061,Ymax=5,Zmin=0,Zmax=10}, ghosttypes=0={}
+Grid 11: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=2.125,Xmax=5,Ymin=5.12973e-06,Ymax=4.33013,Zmin=0,Zmax=10}, ghosttypes=0={}
+Grid 12: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-2.75,Xmax=-1,Ymin=-2.40413e-07,Ymax=2.38157,Zmin=10,Zmax=20}, ghosttypes=0={}
+Grid 13: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-1.375,Xmax=1.375,Ymin=1.73205,Ymax=2.75,Zmin=10,Zmax=20}, ghosttypes=0={}
+Grid 14: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=0.999998,Xmax=2.75,Ymin=2.41399e-06,Ymax=2.38157,Zmin=10,Zmax=20}, ghosttypes=0={}
+Grid 15: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-3.5,Xmax=-1.375,Ymin=-3.0598e-07,Ymax=3.03109,Zmin=10,Zmax=20}, ghosttypes=0={}
+Grid 16: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-1.75,Xmax=1.75,Ymin=2.38157,Ymax=3.5,Zmin=10,Zmax=20}, ghosttypes=0={}
+Grid 17: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=1.375,Xmax=3.5,Ymin=3.31923e-06,Ymax=3.03109,Zmin=10,Zmax=20}, ghosttypes=0={}
+Grid 18: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-4.25,Xmax=-1.75,Ymin=-3.71547e-07,Ymax=3.68061,Zmin=10,Zmax=20}, ghosttypes=0={}
+Grid 19: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-2.125,Xmax=2.125,Ymin=3.03109,Ymax=4.25,Zmin=10,Zmax=20}, ghosttypes=0={}
+Grid 20: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=1.75,Xmax=4.25,Ymin=4.22448e-06,Ymax=3.68061,Zmin=10,Zmax=20}, ghosttypes=0={}
+Grid 21: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-5,Xmax=-2.125,Ymin=-4.37114e-07,Ymax=4.33012,Zmin=10,Zmax=20}, ghosttypes=0={}
+Grid 22: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-2.5,Xmax=2.49999,Ymin=3.68061,Ymax=5,Zmin=10,Zmax=20}, ghosttypes=0={}
+Grid 23: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=2.125,Xmax=5,Ymin=5.12973e-06,Ymax=4.33013,Zmin=10,Zmax=20}, ghosttypes=0={}
+Grid 24: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-2.75,Xmax=-1,Ymin=-2.40413e-07,Ymax=2.38157,Zmin=20,Zmax=30}, ghosttypes=0={}
+Grid 25: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-1.375,Xmax=1.375,Ymin=1.73205,Ymax=2.75,Zmin=20,Zmax=30}, ghosttypes=0={}
+Grid 26: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=0.999998,Xmax=2.75,Ymin=2.41399e-06,Ymax=2.38157,Zmin=20,Zmax=30}, ghosttypes=0={}
+Grid 27: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-3.5,Xmax=-1.375,Ymin=-3.0598e-07,Ymax=3.03109,Zmin=20,Zmax=30}, ghosttypes=0={}
+Grid 28: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-1.75,Xmax=1.75,Ymin=2.38157,Ymax=3.5,Zmin=20,Zmax=30}, ghosttypes=0={}
+Grid 29: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=1.375,Xmax=3.5,Ymin=3.31923e-06,Ymax=3.03109,Zmin=20,Zmax=30}, ghosttypes=0={}
+Grid 30: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-4.25,Xmax=-1.75,Ymin=-3.71547e-07,Ymax=3.68061,Zmin=20,Zmax=30}, ghosttypes=0={}
+Grid 31: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-2.125,Xmax=2.125,Ymin=3.03109,Ymax=4.25,Zmin=20,Zmax=30}, ghosttypes=0={}
+Grid 32: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=1.75,Xmax=4.25,Ymin=4.22448e-06,Ymax=3.68061,Zmin=20,Zmax=30}, ghosttypes=0={}
+Grid 33: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-5,Xmax=-2.125,Ymin=-4.37114e-07,Ymax=4.33012,Zmin=20,Zmax=30}, ghosttypes=0={}
+Grid 34: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=-2.5,Xmax=2.49999,Ymin=3.68061,Ymax=5,Zmin=20,Zmax=30}, ghosttypes=0={}
+Grid 35: type=AVT_CURVILINEAR_MESH, dims={Nx=11,Ny=11,Nz=11}, extents={Xmin=2.125,Xmax=5,Ymin=5.12973e-06,Ymax=4.33013,Zmin=20,Zmax=30}, ghosttypes=0={}

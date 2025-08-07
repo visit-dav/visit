@@ -235,13 +235,8 @@ QvisMoleculePlotWindow::CreateWindowContents()
     
     colorBondsGroup->addButton(colorBondsBondColoringModeColorByAtom, 0);
     colorBondsGroup->addButton(colorBondsBondColoringModeSingleColor, 1);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(colorBondsGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(colorBondsChanged(int)));
-#else
     connect(colorBondsGroup, SIGNAL(idClicked(int)),
             this, SLOT(colorBondsChanged(int)));
-#endif
     bondSingleColor = new QvisColorButton(bondsGroup);
     connect(bondSingleColor, SIGNAL(selectedColor(const QColor&)),
             this, SLOT(bondSingleColorChanged(const QColor&)));

@@ -724,7 +724,7 @@ Silo_ also supports fully arbitrary polyhedral zones but that will not be covere
 The procedure for creating the node coordinates is the same with the exception that 3D meshes also require a Z-coordinate.
 The procedure for creating the zone list (connectivity information) is the same except that you specify cells using a larger number of nodes because they are 3D.
 The order in which the nodes are specified is also more important for 3D shapes because if the nodes are not given in the right order, the zones can become tangled.
-The proper zone ordering for each of the four supported 3D zone shapes is shown in `the Silo_'s user manual <https://wci.llnl.gov/sites/wci/files/2020-08/LLNL-SM-654357.pdf?#page=122>`__.
+The proper zone ordering for each of the four supported 3D zone shapes is shown in `the Silo_'s user manual <https://silo.readthedocs.io/objects.html#silo-standard-hex>`__.
 
 :numref:`Figure %s <silo_meshucd3d>` shows an example of a simple 3D unstructured mesh consisting of 2 hexahedrons, 1 pyramid, 1 prism, and 1 tetrahedron.
 
@@ -866,7 +866,7 @@ Example for associating new axis labels and units with a mesh:
     c Free the option list
         err = dbfreeoptlist(optlistid)
 
-Another intersting feature of Silo_ related to structured and unstructured meshes is its ability to apply various compression algorithms including FPZIP, HZIP and ZFP to the mesh as well as its variables. See the documentation on ``DBSetCompression()`` in the `Silo user's manual <https://wci.llnl.gov/sites/wci/files/2020-08/LLNL-SM-654357.pdf?#page=49>`__ for more information.
+Another intersting feature of Silo_ related to structured and unstructured meshes is its ability to apply various compression algorithms including FPZIP, HZIP and ZFP to the mesh as well as its variables. See the documentation on ``DBSetCompression()`` in the `Silo user's manual <https://silo.readthedocs.io/globals.html#dbsetcompression>`__ for more information.
 
 Writing a scalar variable
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1624,6 +1624,6 @@ Note that if you use the ``"EMPTY"`` keyword in a multivar object then the same 
   DBPutMultimesh(dbfile, "mesh", nmesh, meshnames, meshtypes, NULL);
 
 
-For really large scale problems (say more than say 10\ :sup:`5`), explicitly listing the names of constituent domain-level objects comprising a mutli-block object can result in a performance issue. As a result, Silo_ provides an :ref:`printf-style <FormattingNumbers>` mechanism for generating file system paths and Silo_ object paths on the fly. This mechanism is known as a *namescheme*. It is a best scalability practice to use Silo_ nameschemes for multi-block objects. For more information, see the Silo_ user's manual regarding `DBMakeNamescheme <https://wci.llnl.gov/sites/wci/files/2020-08/LLNL-SM-654357.pdf?#page=226>`__ and the associated optlist options, ``DBOPT_MB_FILE_NS` and ``DBOPT_MB_BLOCK_NS`` for multi-block objects.
+For really large scale problems (say more than say 10\ :sup:`5`), explicitly listing the names of constituent domain-level objects comprising a mutli-block object can result in a performance issue. As a result, Silo_ provides an :ref:`printf-style <FormattingNumbers>` mechanism for generating file system paths and Silo_ object paths on the fly. This mechanism is known as a *namescheme*. It is a best scalability practice to use Silo_ nameschemes for multi-block objects. For more information, see the Silo_ user's manual regarding `DBMakeNamescheme <https://silo.readthedocs.io/subsets.html#dbmakenamescheme>`__ and the associated optlist options, ``DBOPT_MB_FILE_NS` and ``DBOPT_MB_BLOCK_NS`` for multi-block objects.
 You can find many more examples of various features of Silo by browsing source code in either `VisIt's <https://github.com/visit-dav/visit/tree/develop/src/tools/data/datagen>`__ or `Silo's <https://github.com/LLNL/Silo/tree/main/tests>`__ test suites or the `test data files <https://github.com/search?q=repo%3Avisit-dav%2Fvisit%20path%3Asilo*.tar.xz&type=code>`__ used in VisIt_'s testing.
 

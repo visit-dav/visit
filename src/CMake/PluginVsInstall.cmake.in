@@ -129,6 +129,13 @@
 #   Kevin Griffin, Tue Apr 15, 2025
 #   Added HAVE_ANARI
 #
+#   Kathleen Biagas, Wed May 7, 2025
+#   Added NEKTAR++ vars, neeed for libraries that link with avtivp when
+#   Nektar++ is enabled. RadialResample operator is an example
+#
+#   Kathleen Biagas, Thu July 10, 2025
+#   Add support for OpenEXR 3.3.4.
+#
 #****************************************************************************/
 
 ##
@@ -322,6 +329,12 @@ set(MILI_INCLUDE_DIR ${VISIT_ROOT_INCLUDE_DIR}/mili/include)
 set(MILI_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(MILI_LIB @MILI_LIB@)
 
+# needed for any lib linking with avtivp_ser or avtivp_par
+set(NEKTAR++_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
+set(NEKTAR++_LIBRARY_DIRS ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
+set(NEKTAR++_TP_LIBRARY_DIRS ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
+set(ACCELERATE_FRAMEWORK_LINK_FLAGS @ACCELERATE_FRAMEWORK_LINK_FLAGS@)
+
 set(NETCDF_INCLUDE_DIR ${VISIT_ROOT_INCLUDE_DIR}/netcdf/include)
 set(NETCDF_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(NETCDF_LIB @NETCDF_LIB@)
@@ -359,7 +372,11 @@ set(MFEM_INCLUDE_DIR  ${VISIT_ROOT_INCLUDE_DIR}/mfem/include;${CONDUIT_INCLUDE_D
 set(MFEM_LIBRARY_DIR  ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(MFEM_LIB @MFEM_LIB@)
 
+if(OPENEXR_VERSION AND OPENEXR_VERSION VERSION_EQUAL 3.3.4)
+    set(OPENEXR_INCLUDE_DIR  ${VISIT_ROOT_INCLUDE_DIR}/openexr)
+else()
 set(OPENEXR_INCLUDE_DIR  ${VISIT_ROOT_INCLUDE_DIR}/openexr/OpenEXR)
+endif()
 set(OPENEXR_LIBRARY_DIR  ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(OPENEXR_LIB @OPENEXR_LIB@)
 

@@ -43,11 +43,6 @@
 #include <vtkCreateTriangleHelpers.h>
 #include <vtkVisItCutter.h>
 
-#include <visit-config.h>
-
-#if LIB_VERSION_LE(VTK,9,2,6)
-  #include <vtkCutter.h>
-#endif
 
 vtkStandardNewMacro(vtkSlicer);
 
@@ -769,20 +764,14 @@ vtkSlicer::GeneralExecute(void)
 
 void
 vtkSlicer::SliceDataset(vtkDataSet *in_ds, vtkPolyData *out_pd,
-    bool useVTKFilter)
+    bool useUGridBypass)
 {
     vtkPlane  *plane  = vtkPlane::New();
     plane->SetOrigin(Origin[0], Origin[1], Origin[2]);
     plane->SetNormal(Normal[0], Normal[1], Normal[2]);
 
-#if LIB_VERSION_GE(VTK,9,4,1)
     vtkVisItCutter *cutter = vtkVisItCutter::New();
-    // the flag 'useVTKFilter' doesn't really make sense here
-    // We want to tell the cutter to use an unstructured-grid specific
-    // cutting method instead of passing along to vtkPlaneCutter which
-    // garbles CellData when polygonal/polyhedral cells are present.
-    // The flag should be renamed when we strip support for VTK 9.2.6
-    cutter->SetUnstructuredGridBypass(useVTKFilter);
+    cutter->SetUnstructuredGridBypass(useUGridBypass);
     cutter->SetCutFunction(plane);
     cutter->SetInputData(in_ds);
     cutter->Update();
@@ -790,28 +779,6 @@ vtkSlicer::SliceDataset(vtkDataSet *in_ds, vtkPolyData *out_pd,
     out_pd->ShallowCopy(cutter->GetOutput());
     cutter->Delete();
 
-#else
-    if(useVTKFilter)
-    {
-        vtkCutter *cutter = vtkCutter::New();
-        cutter->SetCutFunction(plane);
-        cutter->SetInputData(in_ds);
-        cutter->Update();
-
-        out_pd->ShallowCopy(cutter->GetOutput());
-        cutter->Delete();
-    }
-    else
-    {
-        vtkVisItCutter *cutter = vtkVisItCutter::New();
-        cutter->SetCutFunction(plane);
-        cutter->SetInputData(in_ds);
-        cutter->Update();
-
-        out_pd->ShallowCopy(cutter->GetOutput());
-        cutter->Delete();
-    }
-#endif
     plane->Delete();
 }
 

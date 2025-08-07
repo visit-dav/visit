@@ -80,13 +80,8 @@ QvisBoundaryOpWindow::CreateWindowContents()
 {
     // Create the smoothing level buttons
     smoothingLevelButtons = new QButtonGroup(central);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(smoothingLevelButtons, SIGNAL(buttonClicked(int)),
-            this, SLOT(smoothingLevelChanged(int)));
-#else
     connect(smoothingLevelButtons, SIGNAL(idClicked(int)),
             this, SLOT(smoothingLevelChanged(int)));
-#endif
     QGridLayout *smoothingLayout = new QGridLayout();
     topLayout->addLayout(smoothingLayout);
     smoothingLayout->setSpacing(10);

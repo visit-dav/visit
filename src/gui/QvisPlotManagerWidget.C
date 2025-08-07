@@ -361,13 +361,8 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
     applyWindowAllRadioButton = new QRadioButton(tr("all windows"), applyWindow);
     applyWindowButtonGroup->addButton(applyWindowAllRadioButton,1);
     applyWindowLayout->addWidget(applyWindowAllRadioButton);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(applyWindowButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(applyWindowChanged(int)));
-#else
     connect(applyWindowButtonGroup, SIGNAL(idClicked(int)),
             this, SLOT(applyWindowChanged(int)));
-#endif
 
     applyOperatorCheckBox = new QCheckBox(tr("Apply operators to all plots"), this);
     connect(applyOperatorCheckBox, SIGNAL(toggled(bool)),

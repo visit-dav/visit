@@ -126,9 +126,7 @@ of the plots do not match. The **Popup menu** has a **Recenter view**
 option (see :numref:`Figure %s <viewmenu>`) to calculate a new center of
 rotation for the plots so they are drawn in the center of the window. You
 can also recenter the view by clicking on the **Recenter view icon** in
-the **Toolbar**. To make sure that the view updates appropriately when
-new plots are added to the vis window, you may also want to check the
-**Auto center view** check box that is available in the **View Window** .  
+the **Toolbar**.
 
 Undo view
 """""""""

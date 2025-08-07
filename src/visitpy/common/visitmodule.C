@@ -3417,6 +3417,10 @@ visit_GetDatabaseCorrelationNames(PyObject *self, PyObject *args)
 //    Added code to get the expression if it exists instead of always adding
 //    a new expression.
 //
+//    Eric Brugger, Fri Aug  1 10:19:08 PDT 2025
+//    I modified the function to also handle lists of strings for the names
+//    and expressions.
+//
 // ****************************************************************************
 
 PyObject *
@@ -3424,38 +3428,60 @@ ExpressionDefinitionHelper(PyObject *args, const char *name, Expression::ExprTyp
 {
     ENSURE_VIEWER_EXISTS();
 
-    char *exprName;
-    char *exprDef;
-    if (!PyArg_ParseTuple(args, "ss", &exprName, &exprDef))
+    // Get the list of expression names and definitions.
+    PyObject *nameTuple = 0;
+    PyObject *defTuple = 0;
+    if (!PyArg_ParseTuple(args, "OO", &nameTuple, &defTuple))
         return NULL;
 
-    // Access the expression list and add a new one, if necessary.
+    stringVector nameVec;
+    stringVector defVec;
+    if(!GetStringVectorFromPyObject(nameTuple, nameVec))
+        return NULL;
+    if(!GetStringVectorFromPyObject(defTuple, defVec))
+        return NULL;
+
+    if(nameVec.size() != defVec.size())
+    {
+        VisItErrorFunc("The number of expression names and definitions must match.");
+        return NULL;
+    }
+
+    // Access the expression list and add new ones, if necessary.
     MUTEX_LOCK();
 
         ExpressionList *list = GetViewerState()->GetExpressionList();
-        // Get the existing expression if it exists or create a new one.
-        Expression *e = list->operator[](exprName);
-        bool expressionExists = e != 0;
-        if(!expressionExists)
-            e = new Expression();
-        else
-            debug4 << "Replacing definition for expression " << exprName << endl;
 
-        // Set the expression properties.
-        e->SetName(exprName);
-        e->SetDefinition(exprDef);
-        e->SetType(t);
-
-        // Add the expression if it's not in the list.
-        if(!expressionExists)
+        for (int i = 0; i < nameVec.size(); ++i)
         {
-            list->AddExpressions(*e);
-            delete e;
+            const char *exprName = nameVec[i].c_str();
+            const char *exprDef = defVec[i].c_str();
+
+            // Get the existing expression if it exists or create a new one.
+            Expression *e = list->operator[](exprName);
+            bool expressionExists = e != 0;
+            if(!expressionExists)
+                e = new Expression();
+            else
+                debug4 << "Replacing definition for expression " << exprName << endl;
+
+            // Set the expression properties.
+            e->SetName(exprName);
+            e->SetDefinition(exprDef);
+            e->SetType(t);
+
+            // Add the expression if it's not in the list.
+            if(!expressionExists)
+            {
+                list->AddExpressions(*e);
+                delete e;
+            }
         }
 
         // Send the new list to the viewer.
         list->Notify();
         GetViewerMethods()->ProcessExpressions();
+
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -10716,7 +10742,7 @@ visit_GetDefaultDiscreteColorTable(PyObject *self, PyObject *args)
 // Modifications:
 //    Justin Privitera, Wed Aug  3 14:12:07 PDT 2022
 //    Error is thrown for editing built-in color tables.
-// 
+//
 //    Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
 //    New CT's are correctly marked as NOT built-in.
 //
@@ -12058,11 +12084,11 @@ visit_GetQueryParameters(PyObject *self, PyObject *args)
 //   Now you can pass the output type directly to the xray image query as a
 //   string and it will handle which output type it should be internally.
 //   You can also send the output directory to the xray image query.
-// 
+//
 //   Justin Privitera, Tue Nov 22 14:56:04 PST 2022
 //   Added another tuple (tuple2) to store double vector info.
 //   This one is used for the x ray image query to store energy group bins.
-// 
+//
 //    Justin Privitera, Mon Nov 28 15:38:25 PST 2022
 //    Renamed energy group bins to energy group bounds.
 //
@@ -18148,7 +18174,7 @@ AddMethod(const char *methodName,
 //   Eric Brugger, Tue Sep 24 11:44:41 PDT 2024
 //   Added documentation for GetExportOptions.
 //
-//   Kathleen Biagas, Tue Mar 18, 2025 
+//   Kathleen Biagas, Tue Mar 18, 2025
 //   Removed Ultrawrapper methods.
 //
 // ****************************************************************************
@@ -19299,6 +19325,11 @@ NeedToLoadPlugins(Subject *, void *)
 //
 //   Mark C. Miller, Tue Jan 28 11:02:20 PST 2025
 //   Fix CATCH macro usage.
+//
+//   Cyrus Harrison, Wed May 21 15:22:26 PDT 2025
+//   Added support for -python-log-file option, which allows users to
+//   change the name of visitlog.py
+//
 // ****************************************************************************
 
 static int
@@ -19433,16 +19464,28 @@ InitializeViewerProxy(ViewerProxy* proxy)
     //
     // Open the log file
     //
-#ifndef _WIN32
-    const char *logName = "visitlog.py";
-#else
-    std::string vud = GetUserVisItDirectory() + "\\visitlog.py";
-    const char *logName = vud.c_str();
+
+    std::string log_filename = "visitlog.py";
+    //
+    // check if the user provided a custom log name
+    //
+    for(int i = 1; i < cli_argc; ++i)
+    {
+        if(strcmp(cli_argv[i],"-python-log-file") == 0 &&
+           (i+1) < cli_argc) // make sure the following arg is in bounds
+        {
+            // use specified file name
+            log_filename = std::string(cli_argv[i+1]);
+        }
+    }
+#ifdef _WIN32
+    log_filename = GetUserVisItDirectory() + "\\" + log_filename;
 #endif
+
     if(!viewerEmbedded)
     {
-        if(!LogFile_Open(logName))
-            fprintf(stderr, "Could not open %s log file.\n", logName);
+        if(!LogFile_Open(log_filename.c_str()))
+            fprintf(stderr, "Could not open %s log file.\n", log_filename.c_str());
     }
 
     //remove NULL command

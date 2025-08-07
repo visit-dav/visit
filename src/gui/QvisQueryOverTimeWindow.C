@@ -119,11 +119,7 @@ QvisQueryOverTimeWindow::CreateWindowContents()
     timeTypeBoxLayout->addWidget(mLabel, 0, 0, 1, 3);
 
     timeType = new QButtonGroup(timeTypeBox);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(timeType, SIGNAL(buttonClicked(int)), this, SLOT(timeTypeChanged(int)));
-#else
     connect(timeType, SIGNAL(idClicked(int)), this, SLOT(timeTypeChanged(int)));
-#endif
 
     QHBoxLayout *timeTypeLayout = new QHBoxLayout();
 

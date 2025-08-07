@@ -8,6 +8,7 @@
 #include <hdf5.h>
 #include <visit-hdf5.h>
 #include <string>
+#include <map>
 
 class AMRreader : public AMRreaderInterface
 {
@@ -58,6 +59,44 @@ public:
         return 0;
     }
 
+    virtual int GetRootXS(float xs[]) const {
+        xs[0] = rootxs_[0];
+        xs[1] = rootxs_[1];
+        xs[2] = rootxs_[2];
+        return 0;
+    }
+    virtual int GetRootDX(float dx[]) const {
+        dx[0] = rootdx_[0];
+        dx[1] = rootdx_[1];
+        dx[2] = rootdx_[2];
+        return 0;
+    }
+    virtual int GetRootDims(int dims[]) const {
+        dims[0] = rootdims_[0];
+        dims[1] = rootdims_[1];
+        dims[2] = rootdims_[2];
+        return 0;
+    }
+    virtual int GetRootID(int i, int j, int k) const {
+        int index = k*rootdims_[0]*rootdims_[1] + j*rootdims_[0] + i;
+        return rootids_[index];
+    }
+
+    virtual int GetNumberOfFieldVariables() const
+    {
+        return ncvs_ + navs_;
+    }
+
+    virtual int GetNumberOfConservedVariables() const
+    {
+        return ncvs_;
+    }
+
+    virtual int GetNumberOfSpecies() const
+    {
+        return nspec_;
+    }
+
     virtual int GetBlockHierarchicalIndices(int bid, int *level,
                                             int *ijk_start, int *ijk_end)
     {
@@ -89,9 +128,81 @@ public:
     }
     virtual int GetInterfaceVariable( int vid, void* dat );
 
+    virtual std::map<std::string, int> GetAVMap() {
+        return eos_->avmap;
+    }
+
     virtual bool HasTag() const
     {
         return blktag_==1;
+    }
+
+    virtual bool HasPressure() const
+    {
+        if (eos_->EOStype() == SesameEOS_type) 
+            return sesame_haspres_ || (navs_ > 0 && iavpres_ != -1);
+        else if (eos_->p_from_av())
+        {
+            if (iavpres_ >= navs_ || iavpres_ == -1)
+                return false;
+            else
+                return true;
+        }
+        else
+            return HasDensity() && HasEnergy() && HasMomentum();
+    }
+
+    virtual bool HasTemperature() const
+    {
+        if (eos_->EOStype() == SesameEOS_type) 
+            return sesame_hastemp_ || (navs_ > 0 && iavtemp_ != -1);
+        else if (eos_->T_from_av())
+        {
+            if (iavtemp_ >= navs_ || iavtemp_ == -1)
+                return false;
+            else
+                return true;
+        }
+        else
+            return HasDensity() && HasEnergy() && HasMomentum();
+    }
+
+    virtual bool HasSNDV() const
+    {
+        if (eos_->EOStype() == SesameEOS_type) 
+            return sesame_hassndv_ || (navs_ > 0 && iavsndv_ != -1);
+        else if (eos_->a_from_av())
+        {
+            if (iavsndv_ >= navs_ || iavsndv_ == -1)
+                return false;
+            else
+                return true;
+        }
+        else
+            return HasDensity() && HasEnergy() && HasMomentum();
+    }
+
+    virtual bool HasDensity() const
+    {
+        if (icvdens_ == -1) 
+            return false;
+        else
+            return true;
+    }
+    virtual bool HasMomentum() const
+    {
+        if (icvmomx_ == -1) 
+            return false;
+        else
+            return true;
+    }
+
+    virtual bool HasEnergy() const
+    {
+        if (icvener_ == -1) 
+            return false;
+        else
+            return true;
     }
 
 
@@ -108,14 +219,16 @@ protected:
     /*   virtual int  readblk( int bid ); */
 
 protected:
-    int compvar( int vid, float* blk, float* buf, int sz );
+    int copyvar( int bid, int idx, float* buf, int sz );
+    int compvar( int vid, float* blk, float* ablk, float* buf, int sz );
     int  comp_dens( float*, float*, int sz );
+    int  comp_smass( float*, float*, int sz, int is );
     int  comp_uvel( float*, float*, int sz );
     int  comp_vvel( float*, float*, int sz );
     int  comp_wvel( float*, float*, int sz );
-    int  comp_pres( float*, float*, int sz );
-    int  comp_temp( float*, float*, int sz );
-    int  comp_sndv( float*, float*, int sz );
+    int  comp_pres( float*, float*, float*, int sz );
+    int  comp_temp( float*, float*, float*, int sz );
+    int  comp_sndv( float*, float*, float*, int sz );
     int  comp_xmnt( float*, float*, int sz );
     int  comp_ymnt( float*, float*, int sz );
     int  comp_zmnt( float*, float*, int sz );
@@ -132,14 +245,23 @@ protected:
     double  tttttt_;   // simulation time
     int     blktag_;
 
+    int     ncvs_;
+    int     navs_;
     int     nblks_; // number of leaf blocks
     int     blkdim_[4];  // number of dimensions in each block
     int     blksz_;
+
+    int     nroots_; // number of roots
+    int     rootdims_[3];
+    float   rootxs_[3];
+    float   rootdx_[3];
+    int*    rootids_;
 
     float*  blkxs_;
     float*  blkdx_;
     OctKey *blkkey_;
     float*  datbuf_;
+    float*  adtbuf_;
     float*  prebuf_;
     float*  sndbuf_;
     float*  tmpbuf_;
@@ -148,6 +270,28 @@ protected:
     int  nrect_, nvert_;
 
     EOS* eos_;
+
+    int nspec_; // number of species
+    int nspecener_; // number of species energies stored
+
+    // indices in the CV array
+    int icvdens_; // index of the first species density
+    int icvmomx_; // index of x momentum
+    int icvmomy_; // index of y momentum
+    int icvmomz_; // index of z momentum
+    int icvener_; // index of the first species energy
+
+    int icvpres_; // index of pressure
+    int icvtemp_; // index of temperature
+
+    int iavpres_;
+    int iavtemp_;
+    int iavsndv_;
+    int iavvf_;
+
+    bool sesame_haspres_;
+    bool sesame_hastemp_;
+    bool sesame_hassndv_;
 };
 
 
@@ -158,6 +302,8 @@ extern int isSeqEightSibling( const int* blkdim, const float*blkxs, const float*
 extern int ConsolidateBlocks(int nblks, const int* blkdim,
                              const float* blkxs, const float* blkdx,
                              int* ncb, int* sft );
+extern float ComputeDens(float* blkdt, int istart, int ncvs, int nspec_);
+extern float ComputeEner(float* blkdt, int istart, int ncvs, int icvener_, int nspecener_);
 
 
 #endif

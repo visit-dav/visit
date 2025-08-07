@@ -318,13 +318,8 @@ QvisRenderingWindow::CreateBasicPage()
     QLabel *drawObjLabel = new QLabel(tr("Draw objects as"), basicOptions);
     basicLayout->addWidget(drawObjLabel, row, 0, 1, 3);
     objectRepresentation = new QButtonGroup(basicOptions);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(objectRepresentation, SIGNAL(buttonClicked(int)),
-            this, SLOT(objectRepresentationChanged(int)));
-#else
     connect(objectRepresentation, SIGNAL(idClicked(int)),
             this, SLOT(objectRepresentationChanged(int)));
-#endif
     row++;
 
     QRadioButton *surfaces = new QRadioButton(tr("Surfaces"), basicOptions);
@@ -346,13 +341,8 @@ QvisRenderingWindow::CreateBasicPage()
     row++;
 
     stereoType = new QButtonGroup(basicOptions);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(stereoType, SIGNAL(buttonClicked(int)),
-            this, SLOT(stereoTypeChanged(int)));
-#else
     connect(stereoType, SIGNAL(idClicked(int)),
             this, SLOT(stereoTypeChanged(int)));
-#endif
     redblue = new QRadioButton(tr("Red/Blue"), basicOptions);
     stereoType->addButton(redblue, 0);
     basicLayout->addWidget(redblue, row, 1);
@@ -443,13 +433,8 @@ QvisRenderingWindow::CreateAdvancedPage()
     QLabel *scalrenLabel = new QLabel(tr("Use scalable rendering"), advancedOptions);
     advLayout->addWidget(scalrenLabel, row, 0, 1, 3);
     scalrenActivationMode = new QButtonGroup(advancedOptions);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(scalrenActivationMode, SIGNAL(buttonClicked(int)),
-            this, SLOT(scalrenActivationModeChanged(int)));
-#else
     connect(scalrenActivationMode, SIGNAL(idClicked(int)),
             this, SLOT(scalrenActivationModeChanged(int)));
-#endif
     row++;
 
     scalrenAuto = new QRadioButton(tr("Auto"), advancedOptions);
@@ -482,13 +467,8 @@ QvisRenderingWindow::CreateAdvancedPage()
                                       advancedOptions);
     advLayout->addWidget(scalrenCompressLabel, row, 0, 1, 3);
     scalrenCompressMode = new QButtonGroup(advancedOptions);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(scalrenCompressMode, SIGNAL(buttonClicked(int)),
-            this, SLOT(scalrenCompressModeChanged(int)));
-#else
     connect(scalrenCompressMode, SIGNAL(idClicked(int)),
             this, SLOT(scalrenCompressModeChanged(int)));
-#endif
     row++;
 
     QRadioButton *cmp_auto = new QRadioButton(tr("Auto"), advancedOptions);
@@ -507,13 +487,8 @@ QvisRenderingWindow::CreateAdvancedPage()
     QLabel *compactDomainsLabel = new QLabel(tr("Compact domains on engine"), advancedOptions);
     advLayout->addWidget(compactDomainsLabel, row, 0, 1, 3);
     compactDomainsActivationMode = new QButtonGroup(advancedOptions);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(compactDomainsActivationMode, SIGNAL(buttonClicked(int)),
-            this, SLOT(compactDomainsActivationModeChanged(int)));
-#else
     connect(compactDomainsActivationMode, SIGNAL(idClicked(int)),
             this, SLOT(compactDomainsActivationModeChanged(int)));
-#endif
     row++;
 
     compactDomainsAuto = new QRadioButton(tr("Auto"), advancedOptions);
@@ -1013,9 +988,6 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
         case RenderingAttributes::ID_anariRendering:
             anariRenderingWidget->SetChecked(renderAtts->GetAnariRendering());
             break;
-        case RenderingAttributes::ID_anariSPP:
-            anariRenderingWidget->UpdateDenoiserSelection(renderAtts->GetUseAnariDenoiser());
-            break;
         case RenderingAttributes::ID_anariLibrary:
             anariRenderingWidget->UpdateLibraryName(renderAtts->GetAnariLibrary());
             break;
@@ -1025,44 +997,11 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
         case RenderingAttributes::ID_anariRendererSubtype:
             anariRenderingWidget->UpdateRendererSubtypes(renderAtts->GetAnariRendererSubtype());
             break;
-        case RenderingAttributes::ID_anariLightFalloff:
-            anariRenderingWidget->UpdateLightFalloff(renderAtts->GetAnariLightFalloff());
+        case RenderingAttributes::ID_anariRendererParameters:
+            anariRenderingWidget->UpdateRendererParameters(renderAtts->GetAnariRendererParameters());
             break;
-        case RenderingAttributes::ID_anariAmbientIntensity:
-            anariRenderingWidget->UpdateAmbientIntensity(renderAtts->GetAnariAmbientIntensity());
-            break;
-        case RenderingAttributes::ID_anariMaxDepth:
-            anariRenderingWidget->UpdateMaxDepth(renderAtts->GetAnariMaxDepth());
-            break;
-        case RenderingAttributes::ID_anariRValue:
-            anariRenderingWidget->UpdateRValue(renderAtts->GetAnariRValue());
-            break;
-        case RenderingAttributes::ID_anariDebugMethod:
-            anariRenderingWidget->UpdateDebugMethod(renderAtts->GetAnariDebugMethod());
-            break;
-        case RenderingAttributes::ID_usdDir:
-            anariRenderingWidget->UpdateUSDOutputLocation(renderAtts->GetUsdDir());
-            break;
-        case RenderingAttributes::ID_usdAtCommit:
-            anariRenderingWidget->UpdateUSDParameter(USDParameter::COMMIT, renderAtts->GetUsdAtCommit());
-            break;
-        case RenderingAttributes::ID_usdOutputBinary:
-            anariRenderingWidget->UpdateUSDParameter(USDParameter::BINARY, renderAtts->GetUsdOutputBinary());
-            break;
-        case RenderingAttributes::ID_usdOutputMaterial:
-            anariRenderingWidget->UpdateUSDParameter(USDParameter::MATERIAL, renderAtts->GetUsdOutputMaterial());
-            break;
-        case RenderingAttributes::ID_usdOutputPreviewSurface:
-            anariRenderingWidget->UpdateUSDParameter(USDParameter::PREVIEW, renderAtts->GetUsdOutputPreviewSurface());
-            break;
-        case RenderingAttributes::ID_usdOutputMDL:
-            anariRenderingWidget->UpdateUSDParameter(USDParameter::MDL, renderAtts->GetUsdOutputMDL());
-            break;
-        case RenderingAttributes::ID_usdOutputMDLColors:
-            anariRenderingWidget->UpdateUSDParameter(USDParameter::MDLCOLORS, renderAtts->GetUsdOutputMDLColors());
-            break;
-        case RenderingAttributes::ID_usdOutputDisplayColors:
-            anariRenderingWidget->UpdateUSDParameter(USDParameter::DISPLAY, renderAtts->GetUsdOutputDisplayColors());
+        case RenderingAttributes::ID_anariUSDParameters:
+            anariRenderingWidget->UpdateUSDParameters(renderAtts->GetAnariUSDParameters());
             break;
 #endif
         case RenderingAttributes::ID_scalableActivationMode:

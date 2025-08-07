@@ -171,15 +171,9 @@ QvisRemapWindow::CreateWindowContents()
     QRadioButton *variableTypeVariableTypesextrinsic = new QRadioButton(tr("extrinsic"), variableType);
     variableTypeButtonGroup->addButton(variableTypeVariableTypesextrinsic,1);
     variableTypeLayout->addWidget(variableTypeVariableTypesextrinsic);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(variableTypeButtonGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(variableTypeChanged(int)));
-#else
     connect(variableTypeButtonGroup, SIGNAL(idClicked(int)),
             this, SLOT(variableTypeChanged(int)));
-#endif
     mainLayout->addWidget(variableType, 12,1);
-
 }
 
 

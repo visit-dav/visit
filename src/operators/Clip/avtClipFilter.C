@@ -14,7 +14,6 @@
 #include <vtkIdList.h>
 #include <vtkImplicitBoolean.h>
 #include <vtkMergePoints.h>
-#include <vtkObjectFactory.h>
 #include <vtkPlane.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>

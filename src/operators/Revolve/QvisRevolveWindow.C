@@ -106,13 +106,8 @@ QvisRevolveWindow::CreateWindowContents()
     QRadioButton *meshTypeMeshTypeZR = new QRadioButton(tr("ZR"), meshTypeWidget);
     meshType->addButton(meshTypeMeshTypeZR,3);
     meshTypeLayout->addWidget(meshTypeMeshTypeZR);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(meshType, SIGNAL(buttonClicked(int)),
-            this, SLOT(meshTypeChanged(int)));
-#else
     connect(meshType, SIGNAL(idClicked(int)),
             this, SLOT(meshTypeChanged(int)));
-#endif
     mainLayout->addWidget(meshTypeWidget, 0,1);
 
     autoAxis = new QCheckBox(tr("Choose axis based on mesh type?"), central);

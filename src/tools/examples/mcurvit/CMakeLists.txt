@@ -108,9 +108,7 @@ IF(VISIT_STATIC)
     )
 ENDIF(VISIT_STATIC)
 
-if(QT_VERSION VERSION_GREATER_EQUAL "6.2.0")
-    qt6_disable_unicode_defines(mcurvit)
-endif()
+qt6_disable_unicode_defines(mcurvit)
 
 TARGET_LINK_LIBRARIES(mcurvit
 ${viewer_exe_IOperator}

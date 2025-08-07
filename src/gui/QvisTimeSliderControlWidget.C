@@ -683,11 +683,7 @@ void
 QvisTimeSliderControlWidget::SetTimeFieldText(const QString &text)
 {
     int w  = timeField->width();
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     int nw = timeField->fontMetrics().horizontalAdvance("  " + text);
-#else
-    int nw = timeField->fontMetrics().width("  " + text);
-#endif
     if(w < nw)
         timeField->setMinimumWidth(nw);
     timeField->setText(text);

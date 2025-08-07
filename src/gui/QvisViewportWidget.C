@@ -194,11 +194,7 @@ void
 QViewportItem::updateText()
 {
     QFontMetricsF fmet(textItem->font());
-#if QT_VERSION < QT_VERSION_CHECK(5,11,0)
-    float txt_w = fmet.width(id);
-#else
     float txt_w = fmet.horizontalAdvance(id);
-#endif
     float txt_h = fmet.height();
     if(txt_w > rect().width())
     {
@@ -217,11 +213,7 @@ QViewportItem::updateText()
             name = number;
 
         textItem->setText(name);
-#if QT_VERSION < QT_VERSION_CHECK(5,11,0)
-        txt_w = fmet.width(name);
-#else
         txt_w = fmet.horizontalAdvance(name);
-#endif
     }
     else
     {
@@ -1095,11 +1087,7 @@ QvisViewportWidget::mousePressEvent(QMouseEvent* e)
     if(e->button() == Qt::LeftButton && !selected)
     {
         dragViewportOutline = true;
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        dragMouseStart = e->localPos();
-#else
         dragMouseStart = e->position();
-#endif
     }
 }
 
@@ -1145,13 +1133,8 @@ QvisViewportWidget::mouseMoveEvent(QMouseEvent* e)
         // set rect
         float x = dragMouseStart.x();
         float y = dragMouseStart.y();
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-        float dx = e->localPos().x() - x;
-        float dy = e->localPos().y() - y;
-#else
         float dx = e->position().x() - x;
         float dy = e->position().y() - y;
-#endif
 
         float w = dx;
         float h = dy;

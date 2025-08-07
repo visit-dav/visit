@@ -146,13 +146,8 @@ QvisReflectWindow::CreateWindowContents()
     rb = new QRadioButton(tr("3D"), central);
     modeButtons->addButton(rb,1);
     modeButtons->button(0)->setChecked(true);
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(modeButtons, SIGNAL(buttonClicked(int)),
-            this, SLOT(selectMode(int)));
-#else
     connect(modeButtons, SIGNAL(idClicked(int)),
             this, SLOT(selectMode(int)));
-#endif
     octantLayout->addWidget(rb, 0, 2);
 
     // Octant
@@ -215,31 +210,16 @@ QvisReflectWindow::CreateWindowContents()
 
     connect(octant,        SIGNAL(activated(int)),
             this,          SLOT(octantChanged(int)));
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(xBound,        SIGNAL(buttonClicked(int)),
-            this,          SLOT(xBoundaryChanged(int)));
-#else
     connect(xBound,        SIGNAL(idClicked(int)),
             this,          SLOT(xBoundaryChanged(int)));
-#endif
     connect(specifiedX,    SIGNAL(returnPressed()),
             this,          SLOT(specifiedXProcessText()));
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(yBound,        SIGNAL(buttonClicked(int)),
-            this,          SLOT(yBoundaryChanged(int)));
-#else
     connect(yBound,        SIGNAL(idClicked(int)),
             this,          SLOT(yBoundaryChanged(int)));
-#endif
     connect(specifiedY,    SIGNAL(returnPressed()),
             this,          SLOT(specifiedYProcessText()));
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    connect(zBound,        SIGNAL(buttonClicked(int)),
-            this,          SLOT(zBoundaryChanged(int)));
-#else
     connect(zBound,        SIGNAL(idClicked(int)),
             this,          SLOT(zBoundaryChanged(int)));
-#endif
     connect(specifiedZ,    SIGNAL(returnPressed()),
             this,          SLOT(specifiedZProcessText()));
 
