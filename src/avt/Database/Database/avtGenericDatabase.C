@@ -8275,6 +8275,10 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
     {
         CharStrRef curVar  = var2nd[i];
         avtVarType varType = metadata->DetermineVarType(*curVar);
+        std::cout << "=============================================" << std::endl;
+        std::cout << "*curVar " << *curVar << std::endl;
+        std::cout << "varType " << varType << std::endl;
+        std::cout << "=============================================" << std::endl;
         switch (varType)
         {
           case AVT_SCALAR_VAR:
@@ -8401,6 +8405,7 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
             }
             break;
 
+          case AVT_SYMMETRIC_TENSOR_VAR:
           case AVT_MATERIAL:
           case AVT_MESH:
             // These typically come about because of expressions.

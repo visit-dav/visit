@@ -2555,6 +2555,8 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
             {
                 string mPath = meshPaths[i];
 
+                std::cout << "mPath " << mPath << std::endl;
+
                 //
                 // When we come across a vector of length 6, we change it
                 // to a normal vector of length 9 and render it as a
@@ -3299,65 +3301,65 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
         return (void*) mat;
     }
     // TODO JUSTIN it is this case that breaks things - if this is commented out, all works
-    // else if (strcmp(auxType, AUXILIARY_DATA_GLOBAL_NODE_IDS) == 0)
-    // {
-    //     const char *mesh = varName;
-    //     //
-    //     // The valid meshnames are meshX or sand_meshX, where X is an int > 0.
-    //     // We need to verify the name, and get the meshId.
-    //     //
-    //     bool isSandMesh = false;
-    //     if (strstr(mesh, "sand_mesh") == mesh)
-    //     {
-    //         isSandMesh = true;
-    //     }
-    //     else if (strstr(mesh, "mesh") != mesh)
-    //     {
-    //         EXCEPTION1(InvalidVariableException, mesh);
-    //     }
+    else if (strcmp(auxType, AUXILIARY_DATA_GLOBAL_NODE_IDS) == 0)
+    {
+        const char *mesh = varName;
+        //
+        // The valid meshnames are meshX or sand_meshX, where X is an int > 0.
+        // We need to verify the name, and get the meshId.
+        //
+        bool isSandMesh = false;
+        if (strstr(mesh, "sand_mesh") == mesh)
+        {
+            isSandMesh = true;
+        }
+        else if (strstr(mesh, "mesh") != mesh)
+        {
+            EXCEPTION1(InvalidVariableException, mesh);
+        }
 
-    //     char *check = 0;
-    //     int meshId;
-    //     int offset = 4;
-    //     if (isSandMesh)
-    //     {
-    //         offset = 9;
-    //     }
+        char *check = 0;
+        int meshId;
+        int offset = 4;
+        if (isSandMesh)
+        {
+            offset = 9;
+        }
 
-    //     //
-    //     // Do a checked conversion to integer.
-    //     //
-    //     meshId = (int) strtol(mesh + offset, &check, 10);
-    //     if (meshId == 0 || check == mesh + offset)
-    //     {
-    //         EXCEPTION1(InvalidVariableException, mesh)
-    //     }
-    //     --meshId;
+        //
+        // Do a checked conversion to integer.
+        //
+        meshId = (int) strtol(mesh + offset, &check, 10);
+        if (meshId == 0 || check == mesh + offset)
+        {
+            EXCEPTION1(InvalidVariableException, mesh)
+        }
+        --meshId;
 
-    //     if (!nodeLabelsExistForMesh[meshId])
-    //     {
-    //         return NULL;
-    //     }
+        if (!nodeLabelsExistForMesh[meshId])
+        {
+            return NULL;
+        }
 
-    //     MiliClassMetaData *miliClass =
-    //         miliMetaData[meshId]->GetClassMDByShortName("node");
+        MiliClassMetaData *miliClass =
+            miliMetaData[meshId]->GetClassMDByShortName("node");
 
-    //     intVector labelIds = miliClass->GetLabelIds()[dom];
+        intVector labelIds = miliClass->GetLabelIds()[dom];
 
-    //     int *myLabelIds = new int[labelIds.size()];
-    //     for (int i = 0; i < labelIds.size(); i ++)
-    //     {
-    //         myLabelIds[i] = labelIds[i];
-    //     }
+        int *myLabelIds = new int[labelIds.size()];
+        for (int i = 0; i < labelIds.size(); i ++)
+        {
+            myLabelIds[i] = labelIds[i];
+        }
 
-    //     vtkIntArray *rv = vtkIntArray::New();
-    //     rv->SetNumberOfComponents(1);
-    //     rv->SetArray(myLabelIds, labelIds.size(), 0);
+        vtkIntArray *rv = vtkIntArray::New();
+        rv->SetNumberOfComponents(1);
+        rv->SetArray(myLabelIds, labelIds.size(), 0);
 
-    //     df = avtVariableCache::DestructVTKObject;
+        df = avtVariableCache::DestructVTKObject;
 
-    //     return (void *) rv;
-    // }
+        return (void *) rv;
+    }
 
     return NULL;
 }
