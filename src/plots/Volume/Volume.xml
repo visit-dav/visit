@@ -4,6 +4,18 @@
       ${VISIT_INCLUDE_DIR}/avt/Expressions/Abstract
       ${VISIT_INCLUDE_DIR}/avt/Expressions/General
     </CXXFLAGS>
+    <LIBS components="ESer">
+      avtexpressions_ser
+      avtfilters_ser
+      VTK::RenderingVolume
+      VTK::RenderingVolumeOpenGL2
+    </LIBS>
+    <LIBS components="EPar">
+      avtexpressions_par
+      avtfilters_par
+      VTK::RenderingVolume
+      VTK::RenderingVolumeOpenGL2
+    </LIBS>
     <Files components="V">
       avtVolumeRenderer.C
       avtVolumeFilter.C
@@ -12,6 +24,10 @@
       avtVisItVTKRenderFilter.C
       avtICETCompositor.C
     </Files>
+    <LIBS components="V">
+      VTK::RenderingVolume
+      VTK::RenderingVolumeOpenGL2
+    </LIBS>
     <Files components="E">
       avtVolumeRenderer.C
       avtVolumeFilter.C
@@ -21,10 +37,6 @@
       avtICETCompositor.C
       avtVolumeResampleFilter.C
     </Files>
-    <LIBS components="V">
-      VTK::RenderingVolume
-      VTK::RenderingVolumeOpenGL2
-    </LIBS>
     <LIBS components="ESer">
       avtexpressions_ser
       avtfilters_ser
@@ -94,7 +106,6 @@
         SciVis
         PathTracer
       </Enum>
-
       <Field name="OSPRayEnabledFlag" label="Enable OSPRay" type="bool">
         false
       </Field>
@@ -126,13 +137,13 @@
         0
       </Field>
       <Field name="OSPRayAODistance" label="OSPRayAODistance" type="double">
-        100000.0
+        100000.000000
       </Field>
       <Field name="OSPRayMinContribution" label="OSPRayMinContribution" type="double">
-        0.001
+        0.001000
       </Field>
       <Field name="OSPRayMaxContribution" label="OSPRayMaxContribution" type="double">
-        2.0
+        2.000000
       </Field>
       <Field name="legendFlag" label="legendFlag" type="bool">
         true
@@ -229,6 +240,23 @@
         0.750000
         0.000000
         15.000000
+      </Field>
+      <Field name="anariRendering" label="ANARI Rendering" type="bool">
+        false
+      </Field>
+      <Field name="anariLibrary" label="ANARI Back-end Device" type="string">
+      </Field>
+      <Field name="anariLibrarySubtype" label="ANARI Back-end Device Subtype" type="string">
+      </Field>
+      <Field name="anariRendererSubtype" label="ANARI Renderer Subtype" type="string">
+        default
+      </Field>
+      <Field name="usingUsdDevice" label="Using USD Device" type="bool">
+        false
+      </Field>
+      <Field name="anariRendererParameters" label="ANARI Renderer Parameters" type="stringVector">
+      </Field>
+      <Field name="anariUSDParameters" label="ANARI USD Parameters" type="stringVector">
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
