@@ -494,7 +494,8 @@ vtkVisItContourFilter::UnstructuredGridExecute(vtkDataSet *input,
             {
                 vtkIdType nFaces;
                 const vtkIdType *facePtIds;
-                ug->GetFaceStream(cellId, nFaces, facePtIds);
+                vtkIdList *ptIds;
+                ug->GetFaceStream(cellId, ptIds); // nFaces, facePtIds);
                 stuff_I_cant_contour->InsertNextCell(cellType, npts, pts, 
                      nFaces, facePtIds);
             }

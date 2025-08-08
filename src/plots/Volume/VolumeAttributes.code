@@ -432,7 +432,6 @@ VolumeAttributes::AnyNonTransferFunctionMembersAreDifferent(const VolumeAttribut
     return !same;
 }
 
-
 Target: xml2python
 Function: VolumeAttributes_SetFreeformOpacity
 Declaration: VolumeAttributes_SetFreeformOpacity
@@ -605,7 +604,6 @@ VolumeViewerEnginePluginInfo::~VolumeViewerEnginePluginInfo()
     }
 }
 
-
 Target: xml2python
 Function: VolumeAttributes_SetMaterialProperties
 Declaration: VolumeAttributes_SetMaterialProperties
@@ -653,6 +651,3 @@ VolumeAttributes_SetMaterialProperties(PyObject *self, PyObject *args)
     return Py_None;
 }
 
-Target: xml2cmake
-Condition: VISIT_SLIVR
-Definitions: -DVISIT_SLIVR

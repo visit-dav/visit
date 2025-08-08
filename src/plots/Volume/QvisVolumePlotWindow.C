@@ -28,6 +28,10 @@
 #undef max
 #endif
 
+#ifdef HAVE_ANARI
+#include <AnariVolumeWidget.h>
+#endif
+
 #include <QvisOpacitySlider.h>
 #include <QvisSpectrumBar.h>
 #include <QvisColorSelectionWidget.h>
@@ -976,6 +980,12 @@ void QvisVolumePlotWindow::CreateSamplingGroups(QWidget *parent, QLayout *pLayou
 
     //ospray group
     CreateOSPRayGroups(parent, pLayout);
+    
+    // ANARI Group
+    #ifdef HAVE_ANARI
+        this->anariVolumeWidget = new AnariVolumeWidget(this, volumeAtts);
+        pLayout->addWidget(this->anariVolumeWidget);
+    #endif
 
     //raycasting group
     {
@@ -1065,6 +1075,11 @@ void QvisVolumePlotWindow::EnableDefaultGroup()
 
     osprayGroup->setVisible(true);
     osprayGroup->setEnabled(true);
+    
+    #ifdef HAVE_ANARI
+    anariVolumeWidget->setVisible(true);
+    anariVolumeWidget->setEnabled(true);
+    #endif
 }
 
 void QvisVolumePlotWindow::UpdateSamplingGroup()
@@ -1075,6 +1090,9 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
     defaultGroup->setVisible(false);
     raycastingGroup->setVisible(false);
     methodsGroup->setVisible(true);
+    #ifdef HAVE_ANARI
+    anariVolumeWidget->setVisible(false);
+    #endif
 
     tfTabs->setTabEnabled(1, true);
 
@@ -1167,6 +1185,10 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
         resampleGroup->setEnabled(true);
         osprayGroup->setVisible(true);
         osprayGroup->setEnabled(true);
+        #ifdef HAVE_ANARI
+        anariVolumeWidget->setVisible(true);
+        anariVolumeWidget->setEnabled(true);
+        #endif
 
         // raycastingGroup->setVisible(true);
         EnableSamplingMethods(false);
@@ -2201,6 +2223,26 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             osprayMaxContribution->setValue(volumeAtts->GetOSPRayMaxContribution());
             osprayMaxContribution->blockSignals(false);
             break;
+#ifdef HAVE_ANARI
+        case VolumeAttributes::ID_anariRendering:
+            anariVolumeWidget->SetChecked(volumeAtts->GetAnariRendering());
+            break;
+        case VolumeAttributes::ID_anariLibrary:
+            anariVolumeWidget->UpdateLibraryName(volumeAtts->GetAnariLibrary());
+            break;
+        case VolumeAttributes::ID_anariLibrarySubtype:
+            anariVolumeWidget->UpdateLibrarySubtypes(volumeAtts->GetAnariLibrarySubtype());
+            break;
+        case VolumeAttributes::ID_anariRendererSubtype:
+            anariVolumeWidget->UpdateRendererSubtypes(volumeAtts->GetAnariRendererSubtype());
+            break;
+        case VolumeAttributes::ID_anariRendererParameters:
+            anariVolumeWidget->UpdateRendererParameters(volumeAtts->GetAnariRendererParameters());
+            break;
+        case VolumeAttributes::ID_anariUSDParameters:
+            anariVolumeWidget->UpdateUSDParameters(volumeAtts->GetAnariUSDParameters());
+            break;
+#endif
         }
     }
 
