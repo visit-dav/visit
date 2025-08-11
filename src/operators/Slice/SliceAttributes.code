@@ -394,5 +394,5 @@ SliceAttributes::SetValue(const std::string &name, const bool &value)
 
 Target: xml2cmake
 Condition:       HAVE_LIBVTKM
-ELinkLibraries:  vtkm::cont vtkm::filter_core vtkm::filter_contour vtkm::worklet vtkm::filter_vector_analysis
+ELinkLibraries:  vtkm::cont vtkm::filter_core vtkm::filter_contour vtkm::filter_multi_block vtkm::worklet vtkm::filter_vector_analysis vtkm::vtkmdiympi_nompi
 
