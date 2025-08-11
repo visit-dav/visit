@@ -97,6 +97,7 @@ public:
     void SetPointType(GlyphType pointType_);
     void SetOpaqueMeshIsAppropriate(bool opaqueMeshIsAppropriate_);
     void SetShowInternal(bool showInternal_);
+    void SetShowGenerated(bool showGenerated_);
     void SetPointSizePixels(int pointSizePixels_);
     void SetOpacity(double opacity_);
 
@@ -118,6 +119,7 @@ public:
     GlyphType            GetPointType() const;
     bool                 GetOpaqueMeshIsAppropriate() const;
     bool                 GetShowInternal() const;
+    bool                 GetShowGenerated() const;
     int                  GetPointSizePixels() const;
     double               GetOpacity() const;
 
@@ -172,6 +174,7 @@ public:
         ID_pointType,
         ID_opaqueMeshIsAppropriate,
         ID_showInternal,
+        ID_showGenerated,
         ID_pointSizePixels,
         ID_opacity,
         ID__LAST
@@ -192,6 +195,7 @@ private:
     GlyphType      pointType;
     bool           opaqueMeshIsAppropriate;
     bool           showInternal;
+    bool           showGenerated;
     int            pointSizePixels;
     double         opacity;
 
@@ -199,6 +203,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define MESHATTRIBUTES_TMFS "biaiiidaibsibbid"
+#define MESHATTRIBUTES_TMFS "biaiiidaibsibbbid"
 
 #endif
