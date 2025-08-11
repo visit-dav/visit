@@ -68,6 +68,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Ultrawrapper has been removed from VisIt. For similar functionality, please see: <a href=https://pydv.readthedocs.io/en/latest/>PyDV</a>.</li>
   <li>CLI objects and functions improved in various ways including fixing <code>dir()</code> for them.</li>
   <li><code>apropos()</code> help function is improved with additional arguments to control searches.</li>
+  <li>Enhanced <code>DefineArrayExpression</code>, <code>DefineCurveExpression</code>, <code>DefineMaterialExpression</code>, <code>DefineMeshExpression</code>, <code>DefineScalarExpression</code>, <code>DefineSpeciesExpression</code>, <code>DefineTensorExpression</code> and <code>DefineVectorExpression</code> to take a list of expression names and expression definitions in addition to a single name of an expression and a single definition of an expression. Defining many expressions at once when the Graphical User Interface is active is much faster than defining them one at a time.</li>
 </ul>
 
 <a name="File_format"></a>
@@ -77,6 +78,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Updated Conduit to 0.9.4.</li>
   <li>Updated MFEM to 4.8.</li>
   <li>The Blueprint writer now supports YAML and JSON exports.</li>
+  <li>Fixed a bug in the Blueprint reader causing unstructured points topology fields to display incorrectly.</li>
+  <li>Fixed a bug in the Blueprint reader causing successful reading of Sidre data to trigger the failure case, leading to significantly degraded performance.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -125,6 +128,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a memory bug in AMR plugin when reading velocity magnitude.</li>
   <li>In the PVLD plugin, show SPH in metadata at the first time step even when there are no SPH particles initially.</li>
   <li>Fixed a viewer crash with transparency.</li>
+  <li>Fixed a command recording bug with the Expression window where all the operator generated expressions would get recorded.</li>
 </ul>
 
 <a name="Build_features"></a>
