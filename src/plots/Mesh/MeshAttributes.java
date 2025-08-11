@@ -26,7 +26,7 @@ import llnl.visit.ColorAttribute;
 
 public class MeshAttributes extends AttributeSubject implements Plugin
 {
-    private static int MeshAttributes_numAdditionalAtts = 16;
+    private static int MeshAttributes_numAdditionalAtts = 17;
 
     // Enum values
     public final static int SMOOTHINGLEVEL_NONE = 0;
@@ -64,6 +64,7 @@ public class MeshAttributes extends AttributeSubject implements Plugin
         pointType = 6;
         opaqueMeshIsAppropriate = true;
         showInternal = false;
+        showGenerated = false;
         pointSizePixels = 2;
         opacity = 1;
     }
@@ -86,6 +87,7 @@ public class MeshAttributes extends AttributeSubject implements Plugin
         pointType = 6;
         opaqueMeshIsAppropriate = true;
         showInternal = false;
+        showGenerated = false;
         pointSizePixels = 2;
         opacity = 1;
     }
@@ -108,6 +110,7 @@ public class MeshAttributes extends AttributeSubject implements Plugin
         pointType = obj.pointType;
         opaqueMeshIsAppropriate = obj.opaqueMeshIsAppropriate;
         showInternal = obj.showInternal;
+        showGenerated = obj.showGenerated;
         pointSizePixels = obj.pointSizePixels;
         opacity = obj.opacity;
 
@@ -141,6 +144,7 @@ public class MeshAttributes extends AttributeSubject implements Plugin
                 (pointType == obj.pointType) &&
                 (opaqueMeshIsAppropriate == obj.opaqueMeshIsAppropriate) &&
                 (showInternal == obj.showInternal) &&
+                (showGenerated == obj.showGenerated) &&
                 (pointSizePixels == obj.pointSizePixels) &&
                 (opacity == obj.opacity));
     }
@@ -233,16 +237,22 @@ public class MeshAttributes extends AttributeSubject implements Plugin
         Select(13);
     }
 
+    public void SetShowGenerated(boolean showGenerated_)
+    {
+        showGenerated = showGenerated_;
+        Select(14);
+    }
+
     public void SetPointSizePixels(int pointSizePixels_)
     {
         pointSizePixels = pointSizePixels_;
-        Select(14);
+        Select(15);
     }
 
     public void SetOpacity(double opacity_)
     {
         opacity = opacity_;
-        Select(15);
+        Select(16);
     }
 
     // Property getting methods
@@ -260,6 +270,7 @@ public class MeshAttributes extends AttributeSubject implements Plugin
     public int GetPointType() { return pointType; }
     public boolean        GetOpaqueMeshIsAppropriate() { return opaqueMeshIsAppropriate; }
     public boolean        GetShowInternal() { return showInternal; }
+    public boolean        GetShowGenerated() { return showGenerated; }
     public int            GetPointSizePixels() { return pointSizePixels; }
     public double         GetOpacity() { return opacity; }
 
@@ -295,8 +306,10 @@ public class MeshAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(13, buf))
             buf.WriteBool(showInternal);
         if(WriteSelect(14, buf))
-            buf.WriteInt(pointSizePixels);
+            buf.WriteBool(showGenerated);
         if(WriteSelect(15, buf))
+            buf.WriteInt(pointSizePixels);
+        if(WriteSelect(16, buf))
             buf.WriteDouble(opacity);
     }
 
@@ -349,9 +362,12 @@ public class MeshAttributes extends AttributeSubject implements Plugin
             SetShowInternal(buf.ReadBool());
             break;
         case 14:
-            SetPointSizePixels(buf.ReadInt());
+            SetShowGenerated(buf.ReadBool());
             break;
         case 15:
+            SetPointSizePixels(buf.ReadInt());
+            break;
+        case 16:
             SetOpacity(buf.ReadDouble());
             break;
         }
@@ -402,6 +418,7 @@ public class MeshAttributes extends AttributeSubject implements Plugin
         str = str + intToString("pointType", pointType, indent) + "\n";
         str = str + boolToString("opaqueMeshIsAppropriate", opaqueMeshIsAppropriate, indent) + "\n";
         str = str + boolToString("showInternal", showInternal, indent) + "\n";
+        str = str + boolToString("showGenerated", showGenerated, indent) + "\n";
         str = str + intToString("pointSizePixels", pointSizePixels, indent) + "\n";
         str = str + doubleToString("opacity", opacity, indent) + "\n";
         return str;
@@ -423,6 +440,7 @@ public class MeshAttributes extends AttributeSubject implements Plugin
     private int pointType;
     private boolean        opaqueMeshIsAppropriate;
     private boolean        showInternal;
+    private boolean        showGenerated;
     private int            pointSizePixels;
     private double         opacity;
 }
