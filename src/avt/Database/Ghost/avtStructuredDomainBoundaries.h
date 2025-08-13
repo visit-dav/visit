@@ -333,23 +333,16 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
     template <typename T>
     std::vector<vtkDataArray*>             ExchangeScalarHelper(
                                               BoundaryHelperFunctions<T>* bhf,
-                                              int                   dataType,
-                                              std::vector<int>           domainNum,
-                                              bool                  isPointData,
-                                              std::vector<vtkDataArray*> scalars);
+                                              std::vector<int>            domainNum,
+                                              bool                        isPointData,
+                                              std::vector<vtkDataArray*>  scalars);
 
-    virtual std::vector<vtkDataArray*>     ExchangeFloatVector(std::vector<int> domainNum,
-                                                               bool                   isPointData,
-                                                               std::vector<vtkDataArray*>  vectors);
-    
-    virtual std::vector<vtkDataArray*>     ExchangeDoubleVector(std::vector<int> domainNum,
-                                                                bool                   isPointData,
-                                                                std::vector<vtkDataArray*>  vectors);
-    
-    virtual std::vector<vtkDataArray*>     ExchangeIntVector(std::vector<int>  domainNum,
-                                                             bool                  isPointData,
-                                                             std::vector<vtkDataArray*> vectors);
-
+    template <typename T>
+    std::vector<vtkDataArray*>             ExchangeVectorHelper(
+                                              BoundaryHelperFunctions<T>* bhf,
+                                              std::vector<int>            domainNum,
+                                              bool                        isPointData,
+                                              std::vector<vtkDataArray*>  vectors);
 
     static bool                       createGhostsForTIntersections;
 
