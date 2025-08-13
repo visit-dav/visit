@@ -8194,12 +8194,25 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
             getArray = &vtkDataSetAttributes::GetVectors;
             setArray = &vtkDataSetAttributes::SetVectors;
         }
+        else if (type == AVT_TENSOR_VAR)
+        {
+            centering = GetMetaData(ts)->GetTensor(varname)->centering;
+            getArray = &vtkDataSetAttributes::GetTensors;
+            setArray = &vtkDataSetAttributes::SetTensors;
+        }
+        else if (type == AVT_SYMMETRIC_TENSOR_VAR)
+        {
+            centering = GetMetaData(ts)->GetSymmTensor(varname)->centering;
+            getArray = &vtkDataSetAttributes::GetTensors;
+            setArray = &vtkDataSetAttributes::SetTensors;
+        }
         else
         {
-            // We have only blessed scalars, matspecies, and vectors to be exchanged
-            // for unknown reasons. If someone modifies this code later to allow
-            // other types through, we need them to be bitten by this error so
-            // they remember to add a case to get the centering for the new vartype.
+            // We have only blessed scalars, matspecies, vectors, tensors, and 
+            // symmetric tensors to be exchanged for unknown reasons. If someone 
+            // modifies this code later to allow other types through, we need them to 
+            // be bitten by this error so they remember to add a case to get the 
+            // centering for the new vartype.
             EXCEPTION1(VisItException, "Variables of this type are not able to "
                        "be exchanged. Please contact a VisIt developer.");
         }
