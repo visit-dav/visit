@@ -331,18 +331,11 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
   private:
 
     template <typename T>
-    std::vector<vtkDataArray*>             ExchangeScalarHelper(
+    std::vector<vtkDataArray*>             ExchangeData(
                                               BoundaryHelperFunctions<T>* bhf,
                                               std::vector<int>            domainNum,
                                               bool                        isPointData,
-                                              std::vector<vtkDataArray*>  scalars);
-
-    template <typename T>
-    std::vector<vtkDataArray*>             ExchangeVectorHelper(
-                                              BoundaryHelperFunctions<T>* bhf,
-                                              std::vector<int>            domainNum,
-                                              bool                        isPointData,
-                                              std::vector<vtkDataArray*>  vectors);
+                                              std::vector<vtkDataArray*>  data);
 
     static bool                       createGhostsForTIntersections;
 

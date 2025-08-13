@@ -1827,7 +1827,7 @@ avtStructuredDomainBoundaries::Finish(int domain)
 }
 
 // ****************************************************************************
-//  Method:  avtStructuredDomainBoundaries::ExchangeScalarHelper
+//  Method:  avtStructuredDomainBoundaries::ExchangeData
 //
 //  Purpose:
 //    Exchange the ghost zone information for some scalars,
@@ -1835,26 +1835,26 @@ avtStructuredDomainBoundaries::Finish(int domain)
 //
 //  Arguments:
 //    bhf          the correctly templated boundary helper functions
-//    dataType     the vtk data type
 //    domainNum    an array of domain numbers for each mesh
 //    isPointData  true if this is node-centered, false if cell-centered
-//    scalars      an array of scalars
+//    data         an array of data
 //
 //  Programmer:  Justin Privitera
 //  Creation:    August 12, 2025
 //
 //  Notes:
 //    Copied and modified from ExchangeFloatScalar, ExchangeDoubleScalar,
-//    ExchangeIntScalar, and ExchangeUCharScalar, which were deleted.
+//    ExchangeIntScalar, ExchangeUCharScalar, ExchangeFloatVector, 
+//    ExchangeDoubleVector, and ExchangeIntVector, which were deleted.
 //
 //  Modifications:
 // ****************************************************************************
 template <typename T>
 vector<vtkDataArray*>
-avtStructuredDomainBoundaries::ExchangeScalarHelper(BoundaryHelperFunctions<T>* bhf,
-                                                    vector<int>           domainNum,
-                                                    bool                  isPointData,
-                                                    vector<vtkDataArray*> scalars)
+avtStructuredDomainBoundaries::ExchangeData(BoundaryHelperFunctions<T>* bhf,
+                                            vector<int>                 domainNum,
+                                            bool                        isPointData,
+                                            vector<vtkDataArray*>       data)
 {
     if (domain2proc.size() == 0)
     {
@@ -1865,20 +1865,20 @@ avtStructuredDomainBoundaries::ExchangeScalarHelper(BoundaryHelperFunctions<T>* 
     }
 
     int timer_PackData = visitTimer->StartTimer();
-    vector<vtkDataArray*> out(scalars.size(), NULL);
+    vector<vtkDataArray*> out(data.size(), NULL);
 
     //
-    // Create the matching arrays for the given scalars
+    // Create the matching arrays for the given data
     //
     T ***vals = bhf->InitializeBoundaryData();
 
-    int nComp = (scalars.size() > 0 ? scalars[0]->GetNumberOfComponents() :-1);
+    int nComp = (data.size() > 0 ? data[0]->GetNumberOfComponents() :-1);
     int exceptionThrown = 0;
     TRY
     {
-        for (size_t d = 0; d < scalars.size(); d++)
+        for (size_t d = 0; d < data.size(); d++)
         {
-            T *oldvals = (T*)scalars[d]->GetVoidPointer(0);
+            T *oldvals = (T*)data[d]->GetVoidPointer(0);
             bhf->FillBoundaryData(domainNum[d], oldvals, vals, isPointData, nComp);
         }
     }
@@ -1901,20 +1901,20 @@ avtStructuredDomainBoundaries::ExchangeScalarHelper(BoundaryHelperFunctions<T>* 
     bhf->CommunicateBoundaryData(domain2proc, vals, isPointData, nComp);
 
     int timer_UnpackData = visitTimer->StartTimer();
-    for (size_t d = 0; d < scalars.size(); d++)
+    for (size_t d = 0; d < data.size(); d++)
     {
         Boundary *bi = &boundary[domainNum[d]];
 
         // Create the new VTK objects
-        out[d] = scalars[d]->NewInstance();
+        out[d] = data[d]->NewInstance();
         out[d]->SetNumberOfComponents(nComp);
-        out[d]->SetName(scalars[d]->GetName());
+        out[d]->SetName(data[d]->GetName());
         if (isPointData)
             out[d]->SetNumberOfTuples(bi->newnpts);
         else
             out[d]->SetNumberOfTuples(bi->newncells);
 
-        T *oldvals = (T*)scalars[d]->GetVoidPointer(0);
+        T *oldvals = (T*)data[d]->GetVoidPointer(0);
         T *newvals = (T*)out[d]->GetVoidPointer(0);
 
         // Set the known ones
@@ -1996,134 +1996,27 @@ avtStructuredDomainBoundaries::ExchangeScalar(vector<int>           domainNum,
     switch (maxDataType)
     {
       case VTK_FLOAT:
-        return ExchangeScalarHelper(bhf_float, domainNum, isPointData, scalars);
+        return ExchangeData(bhf_float, domainNum, isPointData, scalars);
         break;
       case VTK_DOUBLE:
-        return ExchangeScalarHelper(bhf_double, domainNum, isPointData, scalars);
+        return ExchangeData(bhf_double, domainNum, isPointData, scalars);
         break;
       case VTK_INT:
-        return ExchangeScalarHelper(bhf_int, domainNum, isPointData, scalars);
+        return ExchangeData(bhf_int, domainNum, isPointData, scalars);
         break;
       case VTK_UNSIGNED_INT:
-        return ExchangeScalarHelper(bhf_uint, domainNum, isPointData, scalars);
+        return ExchangeData(bhf_uint, domainNum, isPointData, scalars);
         break;
       case VTK_CHAR:
-        return ExchangeScalarHelper(bhf_char, domainNum, isPointData, scalars);
+        return ExchangeData(bhf_char, domainNum, isPointData, scalars);
         break;
       case VTK_UNSIGNED_CHAR:
-        return ExchangeScalarHelper(bhf_uchar, domainNum, isPointData, scalars);
+        return ExchangeData(bhf_uchar, domainNum, isPointData, scalars);
         break;
       default:
         EXCEPTION1(VisItException, "Unknown scalar type in "
                    "avtStructuredDomainBoundaries::ExchangeScalar");
     }
-}
-
-// ****************************************************************************
-//  Method:  avtStructuredDomainBoundaries::ExchangeVectorHelper
-//
-//  Purpose:
-//    Exchange the ghost zone information for some vectors,
-//    returning the new ones.
-//
-//  Arguments:
-//    bhf          the correctly templated boundary helper functions
-//    dataType     the vtk data type
-//    domainNum    an array of domain numbers for each mesh
-//    isPointData  true if this is node-centered, false if cell-centered
-//    vectors      an array of vectors
-//
-//  Programmer:  Justin Privitera
-//  Creation:    August 12, 2025
-// 
-//  Notes:
-//    Copied and modified from ExchangeFloatVector, ExchangeDoubleVector, and
-//    ExchangeIntVector, which were deleted.
-//
-//  Modifications:
-// ****************************************************************************
-template <typename T>
-vector<vtkDataArray*>
-avtStructuredDomainBoundaries::ExchangeVectorHelper(BoundaryHelperFunctions<T>* bhf,
-                                                    vector<int>           domainNum,
-                                                    bool                  isPointData,
-                                                    vector<vtkDataArray*> vectors)
-{
-    if (domain2proc.size() == 0)
-    {
-        int timer_InitializeGhost = visitTimer->StartTimer();
-        domain2proc = CreateDomainToProcessorMap(domainNum);
-        CreateCurrentDomainBoundaryInformation(domain2proc);
-        visitTimer->StopTimer(timer_InitializeGhost, "Ghost Zone Generation phase 1: Initialize");
-    }
-
-    int timer_PackData = visitTimer->StartTimer();
-    vector<vtkDataArray*> out(vectors.size(), NULL);
-
-    //
-    // Create the matching arrays for the given vectors
-    //
-    T ***vals = bhf->InitializeBoundaryData();
-
-    int nComp = (vectors.size() > 0 ? vectors[0]->GetNumberOfComponents() :-1);
-    int exceptionThrown = 0;
-    TRY
-    {
-        for (size_t d = 0; d < vectors.size(); d++)
-        {
-            T *oldvals = (T*)vectors[d]->GetVoidPointer(0);
-            bhf->FillBoundaryData(domainNum[d], oldvals, vals, isPointData, nComp);
-        }
-    }
-    CATCH2(VisItException, e)
-    {
-        exceptionThrown = 1;
-    }
-    ENDTRY
-
-    visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data");
-
-    avtParallelContext context;
-    exceptionThrown = context.UnifyMaximumValue(exceptionThrown);
-    if (exceptionThrown)
-    {
-        bhf->FreeBoundaryData(vals);
-        EXCEPTION1(VisItException, "Bad Neighbor Index");
-    }
-
-    bhf->CommunicateBoundaryData(domain2proc, vals, isPointData, nComp);
-
-    int timer_UnpackData = visitTimer->StartTimer();
-    for (size_t d = 0; d < vectors.size(); d++)
-    {
-        Boundary *bi = &boundary[domainNum[d]];
-
-        // Create the new VTK objects
-        out[d] = vectors[d]->NewInstance();
-        out[d]->SetNumberOfComponents(nComp);
-        out[d]->SetName(vectors[d]->GetName());
-        if (isPointData)
-            out[d]->SetNumberOfTuples(bi->newnpts);
-        else
-            out[d]->SetNumberOfTuples(bi->newncells);
-
-        T *oldvals = (T*)vectors[d]->GetVoidPointer(0);
-        T *newvals = (T*)out[d]->GetVoidPointer(0);
-
-        // Set the known ones
-        bhf->CopyOldValues(domainNum[d], oldvals, newvals, isPointData, nComp);
-
-        // Match the unknown ones
-        bhf->SetNewBoundaryData(domainNum[d], vals, newvals, isPointData, nComp);
-
-        // Set the remaining unset ones (reduced connectivity, etc.)
-        bhf->FakeNonexistentBoundaryData(domainNum[d], newvals, isPointData, nComp);
-    }
-    visitTimer->StopTimer(timer_UnpackData, "Ghost Zone Generation phase 4: Unpack Data");
-
-    bhf->FreeBoundaryData(vals);
-
-    return out;
 }
 
 // ****************************************************************************
@@ -2177,16 +2070,16 @@ avtStructuredDomainBoundaries::ExchangeVector(vector<int>           domainNum,
     switch (maxDataType)
     {
         case VTK_FLOAT:
-            return ExchangeVectorHelper(bhf_float, domainNum, isPointData, vectors);
+            return ExchangeData(bhf_float, domainNum, isPointData, vectors);
             break;
         case VTK_DOUBLE:
-            return ExchangeVectorHelper(bhf_double, domainNum, isPointData, vectors);
+            return ExchangeData(bhf_double, domainNum, isPointData, vectors);
             break;
         case VTK_INT:
-            return ExchangeVectorHelper(bhf_int, domainNum, isPointData, vectors);
+            return ExchangeData(bhf_int, domainNum, isPointData, vectors);
             break;
         case VTK_UNSIGNED_INT:
-            return ExchangeVectorHelper(bhf_uint, domainNum, isPointData, vectors);
+            return ExchangeData(bhf_uint, domainNum, isPointData, vectors);
             break;
         default:
             EXCEPTION1(VisItException, "Unknown vector type in "
