@@ -1042,6 +1042,9 @@ static std::string log_SetAppearanceRPC(ViewerRPC *rpc)
 //    Kathleen Bonnell, Thu Aug  3 09:25:00 PDT 2006
 //    Added CurveMeshVar
 //
+//    Eric Brugger, Tue Aug  5 13:59:39 PDT 2025
+//    Added code to skip the recording of operator generated expressions.
+//
 //*****************************************************************************
 
 static std::string log_ProcessExpressionsRPC(ViewerRPC *rpc)
@@ -1053,7 +1056,7 @@ static std::string log_ProcessExpressionsRPC(ViewerRPC *rpc)
     for(int i = 0; i < list->GetNumExpressions(); ++i)
     {
         const Expression &expr = list->GetExpressions(i);
-        if(expr.GetFromDB())
+        if(expr.GetFromDB() || expr.GetFromOperator())
             continue;
 
         const char *fx = 0;

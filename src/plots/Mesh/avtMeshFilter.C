@@ -324,7 +324,12 @@ avtMeshFilter::ExecuteDataTree(avtDataRepresentation *inDR)
 
         if (topoDim == 2)
         {
-            lineFilter->UseOriginalCellsOn();
+            // don't use orignal cells to screen if we want to see
+            // generated zones
+            if(!atts.GetShowGenerated())
+            {
+                lineFilter->UseOriginalCellsOn();
+            }
             lineFilter->SetInputData((vtkPolyData*)revisedInput3);
             lineFilter->Update();
             outDS = lineFilter->GetOutput();
