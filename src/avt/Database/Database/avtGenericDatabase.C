@@ -8209,13 +8209,14 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         for (size_t i = 0; i < doms.size(); i ++)
         {
             vtkDataSet *ds1 = list[i];
-            if (ds1 == NULL ||
-                ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
+            if (ds1 == nullptr ||
+                ds1->GetNumberOfPoints() == 0 || 
+                ds1->GetNumberOfCells() == 0)
             {
-                values.push_back(NULL);
+                values.push_back(nullptr);
                 continue;
             }
-            vtkDataArray *s   = NULL;
+            vtkDataArray *s = nullptr;
             if (centering == AVT_NODECENT)
             {
                 s = (ds1->GetPointData()->*getArray)();
@@ -8231,7 +8232,7 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         for (int i = 0; i < static_cast<int>(doms.size()); i ++)
         {
             vtkDataSet *ds1 = ds.GetDataset(i, 0);
-            if (ds1 == NULL ||
+            if (ds1 == nullptr ||
                 ds1->GetNumberOfPoints() == 0 || 
                 ds1->GetNumberOfCells() == 0)
             {
@@ -8253,244 +8254,106 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
     //
     // Exchange secondary variables.
     //
-    const vector<CharStrRef> &var2nd =
-                           spec->GetSecondaryVariablesWithoutDuplicates();
+    const vector<CharStrRef> &var2nd = spec->GetSecondaryVariablesWithoutDuplicates();
     avtDatabaseMetaData *metadata = GetMetaData(ts);
-    for (size_t i = 0 ; i < var2nd.size() ; i++)
+    for (size_t i = 0; i < var2nd.size(); i ++)
     {
         CharStrRef curVar  = var2nd[i];
         avtVarType varType = metadata->DetermineVarType(*curVar);
-        switch (varType)
+        // we have a set of blessed types
+        if (varType == AVT_SCALAR_VAR ||
+            varType == AVT_MATSPECIES ||
+            varType == AVT_VECTOR_VAR ||
+            varType == AVT_TENSOR_VAR ||
+            varType == AVT_SYMMETRIC_TENSOR_VAR ||
+            varType == AVT_ARRAY_VAR)
         {
-          case AVT_SCALAR_VAR:
+            avtCentering centering;
+            if (varType == AVT_SCALAR_VAR)
             {
-                avtCentering centering = metadata->GetScalar(*curVar)
-                                                               ->centering;
-                bool isPointData = (centering == AVT_NODECENT ? true : false);
-                vector<vtkDataArray *> scalars;
-                for (size_t j = 0 ; j < doms.size() ; j++)
-                {
-                    vtkDataSet *ds1 = list[j];
-                    if (ds1 == NULL ||
-                        ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
-                    {
-                        scalars.push_back(NULL);
-                        continue;
-                    }
-                    vtkDataSetAttributes *atts = NULL;
-                    if (isPointData)
-                    {
-                        atts = ds1->GetPointData();
-                    }
-                    else
-                    {
-                        atts = ds1->GetCellData();
-                    }
-                    scalars.push_back(atts->GetArray(*curVar));
-                }
-                vector<vtkDataArray *> scalarsOut;
-                scalarsOut = dbi->ExchangeVar(doms,isPointData,scalars);
-                for (int j = 0 ; j < (int)doms.size() ; j++)
-                {
-                    vtkDataSet *ds1 = ds.GetDataset(j, 0);
-                    if (ds1 == NULL ||
-                        ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
-                        continue;
-                    vtkDataSetAttributes *atts = NULL;
-                    if (isPointData)
-                    {
-                        atts = ds1->GetPointData();
-                    }
-                    else
-                    {
-                        atts = ds1->GetCellData();
-                    }
-                    atts->AddArray(scalarsOut[j]);
-                    scalarsOut[j]->Delete();
-                }
+                centering = metadata->GetScalar(*curVar)->centering;
             }
-            break;
-          case AVT_MATSPECIES:
+            if (varType == AVT_MATSPECIES)
             {
-                vector<vtkDataArray *> scalars;
-                for (size_t j = 0 ; j < doms.size() ; j++)
-                {
-                    if (list[j] == NULL ||
-                        list[j]->GetNumberOfPoints() == 0 || list[j]->GetNumberOfCells() == 0)
-                    {
-                        scalars.push_back(NULL);
-                        continue;
-                    }
-                    scalars.push_back(list[j]->GetCellData()->GetArray(
-                                                                 *curVar));
-                }
-                vector<vtkDataArray *> scalarsOut;
-                scalarsOut = dbi->ExchangeVar(doms, false, scalars);
-                for (int j = 0 ; j < (int)doms.size() ; j++)
-                {
-                    vtkDataSet *ds1 = ds.GetDataset(j, 0);
-                    if (ds1 == NULL ||
-                        ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
-                        continue;
-                    ds1->GetCellData()->AddArray(scalarsOut[j]);
-                    scalarsOut[j]->Delete();
-                }
+                centering = AVT_ZONECENT;
             }
-            break;
-          case AVT_VECTOR_VAR:
+            if (varType == AVT_VECTOR_VAR)
             {
-                avtCentering centering = metadata->GetVector(*curVar)
-                                                               ->centering;
-                bool isPointData = (centering == AVT_NODECENT ? true : false);
-                vector<vtkDataArray *> vectors;
-                for (size_t j = 0 ; j < doms.size() ; j++)
-                {
-                    vtkDataSet *ds1 = list[j];
-                    if (ds1 == NULL ||
-                        ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
-                    {
-                        vectors.push_back(NULL);
-                        continue;
-                    }
-                    vtkDataSetAttributes *atts = NULL;
-                    if (isPointData)
-                    {
-                        atts = ds1->GetPointData();
-                    }
-                    else
-                    {
-                        atts = ds1->GetCellData();
-                    }
-                    vectors.push_back(atts->GetArray(*curVar));
-                }
-                vector<vtkDataArray *> vectorsOut;
-                vectorsOut = dbi->ExchangeVar(doms,isPointData,vectors);
-                for (int j = 0 ; j < (int) doms.size() ; j++)
-                {
-                    vtkDataSet *ds1 = ds.GetDataset(j, 0);
-                    if (ds1 == NULL ||
-                        ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
-                        continue;
-                    vtkDataSetAttributes *atts = NULL;
-                    if (isPointData)
-                    {
-                        atts = ds1->GetPointData();
-                    }
-                    else
-                    {
-                        atts = ds1->GetCellData();
-                    }
-                    atts->AddArray(vectorsOut[j]);
-                    vectorsOut[j]->Delete();
-                }
+                centering = metadata->GetVector(*curVar)->centering;
             }
-            break;
-          case AVT_TENSOR_VAR:
+            if (varType == AVT_TENSOR_VAR)
             {
-                avtCentering centering = metadata->GetTensor(*curVar)
-                                                               ->centering;
-                bool isPointData = (centering == AVT_NODECENT ? true : false);
-                vector<vtkDataArray *> tensors;
-                for (size_t j = 0 ; j < doms.size() ; j++)
-                {
-                    vtkDataSet *ds1 = list[j];
-                    if (ds1 == NULL ||
-                        ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
-                    {
-                        tensors.push_back(NULL);
-                        continue;
-                    }
-                    vtkDataSetAttributes *atts = NULL;
-                    if (isPointData)
-                    {
-                        atts = ds1->GetPointData();
-                    }
-                    else
-                    {
-                        atts = ds1->GetCellData();
-                    }
-                    tensors.push_back(atts->GetArray(*curVar));
-                }
-                vector<vtkDataArray *> tensorsOut;
-                tensorsOut = dbi->ExchangeVar(doms,isPointData,tensors);
-                for (int j = 0 ; j < (int) doms.size() ; j++)
-                {
-                    vtkDataSet *ds1 = ds.GetDataset(j, 0);
-                    if (ds1 == NULL ||
-                        ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
-                        continue;
-                    vtkDataSetAttributes *atts = NULL;
-                    if (isPointData)
-                    {
-                        atts = ds1->GetPointData();
-                    }
-                    else
-                    {
-                        atts = ds1->GetCellData();
-                    }
-                    atts->AddArray(tensorsOut[j]);
-                    tensorsOut[j]->Delete();
-                }
+                centering = metadata->GetTensor(*curVar)->centering;
             }
-            break;
-          case AVT_SYMMETRIC_TENSOR_VAR:
+            if (varType == AVT_SYMMETRIC_TENSOR_VAR)
             {
-                avtCentering centering = metadata->GetSymmTensor(*curVar)
-                                                               ->centering;
-                bool isPointData = (centering == AVT_NODECENT ? true : false);
-                vector<vtkDataArray *> tensors;
-                for (size_t j = 0 ; j < doms.size() ; j++)
-                {
-                    vtkDataSet *ds1 = list[j];
-                    if (ds1 == NULL ||
-                        ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
-                    {
-                        tensors.push_back(NULL);
-                        continue;
-                    }
-                    vtkDataSetAttributes *atts = NULL;
-                    if (isPointData)
-                    {
-                        atts = ds1->GetPointData();
-                    }
-                    else
-                    {
-                        atts = ds1->GetCellData();
-                    }
-                    tensors.push_back(atts->GetArray(*curVar));
-                }
-                vector<vtkDataArray *> tensorsOut;
-                tensorsOut = dbi->ExchangeVar(doms,isPointData,tensors);
-                for (int j = 0 ; j < (int) doms.size() ; j++)
-                {
-                    vtkDataSet *ds1 = ds.GetDataset(j, 0);
-                    if (ds1 == NULL ||
-                        ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
-                        continue;
-                    vtkDataSetAttributes *atts = NULL;
-                    if (isPointData)
-                    {
-                        atts = ds1->GetPointData();
-                    }
-                    else
-                    {
-                        atts = ds1->GetCellData();
-                    }
-                    atts->AddArray(tensorsOut[j]);
-                    tensorsOut[j]->Delete();
-                }
+                metadata->GetSymmTensor(*curVar)->centering;
             }
-            break;
+            if (varType == AVT_ARRAY_VAR)
+            {
+                metadata->GetArray(*curVar)->centering;
+            }
 
-          case AVT_MATERIAL:
-          case AVT_MESH:
+            const bool isPointData = (centering == AVT_NODECENT ? true : false);
+
+            vector<vtkDataArray *> values;
+            for (size_t j = 0; j < doms.size(); j ++)
+            {
+                vtkDataSet *ds1 = list[j];
+                if (ds1 == nullptr ||
+                    ds1->GetNumberOfPoints() == 0 || 
+                    ds1->GetNumberOfCells() == 0)
+                {
+                    values.push_back(nullptr);
+                    continue;
+                }
+                vtkDataSetAttributes *atts = nullptr;
+                if (isPointData)
+                {
+                    atts = ds1->GetPointData();
+                }
+                else
+                {
+                    atts = ds1->GetCellData();
+                }
+                values.push_back(atts->GetArray(*curVar));
+            }
+            vector<vtkDataArray *> valuesOut;
+            valuesOut = dbi->ExchangeVar(doms,isPointData,values);
+            for (int j = 0; j < static_cast<int>(doms.size()); j ++)
+            {
+                vtkDataSet *ds1 = ds.GetDataset(j, 0);
+                if (ds1 == nullptr ||
+                    ds1->GetNumberOfPoints() == 0 || 
+                    ds1->GetNumberOfCells() == 0)
+                {
+                    continue;
+                }
+                vtkDataSetAttributes *atts = nullptr;
+                if (isPointData)
+                {
+                    atts = ds1->GetPointData();
+                }
+                else
+                {
+                    atts = ds1->GetCellData();
+                }
+                atts->AddArray(valuesOut[j]);
+                valuesOut[j]->Delete();
+            }
+        }
+        else if (varType == AVT_MATERIAL ||
+                 varType == AVT_MESH)
+        {
             // These typically come about because of expressions.
             // Just ignore -- it will be handled elsewhere.
             continue;
-
-          default:
+        }
+        else
+        {
             EXCEPTION1(VisItException, "Cannot exchange secondary "
-                     "variables that aren't scalars, vectors, or species");
+                     "variables that aren't scalars, vectors, tensors, "
+                     "arrays, or species");
         }
     }
 
