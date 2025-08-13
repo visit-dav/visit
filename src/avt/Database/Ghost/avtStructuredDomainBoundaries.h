@@ -329,22 +329,15 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
     virtual void                           ResetCachedMembers();
 
   private:
-    virtual std::vector<vtkDataArray*>     ExchangeFloatScalar(std::vector<int> domainNum,
-                                             bool                  isPointData,
-                                             std::vector<vtkDataArray*> scalars);
 
-    virtual std::vector<vtkDataArray*>     ExchangeDoubleScalar(std::vector<int> domainNum,
-                                             bool                  isPointData,
-                                             std::vector<vtkDataArray*> scalars);
+    template <typename T>
+    std::vector<vtkDataArray*>             ExchangeScalarHelper(
+                                              BoundaryHelperFunctions<T>* bhf,
+                                              int                   dataType,
+                                              std::vector<int>           domainNum,
+                                              bool                  isPointData,
+                                              std::vector<vtkDataArray*> scalars);
 
-    virtual std::vector<vtkDataArray*>     ExchangeIntScalar(std::vector<int>  domainNum,
-                                             bool                  isPointData,
-                                             std::vector<vtkDataArray*> scalars);
-
-    virtual std::vector<vtkDataArray*>     ExchangeUCharScalar(std::vector<int> domainNum,
-                                             bool                  isPointData,
-                                             std::vector<vtkDataArray*> scalars);
-    
     virtual std::vector<vtkDataArray*>     ExchangeFloatVector(std::vector<int> domainNum,
                                                                bool                   isPointData,
                                                                std::vector<vtkDataArray*>  vectors);
@@ -376,13 +369,17 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
     bool                                    haveCalculatedBoundaries;
 
     friend class BoundaryHelperFunctions<int>;
+    friend class BoundaryHelperFunctions<unsigned int>;
     friend class BoundaryHelperFunctions<float>;
     friend class BoundaryHelperFunctions<double>;
+    friend class BoundaryHelperFunctions<char>;
     friend class BoundaryHelperFunctions<unsigned char>;
 
     BoundaryHelperFunctions<int>           *bhf_int;
+    BoundaryHelperFunctions<unsigned int>  *bhf_uint;
     BoundaryHelperFunctions<float>         *bhf_float;
     BoundaryHelperFunctions<double>        *bhf_double;
+    BoundaryHelperFunctions<char>          *bhf_char;
     BoundaryHelperFunctions<unsigned char> *bhf_uchar;
 
     // helper methods

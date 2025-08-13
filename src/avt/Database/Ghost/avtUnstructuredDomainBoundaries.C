@@ -994,8 +994,10 @@ avtUnstructuredDomainBoundaries::ExchangeVector(vector<int> domainNum,
             return ExchangeData<double>(domainNum, isPointData, vectors);
             break;
         case VTK_INT:
-        case VTK_UNSIGNED_INT:
             return ExchangeData<int>(domainNum, isPointData, vectors);
+            break;
+        case VTK_UNSIGNED_INT:
+            return ExchangeData<unsigned int>(domainNum, isPointData, vectors);
             break;
         default:
             EXCEPTION1(VisItException, "Unknown vector type in "
@@ -1573,8 +1575,8 @@ avtUnstructuredDomainBoundaries::ConfirmMesh(vector<int>       domainNum,
 //  Method:  avtUnstructuredDomainBoundaries::ExchangeData
 //
 //  Purpose:
-//    Exchange the ghost zone information for some data (scalars and
-//    vectors of templated type), returning the new ones.
+//    Exchange the ghost zone information for some data (scalars, vectors, and
+//    tensors of templated type), returning the new ones.
 //
 //  Arguments:
 //    domainNum    an array of domain numbers for each mesh
@@ -2555,11 +2557,11 @@ avtUnstructuredDomainBoundaries::CommunicateMaterialInformation(
 //    domain2proc   the map of domains to processors
 //    domainNum     the domains that are owned by the current process
 //    data          the data for the domains owned by the current process
+//    isPointData   boolean for if it is cell or zone data
 //  (Returned arguments:)
-//    gainedData    an array for each domain of data that are given to that
-//                  domain (indexed: [sendDom][recvDom])
-//    nGainedTuples the number of gained tuples of data
-//                  (indexed: [sendDom][recvDom])
+//    domaindata    A structure containing an array for each domain of data 
+//                  that are given to that domain (gainedData) and the number 
+//                  of gained tuples of data (nGainedTuples).
 //
 //  Programmer:  Akira Haddox
 //  Creation:    August 14, 2003

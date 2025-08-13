@@ -7441,6 +7441,8 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
                       intVector &allDomains, bool canDoCollectiveCommunication)
 {
 
+    std::cout << "CommunicateGhosts" << std::endl;
+
 #ifndef PARALLEL
     (void)canDoCollectiveCommunication;
 #endif
@@ -8040,6 +8042,11 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
     avtVarType type  = md->DetermineVarType(varname);
     string meshname  = md->MeshForVar(varname);
 
+    std::cout << "CommunicateGhostZonesFromDomainBoundaries" << std::endl;
+    std::cout << "varname " << varname << std::endl;
+    std::cout << "meshname " << meshname << std::endl;
+    std::cout << "type " << type << std::endl;
+
     bool post_ghost = spec->NeedPostGhostMaterialInfo();
 
     //
@@ -8404,8 +8411,103 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
                 }
             }
             break;
-
+          case AVT_TENSOR_VAR:
+            {
+                avtCentering centering = metadata->GetTensor(*curVar)
+                                                               ->centering;
+                bool isPointData = (centering == AVT_NODECENT ? true : false);
+                vector<vtkDataArray *> tensors;
+                for (size_t j = 0 ; j < doms.size() ; j++)
+                {
+                    vtkDataSet *ds1 = list[j];
+                    if (ds1 == NULL ||
+                        ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
+                    {
+                        tensors.push_back(NULL);
+                        continue;
+                    }
+                    vtkDataSetAttributes *atts = NULL;
+                    if (isPointData)
+                    {
+                        atts = ds1->GetPointData();
+                    }
+                    else
+                    {
+                        atts = ds1->GetCellData();
+                    }
+                    tensors.push_back(atts->GetArray(*curVar));
+                }
+                vector<vtkDataArray *> tensorsOut;
+                tensorsOut = dbi->ExchangeVector(doms,isPointData,tensors);
+                for (int j = 0 ; j < (int) doms.size() ; j++)
+                {
+                    vtkDataSet *ds1 = ds.GetDataset(j, 0);
+                    if (ds1 == NULL ||
+                        ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
+                        continue;
+                    vtkDataSetAttributes *atts = NULL;
+                    if (isPointData)
+                    {
+                        atts = ds1->GetPointData();
+                    }
+                    else
+                    {
+                        atts = ds1->GetCellData();
+                    }
+                    atts->AddArray(tensorsOut[j]);
+                    tensorsOut[j]->Delete();
+                }
+            }
+            break;
           case AVT_SYMMETRIC_TENSOR_VAR:
+            {
+                avtCentering centering = metadata->GetSymmTensor(*curVar)
+                                                               ->centering;
+                bool isPointData = (centering == AVT_NODECENT ? true : false);
+                vector<vtkDataArray *> tensors;
+                for (size_t j = 0 ; j < doms.size() ; j++)
+                {
+                    vtkDataSet *ds1 = list[j];
+                    if (ds1 == NULL ||
+                        ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
+                    {
+                        tensors.push_back(NULL);
+                        continue;
+                    }
+                    vtkDataSetAttributes *atts = NULL;
+                    if (isPointData)
+                    {
+                        atts = ds1->GetPointData();
+                    }
+                    else
+                    {
+                        atts = ds1->GetCellData();
+                    }
+                    tensors.push_back(atts->GetArray(*curVar));
+                }
+                vector<vtkDataArray *> tensorsOut;
+                tensorsOut = dbi->ExchangeVector(doms,isPointData,tensors);
+                for (int j = 0 ; j < (int) doms.size() ; j++)
+                {
+                    vtkDataSet *ds1 = ds.GetDataset(j, 0);
+                    if (ds1 == NULL ||
+                        ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
+                        continue;
+                    vtkDataSetAttributes *atts = NULL;
+                    if (isPointData)
+                    {
+                        atts = ds1->GetPointData();
+                    }
+                    else
+                    {
+                        atts = ds1->GetCellData();
+                    }
+                    atts->AddArray(tensorsOut[j]);
+                    tensorsOut[j]->Delete();
+                }
+            }
+            break;
+
           case AVT_MATERIAL:
           case AVT_MESH:
             // These typically come about because of expressions.
