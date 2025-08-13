@@ -8273,25 +8273,35 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
             {
                 centering = metadata->GetScalar(*curVar)->centering;
             }
-            if (varType == AVT_MATSPECIES)
+            else if (varType == AVT_MATSPECIES)
             {
                 centering = AVT_ZONECENT;
             }
-            if (varType == AVT_VECTOR_VAR)
+            else if (varType == AVT_VECTOR_VAR)
             {
                 centering = metadata->GetVector(*curVar)->centering;
             }
-            if (varType == AVT_TENSOR_VAR)
+            else if (varType == AVT_TENSOR_VAR)
             {
                 centering = metadata->GetTensor(*curVar)->centering;
             }
-            if (varType == AVT_SYMMETRIC_TENSOR_VAR)
+            else if (varType == AVT_SYMMETRIC_TENSOR_VAR)
             {
                 metadata->GetSymmTensor(*curVar)->centering;
             }
-            if (varType == AVT_ARRAY_VAR)
+            else if (varType == AVT_ARRAY_VAR)
             {
                 metadata->GetArray(*curVar)->centering;
+            }
+            else
+            {
+                // We have only blessed scalars, matspecies, vectors, tensors, symmetric
+                // tensors, and arrays to be exchanged for unknown reasons. If someone 
+                // modifies this code later to allow other types through, we need them 
+                // to be bitten by this error so they remember to add a case to get the
+                // centering for the new vartype.
+                EXCEPTION1(VisItException, "Secondary variables of this type are not able to "
+                           "be exchanged. Please contact a VisIt developer.");
             }
 
             const bool isPointData = (centering == AVT_NODECENT ? true : false);
