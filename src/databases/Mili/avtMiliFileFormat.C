@@ -2555,8 +2555,6 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
             {
                 string mPath = meshPaths[i];
 
-                std::cout << "mPath " << mPath << std::endl;
-
                 //
                 // When we come across a vector of length 6, we change it
                 // to a normal vector of length 9 and render it as a
@@ -3300,7 +3298,6 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
 
         return (void*) mat;
     }
-    // TODO JUSTIN it is this case that breaks things - if this is commented out, all works
     else if (strcmp(auxType, AUXILIARY_DATA_GLOBAL_NODE_IDS) == 0)
     {
         const char *mesh = varName;

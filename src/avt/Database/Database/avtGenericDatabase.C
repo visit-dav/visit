@@ -7441,8 +7441,6 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
                       intVector &allDomains, bool canDoCollectiveCommunication)
 {
 
-    std::cout << "CommunicateGhosts" << std::endl;
-
 #ifndef PARALLEL
     (void)canDoCollectiveCommunication;
 #endif
@@ -8042,11 +8040,6 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
     avtVarType type  = md->DetermineVarType(varname);
     string meshname  = md->MeshForVar(varname);
 
-    std::cout << "CommunicateGhostZonesFromDomainBoundaries" << std::endl;
-    std::cout << "varname " << varname << std::endl;
-    std::cout << "meshname " << meshname << std::endl;
-    std::cout << "type " << type << std::endl;
-
     bool post_ghost = spec->NeedPostGhostMaterialInfo();
 
     //
@@ -8282,10 +8275,6 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
     {
         CharStrRef curVar  = var2nd[i];
         avtVarType varType = metadata->DetermineVarType(*curVar);
-        std::cout << "=============================================" << std::endl;
-        std::cout << "*curVar " << *curVar << std::endl;
-        std::cout << "varType " << varType << std::endl;
-        std::cout << "=============================================" << std::endl;
         switch (varType)
         {
           case AVT_SCALAR_VAR:
