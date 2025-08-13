@@ -8268,6 +8268,14 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
                               "Creating ghost zones for field values");
         ExchangeVariable(type, ts, varname, doms, list, dbi, ds);
     }
+    else
+    {
+        // the policy has been to skip exchange of variables that are not one of 
+        // the blessed types.
+        debug1 << "avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries "
+               << "cannot exchange primary variable " << varname
+               << " due to its type." << endl;
+    }
 
     //
     // Exchange secondary variables.
