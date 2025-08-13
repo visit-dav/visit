@@ -8162,49 +8162,40 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
     //
     //  Exchange Variables
     //
-    if (type == AVT_SCALAR_VAR || type == AVT_MATSPECIES || type == AVT_VECTOR_VAR)
+    if (type == AVT_SCALAR_VAR || 
+        type == AVT_MATSPECIES || 
+        type == AVT_VECTOR_VAR ||
+        type == AVT_TENSOR_VAR ||
+        type == AVT_SYMMETRIC_TENSOR_VAR ||
+        type == AVT_ARRAY_VAR)
     {
         src->DatabaseProgress(localstage++, nlocalstage,
                               "Creating ghost zones for field values");
 
-        // There are three attributes that are unique depending on the type of 
-        // the data: centering and the array getter method. We get the centering
-        // as below and we set the array getter and setter methods so we don't
-        // have to have if-statements in the for loop further down.
         avtCentering centering;
-        using GetArrayMethod = vtkDataArray* (vtkDataSetAttributes::*)();
-        using SetArrayMethod = int (vtkDataSetAttributes::*)(vtkDataArray*);
-        GetArrayMethod getArray = nullptr;
-        SetArrayMethod setArray = nullptr;
         if (type == AVT_SCALAR_VAR)
         {
             centering = GetMetaData(ts)->GetScalar(varname)->centering;
-            getArray = &vtkDataSetAttributes::GetScalars;
-            setArray = &vtkDataSetAttributes::SetScalars;
         }
         else if (type == AVT_MATSPECIES)
         {
             centering = AVT_ZONECENT;
-            getArray = &vtkDataSetAttributes::GetScalars;
-            setArray = &vtkDataSetAttributes::SetScalars;
         }
         else if (type == AVT_VECTOR_VAR)
         {
             centering = GetMetaData(ts)->GetVector(varname)->centering;
-            getArray = &vtkDataSetAttributes::GetVectors;
-            setArray = &vtkDataSetAttributes::SetVectors;
         }
         else if (type == AVT_TENSOR_VAR)
         {
             centering = GetMetaData(ts)->GetTensor(varname)->centering;
-            getArray = &vtkDataSetAttributes::GetTensors;
-            setArray = &vtkDataSetAttributes::SetTensors;
         }
         else if (type == AVT_SYMMETRIC_TENSOR_VAR)
         {
             centering = GetMetaData(ts)->GetSymmTensor(varname)->centering;
-            getArray = &vtkDataSetAttributes::GetTensors;
-            setArray = &vtkDataSetAttributes::SetTensors;
+        }
+        else if (type == AVT_ARRAY_VAR)
+        {
+            centering = GetMetaData(ts)->GetArray(varname)->centering;
         }
         else
         {
@@ -8229,16 +8220,10 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
                 values.push_back(nullptr);
                 continue;
             }
-            vtkDataArray *s = nullptr;
-            if (centering == AVT_NODECENT)
-            {
-                s = (ds1->GetPointData()->*getArray)();
-            }
-            else
-            {
-                s = (ds1->GetCellData()->*getArray)();
-            }
-            values.push_back(s);
+            vtkDataSetAttributes *atts = isPointData ?
+                static_cast<vtkDataSetAttributes*>(ds1->GetPointData()) :
+                static_cast<vtkDataSetAttributes*>(ds1->GetCellData());
+            values.push_back(atts->GetArray(varname));
         }
         vector<vtkDataArray *> valuesOut;
         valuesOut = dbi->ExchangeVar(doms, isPointData, values);
@@ -8251,16 +8236,11 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
             {
                 continue;
             }
-            vtkDataArray *s = valuesOut[i];
-            if (centering == AVT_NODECENT)
-            {
-                (ds1->GetPointData()->*setArray)(s);
-            }
-            else
-            {
-                (ds1->GetCellData()->*setArray)(s);
-            }
-            s->Delete();
+            vtkDataSetAttributes *atts = isPointData ?
+                static_cast<vtkDataSetAttributes*>(ds1->GetPointData()) :
+                static_cast<vtkDataSetAttributes*>(ds1->GetCellData());
+            atts->AddArray(valuesOut[i]);
+            valuesOut[i]->Delete();
         }
     }
 
@@ -8330,15 +8310,9 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
                     values.push_back(nullptr);
                     continue;
                 }
-                vtkDataSetAttributes *atts = nullptr;
-                if (isPointData)
-                {
-                    atts = ds1->GetPointData();
-                }
-                else
-                {
-                    atts = ds1->GetCellData();
-                }
+                vtkDataSetAttributes *atts = isPointData ?
+                    static_cast<vtkDataSetAttributes*>(ds1->GetPointData()) :
+                    static_cast<vtkDataSetAttributes*>(ds1->GetCellData());
                 values.push_back(atts->GetArray(*curVar));
             }
             vector<vtkDataArray *> valuesOut;
@@ -8352,15 +8326,9 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
                 {
                     continue;
                 }
-                vtkDataSetAttributes *atts = nullptr;
-                if (isPointData)
-                {
-                    atts = ds1->GetPointData();
-                }
-                else
-                {
-                    atts = ds1->GetCellData();
-                }
+                vtkDataSetAttributes *atts = isPointData ?
+                    static_cast<vtkDataSetAttributes*>(ds1->GetPointData()) :
+                    static_cast<vtkDataSetAttributes*>(ds1->GetCellData());
                 atts->AddArray(valuesOut[j]);
                 valuesOut[j]->Delete();
             }
