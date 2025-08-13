@@ -1934,7 +1934,7 @@ avtStructuredDomainBoundaries::ExchangeData(BoundaryHelperFunctions<T>* bhf,
 }
 
 // ****************************************************************************
-//  Method:  avtStructuredDomainBoundaries::ExchangeScalar
+//  Method:  avtStructuredDomainBoundaries::ExchangeVar
 //
 //  Purpose:
 //    Exchange the ghost zone information for some scalars,
@@ -1964,14 +1964,17 @@ avtStructuredDomainBoundaries::ExchangeData(BoundaryHelperFunctions<T>* bhf,
 //
 //    Kathleen Biagas, Fri Nov 1, 2024
 //    Added consistency check for dataTypes.
+// 
+//    Justin Privitera, Wed Aug 13 10:43:18 PDT 2025
+//    Renamed from ExchangeScalar() to ExchangeVar().
 //
 // ****************************************************************************
 vector<vtkDataArray*>
-avtStructuredDomainBoundaries::ExchangeScalar(vector<int>           domainNum,
-                                              bool                  isPointData,
-                                              vector<vtkDataArray*> scalars)
+avtStructuredDomainBoundaries::ExchangeVar(vector<int>           domainNum,
+                                           bool                  isPointData,
+                                           vector<vtkDataArray*> values)
 {
-    int dataType = (scalars.empty() ? -1 : scalars[0]->GetDataType());
+    int dataType = (values.empty() ? -1 : values[0]->GetDataType());
 
     int maxDataType = dataType;
 #ifdef PARALLEL
@@ -1985,105 +1988,31 @@ avtStructuredDomainBoundaries::ExchangeScalar(vector<int>           domainNum,
     {
         // This should never happen, so throw the exception.
         EXCEPTION1(VisItException,
-                   "avtStructuredDomainBoundaries:ExchangeScalar "
+                   "avtStructuredDomainBoundaries:ExchangeVar "
                    "vtkDataArray data types do not match.");
     }
 #endif
 
     if (maxDataType < 0)
-        return scalars;
-
-    switch (maxDataType)
-    {
-      case VTK_FLOAT:
-        return ExchangeData(bhf_float, domainNum, isPointData, scalars);
-        break;
-      case VTK_DOUBLE:
-        return ExchangeData(bhf_double, domainNum, isPointData, scalars);
-        break;
-      case VTK_INT:
-        return ExchangeData(bhf_int, domainNum, isPointData, scalars);
-        break;
-      case VTK_UNSIGNED_INT:
-        return ExchangeData(bhf_uint, domainNum, isPointData, scalars);
-        break;
-      case VTK_CHAR:
-        return ExchangeData(bhf_char, domainNum, isPointData, scalars);
-        break;
-      case VTK_UNSIGNED_CHAR:
-        return ExchangeData(bhf_uchar, domainNum, isPointData, scalars);
-        break;
-      default:
-        EXCEPTION1(VisItException, "Unknown scalar type in "
-                   "avtStructuredDomainBoundaries::ExchangeScalar");
-    }
-}
-
-// ****************************************************************************
-//  Method:  avtStructuredDomainBoundaries::ExchangeVector
-//
-//  Purpose:
-//    Exchange the ghost zone information for some vectors,
-//    returning the new ones.
-//
-//  Arguments:
-//    domainNum    an array of domain numbers for each mesh
-//    isPointData  true if this is node-centered, false if cell-centered
-//    vectors      an array of vectors
-//
-//  Programmer:  Kevin Griffin
-//  Creation:    April 21, 2015
-//
-//  Modifications:
-//    Kathleen Biagas, Fri Nov 1, 2024
-//    Added consistency check for dataTypes.
-//
-// ****************************************************************************
-vector<vtkDataArray*>
-avtStructuredDomainBoundaries::ExchangeVector(vector<int>           domainNum,
-                                              bool                  isPointData,
-                                              vector<vtkDataArray*> vectors)
-{
-    int dataType = (vectors.empty() ? -1 : vectors[0]->GetDataType());
-
-    int maxDataType = dataType;
-#ifdef PARALLEL
-    // Let's get them all to agree on one data type.
-    MPI_Allreduce(&dataType, &maxDataType, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
-
-    // Now verify if there is a dataType mismatch.
-    int hasDataTypeMismatch = ((dataType >= 0) && (dataType != maxDataType));
-    int hasDataTypeMismatchMax = hasDataTypeMismatch;
-    MPI_Allreduce(&hasDataTypeMismatch, &hasDataTypeMismatchMax, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
-    if(hasDataTypeMismatchMax)
-    {
-        // This should never happen, so throw the exception.
-        EXCEPTION1(VisItException,
-                   "avtStructuredDomainBoundaries:ExchangeVector "
-                   "vtkDataArray data types do not match.");
-    }
-#endif
-
-    if (maxDataType < 0)
-        return vectors;
+        return values;
 
     switch (maxDataType)
     {
         case VTK_FLOAT:
-            return ExchangeData(bhf_float, domainNum, isPointData, vectors);
-            break;
+            return ExchangeData(bhf_float, domainNum, isPointData, values);
         case VTK_DOUBLE:
-            return ExchangeData(bhf_double, domainNum, isPointData, vectors);
-            break;
+            return ExchangeData(bhf_double, domainNum, isPointData, values);
         case VTK_INT:
-            return ExchangeData(bhf_int, domainNum, isPointData, vectors);
-            break;
+            return ExchangeData(bhf_int, domainNum, isPointData, values);
         case VTK_UNSIGNED_INT:
-            return ExchangeData(bhf_uint, domainNum, isPointData, vectors);
-            break;
+            return ExchangeData(bhf_uint, domainNum, isPointData, values);
+        case VTK_CHAR:
+            return ExchangeData(bhf_char, domainNum, isPointData, values);
+        case VTK_UNSIGNED_CHAR:
+            return ExchangeData(bhf_uchar, domainNum, isPointData, values);
         default:
-            EXCEPTION1(VisItException, "Unknown vector type in "
-                       "avtStructuredDomainBoundaries::ExchangeVector");
+            EXCEPTION1(VisItException, "Unknown scalar type in "
+                       "avtStructuredDomainBoundaries::ExchangeVar");
     }
 }
 

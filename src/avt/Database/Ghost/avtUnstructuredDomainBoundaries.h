@@ -75,6 +75,9 @@ class VarDomainData;
 //    instead of large numbers of quadruple, triple, and double pointers.
 //    Forward declared the aforementioned class objects at the top of the file.
 //    Added a dependency on cstddef so that we can use size_t here.
+// 
+//    Justin Privitera, Wed Aug 13 10:43:18 PDT 2025
+//    Renamed ExchangeScalar() to ExchangeVar().
 //
 // ****************************************************************************
 
@@ -100,15 +103,11 @@ class DATABASE_API avtUnstructuredDomainBoundaries : public avtDomainBoundaries
                                          std::vector<int> domainNum,
                                          std::vector<vtkDataSet*>   meshes);
     
-    virtual std::vector<vtkDataArray*>  ExchangeScalar(
-                                         std::vector<int> domainNum,
-                                         bool isPointData,
-                                         std::vector<vtkDataArray*> scalars);
+    virtual std::vector<vtkDataArray*>     ExchangeVar(
+                                             std::vector<int>           domainNum,
+                                             bool                       isPointData,
+                                             std::vector<vtkDataArray*> values);
     
-    virtual std::vector<vtkDataArray*>  ExchangeVector(std::vector<int> domainNum,
-                                                       bool isPointData,
-                                                       std::vector<vtkDataArray*> vectors);
-
     virtual std::vector<avtMaterial*>   ExchangeMaterial(
                                          std::vector<int> domainNum,
                                          std::vector<avtMaterial*>   mats);

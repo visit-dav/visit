@@ -268,6 +268,9 @@ class BoundaryHelperFunctions
 //    Kevin Griffin, Tue Apr 21 17:41:51 PDT 2015
 //    Added the ExchangeVector method so that the Exchange*Vector methods can
 //    be called based on the underlying data type.
+// 
+//    Justin Privitera, Wed Aug 13 10:43:18 PDT 2025
+//    Renamed ExchangeScalar() to ExchangeVar().
 //
 // ****************************************************************************
 
@@ -304,13 +307,10 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
 
     std::vector<Neighbor>                  GetNeighbors(int domain);
 
-    virtual std::vector<vtkDataArray*>     ExchangeScalar(std::vector<int>   domainNum,
-                                             bool                  isPointData,
-                                             std::vector<vtkDataArray*> scalars);
-
-    virtual std::vector<vtkDataArray*>     ExchangeVector(std::vector<int> domainNum,
-                                                               bool                   isPointData,
-                                                               std::vector<vtkDataArray*>  vectors);
+    virtual std::vector<vtkDataArray*>     ExchangeVar(
+                                             std::vector<int>           domainNum,
+                                             bool                       isPointData,
+                                             std::vector<vtkDataArray*> values);
 
     virtual std::vector<avtMaterial*>      ExchangeMaterial(std::vector<int>   domainNum,
                                               std::vector<avtMaterial*>   mats);

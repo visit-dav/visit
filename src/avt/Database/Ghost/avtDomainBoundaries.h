@@ -75,14 +75,11 @@ class DATABASE_API avtDomainBoundaries
     virtual std::vector<vtkDataSet*>       ExchangeMesh(std::vector<int>       domainNum,
                                                std::vector<vtkDataSet*>   meshes)  =0;
 
-    virtual std::vector<vtkDataArray*>     ExchangeScalar(std::vector<int>     domainNum,
-                                               bool                  isPointData,
-                                               std::vector<vtkDataArray*> scalars) =0;
+    virtual std::vector<vtkDataArray*>     ExchangeVar(
+                                              std::vector<int>           domainNum,
+                                              bool                       isPointData,
+                                              std::vector<vtkDataArray*> values) =0;
     
-    virtual std::vector<vtkDataArray*>     ExchangeVector(std::vector<int> domainNum,
-                                                               bool                   isPointData,
-                                                               std::vector<vtkDataArray*>  vectors) =0;
-
     virtual std::vector<avtMaterial*>      ExchangeMaterial(std::vector<int>   domainNum,
                                               std::vector<avtMaterial*>   mats)    =0;
 

@@ -799,7 +799,7 @@ avtUnstructuredDomainBoundaries::ExchangeMeshT(vector<int>         domainNum,
 }
 
 // ****************************************************************************
-//  Method:  avtUnstructuredDomainBoundaries::ExchangeScalar
+//  Method:  avtUnstructuredDomainBoundaries::ExchangeVar
 //
 //  Purpose:
 //    Exchange the ghost zone information for some scalars,
@@ -835,30 +835,33 @@ avtUnstructuredDomainBoundaries::ExchangeMeshT(vector<int>         domainNum,
 //    Justin Privitera, Wed Apr 23 17:39:24 PDT 2025
 //    Style updates.
 //    Error checking.
+// 
+//    Justin Privitera, Wed Aug 13 10:43:18 PDT 2025
+//    Renamed from ExchangeScalar() to ExchangeVar().
 //
 // ****************************************************************************
 
 vector<vtkDataArray*>
-avtUnstructuredDomainBoundaries::ExchangeScalar(vector<int>           domainNum,
-                                                bool                  isPointData,
-                                                vector<vtkDataArray*> scalars)
+avtUnstructuredDomainBoundaries::ExchangeVar(vector<int>           domainNum,
+                                             bool                  isPointData,
+                                             vector<vtkDataArray*> values)
 {
     int nonNullDomain = 0;
     int dataType = -1;
-    if (! scalars.empty())
+    if (! values.empty())
     {
-        if (domainNum.size() != scalars.size())
+        if (domainNum.size() != values.size())
         {
             // This should never happen, so throw the exception.
             EXCEPTION1(VisItException,
-                       "avtUnstructuredDomainBoundaries:ExchangeScalar "
-                       "mismatch between number of domains and per-domain scalars.");
+                       "avtUnstructuredDomainBoundaries::ExchangeVar "
+                       "mismatch between number of domains and per-domain values.");
         }
-        while (nonNullDomain < domainNum.size() && scalars[nonNullDomain] == NULL)
+        while (nonNullDomain < domainNum.size() && values[nonNullDomain] == NULL)
         {
             nonNullDomain ++;
         }
-        dataType = scalars[nonNullDomain]->GetDataType();
+        dataType = values[nonNullDomain]->GetDataType();
     }
 
     int maxDataType = dataType;
@@ -873,136 +876,39 @@ avtUnstructuredDomainBoundaries::ExchangeScalar(vector<int>           domainNum,
     {
         // This should never happen, so throw the exception.
         EXCEPTION1(VisItException,
-                   "avtUnstructuredDomainBoundaries:ExchangeScalar "
+                   "avtUnstructuredDomainBoundaries::ExchangeVar "
                    "vtkDataArray data types do not match.");
     }
 #endif
 
     if (maxDataType < 0)
-        return scalars;
+        return values;
 
     // This one's a little more complicated because there are different
-    // types of scalars we might encounter. If more cases arise,
+    // types of values we might encounter. If more cases arise,
     // expand this function.
     switch (maxDataType)
     {
-        case VTK_INT:
-            return ExchangeData<int>(domainNum, isPointData, scalars);
-        case VTK_CHAR:
-            return ExchangeData<char>(domainNum, isPointData, scalars);
         case VTK_FLOAT:
-            return ExchangeData<float>(domainNum, isPointData, scalars);
+            return ExchangeData<float>(domainNum, isPointData, values);
         case VTK_DOUBLE:
-            return ExchangeData<double>(domainNum, isPointData, scalars);
-        case VTK_UNSIGNED_CHAR:
-            return ExchangeData<unsigned char>(domainNum, isPointData, scalars);
+            return ExchangeData<double>(domainNum, isPointData, values);
+        case VTK_INT:
+            return ExchangeData<int>(domainNum, isPointData, values);
         case VTK_UNSIGNED_INT:
-            return ExchangeData<unsigned int>(domainNum, isPointData, scalars);
+            return ExchangeData<unsigned int>(domainNum, isPointData, values);
+        case VTK_CHAR:
+            return ExchangeData<char>(domainNum, isPointData, values);
+        case VTK_UNSIGNED_CHAR:
+            return ExchangeData<unsigned char>(domainNum, isPointData, values);
         default:
-            string exc_mesg = "avtUnstructuredDomainBoundaries does not know "
-                              "how to exchange scalars from array type "
-                              + string(scalars[0]->GetClassName());
+            string exc_mesg = "avtUnstructuredDomainBoundaries::ExchangeVar does not know "
+                              "how to exchange values from array type "
+                              + string(values[0]->GetClassName());
             EXCEPTION1(VisItException, exc_mesg);
     }
     // (To avoid compiler warnings). This code is never reached.
-    return scalars;
-}
-
-// ****************************************************************************
-//  Method:  avtUnstructuredDomainBoundaries::ExchangeVector
-//
-//  Purpose:
-//    Exchange the ghost zone information for some vectors,
-//    returning the new ones.
-//
-//  Arguments:
-//    domainNum    an array of domain numbers for each mesh
-//    isPointData  true if this is node-centered, false if cell-centered
-//    vectors      an array of vectors
-//
-//  Programmer:  Kevin Griffin
-//  Creation:    April 21, 2015
-//
-//  Modifications:
-//    Eric Brugger, Fri Mar 13 15:20:08 PDT 2020
-//    Modify to handle NULL meshes.
-//
-//    Kathleen Biagas, Thu Oct 31, 2024
-//    Ensure all procs are calling the same Exchange function.
-//
-//    Kathleen Biagas, Fri Nov 1, 2024
-//    Added consistency check for dataTypes.
-// 
-//    Justin Privitera, Wed Apr 23 17:39:24 PDT 2025
-//    Style updates.
-//    Error checking.
-//
-// ****************************************************************************
-
-vector<vtkDataArray*>
-avtUnstructuredDomainBoundaries::ExchangeVector(vector<int> domainNum,
-                                                bool isPointData, 
-                                                vector<vtkDataArray*> vectors)
-{
-    int nonNullDomain = 0;
-    int dataType = -1;
-    if (! vectors.empty())
-    {
-        if (domainNum.size() != vectors.size())
-        {
-            // This should never happen, so throw the exception.
-            EXCEPTION1(VisItException,
-                       "avtUnstructuredDomainBoundaries:ExchangeVector "
-                       "mismatch between number of domains and per-domain vectors.");
-        }
-        while (nonNullDomain < domainNum.size() && vectors[nonNullDomain] == NULL)
-        {
-            nonNullDomain ++;
-        }
-        dataType = vectors[nonNullDomain]->GetDataType();
-    }
-
-    int maxDataType = dataType;
-#ifdef PARALLEL
-    // Let's get them all to agree on one data type.
-    MPI_Allreduce(&dataType, &maxDataType, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
-
-    int hasDataTypeMismatch = ((dataType >= 0) && (dataType != maxDataType));
-    int hasDataTypeMismatchMax = hasDataTypeMismatch;
-    MPI_Allreduce(&hasDataTypeMismatch, &hasDataTypeMismatchMax, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
-    if(hasDataTypeMismatchMax)
-    {
-        // This should never happen, so throw the exception.
-        EXCEPTION1(VisItException,
-                   "avtUnstructuredDomainBoundaries:ExchangeVector "
-                   "vtkDataArray data types do not match.");
-    }
-#endif
-
-    if (maxDataType < 0)
-        return vectors;
-
-    // This one's a little more complicated because there are different
-    // types of vectors we might encounter. If more cases arise,
-    // expand this function.
-    switch (maxDataType)
-    {
-        case VTK_FLOAT:
-            return ExchangeData<float>(domainNum, isPointData, vectors);
-            break;
-        case VTK_DOUBLE:
-            return ExchangeData<double>(domainNum, isPointData, vectors);
-            break;
-        case VTK_INT:
-            return ExchangeData<int>(domainNum, isPointData, vectors);
-            break;
-        case VTK_UNSIGNED_INT:
-            return ExchangeData<unsigned int>(domainNum, isPointData, vectors);
-            break;
-        default:
-            EXCEPTION1(VisItException, "Unknown vector type in "
-                       "avtUnstructuredDomainBoundaries::ExchangeVector");
-    }
+    return values;
 }
 
 
