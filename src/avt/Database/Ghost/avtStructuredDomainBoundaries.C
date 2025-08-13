@@ -1871,13 +1871,15 @@ avtStructuredDomainBoundaries::ExchangeScalarHelper(BoundaryHelperFunctions<T>* 
     // Create the matching arrays for the given scalars
     //
     T ***vals = bhf->InitializeBoundaryData();
+
+    int nComp = (scalars.size() > 0 ? scalars[0]->GetNumberOfComponents() :-1);
     int exceptionThrown = 0;
     TRY
     {
         for (size_t d = 0; d < scalars.size(); d++)
         {
             T *oldvals = (T*)scalars[d]->GetVoidPointer(0);
-            bhf->FillBoundaryData(domainNum[d], oldvals, vals, isPointData);
+            bhf->FillBoundaryData(domainNum[d], oldvals, vals, isPointData, nComp);
         }
     }
     CATCH2(VisItException, e)
@@ -1896,7 +1898,7 @@ avtStructuredDomainBoundaries::ExchangeScalarHelper(BoundaryHelperFunctions<T>* 
         EXCEPTION1(VisItException, "Bad Neighbor Index");
     }
 
-    bhf->CommunicateBoundaryData(domain2proc, vals, isPointData);
+    bhf->CommunicateBoundaryData(domain2proc, vals, isPointData, nComp);
 
     int timer_UnpackData = visitTimer->StartTimer();
     for (size_t d = 0; d < scalars.size(); d++)
@@ -1905,6 +1907,7 @@ avtStructuredDomainBoundaries::ExchangeScalarHelper(BoundaryHelperFunctions<T>* 
 
         // Create the new VTK objects
         out[d] = scalars[d]->NewInstance();
+        out[d]->SetNumberOfComponents(nComp);
         out[d]->SetName(scalars[d]->GetName());
         if (isPointData)
             out[d]->SetNumberOfTuples(bi->newnpts);
@@ -1915,13 +1918,13 @@ avtStructuredDomainBoundaries::ExchangeScalarHelper(BoundaryHelperFunctions<T>* 
         T *newvals = (T*)out[d]->GetVoidPointer(0);
 
         // Set the known ones
-        bhf->CopyOldValues(domainNum[d], oldvals, newvals, isPointData);
+        bhf->CopyOldValues(domainNum[d], oldvals, newvals, isPointData, nComp);
 
         // Match the unknown ones
-        bhf->SetNewBoundaryData(domainNum[d], vals, newvals, isPointData);
+        bhf->SetNewBoundaryData(domainNum[d], vals, newvals, isPointData, nComp);
 
         // Set the remaining unset ones (reduced connectivity, etc.)
-        bhf->FakeNonexistentBoundaryData(domainNum[d], newvals, isPointData);
+        bhf->FakeNonexistentBoundaryData(domainNum[d], newvals, isPointData, nComp);
     }
     visitTimer->StopTimer(timer_UnpackData, "Ghost Zone Generation phase 4: Unpack Data");
 
@@ -2093,14 +2096,16 @@ avtStructuredDomainBoundaries::ExchangeVectorHelper(BoundaryHelperFunctions<T>* 
     int timer_UnpackData = visitTimer->StartTimer();
     for (size_t d = 0; d < vectors.size(); d++)
     {
+        Boundary *bi = &boundary[domainNum[d]];
+
         // Create the new VTK objects
         out[d] = vectors[d]->NewInstance();
         out[d]->SetNumberOfComponents(nComp);
         out[d]->SetName(vectors[d]->GetName());
         if (isPointData)
-            out[d]->SetNumberOfTuples(boundary[domainNum[d]].newnpts);
+            out[d]->SetNumberOfTuples(bi->newnpts);
         else
-            out[d]->SetNumberOfTuples(boundary[domainNum[d]].newncells);
+            out[d]->SetNumberOfTuples(bi->newncells);
 
         T *oldvals = (T*)vectors[d]->GetVoidPointer(0);
         T *newvals = (T*)out[d]->GetVoidPointer(0);
