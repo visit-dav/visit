@@ -561,6 +561,16 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                                                  avtDataRequest_p,
                                                                  bool confirmInputMeshHasRightSize=true);
     avtStreamingGhostGenerator *GetStreamingGhostGenerator(void);
+
+    void                       ExchangeVariable(
+                                    avtVarType type,
+                                    int ts,
+                                    const char *varname,
+                                    intVector &doms,
+                                    std::vector<vtkDataSet *> &list,
+                                    avtDomainBoundaries *dbi,
+                                    avtDatasetCollection &ds);
+
     bool                       CommunicateGhosts(avtGhostDataType,
                                     avtDatasetCollection &, intVector &,
                                     avtDataRequest_p &,

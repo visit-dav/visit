@@ -7947,6 +7947,101 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundariesFromFile(
 
 
 // ****************************************************************************
+//  Method: avtGenericDatabase::ExchangeVariable
+//
+//  Purpose:
+//      TODO
+//
+//  Arguments:
+//      ds        The dataset collection.
+//
+//  Programmer: Justin Privitera
+//  Creation:   August 13, 2025
+//
+//  Modifications:
+// ****************************************************************************
+void
+avtGenericDatabase::ExchangeVariable(avtVarType type,
+                                     int ts,
+                                     const char *varname,
+                                     intVector &doms,
+                                     vector<vtkDataSet *> &list,
+                                     avtDomainBoundaries *dbi,
+                                     avtDatasetCollection &ds)
+{
+    avtCentering centering;
+    if (type == AVT_SCALAR_VAR)
+    {
+        centering = GetMetaData(ts)->GetScalar(varname)->centering;
+    }
+    else if (type == AVT_MATSPECIES)
+    {
+        centering = AVT_ZONECENT;
+    }
+    else if (type == AVT_VECTOR_VAR)
+    {
+        centering = GetMetaData(ts)->GetVector(varname)->centering;
+    }
+    else if (type == AVT_TENSOR_VAR)
+    {
+        centering = GetMetaData(ts)->GetTensor(varname)->centering;
+    }
+    else if (type == AVT_SYMMETRIC_TENSOR_VAR)
+    {
+        centering = GetMetaData(ts)->GetSymmTensor(varname)->centering;
+    }
+    else if (type == AVT_ARRAY_VAR)
+    {
+        centering = GetMetaData(ts)->GetArray(varname)->centering;
+    }
+    else
+    {
+        // We have only blessed scalars, matspecies, vectors, tensors, symmetric 
+        // tensors, and arrays to be exchanged for reasons I do not understand. 
+        // If someone modifies this code later to allow other types through, we 
+        // need them to be bitten by this error so they remember to add a case to 
+        // get the centering for the new vartype.
+        EXCEPTION1(VisItException, "Variables of this type are not able to "
+                   "be exchanged. Please contact a VisIt developer.");
+    }
+    const bool isPointData = (centering == AVT_NODECENT ? true : false);
+
+    vector<vtkDataArray *> values;
+    for (size_t i = 0; i < doms.size(); i ++)
+    {
+        vtkDataSet *ds1 = list[i];
+        if (ds1 == nullptr ||
+            ds1->GetNumberOfPoints() == 0 || 
+            ds1->GetNumberOfCells() == 0)
+        {
+            values.push_back(nullptr);
+            continue;
+        }
+        vtkDataSetAttributes *atts = isPointData ?
+            static_cast<vtkDataSetAttributes*>(ds1->GetPointData()) :
+            static_cast<vtkDataSetAttributes*>(ds1->GetCellData());
+        values.push_back(atts->GetArray(varname));
+    }
+    vector<vtkDataArray *> valuesOut;
+    valuesOut = dbi->ExchangeVar(doms, isPointData, values);
+    for (int i = 0; i < static_cast<int>(doms.size()); i ++)
+    {
+        vtkDataSet *ds1 = ds.GetDataset(i, 0);
+        if (ds1 == nullptr ||
+            ds1->GetNumberOfPoints() == 0 || 
+            ds1->GetNumberOfCells() == 0)
+        {
+            continue;
+        }
+        vtkDataSetAttributes *atts = isPointData ?
+            static_cast<vtkDataSetAttributes*>(ds1->GetPointData()) :
+            static_cast<vtkDataSetAttributes*>(ds1->GetCellData());
+        atts->AddArray(valuesOut[i]);
+        valuesOut[i]->Delete();
+    }
+}
+
+// ****************************************************************************
 //  Method: avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries
 //
 //  Purpose:
@@ -8171,77 +8266,7 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
     {
         src->DatabaseProgress(localstage++, nlocalstage,
                               "Creating ghost zones for field values");
-
-        avtCentering centering;
-        if (type == AVT_SCALAR_VAR)
-        {
-            centering = GetMetaData(ts)->GetScalar(varname)->centering;
-        }
-        else if (type == AVT_MATSPECIES)
-        {
-            centering = AVT_ZONECENT;
-        }
-        else if (type == AVT_VECTOR_VAR)
-        {
-            centering = GetMetaData(ts)->GetVector(varname)->centering;
-        }
-        else if (type == AVT_TENSOR_VAR)
-        {
-            centering = GetMetaData(ts)->GetTensor(varname)->centering;
-        }
-        else if (type == AVT_SYMMETRIC_TENSOR_VAR)
-        {
-            centering = GetMetaData(ts)->GetSymmTensor(varname)->centering;
-        }
-        else if (type == AVT_ARRAY_VAR)
-        {
-            centering = GetMetaData(ts)->GetArray(varname)->centering;
-        }
-        else
-        {
-            // We have only blessed scalars, matspecies, vectors, tensors, and 
-            // symmetric tensors to be exchanged for unknown reasons. If someone 
-            // modifies this code later to allow other types through, we need them to 
-            // be bitten by this error so they remember to add a case to get the 
-            // centering for the new vartype.
-            EXCEPTION1(VisItException, "Variables of this type are not able to "
-                       "be exchanged. Please contact a VisIt developer.");
-        }
-        const bool isPointData = (centering == AVT_NODECENT ? true : false);
-
-        vector<vtkDataArray *> values;
-        for (size_t i = 0; i < doms.size(); i ++)
-        {
-            vtkDataSet *ds1 = list[i];
-            if (ds1 == nullptr ||
-                ds1->GetNumberOfPoints() == 0 || 
-                ds1->GetNumberOfCells() == 0)
-            {
-                values.push_back(nullptr);
-                continue;
-            }
-            vtkDataSetAttributes *atts = isPointData ?
-                static_cast<vtkDataSetAttributes*>(ds1->GetPointData()) :
-                static_cast<vtkDataSetAttributes*>(ds1->GetCellData());
-            values.push_back(atts->GetArray(varname));
-        }
-        vector<vtkDataArray *> valuesOut;
-        valuesOut = dbi->ExchangeVar(doms, isPointData, values);
-        for (int i = 0; i < static_cast<int>(doms.size()); i ++)
-        {
-            vtkDataSet *ds1 = ds.GetDataset(i, 0);
-            if (ds1 == nullptr ||
-                ds1->GetNumberOfPoints() == 0 || 
-                ds1->GetNumberOfCells() == 0)
-            {
-                continue;
-            }
-            vtkDataSetAttributes *atts = isPointData ?
-                static_cast<vtkDataSetAttributes*>(ds1->GetPointData()) :
-                static_cast<vtkDataSetAttributes*>(ds1->GetCellData());
-            atts->AddArray(valuesOut[i]);
-            valuesOut[i]->Delete();
-        }
+        ExchangeVariable(type, ts, varname, doms, list, dbi, ds);
     }
 
     //
@@ -8261,77 +8286,7 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
             varType == AVT_SYMMETRIC_TENSOR_VAR ||
             varType == AVT_ARRAY_VAR)
         {
-            avtCentering centering;
-            if (varType == AVT_SCALAR_VAR)
-            {
-                centering = metadata->GetScalar(*curVar)->centering;
-            }
-            else if (varType == AVT_MATSPECIES)
-            {
-                centering = AVT_ZONECENT;
-            }
-            else if (varType == AVT_VECTOR_VAR)
-            {
-                centering = metadata->GetVector(*curVar)->centering;
-            }
-            else if (varType == AVT_TENSOR_VAR)
-            {
-                centering = metadata->GetTensor(*curVar)->centering;
-            }
-            else if (varType == AVT_SYMMETRIC_TENSOR_VAR)
-            {
-                metadata->GetSymmTensor(*curVar)->centering;
-            }
-            else if (varType == AVT_ARRAY_VAR)
-            {
-                metadata->GetArray(*curVar)->centering;
-            }
-            else
-            {
-                // We have only blessed scalars, matspecies, vectors, tensors, symmetric
-                // tensors, and arrays to be exchanged for unknown reasons. If someone 
-                // modifies this code later to allow other types through, we need them 
-                // to be bitten by this error so they remember to add a case to get the
-                // centering for the new vartype.
-                EXCEPTION1(VisItException, "Secondary variables of this type are not able to "
-                           "be exchanged. Please contact a VisIt developer.");
-            }
-
-            const bool isPointData = (centering == AVT_NODECENT ? true : false);
-
-            vector<vtkDataArray *> values;
-            for (size_t j = 0; j < doms.size(); j ++)
-            {
-                vtkDataSet *ds1 = list[j];
-                if (ds1 == nullptr ||
-                    ds1->GetNumberOfPoints() == 0 || 
-                    ds1->GetNumberOfCells() == 0)
-                {
-                    values.push_back(nullptr);
-                    continue;
-                }
-                vtkDataSetAttributes *atts = isPointData ?
-                    static_cast<vtkDataSetAttributes*>(ds1->GetPointData()) :
-                    static_cast<vtkDataSetAttributes*>(ds1->GetCellData());
-                values.push_back(atts->GetArray(*curVar));
-            }
-            vector<vtkDataArray *> valuesOut;
-            valuesOut = dbi->ExchangeVar(doms,isPointData,values);
-            for (int j = 0; j < static_cast<int>(doms.size()); j ++)
-            {
-                vtkDataSet *ds1 = ds.GetDataset(j, 0);
-                if (ds1 == nullptr ||
-                    ds1->GetNumberOfPoints() == 0 || 
-                    ds1->GetNumberOfCells() == 0)
-                {
-                    continue;
-                }
-                vtkDataSetAttributes *atts = isPointData ?
-                    static_cast<vtkDataSetAttributes*>(ds1->GetPointData()) :
-                    static_cast<vtkDataSetAttributes*>(ds1->GetCellData());
-                atts->AddArray(valuesOut[j]);
-                valuesOut[j]->Delete();
-            }
+            ExchangeVariable(varType, ts, *curVar, doms, list, dbi, ds);
         }
         else if (varType == AVT_MATERIAL ||
                  varType == AVT_MESH)
