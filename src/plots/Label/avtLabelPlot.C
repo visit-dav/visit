@@ -271,6 +271,10 @@ avtLabelPlot::ApplyOperators(avtDataObject_p input)
 //   Kathleen Biagas, Wed Jun  3 10:26:59 PDT 2015
 //   Send information to avtLabelFilter so it can create logical indices.
 //
+//   Kathleen Biagas, Thu Aug 7, 2025
+//   Remove setting of avtCondenseDatasetFilter's 'BypassHeuristic', it is no
+//   longer available.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -323,7 +327,6 @@ avtLabelPlot::ApplyRenderingTransformation(avtDataObject_p input)
     {
         onefilter = visitTimer->StartTimer();
         condenseFilter = new avtCondenseDatasetFilter;
-        condenseFilter->BypassHeuristic(true);
         condenseFilter->KeepAVTandVTK(true);
         condenseFilter->SetInput(dob);
         dob = condenseFilter->GetOutput();
