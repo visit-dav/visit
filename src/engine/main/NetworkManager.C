@@ -5021,7 +5021,7 @@ NetworkManager::ExportSingleDatabase(int id, const ExportDBAttributes &atts)
             auto dname = std::filesystem::path(atts.GetDirname());
             auto fname = std::filesystem::path(atts.GetFilename());
             // Cyrus Note: I hate this `/` operator nonsense, why not a join method?
-            qualFilename = (dname / fname).native();
+            qualFilename = (dname / fname).make_preferred().string();
         }
         bool doAll = false;
         std::vector<std::string> vars = atts.GetVariables();
