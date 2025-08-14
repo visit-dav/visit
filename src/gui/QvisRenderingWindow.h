@@ -11,6 +11,7 @@
 // Forward declarations
 class QButtonGroup;
 class QCheckBox;
+class QComboBox;
 class QLabel;
 class QGroupBox;
 class QRadioButton;
@@ -111,7 +112,7 @@ class AnariRenderingWidget;
 //   Kathleen Biagas, Thu Aug 14, 2025
 //   Remove void* arguments from QvisOpacitySlider slots as the arguments
 //   isn't needed for these instances.
-//   Add widgets and slot for msaaSamples.
+//   Add widgets and slot for msaaSamples and fxaa options.
 //   Remove QLabels that are no longer needed as ivars.
 //
 // ****************************************************************************
@@ -143,6 +144,10 @@ protected:
 private slots:
     void antialiasingChanged(int);
     void msaaSamplesChanged(int);
+    void fxaaRCTChanged(int);
+    void fxaaRCTCustomChanged();
+    void fxaaHCTChanged(int);
+    void fxaaHCTCustomChanged();
     void updateOrderedComposite();
     void updateDepthCompositeThreads();
     void updateDepthCompositeBlocking();
@@ -189,6 +194,16 @@ private:
     QButtonGroup      *antialiasingMode;
     QLabel            *msaaSamplesLabel;
     QSpinBox          *msaaSamples;
+
+    QLabel            *fxaaRCTLabel;
+    QComboBox         *fxaaRCT;  
+    QLabel            *fxaaRCTCustomLabel;
+    QLineEdit         *fxaaRCTCustom;  
+    QLabel            *fxaaHCTLabel;
+    QComboBox         *fxaaHCT;  
+    QLabel            *fxaaHCTCustomLabel;
+    QLineEdit         *fxaaHCTCustom;  
+
     QCheckBox         *orderedComposite;
     QLineEdit         *depthCompositeThreads;
     QLineEdit         *alphaCompositeThreads;

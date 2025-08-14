@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+  <Attribute name="FXAAOptions" purpose="Settings for FXAA antialiasing mode" persistent="true" keyframe="false" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="FXAAOptions.code">
+    <Enum name="RCT">
+      TooLittle
+      LowQuality
+      HighQuality
+      Overkill
+      CustomRCT
+    </Enum>
+    <Enum name="HCT">
+      VisibleLimit
+      HigherQuality
+      UpperLimit
+      CustomHCT
+    </Enum>
+    <Enum name="SBL">
+      LowBlending
+      MediumBlending
+      HighBlending
+      MaximumBlending
+      CustomBlending
+    </Enum>
+    <Enum name="SCT">
+      LowRemoval
+      MediumRemoval
+      DefaultRemoval
+      HighRemoval
+      CompleteRemoval
+      CustomRemoval
+    </Enum>
+    <Field name="relativeContrastThreshold" label="relativeCustomThreshold" type="enum" subtype="RCT">
+      HighQuality
+    </Field>
+    <Field name="customRCT" label="custom relativeContrastThreshold" type="float" enabler="relativeContrastThreshold:CustomRCT">
+      0.125000
+    </Field>
+    <Field name="hardContrastThreshold" label="hardContrastThreshold" type="enum" subtype="HCT">
+      HigherQuality
+    </Field>
+    <Field name="customHCT" label="custom hardContrastThreshold" type="float" enabler="hardContrastThreshold:CustomHCT">
+      0.062500
+    </Field>
+    <Field name="subpixelBlendLimit" label="subpixelBlendLimit" type="enum" subtype="SBL">
+      MediumBlending
+    </Field>
+    <Field name="customSBL" label="custom subpixelBlendLimit" type="float" enabler="subpixelBlendLimit:CustomBlending">
+      0.750000
+    </Field>
+    <Field name="subpixelContrastThreshold" label="subpixelContrastThreshold" type="enum" subtype="SCT">
+      DefaultRemoval
+    </Field>
+    <Field name="customSCT" label="custom subpixelContrastThreshold" type="float" enabler="subpixelContrastThreshold:CustomRemoval">
+      0.250000
+    </Field>
+    <Field name="useHighQualityEndpoints" label="useHighQualityEndpoints" type="bool">
+      true
+    </Field>
+    <Field name="endpointSearchIterations" label="endpointSearchIterations" type="int">
+      12
+    </Field>
+    <Function name="RCT2Float" user="true" member="true">
+    </Function>
+    <Function name="HCT2Float" user="true" member="true">
+    </Function>
+  </Attribute>

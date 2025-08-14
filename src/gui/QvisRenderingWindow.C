@@ -154,7 +154,7 @@ QvisRenderingWindow::~QvisRenderingWindow()
 //   Removed void* arg from SIGNAL and SLOT for QvisOpacitySlider as the arg
 //   isn't needed for these instances.
 //   Use QGroupBox and QFormLayout to better organize the page.
-//   Add widgets for msaaSamples.
+//   Add widgets for msaaSamples and fxaa options.
 //
 // ****************************************************************************
 
@@ -175,26 +175,30 @@ QvisRenderingWindow::CreateBasicPage()
     aaLayout->setContentsMargins(10,10,10,10);
     aaGroup->setLayout(aaLayout);
 
-    QLabel *aaLabel = new QLabel(tr("Antialiasing (MSAA has no effect if Depth Peeling also selected)"), basicOptions);
-    aaLayout->addWidget(aaLabel, 0, 0, 1, 3);
+    int aaRow= 0;
+    QLabel *aaLabel = new QLabel(tr("MSAA will be disabled if Depth Peeling also selected."), basicOptions);
+    aaLayout->addWidget(aaLabel, aaRow, 0, 1, 3);
     antialiasingMode = new QButtonGroup(basicOptions);
     connect(antialiasingMode, SIGNAL(idClicked(int)),
             this, SLOT(antialiasingChanged(int)));
+    aaRow++;
 
     QRadioButton *aaNone = new QRadioButton(tr("None"), basicOptions);
     antialiasingMode->addButton(aaNone, 0);
-    aaLayout->addWidget(aaNone, 1, 0);
+    aaLayout->addWidget(aaNone, aaRow, 0);
     QRadioButton *aaMSAA = new QRadioButton(tr("MSAA"), basicOptions);
     antialiasingMode->addButton(aaMSAA, 1);
-    aaLayout->addWidget(aaMSAA, 1, 1);
+    aaLayout->addWidget(aaMSAA, aaRow, 1);
     QRadioButton *aaFXAA = new QRadioButton(tr("FXAA"), basicOptions);
     antialiasingMode->addButton(aaFXAA, 2);
-    aaLayout->addWidget(aaFXAA, 1, 2);
+    aaLayout->addWidget(aaFXAA, aaRow, 2);
+    aaRow++;
+
     // MSAA options
 
     msaaSamplesLabel = new QLabel(tr("Number of Samples"));
     msaaSamplesLabel->setEnabled(false);
-    aaLayout->addWidget(msaaSamplesLabel, 2, 0);
+    aaLayout->addWidget(msaaSamplesLabel, aaRow, 0);
 
     msaaSamples = new QSpinBox();
     msaaSamples->setKeyboardTracking(false);
@@ -203,9 +207,72 @@ QvisRenderingWindow::CreateBasicPage()
     msaaSamples->setValue(4);
     msaaSamples->setSingleStep(2);
     msaaSamples->setEnabled(false);
-    aaLayout->addWidget(msaaSamples, 2, 1);
+    aaLayout->addWidget(msaaSamples, aaRow, 1);
     connect(msaaSamples, SIGNAL(valueChanged(int)),
             this, SLOT(msaaSamplesChanged(int)));
+    aaRow++;
+
+    // FXAA options
+
+    // RelativeConstrastThreshold default values and custom value widget
+    QDoubleValidator *dvfxaa = new QDoubleValidator(0.f,1.f, 5);
+
+    fxaaRCTLabel = new QLabel(tr("Relative contrast threshold"));
+    fxaaRCTLabel->setToolTip(
+        tr("Threshold for applying FXAA to a pixel, relative to the maximum luminosity of its 4 immediate neighbors\n"
+           "The luminosity of the current pixel and it's NSWE neighbors is computed. The maximum luminosity and luminosity range (contrast) of all 5 pixels is found. If the contrast is less than RelativeContrastThreshold * maxLum, the pixel is not considered aliased and will not be affected by FXAA.\n"));
+
+    aaLayout->addWidget(fxaaRCTLabel, aaRow,0);
+
+    fxaaRCT = new QComboBox();
+    fxaaRCT->addItem("Too little", 0.3333);
+    fxaaRCT->addItem("Low quality", 0.25);
+    fxaaRCT->addItem("High quality", 0.125);
+    fxaaRCT->addItem("Overkill", 0.0625);
+    fxaaRCT->addItem("CustomRCT", 0.125);
+    fxaaRCT->setCurrentIndex(2);
+    connect(fxaaRCT, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(fxaaRCTChanged(int)));
+    aaLayout->addWidget(fxaaRCT, aaRow,1);
+    aaRow++;
+
+    fxaaRCTCustomLabel = new QLabel(tr("Custom RCT value"));
+    aaLayout->addWidget(fxaaRCTCustomLabel, aaRow,0);
+
+    fxaaRCTCustom = new QLineEdit("0.0625");
+    fxaaRCTCustom->setValidator(dvfxaa);
+    connect(fxaaRCTCustom, SIGNAL(editingFinished()),
+            this, SLOT(fxaaRCTCustomChanged()));
+    aaLayout->addWidget(fxaaRCTCustom, aaRow,1);
+    aaRow++;
+
+    // HardConstrastThreshold default values and custom value widgets
+    fxaaHCTLabel = new QLabel(tr("Hard contrast threshold"));
+    fxaaHCTLabel->setToolTip(
+        tr("Similar to RelativeContrastThreshold, but not scaled by the maximum luminosity.\n"
+           "If the contrast of the current pixel and it's 4 immediate NSWE neighbors is less than HardContrastThreshold, the pixel is not considered aliased and will not be affected by FXAA.\n"));
+    aaLayout->addWidget(fxaaHCTLabel, aaRow,0);
+
+    fxaaHCT = new QComboBox();
+    fxaaHCT->addItem("VisibleLimit", 0.03125);
+    fxaaHCT->addItem("HigherQuality", 0.0625);
+    fxaaHCT->addItem("UpperLimit", 0.08333);
+    fxaaHCT->addItem("CustomHCT", 0.0625);
+    fxaaHCT->setCurrentIndex(1);
+    connect(fxaaHCT, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(fxaaHCTChanged(int)));
+    aaLayout->addWidget(fxaaHCT, aaRow,1);
+    aaRow++;
+
+    fxaaHCTCustomLabel = new QLabel(tr("Custom HCT value"));
+    aaLayout->addWidget(fxaaHCTCustomLabel,aaRow,0);
+
+    fxaaHCTCustom = new QLineEdit("0.0625");
+    fxaaHCTCustom->setValidator(dvfxaa);
+    connect(fxaaHCTCustom, SIGNAL(editingFinished()),
+            this, SLOT(fxaaHCTCustomChanged()));
+    aaLayout->addWidget(fxaaHCTCustom,aaRow,1);
+    aaRow++;
 
     // create the order compositing widgets
     QGroupBox *compositeSettings = new QGroupBox(tr("Compositer Settings"));
@@ -929,6 +996,9 @@ QvisRenderingWindow::UpdateWindow(bool doAll)
 //   Kathleen Biagas, Monday July 28, 2025
 //   Update handling of antialiasing.
 //
+//   Kathleen Biagas, Thu Aug 14, 2025
+//   Add handling of msaaSamples and fxaaOptions.
+//
 // ****************************************************************************
 
 void
@@ -955,7 +1025,32 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             itmp = (int)renderAtts->GetAntialiasing();
             antialiasingMode->blockSignals(true);
             antialiasingMode->button(itmp)->setChecked(true);
+            UpdateAAControls(itmp);
             antialiasingMode->blockSignals(false);
+            break;
+        case RenderingAttributes::ID_MSAASamples:
+            msaaSamples->blockSignals(true);
+            msaaSamples->setValue(renderAtts->GetMSAASamples());
+            msaaSamples->blockSignals(false);
+            break;
+        case RenderingAttributes::ID_FXAAOpt:
+        {
+            fxaaRCTLabel->blockSignals(true);
+            fxaaRCT->blockSignals(true);
+            fxaaRCTCustomLabel->blockSignals(true);
+            fxaaRCTCustom->blockSignals(true);
+            FXAAOptions &fxaaOpt = renderAtts->GetFXAAOpt();
+            fxaaRCT->setCurrentIndex((int)fxaaOpt.GetRelativeContrastThreshold());
+            tmp = FloatToQString(fxaaOpt.GetCustomRCT(),5);
+            fxaaRCTCustom->setText(tmp);
+            fxaaHCT->setCurrentIndex((int)fxaaOpt.GetHardContrastThreshold());
+            tmp = FloatToQString(fxaaOpt.GetCustomHCT(),5);
+            fxaaHCTCustom->setText(tmp);
+            fxaaHCTLabel->blockSignals(false);
+            fxaaHCT->blockSignals(false);
+            fxaaHCTCustomLabel->blockSignals(false);
+            fxaaHCTCustom->blockSignals(false);
+        }
             break;
         case RenderingAttributes::ID_multiresolutionMode:
             multiresolutionModeToggle->blockSignals(true);
@@ -1531,8 +1626,44 @@ void
 QvisRenderingWindow::UpdateAAControls(int mode)
 {
     // Set enabled state based on mode
+    msaaSamplesLabel->blockSignals(true);
+    msaaSamples->blockSignals(true);
+
+    fxaaRCTLabel->blockSignals(true);
+    fxaaRCT->blockSignals(true);
+    fxaaRCTCustomLabel->blockSignals(true);
+    fxaaRCTCustom->blockSignals(true);
+
+    fxaaHCTLabel->blockSignals(true);
+    fxaaHCT->blockSignals(true);
+    fxaaHCTCustomLabel->blockSignals(true);
+    fxaaHCTCustom->blockSignals(true);
+
     msaaSamplesLabel->setEnabled(mode == 1);
     msaaSamples->setEnabled(mode == 1);
+
+    fxaaRCTLabel->setEnabled(mode == 2);
+    fxaaRCT->setEnabled(mode == 2);
+    fxaaRCTCustomLabel->setEnabled(mode == 2 && fxaaRCT->currentIndex() == 4);
+    fxaaRCTCustom->setEnabled(mode == 2 && fxaaRCT->currentIndex() == 4);
+
+    fxaaHCTLabel->setEnabled(mode == 2);
+    fxaaHCT->setEnabled(mode == 2);
+    fxaaHCTCustomLabel->setEnabled(mode == 2 && fxaaHCT->currentIndex() == 3);
+    fxaaHCTCustom->setEnabled(mode == 2 && fxaaHCT->currentIndex() == 3);
+
+    msaaSamplesLabel->blockSignals(false);
+    msaaSamples->blockSignals(false);
+
+    fxaaRCTLabel->blockSignals(false);
+    fxaaRCT->blockSignals(false);
+    fxaaRCTCustomLabel->blockSignals(false);
+    fxaaRCTCustom->blockSignals(false);
+
+    fxaaHCTLabel->blockSignals(false);
+    fxaaHCT->blockSignals(false);
+    fxaaHCTCustomLabel->blockSignals(false);
+    fxaaHCTCustom->blockSignals(false);
 }
 
 
@@ -1587,6 +1718,106 @@ void
 QvisRenderingWindow::msaaSamplesChanged(int val)
 {
     renderAtts->SetMSAASamples(val);
+    SetUpdate(false);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::fxaaRCTChanged
+//
+// Purpose:
+//   Slot function called when an fxaaRCTChanged ComboBox value is changed.
+//
+// Arguments:
+//   index : The new fxaaRCT value.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::fxaaRCTChanged(int index)
+{
+    renderAtts->GetFXAAOpt().SetRelativeContrastThreshold(FXAAOptions::RCT(index));
+    UpdateAAControls(antialiasingMode->checkedId());
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::fxaaRCTCustomChanged
+//
+// Purpose:
+//   Slot function called when an fxaaRCTCustom value is changed.
+//
+// Arguments:
+//   index : The new fxaaRCTCustom value.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::fxaaRCTCustomChanged()
+{
+    renderAtts->GetFXAAOpt().SetCustomRCT(fxaaRCTCustom->text().toFloat());
+    SetUpdate(false);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::fxaaHCTChanged
+//
+// Purpose:
+//   Slot function called when an fxaaHCTChanged ComboBox value is changed.
+//
+// Arguments:
+//   index : The new fxaaHCT value.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::fxaaHCTChanged(int index)
+{
+    renderAtts->GetFXAAOpt().SetHardContrastThreshold(FXAAOptions::HCT(index));
+    UpdateAAControls(antialiasingMode->checkedId());
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::fxaaHCTCustomChanged
+//
+// Purpose:
+//   Slot function called when an fxaaHCTCustom value is changed.
+//
+// Arguments:
+//   index : The new fxaaHCTCustom value.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::fxaaHCTCustomChanged()
+{
+    renderAtts->GetFXAAOpt().SetCustomHCT(fxaaHCTCustom->text().toFloat());
     SetUpdate(false);
     Apply();
 }

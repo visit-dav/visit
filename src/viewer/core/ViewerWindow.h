@@ -676,6 +676,8 @@ public:
     int  GetAntialiasing() const;
     void SetMSAASamples(int);
     int  GetMSAASamples() const;
+    void SetFXAAOptions(const FXAAOptions *);
+    const FXAAOptions *GetFXAAOptions() const;
     void SetOrderComposite(bool enabled);
     bool GetOrderComposite() const;
     void SetDepthCompositeThreads(int n);

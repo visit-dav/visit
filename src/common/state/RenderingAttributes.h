@@ -8,6 +8,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+#include <FXAAOptions.h>
 #include <ColorAttribute.h>
 #include <float.h>
 
@@ -84,6 +85,7 @@ public:
 
     // Property selection methods
     virtual void SelectAll();
+    void SelectFXAAOpt();
     void SelectSpecularColor();
     void SelectStartCuePoint();
     void SelectEndCuePoint();
@@ -96,6 +98,7 @@ public:
     // Property setting methods
     void SetAntialiasing(AAMode antialiasing_);
     void SetMSAASamples(int MSAASamples_);
+    void SetFXAAOpt(const FXAAOptions &FXAAOpt_);
     void SetOrderComposite(bool orderComposite_);
     void SetDepthCompositeThreads(int depthCompositeThreads_);
     void SetDepthCompositeBlocking(int depthCompositeBlocking_);
@@ -141,6 +144,8 @@ public:
     // Property getting methods
     AAMode               GetAntialiasing() const;
     int                  GetMSAASamples() const;
+    const FXAAOptions    &GetFXAAOpt() const;
+          FXAAOptions    &GetFXAAOpt();
     bool                 GetOrderComposite() const;
     int                  GetDepthCompositeThreads() const;
     int                  GetDepthCompositeBlocking() const;
@@ -231,6 +236,7 @@ public:
     enum {
         ID_antialiasing = 0,
         ID_MSAASamples,
+        ID_FXAAOpt,
         ID_orderComposite,
         ID_depthCompositeThreads,
         ID_depthCompositeBlocking,
@@ -278,6 +284,7 @@ public:
 private:
     int            antialiasing;
     int            MSAASamples;
+    FXAAOptions    FXAAOpt;
     bool           orderComposite;
     int            depthCompositeThreads;
     int            depthCompositeBlocking;
@@ -324,6 +331,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define RENDERINGATTRIBUTES_TMFS "iibiiiibdibfibibiibffabdbbDDibiibiibbsssbs*s*"
+#define RENDERINGATTRIBUTES_TMFS "iiabiiiibdibfibibiibffabdbbDDibiibiibbsssbs*s*"
 
 #endif

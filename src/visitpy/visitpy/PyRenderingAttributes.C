@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <Py2and3Support.h>
+#include <PyFXAAOptions.h>
 #include <ColorAttribute.h>
 
 // ****************************************************************************
@@ -64,6 +65,11 @@ PyRenderingAttributes_ToString(const RenderingAttributes *atts, const char *pref
 
     snprintf(tmpStr, 1000, "%sMSAASamples = %d\n", prefix, atts->GetMSAASamples());
     str += tmpStr;
+    { // new scope
+        std::string objPrefix(prefix);
+        objPrefix += "FXAAOpt.";
+        str += PyFXAAOptions_ToString(&atts->GetFXAAOpt(), objPrefix.c_str(), forLogging);
+    }
     if(atts->GetOrderComposite())
         snprintf(tmpStr, 1000, "%sorderComposite = 1\n", prefix);
     else
@@ -498,6 +504,39 @@ RenderingAttributes_GetMSAASamples(PyObject *self, PyObject *args)
 {
     PyRenderingAttributesObject *obj = (PyRenderingAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetMSAASamples()));
+    return retval;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_SetFXAAOpt(PyObject *self, PyObject *args)
+{
+    PyRenderingAttributesObject *obj = (PyRenderingAttributesObject *)self;
+
+    PyObject *newValue = NULL;
+    if(!PyArg_ParseTuple(args, "O", &newValue))
+        return NULL;
+    if(!PyFXAAOptions_Check(newValue))
+        return PyErr_Format(PyExc_TypeError, "Field FXAAOpt can be set only with FXAAOptions objects");
+
+    obj->data->SetFXAAOpt(*PyFXAAOptions_FromPyObject(newValue));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetFXAAOpt(PyObject *self, PyObject *args)
+{
+    PyRenderingAttributesObject *obj = (PyRenderingAttributesObject *)self;
+    // Since the new object will point to data owned by this object,
+    // we need to increment the reference count.
+    Py_INCREF(self);
+
+    PyObject *retval = PyFXAAOptions_Wrap(&obj->data->GetFXAAOpt());
+    // Set the object's parent so the reference to the parent can be decref'd
+    // when the child goes out of scope.
+    PyFXAAOptions_SetParent(retval, self);
+
     return retval;
 }
 
@@ -3046,6 +3085,8 @@ PyMethodDef PyRenderingAttributes_methods[RENDERINGATTRIBUTES_NMETH] = {
     {"GetAntialiasing", RenderingAttributes_GetAntialiasing, METH_VARARGS},
     {"SetMSAASamples", RenderingAttributes_SetMSAASamples, METH_VARARGS},
     {"GetMSAASamples", RenderingAttributes_GetMSAASamples, METH_VARARGS},
+    {"SetFXAAOpt", RenderingAttributes_SetFXAAOpt, METH_VARARGS},
+    {"GetFXAAOpt", RenderingAttributes_GetFXAAOpt, METH_VARARGS},
     {"SetOrderComposite", RenderingAttributes_SetOrderComposite, METH_VARARGS},
     {"GetOrderComposite", RenderingAttributes_GetOrderComposite, METH_VARARGS},
     {"SetDepthCompositeThreads", RenderingAttributes_SetDepthCompositeThreads, METH_VARARGS},
@@ -3165,6 +3206,8 @@ PyRenderingAttributes_getattro(PyObject *self, PyObject *attr_name)
 
     if(strcmp(name, "MSAASamples") == 0)
         return RenderingAttributes_GetMSAASamples(self, NULL);
+    if(strcmp(name, "FXAAOpt") == 0)
+        return RenderingAttributes_GetFXAAOpt(self, NULL);
     if(strcmp(name, "orderComposite") == 0)
         return RenderingAttributes_GetOrderComposite(self, NULL);
     if(strcmp(name, "depthCompositeThreads") == 0)
@@ -3303,6 +3346,8 @@ PyRenderingAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *ar
         obj = RenderingAttributes_SetAntialiasing(self, args);
     else if(strcmp(name, "MSAASamples") == 0)
         obj = RenderingAttributes_SetMSAASamples(self, args);
+    else if(strcmp(name, "FXAAOpt") == 0)
+        obj = RenderingAttributes_SetFXAAOpt(self, args);
     else if(strcmp(name, "orderComposite") == 0)
         obj = RenderingAttributes_SetOrderComposite(self, args);
     else if(strcmp(name, "depthCompositeThreads") == 0)

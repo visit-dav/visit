@@ -1,0 +1,39 @@
+Target: xml2atts
+Function: RCT2Float
+Declaration: float RCTAsFloat() const;
+Definition:
+float
+FXAAOptions::RCTAsFloat() const const
+{
+    if(relativeContrastThreshold == 0) // TooLittle
+        return 0.3333;
+    else if(relativeContrastThreshold == 1) // LowQuality
+        return 0.25;
+    else if(relativeContrastThreshold == 2) // HighQuality (Default)
+        return 0.125;
+    else if(relativeContrastThreshold == 3) // Overkill
+        return 0.0625;
+    else if(relativeContrastThreshold == 4) // CustomRCT
+        return customRCT;
+    return 0.125;
+}
+
+Target: xml2atts
+Function: HCT2Float
+Declaration: float HCTAsFloat() const;
+Definition:
+float
+FXAAOptions::HCTAsFloat() const
+{
+    if(hardContrastThreshold == 0) // VisibleLimit
+        return 0.03125;
+    else if(hardContrastThreshold == 1) // HigherQuality (Default)
+        return 0.0625;
+    else if(hardContrastThreshold == 2) // UpperLimit
+        return 0.08333;
+    else if(hardContrastThreshold == 3) // CustomHCT
+        return customHCT;
+    return 0.0625;
+}
+
+

@@ -3161,7 +3161,7 @@ NetworkManager::RenderInternal()
 //    Added option for ordered composting
 //
 //    Kathleen Biagas, Thu Aug 14, 2025 
-//    Added MSAASamples from rendering atts.
+//    Added new RenderingAttributes items: MSAASamples, FXAAOptions.
 //
 // ****************************************************************************
 
@@ -3338,6 +3338,9 @@ NetworkManager::SetWindowAttributes(EngineVisWinInfo &viswinInfo,
 
         if (viswin->GetMSAASamples() != renderAtts.GetMSAASamples())
             viswin->SetMSAASamples(renderAtts.GetMSAASamples());
+
+        if (viswin->GetFXAAOptions() != &renderAtts.GetFXAAOpt())
+            viswin->SetFXAAOptions(&renderAtts.GetFXAAOpt());
 
         if (viswin->GetOrderComposite() != renderAtts.GetOrderComposite())
             viswin->SetOrderComposite(renderAtts.GetOrderComposite());

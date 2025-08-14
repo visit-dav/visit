@@ -2369,7 +2369,7 @@ ViewerWindow::InvertBackgroundColor()
 //   Added ANARI
 //
 //   Kathleen Biagas, Thu Aug 14, 2025
-//   Added MSAASamples.
+//   Added new RenderingAttributes items: MSAASamples, FXAAOptions.
 //
 // ****************************************************************************
 
@@ -2386,6 +2386,7 @@ ViewerWindow::CopyGeneralAttributes(const ViewerWindow *source)
     // classes (in multiple places) must be updated.
     SetAntialiasing(source->GetAntialiasing());
     SetMSAASamples(source->GetMSAASamples());
+    SetFXAAOptions(source->GetFXAAOptions());
     SetOrderComposite(source->GetOrderComposite());
     SetDepthCompositeThreads(source->GetDepthCompositeThreads());
     SetAlphaCompositeThreads(source->GetAlphaCompositeThreads());
@@ -6476,7 +6477,7 @@ RotateAroundY(const avtView3D &curView, double angle,
 //   Antialiasing is now an int (enum).
 //
 //   Kathleen Biagas, Thu Aug 14, 2025
-//   Added MSAASamples.
+//   Added new RenderingAttributes items: MSAASamples, FXAAOptions.
 //
 // ****************************************************************************
 
@@ -6561,6 +6562,7 @@ debug5 << "GetWindowAttributes: size=" << size[0] << ", " << size[1] << endl;
 
     renderAtts.SetAntialiasing((RenderingAttributes::AAMode) GetAntialiasing());
     renderAtts.SetMSAASamples(GetMSAASamples());
+    renderAtts.SetFXAAOpt(*(GetFXAAOptions()));
 
     renderAtts.SetOrderComposite(GetOrderComposite());
 
@@ -7448,6 +7450,51 @@ int
 ViewerWindow::GetMSAASamples() const
 {
     return visWindow->GetMSAASamples();
+}
+
+
+// ****************************************************************************
+//  Method: ViewerWindow::SetFXAAOptions
+//
+//  Purpose:
+//    Set the FXAAoptions of the window.
+//
+//  Arguments:
+//    atts      The FXAAOptions for this window.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   August 14, 2025
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetFXAAOptions(const FXAAOptions *atts)
+{
+    visWindow->SetFXAAOptions(atts);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::GetFXAAOptions
+//
+// Purpose:
+//   Returns a pointer to the VisWindow's FXAAOptions.
+//
+// Note:       Note that the pointer returned by this method cannot be used
+//             to set attributes of the fxaaOptions attributes.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+const FXAAOptions *
+ViewerWindow::GetFXAAOptions() const
+{
+    return (const FXAAOptions *)visWindow->GetFXAAOptions();
 }
 
 
@@ -9111,7 +9158,7 @@ ViewerWindow::GetUsingUsdDevice() const
 //   Added ANARI
 //
 //   Kathleen Biagas, Thu Aug 14, 2025
-//   Added MSAASamples.
+//   Added new RenderingAttributes items: MSAASamples, FXAAOptions.
 //
 // ****************************************************************************
 
@@ -9196,6 +9243,9 @@ ViewerWindow::CreateNode(DataNode *parentNode,
 
         windowNode->AddNode(new DataNode("antialiasing", GetAntialiasing()));
         windowNode->AddNode(new DataNode("MSAASamples", GetMSAASamples()));
+        FXAAOptions fxaaOpt(*visWindow->GetFXAAOptions());
+        fxaaOpt.CreateNode(windowNode, true, true);
+    
         windowNode->AddNode(new DataNode("orderComposite", GetOrderComposite()));
 
         windowNode->AddNode(new DataNode("depthCompositeThreads", GetDepthCompositeThreads()));
@@ -9452,7 +9502,7 @@ ViewerWindow::CreateNode(DataNode *parentNode,
 //   Antialiasing is now an int (enum).
 //
 //   Kathleen Biagas, Thu Aug 14, 2025
-//   Added MSAASamples.
+//   Added new RenderingAttributes items: MSAASamples, FXAAOptions.
 //
 // ****************************************************************************
 
@@ -9586,6 +9636,17 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
         SetAntialiasing(node->AsInt());
     if((node = windowNode->GetNode("MSAASamples")) != 0)
         SetMSAASamples(node->AsInt());
+    //
+    // Read in and set the FXAAOptions
+    //
+    if((node = windowNode->GetNode("FXAAOptions")) != 0)
+    {
+        FXAAOptions fxaaOpt;
+        fxaaOpt.ProcessOldVersions(windowNode, configVersion.c_str());
+        fxaaOpt.SetFromNode(windowNode);
+        SetFXAAOptions(&fxaaOpt);
+    }
+
     if((node = windowNode->GetNode("orderComposite")) != 0)
         SetOrderComposite(node->AsBool());
     if((node = windowNode->GetNode("depthCompositeThreads")) != 0)

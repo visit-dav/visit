@@ -12,6 +12,7 @@
 #include <vtkCullerCollection.h>
 #include <vtkDataSetMapper.h>
 #include <vtkFloatArray.h>
+#include <vtkFXAAOptions.h>
 #include <vtkImageData.h>
 #include <vtkInformation.h>
 #include <vtkInteractorStyle.h>
@@ -2702,6 +2703,62 @@ VisWinRendering::SetMSAASamples(int numSamples)
         GetRenderWindow()->SetMultiSamples((antialiasing == RenderingAttributes::MSAA) ? msaaSamples : 0);
     }
 }
+
+// ****************************************************************************
+// Method: VisWinRendering::SetFXAAOptions
+//
+// Purpose:
+//   Sets the options for FXAA.
+//
+// Arguments:
+//   fxaaOpt : The new FXAA options
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+VisWinRendering::SetFXAAOptions(const FXAAOptions *fxaaOpt)
+{
+    if(fxaaOptions != *fxaaOpt)
+    {
+        fxaaOptions = *fxaaOpt;
+        vtkFXAAOptions *vtkOpt = canvas->GetFXAAOptions();
+
+        if(fxaaOpt->GetRelativeContrastThreshold() == FXAAOptions::CustomRCT)
+            vtkOpt->SetRelativeContrastThreshold(fxaaOpt->GetCustomRCT());
+        else
+            vtkOpt->SetRelativeContrastThreshold(fxaaOpt->RCTAsFloat());
+
+        if(fxaaOpt->GetHardContrastThreshold() == FXAAOptions::CustomHCT)
+            vtkOpt->SetHardContrastThreshold(fxaaOpt->GetCustomHCT());
+        else
+            vtkOpt->SetHardContrastThreshold(fxaaOpt->HCTAsFloat());
+
+        canvas->SetFXAAOptions(vtkOpt);
+    }
+}
+
+// ****************************************************************************
+// Method: VisWinRendering::GetFXAAOptions
+//
+// Purpose:
+//   Returns a pointer to the window's FXAAOptions.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   August 14, 2025
+//
+// ****************************************************************************
+
+const FXAAOptions *
+VisWinRendering::GetFXAAOptions() const
+{
+    return (const FXAAOptions *)&fxaaOptions;
+}
+
 
 // ****************************************************************************
 // Method: VisWinRendering::GetRenderTimes

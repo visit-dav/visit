@@ -249,6 +249,7 @@ void RenderingAttributes::Copy(const RenderingAttributes &obj)
 {
     antialiasing = obj.antialiasing;
     MSAASamples = obj.MSAASamples;
+    FXAAOpt = obj.FXAAOpt;
     orderComposite = obj.orderComposite;
     depthCompositeThreads = obj.depthCompositeThreads;
     depthCompositeBlocking = obj.depthCompositeBlocking;
@@ -467,6 +468,7 @@ RenderingAttributes::operator == (const RenderingAttributes &obj) const
     // Create the return value
     return ((antialiasing == obj.antialiasing) &&
             (MSAASamples == obj.MSAASamples) &&
+            (FXAAOpt == obj.FXAAOpt) &&
             (orderComposite == obj.orderComposite) &&
             (depthCompositeThreads == obj.depthCompositeThreads) &&
             (depthCompositeBlocking == obj.depthCompositeBlocking) &&
@@ -653,6 +655,7 @@ RenderingAttributes::SelectAll()
 {
     Select(ID_antialiasing,                 (void *)&antialiasing);
     Select(ID_MSAASamples,                  (void *)&MSAASamples);
+    Select(ID_FXAAOpt,                      (void *)&FXAAOpt);
     Select(ID_orderComposite,               (void *)&orderComposite);
     Select(ID_depthCompositeThreads,        (void *)&depthCompositeThreads);
     Select(ID_depthCompositeBlocking,       (void *)&depthCompositeBlocking);
@@ -736,6 +739,18 @@ RenderingAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
     {
         addToParent = true;
         node->AddNode(new DataNode("MSAASamples", MSAASamples));
+    }
+
+    if(completeSave || !FieldsEqual(ID_FXAAOpt, &defaultObject))
+    {
+        DataNode *FXAAOptNode = new DataNode("FXAAOpt");
+        if(FXAAOpt.CreateNode(FXAAOptNode, completeSave, false))
+        {
+            addToParent = true;
+            node->AddNode(FXAAOptNode);
+        }
+        else
+            delete FXAAOptNode;
     }
 
     if(completeSave || !FieldsEqual(ID_orderComposite, &defaultObject))
@@ -1040,6 +1055,8 @@ RenderingAttributes::SetFromNode(DataNode *parentNode)
     }
     if((node = searchNode->GetNode("MSAASamples")) != 0)
         SetMSAASamples(node->AsInt());
+    if((node = searchNode->GetNode("FXAAOpt")) != 0)
+        FXAAOpt.SetFromNode(node);
     if((node = searchNode->GetNode("orderComposite")) != 0)
         SetOrderComposite(node->AsBool());
     if((node = searchNode->GetNode("depthCompositeThreads")) != 0)
@@ -1210,6 +1227,13 @@ RenderingAttributes::SetMSAASamples(int MSAASamples_)
 {
     MSAASamples = MSAASamples_;
     Select(ID_MSAASamples, (void *)&MSAASamples);
+}
+
+void
+RenderingAttributes::SetFXAAOpt(const FXAAOptions &FXAAOpt_)
+{
+    FXAAOpt = FXAAOpt_;
+    Select(ID_FXAAOpt, (void *)&FXAAOpt);
 }
 
 void
@@ -1519,6 +1543,18 @@ RenderingAttributes::GetMSAASamples() const
     return MSAASamples;
 }
 
+const FXAAOptions &
+RenderingAttributes::GetFXAAOpt() const
+{
+    return FXAAOpt;
+}
+
+FXAAOptions &
+RenderingAttributes::GetFXAAOpt()
+{
+    return FXAAOpt;
+}
+
 bool
 RenderingAttributes::GetOrderComposite() const
 {
@@ -1818,6 +1854,12 @@ RenderingAttributes::GetAnariUSDParameters()
 ///////////////////////////////////////////////////////////////////////////////
 
 void
+RenderingAttributes::SelectFXAAOpt()
+{
+    Select(ID_FXAAOpt, (void *)&FXAAOpt);
+}
+
+void
 RenderingAttributes::SelectSpecularColor()
 {
     Select(ID_specularColor, (void *)&specularColor);
@@ -1891,6 +1933,7 @@ RenderingAttributes::GetFieldName(int index) const
     {
     case ID_antialiasing:                 return "antialiasing";
     case ID_MSAASamples:                  return "MSAASamples";
+    case ID_FXAAOpt:                      return "FXAAOpt";
     case ID_orderComposite:               return "orderComposite";
     case ID_depthCompositeThreads:        return "depthCompositeThreads";
     case ID_depthCompositeBlocking:       return "depthCompositeBlocking";
@@ -1958,6 +2001,7 @@ RenderingAttributes::GetFieldType(int index) const
     {
     case ID_antialiasing:                 return FieldType_enum;
     case ID_MSAASamples:                  return FieldType_int;
+    case ID_FXAAOpt:                      return FieldType_att;
     case ID_orderComposite:               return FieldType_bool;
     case ID_depthCompositeThreads:        return FieldType_int;
     case ID_depthCompositeBlocking:       return FieldType_int;
@@ -2025,6 +2069,7 @@ RenderingAttributes::GetFieldTypeName(int index) const
     {
     case ID_antialiasing:                 return "enum";
     case ID_MSAASamples:                  return "int";
+    case ID_FXAAOpt:                      return "att";
     case ID_orderComposite:               return "bool";
     case ID_depthCompositeThreads:        return "int";
     case ID_depthCompositeBlocking:       return "int";
@@ -2100,6 +2145,11 @@ RenderingAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_MSAASamples:
         {  // new scope
         retval = (MSAASamples == obj.MSAASamples);
+        }
+        break;
+    case ID_FXAAOpt:
+        {  // new scope
+        retval = (FXAAOpt == obj.FXAAOpt);
         }
         break;
     case ID_orderComposite:

@@ -16,6 +16,7 @@
 #include <avtImage.h>
 #include <avtImageType.h>
 #include <ColorAttribute.h>
+#include <FXAAOptions.h>
 
 #if defined(HAVE_OSPRAY)
 #include <vtkOSPRayPass.h>
@@ -227,7 +228,7 @@ class VisWindowColleagueProxy;
 //    Antialiasing is now an int.
 //
 //    Kathleen Biagas, Thu Aug 14, 2025
-//    Add msaaSamples and Set/Get methods.
+//    Add msaaSamples, fxaaOptions and Set/Get methods.
 //
 // ****************************************************************************
 
@@ -332,6 +333,8 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     int                      GetMSAASamples() const
                                  { return msaaSamples; }
 
+    void                     SetFXAAOptions(const FXAAOptions *);
+    const FXAAOptions       *GetFXAAOptions() const;
 
     void                     GetRenderTimes(double times[6]) const;
     void                     SetStereoRendering(bool enabled, int type);
@@ -469,6 +472,7 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     bool                          realized;
     int                           antialiasing;
     int                           msaaSamples;
+    FXAAOptions                   fxaaOptions;
     bool                          stereo;
     int                           stereoType;
     int                           surfaceRepresentation;

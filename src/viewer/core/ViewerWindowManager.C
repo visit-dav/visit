@@ -3478,7 +3478,7 @@ ViewerWindowManager::SetViewExtentsType(avtExtentType viewType,
 //    Added options for ANARI rendering
 //
 //    Kathleen Biagas, Thu Aug 14, 2025 
-//    Added MSAASamples.
+//    Added new RenderingAttributes items: MSAASamples, FXAAOptions.
 //
 // ****************************************************************************
 
@@ -3503,6 +3503,9 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
 
         if (windows[index]->GetMSAASamples() != ratts->GetMSAASamples())
             windows[index]->SetMSAASamples(ratts->GetMSAASamples());
+
+        if (windows[index]->GetFXAAOptions() != &ratts->GetFXAAOpt())
+            windows[index]->SetFXAAOptions(&ratts->GetFXAAOpt());
 
         if (windows[index]->GetOrderComposite() != ratts->GetOrderComposite())
             windows[index]->SetOrderComposite(ratts->GetOrderComposite());
@@ -5257,7 +5260,7 @@ ViewerWindowManager::UpdateLightListAtts()
 //   Antialiasing is now an int (enum).
 //
 //   Kathleen Biagas, Thu Aug 14, 2025 
-//   Added MSAASamples.
+//   Added new RenderingAttributes items: MSAASamples, FXAAOptions.
 //
 // ****************************************************************************
 
@@ -5281,6 +5284,7 @@ ViewerWindowManager::UpdateRenderingAtts(int windowIndex)
 
         GetViewerState()->GetRenderingAttributes()->SetAntialiasing((RenderingAttributes::AAMode) win->GetAntialiasing());
         GetViewerState()->GetRenderingAttributes()->SetMSAASamples(win->GetMSAASamples());
+        GetViewerState()->GetRenderingAttributes()->SetFXAAOpt(*(win->GetFXAAOptions()));
         GetViewerState()->GetRenderingAttributes()->SetMultiresolutionMode(win->GetMultiresolutionMode());
         GetViewerState()->GetRenderingAttributes()->SetMultiresolutionCellSize(win->GetMultiresolutionCellSize());
         GetViewerState()->GetRenderingAttributes()->SetGeometryRepresentation(
@@ -8236,7 +8240,7 @@ ViewerWindowManager::CreateVisWindow(const int windowIndex,
 //    Ensure color texturing flag gets set.
 //
 //    Kathleen Biagas, Thu Aug 14, 2025 
-//    Added MSAASamples.
+//    Added new RenderingAttributes items: MSAASamples, FXAAOptions.
 //
 // ****************************************************************************
 
@@ -8262,6 +8266,7 @@ ViewerWindowManager::SetWindowAttributes(int windowIndex, bool copyAtts)
     }
     w->SetAntialiasing(GetViewerState()->GetRenderingAttributes()->GetAntialiasing());
     w->SetMSAASamples(GetViewerState()->GetRenderingAttributes()->GetMSAASamples());
+    w->SetFXAAOptions(&GetViewerState()->GetRenderingAttributes()->GetFXAAOpt());
     w->SetMultiresolutionMode(GetViewerState()->GetRenderingAttributes()->GetMultiresolutionMode());
     w->SetMultiresolutionCellSize(GetViewerState()->GetRenderingAttributes()->GetMultiresolutionCellSize());
     int rep = (int)GetViewerState()->GetRenderingAttributes()->GetGeometryRepresentation();

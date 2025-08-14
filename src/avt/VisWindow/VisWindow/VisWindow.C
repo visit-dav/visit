@@ -6199,6 +6199,46 @@ VisWindow::GetMSAASamples() const
 
 
 // ****************************************************************************
+// Method: VisWindow::SetFXAAOptions
+//
+// Purpose:
+//   Sets the options for FXAA.
+//
+// Arguments:
+//   fxaaOpt : The new FXAA options
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+VisWindow::SetFXAAOptions(const FXAAOptions *fxaaOpt)
+{
+    rendering->SetFXAAOptions(fxaaOpt);
+}
+
+// ****************************************************************************
+// Method: VisWindow::GetFXAAOptions
+//
+// Purpose:
+//   Returns a pointer to the window's FXAAOptions.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   August 14, 2025
+//
+// ****************************************************************************
+
+const FXAAOptions *
+VisWindow::GetFXAAOptions() const
+{
+    return rendering->GetFXAAOptions();
+}
+
+
+// ****************************************************************************
 // Method: VisWindow::SetMultiresolutionMode
 //
 // Purpose:

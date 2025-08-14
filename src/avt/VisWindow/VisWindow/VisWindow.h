@@ -20,6 +20,7 @@
 #include <VisCallback.h>
 
 #include <AnnotationAttributes.h>
+#include <FXAAOptions.h>
 #include <InteractorAttributes.h>
 #include <LightList.h>
 
@@ -445,7 +446,7 @@ class VisitInteractor;
 //    Antialiasing is now an int (enum).
 //
 //    Kathleen Biagas, Thu Aug 14, 2025
-//    Add Set/Get MSAASamples.
+//    Add Set/Get MSAASamples and FXAAOptions.
 //
 // ****************************************************************************
 
@@ -674,6 +675,8 @@ public:
     int                  GetAntialiasing() const;
     void                 SetMSAASamples(int);
     int                  GetMSAASamples() const;
+    void                 SetFXAAOptions(const FXAAOptions *);
+    const FXAAOptions   *GetFXAAOptions() const;
     void                 SetOrderComposite(bool enabled);
     bool                 GetOrderComposite() const;
     void                 SetDepthCompositeThreads(size_t n);

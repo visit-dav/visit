@@ -27,6 +27,8 @@
     <Field name="MSAASamples" label="MSAA Samples" type="int">
       4
     </Field>
+    <Field name="FXAAOpt" label="FXAAOpt" type="att" subtype="FXAAOptions" enabler="antialiasing:FXAA">
+    </Field>
     <Field name="orderComposite" label="Order Composite" type="bool">
       true
     </Field>
