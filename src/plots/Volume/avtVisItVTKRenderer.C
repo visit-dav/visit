@@ -651,13 +651,52 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
         m_anariEnabled = m_atts.GetAnariRendering();
 
         if (m_volumeMapper != nullptr)
+        {
             m_volumeMapper->Delete();
+            m_volumeMapper = nullptr;
+        }
 
         // Create the volume mapper.
-        if( m_atts.GetAnariRendering() )
+        if(m_anariEnabled)
         {
-            m_volumeMapper = vtkAnariVolumeMapper::New();
             LOCAL_DEBUG << "ANARI Volume Mapper " << std::endl;
+            vtkAnariVolumeMapper *anariVolumeMapper = vtkAnariVolumeMapper::New();
+            
+            if(!anariVolumeMapper->GetInitialized())
+            {
+                anariVolumeMapper->Init();
+            }
+
+            auto anariPass = anariVolumeMapper->GetAnariPass();
+
+            if(anariPass)
+            {
+                // ANARI Device Settings
+                auto vtkAD = anariPass->GetAnariDevice();
+                std::string libraryName = !m_atts.GetAnariLibrary().empty() ? m_atts.GetAnariLibrary()
+                                                                            : "environment";                
+                vtkAD->SetupAnariDeviceFromLibrary(libraryName.c_str(),
+                                                    m_atts.GetAnariLibrarySubtype().c_str());
+                                                
+                // ANARI Render Settings
+                auto vtkAR = anariPass->GetAnariRenderer();
+                vtkAR->SetSubtype(m_atts.GetAnariRendererSubtype().c_str());
+                
+                if(!m_atts.GetUsingUsdDevice())
+                {
+                    SetAnariRendererParameters(anariPass);
+                }
+                else
+                {
+                    SetAnariUSDParameters(anariPass);
+                }
+            }
+            else 
+            {
+                LOCAL_DEBUG << "ANARI Pass is null." << std::endl;
+            }
+            
+            m_volumeMapper = anariVolumeMapper;         
         }
     }
 #endif
@@ -788,10 +827,6 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
     LOCAL_DEBUG << "sampleDist: " << sampleDist << "  "
                 << std::endl;
 
-    // vtkSmartVolumeMapper::SafeDownCast( volumeMapper )->SetSampleDistance( averageSpacing * 0.1);
-
-    // vtkSmartVolumeMapper::SafeDownCast( volumeMapper )->AutoAdjustSampleDistancesOff();
-
     // Set up the volume
     m_volume->SetMapper(m_volumeMapper);
     m_volume->SetProperty(m_volumeProperty);
@@ -812,56 +847,6 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
         vtkOSPRayRendererNode::SetAmbientSamples (m_atts.GetOSPRayAOSamples(),       renderer);
         vtkOSPRayRendererNode::SetMinContribution(m_atts.GetOSPRayMinContribution(), renderer);
         vtkOSPRayRendererNode::SetMaxContribution(m_atts.GetOSPRayMaxContribution(), renderer);
-    }
-#endif
-
-#ifdef HAVE_ANARI
-    if( m_atts.GetAnariRendering() )
-    {
-        LOCAL_DEBUG << "ANARI rendering enabled." << std::endl;
-        
-        auto anariVolumeMapper = vtkAnariVolumeMapper::SafeDownCast(m_volumeMapper);
-        
-        if(anariVolumeMapper)
-        {
-            if(!anariVolumeMapper->GetInitialized())
-            {
-                anariVolumeMapper->Init();
-            }
-            
-            auto anariPass = anariVolumeMapper->GetAnariPass();
-            
-            if(anariPass)
-            {
-                // ANARI Device Settings
-                auto vtkAD = anariPass->GetAnariDevice();
-                std::string libraryName = !m_atts.GetAnariLibrary().empty() ? m_atts.GetAnariLibrary()
-                                                                            : "environment";                
-                vtkAD->SetupAnariDeviceFromLibrary(libraryName.c_str(),
-                                                   m_atts.GetAnariLibrarySubtype().c_str());
-                                                   
-                // ANARI Render Settings
-                auto vtkAR = anariPass->GetAnariRenderer();
-                vtkAR->SetSubtype(m_atts.GetAnariRendererSubtype().c_str());
-                
-                if(!m_atts.GetUsingUsdDevice())
-                {
-                    SetAnariRendererParameters(anariPass);
-                }
-                else
-                {
-                    SetAnariUSDParameters(anariPass);
-                }
-            }
-            else 
-            {
-                LOCAL_DEBUG << "ANARI Pass is null." << std::endl;
-            }
-        }
-        else 
-        {
-            LOCAL_DEBUG << "ANARI Volume Mapper is null." << std::endl;
-        }
     }
 #endif
 }
@@ -1094,5 +1079,4 @@ avtVisItVTKRenderer::SetAnariUSDParameters(vtkAnariPass * const anariPass)
 
     anari::commitParameters(anariDevice, anariDevice);
 }
-
 #endif

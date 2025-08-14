@@ -72,6 +72,9 @@ class VisitHotPointInteractor;
 //     Kevin Griffin, Wed Apr 02, 2025
 //     Added SetAnariRendering.
 //
+//     Kevin Griffin, Thu Aug 14, 2025
+//     Removed SetAnariRendering.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinInteractions : public VisWinColleague
@@ -109,7 +112,6 @@ class VISWINDOW_API VisWinInteractions : public VisWinColleague
     virtual void             HasPlots();
 
     void                     SetOsprayRendering(bool enabled);
-    void                     SetAnariRendering(bool enabled);
 
     VisitHotPointInteractor* GetHotPointInteractor() { return hotPointInteractor; }
   protected:
