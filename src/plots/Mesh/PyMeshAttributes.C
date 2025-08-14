@@ -189,6 +189,11 @@ PyMeshAttributes_ToString(const MeshAttributes *atts, const char *prefix, const 
     else
         snprintf(tmpStr, 1000, "%sshowInternal = 0\n", prefix);
     str += tmpStr;
+    if(atts->GetShowGenerated())
+        snprintf(tmpStr, 1000, "%sshowGenerated = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%sshowGenerated = 0\n", prefix);
+    str += tmpStr;
     snprintf(tmpStr, 1000, "%spointSizePixels = %d\n", prefix, atts->GetPointSizePixels());
     str += tmpStr;
     snprintf(tmpStr, 1000, "%sopacity = %g\n", prefix, atts->GetOpacity());
@@ -1044,6 +1049,66 @@ MeshAttributes_GetShowInternal(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+MeshAttributes_SetShowGenerated(PyObject *self, PyObject *args)
+{
+    PyMeshAttributesObject *obj = (PyMeshAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the showGenerated in the object.
+    obj->data->SetShowGenerated(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+MeshAttributes_GetShowGenerated(PyObject *self, PyObject *args)
+{
+    PyMeshAttributesObject *obj = (PyMeshAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetShowGenerated()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
 MeshAttributes_SetPointSizePixels(PyObject *self, PyObject *args)
 {
     PyMeshAttributesObject *obj = (PyMeshAttributesObject *)self;
@@ -1194,6 +1259,8 @@ PyMethodDef PyMeshAttributes_methods[MESHATTRIBUTES_NMETH] = {
     {"GetPointType", MeshAttributes_GetPointType, METH_VARARGS},
     {"SetShowInternal", MeshAttributes_SetShowInternal, METH_VARARGS},
     {"GetShowInternal", MeshAttributes_GetShowInternal, METH_VARARGS},
+    {"SetShowGenerated", MeshAttributes_SetShowGenerated, METH_VARARGS},
+    {"GetShowGenerated", MeshAttributes_GetShowGenerated, METH_VARARGS},
     {"SetPointSizePixels", MeshAttributes_SetPointSizePixels, METH_VARARGS},
     {"GetPointSizePixels", MeshAttributes_GetPointSizePixels, METH_VARARGS},
     {"SetOpacity", MeshAttributes_SetOpacity, METH_VARARGS},
@@ -1295,6 +1362,8 @@ PyMeshAttributes_getattro(PyObject *self, PyObject *attr_name)
 
     if(strcmp(name, "showInternal") == 0)
         return MeshAttributes_GetShowInternal(self, NULL);
+    if(strcmp(name, "showGenerated") == 0)
+        return MeshAttributes_GetShowGenerated(self, NULL);
     if(strcmp(name, "pointSizePixels") == 0)
         return MeshAttributes_GetPointSizePixels(self, NULL);
     if(strcmp(name, "opacity") == 0)
@@ -1340,6 +1409,8 @@ PyMeshAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
         obj = MeshAttributes_SetPointType(self, args);
     else if(strcmp(name, "showInternal") == 0)
         obj = MeshAttributes_SetShowInternal(self, args);
+    else if(strcmp(name, "showGenerated") == 0)
+        obj = MeshAttributes_SetShowGenerated(self, args);
     else if(strcmp(name, "pointSizePixels") == 0)
         obj = MeshAttributes_SetPointSizePixels(self, args);
     else if(strcmp(name, "opacity") == 0)

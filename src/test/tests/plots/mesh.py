@@ -423,8 +423,30 @@ def TestCustomColor():
     DeleteAllPlots()
     CloseDatabase(silo_data_path("arbpoly-zoohybrid.silo"))
 
+def TestGeneratedZones():
+    TestSection("Testing display of generated zones")
+    dbfile = data_path("mfem_test_data/escher-p3.mfem_root")
+    OpenDatabase(dbfile)
+    AddPlot("Mesh", "main")
+    AddOperator("MultiresControl")
+    mc_atts  = MultiresControlAttributes()
+    mc_atts.resolution = 3
+    SetOperatorOptions(mc_atts)
+    DrawPlots()
+    Test("mesh_generated_zones_off")
+    m = MeshAttributes()
+    m.showGenerated = 1
+    SetPlotOptions(m)
+    Test("mesh_generated_zones_on")
+    DeleteAllPlots()
+    CloseDatabase(dbfile)
+
 def Main():
     TurnOffAllAnnotations()
+    # TODO
+    # on my macOS machine this test only works if run first
+    # Ohterwise it fails to open the mfem file very strange ...
+    TestGeneratedZones()
     TestRandomColor()
     TestCurve()
     TestPointMesh()
@@ -432,6 +454,7 @@ def Main():
     TestRect3d()
     TestAutoOpaqueFlag()
     TestCustomColor()
+
 
 # Added to allow this test to be run with compression too.
 # Another .py file sources this file with 'useCompression'
