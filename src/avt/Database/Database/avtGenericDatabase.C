@@ -8156,6 +8156,9 @@ avtGenericDatabase::ExchangeVariable(avtVarType type,
 //    Kathleen Biagas, Mon Nov 4, 2024
 //    Use avtMeshMetaData field 'hasExtraGhostInfo' to determine whether or
 //    not to handle extra ghost information.
+// 
+//    Justin Privitera, Thu Aug 14 13:12:42 PDT 2025
+//    Use ExchangeVariable() to handle most exchanges.
 //
 // ****************************************************************************
 
