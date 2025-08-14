@@ -108,6 +108,12 @@ class AnariRenderingWidget;
 //   Change antialiasingToggle to antialiasingMode, a button group to hold
 //   the different antialiasing modes. Update slot accordingly.
 //
+//   Kathleen Biagas, Thu Aug 14, 2025
+//   Remove void* arguments from QvisOpacitySlider slots as the arguments
+//   isn't needed for these instances.
+//   Add widgets and slot for msaaSamples.
+//   Remove QLabels that are no longer needed as ivars.
+//
 // ****************************************************************************
 
 class GUI_API QvisRenderingWindow : public QvisPostableWindowSimpleObserver
@@ -136,6 +142,7 @@ protected:
     void UpdateWindowSensitivity();
 private slots:
     void antialiasingChanged(int);
+    void msaaSamplesChanged(int);
     void updateOrderedComposite();
     void updateDepthCompositeThreads();
     void updateDepthCompositeBlocking();
@@ -154,10 +161,10 @@ private slots:
     void compactDomainsAutoThresholdChanged(int val);
     void scalrenCompressModeChanged(int);
     void specularToggled(bool);
-    void specularStrengthChanged(int, const void*);
-    void specularPowerChanged(int, const void*);
+    void specularStrengthChanged(int);
+    void specularPowerChanged(int);
     void shadowToggled(bool);
-    void shadowStrengthChanged(int, const void*);
+    void shadowStrengthChanged(int);
     void depthCueingToggled(bool);
     void depthCueingAutoToggled(bool);
     void depthCueingStartChanged();
@@ -169,6 +176,8 @@ private slots:
     void osprayShadowsToggled(bool);
 
 private:
+    void UpdateAAControls(int);
+
     QWidget *CreateBasicPage();
     QWidget *CreateAdvancedPage();
     QWidget *CreateInformationPage();
@@ -178,36 +187,27 @@ private:
 
     // Basic controls
     QButtonGroup      *antialiasingMode;
+    QLabel            *msaaSamplesLabel;
+    QSpinBox          *msaaSamples;
     QCheckBox         *orderedComposite;
-    QLabel            *compositeLabel;
-    QLabel            *depthCompositeThreadsLabel;
     QLineEdit         *depthCompositeThreads;
-    QLabel            *alphaCompositeThreadsLabel;
     QLineEdit         *alphaCompositeThreads;
-    QLabel            *depthCompositeBlockingLabel;
     QLineEdit         *depthCompositeBlocking;
-    QLabel            *alphaCompositeBlockingLabel;
     QLineEdit         *alphaCompositeBlocking;
-    QCheckBox         *depthPeeling;
-    QLabel            *occlusionRatioLabel;
+    QGroupBox         *depthPeeling;
     QLineEdit         *occlusionRatio;
-    QLabel            *numberOfPeelsLabel;
     QLineEdit         *numberOfPeels;
-    QCheckBox         *multiresolutionModeToggle;
-    QLabel            *multiresolutionSmallestCellLabel;
+    QGroupBox         *multiresolutionModeToggle;
     QLineEdit         *multiresolutionSmallestCellLineEdit;
     QButtonGroup      *objectRepresentation;
-    QCheckBox         *stereoToggle;
+    QGroupBox         *stereoToggle;
     QButtonGroup      *stereoType;
     QRadioButton      *redblue;
     QRadioButton      *interlace;
     QRadioButton      *crystalEyes;
     QRadioButton      *redgreen;
-    QCheckBox         *renderNotifyToggle;
-    QCheckBox         *specularToggle;
-    QLabel            *specularStrengthLabel;
+    QGroupBox         *specularToggle;
     QvisOpacitySlider *specularStrengthSlider;
-    QLabel            *specularPowerLabel;
     QvisOpacitySlider *specularPowerSlider;
 
     // Advanced controls
@@ -255,6 +255,7 @@ private:
     QLabel            *fpsMaxLabel;
     QLabel            *approxNumPrimitives;
     QLabel            *extents[6];
+    QCheckBox         *renderNotifyToggle;
 };
 
 #endif

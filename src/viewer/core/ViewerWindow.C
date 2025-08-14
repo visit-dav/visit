@@ -2368,6 +2368,9 @@ ViewerWindow::InvertBackgroundColor()
 //   Kevin Griffin, Thu Mar 6 15:51:48 CST 2025
 //   Added ANARI
 //
+//   Kathleen Biagas, Thu Aug 14, 2025
+//   Added MSAASamples.
+//
 // ****************************************************************************
 
 void
@@ -2382,6 +2385,7 @@ ViewerWindow::CopyGeneralAttributes(const ViewerWindow *source)
     // If new rendering attributes are introduced ALL of the above
     // classes (in multiple places) must be updated.
     SetAntialiasing(source->GetAntialiasing());
+    SetMSAASamples(source->GetMSAASamples());
     SetOrderComposite(source->GetOrderComposite());
     SetDepthCompositeThreads(source->GetDepthCompositeThreads());
     SetAlphaCompositeThreads(source->GetAlphaCompositeThreads());
@@ -6471,6 +6475,9 @@ RotateAroundY(const avtView3D &curView, double angle,
 //   Kathleen Biagas, Monday July 28, 2025.
 //   Antialiasing is now an int (enum).
 //
+//   Kathleen Biagas, Thu Aug 14, 2025
+//   Added MSAASamples.
+//
 // ****************************************************************************
 
 WindowAttributes
@@ -6553,6 +6560,7 @@ debug5 << "GetWindowAttributes: size=" << size[0] << ", " << size[1] << endl;
     renderAtts.SetCompactDomainsActivationMode((RenderingAttributes::TriStateMode) GetCompactDomainsActivationMode());
 
     renderAtts.SetAntialiasing((RenderingAttributes::AAMode) GetAntialiasing());
+    renderAtts.SetMSAASamples(GetMSAASamples());
 
     renderAtts.SetOrderComposite(GetOrderComposite());
 
@@ -7360,8 +7368,7 @@ ViewerWindow::UpdateVisualCueList(VisualCueList& visCues) const
 //   Sets the window's AA mode.
 //
 // Arguments:
-//   enabled : Whether or not AA is enabled.
-//   frames  : The number of frames to use.
+//   aaMode :  The AA mode to use.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 23 14:38:31 PST 2002
@@ -7400,6 +7407,47 @@ int
 ViewerWindow::GetAntialiasing() const
 {
     return visWindow->GetAntialiasing();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::SetMSAASamples
+//
+// Purpose:
+//   Sets the window's MSAASamples.
+//
+// Arguments:
+//   numSamp : The number of MSAASamples to use.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetMSAASamples(int numSamp)
+{
+    visWindow->SetMSAASamples(numSamp);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::GetMSAASamples
+//
+// Purpose:
+//   Returns the window's MSAASamples.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+int
+ViewerWindow::GetMSAASamples() const
+{
+    return visWindow->GetMSAASamples();
 }
 
 
@@ -9062,6 +9110,9 @@ ViewerWindow::GetUsingUsdDevice() const
 //   Kevin Griffin, Fri Mar 6 15:51:48 CST 2025
 //   Added ANARI
 //
+//   Kathleen Biagas, Thu Aug 14, 2025
+//   Added MSAASamples.
+//
 // ****************************************************************************
 
 void
@@ -9144,6 +9195,7 @@ ViewerWindow::CreateNode(DataNode *parentNode,
         // classes (in multiple places) must be updated.
 
         windowNode->AddNode(new DataNode("antialiasing", GetAntialiasing()));
+        windowNode->AddNode(new DataNode("MSAASamples", GetMSAASamples()));
         windowNode->AddNode(new DataNode("orderComposite", GetOrderComposite()));
 
         windowNode->AddNode(new DataNode("depthCompositeThreads", GetDepthCompositeThreads()));
@@ -9399,6 +9451,9 @@ ViewerWindow::CreateNode(DataNode *parentNode,
 //   Kathleen Biagas, Monday July 28, 2025.
 //   Antialiasing is now an int (enum).
 //
+//   Kathleen Biagas, Thu Aug 14, 2025
+//   Added MSAASamples.
+//
 // ****************************************************************************
 
 bool
@@ -9529,6 +9584,8 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
 
     if((node = windowNode->GetNode("antialiasing")) != 0)
         SetAntialiasing(node->AsInt());
+    if((node = windowNode->GetNode("MSAASamples")) != 0)
+        SetMSAASamples(node->AsInt());
     if((node = windowNode->GetNode("orderComposite")) != 0)
         SetOrderComposite(node->AsBool());
     if((node = windowNode->GetNode("depthCompositeThreads")) != 0)

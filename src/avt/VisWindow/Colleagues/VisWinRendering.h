@@ -226,6 +226,9 @@ class VisWindowColleagueProxy;
 //    Kathleen Biagas, Monday July 28, 2025
 //    Antialiasing is now an int.
 //
+//    Kathleen Biagas, Thu Aug 14, 2025
+//    Add msaaSamples and Set/Get methods.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRendering : public VisWinColleague
@@ -319,9 +322,17 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
 
     void                     SetRenderInfoCallback(void(*callback)(void *), void *);
     void                     SetRenderEventCallback(void(*callback)(void *,bool), void *);
-    void                     SetAntialiasing(int aaMode);
+
+    // Antialiasing
+    void                     SetAntialiasing(int);
     int                      GetAntialiasing() const
                                  { return antialiasing; }
+
+    void                     SetMSAASamples(int);
+    int                      GetMSAASamples() const
+                                 { return msaaSamples; }
+
+
     void                     GetRenderTimes(double times[6]) const;
     void                     SetStereoRendering(bool enabled, int type);
     bool                     GetStereo() const
@@ -457,6 +468,7 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     bool                          needsUpdate;
     bool                          realized;
     int                           antialiasing;
+    int                           msaaSamples;
     bool                          stereo;
     int                           stereoType;
     int                           surfaceRepresentation;

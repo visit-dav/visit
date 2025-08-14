@@ -24,6 +24,9 @@
     <Field name="antialiasing" label="antialiasing" type="enum" subtype="AAMode">
       None
     </Field>
+    <Field name="MSAASamples" label="MSAA Samples" type="int">
+      4
+    </Field>
     <Field name="orderComposite" label="Order Composite" type="bool">
       true
     </Field>

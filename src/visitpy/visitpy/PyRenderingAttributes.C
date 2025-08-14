@@ -62,6 +62,8 @@ PyRenderingAttributes_ToString(const RenderingAttributes *atts, const char *pref
           break;
     }
 
+    snprintf(tmpStr, 1000, "%sMSAASamples = %d\n", prefix, atts->GetMSAASamples());
+    str += tmpStr;
     if(atts->GetOrderComposite())
         snprintf(tmpStr, 1000, "%sorderComposite = 1\n", prefix);
     else
@@ -436,6 +438,66 @@ RenderingAttributes_GetAntialiasing(PyObject *self, PyObject *args)
 {
     PyRenderingAttributesObject *obj = (PyRenderingAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetAntialiasing()));
+    return retval;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_SetMSAASamples(PyObject *self, PyObject *args)
+{
+    PyRenderingAttributesObject *obj = (PyRenderingAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the MSAASamples in the object.
+    obj->data->SetMSAASamples(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetMSAASamples(PyObject *self, PyObject *args)
+{
+    PyRenderingAttributesObject *obj = (PyRenderingAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetMSAASamples()));
     return retval;
 }
 
@@ -2982,6 +3044,8 @@ PyMethodDef PyRenderingAttributes_methods[RENDERINGATTRIBUTES_NMETH] = {
     {"Notify", RenderingAttributes_Notify, METH_NOARGS},
     {"SetAntialiasing", RenderingAttributes_SetAntialiasing, METH_VARARGS},
     {"GetAntialiasing", RenderingAttributes_GetAntialiasing, METH_VARARGS},
+    {"SetMSAASamples", RenderingAttributes_SetMSAASamples, METH_VARARGS},
+    {"GetMSAASamples", RenderingAttributes_GetMSAASamples, METH_VARARGS},
     {"SetOrderComposite", RenderingAttributes_SetOrderComposite, METH_VARARGS},
     {"GetOrderComposite", RenderingAttributes_GetOrderComposite, METH_VARARGS},
     {"SetDepthCompositeThreads", RenderingAttributes_SetDepthCompositeThreads, METH_VARARGS},
@@ -3099,6 +3163,8 @@ PyRenderingAttributes_getattro(PyObject *self, PyObject *attr_name)
     if(strcmp(name, "FXAA") == 0)
         return PyInt_FromLong(long(RenderingAttributes::FXAA));
 
+    if(strcmp(name, "MSAASamples") == 0)
+        return RenderingAttributes_GetMSAASamples(self, NULL);
     if(strcmp(name, "orderComposite") == 0)
         return RenderingAttributes_GetOrderComposite(self, NULL);
     if(strcmp(name, "depthCompositeThreads") == 0)
@@ -3235,6 +3301,8 @@ PyRenderingAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *ar
 
     if(strcmp(name, "antialiasing") == 0)
         obj = RenderingAttributes_SetAntialiasing(self, args);
+    else if(strcmp(name, "MSAASamples") == 0)
+        obj = RenderingAttributes_SetMSAASamples(self, args);
     else if(strcmp(name, "orderComposite") == 0)
         obj = RenderingAttributes_SetOrderComposite(self, args);
     else if(strcmp(name, "depthCompositeThreads") == 0)

@@ -6107,8 +6107,7 @@ size_t VisWindow::GetAlphaCompositeBlocking() const
 //   Sets the window's antialiasing mode.
 //
 // Arguments:
-//   enabled : Whether or not antialiasing is enabled.
-//   frames  : The number of frames to use for AA.
+//   aaMode :  The antialiasing mode.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 23 14:06:02 PST 2002
@@ -6157,6 +6156,47 @@ VisWindow::GetAntialiasing() const
 {
     return rendering->GetAntialiasing();
 }
+
+// ****************************************************************************
+// Method: VisWindow::SetMSAASamples
+//
+// Purpose:
+//   Sets the window's MSAASamples
+//
+// Arguments:
+//   numSamp  : The number of MSAA samples to use for AA.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+VisWindow::SetMSAASamples(int numSamp)
+{
+    rendering->SetMSAASamples(numSamp);
+}
+
+// ****************************************************************************
+// Method: VisWindow::GetMSAASamples
+//
+// Returns:    The window's MSAASamples.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+int
+VisWindow::GetMSAASamples() const
+{
+    return rendering->GetMSAASamples();
+}
+
 
 // ****************************************************************************
 // Method: VisWindow::SetMultiresolutionMode

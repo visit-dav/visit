@@ -184,6 +184,7 @@ RenderingAttributes::AAMode_FromString(const std::string &s, RenderingAttributes
 void RenderingAttributes::Init()
 {
     antialiasing = None;
+    MSAASamples = 4;
     orderComposite = true;
     depthCompositeThreads = 2;
     depthCompositeBlocking = 65536;
@@ -247,6 +248,7 @@ void RenderingAttributes::Init()
 void RenderingAttributes::Copy(const RenderingAttributes &obj)
 {
     antialiasing = obj.antialiasing;
+    MSAASamples = obj.MSAASamples;
     orderComposite = obj.orderComposite;
     depthCompositeThreads = obj.depthCompositeThreads;
     depthCompositeBlocking = obj.depthCompositeBlocking;
@@ -464,6 +466,7 @@ RenderingAttributes::operator == (const RenderingAttributes &obj) const
 
     // Create the return value
     return ((antialiasing == obj.antialiasing) &&
+            (MSAASamples == obj.MSAASamples) &&
             (orderComposite == obj.orderComposite) &&
             (depthCompositeThreads == obj.depthCompositeThreads) &&
             (depthCompositeBlocking == obj.depthCompositeBlocking) &&
@@ -649,6 +652,7 @@ void
 RenderingAttributes::SelectAll()
 {
     Select(ID_antialiasing,                 (void *)&antialiasing);
+    Select(ID_MSAASamples,                  (void *)&MSAASamples);
     Select(ID_orderComposite,               (void *)&orderComposite);
     Select(ID_depthCompositeThreads,        (void *)&depthCompositeThreads);
     Select(ID_depthCompositeBlocking,       (void *)&depthCompositeBlocking);
@@ -726,6 +730,12 @@ RenderingAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
     {
         addToParent = true;
         node->AddNode(new DataNode("antialiasing", AAMode_ToString(antialiasing)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_MSAASamples, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("MSAASamples", MSAASamples));
     }
 
     if(completeSave || !FieldsEqual(ID_orderComposite, &defaultObject))
@@ -1028,6 +1038,8 @@ RenderingAttributes::SetFromNode(DataNode *parentNode)
                 SetAntialiasing(value);
         }
     }
+    if((node = searchNode->GetNode("MSAASamples")) != 0)
+        SetMSAASamples(node->AsInt());
     if((node = searchNode->GetNode("orderComposite")) != 0)
         SetOrderComposite(node->AsBool());
     if((node = searchNode->GetNode("depthCompositeThreads")) != 0)
@@ -1191,6 +1203,13 @@ RenderingAttributes::SetAntialiasing(RenderingAttributes::AAMode antialiasing_)
 {
     antialiasing = antialiasing_;
     Select(ID_antialiasing, (void *)&antialiasing);
+}
+
+void
+RenderingAttributes::SetMSAASamples(int MSAASamples_)
+{
+    MSAASamples = MSAASamples_;
+    Select(ID_MSAASamples, (void *)&MSAASamples);
 }
 
 void
@@ -1492,6 +1511,12 @@ RenderingAttributes::AAMode
 RenderingAttributes::GetAntialiasing() const
 {
     return AAMode(antialiasing);
+}
+
+int
+RenderingAttributes::GetMSAASamples() const
+{
+    return MSAASamples;
 }
 
 bool
@@ -1865,6 +1890,7 @@ RenderingAttributes::GetFieldName(int index) const
     switch (index)
     {
     case ID_antialiasing:                 return "antialiasing";
+    case ID_MSAASamples:                  return "MSAASamples";
     case ID_orderComposite:               return "orderComposite";
     case ID_depthCompositeThreads:        return "depthCompositeThreads";
     case ID_depthCompositeBlocking:       return "depthCompositeBlocking";
@@ -1931,6 +1957,7 @@ RenderingAttributes::GetFieldType(int index) const
     switch (index)
     {
     case ID_antialiasing:                 return FieldType_enum;
+    case ID_MSAASamples:                  return FieldType_int;
     case ID_orderComposite:               return FieldType_bool;
     case ID_depthCompositeThreads:        return FieldType_int;
     case ID_depthCompositeBlocking:       return FieldType_int;
@@ -1997,6 +2024,7 @@ RenderingAttributes::GetFieldTypeName(int index) const
     switch (index)
     {
     case ID_antialiasing:                 return "enum";
+    case ID_MSAASamples:                  return "int";
     case ID_orderComposite:               return "bool";
     case ID_depthCompositeThreads:        return "int";
     case ID_depthCompositeBlocking:       return "int";
@@ -2067,6 +2095,11 @@ RenderingAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_antialiasing:
         {  // new scope
         retval = (antialiasing == obj.antialiasing);
+        }
+        break;
+    case ID_MSAASamples:
+        {  // new scope
+        retval = (MSAASamples == obj.MSAASamples);
         }
         break;
     case ID_orderComposite:

@@ -95,6 +95,7 @@ public:
 
     // Property setting methods
     void SetAntialiasing(AAMode antialiasing_);
+    void SetMSAASamples(int MSAASamples_);
     void SetOrderComposite(bool orderComposite_);
     void SetDepthCompositeThreads(int depthCompositeThreads_);
     void SetDepthCompositeBlocking(int depthCompositeBlocking_);
@@ -139,6 +140,7 @@ public:
 
     // Property getting methods
     AAMode               GetAntialiasing() const;
+    int                  GetMSAASamples() const;
     bool                 GetOrderComposite() const;
     int                  GetDepthCompositeThreads() const;
     int                  GetDepthCompositeBlocking() const;
@@ -228,6 +230,7 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_antialiasing = 0,
+        ID_MSAASamples,
         ID_orderComposite,
         ID_depthCompositeThreads,
         ID_depthCompositeBlocking,
@@ -274,6 +277,7 @@ public:
 
 private:
     int            antialiasing;
+    int            MSAASamples;
     bool           orderComposite;
     int            depthCompositeThreads;
     int            depthCompositeBlocking;
@@ -320,6 +324,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define RENDERINGATTRIBUTES_TMFS "ibiiiibdibfibibiibffabdbbDDibiibiibbsssbs*s*"
+#define RENDERINGATTRIBUTES_TMFS "iibiiiibdibfibibiibffabdbbDDibiibiibbsssbs*s*"
 
 #endif

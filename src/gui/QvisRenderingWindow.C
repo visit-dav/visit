@@ -8,11 +8,12 @@
 
 #include <QButtonGroup>
 #include <QCheckBox>
+#include <QComboBox>
 #include <QGroupBox>
 #include <QLabel>
 #include <QLayout>
+#include <QFormLayout>
 #include <QRadioButton>
-#include <QSlider>
 #include <QSpinBox>
 #include <QLineEdit>
 #include <QTabWidget>
@@ -145,9 +146,15 @@ QvisRenderingWindow::~QvisRenderingWindow()
 //   Kathleen Biagas, Wed May 14, 2025
 //   Remove 'Requires restart' label from antialiasingToggle.
 //
-//   Kathleen Biagas, Mon Jul 28, 205
+//   Kathleen Biagas, Mon Jul 28, 2025
 //   Change antialiasingToggle checkbox to antialiasingMode buttonGroup
 //   to hold the different Antialiasing modes.
+//
+//   Kathleen Biagas, Thu Aug 14, 2025
+//   Removed void* arg from SIGNAL and SLOT for QvisOpacitySlider as the arg
+//   isn't needed for these instances.
+//   Use QGroupBox and QFormLayout to better organize the page.
+//   Add widgets for msaaSamples.
 //
 // ****************************************************************************
 
@@ -156,36 +163,59 @@ QvisRenderingWindow::CreateBasicPage()
 {
     int row = 0;
     QWidget *basicOptions = new QWidget(central);
-    QGridLayout *basicLayout = new QGridLayout(basicOptions);
-    basicLayout->setSpacing(5);
+    QVBoxLayout *basicLayout = new QVBoxLayout(basicOptions);
     basicLayout->setContentsMargins(10,10,10,10);
 
     // Create the antialiasing widgets.
+    QGroupBox *aaGroup = new QGroupBox(tr("Antialiasing"));
+    aaGroup->setCheckable(false);
+    basicLayout->addWidget(aaGroup);
+
+    QGridLayout *aaLayout = new QGridLayout();
+    aaLayout->setContentsMargins(10,10,10,10);
+    aaGroup->setLayout(aaLayout);
 
     QLabel *aaLabel = new QLabel(tr("Antialiasing (MSAA has no effect if Depth Peeling also selected)"), basicOptions);
-    basicLayout->addWidget(aaLabel, row, 0, 1, 3);
+    aaLayout->addWidget(aaLabel, 0, 0, 1, 3);
     antialiasingMode = new QButtonGroup(basicOptions);
     connect(antialiasingMode, SIGNAL(idClicked(int)),
             this, SLOT(antialiasingChanged(int)));
-    row++;
 
     QRadioButton *aaNone = new QRadioButton(tr("None"), basicOptions);
     antialiasingMode->addButton(aaNone, 0);
-    basicLayout->addWidget(aaNone, row, 1);
-    QRadioButton *aaFXAA = new QRadioButton(tr("FXAA"), basicOptions);
-    antialiasingMode->addButton(aaFXAA, 1);
-    basicLayout->addWidget(aaFXAA, row, 2);
+    aaLayout->addWidget(aaNone, 1, 0);
     QRadioButton *aaMSAA = new QRadioButton(tr("MSAA"), basicOptions);
-    antialiasingMode->addButton(aaMSAA, 2);
-    basicLayout->addWidget(aaMSAA, row, 3);
-    row++;
+    antialiasingMode->addButton(aaMSAA, 1);
+    aaLayout->addWidget(aaMSAA, 1, 1);
+    QRadioButton *aaFXAA = new QRadioButton(tr("FXAA"), basicOptions);
+    antialiasingMode->addButton(aaFXAA, 2);
+    aaLayout->addWidget(aaFXAA, 1, 2);
+    // MSAA options
+
+    msaaSamplesLabel = new QLabel(tr("Number of Samples"));
+    msaaSamplesLabel->setEnabled(false);
+    aaLayout->addWidget(msaaSamplesLabel, 2, 0);
+
+    msaaSamples = new QSpinBox();
+    msaaSamples->setKeyboardTracking(false);
+    msaaSamples->setMinimum(2);
+    msaaSamples->setMaximum(8);
+    msaaSamples->setValue(4);
+    msaaSamples->setSingleStep(2);
+    msaaSamples->setEnabled(false);
+    aaLayout->addWidget(msaaSamples, 2, 1);
+    connect(msaaSamples, SIGNAL(valueChanged(int)),
+            this, SLOT(msaaSamplesChanged(int)));
 
     // create the order compositing widgets
-    compositeLabel = new QLabel(tr("Compositer Settings"), basicOptions);
-    basicLayout->addWidget(compositeLabel, row, 0, 1, 3);
-    row++;
+    QGroupBox *compositeSettings = new QGroupBox(tr("Compositer Settings"));
+    compositeSettings->setCheckable(false);
+    basicLayout->addWidget(compositeSettings);
+    QFormLayout *compositeLayout = new QFormLayout();
+    compositeLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
+    compositeSettings->setLayout(compositeLayout);
 
-    orderedComposite = new QCheckBox(tr("Ordered Compositing"), basicOptions);
+    orderedComposite = new QCheckBox(tr("Ordered Compositing"));
     orderedComposite->setCheckState(Qt::Checked);
     orderedComposite->setToolTip(
         tr("Enable ordered compositing. For block stuctured domain\n"
@@ -195,69 +225,66 @@ QvisRenderingWindow::CreateBasicPage()
            "peeling all geometry sorting is eliminated\n"));
     connect(orderedComposite, SIGNAL(toggled(bool)),
             this, SLOT(updateOrderedComposite()));
-    basicLayout->addWidget(orderedComposite, row, 2);
-    row++;
+    compositeLayout->addRow(orderedComposite);
+
 
     // create the depth and alpha compositing widgets
-    depthCompositeThreadsLabel = new QLabel(tr("Depth Compositer Threads"), basicOptions);
+    QLabel *depthCompositeThreadsLabel = new QLabel(tr("Depth Compositer Threads"));
     depthCompositeThreadsLabel->setToolTip(
         tr("Sets the number of threads that process communication streams\n"
            "during depth compositing.\n"));
-    basicLayout->addWidget(depthCompositeThreadsLabel, row, 2);
-    depthCompositeThreads = new QLineEdit("2", basicOptions);
+    depthCompositeThreads = new QLineEdit("2");
     QIntValidator *iv0 = new QIntValidator(0,8);
     depthCompositeThreads->setValidator(iv0);
     connect(depthCompositeThreads, SIGNAL(textChanged(const QString &)),
             this, SLOT(updateDepthCompositeThreads(void)));
-    basicLayout->addWidget(depthCompositeThreads, row, 3);
-    row++;
 
-    depthCompositeBlockingLabel = new QLabel(tr("Depth Compositer Blocking"), basicOptions);
+    compositeLayout->addRow(depthCompositeThreadsLabel, depthCompositeThreads);
+
+    QLabel *depthCompositeBlockingLabel = new QLabel(tr("Depth Compositer Blocking"));
     depthCompositeBlockingLabel->setToolTip(
         tr("Sets the block size used for streaming communication\n"
            "during depth compositing. Images are split into blocks\n"
            "of this size and streamed out. Incomning streams are\n"
            "processed in the background using compositing threads\n"));
-    basicLayout->addWidget(depthCompositeBlockingLabel, row, 2);
-    depthCompositeBlocking = new QLineEdit("65536", basicOptions);
+    depthCompositeBlocking = new QLineEdit("65536");
     QIntValidator *iv1 = new QIntValidator(4096,0x3fffffff);
     depthCompositeBlocking->setValidator(iv1);
     connect(depthCompositeBlocking, SIGNAL(textChanged(const QString &)),
             this, SLOT(updateDepthCompositeBlocking(void)));
-    basicLayout->addWidget(depthCompositeBlocking, row, 3);
-    row++;
 
-    alphaCompositeThreadsLabel = new QLabel(tr("Alpha Compositer Threads"), basicOptions);
+    compositeLayout->addRow(depthCompositeBlockingLabel, depthCompositeBlocking);
+
+    QLabel *alphaCompositeThreadsLabel = new QLabel(tr("Alpha Compositer Threads"));
     alphaCompositeThreadsLabel->setToolTip(
         tr("Sets the number of threads that process communication streams\n"
            "during alpha compositing.\n"));
-    basicLayout->addWidget(alphaCompositeThreadsLabel, row, 2);
-    alphaCompositeThreads = new QLineEdit("2", basicOptions);
+    alphaCompositeThreads = new QLineEdit("2");
     QIntValidator *iv2 = new QIntValidator(0,8);
     alphaCompositeThreads->setValidator(iv2);
     connect(alphaCompositeThreads, SIGNAL(textChanged(const QString &)),
             this, SLOT(updateAlphaCompositeThreads(void)));
-    basicLayout->addWidget(alphaCompositeThreads, row, 3);
-    row++;
 
-    alphaCompositeBlockingLabel = new QLabel(tr("Alpha Compositer Blocking"), basicOptions);
+    compositeLayout->addRow(alphaCompositeThreadsLabel, alphaCompositeThreads);
+
+    QLabel *alphaCompositeBlockingLabel = new QLabel(tr("Alpha Compositer Blocking"));
     alphaCompositeBlockingLabel->setToolTip(
         tr("Sets the block size used for streaming communication\n"
            "during alpha compositing. Images are split into blocks\n"
            "of this size and streamed out. Incomning streams are\n"
            "processed in the background using compositing threads\n"));
-    basicLayout->addWidget(alphaCompositeBlockingLabel, row, 2);
-    alphaCompositeBlocking = new QLineEdit("65536", basicOptions);
+    alphaCompositeBlocking = new QLineEdit("65536" );
     QIntValidator *iv3 = new QIntValidator(4096,0x3fffffff);
     alphaCompositeBlocking->setValidator(iv3);
     connect(alphaCompositeBlocking, SIGNAL(textChanged(const QString &)),
             this, SLOT(updateAlphaCompositeBlocking(void)));
-    basicLayout->addWidget(alphaCompositeBlocking, row, 3);
-    row++;
+
+    compositeLayout->addRow(alphaCompositeBlockingLabel, alphaCompositeBlocking);
 
     // Create the depthPeeling widgets.
-    depthPeeling = new QCheckBox(tr("Depth Peeling"), basicOptions);
-    depthPeeling->setCheckState(Qt::Unchecked);
+    depthPeeling = new QGroupBox(tr("Depth Peeling"));
+    depthPeeling->setCheckable(true);
+    depthPeeling->setChecked(false);
     depthPeeling->setToolTip(
         tr("Enable depth peeling for order independent rendering of\n"
            "transparent geometry. When not using depth peeling a camera\n"
@@ -266,10 +293,13 @@ QvisRenderingWindow::CreateBasicPage()
            "with VisIt's current Mesa 7.10 it is *very* slow.\n"));
     connect(depthPeeling, SIGNAL(toggled(bool)),
             this, SLOT(updateDepthPeeling(void)));
-    basicLayout->addWidget(depthPeeling, row, 0, 1, 3);
-    row++;
+    basicLayout->addWidget(depthPeeling);
 
-    occlusionRatioLabel = new QLabel(tr("Occlusion ratio"), basicOptions);
+    QFormLayout *dpLayout = new QFormLayout();
+    dpLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
+    depthPeeling->setLayout(dpLayout);
+
+    QLabel *occlusionRatioLabel = new QLabel(tr("Occlusion ratio"));
     occlusionRatioLabel->setToolTip(
         tr("When greater than zero early terminations is enabled and\n"
            "the algorithm will stop doing peels when fewer than this\n"
@@ -278,128 +308,130 @@ QvisRenderingWindow::CreateBasicPage()
            "will be made which, when enough peels are requested, ensures a\n"
            "correct result."));
     occlusionRatioLabel->setEnabled(false);
-    basicLayout->addWidget(occlusionRatioLabel, row, 2);
-    occlusionRatio = new QLineEdit("0.01", basicOptions);
+    occlusionRatio = new QLineEdit("0.01");
     QDoubleValidator *dv0 = new QDoubleValidator(0.0, 0.5, 4, 0);
     occlusionRatio->setValidator(dv0);
     occlusionRatio->setEnabled(false);
     connect(occlusionRatio, SIGNAL(textChanged(const QString &)),
             this, SLOT(updateDepthPeeling(void)));
-    basicLayout->addWidget(occlusionRatio, row, 3);
-    row++;
 
-    numberOfPeelsLabel = new QLabel(tr("Max number of Peels"), basicOptions);
+    dpLayout->addRow(occlusionRatioLabel, occlusionRatio);
+
+    QLabel *numberOfPeelsLabel = new QLabel(tr("Max number of Peels"));
     numberOfPeelsLabel->setToolTip(
         tr("Sets the maximum number of peels to use. Each peel renders the\n"
            "next nearest surface for a given fragment. You may need to\n"
            "increase the number of peels for very complex scenes."));
     numberOfPeelsLabel->setEnabled(false);
-    basicLayout->addWidget(numberOfPeelsLabel, row, 2);
-    numberOfPeels = new QLineEdit("32", basicOptions);
+    numberOfPeels = new QLineEdit("32");
     QIntValidator *iv4 = new QIntValidator(1,1000);
     numberOfPeels->setValidator(iv4);
     numberOfPeels->setEnabled(false);
     connect(numberOfPeels, SIGNAL(textChanged(const QString &)),
             this, SLOT(updateDepthPeeling(void)));
-    basicLayout->addWidget(numberOfPeels, row, 3);
-    row++;
+    dpLayout->addRow(numberOfPeelsLabel, numberOfPeels);
 
-    connect(depthPeeling, SIGNAL(toggled(bool)),
-            occlusionRatioLabel, SLOT(setEnabled(bool)));
-    connect(depthPeeling, SIGNAL(toggled(bool)),
-            occlusionRatio, SLOT(setEnabled(bool)));
-
-    connect(depthPeeling, SIGNAL(toggled(bool)),
-            numberOfPeelsLabel, SLOT(setEnabled(bool)));
-    connect(depthPeeling, SIGNAL(toggled(bool)),
-            numberOfPeels, SLOT(setEnabled(bool)));
 
     // Create the multi resolution widgets.
-    multiresolutionModeToggle = new QCheckBox(tr("Multi resolution for 2d AMR data"), basicOptions);
+    multiresolutionModeToggle = new QGroupBox(tr("Multi resolution for 2d AMR data"));
+    multiresolutionModeToggle->setCheckable(true);
+    multiresolutionModeToggle->setChecked(false);
     connect(multiresolutionModeToggle, SIGNAL(toggled(bool)),
             this, SLOT(multiresolutionModeToggled(bool)));
-    basicLayout->addWidget(multiresolutionModeToggle, row, 0, 1, 3);
-    row++;
+    basicLayout->addWidget(multiresolutionModeToggle);
 
-    multiresolutionSmallestCellLabel = new QLabel(tr("Smallest cell"), basicOptions);
-    basicLayout->addWidget(multiresolutionSmallestCellLabel, row, 1);
-    multiresolutionSmallestCellLineEdit = new QLineEdit(basicOptions);
+    QFormLayout *mrLayout = new QFormLayout();
+    mrLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
+    multiresolutionModeToggle->setLayout(mrLayout);
+
+    QLabel *multiresolutionSmallestCellLabel = new QLabel(tr("Smallest cell"));
+    multiresolutionSmallestCellLineEdit = new QLineEdit();
     connect(multiresolutionSmallestCellLineEdit, SIGNAL(editingFinished()),
             this, SLOT(processMultiresolutionSmallestCellText()));
-    basicLayout->addWidget(multiresolutionSmallestCellLineEdit, row, 2, 1, 2);
-    row++;
+
+    mrLayout->addRow(multiresolutionSmallestCellLabel, multiresolutionSmallestCellLineEdit);
 
     // Create the surface rep widgets.
-    QLabel *drawObjLabel = new QLabel(tr("Draw objects as"), basicOptions);
-    basicLayout->addWidget(drawObjLabel, row, 0, 1, 3);
-    objectRepresentation = new QButtonGroup(basicOptions);
+    QGroupBox *drawObj = new QGroupBox(tr("Draw objects as"));
+    drawObj->setCheckable(false);
+    basicLayout->addWidget(drawObj);
+
+    QGridLayout *objLayout = new QGridLayout();
+    objLayout->setContentsMargins(10,10,10,10);
+    drawObj->setLayout(objLayout);
+
+    objectRepresentation = new QButtonGroup();
     connect(objectRepresentation, SIGNAL(idClicked(int)),
             this, SLOT(objectRepresentationChanged(int)));
-    row++;
 
-    QRadioButton *surfaces = new QRadioButton(tr("Surfaces"), basicOptions);
+    QRadioButton *surfaces = new QRadioButton(tr("Surfaces"));
     objectRepresentation->addButton(surfaces, 0);
-    basicLayout->addWidget(surfaces, row, 1);
-    QRadioButton *wires = new QRadioButton(tr("Wireframe"), basicOptions);
+    objLayout->addWidget(surfaces, 0, 0);
+    QRadioButton *wires = new QRadioButton(tr("Wireframe"));
     objectRepresentation->addButton(wires, 1);
-    basicLayout->addWidget(wires, row, 2);
-    QRadioButton *points = new QRadioButton(tr("Points"), basicOptions);
+    objLayout->addWidget(wires, 0, 1);
+    QRadioButton *points = new QRadioButton(tr("Points"));
     objectRepresentation->addButton(points, 2);
-    basicLayout->addWidget(points, row, 3);
-    row++;
+    objLayout->addWidget(points, 0, 2);
+    objLayout->setSpacing(0);
 
     // Create the stereo widgets.
-    stereoToggle = new QCheckBox(tr("Stereo"), basicOptions);
+    stereoToggle = new QGroupBox(tr("Stereo"));
+    stereoToggle->setCheckable(true);
+    stereoToggle->setChecked(false);
+
     connect(stereoToggle, SIGNAL(toggled(bool)),
             this, SLOT(stereoToggled(bool)));
-    basicLayout->addWidget(stereoToggle, row, 0, 1, 3);
-    row++;
+    basicLayout->addWidget(stereoToggle);
 
-    stereoType = new QButtonGroup(basicOptions);
+    QGridLayout *stereoLayout = new QGridLayout();
+    stereoLayout->setContentsMargins(10,10,10,10);
+    stereoToggle->setLayout(stereoLayout);
+
+    stereoType = new QButtonGroup(stereoToggle);
     connect(stereoType, SIGNAL(idClicked(int)),
             this, SLOT(stereoTypeChanged(int)));
-    redblue = new QRadioButton(tr("Red/Blue"), basicOptions);
+    redblue = new QRadioButton(tr("Red/Blue"));
     stereoType->addButton(redblue, 0);
-    basicLayout->addWidget(redblue, row, 1);
-    interlace = new QRadioButton(tr("Interlace"), basicOptions);
+    stereoLayout->addWidget(redblue, 0, 0);
+    interlace = new QRadioButton(tr("Interlace"));
     stereoType->addButton(interlace, 1);
-    basicLayout->addWidget(interlace, row, 2);
-    row++;
-    crystalEyes = new QRadioButton(tr("Crystal Eyes"), basicOptions);
+    stereoLayout->addWidget(interlace, 0, 1);
+    crystalEyes = new QRadioButton(tr("Crystal Eyes"));
     stereoType->addButton(crystalEyes, 2);
-    basicLayout->addWidget(crystalEyes, row, 1);
-    redgreen = new QRadioButton(tr("Red/Green"), basicOptions);
+    stereoLayout->addWidget(crystalEyes, 1,0);
+    redgreen = new QRadioButton(tr("Red/Green"));
     stereoType->addButton(redgreen, 3);
-    basicLayout->addWidget(redgreen, row, 2);
-    row++;
+    stereoLayout->addWidget(redgreen, 1,1);
+    stereoLayout->setSpacing(0);
 
     // Create the specular lighting options
-    specularToggle = new QCheckBox(tr("Specular lighting"), basicOptions);
+    specularToggle = new QGroupBox(tr("Specular lighting"));
+    specularToggle->setCheckable(true);
+    specularToggle->setChecked(false);
     connect(specularToggle, SIGNAL(toggled(bool)),
             this, SLOT(specularToggled(bool)));
-    basicLayout->addWidget(specularToggle, row, 0, 1, 3);
-    row++;
+    basicLayout->addWidget(specularToggle);
 
-    specularStrengthSlider = new QvisOpacitySlider(0, 100, 10, 60, basicOptions);
+    QFormLayout *specLayout = new QFormLayout();
+    specularToggle->setLayout(specLayout);
+
+    QLabel *specularStrengthLabel = new QLabel(tr("Strength"));
+    specularStrengthSlider = new QvisOpacitySlider(0, 100, 10, 60, specularToggle);
     specularStrengthSlider->setTickInterval(25);
-    connect(specularStrengthSlider, SIGNAL(valueChanged(int, const void*)),
-            this, SLOT(specularStrengthChanged(int, const void*)));
-    specularStrengthLabel = new QLabel(tr("Strength"), basicOptions);
-    specularStrengthLabel->setBuddy(specularStrengthSlider);
-    basicLayout->addWidget(specularStrengthLabel, row, 1);
-    basicLayout->addWidget(specularStrengthSlider, row, 2, 1, 2);
-    row++;
+    connect(specularStrengthSlider, SIGNAL(valueChanged(int)),
+            this, SLOT(specularStrengthChanged(int)));
 
-    specularPowerSlider = new QvisOpacitySlider(0, 1000, 100, 100, basicOptions);
+    specLayout->addRow(specularStrengthLabel, specularStrengthSlider);
+
+    QLabel *specularPowerLabel = new QLabel(tr("Sharpness"));
+    specularPowerSlider = new QvisOpacitySlider(0, 1000, 100, 100, specularToggle);
     specularPowerSlider->setTickInterval(100);
-    connect(specularPowerSlider, SIGNAL(valueChanged(int, const void*)),
-            this, SLOT(specularPowerChanged(int, const void*)));
-    specularPowerLabel = new QLabel(tr("Sharpness"), basicOptions);
-    specularPowerLabel->setBuddy(specularPowerSlider);
-    basicLayout->addWidget(specularPowerLabel, row,1);
-    basicLayout->addWidget(specularPowerSlider, row, 2, 1, 2);
-    row++;
+    connect(specularPowerSlider, SIGNAL(valueChanged(int)),
+            this, SLOT(specularPowerChanged(int)));
+    specLayout->addRow(specularPowerLabel, specularPowerSlider);
 
+    basicLayout->setSpacing(0);
     return basicOptions;
 }
 
@@ -431,6 +463,10 @@ QvisRenderingWindow::CreateBasicPage()
 //
 //   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
 //   Support Qt6: buttonClicked -> idClicked.
+//
+//   Kathleen Biagas, Thu Aug 14, 2025
+//   Removed void* arg from SIGNAL and SLOT for QvisOpacitySlider as the arg
+//   isn't needed for these instances.
 //
 // ****************************************************************************
 
@@ -540,8 +576,8 @@ QvisRenderingWindow::CreateAdvancedPage()
 
     shadowStrengthSlider = new QvisOpacitySlider(0, 100, 10, 60, advancedOptions);
     shadowStrengthSlider->setTickInterval(25);
-    connect(shadowStrengthSlider, SIGNAL(valueChanged(int, const void*)),
-            this, SLOT(shadowStrengthChanged(int, const void*)));
+    connect(shadowStrengthSlider, SIGNAL(valueChanged(int)),
+            this, SLOT(shadowStrengthChanged(int)));
     shadowStrengthLabel = new QLabel(tr("Strength"), advancedOptions);
     shadowStrengthLabel->setBuddy(shadowStrengthSlider);
     advLayout->addWidget(shadowStrengthLabel, row,1);
@@ -954,14 +990,9 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             renderNotifyToggle->blockSignals(false);
             break;
         case RenderingAttributes::ID_depthPeeling:
-            enabled = renderAtts->GetDepthPeeling();
             depthPeeling->blockSignals(true);
-            depthPeeling->setChecked(enabled);
+            depthPeeling->setChecked(renderAtts->GetDepthPeeling());
             depthPeeling->blockSignals(false);
-            occlusionRatioLabel->setEnabled(enabled);
-            occlusionRatio->setEnabled(enabled);
-            numberOfPeelsLabel->setEnabled(enabled);
-            numberOfPeels->setEnabled(enabled);
             break;
         case RenderingAttributes::ID_occlusionRatio:
             tmp = DoubleToQString(renderAtts->GetOcclusionRatio());
@@ -1181,12 +1212,15 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
 //    Eric Brugger, Tue Oct 25 12:32:40 PDT 2011
 //    Add a multi resolution display capability for AMR data.
 //
+//    Kathleen Biagas, Thu Aug 14, 2025
+//    Removed setting of widgets whose enablement is controlled by their
+//    containing QGroupBox.
+//
 // ****************************************************************************
 
 void
 QvisRenderingWindow::UpdateWindowSensitivity()
 {
-    bool multiresolutionOn = renderAtts->GetMultiresolutionMode();
     bool scalableAuto =
         renderAtts->GetScalableActivationMode() == RenderingAttributes::Auto;
     bool compactAuto =
@@ -1194,11 +1228,6 @@ QvisRenderingWindow::UpdateWindowSensitivity()
     bool shadowOn = renderAtts->GetDoShadowing();
     bool depthCueingOn = renderAtts->GetDoDepthCueing();
     bool depthCueingAuto = renderAtts->GetDepthCueingAutomatic();
-    bool stereoOn = renderAtts->GetStereoRendering();
-    bool specularOn = renderAtts->GetSpecularFlag();
-
-    multiresolutionSmallestCellLabel->setEnabled(multiresolutionOn);
-    multiresolutionSmallestCellLineEdit->setEnabled(multiresolutionOn);
 
     scalrenAutoThreshold->setEnabled(scalableAuto);
     compactDomainsAutoThreshold->setEnabled(compactAuto);
@@ -1210,16 +1239,6 @@ QvisRenderingWindow::UpdateWindowSensitivity()
     depthCueingStartLabel->setEnabled(depthCueingOn && !depthCueingAuto);
     depthCueingEndEdit->setEnabled(depthCueingOn && !depthCueingAuto);
     depthCueingEndLabel->setEnabled(depthCueingOn && !depthCueingAuto);
-
-    redblue->setEnabled(stereoOn);
-    interlace->setEnabled(stereoOn);
-    crystalEyes->setEnabled(stereoOn);
-    redgreen->setEnabled(stereoOn);
-
-    specularStrengthSlider->setEnabled(specularOn);
-    specularPowerSlider->setEnabled(specularOn);
-    specularStrengthLabel->setEnabled(specularOn);
-    specularPowerLabel->setEnabled(specularOn);
 }
 
 // ****************************************************************************
@@ -1493,6 +1512,31 @@ QvisRenderingWindow::apply()
 }
 
 // ****************************************************************************
+// Method: QvisRenderingWindow::UpdateAAControls
+//
+// Purpose:
+//   Updates enabled state of AA widgets based on mode.
+//
+// Arguments:
+//   mode : The new AA mode.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::UpdateAAControls(int mode)
+{
+    // Set enabled state based on mode
+    msaaSamplesLabel->setEnabled(mode == 1);
+    msaaSamples->setEnabled(mode == 1);
+}
+
+
+// ****************************************************************************
 // Method: QvisRenderingWindow::antialiasingChanged
 //
 // Purpose:
@@ -1508,15 +1552,45 @@ QvisRenderingWindow::apply()
 //   Kathleen Biagas, Monday July 28, 2025
 //   Changed from antialiasToggled to antialiasingChanged.
 //
+//   Kathleen Biagas, Thu Aug 14, 2025
+//   Added call to UpdateAAControls.
+//
 // ****************************************************************************
 
 void
 QvisRenderingWindow::antialiasingChanged(int val)
 {
     renderAtts->SetAntialiasing(RenderingAttributes::AAMode(val));
+    UpdateAAControls(val);
     SetUpdate(false);
     Apply();
 }
+
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::msaaSamplesChanged
+//
+// Purpose:
+//   Slot function called when an msaaSamples Spinbox value is changed.
+//
+// Arguments:
+//   val : The new msaaSamples value.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::msaaSamplesChanged(int val)
+{
+    renderAtts->SetMSAASamples(val);
+    SetUpdate(false);
+    Apply();
+}
+
 
 // ****************************************************************************
 // Method: QvisRenderingWindow::updateDepthPeeling
@@ -2081,10 +2155,14 @@ QvisRenderingWindow::shadowToggled(bool val)
 //  Programmer:  Hank Childs
 //  Creation:    October 24, 2004
 //
+//  Modifications:
+//    Kathleen Biagas, Monday Aug 11, 2025
+//    Removed void* argument as it was unecessary.
+//
 // ****************************************************************************
 
 void
-QvisRenderingWindow::shadowStrengthChanged(int val, const void*)
+QvisRenderingWindow::shadowStrengthChanged(int val)
 {
     renderAtts->SetShadowStrength(float(val)/100.);
     SetUpdate(false);
@@ -2130,10 +2208,14 @@ QvisRenderingWindow::specularToggled(bool val)
 //  Programmer:  Jeremy Meredith
 //  Creation:    November 14, 2003
 //
+//  Modifications:
+//    Kathleen Biagas, Monday Aug 11, 2025
+//    Removed void* argument as it was unecessary.
+//
 // ****************************************************************************
 
 void
-QvisRenderingWindow::specularStrengthChanged(int val, const void*)
+QvisRenderingWindow::specularStrengthChanged(int val)
 {
     renderAtts->SetSpecularCoeff(float(val)/100.);
     SetUpdate(false);
@@ -2152,10 +2234,14 @@ QvisRenderingWindow::specularStrengthChanged(int val, const void*)
 //  Programmer:  Jeremy Meredith
 //  Creation:    November 14, 2003
 //
+//  Modifications:
+//    Kathleen Biagas, Monday Aug 11, 2025
+//    Removed void* argument as it was unecessary.
+//
 // ****************************************************************************
 
 void
-QvisRenderingWindow::specularPowerChanged(int val, const void*)
+QvisRenderingWindow::specularPowerChanged(int val)
 {
     renderAtts->SetSpecularPower(float(val)/10.);
     SetUpdate(false);

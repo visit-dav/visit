@@ -279,11 +279,15 @@ vtkStandardNewMacro(vtkBackgroundPass);
 //   Kathleen Biagas, Tue Jun 24, 2025
 //   Replace vtkVisItDataSetMapper with vtkDataSetMapper for ospray overrides.
 //
+//   Kathleen Biagas, Wed Aug 14, 2025
+//   antialiasing is now an int. Add msaaSamples.
+//
 // ****************************************************************************
 
 VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
     VisWinColleague(p), background(NULL), foreground(NULL), needsUpdate(false),
-    realized(false), antialiasing(false), stereo(false), stereoType(2),
+    realized(false), antialiasing(0), msaaSamples(4),
+    stereo(false), stereoType(2),
     surfaceRepresentation(0), specularFlag(false),
     specularCoeff(0.6), specularPower(10.0),
     specularColor(ColorAttribute(255,255,255,255)), colorTexturingFlag(true),
@@ -693,6 +697,9 @@ VisWinRendering::EnableDepthPeeling()
 //    Kathleen Biagas, Monday May 19, 2025
 //    Ensure MultiSamples is set based on antialiasing flag, since it is
 //    turned off when DepthPeeling is enabled.
+
+//    Kathleen Biagas, Thu Aug 14, 2025 
+//    Use new msaaSamples ivar.
 //
 // ****************************************************************************
 void
@@ -703,7 +710,7 @@ VisWinRendering::DisableDepthPeeling()
     rwin->SetAlphaBitPlanes(0);
 
     // ensure MSAA settings are reset if necessary.
-    rwin->SetMultiSamples((antialiasing == RenderingAttributes::MSAA) ? 4: 0);
+    rwin->SetMultiSamples((antialiasing == RenderingAttributes::MSAA) ? msaaSamples: 0);
 
     // configure renderer
     canvas->SetUseDepthPeeling(false);
@@ -2634,8 +2641,7 @@ VisWinRendering::SetRenderEventCallback(void(*callback)(void *,bool), void *data
 //   Sets the antialiasing mode.
 //
 // Arguments:
-//   enabled : Whether or not antialiasing is enabled.
-//   frames : The number of frames to use.
+//   aaMode :  The antialiasing mode to use.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 23 14:21:39 PST 2002
@@ -2654,6 +2660,9 @@ VisWinRendering::SetRenderEventCallback(void(*callback)(void *,bool), void *data
 //   Kathleen Biagas, Monday July 28, 2025
 //   Set FXAA/MSAA bases on aaMode.
 //
+//    Kathleen Biagas, Thu Aug 14, 2025 
+//    Use new msaaSamples ivar.
+//
 // ****************************************************************************
 
 void
@@ -2662,13 +2671,35 @@ VisWinRendering::SetAntialiasing(int aaMode)
     if(aaMode != antialiasing )
     {
         antialiasing = aaMode;
-        vtkRenderWindow *renWin = GetRenderWindow();
-
         canvas->SetUseFXAA((aaMode == RenderingAttributes::FXAA));
-        renWin->SetMultiSamples((aaMode == RenderingAttributes::MSAA) ? 4 : 0);
+        GetRenderWindow()->SetMultiSamples((aaMode == RenderingAttributes::MSAA) ? msaaSamples : 0);
         canvas->SetUseOIT((aaMode != RenderingAttributes::MSAA));
+    }
+}
 
-        GetRenderWindow()->Render();
+// ****************************************************************************
+// Method: VisWinRendering::SetMSAASamples
+//
+// Purpose:
+//   Sets the number of MSAA samples used.
+//
+// Arguments:
+//   numSamples : The number of MSA samples to use.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+VisWinRendering::SetMSAASamples(int numSamples)
+{
+    if(msaaSamples != numSamples)
+    {
+        msaaSamples = numSamples;
+        GetRenderWindow()->SetMultiSamples((antialiasing == RenderingAttributes::MSAA) ? msaaSamples : 0);
     }
 }
 
