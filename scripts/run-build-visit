@@ -88,6 +88,9 @@
 #    Removed '--qt6' as it is part of the required group and we no
 #    longer support other versions.
 #
+#    Eric Brugger, Thu Aug 14 09:10:46 PDT 2025
+#    Updated tuolumne to also build gdal, icet and pidx.
+#
 #-----------------------------------------------------------------------
 
 #
@@ -305,8 +308,8 @@ elif [ "$tuolumne" = true ]; then
        CXX=g++ \
        PAR_COMPILER=cc \
        PAR_COMPILER_CXX=CC \
-       ./$build_visit_script --group ${dest_group} --required --optional --mesagl --parallel --no-moab --no-icet \
-       --qwt --no-pyside --no-gdal --no-uintah --no-pidx --no-visit --makeflags -j24 --thirdparty-path ${dest_dir}
+       ./$build_visit_script --group ${dest_group} --required --optional --mesagl --parallel \
+       --qwt --no-moab --no-pyside --no-uintah --no-visit --makeflags -j24 --thirdparty-path ${dest_dir}
 else
    echo "case for $machine_name not implemented. Bailing out."
    exit
