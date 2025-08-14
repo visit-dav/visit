@@ -77,7 +77,7 @@ class VarDomainData;
 //    Added a dependency on cstddef so that we can use size_t here.
 // 
 //    Justin Privitera, Wed Aug 13 10:43:18 PDT 2025
-//    Renamed ExchangeScalar() to ExchangeVar().
+//    Combined ExchangeScalar() and ExchangeVector() into ExchangeVar().
 //
 // ****************************************************************************
 

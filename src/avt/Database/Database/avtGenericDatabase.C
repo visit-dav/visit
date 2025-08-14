@@ -7950,9 +7950,15 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundariesFromFile(
 //  Method: avtGenericDatabase::ExchangeVariable
 //
 //  Purpose:
-//      TODO
+//      Helper to exchange variables of many different types.
 //
 //  Arguments:
+//      type      The avt datatype.
+//      ts        The timestep.
+//      varname   The name of the variable we are exchanging.
+//      doms      A list of domains.
+//      list      A vector of datasets that we are exchanging.
+//      dbi       A domain boundaries object.
 //      ds        The dataset collection.
 //
 //  Programmer: Justin Privitera
@@ -7963,14 +7969,24 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundariesFromFile(
 void
 avtGenericDatabase::ExchangeVariable(avtVarType type,
                                      int ts,
-                                     const char *varname,
+                                     std::string varname,
                                      intVector &doms,
                                      vector<vtkDataSet *> &list,
                                      avtDomainBoundaries *dbi,
                                      avtDatasetCollection &ds)
 {
     avtCentering centering;
-    if (type == AVT_SCALAR_VAR)
+    if (varname == "avtOriginalNodeNumbers" || 
+        varname == "avtGlobalNodeNumbers")
+    {
+        centering = AVT_NODECENT;
+    }
+    else if (varname == "avtOriginalCellNumbers" || 
+             varname == "avtGlobalZoneNumbers")
+    {
+        centering = AVT_ZONECENT;
+    }
+    else if (type == AVT_SCALAR_VAR)
     {
         centering = GetMetaData(ts)->GetScalar(varname)->centering;
     }
@@ -8006,38 +8022,67 @@ avtGenericDatabase::ExchangeVariable(avtVarType type,
     }
     const bool isPointData = (centering == AVT_NODECENT ? true : false);
 
-    vector<vtkDataArray *> values;
-    for (size_t i = 0; i < doms.size(); i ++)
+    // we split up the cases here so that the loops avoid a conditional at each
+    // step of iteration
+    if (isPointData)
     {
-        vtkDataSet *ds1 = list[i];
-        if (ds1 == nullptr ||
-            ds1->GetNumberOfPoints() == 0 || 
-            ds1->GetNumberOfCells() == 0)
+        vector<vtkDataArray *> values;
+        for (size_t i = 0; i < doms.size(); i ++)
         {
-            values.push_back(nullptr);
-            continue;
+            vtkDataSet *ds1 = list[i];
+            if (ds1 == nullptr ||
+                ds1->GetNumberOfPoints() == 0 || 
+                ds1->GetNumberOfCells() == 0)
+            {
+                values.push_back(nullptr);
+                continue;
+            }
+            values.push_back(ds1->GetPointData()->GetArray(varname.c_str()));
         }
-        vtkDataSetAttributes *atts = isPointData ?
-            static_cast<vtkDataSetAttributes*>(ds1->GetPointData()) :
-            static_cast<vtkDataSetAttributes*>(ds1->GetCellData());
-        values.push_back(atts->GetArray(varname));
+        vector<vtkDataArray *> valuesOut;
+        valuesOut = dbi->ExchangeVar(doms, isPointData, values);
+        for (int i = 0; i < static_cast<int>(doms.size()); i ++)
+        {
+            vtkDataSet *ds1 = ds.GetDataset(i, 0);
+            if (ds1 == nullptr ||
+                ds1->GetNumberOfPoints() == 0 || 
+                ds1->GetNumberOfCells() == 0)
+            {
+                continue;
+            }
+            ds1->GetPointData()->AddArray(valuesOut[i]);
+            valuesOut[i]->Delete();
+        }
     }
-    vector<vtkDataArray *> valuesOut;
-    valuesOut = dbi->ExchangeVar(doms, isPointData, values);
-    for (int i = 0; i < static_cast<int>(doms.size()); i ++)
+    else
     {
-        vtkDataSet *ds1 = ds.GetDataset(i, 0);
-        if (ds1 == nullptr ||
-            ds1->GetNumberOfPoints() == 0 || 
-            ds1->GetNumberOfCells() == 0)
+        vector<vtkDataArray *> values;
+        for (size_t i = 0; i < doms.size(); i ++)
         {
-            continue;
+            vtkDataSet *ds1 = list[i];
+            if (ds1 == nullptr ||
+                ds1->GetNumberOfPoints() == 0 || 
+                ds1->GetNumberOfCells() == 0)
+            {
+                values.push_back(nullptr);
+                continue;
+            }
+            values.push_back(ds1->GetCellData()->GetArray(varname.c_str()));
         }
-        vtkDataSetAttributes *atts = isPointData ?
-            static_cast<vtkDataSetAttributes*>(ds1->GetPointData()) :
-            static_cast<vtkDataSetAttributes*>(ds1->GetCellData());
-        atts->AddArray(valuesOut[i]);
-        valuesOut[i]->Delete();
+        vector<vtkDataArray *> valuesOut;
+        valuesOut = dbi->ExchangeVar(doms, isPointData, values);
+        for (int i = 0; i < static_cast<int>(doms.size()); i ++)
+        {
+            vtkDataSet *ds1 = ds.GetDataset(i, 0);
+            if (ds1 == nullptr ||
+                ds1->GetNumberOfPoints() == 0 || 
+                ds1->GetNumberOfCells() == 0)
+            {
+                continue;
+            }
+            ds1->GetCellData()->AddArray(valuesOut[i]);
+            valuesOut[i]->Delete();
+        }
     }
 }
 
@@ -8416,30 +8461,7 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
     //
     if (spec->NeedNodeNumbers())
     {
-        vector<vtkDataArray *> nodeNums;
-        for (size_t j = 0 ; j < doms.size() ; j++)
-        {
-            vtkDataSet *ds1 = list[j];
-            if (ds1 == NULL ||
-                ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
-            {
-                nodeNums.push_back(NULL);
-                continue;
-            }
-            nodeNums.push_back(ds1->GetPointData()->GetArray(
-                                                "avtOriginalNodeNumbers"));
-        }
-        vector<vtkDataArray *> nodeNumsOut;
-        nodeNumsOut = dbi->ExchangeVar(doms,true,nodeNums);
-        for (int j = 0 ; j < (int)doms.size() ; j++)
-        {
-            vtkDataSet *ds1 = ds.GetDataset(j, 0);
-            if (ds1 == NULL ||
-                ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
-                continue;
-            ds1->GetPointData()->AddArray(nodeNumsOut[j]);
-            nodeNumsOut[j]->Delete();
-        }
+        ExchangeVariable(AVT_UNKNOWN_TYPE, ts, "avtOriginalNodeNumbers", doms, list, dbi, ds);
     }
 
     //
@@ -8447,30 +8469,7 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
     //
     if (spec->NeedZoneNumbers() || spec->NeedStructuredIndices())
     {
-        vector<vtkDataArray *> cellNums;
-        for (size_t j = 0 ; j < doms.size() ; j++)
-        {
-            vtkDataSet *ds1 = list[j];
-            if (ds1 == NULL ||
-                ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
-            {
-                cellNums.push_back(NULL);
-                continue;
-            }
-            cellNums.push_back(ds1->GetCellData()->GetArray(
-                                                "avtOriginalCellNumbers"));
-        }
-        vector<vtkDataArray *> cellNumsOut;
-        cellNumsOut = dbi->ExchangeVar(doms,false,cellNums);
-        for (int j = 0 ; j < (int)doms.size() ; j++)
-        {
-            vtkDataSet *ds1 = ds.GetDataset(j, 0);
-            if (ds1 == NULL ||
-                ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
-                continue;
-            ds1->GetCellData()->AddArray(cellNumsOut[j]);
-            cellNumsOut[j]->Delete();
-        }
+        ExchangeVariable(AVT_UNKNOWN_TYPE, ts, "avtOriginalCellNumbers", doms, list, dbi, ds);
     }
 
     //
@@ -8478,30 +8477,7 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
     //
     if (spec->NeedGlobalNodeNumbers())
     {
-        vector<vtkDataArray *> nodeNums;
-        for (size_t j = 0 ; j < doms.size() ; j++)
-        {
-            vtkDataSet *ds1 = list[j];
-            if (ds1 == NULL ||
-                ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
-            {
-                nodeNums.push_back(NULL);
-                continue;
-            }
-            nodeNums.push_back(ds1->GetPointData()->GetArray(
-                                                "avtGlobalNodeNumbers"));
-        }
-        vector<vtkDataArray *> nodeNumsOut;
-        nodeNumsOut = dbi->ExchangeVar(doms,true,nodeNums);
-        for (int j = 0 ; j < (int)doms.size() ; j++)
-        {
-            vtkDataSet *ds1 = ds.GetDataset(j, 0);
-            if (ds1 == NULL ||
-                ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
-                continue;
-            ds1->GetPointData()->AddArray(nodeNumsOut[j]);
-            nodeNumsOut[j]->Delete();
-        }
+        ExchangeVariable(AVT_UNKNOWN_TYPE, ts, "avtGlobalNodeNumbers", doms, list, dbi, ds);
     }
 
     //
@@ -8509,30 +8485,7 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
     //
     if (spec->NeedGlobalZoneNumbers())
     {
-        vector<vtkDataArray *> cellNums;
-        for (size_t j = 0 ; j < doms.size() ; j++)
-        {
-            vtkDataSet *ds1 = list[j];
-            if (ds1 == NULL ||
-                ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
-            {
-                cellNums.push_back(NULL);
-                continue;
-            }
-            cellNums.push_back(ds1->GetCellData()->GetArray(
-                                                "avtGlobalZoneNumbers"));
-        }
-        vector<vtkDataArray *> cellNumsOut;
-        cellNumsOut = dbi->ExchangeVar(doms,false,cellNums);
-        for (int j = 0 ; j < (int)doms.size() ; j++)
-        {
-            vtkDataSet *ds1 = ds.GetDataset(j, 0);
-            if (ds1 == NULL ||
-                ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
-                continue;
-            ds1->GetCellData()->AddArray(cellNumsOut[j]);
-            cellNumsOut[j]->Delete();
-        }
+        ExchangeVariable(AVT_UNKNOWN_TYPE, ts, "avtGlobalZoneNumbers", doms, list, dbi, ds);
     }
 
     if(md->GetMesh(meshname)->hasExtraGhostInfo)

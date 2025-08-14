@@ -837,7 +837,7 @@ avtUnstructuredDomainBoundaries::ExchangeMeshT(vector<int>         domainNum,
 //    Error checking.
 // 
 //    Justin Privitera, Wed Aug 13 10:43:18 PDT 2025
-//    Renamed from ExchangeScalar() to ExchangeVar().
+//    Combined ExchangeScalar() and ExchangeVector() into ExchangeVar().
 //
 // ****************************************************************************
 
@@ -1481,8 +1481,8 @@ avtUnstructuredDomainBoundaries::ConfirmMesh(vector<int>       domainNum,
 //  Method:  avtUnstructuredDomainBoundaries::ExchangeData
 //
 //  Purpose:
-//    Exchange the ghost zone information for some data (scalars, vectors, and
-//    tensors of templated type), returning the new ones.
+//    Exchange the ghost zone information for some data (scalars, vectors,
+//    tensors, and arrays of templated type), returning the new ones.
 //
 //  Arguments:
 //    domainNum    an array of domain numbers for each mesh

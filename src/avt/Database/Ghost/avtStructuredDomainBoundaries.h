@@ -270,7 +270,13 @@ class BoundaryHelperFunctions
 //    be called based on the underlying data type.
 // 
 //    Justin Privitera, Wed Aug 13 10:43:18 PDT 2025
-//    Renamed ExchangeScalar() to ExchangeVar().
+//    Combined ExchangeScalar() and ExchangeVector() into ExchangeVar().
+//    Removed ExchangeFloatScalar(), ExchangeDoubleScalar(), 
+//    ExchangeIntScalar(), ExchangeUCharScalar(), ExchangeFloatVector(),
+//    ExchangeDoubleVector(), and ExchangeIntVector() in favor of a new 
+//    templated method called ExchangeData().
+//    Added explicit template instantiation for BoundaryHelperFunctions for
+//    unsigned ints and chars.
 //
 // ****************************************************************************
 

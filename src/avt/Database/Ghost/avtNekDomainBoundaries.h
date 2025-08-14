@@ -59,6 +59,9 @@ class avtMaterial;
 //    Eric Brugger, Tue Dec 11 09:46:02 PST 2018
 //    Corrected a bug generating ghost nodes for Nek5000 files where all the
 //    nodes were marked as ghost when the mesh was 2D.
+// 
+//    Justin Privitera, Thu Aug 14 11:13:28 PDT 2025
+//    Combined ExchangeScalar() and ExchangeVector() into ExchangeVar().
 //
 // ****************************************************************************
 

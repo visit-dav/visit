@@ -1643,6 +1643,9 @@ BoundaryHelperFunctions<T>::FakeNonexistentBoundaryData(int  d1,
 //
 //    Brad Whitlock, Sun Apr 22 08:51:25 PDT 2012
 //    Create double helpers.
+// 
+//    Justin Privitera, Thu Aug 14 11:48:25 PDT 2025
+//    Added bhf_uint and bhf_char.
 //
 // ****************************************************************************
 
@@ -1669,6 +1672,9 @@ avtStructuredDomainBoundaries::avtStructuredDomainBoundaries(
 //  Modifications:
 //    Mark C. Miller, ed Mar 23 15:29:56 PST 2005
 //    Added code to delete stuff new'd in constructor
+// 
+//    Justin Privitera, Thu Aug 14 11:48:25 PDT 2025
+//    Added bhf_uint and bhf_char.
 //
 // ****************************************************************************
 avtStructuredDomainBoundaries::~avtStructuredDomainBoundaries()
@@ -1966,7 +1972,9 @@ avtStructuredDomainBoundaries::ExchangeData(BoundaryHelperFunctions<T>* bhf,
 //    Added consistency check for dataTypes.
 // 
 //    Justin Privitera, Wed Aug 13 10:43:18 PDT 2025
-//    Renamed from ExchangeScalar() to ExchangeVar().
+//    Combined ExchangeScalar() and ExchangeVector() into ExchangeVar().
+//    Now call generalized helper ExchangeData() instead of type-specialized
+//    helpers.
 //
 // ****************************************************************************
 vector<vtkDataArray*>
