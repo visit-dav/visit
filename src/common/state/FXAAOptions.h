@@ -138,6 +138,8 @@ public:
     // User-defined methods
     float RCTAsFloat() const;
     float HCTAsFloat() const;
+    float SBLAsFloat() const;
+    float SCTAsFloat() const;
 
     // IDs that can be used to identify fields in case statements
     enum {

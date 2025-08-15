@@ -2738,6 +2738,20 @@ VisWinRendering::SetFXAAOptions(const FXAAOptions *fxaaOpt)
         else
             vtkOpt->SetHardContrastThreshold(fxaaOpt->HCTAsFloat());
 
+        if(fxaaOpt->GetSubpixelBlendLimit() == FXAAOptions::CustomBlending)
+            vtkOpt->SetHardContrastThreshold(fxaaOpt->GetCustomSBL());
+        else
+            vtkOpt->SetSubpixelBlendLimit(fxaaOpt->SBLAsFloat());
+
+        if(fxaaOpt->GetSubpixelContrastThreshold() == FXAAOptions::CustomRemoval)
+            vtkOpt->SetSubpixelContrastThreshold(fxaaOpt->GetCustomSCT());
+        else
+            vtkOpt->SetSubpixelContrastThreshold(fxaaOpt->SCTAsFloat());
+
+        vtkOpt->SetUseHighQualityEndpoints(fxaaOpt->GetUseHighQualityEndpoints());
+
+        vtkOpt->SetEndpointSearchIterations(fxaaOpt->GetEndpointSearchIterations());
+
         canvas->SetFXAAOptions(vtkOpt);
     }
 }

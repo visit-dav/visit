@@ -62,4 +62,8 @@
     </Function>
     <Function name="HCT2Float" user="true" member="true">
     </Function>
+    <Function name="SBL2Float" user="true" member="true">
+    </Function>
+    <Function name="SCT2Float" user="true" member="true">
+    </Function>
   </Attribute>

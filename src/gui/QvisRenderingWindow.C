@@ -229,7 +229,7 @@ QvisRenderingWindow::CreateBasicPage()
     fxaaRCT->addItem("Low quality", 0.25);
     fxaaRCT->addItem("High quality", 0.125);
     fxaaRCT->addItem("Overkill", 0.0625);
-    fxaaRCT->addItem("CustomRCT", 0.125);
+    fxaaRCT->addItem("Custom", 0.125);
     fxaaRCT->setCurrentIndex(2);
     connect(fxaaRCT, SIGNAL(currentIndexChanged(int)),
             this, SLOT(fxaaRCTChanged(int)));
@@ -257,7 +257,7 @@ QvisRenderingWindow::CreateBasicPage()
     fxaaHCT->addItem("VisibleLimit", 0.03125);
     fxaaHCT->addItem("HigherQuality", 0.0625);
     fxaaHCT->addItem("UpperLimit", 0.08333);
-    fxaaHCT->addItem("CustomHCT", 0.0625);
+    fxaaHCT->addItem("Custom", 0.0625);
     fxaaHCT->setCurrentIndex(1);
     connect(fxaaHCT, SIGNAL(currentIndexChanged(int)),
             this, SLOT(fxaaHCTChanged(int)));
@@ -274,6 +274,112 @@ QvisRenderingWindow::CreateBasicPage()
     aaLayout->addWidget(fxaaHCTCustom,aaRow,1);
     aaRow++;
 
+    // SubpixelBlendLimit default values and custom value widgets
+    fxaaSBLLabel = new QLabel(tr("Subpixel blend limit"));
+    fxaaSBLLabel->setToolTip(
+        tr("Subpixel aliasing is corrected by applying a lowpass filter\n"
+           "to the current pixel. This is implemented by blending an\n"
+           "average of the 3x3 neighborhood around the pixel into the\n"
+           "final result. The amount of blending is determined by\n"
+           "comparing the detected amount of subpixel aliasing to the\n"
+           "total contrasting of the CNSWE pixels:\n"
+           "SubpixelBlending = abs(lumC - lumAveNSWE) / (lumMaxCNSWE - lumMinCNSWE)\n"
+           "This parameter sets an upper limit to the amount of subpixel\n"
+           "blending to prevent the image from simply getting blurred.\n"));
+
+    aaLayout->addWidget(fxaaSBLLabel, aaRow,0);
+
+    fxaaSBL = new QComboBox();
+    fxaaSBL->addItem("Low", 0.5);
+    fxaaSBL->addItem("Medium", 0.75);
+    fxaaSBL->addItem("High", 0.875);
+    fxaaSBL->addItem("Maximum", 1.0);
+    fxaaSBL->addItem("Custom", 0.75);
+    fxaaSBL->setCurrentIndex(1);
+    connect(fxaaSBL, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(fxaaSBLChanged(int)));
+    aaLayout->addWidget(fxaaSBL, aaRow,1);
+    aaRow++;
+
+    fxaaSBLCustomLabel = new QLabel(tr("Custom SBL value"));
+    aaLayout->addWidget(fxaaSBLCustomLabel,aaRow,0);
+
+    fxaaSBLCustom = new QLineEdit("0.75");
+    fxaaSBLCustom->setValidator(dvfxaa);
+    connect(fxaaSBLCustom, SIGNAL(editingFinished()),
+            this, SLOT(fxaaSBLCustomChanged()));
+    aaLayout->addWidget(fxaaSBLCustom,aaRow,1);
+    aaRow++;
+
+    // SubpixelContrastThreshold default values and custom value widgets
+    fxaaSCTLabel = new QLabel(tr("Subpixel contrast threshold"));
+    fxaaSCTLabel->setToolTip(
+        tr("Minimum amount of subpixel aliasing required for subpixel\n"
+           "antialiasing to be applied.\n"
+           "If SubpixelBlending is less than this threshold,\n"
+           "no lowpass blending will occur.\n"));
+
+    aaLayout->addWidget(fxaaSCTLabel, aaRow,0);
+
+    fxaaSCT = new QComboBox();
+    fxaaSCT->addItem("Low", 0.5);
+    fxaaSCT->addItem("Medium", 0.75);
+    fxaaSCT->addItem("High", 0.875);
+    fxaaSCT->addItem("Maximum", 1.0);
+    fxaaSCT->addItem("Custom", 0.75);
+    fxaaSCT->setCurrentIndex(1);
+    connect(fxaaSCT, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(fxaaSCTChanged(int)));
+    aaLayout->addWidget(fxaaSCT, aaRow,1);
+    aaRow++;
+
+    fxaaSCTCustomLabel = new QLabel(tr("Custom SCT value"));
+    aaLayout->addWidget(fxaaSCTCustomLabel,aaRow,0);
+
+    fxaaSCTCustom = new QLineEdit("0.75");
+    fxaaSCTCustom->setValidator(dvfxaa);
+    connect(fxaaSCTCustom, SIGNAL(editingFinished()),
+            this, SLOT(fxaaSCTCustomChanged()));
+    aaLayout->addWidget(fxaaSCTCustom,aaRow,1);
+    aaRow++;
+
+    // UseHighQualityEndpoint default values and custom value widgets
+    fxaaHQE = new QCheckBox(tr("Use high quality endpoints"));
+    fxaaHQE->setCheckState(Qt::Checked);
+    fxaaHQE->setToolTip(
+        tr("Use an improved edge endpoint detection algorithm.\n"
+            "If true, a modified edge endpoint detection algorithm is used\n"
+            "that requires more texture lookups, but will properly detect\n"
+            "aliased single-pixel lines.\n"
+            "If false, the edge endpoint algorithm proposed by NVIDIA will\n"
+            "be used. This algorithm is faster (fewer lookups), but will \n"
+            "fail to detect endpoints of single pixel edge steps.\n"));
+
+    connect(fxaaHQE, SIGNAL(toggled(bool)),
+            this, SLOT(fxaaHQEToggled(bool)));
+    aaLayout->addWidget(fxaaHQE, aaRow, 0);
+    aaRow++;
+
+    // EndpointSearchIterations default values and custom value widgets
+    fxaaESILabel = new QLabel(tr("Endpoint search iterations"));
+    fxaaESILabel->setToolTip(
+        tr("Set the number of iterations for the endpoint search algorithm.\n"
+           "Increasing this value will increase runtime, but also properly\n"
+           "detect longer edges. The current implementation steps one pixel\n"
+           "in both the positive and negative directions per iteration.\n"
+           "The default value is 12, which will resolve endpoints of\n"
+           "edges < 25 pixels long (2 * 12 + 1).\n"));
+
+    aaLayout->addWidget(fxaaESILabel,aaRow,0);
+
+    QIntValidator *ivfxaa = new QIntValidator(0,10000);
+    fxaaESI = new QLineEdit("12");
+    fxaaESI->setValidator(ivfxaa);
+    connect(fxaaESI, SIGNAL(editingFinished()),
+            this, SLOT(fxaaESIChanged()));
+    aaLayout->addWidget(fxaaESI,aaRow,1);
+    aaRow++;
+
     // create the order compositing widgets
     QGroupBox *compositeSettings = new QGroupBox(tr("Compositer Settings"));
     compositeSettings->setCheckable(false);
@@ -283,6 +389,7 @@ QvisRenderingWindow::CreateBasicPage()
     compositeSettings->setLayout(compositeLayout);
 
     orderedComposite = new QCheckBox(tr("Ordered Compositing"));
+
     orderedComposite->setCheckState(Qt::Checked);
     orderedComposite->setToolTip(
         tr("Enable ordered compositing. For block stuctured domain\n"
@@ -1039,17 +1146,64 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             fxaaRCT->blockSignals(true);
             fxaaRCTCustomLabel->blockSignals(true);
             fxaaRCTCustom->blockSignals(true);
+            fxaaHCTLabel->blockSignals(true);
+            fxaaHCT->blockSignals(true);
+            fxaaHCTCustomLabel->blockSignals(true);
+            fxaaHCTCustom->blockSignals(true);
+            fxaaSBLLabel->blockSignals(true);
+            fxaaSBL->blockSignals(true);
+            fxaaSBLCustomLabel->blockSignals(true);
+            fxaaSBLCustom->blockSignals(true);
+            fxaaSCTLabel->blockSignals(true);
+            fxaaSCT->blockSignals(true);
+            fxaaSCTCustomLabel->blockSignals(true);
+            fxaaSCTCustom->blockSignals(true);
+            fxaaHQE->blockSignals(true);  
+            fxaaESILabel->blockSignals(true);
+            fxaaESI->blockSignals(true);  
+
             FXAAOptions &fxaaOpt = renderAtts->GetFXAAOpt();
+
             fxaaRCT->setCurrentIndex((int)fxaaOpt.GetRelativeContrastThreshold());
             tmp = FloatToQString(fxaaOpt.GetCustomRCT(),5);
             fxaaRCTCustom->setText(tmp);
+
             fxaaHCT->setCurrentIndex((int)fxaaOpt.GetHardContrastThreshold());
             tmp = FloatToQString(fxaaOpt.GetCustomHCT(),5);
             fxaaHCTCustom->setText(tmp);
+
+            fxaaSBL->setCurrentIndex((int)fxaaOpt.GetSubpixelBlendLimit());
+            tmp = FloatToQString(fxaaOpt.GetCustomSBL(),5);
+            fxaaSBLCustom->setText(tmp);
+
+            fxaaSCT->setCurrentIndex((int)fxaaOpt.GetSubpixelContrastThreshold());
+            tmp = FloatToQString(fxaaOpt.GetCustomSCT(),5);
+            fxaaSCTCustom->setText(tmp);
+
+            fxaaHQE->setChecked(fxaaOpt.GetUseHighQualityEndpoints());
+
+            tmp = IntToQString(fxaaOpt.GetEndpointSearchIterations());
+            fxaaESI->setText(tmp);
+
+            fxaaRCTLabel->blockSignals(false);
+            fxaaRCT->blockSignals(false);
+            fxaaRCTCustomLabel->blockSignals(false);
+            fxaaRCTCustom->blockSignals(false);
             fxaaHCTLabel->blockSignals(false);
             fxaaHCT->blockSignals(false);
             fxaaHCTCustomLabel->blockSignals(false);
             fxaaHCTCustom->blockSignals(false);
+            fxaaSBLLabel->blockSignals(false);
+            fxaaSBL->blockSignals(false);
+            fxaaSBLCustomLabel->blockSignals(false);
+            fxaaSBLCustom->blockSignals(false);
+            fxaaSCTLabel->blockSignals(false);
+            fxaaSCT->blockSignals(false);
+            fxaaSCTCustomLabel->blockSignals(false);
+            fxaaSCTCustom->blockSignals(false);
+            fxaaHQE->blockSignals(false);  
+            fxaaESILabel->blockSignals(false);
+            fxaaESI->blockSignals(false);  
         }
             break;
         case RenderingAttributes::ID_multiresolutionMode:
@@ -1639,6 +1793,19 @@ QvisRenderingWindow::UpdateAAControls(int mode)
     fxaaHCTCustomLabel->blockSignals(true);
     fxaaHCTCustom->blockSignals(true);
 
+    fxaaSBLLabel->blockSignals(true);
+    fxaaSBL->blockSignals(true);
+    fxaaSBLCustomLabel->blockSignals(true);
+    fxaaSBLCustom->blockSignals(true);
+
+    fxaaSCTLabel->blockSignals(true);
+    fxaaSCT->blockSignals(true);
+    fxaaSCTCustomLabel->blockSignals(true);
+    fxaaSCTCustom->blockSignals(true);
+
+    fxaaHQE->blockSignals(true);
+    fxaaESI->blockSignals(true);
+
     msaaSamplesLabel->setEnabled(mode == 1);
     msaaSamples->setEnabled(mode == 1);
 
@@ -1652,6 +1819,20 @@ QvisRenderingWindow::UpdateAAControls(int mode)
     fxaaHCTCustomLabel->setEnabled(mode == 2 && fxaaHCT->currentIndex() == 3);
     fxaaHCTCustom->setEnabled(mode == 2 && fxaaHCT->currentIndex() == 3);
 
+    fxaaSBLLabel->setEnabled(mode == 2);
+    fxaaSBL->setEnabled(mode == 2);
+    fxaaSBLCustomLabel->setEnabled(mode == 2 && fxaaSBL->currentIndex() == 4);
+    fxaaSBLCustom->setEnabled(mode == 2 && fxaaSBL->currentIndex() == 4);
+
+    fxaaSCTLabel->setEnabled(mode == 2);
+    fxaaSCT->setEnabled(mode == 2);
+    fxaaSCTCustomLabel->setEnabled(mode == 2 && fxaaSCT->currentIndex() == 5);
+    fxaaSCTCustom->setEnabled(mode == 2 && fxaaSCT->currentIndex() == 5);
+
+    fxaaHQE->setEnabled(mode == 2);
+    fxaaESILabel->setEnabled(mode == 2);
+    fxaaESI->setEnabled(mode == 2);
+
     msaaSamplesLabel->blockSignals(false);
     msaaSamples->blockSignals(false);
 
@@ -1664,6 +1845,18 @@ QvisRenderingWindow::UpdateAAControls(int mode)
     fxaaHCT->blockSignals(false);
     fxaaHCTCustomLabel->blockSignals(false);
     fxaaHCTCustom->blockSignals(false);
+
+    fxaaSBLLabel->blockSignals(false);
+    fxaaSBL->blockSignals(false);
+    fxaaSBLCustomLabel->blockSignals(false);
+    fxaaSBLCustom->blockSignals(false);
+
+    fxaaSCTLabel->blockSignals(false);
+    fxaaSCT->blockSignals(false);
+    fxaaSCTCustomLabel->blockSignals(false);
+    fxaaSCTCustom->blockSignals(false);
+    fxaaHQE->blockSignals(false);
+    fxaaESI->blockSignals(false);
 }
 
 
@@ -1818,6 +2011,155 @@ void
 QvisRenderingWindow::fxaaHCTCustomChanged()
 {
     renderAtts->GetFXAAOpt().SetCustomHCT(fxaaHCTCustom->text().toFloat());
+    SetUpdate(false);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::fxaaSBLChanged
+//
+// Purpose:
+//   Slot function called when an fxaaSBLChanged ComboBox value is changed.
+//
+// Arguments:
+//   index : The new fxaaSBL value.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::fxaaSBLChanged(int index)
+{
+    renderAtts->GetFXAAOpt().SetSubpixelBlendLimit(FXAAOptions::SBL(index));
+    UpdateAAControls(antialiasingMode->checkedId());
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::fxaaSBLCustomChanged
+//
+// Purpose:
+//   Slot function called when an fxaaSBLCustom value is changed.
+//
+// Arguments:
+//   index : The new fxaaSBLCustom value.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::fxaaSBLCustomChanged()
+{
+    renderAtts->GetFXAAOpt().SetCustomSBL(fxaaSBLCustom->text().toFloat());
+    SetUpdate(false);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::fxaaSCTChanged
+//
+// Purpose:
+//   Slot function called when an fxaaSCTChanged ComboBox value is changed.
+//
+// Arguments:
+//   index : The new fxaaSCT value.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::fxaaSCTChanged(int index)
+{
+    renderAtts->GetFXAAOpt().SetSubpixelContrastThreshold(FXAAOptions::SCT(index));
+    UpdateAAControls(antialiasingMode->checkedId());
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::fxaaSCTCustomChanged
+//
+// Purpose:
+//   Slot function called when an fxaaSCTCustom value is changed.
+//
+// Arguments:
+//   index : The new fxaaSCTCustom value.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::fxaaSCTCustomChanged()
+{
+    renderAtts->GetFXAAOpt().SetCustomSCT(fxaaSCTCustom->text().toFloat());
+    SetUpdate(false);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::fxaaHQEToggled
+//
+// Purpose:
+//   Slot function called when fxaaHQE is toggled.
+//
+// Arguments:
+//   val : The new fxaaHQE toggled state.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::fxaaHQEToggled(bool val)
+{
+    renderAtts->GetFXAAOpt().SetUseHighQualityEndpoints(val);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::fxaaESIChanged
+//
+// Purpose:
+//   Slot function called when an fxaaESI value is changed.
+//
+// Arguments:
+//   index : The new fxaaESI value.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::fxaaESIChanged()
+{
+    renderAtts->GetFXAAOpt().SetEndpointSearchIterations(fxaaESI->text().toInt());
     SetUpdate(false);
     Apply();
 }

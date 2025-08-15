@@ -148,6 +148,12 @@ private slots:
     void fxaaRCTCustomChanged();
     void fxaaHCTChanged(int);
     void fxaaHCTCustomChanged();
+    void fxaaSBLChanged(int);
+    void fxaaSBLCustomChanged();
+    void fxaaSCTChanged(int);
+    void fxaaSCTCustomChanged();
+    void fxaaHQEToggled(bool);
+    void fxaaESIChanged();
     void updateOrderedComposite();
     void updateDepthCompositeThreads();
     void updateDepthCompositeBlocking();
@@ -203,6 +209,17 @@ private:
     QComboBox         *fxaaHCT;  
     QLabel            *fxaaHCTCustomLabel;
     QLineEdit         *fxaaHCTCustom;  
+    QLabel            *fxaaSBLLabel;
+    QComboBox         *fxaaSBL;  
+    QLabel            *fxaaSBLCustomLabel;
+    QLineEdit         *fxaaSBLCustom;  
+    QLabel            *fxaaSCTLabel;
+    QComboBox         *fxaaSCT;  
+    QLabel            *fxaaSCTCustomLabel;
+    QLineEdit         *fxaaSCTCustom;  
+    QCheckBox         *fxaaHQE;  
+    QLabel            *fxaaESILabel;
+    QLineEdit          *fxaaESI;  
 
     QCheckBox         *orderedComposite;
     QLineEdit         *depthCompositeThreads;

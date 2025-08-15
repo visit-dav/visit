@@ -888,29 +888,63 @@ float
 FXAAOptions::RCTAsFloat() const const
 {
     if(relativeContrastThreshold == 0) // TooLittle
-        return 0.3333;
+        return 0.3333f;
     else if(relativeContrastThreshold == 1) // LowQuality
-        return 0.25;
+        return 0.25f;
     else if(relativeContrastThreshold == 2) // HighQuality (Default)
-        return 0.125;
+        return 0.125f;
     else if(relativeContrastThreshold == 3) // Overkill
-        return 0.0625;
+        return 0.0625f;
     else if(relativeContrastThreshold == 4) // CustomRCT
         return customRCT;
-    return 0.125;
+    return 0.125f;
 }
 
 float
 FXAAOptions::HCTAsFloat() const
 {
     if(hardContrastThreshold == 0) // VisibleLimit
-        return 0.03125;
+        return 0.03125f;
     else if(hardContrastThreshold == 1) // HigherQuality (Default)
-        return 0.0625;
+        return 0.0625f;
     else if(hardContrastThreshold == 2) // UpperLimit
-        return 0.08333;
+        return 0.08333f;
     else if(hardContrastThreshold == 3) // CustomHCT
         return customHCT;
-    return 0.0625;
+    return 0.0625f;
+}
+
+float
+FXAAOptions::SBLAsFloat() const
+{
+    if(subpixelBlendLimit == 0) // LowBlending
+        return 0.5f;
+    else if(subpixelBlendLimit == 1) // MediumBlending (Default)
+        return 0.75f;
+    else if(subpixelBlendLimit == 2) // HighBlending
+        return 0.875;
+    else if(subpixelBlendLimit == 3) // MaximumBlending
+        return 1.f;
+    else if(subpixelBlendLimit == 4) // CustomSBL
+        return customSBL;
+    return 0.75f;
+}
+
+float
+FXAAOptions::SCTAsFloat() const
+{
+    if(subpixelContrastThreshold == 0) // LowRemoval
+        return 0.5f;
+    else if(subpixelContrastThreshold == 1) // MediumRemoval (Default)
+        return 0.33333f;
+    else if(subpixelContrastThreshold == 2) // DefaultRemoval
+        return 0.25;
+    else if(subpixelContrastThreshold == 3) // HighRemoval
+        return 0.125f;
+    else if(subpixelContrastThreshold == 4) // CompleteRemoval
+        return 0.125f;
+    else if(subpixelContrastThreshold == 5) // CustomSCT
+        return customSCT;
+    return 0.25f;
 }
 
