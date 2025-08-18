@@ -63,6 +63,10 @@
 #    Moved min/max tests into function and extended to include
 #    multi-domain data.
 #
+#    Eric Brugger, Fri Aug  1 14:49:24 PDT 2025
+#    I added tests for defining expressions with a list of names and a list
+#    of definitions.
+#
 # ----------------------------------------------------------------------------
 
 def TestMinMaxExpression():
@@ -118,6 +122,72 @@ def TestMinMaxExpression():
 
     CloseDatabase(silo_data_path("multi_ucd3d.silo"))
 
+def TestListsOfExpressions():
+    OpenDatabase(silo_data_path("rect2d.silo"))
+
+    # Test passing a list of expression names and a list of expression
+    # definitions to each of the define expression functions. I'm testing
+    # all the versions to make sure the common coding is getting called
+    # for all of them.
+    errmsg = ""
+    try:
+        exprNames = ["var0000", "var0001"]
+        exprDefs = ["arrayVar*2.", "arrayVar*3."]
+        DefineArrayExpression(exprNames, exprDefs)
+
+        exprNames = ["var0002", "var0003"]
+        exprDefs = ["curveVar*2.", "curveVar*3."]
+        DefineCurveExpression(exprNames, exprDefs)
+
+        exprNames = ["var0004", "var0005"]
+        exprDefs = ["materialVar*2.", "materialVar*3."]
+        DefineMaterialExpression(exprNames, exprDefs)
+
+        exprNames = ["var0006", "var0007"]
+        exprDefs = ["meshVar*2.", "meshVar*3."]
+        DefineMeshExpression(exprNames, exprDefs)
+
+        exprNames = ["var0008", "var0009"]
+        exprDefs = ["scalarVar*2.", "scalarVar*3."]
+        DefineScalarExpression(exprNames, exprDefs)
+
+        exprNames = ["var0010", "var0011"]
+        exprDefs = ["speciesVar*2.", "speciesVar*3."]
+        DefineSpeciesExpression(exprNames, exprDefs)
+
+        exprNames = ["var0012", "var0013"]
+        exprDefs = ["tensorVar*2.", "tensorVar*3."]
+        DefineTensorExpression(exprNames, exprDefs)
+
+        exprNames = ["var0014", "var0015"]
+        exprDefs = ["vectorVar*2.", "vectorVar*3."]
+        DefineVectorExpression(exprNames, exprDefs)
+    except Exception as e:
+        errmsg = str(e) 
+    TestValueEQ('Defining an expression with 2 expressions', errmsg, '')
+
+    # Test passing a list of expression names and a list of expression
+    # definitions where the number in each list don't match. I'm only
+    # testing DefineScalarExpression since they all use a common function.
+    errmsg = ""
+    try:
+        exprNames = ["var0000", "var0001"]
+        exprDefs = ["scalarVar*2."]
+        DefineScalarExpression(exprNames, exprDefs)
+    except Exception as e:
+        errmsg = str(e) 
+    TestValueEQ('Mismatched expression lists names > defs', errmsg, 'The number of expression names and definitions must match.')
+
+    errmsg = ""
+    try:
+        exprNames = ["var0000"]
+        exprDefs = ["scalarVar*2.", "scalarVar*3."]
+        DefineScalarExpression(exprNames, exprDefs)
+    except Exception as e:
+        errmsg = str(e)
+    TestValueEQ('Mismatched expression lists names < defs', errmsg, 'The number of expression names and definitions must match.')
+
+    CloseDatabase(silo_data_path("rect2d.silo"))
 
 OpenDatabase(silo_data_path("bigsil.silo"))
 
@@ -460,4 +530,7 @@ DrawPlots()
 Test("ident_mesh")
 
 TestMinMaxExpression()
+
+TestListsOfExpressions()
+
 Exit()

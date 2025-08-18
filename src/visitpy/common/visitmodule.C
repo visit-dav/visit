@@ -3417,6 +3417,10 @@ visit_GetDatabaseCorrelationNames(PyObject *self, PyObject *args)
 //    Added code to get the expression if it exists instead of always adding
 //    a new expression.
 //
+//    Eric Brugger, Fri Aug  1 10:19:08 PDT 2025
+//    I modified the function to also handle lists of strings for the names
+//    and expressions.
+//
 // ****************************************************************************
 
 PyObject *
@@ -3424,38 +3428,60 @@ ExpressionDefinitionHelper(PyObject *args, const char *name, Expression::ExprTyp
 {
     ENSURE_VIEWER_EXISTS();
 
-    char *exprName;
-    char *exprDef;
-    if (!PyArg_ParseTuple(args, "ss", &exprName, &exprDef))
+    // Get the list of expression names and definitions.
+    PyObject *nameTuple = 0;
+    PyObject *defTuple = 0;
+    if (!PyArg_ParseTuple(args, "OO", &nameTuple, &defTuple))
         return NULL;
 
-    // Access the expression list and add a new one, if necessary.
+    stringVector nameVec;
+    stringVector defVec;
+    if(!GetStringVectorFromPyObject(nameTuple, nameVec))
+        return NULL;
+    if(!GetStringVectorFromPyObject(defTuple, defVec))
+        return NULL;
+
+    if(nameVec.size() != defVec.size())
+    {
+        VisItErrorFunc("The number of expression names and definitions must match.");
+        return NULL;
+    }
+
+    // Access the expression list and add new ones, if necessary.
     MUTEX_LOCK();
 
         ExpressionList *list = GetViewerState()->GetExpressionList();
-        // Get the existing expression if it exists or create a new one.
-        Expression *e = list->operator[](exprName);
-        bool expressionExists = e != 0;
-        if(!expressionExists)
-            e = new Expression();
-        else
-            debug4 << "Replacing definition for expression " << exprName << endl;
 
-        // Set the expression properties.
-        e->SetName(exprName);
-        e->SetDefinition(exprDef);
-        e->SetType(t);
-
-        // Add the expression if it's not in the list.
-        if(!expressionExists)
+        for (int i = 0; i < nameVec.size(); ++i)
         {
-            list->AddExpressions(*e);
-            delete e;
+            const char *exprName = nameVec[i].c_str();
+            const char *exprDef = defVec[i].c_str();
+
+            // Get the existing expression if it exists or create a new one.
+            Expression *e = list->operator[](exprName);
+            bool expressionExists = e != 0;
+            if(!expressionExists)
+                e = new Expression();
+            else
+                debug4 << "Replacing definition for expression " << exprName << endl;
+
+            // Set the expression properties.
+            e->SetName(exprName);
+            e->SetDefinition(exprDef);
+            e->SetType(t);
+
+            // Add the expression if it's not in the list.
+            if(!expressionExists)
+            {
+                list->AddExpressions(*e);
+                delete e;
+            }
         }
 
         // Send the new list to the viewer.
         list->Notify();
         GetViewerMethods()->ProcessExpressions();
+
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
@@ -20544,11 +20570,6 @@ Synchronize()
         syncAtts->SetSyncTag(syncCount);
         syncAtts->Notify();
         syncAtts->SetSyncTag(-1);
-
-        /// should only run once?
-        while(syncCount != syncAtts->GetSyncTag()) {
-            PyRun_SimpleString("visit_utils.builtin.pyside_support.__VisIt_PySide_Idle_Hook__()");
-        }
         syncCount++;
         return 0;
     }

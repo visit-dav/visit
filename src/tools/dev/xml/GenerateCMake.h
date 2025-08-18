@@ -201,6 +201,9 @@
 //    Eric Brugger, Wed Jul 16 15:29:56 PDT 2025
 //    Modify 'FilterConditionalLibs` for VTKm 2.3.0.
 //
+//    Kathleen Biagas, Thu Jul 24, 2025 
+//    vtkm::vtkmdiympi_nompi needs to be handled differently. 
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -303,8 +306,15 @@ class CMakeGeneratorPlugin : public Plugin
             {
                 // for plugin-vs-install, need to
                 // replace 'vtkm::' with 'vtkm_' and append the version
-                tmp.replace(QString("vtkm::"), QString("vtkm_"));
-                tmp.append(vtkmversion);
+                if(tmp.contains(QString("nompi")))
+                {
+                    tmp.replace(QString("vtkm::"), QString(""));
+                }
+                else
+                {
+                    tmp.replace(QString("vtkm::"), QString("vtkm_"));
+                    tmp.append(vtkmversion);
+                }
             }
             libs += " " + tmp;
         }

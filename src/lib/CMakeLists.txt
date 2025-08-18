@@ -99,25 +99,23 @@ if(VISIT_PYTHON_FILTERS OR VISIT_PYTHON_SCRIPTING)
 endif()
 
 
-IF(VISIT_PYTHON_FILTERS OR (VISIT_PYTHON_SCRIPTING AND HAVE_LIBPYSIDE))
-    IF(NOT WIN32)
-        EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E make_directory
+if(VISIT_PYTHON_FILTERS)
+    if(NOT WIN32)
+        execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory
                         ${CMAKE_CURRENT_BINARY_DIR}/site-packages
                         RESULT_VARIABLE LIB_SITE_PKGS_MKDIR)
         #
         # make sure lib/site-packages exists before we try to
         # symlink or copy the vtk python wrappers
         #
-        IF(NOT "${LIB_SITE_PKGS_MKDIR}" STREQUAL "0")
-            MESSAGE(WARNING "Failed to create lib/site-packages/")
-        ENDIF(NOT "${LIB_SITE_PKGS_MKDIR}" STREQUAL "0")
-    ENDIF(NOT WIN32)
-ENDIF(VISIT_PYTHON_FILTERS OR (VISIT_PYTHON_SCRIPTING AND HAVE_LIBPYSIDE))
+        if(NOT "${LIB_SITE_PKGS_MKDIR}" STREQUAL "0")
+            message(WARNING "Failed to create lib/site-packages/")
+        endif()
+    endif()
 
-IF(VISIT_PYTHON_FILTERS)
-# We need to be able to locate the vtk python wrapper lib at run time.
-# Place symlinks to its components in lib/site-packages/
-    MESSAGE(STATUS "Adding VTK python wrappers to lib/site-packages/")
+    # We need to be able to locate the vtk python wrapper lib at run time.
+    # Place symlinks to its components in lib/site-packages/
+    message(STATUS "Adding VTK python wrappers to lib/site-packages/")
     add_custom_target(vtk_python_modules ALL
         COMMAND ${CMAKE_COMMAND} -E copy_directory
                 ${VTK_PY_WRAPPERS_DIR}
@@ -126,31 +124,6 @@ IF(VISIT_PYTHON_FILTERS)
     if(WIN32)
         visit_add_to_util_builds(vtk_python_modules)
     endif()
-ENDIF(VISIT_PYTHON_FILTERS)
-
-if(VISIT_PYTHON_SCRIPTING AND HAVE_LIBPYSIDE AND NOT PYSIDE_IN_PYTHON)
-    function(SYMLINK_PYSIDE pkg)
-        get_filename_component(ITM_BASE ${${pkg}} NAME)
-        set(sym_cmd "create_symlink")
-        if(WIN32)
-            set(sym_cmd "copy_directory")
-        endif()
-        # KSB to do, check if this works on Windows
-        message(STATUS "${sym_cmd} ${${pkg}} to ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE}")
-        execute_process(COMMAND ${CMAKE_COMMAND} -E remove -f ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE}
-            RESULT_VARIABLE PYSIDE_MODULE_SYM_RM)
-        execute_process(COMMAND ${CMAKE_COMMAND} -E ${sym_cmd}
-            ${${pkg}} ${CMAKE_CURRENT_BINARY_DIR}/site-packages/${ITM_BASE}
-            RESULT_VARIABLE PYSIDE_MODULE_SYM_CREATE)
-        if(NOT "${PYSIDE_MODULE_SYM_CREATE}" STREQUAL "0")
-            message(WARNING "Failed to create PySide module in lib/site-packages/ for ${${pkg}}")
-        endif()
-        unset(sym_cmd)
-    endfunction()
-
-    message(STATUS "Adding PySide to lib/site-packages/")
-    SYMLINK_PYSIDE(PYSIDE_PYTHONPATH)
-    SYMLINK_PYSIDE(SHIBOKEN_PYTHON_MODULE_DIR)
 endif()
 
 if(VISIT_PYTHON_SCRIPTING AND CONDUIT_DIR)

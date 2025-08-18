@@ -8,7 +8,6 @@
 
 #include <avtOriginalDataMinMaxQuery.h>
 
-#include <avtCondenseDatasetFilter.h>
 #include <avtExpressionEvaluatorFilter.h>
 #include <avtOriginatingSource.h>
 

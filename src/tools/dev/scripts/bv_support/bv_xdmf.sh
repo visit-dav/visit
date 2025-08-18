@@ -285,7 +285,7 @@ function build_xdmf
 
     # Install Xdmf
     info "Installing Xdmf"
-    ${CMAKE_COMMAND} install .
+    ${CMAKE_COMMAND} --install .
     if [[ $? != 0 ]] ; then
         warn "Xdmf install failed.  Giving up"
         return 1
