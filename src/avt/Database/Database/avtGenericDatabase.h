@@ -333,6 +333,10 @@ class     vtkUnstructuredGrid;
 // 
 //    Justin Privitera, Tue Oct 22 10:32:27 PDT 2024
 //    Add AugmentGhostData method.
+// 
+//    Justin Privitera, Thu Aug 14 11:13:28 PDT 2025
+//    Added ExchangeVariable(), a singular method for exchanging variables
+//    of all types.
 //
 // ****************************************************************************
 
@@ -561,6 +565,16 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                                                  avtDataRequest_p,
                                                                  bool confirmInputMeshHasRightSize=true);
     avtStreamingGhostGenerator *GetStreamingGhostGenerator(void);
+
+    void                       ExchangeVariable(
+                                    avtVarType type,
+                                    int ts,
+                                    std::string varname,
+                                    intVector &doms,
+                                    std::vector<vtkDataSet *> &list,
+                                    avtDomainBoundaries *dbi,
+                                    avtDatasetCollection &ds);
+
     bool                       CommunicateGhosts(avtGhostDataType,
                                     avtDatasetCollection &, intVector &,
                                     avtDataRequest_p &,

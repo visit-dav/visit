@@ -2609,9 +2609,7 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
             SetNowinMode(true);
         }
         else if (strcmp(argv[i], "-pyuiembedded") == 0 ||
-                 strcmp(argv[i], "-uifile") == 0 ||
-                 strcmp(argv[i], "-pysideviewer") == 0 ||
-                 strcmp(argv[i], "-pysideclient") == 0)
+                 strcmp(argv[i], "-uifile") == 0)
         {
             WindowMetrics::SetEmbeddedWindowState(true);
         }

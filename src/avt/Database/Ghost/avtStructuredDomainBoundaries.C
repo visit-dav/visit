@@ -11,15 +11,17 @@
 #include <algorithm>
 
 #include <vtkCellData.h>
+#include <vtkInformation.h>
 #include <vtkFloatArray.h>
 #include <vtkDoubleArray.h>
-#include <vtkInformation.h>
 #include <vtkIntArray.h>
+#include <vtkUnsignedIntArray.h>
+#include <vtkCharArray.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkStructuredGrid.h>
-#include <vtkUnsignedCharArray.h>
 
 #include <avtGhostData.h>
 #include <avtIntervalTree.h>
@@ -57,9 +59,15 @@ bool avtStructuredDomainBoundaries::createGhostsForTIntersections = false;
 #ifdef PARALLEL
 template <class T> MPI_Datatype GetMPIDataType();
 template <>        MPI_Datatype GetMPIDataType<int>()    { return MPI_INT;  }
+template <>        MPI_Datatype GetMPIDataType<char>()   { return MPI_CHAR; }
 template <>        MPI_Datatype GetMPIDataType<float>()  { return MPI_FLOAT;}
 template <>        MPI_Datatype GetMPIDataType<double>() { return MPI_DOUBLE;}
-template <>        MPI_Datatype GetMPIDataType<unsigned char>()  { return MPI_UNSIGNED_CHAR;}
+
+template <>        MPI_Datatype GetMPIDataType<unsigned int>()
+                   { return MPI_UNSIGNED; }
+template <>        MPI_Datatype GetMPIDataType<unsigned char>()
+                   { return MPI_UNSIGNED_CHAR;}
+
 #endif
 
 // ****************************************************************************
@@ -1635,16 +1643,21 @@ BoundaryHelperFunctions<T>::FakeNonexistentBoundaryData(int  d1,
 //
 //    Brad Whitlock, Sun Apr 22 08:51:25 PDT 2012
 //    Create double helpers.
+// 
+//    Justin Privitera, Thu Aug 14 11:48:25 PDT 2025
+//    Added bhf_uint and bhf_char.
 //
 // ****************************************************************************
 
 avtStructuredDomainBoundaries::avtStructuredDomainBoundaries(
    bool canComputeNeighborsFromExtents)
 {
-    bhf_int   = new BoundaryHelperFunctions<int>(this);
-    bhf_float = new BoundaryHelperFunctions<float>(this);
+    bhf_int    = new BoundaryHelperFunctions<int>(this);
+    bhf_uint   = new BoundaryHelperFunctions<unsigned int>(this);
+    bhf_float  = new BoundaryHelperFunctions<float>(this);
     bhf_double = new BoundaryHelperFunctions<double>(this);
-    bhf_uchar = new BoundaryHelperFunctions<unsigned char>(this);
+    bhf_char   = new BoundaryHelperFunctions<char>(this);
+    bhf_uchar  = new BoundaryHelperFunctions<unsigned char>(this);
     shouldComputeNeighborsFromExtents = canComputeNeighborsFromExtents;
     haveCalculatedBoundaries = false;
     maxAMRLevel = 1;
@@ -1659,13 +1672,18 @@ avtStructuredDomainBoundaries::avtStructuredDomainBoundaries(
 //  Modifications:
 //    Mark C. Miller, ed Mar 23 15:29:56 PST 2005
 //    Added code to delete stuff new'd in constructor
+// 
+//    Justin Privitera, Thu Aug 14 11:48:25 PDT 2025
+//    Added bhf_uint and bhf_char.
 //
 // ****************************************************************************
 avtStructuredDomainBoundaries::~avtStructuredDomainBoundaries()
 {
     delete bhf_int;
+    delete bhf_uint;
     delete bhf_float;
     delete bhf_double;
+    delete bhf_char;
     delete bhf_uchar;
 }
 
@@ -1815,7 +1833,114 @@ avtStructuredDomainBoundaries::Finish(int domain)
 }
 
 // ****************************************************************************
-//  Method:  avtStructuredDomainBoundaries::ExchangeScalar
+//  Method:  avtStructuredDomainBoundaries::ExchangeData
+//
+//  Purpose:
+//    Exchange the ghost zone information for some scalars,
+//    returning the new ones.
+//
+//  Arguments:
+//    bhf          the correctly templated boundary helper functions
+//    domainNum    an array of domain numbers for each mesh
+//    isPointData  true if this is node-centered, false if cell-centered
+//    data         an array of data
+//
+//  Programmer:  Justin Privitera
+//  Creation:    August 12, 2025
+//
+//  Notes:
+//    Copied and modified from ExchangeFloatScalar, ExchangeDoubleScalar,
+//    ExchangeIntScalar, ExchangeUCharScalar, ExchangeFloatVector, 
+//    ExchangeDoubleVector, and ExchangeIntVector, which were deleted.
+//
+//  Modifications:
+// ****************************************************************************
+template <typename T>
+vector<vtkDataArray*>
+avtStructuredDomainBoundaries::ExchangeData(BoundaryHelperFunctions<T>* bhf,
+                                            vector<int>                 domainNum,
+                                            bool                        isPointData,
+                                            vector<vtkDataArray*>       data)
+{
+    if (domain2proc.size() == 0)
+    {
+        int timer_InitializeGhost = visitTimer->StartTimer();
+        domain2proc = CreateDomainToProcessorMap(domainNum);
+        CreateCurrentDomainBoundaryInformation(domain2proc);
+        visitTimer->StopTimer(timer_InitializeGhost, "Ghost Zone Generation phase 1: Initialize");
+    }
+
+    int timer_PackData = visitTimer->StartTimer();
+    vector<vtkDataArray*> out(data.size(), NULL);
+
+    //
+    // Create the matching arrays for the given data
+    //
+    T ***vals = bhf->InitializeBoundaryData();
+
+    int nComp = (data.size() > 0 ? data[0]->GetNumberOfComponents() :-1);
+    int exceptionThrown = 0;
+    TRY
+    {
+        for (size_t d = 0; d < data.size(); d++)
+        {
+            T *oldvals = (T*)data[d]->GetVoidPointer(0);
+            bhf->FillBoundaryData(domainNum[d], oldvals, vals, isPointData, nComp);
+        }
+    }
+    CATCH2(VisItException, e)
+    {
+        exceptionThrown = 1;
+    }
+    ENDTRY
+
+    visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data");
+
+    avtParallelContext context;
+    exceptionThrown = context.UnifyMaximumValue(exceptionThrown);
+    if (exceptionThrown)
+    {
+        bhf->FreeBoundaryData(vals);
+        EXCEPTION1(VisItException, "Bad Neighbor Index");
+    }
+
+    bhf->CommunicateBoundaryData(domain2proc, vals, isPointData, nComp);
+
+    int timer_UnpackData = visitTimer->StartTimer();
+    for (size_t d = 0; d < data.size(); d++)
+    {
+        Boundary *bi = &boundary[domainNum[d]];
+
+        // Create the new VTK objects
+        out[d] = data[d]->NewInstance();
+        out[d]->SetNumberOfComponents(nComp);
+        out[d]->SetName(data[d]->GetName());
+        if (isPointData)
+            out[d]->SetNumberOfTuples(bi->newnpts);
+        else
+            out[d]->SetNumberOfTuples(bi->newncells);
+
+        T *oldvals = (T*)data[d]->GetVoidPointer(0);
+        T *newvals = (T*)out[d]->GetVoidPointer(0);
+
+        // Set the known ones
+        bhf->CopyOldValues(domainNum[d], oldvals, newvals, isPointData, nComp);
+
+        // Match the unknown ones
+        bhf->SetNewBoundaryData(domainNum[d], vals, newvals, isPointData, nComp);
+
+        // Set the remaining unset ones (reduced connectivity, etc.)
+        bhf->FakeNonexistentBoundaryData(domainNum[d], newvals, isPointData, nComp);
+    }
+    visitTimer->StopTimer(timer_UnpackData, "Ghost Zone Generation phase 4: Unpack Data");
+
+    bhf->FreeBoundaryData(vals);
+
+    return out;
+}
+
+// ****************************************************************************
+//  Method:  avtStructuredDomainBoundaries::ExchangeVar
 //
 //  Purpose:
 //    Exchange the ghost zone information for some scalars,
@@ -1845,14 +1970,19 @@ avtStructuredDomainBoundaries::Finish(int domain)
 //
 //    Kathleen Biagas, Fri Nov 1, 2024
 //    Added consistency check for dataTypes.
+// 
+//    Justin Privitera, Wed Aug 13 10:43:18 PDT 2025
+//    Combined ExchangeScalar() and ExchangeVector() into ExchangeVar().
+//    Now call generalized helper ExchangeData() instead of type-specialized
+//    helpers.
 //
 // ****************************************************************************
 vector<vtkDataArray*>
-avtStructuredDomainBoundaries::ExchangeScalar(vector<int>           domainNum,
-                                              bool                  isPointData,
-                                              vector<vtkDataArray*> scalars)
+avtStructuredDomainBoundaries::ExchangeVar(vector<int>           domainNum,
+                                           bool                  isPointData,
+                                           vector<vtkDataArray*> values)
 {
-    int dataType = (scalars.empty() ? -1 : scalars[0]->GetDataType());
+    int dataType = (values.empty() ? -1 : values[0]->GetDataType());
 
     int maxDataType = dataType;
 #ifdef PARALLEL
@@ -1866,887 +1996,32 @@ avtStructuredDomainBoundaries::ExchangeScalar(vector<int>           domainNum,
     {
         // This should never happen, so throw the exception.
         EXCEPTION1(VisItException,
-                   "avtStructuredDomainBoundaries:ExchangeScalar "
+                   "avtStructuredDomainBoundaries:ExchangeVar "
                    "vtkDataArray data types do not match.");
     }
 #endif
 
     if (maxDataType < 0)
-        return scalars;
-
-    switch (maxDataType)
-    {
-      case VTK_FLOAT:
-        return ExchangeFloatScalar(domainNum, isPointData, scalars);
-        break;
-      case VTK_DOUBLE:
-        return ExchangeDoubleScalar(domainNum, isPointData, scalars);
-        break;
-      case VTK_INT:
-      case VTK_UNSIGNED_INT:
-        return ExchangeIntScalar(domainNum, isPointData, scalars);
-        break;
-      case VTK_CHAR:
-      case VTK_UNSIGNED_CHAR:
-        return ExchangeUCharScalar(domainNum, isPointData, scalars);
-        break;
-      default:
-        EXCEPTION1(VisItException, "Unknown scalar type in "
-                   "avtStructuredDomainBoundaries::ExchangeScalar");
-    }
-}
-
-// ****************************************************************************
-//  Method:  avtStructuredDomainBoundaries::ExchangeFloatScalar
-//
-//  Purpose:
-//    Exchange the ghost zone information for some scalars,
-//    returning the new ones.
-//
-//  Arguments:
-//    domainNum    an array of domain numbers for each mesh
-//    isPointData  true if this is node-centered, false if cell-centered
-//    scalars      an array of scalars
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    November 21, 2001
-//
-//  Modifications:
-//    Jeremy Meredith, Thu Dec 13 12:06:54 PST 2001
-//    Made use of templatized functions.  Added call to fake boundary
-//    data when it is nonexistent.
-//
-//    Hank Childs, Wed Jan  2 09:28:05 PST 2002
-//    Propagate variable names.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkScalars has been deprecated in VTK 4.0, use vtkDataArray
-//    and vtkFloatArray instead.
-//
-//    Jeremy Meredith, Fri Nov  7 15:13:56 PST 2003
-//    Renamed to include the "Float" in the name.
-//
-//    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
-//    Cache domain2proc.
-//
-//    Jeremy Meredith, Thu Apr 12 18:00:17 EDT 2012
-//    Added timings for each phase of ghost zone communication.
-//
-//    Eric Brugger, Mon Apr 12 13:49:50 PDT 2021
-//    Add code to detect incorrect domain boundary information, where two
-//    neighbors don't list each other in their neighbor lists.
-//
-// ****************************************************************************
-vector<vtkDataArray*>
-avtStructuredDomainBoundaries::ExchangeFloatScalar(vector<int>     domainNum,
-                                             bool                  isPointData,
-                                             vector<vtkDataArray*> scalars)
-{
-    if (domain2proc.size() == 0)
-    {
-        int timer_InitializeGhost = visitTimer->StartTimer();
-        domain2proc = CreateDomainToProcessorMap(domainNum);
-        CreateCurrentDomainBoundaryInformation(domain2proc);
-        visitTimer->StopTimer(timer_InitializeGhost, "Ghost Zone Generation phase 1: Initialize (in float version)");
-    }
-
-    int timer_PackData = visitTimer->StartTimer();
-    vector<vtkDataArray*> out(scalars.size(), NULL);
-
-    //
-    // Create the matching arrays for the given scalars
-    //
-    float ***vals = bhf_float->InitializeBoundaryData();
-    int exceptionThrown = 0;
-    TRY
-    {
-        for (size_t d = 0; d < scalars.size(); d++)
-        {
-            float *oldvals = (float*)scalars[d]->GetVoidPointer(0);
-            bhf_float->FillBoundaryData(domainNum[d], oldvals, vals, isPointData);
-        }
-    }
-    CATCH2(VisItException, e)
-    {
-        exceptionThrown = 1;
-    }
-    ENDTRY
-
-    visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in float version)");
-
-    avtParallelContext context;
-    exceptionThrown = context.UnifyMaximumValue(exceptionThrown);
-    if (exceptionThrown)
-    {
-        bhf_float->FreeBoundaryData(vals);
-        EXCEPTION1(VisItException, "Bad Neighbor Index");
-    }
-
-    bhf_float->CommunicateBoundaryData(domain2proc, vals, isPointData);
-
-    int timer_UnpackData = visitTimer->StartTimer();
-    for (size_t d = 0; d < scalars.size(); d++)
-    {
-        Boundary *bi = &boundary[domainNum[d]];
-
-        // Create the new VTK objects
-        out[d] = vtkFloatArray::New();
-        out[d]->SetName(scalars[d]->GetName());
-        if (isPointData)
-            out[d]->SetNumberOfTuples(bi->newnpts);
-        else
-            out[d]->SetNumberOfTuples(bi->newncells);
-
-        float *oldvals = (float*)scalars[d]->GetVoidPointer(0);
-        float *newvals = (float*)out[d]->GetVoidPointer(0);
-
-        // Set the known ones
-        bhf_float->CopyOldValues(domainNum[d], oldvals, newvals, isPointData);
-
-        // Match the unknown ones
-        bhf_float->SetNewBoundaryData(domainNum[d], vals, newvals, isPointData);
-
-        // Set the remaining unset ones (reduced connectivity, etc.)
-        bhf_float->FakeNonexistentBoundaryData(domainNum[d], newvals, isPointData);
-    }
-    visitTimer->StopTimer(timer_UnpackData, "Ghost Zone Generation phase 4: Unpack Data (in float version)");
-
-    bhf_float->FreeBoundaryData(vals);
-
-    return out;
-}
-
-// ****************************************************************************
-//  Method:  avtStructuredDomainBoundaries::ExchangeDoubleScalar
-//
-//  Purpose:
-//    Exchange the ghost zone information for some scalars,
-//    returning the new ones.
-//
-//  Arguments:
-//    domainNum    an array of domain numbers for each mesh
-//    isPointData  true if this is node-centered, false if cell-centered
-//    scalars      an array of scalars
-//
-//  Programmer:  Brad Whitlock
-//  Creation:    Sun Apr 22 08:53:31 PDT 2012
-//
-//  Modifications:
-//    Eric Brugger, Mon Apr 12 13:49:50 PDT 2021
-//    Add code to detect incorrect domain boundary information, where two
-//    neighbors don't list each other in their neighbor lists.
-//
-// ****************************************************************************
-
-vector<vtkDataArray*>
-avtStructuredDomainBoundaries::ExchangeDoubleScalar(vector<int>     domainNum,
-                                             bool                  isPointData,
-                                             vector<vtkDataArray*> scalars)
-{
-    if (domain2proc.size() == 0)
-    {
-        int timer_InitializeGhost = visitTimer->StartTimer();
-        domain2proc = CreateDomainToProcessorMap(domainNum);
-        CreateCurrentDomainBoundaryInformation(domain2proc);
-        visitTimer->StopTimer(timer_InitializeGhost, "Ghost Zone Generation phase 1: Initialize (in float version)");
-    }
-
-    int timer_PackData = visitTimer->StartTimer();
-    vector<vtkDataArray*> out(scalars.size(), NULL);
-
-    //
-    // Create the matching arrays for the given scalars
-    //
-    double ***vals = bhf_double->InitializeBoundaryData();
-    int exceptionThrown = 0;
-    TRY
-    {
-        for (size_t d = 0; d < scalars.size(); d++)
-        {
-            double *oldvals = (double*)scalars[d]->GetVoidPointer(0);
-            bhf_double->FillBoundaryData(domainNum[d], oldvals, vals, isPointData);
-        }
-    }
-    CATCH2(VisItException, e)
-    {
-        exceptionThrown = 1;
-    }
-    ENDTRY
-
-    visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in double version)");
-
-    avtParallelContext context;
-    exceptionThrown = context.UnifyMaximumValue(exceptionThrown);
-    if (exceptionThrown)
-    {
-        bhf_double->FreeBoundaryData(vals);
-        EXCEPTION1(VisItException, "Bad Neighbor Index");
-    }
-
-    bhf_double->CommunicateBoundaryData(domain2proc, vals, isPointData);
-
-    int timer_UnpackData = visitTimer->StartTimer();
-    for (size_t d = 0; d < scalars.size(); d++)
-    {
-        Boundary *bi = &boundary[domainNum[d]];
-
-        // Create the new VTK objects
-        out[d] = vtkDoubleArray::New();
-        out[d]->SetName(scalars[d]->GetName());
-        if (isPointData)
-            out[d]->SetNumberOfTuples(bi->newnpts);
-        else
-            out[d]->SetNumberOfTuples(bi->newncells);
-
-        double *oldvals = (double*)scalars[d]->GetVoidPointer(0);
-        double *newvals = (double*)out[d]->GetVoidPointer(0);
-
-        // Set the known ones
-        bhf_double->CopyOldValues(domainNum[d], oldvals, newvals, isPointData);
-
-        // Match the unknown ones
-        bhf_double->SetNewBoundaryData(domainNum[d], vals, newvals, isPointData);
-
-        // Set the remaining unset ones (reduced connectivity, etc.)
-        bhf_double->FakeNonexistentBoundaryData(domainNum[d], newvals, isPointData);
-    }
-    visitTimer->StopTimer(timer_UnpackData, "Ghost Zone Generation phase 4: Unpack Data (in double version)");
-
-    bhf_double->FreeBoundaryData(vals);
-
-    return out;
-}
-
-// ****************************************************************************
-//  Method:  avtStructuredDomainBoundaries::ExchangeIntScalar
-//
-//  Purpose:
-//    Exchange the ghost zone information for some scalars,
-//    returning the new ones.
-//
-//  Arguments:
-//    domainNum    an array of domain numbers for each mesh
-//    isPointData  true if this is node-centered, false if cell-centered
-//    scalars      an array of scalars
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    November  7, 2003
-//
-//  Note: direct copy of ExchangeFloatScalar with modifications for ints.
-//
-//  Modifications:
-//
-//    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
-//    Cache domain2proc.
-//
-//    Jeremy Meredith, Thu Apr 12 18:00:17 EDT 2012
-//    Added timings for each phase of ghost zone communication.
-//
-//    Eric Brugger, Mon Apr 12 13:49:50 PDT 2021
-//    Add code to detect incorrect domain boundary information, where two
-//    neighbors don't list each other in their neighbor lists.
-//
-// ****************************************************************************
-vector<vtkDataArray*>
-avtStructuredDomainBoundaries::ExchangeIntScalar(vector<int>       domainNum,
-                                             bool                  isPointData,
-                                             vector<vtkDataArray*> scalars)
-{
-    if (domain2proc.size() == 0)
-    {
-        int timer_InitializeGhost = visitTimer->StartTimer();
-        domain2proc = CreateDomainToProcessorMap(domainNum);
-        CreateCurrentDomainBoundaryInformation(domain2proc);
-        visitTimer->StopTimer(timer_InitializeGhost, "Ghost Zone Generation phase 1: Initialize (in int version)");
-    }
-
-    int timer_PackData = visitTimer->StartTimer();
-    vector<vtkDataArray*> out(scalars.size(), NULL);
-
-    //
-    // Create the matching arrays for the given scalars
-    //
-    int ***vals = bhf_int->InitializeBoundaryData();
-    int exceptionThrown = 0;
-    TRY
-    {
-        for (size_t d = 0; d < scalars.size(); d++)
-        {
-            int *oldvals = (int*)scalars[d]->GetVoidPointer(0);
-            bhf_int->FillBoundaryData(domainNum[d], oldvals, vals, isPointData);
-        }
-    }
-    CATCH2(VisItException, e)
-    {
-        exceptionThrown = 1;
-    }
-    ENDTRY
-
-    visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in int version)");
-
-    avtParallelContext context;
-    exceptionThrown = context.UnifyMaximumValue(exceptionThrown);
-    if (exceptionThrown)
-    {
-        bhf_int->FreeBoundaryData(vals);
-        EXCEPTION1(VisItException, "Bad Neighbor Index");
-    }
-
-    bhf_int->CommunicateBoundaryData(domain2proc, vals, isPointData);
-
-    int timer_UnpackData = visitTimer->StartTimer();
-    for (size_t d = 0; d < scalars.size(); d++)
-    {
-        Boundary *bi = &boundary[domainNum[d]];
-
-        // Create the new VTK objects
-        out[d] = vtkIntArray::New();
-        out[d]->SetName(scalars[d]->GetName());
-        if (isPointData)
-            out[d]->SetNumberOfTuples(bi->newnpts);
-        else
-            out[d]->SetNumberOfTuples(bi->newncells);
-
-        int *oldvals = (int*)scalars[d]->GetVoidPointer(0);
-        int *newvals = (int*)out[d]->GetVoidPointer(0);
-
-        // Set the known ones
-        bhf_int->CopyOldValues(domainNum[d], oldvals, newvals, isPointData);
-
-        // Match the unknown ones
-        bhf_int->SetNewBoundaryData(domainNum[d], vals, newvals, isPointData);
-
-        // Set the remaining unset ones (reduced connectivity, etc.)
-        bhf_int->FakeNonexistentBoundaryData(domainNum[d], newvals, isPointData);
-    }
-    visitTimer->StopTimer(timer_UnpackData, "Ghost Zone Generation phase 4: Unpack Data (in int version)");
-
-    bhf_int->FreeBoundaryData(vals);
-
-    return out;
-}
-
-
-// ****************************************************************************
-//  Method:  avtStructuredDomainBoundaries::ExchangeUCharScalar
-//
-//  Purpose:
-//    Exchange the ghost zone information for some scalars,
-//    returning the new ones.
-//
-//  Arguments:
-//    domainNum    an array of domain numbers for each mesh
-//    isPointData  true if this is node-centered, false if cell-centered
-//    scalars      an array of scalars
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    November  7, 2003
-//
-//  Note: direct copy of ExchangeFloatScalar with modifications for uchars.
-//
-//  Modifications:
-//
-//    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
-//    Cache domain2proc.
-//
-//    Jeremy Meredith, Thu Apr 12 18:00:17 EDT 2012
-//    Added timings for each phase of ghost zone communication.
-//
-//    Eric Brugger, Mon Apr 12 13:49:50 PDT 2021
-//    Add code to detect incorrect domain boundary information, where two
-//    neighbors don't list each other in their neighbor lists.
-//
-// ****************************************************************************
-vector<vtkDataArray*>
-avtStructuredDomainBoundaries::ExchangeUCharScalar(vector<int>     domainNum,
-                                             bool                  isPointData,
-                                             vector<vtkDataArray*> scalars)
-{
-    if (domain2proc.size() == 0)
-    {
-        int timer_InitializeGhost = visitTimer->StartTimer();
-        domain2proc = CreateDomainToProcessorMap(domainNum);
-        CreateCurrentDomainBoundaryInformation(domain2proc);
-        visitTimer->StopTimer(timer_InitializeGhost, "Ghost Zone Generation phase 1: Initialize (in uchar version)");
-    }
-
-    int timer_PackData = visitTimer->StartTimer();
-    vector<vtkDataArray*> out(scalars.size(), NULL);
-
-    //
-    // Create the matching arrays for the given scalars
-    //
-    unsigned char ***vals = bhf_uchar->InitializeBoundaryData();
-    int exceptionThrown = 0;
-    TRY
-    {
-        for (size_t d = 0; d < scalars.size(); d++)
-        {
-            unsigned char *oldvals = (unsigned char*)scalars[d]->GetVoidPointer(0);
-            bhf_uchar->FillBoundaryData(domainNum[d], oldvals, vals, isPointData);
-        }
-    }
-    CATCH2(VisItException, e)
-    {
-        exceptionThrown = 1;
-    }
-    ENDTRY
-
-    visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in uchar version)");
-
-    avtParallelContext context;
-    exceptionThrown = context.UnifyMaximumValue(exceptionThrown);
-    if (exceptionThrown)
-    {
-        bhf_uchar->FreeBoundaryData(vals);
-        EXCEPTION1(VisItException, "Bad Neighbor Index");
-    }
-
-    bhf_uchar->CommunicateBoundaryData(domain2proc, vals, isPointData);
-
-    int timer_UnpackData = visitTimer->StartTimer();
-    for (size_t d = 0; d < scalars.size(); d++)
-    {
-        Boundary *bi = &boundary[domainNum[d]];
-
-        // Create the new VTK objects
-        out[d] = vtkUnsignedCharArray::New();
-        out[d]->SetName(scalars[d]->GetName());
-        if (isPointData)
-            out[d]->SetNumberOfTuples(bi->newnpts);
-        else
-            out[d]->SetNumberOfTuples(bi->newncells);
-
-        unsigned char *oldvals = (unsigned char*)scalars[d]->GetVoidPointer(0);
-        unsigned char *newvals = (unsigned char*)out[d]->GetVoidPointer(0);
-
-        // Set the known ones
-        bhf_uchar->CopyOldValues(domainNum[d], oldvals, newvals, isPointData);
-
-        // Match the unknown ones
-        bhf_uchar->SetNewBoundaryData(domainNum[d], vals, newvals, isPointData);
-
-        // Set the remaining unset ones (reduced connectivity, etc.)
-        bhf_uchar->FakeNonexistentBoundaryData(domainNum[d], newvals, isPointData);
-    }
-    visitTimer->StopTimer(timer_UnpackData, "Ghost Zone Generation phase 4: Unpack Data (in uchar version)");
-
-    bhf_uchar->FreeBoundaryData(vals);
-
-    return out;
-}
-
-// ****************************************************************************
-//  Method:  avtStructuredDomainBoundaries::ExchangeVector
-//
-//  Purpose:
-//    Exchange the ghost zone information for some vectors,
-//    returning the new ones.
-//
-//  Arguments:
-//    domainNum    an array of domain numbers for each mesh
-//    isPointData  true if this is node-centered, false if cell-centered
-//    vectors      an array of vectors
-//
-//  Programmer:  Kevin Griffin
-//  Creation:    April 21, 2015
-//
-//  Modifications:
-//    Kathleen Biagas, Fri Nov 1, 2024
-//    Added consistency check for dataTypes.
-//
-// ****************************************************************************
-vector<vtkDataArray*>
-avtStructuredDomainBoundaries::ExchangeVector(vector<int>           domainNum,
-                                              bool                  isPointData,
-                                              vector<vtkDataArray*> vectors)
-{
-    int dataType = (vectors.empty() ? -1 : vectors[0]->GetDataType());
-
-    int maxDataType = dataType;
-#ifdef PARALLEL
-    // Let's get them all to agree on one data type.
-    MPI_Allreduce(&dataType, &maxDataType, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
-
-    // Now verify if there is a dataType mismatch.
-    int hasDataTypeMismatch = ((dataType >= 0) && (dataType != maxDataType));
-    int hasDataTypeMismatchMax = hasDataTypeMismatch;
-    MPI_Allreduce(&hasDataTypeMismatch, &hasDataTypeMismatchMax, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
-    if(hasDataTypeMismatchMax)
-    {
-        // This should never happen, so throw the exception.
-        EXCEPTION1(VisItException,
-                   "avtStructuredDomainBoundaries:ExchangeVector "
-                   "vtkDataArray data types do not match.");
-    }
-#endif
-
-    if (maxDataType < 0)
-        return vectors;
+        return values;
 
     switch (maxDataType)
     {
         case VTK_FLOAT:
-            return ExchangeFloatVector(domainNum, isPointData, vectors);
-            break;
+            return ExchangeData(bhf_float, domainNum, isPointData, values);
         case VTK_DOUBLE:
-            return ExchangeDoubleVector(domainNum, isPointData, vectors);
-            break;
+            return ExchangeData(bhf_double, domainNum, isPointData, values);
         case VTK_INT:
+            return ExchangeData(bhf_int, domainNum, isPointData, values);
         case VTK_UNSIGNED_INT:
-            return ExchangeIntVector(domainNum, isPointData, vectors);
-            break;
+            return ExchangeData(bhf_uint, domainNum, isPointData, values);
+        case VTK_CHAR:
+            return ExchangeData(bhf_char, domainNum, isPointData, values);
+        case VTK_UNSIGNED_CHAR:
+            return ExchangeData(bhf_uchar, domainNum, isPointData, values);
         default:
-            EXCEPTION1(VisItException, "Unknown vector type in "
-                       "avtStructuredDomainBoundaries::ExchangeVector");
+            EXCEPTION1(VisItException, "Unknown scalar type in "
+                       "avtStructuredDomainBoundaries::ExchangeVar");
     }
-}
-
-
-// ****************************************************************************
-//  Method:  avtStructuredDomainBoundaries::ExchangeFloatVector
-//
-//  Purpose:
-//    Exchange the ghost zone information for some vectors,
-//    returning the new ones.
-//
-//  Arguments:
-//    domainNum    an array of domain numbers for each mesh
-//    isPointData  true if this is node-centered, false if cell-centered
-//    vectors      an array of vectors
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    November 21, 2001
-//
-//  Modifications:
-//    Jeremy Meredith, Thu Dec 13 12:06:54 PST 2001
-//    Made use of templatized functions.  Added call to fake boundary
-//    data when it is nonexistent.
-//
-//    Hank Childs, Wed Jan  2 09:28:05 PST 2002
-//    Propagate variable names.
-//
-//    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkVectors has been deprecated in VTK 4.0, use vtkDataArray
-//    and vtkFloatArray instead.
-//
-//    Kathleen Bonnell, Mon May 20 13:33:03 PDT 2002
-//    Change name to reflect underlying data type.  Allow for arbitrary
-//    number of components in the array.
-//
-//    Hank Childs, Fri Dec  6 14:56:20 PST 2002
-//    Do not assume that the number of vectors is > 0.
-//
-//    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
-//    Cache domain2proc.
-//
-//    Jeremy Meredith, Thu Apr 12 18:00:17 EDT 2012
-//    Added timings for each phase of ghost zone communication.
-//
-//    Eric Brugger, Mon Apr 12 13:49:50 PDT 2021
-//    Add code to detect incorrect domain boundary information, where two
-//    neighbors don't list each other in their neighbor lists.
-//
-// ****************************************************************************
-vector<vtkDataArray*>
-avtStructuredDomainBoundaries::ExchangeFloatVector(vector<int>      domainNum,
-                                              bool                  isPointData,
-                                              vector<vtkDataArray*> vectors)
-{
-    if (domain2proc.size() == 0)
-    {
-        int timer_InitializeGhost = visitTimer->StartTimer();
-        domain2proc = CreateDomainToProcessorMap(domainNum);
-        CreateCurrentDomainBoundaryInformation(domain2proc);
-        visitTimer->StopTimer(timer_InitializeGhost, "Ghost Zone Generation phase 1: Initialize (in floatvec version)");
-    }
-
-    int timer_PackData = visitTimer->StartTimer();
-    vector<vtkDataArray*> out(vectors.size(), NULL);
-
-    //
-    // Create the matching arrays for the given vectors
-    //
-    float ***vals = bhf_float->InitializeBoundaryData();
-
-    int nComp = (vectors.size() > 0 ? vectors[0]->GetNumberOfComponents() :-1);
-    int exceptionThrown = 0;
-    TRY
-    {
-        for (size_t d = 0; d < vectors.size(); d++)
-        {
-            float *oldvals = (float*)vectors[d]->GetVoidPointer(0);
-            bhf_float->FillBoundaryData(domainNum[d], oldvals, vals, isPointData, nComp);
-        }
-    }
-    CATCH2(VisItException, e)
-    {
-        exceptionThrown = 1;
-    }
-    ENDTRY
-
-    visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in floatvec version)");
-
-    avtParallelContext context;
-    exceptionThrown = context.UnifyMaximumValue(exceptionThrown);
-    if (exceptionThrown)
-    {
-        bhf_float->FreeBoundaryData(vals);
-        EXCEPTION1(VisItException, "Bad Neighbor Index");
-    }
-
-    bhf_float->CommunicateBoundaryData(domain2proc, vals, isPointData, nComp);
-
-    int timer_UnpackData = visitTimer->StartTimer();
-    for (size_t d = 0; d < vectors.size(); d++)
-    {
-        // Create the new VTK objects
-        out[d] = vtkFloatArray::New();
-        out[d]->SetNumberOfComponents(nComp);
-        out[d]->SetName(vectors[d]->GetName());
-        if (isPointData)
-            out[d]->SetNumberOfTuples(boundary[domainNum[d]].newnpts);
-        else
-            out[d]->SetNumberOfTuples(boundary[domainNum[d]].newncells);
-
-        float *oldvals = (float*)vectors[d]->GetVoidPointer(0);
-        float *newvals = (float*)out[d]->GetVoidPointer(0);
-
-        // Set the known ones
-        bhf_float->CopyOldValues(domainNum[d], oldvals, newvals, isPointData, nComp);
-
-        // Match the unknown ones
-        bhf_float->SetNewBoundaryData(domainNum[d], vals, newvals, isPointData, nComp);
-
-        // Set the remaining unset ones (reduced connectivity, etc.)
-        bhf_float->FakeNonexistentBoundaryData(domainNum[d], newvals, isPointData, nComp);
-    }
-    visitTimer->StopTimer(timer_UnpackData, "Ghost Zone Generation phase 4: Unpack Data (in floatvec version)");
-
-    bhf_float->FreeBoundaryData(vals);
-
-    return out;
-}
-
-// ****************************************************************************
-//  Method:  avtStructuredDomainBoundaries::ExchangeDoubleVector
-//
-//  Purpose:
-//    Exchange the ghost zone information for some vectors,
-//    returning the new ones.
-//
-//  Arguments:
-//    domainNum    an array of domain numbers for each mesh
-//    isPointData  true if this is node-centered, false if cell-centered
-//    vectors      an array of vectors
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    November 21, 2001
-//
-//  Modifications:
-//    Eric Brugger, Mon Apr 12 13:49:50 PDT 2021
-//    Add code to detect incorrect domain boundary information, where two
-//    neighbors don't list each other in their neighbor lists.
-//
-// ****************************************************************************
-vector<vtkDataArray*>
-avtStructuredDomainBoundaries::ExchangeDoubleVector(vector<int>      domainNum,
-                                              bool                  isPointData,
-                                              vector<vtkDataArray*> vectors)
-{
-    if (domain2proc.size() == 0)
-    {
-        int timer_InitializeGhost = visitTimer->StartTimer();
-        domain2proc = CreateDomainToProcessorMap(domainNum);
-        CreateCurrentDomainBoundaryInformation(domain2proc);
-        visitTimer->StopTimer(timer_InitializeGhost, "Ghost Zone Generation phase 1: Initialize (in doublevec version)");
-    }
-
-    int timer_PackData = visitTimer->StartTimer();
-    vector<vtkDataArray*> out(vectors.size(), NULL);
-
-    //
-    // Create the matching arrays for the given vectors
-    //
-    double ***vals = bhf_double->InitializeBoundaryData();
-
-    int nComp = (vectors.size() > 0 ? vectors[0]->GetNumberOfComponents() :-1);
-    int exceptionThrown = 0;
-    TRY
-    {
-        for (size_t d = 0; d < vectors.size(); d++)
-        {
-            double *oldvals = (double*)vectors[d]->GetVoidPointer(0);
-            bhf_double->FillBoundaryData(domainNum[d], oldvals, vals, isPointData, nComp);
-        }
-    }
-    CATCH2(VisItException, e)
-    {
-        exceptionThrown = 1;
-    }
-    ENDTRY
-
-    visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in doublevec version)");
-
-    avtParallelContext context;
-    exceptionThrown = context.UnifyMaximumValue(exceptionThrown);
-    if (exceptionThrown)
-    {
-        bhf_double->FreeBoundaryData(vals);
-        EXCEPTION1(VisItException, "Bad Neighbor Index");
-    }
-
-    bhf_double->CommunicateBoundaryData(domain2proc, vals, isPointData, nComp);
-
-    int timer_UnpackData = visitTimer->StartTimer();
-    for (size_t d = 0; d < vectors.size(); d++)
-    {
-        // Create the new VTK objects
-        out[d] = vtkDoubleArray::New();
-        out[d]->SetNumberOfComponents(nComp);
-        out[d]->SetName(vectors[d]->GetName());
-        if (isPointData)
-            out[d]->SetNumberOfTuples(boundary[domainNum[d]].newnpts);
-        else
-            out[d]->SetNumberOfTuples(boundary[domainNum[d]].newncells);
-
-        double *oldvals = (double*)vectors[d]->GetVoidPointer(0);
-        double *newvals = (double*)out[d]->GetVoidPointer(0);
-
-        // Set the known ones
-        bhf_double->CopyOldValues(domainNum[d], oldvals, newvals, isPointData, nComp);
-
-        // Match the unknown ones
-        bhf_double->SetNewBoundaryData(domainNum[d], vals, newvals, isPointData, nComp);
-
-        // Set the remaining unset ones (reduced connectivity, etc.)
-        bhf_double->FakeNonexistentBoundaryData(domainNum[d], newvals, isPointData, nComp);
-    }
-    visitTimer->StopTimer(timer_UnpackData, "Ghost Zone Generation phase 4: Unpack Data (in doublevec version)");
-
-    bhf_double->FreeBoundaryData(vals);
-
-    return out;
-}
-
-// ****************************************************************************
-//  Method:  avtStructuredDomainBoundaries::ExchangeIntVector
-//
-//  Purpose:
-//    Exchange the ghost zone information for some vectors,
-//    returning the new ones.
-//
-//  Arguments:
-//    domainNum    an array of domain numbers for each mesh
-//    isPointData  true if this is node-centered, false if cell-centered
-//    vectors      an array of vectors
-//
-//  Notes:
-//    Taken from ExchangeFloatVector and modified for integer data types.
-//
-//  Programmer:  Kathleen Bonnell
-//  Creation:    May 20, 2002
-//
-//  Modifications:
-//
-//    Hank Childs, Fri Dec  6 14:56:20 PST 2002
-//    Do not assume that the number of vectors is > 0.
-//
-//    Kathleen Bonnell, Wed Dec 11 09:13:25 PST 2002
-//    Preserver underlying data type:  use MakeObject instead of New.
-//
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
-//    Use NewInstance instead of MakeObject, new vtk api.
-//
-//    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
-//    Cache domain2proc.
-//
-//    Jeremy Meredith, Thu Apr 12 18:00:17 EDT 2012
-//    Added timings for each phase of ghost zone communication.
-//
-//    Eric Brugger, Mon Apr 12 13:49:50 PDT 2021
-//    Add code to detect incorrect domain boundary information, where two
-//    neighbors don't list each other in their neighbor lists.
-//
-// ****************************************************************************
-vector<vtkDataArray*>
-avtStructuredDomainBoundaries::ExchangeIntVector(vector<int>        domainNum,
-                                                 bool               isPointData,
-                                                 vector<vtkDataArray*> vectors)
-{
-    if (domain2proc.size() == 0)
-    {
-        int timer_InitializeGhost = visitTimer->StartTimer();
-        domain2proc = CreateDomainToProcessorMap(domainNum);
-        CreateCurrentDomainBoundaryInformation(domain2proc);
-        visitTimer->StopTimer(timer_InitializeGhost, "Ghost Zone Generation phase 1: Initialize (in intvec version)");
-    }
-
-    int timer_PackData = visitTimer->StartTimer();
-    vector<vtkDataArray*> out(vectors.size(), NULL);
-
-    //
-    // Create the matching arrays for the given vectors
-    //
-    int ***vals = bhf_int->InitializeBoundaryData();
-
-    int nComp = (vectors.size() > 0 ? vectors[0]->GetNumberOfComponents(): -1);
-    int exceptionThrown = 0;
-    TRY
-    {
-        for (size_t d = 0; d < vectors.size(); d++)
-        {
-            int *oldvals = (int*)vectors[d]->GetVoidPointer(0);
-            bhf_int->FillBoundaryData(domainNum[d], oldvals, vals, isPointData, nComp);
-        }
-    }
-    CATCH2(VisItException, e)
-    {
-        exceptionThrown = 1;
-    }
-    ENDTRY
-
-    visitTimer->StopTimer(timer_PackData, "Ghost Zone Generation phase 2: Pack Data (in intvec version)");
-
-    avtParallelContext context;
-    exceptionThrown = context.UnifyMaximumValue(exceptionThrown);
-    if (exceptionThrown)
-    {
-        bhf_int->FreeBoundaryData(vals);
-        EXCEPTION1(VisItException, "Bad Neighbor Index");
-    }
-
-    bhf_int->CommunicateBoundaryData(domain2proc, vals, isPointData, nComp);
-
-    int timer_UnpackData = visitTimer->StartTimer();
-    for (size_t d = 0; d < vectors.size(); d++)
-    {
-        // Create the new VTK objects
-        out[d] = vectors[d]->NewInstance();
-        out[d]->SetNumberOfComponents(nComp);
-        out[d]->SetName(vectors[d]->GetName());
-        if (isPointData)
-            out[d]->SetNumberOfTuples(boundary[domainNum[d]].newnpts);
-        else
-            out[d]->SetNumberOfTuples(boundary[domainNum[d]].newncells);
-
-        int *oldvals = (int*)vectors[d]->GetVoidPointer(0);
-        int *newvals = (int*)out[d]->GetVoidPointer(0);
-
-        // Set the known ones
-        bhf_int->CopyOldValues(domainNum[d], oldvals, newvals, isPointData, nComp);
-
-        // Match the unknown ones
-        bhf_int->SetNewBoundaryData(domainNum[d], vals, newvals, isPointData, nComp);
-
-        // Set the remaining unset ones (reduced connectivity, etc.)
-        bhf_int->FakeNonexistentBoundaryData(domainNum[d], newvals, isPointData, nComp);
-    }
-    visitTimer->StopTimer(timer_UnpackData, "Ghost Zone Generation phase 4: Unpack Data (in intvec version)");
-
-    bhf_int->FreeBoundaryData(vals);
-
-    return out;
 }
 
 // ****************************************************************************

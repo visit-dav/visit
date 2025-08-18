@@ -20570,11 +20570,6 @@ Synchronize()
         syncAtts->SetSyncTag(syncCount);
         syncAtts->Notify();
         syncAtts->SetSyncTag(-1);
-
-        /// should only run once?
-        while(syncCount != syncAtts->GetSyncTag()) {
-            PyRun_SimpleString("visit_utils.builtin.pyside_support.__VisIt_PySide_Idle_Hook__()");
-        }
         syncCount++;
         return 0;
     }

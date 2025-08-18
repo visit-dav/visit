@@ -577,15 +577,6 @@ endif()
 
 include(${VISIT_SOURCE_DIR}/CMake/FindVisItVTK.cmake)
 
-# Configure PySide Support
-# Commented out until #19539 is addressed
-#if(VISIT_PYTHON_SCRIPTING AND PYTHONLIBS_FOUND
-#                          AND NOT VISIT_DBIO_ONLY
-#                          AND NOT VISIT_ENGINE_ONLY
-#                          AND NOT VISIT_SERVER_COMPONENTS_ONLY)
-#    include(${VISIT_SOURCE_DIR}/CMake/FindPySide.cmake)
-#endif()
-
 # Include Ice-T support if we can.
 if(VISIT_PARALLEL)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindIceT.cmake)
