@@ -1909,6 +1909,11 @@ ViewerSubject::ProcessEvents()
 //   Kathleen Biagas, Wed Apr  5 13:04:35 PDT 2023
 //   Replace obosolete desktop() with primaryScreen().
 //
+//   Kathleen Biagas, Mon Aug 18, 2025 
+//   Replace 'primaryScreen()->geometry()' with
+//   'primaryScreen()->availableGeometry()' since the latter takes into
+//   account window manager reserved space like the Windows taskbar. 
+//
 // ****************************************************************************
 
 void
@@ -1984,7 +1989,7 @@ ViewerSubject::InitializeWorkArea()
                 wmShift[0] = 0;
                 wmShift[1] = 22;
 
-                QRect geom = qApp->primaryScreen()->geometry();
+                QRect geom = qApp->primaryScreen()->availableGeometry();
                 wmScreen[0] = geom.width();
                 wmScreen[1] = geom.height();
                 wmScreen[2] = geom.x();
