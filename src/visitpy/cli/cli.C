@@ -195,9 +195,6 @@ main(int argc, char *argv[])
     bool verbose = false;
     bool s_found = false;
     bool py2to3 = false;
-    bool pyside = false;
-    bool pyside_gui = false;
-    bool pyside_viewer = false;
     char *runFile = 0;
     char *loadFile = 0;
     char **argv2 = new char *[argc];
@@ -399,28 +396,6 @@ main(int argc, char *argv[])
         {
             py2to3 = true;
         }
-        else if(strcmp(argv[i], "-pyside") == 0)
-        {
-            pyside = true;
-        }
-        else if(strcmp(argv[i], "-pysideviewer") == 0)
-        {
-            pyside_gui = true;
-            pyside_viewer = true;
-            argv2[argc2++] = const_cast<char*>(pyuiembedded_str); //pass it along to client
-        }
-        else if(strcmp(argv[i], "-pysideclient") == 0)
-        {
-            pyside_gui = true;
-            argv2[argc2++] = const_cast<char*>(pyuiembedded_str); //pass it along to client
-        }
-        else if(strcmp(argv[i], "-uifile") == 0)
-        {
-            pyside_gui = true;
-            uifile = argv[i+1];
-            ++i;
-            argv2[argc2++] = const_cast<char*>(pyuiembedded_str); //pass it along to client
-        }
         else if(strcmp(argv[i], "-dv") == 0)
         {
             SetIsDevelopmentVersion(true);
@@ -457,32 +432,11 @@ main(int argc, char *argv[])
         }
     }
 
-    //for some reason if the viewer requests the pysideviewer
     //for now this does not make sense
     for(int i = 0; i < argc; ++i)
     {
         std::string tmp = argv[i];
-        if(pyside_gui && tmp == "-reverse_launch")
-        {
-            std::cerr << "Warning: Cannot enable pysideviewer from remote process,"
-                    << " disabling and reverting functionality to pyside"
-                    << std::endl;
-            pyside_gui = false;
-            pyside = true;
-        }
-        if(pyside_gui && tmp == "-nowin")
-        {
-            std::cerr << "Error: Cannot create pyside client and nowin at the same time" 
-                      << std::endl;
-            return (0);
-        }
 
-        if(pyside_gui && tmp == "-defer")
-        {
-            std::cerr << "Warning: Cannot use pyside client and defer at the same time"
-                      << std::endl;
-            return (0);
-        }
         if(run_code.length() > 0 && tmp == "-reverse_launch") {
            run_code = ""; //don't execute scripts during reverse launches..
         }
@@ -612,64 +566,6 @@ main(int argc, char *argv[])
 
         PyDict_SetItemString(visit_dict, "argv_full", py_argv_full);
 
-        if(pyside || pyside_gui)
-        {
-            int error = 0;
-            if(!error) error |= PyRun_SimpleString((char*)"import PySide2");
-            if(!error) error |= PyRun_SimpleString((char*)"from PySide2.QtCore import *");
-            if(!error) error |= PyRun_SimpleString((char*)"from PySide2.QtGui import *");
-            if(!error) error |= PyRun_SimpleString((char*)"from PySide2.QtOpenGL import *");
-            if(!error) error |= PyRun_SimpleString((char*)"from PySide2.QtUiTools import *");
-
-            if(!error) error |= PyRun_SimpleString((char*)"import visit_utils.builtin.pyside_support");
-            if(!error) error |= PyRun_SimpleString((char*)"import visit_utils.builtin.pyside_hook");
-
-            if(error)
-            {
-                std::cerr   << "Error: Unable to initialize PySide components" 
-                            << std::endl;
-                return (0); 
-            }
-            else
-            {
-                // Cyrus Note, Wed Feb 24 10:15:52 PST 2021
-                // This Event handler seems to make the CLI unusable.
-                PyRun_SimpleString((char*)"visit_utils.builtin.pyside_support.SetupTimer()");
-                PyRun_SimpleString((char*)"visit_utils.builtin.pyside_hook.SetHook()");
-            }
-        }
-
-        if(pyside_gui)
-        {
-            //pysideviewer needs to be executed before visit import
-            //so that visit will use the window..
-            // we will only have one instance, init it
-            int error = PyRun_SimpleString((char*)"import visit_utils.builtin.pyside_gui");
-
-            if(error)
-            {
-                std::cerr   << "Error: Unable to initialize PySide GUI components" 
-                            << std::endl;
-                return (0);
-            }
-
-            PyRun_SimpleString((char*)"args = sys.argv");
-            if(uifile) //if external file then start VisIt in embedded mode
-                PyRun_SimpleString((char*)"args.append('-pyuiembedded')"); //default to embedded
-            PyRun_SimpleString((char*)"tmp = visit_utils.builtin.pyside_gui.PySideGUI.instance(args)");
-            PyRun_SimpleString((char*)"visit.InitializeViewerProxy(tmp.GetViewerProxyPtr())");
-            PyRun_SimpleString((char*)"from visit_utils.builtin.pyside_support import GetRenderWindow");
-            PyRun_SimpleString((char*)"from visit_utils.builtin.pyside_support import GetRenderWindowIds");
-            PyRun_SimpleString((char*)"from visit_utils.builtin.pyside_support import GetUIWindow");
-            PyRun_SimpleString((char*)"from visit_utils.builtin.pyside_support import GetPlotWindow");
-            PyRun_SimpleString((char*)"from visit_utils.builtin.pyside_support import GetOperatorWindow");
-            PyRun_SimpleString((char*)"from visit_utils.builtin.pyside_support import GetOtherWindow");
-            PyRun_SimpleString((char*)"from visit_utils.builtin.pyside_support import GetOtherWindowNames");
-
-            if(!uifile && !pyside_viewer)
-                PyRun_SimpleString((char*)"GetUIWindow().show()");
-        }
-
         // setup source file and source stack variables
         PyRun_SimpleString((char*)"import os\n"
                                   "__visit_script_file__  = '<None>'\n"
@@ -694,16 +590,6 @@ main(int argc, char *argv[])
         else if (FileFunctions::VisItStat(visitSystemRc.c_str(), &s) == 0)
         {
             visitrc = visitSystemRc;
-        }
-
-        if(!uifile && (pyside_viewer || pyside_gui))
-            PyRun_SimpleString((char*)"visit.ShowAllWindows()");
-
-        if(uifile && pyside_gui)
-        {
-            std::ostringstream pycmd;
-            pycmd << "visit.Source(\"" << uifile << "\")";
-            PyRun_SimpleString(pycmd.str().c_str());
         }
 
         if (visitrc.size())
