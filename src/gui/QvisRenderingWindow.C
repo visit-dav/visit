@@ -166,7 +166,9 @@ QvisRenderingWindow::CreateBasicPage()
     QVBoxLayout *basicLayout = new QVBoxLayout(basicOptions);
     basicLayout->setContentsMargins(10,10,10,10);
 
+    //
     // Create the antialiasing widgets.
+    //
     QGroupBox *aaGroup = new QGroupBox(tr("Antialiasing"));
     aaGroup->setCheckable(false);
     basicLayout->addWidget(aaGroup);
@@ -196,7 +198,7 @@ QvisRenderingWindow::CreateBasicPage()
 
     // MSAA options
 
-    msaaSamplesLabel = new QLabel(tr("Number of Samples"));
+    msaaSamplesLabel = new QLabel(tr("Number of MSAA samples"));
     msaaSamplesLabel->setEnabled(false);
     aaLayout->addWidget(msaaSamplesLabel, aaRow, 0);
 
@@ -213,6 +215,10 @@ QvisRenderingWindow::CreateBasicPage()
     aaRow++;
 
     // FXAA options
+    QFormLayout *fxaaLeftLayout = new QFormLayout();
+    aaLayout->addLayout(fxaaLeftLayout, aaRow,0, 1, 2);
+    QFormLayout *fxaaRightLayout = new QFormLayout();
+    aaLayout->addLayout(fxaaRightLayout, aaRow, 2, 1, 2);
 
     // RelativeConstrastThreshold default values and custom value widget
     QDoubleValidator *dvfxaa = new QDoubleValidator(0.f,1.f, 5);
@@ -221,9 +227,6 @@ QvisRenderingWindow::CreateBasicPage()
     fxaaRCTLabel->setToolTip(
         tr("Threshold for applying FXAA to a pixel, relative to the maximum luminosity of its 4 immediate neighbors\n"
            "The luminosity of the current pixel and it's NSWE neighbors is computed. The maximum luminosity and luminosity range (contrast) of all 5 pixels is found. If the contrast is less than RelativeContrastThreshold * maxLum, the pixel is not considered aliased and will not be affected by FXAA.\n"));
-
-    aaLayout->addWidget(fxaaRCTLabel, aaRow,0);
-
     fxaaRCT = new QComboBox();
     fxaaRCT->addItem("Too little", 0.3333);
     fxaaRCT->addItem("Low quality", 0.25);
@@ -233,26 +236,20 @@ QvisRenderingWindow::CreateBasicPage()
     fxaaRCT->setCurrentIndex(2);
     connect(fxaaRCT, SIGNAL(currentIndexChanged(int)),
             this, SLOT(fxaaRCTChanged(int)));
-    aaLayout->addWidget(fxaaRCT, aaRow,1);
-    aaRow++;
+    fxaaLeftLayout->addRow(fxaaRCTLabel, fxaaRCT);
 
     fxaaRCTCustomLabel = new QLabel(tr("Custom RCT value"));
-    aaLayout->addWidget(fxaaRCTCustomLabel, aaRow,0);
-
     fxaaRCTCustom = new QLineEdit("0.0625");
     fxaaRCTCustom->setValidator(dvfxaa);
     connect(fxaaRCTCustom, SIGNAL(editingFinished()),
             this, SLOT(fxaaRCTCustomChanged()));
-    aaLayout->addWidget(fxaaRCTCustom, aaRow,1);
-    aaRow++;
+    fxaaLeftLayout->addRow(fxaaRCTCustomLabel, fxaaRCTCustom);
 
     // HardConstrastThreshold default values and custom value widgets
     fxaaHCTLabel = new QLabel(tr("Hard contrast threshold"));
     fxaaHCTLabel->setToolTip(
         tr("Similar to RelativeContrastThreshold, but not scaled by the maximum luminosity.\n"
            "If the contrast of the current pixel and it's 4 immediate NSWE neighbors is less than HardContrastThreshold, the pixel is not considered aliased and will not be affected by FXAA.\n"));
-    aaLayout->addWidget(fxaaHCTLabel, aaRow,0);
-
     fxaaHCT = new QComboBox();
     fxaaHCT->addItem("VisibleLimit", 0.03125);
     fxaaHCT->addItem("HigherQuality", 0.0625);
@@ -261,18 +258,14 @@ QvisRenderingWindow::CreateBasicPage()
     fxaaHCT->setCurrentIndex(1);
     connect(fxaaHCT, SIGNAL(currentIndexChanged(int)),
             this, SLOT(fxaaHCTChanged(int)));
-    aaLayout->addWidget(fxaaHCT, aaRow,1);
-    aaRow++;
+    fxaaRightLayout->addRow(fxaaHCTLabel, fxaaHCT);
 
     fxaaHCTCustomLabel = new QLabel(tr("Custom HCT value"));
-    aaLayout->addWidget(fxaaHCTCustomLabel,aaRow,0);
-
     fxaaHCTCustom = new QLineEdit("0.0625");
     fxaaHCTCustom->setValidator(dvfxaa);
     connect(fxaaHCTCustom, SIGNAL(editingFinished()),
             this, SLOT(fxaaHCTCustomChanged()));
-    aaLayout->addWidget(fxaaHCTCustom,aaRow,1);
-    aaRow++;
+    fxaaRightLayout->addRow(fxaaHCTCustomLabel, fxaaHCTCustom);
 
     // SubpixelBlendLimit default values and custom value widgets
     fxaaSBLLabel = new QLabel(tr("Subpixel blend limit"));
@@ -286,9 +279,6 @@ QvisRenderingWindow::CreateBasicPage()
            "SubpixelBlending = abs(lumC - lumAveNSWE) / (lumMaxCNSWE - lumMinCNSWE)\n"
            "This parameter sets an upper limit to the amount of subpixel\n"
            "blending to prevent the image from simply getting blurred.\n"));
-
-    aaLayout->addWidget(fxaaSBLLabel, aaRow,0);
-
     fxaaSBL = new QComboBox();
     fxaaSBL->addItem("Low", 0.5);
     fxaaSBL->addItem("Medium", 0.75);
@@ -298,18 +288,14 @@ QvisRenderingWindow::CreateBasicPage()
     fxaaSBL->setCurrentIndex(1);
     connect(fxaaSBL, SIGNAL(currentIndexChanged(int)),
             this, SLOT(fxaaSBLChanged(int)));
-    aaLayout->addWidget(fxaaSBL, aaRow,1);
-    aaRow++;
+    fxaaLeftLayout->addRow(fxaaSBLLabel, fxaaSBL);
 
     fxaaSBLCustomLabel = new QLabel(tr("Custom SBL value"));
-    aaLayout->addWidget(fxaaSBLCustomLabel,aaRow,0);
-
     fxaaSBLCustom = new QLineEdit("0.75");
     fxaaSBLCustom->setValidator(dvfxaa);
     connect(fxaaSBLCustom, SIGNAL(editingFinished()),
             this, SLOT(fxaaSBLCustomChanged()));
-    aaLayout->addWidget(fxaaSBLCustom,aaRow,1);
-    aaRow++;
+    fxaaLeftLayout->addRow(fxaaSBLCustomLabel, fxaaSBLCustom);
 
     // SubpixelContrastThreshold default values and custom value widgets
     fxaaSCTLabel = new QLabel(tr("Subpixel contrast threshold"));
@@ -318,9 +304,6 @@ QvisRenderingWindow::CreateBasicPage()
            "antialiasing to be applied.\n"
            "If SubpixelBlending is less than this threshold,\n"
            "no lowpass blending will occur.\n"));
-
-    aaLayout->addWidget(fxaaSCTLabel, aaRow,0);
-
     fxaaSCT = new QComboBox();
     fxaaSCT->addItem("Low", 0.5);
     fxaaSCT->addItem("Medium", 0.75);
@@ -330,18 +313,14 @@ QvisRenderingWindow::CreateBasicPage()
     fxaaSCT->setCurrentIndex(1);
     connect(fxaaSCT, SIGNAL(currentIndexChanged(int)),
             this, SLOT(fxaaSCTChanged(int)));
-    aaLayout->addWidget(fxaaSCT, aaRow,1);
-    aaRow++;
+    fxaaRightLayout->addRow(fxaaSCTLabel, fxaaSCT);
 
     fxaaSCTCustomLabel = new QLabel(tr("Custom SCT value"));
-    aaLayout->addWidget(fxaaSCTCustomLabel,aaRow,0);
-
     fxaaSCTCustom = new QLineEdit("0.75");
     fxaaSCTCustom->setValidator(dvfxaa);
     connect(fxaaSCTCustom, SIGNAL(editingFinished()),
             this, SLOT(fxaaSCTCustomChanged()));
-    aaLayout->addWidget(fxaaSCTCustom,aaRow,1);
-    aaRow++;
+    fxaaRightLayout->addRow(fxaaSCTCustomLabel, fxaaSCTCustom);
 
     // UseHighQualityEndpoint default values and custom value widgets
     fxaaHQE = new QCheckBox(tr("Use high quality endpoints"));
@@ -354,11 +333,9 @@ QvisRenderingWindow::CreateBasicPage()
             "If false, the edge endpoint algorithm proposed by NVIDIA will\n"
             "be used. This algorithm is faster (fewer lookups), but will \n"
             "fail to detect endpoints of single pixel edge steps.\n"));
-
     connect(fxaaHQE, SIGNAL(toggled(bool)),
             this, SLOT(fxaaHQEToggled(bool)));
-    aaLayout->addWidget(fxaaHQE, aaRow, 0);
-    aaRow++;
+    fxaaLeftLayout->addRow(fxaaHQE);
 
     // EndpointSearchIterations default values and custom value widgets
     fxaaESILabel = new QLabel(tr("Endpoint search iterations"));
@@ -370,17 +347,68 @@ QvisRenderingWindow::CreateBasicPage()
            "The default value is 12, which will resolve endpoints of\n"
            "edges < 25 pixels long (2 * 12 + 1).\n"));
 
-    aaLayout->addWidget(fxaaESILabel,aaRow,0);
-
     QIntValidator *ivfxaa = new QIntValidator(0,10000);
     fxaaESI = new QLineEdit("12");
     fxaaESI->setValidator(ivfxaa);
     connect(fxaaESI, SIGNAL(editingFinished()),
             this, SLOT(fxaaESIChanged()));
-    aaLayout->addWidget(fxaaESI,aaRow,1);
-    aaRow++;
+    fxaaRightLayout->addRow(fxaaESILabel, fxaaESI);
 
+    //
+    // Create the depthPeeling widgets.
+    //
+    depthPeeling = new QGroupBox(tr("Depth Peeling"));
+    depthPeeling->setCheckable(true);
+    depthPeeling->setChecked(false);
+    depthPeeling->setToolTip(
+        tr("Enable depth peeling for order independent rendering of\n"
+           "transparent geometry. When not using depth peeling a camera\n"
+           "order sort is used. If you have a GPU this is usualy a win\n"
+           "with OSMesa it will depend on the version and build options\n"
+           "with VisIt's current Mesa 7.10 it is *very* slow.\n"));
+    connect(depthPeeling, SIGNAL(toggled(bool)),
+            this, SLOT(updateDepthPeeling(void)));
+    basicLayout->addWidget(depthPeeling);
+
+    QFormLayout *dpLayout = new QFormLayout();
+    dpLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
+    depthPeeling->setLayout(dpLayout);
+
+    QLabel *occlusionRatioLabel = new QLabel(tr("Occlusion ratio"));
+    occlusionRatioLabel->setToolTip(
+        tr("When greater than zero early terminations is enabled and\n"
+           "the algorithm will stop doing peels when fewer than this\n"
+           "fraction of pixels changed in the last peel. Thus one sacrifices\n"
+           "accuracy for speed. When set to zero the maximum number of peels\n"
+           "will be made which, when enough peels are requested, ensures a\n"
+           "correct result."));
+    occlusionRatioLabel->setEnabled(false);
+    occlusionRatio = new QLineEdit("0.01");
+    QDoubleValidator *dv0 = new QDoubleValidator(0.0, 0.5, 4, 0);
+    occlusionRatio->setValidator(dv0);
+    occlusionRatio->setEnabled(false);
+    connect(occlusionRatio, SIGNAL(textChanged(const QString &)),
+            this, SLOT(updateDepthPeeling(void)));
+
+    dpLayout->addRow(occlusionRatioLabel, occlusionRatio);
+
+    QLabel *numberOfPeelsLabel = new QLabel(tr("Max number of Peels"));
+    numberOfPeelsLabel->setToolTip(
+        tr("Sets the maximum number of peels to use. Each peel renders the\n"
+           "next nearest surface for a given fragment. You may need to\n"
+           "increase the number of peels for very complex scenes."));
+    numberOfPeelsLabel->setEnabled(false);
+    numberOfPeels = new QLineEdit("32");
+    QIntValidator *iv4 = new QIntValidator(1,1000);
+    numberOfPeels->setValidator(iv4);
+    numberOfPeels->setEnabled(false);
+    connect(numberOfPeels, SIGNAL(textChanged(const QString &)),
+            this, SLOT(updateDepthPeeling(void)));
+    dpLayout->addRow(numberOfPeelsLabel, numberOfPeels);
+
+    //
     // create the order compositing widgets
+    //
     QGroupBox *compositeSettings = new QGroupBox(tr("Compositer Settings"));
     compositeSettings->setCheckable(false);
     basicLayout->addWidget(compositeSettings);
@@ -400,7 +428,6 @@ QvisRenderingWindow::CreateBasicPage()
     connect(orderedComposite, SIGNAL(toggled(bool)),
             this, SLOT(updateOrderedComposite()));
     compositeLayout->addRow(orderedComposite);
-
 
     // create the depth and alpha compositing widgets
     QLabel *depthCompositeThreadsLabel = new QLabel(tr("Depth Compositer Threads"));
@@ -455,58 +482,9 @@ QvisRenderingWindow::CreateBasicPage()
 
     compositeLayout->addRow(alphaCompositeBlockingLabel, alphaCompositeBlocking);
 
-    // Create the depthPeeling widgets.
-    depthPeeling = new QGroupBox(tr("Depth Peeling"));
-    depthPeeling->setCheckable(true);
-    depthPeeling->setChecked(false);
-    depthPeeling->setToolTip(
-        tr("Enable depth peeling for order independent rendering of\n"
-           "transparent geometry. When not using depth peeling a camera\n"
-           "order sort is used. If you have a GPU this is usualy a win\n"
-           "with OSMesa it will depend on the version and build options\n"
-           "with VisIt's current Mesa 7.10 it is *very* slow.\n"));
-    connect(depthPeeling, SIGNAL(toggled(bool)),
-            this, SLOT(updateDepthPeeling(void)));
-    basicLayout->addWidget(depthPeeling);
-
-    QFormLayout *dpLayout = new QFormLayout();
-    dpLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
-    depthPeeling->setLayout(dpLayout);
-
-    QLabel *occlusionRatioLabel = new QLabel(tr("Occlusion ratio"));
-    occlusionRatioLabel->setToolTip(
-        tr("When greater than zero early terminations is enabled and\n"
-           "the algorithm will stop doing peels when fewer than this\n"
-           "fraction of pixels changed in the last peel. Thus one sacrifices\n"
-           "accuracy for speed. When set to zero the maximum number of peels\n"
-           "will be made which, when enough peels are requested, ensures a\n"
-           "correct result."));
-    occlusionRatioLabel->setEnabled(false);
-    occlusionRatio = new QLineEdit("0.01");
-    QDoubleValidator *dv0 = new QDoubleValidator(0.0, 0.5, 4, 0);
-    occlusionRatio->setValidator(dv0);
-    occlusionRatio->setEnabled(false);
-    connect(occlusionRatio, SIGNAL(textChanged(const QString &)),
-            this, SLOT(updateDepthPeeling(void)));
-
-    dpLayout->addRow(occlusionRatioLabel, occlusionRatio);
-
-    QLabel *numberOfPeelsLabel = new QLabel(tr("Max number of Peels"));
-    numberOfPeelsLabel->setToolTip(
-        tr("Sets the maximum number of peels to use. Each peel renders the\n"
-           "next nearest surface for a given fragment. You may need to\n"
-           "increase the number of peels for very complex scenes."));
-    numberOfPeelsLabel->setEnabled(false);
-    numberOfPeels = new QLineEdit("32");
-    QIntValidator *iv4 = new QIntValidator(1,1000);
-    numberOfPeels->setValidator(iv4);
-    numberOfPeels->setEnabled(false);
-    connect(numberOfPeels, SIGNAL(textChanged(const QString &)),
-            this, SLOT(updateDepthPeeling(void)));
-    dpLayout->addRow(numberOfPeelsLabel, numberOfPeels);
-
-
+    //
     // Create the multi resolution widgets.
+    //
     multiresolutionModeToggle = new QGroupBox(tr("Multi resolution for 2d AMR data"));
     multiresolutionModeToggle->setCheckable(true);
     multiresolutionModeToggle->setChecked(false);
@@ -525,7 +503,9 @@ QvisRenderingWindow::CreateBasicPage()
 
     mrLayout->addRow(multiresolutionSmallestCellLabel, multiresolutionSmallestCellLineEdit);
 
+    //
     // Create the surface rep widgets.
+    //
     QGroupBox *drawObj = new QGroupBox(tr("Draw objects as"));
     drawObj->setCheckable(false);
     basicLayout->addWidget(drawObj);
@@ -549,7 +529,9 @@ QvisRenderingWindow::CreateBasicPage()
     objLayout->addWidget(points, 0, 2);
     objLayout->setSpacing(0);
 
+    //
     // Create the stereo widgets.
+    //
     stereoToggle = new QGroupBox(tr("Stereo"));
     stereoToggle->setCheckable(true);
     stereoToggle->setChecked(false);
@@ -579,7 +561,9 @@ QvisRenderingWindow::CreateBasicPage()
     stereoLayout->addWidget(redgreen, 1,1);
     stereoLayout->setSpacing(0);
 
+    //
     // Create the specular lighting options
+    //
     specularToggle = new QGroupBox(tr("Specular lighting"));
     specularToggle->setCheckable(true);
     specularToggle->setChecked(false);
