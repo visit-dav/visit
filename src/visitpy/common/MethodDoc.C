@@ -89,6 +89,7 @@ const char *visit_AddArgument_doc =
 "\n"
 "import visit_launcher\n"
 "visit_launcher.AddArgument(\"-nowin\") # Add the -nowin argument to the viewer.\n"
+"visit_launcher.Launch()\n"
 "import visit\n"
 ;
 const char *visit_AddMachineProfile_doc = 
