@@ -572,7 +572,6 @@ if(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
                 PATTERN "visit.*" EXCLUDE
                 PATTERN "visitmodule.*" EXCLUDE
                 PATTERN "visit_writer.*" EXCLUDE
-                PATTERN "PySide" EXCLUDE
                 PATTERN "Python-2.6-py2.6.egg-info" EXCLUDE)
         endif()
 

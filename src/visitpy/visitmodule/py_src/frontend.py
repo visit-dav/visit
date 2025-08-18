@@ -62,8 +62,6 @@ from os.path import join as pjoin
 __all__ = ["Launch",
            "LaunchNowin",
            "LaunchWithProxy",
-           "LaunchPySide",
-           "LaunchPyQt",
            "AddArgument","SetDebugLevel","GetDebugLevel"]
 
 def GetVDir(vdir):
@@ -81,17 +79,6 @@ def LaunchNowin(vdir=None):
 
 def LaunchWithProxy(vdir=None,proxy=None):
     return VisItModuleState.launch(GetVDir(vdir),proxy)
-
-def LaunchPySide(vdir=None,args=None):
-    VisItModuleState.add_argument("-pyuiembedded")
-    ret = visit_utils.builtin.pyside_support.LaunchPyViewer(args)
-    return VisItModuleState.launch(GetVDir(vdir),ret.GetViewerProxyPtr())
-
-def LaunchPyQt(vdir=None,args=None):
-    VisItModuleState.add_argument("-pyuiembedded")
-    from . import pyqt_support
-    ret = visit_utils.builtin.pyqt_support.LaunchPyViewer(args)
-    return VisItModuleState.launch(GetVDir(vdir),ret.GetViewerProxyPtr())
 
 def AddArgument(arg):
     return VisItModuleState.add_argument(arg)

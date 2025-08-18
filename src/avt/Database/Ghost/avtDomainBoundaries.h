@@ -63,6 +63,9 @@ class avtMaterial;
 //    Kevin Griffin, Tue Apr 21 17:41:51 PDT 2015
 //    Removed the Exchange*Vector methods and replaced with ExchangeVector
 //    so that the right method is called based on the data type like ExchangeScalar.
+// 
+//    Justin Privitera, Thu Aug 14 11:13:28 PDT 2025
+//    Combined ExchangeScalar() and ExchangeVector() into ExchangeVar().
 //
 // ****************************************************************************
 
@@ -75,14 +78,11 @@ class DATABASE_API avtDomainBoundaries
     virtual std::vector<vtkDataSet*>       ExchangeMesh(std::vector<int>       domainNum,
                                                std::vector<vtkDataSet*>   meshes)  =0;
 
-    virtual std::vector<vtkDataArray*>     ExchangeScalar(std::vector<int>     domainNum,
-                                               bool                  isPointData,
-                                               std::vector<vtkDataArray*> scalars) =0;
+    virtual std::vector<vtkDataArray*>     ExchangeVar(
+                                              std::vector<int>           domainNum,
+                                              bool                       isPointData,
+                                              std::vector<vtkDataArray*> values) =0;
     
-    virtual std::vector<vtkDataArray*>     ExchangeVector(std::vector<int> domainNum,
-                                                               bool                   isPointData,
-                                                               std::vector<vtkDataArray*>  vectors) =0;
-
     virtual std::vector<avtMaterial*>      ExchangeMaterial(std::vector<int>   domainNum,
                                               std::vector<avtMaterial*>   mats)    =0;
 
