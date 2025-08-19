@@ -49,20 +49,22 @@
 #  For Windows, don't add launch args to vcmd passed to __read_visit_env,
 #  instead add them to the pcmd constructed in that function.
 #
+#  Cyrus Harrison, Tue Jul 15 12:15:12 PDT 2025
+#  Refactor to support visit_launcher as separate frontend module
+#
 ###############################################################################
 
 import sys
 import subprocess
 import os
-import imp
-import visit_utils
 
 from os.path import join as pjoin
 
 __all__ = ["Launch",
            "LaunchNowin",
-           "LaunchWithProxy",
-           "AddArgument","SetDebugLevel","GetDebugLevel"]
+           "AddArgument",
+           "SetDebugLevel",
+           "GetDebugLevel"]
 
 def GetVDir(vdir):
     if sys.platform.startswith("win") and vdir==None and 'VISITLOC' in os.environ:
@@ -76,9 +78,6 @@ def Launch(vdir=None):
 def LaunchNowin(vdir=None):
     VisItModuleState.add_argument("-nowin")
     return VisItModuleState.launch(GetVDir(vdir))
-
-def LaunchWithProxy(vdir=None,proxy=None):
-    return VisItModuleState.launch(GetVDir(vdir),proxy)
 
 def AddArgument(arg):
     return VisItModuleState.add_argument(arg)
@@ -96,7 +95,7 @@ class VisItModuleState(object):
     debug_lvl   = None
     launch_args = []
     @classmethod
-    def launch(cls,vdir=None,proxy=None):
+    def launch(cls,vdir=None):
         launched = False
         try:
             if sys.platform.startswith("win"):
@@ -112,43 +111,31 @@ class VisItModuleState(object):
             for k in list(env.keys()):
                 if k != "LIBPATH" and k != "VISITARCHHOME":
                     os.environ[k] = env[k]
-            mod = cls.__load_visitmodule(mod)
+            cls.__prime_visitmodule(mod)
+            import visit
             for arg in cls.launch_args:
-                mod.AddArgument(arg)
+                visit.AddArgument(arg)
             if not cls.debug_lvl is None:
-                mod.SetDebugLevel(str(cls.debug_lvl))
+                visit.SetDebugLevel(str(cls.debug_lvl))
             vcmd = cls.__visit_cmd(vdir,[])
-            # this will add functions to the current
-            # 'visit' module
-            if proxy is not None:
-                mod.InitializeViewerProxy(proxy)
-            mod.Launch(vcmd)
-
-            # if SetDebugLevel exists in __main__, then the user did
-            # did "from visit import *". the Launch() added functions to
-            # the 'visit' module so we need to copy over the functions
-            # from the 'visit' module into __main__. We check for
-            # the SetDebugLevel function because it's in the frontend
-            # 'visit' module and because whichever way we import the 
-            # 'visit' module, there seems to be a 'visit' entry in
-            # __main__. 
-            main_mod = __import__("__main__")
-            if "SetDebugLevel" in list(main_mod.__dict__.keys()):
-                for k,v in list(mod.__dict__.items()):
-                    # avoid hidden module vars
-                    if not k.startswith("__"):
-                        main_mod.__dict__[k] = v
-                # Tell the VisIt module that it uses a local namespace,
-                # which helps it get command recording right.
-                mod.LocalNameSpace()
+            visit.Launch(vcmd)
             launched = True
         except Exception as e:
             print("ERROR: %s" % e)
         return launched
     @classmethod
-    def __load_visitmodule(cls,mod_file):
+    def __prime_visitmodule(cls,mod_file):
         mod_path = os.path.split(mod_file)[0]
-        mfile, mpath, mdes =  imp.find_module('visitmodule',[mod_path ])
+        visit_site_pkgs_dir = os.path.split(mod_path)[0]
+        if not os.path.isdir(pjoin(visit_site_pkgs_dir,"visit")):
+            print("ERROR: visit module is missing from %s" %visit_site_pkgs_dir)
+        sys.path.insert(0,visit_site_pkgs_dir)
+
+        #
+        # # for debugging
+        # print(sys.path)
+        #
+
         # If VisIt is installed, preemptively try to dlopen the libraries 
         # upon which the visitmodule depends. During package creation, VisIt
         # libraries get their rpath stripped so the path to the various
@@ -181,13 +168,6 @@ class VisItModuleState(object):
             for lib in libs:
                 libfile = pjoin(libdir,lib + ext)
                 a = ctypes.cdll.LoadLibrary(libfile)
-
-        res = None
-        try:
-            res = imp.load_module("visit", mfile, mpath, mdes)
-        finally:
-            mfile.close()
-        return res
     @classmethod
     def add_argument(cls,arg):
         cls.launch_args.append(arg)

@@ -4,15 +4,10 @@
 
 ###############################################################################
 # file: setup.py
-# Purpose: disutils setup for the visit module.
+# Purpose: python setup for the visit module.
 #
 # Programmer: Cyrus Harrison
-# Creation: Tue Apr  3 13:40:18 PDT
-#
-#
-# Modifications:
-#  Cyrus Harrison, Fri Feb 16 13:41:04 PST 2024
-#  Move to use setuptools.
+# Creation: Wed Jul 16 07:52:20 PDT 2025
 #
 ###############################################################################
 
