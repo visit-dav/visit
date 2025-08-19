@@ -3,7 +3,7 @@ Function: RCT2Float
 Declaration: float RCTAsFloat() const;
 Definition:
 float
-FXAAOptions::RCTAsFloat() const const
+FXAAOptions::RCTAsFloat() const
 {
     if(relativeContrastThreshold == 0) // TooLittle
         return 0.3333f;

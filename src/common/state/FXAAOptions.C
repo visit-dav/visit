@@ -885,7 +885,7 @@ FXAAOptions::GetEndpointSearchIterations() const
 ///////////////////////////////////////////////////////////////////////////////
 
 float
-FXAAOptions::RCTAsFloat() const const
+FXAAOptions::RCTAsFloat() const
 {
     if(relativeContrastThreshold == 0) // TooLittle
         return 0.3333f;
