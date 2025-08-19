@@ -180,10 +180,11 @@ QvisRenderingWindow::CreateBasicPage()
     int aaRow= 0;
     QLabel *aaLabel = new QLabel(tr("MSAA will be disabled if Depth Peeling also selected."), basicOptions);
     aaLayout->addWidget(aaLabel, aaRow, 0, 1, 3);
+    aaRow++;
+
     antialiasingMode = new QButtonGroup(basicOptions);
     connect(antialiasingMode, SIGNAL(idClicked(int)),
             this, SLOT(antialiasingChanged(int)));
-    aaRow++;
 
     QRadioButton *aaNone = new QRadioButton(tr("None"), basicOptions);
     antialiasingMode->addButton(aaNone, 0);
@@ -382,11 +383,9 @@ QvisRenderingWindow::CreateBasicPage()
            "accuracy for speed. When set to zero the maximum number of peels\n"
            "will be made which, when enough peels are requested, ensures a\n"
            "correct result."));
-    occlusionRatioLabel->setEnabled(false);
     occlusionRatio = new QLineEdit("0.01");
     QDoubleValidator *dv0 = new QDoubleValidator(0.0, 0.5, 4, 0);
     occlusionRatio->setValidator(dv0);
-    occlusionRatio->setEnabled(false);
     connect(occlusionRatio, SIGNAL(textChanged(const QString &)),
             this, SLOT(updateDepthPeeling(void)));
 
@@ -397,11 +396,9 @@ QvisRenderingWindow::CreateBasicPage()
         tr("Sets the maximum number of peels to use. Each peel renders the\n"
            "next nearest surface for a given fragment. You may need to\n"
            "increase the number of peels for very complex scenes."));
-    numberOfPeelsLabel->setEnabled(false);
     numberOfPeels = new QLineEdit("32");
     QIntValidator *iv4 = new QIntValidator(1,1000);
     numberOfPeels->setValidator(iv4);
-    numberOfPeels->setEnabled(false);
     connect(numberOfPeels, SIGNAL(textChanged(const QString &)),
             this, SLOT(updateDepthPeeling(void)));
     dpLayout->addRow(numberOfPeelsLabel, numberOfPeels);
@@ -2159,16 +2156,32 @@ QvisRenderingWindow::fxaaESIChanged()
 // Creation:   Sun Sep  6 08:42:01 PDT 2015
 //
 // Modifications:
-//
+//   Kathleen Biagas, Tue Aug 19, 2025
+//   Turn of MSAA mode if depth peeling being enabled.
+//   Set enabled state of MSAA button dependent on depthPeeling state.
+// 
 // ****************************************************************************
 
 void
 QvisRenderingWindow::updateDepthPeeling()
 {
+    bool doUpdate = false;
+    // has depthPeeling toggle changed
+    if (depthPeeling->isChecked() && !renderAtts->GetDepthPeeling())
+    {
+        if (renderAtts->GetAntialiasing() == RenderingAttributes::MSAA)
+        {
+            Warning(tr("MSAA is incompatible with Depth Peeling. Antialiasing will be set to None. You may want to try FXAA."));
+            renderAtts->SetAntialiasing(RenderingAttributes::None);
+            doUpdate = true;
+        }
+    }
+    // enable/disable MSAA button based on state of depthPeeling.
+    antialiasingMode->button(1)->setEnabled(!depthPeeling->isChecked());
     renderAtts->SetDepthPeeling(depthPeeling->isChecked());
     renderAtts->SetOcclusionRatio(occlusionRatio->text().toDouble());
     renderAtts->SetNumberOfPeels(numberOfPeels->text().toInt());
-    SetUpdate(false);
+    SetUpdate(doUpdate);
     Apply();
 }
 
