@@ -41,6 +41,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li><a href="https://matplotlib.org/cmocean/">cmocean</a> color maps were added.</li>
   <li>Added '-python-log-file' command line option to control the name of the file used to log python methods (default='visitlog.py').</li>
   <li>Add individual stress components to the PVLD plugin metadata.</li>
+  <li>Refactored how to import visit into a stand alone python module. This is now done via the 'visit_launcher' module, avoiding module namespace issues.</li>
 </ul>
 
 <a name="Advanced_features"></a>
@@ -58,6 +59,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Disabled rich text paste support in the Commands Window and Expressions Editor. Avoids battles with cut and pasted text from editors that embed formatting, such as vscode.</li>
   <li>Fixed a bug causing Color Table Window tags to be duplicated when loading a session file.</li>
   <li>Save session file now takes existing session file names into account to avoid naming collisions.</li>
+  <li>Fixed a bug where bottom of main GUI window would be hidden behind the Windows taskbar.</li>
 </ul>
 
 <a name="CLI_changes"></a>
@@ -79,6 +81,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The Blueprint writer now supports YAML and JSON exports.</li>
   <li>Fixed a bug in the Blueprint reader causing unstructured points topology fields to display incorrectly.</li>
   <li>Fixed a bug in the Blueprint reader causing successful reading of Sidre data to trigger the failure case, leading to significantly degraded performance.</li>
+  <li>The VisItXdmf reader has been removed, it hasn't been maintained. The Xdmf reader that utilizes the Xdmf library is still available.</li>
 </ul>
 
 <a name="Plot_changes"></a>

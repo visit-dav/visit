@@ -1,4 +1,4 @@
-"""Main init for the pyside_visithook module."""
+"""Main init for the visit_launcher module."""
 
 # Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
 # Project developers.  See the top-level LICENSE file for dates and other
@@ -6,7 +6,7 @@
 
 ###############################################################################
 # file: __init__.py
-# Purpose: Main init for the pyside_visithook module.
+# Purpose: Main init for the visit_launcher module
 #
 # Programmer: Cyrus Harrison
 # Creation: Tue Apr  3 13:40:18 PDT
