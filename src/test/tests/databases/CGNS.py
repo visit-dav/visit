@@ -31,7 +31,12 @@
 #    Alister Maguire, Tue Mar  2 10:29:37 PST 2021
 #    Added tests for NGon and NFace elements.
 #
+#    Kathleen Biagas, Tue Aug 19, 2025
+#    Use FXAA for anti-aliasing as MSAA doesn't work in the
+#    vtkOSOpenGLRenderWindow that is used for testing.
+#
 # ----------------------------------------------------------------------------
+
 RequiredDatabasePlugin("CGNS")
 
 def test0(datapath):

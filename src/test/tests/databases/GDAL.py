@@ -10,6 +10,9 @@
 #  Date:       Thu Sep 8 16:35:17 PST 2005
 #
 #  Modifications:
+#    Kathleen Biagas, Tue Aug 19, 2025
+#    Antialiasing is now multi-modal. Use FXAA for antialiasing as MSAA
+#    doesn't work in the vtkOSOpenGLRenderWindow that is used for testing.
 #
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("GDAL")
