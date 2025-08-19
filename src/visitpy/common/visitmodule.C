@@ -20185,12 +20185,12 @@ static struct PyModuleDef visitmodule_def =
 #if defined(IS_PY3K)
 //---------------------------------------------------------------------------//
 //---------------------------------------------------------------------------//
-PyObject *PyInit_visit()
+PyMODINIT_FUNC PyInit_visit()
 {
     return initialize_visit_python_module();
 }
 //---------------------------------------------------------------------------//
-PyObject * PyInit_visitmodule(void)
+PyMODINIT_FUNC PyInit_visitmodule(void)
 {
     return initialize_visit_python_module();
 }
@@ -20570,11 +20570,6 @@ Synchronize()
         syncAtts->SetSyncTag(syncCount);
         syncAtts->Notify();
         syncAtts->SetSyncTag(-1);
-
-        /// should only run once?
-        while(syncCount != syncAtts->GetSyncTag()) {
-            PyRun_SimpleString("visit_utils.builtin.pyside_support.__VisIt_PySide_Idle_Hook__()");
-        }
         syncCount++;
         return 0;
     }
