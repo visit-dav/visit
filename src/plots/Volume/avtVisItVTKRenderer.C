@@ -646,9 +646,9 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
 #endif
     }
 #ifdef HAVE_ANARI
-    else if(m_anariEnabled != m_atts.GetAnariRendering())
+    else if(m_anariEnabled != (m_atts.GetRendererType() == VolumeAttributes::ANARI))
     {
-        m_anariEnabled = m_atts.GetAnariRendering();
+        m_anariEnabled = (m_atts.GetRendererType() == VolumeAttributes::ANARI);
 
         if (m_volumeMapper != nullptr)
         {

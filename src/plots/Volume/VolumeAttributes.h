@@ -34,7 +34,8 @@ public:
         Parallel,
         Composite,
         Integration,
-        SLIVR
+        SLIVR,
+        ANARI
     };
     enum ResampleType
     {

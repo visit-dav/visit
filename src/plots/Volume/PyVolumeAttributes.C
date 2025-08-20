@@ -246,7 +246,8 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix, co
     str += tmpStr;
     snprintf(tmpStr, 1000, "%ssamplesPerRay = %d\n", prefix, atts->GetSamplesPerRay());
     str += tmpStr;
-    const char *rendererType_names = "Serial, Parallel, Composite, Integration, SLIVR";
+    const char *rendererType_names = "Serial, Parallel, Composite, Integration, SLIVR, "
+        "ANARI";
     switch (atts->GetRendererType())
     {
       case VolumeAttributes::Serial:
@@ -267,6 +268,10 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix, co
           break;
       case VolumeAttributes::SLIVR:
           snprintf(tmpStr, 1000, "%srendererType = %sSLIVR  # %s\n", prefix, prefix, rendererType_names);
+          str += tmpStr;
+          break;
+      case VolumeAttributes::ANARI:
+          snprintf(tmpStr, 1000, "%srendererType = %sANARI  # %s\n", prefix, prefix, rendererType_names);
           str += tmpStr;
           break;
       default:
@@ -2581,17 +2586,18 @@ VolumeAttributes_SetRendererType(PyObject *self, PyObject *args)
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
 
-    if (cval < 0 || cval >= 5)
+    if (cval < 0 || cval >= 6)
     {
         std::stringstream ss;
         ss << "An invalid rendererType value was given." << std::endl;
-        ss << "Valid values are in the range [0,4]." << std::endl;
+        ss << "Valid values are in the range [0,5]." << std::endl;
         ss << "You can also use the following symbolic names:";
         ss << " Serial";
         ss << ", Parallel";
         ss << ", Composite";
         ss << ", Integration";
         ss << ", SLIVR";
+        ss << ", ANARI";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -3893,6 +3899,8 @@ PyVolumeAttributes_getattro(PyObject *self, PyObject *attr_name)
         return PyInt_FromLong(long(VolumeAttributes::Integration));
     if(strcmp(name, "SLIVR") == 0)
         return PyInt_FromLong(long(VolumeAttributes::SLIVR));
+    if(strcmp(name, "ANARI") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::ANARI));
 
     if(strcmp(name, "gradientType") == 0)
         return VolumeAttributes_GetGradientType(self, NULL);

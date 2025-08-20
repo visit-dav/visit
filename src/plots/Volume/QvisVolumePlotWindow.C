@@ -1075,11 +1075,6 @@ void QvisVolumePlotWindow::EnableDefaultGroup()
 
     osprayGroup->setVisible(true);
     osprayGroup->setEnabled(true);
-    
-    #ifdef HAVE_ANARI
-    anariVolumeWidget->setVisible(true);
-    anariVolumeWidget->setEnabled(true);
-    #endif
 }
 
 void QvisVolumePlotWindow::UpdateSamplingGroup()
@@ -1097,6 +1092,7 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
     tfTabs->setTabEnabled(1, true);
 
     //lighting and material properties group, enabled for all but RayCastingIntegration
+    lightMaterialPropGroup->setVisible(true);
     lightMaterialPropGroup->setEnabled(true);
     lightingToggle->setEnabled(true);
 
@@ -1128,6 +1124,7 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
     {
     case VolumeAttributes::Serial:
         EnableDefaultGroup();
+        lowGradientGroup->setVisible(false);
         UpdateLowGradientGroup(false);
         centeredDiffButton->setEnabled(false);
         sobelButton->setEnabled(false);
@@ -1141,6 +1138,7 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
     case VolumeAttributes::Composite:
         resampleGroup->setEnabled(false);
         raycastingGroup->setVisible(true);
+        lowGradientGroup->setVisible(true);
         UpdateLowGradientGroup(true);
         materialProperties->setEnabled(volumeAtts->GetSampling()==VolumeAttributes::Trilinear && volumeAtts->GetLightingFlag());
         EnableSamplingMethods(true);
@@ -1151,8 +1149,9 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
     case VolumeAttributes::Integration:
         resampleGroup->setEnabled(false);
         raycastingGroup->setVisible(true);
+        lowGradientGroup->setVisible(false);
         UpdateLowGradientGroup(false);
-        lightMaterialPropGroup->setEnabled(false);
+        lightMaterialPropGroup->setVisible(false);
         colorWidgetGroup->setEnabled(false);
         opacityWidgetGroup->setEnabled(false);
         centeredDiffButton->setEnabled(false);
@@ -1167,6 +1166,7 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
 #ifdef VISIT_SLIVR
     case VolumeAttributes::SLIVR:
         raycastingGroup->setVisible(true);
+        lowGradientGroup->setVisible(false);
         UpdateLowGradientGroup(false);
         materialProperties->setEnabled(volumeAtts->GetLightingFlag());
         EnableSamplingMethods(false);
@@ -1179,16 +1179,26 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
         sobelButton->setEnabled(false);
         break;
 #endif
+#ifdef HAVE_ANARI
+    case VolumeAttributes::ANARI:
+        raycastingGroup->setVisible(false);
+        lowGradientGroup->setVisible(false);
+        UpdateLowGradientGroup(false);
+        lightMaterialPropGroup->setVisible(false);
+        methodsGroup->setVisible(false);
+        
+        smoothDataToggle->setEnabled(false);
+        
+        anariVolumeWidget->setVisible(true);
+        anariVolumeWidget->setEnabled(true);
+        break;
+#endif 
 
     case VolumeAttributes::Parallel:
         resampleGroup->setVisible(true);
         resampleGroup->setEnabled(true);
         osprayGroup->setVisible(true);
         osprayGroup->setEnabled(true);
-        #ifdef HAVE_ANARI
-        anariVolumeWidget->setVisible(true);
-        anariVolumeWidget->setEnabled(true);
-        #endif
 
         // raycastingGroup->setVisible(true);
         EnableSamplingMethods(false);
@@ -1201,7 +1211,6 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
         methodsGroup->setVisible(false);
         centeredDiffButton->setEnabled(false);
         sobelButton->setEnabled(false);
-        lightingToggle->setEnabled(true);
         materialProperties->setEnabled(volumeAtts->GetLightingFlag());
 
         lowGradientGroup->setVisible(false);
@@ -1247,6 +1256,9 @@ QvisVolumePlotWindow::CreateRendererOptionsGroup(int maxWidth)
     rendererTypesComboBox->addItem(tr("Integration (grey scale)"));
 #ifdef VISIT_SLIVR
     rendererTypesComboBox->addItem(tr("SLIVR"));
+#endif
+#ifdef HAVE_ANARI
+    rendererTypesComboBox->addItem(tr("ANARI"));
 #endif
     connect(rendererTypesComboBox, SIGNAL(activated(int)),
             this, SLOT(rendererTypeChanged(int)));
@@ -2040,6 +2052,18 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             else if (volumeAtts->GetRendererType() == VolumeAttributes::SLIVR)
             {
                 rendererTypesComboBox->setCurrentIndex(4);
+            }
+#endif
+#ifdef HAVE_ANARI
+            else if (volumeAtts->GetRendererType() == VolumeAttributes::ANARI)
+            {
+                int currentIdx = 4;
+                
+                #ifdef VISIT_SLIVR
+                    ++currentIdx;
+                #endif
+                
+                rendererTypesComboBox->setCurrentIndex(currentIdx);
             }
 #endif
 
@@ -3955,6 +3979,15 @@ QvisVolumePlotWindow::rendererTypeChanged(int val)
 #ifdef VISIT_SLIVR
       case 4:
         volumeAtts->SetRendererType(VolumeAttributes::SLIVR);
+        break;
+#endif
+#if defined(HAVE_ANARI) && !defined(VISIT_SLIVR)
+      case 4:
+        volumeAtts->SetRendererType(VolumeAttributes::ANARI);
+        break;
+#elif defined(HAVE_ANARI)
+      case 5:
+        volumeAtts->SetRendererType(VolumeAttributes::ANARI);
         break;
 #endif
       default:

@@ -56,6 +56,7 @@
         Composite
         Integration
         SLIVR
+        ANARI
       </Enum>
       <Enum name="ResampleType">
         NoResampling

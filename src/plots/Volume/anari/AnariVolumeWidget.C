@@ -1036,7 +1036,7 @@ AnariVolumeWidget::UpdateUSDParameters(const stringVector &params)
 //   Sets the check state of the ANARI rendering group box.
 //
 // Arguments:
-//   val    If true, surface rendering will be done by an ANARI back-end
+//   val    If true, volume rendering will be done by an ANARI back-end
 //          renderer, otherwise, the default rendering is used.
 //
 // Programmer: Kevin Griffin
@@ -1075,6 +1075,12 @@ void
 AnariVolumeWidget::renderingToggled(bool val)
 {
     volumeAttributes->SetAnariRendering(val);
+    
+    if(!val)
+    {
+        volumeAttributes->SetRendererType(VolumeAttributes::Serial);
+    }
+    
     renderingWindow->SetApply(false);
     
     if(val) 

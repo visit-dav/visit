@@ -36,6 +36,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     public final static int RENDERER_COMPOSITE = 2;
     public final static int RENDERER_INTEGRATION = 3;
     public final static int RENDERER_SLIVR = 4;
+    public final static int RENDERER_ANARI = 5;
 
     public final static int RESAMPLETYPE_NORESAMPLING = 0;
     public final static int RESAMPLETYPE_ONLYIFREQUIRED = 1;
@@ -1112,6 +1113,8 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
             str = str + "RENDERER_INTEGRATION";
         if(rendererType == RENDERER_SLIVR)
             str = str + "RENDERER_SLIVR";
+        if(rendererType == RENDERER_ANARI)
+            str = str + "RENDERER_ANARI";
         str = str + "\n";
         str = str + indent + "gradientType = ";
         if(gradientType == GRADIENTTYPE_CENTEREDDIFFERENCES)
