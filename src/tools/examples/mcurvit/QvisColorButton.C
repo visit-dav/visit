@@ -384,6 +384,11 @@ QvisColorButton::buttonColor() const
 //   Kathleen Biagas, Wed Apr  5 13:04:35 PDT 2023
 //   Replace obosolete desktop() with primaryScreen().
 //
+//   Kathleen Biagas, Mon Aug 18, 2025 
+//   Replace 'primaryScreen()->geometry()' with
+//   'primaryScreen()->availableGeometry()' since the latter takes into
+//   account window manager reserved space like the Windows taskbar. 
+//
 // ****************************************************************************
 
 void
@@ -421,14 +426,14 @@ QvisColorButton::popupPressed()
         // Fix the X dimension.
         if(menuX < 0)
            menuX = 0;
-        else if(menuX + menuW > QApplication::primaryScreen()->geometry().width())
+        else if(menuX + menuW > QApplication::primaryScreen()->availableGeometry().width())
            menuX -= (menuW + 5);
 
         // Fix the Y dimension.
         if(menuY < 0)
            menuY = 0;
-        else if(menuY + menuH > QApplication::primaryScreen()->geometry().height())
-           menuY -= ((menuY + menuH) - QApplication::primaryScreen()->geometry().height());
+        else if(menuY + menuH > QApplication::primaryScreen()->availableGeometry().height())
+           menuY -= ((menuY + menuH) - QApplication::primaryScreen()->availableGeometry().height());
 
         // Show the popup menu.         
         popup->move(menuX, menuY);

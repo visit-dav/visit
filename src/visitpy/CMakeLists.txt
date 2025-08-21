@@ -474,20 +474,18 @@ ELSE(VISIT_STATIC)
 ENDIF(VISIT_STATIC)
 
 #
-# For module setup of the pure python parts of the visit module
+# For module setup pure python visit modules
 #
-ADD_SUBDIRECTORY(visitmodule)
-# the visitmodule subdir added above creates the visitmodule_py_setup target
-# visitmodule needs to depend on it so it is built after the py module,
-# otherwise pip install will overwrite the directory and delete visitmodule.so
-target_link_libraries(visitmodule PRIVATE visitmodule_py_setup)
+ADD_SUBDIRECTORY(visit_module)
+ADD_SUBDIRECTORY(visit_launcher)
 ADD_SUBDIRECTORY(visit_utils)
 ADD_SUBDIRECTORY(visit_flow)
 
+# the visit compiled module depends on the dir structure from the python shell
+target_link_libraries(visitmodule PRIVATE visit_module_py_setup)
 
 IF(VISIT_PYTHON_FILTERS)
     ADD_SUBDIRECTORY(pyavt)
     ADD_SUBDIRECTORY(mpicom)
 ENDIF(VISIT_PYTHON_FILTERS)
 
-ADD_SUBDIRECTORY(pyui)

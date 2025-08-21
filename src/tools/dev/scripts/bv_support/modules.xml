@@ -48,7 +48,6 @@
             <lib name="mpich"/>
             <lib name="nektarpp"/>
             <lib name="ninja"/>
-            <lib name="pyside"/>
             <lib name="xcb"/>
             <lib name="xkbcommon"/>
         </group>

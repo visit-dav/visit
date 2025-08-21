@@ -547,6 +547,37 @@ def TestDisplacement():
     DeleteAllPlots()
     CloseDatabase(db_path)
 
+def TestSymmTensorGhostZoneExchange():
+    TestSection("Symmetric Tensor Ghost Zone Exchange")
+
+    db_path = single_domain_path + "/HexModel1.plt.mili"
+    OpenDatabase(db_path)
+    
+    AddPlot("Pseudocolor", "Derived/brick/stress/pressure")
+
+    # This threshold doesn't do anything but it does trigger
+    # ghost zone exchange of the symmetric tensor Primal/brick/stress
+    # which is used to generate Derived/brick/stress/pressure.
+    AddOperator("Threshold", 1)
+    ThresholdAtts = ThresholdAttributes()
+    ThresholdAtts.outputMeshType = 0
+    ThresholdAtts.boundsInputType = 0
+    ThresholdAtts.listedVarNames = ("Primal/brick/sand")
+    ThresholdAtts.zonePortions = (1)
+    ThresholdAtts.lowerBounds = (-1e+37)
+    ThresholdAtts.upperBounds = (1e+37)
+    ThresholdAtts.defaultVarIsScalar = 1
+    ThresholdAtts.boundsRange = ("-1e+37:1e+37")
+    SetOperatorOptions(ThresholdAtts, 0, 1)
+
+    DrawPlots()
+
+    Test("mili_symm_tensor_exchange")
+
+    ResetView()
+    DeleteAllPlots()
+    CloseDatabase(db_path)
+
 def Main():
     TestComponentVis()
     TestNonSharedElementSets()
@@ -566,6 +597,7 @@ def Main():
     TestGlobalIntegrationPoint()
     TestMaterialEdgeLines()
     TestDisplacement()
+    TestSymmTensorGhostZoneExchange()
 
 Main()
 Exit()

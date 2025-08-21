@@ -281,14 +281,19 @@ QvisWindowBase::SetFromNode(DataNode *parentNode, const int *borders)
 // Modifications:
 //   Kathleen Biagas, Wed Apr  5 13:04:35 PDT 2023
 //   Replace obosolete desktop() with primaryScreen().
-//   
+//
+//   Kathleen Biagas, Mon Aug 18, 2025 
+//   Replace 'primaryScreen()->geometry()' with
+//   'primaryScreen()->availableGeometry()' since the latter takes into
+//   account window manager reserved space like the Windows taskbar. 
+//
 // ****************************************************************************
 
 void
 QvisWindowBase::FitToScreen(int &x, int &y, int &w, int &h)
 {
-    const int screenW = qApp->primaryScreen()->geometry().width();
-    const int screenH = qApp->primaryScreen()->geometry().height();
+    const int screenW = qApp->primaryScreen()->availableGeometry().width();
+    const int screenH = qApp->primaryScreen()->availableGeometry().height();
 
     if(x + w > screenW)
     {

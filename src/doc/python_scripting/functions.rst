@@ -84,8 +84,10 @@ argument : string
 
 ::
 
+  import visit_launcher
+  visit_launcher.AddArgument("-nowin") # Add the -nowin argument to the viewer.
+  visit_launcher.Launch()
   import visit
-  visit.AddArgument("-nowin") # Add the -nowin argument to the viewer.
 
 
 AddMachineProfile
@@ -235,8 +237,9 @@ AddWindow
 
 ::
 
+  import visit_launcher
+  visit_launcher.Launch()
   import visit
-  visit.Launch()
   visit.AddWindow() # Create window #2
   visit.AddWindow() # Create window #3
 
@@ -866,8 +869,9 @@ Close
 
 ::
 
+  import visit_launcher
+  visit_launcher.Launch()
   import visit
-  visit.Launch()
   visit.Close() # Close the viewer
 
 
@@ -5398,10 +5402,11 @@ return type : CLI_return_t
 
 ::
 
+  import visit_launcher
+  visit_launcher.AddArgument("-nowin")
+  visit_launcher.Launch()
   import visit
-  import visit
-  visit.AddArgument("-nowin")
-  visit.Launch()
+
 
 
 LaunchNowin
@@ -5437,10 +5442,11 @@ return type : CLI_return_t
 
 ::
 
+  import visit_launcher
+  visit_launcher.AddArgument("-geometry")
+  visit_launcher.AddArgument("1024x1024")
+  visit_launcher.LaunchNowin()
   import visit
-  visit.AddArgument("-geometry")
-  visit.AddArgument("1024x1024")
-  visit.LaunchNowin()
 
 
 Lineout
@@ -5709,9 +5715,10 @@ LocalNameSpace
 
 ::
 
+  import visit_launcher
+  visit_launcher.LocalNameSpace()
+  visit_launcher.Launch()
   import visit
-  visit.LocalNameSpace()
-  visit.Launch()
 
 
 LongFileName
@@ -11302,8 +11309,9 @@ return type : CLI_return_t
 
 ::
 
+  import visit_launcher
+  visit_launcher.Launch()
   import visit
-  visit.Launch()
   visit.SetWindowArea(0, 0, 600, 600)
   visit.SetWindowLayout(4)
 
@@ -11414,8 +11422,9 @@ return type : CLI_return_t
 ::
 
   #% python
+  import visit_launcher
+  visit_launcher.Launch()
   import visit
-  visit.Launch()
   visit.ShowAllWindows()
 
 

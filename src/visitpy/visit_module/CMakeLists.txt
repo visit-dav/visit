@@ -7,14 +7,12 @@
 #
 #****************************************************************************
 
-IF(HAVE_LIBPYSIDE OR HAVE_LIBPYQT)
-    ADD_SUBDIRECTORY(common)
-ENDIF()
+PYTHON_ADD_PIP_SETUP(NAME visit_module_py_setup
+                     DEST_DIR site-packages
+                     PY_MODULE_DIR visit
+                     PY_SETUP_FILE setup.py
+                     PY_SOURCES  py_src/__init__.py)
 
-IF(HAVE_LIBPYSIDE)
-    ADD_SUBDIRECTORY(pyside)
-ENDIF()
 
-IF(HAVE_LIBPYQT AND VISIT_SIP_DIR)
-    ADD_SUBDIRECTORY(pyqt)
-ENDIF(HAVE_LIBPYQT AND VISIT_SIP_DIR)
+
+
