@@ -684,7 +684,6 @@ vtkSlicer::UnstructuredGridExecute(void)
             {
                 vtkIdType nFaces;
                 const vtkIdType *facePtIds;
-                vtkIdList *ptIds;
                 ug->GetFaceStream(cellId, nFaces, facePtIds);
                 stuff_I_cant_slice->InsertNextCell(cellType, npts, pts,
                     nFaces, facePtIds);
