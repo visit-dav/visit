@@ -54,6 +54,10 @@ Each sample point along the ray is composited to form a final color for the scre
 Rays are traced from closest to farthest to allow for early ray termination which stops the sampling process when the pixel opacity gets above a certain threshold.
 This method of volume-rendering yields superior pictures at the cost of speed and memory use.
 
+If VisIt_ is built with `ANARI <https://www.khronos.org/api/index_2017/anari/>`_ support by using the ``-–anari`` option, 
+there will be an additional rendering method (:numref:`Figure %s<anari_rendering_atts_window>`). Once ANARI Rendering is enabled, all volume rendering 
+will be done with the vendor-specific ANARI back-end. Rendering details can be found in the back-end vendor's documentation.
+
 **Rendering Method: Serial Rendering** (:numref:`Figure %s<serial_rendering_atts_window>`).
 
 .. _serial_rendering_atts_window:
@@ -140,6 +144,51 @@ Lighting is enabled by default but the user can disable it by unchecking the **L
 .. figure:: ../images/slivr.png
 
    SLIVR options
+   
+**Rendering Method: ANARI Rendering** (:numref:`Figure %s<anari_rendering_atts_window1>`).
+
+.. _anari_rendering_atts_window1:
+
+.. figure:: ../images/anari_rendering1.png
+
+   ANARI options
+
+ANARI currently only supports structured regular spatial fields which means the data must be defined on a rectilinear grid.
+For data not defined on a rectilinear grid, the data will need to be resampled onto a rectilinear grid. The user can control 
+the resampling of the data through the resampling options. See the **Serial and Parallel Rendering Options** section above for details.
+
+ANARI Rendering Options:
+
+``Back-end``: This option allows you to specify any ANARI supported back-end like `NVIDIA VisRTX <https://github.com/NVIDIA/VisRTX/>`_.
+
+The back-end is a library that implements the ANARI API and must be on your library path.
+You can specify **environment** if you've exported the **ANARI_LIBRARY** environment variable with the name of theback-end (e.g., ``export ANARI_LIBRARY=visrtx``).
+A list of supported back-ends and publicly available applications using ANARI can be found `here <https://github.com/KhronosGroup/ANARI-SDK/>`_.
+
+.. note::
+    ANARI back-ends are a software construct.
+    Because ANARI abstracts away the details of an entire rendering system, the underlying hardware which a back-end may use is entirely up to the implementation.
+    Please read your vendor's back-end documentation to see what parameters are available to configure and what underlying hardware is both available and used to render frames.
+
+``Back-end Subtype``: This option allows you to specify the subtype of the back-end to use if supported by the back-end. The **default** option is most common and supported by all of the back-ends.
+
+``Renderer``: This option allows you to specify the renderer to use with the back-end.
+
+Different renderers implement different algorithms, extensions, and support different materials.
+Every ANARI back-end offers a **default** renderer.
+See the vendor's documentation for details on the available renderers and their capabilities.
+
+Other ANARI Rendering Options (:numref:`Figure %s<anari_rendering_atts_window2>`): 
+
+These options are specific to the **Back-end** and **Renderer** you are using and are generated at runtime.
+Hovering the mouse over the option label will show you a tooltip with more information.
+For more detailed information on the options, please refer to the vendor's documentation.
+
+.. _anari_rendering_atts_window2:
+
+.. figure:: ../images/anari_rendering2.png
+
+   ANARI rendering options generated at runtime
 
 Transfer Function
 """""""""""""""""

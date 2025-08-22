@@ -1185,20 +1185,16 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
         lowGradientGroup->setVisible(false);
         UpdateLowGradientGroup(false);
         lightMaterialPropGroup->setVisible(false);
-        methodsGroup->setVisible(false);
-        
+        methodsGroup->setVisible(false);        
         smoothDataToggle->setEnabled(false);
-        
+    
         anariVolumeWidget->setVisible(true);
         anariVolumeWidget->setEnabled(true);
         break;
 #endif 
 
     case VolumeAttributes::Parallel:
-        resampleGroup->setVisible(true);
-        resampleGroup->setEnabled(true);
-        osprayGroup->setVisible(true);
-        osprayGroup->setEnabled(true);
+        EnableDefaultGroup();
 
         // raycastingGroup->setVisible(true);
         EnableSamplingMethods(false);

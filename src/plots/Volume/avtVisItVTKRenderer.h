@@ -98,7 +98,7 @@ protected:
 private:
 #ifdef HAVE_ANARI
     bool m_anariEnabled{false};
-    
+
     void SetAnariRendererParameters(vtkAnariPass * const);
     void SetAnariUSDParameters(vtkAnariPass * const);
 #endif

@@ -631,7 +631,7 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
         m_OSPRayEnabled = m_atts.GetOSPRayEnabledFlag();
 
         if (m_volumeMapper != nullptr)
-            m_volumeMapper->Delete();
+            m_volumeMapper->Delete(); m_atts.GetResampleCentering();
 
         // Create the volume mapper.
 #ifdef HAVE_OSPRAY
@@ -646,9 +646,10 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
 #endif
     }
 #ifdef HAVE_ANARI
-    else if(m_anariEnabled != (m_atts.GetAnariRendering() && (m_atts.GetRendererType() == VolumeAttributes::ANARI)))
+    else if((m_atts.GetRendererType() == VolumeAttributes::ANARI) &&
+            (m_anariEnabled != m_atts.GetAnariRendering()))
     {
-        m_anariEnabled = (m_atts.GetAnariRendering() && (m_atts.GetRendererType() == VolumeAttributes::ANARI));
+        m_anariEnabled = m_atts.GetAnariRendering();
 
         if (m_volumeMapper != nullptr)
         {
