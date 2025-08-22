@@ -7965,7 +7965,37 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundariesFromFile(
 //  Creation:   August 13, 2025
 //
 //  Modifications:
+//    Kathleen Biagas, Thu Aug 21, 2025
+//    Add optional 'isPrimary' arg to ExchangeVariable to aid in setting
+//    'active' variables (eg ActiveScalars, ActiveVectors, etc).
+//    Also added help function convert between avtVarType and
+//    vtkDataSetAttribute type.
+//
 // ****************************************************************************
+
+
+int
+avtVarTypeToVTKAttributeType(avtVarType v)
+{
+    // only concerned with main vtk types
+    switch (v)
+    {
+      case AVT_SCALAR_VAR:
+        return vtkDataSetAttributes::SCALARS;
+      case AVT_VECTOR_VAR:
+        return vtkDataSetAttributes::VECTORS;
+      case AVT_TENSOR_VAR:
+        return vtkDataSetAttributes::TENSORS;
+      case AVT_SYMMETRIC_TENSOR_VAR:
+        return vtkDataSetAttributes::TENSORS;
+      case AVT_MATSPECIES:
+        return vtkDataSetAttributes::SCALARS;
+      default:
+        break;
+    }
+    return -1;
+}
+
 void
 avtGenericDatabase::ExchangeVariable(avtVarType type,
                                      int ts,
@@ -7973,7 +8003,8 @@ avtGenericDatabase::ExchangeVariable(avtVarType type,
                                      intVector &doms,
                                      vector<vtkDataSet *> &list,
                                      avtDomainBoundaries *dbi,
-                                     avtDatasetCollection &ds)
+                                     avtDatasetCollection &ds,
+                                     bool isPrimary)
 {
     avtCentering centering;
     if (varname == "avtOriginalNodeNumbers" || 
@@ -8051,6 +8082,9 @@ avtGenericDatabase::ExchangeVariable(avtVarType type,
                 continue;
             }
             ds1->GetPointData()->AddArray(valuesOut[i]);
+            if(isPrimary)
+                ds1->GetPointData()->SetActiveAttribute(varname.c_str(),
+                     avtVarTypeToVTKAttributeType(type));
             valuesOut[i]->Delete();
         }
     }
@@ -8081,6 +8115,9 @@ avtGenericDatabase::ExchangeVariable(avtVarType type,
                 continue;
             }
             ds1->GetCellData()->AddArray(valuesOut[i]);
+            if(isPrimary)
+                ds1->GetCellData()->SetActiveAttribute(varname.c_str(),
+                     avtVarTypeToVTKAttributeType(type));
             valuesOut[i]->Delete();
         }
     }
@@ -8159,6 +8196,10 @@ avtGenericDatabase::ExchangeVariable(avtVarType type,
 // 
 //    Justin Privitera, Thu Aug 14 13:12:42 PDT 2025
 //    Use ExchangeVariable() to handle most exchanges.
+//
+//    Kathleen Biagas, Thu Aug 21, 2025
+//    Pass true for 'isPrimary' to ExchangeVariable when exchanging
+//    pipeline primarhy variables.
 //
 // ****************************************************************************
 
@@ -8314,7 +8355,7 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
     {
         src->DatabaseProgress(localstage++, nlocalstage,
                               "Creating ghost zones for field values");
-        ExchangeVariable(type, ts, varname, doms, list, dbi, ds);
+        ExchangeVariable(type, ts, varname, doms, list, dbi, ds, true);
     }
     else
     {
