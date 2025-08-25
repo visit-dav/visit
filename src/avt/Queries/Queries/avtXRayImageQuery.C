@@ -1329,7 +1329,11 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 // 
 //    Justin Privitera, Wed Nov 29 15:10:59 PST 2023
 //    Handle windows-style file paths.
-// 
+//
+//    Kathleen Biagas, Thu Aug 21, 2025
+//    Use VISIT_SLASH_STRING instead of "/" when constructing
+//    out_filename_w_path.
+//
 // ****************************************************************************
 
 void
@@ -1504,7 +1508,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             baseName << "output";
 
         // does NOT contain the file extension
-        std::string out_filename_w_path{(outputDir == "." ? "" : outputDir + "/") + baseName.str()};
+        std::string out_filename_w_path{(outputDir == "." ? "" : outputDir + VISIT_SLASH_STRING) + baseName.str()};
 
         //
         // Write out the intensity and path length. The path length is only

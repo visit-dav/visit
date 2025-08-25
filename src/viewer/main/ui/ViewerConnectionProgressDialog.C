@@ -328,6 +328,11 @@ ViewerConnectionProgressDialog::hide()
 //   Kathleen Biagas, Wed Apr  5 13:04:35 PDT 2023
 //   Replace obosolete desktop() with primaryScreen().
 //
+//   Kathleen Biagas, Mon Aug 18, 2025 
+//   Replace 'primaryScreen()->geometry()' with
+//   'primaryScreen()->availableGeometry()' since the latter takes into
+//   account window manager reserved space like the Windows taskbar. 
+//
 // ****************************************************************************
 
 void
@@ -339,8 +344,8 @@ ViewerConnectionProgressDialog::timedShow()
         raise();
         
         // Move the window a little above center.
-        int w = qApp->primaryScreen()->geometry().width();
-        int h = qApp->primaryScreen()->geometry().height();
+        int w = qApp->primaryScreen()->availableGeometry().width();
+        int h = qApp->primaryScreen()->availableGeometry().height();
         int x = (w - width()) / 2;
         int y = (h - height()) / 2 - (height() * 6 / 5);
         move(x, y);
