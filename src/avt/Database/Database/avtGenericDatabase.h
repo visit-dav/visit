@@ -338,6 +338,10 @@ class     vtkUnstructuredGrid;
 //    Added ExchangeVariable(), a singular method for exchanging variables
 //    of all types.
 //
+//    Kathleen Biagas, Thu Aug 21, 2025
+//    Add optional 'isPrimary' arg to ExchangeVariable to aid in setting
+//    'active' variables (eg ActiveScalars, ActiveVectors, etc).
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -573,7 +577,8 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                     intVector &doms,
                                     std::vector<vtkDataSet *> &list,
                                     avtDomainBoundaries *dbi,
-                                    avtDatasetCollection &ds);
+                                    avtDatasetCollection &ds,
+                                    bool isPrimary=false);
 
     bool                       CommunicateGhosts(avtGhostDataType,
                                     avtDatasetCollection &, intVector &,
