@@ -165,7 +165,6 @@ QvisRenderingWindow::~QvisRenderingWindow()
 QWidget *
 QvisRenderingWindow::CreateBasicPage()
 {
-    int row = 0;
     QWidget *basicOptions = new QWidget(central);
     QVBoxLayout *basicLayout = new QVBoxLayout(basicOptions);
     basicLayout->setContentsMargins(10,10,10,10);
