@@ -670,7 +670,6 @@ VisWinRendering::EnableDepthPeeling()
 
     // configure window
     rwin->SetAlphaBitPlanes(1);
-    rwin->SetMultiSamples(0);
 
     // configure renderer
     canvas->SetUseDepthPeeling(true);
@@ -698,9 +697,6 @@ VisWinRendering::EnableDepthPeeling()
 //    Kathleen Biagas, Monday May 19, 2025
 //    Ensure MultiSamples is set based on antialiasing flag, since it is
 //    turned off when DepthPeeling is enabled.
-
-//    Kathleen Biagas, Thu Aug 14, 2025 
-//    Use new msaaSamples ivar.
 //
 // ****************************************************************************
 void
@@ -709,9 +705,6 @@ VisWinRendering::DisableDepthPeeling()
     // restore window settings
     vtkRenderWindow *rwin = GetRenderWindow();
     rwin->SetAlphaBitPlanes(0);
-
-    // ensure MSAA settings are reset if necessary.
-    rwin->SetMultiSamples((antialiasing == RenderingAttributes::MSAA) ? msaaSamples: 0);
 
     // configure renderer
     canvas->SetUseDepthPeeling(false);
@@ -2661,7 +2654,7 @@ VisWinRendering::SetRenderEventCallback(void(*callback)(void *,bool), void *data
 //   Kathleen Biagas, Monday July 28, 2025
 //   Set FXAA/MSAA bases on aaMode.
 //
-//    Kathleen Biagas, Thu Aug 14, 2025 
+//    Kathleen Biagas, Thu Aug 14, 2025
 //    Use new msaaSamples ivar.
 //
 // ****************************************************************************
@@ -2703,6 +2696,35 @@ VisWinRendering::SetMSAASamples(int numSamples)
         GetRenderWindow()->SetMultiSamples((antialiasing == RenderingAttributes::MSAA) ? msaaSamples : 0);
     }
 }
+
+// ****************************************************************************
+// Method: VisWinRendering::MSAAAvailable
+//
+// Purpose:
+//   Determines is MSAA is available for the current Render Window.
+//
+// Returns:
+//   true if MSAA is available (GL_MAX_SAMPLES > 1).
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 26, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+//
+bool
+VisWinRendering::MSAAAvailable()
+{
+#ifdef GL_MAX_SAMPLES
+    vtkOpenGLRenderWindow* oglWin = vtkOpenGLRenderWindow::SafeDownCast(GetRenderWindow());
+    int msamples = 0;
+    oglWin->GetState()->vtkglGetIntegerv(GL_MAX_SAMPLES, &msamples);
+    return (msamples > 1);
+#endif
+    return false;
+}
+
 
 // ****************************************************************************
 // Method: VisWinRendering::SetFXAAOptions
@@ -2762,7 +2784,7 @@ VisWinRendering::SetFXAAOptions(const FXAAOptions *fxaaOpt)
 // Purpose:
 //   Returns a pointer to the window's FXAAOptions.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   August 14, 2025
 //
 // ****************************************************************************

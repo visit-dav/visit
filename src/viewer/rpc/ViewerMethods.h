@@ -158,6 +158,9 @@ class ViewerState;
 //   Eric Brugger, Wed Mar 22 16:23:12 PDT 2023
 //   Added operator keyframing.
 //
+//   Kathleen Biagas, Tue Aug 26, 2025
+//   Added QueryMSAAAvailability.
+//
 // ****************************************************************************
 
 class VIEWER_RPC_API ViewerMethods
@@ -447,6 +450,8 @@ public:
     void GetFileList(const std::string& path);
     void ForceRedraw(int windowId);
     void RegisterNewWindow(int windowId);
+
+    void QueryMSAAAvailability();
 private:
     ViewerState *state;
 };

@@ -6166,7 +6166,7 @@ VisWindow::GetAntialiasing() const
 // Arguments:
 //   numSamp  : The number of MSAA samples to use for AA.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   August 14, 2025
 //
 // Modifications:
@@ -6184,7 +6184,7 @@ VisWindow::SetMSAASamples(int numSamp)
 //
 // Returns:    The window's MSAASamples.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   August 14, 2025
 //
 // Modifications:
@@ -6197,6 +6197,24 @@ VisWindow::GetMSAASamples() const
     return rendering->GetMSAASamples();
 }
 
+
+// ****************************************************************************
+// Method: VisWindow::MSAAAvailable
+//
+// Returns:    Whether or not MSAA is available.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 26, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+VisWindow::MSAAAvailable() const
+{
+    return rendering->MSAAAvailable();
+}
 
 // ****************************************************************************
 // Method: VisWindow::SetFXAAOptions
@@ -6226,7 +6244,7 @@ VisWindow::SetFXAAOptions(const FXAAOptions *fxaaOpt)
 // Purpose:
 //   Returns a pointer to the window's FXAAOptions.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   August 14, 2025
 //
 // ****************************************************************************

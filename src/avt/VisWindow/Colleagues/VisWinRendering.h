@@ -230,6 +230,9 @@ class VisWindowColleagueProxy;
 //    Kathleen Biagas, Thu Aug 14, 2025
 //    Add msaaSamples, fxaaOptions and Set/Get methods.
 //
+//    Kathleen Biagas, Tue Aug 26, 2025
+//    Add MSAAAvailable.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRendering : public VisWinColleague
@@ -332,6 +335,7 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     void                     SetMSAASamples(int);
     int                      GetMSAASamples() const
                                  { return msaaSamples; }
+    bool                     MSAAAvailable();
 
     void                     SetFXAAOptions(const FXAAOptions *);
     const FXAAOptions       *GetFXAAOptions() const;

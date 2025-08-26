@@ -6562,6 +6562,7 @@ debug5 << "GetWindowAttributes: size=" << size[0] << ", " << size[1] << endl;
 
     renderAtts.SetAntialiasing((RenderingAttributes::AAMode) GetAntialiasing());
     renderAtts.SetMSAASamples(GetMSAASamples());
+    renderAtts.SetMSAAAvailable(MSAAAvailable());
     renderAtts.SetFXAAOpt(*(GetFXAAOptions()));
 
     renderAtts.SetOrderComposite(GetOrderComposite());
@@ -7420,7 +7421,7 @@ ViewerWindow::GetAntialiasing() const
 // Arguments:
 //   numSamp : The number of MSAASamples to use.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   August 14, 2025
 //
 // Modifications:
@@ -7439,7 +7440,7 @@ ViewerWindow::SetMSAASamples(int numSamp)
 // Purpose:
 //   Returns the window's MSAASamples.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   August 14, 2025
 //
 // Modifications:
@@ -7450,6 +7451,26 @@ int
 ViewerWindow::GetMSAASamples() const
 {
     return visWindow->GetMSAASamples();
+}
+
+
+// ****************************************************************************
+// Method: ViewerWindow::MSAAAvailable
+//
+// Purpose:
+//   Returns the availablility of MSAA.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 26, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+ViewerWindow::MSAAAvailable() const
+{
+    return visWindow->MSAAAvailable();
 }
 
 
@@ -7484,7 +7505,7 @@ ViewerWindow::SetFXAAOptions(const FXAAOptions *atts)
 // Note:       Note that the pointer returned by this method cannot be used
 //             to set attributes of the fxaaOptions attributes.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   August 14, 2025
 //
 // Modifications:
@@ -9245,7 +9266,7 @@ ViewerWindow::CreateNode(DataNode *parentNode,
         windowNode->AddNode(new DataNode("MSAASamples", GetMSAASamples()));
         FXAAOptions fxaaOpt(*visWindow->GetFXAAOptions());
         fxaaOpt.CreateNode(windowNode, true, true);
-    
+
         windowNode->AddNode(new DataNode("orderComposite", GetOrderComposite()));
 
         windowNode->AddNode(new DataNode("depthCompositeThreads", GetDepthCompositeThreads()));

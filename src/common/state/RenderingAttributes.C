@@ -184,6 +184,7 @@ RenderingAttributes::AAMode_FromString(const std::string &s, RenderingAttributes
 void RenderingAttributes::Init()
 {
     antialiasing = None;
+    MSAAAvailable = false;
     MSAASamples = 4;
     orderComposite = true;
     depthCompositeThreads = 2;
@@ -248,6 +249,7 @@ void RenderingAttributes::Init()
 void RenderingAttributes::Copy(const RenderingAttributes &obj)
 {
     antialiasing = obj.antialiasing;
+    MSAAAvailable = obj.MSAAAvailable;
     MSAASamples = obj.MSAASamples;
     FXAAOpt = obj.FXAAOpt;
     orderComposite = obj.orderComposite;
@@ -467,6 +469,7 @@ RenderingAttributes::operator == (const RenderingAttributes &obj) const
 
     // Create the return value
     return ((antialiasing == obj.antialiasing) &&
+            (MSAAAvailable == obj.MSAAAvailable) &&
             (MSAASamples == obj.MSAASamples) &&
             (FXAAOpt == obj.FXAAOpt) &&
             (orderComposite == obj.orderComposite) &&
@@ -654,6 +657,7 @@ void
 RenderingAttributes::SelectAll()
 {
     Select(ID_antialiasing,                 (void *)&antialiasing);
+    Select(ID_MSAAAvailable,                (void *)&MSAAAvailable);
     Select(ID_MSAASamples,                  (void *)&MSAASamples);
     Select(ID_FXAAOpt,                      (void *)&FXAAOpt);
     Select(ID_orderComposite,               (void *)&orderComposite);
@@ -733,6 +737,12 @@ RenderingAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
     {
         addToParent = true;
         node->AddNode(new DataNode("antialiasing", AAMode_ToString(antialiasing)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_MSAAAvailable, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("MSAAAvailable", MSAAAvailable));
     }
 
     if(completeSave || !FieldsEqual(ID_MSAASamples, &defaultObject))
@@ -1053,6 +1063,8 @@ RenderingAttributes::SetFromNode(DataNode *parentNode)
                 SetAntialiasing(value);
         }
     }
+    if((node = searchNode->GetNode("MSAAAvailable")) != 0)
+        SetMSAAAvailable(node->AsBool());
     if((node = searchNode->GetNode("MSAASamples")) != 0)
         SetMSAASamples(node->AsInt());
     if((node = searchNode->GetNode("FXAAOpt")) != 0)
@@ -1220,6 +1232,13 @@ RenderingAttributes::SetAntialiasing(RenderingAttributes::AAMode antialiasing_)
 {
     antialiasing = antialiasing_;
     Select(ID_antialiasing, (void *)&antialiasing);
+}
+
+void
+RenderingAttributes::SetMSAAAvailable(bool MSAAAvailable_)
+{
+    MSAAAvailable = MSAAAvailable_;
+    Select(ID_MSAAAvailable, (void *)&MSAAAvailable);
 }
 
 void
@@ -1535,6 +1554,12 @@ RenderingAttributes::AAMode
 RenderingAttributes::GetAntialiasing() const
 {
     return AAMode(antialiasing);
+}
+
+bool
+RenderingAttributes::GetMSAAAvailable() const
+{
+    return MSAAAvailable;
 }
 
 int
@@ -1932,6 +1957,7 @@ RenderingAttributes::GetFieldName(int index) const
     switch (index)
     {
     case ID_antialiasing:                 return "antialiasing";
+    case ID_MSAAAvailable:                return "MSAAAvailable";
     case ID_MSAASamples:                  return "MSAASamples";
     case ID_FXAAOpt:                      return "FXAAOpt";
     case ID_orderComposite:               return "orderComposite";
@@ -2000,6 +2026,7 @@ RenderingAttributes::GetFieldType(int index) const
     switch (index)
     {
     case ID_antialiasing:                 return FieldType_enum;
+    case ID_MSAAAvailable:                return FieldType_bool;
     case ID_MSAASamples:                  return FieldType_int;
     case ID_FXAAOpt:                      return FieldType_att;
     case ID_orderComposite:               return FieldType_bool;
@@ -2068,6 +2095,7 @@ RenderingAttributes::GetFieldTypeName(int index) const
     switch (index)
     {
     case ID_antialiasing:                 return "enum";
+    case ID_MSAAAvailable:                return "bool";
     case ID_MSAASamples:                  return "int";
     case ID_FXAAOpt:                      return "att";
     case ID_orderComposite:               return "bool";
@@ -2140,6 +2168,11 @@ RenderingAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_antialiasing:
         {  // new scope
         retval = (antialiasing == obj.antialiasing);
+        }
+        break;
+    case ID_MSAAAvailable:
+        {  // new scope
+        retval = (MSAAAvailable == obj.MSAAAvailable);
         }
         break;
     case ID_MSAASamples:

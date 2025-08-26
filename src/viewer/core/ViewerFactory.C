@@ -182,6 +182,9 @@ ViewerFactory::CreateViewerWindow(int windowIndex)
 //   Eric Brugger, Wed Mar 22 16:23:12 PDT 2023
 //   Add operator keyframing.
 //
+//   Kathleen Biagas, Tue Aug 26, 2025
+//   Add QueryMSAAAvailability.
+//
 // ****************************************************************************
 
 void
@@ -380,6 +383,7 @@ ViewerFactory::SetActionManagerLogic(ViewerActionManager *mgr, ViewerWindow *win
     mgr->SetLogic(ViewerRPC::UpdateColorTableRPC,           new UpdateColorTableAction(win));
     mgr->SetLogic(ViewerRPC::UpdateNamedSelectionRPC,       new UpdateNamedSelectionAction(win));
     mgr->SetLogic(ViewerRPC::WriteConfigFileRPC,            new WriteConfigFileAction(win));
+    mgr->SetLogic(ViewerRPC::QueryMSAAAvailabilityRPC,      new QueryMSAAAvailabilityAction(win));
 }
 
 // ****************************************************************************

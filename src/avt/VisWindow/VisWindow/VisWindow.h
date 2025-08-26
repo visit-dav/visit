@@ -448,6 +448,9 @@ class VisitInteractor;
 //    Kathleen Biagas, Thu Aug 14, 2025
 //    Add Set/Get MSAASamples and FXAAOptions.
 //
+//    Kathleen Biagas, Tue Aug 26, 2025
+//    Add MSAAAvailable.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -675,6 +678,7 @@ public:
     int                  GetAntialiasing() const;
     void                 SetMSAASamples(int);
     int                  GetMSAASamples() const;
+    bool                 MSAAAvailable() const;
     void                 SetFXAAOptions(const FXAAOptions *);
     const FXAAOptions   *GetFXAAOptions() const;
     void                 SetOrderComposite(bool enabled);

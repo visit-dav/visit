@@ -97,6 +97,7 @@ public:
 
     // Property setting methods
     void SetAntialiasing(AAMode antialiasing_);
+    void SetMSAAAvailable(bool MSAAAvailable_);
     void SetMSAASamples(int MSAASamples_);
     void SetFXAAOpt(const FXAAOptions &FXAAOpt_);
     void SetOrderComposite(bool orderComposite_);
@@ -143,6 +144,7 @@ public:
 
     // Property getting methods
     AAMode               GetAntialiasing() const;
+    bool                 GetMSAAAvailable() const;
     int                  GetMSAASamples() const;
     const FXAAOptions    &GetFXAAOpt() const;
           FXAAOptions    &GetFXAAOpt();
@@ -235,6 +237,7 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_antialiasing = 0,
+        ID_MSAAAvailable,
         ID_MSAASamples,
         ID_FXAAOpt,
         ID_orderComposite,
@@ -283,6 +286,7 @@ public:
 
 private:
     int            antialiasing;
+    bool           MSAAAvailable;
     int            MSAASamples;
     FXAAOptions    FXAAOpt;
     bool           orderComposite;
@@ -331,6 +335,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define RENDERINGATTRIBUTES_TMFS "iiabiiiibdibfibibiibffabdbbDDibiibiibbsssbs*s*"
+#define RENDERINGATTRIBUTES_TMFS "ibiabiiiibdibfibibiibffabdbbDDibiibiibbsssbs*s*"
 
 #endif

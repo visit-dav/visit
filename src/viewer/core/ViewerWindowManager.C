@@ -3477,7 +3477,7 @@ ViewerWindowManager::SetViewExtentsType(avtExtentType viewType,
 //    Kevin Griffin, Thu Mar 6 15:51:48 CST 2025
 //    Added options for ANARI rendering
 //
-//    Kathleen Biagas, Thu Aug 14, 2025 
+//    Kathleen Biagas, Thu Aug 14, 2025
 //    Added new RenderingAttributes items: MSAASamples, FXAAOptions.
 //
 // ****************************************************************************
@@ -5259,7 +5259,7 @@ ViewerWindowManager::UpdateLightListAtts()
 //   Kathleen Biagas, Monday July 28, 2025.
 //   Antialiasing is now an int (enum).
 //
-//   Kathleen Biagas, Thu Aug 14, 2025 
+//   Kathleen Biagas, Thu Aug 14, 2025
 //   Added new RenderingAttributes items: MSAASamples, FXAAOptions.
 //
 // ****************************************************************************
@@ -8239,7 +8239,7 @@ ViewerWindowManager::CreateVisWindow(const int windowIndex,
 //    Kathleen Biagas, Thu Apr  2 17:06:22 PDT 2015
 //    Ensure color texturing flag gets set.
 //
-//    Kathleen Biagas, Thu Aug 14, 2025 
+//    Kathleen Biagas, Thu Aug 14, 2025
 //    Added new RenderingAttributes items: MSAASamples, FXAAOptions.
 //
 // ****************************************************************************
@@ -10179,4 +10179,29 @@ ViewerWindowManager::CheckForOSPRayRendering() const
         }
     }
 #endif
+}
+
+// ****************************************************************************
+//  Method: ViewerWindowManager::QueryMSAAAvailability
+//
+//  Purpose: Checks if MSAA is available.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   Aug 26, 2025
+//
+// ****************************************************************************
+
+void
+ViewerWindowManager::QueryMSAAAvailability(int windowIndex)
+{
+    int index = (windowIndex == -1) ? activeWindow : windowIndex;
+    if(windows[index] != 0)
+    {
+        bool msaaAvail = windows[index]->MSAAAvailable();
+        if(msaaAvail != GetViewerState()->GetRenderingAttributes()->GetMSAAAvailable())
+        {
+            GetViewerState()->GetRenderingAttributes()->SetMSAAAvailable(msaaAvail);
+            GetViewerState()->GetRenderingAttributes()->Notify();
+        }
+    }
 }

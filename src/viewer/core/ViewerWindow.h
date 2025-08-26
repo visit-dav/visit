@@ -471,6 +471,9 @@ class ViewerPlotList;
 //    Kathleen Biagas, Thu Aug 14, 2025
 //    Add Set/Get MSAASamples.
 //
+//    Kathleen Biagas, Tue Aug 26, 2025
+//    Add MSAAAvailable.
+//
 // ****************************************************************************
 
 class VIEWERCORE_API ViewerWindow : public ViewerBase
@@ -676,6 +679,7 @@ public:
     int  GetAntialiasing() const;
     void SetMSAASamples(int);
     int  GetMSAASamples() const;
+    bool MSAAAvailable() const;
     void SetFXAAOptions(const FXAAOptions *);
     const FXAAOptions *GetFXAAOptions() const;
     void SetOrderComposite(bool enabled);

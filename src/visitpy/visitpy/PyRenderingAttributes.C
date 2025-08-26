@@ -375,6 +375,7 @@ RenderingAttributes_dir(PyObject *self, PyObject *args)
 
     // Add members using generic AttributeGroup interface
     for (int i = 0; i < atts.NumAttributes(); i++) {
+        if (i == 1) continue; // internal field
         PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
     }
 
@@ -430,6 +431,17 @@ RenderingAttributes_SetAntialiasing(PyObject *self, PyObject *args)
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
+   if(cval == 1 && (cval != obj->data->GetAntialiasing()) &&
+      (obj->data->GetDepthPeeling()))
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        PyErr_WarnEx(PyExc_RuntimeWarning,
+                "MSAA is incompatible with DepthPeeling, turn off\n"
+                " DepthPeeling before selecting MSAA antialiasing\n"
+                " or choose a different antialiasing mode.\n",  0);
+        return PyInt_FromLong(0);
+    }
     Py_XDECREF(packaged_args);
 
     // Set the antialiasing in the object.
@@ -883,6 +895,16 @@ RenderingAttributes_SetDepthPeeling(PyObject *self, PyObject *args)
         return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
     }
 
+    if(cval && (cval != obj->data->GetDepthPeeling()) &&
+      (obj->data->GetAntialiasing() == RenderingAttributes::MSAA))
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        PyErr_WarnEx(PyExc_RuntimeWarning,
+                "DepthPeeling is incompatible with MSAA, select a different\n"
+                " antialiasing method before turning on DepthPeeling.", 0);
+        return PyInt_FromLong(0);
+    }
     Py_XDECREF(packaged_args);
 
     // Set the depthPeeling in the object.

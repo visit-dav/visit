@@ -115,6 +115,9 @@ class AnariRenderingWidget;
 //   Add widgets and slot for msaaSamples and fxaa options.
 //   Remove QLabels that are no longer needed as ivars.
 //
+//   Kathleen Biagas, Tue Aug 26, 2025
+//   Added UpdateMSAAButton and lastAA to hold last chosen AA mode.
+//
 // ****************************************************************************
 
 class GUI_API QvisRenderingWindow : public QvisPostableWindowSimpleObserver
@@ -188,6 +191,7 @@ private slots:
 
 private:
     void UpdateAAControls(int);
+    void UpdateMSAAButton();
 
     QWidget *CreateBasicPage();
     QWidget *CreateAdvancedPage();
@@ -195,6 +199,7 @@ private:
 
     RenderingAttributes *renderAtts;
     WindowInformation   *windowInfo;
+    int                 lastAA;
 
     // Basic controls
     QButtonGroup      *antialiasingMode;

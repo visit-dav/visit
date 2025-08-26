@@ -63,6 +63,9 @@
 //    Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
 //    Add compact domain options.
 //
+//    Kathleen Biagas, Tue Aug 26, 2025
+//    Init lastAA.
+//
 // ****************************************************************************
 
 QvisRenderingWindow::QvisRenderingWindow(const QString &caption,
@@ -71,6 +74,7 @@ QvisRenderingWindow::QvisRenderingWindow(const QString &caption,
 {
     renderAtts = 0;
     windowInfo = 0;
+    lastAA = 0;
 
     objectRepresentation = 0;
     stereoType = 0;
@@ -178,10 +182,6 @@ QvisRenderingWindow::CreateBasicPage()
     aaGroup->setLayout(aaLayout);
 
     int aaRow= 0;
-    QLabel *aaLabel = new QLabel(tr("MSAA will be disabled if Depth Peeling also selected."), basicOptions);
-    aaLayout->addWidget(aaLabel, aaRow, 0, 1, 3);
-    aaRow++;
-
     antialiasingMode = new QButtonGroup(basicOptions);
     connect(antialiasingMode, SIGNAL(idClicked(int)),
             this, SLOT(antialiasingChanged(int)));
@@ -956,6 +956,9 @@ QvisRenderingWindow::CreateInformationPage()
 //   Brad Whitlock, Thu Jun 19 11:57:46 PDT 2008
 //   Moved code to helper functions.
 //
+//   Kathleen Biagas, Tue Aug 26, 2025
+//   Added call to QueryMSAAAvailability.
+//
 // ****************************************************************************
 
 void
@@ -978,6 +981,8 @@ QvisRenderingWindow::CreateWindowContents()
     // Create the renderer information group.
     //
     topTab->addTab(CreateInformationPage(), tr("Information"));
+
+    GetViewerMethods()->QueryMSAAAvailability();
 }
 
 // ****************************************************************************
@@ -1114,6 +1119,11 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             antialiasingMode->blockSignals(true);
             antialiasingMode->button(itmp)->setChecked(true);
             UpdateAAControls(itmp);
+            antialiasingMode->blockSignals(false);
+            break;
+        case RenderingAttributes::ID_MSAAAvailable:
+            antialiasingMode->blockSignals(true);
+            UpdateMSAAButton();
             antialiasingMode->blockSignals(false);
             break;
         case RenderingAttributes::ID_MSAASamples:
@@ -1742,6 +1752,38 @@ QvisRenderingWindow::apply()
 }
 
 // ****************************************************************************
+// Method: QvisRenderingWindow::UpdateMSAAButton
+//
+// Purpose:
+//   Updates enabled state of MSAA button, based on MSAA availability.
+//   Changes Label text to indicate if it is not available.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 26, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::UpdateMSAAButton()
+{
+    if(renderAtts->GetMSAAAvailable())
+    {
+        antialiasingMode->button(1)->setEnabled(!depthPeeling->isChecked());
+        antialiasingMode->button(1)->setText("MSAA");
+    }
+    else
+    {
+        antialiasingMode->button(1)->setEnabled(false);
+        antialiasingMode->button(1)->setText("MSAA (not available)");
+        if(antialiasingMode->button(1)->isChecked())
+            antialiasingMode->button(lastAA)->setChecked(true);
+    }
+}
+
+
+// ****************************************************************************
 // Method: QvisRenderingWindow::UpdateAAControls
 //
 // Purpose:
@@ -1860,11 +1902,24 @@ QvisRenderingWindow::UpdateAAControls(int mode)
 //   Kathleen Biagas, Thu Aug 14, 2025
 //   Added call to UpdateAAControls.
 //
+//   Kathleen Biagas, Tue Aug 26, 2025
+//   Issue warning if turning on MSAA and depth peeling is already selected,
+//   and eeset AA  mode to last value.
+//
 // ****************************************************************************
 
 void
 QvisRenderingWindow::antialiasingChanged(int val)
 {
+    if(val == 1 && depthPeeling->isChecked())
+    {
+        Warning(tr("MSAA is incompatible with Depth Peeling. "
+                    "Please turn off DepthPeeling or choose a"
+                    " different Antialiasing mode."));
+        antialiasingMode->button(lastAA)->setChecked(true);
+        return;
+    }
+    lastAA=val;
     renderAtts->SetAntialiasing(RenderingAttributes::AAMode(val));
     UpdateAAControls(val);
     SetUpdate(false);
@@ -2156,32 +2211,30 @@ QvisRenderingWindow::fxaaESIChanged()
 // Creation:   Sun Sep  6 08:42:01 PDT 2015
 //
 // Modifications:
-//   Kathleen Biagas, Tue Aug 19, 2025
-//   Turn of MSAA mode if depth peeling being enabled.
-//   Set enabled state of MSAA button dependent on depthPeeling state.
+//   Kathleen Biagas, Tue Aug 26, 2025
+//   Issue warning if MSAA is enabled and set depthPeeling to unchecked.
 // 
 // ****************************************************************************
 
 void
 QvisRenderingWindow::updateDepthPeeling()
 {
-    bool doUpdate = false;
     // has depthPeeling toggle changed
     if (depthPeeling->isChecked() && !renderAtts->GetDepthPeeling())
     {
         if (renderAtts->GetAntialiasing() == RenderingAttributes::MSAA)
         {
-            Warning(tr("MSAA is incompatible with Depth Peeling. Antialiasing will be set to None. You may want to try FXAA."));
-            renderAtts->SetAntialiasing(RenderingAttributes::None);
-            doUpdate = true;
+            Warning(tr("MSAA is incompatible with Depth Peeling. "
+                       "Please choose a different Antialiasing mode "
+                       "if you want to enable Depth Peeling."));
+            depthPeeling->setChecked(false);
+            return;
         }
     }
-    // enable/disable MSAA button based on state of depthPeeling.
-    antialiasingMode->button(1)->setEnabled(!depthPeeling->isChecked());
     renderAtts->SetDepthPeeling(depthPeeling->isChecked());
     renderAtts->SetOcclusionRatio(occlusionRatio->text().toDouble());
     renderAtts->SetNumberOfPeels(numberOfPeels->text().toInt());
-    SetUpdate(doUpdate);
+    SetUpdate(false);
     Apply();
 }
 
