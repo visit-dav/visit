@@ -2654,8 +2654,11 @@ VisWinRendering::SetRenderEventCallback(void(*callback)(void *,bool), void *data
 //   Kathleen Biagas, Monday July 28, 2025
 //   Set FXAA/MSAA bases on aaMode.
 //
-//    Kathleen Biagas, Thu Aug 14, 2025
-//    Use new msaaSamples ivar.
+//   Kathleen Biagas, Thu Aug 14, 2025
+//   Use new msaaSamples ivar.
+//
+//   Kathleen Biagas, Wed Aug 27, 2025
+//   Issue warning if MSAA chosen when it isn't available.
 //
 // ****************************************************************************
 
@@ -2664,6 +2667,12 @@ VisWinRendering::SetAntialiasing(int aaMode)
 {
     if(aaMode != antialiasing )
     {
+        if(aaMode == 1 && !MSAAAvailable())
+        {
+            avtCallback::IssueWarning(
+                "MSAA is not available with the current configuration of"
+                " VisIt on this system. Please try FXAA instead.\n");
+        }
         antialiasing = aaMode;
         canvas->SetUseFXAA((aaMode == RenderingAttributes::FXAA));
         GetRenderWindow()->SetMultiSamples((aaMode == RenderingAttributes::MSAA) ? msaaSamples : 0);

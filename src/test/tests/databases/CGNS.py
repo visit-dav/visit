@@ -33,7 +33,7 @@
 #
 #    Kathleen Biagas, Tue Aug 19, 2025
 #    Use FXAA for anti-aliasing as MSAA doesn't work in the
-#    vtkOSOpenGLRenderWindow that is used for testing.
+#    build configuration that is used for testing.
 #
 # ----------------------------------------------------------------------------
 
