@@ -118,6 +118,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <filesystem>
 #ifdef _WIN32
 #include <functional>
 #include <direct.h>  // for _getcwd, _chdir
@@ -4930,6 +4931,10 @@ NetworkManager::ExportDatabases(const intVector &ids,
 //    Brad Whitlock, Thu Aug  6 17:00:03 PDT 2015
 //    Add support for writing using groups of ranks.
 //
+//    Cyrus Harrion, Wed Aug 13 09:43:32 PDT 2025
+//    Use std::filesystem::path to construct output path to avoid issues
+//    with native paths.
+//
 // ****************************************************************************
 
 void
@@ -5015,10 +5020,18 @@ NetworkManager::ExportSingleDatabase(int id, const ExportDBAttributes &atts)
 
         std::string qualFilename;
         if (atts.GetDirname() == "")
+        {
             qualFilename = atts.GetFilename();
+        }
         else
-            qualFilename = atts.GetDirname() + std::string(VISIT_SLASH_STRING)
-                         + atts.GetFilename();
+        {
+            // use std::filesystem::path to help us make sure we are using
+            // native style paths
+            auto dname = std::filesystem::path(atts.GetDirname());
+            auto fname = std::filesystem::path(atts.GetFilename());
+            // Cyrus Note: I hate this `/` operator nonsense, why not a join method?
+            qualFilename = (dname / fname).make_preferred().string();
+        }
         bool doAll = false;
         std::vector<std::string> vars = atts.GetVariables();
         if (vars.size() == 1 && vars[0] == "<all>")
