@@ -694,11 +694,8 @@ VisWinRendering::EnableDepthPeeling()
 //    Remove multi sampling related code when using VTK 9. This fixes a bug
 //    where the visualization window is black when using mesagl.
 //
-//    Kathleen Biagas, Monday May 19, 2025
-//    Ensure MultiSamples is set based on antialiasing flag, since it is
-//    turned off when DepthPeeling is enabled.
-//
 // ****************************************************************************
+
 void
 VisWinRendering::DisableDepthPeeling()
 {
@@ -2649,7 +2646,7 @@ VisWinRendering::SetRenderEventCallback(void(*callback)(void *,bool), void *data
 //
 //   Kathleen Biagas, Monday May 19, 2025
 //   If using VTK 9.5 or above, turn off special transparency handler
-//   if antialias enabled, as the OIT will not honor MSAA.
+//   if MSAA enabled, as the OIT will not honor MSAA.
 //
 //   Kathleen Biagas, Monday July 28, 2025
 //   Set FXAA/MSAA based on aaMode.
