@@ -2652,7 +2652,7 @@ VisWinRendering::SetRenderEventCallback(void(*callback)(void *,bool), void *data
 //   if antialias enabled, as the OIT will not honor MSAA.
 //
 //   Kathleen Biagas, Monday July 28, 2025
-//   Set FXAA/MSAA bases on aaMode.
+//   Set FXAA/MSAA based on aaMode.
 //
 //   Kathleen Biagas, Thu Aug 14, 2025
 //   Use new msaaSamples ivar.
@@ -2672,6 +2672,7 @@ VisWinRendering::SetAntialiasing(int aaMode)
             avtCallback::IssueWarning(
                 "MSAA is not available with the current configuration of"
                 " VisIt on this system. Please try FXAA instead.\n");
+            return;
         }
         antialiasing = aaMode;
         canvas->SetUseFXAA((aaMode == RenderingAttributes::FXAA));
