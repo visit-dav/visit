@@ -120,6 +120,9 @@
 //    Kathleen Biagas, Monday July 28, 2025
 //    Antialiasing is now an int (enum).
 //
+//    Kathleen Biagas, Thu Aug 28 15:39:06 PDT 2025
+//    Remove GetSurfaceRepresentation, no longer used.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
@@ -188,9 +191,6 @@ class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
 
     void                UpdateLightPositions()
                                   { ProxiedUpdateLightPositions(); }
-
-    int                 GetSurfaceRepresentation()
-                                  { return ProxiedGetSurfaceRepresentation(); }
 
     bool                DisableExternalRenderRequests(bool bClearImage = false)
                                   { return ProxiedDisableExternalRenderRequests(bClearImage); }

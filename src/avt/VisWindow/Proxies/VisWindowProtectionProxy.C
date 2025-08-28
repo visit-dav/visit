@@ -694,24 +694,6 @@ VisWindowProtectionProxy::ProxiedUpdateLightPositions()
     viswin->UpdateLightPositions();
 }
 
-// ****************************************************************************
-// Method: VisWindowProtectionProxy::ProxiedGetSurfaceRepresentation
-//
-// Purpose:
-//   Returns the surface representation.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Sep 23 16:32:24 PST 2002
-//
-// Modifications:
-//
-// ****************************************************************************
-
-int
-VisWindowProtectionProxy::ProxiedGetSurfaceRepresentation()
-{
-    return viswin->GetSurfaceRepresentation();
-}
 
 // ****************************************************************************
 // Method: VisWindowProtectionProxy::ProxiedDisableExternalRenderRequests
@@ -1369,3 +1351,4 @@ VisWindowProtectionProxy::ProxiedGetUsingUsdDevice()
     return viswin->GetUsingUsdDevice();
 }
 #endif
+

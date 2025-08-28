@@ -278,27 +278,6 @@ avtCustomRenderer::SetSpecularProperties(bool , double , double ,
     ;
 }
 
-// ****************************************************************************
-//  Method: avtCustomRenderer::SetSurfaceRepresentation
-//
-//  Purpose:
-//     Set the surface representation to the specified value.
-//     This is a stub for derived types. 
-//
-//  Arguments:
-//     <un-named>  The new surface representation.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   September 2, 2004 
-//
-// ****************************************************************************
-
-void
-avtCustomRenderer::SetSurfaceRepresentation(int rep)
-{
-    ;
-}
-
 
 // ****************************************************************************
 //  Method: avtCustomRenderer::SetBoundingBox
