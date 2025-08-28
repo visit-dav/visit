@@ -104,6 +104,9 @@ class AnariRenderingWidget;
 //   Added ANARI widget for setting ANARI device, usd, and rendering
 //   parameters.
 //
+//   Kathleen Biagas, Thu Aug 28 15:52:57 PDT 2025
+//   Removed objectRepresentation widget and slot, no longer used.
+//
 // ****************************************************************************
 
 class GUI_API QvisRenderingWindow : public QvisPostableWindowSimpleObserver
@@ -140,7 +143,6 @@ private slots:
     void updateDepthPeeling();
     void multiresolutionModeToggled(bool);
     void processMultiresolutionSmallestCellText();
-    void objectRepresentationChanged(int);
     void stereoToggled(bool);
     void stereoTypeChanged(int);
     void renderNotifyToggled(bool);
@@ -193,7 +195,6 @@ private:
     QCheckBox         *multiresolutionModeToggle;
     QLabel            *multiresolutionSmallestCellLabel;
     QLineEdit         *multiresolutionSmallestCellLineEdit;
-    QButtonGroup      *objectRepresentation;
     QCheckBox         *stereoToggle;
     QButtonGroup      *stereoType;
     QRadioButton      *redblue;

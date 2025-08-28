@@ -441,6 +441,9 @@ class VisitInteractor;
 //    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9:
 //    add initialization of nullptr to pointer ivars.
 //
+//    Kathleen Biagas, Thu Aug 28 15:41:28 PDT 2025
+//    Remove Set/GetSurfaceRepresentation, no longer used.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -695,8 +698,6 @@ public:
     bool                 GetStereo() const;
     int                  GetStereoType() const;
     bool                 IsDirect(void);
-    void                 SetSurfaceRepresentation(int rep);
-    int                  GetSurfaceRepresentation() const;
     int                  GetNumPrimitives() const;
     void                 SetNotifyForEachRender(bool val);
     bool                 GetNotifyForEachRender() const;

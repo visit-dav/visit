@@ -117,6 +117,9 @@
 //    Kevin Griffin, Wed 05 Mar 2025 11:59:26 AM CST
 //    Added Anari support.
 //
+//    Kathleen Biagas, Thu Aug 28 15:39:06 PDT 2025
+//    Remove GetSurfaceRepresentation, no longer used.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
@@ -185,9 +188,6 @@ class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
 
     void                UpdateLightPositions()
                                   { ProxiedUpdateLightPositions(); }
-
-    int                 GetSurfaceRepresentation()
-                                  { return ProxiedGetSurfaceRepresentation(); }
 
     bool                DisableExternalRenderRequests(bool bClearImage = false)
                                   { return ProxiedDisableExternalRenderRequests(bClearImage); }

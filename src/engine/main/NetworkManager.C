@@ -3161,6 +3161,9 @@ NetworkManager::RenderInternal()
 //    Burlen Loring, Sun Sep  6 08:44:26 PDT 2015
 //    Added option for ordered composting
 //
+//    Kathleen Biagas, Thu Aug 28 15:43:23 PDT 2025
+//    Remove SurfaceRepresentation, no longer used.
+//
 // ****************************************************************************
 
 void
@@ -3367,9 +3370,6 @@ NetworkManager::SetWindowAttributes(EngineVisWinInfo &viswinInfo,
 
         if (viswin->GetMultiresolutionCellSize() != renderAtts.GetMultiresolutionCellSize())
             viswin->SetMultiresolutionCellSize(renderAtts.GetMultiresolutionCellSize());
-
-        if (viswin->GetSurfaceRepresentation() != renderAtts.GetGeometryRepresentation())
-            viswin->SetSurfaceRepresentation(renderAtts.GetGeometryRepresentation());
 
         // handle stereo rendering settings
         bool stereo = renderAtts.GetStereoRendering();

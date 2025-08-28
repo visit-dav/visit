@@ -465,6 +465,9 @@ class ViewerPlotList;
 //    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9:
 //    Initialize to nullptr all pointer ivars.
 //
+//    Kathleen Biagas, Thu Aug 28 15:44:48 PDT 2025
+//    Removed Set/GetSurfaceRepresentation, no longer used.
+//
 // ****************************************************************************
 
 class VIEWERCORE_API ViewerWindow : public ViewerBase
@@ -692,8 +695,6 @@ public:
     void SetStereoRendering(bool enabled, int type);
     bool GetStereo() const;
     int  GetStereoType() const;
-    void SetSurfaceRepresentation(int rep);
-    int  GetSurfaceRepresentation() const;
     int  GetNumPrimitives() const;
     long long GetNumberOfCells(bool polysOnly = false) const;
     void SetNotifyForEachRender(bool val);

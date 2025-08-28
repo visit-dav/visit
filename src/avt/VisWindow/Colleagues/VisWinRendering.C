@@ -279,12 +279,15 @@ vtkStandardNewMacro(vtkBackgroundPass);
 //   Kathleen Biagas, Tue Jun 24, 2025
 //   Replace vtkVisItDataSetMapper with vtkDataSetMapper for ospray overrides.
 //
+//   Kathleen Biagas, Thu Aug 28 15:37:48 PDT 2025
+//   Removes surfaceRepresentation, no longer used.
+//
 // ****************************************************************************
 
 VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
     VisWinColleague(p), background(NULL), foreground(NULL), needsUpdate(false),
     realized(false), antialiasing(false), stereo(false), stereoType(2),
-    surfaceRepresentation(0), specularFlag(false),
+    specularFlag(false),
     specularCoeff(0.6), specularPower(10.0),
     specularColor(ColorAttribute(255,255,255,255)), colorTexturingFlag(true),
     orderComposite(true), depthCompositeThreads(2), depthCompositeBlocking(65536),
@@ -2744,28 +2747,6 @@ VisWinRendering::SetStereoRendering(bool enabled, int type)
     }
 }
 
-
-// ****************************************************************************
-// Method: VisWinRendering::SetSurfaceRepresentation
-//
-// Purpose:
-//   Sets the surface representation.
-//
-// Arguments:
-//   rep : The new surface representation.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Sep 23 14:26:55 PST 2002
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-VisWinRendering::SetSurfaceRepresentation(int rep)
-{
-    surfaceRepresentation = rep;
-}
 
 // ****************************************************************************
 // Method: VisWinRendering::SetSpecularProperties

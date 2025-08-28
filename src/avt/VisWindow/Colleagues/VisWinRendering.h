@@ -223,6 +223,9 @@ class VisWindowColleagueProxy;
 //    Kathleen Biagas, Tue Jun 24, 2025
 //    Make anariRendering and osprayRendering ivars available always.
 //
+//    Kathleen Biagas, Thu Aug 28 15:33:26 PDT 2025
+//    Remove SetSurfaceRepresentation, no longer used.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRendering : public VisWinColleague
@@ -325,9 +328,6 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
                                  { return stereo; };
     int                      GetStereoType() const
                                  { return stereoType; };
-    virtual void             SetSurfaceRepresentation(int rep);
-    int                      GetSurfaceRepresentation() const
-                                 { return surfaceRepresentation; };
     virtual void             SetSpecularProperties(bool,double,double,
                                                    const ColorAttribute&);
     bool                     GetSpecularFlag() const
@@ -456,7 +456,6 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     bool                          antialiasing;
     bool                          stereo;
     int                           stereoType;
-    int                           surfaceRepresentation;
     bool                          specularFlag;
     double                        specularCoeff;
     double                        specularPower;

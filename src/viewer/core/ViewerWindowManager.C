@@ -3477,6 +3477,9 @@ ViewerWindowManager::SetViewExtentsType(avtExtentType viewType,
 //    Kevin Griffin, Thu Mar 6 15:51:48 CST 2025
 //    Added options for ANARI rendering
 //
+//   Kathleen Biagas, Thu Aug 28 15:46:38 PDT 2025
+//   Removed surfaceRepresentation, no longer used.
+//
 // ****************************************************************************
 
 void
@@ -3533,11 +3536,6 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
             ratts->GetMultiresolutionCellSize())
             windows[index]->SetMultiresolutionCellSize(
             ratts->GetMultiresolutionCellSize());
-
-        if (windows[index]->GetSurfaceRepresentation() !=
-            (int) ratts->GetGeometryRepresentation())
-            windows[index]->SetSurfaceRepresentation((int)
-            ratts->GetGeometryRepresentation());
 
         if ((windows[index]->GetStereo() != ratts->GetStereoRendering()) ||
             (windows[index]->GetStereoType() != (int) ratts->GetStereoType()))
@@ -5247,6 +5245,9 @@ ViewerWindowManager::UpdateLightListAtts()
 //   Kevin Griffin, Thu Mar 6 15:51:48 CST 2025
 //   Added ANARI rendering properties
 //
+//   Kathleen Biagas, Thu Aug 28 15:46:38 PDT 2025
+//   Removed geometryRepresentation, no longer used.
+//
 // ****************************************************************************
 
 void
@@ -5270,8 +5271,6 @@ ViewerWindowManager::UpdateRenderingAtts(int windowIndex)
         GetViewerState()->GetRenderingAttributes()->SetAntialiasing(win->GetAntialiasing());
         GetViewerState()->GetRenderingAttributes()->SetMultiresolutionMode(win->GetMultiresolutionMode());
         GetViewerState()->GetRenderingAttributes()->SetMultiresolutionCellSize(win->GetMultiresolutionCellSize());
-        GetViewerState()->GetRenderingAttributes()->SetGeometryRepresentation(
-            (RenderingAttributes::GeometryRepresentation)win->GetSurfaceRepresentation());
         GetViewerState()->GetRenderingAttributes()->SetStereoRendering(win->GetStereo());
         GetViewerState()->GetRenderingAttributes()->SetStereoType((RenderingAttributes::StereoTypes)
             win->GetStereoType());
@@ -8222,6 +8221,9 @@ ViewerWindowManager::CreateVisWindow(const int windowIndex,
 //    Kathleen Biagas, Thu Apr  2 17:06:22 PDT 2015
 //    Ensure color texturing flag gets set.
 //
+//    Kathleen Biagas, Thu Aug 28 15:46:38 PDT 2025
+//    Removed geometryRepresentation, no longer used.
+//
 // ****************************************************************************
 
 void
@@ -8247,8 +8249,6 @@ ViewerWindowManager::SetWindowAttributes(int windowIndex, bool copyAtts)
     w->SetAntialiasing(GetViewerState()->GetRenderingAttributes()->GetAntialiasing());
     w->SetMultiresolutionMode(GetViewerState()->GetRenderingAttributes()->GetMultiresolutionMode());
     w->SetMultiresolutionCellSize(GetViewerState()->GetRenderingAttributes()->GetMultiresolutionCellSize());
-    int rep = (int)GetViewerState()->GetRenderingAttributes()->GetGeometryRepresentation();
-    w->SetSurfaceRepresentation(rep);
     w->SetStereoRendering(GetViewerState()->GetRenderingAttributes()->GetStereoRendering(),
         (int)GetViewerState()->GetRenderingAttributes()->GetStereoType());
     w->SetNotifyForEachRender(GetViewerState()->GetRenderingAttributes()->GetNotifyForEachRender());

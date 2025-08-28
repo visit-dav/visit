@@ -6348,50 +6348,6 @@ VisWindow::IsDirect(void)
     return rendering->IsDirect();
 }
 
-// ****************************************************************************
-// Method: VisWindow::SetSurfaceRepresentation
-//
-// Purpose:
-//   Sets the window's surface representation.
-//
-// Arguments:
-//   rep : The window's new surface representation.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Sep 23 14:11:19 PST 2002
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-VisWindow::SetSurfaceRepresentation(int rep)
-{
-    std::vector< VisWinColleague * >::iterator it;
-    for (it = colleagues.begin() ; it != colleagues.end() ; it++)
-    {
-        (*it)->SetSurfaceRepresentation(rep);
-    }
-}
-
-// ****************************************************************************
-// Method: VisWindow::GetSurfaceRepresentation
-//
-// Purpose:
-//   Gets the window's surface representation.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Sep 23 14:11:50 PST 2002
-//
-// Modifications:
-//
-// ****************************************************************************
-
-int
-VisWindow::GetSurfaceRepresentation() const
-{
-    return rendering->GetSurfaceRepresentation();
-}
 
 // ****************************************************************************
 // Method: VisWindow::SetSpecularProperties

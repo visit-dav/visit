@@ -2368,6 +2368,9 @@ ViewerWindow::InvertBackgroundColor()
 //   Kevin Griffin, Thu Mar 6 15:51:48 CST 2025
 //   Added ANARI
 //
+//   Kathleen Biagas, Thu Aug 28 15:46:01 PDT 2025
+//   Removed call to SetSurfaceRepresentation, no longer used.
+//
 // ****************************************************************************
 
 void
@@ -2393,7 +2396,6 @@ ViewerWindow::CopyGeneralAttributes(const ViewerWindow *source)
     SetMultiresolutionMode(source->GetMultiresolutionMode());
     SetMultiresolutionCellSize(source->GetMultiresolutionCellSize());
     SetStereoRendering(source->GetStereo(), source->GetStereoType());
-    SetSurfaceRepresentation(source->GetSurfaceRepresentation());
     SetNotifyForEachRender(source->GetNotifyForEachRender());
     SetScalableAutoThreshold(source->GetScalableAutoThreshold());
     SetScalableActivationMode(source->GetScalableActivationMode());
@@ -6468,6 +6470,9 @@ RotateAroundY(const avtView3D &curView, double angle,
 //    Kevin Griffin, Thu Mar 6 15:51:48 CST 2025
 //    Added ANARI
 //
+//    Kathleen Biagas, Thu Aug 28 15:46:38 PDT 2025
+//    Removed renderAtts.SetGeometryRepresentation, it no longer exists.
+//
 // ****************************************************************************
 
 WindowAttributes
@@ -6564,9 +6569,6 @@ debug5 << "GetWindowAttributes: size=" << size[0] << ", " << size[1] << endl;
 
     renderAtts.SetMultiresolutionMode(GetMultiresolutionMode());
     renderAtts.SetMultiresolutionCellSize(GetMultiresolutionCellSize());
-
-    renderAtts.SetGeometryRepresentation(
-       (RenderingAttributes::GeometryRepresentation) GetSurfaceRepresentation());
 
     renderAtts.SetSpecularFlag(GetSpecularFlag());
     renderAtts.SetSpecularCoeff(GetSpecularCoeff());
@@ -7764,44 +7766,6 @@ int
 ViewerWindow::GetStereoType() const
 {
     return visWindow->GetStereoType();
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::SetSurfaceRepresentation
-//
-// Purpose:
-//   Sets the window's surface representation.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Sep 23 14:41:42 PST 2002
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-ViewerWindow::SetSurfaceRepresentation(int rep)
-{
-    visWindow->SetSurfaceRepresentation(rep);
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::GetSurfaceRepresentation
-//
-// Purpose:
-//   Returns the window's surface representation.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Sep 23 14:41:59 PST 2002
-//
-// Modifications:
-//
-// ****************************************************************************
-
-int
-ViewerWindow::GetSurfaceRepresentation() const
-{
-    return visWindow->GetSurfaceRepresentation();
 }
 
 // ****************************************************************************
@@ -9054,6 +9018,9 @@ ViewerWindow::GetUsingUsdDevice() const
 //   Kevin Griffin, Fri Mar 6 15:51:48 CST 2025
 //   Added ANARI
 //
+//   Kathleen Biagas, Thu Aug 28 15:46:38 PDT 2025
+//   Removed surfaceRepresentation, no longer used.
+//
 // ****************************************************************************
 
 void
@@ -9149,8 +9116,6 @@ ViewerWindow::CreateNode(DataNode *parentNode,
         windowNode->AddNode(new DataNode("multiresolutionMode", GetMultiresolutionMode()));
         windowNode->AddNode(new DataNode("multiresolutionCellSize", GetMultiresolutionCellSize()));
 
-        // AKA geometryRepresentation in the rendering attrbiutes.
-        windowNode->AddNode(new DataNode("surfaceRepresentation", GetSurfaceRepresentation()));
         windowNode->AddNode(new DataNode("stereoRendering", GetStereo()));
         windowNode->AddNode(new DataNode("stereoType", GetStereoType()));
         windowNode->AddNode(new DataNode("notifyForEachRender", GetNotifyForEachRender()));
@@ -9388,6 +9353,9 @@ ViewerWindow::CreateNode(DataNode *parentNode,
 //   Kevin Griffin, Thu Mar 6 15:51:48 CST 2025
 //   Added ANARI
 //
+//   Kathleen Biagas, Thu Aug 28 15:46:38 PDT 2025
+//   Removed surfaceRepresentation, no longer used.
+//
 // ****************************************************************************
 
 bool
@@ -9538,8 +9506,6 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
         SetMultiresolutionMode(node->AsBool());
     if((node = windowNode->GetNode("multiresolutionCellSize")) != 0)
         SetMultiresolutionCellSize(node->AsDouble());
-    if((node = windowNode->GetNode("surfaceRepresentation")) != 0)
-        SetSurfaceRepresentation(node->AsInt());
     int stereoType = 0;
     if((node = windowNode->GetNode("stereoType")) != 0)
         stereoType = node->AsInt();
