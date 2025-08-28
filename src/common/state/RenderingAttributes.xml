@@ -1,10 +1,5 @@
 <?xml version="1.0"?>
   <Attribute name="RenderingAttributes" purpose="This class contains special rendering attributes like antialiasing and stero settings." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="RenderingAttributes.code">
-    <Enum name="GeometryRepresentation">
-      Surfaces
-      Wireframe
-      Points
-    </Enum>
     <Enum name="StereoTypes">
       RedBlue
       Interlaced
@@ -48,9 +43,6 @@
     </Field>
     <Field name="multiresolutionCellSize" label="multiresolutionCellSize" type="float">
       0.002000
-    </Field>
-    <Field name="geometryRepresentation" label="geometryRepresentation" type="enum" subtype="GeometryRepresentation">
-      Surfaces
     </Field>
     <Field name="stereoRendering" label="stereoRendering" type="bool">
       false

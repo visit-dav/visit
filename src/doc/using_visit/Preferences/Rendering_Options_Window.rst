@@ -27,28 +27,6 @@ The **Antialiasing**, and **Specular lighting** options are covered in the
 
     The basic rendering options
 
-Changing surface representations
-""""""""""""""""""""""""""""""""
-
-Sometimes when visualizing large or complex databases, drawing plots with
-all of their shaded surfaces can take too long to be interactive, even for
-fast graphics hardware. To combat this problem, VisIt_ provides an option
-to view all of the plots in the visualization window as wireframe outlines
-or point clouds instead of as shaded surfaces (see
-:numref:`Figure %s<Preferences-SurfaceRepresentations>`). While being less
-visually informative, plots drawn as wireframe outlines or as clouds of
-points can still be useful for visualizations since it is possible to do
-the setup work like setting the view before switching back to a surface
-representation that is more costly to draw. To change the surface
-representation used to draw plots click on either the **Surfaces**,
-**Wireframe** or **Points** radio buttons below the **Draw objects as**
-label.
-
-.. _Preferences-SurfaceRepresentations:
-
-.. figure:: images/SurfaceRepresentations.png
-
-    The different surface representations
 
 Using display lists
 """""""""""""""""""
