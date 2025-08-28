@@ -99,25 +99,6 @@ PyRenderingAttributes_ToString(const RenderingAttributes *atts, const char *pref
     str += tmpStr;
     snprintf(tmpStr, 1000, "%smultiresolutionCellSize = %g\n", prefix, atts->GetMultiresolutionCellSize());
     str += tmpStr;
-    const char *geometryRepresentation_names = "Surfaces, Wireframe, Points";
-    switch (atts->GetGeometryRepresentation())
-    {
-      case RenderingAttributes::Surfaces:
-          snprintf(tmpStr, 1000, "%sgeometryRepresentation = %sSurfaces  # %s\n", prefix, prefix, geometryRepresentation_names);
-          str += tmpStr;
-          break;
-      case RenderingAttributes::Wireframe:
-          snprintf(tmpStr, 1000, "%sgeometryRepresentation = %sWireframe  # %s\n", prefix, prefix, geometryRepresentation_names);
-          str += tmpStr;
-          break;
-      case RenderingAttributes::Points:
-          snprintf(tmpStr, 1000, "%sgeometryRepresentation = %sPoints  # %s\n", prefix, prefix, geometryRepresentation_names);
-          str += tmpStr;
-          break;
-      default:
-          break;
-    }
-
     if(atts->GetStereoRendering())
         snprintf(tmpStr, 1000, "%sstereoRendering = 1\n", prefix);
     else
@@ -1159,73 +1140,6 @@ RenderingAttributes_GetMultiresolutionCellSize(PyObject *self, PyObject *args)
 {
     PyRenderingAttributesObject *obj = (PyRenderingAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetMultiresolutionCellSize()));
-    return retval;
-}
-
-/*static*/ PyObject *
-RenderingAttributes_SetGeometryRepresentation(PyObject *self, PyObject *args)
-{
-    PyRenderingAttributesObject *obj = (PyRenderingAttributesObject *)self;
-
-    PyObject *packaged_args = 0;
-
-    // Handle args packaged into a tuple of size one
-    // if we think the unpackaged args matches our needs
-    if (PySequence_Check(args) && PySequence_Size(args) == 1)
-    {
-        packaged_args = PySequence_GetItem(args, 0);
-        if (PyNumber_Check(packaged_args))
-            args = packaged_args;
-    }
-
-    if (PySequence_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
-    }
-
-    if (!PyNumber_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
-    }
-
-    long val = PyLong_AsLong(args);
-    int cval = int(val);
-
-    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
-    {
-        Py_XDECREF(packaged_args);
-        PyErr_Clear();
-        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
-    }
-
-    if (cval < 0 || cval >= 3)
-    {
-        std::stringstream ss;
-        ss << "An invalid geometryRepresentation value was given." << std::endl;
-        ss << "Valid values are in the range [0,2]." << std::endl;
-        ss << "You can also use the following symbolic names:";
-        ss << " Surfaces";
-        ss << ", Wireframe";
-        ss << ", Points";
-        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
-    }
-
-    Py_XDECREF(packaged_args);
-
-    // Set the geometryRepresentation in the object.
-    obj->data->SetGeometryRepresentation(RenderingAttributes::GeometryRepresentation(cval));
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-RenderingAttributes_GetGeometryRepresentation(PyObject *self, PyObject *args)
-{
-    PyRenderingAttributesObject *obj = (PyRenderingAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetGeometryRepresentation()));
     return retval;
 }
 
@@ -3129,8 +3043,6 @@ PyMethodDef PyRenderingAttributes_methods[RENDERINGATTRIBUTES_NMETH] = {
     {"GetMultiresolutionMode", RenderingAttributes_GetMultiresolutionMode, METH_VARARGS},
     {"SetMultiresolutionCellSize", RenderingAttributes_SetMultiresolutionCellSize, METH_VARARGS},
     {"GetMultiresolutionCellSize", RenderingAttributes_GetMultiresolutionCellSize, METH_VARARGS},
-    {"SetGeometryRepresentation", RenderingAttributes_SetGeometryRepresentation, METH_VARARGS},
-    {"GetGeometryRepresentation", RenderingAttributes_GetGeometryRepresentation, METH_VARARGS},
     {"SetStereoRendering", RenderingAttributes_SetStereoRendering, METH_VARARGS},
     {"GetStereoRendering", RenderingAttributes_GetStereoRendering, METH_VARARGS},
     {"SetStereoType", RenderingAttributes_SetStereoType, METH_VARARGS},
@@ -3250,15 +3162,6 @@ PyRenderingAttributes_getattro(PyObject *self, PyObject *attr_name)
         return RenderingAttributes_GetMultiresolutionMode(self, NULL);
     if(strcmp(name, "multiresolutionCellSize") == 0)
         return RenderingAttributes_GetMultiresolutionCellSize(self, NULL);
-    if(strcmp(name, "geometryRepresentation") == 0)
-        return RenderingAttributes_GetGeometryRepresentation(self, NULL);
-    if(strcmp(name, "Surfaces") == 0)
-        return PyInt_FromLong(long(RenderingAttributes::Surfaces));
-    if(strcmp(name, "Wireframe") == 0)
-        return PyInt_FromLong(long(RenderingAttributes::Wireframe));
-    if(strcmp(name, "Points") == 0)
-        return PyInt_FromLong(long(RenderingAttributes::Points));
-
     if(strcmp(name, "stereoRendering") == 0)
         return RenderingAttributes_GetStereoRendering(self, NULL);
     if(strcmp(name, "stereoType") == 0)
@@ -3390,8 +3293,6 @@ PyRenderingAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *ar
         obj = RenderingAttributes_SetMultiresolutionMode(self, args);
     else if(strcmp(name, "multiresolutionCellSize") == 0)
         obj = RenderingAttributes_SetMultiresolutionCellSize(self, args);
-    else if(strcmp(name, "geometryRepresentation") == 0)
-        obj = RenderingAttributes_SetGeometryRepresentation(self, args);
     else if(strcmp(name, "stereoRendering") == 0)
         obj = RenderingAttributes_SetStereoRendering(self, args);
     else if(strcmp(name, "stereoType") == 0)
