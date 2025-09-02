@@ -652,3 +652,5 @@ VolumeAttributes_SetMaterialProperties(PyObject *self, PyObject *args)
 }
 
 Target: xml2cmake
+Condition: VISIT_SLIVR
+Definitions: -DVISIT_SLIVR

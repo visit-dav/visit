@@ -171,7 +171,8 @@ A list of supported back-ends and publicly available applications using ANARI ca
     Because ANARI abstracts away the details of an entire rendering system, the underlying hardware which a back-end may use is entirely up to the implementation.
     Please read your vendor's back-end documentation to see what parameters are available to configure and what underlying hardware is both available and used to render frames.
 
-``Back-end Subtype``: This option allows you to specify the subtype of the back-end to use if supported by the back-end. The **default** option is most common and supported by all of the back-ends.
+``Back-end Subtype``: This option allows you to specify the subtype of the back-end to use if supported by the back-end. 
+The **default** option is most common and supported by all of the back-ends.
 
 ``Renderer``: This option allows you to specify the renderer to use with the back-end.
 
