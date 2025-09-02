@@ -54,9 +54,9 @@ Each sample point along the ray is composited to form a final color for the scre
 Rays are traced from closest to farthest to allow for early ray termination which stops the sampling process when the pixel opacity gets above a certain threshold.
 This method of volume-rendering yields superior pictures at the cost of speed and memory use.
 
-If VisIt_ is built with `ANARI <https://www.khronos.org/api/index_2017/anari/>`_ support by using the ``-–anari`` option, 
-there will be an additional rendering method (:numref:`Figure %s<anari_rendering_atts_window>`). Once ANARI Rendering is enabled, all volume rendering 
-will be done with the vendor-specific ANARI back-end. Rendering details can be found in the back-end vendor's documentation.
+If VisIt_ is built with `ANARI <https://www.khronos.org/api/index_2017/anari/>`_ support by using the ``-–anari`` option, there will be an additional rendering method (:numref:`Figure %s<anari_rendering_atts_window>`). 
+Once ANARI Rendering is enabled, all volume rendering will be done with the vendor-specific ANARI back-end. 
+Rendering details can be found in the back-end vendor's documentation.
 
 **Rendering Method: Serial Rendering** (:numref:`Figure %s<serial_rendering_atts_window>`).
 
@@ -154,8 +154,9 @@ Lighting is enabled by default but the user can disable it by unchecking the **L
    ANARI options
 
 ANARI currently only supports structured regular spatial fields which means the data must be defined on a rectilinear grid.
-For data not defined on a rectilinear grid, the data will need to be resampled onto a rectilinear grid. The user can control 
-the resampling of the data through the resampling options. See the **Serial and Parallel Rendering Options** section above for details.
+For data not defined on a rectilinear grid, the data will need to be resampled onto a rectilinear grid. 
+The user can control the resampling of the data through the resampling options. 
+See the **Serial and Parallel Rendering Options** section above for details.
 
 ANARI Rendering Options:
 
