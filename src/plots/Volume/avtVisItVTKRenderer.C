@@ -642,7 +642,6 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
             LOCAL_DEBUG << "OSPRay Volume Mapper "
                         << std::endl;
         }
-        else
 #endif
     }
 #ifdef HAVE_ANARI
