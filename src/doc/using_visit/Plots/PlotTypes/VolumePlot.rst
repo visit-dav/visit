@@ -54,7 +54,7 @@ Each sample point along the ray is composited to form a final color for the scre
 Rays are traced from closest to farthest to allow for early ray termination which stops the sampling process when the pixel opacity gets above a certain threshold.
 This method of volume-rendering yields superior pictures at the cost of speed and memory use.
 
-If VisIt_ is built with `ANARI <https://www.khronos.org/api/index_2017/anari/>`_ support by using the ``-–anari`` option, there will be an additional rendering method (:numref:`Figure %s<anari_rendering_atts_window>`). 
+If VisIt_ is built with `ANARI <https://www.khronos.org/api/index_2017/anari/>`_ support by using the ``-–anari`` option, there will be an additional rendering method (:numref:`Figure %s<anari_rendering_atts_window1>`). 
 Once ANARI Rendering is enabled, all volume rendering will be done with the vendor-specific ANARI back-end. 
 Rendering details can be found in the back-end vendor's documentation.
 
