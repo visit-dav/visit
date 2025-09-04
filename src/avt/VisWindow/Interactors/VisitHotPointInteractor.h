@@ -115,7 +115,6 @@ public:
     void              StopCurveMode();
     void              StopAxisArrayMode();
     void              StopParallelAxesMode();
-    void              SetAnariRendering(bool enabled);
 private:
     VisitInteractor  *currentInteractor;
 

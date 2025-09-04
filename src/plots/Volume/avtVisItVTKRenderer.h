@@ -20,6 +20,10 @@ class vtkVolume;
 class vtkVolumeMapper;
 class vtkVolumeProperty;
 
+#ifdef HAVE_ANARI
+class vtkAnariPass;
+#endif
+
 
 // ****************************************************************************
 //  Class: avtVisItVTKRenderer
@@ -90,6 +94,15 @@ protected:
     vtkVolume                 *m_volume        {nullptr};
 
     vtkDataSet                *previousInput{nullptr};
+
+private:
+#ifdef HAVE_ANARI
+    bool m_anariEnabled{false};
+
+    void SetAnariRendererParameters(vtkAnariPass * const);
+    void SetAnariUSDParameters(vtkAnariPass * const);
+#endif
+    
 };
 
 #endif

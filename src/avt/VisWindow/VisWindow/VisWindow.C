@@ -3473,9 +3473,6 @@ VisWindow::GetToolUpdateMode() const
 void
 VisWindow::SetInteractor(VisitInteractor *i)
 {
-#ifdef HAVE_ANARI
-    i->SetAnariRendering(rendering->GetAnariRendering());
-#endif
     rendering->SetInteractor(i);
 }
 
@@ -6989,7 +6986,6 @@ VisWindow::SetAnariRendering(const bool enabled)
     if (enabled != GetAnariRendering())
     {
         rendering->SetAnariRendering(enabled);
-        interactions->SetAnariRendering(enabled);
     }
 }
 
