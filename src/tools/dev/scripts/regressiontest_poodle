@@ -634,6 +634,9 @@ if test "$post" = "true" ; then
         $repoDir/src/tools/dev/scripts/visit-notify-test-failure -host $testHost
     fi
 
+    # log current quota usage
+    python3 $repoDir/src/tools/dev/scripts/visit-check-lc-workspace-quota.py >> /usr/workspace/visit/QUOTA_HISTORY.txt
+
     # If its the first day of the month, purge test results from 3 months ago.
     if test "\$(date +%d)" = "01" ; then
          cd $testDir/$workingDir/old_results
