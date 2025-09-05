@@ -29,7 +29,7 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRI
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
 ## (configured w/ mpi compiler wrapper)
-VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/bin/mpicc TYPE FILEPATH)
+VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/bin/mpicc TYPE FILEPATH)
 
 ##
 ## VisIt Thread Option
