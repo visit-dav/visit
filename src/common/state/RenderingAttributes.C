@@ -183,10 +183,6 @@ void RenderingAttributes::Init()
     ospraySPP = 1;
     osprayAO = 0;
     osprayShadows = false;
-    anariRendering = false;
-    anariLibrarySubtype = "default";
-    anariRendererSubtype = "default";
-    usingUsdDevice = false;
 
     RenderingAttributes::SelectAll();
 }
@@ -249,13 +245,7 @@ void RenderingAttributes::Copy(const RenderingAttributes &obj)
     ospraySPP = obj.ospraySPP;
     osprayAO = obj.osprayAO;
     osprayShadows = obj.osprayShadows;
-    anariRendering = obj.anariRendering;
-    anariLibrary = obj.anariLibrary;
-    anariLibrarySubtype = obj.anariLibrarySubtype;
-    anariRendererSubtype = obj.anariRendererSubtype;
-    usingUsdDevice = obj.usingUsdDevice;
-    anariRendererParameters = obj.anariRendererParameters;
-    anariUSDParameters = obj.anariUSDParameters;
+    anariAttributes = obj.anariAttributes;
 
     RenderingAttributes::SelectAll();
 }
@@ -460,13 +450,7 @@ RenderingAttributes::operator == (const RenderingAttributes &obj) const
             (ospraySPP == obj.ospraySPP) &&
             (osprayAO == obj.osprayAO) &&
             (osprayShadows == obj.osprayShadows) &&
-            (anariRendering == obj.anariRendering) &&
-            (anariLibrary == obj.anariLibrary) &&
-            (anariLibrarySubtype == obj.anariLibrarySubtype) &&
-            (anariRendererSubtype == obj.anariRendererSubtype) &&
-            (usingUsdDevice == obj.usingUsdDevice) &&
-            (anariRendererParameters == obj.anariRendererParameters) &&
-            (anariUSDParameters == obj.anariUSDParameters));
+            (anariAttributes == obj.anariAttributes));
 }
 
 // ****************************************************************************
@@ -645,13 +629,7 @@ RenderingAttributes::SelectAll()
     Select(ID_ospraySPP,                    (void *)&ospraySPP);
     Select(ID_osprayAO,                     (void *)&osprayAO);
     Select(ID_osprayShadows,                (void *)&osprayShadows);
-    Select(ID_anariRendering,               (void *)&anariRendering);
-    Select(ID_anariLibrary,                 (void *)&anariLibrary);
-    Select(ID_anariLibrarySubtype,          (void *)&anariLibrarySubtype);
-    Select(ID_anariRendererSubtype,         (void *)&anariRendererSubtype);
-    Select(ID_usingUsdDevice,               (void *)&usingUsdDevice);
-    Select(ID_anariRendererParameters,      (void *)&anariRendererParameters);
-    Select(ID_anariUSDParameters,           (void *)&anariUSDParameters);
+    Select(ID_anariAttributes,              (void *)&anariAttributes);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -896,46 +874,16 @@ RenderingAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
         node->AddNode(new DataNode("osprayShadows", osprayShadows));
     }
 
-    if(completeSave || !FieldsEqual(ID_anariRendering, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_anariAttributes, &defaultObject))
     {
-        addToParent = true;
-        node->AddNode(new DataNode("anariRendering", anariRendering));
-    }
-
-    if(completeSave || !FieldsEqual(ID_anariLibrary, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("anariLibrary", anariLibrary));
-    }
-
-    if(completeSave || !FieldsEqual(ID_anariLibrarySubtype, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("anariLibrarySubtype", anariLibrarySubtype));
-    }
-
-    if(completeSave || !FieldsEqual(ID_anariRendererSubtype, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("anariRendererSubtype", anariRendererSubtype));
-    }
-
-    if(completeSave || !FieldsEqual(ID_usingUsdDevice, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("usingUsdDevice", usingUsdDevice));
-    }
-
-    if(completeSave || !FieldsEqual(ID_anariRendererParameters, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("anariRendererParameters", anariRendererParameters));
-    }
-
-    if(completeSave || !FieldsEqual(ID_anariUSDParameters, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("anariUSDParameters", anariUSDParameters));
+        DataNode *anariAttributesNode = new DataNode("anariAttributes");
+        if(anariAttributes.CreateNode(anariAttributesNode, completeSave, false))
+        {
+            addToParent = true;
+            node->AddNode(anariAttributesNode);
+        }
+        else
+            delete anariAttributesNode;
     }
 
 
@@ -1114,20 +1062,8 @@ RenderingAttributes::SetFromNode(DataNode *parentNode)
         SetOsprayAO(node->AsInt());
     if((node = searchNode->GetNode("osprayShadows")) != 0)
         SetOsprayShadows(node->AsBool());
-    if((node = searchNode->GetNode("anariRendering")) != 0)
-        SetAnariRendering(node->AsBool());
-    if((node = searchNode->GetNode("anariLibrary")) != 0)
-        SetAnariLibrary(node->AsString());
-    if((node = searchNode->GetNode("anariLibrarySubtype")) != 0)
-        SetAnariLibrarySubtype(node->AsString());
-    if((node = searchNode->GetNode("anariRendererSubtype")) != 0)
-        SetAnariRendererSubtype(node->AsString());
-    if((node = searchNode->GetNode("usingUsdDevice")) != 0)
-        SetUsingUsdDevice(node->AsBool());
-    if((node = searchNode->GetNode("anariRendererParameters")) != 0)
-        SetAnariRendererParameters(node->AsStringVector());
-    if((node = searchNode->GetNode("anariUSDParameters")) != 0)
-        SetAnariUSDParameters(node->AsStringVector());
+    if((node = searchNode->GetNode("anariAttributes")) != 0)
+        anariAttributes.SetFromNode(node);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1384,52 +1320,10 @@ RenderingAttributes::SetOsprayShadows(bool osprayShadows_)
 }
 
 void
-RenderingAttributes::SetAnariRendering(bool anariRendering_)
+RenderingAttributes::SetAnariAttributes(const AnariAttributes &anariAttributes_)
 {
-    anariRendering = anariRendering_;
-    Select(ID_anariRendering, (void *)&anariRendering);
-}
-
-void
-RenderingAttributes::SetAnariLibrary(const std::string &anariLibrary_)
-{
-    anariLibrary = anariLibrary_;
-    Select(ID_anariLibrary, (void *)&anariLibrary);
-}
-
-void
-RenderingAttributes::SetAnariLibrarySubtype(const std::string &anariLibrarySubtype_)
-{
-    anariLibrarySubtype = anariLibrarySubtype_;
-    Select(ID_anariLibrarySubtype, (void *)&anariLibrarySubtype);
-}
-
-void
-RenderingAttributes::SetAnariRendererSubtype(const std::string &anariRendererSubtype_)
-{
-    anariRendererSubtype = anariRendererSubtype_;
-    Select(ID_anariRendererSubtype, (void *)&anariRendererSubtype);
-}
-
-void
-RenderingAttributes::SetUsingUsdDevice(bool usingUsdDevice_)
-{
-    usingUsdDevice = usingUsdDevice_;
-    Select(ID_usingUsdDevice, (void *)&usingUsdDevice);
-}
-
-void
-RenderingAttributes::SetAnariRendererParameters(const stringVector &anariRendererParameters_)
-{
-    anariRendererParameters = anariRendererParameters_;
-    Select(ID_anariRendererParameters, (void *)&anariRendererParameters);
-}
-
-void
-RenderingAttributes::SetAnariUSDParameters(const stringVector &anariUSDParameters_)
-{
-    anariUSDParameters = anariUSDParameters_;
-    Select(ID_anariUSDParameters, (void *)&anariUSDParameters);
+    anariAttributes = anariAttributes_;
+    Select(ID_anariAttributes, (void *)&anariAttributes);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1664,76 +1558,16 @@ RenderingAttributes::GetOsprayShadows() const
     return osprayShadows;
 }
 
-bool
-RenderingAttributes::GetAnariRendering() const
+const AnariAttributes &
+RenderingAttributes::GetAnariAttributes() const
 {
-    return anariRendering;
+    return anariAttributes;
 }
 
-const std::string &
-RenderingAttributes::GetAnariLibrary() const
+AnariAttributes &
+RenderingAttributes::GetAnariAttributes()
 {
-    return anariLibrary;
-}
-
-std::string &
-RenderingAttributes::GetAnariLibrary()
-{
-    return anariLibrary;
-}
-
-const std::string &
-RenderingAttributes::GetAnariLibrarySubtype() const
-{
-    return anariLibrarySubtype;
-}
-
-std::string &
-RenderingAttributes::GetAnariLibrarySubtype()
-{
-    return anariLibrarySubtype;
-}
-
-const std::string &
-RenderingAttributes::GetAnariRendererSubtype() const
-{
-    return anariRendererSubtype;
-}
-
-std::string &
-RenderingAttributes::GetAnariRendererSubtype()
-{
-    return anariRendererSubtype;
-}
-
-bool
-RenderingAttributes::GetUsingUsdDevice() const
-{
-    return usingUsdDevice;
-}
-
-const stringVector &
-RenderingAttributes::GetAnariRendererParameters() const
-{
-    return anariRendererParameters;
-}
-
-stringVector &
-RenderingAttributes::GetAnariRendererParameters()
-{
-    return anariRendererParameters;
-}
-
-const stringVector &
-RenderingAttributes::GetAnariUSDParameters() const
-{
-    return anariUSDParameters;
-}
-
-stringVector &
-RenderingAttributes::GetAnariUSDParameters()
-{
-    return anariUSDParameters;
+    return anariAttributes;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1759,33 +1593,9 @@ RenderingAttributes::SelectEndCuePoint()
 }
 
 void
-RenderingAttributes::SelectAnariLibrary()
+RenderingAttributes::SelectAnariAttributes()
 {
-    Select(ID_anariLibrary, (void *)&anariLibrary);
-}
-
-void
-RenderingAttributes::SelectAnariLibrarySubtype()
-{
-    Select(ID_anariLibrarySubtype, (void *)&anariLibrarySubtype);
-}
-
-void
-RenderingAttributes::SelectAnariRendererSubtype()
-{
-    Select(ID_anariRendererSubtype, (void *)&anariRendererSubtype);
-}
-
-void
-RenderingAttributes::SelectAnariRendererParameters()
-{
-    Select(ID_anariRendererParameters, (void *)&anariRendererParameters);
-}
-
-void
-RenderingAttributes::SelectAnariUSDParameters()
-{
-    Select(ID_anariUSDParameters, (void *)&anariUSDParameters);
+    Select(ID_anariAttributes, (void *)&anariAttributes);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1847,13 +1657,7 @@ RenderingAttributes::GetFieldName(int index) const
     case ID_ospraySPP:                    return "ospraySPP";
     case ID_osprayAO:                     return "osprayAO";
     case ID_osprayShadows:                return "osprayShadows";
-    case ID_anariRendering:               return "anariRendering";
-    case ID_anariLibrary:                 return "anariLibrary";
-    case ID_anariLibrarySubtype:          return "anariLibrarySubtype";
-    case ID_anariRendererSubtype:         return "anariRendererSubtype";
-    case ID_usingUsdDevice:               return "usingUsdDevice";
-    case ID_anariRendererParameters:      return "anariRendererParameters";
-    case ID_anariUSDParameters:           return "anariUSDParameters";
+    case ID_anariAttributes:              return "anariAttributes";
     default:  return "invalid index";
     }
 }
@@ -1913,13 +1717,7 @@ RenderingAttributes::GetFieldType(int index) const
     case ID_ospraySPP:                    return FieldType_int;
     case ID_osprayAO:                     return FieldType_int;
     case ID_osprayShadows:                return FieldType_bool;
-    case ID_anariRendering:               return FieldType_bool;
-    case ID_anariLibrary:                 return FieldType_string;
-    case ID_anariLibrarySubtype:          return FieldType_string;
-    case ID_anariRendererSubtype:         return FieldType_string;
-    case ID_usingUsdDevice:               return FieldType_bool;
-    case ID_anariRendererParameters:      return FieldType_stringVector;
-    case ID_anariUSDParameters:           return FieldType_stringVector;
+    case ID_anariAttributes:              return FieldType_att;
     default:  return FieldType_unknown;
     }
 }
@@ -1979,13 +1777,7 @@ RenderingAttributes::GetFieldTypeName(int index) const
     case ID_ospraySPP:                    return "int";
     case ID_osprayAO:                     return "int";
     case ID_osprayShadows:                return "bool";
-    case ID_anariRendering:               return "bool";
-    case ID_anariLibrary:                 return "string";
-    case ID_anariLibrarySubtype:          return "string";
-    case ID_anariRendererSubtype:         return "string";
-    case ID_usingUsdDevice:               return "bool";
-    case ID_anariRendererParameters:      return "stringVector";
-    case ID_anariUSDParameters:           return "stringVector";
+    case ID_anariAttributes:              return "att";
     default:  return "invalid index";
     }
 }
@@ -2197,39 +1989,9 @@ RenderingAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (osprayShadows == obj.osprayShadows);
         }
         break;
-    case ID_anariRendering:
+    case ID_anariAttributes:
         {  // new scope
-        retval = (anariRendering == obj.anariRendering);
-        }
-        break;
-    case ID_anariLibrary:
-        {  // new scope
-        retval = (anariLibrary == obj.anariLibrary);
-        }
-        break;
-    case ID_anariLibrarySubtype:
-        {  // new scope
-        retval = (anariLibrarySubtype == obj.anariLibrarySubtype);
-        }
-        break;
-    case ID_anariRendererSubtype:
-        {  // new scope
-        retval = (anariRendererSubtype == obj.anariRendererSubtype);
-        }
-        break;
-    case ID_usingUsdDevice:
-        {  // new scope
-        retval = (usingUsdDevice == obj.usingUsdDevice);
-        }
-        break;
-    case ID_anariRendererParameters:
-        {  // new scope
-        retval = (anariRendererParameters == obj.anariRendererParameters);
-        }
-        break;
-    case ID_anariUSDParameters:
-        {  // new scope
-        retval = (anariUSDParameters == obj.anariUSDParameters);
+        retval = (anariAttributes == obj.anariAttributes);
         }
         break;
     default: retval = false;

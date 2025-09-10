@@ -7,6 +7,8 @@
 #       modern CMake syntax.
 #
 # Modifications:
+#   Kevin Griffin, Wed Sep 10, 2025
+#   Refactored ANARI rendering options into AnariAttributes
 #
 #****************************************************************************
 
@@ -23,6 +25,7 @@
 #
 
 foreach(obj_name
+    AnariAttributes
     AnimationAttributes
     AnnotationAttributes
     AnnotationObject
@@ -137,6 +140,7 @@ endforeach()
 
 # Adding contents of this dir as SOURCES to visitcommon
 target_sources(visitcommon PRIVATE
+    AnariAttributes.C
     AnimationAttributes.C
     AnnotationAttributes.C
     AnnotationObject.C

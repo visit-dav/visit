@@ -67,6 +67,9 @@
 #  Remove DatabaseCorrelation, View2DAttributes, View3DAttributes from
 #  code-gen skipping. All customizations are in the .code files now.
 #
+#  Kevin Griffin, Wed Sep 10, 2025
+#  Add AnariAttributes.
+#
 #****************************************************************************
 
 #########################################################
@@ -126,6 +129,7 @@ SET(PY_GEN_METADATA_OBJECTS
 #####################
 
 SET(PY_GEN_STATE_OBJECTS
+    AnariAttributes
     AnimationAttributes
     AnnotationAttributes
     Axes2D
@@ -286,6 +290,7 @@ visitpy/PyavtVectorMetaData.C
 
 
 SET(GENERATED_PY_SOURCES
+visitpy/PyAnariAttributes.C
 visitpy/PyAnimationAttributes.C 
 visitpy/PyAnnotationAttributes.C 
 visitpy/PyAxes2D.C 

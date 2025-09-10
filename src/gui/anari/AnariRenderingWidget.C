@@ -6,6 +6,7 @@
 #include <AnariParameterInfo.h>
 #include <QvisRenderingWindow.h>
 #include <RenderingAttributes.h>
+#include <AnariAttributes.h>
 #include <DebugStream.h>
 
 #include <QGroupBox>
@@ -98,7 +99,7 @@ AnariRenderingWidget::AnariRenderingWidget(QvisRenderingWindow *qrw,
                                            QWidget *parent)
     : QWidget(parent)
     , renderingWindow(qrw)
-    , renderingAttributes(ra)
+    , anariAttributes(&ra->GetAnariAttributes())
     , dynamicLayouts(nullptr)
     , dynamicLayoutMap()
     , topRows(0)
@@ -849,6 +850,33 @@ AnariRenderingWidget::GetParameterInfo(anari::Device device,
 //----------------------------------------------------------------------------
 
 // ****************************************************************************
+// Method: AnariRenderingWidget::UpdateAnariAttributes
+//
+// Purpose:
+//   Updates the ANARI rendering widget with the given attributes.
+//
+// Arguments:
+//   attrs the AnariAttributes object containing the new settings
+//
+// Programmer: Kevin Griffin
+// Creation:
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+AnariRenderingWidget::UpdateAnariAttributes(const AnariAttributes &attrs)
+{
+    SetChecked(attrs.GetAnariRendering());
+    UpdateLibraryName(attrs.GetAnariLibrary());
+    UpdateLibrarySubtypes(attrs.GetAnariLibrarySubtype());
+    UpdateRendererSubtypes(attrs.GetAnariRendererSubtype());
+    UpdateRendererParameters(attrs.GetAnariRendererParameters());
+    UpdateUSDParameters(attrs.GetAnariUSDParameters());
+}
+
+// ****************************************************************************
 // Method: AnariRenderingWidget::UpdateLibrarySubtypes
 //
 // Purpose:
@@ -1074,7 +1102,7 @@ AnariRenderingWidget::SetChecked(const bool val)
 void
 AnariRenderingWidget::renderingToggled(bool val)
 {
-    renderingAttributes->SetAnariRendering(val);
+    anariAttributes->SetAnariRendering(val);
     renderingWindow->SetUpdateApply(false);
     
     if(val) 
@@ -1104,7 +1132,7 @@ AnariRenderingWidget::renderingToggled(bool val)
 void
 AnariRenderingWidget::libraryChanged()
 {
-    renderingAttributes->SetUsingUsdDevice(false);
+    anariAttributes->SetUsingUsdDevice(false);
     std::string libname = libraryName->text().trimmed().toStdString();
     
     if(libname.empty())
@@ -1174,14 +1202,14 @@ AnariRenderingWidget::libraryChanged()
             librarySubtypes->addItem("default");
             librarySubtypes->blockSignals(false);
             auto libSubtype =  librarySubtypes->currentText().toStdString();
-            renderingAttributes->SetAnariLibrarySubtype(libSubtype);
+            anariAttributes->SetAnariLibrarySubtype(libSubtype);
 
             rendererSubtypes->blockSignals(true);
             rendererSubtypes->clear();
             rendererSubtypes->addItem("default");
             rendererSubtypes->blockSignals(false);
             auto rendererSubtype = rendererSubtypes->currentText().toStdString();
-            renderingAttributes->SetAnariRendererSubtype(rendererSubtype);
+            anariAttributes->SetAnariRendererSubtype(rendererSubtype);
 
             // Reset to blank widget
             emit currentBackendChanged(0);
@@ -1211,7 +1239,7 @@ void
 AnariRenderingWidget::librarySubtypeChanged(const QString &subtype)
 {
     auto libSubtype = subtype.toStdString();
-    renderingAttributes->SetAnariLibrarySubtype(libSubtype);
+    anariAttributes->SetAnariLibrarySubtype(libSubtype);
     auto libname = libraryName->text().trimmed().toStdString();
 
     auto anariLibrary = anari::loadLibrary(libname.c_str(), anari_visit::StatusCallback);
@@ -1237,7 +1265,7 @@ AnariRenderingWidget::librarySubtypeChanged(const QString &subtype)
         }
 
         auto rendererSubtype =  rendererSubtypes->currentText().toStdString();
-        renderingAttributes->SetAnariRendererSubtype(rendererSubtype);
+        anariAttributes->SetAnariRendererSubtype(rendererSubtype);
         rendererSubtypes->blockSignals(false);
 
         // Create Dynamic Widget
@@ -1279,7 +1307,7 @@ void
 AnariRenderingWidget::rendererSubtypeChanged(const QString &subtype)
 {
     auto rendererSubtype = subtype.toStdString();
-    renderingAttributes->SetAnariRendererSubtype(rendererSubtype);
+    anariAttributes->SetAnariRendererSubtype(rendererSubtype);
 
     auto libname = libraryName->text().trimmed().toStdString();
     auto libSubtype = librarySubtypes->currentText().toStdString();
@@ -1491,13 +1519,13 @@ AnariRenderingWidget::UpdateRenderingAttributes(const bool updateApply)
         }
     }
 
-    if(!this->renderingAttributes->GetUsingUsdDevice())
+    if(!anariAttributes->GetUsingUsdDevice())
     {
-        renderingAttributes->SetAnariRendererParameters(params);
+        anariAttributes->SetAnariRendererParameters(params);
     }
     else
     {
-        renderingAttributes->SetAnariUSDParameters(params);
+        anariAttributes->SetAnariUSDParameters(params);
     }
 
     renderingWindow->SetUpdateApply(updateApply);
@@ -1519,8 +1547,8 @@ AnariRenderingWidget::UpdateRenderingAttributes(const bool updateApply)
 void AnariRenderingWidget::ClearAnariParameterAttributes()
 {
     stringVector params;
-    renderingAttributes->SetAnariRendererParameters(params);
-    renderingAttributes->SetAnariUSDParameters(params);
+    anariAttributes->SetAnariRendererParameters(params);
+    anariAttributes->SetAnariUSDParameters(params);
 }
 
 // ****************************************************************************
@@ -1543,16 +1571,16 @@ void AnariRenderingWidget::ClearAnariParameterAttributes()
 void
 AnariRenderingWidget::UpdateLibraryUI(anari::Library anariLibrary, const std::string &libname)
 {
-    renderingAttributes->SetAnariLibrary(libname);
+    anariAttributes->SetAnariLibrary(libname);
     auto backendType = GetBackendType(libname);
 
     if(backendType == BackendType::USD)
     {
-        renderingAttributes->SetUsingUsdDevice(true);
+        anariAttributes->SetUsingUsdDevice(true);
     }
     else
     {
-        renderingAttributes->SetUsingUsdDevice(false);
+        anariAttributes->SetUsingUsdDevice(false);
     }
 
     // Update back-end subtypes
@@ -1574,7 +1602,7 @@ AnariRenderingWidget::UpdateLibraryUI(anari::Library anariLibrary, const std::st
 
     librarySubtypes->blockSignals(false);
     auto libSubtype =  librarySubtypes->currentText().toStdString();
-    renderingAttributes->SetAnariLibrarySubtype(libSubtype);
+    anariAttributes->SetAnariLibrarySubtype(libSubtype);
 
     auto anariDevice = anari::newDevice(anariLibrary, libSubtype.c_str());
 
@@ -1597,7 +1625,7 @@ AnariRenderingWidget::UpdateLibraryUI(anari::Library anariLibrary, const std::st
     }
 
     auto rendererSubtype = rendererSubtypes->currentText().toStdString();
-    renderingAttributes->SetAnariRendererSubtype(rendererSubtype);
+    anariAttributes->SetAnariRendererSubtype(rendererSubtype);
     rendererSubtypes->blockSignals(false);
 
     // Create Dynamic Widget

@@ -30,6 +30,10 @@
 
 #include <ExternalRenderRequestInfo.h>
 
+#ifdef HAVE_ANARI
+#include <AnariAttributes.h>
+#endif
+
 class AnnotationObjectList;
 class AttributeSubject;
 class AttributeSubjectMap;
@@ -465,6 +469,9 @@ class ViewerPlotList;
 //    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9:
 //    Initialize to nullptr all pointer ivars.
 //
+//    Kevin Griffin, Tue Sep 9, 2025
+//    Added Set/Get AnariAttributes when built with ANARI support.
+//
 // ****************************************************************************
 
 class VIEWERCORE_API ViewerWindow : public ViewerBase
@@ -739,20 +746,8 @@ public:
     bool GetOsprayShadows() const;
 #endif
 #ifdef HAVE_ANARI
-    void                SetAnariRendering(const bool enabled);
-    bool                GetAnariRendering() const;
-    void                SetAnariLibraryName(const std::string name);
-    std::string         GetAnariLibraryName() const;
-    void                SetAnariLibrarySubtype(const std::string subtype);
-    std::string         GetAnariLibrarySubtype() const;
-    void                SetAnariRendererSubtype(const std::string subtype);
-    std::string         GetAnariRendererSubtype() const;
-    void                SetAnariRendererParameters(const stringVector &params);
-    stringVector        GetAnariRendererParameters() const;
-    void                SetAnariUSDParameters(const stringVector &params);
-    stringVector        GetAnariUSDParameters() const;
-    void                SetUsingUsdDevice(const bool val);
-    bool                GetUsingUsdDevice() const;
+    void                  SetAnariAttributes(const AnariAttributes &);
+    const AnariAttributes &GetAnariAttributes() const;
 #endif
 
     void Lineout(const bool);

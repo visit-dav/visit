@@ -14,6 +14,7 @@
 #include <memory>
 
 class RenderingAttributes;
+class AnariAttributes;
 class QvisRenderingWindow;
 class QGroupBox;
 class QComboBox;
@@ -52,6 +53,7 @@ public:
     int GetRowCount() const { return (topRows + bottomRows); }
 
     // General
+    void UpdateAnariAttributes(const AnariAttributes &);
     void SetChecked(const bool);
     void UpdateLibraryName(const std::string);
     void UpdateLibrarySubtypes(const std::string);
@@ -91,7 +93,7 @@ private:
     void UpdateLibraryUI(anari::Library, const std::string &);
 
     QvisRenderingWindow *renderingWindow;
-    RenderingAttributes *renderingAttributes;
+    AnariAttributes *anariAttributes;
     QStackedLayout *dynamicLayouts; // Caches the dynamic widgets
 
     // Mapping of dynamic widget key (backend:subtype:renderer) to index in
