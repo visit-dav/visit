@@ -108,6 +108,7 @@ rzwhippet=false
 rzvernal=false
 crossroads=false
 tuolumne=false
+elcap=true
 
 machine_name="unknown"
 
@@ -161,6 +162,7 @@ do
          ;;
       -elcap)
          tuolumne=true
+         elcap=true
          machine_name="elcap"
          shift
          ;;
@@ -302,6 +304,13 @@ elif [ "$crossroads" = true ]; then
        --no-adios --no-gdal --no-nektarpp \
        --meson --ninja --xcb --xkbcommon --qwt --parallel \
        --no-visit --makeflags -j16 --thirdparty-path ${dest_dir}
+elif [ "$elcap" = true ]; then
+   env CC=gcc \
+       CXX=g++ \
+       PAR_COMPILER=cc \
+       PAR_COMPILER_CXX=CC \
+       ./$build_visit_script --group ${dest_group} --required --optional --no-anari --mesagl --parallel \
+       --qwt --no-moab --no-uintah --no-visit --no-icet --makeflags -j24 --thirdparty-path ${dest_dir}
 elif [ "$tuolumne" = true ]; then
    env CC=gcc \
        CXX=g++ \
