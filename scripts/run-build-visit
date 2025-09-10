@@ -91,6 +91,12 @@
 #    Eric Brugger, Thu Aug 14 09:10:46 PDT 2025
 #    Updated tuolumne to also build gdal, icet and pidx.
 #
+#    Eric Brugger, Fri Sep  5 11:43:36 PDT 2025
+#    Removed all references to '--no-pyside' since it is no longer
+#    supported. Removed the use of '--no-anari' since it is off by
+#    default. Combined the build of poodle and rzwhippet. Added
+#    '--anari' to poodle, rzwhippet and tuolumne.
+#
 #-----------------------------------------------------------------------
 
 #
@@ -264,26 +270,19 @@ fi
 #
 # Call build_visit
 #
-if [ "$poodle" = true ]; then
-   env PAR_COMPILER=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/bin/mpicc \
-       PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/bin/mpicxx \
-       PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/include \
-       ./$build_visit_script --group ${dest_group} --required --optional --mesagl --parallel \
-       --qwt --no-pyside --no-visit --makeflags -j16 --thirdparty-path ${dest_dir}
-elif [ "$rzwhippet" = true ]; then
+if [ "$poodle" = true ] || [ "$rzwhippet" = true ]; then
    env PAR_COMPILER=/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/bin/mpicc \
        PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/bin/mpicxx \
        PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/include \
-       ./$build_visit_script --group ${dest_group} --required --optional --mesagl --parallel \
-        --qwt --no-pyside --no-gdal --no-visit --makeflags -j20 \
-        --thirdparty-path ${dest_dir}
+       ./$build_visit_script --group ${dest_group} --required --optional --anari --mesagl --parallel \
+       --qwt --no-visit --makeflags -j16 --thirdparty-path ${dest_dir}
 elif [ "$lassen" = true ]; then
    module load gcc/8.3.1
    env PAR_COMPILER=/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-8.3.1/bin/mpicc \
        PAR_COMPILER_CXX=/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-8.3.1/bin/mpicxx \
        PAR_INCLUDE=-I/usr/tce/packages/spectrum-mpi/ibm/spectrum-mpi-rolling-release/include \
        ./${build_visit_script} --group ${dest_group} --required --optional --mesagl \
-       --no-anari --no-boost --no-gdal --no-openexr --no-ospray --no-pidx --no-pyside \
+       --no-boost --no-gdal --no-openexr --no-ospray --no-pidx \
        --meson --ninja --xcb --xkbcommon --qwt --parallel \
        --no-visit --makeflags -j16 --thirdparty-path ${dest_dir}
 elif [ "$rzvernal" = true ]; then
@@ -291,7 +290,7 @@ elif [ "$rzvernal" = true ]; then
        PAR_COMPILER_CXX=/usr/tce/packages/cray-mpich/cray-mpich-8.1.28-gcc-12.2.1-magic/bin/mpicxx \
        PAR_INCLUDE=-I/usr/tce/packages/cray-mpich/cray-mpich-8.1.28-gcc-12.2.1-magic/include \
        ./$build_visit_script --group ${dest_group} --required --optional --mesagl --parallel \
-       --qwt --no-pyside --no-gdal --no-uintah --no-visit --makeflags -j24 --thirdparty-path ${dest_dir}
+       --qwt --no-gdal --no-uintah --no-visit --makeflags -j24 --thirdparty-path ${dest_dir}
 elif [ "$crossroads" = true ]; then
    env C_COMPILER=gcc \
        CXX_COMPILER=g++ \
@@ -300,7 +299,7 @@ elif [ "$crossroads" = true ]; then
        PAR_INCLUDE=-I/opt/cray/pe/mpich/8.1.28/ofi/intel/2022.1/include \
        PAR_LIBS="-L/opt/cray/pe/mpich/8.1.28/ofi/intel/2022.1/lib -Wl,-rpath=/opt/cray/pe/mpich/8.1.28/ofi/intel/intel/lib" \
        ./$build_visit_script --group ${dest_group} --required --optional --mesagl \
-       --no-adios --no-anari --no-gdal --no-nektarpp --no-pyside \
+       --no-adios --no-gdal --no-nektarpp \
        --meson --ninja --xcb --xkbcommon --qwt --parallel \
        --no-visit --makeflags -j16 --thirdparty-path ${dest_dir}
 elif [ "$tuolumne" = true ]; then
@@ -308,8 +307,8 @@ elif [ "$tuolumne" = true ]; then
        CXX=g++ \
        PAR_COMPILER=cc \
        PAR_COMPILER_CXX=CC \
-       ./$build_visit_script --group ${dest_group} --required --optional --mesagl --parallel \
-       --qwt --no-moab --no-pyside --no-uintah --no-visit --makeflags -j24 --thirdparty-path ${dest_dir}
+       ./$build_visit_script --group ${dest_group} --required --optional --anari --mesagl --parallel \
+       --qwt --no-moab --no-uintah --no-visit --makeflags -j24 --thirdparty-path ${dest_dir}
 else
    echo "case for $machine_name not implemented. Bailing out."
    exit
