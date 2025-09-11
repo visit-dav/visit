@@ -224,7 +224,7 @@ class PIPELINE_API avtDatabaseWriter : public virtual avtTerminatingDatasetSink
                                    const std::vector<std::string> &materialList,
                                    int numTotalChunks, int startIndex,
                                    int tag, bool writeUsingGroups, int groupSize);
-    vtkDataSet         *RemoveUnusedPoints(vtkDataset *ds);
+    vtkDataSet         *RemoveUnusedPoints(vtkDataSet *ds);
     void                WaitForTurn(int tag, int &nWritten);
     void                GrantTurn(int tag, int &nWritten);
 };

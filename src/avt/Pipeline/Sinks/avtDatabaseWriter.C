@@ -19,6 +19,9 @@
 #include <vtkPointData.h>
 #include <vtkPolyDataReader.h>
 #include <vtkPolyDataWriter.h>
+#include <vtkPolyDataRelevantPointsFilter.h>
+#include <vtkUnstructuredGrid.h>
+#include <vtkUnstructuredGridRelevantPointsFilter.h>
 #include <vtkCharArray.h>
 #include <vtkPolyData.h>
 #include <vtkTriangleFilter.h>
@@ -1065,7 +1068,7 @@ avtDatabaseWriter::Write(const std::string &plotName,
 // Modifications:
 //
 //    Cyrus Harrison, Wed Jul 16 09:18:14 PDT 2025
-//    Added call to remove unsued points for the non combined case
+//    Added call to remove unused points for the non combined case
 //
 // ****************************************************************************
 void
@@ -1250,7 +1253,7 @@ avtDatabaseWriter::GroupWrite(const std::string &plotName,
                 vtkDataSet *in_ds = dt->GetDataRepresentation().GetDataVTK();
                 int domainId = dt->GetDataRepresentation().GetDomain();
                 std::string label(dt->GetDataRepresentation().GetLabel());
-                ReleventPointsFilter();
+
                 // RemoveUnusedPoints returns input dataset or new cleaned dataset
                 vtkDataSet *clean_ds = RemoveUnusedPoints(in_ds);
 
@@ -1261,7 +1264,7 @@ avtDatabaseWriter::GroupWrite(const std::string &plotName,
                 // clean up the clean_ds if RemoveUnusedPoints created new dataset
                 if(clean_ds != in_ds)
                 {
-                    clean_ds->Delete()
+                    clean_ds->Delete();
                 }
             }
         }
@@ -1938,7 +1941,7 @@ avtDatabaseWriter::RemoveUnusedPoints(vtkDataSet *ds)
         {
             vtkPolyDataRelevantPointsFilter *rpfPD = vtkPolyDataRelevantPointsFilter::New();
             rpfPD->SetInputData((vtkPolyData*)ds);
-            out_pd = vtkPolyData::New();
+            vtkPolyData *out_pd = vtkPolyData::New();
             rpfPD->SetOutput(out_pd);
             rpfPD->Update();
             rpfPD->Delete();
@@ -1949,11 +1952,11 @@ avtDatabaseWriter::RemoveUnusedPoints(vtkDataSet *ds)
         {
             vtkUnstructuredGridRelevantPointsFilter *rpfUG = vtkUnstructuredGridRelevantPointsFilter::New();
             rpfUG->SetInputData((vtkUnstructuredGrid*)ds);
-            out_ug = vtkUnstructuredGrid::New();
+            vtkUnstructuredGrid *out_ug = vtkUnstructuredGrid::New();
             rpfUG->SetOutput(out_ug);
             rpfUG->Update();
             rpfUG->Delete();
-            res = out_pd;
+            res = out_ug;
             break;
         }
         default: // we should not need to filter points for other dataset types
