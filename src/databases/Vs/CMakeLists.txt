@@ -38,7 +38,6 @@ VsDataset.C
 VsAttribute.C
 VsFile.C
 VsReader.C
-VsStaggeredField.C
 HighOrderUnstructuredData.C
 )
 

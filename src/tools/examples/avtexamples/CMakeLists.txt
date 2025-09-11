@@ -101,10 +101,6 @@ Threads::Threads
 ${ZLIB_LIBRARY}
 )
 
-if(HAVE_OSMESA)
-    target_link_libraries(avtFilterExample ${OSMESA_LIBRARIES})
-endif()
-
 ADD_EXECUTABLE(avtRenderExample avtRenderExample.C)
 VISIT_INSTALL_TARGETS(avtRenderExample)
 VISIT_EXAMPLES_ADD_FOLDER(avtexamples avtRenderExample)
@@ -129,9 +125,6 @@ Threads::Threads
 ${ZLIB_LIBRARY}
 )
 
-if(HAVE_OSMESA)
-    target_link_libraries(avtRenderExample ${OSMESA_LIBRARIES})
-endif()
 
 
 ADD_EXECUTABLE(avtPluginExample avtPluginExample.C)
@@ -153,10 +146,6 @@ ${OPENGL_LIBRARIES}
 Threads::Threads
 ${ZLIB_LIBRARY}
 )
-
-if(HAVE_OSMESA)
-    target_link_libraries(avtPluginExample ${OSMESA_LIBRARIES})
-endif()
 
 ADD_EXECUTABLE(avtPlotPluginExample avtPlotPluginExample.C)
 VISIT_INSTALL_TARGETS(avtPlotPluginExample)
@@ -181,10 +170,6 @@ ${OPENGL_LIBRARIES}
 Threads::Threads
 ${ZLIB_LIBRARY}
 )
-
-if(HAVE_OSMESA)
-    target_link_libraries(avtPlotPluginExample ${OSMESA_LIBRARIES})
-endif()
 
 ADD_EXECUTABLE(networkManagerExample networkManagerExample.C)
 VISIT_INSTALL_TARGETS(networkManagerExample)

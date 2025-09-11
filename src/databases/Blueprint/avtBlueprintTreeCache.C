@@ -502,6 +502,11 @@ avtBlueprintTreeCache::IO::LoadBlueprintTree(avtBlueprintTreeCache &tree_cache,
 
 
 //----------------------------------------------------------------------------/
+// Modifications:
+//    Justin Privitera, Wed Jul 30 16:40:33 PDT 2025
+//    Fix buffer slab read conditional such that the successful read case
+//    does not trigger the failure result.
+//----------------------------------------------------------------------------/
 // TODO CONST FOR INPUT 
 void
 avtBlueprintTreeCache::IO::LoadSidreView(Node &sidre_meta_view,
@@ -601,7 +606,7 @@ avtBlueprintTreeCache::IO::LoadSidreView(Node &sidre_meta_view,
             //  hdf5 doesn't support byte level striding.
 
             if(
-                tree_cache.Read(file_path,
+               !tree_cache.Read(file_path,
                                 buffer_data_fetch_path,
                                 view_schema.dtype(),
                                 out)

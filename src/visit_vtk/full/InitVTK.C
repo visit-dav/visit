@@ -12,11 +12,8 @@
 #include <vtkObjectFactory.h>
 #include <vtkVersion.h>
 #include <vtkVisItCellDataToPointData.h>
+#include <vtkLogger.h>
 #include <visit-config.h>
-#if LIB_VERSION_LE(VTK,9,2,6)
-#include <vtkVisItRectilinearGrid.h>
-#include <vtkVisItStructuredGrid.h>
-#endif
 
 
 //
@@ -40,15 +37,9 @@ class vtkVisItObjectFactory : public vtkObjectFactory
 // Necessary for each object that will override a vtkObject.
 //
 VTK_CREATE_CREATE_FUNCTION(vtkVisItCellDataToPointData);
-#if LIB_VERSION_LE(VTK,9,2,6)
-VTK_CREATE_CREATE_FUNCTION(vtkVisItRectilinearGrid);
-VTK_CREATE_CREATE_FUNCTION(vtkVisItStructuredGrid);
-#endif
 
-#if LIB_VERSION_GE(VTK,9,4,0)
 #include <vtkVisItDataSetWriter.h>
 VTK_CREATE_CREATE_FUNCTION(vtkVisItDataSetWriter);
-#endif
 
 const char*
 vtkVisItObjectFactory::GetVTKSourceVersion()
@@ -83,24 +74,10 @@ vtkVisItObjectFactory::vtkVisItObjectFactory()
                          1,
                          vtkObjectFactoryCreatevtkVisItCellDataToPointData);
 
-#if LIB_VERSION_GE(VTK,9,4,0)
   this->RegisterOverride("vtkDataSetWriter", "vtkVisItDataSetWriter",
                          "vtkVisItDataSetWriter override vtkDataSetWriter",
                          1,
                          vtkObjectFactoryCreatevtkVisItDataSetWriter);
-#endif
-
-#if LIB_VERSION_LE(VTK,9,2,6)
-  this->RegisterOverride("vtkRectilinearGrid", "vtkVisItRectilinearGrid",
-                         "vtkVisItRectilinearGrid override vtkRectilinearGrid",
-                         1,
-                         vtkObjectFactoryCreatevtkVisItRectilinearGrid);
-  this->RegisterOverride("vtkStructuredGrid", "vtkVisItStructuredGrid",
-                         "vtkVisItStructuredGrid override vtkStructuredGrid",
-                         1,
-                         vtkObjectFactoryCreatevtkVisItStructuredGrid);
-#endif
-
 }
 
 // ****************************************************************************
@@ -127,6 +104,11 @@ vtkVisItObjectFactory::vtkVisItObjectFactory()
 //    Hank Childs, Wed May  5 10:15:48 PDT 2004
 //    Use the VisIt graphics factory to override the standard polydata mapper.
 //
+//    Kathleen Biagas, Thu Jul 17, 2025
+//    Stifle vtkLogger output to terminal by setting its verbosity level OFF.
+//    Avoids lots of console output, even from vtkWarning or vtkDebug macros
+//    which we capture in our debug logs.
+//
 // ****************************************************************************
 
 void
@@ -138,6 +120,8 @@ InitVTK::Initialize(void)
     vtkVisItObjectFactory *factory = vtkVisItObjectFactory::New();
     vtkObjectFactory::RegisterFactory(factory);
     factory->Delete();
+
+    vtkLogger::SetStderrVerbosity(vtkLogger::Verbosity::VERBOSITY_OFF);
 }
 
 

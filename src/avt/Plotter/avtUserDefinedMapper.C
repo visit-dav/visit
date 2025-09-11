@@ -378,22 +378,7 @@ avtUserDefinedMapper::ReducedDetailModeOff()
 //
 // ****************************************************************************
 
-vtkUserDefinedMapperBridge *
-vtkUserDefinedMapperBridge::New(void)
-{
-    //
-    // First try to create the object from the vtkObjectFactory
-    //
-    vtkObject *ret = NULL;
-    ret = vtkObjectFactory::CreateInstance("vtkUserDefinedMapperBridge");
-    if (ret == NULL)
-    {
-        ret = new vtkUserDefinedMapperBridge;
-    }
-
-    return (vtkUserDefinedMapperBridge *) ret;
-}
-
+vtkStandardNewMacro(vtkUserDefinedMapperBridge);
 
 // ****************************************************************************
 //  Method: vtkUserDefinedMapperBridge constructor

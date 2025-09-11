@@ -81,7 +81,8 @@ avtVolumeResampleFilter::Execute(void)
 
 
     if (volAtts.GetRendererType() == VolumeAttributes::Serial ||
-        volAtts.GetRendererType() == VolumeAttributes::Parallel)
+        volAtts.GetRendererType() == VolumeAttributes::Parallel ||
+        volAtts.GetRendererType() == VolumeAttributes::ANARI)
     {
         const avtDataAttributes &datts = input->GetInfo().GetAttributes();
         std::string activeVariable = datts.GetVariableName();

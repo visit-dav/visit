@@ -118,6 +118,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <filesystem>
 #ifdef _WIN32
 #include <functional>
 #include <direct.h>  // for _getcwd, _chdir
@@ -4921,6 +4922,10 @@ NetworkManager::ExportDatabases(const intVector &ids,
 //    Brad Whitlock, Thu Aug  6 17:00:03 PDT 2015
 //    Add support for writing using groups of ranks.
 //
+//    Cyrus Harrion, Wed Aug 13 09:43:32 PDT 2025
+//    Use std::filesystem::path to construct output path to avoid issues
+//    with native paths.
+//
 // ****************************************************************************
 
 void
@@ -5006,10 +5011,18 @@ NetworkManager::ExportSingleDatabase(int id, const ExportDBAttributes &atts)
 
         std::string qualFilename;
         if (atts.GetDirname() == "")
+        {
             qualFilename = atts.GetFilename();
+        }
         else
-            qualFilename = atts.GetDirname() + std::string(VISIT_SLASH_STRING)
-                         + atts.GetFilename();
+        {
+            // use std::filesystem::path to help us make sure we are using
+            // native style paths
+            auto dname = std::filesystem::path(atts.GetDirname());
+            auto fname = std::filesystem::path(atts.GetFilename());
+            // Cyrus Note: I hate this `/` operator nonsense, why not a join method?
+            qualFilename = (dname / fname).make_preferred().string();
+        }
         bool doAll = false;
         std::vector<std::string> vars = atts.GetVariables();
         if (vars.size() == 1 && vars[0] == "<all>")
@@ -6791,25 +6804,11 @@ NetworkManager::RenderSetup(avtImageType imgT, int windowID, intVector& plotIds,
 
 #ifdef HAVE_ANARI
     renderState.window->SetAnariRendering(renderAtts.GetAnariRendering());
-    renderState.window->SetAnariSPP(renderAtts.GetAnariSPP());
-    renderState.window->SetAnariAO(renderAtts.GetAnariAO());
     renderState.window->SetAnariLibraryName(renderAtts.GetAnariLibrary());
     renderState.window->SetAnariLibrarySubtype(renderAtts.GetAnariLibrarySubtype());
     renderState.window->SetAnariRendererSubtype(renderAtts.GetAnariRendererSubtype());
-    renderState.window->SetUseAnariDenoiser(renderAtts.GetUseAnariDenoiser());
-    renderState.window->SetAnariLightFalloff(renderAtts.GetAnariLightFalloff());
-    renderState.window->SetAnariAmbientIntensity(renderAtts.GetAnariAmbientIntensity());
-    renderState.window->SetAnariMaxDepth(renderAtts.GetAnariMaxDepth());
-    renderState.window->SetAnariRValue(renderAtts.GetAnariRValue());
-    renderState.window->SetAnariDebugMethod(renderAtts.GetAnariDebugMethod());
-    renderState.window->SetUsdDir(renderAtts.GetUsdDir());
-    renderState.window->SetUsdAtCommit(renderAtts.GetUsdAtCommit());
-    renderState.window->SetUsdOutputBinary(renderAtts.GetUsdOutputBinary());
-    renderState.window->SetUsdOutputMaterial(renderAtts.GetUsdOutputMaterial());
-    renderState.window->SetUsdOutputPreviewSurface(renderAtts.GetUsdOutputPreviewSurface());
-    renderState.window->SetUsdOutputMDL(renderAtts.GetUsdOutputMDL());
-    renderState.window->SetUsdOutputMDLColors(renderAtts.GetUsdOutputMDLColors());
-    renderState.window->SetUsdOutputDisplayColors(renderAtts.GetUsdOutputDisplayColors());
+    renderState.window->SetAnariRendererParameters(renderAtts.GetAnariRendererParameters());
+    renderState.window->SetAnariUSDParameters(renderAtts.GetAnariUSDParameters());
     renderState.window->SetUsingUsdDevice(renderAtts.GetUsingUsdDevice());
 #endif
 

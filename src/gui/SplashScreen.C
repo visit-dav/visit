@@ -499,14 +499,19 @@ SplashScreen::CreateAboutButtons()
 //   Kathleen Biagas, Wed Apr  5 13:04:35 PDT 2023
 //   Replace obosolete desktop() with primaryScreen().
 //
+//   Kathleen Biagas, Mon Aug 18, 2025 
+//   Replace 'primaryScreen()->geometry()' with
+//   'primaryScreen()->availableGeometry()' since the latter takes into
+//   account window manager reserved space like the Windows taskbar. 
+//
 // ****************************************************************************
 
 void
 SplashScreen::show()
 {
     // Figure out where to put the window
-    int     W = qApp->primaryScreen()->geometry().width();
-    int     H = qApp->primaryScreen()->geometry().height();
+    int     W = qApp->primaryScreen()->availableGeometry().width();
+    int     H = qApp->primaryScreen()->availableGeometry().height();
     move((W - pictures[0].width()) / 2, (H - pictures[0].height()) / 2);
 
     // Show the window

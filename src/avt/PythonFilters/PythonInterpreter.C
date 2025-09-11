@@ -110,14 +110,14 @@ PythonInterpreter::Initialize(int argc, char **argv)
 #endif
 
     sioModule = PyImport_ImportModule(sio_module_name);
-    
+
     if(sioModule == NULL)
     {
         return false;
     }
-    
+
     PyObject *sioDict = PyModule_GetDict(sioModule);
-    
+
     if(sioDict == NULL)
     {
         return false;
@@ -217,8 +217,8 @@ PythonInterpreter::AddSystemPath(const std::string &path)
 //  Arguments:
 //      path      Path to DLLs  (eg VisIt's third party dlls)
 //
-//  Programmer:   Kathleen Biagas 
-//  Creation:     January 24, 2024 
+//  Programmer:   Kathleen Biagas
+//  Creation:     January 24, 2024
 //
 //  Modifications:
 //
@@ -238,7 +238,7 @@ PythonInterpreter::AddDLLPath(const std::string &path)
 //      Executes passed python script in the interpreter.
 //
 //  Arguments:
-//      script      String containing python code to execute. 
+//      script      String containing python code to execute.
 //
 //  Programmer:   Cyrus Harrison
 //  Creation:     May 2, 2008
@@ -342,19 +342,30 @@ PythonInterpreter::GetGlobalObject(const string &py_name)
 //      python scripts & calls to the C-API. The differnce between these
 //      to cases is bascially the existance of a python traceback.
 //
-//      Note: This method clears the python error state, but it will continue 
+//      Note: This method clears the python error state, but it will continue
 //      to return "true" indicating an error until ClearError() is called.
 //
 //  Programmer:   Cyrus Harrison
 //  Creation:     May 7, 2008
 //
+//  Modifications:
+//    Cyrus Harrison, Mon Jun  9 07:03:13 PDT 2025
+//    Added note about debugging with PyErr_Print
+//
 // ****************************************************************************
 
-bool 
+bool
 PythonInterpreter::CheckError()
 {
     if(PyErr_Occurred())
     {
+        // // For debugging
+        // // Note: PyErr_Print() will print the error, but also clear error
+        // //       status and prevent us from extracting the error info
+        // //       programmatically, so only use it for debugging missions.
+        //
+        // PyErr_Print();
+        //
         error = true;
         errorMsg = "<Unknown Error>";
 
@@ -398,7 +409,7 @@ PythonInterpreter::CheckError()
 //
 // ****************************************************************************
 
-void 
+void
 PythonInterpreter::ClearError()
 {
     if(error)
@@ -576,7 +587,7 @@ PythonInterpreter::PyTracebackToString(PyObject *py_etype,
 
     // call buffer.getvalue() to get python string object
     PyObject *py_str = PyObject_CallMethod(py_buffer,(char*)"getvalue",NULL);
-    
+
 
     if(!py_str)
     {
@@ -585,7 +596,7 @@ PythonInterpreter::PyTracebackToString(PyObject *py_etype,
     }
 
     // convert python string object to std::string
-    
+
     char *str_val = PyString_AsString(py_str);
     res = std::string(str_val);
     PyString_AsString_Cleanup(str_val);

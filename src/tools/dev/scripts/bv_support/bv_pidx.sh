@@ -285,7 +285,7 @@ function build_pidx
     # Build PIDX
     #
     info "Making pidx . . ."
-    $MAKE $MAKE_OPT_FLAGS
+    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
         warn "pidx build failed.  Giving up"
         return 1
@@ -295,7 +295,7 @@ function build_pidx
     # Install into the VisIt third party location.
     #
     info "Installing pidx . . ."
-    $MAKE install
+    ${CMAKE_COMMAND} --install .
     if [[ $? != 0 ]] ; then
         warn "pidx install failed.  Giving up"
         return 1

@@ -198,6 +198,12 @@
 //    Add 'FilterConditionalLibs' so that VTKM version can be appended to
 //    vtkm_ libraries when run outside dev environment (eg pluginVsInstall).
 //
+//    Eric Brugger, Wed Jul 16 15:29:56 PDT 2025
+//    Modify 'FilterConditionalLibs` for VTKm 2.3.0.
+//
+//    Kathleen Biagas, Thu Jul 24, 2025 
+//    vtkm::vtkmdiympi_nompi needs to be handled differently. 
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -288,7 +294,7 @@ class CMakeGeneratorPlugin : public Plugin
     FilterConditionalLibs(QString &links, QString &libs)
     {
 #ifdef HAVE_LIBVTKM
-        // Will convert vtkm_xxx to vtkm_xxx-version
+        // Will convert vtkm::xxx to vtkm_xxx-version
         // otherwise will leave it alone.
         QString vtkmversion = QString("-%1").arg(VTKM_SMALL);
 
@@ -296,10 +302,19 @@ class CMakeGeneratorPlugin : public Plugin
         for(int i = 0; i < newlist.size(); ++i)
         {
             QString tmp(newlist[i]);
-            if(tmp.startsWith("vtkm_") && !using_dev)
+            if(tmp.startsWith("vtkm::") && !using_dev)
             {
-                // append the vtkm version
-                tmp.append(vtkmversion);
+                // for plugin-vs-install, need to
+                // replace 'vtkm::' with 'vtkm_' and append the version
+                if(tmp.contains(QString("nompi")))
+                {
+                    tmp.replace(QString("vtkm::"), QString(""));
+                }
+                else
+                {
+                    tmp.replace(QString("vtkm::"), QString("vtkm_"));
+                    tmp.append(vtkmversion);
+                }
             }
             libs += " " + tmp;
         }

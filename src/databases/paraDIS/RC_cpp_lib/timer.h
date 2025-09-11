@@ -17,6 +17,9 @@
 #include <stdio.h>
 #include <ctime>
 #ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
 #include <sys/timeb.h>
 #include <Winsock2.h>
 #endif

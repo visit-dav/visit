@@ -220,6 +220,9 @@ class VisWindowColleagueProxy;
 //    Kevin Griffin, Tue 04 Mar 2025 05:53:41 PM CST
 //    Added support for ANARI.
 //
+//    Kathleen Biagas, Tue Jun 24, 2025
+//    Make anariRendering and osprayRendering ivars available always.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRendering : public VisWinColleague
@@ -413,44 +416,16 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
 #ifdef HAVE_ANARI
     void                    SetAnariRendering(const bool);
     bool                    GetAnariRendering() const { return anariRendering; }
-    void                    SetAnariSPP(const int);
-    int                     GetAnariSPP() const { return anariSPP; }
-    void                    SetAnariAO(const int);
-    int                     GetAnariAO() const { return anariAO; }
     void                    SetAnariLibraryName(const std::string);
     std::string             GetAnariLibraryName() const { return anariLibraryName; }
     void                    SetAnariLibrarySubtype(const std::string);
     std::string             GetAnariLibrarySubtype() const { return anariLibrarySubtype; }
     void                    SetAnariRendererSubtype(const std::string);
     std::string             GetAnariRendererSubtype() const { return anariRendererSubtype; }
-    void                    SetUseAnariDenoiser(const bool);
-    bool                    GetUseAnariDenoiser() const { return useAnariDenoiser; }
-    void                    SetAnariLightFalloff(const float);
-    float                   GetAnariLightFalloff() const { return anariLightFalloff; }
-    void                    SetAnariAmbientIntensity(const float);
-    float                   GetAnariAmbientIntensity() const { return anariAmbientIntensity; }
-    void                    SetAnariMaxDepth(const int);
-    int                     GetAnariMaxDepth() const { return anariMaxDepth; }
-    void                    SetAnariRValue(const float);
-    float                   GetAnariRValue() const { return anariRValue; }
-    void                    SetAnariDebugMethod(const std::string);
-    std::string             GetAnariDebugMethod() const { return anariDebugMethod; }
-    void                    SetUsdDir(const std::string);
-    std::string             GetUsdDir() const { return usdDir; }
-    void                    SetUsdAtCommit(const bool);
-    bool                    GetUsdAtCommit() const { return usdAtCommit; }
-    void                    SetUsdOutputBinary(const bool);
-    bool                    GetUsdOutputBinary() const { return usdOutputBinary; }
-    void                    SetUsdOutputMaterial(const bool);
-    bool                    GetUsdOutputMaterial() const { return usdOutputMaterial; }
-    void                    SetUsdOutputPreviewSurface(const bool);
-    bool                    GetUsdOutputPreviewSurface() const { return usdOutputPreviewSurface; }
-    void                    SetUsdOutputMDL(const bool);
-    bool                    GetUsdOutputMDL() const { return usdOutputMDL; }
-    void                    SetUsdOutputMDLColors(const bool);
-    bool                    GetUsdOutputMDLColors() const { return usdOutputMDLColors; }
-    void                    SetUsdOutputDisplayColors(const bool);
-    bool                    GetUsdOutputDisplayColors() const { return usdOutputDisplayColors; }
+    void                    SetAnariRendererParameters(const stringVector &);
+    stringVector            GetAnariRendererParameters() const { return anariRendererParameters; }
+    void                    SetAnariUSDParameters(const stringVector &);
+    stringVector            GetAnariUSDParameters() const { return anariUSDParameters; }
     void                    SetUsingUsdDevice(const bool);
     bool                    GetUsingUsdDevice() const { return usingUsdDevice; }
     vtkAnariPass            *CreateAnariPass();
@@ -495,38 +470,24 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     bool                          depthPeeling;
     double                        occlusionRatio;
     int                           numberOfPeels;
-#if defined(HAVE_OSPRAY)
+
     bool                          osprayRendering {false};
+    bool                          viewIs3D {true};
+#if defined(HAVE_OSPRAY)
     int                           ospraySPP {1};
     int                           osprayAO {0};
     bool                          osprayShadows {false};
     vtkOSPRayPass                *osprayPass {nullptr};
-    bool                          viewIs3D {true};
 #endif
+    bool                        anariRendering {false};
 #ifdef HAVE_ANARI
-    bool                        anariRendering;
-    int                         anariSPP;
-    int                         anariAO;
     std::string                 anariLibraryName;
     std::string                 anariLibrarySubtype;
     std::string                 anariRendererSubtype;
-    bool                        useAnariDenoiser;
-    float                       anariLightFalloff;
-    float                       anariAmbientIntensity;
-    int                         anariMaxDepth;
-    float                       anariRValue;
-    std::string                 anariDebugMethod;
-    std::string                 usdDir;
-    bool                        usdAtCommit;
-    bool                        usdOutputBinary;
-    bool                        usdOutputMaterial;
-    bool                        usdOutputPreviewSurface;
-    bool                        usdOutputMDL;
-    bool                        usdOutputMDLColors;
-    bool                        usdOutputDisplayColors;
+    stringVector                anariRendererParameters;
+    stringVector                anariUSDParameters;
     bool                        usingUsdDevice;
-    vtkAnariPass                *anariPass;
-    bool                        anariPassValid;
+    vtkAnariPass                *anariPass {nullptr};
 #endif
 
     void                          (*renderInfo)(void *);

@@ -153,6 +153,9 @@
 #    Kevin Griffin, Mon 24 Feb 2025
 #    Added ANARI to pkg variable
 #
+#    Kathleen Biagas, Thu Jun 19, 2025
+#    Make VTK minimum version 9.5.0.
+#
 #****************************************************************************
 
 cmake_minimum_required(VERSION 3.24 FATAL_ERROR)
@@ -234,7 +237,7 @@ endif()
 
 #-----------------------------------------------------------------------------
 
-set(VTK_MINIMUM_VERSION "9.2.6" CACHE INTERNAL "minimum version of vtk that VisIt can use")
+set(VTK_MINIMUM_VERSION "9.5.0" CACHE INTERNAL "minimum version of vtk that VisIt can use")
 
 set(NEKTAR++_MINIMUM_VERSION "4.0.0" CACHE INTERNAL "minimum version of Nektar++ that VisIt can use")
 
@@ -349,10 +352,10 @@ set(CXX_TEST_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 #-----------------------------------------------------------------------------
 
 # Set up placeholders for package vars: XXX_DIR
-foreach(pkg ADIOS ADIOS2 ADIOS2_PAR ADVIO BLOSC2 BOOST BOXLIB CFITSIO CGNS
+foreach(pkg ADIOS ADIOS2 ADIOS2_PAR ADVIO ANARI BLOSC2 BOOST BOXLIB CFITSIO CGNS
             CONDUIT DAMARIS EMBREE FMS GDAL GFORTRAN HDF5 HDF5_MPI H5PART ICET
             ISPC JPEG LLVM MDSPLUS MFEM MILI MOAB MOAB_MPI NEKTAR++ NETCDF
-            OPENGL OPENEXR OSPRAY ANARI PIDX PYSIDE PYTHON QT QWT SILO SZIP TBB
+            OPENGL OPENEXR OSPRAY PIDX PYTHON QT QWT SILO SZIP TBB
             TIFF UINTAH VTK VTKM XDMF XSD ZLIB)
     VISIT_3RDPARTY_DIR(${pkg})
 endforeach()

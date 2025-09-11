@@ -43,6 +43,9 @@ ViewCallback   VisitInteractor::viewCallback     = NULL;
 //    Kevin Griffin, Wed Apr 02, 2025
 //    Added useAnari.
 //
+//    Kevin Griffin, Thu Aug 14, 2025
+//    Removed useAnari.
+//
 // ****************************************************************************
 
 VisitInteractor::VisitInteractor(VisWindowInteractorProxy &p) : proxy(p)
@@ -64,7 +67,6 @@ VisitInteractor::VisitInteractor(VisWindowInteractorProxy &p) : proxy(p)
     spinNewX = 0;
     spinNewY = 0;
     useOSPRay = false;
-    useAnari = false;
 }
 
 // ****************************************************************************

@@ -17,6 +17,10 @@
 #    Kathleen Biagas, Tue Sep 26, 2023
 #    Replace ${CMAKE_THREAD_LIBS} with Threads::Threads.
 #
+#    Kathleen Biagas, Wed Jun 18, 2025
+#    Remove visit_vtk_offscreen, no longer needed (VTK 9.5).  Remove
+#    unnececssary call to link_directories with LIBRARY_OUTPUT_DIRECTORY.
+#
 #****************************************************************************
 
 #
@@ -125,8 +129,6 @@ ${VISIT_SOURCE_DIR}/visit_vtk/osmesa
 ${VTK_INCLUDE_DIRS}
 )
 
-link_directories(${LIBRARY_OUTPUT_DIRECTORY})
-
 
 #******************** The viewercore_ser library ******************************
 add_library(viewercore_ser ${VIEWERCORE_SOURCES})
@@ -145,12 +147,6 @@ avtviswindow_ser
 avtwriter_ser
 Threads::Threads
 )
-
-if(VTK_VERSION VERSION_LESS "9.4.0")
-if(HAVE_OSMESA)
-    target_link_libraries(viewercore_ser visit_vtk_offscreen)
-endif()
-endif()
 
 #******************** The viewercore_par library ******************************
 # We build a _par version of viewercore because we can't allow it to have any _ser
@@ -172,12 +168,6 @@ if(VISIT_PARALLEL)
     avtwriter_par
     Threads::Threads
     )
-
-if(VTK_VERSION VERSION_LESS "9.4.0")
-    if(HAVE_OSMESA)
-        target_link_libraries(viewercore_par visit_vtk_offscreen)
-    endif()
-endif()
 
     set(VIEWERCORE_PAR viewercore_par)
 endif(VISIT_PARALLEL)

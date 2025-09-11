@@ -28,6 +28,7 @@ class QvisOpacitySlider;
 class QvisScribbleOpacityBar;
 class QvisSpectrumBar;
 class QvisVariableButton;
+class AnariVolumeWidget;
 typedef int WidgetID;
 
 // ****************************************************************************
@@ -121,6 +122,9 @@ typedef int WidgetID;
 //    Kathleen Biagas, Fri Mar  2 14:53:14 MST 2018
 //    Removed Tuvok.
 //
+//    Kevin Griffin, Thu 07 Aug 2025 09:54:27 AM CDT
+//    Added ANARI volume rendering support
+//
 // ****************************************************************************
 
 class QvisVolumePlotWindow : public QvisPostableWindowObserver
@@ -135,6 +139,7 @@ public:
     virtual void CreateWindowContents();
 
     virtual void ProcessOldVersions(DataNode *node, const char *configVersion);
+    void SetApply(bool ignore = false) { Apply(ignore); }
 public slots:
     virtual void apply();
     virtual void makeDefault();
@@ -357,6 +362,10 @@ private:
     QWidget                 *osprayMaxContributionWidget;
     QLabel                  *osprayMaxContributionLabel;
     QDoubleSpinBox          *osprayMaxContribution;
+    
+#ifdef HAVE_ANARI
+    AnariVolumeWidget       *anariVolumeWidget;
+#endif
 
     //Sampling group
     QGroupBox               *resampleGroup;

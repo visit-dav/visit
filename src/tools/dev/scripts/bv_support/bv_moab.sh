@@ -49,7 +49,7 @@ function bv_moab_host_profile
     if [[ "$DO_MOAB" == "yes" ]] ; then
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
-        echo "## MOAB " >> $HOSTCONF
+        echo "## MOAB" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
             "VISIT_OPTION_DEFAULT(VISIT_MOAB_DIR \${VISITHOME}/moab/$MOAB_VERSION/\${VISITARCH})" \

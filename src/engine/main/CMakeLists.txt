@@ -52,6 +52,10 @@
 #    Kathleen Biagas, Tue Sep 5, 2023 
 #    Remove untested, unused EGL logic.
 #
+#    Kathleen Biagas, Wed Jun 18, 2025
+#    Remove visit_vtk_offscreen, no longer needed (VTK 9.5).
+#    Remove unnecessary LIBRARY_OUTPUT_DIRECTORY in link_directories call.
+#
 #****************************************************************************
 
 set(LIBENGINE_SOURCES
@@ -127,14 +131,8 @@ ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
 ${VTK_INCLUDE_DIRS}
 )
 
-if(VTK_VERSION VERSION_LESS "9.4.0")
-if(HAVE_OSMESA)
-  include_directories(${VISIT_SOURCE_DIR}/visit_vtk/offscreen)
-endif()
-endif()
-
 # Add link directories
-link_directories(${LIBRARY_OUTPUT_DIRECTORY} ${AVT_REQUIRED_LIB_DIR})
+link_directories(${AVT_REQUIRED_LIB_DIR})
 
 #********************************* SERIAL ************************************
 add_library(engine_ser ${LIBENGINE_SOURCES})
@@ -167,13 +165,6 @@ if(CONDUIT_FOUND AND MFEM_FOUND)
         ${MFEM_LIB} 
         avtblueprint
         )
-endif()
-
-
-if(VTK_VERSION VERSION_LESS "9.4.0")
-if(HAVE_OSMESA)
-    target_link_libraries(engine_ser visit_vtk_offscreen)
-endif()
 endif()
 
 
@@ -273,12 +264,6 @@ if(VISIT_PARALLEL)
             avtblueprint
             )
     endif()
-
-if(VTK_VERSION VERSION_LESS "9.4.0")
-    if(HAVE_OSMESA)
-        target_link_libraries(engine_par visit_vtk_offscreen)
-    endif()
-endif()
 
     if(VISIT_NOLINK_MPI_WITH_LIBRARIES)
         add_library(link_mpi_libs STATIC empty.c)
