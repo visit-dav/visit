@@ -1959,8 +1959,9 @@ avtDatabaseWriter::RemoveUnusedPoints(vtkDataSet *ds)
             res = out_ug;
             break;
         }
-        default: // we should not need to filter points for other dataset types
+        default: // we do not need to filter points for other dataset types
         {
+            res = ds;
             break;
         }
     }
