@@ -412,9 +412,6 @@ cd $testDir/$workingDir
 mkdir build
 cd build
 export PATH=\$PATH:/usr/bin/X11
-export PATH=/usr/tce/packages/cuda/cuda-8.0/bin:\$PATH
-export CUDA_HOME=/usr/tce/packages/cuda/cuda-8.0
-export LD_LIBRARY_PATH=/usr/tce/packages/cuda/cuda-8.0/lib64:\$LD_LIBRARY_PATH
 
 # since gcc-7 or 6 isn't the default, make sure to set CC and CXX, otherwise
 # pluginVsInstall tests won't use the right compiler
