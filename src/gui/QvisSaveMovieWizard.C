@@ -85,7 +85,6 @@ movie_format_info movieFormatInfo[] = {
     {"SWF movie",       "swf"},
     {"WMV movie",       "wmv"},
 #endif
-    {"Streaming movie", "sm"}
 };
 
 // Prefer MPEG since we provide an encoder for that format.
