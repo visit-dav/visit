@@ -108,7 +108,7 @@ rzwhippet=false
 rzvernal=false
 crossroads=false
 tuolumne=false
-elcap=true
+elcap=false
 
 machine_name="unknown"
 
@@ -309,7 +309,8 @@ elif [ "$elcap" = true ]; then
        CXX=g++ \
        PAR_COMPILER=cc \
        PAR_COMPILER_CXX=CC \
-       ./$build_visit_script --group ${dest_group} --required --optional --no-anari --osmesa --parallel \
+
+       ./$build_visit_script --group ${dest_group} --required --optional --osmesa --parallel \
        --qwt --no-moab --no-uintah --no-visit --no-icet --makeflags -j24 --thirdparty-path ${dest_dir}
 elif [ "$tuolumne" = true ]; then
    env CC=gcc \
