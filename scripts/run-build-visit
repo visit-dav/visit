@@ -96,6 +96,9 @@
 #    supported. Removed the use of '--no-anari' since it is off by
 #    default. Combined the build of poodle and rzwhippet. Added
 #    '--anari' to poodle, rzwhippet and tuolumne.
+# 
+#    Justin Privitera, Fri Sep 12 15:24:04 PDT 2025
+#    Added elcap case for special elcap logic.
 #
 #-----------------------------------------------------------------------
 
