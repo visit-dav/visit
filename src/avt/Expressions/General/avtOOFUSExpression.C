@@ -109,6 +109,215 @@ avtOOFUSExpression::GetNumberOfComponents()
 
 // ****************************************************************************
 // ****************************************************************************
+void
+avtOOFUSExpression::CalculateWithoutGhosts(vtkDataArray *in, 
+                                           vtkDataArray *out,
+                                           int ncomponents,
+                                           int ntuples)
+{
+    for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
+    {
+        double comp_max = in->GetComponent(0, comp_id);
+        // start at 1 since we already looked at the 0th element
+        for (int tuple_id = 1; tuple_id < ntuples; tuple_id ++)
+        {
+            const double val = in->GetComponent(tuple_id, comp_id);
+            if (val > comp_max)
+            {
+                comp_max = val;
+            }
+        }
+
+        for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+        {
+            out->SetComponent(tuple_id, comp_id, comp_max);
+        }
+    }
+}
+
+// ****************************************************************************
+// ****************************************************************************
+void
+avtOOFUSExpression::CalculateWithGhosts(vtkDataArray *in,
+                                        vtkDataArray *out,
+                                        int ncomponents,
+                                        int ntuples,
+                                        int (getNodeOrCellValid)(vtkDataArray *, int *, int),
+                                        vtkDataArray *ghostZones,
+                                        int *nodeShouldBeIgnoredPtr)
+{
+    for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
+    {
+        int start_tuple_id = 0;
+        double comp_max = [&]() -> double
+        {
+            for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+            {
+                if (0 == getNodeOrCellValid(ghostZones, nodeShouldBeIgnoredPtr, tuple_id))
+                {
+                    start_tuple_id = tuple_id + 1;
+                    return in->GetComponent(tuple_id, comp_id);
+                }
+            }
+            EXCEPTION2(ExpressionException, outputVariableName,
+                 "Everything is ghosted so the global_max expression is not valid.");
+            return 0; // return so the compiler is happy
+        }();
+
+        // start at start_tuple_id since it is the second non-ghosted tuple and we
+        // have already looked at the first.
+        for (int tuple_id = start_tuple_id; tuple_id < ntuples; tuple_id ++)
+        {
+            if (0 == getNodeOrCellValid(ghostZones, nodeShouldBeIgnoredPtr, tuple_id))
+            {
+                const double val = in->GetComponent(tuple_id, comp_id);
+                if (val > comp_max)
+                {
+                    comp_max = val;
+                }
+            }
+        }
+
+        for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+        {
+            out->SetComponent(tuple_id, comp_id, comp_max);
+        }
+    }
+}
+
+// ****************************************************************************
+// ****************************************************************************
+std::vector<int>
+avtOOFUSExpression::IdentifyGhostedNodes(vtkDataSet *in_ds,
+                                                       vtkDataArray *ghostZones,
+                                                       vtkDataArray *ghostNodes)
+{
+    const int nPoints = in_ds->GetNumberOfPoints();
+
+    // we create an array to track if this point should be counted
+    std::vector<int> nodeShouldBeIgnored(nPoints);
+    if (ghostZones)
+    {
+        // if there are ghost zones, we want to initialize all points to not being counted
+        fill(nodeShouldBeIgnored.begin(), nodeShouldBeIgnored.end(), true);
+    }
+    else
+    {
+        // If there are ghost nodes and NOT ghost zones, we want to initialize all points
+        // to being counted
+        // Alternatively, we will hit this case if there are neither ghost zones nor ghost
+        // nodes. In that case, we shouldn't even be in this function, but if we are here
+        // we might as well say all the points are valid since they are.
+        fill(nodeShouldBeIgnored.begin(), nodeShouldBeIgnored.end(), false);
+    }
+
+    if (ghostZones)
+    {
+        const int nCells = in_ds->GetNumberOfCells();
+        // iterate through the cells and mark points that are touching non-ghosts
+        // as points that should be counted
+        for (int cellId = 0; cellId < nCells; cellId ++)
+        {
+            // if this zone is not a ghost zone
+            if (0 == ghostZones->GetComponent(cellId, 0))
+            {
+                vtkIdType numCellPoints = 0;
+                const vtkIdType *cellPoints = nullptr;
+                vtkIdList *ptIds = vtkIdList::New();
+                // we get the points for this zone
+                in_ds->GetCellPoints(cellId, numCellPoints, cellPoints, ptIds);
+
+                // and mark them as valid points
+                if (numCellPoints && cellPoints)
+                {
+                    for (int cellPointId = 0; cellPointId < numCellPoints; cellPointId ++)
+                    {
+                        const int pointId = cellPoints[cellPointId];
+                        nodeShouldBeIgnored[pointId] = false;
+                    }
+                }
+                ptIds->Delete();
+            }
+        }
+    }
+
+    if (ghostNodes)
+    {
+        // iterate through all points and make sure points marked as ghost
+        // nodes are not counted
+        for (int pointId = 0; pointId < nPoints; pointId ++)
+        {
+            // if this node is a ghost node
+            if (0 != ghostNodes->GetComponent(pointId, 0))
+            {
+                nodeShouldBeIgnored[pointId] = true;
+            }
+        }
+    }
+
+    return nodeShouldBeIgnored;
+}
+
+// ****************************************************************************
+// ****************************************************************************
+void
+avtOOFUSExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
+                          int ncomponents, int ntuples, vtkDataSet *in_ds)
+{
+    vtkDataArray *ghostZones = in_ds->GetCellData()->GetArray("avtGhostZones");
+    vtkDataArray *ghostNodes = in_ds->GetPointData()->GetArray("avtGhostNodes");
+    int *nodeShouldBeIgnoredPtr = nullptr;
+
+    if (AVT_ZONECENT == centering)
+    {
+        if (ghostZones)
+        {
+            // we pass a lambda to CalculateWithGhosts() that
+            // looks at the ghostZones to determine if a cell
+            // is valid and ignores the nodeShouldBeIgnoredPtr.
+            CalculateWithGhosts(in, out, ncomponents, ntuples,
+                                [](vtkDataArray *ghostZones,
+                                   int *nodeShouldBeIgnoredPtr,
+                                   int tuple_id) -> int 
+                                   { return ghostZones->GetComponent(tuple_id, 0); },
+                                ghostZones,
+                                nodeShouldBeIgnoredPtr);
+        }
+        else // no ghosts or just ghost nodes
+        {
+            CalculateWithoutGhosts(in, out, ncomponents, ntuples);
+        }
+    }
+    else // AVT_NODECENT == centering
+    {
+        // if we have any kind of ghosts
+        if (ghostZones || ghostNodes)
+        {
+            // we need to identify which nodes should be ignored
+            std::vector<int> nodeShouldBeIgnored = IdentifyGhostedNodes(
+                in_ds, ghostZones, ghostNodes);
+            nodeShouldBeIgnoredPtr = nodeShouldBeIgnored.data();
+
+            // we pass a lambda to CalculateWithGhosts() that
+            // looks at the nodeShouldBeIgnoredPtr to determine 
+            // if a node is valid and ignores the ghostZones.
+            CalculateWithGhosts(in, out, ncomponents, ntuples,
+                                [](vtkDataArray *ghostZones,
+                                   int *nodeShouldBeIgnoredPtr,
+                                   int tuple_id) -> int 
+                                   { return nodeShouldBeIgnoredPtr[tuple_id]; },
+                                ghostZones,
+                                nodeShouldBeIgnoredPtr);
+        }
+        else // no ghosts
+        {
+            CalculateWithoutGhosts(in, out, ncomponents, ntuples);
+        }
+    }
+}
+
+// ****************************************************************************
+// ****************************************************************************
 vtkDataArray *
 avtOOFUSExpression::CreateArray(vtkDataArray *in1)
 {
@@ -277,26 +486,6 @@ avtOOFUSExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 // ****************************************************************************
 // ****************************************************************************
 avtDataRepresentation *
-avtOOFUSExpression::ExecuteData(avtDataRepresentation *in_dr)
-{
-    avtDataRepresentation *out_dr = nullptr;
-
-#ifdef HAVE_LIBVTKM
-    if (in_dr->GetDataRepType() == DATA_REP_TYPE_VTKM ||
-        avtCallback::GetBackendType() == GlobalAttributes::VTKM)
-    {
-        out_dr = ExecuteData_VTKm(in_dr);
-    }
-    else
-#endif
-    {
-        out_dr = ExecuteData_VTK(in_dr); 
-    }
-
-    return out_dr;
-}
-
-avtDataRepresentation *
 avtOOFUSExpression::ExecuteData_VTK(avtDataRepresentation *in_dr)
 {
     //
@@ -419,6 +608,26 @@ avtOOFUSExpression::ExecuteData_VTK(avtDataRepresentation *in_dr)
     return out_dr;
 }
 
+avtDataRepresentation *
+avtOOFUSExpression::ExecuteData(avtDataRepresentation *in_dr)
+{
+    avtDataRepresentation *out_dr = nullptr;
+
+#ifdef HAVE_LIBVTKM
+    if (in_dr->GetDataRepType() == DATA_REP_TYPE_VTKM ||
+        avtCallback::GetBackendType() == GlobalAttributes::VTKM)
+    {
+        out_dr = ExecuteData_VTKm(in_dr);
+    }
+    else
+#endif
+    {
+        out_dr = ExecuteData_VTK(in_dr); 
+    }
+
+    return out_dr;
+}
+
 // ****************************************************************************
 // ****************************************************************************
 avtDataTree_p
@@ -517,6 +726,8 @@ avtOOFUSExpression::execute_2_electric_boogaloo(avtDataTree_p inDT, avtDataTree_
 void
 avtOOFUSExpression::Execute()
 {
+    // taken from avtSIMODataTreeIterator::Execute()
+
     //
     // This will walk through the data domains in a data tree.
     //
@@ -555,254 +766,254 @@ avtOOFUSExpression::Execute()
 
     ///////////////////////////////////////////////////////////////
 
-    int t_full = visitTimer->StartTimer();
+//     int t_full = visitTimer->StartTimer();
 
-    // loop index
-    int i;
-    // initialize number of components to zero 
-    nFinalComps = 0;
+//     // loop index
+//     int i;
+//     // initialize number of components to zero 
+//     nFinalComps = 0;
 
-    // get input data tree to obtain datasets
-    avtDataTree_p tree = GetInputDataTree();
-    // holds number of datasets
-    int nsets;
+//     // get input data tree to obtain datasets
+//     avtDataTree_p tree = GetInputDataTree();
+//     // holds number of datasets
+//     int nsets;
 
-    // get datasets
-    vtkDataSet **data_sets = tree->GetAllLeaves(nsets);
+//     // get datasets
+//     vtkDataSet **data_sets = tree->GetAllLeaves(nsets);
 
-    // get dataset domain ids
-    std::vector<int> domain_ids;
-    tree->GetAllDomainIds(domain_ids);
+//     // get dataset domain ids
+//     std::vector<int> domain_ids;
+//     tree->GetAllDomainIds(domain_ids);
 
-    // check for ghosts
-    bool have_ghosts = false;
-    if(nsets > 0)
-        have_ghosts = data_sets[0]->GetCellData()->GetArray("avtGhostZones");
+//     // check for ghosts
+//     bool have_ghosts = false;
+//     if(nsets > 0)
+//         have_ghosts = data_sets[0]->GetCellData()->GetArray("avtGhostZones");
 
-    // set progress related vars
-#ifdef PARALLEL
-    totalSteps = nsets *4;
-    if(have_ghosts)
-        totalSteps+= nsets;
-#else
-    totalSteps = nsets *2;
-#endif
-    currentProgress = 0;        
+//     // set progress related vars
+// #ifdef PARALLEL
+//     totalSteps = nsets *4;
+//     if(have_ghosts)
+//         totalSteps+= nsets;
+// #else
+//     totalSteps = nsets *2;
+// #endif
+//     currentProgress = 0;        
 
-#ifdef PARALLEL
+// #ifdef PARALLEL
 
-    debug2 << "avtOOFUSExpression::enableGhostNeighbors = " 
-           << enableGhostNeighbors <<endl;
-    if(enableGhostNeighbors == 0) 
-       if (!  CheckForProperGhostZones(data_sets,nsets))
-       {
-           enableGhostNeighbors = 2;
-       }
+//     debug2 << "avtOOFUSExpression::enableGhostNeighbors = " 
+//            << enableGhostNeighbors <<endl;
+//     if(enableGhostNeighbors == 0) 
+//        if (!  CheckForProperGhostZones(data_sets,nsets))
+//        {
+//            enableGhostNeighbors = 2;
+//        }
 
-    if (enableGhostNeighbors == 0)
-    {
-        debug2 << "avtOOFUSExpression:: Proper ghost zones found for "
-               << "ghost zone communication enhancement." 
-               << "Labeling ghost zone neighbors."
-               << endl;
-        // if we have ghosts, label ghost neighbors for reduced comm in global
-        // resolve
-        for( i = 0; i <nsets ; i++)
-        {
-            LabelGhostNeighbors(data_sets[i]);
-            UpdateProgress(currentProgress++,totalSteps);
-        }
-    }
-#endif
+//     if (enableGhostNeighbors == 0)
+//     {
+//         debug2 << "avtOOFUSExpression:: Proper ghost zones found for "
+//                << "ghost zone communication enhancement." 
+//                << "Labeling ghost zone neighbors."
+//                << endl;
+//         // if we have ghosts, label ghost neighbors for reduced comm in global
+//         // resolve
+//         for( i = 0; i <nsets ; i++)
+//         {
+//             LabelGhostNeighbors(data_sets[i]);
+//             UpdateProgress(currentProgress++,totalSteps);
+//         }
+//     }
+// #endif
 
-    int t_gzrm = visitTimer->StartTimer();
-    // filter out any ghost cells
-    vtkDataSetRemoveGhostCells **ghost_filters = NULL;
+//     int t_gzrm = visitTimer->StartTimer();
+//     // filter out any ghost cells
+//     vtkDataSetRemoveGhostCells **ghost_filters = NULL;
 
-    if(have_ghosts)
-    {
-        ghost_filters = new vtkDataSetRemoveGhostCells*[nsets];
+//     if(have_ghosts)
+//     {
+//         ghost_filters = new vtkDataSetRemoveGhostCells*[nsets];
 
-        for( i = 0 ; i < nsets ; i++)
-        {
-            ghost_filters[i] = vtkDataSetRemoveGhostCells::New();
-            ghost_filters[i]->SetInputData(data_sets[i]);
-            ghost_filters[i]->Update();
-            data_sets[i] = ghost_filters[i]->GetOutput();
-        }
-    }
-    visitTimer->StopTimer(t_gzrm,"Ghost Zone Removal");
+//         for( i = 0 ; i < nsets ; i++)
+//         {
+//             ghost_filters[i] = vtkDataSetRemoveGhostCells::New();
+//             ghost_filters[i]->SetInputData(data_sets[i]);
+//             ghost_filters[i]->Update();
+//             data_sets[i] = ghost_filters[i]->GetOutput();
+//         }
+//     }
+//     visitTimer->StopTimer(t_gzrm,"Ghost Zone Removal");
 
-#ifdef PARALLEL
-    if (enableGhostNeighbors == 1)
-    {
-        debug2 << "avtOOFUSExpression:: Proper ghost zones NOT found "
-               << "for ghost zone communication enhancement, using boundary neighbors." << endl;
-        for( i = 0; i <nsets ; i++)
-        {
-            LabelBoundaryNeighbors(data_sets[i]);
-            UpdateProgress(currentProgress++,totalSteps);
-        }
-    }
-    else // enableGhostNeighbors == 2
-    {
-        debug2 << "old method for boundary neighbors." << endl;
-    }
-#endif
+// #ifdef PARALLEL
+//     if (enableGhostNeighbors == 1)
+//     {
+//         debug2 << "avtOOFUSExpression:: Proper ghost zones NOT found "
+//                << "for ghost zone communication enhancement, using boundary neighbors." << endl;
+//         for( i = 0; i <nsets ; i++)
+//         {
+//             LabelBoundaryNeighbors(data_sets[i]);
+//             UpdateProgress(currentProgress++,totalSteps);
+//         }
+//     }
+//     else // enableGhostNeighbors == 2
+//     {
+//         debug2 << "old method for boundary neighbors." << endl;
+//     }
+// #endif
 
-    int t_local_lbl = visitTimer->StartTimer();
-    // array to hold output sets
-    avtDataTree_p *leaves = new avtDataTree_p[nsets];
+//     int t_local_lbl = visitTimer->StartTimer();
+//     // array to hold output sets
+//     avtDataTree_p *leaves = new avtDataTree_p[nsets];
 
-    // vectors to hold result sets and their component labels
-    std::vector<vtkDataSet *>  result_sets;
-    std::vector<vtkIntArray *> result_arrays;
-    // vector to hold the number of components per set
-    std::vector<int> results_num_comps;
+//     // vectors to hold result sets and their component labels
+//     std::vector<vtkDataSet *>  result_sets;
+//     std::vector<vtkIntArray *> result_arrays;
+//     // vector to hold the number of components per set
+//     std::vector<int> results_num_comps;
 
-    result_sets.resize(nsets);
-    result_arrays.resize(nsets);
-    results_num_comps.resize(nsets);
+//     result_sets.resize(nsets);
+//     result_arrays.resize(nsets);
+//     results_num_comps.resize(nsets);
 
-    int num_local_comps=0;
-    int num_comps = 0;
-    int num_local_cells=0;
+//     int num_local_comps=0;
+//     int num_comps = 0;
+//     int num_local_cells=0;
 
-    // process all local sets
-    for(i = 0; i < nsets ; i++)
-    {
-        // get current set
-        vtkDataSet *curr_set = data_sets[i];
-        num_local_cells += curr_set->GetNumberOfCells();
+//     // process all local sets
+//     for(i = 0; i < nsets ; i++)
+//     {
+//         // get current set
+//         vtkDataSet *curr_set = data_sets[i];
+//         num_local_cells += curr_set->GetNumberOfCells();
 
-        // perform connected components labeling on current set
-        // (this only resolves components within the set)
-        vtkIntArray *res_array = SingleSetLabel(curr_set,results_num_comps[i]);
+//         // perform connected components labeling on current set
+//         // (this only resolves components within the set)
+//         vtkIntArray *res_array = SingleSetLabel(curr_set,results_num_comps[i]);
 
-        vtkIntArray *res_array = 
+//         vtkIntArray *res_array = 
 
-        int ncomponents = res_array->GetNumberOfComponents();
-        int ntuples = res_array->GetNumberOfTuples();
-        for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
-        {
-            for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-            {
-                res_array->SetComponent(tuple_id, comp_id, 1);
-            }
-        }
+//         int ncomponents = res_array->GetNumberOfComponents();
+//         int ntuples = res_array->GetNumberOfTuples();
+//         for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
+//         {
+//             for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+//             {
+//                 res_array->SetComponent(tuple_id, comp_id, 1);
+//             }
+//         }
 
-        // update the total number of components found
-        num_local_comps+= results_num_comps[i];
+//         // update the total number of components found
+//         num_local_comps+= results_num_comps[i];
 
-        // create a shallow copy of the current data set to add to output
-        vtkDataSet *res_set = (vtkDataSet *) curr_set->NewInstance();
-        res_set->ShallowCopy(curr_set);
+//         // create a shallow copy of the current data set to add to output
+//         vtkDataSet *res_set = (vtkDataSet *) curr_set->NewInstance();
+//         res_set->ShallowCopy(curr_set);
 
-        // add array to dataset
-        res_set->GetCellData()->AddArray(res_array);
+//         // add array to dataset
+//         res_set->GetCellData()->AddArray(res_array);
 
-        // keep pointers to the result set and labels
-        result_arrays[i] = res_array;
-        result_sets[i]   = res_set;
+//         // keep pointers to the result set and labels
+//         result_arrays[i] = res_array;
+//         result_sets[i]   = res_set;
 
-        if(res_array->GetNumberOfTuples() > 0) // add result as new leaf
-            leaves[i] = new avtDataTree(res_set,domain_ids[i]);
-        else // if the dataset only contained ghost zones we could end up here
-            leaves[i] = NULL;
+//         if(res_array->GetNumberOfTuples() > 0) // add result as new leaf
+//             leaves[i] = new avtDataTree(res_set,domain_ids[i]);
+//         else // if the dataset only contained ghost zones we could end up here
+//             leaves[i] = NULL;
 
-        // update progress
-        UpdateProgress(currentProgress++,totalSteps);
-    }
+//         // update progress
+//         UpdateProgress(currentProgress++,totalSteps);
+//     }
 
-    // create a boundary set 
-    // this is used to for fast boundary queries to resolve components across
-    // multiple datasets
+//     // create a boundary set 
+//     // this is used to for fast boundary queries to resolve components across
+//     // multiple datasets
 
-    BoundarySet bset;
-    for(i=0;i<nsets;i++)
-    {
-        // add each local mesh to the boundary set
-        bset.AddMesh(result_sets[i]);
-    }
-    // prepare the boundary set for queries
-    bset.Finalize();
+//     BoundarySet bset;
+//     for(i=0;i<nsets;i++)
+//     {
+//         // add each local mesh to the boundary set
+//         bset.AddMesh(result_sets[i]);
+//     }
+//     // prepare the boundary set for queries
+//     bset.Finalize();
 
-    // resolve labels across multiple local sets
-    num_local_comps = MultiSetResolve(num_local_comps,
-                                     bset,
-                                     result_sets,
-                                     result_arrays);
+//     // resolve labels across multiple local sets
+//     num_local_comps = MultiSetResolve(num_local_comps,
+//                                      bset,
+//                                      result_sets,
+//                                      result_arrays);
 
-    // update the total number of found components
-    num_comps = num_local_comps;
+//     // update the total number of found components
+//     num_comps = num_local_comps;
 
-    std::ostringstream oss;
-    oss << "Connected Components Labeling of " << nsets << " local datasets (" 
-        << num_local_cells << " cells, " << num_comps << " comps)";
-    visitTimer->StopTimer(t_local_lbl,oss.str());
+//     std::ostringstream oss;
+//     oss << "Connected Components Labeling of " << nsets << " local datasets (" 
+//         << num_local_cells << " cells, " << num_comps << " comps)";
+//     visitTimer->StopTimer(t_local_lbl,oss.str());
 
-#ifdef PARALLEL
+// #ifdef PARALLEL
 
-    //
-    // At this point each processor has resolved the labels across all local 
-    // datasets.  Components on each processor are labeled 0 <-> (number of 
-    // local comps - 1).  In the parallel case we need to ensure that every 
-    // component has a unique label so we first perform a global label shift.
-    //
+//     //
+//     // At this point each processor has resolved the labels across all local 
+//     // datasets.  Components on each processor are labeled 0 <-> (number of 
+//     // local comps - 1).  In the parallel case we need to ensure that every 
+//     // component has a unique label so we first perform a global label shift.
+//     //
 
-    // Globally shift labels to make sure they are unique
-    int num_global_comps = GlobalLabelShift(num_local_comps,result_arrays);
+//     // Globally shift labels to make sure they are unique
+//     int num_global_comps = GlobalLabelShift(num_local_comps,result_arrays);
 
 
-    // We can now globally resolve the labels
+//     // We can now globally resolve the labels
 
-    // Resolve components across processors
-    num_global_comps = GlobalResolve(num_global_comps,
-                                     bset,
-                                     result_sets,
-                                     result_arrays);
+//     // Resolve components across processors
+//     num_global_comps = GlobalResolve(num_global_comps,
+//                                      bset,
+//                                      result_sets,
+//                                      result_arrays);
 
-    // update the total number of found components
-    num_comps = num_global_comps;
+//     // update the total number of found components
+//     num_comps = num_global_comps;
 
-#endif
+// #endif
 
-    // create output data trees
-    if(nsets > 0 )
-    {
-        // create output data tree
-        avtDataTree_p result_tree = new avtDataTree(nsets,leaves);
-        // set output data tree
-        SetOutputDataTree(result_tree);
-    }
+//     // create output data trees
+//     if(nsets > 0 )
+//     {
+//         // create output data tree
+//         avtDataTree_p result_tree = new avtDataTree(nsets,leaves);
+//         // set output data tree
+//         SetOutputDataTree(result_tree);
+//     }
 
-    // cleanup leaves array
-    delete [] leaves;
-    // cleanup data_sets array
-    delete [] data_sets;
+//     // cleanup leaves array
+//     delete [] leaves;
+//     // cleanup data_sets array
+//     delete [] data_sets;
 
-    // cleanup result sets
-    for(i = 0; i< nsets; i++)
-    {
-       // dec ref pointer for each set
-       result_sets[i]->Delete();
-       // dec ref pointer for each set's label array
-       result_arrays[i]->Delete();
-       // cleanup ghost filters
-       if(have_ghosts)
-           ghost_filters[i]->Delete();
-    }
-    // cleanup ghost filters array
-    if(have_ghosts)
-        delete [] ghost_filters;
+//     // cleanup result sets
+//     for(i = 0; i< nsets; i++)
+//     {
+//        // dec ref pointer for each set
+//        result_sets[i]->Delete();
+//        // dec ref pointer for each set's label array
+//        result_arrays[i]->Delete();
+//        // cleanup ghost filters
+//        if(have_ghosts)
+//            ghost_filters[i]->Delete();
+//     }
+//     // cleanup ghost filters array
+//     if(have_ghosts)
+//         delete [] ghost_filters;
 
-    // Set progress to complete
-    UpdateProgress(totalSteps,totalSteps);
+//     // Set progress to complete
+//     UpdateProgress(totalSteps,totalSteps);
 
-    // set the final number of components
-    nFinalComps  = num_comps;
+//     // set the final number of components
+//     nFinalComps  = num_comps;
 
-    visitTimer->StopTimer(t_full,"Full Connected Components Labeling");
+//     visitTimer->StopTimer(t_full,"Full Connected Components Labeling");
 }
 
 

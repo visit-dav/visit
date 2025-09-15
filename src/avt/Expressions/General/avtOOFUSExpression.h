@@ -62,6 +62,53 @@ class EXPRESSION_API avtOOFUSExpression : public avtExpressionFilter
     virtual bool              CheckForProperGhostZones(vtkDataSet **sets,int nsets);
     virtual void              LabelGhostNeighbors(vtkDataSet *);
     virtual void              LabelBoundaryNeighbors(vtkDataSet *);
+
+    avtCentering              centering;
+    vtkDataSet               *cur_mesh;
+
+  private:
+    void
+    CalculateWithoutGhosts(vtkDataArray *in, 
+                                               vtkDataArray *out,
+                                               int ncomponents,
+                                               int ntuples);
+
+    void
+    CalculateWithGhosts(vtkDataArray *in,
+                                        vtkDataArray *out,
+                                        int ncomponents,
+                                        int ntuples,
+                                        int (getNodeOrCellValid)(vtkDataArray *, int *, int),
+                                        vtkDataArray *ghostZones,
+                                        int *nodeShouldBeIgnoredPtr);
+    std::vector<int>
+    IdentifyGhostedNodes(vtkDataSet *in_ds,
+                                                           vtkDataArray *ghostZones,
+                                                           vtkDataArray *ghostNodes);
+    void
+    DoOperation(vtkDataArray *in, vtkDataArray *out,
+                              int ncomponents, int ntuples, vtkDataSet *in_ds);
+
+    vtkDataArray *
+    CreateArray(vtkDataArray *in1);
+
+    vtkDataArray *
+    DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex);
+
+    avtDataRepresentation *
+    ExecuteData_VTK(avtDataRepresentation *in_dr);
+
+    avtDataRepresentation *
+    ExecuteData(avtDataRepresentation *in_dr);
+
+    avtDataTree_p
+    ExecuteDataTree(avtDataRepresentation *in_dr);
+
+    void
+    ExecuteDataTreeOnThread(avtDataTree_p inDT, avtDataTree_p &outDT);
+
+    void
+    execute_2_electric_boogaloo(avtDataTree_p inDT, avtDataTree_p &outDT);
 };
 
 

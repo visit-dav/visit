@@ -56,6 +56,7 @@ set(GENERAL_SOURCES
     avtNeighborEvaluatorExpression.C
     avtNMatsExpression.C
     avtNormalizeExpression.C
+    avtOOFUSExpression.C
     avtPerformColorTableLookupExpression.C
     avtPerMaterialValueExpression.C
     avtProcessorIdExpression.C
