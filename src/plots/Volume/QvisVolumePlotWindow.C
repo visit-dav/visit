@@ -28,6 +28,10 @@
 #undef max
 #endif
 
+#ifdef HAVE_ANARI
+#include <AnariVolumeWidget.h>
+#endif
+
 #include <QvisOpacitySlider.h>
 #include <QvisSpectrumBar.h>
 #include <QvisColorSelectionWidget.h>
@@ -976,6 +980,12 @@ void QvisVolumePlotWindow::CreateSamplingGroups(QWidget *parent, QLayout *pLayou
 
     //ospray group
     CreateOSPRayGroups(parent, pLayout);
+    
+    // ANARI Group
+    #ifdef HAVE_ANARI
+        this->anariVolumeWidget = new AnariVolumeWidget(this, volumeAtts);
+        pLayout->addWidget(this->anariVolumeWidget);
+    #endif
 
     //raycasting group
     {
@@ -1075,10 +1085,14 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
     defaultGroup->setVisible(false);
     raycastingGroup->setVisible(false);
     methodsGroup->setVisible(true);
+    #ifdef HAVE_ANARI
+    anariVolumeWidget->setVisible(false);
+    #endif
 
     tfTabs->setTabEnabled(1, true);
 
     //lighting and material properties group, enabled for all but RayCastingIntegration
+    lightMaterialPropGroup->setVisible(true);
     lightMaterialPropGroup->setEnabled(true);
     lightingToggle->setEnabled(true);
 
@@ -1110,6 +1124,7 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
     {
     case VolumeAttributes::Serial:
         EnableDefaultGroup();
+        lowGradientGroup->setVisible(false);
         UpdateLowGradientGroup(false);
         centeredDiffButton->setEnabled(false);
         sobelButton->setEnabled(false);
@@ -1123,6 +1138,7 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
     case VolumeAttributes::Composite:
         resampleGroup->setEnabled(false);
         raycastingGroup->setVisible(true);
+        lowGradientGroup->setVisible(true);
         UpdateLowGradientGroup(true);
         materialProperties->setEnabled(volumeAtts->GetSampling()==VolumeAttributes::Trilinear && volumeAtts->GetLightingFlag());
         EnableSamplingMethods(true);
@@ -1133,8 +1149,9 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
     case VolumeAttributes::Integration:
         resampleGroup->setEnabled(false);
         raycastingGroup->setVisible(true);
+        lowGradientGroup->setVisible(false);
         UpdateLowGradientGroup(false);
-        lightMaterialPropGroup->setEnabled(false);
+        lightMaterialPropGroup->setVisible(false);
         colorWidgetGroup->setEnabled(false);
         opacityWidgetGroup->setEnabled(false);
         centeredDiffButton->setEnabled(false);
@@ -1149,6 +1166,7 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
 #ifdef VISIT_SLIVR
     case VolumeAttributes::SLIVR:
         raycastingGroup->setVisible(true);
+        lowGradientGroup->setVisible(false);
         UpdateLowGradientGroup(false);
         materialProperties->setEnabled(volumeAtts->GetLightingFlag());
         EnableSamplingMethods(false);
@@ -1161,12 +1179,22 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
         sobelButton->setEnabled(false);
         break;
 #endif
+#ifdef HAVE_ANARI
+    case VolumeAttributes::ANARI:
+        raycastingGroup->setVisible(false);
+        lowGradientGroup->setVisible(false);
+        UpdateLowGradientGroup(false);
+        lightMaterialPropGroup->setVisible(false);
+        methodsGroup->setVisible(false);        
+        smoothDataToggle->setEnabled(false);
+    
+        anariVolumeWidget->setVisible(true);
+        anariVolumeWidget->setEnabled(true);
+        break;
+#endif 
 
     case VolumeAttributes::Parallel:
-        resampleGroup->setVisible(true);
-        resampleGroup->setEnabled(true);
-        osprayGroup->setVisible(true);
-        osprayGroup->setEnabled(true);
+        EnableDefaultGroup();
 
         // raycastingGroup->setVisible(true);
         EnableSamplingMethods(false);
@@ -1179,7 +1207,6 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
         methodsGroup->setVisible(false);
         centeredDiffButton->setEnabled(false);
         sobelButton->setEnabled(false);
-        lightingToggle->setEnabled(true);
         materialProperties->setEnabled(volumeAtts->GetLightingFlag());
 
         lowGradientGroup->setVisible(false);
@@ -1225,6 +1252,9 @@ QvisVolumePlotWindow::CreateRendererOptionsGroup(int maxWidth)
     rendererTypesComboBox->addItem(tr("Integration (grey scale)"));
 #ifdef VISIT_SLIVR
     rendererTypesComboBox->addItem(tr("SLIVR"));
+#endif
+#ifdef HAVE_ANARI
+    rendererTypesComboBox->addItem(tr("ANARI"));
 #endif
     connect(rendererTypesComboBox, SIGNAL(activated(int)),
             this, SLOT(rendererTypeChanged(int)));
@@ -2020,6 +2050,18 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
                 rendererTypesComboBox->setCurrentIndex(4);
             }
 #endif
+#ifdef HAVE_ANARI
+            else if (volumeAtts->GetRendererType() == VolumeAttributes::ANARI)
+            {
+                int currentIdx = 4;
+                
+                #ifdef VISIT_SLIVR
+                    ++currentIdx;
+                #endif
+                
+                rendererTypesComboBox->setCurrentIndex(currentIdx);
+            }
+#endif
 
             opacityVariable->setEnabled(true);
             rendererTypesComboBox->blockSignals(false);
@@ -2201,6 +2243,26 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             osprayMaxContribution->setValue(volumeAtts->GetOSPRayMaxContribution());
             osprayMaxContribution->blockSignals(false);
             break;
+#ifdef HAVE_ANARI
+        case VolumeAttributes::ID_anariRendering:
+            anariVolumeWidget->SetChecked(volumeAtts->GetAnariRendering());
+            break;
+        case VolumeAttributes::ID_anariLibrary:
+            anariVolumeWidget->UpdateLibraryName(volumeAtts->GetAnariLibrary());
+            break;
+        case VolumeAttributes::ID_anariLibrarySubtype:
+            anariVolumeWidget->UpdateLibrarySubtypes(volumeAtts->GetAnariLibrarySubtype());
+            break;
+        case VolumeAttributes::ID_anariRendererSubtype:
+            anariVolumeWidget->UpdateRendererSubtypes(volumeAtts->GetAnariRendererSubtype());
+            break;
+        case VolumeAttributes::ID_anariRendererParameters:
+            anariVolumeWidget->UpdateRendererParameters(volumeAtts->GetAnariRendererParameters());
+            break;
+        case VolumeAttributes::ID_anariUSDParameters:
+            anariVolumeWidget->UpdateUSDParameters(volumeAtts->GetAnariUSDParameters());
+            break;
+#endif
         }
     }
 
@@ -3027,6 +3089,11 @@ QvisVolumePlotWindow::controlPointMoved(int, float)
 //   Kathleen Biagas, Wed Apr  5 13:04:35 PDT 2023
 //   Replace obosolete desktop() with primaryScreen().
 //
+//   Kathleen Biagas, Mon Aug 18, 2025 
+//   Replace 'primaryScreen()->geometry()' with
+//   'primaryScreen()->availableGeometry()' since the latter takes into
+//   account window manager reserved space like the Windows taskbar. 
+//
 // ****************************************************************************
 
 void
@@ -3046,14 +3113,14 @@ QvisVolumePlotWindow::popupColorSelect(int index, const QPoint &p)
     // Fix the X dimension.
     if(menuX < 0)
         menuX = 0;
-    else if(menuX + menuW > QApplication::primaryScreen()->geometry().width())
+    else if(menuX + menuW > QApplication::primaryScreen()->availableGeometry().width())
         menuX -= (menuW + 5);
 
     // Fix the Y dimension.
     if(menuY < 0)
         menuY = 0;
-    else if(menuY + menuH > QApplication::primaryScreen()->geometry().height())
-        menuY -= ((menuY + menuH) - QApplication::primaryScreen()->geometry().height());
+    else if(menuY + menuH > QApplication::primaryScreen()->availableGeometry().height())
+        menuY -= ((menuY + menuH) - QApplication::primaryScreen()->availableGeometry().height());
 
     // Show the popup menu.
     colorSelect->move(menuX, menuY);
@@ -3913,6 +3980,15 @@ QvisVolumePlotWindow::rendererTypeChanged(int val)
 #ifdef VISIT_SLIVR
       case 4:
         volumeAtts->SetRendererType(VolumeAttributes::SLIVR);
+        break;
+#endif
+#if defined(HAVE_ANARI) && !defined(VISIT_SLIVR)
+      case 4:
+        volumeAtts->SetRendererType(VolumeAttributes::ANARI);
+        break;
+#elif defined(HAVE_ANARI)
+      case 5:
+        volumeAtts->SetRendererType(VolumeAttributes::ANARI);
         break;
 #endif
       default:

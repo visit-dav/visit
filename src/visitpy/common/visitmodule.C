@@ -17568,6 +17568,12 @@ ExecuteClientMethodHelper(Subject *subj, void *)
 //   Hank Childs, Thu Oct 25 08:52:27 PDT 2007
 //   Add preprocessor directives for the case when THREADS is not defined.
 //
+//   Kathleen Biagas, Thu Jul 17 14:12:08 PDT 2025
+//   Changed 'Quit' handling to simply run the PyRun_SimpleString that calls
+//   'sys.exit(0)' instead of going through the callback mechanism. This
+//   fixes the problem of CLI not truly exiting when the GUI initiates the
+//   Quit.
+//
 // ****************************************************************************
 
 static void
@@ -17614,13 +17620,7 @@ ExecuteClientMethod(ClientMethod *method, bool onNewThread)
     }
     else if(method->GetMethodName() == "Quit")
     {
-        // Execute the Quit method here on the 2nd thread. Make it get
-        // the interpreter lock by calling it using visit_exec_client_method.
-        void **cbData = new void *[2];
-        ClientMethod *m = new ClientMethod(*method);
-        cbData[0] = (void *)m;
-        cbData[1] = (void *)1;
-        visit_exec_client_method(cbData);
+        PyRun_SimpleString("import sys; sys.exit(0)");
     }
     else if(method->GetMethodName() == "MacroStart")
     {
@@ -20185,12 +20185,12 @@ static struct PyModuleDef visitmodule_def =
 #if defined(IS_PY3K)
 //---------------------------------------------------------------------------//
 //---------------------------------------------------------------------------//
-PyObject *PyInit_visit()
+PyMODINIT_FUNC PyInit_visit()
 {
     return initialize_visit_python_module();
 }
 //---------------------------------------------------------------------------//
-PyObject * PyInit_visitmodule(void)
+PyMODINIT_FUNC PyInit_visitmodule(void)
 {
     return initialize_visit_python_module();
 }

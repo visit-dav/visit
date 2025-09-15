@@ -55,7 +55,7 @@ function bv_mfem_host_profile
     if [[ "$DO_MFEM" == "yes" ]] ; then
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
-        echo "## MFEM " >> $HOSTCONF
+        echo "## MFEM" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
             "VISIT_OPTION_DEFAULT(VISIT_MFEM_DIR \${VISITHOME}/mfem/$MFEM_VERSION/\${VISITARCH})" \

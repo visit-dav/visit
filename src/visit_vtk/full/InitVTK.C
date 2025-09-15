@@ -12,6 +12,7 @@
 #include <vtkObjectFactory.h>
 #include <vtkVersion.h>
 #include <vtkVisItCellDataToPointData.h>
+#include <vtkLogger.h>
 #include <visit-config.h>
 
 
@@ -103,6 +104,11 @@ vtkVisItObjectFactory::vtkVisItObjectFactory()
 //    Hank Childs, Wed May  5 10:15:48 PDT 2004
 //    Use the VisIt graphics factory to override the standard polydata mapper.
 //
+//    Kathleen Biagas, Thu Jul 17, 2025
+//    Stifle vtkLogger output to terminal by setting its verbosity level OFF.
+//    Avoids lots of console output, even from vtkWarning or vtkDebug macros
+//    which we capture in our debug logs.
+//
 // ****************************************************************************
 
 void
@@ -114,6 +120,8 @@ InitVTK::Initialize(void)
     vtkVisItObjectFactory *factory = vtkVisItObjectFactory::New();
     vtkObjectFactory::RegisterFactory(factory);
     factory->Delete();
+
+    vtkLogger::SetStderrVerbosity(vtkLogger::Verbosity::VERBOSITY_OFF);
 }
 
 

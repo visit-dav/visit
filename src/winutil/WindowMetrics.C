@@ -146,13 +146,18 @@ WindowMetrics::WindowMetrics()
 //    Kathleen Biagas, Wed Apr  5 13:04:35 PDT 2023
 //    Replace obosolete desktop() with primaryScreen().
 //
+//    Kathleen Biagas, Mon Aug 18, 2025 
+//    Replace 'primaryScreen()->geometry()' with
+//    'primaryScreen()->availableGeometry()' since the latter takes into
+//    account window manager reserved space like the Windows taskbar. 
+//
 // ****************************************************************************
 void
 WindowMetrics::CalculateScreen(QWidget *win,
                                int &screenX, int &screenY,
                                int &screenW, int &screenH)
 {
-    QRect rect = qApp->primaryScreen()->geometry();
+    QRect rect = qApp->primaryScreen()->availableGeometry();
     screenX = rect.x();
 #if defined(Q_OS_MAC)
     screenY = 0;
@@ -507,8 +512,8 @@ WindowMetrics::CalculateBorders(QWidget *win,
     int border_width = leaf_attributes.border_width;
     int big_height = 0, big_width = 0;
 
-    int desktop_width  = qApp->primaryScreen()->geometry().width();
-    int desktop_height = qApp->primaryScreen()->geometry().height();
+    int desktop_width  = qApp->primaryScreen()->availableGeometry().width();
+    int desktop_height = qApp->primaryScreen()->availableGeometry().height();
 
     // Start progressing up the tree.
     int count = 0;
