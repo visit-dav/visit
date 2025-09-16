@@ -6,7 +6,6 @@
 #include <AnariParameterInfo.h>
 #include <QvisRenderingWindow.h>
 #include <RenderingAttributes.h>
-#include <AnariAttributes.h>
 #include <DebugStream.h>
 
 #include <QGroupBox>
@@ -99,7 +98,7 @@ AnariRenderingWidget::AnariRenderingWidget(QvisRenderingWindow *qrw,
                                            QWidget *parent)
     : QWidget(parent)
     , renderingWindow(qrw)
-    , anariAttributes(&ra->GetAnariAttributes())
+    , anariAttributes(&(ra->GetAnariAttributes()))
     , dynamicLayouts(nullptr)
     , dynamicLayoutMap()
     , topRows(0)
@@ -1208,7 +1207,7 @@ AnariRenderingWidget::libraryChanged()
             rendererSubtypes->clear();
             rendererSubtypes->addItem("default");
             rendererSubtypes->blockSignals(false);
-            auto rendererSubtype = rendererSubtypes->currentText().toStdString();
+            auto rendererSubtype = rendererSubtypes->currentText().toStdString();            
             anariAttributes->SetAnariRendererSubtype(rendererSubtype);
 
             // Reset to blank widget
@@ -1240,8 +1239,8 @@ AnariRenderingWidget::librarySubtypeChanged(const QString &subtype)
 {
     auto libSubtype = subtype.toStdString();
     anariAttributes->SetAnariLibrarySubtype(libSubtype);
-    auto libname = libraryName->text().trimmed().toStdString();
 
+    auto libname = libraryName->text().trimmed().toStdString();
     auto anariLibrary = anari::loadLibrary(libname.c_str(), anari_visit::StatusCallback);
     auto anariDevice = anari::newDevice(anariLibrary, libSubtype.c_str());
 

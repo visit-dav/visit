@@ -3226,7 +3226,7 @@ VisWinRendering::SetOsprayShadows(bool enabled)
 //   Sets the ANARI attributes and updates the rendering settings accordingly
 //
 // Arguments:
-//   atts : Pointer to the AnariAttributes object containing the new settings
+//   atts : The AnariAttributes object containing the new settings
 //
 // Programmer:  Kevin Griffin
 // Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
@@ -3236,46 +3236,44 @@ VisWinRendering::SetOsprayShadows(bool enabled)
 void
 VisWinRendering::SetAnariAttributes(const AnariAttributes &atts)
 {
-    // Anari rendering flag changed
-    if(anariAttributes.GetAnariRendering() != atts.GetAnariRendering())
-    {
-        anariAttributes.SetAnariRendering(atts.GetAnariRendering());
-        SetAnariRendering(anariAttributes.GetAnariRendering());
-    }
+    if(anariAttributes == atts)
+        return; // No change
+
+    auto oldAtts = anariAttributes;
+    anariAttributes = atts;
+    
     // Anari library changed
-    if(anariAttributes.GetAnariLibrary() != atts.GetAnariLibrary())
+    if(oldAtts.GetAnariLibrary() != anariAttributes.GetAnariLibrary())
     {
-        anariAttributes.SetAnariLibrary(atts.GetAnariLibrary());
-        SetAnariLibraryName(anariAttributes.GetAnariLibrary());
+        SetAnariLibrary(anariAttributes.GetAnariLibrary());
     }
     // Anari library subtype changed
-    if(anariAttributes.GetAnariLibrarySubtype() != atts.GetAnariLibrarySubtype())
+    else if(oldAtts.GetAnariLibrarySubtype() != anariAttributes.GetAnariLibrarySubtype())
     {
-        anariAttributes.SetAnariLibrarySubtype(atts.GetAnariLibrarySubtype());
         SetAnariLibrarySubtype(anariAttributes.GetAnariLibrarySubtype());
     }
+
     // Anari renderer subtype changed
-    if(anariAttributes.GetAnariRendererSubtype() != atts.GetAnariRendererSubtype())
+    if(oldAtts.GetAnariRendererSubtype() != anariAttributes.GetAnariRendererSubtype())
     {
-        anariAttributes.SetAnariRendererSubtype(atts.GetAnariRendererSubtype());
         SetAnariRendererSubtype(anariAttributes.GetAnariRendererSubtype());
     }
+    
     // Anari renderer parameters changed
-    if(anariAttributes.GetAnariRendererParameters() != atts.GetAnariRendererParameters())
+    if(oldAtts.GetAnariRendererParameters() != anariAttributes.GetAnariRendererParameters())
     {
-        anariAttributes.SetAnariRendererParameters(atts.GetAnariRendererParameters());
         SetAnariRendererParameters(anariAttributes.GetAnariRendererParameters());
     }
+
     // Anari USD parameters changed
-    if(anariAttributes.GetAnariUSDParameters() != atts.GetAnariUSDParameters())
+    if(oldAtts.GetAnariUSDParameters() != anariAttributes.GetAnariUSDParameters())
     {
-        anariAttributes.SetAnariUSDParameters(atts.GetAnariUSDParameters());
         SetAnariUSDParameters(anariAttributes.GetAnariUSDParameters());
     }
-    // Using USD device flag changed
-    if(anariAttributes.GetUsingUsdDevice() != atts.GetUsingUsdDevice())
+
+    if(oldAtts.GetAnariRendering() != anariAttributes.GetAnariRendering())
     {
-        anariAttributes.SetUsingUsdDevice(atts.GetUsingUsdDevice());
+        SetAnariRendering(anariAttributes.GetAnariRendering());
     }
 }
 
@@ -3296,6 +3294,8 @@ VisWinRendering::SetAnariAttributes(const AnariAttributes &atts)
 void
 VisWinRendering::SetAnariRendering(const bool enabled)
 {
+    anariRendering = enabled;
+
     if (enabled)
     {
         canvas->SetPass(anariPass);
@@ -3321,7 +3321,7 @@ VisWinRendering::SetAnariRendering(const bool enabled)
 // ****************************************************************************
 
 void
-VisWinRendering::SetAnariLibraryName(const std::string name)
+VisWinRendering::SetAnariLibrary(const std::string name)
 {
     auto anariLibrarySubtype = anariAttributes.GetAnariLibrarySubtype();
     auto* ad = anariPass->GetAnariDevice();

@@ -224,6 +224,9 @@ class VisWindowColleagueProxy;
 //    Kathleen Biagas, Tue Jun 24, 2025
 //    Make anariRendering and osprayRendering ivars available always.
 //
+//    Kevin Griffin, Tue Sep 16, 2025
+//    Switched to using AnariAttributes.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRendering : public VisWinColleague
@@ -517,13 +520,13 @@ private:
                              { return setRenderUpdate; }
 
 #ifdef HAVE_ANARI
-    vtkAnariPass            *CreateAnariPass();
-    void                    SetAnariRendering(const bool);
-    void                    SetAnariLibraryName(const std::string);
-    void                    SetAnariLibrarySubtype(const std::string);
-    void                    SetAnariRendererSubtype(const std::string);
-    void                    SetAnariRendererParameters(const stringVector &);
-    void                    SetAnariUSDParameters(const stringVector &);
+    vtkAnariPass                *CreateAnariPass();
+    void                        SetAnariRendering(const bool);
+    void                        SetAnariLibrary(const std::string);
+    void                        SetAnariLibrarySubtype(const std::string);
+    void                        SetAnariRendererSubtype(const std::string);
+    void                        SetAnariRendererParameters(const stringVector &);
+    void                        SetAnariUSDParameters(const stringVector &);
 #endif
 };
 
