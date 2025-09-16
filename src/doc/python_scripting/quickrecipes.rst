@@ -900,7 +900,7 @@ Exporting to VTK
 .. literalinclude:: ../../test/tests/quickrecipes/export.py
     :language: Python
     :start-after: # exportToVtk {
-    :end-before: #  exportToVtk }
+    :end-before: # exportToVtk }
 
 
 Exporting to Silo
@@ -909,7 +909,7 @@ Exporting to Silo
 .. literalinclude:: ../../test/tests/quickrecipes/export.py
     :language: Python
     :start-after: # exportToSilo {
-    :end-before: #  exportToSilo }
+    :end-before: # exportToSilo }
 
 
 Exporting to Conduit Blueprint
@@ -918,7 +918,7 @@ Exporting to Conduit Blueprint
 .. literalinclude:: ../../test/tests/quickrecipes/export.py
     :language: Python
     :start-after: # exportToBlueprint {
-    :end-before: #  exportToBlueprint }
+    :end-before: # exportToBlueprint }
 
 
 
@@ -932,6 +932,6 @@ CSV export is an option in the Conduit Blueprint Database Exporter.
 .. literalinclude:: ../../test/tests/quickrecipes/export.py
     :language: Python
     :start-after: # exportToBlueprintCSV {
-    :end-before: #  exportToBlueprintCSV }
+    :end-before: # exportToBlueprintCSV }
 
 
