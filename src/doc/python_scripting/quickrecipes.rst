@@ -897,7 +897,7 @@ These examples show how to export data from VisIt pipelines to VTK, Silo, and Co
 Exporting to VTK
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. literalinclude:: ../../test/tests/quickrecipes/expressions.py
+.. literalinclude:: ../../test/tests/quickrecipes/export.py
     :language: Python
     :start-after: # exportToVtk {
     :end-before: #  exportToVtk }
@@ -906,7 +906,7 @@ Exporting to VTK
 Exporting to Silo
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. literalinclude:: ../../test/tests/quickrecipes/expressions.py
+.. literalinclude:: ../../test/tests/quickrecipes/export.py
     :language: Python
     :start-after: # exportToSilo {
     :end-before: #  exportToSilo }
@@ -915,7 +915,7 @@ Exporting to Silo
 Exporting to Conduit Blueprint
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. literalinclude:: ../../test/tests/quickrecipes/expressions.py
+.. literalinclude:: ../../test/tests/quickrecipes/export.py
     :language: Python
     :start-after: # exportToBlueprint {
     :end-before: #  exportToBlueprint }
@@ -929,7 +929,7 @@ You can also flatten your mesh and fields data into tables and save the results 
 Exporting to CSV discards mesh topology info, but this provide data in a simple, easy to parse format, that many tools can read. 
 CSV export is an option in the Conduit Blueprint Database Exporter.
 
-.. literalinclude:: ../../test/tests/quickrecipes/expressions.py
+.. literalinclude:: ../../test/tests/quickrecipes/export.py
     :language: Python
     :start-after: # exportToBlueprintCSV {
     :end-before: #  exportToBlueprintCSV }
