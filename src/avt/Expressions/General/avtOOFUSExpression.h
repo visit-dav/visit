@@ -10,6 +10,7 @@
 #define AVT_OOFUS_EXPRESSION_H
 
 #include <avtExpressionFilter.h>
+#include <vtkBitArray.h>
 
 #include <vector>
 
@@ -51,6 +52,7 @@ class EXPRESSION_API avtOOFUSExpression : public avtExpressionFilter
     int                       nFinalComps;
     int                       currentProgress;
     int                       totalSteps;
+    int                       totalNodes;
 
     int                       enableGhostNeighbors;
 
@@ -65,6 +67,8 @@ class EXPRESSION_API avtOOFUSExpression : public avtExpressionFilter
 
     avtCentering              centering;
     vtkDataSet               *cur_mesh;
+    // Track if the created array is volume-dependent.
+    vtkBitArray              *volumeDependent;
 
   private:
     void

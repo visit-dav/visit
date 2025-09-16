@@ -34,6 +34,7 @@
 // global expressions
 #include <avtGlobalAvgExpression.h>
 #include <avtGlobalMaxExpression.h>
+#include <avtOOFUSExpression.h>
 #include <avtGlobalMinExpression.h>
 #include <avtGlobalRMSExpression.h>
 #include <avtGlobalStdDevExpression.h>
@@ -110,6 +111,8 @@ avtFunctionExpr::CreateMathFilters(const std::string &functionName) const
         f = new avtGlobalAvgExpression();
     else if (functionName == "global_max")
         f = new avtGlobalMaxExpression();
+    else if (functionName == "OOFUS")
+        f = new avtOOFUSExpression();
     else if (functionName == "global_min")
         f = new avtGlobalMinExpression();
     else if (functionName == "global_rms")

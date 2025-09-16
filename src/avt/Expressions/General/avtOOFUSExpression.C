@@ -67,6 +67,14 @@ avtOOFUSExpression::avtOOFUSExpression()
     nFinalComps = 0;
     enableGhostNeighbors = 0;
     canApplyToDirectDatabaseQOT = false;
+
+    volumeDependent = vtkBitArray::New();
+    volumeDependent->SetName("VolumeDependent");
+    volumeDependent->SetNumberOfComponents(1);
+    volumeDependent->SetNumberOfTuples(1);
+    volumeDependent->SetComponent(0, 0, false); // Default volume dependency to false
+
+    totalNodes  = 0;
 }
 
 
@@ -85,7 +93,7 @@ avtOOFUSExpression::avtOOFUSExpression()
 
 avtOOFUSExpression::~avtOOFUSExpression()
 {
-    ;
+    volumeDependent->Delete();
 }
 
 
@@ -160,7 +168,7 @@ avtOOFUSExpression::CalculateWithGhosts(vtkDataArray *in,
                 }
             }
             EXCEPTION2(ExpressionException, outputVariableName,
-                 "Everything is ghosted so the global_max expression is not valid.");
+                 "Everything is ghosted so the OOFUS expression is not valid.");
             return 0; // return so the compiler is happy
         }();
 
@@ -613,14 +621,14 @@ avtOOFUSExpression::ExecuteData(avtDataRepresentation *in_dr)
 {
     avtDataRepresentation *out_dr = nullptr;
 
-#ifdef HAVE_LIBVTKM
-    if (in_dr->GetDataRepType() == DATA_REP_TYPE_VTKM ||
-        avtCallback::GetBackendType() == GlobalAttributes::VTKM)
-    {
-        out_dr = ExecuteData_VTKm(in_dr);
-    }
-    else
-#endif
+// #ifdef HAVE_LIBVTKM
+//     if (in_dr->GetDataRepType() == DATA_REP_TYPE_VTKM ||
+//         avtCallback::GetBackendType() == GlobalAttributes::VTKM)
+//     {
+//         out_dr = ExecuteData_VTKm(in_dr);
+//     }
+//     else
+// #endif
     {
         out_dr = ExecuteData_VTK(in_dr); 
     }
