@@ -96,6 +96,9 @@
 #    supported. Removed the use of '--no-anari' since it is off by
 #    default. Combined the build of poodle and rzwhippet. Added
 #    '--anari' to poodle, rzwhippet and tuolumne.
+# 
+#    Justin Privitera, Fri Sep 12 15:24:04 PDT 2025
+#    Added elcap case for special elcap logic.
 #
 #-----------------------------------------------------------------------
 
@@ -108,6 +111,7 @@ rzwhippet=false
 rzvernal=false
 crossroads=false
 tuolumne=false
+elcap=false
 
 machine_name="unknown"
 
@@ -161,6 +165,7 @@ do
          ;;
       -elcap)
          tuolumne=true
+         elcap=true
          machine_name="elcap"
          shift
          ;;
@@ -289,7 +294,7 @@ elif [ "$rzvernal" = true ]; then
    env PAR_COMPILER=/usr/tce/packages/cray-mpich/cray-mpich-8.1.28-gcc-12.2.1-magic/bin/mpicc \
        PAR_COMPILER_CXX=/usr/tce/packages/cray-mpich/cray-mpich-8.1.28-gcc-12.2.1-magic/bin/mpicxx \
        PAR_INCLUDE=-I/usr/tce/packages/cray-mpich/cray-mpich-8.1.28-gcc-12.2.1-magic/include \
-       ./$build_visit_script --group ${dest_group} --required --optional --mesagl --parallel \
+       ./$build_visit_script --group ${dest_group} --required --optional --osmesa --parallel \
        --qwt --no-gdal --no-uintah --no-visit --makeflags -j24 --thirdparty-path ${dest_dir}
 elif [ "$crossroads" = true ]; then
    env C_COMPILER=gcc \
@@ -302,12 +307,20 @@ elif [ "$crossroads" = true ]; then
        --no-adios --no-gdal --no-nektarpp \
        --meson --ninja --xcb --xkbcommon --qwt --parallel \
        --no-visit --makeflags -j16 --thirdparty-path ${dest_dir}
+elif [ "$elcap" = true ]; then
+   env CC=gcc \
+       CXX=g++ \
+       PAR_COMPILER=cc \
+       PAR_COMPILER_CXX=CC \
+
+       ./$build_visit_script --group ${dest_group} --required --optional --osmesa --parallel \
+       --qwt --no-moab --no-uintah --no-visit --no-icet --makeflags -j24 --thirdparty-path ${dest_dir}
 elif [ "$tuolumne" = true ]; then
    env CC=gcc \
        CXX=g++ \
        PAR_COMPILER=cc \
        PAR_COMPILER_CXX=CC \
-       ./$build_visit_script --group ${dest_group} --required --optional --anari --mesagl --parallel \
+       ./$build_visit_script --group ${dest_group} --required --optional --anari --osmesa --parallel \
        --qwt --no-moab --no-uintah --no-visit --makeflags -j24 --thirdparty-path ${dest_dir}
 else
    echo "case for $machine_name not implemented. Bailing out."
