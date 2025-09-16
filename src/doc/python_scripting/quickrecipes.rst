@@ -899,8 +899,8 @@ Exporting to VTK
 
 .. literalinclude:: ../../test/tests/quickrecipes/export.py
     :language: Python
-    :start-after: # exportToVtk {
-    :end-before: # exportToVtk }
+    :start-after: # exportToVTK {
+    :end-before: # exportToVTK }
 
 
 Exporting to Silo
