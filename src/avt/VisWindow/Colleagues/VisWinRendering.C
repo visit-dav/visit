@@ -280,9 +280,12 @@ vtkStandardNewMacro(vtkBackgroundPass);
 //   Kathleen Biagas, Tue Jun 24, 2025
 //   Replace vtkVisItDataSetMapper with vtkDataSetMapper for ospray overrides.
 //
+<<<<<<< HEAD
 //   Kathleen Biagas, Wed Aug 14, 2025
 //   antialiasing is now an int. Add msaaSamples.
 //
+=======
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
 //   Kathleen Biagas, Thu Aug 28 15:37:48 PDT 2025
 //   Removes surfaceRepresentation, no longer used.
 //
@@ -290,8 +293,12 @@ vtkStandardNewMacro(vtkBackgroundPass);
 
 VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
     VisWinColleague(p), background(NULL), foreground(NULL), needsUpdate(false),
+<<<<<<< HEAD
     realized(false), antialiasing(0), msaaSamples(4),
     stereo(false), stereoType(2),
+=======
+    realized(false), antialiasing(false), stereo(false), stereoType(2),
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
     specularFlag(false),
     specularCoeff(0.6), specularPower(10.0),
     specularColor(ColorAttribute(255,255,255,255)), colorTexturingFlag(true),

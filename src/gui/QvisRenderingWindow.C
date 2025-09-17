@@ -63,9 +63,12 @@
 //   Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
 //   Add compact domain options.
 //
+<<<<<<< HEAD
 //   Kathleen Biagas, Tue Aug 26, 2025
 //   Init lastAA.
 //
+=======
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
 //   Kathleen Biagas, Thu Aug 28 15:52:57 PDT 2025
 //   Removed objectRepresentation widget, no longer used.
 //
@@ -149,6 +152,7 @@ QvisRenderingWindow::~QvisRenderingWindow()
 //   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
 //   Support Qt6: buttonClicked -> idClicked.
 //
+<<<<<<< HEAD
 //   Kathleen Biagas, Wed May 14, 2025
 //   Remove 'Requires restart' label from antialiasingToggle.
 //
@@ -162,6 +166,8 @@ QvisRenderingWindow::~QvisRenderingWindow()
 //   Use QGroupBox and QFormLayout to better organize the page.
 //   Add widgets for msaaSamples and fxaa options.
 //
+=======
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
 //   Kathleen Biagas, Thu Aug 28 15:52:57 PDT 2025
 //   Removed objectRepresentation widget, no longer used.
 //
@@ -502,6 +508,7 @@ QvisRenderingWindow::CreateBasicPage()
     connect(multiresolutionSmallestCellLineEdit, SIGNAL(editingFinished()),
             this, SLOT(processMultiresolutionSmallestCellText()));
 
+<<<<<<< HEAD
     mrLayout->addRow(multiresolutionSmallestCellLabel, multiresolutionSmallestCellLineEdit);
 
     //
@@ -516,6 +523,8 @@ QvisRenderingWindow::CreateBasicPage()
     drawObj->setLayout(objLayout);
 
     //
+=======
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
     // Create the stereo widgets.
     //
     stereoToggle = new QGroupBox(tr("Stereo"));

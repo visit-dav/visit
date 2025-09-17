@@ -105,6 +105,7 @@ class AnariRenderingWidget;
 //   Added ANARI widget for setting ANARI device, usd, and rendering
 //   parameters.
 //
+<<<<<<< HEAD
 //   Kathleen Biagas, Mon Jul 28, 2025
 //   Change antialiasingToggle to antialiasingMode, a button group to hold
 //   the different antialiasing modes. Update slot accordingly.
@@ -118,6 +119,8 @@ class AnariRenderingWidget;
 //   Kathleen Biagas, Tue Aug 26, 2025
 //   Added UpdateMSAAButton and lastAA to hold last chosen AA mode.
 //
+=======
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
 //   Kathleen Biagas, Thu Aug 28 15:52:57 PDT 2025
 //   Removed objectRepresentation widget and slot, no longer used.
 //
@@ -238,7 +241,11 @@ private:
     QLineEdit         *numberOfPeels;
     QGroupBox         *multiresolutionModeToggle;
     QLineEdit         *multiresolutionSmallestCellLineEdit;
+<<<<<<< HEAD
     QGroupBox         *stereoToggle;
+=======
+    QCheckBox         *stereoToggle;
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
     QButtonGroup      *stereoType;
     QRadioButton      *redblue;
     QRadioButton      *interlace;

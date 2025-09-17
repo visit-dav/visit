@@ -442,6 +442,7 @@ class VisitInteractor;
 //    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9:
 //    add initialization of nullptr to pointer ivars.
 //
+<<<<<<< HEAD
 //    Kathleen Biagas, Monday July 28, 2025
 //    Antialiasing is now an int (enum).
 //
@@ -451,6 +452,8 @@ class VisitInteractor;
 //    Kathleen Biagas, Tue Aug 26, 2025
 //    Add MSAAAvailable.
 //
+=======
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
 //    Kathleen Biagas, Thu Aug 28 15:41:28 PDT 2025
 //    Remove Set/GetSurfaceRepresentation, no longer used.
 //

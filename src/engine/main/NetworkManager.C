@@ -3161,9 +3161,12 @@ NetworkManager::RenderInternal()
 //    Burlen Loring, Sun Sep  6 08:44:26 PDT 2015
 //    Added option for ordered composting
 //
+<<<<<<< HEAD
 //    Kathleen Biagas, Thu Aug 14, 2025 
 //    Added new RenderingAttributes items: MSAASamples, FXAAOptions.
 //
+=======
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
 //    Kathleen Biagas, Thu Aug 28 15:43:23 PDT 2025
 //    Remove SurfaceRepresentation, no longer used.
 //

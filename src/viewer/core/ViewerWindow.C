@@ -2368,9 +2368,12 @@ ViewerWindow::InvertBackgroundColor()
 //   Kevin Griffin, Thu Mar 6 15:51:48 CST 2025
 //   Added ANARI
 //
+<<<<<<< HEAD
 //   Kathleen Biagas, Thu Aug 14, 2025
 //   Added new RenderingAttributes items: MSAASamples, FXAAOptions.
 //
+=======
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
 //   Kathleen Biagas, Thu Aug 28 15:46:01 PDT 2025
 //   Removed call to SetSurfaceRepresentation, no longer used.
 //
@@ -6484,6 +6487,9 @@ RotateAroundY(const avtView3D &curView, double angle,
 //    Kathleen Biagas, Thu Aug 28 15:46:38 PDT 2025
 //    Removed renderAtts.SetGeometryRepresentation, it no longer exists.
 //
+//    Kathleen Biagas, Thu Aug 28 15:46:38 PDT 2025
+//    Removed renderAtts.SetGeometryRepresentation, it no longer exists.
+//
 // ****************************************************************************
 
 WindowAttributes
@@ -9142,9 +9148,12 @@ ViewerWindow::GetUsingUsdDevice() const
 //   Kevin Griffin, Fri Mar 6 15:51:48 CST 2025
 //   Added ANARI
 //
+<<<<<<< HEAD
 //   Kathleen Biagas, Thu Aug 14, 2025
 //   Added new RenderingAttributes items: MSAASamples, FXAAOptions.
 //
+=======
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
 //   Kathleen Biagas, Thu Aug 28 15:46:38 PDT 2025
 //   Removed surfaceRepresentation, no longer used.
 //
@@ -9484,12 +9493,15 @@ ViewerWindow::CreateNode(DataNode *parentNode,
 //   Kevin Griffin, Thu Mar 6 15:51:48 CST 2025
 //   Added ANARI
 //
+<<<<<<< HEAD
 //   Kathleen Biagas, Monday July 28, 2025.
 //   Antialiasing is now an int (enum).
 //
 //   Kathleen Biagas, Thu Aug 14, 2025
 //   Added new RenderingAttributes items: MSAASamples, FXAAOptions.
 //
+=======
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
 //   Kathleen Biagas, Thu Aug 28 15:46:38 PDT 2025
 //   Removed surfaceRepresentation, no longer used.
 //

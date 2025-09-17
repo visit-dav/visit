@@ -465,6 +465,7 @@ class ViewerPlotList;
 //    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9:
 //    Initialize to nullptr all pointer ivars.
 //
+<<<<<<< HEAD
 //    Kathleen Biagas, Monday July 28, 2025.
 //    Antialiasing is now an int (enum).
 //
@@ -474,6 +475,8 @@ class ViewerPlotList;
 //    Kathleen Biagas, Tue Aug 26, 2025
 //    Add MSAAAvailable.
 //
+=======
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
 //    Kathleen Biagas, Thu Aug 28 15:44:48 PDT 2025
 //    Removed Set/GetSurfaceRepresentation, no longer used.
 //

@@ -3477,9 +3477,12 @@ ViewerWindowManager::SetViewExtentsType(avtExtentType viewType,
 //    Kevin Griffin, Thu Mar 6 15:51:48 CST 2025
 //    Added options for ANARI rendering
 //
+<<<<<<< HEAD
 //    Kathleen Biagas, Thu Aug 14, 2025
 //    Added new RenderingAttributes items: MSAASamples, FXAAOptions.
 //
+=======
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
 //   Kathleen Biagas, Thu Aug 28 15:46:38 PDT 2025
 //   Removed surfaceRepresentation, no longer used.
 //
@@ -5254,12 +5257,15 @@ ViewerWindowManager::UpdateLightListAtts()
 //   Kevin Griffin, Thu Mar 6 15:51:48 CST 2025
 //   Added ANARI rendering properties
 //
+<<<<<<< HEAD
 //   Kathleen Biagas, Monday July 28, 2025.
 //   Antialiasing is now an int (enum).
 //
 //   Kathleen Biagas, Thu Aug 14, 2025
 //   Added new RenderingAttributes items: MSAASamples, FXAAOptions.
 //
+=======
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
 //   Kathleen Biagas, Thu Aug 28 15:46:38 PDT 2025
 //   Removed geometryRepresentation, no longer used.
 //
@@ -8238,9 +8244,12 @@ ViewerWindowManager::CreateVisWindow(const int windowIndex,
 //    Kathleen Biagas, Thu Apr  2 17:06:22 PDT 2015
 //    Ensure color texturing flag gets set.
 //
+<<<<<<< HEAD
 //    Kathleen Biagas, Thu Aug 14, 2025
 //    Added new RenderingAttributes items: MSAASamples, FXAAOptions.
 //
+=======
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
 //    Kathleen Biagas, Thu Aug 28 15:46:38 PDT 2025
 //    Removed geometryRepresentation, no longer used.
 //

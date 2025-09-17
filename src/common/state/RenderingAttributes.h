@@ -320,6 +320,10 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
+<<<<<<< HEAD
 #define RENDERINGATTRIBUTES_TMFS "ibiabiiiibdibfbibiibffabdbbDDibiibiibbsssbs*s*"
+=======
+#define RENDERINGATTRIBUTES_TMFS "bbiiiibdibfbibiibffabdbbDDibiibiibbsssbs*s*"
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
 
 #endif

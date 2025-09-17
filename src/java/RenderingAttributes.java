@@ -23,7 +23,11 @@ import java.util.Vector;
 
 public class RenderingAttributes extends AttributeSubject
 {
+<<<<<<< HEAD
     private static int RenderingAttributes_numAdditionalAtts = 44;
+=======
+    private static int RenderingAttributes_numAdditionalAtts = 41;
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
 
     // Enum values
     public final static int STEREOTYPES_REDBLUE = 0;
@@ -400,85 +404,141 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
     public void SetMultiresolutionCellSize(float multiresolutionCellSize_)
     {
         multiresolutionCellSize = multiresolutionCellSize_;
+<<<<<<< HEAD
         Select(13);
+=======
+        Select(10);
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
     }
 
     public void SetStereoRendering(boolean stereoRendering_)
     {
         stereoRendering = stereoRendering_;
+<<<<<<< HEAD
         Select(14);
+=======
+        Select(11);
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
     }
 
     public void SetStereoType(int stereoType_)
     {
         stereoType = stereoType_;
+<<<<<<< HEAD
         Select(15);
+=======
+        Select(12);
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
     }
 
     public void SetNotifyForEachRender(boolean notifyForEachRender_)
     {
         notifyForEachRender = notifyForEachRender_;
+<<<<<<< HEAD
         Select(16);
+=======
+        Select(13);
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
     }
 
     public void SetScalableActivationMode(int scalableActivationMode_)
     {
         scalableActivationMode = scalableActivationMode_;
+<<<<<<< HEAD
         Select(17);
+=======
+        Select(14);
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
     }
 
     public void SetScalableAutoThreshold(int scalableAutoThreshold_)
     {
         scalableAutoThreshold = scalableAutoThreshold_;
+<<<<<<< HEAD
         Select(18);
+=======
+        Select(15);
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
     }
 
     public void SetSpecularFlag(boolean specularFlag_)
     {
         specularFlag = specularFlag_;
+<<<<<<< HEAD
         Select(19);
+=======
+        Select(16);
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
     }
 
     public void SetSpecularCoeff(float specularCoeff_)
     {
         specularCoeff = specularCoeff_;
+<<<<<<< HEAD
         Select(20);
+=======
+        Select(17);
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
     }
 
     public void SetSpecularPower(float specularPower_)
     {
         specularPower = specularPower_;
+<<<<<<< HEAD
         Select(21);
+=======
+        Select(18);
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
     }
 
     public void SetSpecularColor(ColorAttribute specularColor_)
     {
         specularColor = specularColor_;
+<<<<<<< HEAD
         Select(22);
+=======
+        Select(19);
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
     }
 
     public void SetDoShadowing(boolean doShadowing_)
     {
         doShadowing = doShadowing_;
+<<<<<<< HEAD
         Select(23);
+=======
+        Select(20);
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
     }
 
     public void SetShadowStrength(double shadowStrength_)
     {
         shadowStrength = shadowStrength_;
+<<<<<<< HEAD
         Select(24);
+=======
+        Select(21);
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
     }
 
     public void SetDoDepthCueing(boolean doDepthCueing_)
     {
         doDepthCueing = doDepthCueing_;
+<<<<<<< HEAD
         Select(25);
+=======
+        Select(22);
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
     }
 
     public void SetDepthCueingAutomatic(boolean depthCueingAutomatic_)
     {
         depthCueingAutomatic = depthCueingAutomatic_;
+<<<<<<< HEAD
         Select(26);
+=======
+        Select(23);
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
     }
 
     public void SetStartCuePoint(double[] startCuePoint_)
@@ -486,7 +546,11 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         startCuePoint[0] = startCuePoint_[0];
         startCuePoint[1] = startCuePoint_[1];
         startCuePoint[2] = startCuePoint_[2];
+<<<<<<< HEAD
         Select(27);
+=======
+        Select(24);
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
     }
 
     public void SetStartCuePoint(double e0, double e1, double e2)
@@ -494,7 +558,11 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         startCuePoint[0] = e0;
         startCuePoint[1] = e1;
         startCuePoint[2] = e2;
+<<<<<<< HEAD
         Select(27);
+=======
+        Select(24);
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
     }
 
     public void SetEndCuePoint(double[] endCuePoint_)
@@ -502,7 +570,11 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         endCuePoint[0] = endCuePoint_[0];
         endCuePoint[1] = endCuePoint_[1];
         endCuePoint[2] = endCuePoint_[2];
+<<<<<<< HEAD
         Select(28);
+=======
+        Select(25);
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
     }
 
     public void SetEndCuePoint(double e0, double e1, double e2)
@@ -510,97 +582,161 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         endCuePoint[0] = e0;
         endCuePoint[1] = e1;
         endCuePoint[2] = e2;
+<<<<<<< HEAD
         Select(28);
+=======
+        Select(25);
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
     }
 
     public void SetCompressionActivationMode(int compressionActivationMode_)
     {
         compressionActivationMode = compressionActivationMode_;
+<<<<<<< HEAD
         Select(29);
+=======
+        Select(26);
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
     }
 
     public void SetColorTexturingFlag(boolean colorTexturingFlag_)
     {
         colorTexturingFlag = colorTexturingFlag_;
+<<<<<<< HEAD
         Select(30);
+=======
+        Select(27);
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
     }
 
     public void SetCompactDomainsActivationMode(int compactDomainsActivationMode_)
     {
         compactDomainsActivationMode = compactDomainsActivationMode_;
+<<<<<<< HEAD
         Select(31);
+=======
+        Select(28);
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
     }
 
     public void SetCompactDomainsAutoThreshold(int compactDomainsAutoThreshold_)
     {
         compactDomainsAutoThreshold = compactDomainsAutoThreshold_;
+<<<<<<< HEAD
         Select(32);
+=======
+        Select(29);
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
     }
 
     public void SetOsprayRendering(boolean osprayRendering_)
     {
         osprayRendering = osprayRendering_;
+<<<<<<< HEAD
         Select(33);
+=======
+        Select(30);
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
     }
 
     public void SetOspraySPP(int ospraySPP_)
     {
         ospraySPP = ospraySPP_;
+<<<<<<< HEAD
         Select(34);
+=======
+        Select(31);
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
     }
 
     public void SetOsprayAO(int osprayAO_)
     {
         osprayAO = osprayAO_;
+<<<<<<< HEAD
         Select(35);
+=======
+        Select(32);
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
     }
 
     public void SetOsprayShadows(boolean osprayShadows_)
     {
         osprayShadows = osprayShadows_;
+<<<<<<< HEAD
         Select(36);
+=======
+        Select(33);
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
     }
 
     public void SetAnariRendering(boolean anariRendering_)
     {
         anariRendering = anariRendering_;
+<<<<<<< HEAD
         Select(37);
+=======
+        Select(34);
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
     }
 
     public void SetAnariLibrary(String anariLibrary_)
     {
         anariLibrary = anariLibrary_;
+<<<<<<< HEAD
         Select(38);
+=======
+        Select(35);
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
     }
 
     public void SetAnariLibrarySubtype(String anariLibrarySubtype_)
     {
         anariLibrarySubtype = anariLibrarySubtype_;
+<<<<<<< HEAD
         Select(39);
+=======
+        Select(36);
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
     }
 
     public void SetAnariRendererSubtype(String anariRendererSubtype_)
     {
         anariRendererSubtype = anariRendererSubtype_;
+<<<<<<< HEAD
         Select(40);
+=======
+        Select(37);
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
     }
 
     public void SetUsingUsdDevice(boolean usingUsdDevice_)
     {
         usingUsdDevice = usingUsdDevice_;
+<<<<<<< HEAD
         Select(41);
+=======
+        Select(38);
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
     }
 
     public void SetAnariRendererParameters(Vector anariRendererParameters_)
     {
         anariRendererParameters = anariRendererParameters_;
+<<<<<<< HEAD
         Select(42);
+=======
+        Select(39);
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
     }
 
     public void SetAnariUSDParameters(Vector anariUSDParameters_)
     {
         anariUSDParameters = anariUSDParameters_;
+<<<<<<< HEAD
         Select(43);
+=======
+        Select(40);
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
     }
 
     // Property getting methods
@@ -675,6 +811,7 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         if(WriteSelect(10, buf))
             buf.WriteDouble(occlusionRatio);
         if(WriteSelect(11, buf))
+<<<<<<< HEAD
             buf.WriteInt(numberOfPeels);
         if(WriteSelect(12, buf))
             buf.WriteBool(multiresolutionMode);
@@ -739,6 +876,66 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         if(WriteSelect(42, buf))
             buf.WriteStringVector(anariRendererParameters);
         if(WriteSelect(43, buf))
+=======
+            buf.WriteBool(stereoRendering);
+        if(WriteSelect(12, buf))
+            buf.WriteInt(stereoType);
+        if(WriteSelect(13, buf))
+            buf.WriteBool(notifyForEachRender);
+        if(WriteSelect(14, buf))
+            buf.WriteInt(scalableActivationMode);
+        if(WriteSelect(15, buf))
+            buf.WriteInt(scalableAutoThreshold);
+        if(WriteSelect(16, buf))
+            buf.WriteBool(specularFlag);
+        if(WriteSelect(17, buf))
+            buf.WriteFloat(specularCoeff);
+        if(WriteSelect(18, buf))
+            buf.WriteFloat(specularPower);
+        if(WriteSelect(19, buf))
+            specularColor.Write(buf);
+        if(WriteSelect(20, buf))
+            buf.WriteBool(doShadowing);
+        if(WriteSelect(21, buf))
+            buf.WriteDouble(shadowStrength);
+        if(WriteSelect(22, buf))
+            buf.WriteBool(doDepthCueing);
+        if(WriteSelect(23, buf))
+            buf.WriteBool(depthCueingAutomatic);
+        if(WriteSelect(24, buf))
+            buf.WriteDoubleArray(startCuePoint);
+        if(WriteSelect(25, buf))
+            buf.WriteDoubleArray(endCuePoint);
+        if(WriteSelect(26, buf))
+            buf.WriteInt(compressionActivationMode);
+        if(WriteSelect(27, buf))
+            buf.WriteBool(colorTexturingFlag);
+        if(WriteSelect(28, buf))
+            buf.WriteInt(compactDomainsActivationMode);
+        if(WriteSelect(29, buf))
+            buf.WriteInt(compactDomainsAutoThreshold);
+        if(WriteSelect(30, buf))
+            buf.WriteBool(osprayRendering);
+        if(WriteSelect(31, buf))
+            buf.WriteInt(ospraySPP);
+        if(WriteSelect(32, buf))
+            buf.WriteInt(osprayAO);
+        if(WriteSelect(33, buf))
+            buf.WriteBool(osprayShadows);
+        if(WriteSelect(34, buf))
+            buf.WriteBool(anariRendering);
+        if(WriteSelect(35, buf))
+            buf.WriteString(anariLibrary);
+        if(WriteSelect(36, buf))
+            buf.WriteString(anariLibrarySubtype);
+        if(WriteSelect(37, buf))
+            buf.WriteString(anariRendererSubtype);
+        if(WriteSelect(38, buf))
+            buf.WriteBool(usingUsdDevice);
+        if(WriteSelect(39, buf))
+            buf.WriteStringVector(anariRendererParameters);
+        if(WriteSelect(40, buf))
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
             buf.WriteStringVector(anariUSDParameters);
     }
 
@@ -781,6 +978,7 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
             SetOcclusionRatio(buf.ReadDouble());
             break;
         case 11:
+<<<<<<< HEAD
             SetNumberOfPeels(buf.ReadInt());
             break;
         case 12:
@@ -878,6 +1076,96 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
             SetAnariRendererParameters(buf.ReadStringVector());
             break;
         case 43:
+=======
+            SetStereoRendering(buf.ReadBool());
+            break;
+        case 12:
+            SetStereoType(buf.ReadInt());
+            break;
+        case 13:
+            SetNotifyForEachRender(buf.ReadBool());
+            break;
+        case 14:
+            SetScalableActivationMode(buf.ReadInt());
+            break;
+        case 15:
+            SetScalableAutoThreshold(buf.ReadInt());
+            break;
+        case 16:
+            SetSpecularFlag(buf.ReadBool());
+            break;
+        case 17:
+            SetSpecularCoeff(buf.ReadFloat());
+            break;
+        case 18:
+            SetSpecularPower(buf.ReadFloat());
+            break;
+        case 19:
+            specularColor.Read(buf);
+            Select(19);
+            break;
+        case 20:
+            SetDoShadowing(buf.ReadBool());
+            break;
+        case 21:
+            SetShadowStrength(buf.ReadDouble());
+            break;
+        case 22:
+            SetDoDepthCueing(buf.ReadBool());
+            break;
+        case 23:
+            SetDepthCueingAutomatic(buf.ReadBool());
+            break;
+        case 24:
+            SetStartCuePoint(buf.ReadDoubleArray());
+            break;
+        case 25:
+            SetEndCuePoint(buf.ReadDoubleArray());
+            break;
+        case 26:
+            SetCompressionActivationMode(buf.ReadInt());
+            break;
+        case 27:
+            SetColorTexturingFlag(buf.ReadBool());
+            break;
+        case 28:
+            SetCompactDomainsActivationMode(buf.ReadInt());
+            break;
+        case 29:
+            SetCompactDomainsAutoThreshold(buf.ReadInt());
+            break;
+        case 30:
+            SetOsprayRendering(buf.ReadBool());
+            break;
+        case 31:
+            SetOspraySPP(buf.ReadInt());
+            break;
+        case 32:
+            SetOsprayAO(buf.ReadInt());
+            break;
+        case 33:
+            SetOsprayShadows(buf.ReadBool());
+            break;
+        case 34:
+            SetAnariRendering(buf.ReadBool());
+            break;
+        case 35:
+            SetAnariLibrary(buf.ReadString());
+            break;
+        case 36:
+            SetAnariLibrarySubtype(buf.ReadString());
+            break;
+        case 37:
+            SetAnariRendererSubtype(buf.ReadString());
+            break;
+        case 38:
+            SetUsingUsdDevice(buf.ReadBool());
+            break;
+        case 39:
+            SetAnariRendererParameters(buf.ReadStringVector());
+            break;
+        case 40:
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
             SetAnariUSDParameters(buf.ReadStringVector());
             break;
         }

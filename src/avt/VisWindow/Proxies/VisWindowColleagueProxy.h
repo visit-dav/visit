@@ -117,9 +117,12 @@
 //    Kevin Griffin, Wed 05 Mar 2025 11:59:26 AM CST
 //    Added Anari support.
 //
+<<<<<<< HEAD
 //    Kathleen Biagas, Monday July 28, 2025
 //    Antialiasing is now an int (enum).
 //
+=======
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
 //    Kathleen Biagas, Thu Aug 28 15:39:06 PDT 2025
 //    Remove GetSurfaceRepresentation, no longer used.
 //

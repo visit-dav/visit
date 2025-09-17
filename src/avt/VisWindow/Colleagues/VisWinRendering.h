@@ -224,6 +224,7 @@ class VisWindowColleagueProxy;
 //    Kathleen Biagas, Tue Jun 24, 2025
 //    Make anariRendering and osprayRendering ivars available always.
 //
+<<<<<<< HEAD
 //    Kathleen Biagas, Monday July 28, 2025
 //    Antialiasing is now an int.
 //
@@ -233,6 +234,8 @@ class VisWindowColleagueProxy;
 //    Kathleen Biagas, Tue Aug 26, 2025
 //    Add MSAAAvailable.
 //
+=======
+>>>>>>> 7a69d439b259ebf758882caed0d92925d2721c48
 //    Kathleen Biagas, Thu Aug 28 15:33:26 PDT 2025
 //    Remove SetSurfaceRepresentation, no longer used.
 //
