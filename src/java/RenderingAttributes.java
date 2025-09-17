@@ -533,44 +533,44 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
     }
 
     // Property getting methods
-    public int            GetAntialiasing() { return antialiasing; }
-    public boolean        GetMSAAAvailable() { return MSAAAvailable; }
-    public int            GetMSAASamples() { return MSAASamples; }
-    public FXAAOptions    GetFXAAOpt() { return FXAAOpt; }
-    public boolean        GetOrderComposite() { return orderComposite; }
-    public int            GetDepthCompositeThreads() { return depthCompositeThreads; }
-    public int            GetDepthCompositeBlocking() { return depthCompositeBlocking; }
-    public int            GetAlphaCompositeThreads() { return alphaCompositeThreads; }
-    public int            GetAlphaCompositeBlocking() { return alphaCompositeBlocking; }
-    public boolean        GetDepthPeeling() { return depthPeeling; }
-    public double         GetOcclusionRatio() { return occlusionRatio; }
-    public int            GetNumberOfPeels() { return numberOfPeels; }
-    public boolean        GetMultiresolutionMode() { return multiresolutionMode; }
-    public float          GetMultiresolutionCellSize() { return multiresolutionCellSize; }
-    public int            GetGeometryRepresentation() { return geometryRepresentation; }
-    public boolean        GetStereoRendering() { return stereoRendering; }
-    public int            GetStereoType() { return stereoType; }
-    public boolean        GetNotifyForEachRender() { return notifyForEachRender; }
-    public int            GetScalableActivationMode() { return scalableActivationMode; }
-    public int            GetScalableAutoThreshold() { return scalableAutoThreshold; }
-    public boolean        GetSpecularFlag() { return specularFlag; }
-    public float          GetSpecularCoeff() { return specularCoeff; }
-    public float          GetSpecularPower() { return specularPower; }
-    public ColorAttribute GetSpecularColor() { return specularColor; }
-    public boolean        GetDoShadowing() { return doShadowing; }
-    public double         GetShadowStrength() { return shadowStrength; }
-    public boolean        GetDoDepthCueing() { return doDepthCueing; }
-    public boolean        GetDepthCueingAutomatic() { return depthCueingAutomatic; }
-    public double[]       GetStartCuePoint() { return startCuePoint; }
-    public double[]       GetEndCuePoint() { return endCuePoint; }
-    public int            GetCompressionActivationMode() { return compressionActivationMode; }
-    public boolean        GetColorTexturingFlag() { return colorTexturingFlag; }
-    public int            GetCompactDomainsActivationMode() { return compactDomainsActivationMode; }
-    public int            GetCompactDomainsAutoThreshold() { return compactDomainsAutoThreshold; }
-    public boolean        GetOsprayRendering() { return osprayRendering; }
-    public int            GetOspraySPP() { return ospraySPP; }
-    public int            GetOsprayAO() { return osprayAO; }
-    public boolean        GetOsprayShadows() { return osprayShadows; }
+    public int             GetAntialiasing() { return antialiasing; }
+    public boolean         GetMSAAAvailable() { return MSAAAvailable; }
+    public int             GetMSAASamples() { return MSAASamples; }
+    public FXAAOptions     GetFXAAOpt() { return FXAAOpt; }
+    public boolean         GetOrderComposite() { return orderComposite; }
+    public int             GetDepthCompositeThreads() { return depthCompositeThreads; }
+    public int             GetDepthCompositeBlocking() { return depthCompositeBlocking; }
+    public int             GetAlphaCompositeThreads() { return alphaCompositeThreads; }
+    public int             GetAlphaCompositeBlocking() { return alphaCompositeBlocking; }
+    public boolean         GetDepthPeeling() { return depthPeeling; }
+    public double          GetOcclusionRatio() { return occlusionRatio; }
+    public int             GetNumberOfPeels() { return numberOfPeels; }
+    public boolean         GetMultiresolutionMode() { return multiresolutionMode; }
+    public float           GetMultiresolutionCellSize() { return multiresolutionCellSize; }
+    public int             GetGeometryRepresentation() { return geometryRepresentation; }
+    public boolean         GetStereoRendering() { return stereoRendering; }
+    public int             GetStereoType() { return stereoType; }
+    public boolean         GetNotifyForEachRender() { return notifyForEachRender; }
+    public int             GetScalableActivationMode() { return scalableActivationMode; }
+    public int             GetScalableAutoThreshold() { return scalableAutoThreshold; }
+    public boolean         GetSpecularFlag() { return specularFlag; }
+    public float           GetSpecularCoeff() { return specularCoeff; }
+    public float           GetSpecularPower() { return specularPower; }
+    public ColorAttribute  GetSpecularColor() { return specularColor; }
+    public boolean         GetDoShadowing() { return doShadowing; }
+    public double          GetShadowStrength() { return shadowStrength; }
+    public boolean         GetDoDepthCueing() { return doDepthCueing; }
+    public boolean         GetDepthCueingAutomatic() { return depthCueingAutomatic; }
+    public double[]        GetStartCuePoint() { return startCuePoint; }
+    public double[]        GetEndCuePoint() { return endCuePoint; }
+    public int             GetCompressionActivationMode() { return compressionActivationMode; }
+    public boolean         GetColorTexturingFlag() { return colorTexturingFlag; }
+    public int             GetCompactDomainsActivationMode() { return compactDomainsActivationMode; }
+    public int             GetCompactDomainsAutoThreshold() { return compactDomainsAutoThreshold; }
+    public boolean         GetOsprayRendering() { return osprayRendering; }
+    public int             GetOspraySPP() { return ospraySPP; }
+    public int             GetOsprayAO() { return osprayAO; }
+    public boolean         GetOsprayShadows() { return osprayShadows; }
     public AnariAttributes GetAnariAttributes() { return anariAttributes; }
 
     // Write and read methods.
@@ -778,7 +778,7 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
             break;
         case 38:
             anariAttributes.Read(buf);
-            Select(35);
+            Select(38);
             break;
         }
     }
@@ -874,44 +874,44 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
 
 
     // Attributes
-    private int            antialiasing;
-    private boolean        MSAAAvailable;
-    private int            MSAASamples;
-    private FXAAOptions    FXAAOpt;
-    private boolean        orderComposite;
-    private int            depthCompositeThreads;
-    private int            depthCompositeBlocking;
-    private int            alphaCompositeThreads;
-    private int            alphaCompositeBlocking;
-    private boolean        depthPeeling;
-    private double         occlusionRatio;
-    private int            numberOfPeels;
-    private boolean        multiresolutionMode;
-    private float          multiresolutionCellSize;
-    private int            geometryRepresentation;
-    private boolean        stereoRendering;
-    private int            stereoType;
-    private boolean        notifyForEachRender;
-    private int            scalableActivationMode;
-    private int            scalableAutoThreshold;
-    private boolean        specularFlag;
-    private float          specularCoeff;
-    private float          specularPower;
-    private ColorAttribute specularColor;
-    private boolean        doShadowing;
-    private double         shadowStrength;
-    private boolean        doDepthCueing;
-    private boolean        depthCueingAutomatic;
-    private double[]       startCuePoint;
-    private double[]       endCuePoint;
-    private int            compressionActivationMode;
-    private boolean        colorTexturingFlag;
-    private int            compactDomainsActivationMode;
-    private int            compactDomainsAutoThreshold;
-    private boolean        osprayRendering;
-    private int            ospraySPP;
-    private int            osprayAO;
-    private boolean        osprayShadows;
+    private int             antialiasing;
+    private boolean         MSAAAvailable;
+    private int             MSAASamples;
+    private FXAAOptions     FXAAOpt;
+    private boolean         orderComposite;
+    private int             depthCompositeThreads;
+    private int             depthCompositeBlocking;
+    private int             alphaCompositeThreads;
+    private int             alphaCompositeBlocking;
+    private boolean         depthPeeling;
+    private double          occlusionRatio;
+    private int             numberOfPeels;
+    private boolean         multiresolutionMode;
+    private float           multiresolutionCellSize;
+    private int             geometryRepresentation;
+    private boolean         stereoRendering;
+    private int             stereoType;
+    private boolean         notifyForEachRender;
+    private int             scalableActivationMode;
+    private int             scalableAutoThreshold;
+    private boolean         specularFlag;
+    private float           specularCoeff;
+    private float           specularPower;
+    private ColorAttribute  specularColor;
+    private boolean         doShadowing;
+    private double          shadowStrength;
+    private boolean         doDepthCueing;
+    private boolean         depthCueingAutomatic;
+    private double[]        startCuePoint;
+    private double[]        endCuePoint;
+    private int             compressionActivationMode;
+    private boolean         colorTexturingFlag;
+    private int             compactDomainsActivationMode;
+    private int             compactDomainsAutoThreshold;
+    private boolean         osprayRendering;
+    private int             ospraySPP;
+    private int             osprayAO;
+    private boolean         osprayShadows;
     private AnariAttributes anariAttributes;
 }
 

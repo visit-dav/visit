@@ -134,21 +134,21 @@ public:
     void SetAnariAttributes(const AnariAttributes &anariAttributes_);
 
     // Property getting methods
-    AAMode               GetAntialiasing() const;
-    bool                 GetMSAAAvailable() const;
-    int                  GetMSAASamples() const;
-    const FXAAOptions    &GetFXAAOpt() const;
-          FXAAOptions    &GetFXAAOpt();
-    bool                 GetOrderComposite() const;
-    int                  GetDepthCompositeThreads() const;
-    int                  GetDepthCompositeBlocking() const;
-    int                  GetAlphaCompositeThreads() const;
-    int                  GetAlphaCompositeBlocking() const;
-    bool                 GetDepthPeeling() const;
-    double               GetOcclusionRatio() const;
-    int                  GetNumberOfPeels() const;
-    bool                 GetMultiresolutionMode() const;
-    float                GetMultiresolutionCellSize() const;
+    AAMode                GetAntialiasing() const;
+    bool                  GetMSAAAvailable() const;
+    int                   GetMSAASamples() const;
+    const FXAAOptions     &GetFXAAOpt() const;
+          FXAAOptions     &GetFXAAOpt();
+    bool                  GetOrderComposite() const;
+    int                   GetDepthCompositeThreads() const;
+    int                   GetDepthCompositeBlocking() const;
+    int                   GetAlphaCompositeThreads() const;
+    int                   GetAlphaCompositeBlocking() const;
+    bool                  GetDepthPeeling() const;
+    double                GetOcclusionRatio() const;
+    int                   GetNumberOfPeels() const;
+    bool                  GetMultiresolutionMode() const;
+    float                 GetMultiresolutionCellSize() const;
     GeometryRepresentation GetGeometryRepresentation() const;
     bool                  GetStereoRendering() const;
     StereoTypes           GetStereoType() const;
@@ -260,51 +260,50 @@ public:
     };
 
 private:
-    int            antialiasing;
-    bool           MSAAAvailable;
-    int            MSAASamples;
-    FXAAOptions    FXAAOpt;
-    bool           orderComposite;
-    int            depthCompositeThreads;
-    int            depthCompositeBlocking;
-    int            alphaCompositeThreads;
-    int            alphaCompositeBlocking;
-    bool           depthPeeling;
-    double         occlusionRatio;
-    int            numberOfPeels;
-    bool           multiresolutionMode;
-    float          multiresolutionCellSize;
-    int            geometryRepresentation;
-    bool           stereoRendering;
-    int            stereoType;
-    bool           notifyForEachRender;
-    int            scalableActivationMode;
-    int            scalableAutoThreshold;
-    bool           specularFlag;
-    float          specularCoeff;
-    float          specularPower;
-    ColorAttribute specularColor;
-    bool           doShadowing;
-    double         shadowStrength;
-    bool           doDepthCueing;
-    bool           depthCueingAutomatic;
-    double         startCuePoint[3];
-    double         endCuePoint[3];
-    int            compressionActivationMode;
-    bool           colorTexturingFlag;
-    int            compactDomainsActivationMode;
-    int            compactDomainsAutoThreshold;
-    bool           osprayRendering;
-    int            ospraySPP;
-    int            osprayAO;
-    bool           osprayShadows;
+    int             antialiasing;
+    bool            MSAAAvailable;
+    int             MSAASamples;
+    FXAAOptions     FXAAOpt;
+    bool            orderComposite;
+    int             depthCompositeThreads;
+    int             depthCompositeBlocking;
+    int             alphaCompositeThreads;
+    int             alphaCompositeBlocking;
+    bool            depthPeeling;
+    double          occlusionRatio;
+    int             numberOfPeels;
+    bool            multiresolutionMode;
+    float           multiresolutionCellSize;
+    int             geometryRepresentation;
+    bool            stereoRendering;
+    int             stereoType;
+    bool            notifyForEachRender;
+    int             scalableActivationMode;
+    int             scalableAutoThreshold;
+    bool            specularFlag;
+    float           specularCoeff;
+    float           specularPower;
+    ColorAttribute  specularColor;
+    bool            doShadowing;
+    double          shadowStrength;
+    bool            doDepthCueing;
+    bool            depthCueingAutomatic;
+    double          startCuePoint[3];
+    double          endCuePoint[3];
+    int             compressionActivationMode;
+    bool            colorTexturingFlag;
+    int             compactDomainsActivationMode;
+    int             compactDomainsAutoThreshold;
+    bool            osprayRendering;
+    int             ospraySPP;
+    int             osprayAO;
+    bool            osprayShadows;
     AnariAttributes anariAttributes;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-
-#define RENDERINGATTRIBUTES_TMFS "ibiabiiiibdibfibibiibffabdbbDDibiibiibbsssbs*s*"
+#define RENDERINGATTRIBUTES_TMFS "ibiabiiiibdibfibibiibffabdbbDDibiibiiba"
 
 #endif
