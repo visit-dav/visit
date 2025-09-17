@@ -39,7 +39,6 @@ class avtMeshPlotMapper : public avtMapper
                                avtMeshPlotMapper();
     virtual                   ~avtMeshPlotMapper();
 
-    //virtual void               SetSurfaceRepresentation(int rep);
     bool        GetLighting(void) override  { return false; }
     bool        ActorIsShiftable(int) override;
 

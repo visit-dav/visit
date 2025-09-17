@@ -35,7 +35,6 @@ class avtSurfaceMapper : public avtMapper
     virtual                   ~avtSurfaceMapper();
 
     // these are called from avtMapper
-    virtual void               SetSurfaceRepresentation(int rep);
     virtual bool               GetLighting(void) { return !ignoreLighting; }
 
 

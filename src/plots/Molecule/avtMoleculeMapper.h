@@ -35,9 +35,6 @@ class avtMoleculeMapper : public avtMapper
     virtual                   ~avtMoleculeMapper();
 
 
-    // From avtMapper
-    void                       SetSurfaceRepresentation(int);
-
     // this class, called from avtPlot
     void                       SetRange(double, double);
     void                       SetAtts(const AttributeGroup *);

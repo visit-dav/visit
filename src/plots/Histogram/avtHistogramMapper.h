@@ -42,7 +42,6 @@ class avtHistogramMapper : public avtMapper
 
     // From avtMapper
     virtual bool               GetLighting(void) { return false; }
-    virtual void               SetSurfaceRepresentation(int rep);
 
     // this class
     void                       SetEdgeVisibility(bool val);

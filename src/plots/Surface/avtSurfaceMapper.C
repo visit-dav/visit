@@ -349,55 +349,6 @@ avtSurfaceMapper::SetRepresentation(bool val)
 
 
 // ****************************************************************************
-//  Method: avtSurfaceMapper::SetSurfaceRepresentation
-//
-//  Purpose:
-//     Global setting of representation: surface, wireframe or points.
-// 
-//  Programmer: Kathleen Biagas
-//  Creation:   July 18, 2016
-//
-// ****************************************************************************
-
-void
-avtSurfaceMapper::SetSurfaceRepresentation(int rep)
-{
-    if (canApplyGlobalRep)
-    {
-        for (int i = 0; i < nMappers; ++i)
-        {
-            if (mappers[i] == NULL)
-                continue;
-
-            vtkProperty *prop = actors[i]->GetProperty();
-            int actorRep = prop->GetRepresentation();
-            if(rep == 0 && actorRep != VTK_SURFACE)
-            {
-                prop->SetRepresentation(VTK_SURFACE);
-                if (GetLighting())
-                {
-                    prop->SetAmbient(GetGlobalAmbientCoefficient());
-                    prop->SetDiffuse(1.);
-                }
-            }
-            else if(rep == 1 && actorRep != VTK_WIREFRAME)
-            {
-                prop->SetRepresentation(VTK_WIREFRAME);
-                prop->SetAmbient(1.);
-                prop->SetDiffuse(0.);
-            }
-            else if(rep == 2 && actorRep != VTK_POINTS)
-            {
-                prop->SetRepresentation(VTK_POINTS);
-                prop->SetAmbient(1.);
-                prop->SetDiffuse(0.);
-            }
-        }
-    }
-}
-
-
-// ****************************************************************************
 //  Method: avtSurfaceMapper::SetIgnoreLighting
 //
 //  Purpose:
