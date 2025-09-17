@@ -49,7 +49,7 @@ function bv_fms_host_profile
     if [[ "$DO_FMS" == "yes" ]] ; then
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
-        echo "## FMS " >> $HOSTCONF
+        echo "## FMS" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
             "VISIT_OPTION_DEFAULT(VISIT_FMS_DIR \${VISITHOME}/fms/$FMS_VERSION/\${VISITARCH})" \
