@@ -8,11 +8,12 @@
 
 #include <QButtonGroup>
 #include <QCheckBox>
+#include <QComboBox>
 #include <QGroupBox>
 #include <QLabel>
 #include <QLayout>
+#include <QFormLayout>
 #include <QRadioButton>
-#include <QSlider>
 #include <QSpinBox>
 #include <QLineEdit>
 #include <QTabWidget>
@@ -62,6 +63,9 @@
 //    Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
 //    Add compact domain options.
 //
+//    Kathleen Biagas, Tue Aug 26, 2025
+//    Init lastAA.
+//
 // ****************************************************************************
 
 QvisRenderingWindow::QvisRenderingWindow(const QString &caption,
@@ -70,6 +74,7 @@ QvisRenderingWindow::QvisRenderingWindow(const QString &caption,
 {
     renderAtts = 0;
     windowInfo = 0;
+    lastAA = 0;
 
     objectRepresentation = 0;
     stereoType = 0;
@@ -142,35 +147,273 @@ QvisRenderingWindow::~QvisRenderingWindow()
 //   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
 //   Support Qt6: buttonClicked -> idClicked.
 //
+//   Kathleen Biagas, Wed May 14, 2025
+//   Remove 'Requires restart' label from antialiasingToggle.
+//
+//   Kathleen Biagas, Mon Jul 28, 2025
+//   Change antialiasingToggle checkbox to antialiasingMode buttonGroup
+//   to hold the different Antialiasing modes.
+//
+//   Kathleen Biagas, Thu Aug 14, 2025
+//   Removed void* arg from SIGNAL and SLOT for QvisOpacitySlider as the arg
+//   isn't needed for these instances.
+//   Use QGroupBox and QFormLayout to better organize the page.
+//   Add widgets for msaaSamples and fxaa options.
+//
 // ****************************************************************************
 
 QWidget *
 QvisRenderingWindow::CreateBasicPage()
 {
-    int row = 0;
     QWidget *basicOptions = new QWidget(central);
-    QGridLayout *basicLayout = new QGridLayout(basicOptions);
-    basicLayout->setSpacing(5);
+    QVBoxLayout *basicLayout = new QVBoxLayout(basicOptions);
     basicLayout->setContentsMargins(10,10,10,10);
 
+    //
     // Create the antialiasing widgets.
-    antialiasingToggle = new QCheckBox(tr("Antialiasing"), basicOptions);
-    connect(antialiasingToggle, SIGNAL(toggled(bool)),
-            this, SLOT(antialiasingToggled(bool)));
-    basicLayout->addWidget(antialiasingToggle, row, 0);
-    restartLabel = new QLabel(tr(" (Requires restart)"), basicOptions);
-    restartLabel->setToolTip(tr("When changing antialiasing, a VisIt restart is required\n"
-                                "before the changes can take effect."));
-    restartLabel->setEnabled(false);
-    basicLayout->addWidget(restartLabel, row, 1, 1, 2);
-    row++;
+    //
+    QGroupBox *aaGroup = new QGroupBox(tr("Antialiasing"));
+    aaGroup->setCheckable(false);
+    basicLayout->addWidget(aaGroup);
 
+    QGridLayout *aaLayout = new QGridLayout();
+    aaLayout->setContentsMargins(10,10,10,10);
+    aaGroup->setLayout(aaLayout);
+
+    int aaRow= 0;
+    antialiasingMode = new QButtonGroup(basicOptions);
+    connect(antialiasingMode, SIGNAL(idClicked(int)),
+            this, SLOT(antialiasingChanged(int)));
+
+    QRadioButton *aaNone = new QRadioButton(tr("None"), basicOptions);
+    antialiasingMode->addButton(aaNone, 0);
+    aaLayout->addWidget(aaNone, aaRow, 0);
+    QRadioButton *aaMSAA = new QRadioButton(tr("MSAA"), basicOptions);
+    antialiasingMode->addButton(aaMSAA, 1);
+    aaLayout->addWidget(aaMSAA, aaRow, 1);
+    QRadioButton *aaFXAA = new QRadioButton(tr("FXAA"), basicOptions);
+    antialiasingMode->addButton(aaFXAA, 2);
+    aaLayout->addWidget(aaFXAA, aaRow, 2);
+    aaRow++;
+
+    // MSAA options
+
+    msaaSamplesLabel = new QLabel(tr("Number of MSAA samples"));
+    msaaSamplesLabel->setEnabled(false);
+    aaLayout->addWidget(msaaSamplesLabel, aaRow, 0);
+
+    msaaSamples = new QSpinBox();
+    msaaSamples->setKeyboardTracking(false);
+    msaaSamples->setMinimum(2);
+    msaaSamples->setMaximum(8);
+    msaaSamples->setValue(4);
+    msaaSamples->setSingleStep(2);
+    msaaSamples->setEnabled(false);
+    aaLayout->addWidget(msaaSamples, aaRow, 1);
+    connect(msaaSamples, SIGNAL(valueChanged(int)),
+            this, SLOT(msaaSamplesChanged(int)));
+    aaRow++;
+
+    // FXAA options
+    QFormLayout *fxaaLeftLayout = new QFormLayout();
+    aaLayout->addLayout(fxaaLeftLayout, aaRow,0, 1, 2);
+    QFormLayout *fxaaRightLayout = new QFormLayout();
+    aaLayout->addLayout(fxaaRightLayout, aaRow, 2, 1, 2);
+
+    // RelativeConstrastThreshold default values and custom value widget
+    QDoubleValidator *dvfxaa = new QDoubleValidator(0.f,1.f, 5);
+
+    fxaaRCTLabel = new QLabel(tr("Relative contrast threshold"));
+    fxaaRCTLabel->setToolTip(
+        tr("Threshold for applying FXAA to a pixel, relative to the maximum luminosity of its 4 immediate neighbors\n"
+           "The luminosity of the current pixel and it's NSWE neighbors is computed. The maximum luminosity and luminosity range (contrast) of all 5 pixels is found. If the contrast is less than RelativeContrastThreshold * maxLum, the pixel is not considered aliased and will not be affected by FXAA.\n"));
+    fxaaRCT = new QComboBox();
+    fxaaRCT->addItem("Too little", 0.3333);
+    fxaaRCT->addItem("Low quality", 0.25);
+    fxaaRCT->addItem("High quality", 0.125);
+    fxaaRCT->addItem("Overkill", 0.0625);
+    fxaaRCT->addItem("Custom", 0.125);
+    fxaaRCT->setCurrentIndex(2);
+    connect(fxaaRCT, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(fxaaRCTChanged(int)));
+    fxaaLeftLayout->addRow(fxaaRCTLabel, fxaaRCT);
+
+    fxaaRCTCustomLabel = new QLabel(tr("Custom RCT value"));
+    fxaaRCTCustom = new QLineEdit("0.0625");
+    fxaaRCTCustom->setValidator(dvfxaa);
+    connect(fxaaRCTCustom, SIGNAL(editingFinished()),
+            this, SLOT(fxaaRCTCustomChanged()));
+    fxaaLeftLayout->addRow(fxaaRCTCustomLabel, fxaaRCTCustom);
+
+    // HardConstrastThreshold default values and custom value widgets
+    fxaaHCTLabel = new QLabel(tr("Hard contrast threshold"));
+    fxaaHCTLabel->setToolTip(
+        tr("Similar to RelativeContrastThreshold, but not scaled by the maximum luminosity.\n"
+           "If the contrast of the current pixel and it's 4 immediate NSWE neighbors is less than HardContrastThreshold, the pixel is not considered aliased and will not be affected by FXAA.\n"));
+    fxaaHCT = new QComboBox();
+    fxaaHCT->addItem("VisibleLimit", 0.03125);
+    fxaaHCT->addItem("HigherQuality", 0.0625);
+    fxaaHCT->addItem("UpperLimit", 0.08333);
+    fxaaHCT->addItem("Custom", 0.0625);
+    fxaaHCT->setCurrentIndex(1);
+    connect(fxaaHCT, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(fxaaHCTChanged(int)));
+    fxaaRightLayout->addRow(fxaaHCTLabel, fxaaHCT);
+
+    fxaaHCTCustomLabel = new QLabel(tr("Custom HCT value"));
+    fxaaHCTCustom = new QLineEdit("0.0625");
+    fxaaHCTCustom->setValidator(dvfxaa);
+    connect(fxaaHCTCustom, SIGNAL(editingFinished()),
+            this, SLOT(fxaaHCTCustomChanged()));
+    fxaaRightLayout->addRow(fxaaHCTCustomLabel, fxaaHCTCustom);
+
+    // SubpixelBlendLimit default values and custom value widgets
+    fxaaSBLLabel = new QLabel(tr("Subpixel blend limit"));
+    fxaaSBLLabel->setToolTip(
+        tr("Subpixel aliasing is corrected by applying a lowpass filter\n"
+           "to the current pixel. This is implemented by blending an\n"
+           "average of the 3x3 neighborhood around the pixel into the\n"
+           "final result. The amount of blending is determined by\n"
+           "comparing the detected amount of subpixel aliasing to the\n"
+           "total contrasting of the CNSWE pixels:\n"
+           "SubpixelBlending = abs(lumC - lumAveNSWE) / (lumMaxCNSWE - lumMinCNSWE)\n"
+           "This parameter sets an upper limit to the amount of subpixel\n"
+           "blending to prevent the image from simply getting blurred.\n"));
+    fxaaSBL = new QComboBox();
+    fxaaSBL->addItem("Low", 0.5);
+    fxaaSBL->addItem("Medium", 0.75);
+    fxaaSBL->addItem("High", 0.875);
+    fxaaSBL->addItem("Maximum", 1.0);
+    fxaaSBL->addItem("Custom", 0.75);
+    fxaaSBL->setCurrentIndex(1);
+    connect(fxaaSBL, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(fxaaSBLChanged(int)));
+    fxaaLeftLayout->addRow(fxaaSBLLabel, fxaaSBL);
+
+    fxaaSBLCustomLabel = new QLabel(tr("Custom SBL value"));
+    fxaaSBLCustom = new QLineEdit("0.75");
+    fxaaSBLCustom->setValidator(dvfxaa);
+    connect(fxaaSBLCustom, SIGNAL(editingFinished()),
+            this, SLOT(fxaaSBLCustomChanged()));
+    fxaaLeftLayout->addRow(fxaaSBLCustomLabel, fxaaSBLCustom);
+
+    // SubpixelContrastThreshold default values and custom value widgets
+    fxaaSCTLabel = new QLabel(tr("Subpixel contrast threshold"));
+    fxaaSCTLabel->setToolTip(
+        tr("Minimum amount of subpixel aliasing required for subpixel\n"
+           "antialiasing to be applied.\n"
+           "If SubpixelBlending is less than this threshold,\n"
+           "no lowpass blending will occur.\n"));
+    fxaaSCT = new QComboBox();
+    fxaaSCT->addItem("Low", 0.5);
+    fxaaSCT->addItem("Medium", 0.75);
+    fxaaSCT->addItem("High", 0.875);
+    fxaaSCT->addItem("Maximum", 1.0);
+    fxaaSCT->addItem("Custom", 0.75);
+    fxaaSCT->setCurrentIndex(1);
+    connect(fxaaSCT, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(fxaaSCTChanged(int)));
+    fxaaRightLayout->addRow(fxaaSCTLabel, fxaaSCT);
+
+    fxaaSCTCustomLabel = new QLabel(tr("Custom SCT value"));
+    fxaaSCTCustom = new QLineEdit("0.75");
+    fxaaSCTCustom->setValidator(dvfxaa);
+    connect(fxaaSCTCustom, SIGNAL(editingFinished()),
+            this, SLOT(fxaaSCTCustomChanged()));
+    fxaaRightLayout->addRow(fxaaSCTCustomLabel, fxaaSCTCustom);
+
+    // UseHighQualityEndpoint default values and custom value widgets
+    fxaaHQE = new QCheckBox(tr("Use high quality endpoints"));
+    fxaaHQE->setCheckState(Qt::Checked);
+    fxaaHQE->setToolTip(
+        tr("Use an improved edge endpoint detection algorithm.\n"
+            "If true, a modified edge endpoint detection algorithm is used\n"
+            "that requires more texture lookups, but will properly detect\n"
+            "aliased single-pixel lines.\n"
+            "If false, the edge endpoint algorithm proposed by NVIDIA will\n"
+            "be used. This algorithm is faster (fewer lookups), but will \n"
+            "fail to detect endpoints of single pixel edge steps.\n"));
+    connect(fxaaHQE, SIGNAL(toggled(bool)),
+            this, SLOT(fxaaHQEToggled(bool)));
+    fxaaLeftLayout->addRow(fxaaHQE);
+
+    // EndpointSearchIterations default values and custom value widgets
+    fxaaESILabel = new QLabel(tr("Endpoint search iterations"));
+    fxaaESILabel->setToolTip(
+        tr("Set the number of iterations for the endpoint search algorithm.\n"
+           "Increasing this value will increase runtime, but also properly\n"
+           "detect longer edges. The current implementation steps one pixel\n"
+           "in both the positive and negative directions per iteration.\n"
+           "The default value is 12, which will resolve endpoints of\n"
+           "edges < 25 pixels long (2 * 12 + 1).\n"));
+
+    QIntValidator *ivfxaa = new QIntValidator(0,10000);
+    fxaaESI = new QLineEdit("12");
+    fxaaESI->setValidator(ivfxaa);
+    connect(fxaaESI, SIGNAL(editingFinished()),
+            this, SLOT(fxaaESIChanged()));
+    fxaaRightLayout->addRow(fxaaESILabel, fxaaESI);
+
+    //
+    // Create the depthPeeling widgets.
+    //
+    depthPeeling = new QGroupBox(tr("Depth Peeling"));
+    depthPeeling->setCheckable(true);
+    depthPeeling->setChecked(false);
+    depthPeeling->setToolTip(
+        tr("Enable depth peeling for order independent rendering of\n"
+           "transparent geometry. When not using depth peeling a camera\n"
+           "order sort is used. If you have a GPU this is usualy a win\n"
+           "with OSMesa it will depend on the version and build options\n"
+           "with VisIt's current Mesa 7.10 it is *very* slow.\n"));
+    connect(depthPeeling, SIGNAL(toggled(bool)),
+            this, SLOT(updateDepthPeeling(void)));
+    basicLayout->addWidget(depthPeeling);
+
+    QFormLayout *dpLayout = new QFormLayout();
+    dpLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
+    depthPeeling->setLayout(dpLayout);
+
+    QLabel *occlusionRatioLabel = new QLabel(tr("Occlusion ratio"));
+    occlusionRatioLabel->setToolTip(
+        tr("When greater than zero early terminations is enabled and\n"
+           "the algorithm will stop doing peels when fewer than this\n"
+           "fraction of pixels changed in the last peel. Thus one sacrifices\n"
+           "accuracy for speed. When set to zero the maximum number of peels\n"
+           "will be made which, when enough peels are requested, ensures a\n"
+           "correct result."));
+    occlusionRatio = new QLineEdit("0.01");
+    QDoubleValidator *dv0 = new QDoubleValidator(0.0, 0.5, 4, 0);
+    occlusionRatio->setValidator(dv0);
+    connect(occlusionRatio, SIGNAL(textChanged(const QString &)),
+            this, SLOT(updateDepthPeeling(void)));
+
+    dpLayout->addRow(occlusionRatioLabel, occlusionRatio);
+
+    QLabel *numberOfPeelsLabel = new QLabel(tr("Max number of Peels"));
+    numberOfPeelsLabel->setToolTip(
+        tr("Sets the maximum number of peels to use. Each peel renders the\n"
+           "next nearest surface for a given fragment. You may need to\n"
+           "increase the number of peels for very complex scenes."));
+    numberOfPeels = new QLineEdit("32");
+    QIntValidator *iv4 = new QIntValidator(1,1000);
+    numberOfPeels->setValidator(iv4);
+    connect(numberOfPeels, SIGNAL(textChanged(const QString &)),
+            this, SLOT(updateDepthPeeling(void)));
+    dpLayout->addRow(numberOfPeelsLabel, numberOfPeels);
+
+    //
     // create the order compositing widgets
-    compositeLabel = new QLabel(tr("Compositer Settings"), basicOptions);
-    basicLayout->addWidget(compositeLabel, row, 0, 1, 3);
-    row++;
+    //
+    QGroupBox *compositeSettings = new QGroupBox(tr("Compositer Settings"));
+    compositeSettings->setCheckable(false);
+    basicLayout->addWidget(compositeSettings);
+    QFormLayout *compositeLayout = new QFormLayout();
+    compositeLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
+    compositeSettings->setLayout(compositeLayout);
 
-    orderedComposite = new QCheckBox(tr("Ordered Compositing"), basicOptions);
+    orderedComposite = new QCheckBox(tr("Ordered Compositing"));
+
     orderedComposite->setCheckState(Qt::Checked);
     orderedComposite->setToolTip(
         tr("Enable ordered compositing. For block stuctured domain\n"
@@ -180,211 +423,169 @@ QvisRenderingWindow::CreateBasicPage()
            "peeling all geometry sorting is eliminated\n"));
     connect(orderedComposite, SIGNAL(toggled(bool)),
             this, SLOT(updateOrderedComposite()));
-    basicLayout->addWidget(orderedComposite, row, 2);
-    row++;
+    compositeLayout->addRow(orderedComposite);
 
     // create the depth and alpha compositing widgets
-    depthCompositeThreadsLabel = new QLabel(tr("Depth Compositer Threads"), basicOptions);
+    QLabel *depthCompositeThreadsLabel = new QLabel(tr("Depth Compositer Threads"));
     depthCompositeThreadsLabel->setToolTip(
         tr("Sets the number of threads that process communication streams\n"
            "during depth compositing.\n"));
-    basicLayout->addWidget(depthCompositeThreadsLabel, row, 2);
-    depthCompositeThreads = new QLineEdit("2", basicOptions);
+    depthCompositeThreads = new QLineEdit("2");
     QIntValidator *iv0 = new QIntValidator(0,8);
     depthCompositeThreads->setValidator(iv0);
     connect(depthCompositeThreads, SIGNAL(textChanged(const QString &)),
             this, SLOT(updateDepthCompositeThreads(void)));
-    basicLayout->addWidget(depthCompositeThreads, row, 3);
-    row++;
 
-    depthCompositeBlockingLabel = new QLabel(tr("Depth Compositer Blocking"), basicOptions);
+    compositeLayout->addRow(depthCompositeThreadsLabel, depthCompositeThreads);
+
+    QLabel *depthCompositeBlockingLabel = new QLabel(tr("Depth Compositer Blocking"));
     depthCompositeBlockingLabel->setToolTip(
         tr("Sets the block size used for streaming communication\n"
            "during depth compositing. Images are split into blocks\n"
            "of this size and streamed out. Incomning streams are\n"
            "processed in the background using compositing threads\n"));
-    basicLayout->addWidget(depthCompositeBlockingLabel, row, 2);
-    depthCompositeBlocking = new QLineEdit("65536", basicOptions);
+    depthCompositeBlocking = new QLineEdit("65536");
     QIntValidator *iv1 = new QIntValidator(4096,0x3fffffff);
     depthCompositeBlocking->setValidator(iv1);
     connect(depthCompositeBlocking, SIGNAL(textChanged(const QString &)),
             this, SLOT(updateDepthCompositeBlocking(void)));
-    basicLayout->addWidget(depthCompositeBlocking, row, 3);
-    row++;
 
-    alphaCompositeThreadsLabel = new QLabel(tr("Alpha Compositer Threads"), basicOptions);
+    compositeLayout->addRow(depthCompositeBlockingLabel, depthCompositeBlocking);
+
+    QLabel *alphaCompositeThreadsLabel = new QLabel(tr("Alpha Compositer Threads"));
     alphaCompositeThreadsLabel->setToolTip(
         tr("Sets the number of threads that process communication streams\n"
            "during alpha compositing.\n"));
-    basicLayout->addWidget(alphaCompositeThreadsLabel, row, 2);
-    alphaCompositeThreads = new QLineEdit("2", basicOptions);
+    alphaCompositeThreads = new QLineEdit("2");
     QIntValidator *iv2 = new QIntValidator(0,8);
     alphaCompositeThreads->setValidator(iv2);
     connect(alphaCompositeThreads, SIGNAL(textChanged(const QString &)),
             this, SLOT(updateAlphaCompositeThreads(void)));
-    basicLayout->addWidget(alphaCompositeThreads, row, 3);
-    row++;
 
-    alphaCompositeBlockingLabel = new QLabel(tr("Alpha Compositer Blocking"), basicOptions);
+    compositeLayout->addRow(alphaCompositeThreadsLabel, alphaCompositeThreads);
+
+    QLabel *alphaCompositeBlockingLabel = new QLabel(tr("Alpha Compositer Blocking"));
     alphaCompositeBlockingLabel->setToolTip(
         tr("Sets the block size used for streaming communication\n"
            "during alpha compositing. Images are split into blocks\n"
            "of this size and streamed out. Incomning streams are\n"
            "processed in the background using compositing threads\n"));
-    basicLayout->addWidget(alphaCompositeBlockingLabel, row, 2);
-    alphaCompositeBlocking = new QLineEdit("65536", basicOptions);
+    alphaCompositeBlocking = new QLineEdit("65536" );
     QIntValidator *iv3 = new QIntValidator(4096,0x3fffffff);
     alphaCompositeBlocking->setValidator(iv3);
     connect(alphaCompositeBlocking, SIGNAL(textChanged(const QString &)),
             this, SLOT(updateAlphaCompositeBlocking(void)));
-    basicLayout->addWidget(alphaCompositeBlocking, row, 3);
-    row++;
 
-    // Create the depthPeeling widgets.
-    depthPeeling = new QCheckBox(tr("Depth Peeling"), basicOptions);
-    depthPeeling->setCheckState(Qt::Unchecked);
-    depthPeeling->setToolTip(
-        tr("Enable depth peeling for order independent rendering of\n"
-           "transparent geometry. When not using depth peeling a camera\n"
-           "order sort is used. If you have a GPU this is usualy a win\n"
-           "with OSMesa it will depend on the version and build options\n"
-           "with VisIt's current Mesa 7.10 it is *very* slow.\n"));
-    connect(depthPeeling, SIGNAL(toggled(bool)),
-            this, SLOT(updateDepthPeeling(void)));
-    basicLayout->addWidget(depthPeeling, row, 0, 1, 3);
-    row++;
+    compositeLayout->addRow(alphaCompositeBlockingLabel, alphaCompositeBlocking);
 
-    occlusionRatioLabel = new QLabel(tr("Occlusion ratio"), basicOptions);
-    occlusionRatioLabel->setToolTip(
-        tr("When greater than zero early terminations is enabled and\n"
-           "the algorithm will stop doing peels when fewer than this\n"
-           "fraction of pixels changed in the last peel. Thus one sacrifices\n"
-           "accuracy for speed. When set to zero the maximum number of peels\n"
-           "will be made which, when enough peels are requested, ensures a\n"
-           "correct result."));
-    occlusionRatioLabel->setEnabled(false);
-    basicLayout->addWidget(occlusionRatioLabel, row, 2);
-    occlusionRatio = new QLineEdit("0.01", basicOptions);
-    QDoubleValidator *dv0 = new QDoubleValidator(0.0, 0.5, 4, 0);
-    occlusionRatio->setValidator(dv0);
-    occlusionRatio->setEnabled(false);
-    connect(occlusionRatio, SIGNAL(textChanged(const QString &)),
-            this, SLOT(updateDepthPeeling(void)));
-    basicLayout->addWidget(occlusionRatio, row, 3);
-    row++;
-
-    numberOfPeelsLabel = new QLabel(tr("Max number of Peels"), basicOptions);
-    numberOfPeelsLabel->setToolTip(
-        tr("Sets the maximum number of peels to use. Each peel renders the\n"
-           "next nearest surface for a given fragment. You may need to\n"
-           "increase the number of peels for very complex scenes."));
-    numberOfPeelsLabel->setEnabled(false);
-    basicLayout->addWidget(numberOfPeelsLabel, row, 2);
-    numberOfPeels = new QLineEdit("32", basicOptions);
-    QIntValidator *iv4 = new QIntValidator(1,1000);
-    numberOfPeels->setValidator(iv4);
-    numberOfPeels->setEnabled(false);
-    connect(numberOfPeels, SIGNAL(textChanged(const QString &)),
-            this, SLOT(updateDepthPeeling(void)));
-    basicLayout->addWidget(numberOfPeels, row, 3);
-    row++;
-
-    connect(depthPeeling, SIGNAL(toggled(bool)),
-            occlusionRatioLabel, SLOT(setEnabled(bool)));
-    connect(depthPeeling, SIGNAL(toggled(bool)),
-            occlusionRatio, SLOT(setEnabled(bool)));
-
-    connect(depthPeeling, SIGNAL(toggled(bool)),
-            numberOfPeelsLabel, SLOT(setEnabled(bool)));
-    connect(depthPeeling, SIGNAL(toggled(bool)),
-            numberOfPeels, SLOT(setEnabled(bool)));
-
+    //
     // Create the multi resolution widgets.
-    multiresolutionModeToggle = new QCheckBox(tr("Multi resolution for 2d AMR data"), basicOptions);
+    //
+    multiresolutionModeToggle = new QGroupBox(tr("Multi resolution for 2d AMR data"));
+    multiresolutionModeToggle->setCheckable(true);
+    multiresolutionModeToggle->setChecked(false);
     connect(multiresolutionModeToggle, SIGNAL(toggled(bool)),
             this, SLOT(multiresolutionModeToggled(bool)));
-    basicLayout->addWidget(multiresolutionModeToggle, row, 0, 1, 3);
-    row++;
+    basicLayout->addWidget(multiresolutionModeToggle);
 
-    multiresolutionSmallestCellLabel = new QLabel(tr("Smallest cell"), basicOptions);
-    basicLayout->addWidget(multiresolutionSmallestCellLabel, row, 1);
-    multiresolutionSmallestCellLineEdit = new QLineEdit(basicOptions);
+    QFormLayout *mrLayout = new QFormLayout();
+    mrLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
+    multiresolutionModeToggle->setLayout(mrLayout);
+
+    QLabel *multiresolutionSmallestCellLabel = new QLabel(tr("Smallest cell"));
+    multiresolutionSmallestCellLineEdit = new QLineEdit();
     connect(multiresolutionSmallestCellLineEdit, SIGNAL(editingFinished()),
             this, SLOT(processMultiresolutionSmallestCellText()));
-    basicLayout->addWidget(multiresolutionSmallestCellLineEdit, row, 2, 1, 2);
-    row++;
 
+    mrLayout->addRow(multiresolutionSmallestCellLabel, multiresolutionSmallestCellLineEdit);
+
+    //
     // Create the surface rep widgets.
-    QLabel *drawObjLabel = new QLabel(tr("Draw objects as"), basicOptions);
-    basicLayout->addWidget(drawObjLabel, row, 0, 1, 3);
-    objectRepresentation = new QButtonGroup(basicOptions);
+    //
+    QGroupBox *drawObj = new QGroupBox(tr("Draw objects as"));
+    drawObj->setCheckable(false);
+    basicLayout->addWidget(drawObj);
+
+    QGridLayout *objLayout = new QGridLayout();
+    objLayout->setContentsMargins(10,10,10,10);
+    drawObj->setLayout(objLayout);
+
+    objectRepresentation = new QButtonGroup();
     connect(objectRepresentation, SIGNAL(idClicked(int)),
             this, SLOT(objectRepresentationChanged(int)));
-    row++;
 
-    QRadioButton *surfaces = new QRadioButton(tr("Surfaces"), basicOptions);
+    QRadioButton *surfaces = new QRadioButton(tr("Surfaces"));
     objectRepresentation->addButton(surfaces, 0);
-    basicLayout->addWidget(surfaces, row, 1);
-    QRadioButton *wires = new QRadioButton(tr("Wireframe"), basicOptions);
+    objLayout->addWidget(surfaces, 0, 0);
+    QRadioButton *wires = new QRadioButton(tr("Wireframe"));
     objectRepresentation->addButton(wires, 1);
-    basicLayout->addWidget(wires, row, 2);
-    QRadioButton *points = new QRadioButton(tr("Points"), basicOptions);
+    objLayout->addWidget(wires, 0, 1);
+    QRadioButton *points = new QRadioButton(tr("Points"));
     objectRepresentation->addButton(points, 2);
-    basicLayout->addWidget(points, row, 3);
-    row++;
+    objLayout->addWidget(points, 0, 2);
+    objLayout->setSpacing(0);
 
+    //
     // Create the stereo widgets.
-    stereoToggle = new QCheckBox(tr("Stereo"), basicOptions);
+    //
+    stereoToggle = new QGroupBox(tr("Stereo"));
+    stereoToggle->setCheckable(true);
+    stereoToggle->setChecked(false);
+
     connect(stereoToggle, SIGNAL(toggled(bool)),
             this, SLOT(stereoToggled(bool)));
-    basicLayout->addWidget(stereoToggle, row, 0, 1, 3);
-    row++;
+    basicLayout->addWidget(stereoToggle);
 
-    stereoType = new QButtonGroup(basicOptions);
+    QGridLayout *stereoLayout = new QGridLayout();
+    stereoLayout->setContentsMargins(10,10,10,10);
+    stereoToggle->setLayout(stereoLayout);
+
+    stereoType = new QButtonGroup(stereoToggle);
     connect(stereoType, SIGNAL(idClicked(int)),
             this, SLOT(stereoTypeChanged(int)));
-    redblue = new QRadioButton(tr("Red/Blue"), basicOptions);
+    redblue = new QRadioButton(tr("Red/Blue"));
     stereoType->addButton(redblue, 0);
-    basicLayout->addWidget(redblue, row, 1);
-    interlace = new QRadioButton(tr("Interlace"), basicOptions);
+    stereoLayout->addWidget(redblue, 0, 0);
+    interlace = new QRadioButton(tr("Interlace"));
     stereoType->addButton(interlace, 1);
-    basicLayout->addWidget(interlace, row, 2);
-    row++;
-    crystalEyes = new QRadioButton(tr("Crystal Eyes"), basicOptions);
+    stereoLayout->addWidget(interlace, 0, 1);
+    crystalEyes = new QRadioButton(tr("Crystal Eyes"));
     stereoType->addButton(crystalEyes, 2);
-    basicLayout->addWidget(crystalEyes, row, 1);
-    redgreen = new QRadioButton(tr("Red/Green"), basicOptions);
+    stereoLayout->addWidget(crystalEyes, 1,0);
+    redgreen = new QRadioButton(tr("Red/Green"));
     stereoType->addButton(redgreen, 3);
-    basicLayout->addWidget(redgreen, row, 2);
-    row++;
+    stereoLayout->addWidget(redgreen, 1,1);
+    stereoLayout->setSpacing(0);
 
+    //
     // Create the specular lighting options
-    specularToggle = new QCheckBox(tr("Specular lighting"), basicOptions);
+    //
+    specularToggle = new QGroupBox(tr("Specular lighting"));
+    specularToggle->setCheckable(true);
+    specularToggle->setChecked(false);
     connect(specularToggle, SIGNAL(toggled(bool)),
             this, SLOT(specularToggled(bool)));
-    basicLayout->addWidget(specularToggle, row, 0, 1, 3);
-    row++;
+    basicLayout->addWidget(specularToggle);
 
-    specularStrengthSlider = new QvisOpacitySlider(0, 100, 10, 60, basicOptions);
+    QFormLayout *specLayout = new QFormLayout();
+    specularToggle->setLayout(specLayout);
+
+    QLabel *specularStrengthLabel = new QLabel(tr("Strength"));
+    specularStrengthSlider = new QvisOpacitySlider(0, 100, 10, 60, specularToggle);
     specularStrengthSlider->setTickInterval(25);
-    connect(specularStrengthSlider, SIGNAL(valueChanged(int, const void*)),
-            this, SLOT(specularStrengthChanged(int, const void*)));
-    specularStrengthLabel = new QLabel(tr("Strength"), basicOptions);
-    specularStrengthLabel->setBuddy(specularStrengthSlider);
-    basicLayout->addWidget(specularStrengthLabel, row, 1);
-    basicLayout->addWidget(specularStrengthSlider, row, 2, 1, 2);
-    row++;
+    connect(specularStrengthSlider, SIGNAL(valueChanged(int)),
+            this, SLOT(specularStrengthChanged(int)));
 
-    specularPowerSlider = new QvisOpacitySlider(0, 1000, 100, 100, basicOptions);
+    specLayout->addRow(specularStrengthLabel, specularStrengthSlider);
+
+    QLabel *specularPowerLabel = new QLabel(tr("Sharpness"));
+    specularPowerSlider = new QvisOpacitySlider(0, 1000, 100, 100, specularToggle);
     specularPowerSlider->setTickInterval(100);
-    connect(specularPowerSlider, SIGNAL(valueChanged(int, const void*)),
-            this, SLOT(specularPowerChanged(int, const void*)));
-    specularPowerLabel = new QLabel(tr("Sharpness"), basicOptions);
-    specularPowerLabel->setBuddy(specularPowerSlider);
-    basicLayout->addWidget(specularPowerLabel, row,1);
-    basicLayout->addWidget(specularPowerSlider, row, 2, 1, 2);
-    row++;
+    connect(specularPowerSlider, SIGNAL(valueChanged(int)),
+            this, SLOT(specularPowerChanged(int)));
+    specLayout->addRow(specularPowerLabel, specularPowerSlider);
 
+    basicLayout->setSpacing(0);
     return basicOptions;
 }
 
@@ -416,6 +617,10 @@ QvisRenderingWindow::CreateBasicPage()
 //
 //   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
 //   Support Qt6: buttonClicked -> idClicked.
+//
+//   Kathleen Biagas, Thu Aug 14, 2025
+//   Removed void* arg from SIGNAL and SLOT for QvisOpacitySlider as the arg
+//   isn't needed for these instances.
 //
 // ****************************************************************************
 
@@ -525,8 +730,8 @@ QvisRenderingWindow::CreateAdvancedPage()
 
     shadowStrengthSlider = new QvisOpacitySlider(0, 100, 10, 60, advancedOptions);
     shadowStrengthSlider->setTickInterval(25);
-    connect(shadowStrengthSlider, SIGNAL(valueChanged(int, const void*)),
-            this, SLOT(shadowStrengthChanged(int, const void*)));
+    connect(shadowStrengthSlider, SIGNAL(valueChanged(int)),
+            this, SLOT(shadowStrengthChanged(int)));
     shadowStrengthLabel = new QLabel(tr("Strength"), advancedOptions);
     shadowStrengthLabel->setBuddy(shadowStrengthSlider);
     advLayout->addWidget(shadowStrengthLabel, row,1);
@@ -750,6 +955,9 @@ QvisRenderingWindow::CreateInformationPage()
 //   Brad Whitlock, Thu Jun 19 11:57:46 PDT 2008
 //   Moved code to helper functions.
 //
+//   Kathleen Biagas, Tue Aug 26, 2025
+//   Added call to QueryMSAAAvailability.
+//
 // ****************************************************************************
 
 void
@@ -772,6 +980,8 @@ QvisRenderingWindow::CreateWindowContents()
     // Create the renderer information group.
     //
     topTab->addTab(CreateInformationPage(), tr("Information"));
+
+    GetViewerMethods()->QueryMSAAAvailability();
 }
 
 // ****************************************************************************
@@ -875,6 +1085,12 @@ QvisRenderingWindow::UpdateWindow(bool doAll)
 //   Kevin Griffin, Wed Mar 05 2025 11:59:26 AM CST
 //   ANARI Integration
 //
+//   Kathleen Biagas, Monday July 28, 2025
+//   Update handling of antialiasing.
+//
+//   Kathleen Biagas, Thu Aug 14, 2025
+//   Add handling of msaaSamples and fxaaOptions.
+//
 // ****************************************************************************
 
 void
@@ -898,9 +1114,87 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
         switch(i)
         {
         case RenderingAttributes::ID_antialiasing:
-            antialiasingToggle->blockSignals(true);
-            antialiasingToggle->setChecked(renderAtts->GetAntialiasing());
-            antialiasingToggle->blockSignals(false);
+            itmp = (int)renderAtts->GetAntialiasing();
+            antialiasingMode->blockSignals(true);
+            antialiasingMode->button(itmp)->setChecked(true);
+            UpdateAAControls(itmp);
+            antialiasingMode->blockSignals(false);
+            break;
+        case RenderingAttributes::ID_MSAAAvailable:
+            antialiasingMode->blockSignals(true);
+            UpdateMSAAButton();
+            antialiasingMode->blockSignals(false);
+            break;
+        case RenderingAttributes::ID_MSAASamples:
+            msaaSamples->blockSignals(true);
+            msaaSamples->setValue(renderAtts->GetMSAASamples());
+            msaaSamples->blockSignals(false);
+            break;
+        case RenderingAttributes::ID_FXAAOpt:
+        {
+            fxaaRCTLabel->blockSignals(true);
+            fxaaRCT->blockSignals(true);
+            fxaaRCTCustomLabel->blockSignals(true);
+            fxaaRCTCustom->blockSignals(true);
+            fxaaHCTLabel->blockSignals(true);
+            fxaaHCT->blockSignals(true);
+            fxaaHCTCustomLabel->blockSignals(true);
+            fxaaHCTCustom->blockSignals(true);
+            fxaaSBLLabel->blockSignals(true);
+            fxaaSBL->blockSignals(true);
+            fxaaSBLCustomLabel->blockSignals(true);
+            fxaaSBLCustom->blockSignals(true);
+            fxaaSCTLabel->blockSignals(true);
+            fxaaSCT->blockSignals(true);
+            fxaaSCTCustomLabel->blockSignals(true);
+            fxaaSCTCustom->blockSignals(true);
+            fxaaHQE->blockSignals(true);  
+            fxaaESILabel->blockSignals(true);
+            fxaaESI->blockSignals(true);  
+
+            FXAAOptions &fxaaOpt = renderAtts->GetFXAAOpt();
+
+            fxaaRCT->setCurrentIndex((int)fxaaOpt.GetRelativeContrastThreshold());
+            tmp = FloatToQString(fxaaOpt.GetCustomRCT(),5);
+            fxaaRCTCustom->setText(tmp);
+
+            fxaaHCT->setCurrentIndex((int)fxaaOpt.GetHardContrastThreshold());
+            tmp = FloatToQString(fxaaOpt.GetCustomHCT(),5);
+            fxaaHCTCustom->setText(tmp);
+
+            fxaaSBL->setCurrentIndex((int)fxaaOpt.GetSubpixelBlendLimit());
+            tmp = FloatToQString(fxaaOpt.GetCustomSBL(),5);
+            fxaaSBLCustom->setText(tmp);
+
+            fxaaSCT->setCurrentIndex((int)fxaaOpt.GetSubpixelContrastThreshold());
+            tmp = FloatToQString(fxaaOpt.GetCustomSCT(),5);
+            fxaaSCTCustom->setText(tmp);
+
+            fxaaHQE->setChecked(fxaaOpt.GetUseHighQualityEndpoints());
+
+            tmp = IntToQString(fxaaOpt.GetEndpointSearchIterations());
+            fxaaESI->setText(tmp);
+
+            fxaaRCTLabel->blockSignals(false);
+            fxaaRCT->blockSignals(false);
+            fxaaRCTCustomLabel->blockSignals(false);
+            fxaaRCTCustom->blockSignals(false);
+            fxaaHCTLabel->blockSignals(false);
+            fxaaHCT->blockSignals(false);
+            fxaaHCTCustomLabel->blockSignals(false);
+            fxaaHCTCustom->blockSignals(false);
+            fxaaSBLLabel->blockSignals(false);
+            fxaaSBL->blockSignals(false);
+            fxaaSBLCustomLabel->blockSignals(false);
+            fxaaSBLCustom->blockSignals(false);
+            fxaaSCTLabel->blockSignals(false);
+            fxaaSCT->blockSignals(false);
+            fxaaSCTCustomLabel->blockSignals(false);
+            fxaaSCTCustom->blockSignals(false);
+            fxaaHQE->blockSignals(false);  
+            fxaaESILabel->blockSignals(false);
+            fxaaESI->blockSignals(false);  
+        }
             break;
         case RenderingAttributes::ID_multiresolutionMode:
             multiresolutionModeToggle->blockSignals(true);
@@ -935,14 +1229,9 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             renderNotifyToggle->blockSignals(false);
             break;
         case RenderingAttributes::ID_depthPeeling:
-            enabled = renderAtts->GetDepthPeeling();
             depthPeeling->blockSignals(true);
-            depthPeeling->setChecked(enabled);
+            depthPeeling->setChecked(renderAtts->GetDepthPeeling());
             depthPeeling->blockSignals(false);
-            occlusionRatioLabel->setEnabled(enabled);
-            occlusionRatio->setEnabled(enabled);
-            numberOfPeelsLabel->setEnabled(enabled);
-            numberOfPeels->setEnabled(enabled);
             break;
         case RenderingAttributes::ID_occlusionRatio:
             tmp = DoubleToQString(renderAtts->GetOcclusionRatio());
@@ -1162,12 +1451,15 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
 //    Eric Brugger, Tue Oct 25 12:32:40 PDT 2011
 //    Add a multi resolution display capability for AMR data.
 //
+//    Kathleen Biagas, Thu Aug 14, 2025
+//    Removed setting of widgets whose enablement is controlled by their
+//    containing QGroupBox.
+//
 // ****************************************************************************
 
 void
 QvisRenderingWindow::UpdateWindowSensitivity()
 {
-    bool multiresolutionOn = renderAtts->GetMultiresolutionMode();
     bool scalableAuto =
         renderAtts->GetScalableActivationMode() == RenderingAttributes::Auto;
     bool compactAuto =
@@ -1175,11 +1467,6 @@ QvisRenderingWindow::UpdateWindowSensitivity()
     bool shadowOn = renderAtts->GetDoShadowing();
     bool depthCueingOn = renderAtts->GetDoDepthCueing();
     bool depthCueingAuto = renderAtts->GetDepthCueingAutomatic();
-    bool stereoOn = renderAtts->GetStereoRendering();
-    bool specularOn = renderAtts->GetSpecularFlag();
-
-    multiresolutionSmallestCellLabel->setEnabled(multiresolutionOn);
-    multiresolutionSmallestCellLineEdit->setEnabled(multiresolutionOn);
 
     scalrenAutoThreshold->setEnabled(scalableAuto);
     compactDomainsAutoThreshold->setEnabled(compactAuto);
@@ -1191,16 +1478,6 @@ QvisRenderingWindow::UpdateWindowSensitivity()
     depthCueingStartLabel->setEnabled(depthCueingOn && !depthCueingAuto);
     depthCueingEndEdit->setEnabled(depthCueingOn && !depthCueingAuto);
     depthCueingEndLabel->setEnabled(depthCueingOn && !depthCueingAuto);
-
-    redblue->setEnabled(stereoOn);
-    interlace->setEnabled(stereoOn);
-    crystalEyes->setEnabled(stereoOn);
-    redgreen->setEnabled(stereoOn);
-
-    specularStrengthSlider->setEnabled(specularOn);
-    specularPowerSlider->setEnabled(specularOn);
-    specularStrengthLabel->setEnabled(specularOn);
-    specularPowerLabel->setEnabled(specularOn);
 }
 
 // ****************************************************************************
@@ -1474,10 +1751,142 @@ QvisRenderingWindow::apply()
 }
 
 // ****************************************************************************
-// Method: QvisRenderingWindow::antialiasingToggled
+// Method: QvisRenderingWindow::UpdateMSAAButton
 //
 // Purpose:
-//   This Qt slot function is called when the antialiasing checkbox is clicked.
+//   Updates enabled state of MSAA button, based on MSAA availability.
+//   Changes Label text to indicate if it is not available.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 26, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::UpdateMSAAButton()
+{
+    if(renderAtts->GetMSAAAvailable())
+    {
+        antialiasingMode->button(1)->setEnabled(!depthPeeling->isChecked());
+        antialiasingMode->button(1)->setText("MSAA");
+    }
+    else
+    {
+        antialiasingMode->button(1)->setEnabled(false);
+        antialiasingMode->button(1)->setText("MSAA (not available)");
+        if(antialiasingMode->button(1)->isChecked())
+            antialiasingMode->button(lastAA)->setChecked(true);
+    }
+}
+
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::UpdateAAControls
+//
+// Purpose:
+//   Updates enabled state of AA widgets based on mode.
+//
+// Arguments:
+//   mode : The new AA mode.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::UpdateAAControls(int mode)
+{
+    // Set enabled state based on mode
+    msaaSamplesLabel->blockSignals(true);
+    msaaSamples->blockSignals(true);
+
+    fxaaRCTLabel->blockSignals(true);
+    fxaaRCT->blockSignals(true);
+    fxaaRCTCustomLabel->blockSignals(true);
+    fxaaRCTCustom->blockSignals(true);
+
+    fxaaHCTLabel->blockSignals(true);
+    fxaaHCT->blockSignals(true);
+    fxaaHCTCustomLabel->blockSignals(true);
+    fxaaHCTCustom->blockSignals(true);
+
+    fxaaSBLLabel->blockSignals(true);
+    fxaaSBL->blockSignals(true);
+    fxaaSBLCustomLabel->blockSignals(true);
+    fxaaSBLCustom->blockSignals(true);
+
+    fxaaSCTLabel->blockSignals(true);
+    fxaaSCT->blockSignals(true);
+    fxaaSCTCustomLabel->blockSignals(true);
+    fxaaSCTCustom->blockSignals(true);
+
+    fxaaHQE->blockSignals(true);
+    fxaaESI->blockSignals(true);
+
+    msaaSamplesLabel->setEnabled(mode == 1);
+    msaaSamples->setEnabled(mode == 1);
+
+    fxaaRCTLabel->setEnabled(mode == 2);
+    fxaaRCT->setEnabled(mode == 2);
+    fxaaRCTCustomLabel->setEnabled(mode == 2 && fxaaRCT->currentIndex() == 4);
+    fxaaRCTCustom->setEnabled(mode == 2 && fxaaRCT->currentIndex() == 4);
+
+    fxaaHCTLabel->setEnabled(mode == 2);
+    fxaaHCT->setEnabled(mode == 2);
+    fxaaHCTCustomLabel->setEnabled(mode == 2 && fxaaHCT->currentIndex() == 3);
+    fxaaHCTCustom->setEnabled(mode == 2 && fxaaHCT->currentIndex() == 3);
+
+    fxaaSBLLabel->setEnabled(mode == 2);
+    fxaaSBL->setEnabled(mode == 2);
+    fxaaSBLCustomLabel->setEnabled(mode == 2 && fxaaSBL->currentIndex() == 4);
+    fxaaSBLCustom->setEnabled(mode == 2 && fxaaSBL->currentIndex() == 4);
+
+    fxaaSCTLabel->setEnabled(mode == 2);
+    fxaaSCT->setEnabled(mode == 2);
+    fxaaSCTCustomLabel->setEnabled(mode == 2 && fxaaSCT->currentIndex() == 5);
+    fxaaSCTCustom->setEnabled(mode == 2 && fxaaSCT->currentIndex() == 5);
+
+    fxaaHQE->setEnabled(mode == 2);
+    fxaaESILabel->setEnabled(mode == 2);
+    fxaaESI->setEnabled(mode == 2);
+
+    msaaSamplesLabel->blockSignals(false);
+    msaaSamples->blockSignals(false);
+
+    fxaaRCTLabel->blockSignals(false);
+    fxaaRCT->blockSignals(false);
+    fxaaRCTCustomLabel->blockSignals(false);
+    fxaaRCTCustom->blockSignals(false);
+
+    fxaaHCTLabel->blockSignals(false);
+    fxaaHCT->blockSignals(false);
+    fxaaHCTCustomLabel->blockSignals(false);
+    fxaaHCTCustom->blockSignals(false);
+
+    fxaaSBLLabel->blockSignals(false);
+    fxaaSBL->blockSignals(false);
+    fxaaSBLCustomLabel->blockSignals(false);
+    fxaaSBLCustom->blockSignals(false);
+
+    fxaaSCTLabel->blockSignals(false);
+    fxaaSCT->blockSignals(false);
+    fxaaSCTCustomLabel->blockSignals(false);
+    fxaaSCTCustom->blockSignals(false);
+    fxaaHQE->blockSignals(false);
+    fxaaESI->blockSignals(false);
+}
+
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::antialiasingChanged
+//
+// Purpose:
+//   Slot function called when an antialiasing radio button is clicked.
 //
 // Arguments:
 //   val : The new AA value.
@@ -1486,16 +1895,310 @@ QvisRenderingWindow::apply()
 // Creation:   Mon Sep 23 14:52:07 PST 2002
 //
 // Modifications:
+//   Kathleen Biagas, Monday July 28, 2025
+//   Changed from antialiasToggled to antialiasingChanged.
+//
+//   Kathleen Biagas, Thu Aug 14, 2025
+//   Added call to UpdateAAControls.
+//
+//   Kathleen Biagas, Tue Aug 26, 2025
+//   Issue warning if turning on MSAA and depth peeling is already selected,
+//   and eeset AA  mode to last value.
 //
 // ****************************************************************************
 
 void
-QvisRenderingWindow::antialiasingToggled(bool val)
+QvisRenderingWindow::antialiasingChanged(int val)
 {
-    renderAtts->SetAntialiasing(val);
+    if(val == 1 && depthPeeling->isChecked())
+    {
+        Warning(tr("MSAA is incompatible with Depth Peeling. "
+                    "Please turn off DepthPeeling or choose a"
+                    " different Antialiasing mode."));
+        antialiasingMode->button(lastAA)->setChecked(true);
+        return;
+    }
+    lastAA=val;
+    renderAtts->SetAntialiasing(RenderingAttributes::AAMode(val));
+    UpdateAAControls(val);
     SetUpdate(false);
     Apply();
 }
+
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::msaaSamplesChanged
+//
+// Purpose:
+//   Slot function called when an msaaSamples Spinbox value is changed.
+//
+// Arguments:
+//   val : The new msaaSamples value.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::msaaSamplesChanged(int val)
+{
+    renderAtts->SetMSAASamples(val);
+    SetUpdate(false);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::fxaaRCTChanged
+//
+// Purpose:
+//   Slot function called when an fxaaRCTChanged ComboBox value is changed.
+//
+// Arguments:
+//   index : The new fxaaRCT value.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::fxaaRCTChanged(int index)
+{
+    renderAtts->GetFXAAOpt().SetRelativeContrastThreshold(FXAAOptions::RCT(index));
+    UpdateAAControls(antialiasingMode->checkedId());
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::fxaaRCTCustomChanged
+//
+// Purpose:
+//   Slot function called when an fxaaRCTCustom value is changed.
+//
+// Arguments:
+//   index : The new fxaaRCTCustom value.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::fxaaRCTCustomChanged()
+{
+    renderAtts->GetFXAAOpt().SetCustomRCT(fxaaRCTCustom->text().toFloat());
+    SetUpdate(false);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::fxaaHCTChanged
+//
+// Purpose:
+//   Slot function called when an fxaaHCTChanged ComboBox value is changed.
+//
+// Arguments:
+//   index : The new fxaaHCT value.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::fxaaHCTChanged(int index)
+{
+    renderAtts->GetFXAAOpt().SetHardContrastThreshold(FXAAOptions::HCT(index));
+    UpdateAAControls(antialiasingMode->checkedId());
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::fxaaHCTCustomChanged
+//
+// Purpose:
+//   Slot function called when an fxaaHCTCustom value is changed.
+//
+// Arguments:
+//   index : The new fxaaHCTCustom value.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::fxaaHCTCustomChanged()
+{
+    renderAtts->GetFXAAOpt().SetCustomHCT(fxaaHCTCustom->text().toFloat());
+    SetUpdate(false);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::fxaaSBLChanged
+//
+// Purpose:
+//   Slot function called when an fxaaSBLChanged ComboBox value is changed.
+//
+// Arguments:
+//   index : The new fxaaSBL value.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::fxaaSBLChanged(int index)
+{
+    renderAtts->GetFXAAOpt().SetSubpixelBlendLimit(FXAAOptions::SBL(index));
+    UpdateAAControls(antialiasingMode->checkedId());
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::fxaaSBLCustomChanged
+//
+// Purpose:
+//   Slot function called when an fxaaSBLCustom value is changed.
+//
+// Arguments:
+//   index : The new fxaaSBLCustom value.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::fxaaSBLCustomChanged()
+{
+    renderAtts->GetFXAAOpt().SetCustomSBL(fxaaSBLCustom->text().toFloat());
+    SetUpdate(false);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::fxaaSCTChanged
+//
+// Purpose:
+//   Slot function called when an fxaaSCTChanged ComboBox value is changed.
+//
+// Arguments:
+//   index : The new fxaaSCT value.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::fxaaSCTChanged(int index)
+{
+    renderAtts->GetFXAAOpt().SetSubpixelContrastThreshold(FXAAOptions::SCT(index));
+    UpdateAAControls(antialiasingMode->checkedId());
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::fxaaSCTCustomChanged
+//
+// Purpose:
+//   Slot function called when an fxaaSCTCustom value is changed.
+//
+// Arguments:
+//   index : The new fxaaSCTCustom value.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::fxaaSCTCustomChanged()
+{
+    renderAtts->GetFXAAOpt().SetCustomSCT(fxaaSCTCustom->text().toFloat());
+    SetUpdate(false);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::fxaaHQEToggled
+//
+// Purpose:
+//   Slot function called when fxaaHQE is toggled.
+//
+// Arguments:
+//   val : The new fxaaHQE toggled state.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::fxaaHQEToggled(bool val)
+{
+    renderAtts->GetFXAAOpt().SetUseHighQualityEndpoints(val);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::fxaaESIChanged
+//
+// Purpose:
+//   Slot function called when an fxaaESI value is changed.
+//
+// Arguments:
+//   index : The new fxaaESI value.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisRenderingWindow::fxaaESIChanged()
+{
+    renderAtts->GetFXAAOpt().SetEndpointSearchIterations(fxaaESI->text().toInt());
+    SetUpdate(false);
+    Apply();
+}
+
 
 // ****************************************************************************
 // Method: QvisRenderingWindow::updateDepthPeeling
@@ -1507,12 +2210,26 @@ QvisRenderingWindow::antialiasingToggled(bool val)
 // Creation:   Sun Sep  6 08:42:01 PDT 2015
 //
 // Modifications:
-//
+//   Kathleen Biagas, Tue Aug 26, 2025
+//   Issue warning if MSAA is enabled and set depthPeeling to unchecked.
+// 
 // ****************************************************************************
 
 void
 QvisRenderingWindow::updateDepthPeeling()
 {
+    // has depthPeeling toggle changed
+    if (depthPeeling->isChecked() && !renderAtts->GetDepthPeeling())
+    {
+        if (renderAtts->GetAntialiasing() == RenderingAttributes::MSAA)
+        {
+            Warning(tr("MSAA is incompatible with Depth Peeling. "
+                       "Please choose a different Antialiasing mode "
+                       "if you want to enable Depth Peeling."));
+            depthPeeling->setChecked(false);
+            return;
+        }
+    }
     renderAtts->SetDepthPeeling(depthPeeling->isChecked());
     renderAtts->SetOcclusionRatio(occlusionRatio->text().toDouble());
     renderAtts->SetNumberOfPeels(numberOfPeels->text().toInt());
@@ -2060,10 +2777,14 @@ QvisRenderingWindow::shadowToggled(bool val)
 //  Programmer:  Hank Childs
 //  Creation:    October 24, 2004
 //
+//  Modifications:
+//    Kathleen Biagas, Monday Aug 11, 2025
+//    Removed void* argument as it was unecessary.
+//
 // ****************************************************************************
 
 void
-QvisRenderingWindow::shadowStrengthChanged(int val, const void*)
+QvisRenderingWindow::shadowStrengthChanged(int val)
 {
     renderAtts->SetShadowStrength(float(val)/100.);
     SetUpdate(false);
@@ -2109,10 +2830,14 @@ QvisRenderingWindow::specularToggled(bool val)
 //  Programmer:  Jeremy Meredith
 //  Creation:    November 14, 2003
 //
+//  Modifications:
+//    Kathleen Biagas, Monday Aug 11, 2025
+//    Removed void* argument as it was unecessary.
+//
 // ****************************************************************************
 
 void
-QvisRenderingWindow::specularStrengthChanged(int val, const void*)
+QvisRenderingWindow::specularStrengthChanged(int val)
 {
     renderAtts->SetSpecularCoeff(float(val)/100.);
     SetUpdate(false);
@@ -2131,10 +2856,14 @@ QvisRenderingWindow::specularStrengthChanged(int val, const void*)
 //  Programmer:  Jeremy Meredith
 //  Creation:    November 14, 2003
 //
+//  Modifications:
+//    Kathleen Biagas, Monday Aug 11, 2025
+//    Removed void* argument as it was unecessary.
+//
 // ****************************************************************************
 
 void
-QvisRenderingWindow::specularPowerChanged(int val, const void*)
+QvisRenderingWindow::specularPowerChanged(int val)
 {
     renderAtts->SetSpecularPower(float(val)/10.);
     SetUpdate(false);

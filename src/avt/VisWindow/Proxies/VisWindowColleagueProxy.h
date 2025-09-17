@@ -117,6 +117,9 @@
 //    Kevin Griffin, Wed 05 Mar 2025 11:59:26 AM CST
 //    Added Anari support.
 //
+//    Kathleen Biagas, Monday July 28, 2025
+//    Antialiasing is now an int (enum).
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
@@ -201,7 +204,7 @@ class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
     void                ReAddColleaguesToRenderWindow()
                                   { ProxiedReAddColleaguesToRenderWindow(); }
 
-    bool                GetAntialiasing()
+    int                 GetAntialiasing()
                                   { return ProxiedGetAntialiasing(); }
 
     bool                GetFullFrameMode()

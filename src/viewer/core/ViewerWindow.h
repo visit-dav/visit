@@ -465,6 +465,15 @@ class ViewerPlotList;
 //    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9:
 //    Initialize to nullptr all pointer ivars.
 //
+//    Kathleen Biagas, Monday July 28, 2025.
+//    Antialiasing is now an int (enum).
+//
+//    Kathleen Biagas, Thu Aug 14, 2025
+//    Add Set/Get MSAASamples.
+//
+//    Kathleen Biagas, Tue Aug 26, 2025
+//    Add MSAAAvailable.
+//
 // ****************************************************************************
 
 class VIEWERCORE_API ViewerWindow : public ViewerBase
@@ -666,8 +675,13 @@ public:
                               avtImageType imgT, bool needZBuffer);
 
     // Rendering options.
-    void SetAntialiasing(bool enabled);
-    bool GetAntialiasing() const;
+    void SetAntialiasing(int);
+    int  GetAntialiasing() const;
+    void SetMSAASamples(int);
+    int  GetMSAASamples() const;
+    bool MSAAAvailable() const;
+    void SetFXAAOptions(const FXAAOptions *);
+    const FXAAOptions *GetFXAAOptions() const;
     void SetOrderComposite(bool enabled);
     bool GetOrderComposite() const;
     void SetDepthCompositeThreads(int n);

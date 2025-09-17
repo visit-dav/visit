@@ -37,6 +37,9 @@
 #   Eric Brugger, Thu Aug  5 11:21:21 PDT 2021
 #   Removed support for SeedMe.
 #
+#   Kathleen Biags, Thu Aug 14, 2025
+#   Add FXAAOptions.
+#
 #****************************************************************************
 
 PROJECT(JavaClient)
@@ -108,6 +111,7 @@ SET(JAVA_GEN_STATE_OBJECTS
     ExpressionList 
     FileOpenOptions 
     FontAttributes 
+    FXAAOptions 
     GaussianControlPoint 
     GaussianControlPointList 
     GlobalAttributes 
@@ -265,6 +269,7 @@ Expression.java
 ExpressionList.java 
 FileOpenOptions.java 
 FontAttributes.java 
+FXAAOptions.java 
 GaussianControlPoint.java 
 GaussianControlPointList.java 
 GlobalAttributes.java 

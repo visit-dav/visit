@@ -8,6 +8,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+#include <FXAAOptions.h>
 #include <ColorAttribute.h>
 #include <float.h>
 
@@ -48,6 +49,12 @@ public:
         Always,
         Auto
     };
+    enum AAMode
+    {
+        None,
+        MSAA,
+        FXAA
+    };
     static const int DEFAULT_SCALABLE_AUTO_THRESHOLD;
     static const int DEFAULT_SCALABLE_ACTIVATION_MODE;
     static const int DEFAULT_COMPACT_DOMAINS_ACTIVATION_MODE;
@@ -78,6 +85,7 @@ public:
 
     // Property selection methods
     virtual void SelectAll();
+    void SelectFXAAOpt();
     void SelectSpecularColor();
     void SelectStartCuePoint();
     void SelectEndCuePoint();
@@ -88,7 +96,10 @@ public:
     void SelectAnariUSDParameters();
 
     // Property setting methods
-    void SetAntialiasing(bool antialiasing_);
+    void SetAntialiasing(AAMode antialiasing_);
+    void SetMSAAAvailable(bool MSAAAvailable_);
+    void SetMSAASamples(int MSAASamples_);
+    void SetFXAAOpt(const FXAAOptions &FXAAOpt_);
     void SetOrderComposite(bool orderComposite_);
     void SetDepthCompositeThreads(int depthCompositeThreads_);
     void SetDepthCompositeBlocking(int depthCompositeBlocking_);
@@ -132,7 +143,11 @@ public:
     void SetAnariUSDParameters(const stringVector &anariUSDParameters_);
 
     // Property getting methods
-    bool                 GetAntialiasing() const;
+    AAMode               GetAntialiasing() const;
+    bool                 GetMSAAAvailable() const;
+    int                  GetMSAASamples() const;
+    const FXAAOptions    &GetFXAAOpt() const;
+          FXAAOptions    &GetFXAAOpt();
     bool                 GetOrderComposite() const;
     int                  GetDepthCompositeThreads() const;
     int                  GetDepthCompositeBlocking() const;
@@ -203,6 +218,11 @@ public:
 protected:
     static std::string TriStateMode_ToString(int);
 public:
+    static std::string AAMode_ToString(AAMode);
+    static bool AAMode_FromString(const std::string &, AAMode &);
+protected:
+    static std::string AAMode_ToString(int);
+public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -217,6 +237,9 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_antialiasing = 0,
+        ID_MSAAAvailable,
+        ID_MSAASamples,
+        ID_FXAAOpt,
         ID_orderComposite,
         ID_depthCompositeThreads,
         ID_depthCompositeBlocking,
@@ -262,7 +285,10 @@ public:
     };
 
 private:
-    bool           antialiasing;
+    int            antialiasing;
+    bool           MSAAAvailable;
+    int            MSAASamples;
+    FXAAOptions    FXAAOpt;
     bool           orderComposite;
     int            depthCompositeThreads;
     int            depthCompositeBlocking;
@@ -309,6 +335,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define RENDERINGATTRIBUTES_TMFS "bbiiiibdibfibibiibffabdbbDDibiibiibbsssbs*s*"
+#define RENDERINGATTRIBUTES_TMFS "ibiabiiiibdibfibibiibffabdbbDDibiibiibbsssbs*s*"
 
 #endif

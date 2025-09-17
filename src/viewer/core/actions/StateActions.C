@@ -21,14 +21,14 @@
 // ****************************************************************************
 // Method: AddAnnotationObjectAction::Execute
 //
-// Purpose: 
+// Purpose:
 //   Execute ViewerRPC::AddAnnotationObjectRPC
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:57:49 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -42,14 +42,14 @@ AddAnnotationObjectAction::Execute()
 // ****************************************************************************
 // Method: DeleteActiveAnnotationObjectsAction::Execute
 //
-// Purpose: 
+// Purpose:
 //   Execute ViewerRPC::DeleteActiveAnnotationObjectsRPC
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:57:49 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -63,14 +63,14 @@ DeleteActiveAnnotationObjectsAction::Execute()
 // ****************************************************************************
 // Method: HideActiveAnnotationObjectsAction::Execute
 //
-// Purpose: 
+// Purpose:
 //   Execute ViewerRPC::HideActiveAnnotationObjectsRPC
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:57:49 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -84,14 +84,14 @@ HideActiveAnnotationObjectsAction::Execute()
 // ****************************************************************************
 // Method: LowerActiveAnnotationObjectsAction::Execute
 //
-// Purpose: 
+// Purpose:
 //   Execute ViewerRPC::LowerActiveAnnotationObjectsRPC
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:57:49 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -105,14 +105,14 @@ LowerActiveAnnotationObjectsAction::Execute()
 // ****************************************************************************
 // Method: RaiseActiveAnnotationObjectsAction::Execute
 //
-// Purpose: 
+// Purpose:
 //   Execute ViewerRPC::RaiseActiveAnnotationObjectsRPC
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:57:49 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -126,14 +126,14 @@ RaiseActiveAnnotationObjectsAction::Execute()
 // ****************************************************************************
 // Method: ReadHostProfilesFromDirectoryAction::Execute
 //
-// Purpose: 
+// Purpose:
 //   Execute ViewerRPC::ReadHostProfilesFromDirectoryRPC
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Dec 15 15:00:47 PST 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -148,14 +148,14 @@ ReadHostProfilesFromDirectoryAction::Execute()
 // ****************************************************************************
 // Method: ResetAnnotationAttributesAction::Execute
 //
-// Purpose: 
+// Purpose:
 //   Execute ViewerRPC::ResetAnnotationAttributesRPC
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:57:49 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -169,14 +169,14 @@ ResetAnnotationAttributesAction::Execute()
 // ****************************************************************************
 // Method: ResetAnnotationObjectListAction::Execute
 //
-// Purpose: 
+// Purpose:
 //   Execute ViewerRPC::ResetAnnotationObjectListRPC
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:57:49 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -199,7 +199,7 @@ ResetAnnotationObjectListAction::Execute()
 
     // We should add an optional bool array to CreateAnnotationObjectsFromList that
     // lets us tell the routine whether to set the options for the newly created object.
-    // That would let us create annotation objects but not use the attributes we have 
+    // That would let us create annotation objects but not use the attributes we have
     // for them. The use case for that is resetting the legends to default values.
     GetWindow()->DeleteAllAnnotationObjects();
     GetWindow()->CreateAnnotationObjectsFromList(legendPlusDefault);
@@ -211,14 +211,14 @@ ResetAnnotationObjectListAction::Execute()
 // ****************************************************************************
 // Method: ResetInteractorAttributesAction::Execute
 //
-// Purpose: 
+// Purpose:
 //   Execute ViewerRPC::ResetInteractorAttributesRPC
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:57:49 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -232,14 +232,14 @@ ResetInteractorAttributesAction::Execute()
 // ****************************************************************************
 // Method: ResetLightListAction::Execute
 //
-// Purpose: 
+// Purpose:
 //   Execute ViewerRPC::ResetLightListRPC
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:57:49 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -253,14 +253,14 @@ ResetLightListAction::Execute()
 // ****************************************************************************
 // Method: SetAnimationAttributesAction::Execute
 //
-// Purpose: 
+// Purpose:
 //   Execute ViewerRPC::SetAnimationAttributesRPC
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:57:49 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -274,14 +274,14 @@ SetAnimationAttributesAction::Execute()
 // ****************************************************************************
 // Method: SetAnnotationAttributesAction::Execute
 //
-// Purpose: 
+// Purpose:
 //   Execute ViewerRPC::SetAnnotationAttributesRPC
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:57:49 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -295,14 +295,14 @@ SetAnnotationAttributesAction::Execute()
 // ****************************************************************************
 // Method: SetAnnotationObjectOptionsAction::Execute
 //
-// Purpose: 
+// Purpose:
 //   Execute ViewerRPC::SetAnnotationObjectOptionsRPC
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:57:49 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -316,14 +316,14 @@ SetAnnotationObjectOptionsAction::Execute()
 // ****************************************************************************
 // Method: SetDefaultAnnotationAttributesAction::Execute
 //
-// Purpose: 
+// Purpose:
 //   Execute ViewerRPC::SetDefaultAnnotationAttributesRPC
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:57:49 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -337,14 +337,14 @@ SetDefaultAnnotationAttributesAction::Execute()
 // ****************************************************************************
 // Method: SetDefaultAnnotationObjectListAction::Execute
 //
-// Purpose: 
+// Purpose:
 //   Execute ViewerRPC::SetDefaultAnnotationObjectListRPC
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:57:49 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -358,14 +358,14 @@ SetDefaultAnnotationObjectListAction::Execute()
 // ****************************************************************************
 // Method: SetDefaultInteractorAttributesAction::Execute
 //
-// Purpose: 
+// Purpose:
 //   Execute ViewerRPC::SetDefaultInteractorAttributesRPC
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:57:49 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -379,14 +379,14 @@ SetDefaultInteractorAttributesAction::Execute()
 // ****************************************************************************
 // Method: SetDefaultLightListAction::Execute
 //
-// Purpose: 
+// Purpose:
 //   Execute ViewerRPC::SetDefaultLightListRPC
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:57:49 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -400,14 +400,14 @@ SetDefaultLightListAction::Execute()
 // ****************************************************************************
 // Method: SetInteractorAttributesAction::Execute
 //
-// Purpose: 
+// Purpose:
 //   Execute ViewerRPC::SetInteractorAttributesRPC
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:57:49 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -421,14 +421,14 @@ SetInteractorAttributesAction::Execute()
 // ****************************************************************************
 // Method: SetKeyframeAttributesAction::Execute
 //
-// Purpose: 
+// Purpose:
 //   Execute ViewerRPC::SetKeyframeAttributesRPC
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:57:49 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -442,14 +442,14 @@ SetKeyframeAttributesAction::Execute()
 // ****************************************************************************
 // Method: SetLightListAction::Execute
 //
-// Purpose: 
+// Purpose:
 //   Execute ViewerRPC::SetLightListRPC
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:57:49 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -463,14 +463,14 @@ SetLightListAction::Execute()
 // ****************************************************************************
 // Method: SetRenderingAttributesAction::Execute
 //
-// Purpose: 
+// Purpose:
 //   Execute ViewerRPC::SetRenderingAttributesRPC
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:57:49 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -484,7 +484,7 @@ SetRenderingAttributesAction::Execute()
 // ****************************************************************************
 // Method: UpdateColorTableAction::Execute
 //
-// Purpose: 
+// Purpose:
 //   Execute ViewerRPC::UpdateColorTableRPC
 //
 // Programmer: Brad Whitlock
@@ -498,7 +498,7 @@ SetRenderingAttributesAction::Execute()
 //             table.
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -506,3 +506,25 @@ UpdateColorTableAction::Execute()
 {
     windowMgr->UpdateColorTable(args.GetColorTableName());
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: QueryMSAAAvailability::Execute
+//
+// Purpose:
+//   Execute ViewerRPC::QueryMSAAAvailabilityRPC
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 26, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QueryMSAAAvailabilityAction::Execute()
+{
+    windowMgr->QueryMSAAAvailability();
+}
+

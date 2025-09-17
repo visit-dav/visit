@@ -1121,7 +1121,7 @@ VisWinAxes3D::SetTickLocation(int loc)
 void
 VisWinAxes3D::ReAddToWindow()
 {
-    if (mediator.GetAntialiasing())
+    if (mediator.GetAntialiasing() != RenderingAttributes::None)
     {
         RemoveAxes3DFromWindow();
         if (ShouldAddAxes3D())

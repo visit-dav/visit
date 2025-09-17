@@ -67,6 +67,9 @@
 #  Remove DatabaseCorrelation, View2DAttributes, View3DAttributes from
 #  code-gen skipping. All customizations are in the .code files now.
 #
+#  Kathleen Biagas, Thu Aug 14, 2025
+#  Add FXAAOptions.
+#
 #****************************************************************************
 
 #########################################################
@@ -148,6 +151,7 @@ SET(PY_GEN_STATE_OBJECTS
     ExpressionList
     FontAttributes
     FileOpenOptions
+    FXAAOptions
     GaussianControlPoint
     GaussianControlPointList
     GlobalAttributes
@@ -310,6 +314,7 @@ visitpy/PyExpression.C
 visitpy/PyExpressionList.C 
 visitpy/PyFontAttributes.C 
 visitpy/PyFileOpenOptions.C 
+visitpy/PyFXAAOptions.C 
 visitpy/PyGaussianControlPoint.C 
 visitpy/PyGaussianControlPointList.C 
 visitpy/PyGlobalAttributes.C 

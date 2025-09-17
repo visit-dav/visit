@@ -80,20 +80,21 @@ static const char *ViewerRPCType_strings[] = {
 "DDTConnectRPC", "DDTFocusRPC", "ReleaseToDDTRPC",
 "PlotDDTVispointVariablesRPC", "ExportRPC", "ExportHostProfileRPC",
 "StartPlotAnimationRPC", "StopPlotAnimationRPC", "ReadHostProfilesFromDirectoryRPC",
-"SetRemoveDuplicateNodesRPC", "MaxRPC"};
+"SetRemoveDuplicateNodesRPC", "QueryMSAAAvailabilityRPC", "MaxRPC"
+};
 
 std::string
 ViewerRPC::ViewerRPCType_ToString(ViewerRPC::ViewerRPCType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 212) index = 0;
+    if(index < 0 || index >= 213) index = 0;
     return ViewerRPCType_strings[index];
 }
 
 std::string
 ViewerRPC::ViewerRPCType_ToString(int t)
 {
-    int index = (t < 0 || t >= 212) ? 0 : t;
+    int index = (t < 0 || t >= 213) ? 0 : t;
     return ViewerRPCType_strings[index];
 }
 
@@ -101,7 +102,7 @@ bool
 ViewerRPC::ViewerRPCType_FromString(const std::string &s, ViewerRPC::ViewerRPCType &val)
 {
     val = ViewerRPC::CloseRPC;
-    for(int i = 0; i < 212; ++i)
+    for(int i = 0; i < 213; ++i)
     {
         if(s == ViewerRPCType_strings[i])
         {

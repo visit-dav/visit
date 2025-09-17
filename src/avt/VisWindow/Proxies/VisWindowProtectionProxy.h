@@ -139,6 +139,9 @@ class     VisitInteractor;
 //    Kevin Griffin, Wed 05 Mar 2025 11:59:26 AM CST
 //    Added Anari support.
 //
+//    Kathleen Biagas, Monday July 28, 2025
+//    Antialiasing is now an int (enum).
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowProtectionProxy
@@ -203,7 +206,7 @@ class VISWINDOW_API VisWindowProtectionProxy
     bool                ProxiedEnableExternalRenderRequests();
     void                ProxiedGetScaleFactorAndType(double &s, int &t);
     void                ProxiedReAddColleaguesToRenderWindow();
-    bool                ProxiedGetAntialiasing();
+    int                 ProxiedGetAntialiasing();
     bool                ProxiedGetFullFrameMode();
     bool                ProxiedGet3DAxisScalingFactors(double s[3]);
     bool                ProxiedGetSpecularFlag();

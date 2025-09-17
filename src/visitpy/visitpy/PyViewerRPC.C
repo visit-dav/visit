@@ -94,7 +94,7 @@ PyViewerRPC_ToString(const ViewerRPC *atts, const char *prefix, const bool forLo
         "SetPlotOrderToFirstRPC, SetPlotOrderToLastRPC, RenamePickLabelRPC, GetQueryParametersRPC, "
         "DDTConnectRPC, DDTFocusRPC, ReleaseToDDTRPC, PlotDDTVispointVariablesRPC, "
         "ExportRPC, ExportHostProfileRPC, StartPlotAnimationRPC, StopPlotAnimationRPC, "
-        "ReadHostProfilesFromDirectoryRPC, SetRemoveDuplicateNodesRPC, MaxRPC";
+        "ReadHostProfilesFromDirectoryRPC, SetRemoveDuplicateNodesRPC, QueryMSAAAvailabilityRPC, MaxRPC";
     switch (atts->GetRPCType())
     {
       case ViewerRPC::CloseRPC:
@@ -941,6 +941,10 @@ PyViewerRPC_ToString(const ViewerRPC *atts, const char *prefix, const bool forLo
           snprintf(tmpStr, 1000, "%sRPCType = %sSetRemoveDuplicateNodesRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
           break;
+      case ViewerRPC::QueryMSAAAvailabilityRPC:
+          snprintf(tmpStr, 1000, "%sRPCType = %sQueryMSAAAvailabilityRPC  # %s\n", prefix, prefix, RPCType_names);
+          str += tmpStr;
+          break;
       case ViewerRPC::MaxRPC:
           snprintf(tmpStr, 1000, "%sRPCType = %sMaxRPC  # %s\n", prefix, prefix, RPCType_names);
           str += tmpStr;
@@ -1177,11 +1181,11 @@ ViewerRPC_SetRPCType(PyObject *self, PyObject *args)
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
 
-    if (cval < 0 || cval >= 212)
+    if (cval < 0 || cval >= 213)
     {
         std::stringstream ss;
         ss << "An invalid RPCType value was given." << std::endl;
-        ss << "Valid values are in the range [0,211]." << std::endl;
+        ss << "Valid values are in the range [0,212]." << std::endl;
         ss << "You can also use the following symbolic names:";
         ss << " CloseRPC";
         ss << ", DetachRPC";
@@ -1394,6 +1398,7 @@ ViewerRPC_SetRPCType(PyObject *self, PyObject *args)
         ss << ", StopPlotAnimationRPC";
         ss << ", ReadHostProfilesFromDirectoryRPC";
         ss << ", SetRemoveDuplicateNodesRPC";
+        ss << ", QueryMSAAAvailabilityRPC";
         ss << ", MaxRPC";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
@@ -3814,6 +3819,8 @@ PyViewerRPC_getattro(PyObject *self, PyObject *attr_name)
         return PyInt_FromLong(long(ViewerRPC::ReadHostProfilesFromDirectoryRPC));
     if(strcmp(name, "SetRemoveDuplicateNodesRPC") == 0)
         return PyInt_FromLong(long(ViewerRPC::SetRemoveDuplicateNodesRPC));
+    if(strcmp(name, "QueryMSAAAvailabilityRPC") == 0)
+        return PyInt_FromLong(long(ViewerRPC::QueryMSAAAvailabilityRPC));
     if(strcmp(name, "MaxRPC") == 0)
         return PyInt_FromLong(long(ViewerRPC::MaxRPC));
 

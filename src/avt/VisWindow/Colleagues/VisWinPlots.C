@@ -1316,7 +1316,7 @@ VisWinPlots::UnsetBounds(void)
 void
 VisWinPlots::OrderPlots()
 {
-    bool aa = mediator.GetAntialiasing();
+    bool aa = mediator.GetAntialiasing() != RenderingAttributes::None;
     std::vector< avtActor_p >::iterator it;
     std::vector< avtActor_p > orderPlots;
     std::vector< avtActor_p >::iterator oit;

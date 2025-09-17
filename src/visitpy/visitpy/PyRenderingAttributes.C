@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <Py2and3Support.h>
+#include <PyFXAAOptions.h>
 #include <ColorAttribute.h>
 
 // ****************************************************************************
@@ -43,11 +44,32 @@ PyRenderingAttributes_ToString(const RenderingAttributes *atts, const char *pref
     std::string str;
     char tmpStr[1000];
 
-    if(atts->GetAntialiasing())
-        snprintf(tmpStr, 1000, "%santialiasing = 1\n", prefix);
-    else
-        snprintf(tmpStr, 1000, "%santialiasing = 0\n", prefix);
+    const char *antialiasing_names = "NONE, MSAA, FXAA";
+    switch (atts->GetAntialiasing())
+    {
+      case RenderingAttributes::None:
+          snprintf(tmpStr, 1000, "%santialiasing = %sNONE  # %s\n", prefix, prefix, antialiasing_names);
+          str += tmpStr;
+          break;
+      case RenderingAttributes::MSAA:
+          snprintf(tmpStr, 1000, "%santialiasing = %sMSAA  # %s\n", prefix, prefix, antialiasing_names);
+          str += tmpStr;
+          break;
+      case RenderingAttributes::FXAA:
+          snprintf(tmpStr, 1000, "%santialiasing = %sFXAA  # %s\n", prefix, prefix, antialiasing_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    snprintf(tmpStr, 1000, "%sMSAASamples = %d\n", prefix, atts->GetMSAASamples());
     str += tmpStr;
+    { // new scope
+        std::string objPrefix(prefix);
+        objPrefix += "FXAAOpt.";
+        str += PyFXAAOptions_ToString(&atts->GetFXAAOpt(), objPrefix.c_str(), forLogging);
+    }
     if(atts->GetOrderComposite())
         snprintf(tmpStr, 1000, "%sorderComposite = 1\n", prefix);
     else
@@ -353,6 +375,7 @@ RenderingAttributes_dir(PyObject *self, PyObject *args)
 
     // Add members using generic AttributeGroup interface
     for (int i = 0; i < atts.NumAttributes(); i++) {
+        if (i == 1) continue; // internal field
         PyList_Append(dir_list, PyUnicode_FromString(atts.GetFieldName(i).c_str()));
     }
 
@@ -387,24 +410,42 @@ RenderingAttributes_SetAntialiasing(PyObject *self, PyObject *args)
     }
 
     long val = PyLong_AsLong(args);
-    bool cval = bool(val);
+    int cval = int(val);
 
-    if (val == -1 && PyErr_Occurred())
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
-        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
-    }
-    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
 
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid antialiasing value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " None";
+        ss << ", MSAA";
+        ss << ", FXAA";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+   if(cval == 1 && (cval != obj->data->GetAntialiasing()) &&
+      (obj->data->GetDepthPeeling()))
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        PyErr_WarnEx(PyExc_RuntimeWarning,
+                "MSAA is incompatible with DepthPeeling, turn off\n"
+                " DepthPeeling before selecting MSAA antialiasing\n"
+                " or choose a different antialiasing mode.\n",  0);
+        return PyInt_FromLong(0);
+    }
     Py_XDECREF(packaged_args);
 
     // Set the antialiasing in the object.
-    obj->data->SetAntialiasing(cval);
+    obj->data->SetAntialiasing(RenderingAttributes::AAMode(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -414,7 +455,100 @@ RenderingAttributes_SetAntialiasing(PyObject *self, PyObject *args)
 RenderingAttributes_GetAntialiasing(PyObject *self, PyObject *args)
 {
     PyRenderingAttributesObject *obj = (PyRenderingAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetAntialiasing()?1L:0L);
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetAntialiasing()));
+    return retval;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_SetMSAASamples(PyObject *self, PyObject *args)
+{
+    PyRenderingAttributesObject *obj = (PyRenderingAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the MSAASamples in the object.
+    obj->data->SetMSAASamples(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetMSAASamples(PyObject *self, PyObject *args)
+{
+    PyRenderingAttributesObject *obj = (PyRenderingAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetMSAASamples()));
+    return retval;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_SetFXAAOpt(PyObject *self, PyObject *args)
+{
+    PyRenderingAttributesObject *obj = (PyRenderingAttributesObject *)self;
+
+    PyObject *newValue = NULL;
+    if(!PyArg_ParseTuple(args, "O", &newValue))
+        return NULL;
+    if(!PyFXAAOptions_Check(newValue))
+        return PyErr_Format(PyExc_TypeError, "Field FXAAOpt can be set only with FXAAOptions objects");
+
+    obj->data->SetFXAAOpt(*PyFXAAOptions_FromPyObject(newValue));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RenderingAttributes_GetFXAAOpt(PyObject *self, PyObject *args)
+{
+    PyRenderingAttributesObject *obj = (PyRenderingAttributesObject *)self;
+    // Since the new object will point to data owned by this object,
+    // we need to increment the reference count.
+    Py_INCREF(self);
+
+    PyObject *retval = PyFXAAOptions_Wrap(&obj->data->GetFXAAOpt());
+    // Set the object's parent so the reference to the parent can be decref'd
+    // when the child goes out of scope.
+    PyFXAAOptions_SetParent(retval, self);
+
     return retval;
 }
 
@@ -761,6 +895,16 @@ RenderingAttributes_SetDepthPeeling(PyObject *self, PyObject *args)
         return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
     }
 
+    if(cval && (cval != obj->data->GetDepthPeeling()) &&
+      (obj->data->GetAntialiasing() == RenderingAttributes::MSAA))
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        PyErr_WarnEx(PyExc_RuntimeWarning,
+                "DepthPeeling is incompatible with MSAA, select a different\n"
+                " antialiasing method before turning on DepthPeeling.", 0);
+        return PyInt_FromLong(0);
+    }
     Py_XDECREF(packaged_args);
 
     // Set the depthPeeling in the object.
@@ -2961,6 +3105,10 @@ PyMethodDef PyRenderingAttributes_methods[RENDERINGATTRIBUTES_NMETH] = {
     {"Notify", RenderingAttributes_Notify, METH_NOARGS},
     {"SetAntialiasing", RenderingAttributes_SetAntialiasing, METH_VARARGS},
     {"GetAntialiasing", RenderingAttributes_GetAntialiasing, METH_VARARGS},
+    {"SetMSAASamples", RenderingAttributes_SetMSAASamples, METH_VARARGS},
+    {"GetMSAASamples", RenderingAttributes_GetMSAASamples, METH_VARARGS},
+    {"SetFXAAOpt", RenderingAttributes_SetFXAAOpt, METH_VARARGS},
+    {"GetFXAAOpt", RenderingAttributes_GetFXAAOpt, METH_VARARGS},
     {"SetOrderComposite", RenderingAttributes_SetOrderComposite, METH_VARARGS},
     {"GetOrderComposite", RenderingAttributes_GetOrderComposite, METH_VARARGS},
     {"SetDepthCompositeThreads", RenderingAttributes_SetDepthCompositeThreads, METH_VARARGS},
@@ -3069,6 +3217,19 @@ PyRenderingAttributes_getattro(PyObject *self, PyObject *attr_name)
 
     if(strcmp(name, "antialiasing") == 0)
         return RenderingAttributes_GetAntialiasing(self, NULL);
+    if(strcmp(name, "None") == 0)
+        return PyInt_FromLong(long(RenderingAttributes::None));
+    if(strcmp(name, "NONE") == 0)
+        return PyInt_FromLong(long(RenderingAttributes::None));
+    if(strcmp(name, "MSAA") == 0)
+        return PyInt_FromLong(long(RenderingAttributes::MSAA));
+    if(strcmp(name, "FXAA") == 0)
+        return PyInt_FromLong(long(RenderingAttributes::FXAA));
+
+    if(strcmp(name, "MSAASamples") == 0)
+        return RenderingAttributes_GetMSAASamples(self, NULL);
+    if(strcmp(name, "FXAAOpt") == 0)
+        return RenderingAttributes_GetFXAAOpt(self, NULL);
     if(strcmp(name, "orderComposite") == 0)
         return RenderingAttributes_GetOrderComposite(self, NULL);
     if(strcmp(name, "depthCompositeThreads") == 0)
@@ -3205,6 +3366,10 @@ PyRenderingAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *ar
 
     if(strcmp(name, "antialiasing") == 0)
         obj = RenderingAttributes_SetAntialiasing(self, args);
+    else if(strcmp(name, "MSAASamples") == 0)
+        obj = RenderingAttributes_SetMSAASamples(self, args);
+    else if(strcmp(name, "FXAAOpt") == 0)
+        obj = RenderingAttributes_SetFXAAOpt(self, args);
     else if(strcmp(name, "orderComposite") == 0)
         obj = RenderingAttributes_SetOrderComposite(self, args);
     else if(strcmp(name, "depthCompositeThreads") == 0)
