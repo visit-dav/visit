@@ -159,6 +159,11 @@ protected:
 //
 //    Mark C. Miller, Mon Oct 28 12:11:33 PDT 2024
 //    Install an event filter to ignore touch events.
+//
+//    Kathleen Biagas, Wed May 14, 2025
+//    Remove setting of QSurfaceFormat attributes, use
+//    QVTKOpenGLNativeWidget::defaultFormat() as it comes.
+//
 // ****************************************************************************
 int
 ViewerMain(int argc, char *argv[])
@@ -238,10 +243,7 @@ ViewerMain(int argc, char *argv[])
         int argc2 = real_argc + nExtraArgs;
 
         // Setting default QSurfaceFormat required with QVTKOpenGLwidget
-        auto surfaceFormat = QVTKOpenGLNativeWidget::defaultFormat();
-        surfaceFormat.setSamples(0);
-        surfaceFormat.setAlphaBufferSize(0);
-        QSurfaceFormat::setDefaultFormat(surfaceFormat);
+        QSurfaceFormat::setDefaultFormat(QVTKOpenGLNativeWidget::defaultFormat());
 
         QCoreApplication *mainApp = NULL;
         if(viewer.GetNowinMode())

@@ -12,13 +12,13 @@
 // Purpose:
 //   Handles ViewerRPC::AddAnnotationObjectRPC
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:48:37 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class VIEWERCORE_API AddAnnotationObjectAction : public ViewerActionLogic
@@ -36,13 +36,13 @@ public:
 // Purpose:
 //   Handles ViewerRPC::DeleteActiveAnnotationObjectsRPC
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:48:37 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class VIEWERCORE_API DeleteActiveAnnotationObjectsAction : public ViewerActionLogic
@@ -60,13 +60,13 @@ public:
 // Purpose:
 //   Handles ViewerRPC::HideActiveAnnotationObjectsRPC
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:48:37 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class VIEWERCORE_API HideActiveAnnotationObjectsAction : public ViewerActionLogic
@@ -84,13 +84,13 @@ public:
 // Purpose:
 //   Handles ViewerRPC::LowerActiveAnnotationObjectsRPC
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:48:37 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class VIEWERCORE_API LowerActiveAnnotationObjectsAction : public ViewerActionLogic
@@ -108,13 +108,13 @@ public:
 // Purpose:
 //   Handles ViewerRPC::RaiseActiveAnnotationObjectsRPC
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:48:37 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class VIEWERCORE_API RaiseActiveAnnotationObjectsAction : public ViewerActionLogic
@@ -132,13 +132,13 @@ public:
 // Purpose:
 //   Handles ViewerRPC::ReadHostProfilesFromDirectoryRPC
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Dec 15 14:59:45 PST 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class VIEWERCORE_API ReadHostProfilesFromDirectoryAction : public ViewerActionLogic
@@ -156,13 +156,13 @@ public:
 // Purpose:
 //   Handles ViewerRPC::ResetAnnotationAttributesRPC
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:48:37 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class VIEWERCORE_API ResetAnnotationAttributesAction : public ViewerActionLogic
@@ -180,13 +180,13 @@ public:
 // Purpose:
 //   Handles ViewerRPC::ResetAnnotationObjectListRPC
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:48:37 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class VIEWERCORE_API ResetAnnotationObjectListAction : public ViewerActionLogic
@@ -204,13 +204,13 @@ public:
 // Purpose:
 //   Handles ViewerRPC::ResetInteractorAttributesRPC
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:48:37 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class VIEWERCORE_API ResetInteractorAttributesAction : public ViewerActionLogic
@@ -228,13 +228,13 @@ public:
 // Purpose:
 //   Handles ViewerRPC::ResetLightListRPC
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:48:37 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class VIEWERCORE_API ResetLightListAction : public ViewerActionLogic
@@ -252,13 +252,13 @@ public:
 // Purpose:
 //   Handles ViewerRPC::SetAnimationAttributesRPC
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:48:37 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class VIEWERCORE_API SetAnimationAttributesAction : public ViewerActionLogic
@@ -276,13 +276,13 @@ public:
 // Purpose:
 //   Handles ViewerRPC::SetAnnotationAttributesRPC
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:48:37 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class VIEWERCORE_API SetAnnotationAttributesAction : public ViewerActionLogic
@@ -300,13 +300,13 @@ public:
 // Purpose:
 //   Handles ViewerRPC::SetAnnotationObjectOptionsRPC
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:48:37 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class VIEWERCORE_API SetAnnotationObjectOptionsAction : public ViewerActionLogic
@@ -324,13 +324,13 @@ public:
 // Purpose:
 //   Handles ViewerRPC::SetDefaultAnnotationAttributesRPC
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:48:37 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class VIEWERCORE_API SetDefaultAnnotationAttributesAction : public ViewerActionLogic
@@ -348,13 +348,13 @@ public:
 // Purpose:
 //   Handles ViewerRPC::SetDefaultAnnotationObjectListRPC
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:48:37 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class VIEWERCORE_API SetDefaultAnnotationObjectListAction : public ViewerActionLogic
@@ -372,13 +372,13 @@ public:
 // Purpose:
 //   Handles ViewerRPC::SetDefaultInteractorAttributesRPC
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:48:37 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class VIEWERCORE_API SetDefaultInteractorAttributesAction : public ViewerActionLogic
@@ -396,13 +396,13 @@ public:
 // Purpose:
 //   Handles ViewerRPC::SetDefaultLightListRPC
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:48:37 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class VIEWERCORE_API SetDefaultLightListAction : public ViewerActionLogic
@@ -420,13 +420,13 @@ public:
 // Purpose:
 //   Handles ViewerRPC::SetInteractorAttributesRPC
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:48:37 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class VIEWERCORE_API SetInteractorAttributesAction : public ViewerActionLogic
@@ -444,13 +444,13 @@ public:
 // Purpose:
 //   Handles ViewerRPC::SetKeyframeAttributesRPC
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:48:37 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class VIEWERCORE_API SetKeyframeAttributesAction : public ViewerActionLogic
@@ -468,13 +468,13 @@ public:
 // Purpose:
 //   Handles ViewerRPC::SetLightListRPC
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:48:37 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class VIEWERCORE_API SetLightListAction : public ViewerActionLogic
@@ -492,13 +492,13 @@ public:
 // Purpose:
 //   Handles ViewerRPC::SetRenderingAttributesRPC
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:48:37 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class VIEWERCORE_API SetRenderingAttributesAction : public ViewerActionLogic
@@ -516,13 +516,13 @@ public:
 // Purpose:
 //   Handles ViewerRPC::UpdateColorTableRPC
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 22 10:48:37 PDT 2014
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class VIEWERCORE_API UpdateColorTableAction : public ViewerActionLogic
@@ -530,6 +530,30 @@ class VIEWERCORE_API UpdateColorTableAction : public ViewerActionLogic
 public:
     UpdateColorTableAction(ViewerWindow *win) : ViewerActionLogic(win) {}
     virtual ~UpdateColorTableAction() {}
+
+    virtual void Execute();
+};
+
+// ****************************************************************************
+// Class: QueryMSAAAvailabilityAction
+//
+// Purpose:
+//   Handles ViewerRPC::QueryMSAAAvailabilityRPC
+//
+// Notes:
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 26, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+class VIEWERCORE_API QueryMSAAAvailabilityAction : public ViewerActionLogic
+{
+public:
+    QueryMSAAAvailabilityAction(ViewerWindow *win) : ViewerActionLogic(win) {}
+    virtual ~QueryMSAAAvailabilityAction() {}
 
     virtual void Execute();
 };

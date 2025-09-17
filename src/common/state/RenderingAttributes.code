@@ -1,3 +1,35 @@
+Target: xml2python
+Code: RenderingAttributes_SetAntialiasing
+Prefix:
+Postfix:
+   if(cval == 1 && (cval != obj->data->GetAntialiasing()) &&
+      (obj->data->GetDepthPeeling()))
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        PyErr_WarnEx(PyExc_RuntimeWarning,
+                "MSAA is incompatible with DepthPeeling, turn off\n"
+                " DepthPeeling before selecting MSAA antialiasing\n"
+                " or choose a different antialiasing mode.\n",  0);
+        return PyInt_FromLong(0);
+    }
+
+Target: xml2python
+Code: RenderingAttributes_SetDepthPeeling
+Prefix:
+Postfix:
+    if(cval && (cval != obj->data->GetDepthPeeling()) &&
+      (obj->data->GetAntialiasing() == RenderingAttributes::MSAA))
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        PyErr_WarnEx(PyExc_RuntimeWarning,
+                "DepthPeeling is incompatible with MSAA, select a different\n"
+                " antialiasing method before turning on DepthPeeling.", 0);
+        return PyInt_FromLong(0);
+    }
+
+Target: xml2atts
 Constant: DEFAULT_SCALABLE_AUTO_THRESHOLD
 Declaration: static const int DEFAULT_SCALABLE_AUTO_THRESHOLD;
 Definition: const int RenderingAttributes::DEFAULT_SCALABLE_AUTO_THRESHOLD = 2000000;

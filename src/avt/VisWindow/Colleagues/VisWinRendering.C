@@ -12,6 +12,7 @@
 #include <vtkCullerCollection.h>
 #include <vtkDataSetMapper.h>
 #include <vtkFloatArray.h>
+#include <vtkFXAAOptions.h>
 #include <vtkImageData.h>
 #include <vtkInformation.h>
 #include <vtkInteractorStyle.h>
@@ -278,11 +279,15 @@ vtkStandardNewMacro(vtkBackgroundPass);
 //   Kathleen Biagas, Tue Jun 24, 2025
 //   Replace vtkVisItDataSetMapper with vtkDataSetMapper for ospray overrides.
 //
+//   Kathleen Biagas, Wed Aug 14, 2025
+//   antialiasing is now an int. Add msaaSamples.
+//
 // ****************************************************************************
 
 VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
     VisWinColleague(p), background(NULL), foreground(NULL), needsUpdate(false),
-    realized(false), antialiasing(false), stereo(false), stereoType(2),
+    realized(false), antialiasing(0), msaaSamples(4),
+    stereo(false), stereoType(2),
     surfaceRepresentation(0), specularFlag(false),
     specularCoeff(0.6), specularPower(10.0),
     specularColor(ColorAttribute(255,255,255,255)), colorTexturingFlag(true),
@@ -658,7 +663,6 @@ VisWinRendering::EnableDepthPeeling()
 
     // configure window
     rwin->SetAlphaBitPlanes(1);
-    rwin->SetMultiSamples(0);
 
     // configure renderer
     canvas->SetUseDepthPeeling(true);
@@ -684,6 +688,7 @@ VisWinRendering::EnableDepthPeeling()
 //    where the visualization window is black when using mesagl.
 //
 // ****************************************************************************
+
 void
 VisWinRendering::DisableDepthPeeling()
 {
@@ -2611,6 +2616,8 @@ VisWinRendering::SetRenderEventCallback(void(*callback)(void *,bool), void *data
     renderEvent = callback;
     renderEventData = data;
 }
+
+
 // ****************************************************************************
 // Method: VisWinRendering::SetAntialiasing
 //
@@ -2618,8 +2625,7 @@ VisWinRendering::SetRenderEventCallback(void(*callback)(void *,bool), void *data
 //   Sets the antialiasing mode.
 //
 // Arguments:
-//   enabled : Whether or not antialiasing is enabled.
-//   frames : The number of frames to use.
+//   aaMode :  The antialiasing mode to use.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 23 14:21:39 PST 2002
@@ -2628,17 +2634,167 @@ VisWinRendering::SetRenderEventCallback(void(*callback)(void *,bool), void *data
 //   Kathleen Bonnell, Wed Dec  4 17:05:24 PST 2002
 //   Remove frames, perform antialiasing via line-smoothing.
 //
+//   Kathleen Biagas, Wed May 14, 2025
+//   Remove LineSmoothing, call SetMultiSamples instead.
+//
+//   Kathleen Biagas, Monday May 19, 2025
+//   If using VTK 9.5 or above, turn off special transparency handler
+//   if MSAA enabled, as the OIT will not honor MSAA.
+//
+//   Kathleen Biagas, Monday July 28, 2025
+//   Set FXAA/MSAA based on aaMode.
+//
+//   Kathleen Biagas, Thu Aug 14, 2025
+//   Use new msaaSamples ivar.
+//
+//   Kathleen Biagas, Wed Aug 27, 2025
+//   Issue warning if MSAA chosen when it isn't available.
+//
 // ****************************************************************************
 
 void
-VisWinRendering::SetAntialiasing(bool enabled)
+VisWinRendering::SetAntialiasing(int aaMode)
 {
-    if(enabled != antialiasing )
+    if(aaMode != antialiasing )
     {
-        antialiasing = enabled;
-        GetRenderWindow()->SetLineSmoothing(enabled);
+        if(aaMode == 1 && !MSAAAvailable())
+        {
+            avtCallback::IssueWarning(
+                "MSAA is not available with the current configuration of"
+                " VisIt on this system. Please try FXAA instead.\n");
+            return;
+        }
+        antialiasing = aaMode;
+        canvas->SetUseFXAA((aaMode == RenderingAttributes::FXAA));
+        GetRenderWindow()->SetMultiSamples((aaMode == RenderingAttributes::MSAA) ? msaaSamples : 0);
+        canvas->SetUseOIT((aaMode != RenderingAttributes::MSAA));
     }
 }
+
+// ****************************************************************************
+// Method: VisWinRendering::SetMSAASamples
+//
+// Purpose:
+//   Sets the number of MSAA samples used.
+//
+// Arguments:
+//   numSamples : The number of MSA samples to use.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+VisWinRendering::SetMSAASamples(int numSamples)
+{
+    if(msaaSamples != numSamples)
+    {
+        msaaSamples = numSamples;
+        GetRenderWindow()->SetMultiSamples((antialiasing == RenderingAttributes::MSAA) ? msaaSamples : 0);
+    }
+}
+
+// ****************************************************************************
+// Method: VisWinRendering::MSAAAvailable
+//
+// Purpose:
+//   Determines is MSAA is available for the current Render Window.
+//
+// Returns:
+//   true if MSAA is available (GL_MAX_SAMPLES > 1).
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 26, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+//
+bool
+VisWinRendering::MSAAAvailable()
+{
+#ifdef GL_MAX_SAMPLES
+    vtkOpenGLRenderWindow* oglWin = vtkOpenGLRenderWindow::SafeDownCast(GetRenderWindow());
+    int msamples = 0;
+    oglWin->GetState()->vtkglGetIntegerv(GL_MAX_SAMPLES, &msamples);
+    return (msamples > 1);
+#endif
+    return false;
+}
+
+
+// ****************************************************************************
+// Method: VisWinRendering::SetFXAAOptions
+//
+// Purpose:
+//   Sets the options for FXAA.
+//
+// Arguments:
+//   fxaaOpt : The new FXAA options
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+VisWinRendering::SetFXAAOptions(const FXAAOptions *fxaaOpt)
+{
+    if(fxaaOptions != *fxaaOpt)
+    {
+        fxaaOptions = *fxaaOpt;
+        vtkFXAAOptions *vtkOpt = canvas->GetFXAAOptions();
+
+        if(fxaaOpt->GetRelativeContrastThreshold() == FXAAOptions::CustomRCT)
+            vtkOpt->SetRelativeContrastThreshold(fxaaOpt->GetCustomRCT());
+        else
+            vtkOpt->SetRelativeContrastThreshold(fxaaOpt->RCTAsFloat());
+
+        if(fxaaOpt->GetHardContrastThreshold() == FXAAOptions::CustomHCT)
+            vtkOpt->SetHardContrastThreshold(fxaaOpt->GetCustomHCT());
+        else
+            vtkOpt->SetHardContrastThreshold(fxaaOpt->HCTAsFloat());
+
+        if(fxaaOpt->GetSubpixelBlendLimit() == FXAAOptions::CustomBlending)
+            vtkOpt->SetHardContrastThreshold(fxaaOpt->GetCustomSBL());
+        else
+            vtkOpt->SetSubpixelBlendLimit(fxaaOpt->SBLAsFloat());
+
+        if(fxaaOpt->GetSubpixelContrastThreshold() == FXAAOptions::CustomRemoval)
+            vtkOpt->SetSubpixelContrastThreshold(fxaaOpt->GetCustomSCT());
+        else
+            vtkOpt->SetSubpixelContrastThreshold(fxaaOpt->SCTAsFloat());
+
+        vtkOpt->SetUseHighQualityEndpoints(fxaaOpt->GetUseHighQualityEndpoints());
+
+        vtkOpt->SetEndpointSearchIterations(fxaaOpt->GetEndpointSearchIterations());
+
+        canvas->SetFXAAOptions(vtkOpt);
+    }
+}
+
+// ****************************************************************************
+// Method: VisWinRendering::GetFXAAOptions
+//
+// Purpose:
+//   Returns a pointer to the window's FXAAOptions.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// ****************************************************************************
+
+const FXAAOptions *
+VisWinRendering::GetFXAAOptions() const
+{
+    return (const FXAAOptions *)&fxaaOptions;
+}
+
 
 // ****************************************************************************
 // Method: VisWinRendering::GetRenderTimes

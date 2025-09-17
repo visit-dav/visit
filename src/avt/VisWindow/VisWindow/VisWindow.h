@@ -20,6 +20,7 @@
 #include <VisCallback.h>
 
 #include <AnnotationAttributes.h>
+#include <FXAAOptions.h>
 #include <InteractorAttributes.h>
 #include <LightList.h>
 
@@ -445,6 +446,15 @@ class VisitInteractor;
 //    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9:
 //    add initialization of nullptr to pointer ivars.
 //
+//    Kathleen Biagas, Monday July 28, 2025
+//    Antialiasing is now an int (enum).
+//
+//    Kathleen Biagas, Thu Aug 14, 2025
+//    Add Set/Get MSAASamples and FXAAOptions.
+//
+//    Kathleen Biagas, Tue Aug 26, 2025
+//    Add MSAAAvailable.
+//
 //    Kevin Griffin, Tue Sep 9, 2025
 //    Added Set/Get AnariAttributes when built with ANARI support.
 //
@@ -671,8 +681,13 @@ public:
     // Rendering options.
     void                 SetRenderInfoCallback(VisCallback *cb, void *data);
     void                 SetRenderEventCallback(void (*cb)(void *, bool), void *data);
-    void                 SetAntialiasing(bool enabled);
-    bool                 GetAntialiasing() const;
+    void                 SetAntialiasing(int);
+    int                  GetAntialiasing() const;
+    void                 SetMSAASamples(int);
+    int                  GetMSAASamples() const;
+    bool                 MSAAAvailable() const;
+    void                 SetFXAAOptions(const FXAAOptions *);
+    const FXAAOptions   *GetFXAAOptions() const;
     void                 SetOrderComposite(bool enabled);
     bool                 GetOrderComposite() const;
     void                 SetDepthCompositeThreads(size_t n);

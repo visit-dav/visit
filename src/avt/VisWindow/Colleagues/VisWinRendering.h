@@ -16,6 +16,7 @@
 #include <avtImage.h>
 #include <avtImageType.h>
 #include <ColorAttribute.h>
+#include <FXAAOptions.h>
 
 #if defined(HAVE_OSPRAY)
 #include <vtkOSPRayPass.h>
@@ -224,6 +225,15 @@ class VisWindowColleagueProxy;
 //    Kathleen Biagas, Tue Jun 24, 2025
 //    Make anariRendering and osprayRendering ivars available always.
 //
+//    Kathleen Biagas, Monday July 28, 2025
+//    Antialiasing is now an int.
+//
+//    Kathleen Biagas, Thu Aug 14, 2025
+//    Add msaaSamples, fxaaOptions and Set/Get methods.
+//
+//    Kathleen Biagas, Tue Aug 26, 2025
+//    Add MSAAAvailable.
+//
 //    Kevin Griffin, Tue Sep 16, 2025
 //    Switched to using AnariAttributes.
 //
@@ -320,9 +330,20 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
 
     void                     SetRenderInfoCallback(void(*callback)(void *), void *);
     void                     SetRenderEventCallback(void(*callback)(void *,bool), void *);
-    void                     SetAntialiasing(bool enabled);
-    bool                     GetAntialiasing() const
-                                 { return antialiasing; };
+
+    // Antialiasing
+    void                     SetAntialiasing(int);
+    int                      GetAntialiasing() const
+                                 { return antialiasing; }
+
+    void                     SetMSAASamples(int);
+    int                      GetMSAASamples() const
+                                 { return msaaSamples; }
+    bool                     MSAAAvailable();
+
+    void                     SetFXAAOptions(const FXAAOptions *);
+    const FXAAOptions       *GetFXAAOptions() const;
+
     void                     GetRenderTimes(double times[6]) const;
     void                     SetStereoRendering(bool enabled, int type);
     bool                     GetStereo() const
@@ -444,7 +465,9 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     vtkRenderer                  *foreground {nullptr};
     bool                          needsUpdate;
     bool                          realized;
-    bool                          antialiasing;
+    int                           antialiasing;
+    int                           msaaSamples;
+    FXAAOptions                   fxaaOptions;
     bool                          stereo;
     int                           stereoType;
     int                           surfaceRepresentation;

@@ -7,6 +7,9 @@
 #       modern CMake syntax.
 #
 # Modifications:
+#   Kathleen Biagas, Thu Aug 14, 2025
+#   Add FXAAOptions.
+#
 #   Kevin Griffin, Wed Sep 10, 2025
 #   Refactored ANARI rendering options into AnariAttributes
 #
@@ -63,6 +66,7 @@ foreach(obj_name
     Expression
     FileOpenOptions
     FontAttributes
+    FXAAOptions
     GaussianControlPoint
     GaussianControlPointList
     GlobalAttributes
@@ -186,6 +190,7 @@ target_sources(visitcommon PRIVATE
     ExpressionList.C
     FileOpenOptions.C
     FontAttributes.C
+    FXAAOptions.C
     GaussianControlPoint.C
     GaussianControlPointList.C
     GlobalAttributes.C

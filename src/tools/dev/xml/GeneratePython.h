@@ -365,6 +365,10 @@ class PythonGeneratorField : public virtual Field
 //    * pyFunc is the Python function call to obtain the pyType value.
 //    * ckVal (usually just 'val') a value to check cval for conversion error
 //
+// Modifications:
+//   Kathleen Biagas, Wed Aug 2025
+//   add ability for Set methods to be modified Postfix via logic in .code file.
+//
 #define WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(cType, pyType, pyFunc) \
         c << "    PyObject *packaged_args = 0;" << Endl; \
         c << Endl; \
@@ -404,6 +408,9 @@ class PythonGeneratorField : public virtual Field
         c << "        return PyErr_Format(PyExc_ValueError, \"arg not interpretable as C++ " #cType "\");" << Endl; \
         c << "    }" << Endl; \
         c << Endl; \
+        QString mName(className+"_"+MethodNameSet()); \
+        if(HasCode(mName, 1)) \
+            PrintCode(c, mName, 1); \
         c << "    Py_XDECREF(packaged_args);" << Endl; \
         c << Endl; \
         c << "    // Set the " << name << " in the object." << Endl; \
@@ -440,6 +447,9 @@ class PythonGeneratorField : public virtual Field
         c << "        return PyErr_Format(PyExc_TypeError, \"arg not interpretable as utf8 string\");" << Endl; \
         c << "    }" << Endl; \
         c << Endl; \
+        QString mName(className+"_"+MethodNameSet()); \
+        if(HasCode(mName, 1)) \
+            PrintCode(c, mName, 1); \
         c << "    Py_XDECREF(packaged_args);" << Endl; \
         c << Endl; \
         c << "    // Set the " << name << " in the object." << Endl; \
@@ -513,6 +523,9 @@ class PythonGeneratorField : public virtual Field
         c << "        vals[i] = cval;" << Endl; \
         c << "    }" << Endl; \
         c << Endl; \
+        QString mName(className+"_"+MethodNameSet()); \
+        if(HasCode(mName, 1)) \
+            PrintCode(c, mName, 1); \
         c << "    Py_XDECREF(packaged_args);" << Endl; \
         c << Endl; \
         c << "    // Mark the " << name << " in the object as modified." << Endl; \
@@ -579,6 +592,9 @@ class PythonGeneratorField : public virtual Field
         c << "    else" << Endl; \
         c << "        return PyErr_Format(PyExc_TypeError, \"arg(s) must be one or more " #cType "s\");" << Endl; \
         c << Endl; \
+        QString mName(className+"_"+MethodNameSet()); \
+        if(HasCode(mName, 1)) \
+            PrintCode(c, mName, 1); \
         c << "    obj->data->"; \
         if(accessType == Field::AccessPublic) \
             c << name; \
@@ -2222,6 +2238,10 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
 //
 //    Mark C. Miller, Wed Aug 19 15:25:14 PDT 2009
 //    Added missing logic for accesType in WriteGetMethodBody
+//
+//    Kathleen Biagas, Wed Aug 2025
+//    Add ability for SetMethod to be modified Postfix via logic in .code file.
+//
 class PythonGeneratorEnum : public virtual Enum , public virtual PythonGeneratorField
 {
   public:
@@ -2273,6 +2293,9 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
         c << "        return PyErr_Format(PyExc_ValueError, ss.str().c_str());" << Endl;
         c << "    }" << Endl;
         c << Endl;
+        QString mName(className+"_"+MethodNameSet()); \
+        if(HasCode(mName, 1)) \
+            PrintCode(c, mName, 1); \
         c << "    Py_XDECREF(packaged_args);" << Endl;
         c << Endl;
         c << "    // Set the " << name << " in the object." << Endl;
