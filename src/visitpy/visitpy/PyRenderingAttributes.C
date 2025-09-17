@@ -3127,6 +3127,7 @@ PyRenderingAttributes_getattro(PyObject *self, PyObject *attr_name)
     const char *name = PyUnicode_AsUTF8(attr_name);
     if (!name) return NULL;
 
+#include <visit-config.h>
     if(strcmp(name, "antialiasing") == 0)
         return RenderingAttributes_GetAntialiasing(self, NULL);
     if(strcmp(name, "None") == 0)
@@ -3253,6 +3254,23 @@ PyRenderingAttributes_getattro(PyObject *self, PyObject *attr_name)
     if(strcmp(name, "anariUSDParameters") == 0)
         return RenderingAttributes_GetAnariUSDParameters(self, NULL);
 
+#if VISIT_OBSOLETE_AT_VERSION(3,6,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+    // Try and handle legacy fields in RenderingAttributes
+
+    //
+    // Removed in 3.5.0
+    //
+    if(strcmp(name, "geometryRepresentation") == 0)
+    {
+        PyErr_WarnEx(NULL,
+                    "geometryRepresentation is no longer a valid Rendering "
+                    "attribute.\nIt's value is being ignored, please remove "
+                    "it from your script.\n", 3);
+        return PyInt_FromLong(0L);
+    }
+#endif
     PyObject *meth = Py_FindMethod(PyRenderingAttributes_methods, self, (char*)name);
     if (meth) return meth;
 
@@ -3262,6 +3280,7 @@ PyRenderingAttributes_getattro(PyObject *self, PyObject *attr_name)
 int
 PyRenderingAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
 {
+#include <visit-config.h>
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
     const char *name = PyUnicode_AsUTF8(attr_name);
@@ -3353,6 +3372,24 @@ PyRenderingAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *ar
         obj = RenderingAttributes_SetAnariRendererParameters(self, args);
     else if(strcmp(name, "anariUSDParameters") == 0)
         obj = RenderingAttributes_SetAnariUSDParameters(self, args);
+
+#if VISIT_OBSOLETE_AT_VERSION(3,6,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+   // Try and handle legacy fields in RenderingAttributes
+    if(obj == &NULL_PY_OBJ)
+    {
+        //
+        // Removed in 3.5.0
+        //
+        if(strcmp(name, "geometryRepresentation") == 0)
+        {
+            PyErr_WarnEx(NULL, "'geometryRepresentation' is obsolete and is being ignored.", 3);
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+    }
+#endif
 
     if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
     {

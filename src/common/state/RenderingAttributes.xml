@@ -155,6 +155,8 @@
     </Function>
     <Function name="GetEffectiveCompactDomainsThreshold" user="true" member="true">
     </Function>
+    <Function name="ProcessOldVersions" user="true" member="true">
+    </Function>
     <Constant name="DEFAULT_SCALABLE_AUTO_THRESHOLD" member="true">
     </Constant>
     <Constant name="DEFAULT_SCALABLE_ACTIVATION_MODE" member="true">

@@ -2349,3 +2349,49 @@ int RenderingAttributes::GetEffectiveCompactDomainsThreshold(TriStateMode mode, 
         return -1;
 }
 
+// ****************************************************************************
+// Method: RenderingAttributes::ProcessOldVersions
+//
+// Purpose:
+//   This method allows handling of older config/session files that may
+//   contain fields that are no longer present or have been modified/renamed.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   Aug 28, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+#include <visit-config.h>
+#ifdef VIEWER
+#include <avtCallback.h>
+#endif
+
+void
+RenderingAttributes::ProcessOldVersions(DataNode *parentNode,
+                                         const char *configVersion)
+{
+#if VISIT_OBSOLETE_AT_VERSION(3,6,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("RenderingAttributes");
+    if(searchNode == 0)
+        return;
+
+    if (VersionLessThan(configVersion, "3.5.0"))
+    {
+        DataNode *k = 0;
+        if ((k = searchNode->GetNode("geometryRepresentation")) != 0)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("geometryRepresentation", "3.6.0"));
+#endif
+            searchNode->RemoveNode(k);
+        }
+    }
+#endif
+}
+
