@@ -81,6 +81,9 @@ class     avtTransparencyActor;
 //    Burlen Loring, Mon Sep 28 08:54:40 PDT 2015
 //    Clean up two warnings
 //
+//    Kathleen Biagas, Thu Aug 28 15:28:06 PDT 2025
+//    Remove SetSurfaceRepresentation, no longer used.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtDrawable
@@ -105,8 +108,6 @@ class PLOTTER_API avtDrawable
     virtual void               TurnLightingOn(void) = 0;
     virtual void               TurnLightingOff(void) = 0;
     virtual void               SetAmbientCoefficient(const double) = 0;
-
-    virtual void               SetSurfaceRepresentation(int) {;};
 
     virtual void               SetSpecularProperties(bool,double,double,
                                                      const ColorAttribute&) {;}

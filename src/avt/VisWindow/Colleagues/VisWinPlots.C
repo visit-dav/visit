@@ -250,6 +250,9 @@ VisWinPlots::~VisWinPlots()
 //    had no effect (an ancient code path).  Replaced with setting the
 //    currentBounds, which used to be done at the end of AdjustCamera.
 //
+//    Kathleen Biagas, Thu Aug 28 15:36:25 PDT 2025
+//    Removed call to SetSurfaceRepresentation, no longer used.
+//
 // ****************************************************************************
 
 void
@@ -348,14 +351,6 @@ VisWinPlots::AddPlot(avtActor_p &p)
         p->SetAmbientCoefficient(mediator.GetAmbientCoefficient());
     }
 
-    //
-    // Ensure that the new plot has the correct surface representation.
-    //
-    p->SetSurfaceRepresentation(mediator.GetSurfaceRepresentation());
-
-    //
-    // Ensure that the new plot has the right immediate mode rendering flag.
-    //
     VisWindow *vw = mediator;
 
     mediator.UpdatePlotList(plots);
@@ -1630,44 +1625,6 @@ VisWinPlots::SetAmbientCoefficient(const double amb)
     for (it = plots.begin() ; it != plots.end() ; it++)
     {
         (*it)->SetAmbientCoefficient(amb);
-    }
-}
-
-// ****************************************************************************
-//  Method: VisWinPlots::SetSurfaceRepresentation
-//
-//  Purpose:
-//      Allows actors to update their surface representation. 
-//
-//  Programmer: Brad Whitlock
-//  Creation:   Mon Sep 23 15:48:39 PST 2002
-//
-//  Modifications:
-//    Kathleen Bonnell, Thu Sep  2 08:52:16 PDT 2004
-//    Set specular properties when surface rep is Surface.
-//
-// ****************************************************************************
-
-void
-VisWinPlots::SetSurfaceRepresentation(int rep)
-{
-    std::vector< avtActor_p >::iterator it;
-    for (it = plots.begin() ; it != plots.end() ; it++)
-    {
-        (*it)->SetSurfaceRepresentation(rep);
-    }
-
-    //
-    //  If we are changing to surface rep, and are in 3D mode, make
-    //  sure the specular properties get reset. (They were not 
-    //  applied if old rep was wireframe).
-    //
-    if (rep == 0 && mediator.GetMode() == WINMODE_3D)
-    {
-        SetSpecularProperties(mediator.GetSpecularFlag(),
-                              mediator.GetSpecularCoeff(),
-                              mediator.GetSpecularPower(),
-                              mediator.GetSpecularColor());
     }
 }
 

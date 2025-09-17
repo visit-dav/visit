@@ -118,6 +118,9 @@ class AnariRenderingWidget;
 //   Kathleen Biagas, Tue Aug 26, 2025
 //   Added UpdateMSAAButton and lastAA to hold last chosen AA mode.
 //
+//   Kathleen Biagas, Thu Aug 28 15:52:57 PDT 2025
+//   Removed objectRepresentation widget and slot, no longer used.
+//
 // ****************************************************************************
 
 class GUI_API QvisRenderingWindow : public QvisPostableWindowSimpleObserver
@@ -165,7 +168,6 @@ private slots:
     void updateDepthPeeling();
     void multiresolutionModeToggled(bool);
     void processMultiresolutionSmallestCellText();
-    void objectRepresentationChanged(int);
     void stereoToggled(bool);
     void stereoTypeChanged(int);
     void renderNotifyToggled(bool);
@@ -236,7 +238,6 @@ private:
     QLineEdit         *numberOfPeels;
     QGroupBox         *multiresolutionModeToggle;
     QLineEdit         *multiresolutionSmallestCellLineEdit;
-    QButtonGroup      *objectRepresentation;
     QGroupBox         *stereoToggle;
     QButtonGroup      *stereoType;
     QRadioButton      *redblue;

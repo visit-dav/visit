@@ -3164,6 +3164,9 @@ NetworkManager::RenderInternal()
 //    Kathleen Biagas, Thu Aug 14, 2025 
 //    Added new RenderingAttributes items: MSAASamples, FXAAOptions.
 //
+//    Kathleen Biagas, Thu Aug 28 15:43:23 PDT 2025
+//    Remove SurfaceRepresentation, no longer used.
+//
 // ****************************************************************************
 
 void
@@ -3376,9 +3379,6 @@ NetworkManager::SetWindowAttributes(EngineVisWinInfo &viswinInfo,
 
         if (viswin->GetMultiresolutionCellSize() != renderAtts.GetMultiresolutionCellSize())
             viswin->SetMultiresolutionCellSize(renderAtts.GetMultiresolutionCellSize());
-
-        if (viswin->GetSurfaceRepresentation() != renderAtts.GetGeometryRepresentation())
-            viswin->SetSurfaceRepresentation(renderAtts.GetGeometryRepresentation());
 
         // handle stereo rendering settings
         bool stereo = renderAtts.GetStereoRendering();

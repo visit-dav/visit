@@ -3480,6 +3480,9 @@ ViewerWindowManager::SetViewExtentsType(avtExtentType viewType,
 //    Kathleen Biagas, Thu Aug 14, 2025
 //    Added new RenderingAttributes items: MSAASamples, FXAAOptions.
 //
+//   Kathleen Biagas, Thu Aug 28 15:46:38 PDT 2025
+//   Removed surfaceRepresentation, no longer used.
+//
 // ****************************************************************************
 
 void
@@ -3542,11 +3545,6 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
             ratts->GetMultiresolutionCellSize())
             windows[index]->SetMultiresolutionCellSize(
             ratts->GetMultiresolutionCellSize());
-
-        if (windows[index]->GetSurfaceRepresentation() !=
-            (int) ratts->GetGeometryRepresentation())
-            windows[index]->SetSurfaceRepresentation((int)
-            ratts->GetGeometryRepresentation());
 
         if ((windows[index]->GetStereo() != ratts->GetStereoRendering()) ||
             (windows[index]->GetStereoType() != (int) ratts->GetStereoType()))
@@ -5262,6 +5260,9 @@ ViewerWindowManager::UpdateLightListAtts()
 //   Kathleen Biagas, Thu Aug 14, 2025
 //   Added new RenderingAttributes items: MSAASamples, FXAAOptions.
 //
+//   Kathleen Biagas, Thu Aug 28 15:46:38 PDT 2025
+//   Removed geometryRepresentation, no longer used.
+//
 // ****************************************************************************
 
 void
@@ -5287,8 +5288,6 @@ ViewerWindowManager::UpdateRenderingAtts(int windowIndex)
         GetViewerState()->GetRenderingAttributes()->SetFXAAOpt(*(win->GetFXAAOptions()));
         GetViewerState()->GetRenderingAttributes()->SetMultiresolutionMode(win->GetMultiresolutionMode());
         GetViewerState()->GetRenderingAttributes()->SetMultiresolutionCellSize(win->GetMultiresolutionCellSize());
-        GetViewerState()->GetRenderingAttributes()->SetGeometryRepresentation(
-            (RenderingAttributes::GeometryRepresentation)win->GetSurfaceRepresentation());
         GetViewerState()->GetRenderingAttributes()->SetStereoRendering(win->GetStereo());
         GetViewerState()->GetRenderingAttributes()->SetStereoType((RenderingAttributes::StereoTypes)
             win->GetStereoType());
@@ -8242,6 +8241,9 @@ ViewerWindowManager::CreateVisWindow(const int windowIndex,
 //    Kathleen Biagas, Thu Aug 14, 2025
 //    Added new RenderingAttributes items: MSAASamples, FXAAOptions.
 //
+//    Kathleen Biagas, Thu Aug 28 15:46:38 PDT 2025
+//    Removed geometryRepresentation, no longer used.
+//
 // ****************************************************************************
 
 void
@@ -8269,8 +8271,6 @@ ViewerWindowManager::SetWindowAttributes(int windowIndex, bool copyAtts)
     w->SetFXAAOptions(&GetViewerState()->GetRenderingAttributes()->GetFXAAOpt());
     w->SetMultiresolutionMode(GetViewerState()->GetRenderingAttributes()->GetMultiresolutionMode());
     w->SetMultiresolutionCellSize(GetViewerState()->GetRenderingAttributes()->GetMultiresolutionCellSize());
-    int rep = (int)GetViewerState()->GetRenderingAttributes()->GetGeometryRepresentation();
-    w->SetSurfaceRepresentation(rep);
     w->SetStereoRendering(GetViewerState()->GetRenderingAttributes()->GetStereoRendering(),
         (int)GetViewerState()->GetRenderingAttributes()->GetStereoType());
     w->SetNotifyForEachRender(GetViewerState()->GetRenderingAttributes()->GetNotifyForEachRender());

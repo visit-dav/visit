@@ -51,27 +51,6 @@ avtHistogramMapper::~avtHistogramMapper()
 
 
 // ****************************************************************************
-//  Method: avtHistogramMapper::SetSurfaceRepresentation
-//
-//  Purpose:
-//      Sets the drawable's surface representation.
-//
-//  Arguments:
-//      rep : The new surface representation.
-//
-//  Programmer: Kathleen Biagas 
-//  Creation:   May 11, 2016
-//
-// ****************************************************************************
-
-void
-avtHistogramMapper::SetSurfaceRepresentation(int globalRep)
-{
-  // This is global rep, don't allow it to set anything for now.
-}
-
-
-// ****************************************************************************
 //  Method: avtHistogramMapper::CustomizeMappers
 //
 //  Purpose:

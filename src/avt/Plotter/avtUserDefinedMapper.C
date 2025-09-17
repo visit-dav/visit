@@ -281,28 +281,6 @@ avtUserDefinedMapper::SetSpecularProperties(bool flag, double coeff,
 
 
 // ****************************************************************************
-//  Method: avtUserDefinedMapper::SetSurfaceRepresentation
-//
-//  Purpose:
-//    Sends the surface representation to the renderer. 
-//
-//  Arguments:
-//    rep  :  the new representation 
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   September 2, 2004 
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-avtUserDefinedMapper::SetSurfaceRepresentation(int rep)
-{
-    renderer->SetSurfaceRepresentation(rep);
-}
-
-// ****************************************************************************
 // Method: avtUserDefinedMapper::SetAlternateDisplay
 //
 // Purpose: 
