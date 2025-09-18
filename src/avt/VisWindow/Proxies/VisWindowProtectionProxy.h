@@ -22,6 +22,10 @@ class     vtkPolyDataMapper2D;
 class     VisWindow;
 class     VisitInteractor;
 
+#ifdef HAVE_ANARI
+class AnariAttributes;
+#endif
+
 
 // ****************************************************************************
 //  Class: VisWindowProtectionProxy
@@ -237,13 +241,7 @@ class VISWINDOW_API VisWindowProtectionProxy
     bool                ProxiedGetOsprayShadows();
 #endif
 #ifdef HAVE_ANARI
-    bool                ProxiedGetAnariRendering();
-    std::string         ProxiedGetAnariLibraryName();
-    std::string         ProxiedGetAnariLibrarySubtype();
-    std::string         ProxiedGetAnariRendererSubtype();
-    stringVector        ProxiedGetAnariRendererParameters();
-    stringVector        ProxiedGetAnariUSDParameters();
-    bool                ProxiedGetUsingUsdDevice();
+    const AnariAttributes &ProxiedGetAnariAttributes();
 #endif
 };
 

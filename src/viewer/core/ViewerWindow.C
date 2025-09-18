@@ -2422,13 +2422,7 @@ ViewerWindow::CopyGeneralAttributes(const ViewerWindow *source)
 #endif
 
 #ifdef HAVE_ANARI
-    SetAnariRendering(source->GetAnariRendering());
-    SetAnariLibraryName(source->GetAnariLibraryName());
-    SetAnariLibrarySubtype(source->GetAnariLibrarySubtype());
-    SetAnariRendererSubtype(source->GetAnariRendererSubtype());
-    SetAnariRendererParameters(source->GetAnariRendererParameters());
-    SetAnariUSDParameters(source->GetAnariUSDParameters());
-    SetUsingUsdDevice(source->GetUsingUsdDevice());
+    SetAnariAttributes(source->GetAnariAttributes());
 #endif
 
     //
@@ -6611,13 +6605,7 @@ debug5 << "GetWindowAttributes: size=" << size[0] << ", " << size[1] << endl;
 #endif
 
 #ifdef HAVE_ANARI
-    renderAtts.SetAnariRendering(GetAnariRendering());
-    renderAtts.SetAnariLibrary(GetAnariLibraryName());
-    renderAtts.SetAnariLibrarySubtype(GetAnariLibrarySubtype());
-    renderAtts.SetAnariRendererSubtype(GetAnariRendererSubtype());
-    renderAtts.SetAnariRendererParameters(GetAnariRendererParameters());
-    renderAtts.SetAnariUSDParameters(GetAnariUSDParameters());
-    renderAtts.SetUsingUsdDevice(GetUsingUsdDevice());
+    renderAtts.SetAnariAttributes(GetAnariAttributes());
 #endif
 
     winAtts.SetRenderAtts(renderAtts);
@@ -8854,41 +8842,9 @@ ViewerWindow::GetOsprayShadows() const
 
 #ifdef HAVE_ANARI
 // ****************************************************************************
-// Method:  ViewerWindow::SetAnariRendering
+// Method:  ViewerWindow::SetAnariAttributes
 //
-// Purpose: Set/Get ANARI rendering flag
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-void
-ViewerWindow::SetAnariRendering(const bool enabled)
-{
-    visWindow->SetAnariRendering(enabled);
-}
-
-// ****************************************************************************
-// Method:  ViewerWindow::GetAnariRendering
-//
-// Purpose: Set/Get ANARI rendering flag
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-bool
-ViewerWindow::GetAnariRendering() const
-{
-    return visWindow->GetAnariRendering();
-}
-
-// ****************************************************************************
-// Method:  ViewerWindow::SetAnariLibraryName
-//
-// Purpose: Set ANARI back-end device library name
+// Purpose: Set ANARI rendering attributes
 //
 // Programmer:  Kevin Griffin
 // Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
@@ -8896,188 +8852,25 @@ ViewerWindow::GetAnariRendering() const
 // ****************************************************************************
 
 void
-ViewerWindow::SetAnariLibraryName(const std::string name)
+ViewerWindow::SetAnariAttributes(const AnariAttributes &atts)
 {
-    visWindow->SetAnariLibraryName(name);
+    visWindow->SetAnariAttributes(atts);
 }
 
 // ****************************************************************************
-// Method:  ViewerWindow::GetAnariLibraryName
+// Method:  ViewerWindow::GetAnariAttributes
 //
-// Purpose: Get ANARI back-end device library name
+// Purpose: Get ANARI rendering attributes
 //
 // Programmer:  Kevin Griffin
 // Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
 //
 // ****************************************************************************
 
-std::string
-ViewerWindow::GetAnariLibraryName() const
+const AnariAttributes &
+ViewerWindow::GetAnariAttributes() const
 {
-    return visWindow->GetAnariLibraryName();
-}
-
-// ****************************************************************************
-// Method:  ViewerWindow::SetAnariLibrarySubtype
-//
-// Purpose: Set ANARI back-end device library subtype name
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-void
-ViewerWindow::SetAnariLibrarySubtype(const std::string subtype)
-{
-    visWindow->SetAnariLibrarySubtype(subtype);
-}
-
-// ****************************************************************************
-// Method:  ViewerWindow::GetAnariLibrarySubtype
-//
-// Purpose: Get ANARI back-end device library subtype name
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-std::string
-ViewerWindow::GetAnariLibrarySubtype() const
-{
-    return visWindow->GetAnariLibrarySubtype();
-}
-
-// ****************************************************************************
-// Method:  ViewerWindow::SetAnariRendererSubtype
-//
-// Purpose: Set ANARI back-end device renderer subtype
-//
-// Arguments:
-//   subtype the renderer subtype name
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-void
-ViewerWindow::SetAnariRendererSubtype(const std::string subtype)
-{
-    visWindow->SetAnariRendererSubtype(subtype);
-}
-
-// ****************************************************************************
-// Method:  ViewerWindow::GetAnariRendererSubtype
-//
-// Purpose: Get ANARI back-end renderer subtype
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-std::string
-ViewerWindow::GetAnariRendererSubtype() const
-{
-    return visWindow->GetAnariRendererSubtype();
-}
-
-// ****************************************************************************
-// Method:  ViewerWindow::SetAnariRendererParameters
-//
-// @see VisWindow::SetAnariRendererParameters
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-void
-ViewerWindow::SetAnariRendererParameters(const stringVector &params)
-{
-    visWindow->SetAnariRendererParameters(params);
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::GetAnariRendererParameters
-//
-// @see VisWindow::GetAnariRendererParameters
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-stringVector
-ViewerWindow::GetAnariRendererParameters() const
-{
-    return visWindow->GetAnariRendererParameters();
-}
-
-// ****************************************************************************
-// Method:  ViewerWindow::SetAnariUSDParameters
-//
-// @see VisWindow::SetAnariUSDParameters
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-void
-ViewerWindow::SetAnariUSDParameters(const stringVector &params)
-{
-    visWindow->SetAnariUSDParameters(params);
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::GetAnariUSDParameters
-//
-// @see VisWindow::GetAnariUSDParameters
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-stringVector
-ViewerWindow::GetAnariUSDParameters() const
-{
-    return visWindow->GetAnariUSDParameters();
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::SetUsingUsdDevice
-//
-// @see VisWindow::SetUsingUsdDevice
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-void
-ViewerWindow::SetUsingUsdDevice(const bool val)
-{
-    visWindow->SetUsingUsdDevice(val);
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::GetUsingUsdDevice
-//
-// @see VisWindow::GetUsingUsdDevice
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-bool
-ViewerWindow::GetUsingUsdDevice() const
-{
-    return visWindow->GetUsingUsdDevice();
+    return visWindow->GetAnariAttributes();
 }
 #endif
 
@@ -9314,15 +9107,9 @@ ViewerWindow::CreateNode(DataNode *parentNode,
 #endif
 
 #ifdef HAVE_ANARI
-        windowNode->AddNode(new DataNode("anariRendering", GetAnariRendering()));
-        windowNode->AddNode(new DataNode("anariLibraryName", GetAnariLibraryName()));
-        windowNode->AddNode(new DataNode("anariLibrarySubtype", GetAnariLibrarySubtype()));
-        windowNode->AddNode(new DataNode("anariRendererSubtype", GetAnariRendererSubtype()));
-        windowNode->AddNode(new DataNode("anariRendererParameters", GetAnariRendererParameters()));
-        windowNode->AddNode(new DataNode("anariUSDParameters", GetAnariUSDParameters()));
-        windowNode->AddNode(new DataNode("anariUsingUsdDevice", GetUsingUsdDevice()));
-#endif
-
+        AnariAttributes anariAtts(visWindow->GetAnariAttributes());
+        anariAtts.CreateNode(windowNode, true, true);
+#endif   
         //
         // View
         //
@@ -9819,20 +9606,13 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
 #endif
 
 #ifdef HAVE_ANARI
-    if((node = windowNode->GetNode("anariRendering")) != 0)
-        SetAnariRendering(node->AsBool());
-    if((node = windowNode->GetNode("anariLibraryName")) != 0)
-        SetAnariLibraryName(node->AsString());
-    if((node = windowNode->GetNode("anariLibrarySubtype")) != 0)
-        SetAnariLibrarySubtype(node->AsString());
-    if((node = windowNode->GetNode("anariRendererSubtype")) != 0)
-        SetAnariRendererSubtype(node->AsString());
-    if((node = windowNode->GetNode("anariRendererParameters")) != 0)
-        SetAnariRendererParameters(node->AsStringVector());
-    if((node = windowNode->GetNode("anariUSDParameters")) != 0)
-        SetAnariUSDParameters(node->AsStringVector());
-    if((node = windowNode->GetNode("anariUsingUsdDevice")) != 0)
-        SetUsingUsdDevice(node->AsBool());
+    if((node = windowNode->GetNode("AnariAttributes")) != 0)
+    {
+        AnariAttributes anariAtts;
+        anariAtts.ProcessOldVersions(windowNode, configVersion.c_str());
+        anariAtts.SetFromNode(windowNode);
+        SetAnariAttributes(anariAtts);
+    }
 #endif
 
     //

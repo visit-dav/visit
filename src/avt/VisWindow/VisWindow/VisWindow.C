@@ -7069,14 +7069,13 @@ VisWindow::GetOsprayShadows() const
 
 #ifdef HAVE_ANARI
 // ****************************************************************************
-// Method: VisWindow::SetAnariRendering
+// Method: VisWindow::SetAnariAttributes
 //
 // Purpose:
-//   Sets the ANARI rendering flag
+//   Sets the ANARI attributes
 //
 // Arguments:
-//   enabled    if true enable ANARI rendering, otherwise disable ANARI
-//              rendering
+//   attrs    The ANARI attributes to set
 //
 // Programmer:  Kevin Griffin
 // Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
@@ -7084,283 +7083,29 @@ VisWindow::GetOsprayShadows() const
 // ****************************************************************************
 
 void
-VisWindow::SetAnariRendering(const bool enabled)
+VisWindow::SetAnariAttributes(const AnariAttributes &attrs)
 {
-    if (enabled != GetAnariRendering())
-    {
-        rendering->SetAnariRendering(enabled);
-    }
+    rendering->SetAnariAttributes(attrs);
 }
 
 // ****************************************************************************
-// Method: VisWindow::GetAnariRendering
+// Method: VisWindow::GetAnariAttributes
 //
 // Purpose:
-//   Returns the ANARI rendering flag
+//   Returns the ANARI attributes
 //
-// Returns:    The ANARI rendering flag
+// Returns:    The ANARI attributes
 //
 // Programmer:  Kevin Griffin
 // Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
 //
 // ****************************************************************************
 
-bool
-VisWindow::GetAnariRendering() const
+const AnariAttributes &
+VisWindow::GetAnariAttributes() const
 {
-    return rendering->GetAnariRendering();
+    return rendering->GetAnariAttributes();
 }
-
-// ****************************************************************************
-// Method: VisWindow::SetAnariLibraryName
-//
-// Purpose:
-//   Set ANARI back-end rendering library name
-//
-// Arguments:
-//   name : back-end rendering library name
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-void
-VisWindow::SetAnariLibraryName(const std::string name)
-{
-    if(name.compare(GetAnariLibraryName()) != 0)
-    {
-        rendering->SetAnariLibraryName(name);
-    }
-}
-
-// ****************************************************************************
-// Method: VisWindow::GetAnariLibraryName
-//
-// Purpose:
-//   Returns the ANARI back-end rendering library name
-//
-// Returns:    the ANARI back-end rendering library name
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-std::string
-VisWindow::GetAnariLibraryName() const
-{
-    return rendering->GetAnariLibraryName();
-}
-
-// ****************************************************************************
-// Method: VisWindow::SetAnariLibrarySubtype
-//
-// Purpose:
-//   Set ANARI back-end rendering library subtype name
-//
-// Arguments:
-//   name : back-end rendering library subtype name
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-void
-VisWindow::SetAnariLibrarySubtype(const std::string name)
-{
-    if(name.compare(GetAnariLibrarySubtype()) != 0)
-    {
-        rendering->SetAnariLibrarySubtype(name);
-    }
-}
-
-// ****************************************************************************
-// Method: VisWindow::GetAnariLibrarySubtype
-//
-// Purpose:
-//   Returns the ANARI back-end rendering library subtype name
-//
-// Returns:    the ANARI back-end rendering library subtype name
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-std::string
-VisWindow::GetAnariLibrarySubtype() const
-{
-    return rendering->GetAnariLibrarySubtype();
-}
-
-// ****************************************************************************
-// Method: VisWindow::SetAnariRendererSubtype
-//
-// Purpose:
-//   Set ANARI back-end renderer subtype
-//
-// Arguments:
-//   subtype    back-end renderer subtype
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-void
-VisWindow::SetAnariRendererSubtype(const std::string subtype)
-{
-    if(subtype.compare(GetAnariRendererSubtype()) != 0)
-    {
-        rendering->SetAnariRendererSubtype(subtype);
-    }
-}
-
-// ****************************************************************************
-// Method: VisWindow::GetAnariRendererSubtype
-//
-// Purpose:
-//   Returns the ANARI back-end renderer subtype
-//
-// Returns:    the ANARI back-end renderer subtype
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-std::string
-VisWindow::GetAnariRendererSubtype() const
-{
-    return rendering->GetAnariRendererSubtype();
-}
-
-// ****************************************************************************
-// Method: VisWindow::SetUsingUsdDevice
-//
-// Purpose:
-//   Sets the using USD device flag for the USD back-end.
-//
-// Arguments:
-//   val    true if using the USD back-end, otherwise false
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-void
-VisWindow::SetUsingUsdDevice(const bool val)
-{
-    if(val != GetUsingUsdDevice())
-    {
-        rendering->SetUsingUsdDevice(val);
-    }
-}
-
-// ****************************************************************************
-// Method: VisWindow::SetAnariRendererParameters
-//
-// Purpose:
-//   Set the list of string param:value pairs for an ANARI renderer
-//
-// Arguments:
-//   params    the list of string param:value pairs
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-void
-VisWindow::SetAnariRendererParameters(const stringVector &params)
-{
-    if(params != GetAnariRendererParameters())
-    {
-        rendering->SetAnariRendererParameters(params);
-    }
-}
-
-// ****************************************************************************
-// Method: VisWindow::GetAnariRendererParameters
-//
-// Purpose:
-//   Returns the vector of param:value strings for an ANARI renderer
-//
-// Returns:    the vector of param:value strings
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-stringVector
-VisWindow::GetAnariRendererParameters() const
-{
-    return rendering->GetAnariRendererParameters();
-}
-
-// ****************************************************************************
-// Method: VisWindow::SetAnariUSDParameters
-//
-// Purpose:
-//   Set the string param:value pairs for an ANARI USD device
-//
-// Arguments:
-//   params    the string param:value pairs
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-void
-VisWindow::SetAnariUSDParameters(const stringVector &params)
-{
-    if(params != GetAnariUSDParameters())
-    {
-        rendering->SetAnariUSDParameters(params);
-    }
-}
-
-// ****************************************************************************
-// Method: VisWindow::GetAnariUSDParameters
-//
-// Purpose:
-//   Returns the vector of param:value strings for an ANARI USD device
-//
-// Returns:    the vector of param:value strings
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-stringVector
-VisWindow::GetAnariUSDParameters() const
-{
-    return rendering->GetAnariUSDParameters();
-}
-
-// ****************************************************************************
-// Method: VisWindow::GetUsingUsdDevice
-//
-// Purpose:
-//   Gets the using USD device flag for the USD back-end.
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-bool
-VisWindow::GetUsingUsdDevice() const
-{
-    return rendering->GetUsingUsdDevice();
-}
-
 #endif
 
 // ****************************************************************************

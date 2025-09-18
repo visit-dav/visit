@@ -3480,6 +3480,9 @@ ViewerWindowManager::SetViewExtentsType(avtExtentType viewType,
 //    Kathleen Biagas, Thu Aug 14, 2025
 //    Added new RenderingAttributes items: MSAASamples, FXAAOptions.
 //
+//    Kevin Griffin, Wed Sep 10, 2025
+//    Refactored ANARI rendering options into AnariAttributes
+//
 // ****************************************************************************
 
 void
@@ -3630,20 +3633,8 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
 #endif
 
 #ifdef HAVE_ANARI
-    if (windows[index]->GetAnariRendering() != ratts->GetAnariRendering())
-        windows[index]->SetAnariRendering(ratts->GetAnariRendering());
-    if (windows[index]->GetAnariLibraryName().compare(ratts->GetAnariLibrary()) != 0)
-        windows[index]->SetAnariLibraryName(ratts->GetAnariLibrary());
-    if (windows[index]->GetAnariLibrarySubtype().compare(ratts->GetAnariLibrarySubtype()) != 0)
-        windows[index]->SetAnariLibrarySubtype(ratts->GetAnariLibrarySubtype());
-    if (windows[index]->GetAnariRendererSubtype().compare(ratts->GetAnariRendererSubtype()) != 0)
-        windows[index]->SetAnariRendererSubtype(ratts->GetAnariRendererSubtype());
-    if (windows[index]->GetAnariRendererParameters() != ratts->GetAnariRendererParameters())
-        windows[index]->SetAnariRendererParameters(ratts->GetAnariRendererParameters());
-    if (windows[index]->GetAnariUSDParameters() != ratts->GetAnariUSDParameters())
-        windows[index]->SetAnariUSDParameters(ratts->GetAnariUSDParameters());
-    if (windows[index]->GetUsingUsdDevice() != ratts->GetUsingUsdDevice())
-        windows[index]->SetUsingUsdDevice(ratts->GetUsingUsdDevice());
+    if (windows[index]->GetAnariAttributes() != ratts->GetAnariAttributes())
+        windows[index]->SetAnariAttributes(ratts->GetAnariAttributes());
 #endif
 
         // If the updatesEnabled flag was true before we temporarily disabled
@@ -5262,6 +5253,9 @@ ViewerWindowManager::UpdateLightListAtts()
 //   Kathleen Biagas, Thu Aug 14, 2025
 //   Added new RenderingAttributes items: MSAASamples, FXAAOptions.
 //
+//   Kevin Griffin, Wed Sep 10, 2025
+//   Refactored ANARI rendering properties into AnariAttributes
+//
 // ****************************************************************************
 
 void
@@ -5319,13 +5313,7 @@ ViewerWindowManager::UpdateRenderingAtts(int windowIndex)
 #endif
 
 #ifdef HAVE_ANARI
-        GetViewerState()->GetRenderingAttributes()->SetAnariRendering(win->GetAnariRendering());
-        GetViewerState()->GetRenderingAttributes()->SetAnariLibrary(win->GetAnariLibraryName());
-        GetViewerState()->GetRenderingAttributes()->SetAnariLibrarySubtype(win->GetAnariLibrarySubtype());
-        GetViewerState()->GetRenderingAttributes()->SetAnariRendererSubtype(win->GetAnariRendererSubtype());
-        GetViewerState()->GetRenderingAttributes()->SetAnariRendererParameters(win->GetAnariRendererParameters());
-        GetViewerState()->GetRenderingAttributes()->SetAnariUSDParameters(win->GetAnariUSDParameters());
-        GetViewerState()->GetRenderingAttributes()->SetUsingUsdDevice(win->GetUsingUsdDevice());
+        GetViewerState()->GetRenderingAttributes()->SetAnariAttributes(win->GetAnariAttributes());
 #endif
 
         // Tell the client about the new rendering information.
@@ -8242,6 +8230,9 @@ ViewerWindowManager::CreateVisWindow(const int windowIndex,
 //    Kathleen Biagas, Thu Aug 14, 2025
 //    Added new RenderingAttributes items: MSAASamples, FXAAOptions.
 //
+//    Kevin Griffin, Wed Sep 10, 2025
+//    Added AnariAttributes
+//
 // ****************************************************************************
 
 void
@@ -8300,13 +8291,7 @@ ViewerWindowManager::SetWindowAttributes(int windowIndex, bool copyAtts)
 #endif
 
 #ifdef HAVE_ANARI
-    w->SetAnariRendering(GetViewerState()->GetRenderingAttributes()->GetAnariRendering());
-    w->SetAnariLibraryName(GetViewerState()->GetRenderingAttributes()->GetAnariLibrary());
-    w->SetAnariLibrarySubtype(GetViewerState()->GetRenderingAttributes()->GetAnariLibrarySubtype());
-    w->SetAnariRendererSubtype(GetViewerState()->GetRenderingAttributes()->GetAnariRendererSubtype());
-    w->SetAnariRendererParameters(GetViewerState()->GetRenderingAttributes()->GetAnariRendererParameters());
-    w->SetAnariUSDParameters(GetViewerState()->GetRenderingAttributes()->GetAnariUSDParameters());
-    w->SetUsingUsdDevice(GetViewerState()->GetRenderingAttributes()->GetUsingUsdDevice());
+    w->SetAnariAttributes(GetViewerState()->GetRenderingAttributes()->GetAnariAttributes());
 #endif
 }
 

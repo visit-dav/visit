@@ -141,23 +141,7 @@
     <Field name="osprayShadows" label="OSPRay shadows" type="bool">
       false
     </Field>
-    <Field name="anariRendering" label="ANARI Rendering" type="bool">
-      false
-    </Field>
-    <Field name="anariLibrary" label="ANARI Back-end Device" type="string">
-    </Field>
-    <Field name="anariLibrarySubtype" label="ANARI Back-end Device Subtype" type="string">
-      default
-    </Field>
-    <Field name="anariRendererSubtype" label="ANARI Renderer Subtype" type="string">
-      default
-    </Field>
-    <Field name="usingUsdDevice" label="Using USD Device" type="bool">
-      false
-    </Field>
-    <Field name="anariRendererParameters" label="ANARI Renderer Parameters" type="stringVector">
-    </Field>
-    <Field name="anariUSDParameters" label="ANARI USD Parameters" type="stringVector">
+    <Field name="anariAttributes" label="ANARI attributes " type="att" subtype="AnariAttributes">
     </Field>
     <Function name="GetEffectiveScalableThreshold" user="true" member="true">
     </Function>
