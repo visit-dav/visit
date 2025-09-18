@@ -332,8 +332,6 @@ avtOOFUSExpression::CreateArray(vtkDataArray *in1)
     return in1->NewInstance();
 }
 
-// TODO justin this is where I left off reproducing the call chain
-
 // ****************************************************************************
 // ****************************************************************************
 vtkDataArray *
@@ -545,6 +543,7 @@ avtOOFUSExpression::ExecuteData_VTK(avtDataRepresentation *in_dr)
     int npts   = rv->GetNumberOfPoints();
     int ncells = rv->GetNumberOfCells();
     int ntups  = dat->GetNumberOfTuples();
+
     bool isPoint = false;
     if ((ntups == npts) && (ntups == ncells))
     {
@@ -670,7 +669,7 @@ avtOOFUSExpression::ExecuteDataTreeOnThread(avtDataTree_p inDT, avtDataTree_p &o
     avtDataTree_p retDT = ExecuteDataTree(&(inDT->GetDataRepresentation()));
     if (*retDT)
     {
-        outDT = *retDT;
+        outDT = retDT;
     }
 
     UpdateProgress(currentProgress++, totalSteps);
@@ -724,7 +723,7 @@ avtOOFUSExpression::execute_2_electric_boogaloo(avtDataTree_p inDT, avtDataTree_
 //  Method: avtOOFUSExpression::Execute
 //
 //  Purpose:
-//      Labels the connected components of an unstructured mesh.
+//      TODO
 //
 //  Programmer: Justin Privitera
 //  Creation:   August 18, 2025
