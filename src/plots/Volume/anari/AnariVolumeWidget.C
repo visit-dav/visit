@@ -99,6 +99,7 @@ AnariVolumeWidget::AnariVolumeWidget(QvisVolumePlotWindow *qrw,
     : QWidget(parent)
     , renderingWindow(qrw)
     , volumeAttributes(va)
+    , anariAttributes(&(va->GetAnariAttributes()))
     , dynamicLayouts(nullptr)
     , dynamicLayoutMap()
     , topRows(0)
@@ -849,6 +850,33 @@ AnariVolumeWidget::GetParameterInfo(anari::Device device,
 //----------------------------------------------------------------------------
 
 // ****************************************************************************
+// Method: AnariVolumeWidget::UpdateAnariAttributes
+//
+// Purpose:
+//   Updates the ANARI volume widget with the given attributes.
+//
+// Arguments:
+//   attrs the AnariAttributes object containing the new settings
+//
+// Programmer: Kevin Griffin
+// Creation:
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+AnariVolumeWidget::UpdateAnariAttributes(const AnariAttributes &attrs)
+{
+    SetChecked(attrs.GetAnariRendering());
+    UpdateLibraryName(attrs.GetAnariLibrary());
+    UpdateLibrarySubtypes(attrs.GetAnariLibrarySubtype());
+    UpdateRendererSubtypes(attrs.GetAnariRendererSubtype());
+    UpdateRendererParameters(attrs.GetAnariRendererParameters());
+    UpdateUSDParameters(attrs.GetAnariUSDParameters());
+}
+
+// ****************************************************************************
 // Method: AnariVolumeWidget::UpdateLibrarySubtypes
 //
 // Purpose:
@@ -1074,7 +1102,7 @@ AnariVolumeWidget::SetChecked(const bool val)
 void
 AnariVolumeWidget::renderingToggled(bool val)
 {
-    volumeAttributes->SetAnariRendering(val);
+    anariAttributes->SetAnariRendering(val);
     
     if(!val)
     {
@@ -1110,7 +1138,7 @@ AnariVolumeWidget::renderingToggled(bool val)
 void
 AnariVolumeWidget::libraryChanged()
 {
-    volumeAttributes->SetUsingUsdDevice(false);
+    anariAttributes->SetUsingUsdDevice(false);
     std::string libname = libraryName->text().trimmed().toStdString();
     
     if(libname.empty())
@@ -1180,14 +1208,14 @@ AnariVolumeWidget::libraryChanged()
             librarySubtypes->addItem("default");
             librarySubtypes->blockSignals(false);
             auto libSubtype =  librarySubtypes->currentText().toStdString();
-            volumeAttributes->SetAnariLibrarySubtype(libSubtype);
+            anariAttributes->SetAnariLibrarySubtype(libSubtype);
 
             rendererSubtypes->blockSignals(true);
             rendererSubtypes->clear();
             rendererSubtypes->addItem("default");
             rendererSubtypes->blockSignals(false);
             auto rendererSubtype = rendererSubtypes->currentText().toStdString();
-            volumeAttributes->SetAnariRendererSubtype(rendererSubtype);
+            anariAttributes->SetAnariRendererSubtype(rendererSubtype);
 
             // Reset to blank widget
             emit currentBackendChanged(0);
@@ -1217,7 +1245,7 @@ void
 AnariVolumeWidget::librarySubtypeChanged(const QString &subtype)
 {
     auto libSubtype = subtype.toStdString();
-    volumeAttributes->SetAnariLibrarySubtype(libSubtype);
+    anariAttributes->SetAnariLibrarySubtype(libSubtype);
     auto libname = libraryName->text().trimmed().toStdString();
 
     auto anariLibrary = anari::loadLibrary(libname.c_str(), anari_visit::StatusCallback);
@@ -1243,7 +1271,7 @@ AnariVolumeWidget::librarySubtypeChanged(const QString &subtype)
         }
 
         auto rendererSubtype =  rendererSubtypes->currentText().toStdString();
-        volumeAttributes->SetAnariRendererSubtype(rendererSubtype);
+        anariAttributes->SetAnariRendererSubtype(rendererSubtype);
         rendererSubtypes->blockSignals(false);
 
         // Create Dynamic Widget
@@ -1285,7 +1313,7 @@ void
 AnariVolumeWidget::rendererSubtypeChanged(const QString &subtype)
 {
     auto rendererSubtype = subtype.toStdString();
-    volumeAttributes->SetAnariRendererSubtype(rendererSubtype);
+    anariAttributes->SetAnariRendererSubtype(rendererSubtype);
 
     auto libname = libraryName->text().trimmed().toStdString();
     auto libSubtype = librarySubtypes->currentText().toStdString();
@@ -1497,13 +1525,13 @@ AnariVolumeWidget::UpdateRenderingAttributes(const bool updateApply)
         }
     }
 
-    if(!this->volumeAttributes->GetUsingUsdDevice())
+    if(!this->anariAttributes->GetUsingUsdDevice())
     {
-        volumeAttributes->SetAnariRendererParameters(params);
+        anariAttributes->SetAnariRendererParameters(params);
     }
     else
     {
-        volumeAttributes->SetAnariUSDParameters(params);
+        anariAttributes->SetAnariUSDParameters(params);
     }
 
     renderingWindow->SetApply(updateApply);
@@ -1525,8 +1553,8 @@ AnariVolumeWidget::UpdateRenderingAttributes(const bool updateApply)
 void AnariVolumeWidget::ClearAnariParameterAttributes()
 {
     stringVector params;
-    volumeAttributes->SetAnariRendererParameters(params);
-    volumeAttributes->SetAnariUSDParameters(params);
+    anariAttributes->SetAnariRendererParameters(params);
+    anariAttributes->SetAnariUSDParameters(params);
 }
 
 // ****************************************************************************
@@ -1549,16 +1577,16 @@ void AnariVolumeWidget::ClearAnariParameterAttributes()
 void
 AnariVolumeWidget::UpdateLibraryUI(anari::Library anariLibrary, const std::string &libname)
 {
-    volumeAttributes->SetAnariLibrary(libname);
+    anariAttributes->SetAnariLibrary(libname);
     auto backendType = GetBackendType(libname);
 
     if(backendType == BackendType::USD)
     {
-        volumeAttributes->SetUsingUsdDevice(true);
+        anariAttributes->SetUsingUsdDevice(true);
     }
     else
     {
-        volumeAttributes->SetUsingUsdDevice(false);
+        anariAttributes->SetUsingUsdDevice(false);
     }
 
     // Update back-end subtypes
@@ -1580,7 +1608,7 @@ AnariVolumeWidget::UpdateLibraryUI(anari::Library anariLibrary, const std::strin
 
     librarySubtypes->blockSignals(false);
     auto libSubtype =  librarySubtypes->currentText().toStdString();
-    volumeAttributes->SetAnariLibrarySubtype(libSubtype);
+    anariAttributes->SetAnariLibrarySubtype(libSubtype);
 
     auto anariDevice = anari::newDevice(anariLibrary, libSubtype.c_str());
 
@@ -1603,7 +1631,7 @@ AnariVolumeWidget::UpdateLibraryUI(anari::Library anariLibrary, const std::strin
     }
 
     auto rendererSubtype = rendererSubtypes->currentText().toStdString();
-    volumeAttributes->SetAnariRendererSubtype(rendererSubtype);
+    anariAttributes->SetAnariRendererSubtype(rendererSubtype);
     rendererSubtypes->blockSignals(false);
 
     // Create Dynamic Widget
