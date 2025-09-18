@@ -5,7 +5,6 @@
 #ifndef ANARI_VOLUME_WIDGET
 #define ANARI_VOLUME_WIDGET
 
-#include <gui_exports.h>
 #include <QWidget>
 
 #include <anari/anari_cpp.hpp>
@@ -40,7 +39,7 @@ namespace anari_visit
 
 using BackendType = anari_visit::BackendType;
 
-class GUI_API AnariVolumeWidget : public QWidget
+class AnariVolumeWidget : public QWidget
 {
     Q_OBJECT
 public:
