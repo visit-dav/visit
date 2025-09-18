@@ -242,3 +242,33 @@ PseudocolorAttributes::CreateCompatible(const std::string &tname) const
     return retval;
 }
 
+
+Target: xml2python
+Code: PseudocolorAttributes_SetWireframeColorByVar
+Prefix:
+Postfix:
+    if(cval && (cval != obj->data->GetWireframeColorByVar() &&
+                obj->data->GetRenderSurfaces()))
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        PyErr_WarnEx(PyExc_RuntimeWarning,
+                "Cannot color wireframes by var if also rendering surfaces.\n", 0);
+        return PyInt_FromLong(0);
+    }
+
+
+Target: xml2python
+Code: PseudocolorAttributes_SetPointColorByVar
+Prefix:
+Postfix:
+   if(cval && (cval != obj->data->GetPointColorByVar() &&
+                obj->data->GetRenderSurfaces()))
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        PyErr_WarnEx(PyExc_RuntimeWarning,
+                "Cannot color points by var if also rendering surfaces.\n", 0);
+        return PyInt_FromLong(0);
+    }
+

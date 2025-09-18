@@ -36,6 +36,9 @@
 //    Added override methods for SetFullFrameScaling, CreateActorMapperPairs,
 //    and SetLabels.  Added CustomizeMappersInternal.
 //
+//    Kathleen Biagas, Tue Sept 2, 2025
+//    Added wireframeColorByVar and pointsColorByVar and Set methods.
+//
 // ****************************************************************************
 
 class avtPseudocolorMapper : public avtVariableMapper
@@ -47,10 +50,12 @@ class avtPseudocolorMapper : public avtVariableMapper
     void        SetDrawSurface(bool);
     void        SetDrawWireframe(bool);
     void        SetWireframeColor(double rgb[3]);
+    void        SetWireframeColorByVar(bool);
 
     // For points glpyhing
     void        SetDrawPoints(bool);
     void        SetPointsColor(double rgb[3]);
+    void        SetPointsColorByVar(bool);
 
     void        ColorByScalarOn(const std::string &);
     void        ColorByScalarOff(void);
@@ -76,9 +81,11 @@ class avtPseudocolorMapper : public avtVariableMapper
     bool        drawSurface;
     bool        drawWireframe;
     double      wireframeColor[3];
+    bool        wireframeColorByVar;
 
     bool        drawPoints;
     double      pointsColor[3];
+    bool        pointsColorByVar;
     bool        colorByScalar;
     int         spatialDim;
     double      scale;

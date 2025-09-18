@@ -59,6 +59,9 @@ You may set these limits, and turn them on and off, independently of one another
 That is, the use of one limit does not require the use of the other.
 To set a limit, check the **Min** or **Max** check box next to the **Min** or **Max** text field and type a new limit value into the **Min** or **Max** text field.
 
+You can also change the color used for values that lie outside the range you choose.
+Simply check the box **Color for values < min** and/or **Color for values > max** to enable the appropriate color button and select the desired color.
+
 Variable centering
 ''''''''''''''''''
 
@@ -159,10 +162,11 @@ Controls for points are described in :ref:`plot_point_type_and_size`.
 Representation
 ''''''''''''''
 
-By default, the **Pseudocolor** plot renders as a **Surface**.
+By default, the **Pseudocolor** plot renders as a **Surfaces**.
 It can also render in **Wireframe** or **Points** mode.
 Choose the representation by checking one or any combination of the three.
-**Wireframe** and **Points** will be rendered in the color specified by their corresponding Color buttons.  
+**Wireframe** and **Points** can be colored by a single color by selecting the desired color from their corresponding Color buttons, or by the default variable used for the plot.
+The checkbox for coloring by the default variable will only be enabled if **Surfaces** is disabled, because the wireframe or points will otherwise blend into the surface.
 
 Geometry smoothing
 ''''''''''''''''''

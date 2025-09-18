@@ -332,6 +332,8 @@ void PseudocolorAttributes::Init()
     smoothingLevel = 0;
     legendFlag = true;
     lightingFlag = true;
+    wireframeColorByVar = false;
+    pointColorByVar = false;
 
     PseudocolorAttributes::SelectAll();
 }
@@ -405,7 +407,9 @@ void PseudocolorAttributes::Copy(const PseudocolorAttributes &obj)
     legendFlag = obj.legendFlag;
     lightingFlag = obj.lightingFlag;
     wireframeColor = obj.wireframeColor;
+    wireframeColorByVar = obj.wireframeColorByVar;
     pointColor = obj.pointColor;
+    pointColorByVar = obj.pointColorByVar;
 
     PseudocolorAttributes::SelectAll();
 }
@@ -621,7 +625,9 @@ PseudocolorAttributes::operator == (const PseudocolorAttributes &obj) const
             (legendFlag == obj.legendFlag) &&
             (lightingFlag == obj.lightingFlag) &&
             (wireframeColor == obj.wireframeColor) &&
-            (pointColor == obj.pointColor));
+            (wireframeColorByVar == obj.wireframeColorByVar) &&
+            (pointColor == obj.pointColor) &&
+            (pointColorByVar == obj.pointColorByVar));
 }
 
 // ****************************************************************************
@@ -854,7 +860,9 @@ PseudocolorAttributes::SelectAll()
     Select(ID_legendFlag,               (void *)&legendFlag);
     Select(ID_lightingFlag,             (void *)&lightingFlag);
     Select(ID_wireframeColor,           (void *)&wireframeColor);
+    Select(ID_wireframeColorByVar,      (void *)&wireframeColorByVar);
     Select(ID_pointColor,               (void *)&pointColor);
+    Select(ID_pointColorByVar,          (void *)&pointColorByVar);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1205,6 +1213,12 @@ PseudocolorAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
         }
         else
             delete wireframeColorNode;
+    if(completeSave || !FieldsEqual(ID_wireframeColorByVar, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("wireframeColorByVar", wireframeColorByVar));
+    }
+
         DataNode *pointColorNode = new DataNode("pointColor");
         if(pointColor.CreateNode(pointColorNode, completeSave, true))
         {
@@ -1213,6 +1227,12 @@ PseudocolorAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
         }
         else
             delete pointColorNode;
+    if(completeSave || !FieldsEqual(ID_pointColorByVar, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("pointColorByVar", pointColorByVar));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -1493,8 +1513,12 @@ PseudocolorAttributes::SetFromNode(DataNode *parentNode)
         SetLightingFlag(node->AsBool());
     if((node = searchNode->GetNode("wireframeColor")) != 0)
         wireframeColor.SetFromNode(node);
+    if((node = searchNode->GetNode("wireframeColorByVar")) != 0)
+        SetWireframeColorByVar(node->AsBool());
     if((node = searchNode->GetNode("pointColor")) != 0)
         pointColor.SetFromNode(node);
+    if((node = searchNode->GetNode("pointColorByVar")) != 0)
+        SetPointColorByVar(node->AsBool());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1866,10 +1890,24 @@ PseudocolorAttributes::SetWireframeColor(const ColorAttribute &wireframeColor_)
 }
 
 void
+PseudocolorAttributes::SetWireframeColorByVar(bool wireframeColorByVar_)
+{
+    wireframeColorByVar = wireframeColorByVar_;
+    Select(ID_wireframeColorByVar, (void *)&wireframeColorByVar);
+}
+
+void
 PseudocolorAttributes::SetPointColor(const ColorAttribute &pointColor_)
 {
     pointColor = pointColor_;
     Select(ID_pointColor, (void *)&pointColor);
+}
+
+void
+PseudocolorAttributes::SetPointColorByVar(bool pointColorByVar_)
+{
+    pointColorByVar = pointColorByVar_;
+    Select(ID_pointColorByVar, (void *)&pointColorByVar);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2236,6 +2274,12 @@ PseudocolorAttributes::GetWireframeColor()
     return wireframeColor;
 }
 
+bool
+PseudocolorAttributes::GetWireframeColorByVar() const
+{
+    return wireframeColorByVar;
+}
+
 const ColorAttribute &
 PseudocolorAttributes::GetPointColor() const
 {
@@ -2246,6 +2290,12 @@ ColorAttribute &
 PseudocolorAttributes::GetPointColor()
 {
     return pointColor;
+}
+
+bool
+PseudocolorAttributes::GetPointColorByVar() const
+{
+    return pointColorByVar;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2382,7 +2432,9 @@ PseudocolorAttributes::GetFieldName(int index) const
     case ID_legendFlag:               return "legendFlag";
     case ID_lightingFlag:             return "lightingFlag";
     case ID_wireframeColor:           return "wireframeColor";
+    case ID_wireframeColorByVar:      return "wireframeColorByVar";
     case ID_pointColor:               return "pointColor";
+    case ID_pointColorByVar:          return "pointColorByVar";
     default:  return "invalid index";
     }
 }
@@ -2459,7 +2511,9 @@ PseudocolorAttributes::GetFieldType(int index) const
     case ID_legendFlag:               return FieldType_bool;
     case ID_lightingFlag:             return FieldType_bool;
     case ID_wireframeColor:           return FieldType_color;
+    case ID_wireframeColorByVar:      return FieldType_bool;
     case ID_pointColor:               return FieldType_color;
+    case ID_pointColorByVar:          return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -2536,7 +2590,9 @@ PseudocolorAttributes::GetFieldTypeName(int index) const
     case ID_legendFlag:               return "bool";
     case ID_lightingFlag:             return "bool";
     case ID_wireframeColor:           return "color";
+    case ID_wireframeColorByVar:      return "bool";
     case ID_pointColor:               return "color";
+    case ID_pointColorByVar:          return "bool";
     default:  return "invalid index";
     }
 }
@@ -2823,9 +2879,19 @@ PseudocolorAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (wireframeColor == obj.wireframeColor);
         }
         break;
+    case ID_wireframeColorByVar:
+        {  // new scope
+        retval = (wireframeColorByVar == obj.wireframeColorByVar);
+        }
+        break;
     case ID_pointColor:
         {  // new scope
         retval = (pointColor == obj.pointColor);
+        }
+        break;
+    case ID_pointColorByVar:
+        {  // new scope
+        retval = (pointColorByVar == obj.pointColorByVar);
         }
         break;
     default: retval = false;

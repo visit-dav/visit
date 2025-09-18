@@ -201,11 +201,17 @@
         0
         0
       </Field>
+      <Field name="wireframeColorByVar" label="wireframeColorByVar" type="bool">
+        false
+      </Field>
       <Field name="pointColor" label="pointColor" type="color" length="4">
         0
         0
         0
         0
+      </Field>
+      <Field name="pointColorByVar" label="pointColorByVar" type="bool">
+        false
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
