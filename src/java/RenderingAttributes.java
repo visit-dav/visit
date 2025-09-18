@@ -22,13 +22,9 @@ package llnl.visit;
 
 public class RenderingAttributes extends AttributeSubject
 {
-    private static int RenderingAttributes_numAdditionalAtts = 39;
+    private static int RenderingAttributes_numAdditionalAtts = 38;
 
     // Enum values
-    public final static int GEOMETRYREPRESENTATION_SURFACES = 0;
-    public final static int GEOMETRYREPRESENTATION_WIREFRAME = 1;
-    public final static int GEOMETRYREPRESENTATION_POINTS = 2;
-
     public final static int STEREOTYPES_REDBLUE = 0;
     public final static int STEREOTYPES_INTERLACED = 1;
     public final static int STEREOTYPES_CRYSTALEYES = 2;
@@ -70,7 +66,6 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         numberOfPeels = 16;
         multiresolutionMode = false;
         multiresolutionCellSize = 0.002f;
-        geometryRepresentation = GEOMETRYREPRESENTATION_SURFACES;
         stereoRendering = false;
         stereoType = STEREOTYPES_CRYSTALEYES;
         notifyForEachRender = false;
@@ -121,7 +116,6 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         numberOfPeels = 16;
         multiresolutionMode = false;
         multiresolutionCellSize = 0.002f;
-        geometryRepresentation = GEOMETRYREPRESENTATION_SURFACES;
         stereoRendering = false;
         stereoType = STEREOTYPES_CRYSTALEYES;
         notifyForEachRender = false;
@@ -174,7 +168,6 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         numberOfPeels = obj.numberOfPeels;
         multiresolutionMode = obj.multiresolutionMode;
         multiresolutionCellSize = obj.multiresolutionCellSize;
-        geometryRepresentation = obj.geometryRepresentation;
         stereoRendering = obj.stereoRendering;
         stereoType = obj.stereoType;
         notifyForEachRender = obj.notifyForEachRender;
@@ -250,7 +243,6 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
                 (numberOfPeels == obj.numberOfPeels) &&
                 (multiresolutionMode == obj.multiresolutionMode) &&
                 (multiresolutionCellSize == obj.multiresolutionCellSize) &&
-                (geometryRepresentation == obj.geometryRepresentation) &&
                 (stereoRendering == obj.stereoRendering) &&
                 (stereoType == obj.stereoType) &&
                 (notifyForEachRender == obj.notifyForEachRender) &&
@@ -362,88 +354,82 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         Select(13);
     }
 
-    public void SetGeometryRepresentation(int geometryRepresentation_)
-    {
-        geometryRepresentation = geometryRepresentation_;
-        Select(14);
-    }
-
     public void SetStereoRendering(boolean stereoRendering_)
     {
         stereoRendering = stereoRendering_;
-        Select(15);
+        Select(14);
     }
 
     public void SetStereoType(int stereoType_)
     {
         stereoType = stereoType_;
-        Select(16);
+        Select(15);
     }
 
     public void SetNotifyForEachRender(boolean notifyForEachRender_)
     {
         notifyForEachRender = notifyForEachRender_;
-        Select(17);
+        Select(16);
     }
 
     public void SetScalableActivationMode(int scalableActivationMode_)
     {
         scalableActivationMode = scalableActivationMode_;
-        Select(18);
+        Select(17);
     }
 
     public void SetScalableAutoThreshold(int scalableAutoThreshold_)
     {
         scalableAutoThreshold = scalableAutoThreshold_;
-        Select(19);
+        Select(18);
     }
 
     public void SetSpecularFlag(boolean specularFlag_)
     {
         specularFlag = specularFlag_;
-        Select(20);
+        Select(19);
     }
 
     public void SetSpecularCoeff(float specularCoeff_)
     {
         specularCoeff = specularCoeff_;
-        Select(21);
+        Select(20);
     }
 
     public void SetSpecularPower(float specularPower_)
     {
         specularPower = specularPower_;
-        Select(22);
+        Select(21);
     }
 
     public void SetSpecularColor(ColorAttribute specularColor_)
     {
         specularColor = specularColor_;
-        Select(23);
+        Select(22);
     }
 
     public void SetDoShadowing(boolean doShadowing_)
     {
         doShadowing = doShadowing_;
-        Select(24);
+        Select(23);
     }
 
     public void SetShadowStrength(double shadowStrength_)
     {
         shadowStrength = shadowStrength_;
-        Select(25);
+        Select(24);
     }
 
     public void SetDoDepthCueing(boolean doDepthCueing_)
     {
         doDepthCueing = doDepthCueing_;
-        Select(26);
+        Select(25);
     }
 
     public void SetDepthCueingAutomatic(boolean depthCueingAutomatic_)
     {
         depthCueingAutomatic = depthCueingAutomatic_;
-        Select(27);
+        Select(26);
     }
 
     public void SetStartCuePoint(double[] startCuePoint_)
@@ -451,7 +437,7 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         startCuePoint[0] = startCuePoint_[0];
         startCuePoint[1] = startCuePoint_[1];
         startCuePoint[2] = startCuePoint_[2];
-        Select(28);
+        Select(27);
     }
 
     public void SetStartCuePoint(double e0, double e1, double e2)
@@ -459,7 +445,7 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         startCuePoint[0] = e0;
         startCuePoint[1] = e1;
         startCuePoint[2] = e2;
-        Select(28);
+        Select(27);
     }
 
     public void SetEndCuePoint(double[] endCuePoint_)
@@ -467,7 +453,7 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         endCuePoint[0] = endCuePoint_[0];
         endCuePoint[1] = endCuePoint_[1];
         endCuePoint[2] = endCuePoint_[2];
-        Select(29);
+        Select(28);
     }
 
     public void SetEndCuePoint(double e0, double e1, double e2)
@@ -475,61 +461,61 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         endCuePoint[0] = e0;
         endCuePoint[1] = e1;
         endCuePoint[2] = e2;
-        Select(29);
+        Select(28);
     }
 
     public void SetCompressionActivationMode(int compressionActivationMode_)
     {
         compressionActivationMode = compressionActivationMode_;
-        Select(30);
+        Select(29);
     }
 
     public void SetColorTexturingFlag(boolean colorTexturingFlag_)
     {
         colorTexturingFlag = colorTexturingFlag_;
-        Select(31);
+        Select(30);
     }
 
     public void SetCompactDomainsActivationMode(int compactDomainsActivationMode_)
     {
         compactDomainsActivationMode = compactDomainsActivationMode_;
-        Select(32);
+        Select(31);
     }
 
     public void SetCompactDomainsAutoThreshold(int compactDomainsAutoThreshold_)
     {
         compactDomainsAutoThreshold = compactDomainsAutoThreshold_;
-        Select(33);
+        Select(32);
     }
 
     public void SetOsprayRendering(boolean osprayRendering_)
     {
         osprayRendering = osprayRendering_;
-        Select(34);
+        Select(33);
     }
 
     public void SetOspraySPP(int ospraySPP_)
     {
         ospraySPP = ospraySPP_;
-        Select(35);
+        Select(34);
     }
 
     public void SetOsprayAO(int osprayAO_)
     {
         osprayAO = osprayAO_;
-        Select(36);
+        Select(35);
     }
 
     public void SetOsprayShadows(boolean osprayShadows_)
     {
         osprayShadows = osprayShadows_;
-        Select(37);
+        Select(36);
     }
 
     public void SetAnariAttributes(AnariAttributes anariAttributes_)
     {
         anariAttributes = anariAttributes_;
-        Select(38);
+        Select(37);
     }
 
     // Property getting methods
@@ -547,7 +533,6 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
     public int             GetNumberOfPeels() { return numberOfPeels; }
     public boolean         GetMultiresolutionMode() { return multiresolutionMode; }
     public float           GetMultiresolutionCellSize() { return multiresolutionCellSize; }
-    public int             GetGeometryRepresentation() { return geometryRepresentation; }
     public boolean         GetStereoRendering() { return stereoRendering; }
     public int             GetStereoType() { return stereoType; }
     public boolean         GetNotifyForEachRender() { return notifyForEachRender; }
@@ -605,54 +590,52 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         if(WriteSelect(13, buf))
             buf.WriteFloat(multiresolutionCellSize);
         if(WriteSelect(14, buf))
-            buf.WriteInt(geometryRepresentation);
-        if(WriteSelect(15, buf))
             buf.WriteBool(stereoRendering);
-        if(WriteSelect(16, buf))
+        if(WriteSelect(15, buf))
             buf.WriteInt(stereoType);
-        if(WriteSelect(17, buf))
+        if(WriteSelect(16, buf))
             buf.WriteBool(notifyForEachRender);
-        if(WriteSelect(18, buf))
+        if(WriteSelect(17, buf))
             buf.WriteInt(scalableActivationMode);
-        if(WriteSelect(19, buf))
+        if(WriteSelect(18, buf))
             buf.WriteInt(scalableAutoThreshold);
-        if(WriteSelect(20, buf))
+        if(WriteSelect(19, buf))
             buf.WriteBool(specularFlag);
-        if(WriteSelect(21, buf))
+        if(WriteSelect(20, buf))
             buf.WriteFloat(specularCoeff);
-        if(WriteSelect(22, buf))
+        if(WriteSelect(21, buf))
             buf.WriteFloat(specularPower);
-        if(WriteSelect(23, buf))
+        if(WriteSelect(22, buf))
             specularColor.Write(buf);
-        if(WriteSelect(24, buf))
+        if(WriteSelect(23, buf))
             buf.WriteBool(doShadowing);
-        if(WriteSelect(25, buf))
+        if(WriteSelect(24, buf))
             buf.WriteDouble(shadowStrength);
-        if(WriteSelect(26, buf))
+        if(WriteSelect(25, buf))
             buf.WriteBool(doDepthCueing);
-        if(WriteSelect(27, buf))
+        if(WriteSelect(26, buf))
             buf.WriteBool(depthCueingAutomatic);
-        if(WriteSelect(28, buf))
+        if(WriteSelect(27, buf))
             buf.WriteDoubleArray(startCuePoint);
-        if(WriteSelect(29, buf))
+        if(WriteSelect(28, buf))
             buf.WriteDoubleArray(endCuePoint);
-        if(WriteSelect(30, buf))
+        if(WriteSelect(29, buf))
             buf.WriteInt(compressionActivationMode);
-        if(WriteSelect(31, buf))
+        if(WriteSelect(30, buf))
             buf.WriteBool(colorTexturingFlag);
-        if(WriteSelect(32, buf))
+        if(WriteSelect(31, buf))
             buf.WriteInt(compactDomainsActivationMode);
-        if(WriteSelect(33, buf))
+        if(WriteSelect(32, buf))
             buf.WriteInt(compactDomainsAutoThreshold);
-        if(WriteSelect(34, buf))
+        if(WriteSelect(33, buf))
             buf.WriteBool(osprayRendering);
-        if(WriteSelect(35, buf))
+        if(WriteSelect(34, buf))
             buf.WriteInt(ospraySPP);
-        if(WriteSelect(36, buf))
+        if(WriteSelect(35, buf))
             buf.WriteInt(osprayAO);
-        if(WriteSelect(37, buf))
+        if(WriteSelect(36, buf))
             buf.WriteBool(osprayShadows);
-        if(WriteSelect(38, buf))
+        if(WriteSelect(37, buf))
             anariAttributes.Write(buf);
     }
 
@@ -704,81 +687,78 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
             SetMultiresolutionCellSize(buf.ReadFloat());
             break;
         case 14:
-            SetGeometryRepresentation(buf.ReadInt());
-            break;
-        case 15:
             SetStereoRendering(buf.ReadBool());
             break;
-        case 16:
+        case 15:
             SetStereoType(buf.ReadInt());
             break;
-        case 17:
+        case 16:
             SetNotifyForEachRender(buf.ReadBool());
             break;
-        case 18:
+        case 17:
             SetScalableActivationMode(buf.ReadInt());
             break;
-        case 19:
+        case 18:
             SetScalableAutoThreshold(buf.ReadInt());
             break;
-        case 20:
+        case 19:
             SetSpecularFlag(buf.ReadBool());
             break;
-        case 21:
+        case 20:
             SetSpecularCoeff(buf.ReadFloat());
             break;
-        case 22:
+        case 21:
             SetSpecularPower(buf.ReadFloat());
             break;
-        case 23:
+        case 22:
             specularColor.Read(buf);
-            Select(23);
+            Select(22);
             break;
-        case 24:
+        case 23:
             SetDoShadowing(buf.ReadBool());
             break;
-        case 25:
+        case 24:
             SetShadowStrength(buf.ReadDouble());
             break;
-        case 26:
+        case 25:
             SetDoDepthCueing(buf.ReadBool());
             break;
-        case 27:
+        case 26:
             SetDepthCueingAutomatic(buf.ReadBool());
             break;
-        case 28:
+        case 27:
             SetStartCuePoint(buf.ReadDoubleArray());
             break;
-        case 29:
+        case 28:
             SetEndCuePoint(buf.ReadDoubleArray());
             break;
-        case 30:
+        case 29:
             SetCompressionActivationMode(buf.ReadInt());
             break;
-        case 31:
+        case 30:
             SetColorTexturingFlag(buf.ReadBool());
             break;
-        case 32:
+        case 31:
             SetCompactDomainsActivationMode(buf.ReadInt());
             break;
-        case 33:
+        case 32:
             SetCompactDomainsAutoThreshold(buf.ReadInt());
             break;
-        case 34:
+        case 33:
             SetOsprayRendering(buf.ReadBool());
             break;
-        case 35:
+        case 34:
             SetOspraySPP(buf.ReadInt());
             break;
-        case 36:
+        case 35:
             SetOsprayAO(buf.ReadInt());
             break;
-        case 37:
+        case 36:
             SetOsprayShadows(buf.ReadBool());
             break;
-        case 38:
+        case 37:
             anariAttributes.Read(buf);
-            Select(38);
+            Select(37);
             break;
         }
     }
@@ -807,14 +787,6 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         str = str + intToString("numberOfPeels", numberOfPeels, indent) + "\n";
         str = str + boolToString("multiresolutionMode", multiresolutionMode, indent) + "\n";
         str = str + floatToString("multiresolutionCellSize", multiresolutionCellSize, indent) + "\n";
-        str = str + indent + "geometryRepresentation = ";
-        if(geometryRepresentation == GEOMETRYREPRESENTATION_SURFACES)
-            str = str + "GEOMETRYREPRESENTATION_SURFACES";
-        if(geometryRepresentation == GEOMETRYREPRESENTATION_WIREFRAME)
-            str = str + "GEOMETRYREPRESENTATION_WIREFRAME";
-        if(geometryRepresentation == GEOMETRYREPRESENTATION_POINTS)
-            str = str + "GEOMETRYREPRESENTATION_POINTS";
-        str = str + "\n";
         str = str + boolToString("stereoRendering", stereoRendering, indent) + "\n";
         str = str + indent + "stereoType = ";
         if(stereoType == STEREOTYPES_REDBLUE)
@@ -888,7 +860,6 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
     private int             numberOfPeels;
     private boolean         multiresolutionMode;
     private float           multiresolutionCellSize;
-    private int             geometryRepresentation;
     private boolean         stereoRendering;
     private int             stereoType;
     private boolean         notifyForEachRender;

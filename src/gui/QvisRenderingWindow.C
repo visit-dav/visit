@@ -60,11 +60,14 @@
 //   Jeremy Meredith, Fri Apr 30 15:04:34 EDT 2010
 //   Added an automatic start/end setting capability for depth cueing.
 //
-//    Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
-//    Add compact domain options.
+//   Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
+//   Add compact domain options.
 //
-//    Kathleen Biagas, Tue Aug 26, 2025
-//    Init lastAA.
+//   Kathleen Biagas, Tue Aug 26, 2025
+//   Init lastAA.
+//
+//   Kathleen Biagas, Thu Aug 28 15:52:57 PDT 2025
+//   Removed objectRepresentation widget, no longer used.
 //
 // ****************************************************************************
 
@@ -76,7 +79,6 @@ QvisRenderingWindow::QvisRenderingWindow(const QString &caption,
     windowInfo = 0;
     lastAA = 0;
 
-    objectRepresentation = 0;
     stereoType = 0;
     scalrenActivationMode = 0;
     scalrenCompressMode = 0;
@@ -159,6 +161,9 @@ QvisRenderingWindow::~QvisRenderingWindow()
 //   isn't needed for these instances.
 //   Use QGroupBox and QFormLayout to better organize the page.
 //   Add widgets for msaaSamples and fxaa options.
+//
+//   Kathleen Biagas, Thu Aug 28 15:52:57 PDT 2025
+//   Removed objectRepresentation widget, no longer used.
 //
 // ****************************************************************************
 
@@ -509,21 +514,6 @@ QvisRenderingWindow::CreateBasicPage()
     QGridLayout *objLayout = new QGridLayout();
     objLayout->setContentsMargins(10,10,10,10);
     drawObj->setLayout(objLayout);
-
-    objectRepresentation = new QButtonGroup();
-    connect(objectRepresentation, SIGNAL(idClicked(int)),
-            this, SLOT(objectRepresentationChanged(int)));
-
-    QRadioButton *surfaces = new QRadioButton(tr("Surfaces"));
-    objectRepresentation->addButton(surfaces, 0);
-    objLayout->addWidget(surfaces, 0, 0);
-    QRadioButton *wires = new QRadioButton(tr("Wireframe"));
-    objectRepresentation->addButton(wires, 1);
-    objLayout->addWidget(wires, 0, 1);
-    QRadioButton *points = new QRadioButton(tr("Points"));
-    objectRepresentation->addButton(points, 2);
-    objLayout->addWidget(points, 0, 2);
-    objLayout->setSpacing(0);
 
     //
     // Create the stereo widgets.
@@ -1206,12 +1196,6 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             tmp = DoubleToQString(renderAtts->GetMultiresolutionCellSize());
             multiresolutionSmallestCellLineEdit->setText(tmp);
             multiresolutionSmallestCellLineEdit->blockSignals(false);
-            break;
-        case RenderingAttributes::ID_geometryRepresentation:
-            itmp = (int)renderAtts->GetGeometryRepresentation();
-            objectRepresentation->blockSignals(true);
-            objectRepresentation->button(itmp)->setChecked(true);
-            objectRepresentation->blockSignals(false);
             break;
         case RenderingAttributes::ID_stereoRendering:
             stereoToggle->blockSignals(true);
@@ -2384,31 +2368,6 @@ QvisRenderingWindow::processMultiresolutionSmallestCellText()
     }
 }
 
-
-// ****************************************************************************
-// Method: QvisRenderingWindow::objectRepresentationChanged
-//
-// Purpose:
-//   This Qt slot function is called when we change surface representations.
-//
-// Arguments:
-//   val : The new surface representation.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Sep 23 14:53:28 PST 2002
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-QvisRenderingWindow::objectRepresentationChanged(int val)
-{
-    renderAtts->SetGeometryRepresentation(
-        (RenderingAttributes::GeometryRepresentation)val);
-    SetUpdate(false);
-    Apply();
-}
 
 // ****************************************************************************
 // Method: QvisRenderingWindow::stereoToggled

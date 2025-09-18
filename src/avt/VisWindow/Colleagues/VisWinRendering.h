@@ -234,6 +234,9 @@ class VisWindowColleagueProxy;
 //    Kathleen Biagas, Tue Aug 26, 2025
 //    Add MSAAAvailable.
 //
+//    Kathleen Biagas, Thu Aug 28 15:33:26 PDT 2025
+//    Remove SetSurfaceRepresentation, no longer used.
+//
 //    Kevin Griffin, Tue Sep 16, 2025
 //    Switched to using AnariAttributes.
 //
@@ -350,9 +353,6 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
                                  { return stereo; };
     int                      GetStereoType() const
                                  { return stereoType; };
-    virtual void             SetSurfaceRepresentation(int rep);
-    int                      GetSurfaceRepresentation() const
-                                 { return surfaceRepresentation; };
     virtual void             SetSpecularProperties(bool,double,double,
                                                    const ColorAttribute&);
     bool                     GetSpecularFlag() const
@@ -470,7 +470,6 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     FXAAOptions                   fxaaOptions;
     bool                          stereo;
     int                           stereoType;
-    int                           surfaceRepresentation;
     bool                          specularFlag;
     double                        specularCoeff;
     double                        specularPower;

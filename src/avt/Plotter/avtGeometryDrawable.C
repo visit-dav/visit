@@ -534,40 +534,12 @@ avtGeometryDrawable::SetAmbientCoefficient(const double amb)
         mapper->GlobalSetAmbientCoefficient(amb);
 }
 
-// ****************************************************************************
-//  Method: avtGeometryDrawable::SetSurfaceRepresentation
-//
-//  Purpose:
-//      Sets the drawable's surface representation.
-//
-//  Arguments:
-//      rep : The new surface representation.
-//
-//  Programmer: Brad Whitlock
-//  Creation:   Mon Sep 23 15:58:48 PST 2002
-//
-//  Modifications:
-//    Kathleen Bonnell, Sat Oct 19 15:07:04 PDT 2002
-//    Disable lighting for Wireframe and Points representation.
-//
-//    Kathleen Bonnell, Thu Sep  2 11:44:09 PDT 2004
-//    Moved logic into avtMapper so that derived mappers may have a chance
-//    to override the behavior.
-//
-// ****************************************************************************
-
-void
-avtGeometryDrawable::SetSurfaceRepresentation(int rep)
-{
-    if (mapper != NULL)
-        mapper->SetSurfaceRepresentation(rep);
-}
 
 // ****************************************************************************
 //  Method: avtGeometryDrawable::SetSpecularProperties
 //
 //  Purpose:
-//      Sets the drawable's surface representation.
+//      Sets the drawable's specular properties.
 //
 //  Arguments:
 //      flag  :  true to enable specular, false otherwise

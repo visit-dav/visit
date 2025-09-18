@@ -478,6 +478,9 @@ class ViewerPlotList;
 //    Kathleen Biagas, Tue Aug 26, 2025
 //    Add MSAAAvailable.
 //
+//    Kathleen Biagas, Thu Aug 28 15:44:48 PDT 2025
+//    Removed Set/GetSurfaceRepresentation, no longer used.
+//
 //    Kevin Griffin, Tue Sep 9, 2025
 //    Added Set/Get AnariAttributes when built with ANARI support.
 //
@@ -713,8 +716,6 @@ public:
     void SetStereoRendering(bool enabled, int type);
     bool GetStereo() const;
     int  GetStereoType() const;
-    void SetSurfaceRepresentation(int rep);
-    int  GetSurfaceRepresentation() const;
     int  GetNumPrimitives() const;
     long long GetNumberOfCells(bool polysOnly = false) const;
     void SetNotifyForEachRender(bool val);

@@ -60,6 +60,9 @@ typedef void (*OverrideRenderCallback)(void *, avtDataObject_p &);
 //    Carson Brownlee, Fri Jul 27 13:54:29 PDT 2012
 //    Add method for setting the actor.
 //
+//    Kathleen Biagas, Thu Aug 28 15:29:37 PDT 2025
+//    Remove SetSurfaceRepresentation.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtCustomRenderer
@@ -81,10 +84,8 @@ class PLOTTER_API avtCustomRenderer
     virtual void            GlobalLightingOff(void);
     virtual void            GlobalSetAmbientCoefficient(const double); 
 
-    virtual void            SetSurfaceRepresentation(int rep);
     virtual void            SetSpecularProperties(bool,double,double,
                                                   const ColorAttribute&);
-
 
     void                    RegisterOverrideRenderCallback(
                                                OverrideRenderCallback, void *);

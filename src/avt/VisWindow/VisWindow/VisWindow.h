@@ -455,6 +455,9 @@ class VisitInteractor;
 //    Kathleen Biagas, Tue Aug 26, 2025
 //    Add MSAAAvailable.
 //
+//    Kathleen Biagas, Thu Aug 28 15:41:28 PDT 2025
+//    Remove Set/GetSurfaceRepresentation, no longer used.
+//
 //    Kevin Griffin, Tue Sep 9, 2025
 //    Added Set/Get AnariAttributes when built with ANARI support.
 //
@@ -717,8 +720,6 @@ public:
     bool                 GetStereo() const;
     int                  GetStereoType() const;
     bool                 IsDirect(void);
-    void                 SetSurfaceRepresentation(int rep);
-    int                  GetSurfaceRepresentation() const;
     int                  GetNumPrimitives() const;
     void                 SetNotifyForEachRender(bool val);
     bool                 GetNotifyForEachRender() const;

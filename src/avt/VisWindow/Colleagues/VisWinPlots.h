@@ -170,6 +170,9 @@ class avtTransparencyActor;
 //    Kathleen Biagas, Thu Aug  2 13:03:41 MST 2018
 //    Removed AdjustCamera, an ancient code path.
 //
+//    Kathleen Biagas, Thu Aug 28 15:33:26 PDT 2025
+//    Remove SetSurfaceRepresentation, no longer used.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinPlots : public VisWinColleague
@@ -213,8 +216,6 @@ class VISWINDOW_API VisWinPlots : public VisWinColleague
     void                          TurnLightingOn(void);
     void                          TurnLightingOff(void);
     void                          SetAmbientCoefficient(const double);
-
-    virtual void                  SetSurfaceRepresentation(int rep);
 
     virtual void                  SetSpecularProperties(bool,double,double,
                                                         const ColorAttribute&);

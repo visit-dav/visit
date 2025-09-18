@@ -96,6 +96,9 @@ class   ColorAttribute;
 //    Alister Maguire, Tue Jun  5 10:08:59 PDT 2018
 //    Added SetViewScale. 
 //
+//    Kathleen Biagas, Thu Aug 28 15:31:22 PDT 2025
+//    Remove SetSurfaceRepresentation.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtMapperBase : public avtTerminatingDatasetSink
@@ -117,7 +120,6 @@ class PLOTTER_API avtMapperBase : public avtTerminatingDatasetSink
     double                     GetGlobalAmbientCoefficient()
                                    { return globalAmbient; }
 
-
     virtual int                SetTransparencyActor(avtTransparencyActor *) = 0;
 
     void                       SetSpecularIsInappropriate(bool val)
@@ -125,7 +127,6 @@ class PLOTTER_API avtMapperBase : public avtTerminatingDatasetSink
     bool                       GetSpecularIsInappropriate()
                                    { return specularIsInappropriate; }
 
-    virtual void               SetSurfaceRepresentation(int) {;}
     virtual void               SetSpecularProperties(bool,double,double,
                                                      const ColorAttribute&) = 0;
 

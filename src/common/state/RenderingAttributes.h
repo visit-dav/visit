@@ -31,12 +31,6 @@
 class STATE_API RenderingAttributes : public AttributeSubject
 {
 public:
-    enum GeometryRepresentation
-    {
-        Surfaces,
-        Wireframe,
-        Points
-    };
     enum StereoTypes
     {
         RedBlue,
@@ -107,7 +101,6 @@ public:
     void SetNumberOfPeels(int numberOfPeels_);
     void SetMultiresolutionMode(bool multiresolutionMode_);
     void SetMultiresolutionCellSize(float multiresolutionCellSize_);
-    void SetGeometryRepresentation(GeometryRepresentation geometryRepresentation_);
     void SetStereoRendering(bool stereoRendering_);
     void SetStereoType(StereoTypes stereoType_);
     void SetNotifyForEachRender(bool notifyForEachRender_);
@@ -149,7 +142,6 @@ public:
     int                   GetNumberOfPeels() const;
     bool                  GetMultiresolutionMode() const;
     float                 GetMultiresolutionCellSize() const;
-    GeometryRepresentation GetGeometryRepresentation() const;
     bool                  GetStereoRendering() const;
     StereoTypes           GetStereoType() const;
     bool                  GetNotifyForEachRender() const;
@@ -184,11 +176,6 @@ public:
     virtual void SetFromNode(DataNode *node);
 
     // Enum conversion functions
-    static std::string GeometryRepresentation_ToString(GeometryRepresentation);
-    static bool GeometryRepresentation_FromString(const std::string &, GeometryRepresentation &);
-protected:
-    static std::string GeometryRepresentation_ToString(int);
-public:
     static std::string StereoTypes_ToString(StereoTypes);
     static bool StereoTypes_FromString(const std::string &, StereoTypes &);
 protected:
@@ -214,6 +201,7 @@ public:
     // User-defined methods
     static int GetEffectiveScalableThreshold(TriStateMode mode, int autoThreshold);
     static int GetEffectiveCompactDomainsThreshold(TriStateMode mode, int autoThreshold);
+    virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 
     // IDs that can be used to identify fields in case statements
     enum {
@@ -231,7 +219,6 @@ public:
         ID_numberOfPeels,
         ID_multiresolutionMode,
         ID_multiresolutionCellSize,
-        ID_geometryRepresentation,
         ID_stereoRendering,
         ID_stereoType,
         ID_notifyForEachRender,
@@ -274,7 +261,6 @@ private:
     int             numberOfPeels;
     bool            multiresolutionMode;
     float           multiresolutionCellSize;
-    int             geometryRepresentation;
     bool            stereoRendering;
     int             stereoType;
     bool            notifyForEachRender;
@@ -304,6 +290,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define RENDERINGATTRIBUTES_TMFS "ibiabiiiibdibfibibiibffabdbbDDibiibiiba"
+#define RENDERINGATTRIBUTES_TMFS "ibiabiiiibdibfbibiibffabdbbDDibiibiiba"
 
 #endif

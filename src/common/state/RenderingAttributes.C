@@ -15,44 +15,6 @@ const int RenderingAttributes::DEFAULT_COMPACT_DOMAINS_ACTIVATION_MODE = Auto;
 const int RenderingAttributes::DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
 
 //
-// Enum conversion methods for RenderingAttributes::GeometryRepresentation
-//
-
-static const char *GeometryRepresentation_strings[] = {
-"Surfaces", "Wireframe", "Points"
-};
-
-std::string
-RenderingAttributes::GeometryRepresentation_ToString(RenderingAttributes::GeometryRepresentation t)
-{
-    int index = int(t);
-    if(index < 0 || index >= 3) index = 0;
-    return GeometryRepresentation_strings[index];
-}
-
-std::string
-RenderingAttributes::GeometryRepresentation_ToString(int t)
-{
-    int index = (t < 0 || t >= 3) ? 0 : t;
-    return GeometryRepresentation_strings[index];
-}
-
-bool
-RenderingAttributes::GeometryRepresentation_FromString(const std::string &s, RenderingAttributes::GeometryRepresentation &val)
-{
-    val = RenderingAttributes::Surfaces;
-    for(int i = 0; i < 3; ++i)
-    {
-        if(s == GeometryRepresentation_strings[i])
-        {
-            val = (GeometryRepresentation)i;
-            return true;
-        }
-    }
-    return false;
-}
-
-//
 // Enum conversion methods for RenderingAttributes::StereoTypes
 //
 
@@ -196,7 +158,6 @@ void RenderingAttributes::Init()
     numberOfPeels = 16;
     multiresolutionMode = false;
     multiresolutionCellSize = 0.002;
-    geometryRepresentation = Surfaces;
     stereoRendering = false;
     stereoType = CrystalEyes;
     notifyForEachRender = false;
@@ -258,7 +219,6 @@ void RenderingAttributes::Copy(const RenderingAttributes &obj)
     numberOfPeels = obj.numberOfPeels;
     multiresolutionMode = obj.multiresolutionMode;
     multiresolutionCellSize = obj.multiresolutionCellSize;
-    geometryRepresentation = obj.geometryRepresentation;
     stereoRendering = obj.stereoRendering;
     stereoType = obj.stereoType;
     notifyForEachRender = obj.notifyForEachRender;
@@ -472,7 +432,6 @@ RenderingAttributes::operator == (const RenderingAttributes &obj) const
             (numberOfPeels == obj.numberOfPeels) &&
             (multiresolutionMode == obj.multiresolutionMode) &&
             (multiresolutionCellSize == obj.multiresolutionCellSize) &&
-            (geometryRepresentation == obj.geometryRepresentation) &&
             (stereoRendering == obj.stereoRendering) &&
             (stereoType == obj.stereoType) &&
             (notifyForEachRender == obj.notifyForEachRender) &&
@@ -654,7 +613,6 @@ RenderingAttributes::SelectAll()
     Select(ID_numberOfPeels,                (void *)&numberOfPeels);
     Select(ID_multiresolutionMode,          (void *)&multiresolutionMode);
     Select(ID_multiresolutionCellSize,      (void *)&multiresolutionCellSize);
-    Select(ID_geometryRepresentation,       (void *)&geometryRepresentation);
     Select(ID_stereoRendering,              (void *)&stereoRendering);
     Select(ID_stereoType,                   (void *)&stereoType);
     Select(ID_notifyForEachRender,          (void *)&notifyForEachRender);
@@ -799,12 +757,6 @@ RenderingAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
     {
         addToParent = true;
         node->AddNode(new DataNode("multiresolutionCellSize", multiresolutionCellSize));
-    }
-
-    if(completeSave || !FieldsEqual(ID_geometryRepresentation, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("geometryRepresentation", GeometryRepresentation_ToString(geometryRepresentation)));
     }
 
     if(completeSave || !FieldsEqual(ID_stereoRendering, &defaultObject))
@@ -1037,22 +989,6 @@ RenderingAttributes::SetFromNode(DataNode *parentNode)
         SetMultiresolutionMode(node->AsBool());
     if((node = searchNode->GetNode("multiresolutionCellSize")) != 0)
         SetMultiresolutionCellSize(node->AsFloat());
-    if((node = searchNode->GetNode("geometryRepresentation")) != 0)
-    {
-        // Allow enums to be int or string in the config file
-        if(node->GetNodeType() == INT_NODE)
-        {
-            int ival = node->AsInt();
-            if(ival >= 0 && ival < 3)
-                SetGeometryRepresentation(GeometryRepresentation(ival));
-        }
-        else if(node->GetNodeType() == STRING_NODE)
-        {
-            GeometryRepresentation value;
-            if(GeometryRepresentation_FromString(node->AsString(), value))
-                SetGeometryRepresentation(value);
-        }
-    }
     if((node = searchNode->GetNode("stereoRendering")) != 0)
         SetStereoRendering(node->AsBool());
     if((node = searchNode->GetNode("stereoType")) != 0)
@@ -1259,13 +1195,6 @@ RenderingAttributes::SetMultiresolutionCellSize(float multiresolutionCellSize_)
 {
     multiresolutionCellSize = multiresolutionCellSize_;
     Select(ID_multiresolutionCellSize, (void *)&multiresolutionCellSize);
-}
-
-void
-RenderingAttributes::SetGeometryRepresentation(RenderingAttributes::GeometryRepresentation geometryRepresentation_)
-{
-    geometryRepresentation = geometryRepresentation_;
-    Select(ID_geometryRepresentation, (void *)&geometryRepresentation);
 }
 
 void
@@ -1534,12 +1463,6 @@ RenderingAttributes::GetMultiresolutionCellSize() const
     return multiresolutionCellSize;
 }
 
-RenderingAttributes::GeometryRepresentation
-RenderingAttributes::GetGeometryRepresentation() const
-{
-    return GeometryRepresentation(geometryRepresentation);
-}
-
 bool
 RenderingAttributes::GetStereoRendering() const
 {
@@ -1780,7 +1703,6 @@ RenderingAttributes::GetFieldName(int index) const
     case ID_numberOfPeels:                return "numberOfPeels";
     case ID_multiresolutionMode:          return "multiresolutionMode";
     case ID_multiresolutionCellSize:      return "multiresolutionCellSize";
-    case ID_geometryRepresentation:       return "geometryRepresentation";
     case ID_stereoRendering:              return "stereoRendering";
     case ID_stereoType:                   return "stereoType";
     case ID_notifyForEachRender:          return "notifyForEachRender";
@@ -1843,7 +1765,6 @@ RenderingAttributes::GetFieldType(int index) const
     case ID_numberOfPeels:                return FieldType_int;
     case ID_multiresolutionMode:          return FieldType_bool;
     case ID_multiresolutionCellSize:      return FieldType_float;
-    case ID_geometryRepresentation:       return FieldType_enum;
     case ID_stereoRendering:              return FieldType_bool;
     case ID_stereoType:                   return FieldType_enum;
     case ID_notifyForEachRender:          return FieldType_bool;
@@ -1906,7 +1827,6 @@ RenderingAttributes::GetFieldTypeName(int index) const
     case ID_numberOfPeels:                return "int";
     case ID_multiresolutionMode:          return "bool";
     case ID_multiresolutionCellSize:      return "float";
-    case ID_geometryRepresentation:       return "enum";
     case ID_stereoRendering:              return "bool";
     case ID_stereoType:                   return "enum";
     case ID_notifyForEachRender:          return "bool";
@@ -2025,11 +1945,6 @@ RenderingAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_multiresolutionCellSize:
         {  // new scope
         retval = (multiresolutionCellSize == obj.multiresolutionCellSize);
-        }
-        break;
-    case ID_geometryRepresentation:
-        {  // new scope
-        retval = (geometryRepresentation == obj.geometryRepresentation);
         }
         break;
     case ID_stereoRendering:
@@ -2194,5 +2109,51 @@ int RenderingAttributes::GetEffectiveCompactDomainsThreshold(TriStateMode mode, 
         return autoThreshold;
     else
         return -1;
+}
+
+// ****************************************************************************
+// Method: RenderingAttributes::ProcessOldVersions
+//
+// Purpose:
+//   This method allows handling of older config/session files that may
+//   contain fields that are no longer present or have been modified/renamed.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   Aug 28, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+#include <visit-config.h>
+#ifdef VIEWER
+#include <avtCallback.h>
+#endif
+
+void
+RenderingAttributes::ProcessOldVersions(DataNode *parentNode,
+                                         const char *configVersion)
+{
+#if VISIT_OBSOLETE_AT_VERSION(3,6,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("RenderingAttributes");
+    if(searchNode == 0)
+        return;
+
+    if (VersionLessThan(configVersion, "3.5.0"))
+    {
+        DataNode *k = 0;
+        if ((k = searchNode->GetNode("geometryRepresentation")) != 0)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("geometryRepresentation", "3.6.0"));
+#endif
+            searchNode->RemoveNode(k);
+        }
+    }
+#endif
 }
 

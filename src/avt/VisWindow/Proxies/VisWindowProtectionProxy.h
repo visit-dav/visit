@@ -146,6 +146,9 @@ class AnariAttributes;
 //    Kathleen Biagas, Monday July 28, 2025
 //    Antialiasing is now an int (enum).
 //
+//    Kathleen Biagas, Thu Aug 28 15:39:06 PDT 2025
+//    Remove ProxiedGetSurfaceRepresentation, no longer used.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowProtectionProxy
@@ -205,7 +208,6 @@ class VISWINDOW_API VisWindowProtectionProxy
     double              ProxiedGetAmbientCoefficient();
     bool                ProxiedGetLighting();
     void                ProxiedUpdateLightPositions();
-    int                 ProxiedGetSurfaceRepresentation();
     bool                ProxiedDisableExternalRenderRequests(bool bClearImage = false);
     bool                ProxiedEnableExternalRenderRequests();
     void                ProxiedGetScaleFactorAndType(double &s, int &t);
