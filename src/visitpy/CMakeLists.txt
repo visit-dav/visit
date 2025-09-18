@@ -70,6 +70,9 @@
 #  Kathleen Biagas, Thu Aug 14, 2025
 #  Add FXAAOptions.
 #
+#  Kevin Griffin, Wed Sep 10, 2025
+#  Add AnariAttributes.
+#
 #****************************************************************************
 
 #########################################################
@@ -129,6 +132,7 @@ SET(PY_GEN_METADATA_OBJECTS
 #####################
 
 SET(PY_GEN_STATE_OBJECTS
+    AnariAttributes
     AnimationAttributes
     AnnotationAttributes
     Axes2D
@@ -290,6 +294,7 @@ visitpy/PyavtVectorMetaData.C
 
 
 SET(GENERATED_PY_SOURCES
+visitpy/PyAnariAttributes.C
 visitpy/PyAnimationAttributes.C 
 visitpy/PyAnnotationAttributes.C 
 visitpy/PyAxes2D.C 

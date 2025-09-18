@@ -39,6 +39,10 @@
 #include <LineoutInfo.h>
 #include <VisualCueInfo.h>
 
+#ifdef HAVE_ANARI
+#include <AnariAttributes.h>
+#endif
+
 class vtkCallbackCommand;
 class vtkRenderer;
 class vtkCamera;
@@ -454,6 +458,9 @@ class VisitInteractor;
 //    Kathleen Biagas, Thu Aug 28 15:41:28 PDT 2025
 //    Remove Set/GetSurfaceRepresentation, no longer used.
 //
+//    Kevin Griffin, Tue Sep 9, 2025
+//    Added Set/Get AnariAttributes when built with ANARI support.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -738,20 +745,8 @@ public:
     bool                 GetOsprayShadows() const;
 #endif
 #ifdef HAVE_ANARI
-    void                SetAnariRendering(const bool);
-    bool                GetAnariRendering() const;
-    void                SetAnariLibraryName(const std::string);
-    std::string         GetAnariLibraryName() const;
-    void                SetAnariLibrarySubtype(const std::string);
-    std::string         GetAnariLibrarySubtype() const;
-    void                SetAnariRendererSubtype(const std::string);
-    std::string         GetAnariRendererSubtype() const;
-    void                SetAnariRendererParameters(const stringVector &);
-    stringVector        GetAnariRendererParameters() const;
-    void                SetAnariUSDParameters(const stringVector &);
-    stringVector        GetAnariUSDParameters() const;
-    void                SetUsingUsdDevice(const bool);
-    bool                GetUsingUsdDevice() const;
+    void                 SetAnariAttributes(const AnariAttributes &);
+    const AnariAttributes &GetAnariAttributes() const;
 #endif
     void                 SetSpecularProperties(bool,double,double,
                                                const ColorAttribute&);

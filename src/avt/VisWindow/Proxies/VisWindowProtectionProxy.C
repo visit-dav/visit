@@ -1225,129 +1225,20 @@ VisWindowProtectionProxy::ProxiedGetOsprayShadows()
 
 #ifdef HAVE_ANARI
 // ****************************************************************************
-// Method: VisWindowProtectionProxy::ProxiedGetAnariRendering
+// Method: VisWindowProtectionProxy::ProxiedGetAnariAttributes
 //
-// Purpose:     Get the ANARI rendering flag
+// Purpose:     Get the ANARI attributes
 //
-// Returns:     true if ANARI rendering is selected, false otherwise
-//
-// Programmer:  Kevin Griffin
-// Creation:    Wed 30 Mar 2022 03:43:48 PM PDT
-//
-// ****************************************************************************
-
-bool
-VisWindowProtectionProxy::ProxiedGetAnariRendering()
-{
-    return viswin->GetAnariRendering();
-}
-
-// ****************************************************************************
-// Method: VisWindowProtectionProxy::ProxiedGetAnariLibraryName
-//
-// Purpose:     Get ANARI back-end library name
-//
-// Returns:     back-end library name
+// Returns:     A const reference to the ANARI attributes
 //
 // Programmer:  Kevin Griffin
 // Creation:    Wed 30 Mar 2022 03:43:48 PM PDT
 //
 // ****************************************************************************
 
-std::string
-VisWindowProtectionProxy::ProxiedGetAnariLibraryName()
+const AnariAttributes &
+VisWindowProtectionProxy::ProxiedGetAnariAttributes()
 {
-    return viswin->GetAnariLibraryName();
-}
-
-// ****************************************************************************
-// Method: VisWindowProtectionProxy::ProxiedGetAnariLibrarySubtype
-//
-// Purpose:     Get ANARI back-end library subtype name
-//
-// Returns:     back-end library subtype name
-//
-// Programmer:  Kevin Griffin
-// Creation:    Wed 30 Mar 2022 03:43:48 PM PDT
-//
-// ****************************************************************************
-
-std::string
-VisWindowProtectionProxy::ProxiedGetAnariLibrarySubtype()
-{
-    return viswin->GetAnariLibrarySubtype();
-}
-
-// ****************************************************************************
-// Method: VisWindowProtectionProxy::ProxiedGetAnariRendererSubtype
-//
-// Purpose:     Get ANARI back-end renderer subtype name
-//
-// Returns:     back-end renderer subtype name
-//
-// Programmer:  Kevin Griffin
-// Creation:    Wed 30 Mar 2022 03:43:48 PM PDT
-//
-// ****************************************************************************
-
-std::string
-VisWindowProtectionProxy::ProxiedGetAnariRendererSubtype()
-{
-    return viswin->GetAnariRendererSubtype();
-}
-
-// ****************************************************************************
-// Method: VisWindowProtectionProxy::ProxiedGetAnariRendererParameters
-//
-// Purpose:     Get the list of ANARI renderer parameters in the form of
-//              param;value.
-//
-// Returns:     list of ANARI renderer parameters
-//
-// Programmer:  Kevin Griffin
-// Creation:    Wed 30 Mar 2022 03:43:48 PM PDT
-//
-// ****************************************************************************
-
-stringVector
-VisWindowProtectionProxy::ProxiedGetAnariRendererParameters()
-{
-    return viswin->GetAnariRendererParameters();
-}
-
-// ****************************************************************************
-// Method: VisWindowProtectionProxy::ProxiedGetAnariUSDParameters
-//
-// Purpose:     Get the list of ANARI USD parameters in the form of param;value.
-//
-// Returns:     list of ANARI USD parameters
-//
-// Programmer:  Kevin Griffin
-// Creation:    Wed 30 Mar 2022 03:43:48 PM PDT
-//
-// ****************************************************************************
-
-stringVector
-VisWindowProtectionProxy::ProxiedGetAnariUSDParameters()
-{
-    return viswin->GetAnariUSDParameters();
-}
-
-// ****************************************************************************
-// Method: VisWindowProtectionProxy::ProxiedGetUsingUsdDevice
-//
-// Purpose:     Get the using USD device flag.
-//
-// Returns:     true if using the USD device, otherwise false
-//
-// Programmer:  Kevin Griffin
-// Creation:    Wed 30 Mar 2022 03:43:48 PM PDT
-//
-// ****************************************************************************
-
-bool
-VisWindowProtectionProxy::ProxiedGetUsingUsdDevice()
-{
-    return viswin->GetUsingUsdDevice();
+    return viswin->GetAnariAttributes();
 }
 #endif

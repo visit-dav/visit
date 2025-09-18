@@ -6760,6 +6760,9 @@ NetworkManager::CalculateCellCountTotal(vector<long long> &cellCounts,
 //    Kevin Griffin, Wed 05 Mar 2025 11:59:26 AM CST
 //    Pass the Anari settings to the render window.
 //
+//    Kevin Griffin, Tue 09 Sep 2025 12:25:03 AM CST
+//    Refactored to pass the AnariAttributes class to the render window.
+//
 // ****************************************************************************
 
 void
@@ -6812,13 +6815,7 @@ NetworkManager::RenderSetup(avtImageType imgT, int windowID, intVector& plotIds,
 #endif
 
 #ifdef HAVE_ANARI
-    renderState.window->SetAnariRendering(renderAtts.GetAnariRendering());
-    renderState.window->SetAnariLibraryName(renderAtts.GetAnariLibrary());
-    renderState.window->SetAnariLibrarySubtype(renderAtts.GetAnariLibrarySubtype());
-    renderState.window->SetAnariRendererSubtype(renderAtts.GetAnariRendererSubtype());
-    renderState.window->SetAnariRendererParameters(renderAtts.GetAnariRendererParameters());
-    renderState.window->SetAnariUSDParameters(renderAtts.GetAnariUSDParameters());
-    renderState.window->SetUsingUsdDevice(renderAtts.GetUsingUsdDevice());
+    renderState.window->SetAnariAttributes(renderAtts.GetAnariAttributes());
 #endif
 
     // Apply any rendering-related changes to the annotation attributes.

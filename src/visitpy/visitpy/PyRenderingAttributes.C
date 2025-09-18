@@ -9,6 +9,7 @@
 #include <Py2and3Support.h>
 #include <PyFXAAOptions.h>
 #include <ColorAttribute.h>
+#include <PyAnariAttributes.h>
 
 // ****************************************************************************
 // Module: PyRenderingAttributes
@@ -273,53 +274,10 @@ PyRenderingAttributes_ToString(const RenderingAttributes *atts, const char *pref
     else
         snprintf(tmpStr, 1000, "%sosprayShadows = 0\n", prefix);
     str += tmpStr;
-    if(atts->GetAnariRendering())
-        snprintf(tmpStr, 1000, "%sanariRendering = 1\n", prefix);
-    else
-        snprintf(tmpStr, 1000, "%sanariRendering = 0\n", prefix);
-    str += tmpStr;
-    snprintf(tmpStr, 1000, "%sanariLibrary = \"%s\"\n", prefix, atts->GetAnariLibrary().c_str());
-    str += tmpStr;
-    snprintf(tmpStr, 1000, "%sanariLibrarySubtype = \"%s\"\n", prefix, atts->GetAnariLibrarySubtype().c_str());
-    str += tmpStr;
-    snprintf(tmpStr, 1000, "%sanariRendererSubtype = \"%s\"\n", prefix, atts->GetAnariRendererSubtype().c_str());
-    str += tmpStr;
-    if(atts->GetUsingUsdDevice())
-        snprintf(tmpStr, 1000, "%susingUsdDevice = 1\n", prefix);
-    else
-        snprintf(tmpStr, 1000, "%susingUsdDevice = 0\n", prefix);
-    str += tmpStr;
-    {   const stringVector &anariRendererParameters = atts->GetAnariRendererParameters();
-        snprintf(tmpStr, 1000, "%sanariRendererParameters = (", prefix);
-        str += tmpStr;
-        for(size_t i = 0; i < anariRendererParameters.size(); ++i)
-        {
-            snprintf(tmpStr, 1000, "\"%s\"", anariRendererParameters[i].c_str());
-            str += tmpStr;
-            if(i < anariRendererParameters.size() - 1)
-            {
-                snprintf(tmpStr, 1000, ", ");
-                str += tmpStr;
-            }
-        }
-        snprintf(tmpStr, 1000, ")\n");
-        str += tmpStr;
-    }
-    {   const stringVector &anariUSDParameters = atts->GetAnariUSDParameters();
-        snprintf(tmpStr, 1000, "%sanariUSDParameters = (", prefix);
-        str += tmpStr;
-        for(size_t i = 0; i < anariUSDParameters.size(); ++i)
-        {
-            snprintf(tmpStr, 1000, "\"%s\"", anariUSDParameters[i].c_str());
-            str += tmpStr;
-            if(i < anariUSDParameters.size() - 1)
-            {
-                snprintf(tmpStr, 1000, ", ");
-                str += tmpStr;
-            }
-        }
-        snprintf(tmpStr, 1000, ")\n");
-        str += tmpStr;
+    { // new scope
+        std::string objPrefix(prefix);
+        objPrefix += "anariAttributes.";
+        str += PyAnariAttributes_ToString(&atts->GetAnariAttributes(), objPrefix.c_str(), forLogging);
     }
     return str;
 }
@@ -2608,407 +2566,35 @@ RenderingAttributes_GetOsprayShadows(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-RenderingAttributes_SetAnariRendering(PyObject *self, PyObject *args)
+RenderingAttributes_SetAnariAttributes(PyObject *self, PyObject *args)
 {
     PyRenderingAttributesObject *obj = (PyRenderingAttributesObject *)self;
 
-    PyObject *packaged_args = 0;
+    PyObject *newValue = NULL;
+    if(!PyArg_ParseTuple(args, "O", &newValue))
+        return NULL;
+    if(!PyAnariAttributes_Check(newValue))
+        return PyErr_Format(PyExc_TypeError, "Field anariAttributes can be set only with AnariAttributes objects");
 
-    // Handle args packaged into a tuple of size one
-    // if we think the unpackaged args matches our needs
-    if (PySequence_Check(args) && PySequence_Size(args) == 1)
-    {
-        packaged_args = PySequence_GetItem(args, 0);
-        if (PyNumber_Check(packaged_args))
-            args = packaged_args;
-    }
-
-    if (PySequence_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
-    }
-
-    if (!PyNumber_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
-    }
-
-    long val = PyLong_AsLong(args);
-    bool cval = bool(val);
-
-    if (val == -1 && PyErr_Occurred())
-    {
-        Py_XDECREF(packaged_args);
-        PyErr_Clear();
-        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
-    }
-    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
-    }
-
-    Py_XDECREF(packaged_args);
-
-    // Set the anariRendering in the object.
-    obj->data->SetAnariRendering(cval);
+    obj->data->SetAnariAttributes(*PyAnariAttributes_FromPyObject(newValue));
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-RenderingAttributes_GetAnariRendering(PyObject *self, PyObject *args)
+RenderingAttributes_GetAnariAttributes(PyObject *self, PyObject *args)
 {
     PyRenderingAttributesObject *obj = (PyRenderingAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetAnariRendering()?1L:0L);
-    return retval;
-}
+    // Since the new object will point to data owned by this object,
+    // we need to increment the reference count.
+    Py_INCREF(self);
 
-/*static*/ PyObject *
-RenderingAttributes_SetAnariLibrary(PyObject *self, PyObject *args)
-{
-    PyRenderingAttributesObject *obj = (PyRenderingAttributesObject *)self;
+    PyObject *retval = PyAnariAttributes_Wrap(&obj->data->GetAnariAttributes());
+    // Set the object's parent so the reference to the parent can be decref'd
+    // when the child goes out of scope.
+    PyAnariAttributes_SetParent(retval, self);
 
-    PyObject *packaged_args = 0;
-
-    // Handle args packaged as first member of a tuple of size one
-    // if we think the unpackaged args matches our needs
-    if (PySequence_Check(args) && PySequence_Size(args) == 1)
-    {
-        packaged_args = PySequence_GetItem(args, 0);
-        if (PyUnicode_Check(packaged_args))
-            args = packaged_args;
-    }
-
-    if (!PyUnicode_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
-    }
-
-    char const *val = PyUnicode_AsUTF8(args);
-    std::string cval = std::string(val);
-
-    if (val == 0 && PyErr_Occurred())
-    {
-        Py_XDECREF(packaged_args);
-        PyErr_Clear();
-        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
-    }
-
-    Py_XDECREF(packaged_args);
-
-    // Set the anariLibrary in the object.
-    obj->data->SetAnariLibrary(cval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-RenderingAttributes_GetAnariLibrary(PyObject *self, PyObject *args)
-{
-    PyRenderingAttributesObject *obj = (PyRenderingAttributesObject *)self;
-    PyObject *retval = PyString_FromString(obj->data->GetAnariLibrary().c_str());
-    return retval;
-}
-
-/*static*/ PyObject *
-RenderingAttributes_SetAnariLibrarySubtype(PyObject *self, PyObject *args)
-{
-    PyRenderingAttributesObject *obj = (PyRenderingAttributesObject *)self;
-
-    PyObject *packaged_args = 0;
-
-    // Handle args packaged as first member of a tuple of size one
-    // if we think the unpackaged args matches our needs
-    if (PySequence_Check(args) && PySequence_Size(args) == 1)
-    {
-        packaged_args = PySequence_GetItem(args, 0);
-        if (PyUnicode_Check(packaged_args))
-            args = packaged_args;
-    }
-
-    if (!PyUnicode_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
-    }
-
-    char const *val = PyUnicode_AsUTF8(args);
-    std::string cval = std::string(val);
-
-    if (val == 0 && PyErr_Occurred())
-    {
-        Py_XDECREF(packaged_args);
-        PyErr_Clear();
-        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
-    }
-
-    Py_XDECREF(packaged_args);
-
-    // Set the anariLibrarySubtype in the object.
-    obj->data->SetAnariLibrarySubtype(cval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-RenderingAttributes_GetAnariLibrarySubtype(PyObject *self, PyObject *args)
-{
-    PyRenderingAttributesObject *obj = (PyRenderingAttributesObject *)self;
-    PyObject *retval = PyString_FromString(obj->data->GetAnariLibrarySubtype().c_str());
-    return retval;
-}
-
-/*static*/ PyObject *
-RenderingAttributes_SetAnariRendererSubtype(PyObject *self, PyObject *args)
-{
-    PyRenderingAttributesObject *obj = (PyRenderingAttributesObject *)self;
-
-    PyObject *packaged_args = 0;
-
-    // Handle args packaged as first member of a tuple of size one
-    // if we think the unpackaged args matches our needs
-    if (PySequence_Check(args) && PySequence_Size(args) == 1)
-    {
-        packaged_args = PySequence_GetItem(args, 0);
-        if (PyUnicode_Check(packaged_args))
-            args = packaged_args;
-    }
-
-    if (!PyUnicode_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
-    }
-
-    char const *val = PyUnicode_AsUTF8(args);
-    std::string cval = std::string(val);
-
-    if (val == 0 && PyErr_Occurred())
-    {
-        Py_XDECREF(packaged_args);
-        PyErr_Clear();
-        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
-    }
-
-    Py_XDECREF(packaged_args);
-
-    // Set the anariRendererSubtype in the object.
-    obj->data->SetAnariRendererSubtype(cval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-RenderingAttributes_GetAnariRendererSubtype(PyObject *self, PyObject *args)
-{
-    PyRenderingAttributesObject *obj = (PyRenderingAttributesObject *)self;
-    PyObject *retval = PyString_FromString(obj->data->GetAnariRendererSubtype().c_str());
-    return retval;
-}
-
-/*static*/ PyObject *
-RenderingAttributes_SetUsingUsdDevice(PyObject *self, PyObject *args)
-{
-    PyRenderingAttributesObject *obj = (PyRenderingAttributesObject *)self;
-
-    PyObject *packaged_args = 0;
-
-    // Handle args packaged into a tuple of size one
-    // if we think the unpackaged args matches our needs
-    if (PySequence_Check(args) && PySequence_Size(args) == 1)
-    {
-        packaged_args = PySequence_GetItem(args, 0);
-        if (PyNumber_Check(packaged_args))
-            args = packaged_args;
-    }
-
-    if (PySequence_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
-    }
-
-    if (!PyNumber_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
-    }
-
-    long val = PyLong_AsLong(args);
-    bool cval = bool(val);
-
-    if (val == -1 && PyErr_Occurred())
-    {
-        Py_XDECREF(packaged_args);
-        PyErr_Clear();
-        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
-    }
-    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
-    }
-
-    Py_XDECREF(packaged_args);
-
-    // Set the usingUsdDevice in the object.
-    obj->data->SetUsingUsdDevice(cval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-RenderingAttributes_GetUsingUsdDevice(PyObject *self, PyObject *args)
-{
-    PyRenderingAttributesObject *obj = (PyRenderingAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetUsingUsdDevice()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
-RenderingAttributes_SetAnariRendererParameters(PyObject *self, PyObject *args)
-{
-    PyRenderingAttributesObject *obj = (PyRenderingAttributesObject *)self;
-
-    stringVector vec;
-
-    if (PyUnicode_Check(args))
-    {
-        char const *val = PyUnicode_AsUTF8(args);
-        std::string cval = std::string(val);
-        if (val == 0 && PyErr_Occurred())
-        {
-            PyErr_Clear();
-            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
-        }
-        vec.resize(1);
-        vec[0] = cval;
-    }
-    else if (PySequence_Check(args))
-    {
-        vec.resize(PySequence_Size(args));
-        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
-        {
-            PyObject *item = PySequence_GetItem(args, i);
-
-            if (!PyUnicode_Check(item))
-            {
-                Py_DECREF(item);
-                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
-            }
-
-            char const *val = PyUnicode_AsUTF8(item);
-            std::string cval = std::string(val);
-
-            if (val == 0 && PyErr_Occurred())
-            {
-                Py_DECREF(item);
-                PyErr_Clear();
-                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
-            }
-            Py_DECREF(item);
-
-            vec[i] = cval;
-        }
-    }
-    else
-        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
-
-    obj->data->GetAnariRendererParameters() = vec;
-    // Mark the anariRendererParameters in the object as modified.
-    obj->data->SelectAnariRendererParameters();
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-RenderingAttributes_GetAnariRendererParameters(PyObject *self, PyObject *args)
-{
-    PyRenderingAttributesObject *obj = (PyRenderingAttributesObject *)self;
-    // Allocate a tuple the with enough entries to hold the anariRendererParameters.
-    const stringVector &anariRendererParameters = obj->data->GetAnariRendererParameters();
-    PyObject *retval = PyTuple_New(anariRendererParameters.size());
-    for(size_t i = 0; i < anariRendererParameters.size(); ++i)
-        PyTuple_SET_ITEM(retval, i, PyString_FromString(anariRendererParameters[i].c_str()));
-    return retval;
-}
-
-/*static*/ PyObject *
-RenderingAttributes_SetAnariUSDParameters(PyObject *self, PyObject *args)
-{
-    PyRenderingAttributesObject *obj = (PyRenderingAttributesObject *)self;
-
-    stringVector vec;
-
-    if (PyUnicode_Check(args))
-    {
-        char const *val = PyUnicode_AsUTF8(args);
-        std::string cval = std::string(val);
-        if (val == 0 && PyErr_Occurred())
-        {
-            PyErr_Clear();
-            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
-        }
-        vec.resize(1);
-        vec[0] = cval;
-    }
-    else if (PySequence_Check(args))
-    {
-        vec.resize(PySequence_Size(args));
-        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
-        {
-            PyObject *item = PySequence_GetItem(args, i);
-
-            if (!PyUnicode_Check(item))
-            {
-                Py_DECREF(item);
-                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
-            }
-
-            char const *val = PyUnicode_AsUTF8(item);
-            std::string cval = std::string(val);
-
-            if (val == 0 && PyErr_Occurred())
-            {
-                Py_DECREF(item);
-                PyErr_Clear();
-                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
-            }
-            Py_DECREF(item);
-
-            vec[i] = cval;
-        }
-    }
-    else
-        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
-
-    obj->data->GetAnariUSDParameters() = vec;
-    // Mark the anariUSDParameters in the object as modified.
-    obj->data->SelectAnariUSDParameters();
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-RenderingAttributes_GetAnariUSDParameters(PyObject *self, PyObject *args)
-{
-    PyRenderingAttributesObject *obj = (PyRenderingAttributesObject *)self;
-    // Allocate a tuple the with enough entries to hold the anariUSDParameters.
-    const stringVector &anariUSDParameters = obj->data->GetAnariUSDParameters();
-    PyObject *retval = PyTuple_New(anariUSDParameters.size());
-    for(size_t i = 0; i < anariUSDParameters.size(); ++i)
-        PyTuple_SET_ITEM(retval, i, PyString_FromString(anariUSDParameters[i].c_str()));
     return retval;
 }
 
@@ -3089,20 +2675,8 @@ PyMethodDef PyRenderingAttributes_methods[RENDERINGATTRIBUTES_NMETH] = {
     {"GetOsprayAO", RenderingAttributes_GetOsprayAO, METH_VARARGS},
     {"SetOsprayShadows", RenderingAttributes_SetOsprayShadows, METH_VARARGS},
     {"GetOsprayShadows", RenderingAttributes_GetOsprayShadows, METH_VARARGS},
-    {"SetAnariRendering", RenderingAttributes_SetAnariRendering, METH_VARARGS},
-    {"GetAnariRendering", RenderingAttributes_GetAnariRendering, METH_VARARGS},
-    {"SetAnariLibrary", RenderingAttributes_SetAnariLibrary, METH_VARARGS},
-    {"GetAnariLibrary", RenderingAttributes_GetAnariLibrary, METH_VARARGS},
-    {"SetAnariLibrarySubtype", RenderingAttributes_SetAnariLibrarySubtype, METH_VARARGS},
-    {"GetAnariLibrarySubtype", RenderingAttributes_GetAnariLibrarySubtype, METH_VARARGS},
-    {"SetAnariRendererSubtype", RenderingAttributes_SetAnariRendererSubtype, METH_VARARGS},
-    {"GetAnariRendererSubtype", RenderingAttributes_GetAnariRendererSubtype, METH_VARARGS},
-    {"SetUsingUsdDevice", RenderingAttributes_SetUsingUsdDevice, METH_VARARGS},
-    {"GetUsingUsdDevice", RenderingAttributes_GetUsingUsdDevice, METH_VARARGS},
-    {"SetAnariRendererParameters", RenderingAttributes_SetAnariRendererParameters, METH_VARARGS},
-    {"GetAnariRendererParameters", RenderingAttributes_GetAnariRendererParameters, METH_VARARGS},
-    {"SetAnariUSDParameters", RenderingAttributes_SetAnariUSDParameters, METH_VARARGS},
-    {"GetAnariUSDParameters", RenderingAttributes_GetAnariUSDParameters, METH_VARARGS},
+    {"SetAnariAttributes", RenderingAttributes_SetAnariAttributes, METH_VARARGS},
+    {"GetAnariAttributes", RenderingAttributes_GetAnariAttributes, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -3239,20 +2813,8 @@ PyRenderingAttributes_getattro(PyObject *self, PyObject *attr_name)
         return RenderingAttributes_GetOsprayAO(self, NULL);
     if(strcmp(name, "osprayShadows") == 0)
         return RenderingAttributes_GetOsprayShadows(self, NULL);
-    if(strcmp(name, "anariRendering") == 0)
-        return RenderingAttributes_GetAnariRendering(self, NULL);
-    if(strcmp(name, "anariLibrary") == 0)
-        return RenderingAttributes_GetAnariLibrary(self, NULL);
-    if(strcmp(name, "anariLibrarySubtype") == 0)
-        return RenderingAttributes_GetAnariLibrarySubtype(self, NULL);
-    if(strcmp(name, "anariRendererSubtype") == 0)
-        return RenderingAttributes_GetAnariRendererSubtype(self, NULL);
-    if(strcmp(name, "usingUsdDevice") == 0)
-        return RenderingAttributes_GetUsingUsdDevice(self, NULL);
-    if(strcmp(name, "anariRendererParameters") == 0)
-        return RenderingAttributes_GetAnariRendererParameters(self, NULL);
-    if(strcmp(name, "anariUSDParameters") == 0)
-        return RenderingAttributes_GetAnariUSDParameters(self, NULL);
+    if(strcmp(name, "anariAttributes") == 0)
+        return RenderingAttributes_GetAnariAttributes(self, NULL);
 
 #if VISIT_OBSOLETE_AT_VERSION(3,6,0)
 #error This code is obsolete in this version. Please remove it.
@@ -3358,20 +2920,8 @@ PyRenderingAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *ar
         obj = RenderingAttributes_SetOsprayAO(self, args);
     else if(strcmp(name, "osprayShadows") == 0)
         obj = RenderingAttributes_SetOsprayShadows(self, args);
-    else if(strcmp(name, "anariRendering") == 0)
-        obj = RenderingAttributes_SetAnariRendering(self, args);
-    else if(strcmp(name, "anariLibrary") == 0)
-        obj = RenderingAttributes_SetAnariLibrary(self, args);
-    else if(strcmp(name, "anariLibrarySubtype") == 0)
-        obj = RenderingAttributes_SetAnariLibrarySubtype(self, args);
-    else if(strcmp(name, "anariRendererSubtype") == 0)
-        obj = RenderingAttributes_SetAnariRendererSubtype(self, args);
-    else if(strcmp(name, "usingUsdDevice") == 0)
-        obj = RenderingAttributes_SetUsingUsdDevice(self, args);
-    else if(strcmp(name, "anariRendererParameters") == 0)
-        obj = RenderingAttributes_SetAnariRendererParameters(self, args);
-    else if(strcmp(name, "anariUSDParameters") == 0)
-        obj = RenderingAttributes_SetAnariUSDParameters(self, args);
+    else if(strcmp(name, "anariAttributes") == 0)
+        obj = RenderingAttributes_SetAnariAttributes(self, args);
 
 #if VISIT_OBSOLETE_AT_VERSION(3,6,0)
 #error This code is obsolete in this version. Please remove it.

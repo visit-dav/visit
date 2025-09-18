@@ -10,6 +10,9 @@
 #   Kathleen Biagas, Thu Aug 14, 2025
 #   Add FXAAOptions.
 #
+#   Kevin Griffin, Wed Sep 10, 2025
+#   Refactored ANARI rendering options into AnariAttributes
+#
 #****************************************************************************
 
 # Add XML Code Gen Targets
@@ -25,6 +28,7 @@
 #
 
 foreach(obj_name
+    AnariAttributes
     AnimationAttributes
     AnnotationAttributes
     AnnotationObject
@@ -140,6 +144,7 @@ endforeach()
 
 # Adding contents of this dir as SOURCES to visitcommon
 target_sources(visitcommon PRIVATE
+    AnariAttributes.C
     AnimationAttributes.C
     AnnotationAttributes.C
     AnnotationObject.C

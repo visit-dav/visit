@@ -1258,23 +1258,8 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             break;
 #endif
 #ifdef HAVE_ANARI
-        case RenderingAttributes::ID_anariRendering:
-            anariRenderingWidget->SetChecked(renderAtts->GetAnariRendering());
-            break;
-        case RenderingAttributes::ID_anariLibrary:
-            anariRenderingWidget->UpdateLibraryName(renderAtts->GetAnariLibrary());
-            break;
-        case RenderingAttributes::ID_anariLibrarySubtype:
-            anariRenderingWidget->UpdateLibrarySubtypes(renderAtts->GetAnariLibrarySubtype());
-            break;
-        case RenderingAttributes::ID_anariRendererSubtype:
-            anariRenderingWidget->UpdateRendererSubtypes(renderAtts->GetAnariRendererSubtype());
-            break;
-        case RenderingAttributes::ID_anariRendererParameters:
-            anariRenderingWidget->UpdateRendererParameters(renderAtts->GetAnariRendererParameters());
-            break;
-        case RenderingAttributes::ID_anariUSDParameters:
-            anariRenderingWidget->UpdateUSDParameters(renderAtts->GetAnariUSDParameters());
+        case RenderingAttributes::ID_anariAttributes:
+            anariRenderingWidget->UpdateAnariAttributes(renderAtts->GetAnariAttributes());
             break;
 #endif
         case RenderingAttributes::ID_scalableActivationMode:
