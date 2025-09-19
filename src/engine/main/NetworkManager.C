@@ -3117,6 +3117,12 @@ NetworkManager::RenderInternal()
 //    Burlen Loring, Sun Sep  6 08:44:26 PDT 2015
 //    Added option for ordered composting
 //
+//    Kathleen Biagas, Thu Aug 14, 2025 
+//    Added new RenderingAttributes items: MSAASamples, FXAAOptions.
+//
+//    Kathleen Biagas, Thu Aug 28 15:43:23 PDT 2025
+//    Remove SurfaceRepresentation, no longer used.
+//
 // ****************************************************************************
 
 void
@@ -3290,6 +3296,12 @@ NetworkManager::SetWindowAttributes(EngineVisWinInfo &viswinInfo,
         if (viswin->GetAntialiasing() != renderAtts.GetAntialiasing())
             viswin->SetAntialiasing(renderAtts.GetAntialiasing());
 
+        if (viswin->GetMSAASamples() != renderAtts.GetMSAASamples())
+            viswin->SetMSAASamples(renderAtts.GetMSAASamples());
+
+        if (viswin->GetFXAAOptions() != &renderAtts.GetFXAAOpt())
+            viswin->SetFXAAOptions(&renderAtts.GetFXAAOpt());
+
         if (viswin->GetOrderComposite() != renderAtts.GetOrderComposite())
             viswin->SetOrderComposite(renderAtts.GetOrderComposite());
 
@@ -3323,9 +3335,6 @@ NetworkManager::SetWindowAttributes(EngineVisWinInfo &viswinInfo,
 
         if (viswin->GetMultiresolutionCellSize() != renderAtts.GetMultiresolutionCellSize())
             viswin->SetMultiresolutionCellSize(renderAtts.GetMultiresolutionCellSize());
-
-        if (viswin->GetSurfaceRepresentation() != renderAtts.GetGeometryRepresentation())
-            viswin->SetSurfaceRepresentation(renderAtts.GetGeometryRepresentation());
 
         // handle stereo rendering settings
         bool stereo = renderAtts.GetStereoRendering();
@@ -6707,6 +6716,9 @@ NetworkManager::CalculateCellCountTotal(vector<long long> &cellCounts,
 //    Kevin Griffin, Wed 05 Mar 2025 11:59:26 AM CST
 //    Pass the Anari settings to the render window.
 //
+//    Kevin Griffin, Tue 09 Sep 2025 12:25:03 AM CST
+//    Refactored to pass the AnariAttributes class to the render window.
+//
 // ****************************************************************************
 
 void
@@ -6759,13 +6771,7 @@ NetworkManager::RenderSetup(avtImageType imgT, int windowID, intVector& plotIds,
 #endif
 
 #ifdef HAVE_ANARI
-    renderState.window->SetAnariRendering(renderAtts.GetAnariRendering());
-    renderState.window->SetAnariLibraryName(renderAtts.GetAnariLibrary());
-    renderState.window->SetAnariLibrarySubtype(renderAtts.GetAnariLibrarySubtype());
-    renderState.window->SetAnariRendererSubtype(renderAtts.GetAnariRendererSubtype());
-    renderState.window->SetAnariRendererParameters(renderAtts.GetAnariRendererParameters());
-    renderState.window->SetAnariUSDParameters(renderAtts.GetAnariUSDParameters());
-    renderState.window->SetUsingUsdDevice(renderAtts.GetUsingUsdDevice());
+    renderState.window->SetAnariAttributes(renderAtts.GetAnariAttributes());
 #endif
 
     // Apply any rendering-related changes to the annotation attributes.

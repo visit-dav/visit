@@ -3,17 +3,11 @@
 Rendering Options
 -----------------
 
-VisIt provides support for setting various global rendering options that
-improve quality and realism of the plots in the visualization. Specifically,
-VisIt provides controls that let you smooth the appearance of lines, add
-specular highlights, add shadows, and apply depth cueing to plots in your
-visualizations. The controls for setting these options are located in the
-**Rendering options Window**
-(see :numref:`Figure %s <fig-MakingItPretty-RenderingOptionsBasic>`) and
-they will be covered here while the other controls in that window will be
-covered in the **Preferences** chapter. To open the
-**Rendering options Window**, click on **Rendering** in the
-**Main Window's Preferences** menu.
+VisIt_ provides support for setting various global rendering options that
+improve quality and realism of the plots in the visualization.
+Specifically, VisIt_ provides controls that let you smooth the appearance of lines, add specular highlights, add shadows, and apply depth cueing to plots in your visualizations.
+The controls for setting these options are located in the **Rendering options Window** (see :numref:`Figure %s <fig-MakingItPretty-RenderingOptionsBasic>`) and they will be covered here while the other controls in that window will be covered in the **Preferences** chapter.
+To open the **Rendering options Window**, click on **Rendering** in the **Main Window's Preferences** menu.
 
 .. _fig-MakingItPretty-RenderingOptionsBasic:
 
@@ -24,19 +18,16 @@ covered in the **Preferences** chapter. To open the
 Making Lines Look Smoother
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Computer monitors contain an array of millions of tiny rectangular pixels
-that light up to form patterns which your eyes perceive as images. Lines
-tend to look blocky on computer monitors because they are drawn using a
-relatively small set of pixels. Lines can be made to look better by
-blending the edges of the line with the color of the background image.
-This is a form of antialiasing that VisIt can use to make plots which use
-lines, such as the Mesh plot, look better
-(see :numref:`Figure %s <fig-MakingItPretty-AntialiasingExample>`). If
-you want to enable antialiasing, which is off by default, you check the
-**Antialiasing** check box located at the top of the **Basic** tab
-(see :numref:`Figure %s <fig-MakingItPretty-RenderingOptionsBasic>`).
-When antialiasing is enabled, all lines drawn in a visualization window
-are blended with the background image so that they look smoother.
+Computer monitors contain an array of millions of tiny rectangular pixels that light up to form patterns which your eyes perceive as images.
+Lines tend to look blocky on computer monitors because they are drawn using a relatively small set of pixels.
+Lines can be made to look better by turning on antialiasing, as can be seen in this example (see :numref:`Figure %s <fig-MakingItPretty-AntialiasingExample>`).
+There are two forms of antialiasing available in VisIt_: MSAA (Multisample anti-aliasing) and FXAA (Fast approximate anti-aliasing).
+The only MSAA control is the number of multi-samples (2, 4, 6 or 8), though the actual value used will be clamped to the maximum available for your system.
+Depending on VisIt_'s build configuration and the system on which it is running, MSAA may not be available.
+If this is the case, the MSAA radio button will be disabled and it's label will be changed to **MSAA (not available)**.
+The FXAA controls correspond to the available VTK options and are described in their docs for the `vtkFAAOptions <https://vtk.org/doc/nightly/html/classvtkFXAAOptions.html>`_ class.
+If you want to enable antialiasing, which is off by default, you check either the **MSAA** radio button or the **FXAA** radio button box located in the **Antialiasing** section of the **Basic** tab (see :numref:`Figure %s <fig-MakingItPretty-RenderingOptionsBasic>`).
+When antialiasing is enabled, lines and polygon edges should look smoother.
 
 .. _fig-MakingItPretty-AntialiasingExample:
 
@@ -47,15 +38,11 @@ are blended with the background image so that they look smoother.
 Specular Lighting
 ~~~~~~~~~~~~~~~~~
 
-VisIt supports specular lighting, which results in bright highlights on
-surfaces that reflect a lot of incident light from VisIt's light sources.
-Specular lighting is not handled in the **Lighting Window** because specular
-lighting is best described as a property of the material reflecting the
-light. The controls for specular lighting don't control any lights but
-instead control the amount of specular highlighting caused by the plots.
-Specular lighting is not enabled by default. To enable specular lighting,
-click the **Specular lighting** check box near the bottom of the **Basic**
-tab (see :numref:`Figure %s <fig-MakingItPretty-RenderingOptionsBasic>`).
+VisIt_ supports specular lighting, which results in bright highlights on surfaces that reflect a lot of incident light from VisIt_'s light sources.
+Specular lighting is not handled in the **Lighting Window** because specular lighting is best described as a property of the material reflecting the light.
+The controls for specular lighting don't control any lights but instead control the amount of specular highlighting caused by the plots.
+Specular lighting is not enabled by default.
+To enable specular lighting, click the **Specular lighting** check box near the bottom of the **Basic** tab (see :numref:`Figure %s <fig-MakingItPretty-RenderingOptionsBasic>`).
 
 .. _fig-MakingItPretty-SpecularExample:
 
@@ -63,18 +50,13 @@ tab (see :numref:`Figure %s <fig-MakingItPretty-RenderingOptionsBasic>`).
 
    The effects of specular lighting on plots
 
-Once specular lighting is enabled, you can change the strength and sharpness
-properties of the material reflecting the light. The strength, which you
-can set using the **Strength** slider, influences how glossy the plots are
-and how much light is reflected off of the plots. The sharpness, which is
-set using the **Sharpness** slider, controls the locality of the reflections.
-Higher sharpness values result in smaller specular highlights. Specular
-highlights are a crucial component of lighting models and including specular
-lighting in your visualizations enhances their appearance by making them
-more realistic. Compare and contrast the plots in
-:numref:`Figure %s <fig-MakingItPretty-SpecularExample>`. The plot on the
-left side has no specular highlights and the plot on the right side has
-specular highlights.
+Once specular lighting is enabled, you can change the strength and sharpness properties of the material reflecting the light.
+The strength, which you can set using the **Strength** slider, influences how glossy the plots are and how much light is reflected off of the plots.
+The sharpness, which is set using the **Sharpness** slider, controls the locality of the reflections.
+Higher sharpness values result in smaller specular highlights.
+Specular highlights are a crucial component of lighting models and including specular lighting in your visualizations enhances their appearance by making them more realistic.
+Compare and contrast the plots in :numref:`Figure %s <fig-MakingItPretty-SpecularExample>`.
+The plot on the left side has no specular highlights and the plot on the right side has specular highlights.
 
 .. _fig-MakingItPretty-RenderingOptionsAdvanced:
 

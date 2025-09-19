@@ -110,6 +110,9 @@ class     avtTransparencyActor;
 //    Brad Whitlock, Thu Jan 10 14:57:03 PST 2008
 //    Added reduced detail mode.
 //
+//    Kathleen Biagas, Thu Aug 28 15:26:21 PDT 2025
+//    Remove SetSurfaceRepresentation, it is no longer used.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtActor
@@ -149,8 +152,6 @@ class PLOTTER_API avtActor
     void                          TurnLightingOn(void);
     void                          TurnLightingOff(void);
     void                          SetAmbientCoefficient(const double);
-
-    void                          SetSurfaceRepresentation(int rep);
 
     void                          SetSpecularProperties(bool,double,double,
                                                         const ColorAttribute&);

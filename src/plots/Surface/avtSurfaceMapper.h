@@ -25,6 +25,8 @@ class vtkLookupTable;
 //  Creation:   July 18, 2016
 //
 //  Modifications:
+//    Kathleen Biagas, Thu Aug 28, 2025
+//    Remove SetSurfaceRepresentation, CanApplyGlobalRep, no longer used.
 //
 // ****************************************************************************
 
@@ -35,7 +37,6 @@ class avtSurfaceMapper : public avtMapper
     virtual                   ~avtSurfaceMapper();
 
     // these are called from avtMapper
-    virtual void               SetSurfaceRepresentation(int rep);
     virtual bool               GetLighting(void) { return !ignoreLighting; }
 
 
@@ -46,8 +47,6 @@ class avtSurfaceMapper : public avtMapper
     void                       SetLineWidth(int lw);
     void                       SetSurfaceColor(double rgb[3]);
 
-
-    void                       CanApplyGlobalRepresentation(bool);
     void                       SetRepresentation(bool);
     void                       SetIgnoreLighting(bool);
     void                       SetLookupTable(vtkLookupTable *);
@@ -68,7 +67,6 @@ class avtSurfaceMapper : public avtMapper
     int             lineWidth;
     double          edgeColor[3];
     double          surfaceColor[3];
-    bool            canApplyGlobalRep;
     bool            ignoreLighting;
     bool            wireMode;
     vtkLookupTable *lut;

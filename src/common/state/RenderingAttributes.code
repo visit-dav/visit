@@ -1,3 +1,35 @@
+Target: xml2python
+Code: RenderingAttributes_SetAntialiasing
+Prefix:
+Postfix:
+   if(cval == 1 && (cval != obj->data->GetAntialiasing()) &&
+      (obj->data->GetDepthPeeling()))
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        PyErr_WarnEx(PyExc_RuntimeWarning,
+                "MSAA is incompatible with DepthPeeling, turn off\n"
+                " DepthPeeling before selecting MSAA antialiasing\n"
+                " or choose a different antialiasing mode.\n",  0);
+        return PyInt_FromLong(0);
+    }
+
+Target: xml2python
+Code: RenderingAttributes_SetDepthPeeling
+Prefix:
+Postfix:
+    if(cval && (cval != obj->data->GetDepthPeeling()) &&
+      (obj->data->GetAntialiasing() == RenderingAttributes::MSAA))
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        PyErr_WarnEx(PyExc_RuntimeWarning,
+                "DepthPeeling is incompatible with MSAA, select a different\n"
+                " antialiasing method before turning on DepthPeeling.", 0);
+        return PyInt_FromLong(0);
+    }
+
+Target: xml2atts
 Constant: DEFAULT_SCALABLE_AUTO_THRESHOLD
 Declaration: static const int DEFAULT_SCALABLE_AUTO_THRESHOLD;
 Definition: const int RenderingAttributes::DEFAULT_SCALABLE_AUTO_THRESHOLD = 2000000;
@@ -75,4 +107,102 @@ int RenderingAttributes::GetEffectiveCompactDomainsThreshold(TriStateMode mode, 
     else
         return -1;
 }
+
+
+Target: xml2atts
+Function: ProcessOldVersions
+Declaration: virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
+Definition:
+// ****************************************************************************
+// Method: RenderingAttributes::ProcessOldVersions
+//
+// Purpose:
+//   This method allows handling of older config/session files that may
+//   contain fields that are no longer present or have been modified/renamed.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   Aug 28, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+#include <visit-config.h>
+#ifdef VIEWER
+#include <avtCallback.h>
+#endif
+
+void
+RenderingAttributes::ProcessOldVersions(DataNode *parentNode,
+                                         const char *configVersion)
+{
+#if VISIT_OBSOLETE_AT_VERSION(3,6,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("RenderingAttributes");
+    if(searchNode == 0)
+        return;
+
+    if (VersionLessThan(configVersion, "3.5.0"))
+    {
+        DataNode *k = 0;
+        if ((k = searchNode->GetNode("geometryRepresentation")) != 0)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("geometryRepresentation", "3.6.0"));
+#endif
+            searchNode->RemoveNode(k);
+        }
+    }
+#endif
+}
+
+
+
+Target: xml2python
+Code: PyRenderingAttributes_getattro
+Prefix:
+#include <visit-config.h>
+Postfix:
+#if VISIT_OBSOLETE_AT_VERSION(3,6,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+    // Try and handle legacy fields in RenderingAttributes
+
+    //
+    // Removed in 3.5.0
+    //
+    if(strcmp(name, "geometryRepresentation") == 0)
+    {
+        PyErr_WarnEx(NULL,
+                    "geometryRepresentation is no longer a valid Rendering "
+                    "attribute.\nIt's value is being ignored, please remove "
+                    "it from your script.\n", 3);
+        return PyInt_FromLong(0L);
+    }
+#endif
+
+Code: PyRenderingAttributes_setattro
+Prefix:
+#include <visit-config.h>
+Postfix:
+#if VISIT_OBSOLETE_AT_VERSION(3,6,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+   // Try and handle legacy fields in RenderingAttributes
+    if(obj == &NULL_PY_OBJ)
+    {
+        //
+        // Removed in 3.5.0
+        //
+        if(strcmp(name, "geometryRepresentation") == 0)
+        {
+            PyErr_WarnEx(NULL, "'geometryRepresentation' is obsolete and is being ignored.", 3);
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+    }
+#endif
 

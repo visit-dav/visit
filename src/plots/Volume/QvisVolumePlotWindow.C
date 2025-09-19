@@ -2244,23 +2244,8 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             osprayMaxContribution->blockSignals(false);
             break;
 #ifdef HAVE_ANARI
-        case VolumeAttributes::ID_anariRendering:
-            anariVolumeWidget->SetChecked(volumeAtts->GetAnariRendering());
-            break;
-        case VolumeAttributes::ID_anariLibrary:
-            anariVolumeWidget->UpdateLibraryName(volumeAtts->GetAnariLibrary());
-            break;
-        case VolumeAttributes::ID_anariLibrarySubtype:
-            anariVolumeWidget->UpdateLibrarySubtypes(volumeAtts->GetAnariLibrarySubtype());
-            break;
-        case VolumeAttributes::ID_anariRendererSubtype:
-            anariVolumeWidget->UpdateRendererSubtypes(volumeAtts->GetAnariRendererSubtype());
-            break;
-        case VolumeAttributes::ID_anariRendererParameters:
-            anariVolumeWidget->UpdateRendererParameters(volumeAtts->GetAnariRendererParameters());
-            break;
-        case VolumeAttributes::ID_anariUSDParameters:
-            anariVolumeWidget->UpdateUSDParameters(volumeAtts->GetAnariUSDParameters());
+        case VolumeAttributes::ID_anariAttributes:
+            anariVolumeWidget->UpdateAnariAttributes(volumeAtts->GetAnariAttributes());
             break;
 #endif
         }

@@ -381,6 +381,9 @@ avtSurfacePlot::CustomizeBehavior()
 //    VTK-7 port: Use surface-plot specific mapper instead of user-specified
 //    with avtSurfaceAndWireframeRenderer.
 //
+//    Kathleen Biagas, Thu Aug 28, 2025
+//    Remove call to CanApplyGlobalRepresentation.
+//    
 // ****************************************************************************
 
 void
@@ -405,7 +408,6 @@ avtSurfacePlot::SetAtts(const AttributeGroup *a)
     SetWireframeAttributes(atts.GetWireframeFlag());
     mapper->SetIgnoreLighting(!atts.GetLightingFlag());
     mapper->SetLineWidth(LineWidth2Int(Int2LineWidth(atts.GetLineWidth())));
-    mapper->CanApplyGlobalRepresentation(atts.GetSurfaceFlag());
     mapper->SetRepresentation(!atts.GetSurfaceFlag() && atts.GetWireframeFlag());
     SetLegend(atts.GetLegendFlag());
 

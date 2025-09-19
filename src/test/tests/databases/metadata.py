@@ -12,6 +12,11 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Kathleen Biagas, Tue Aug 19, 2025
+#    Antialiasing is now multi-modal. Use FXAA for antialiasing as MSAA
+#    doesn't work in the build configuration that is used for testing.
+#
 # ----------------------------------------------------------------------------
 
 def test0():
@@ -101,7 +106,8 @@ def test1():
 def main():
     # Draw antialiased lines
     r = GetRenderingAttributes()
-    r.antialiasing = 1
+    # use FXAA since MSAA doesn't work in our testing mode
+    r.antialiasing = r.FXAA
     SetRenderingAttributes(r)
 
     test0()

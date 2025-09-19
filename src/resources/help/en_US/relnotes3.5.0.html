@@ -42,6 +42,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Added '-python-log-file' command line option to control the name of the file used to log python methods (default='visitlog.py').</li>
   <li>Add individual stress components to the PVLD plugin metadata.</li>
   <li>Refactored how to import visit into a stand alone python module. This is now done via the 'visit_launcher' module, avoiding module namespace issues.</li>
+  <li>Antialiasing is no longer an on/off option, there are two modes: MSAA (when available) and FXAA. The default is still no antialiasing.</li>
 </ul>
 
 <a name="Advanced_features"></a>
@@ -88,6 +89,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Changes to VisIt's plots in version 3.5</font></b></p>
 <ul>
   <li>Added ANARI rendering support for volume plots.</li>
+  <li>Enhanced the Pseudocolor plot to allow using the default variable for coloring the wireframe and points, as long as rendering of surfaces is turned off.</li>
   <li>Plot Change 2</li>
 </ul>
 

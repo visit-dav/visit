@@ -879,27 +879,6 @@ avtActor::SetAmbientCoefficient(const double amb)
 }
 
 // ****************************************************************************
-//  Method: avtActor::SetSurfaceRepresentation
-//
-//  Purpose:
-//      Tells the drawable to set its surface representation.
-//
-//  Programmer: Brad Whitlock
-//  Creation:   Mon Sep 23 15:54:15 PST 2002
-//
-// ****************************************************************************
-
-void
-avtActor::SetSurfaceRepresentation(int rep)
-{
-    if (*(drawable) != NULL)
-    {
-        drawable->SetSurfaceRepresentation(rep);
-    }
-}
-
-
-// ****************************************************************************
 //  Method: avtActor::SetSpecularProperties
 //
 //  Purpose:

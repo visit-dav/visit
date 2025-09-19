@@ -76,6 +76,9 @@ class     ColorAttribute;
 //    Kathleen Biagas, Thu Apr 13 10:15:06 PDT 2017
 //    Allows creating using vtkActor2D.  Use avtMapperBase instead of avtMapper.
 //
+//    Kathleen Biagas, Thu Aug 28 15:28:06 PDT 2025
+//    Remove SetSurfaceRepresentation, no longer used.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtGeometryDrawable : public avtDrawable
@@ -103,8 +106,6 @@ class PLOTTER_API avtGeometryDrawable : public avtDrawable
     virtual void                TurnLightingOn(void);
     virtual void                TurnLightingOff(void);
     virtual void                SetAmbientCoefficient(const double);
-
-    virtual void                SetSurfaceRepresentation(int rep);
 
     virtual void                SetSpecularProperties(bool,double,double,
                                                       const ColorAttribute&);
