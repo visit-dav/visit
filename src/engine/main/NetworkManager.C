@@ -2985,6 +2985,10 @@ NetworkManager::RenderValues(intVector plotIds, bool getZBuffer, int windowID, b
 //  Creation:    Thu Sep  3 10:26:48 PDT 2015
 //
 //  Modifications:
+//    Eric Brugger, Tue Sep 16 16:42:11 PDT 2025
+//    Enhanced the output of intermediate images to have more descriptive
+//    names and be named such that their sort order matches the order in
+//    which they are generated. I renumbered the rendering passes.
 //
 // ****************************************************************************
 //
@@ -2994,84 +2998,36 @@ NetworkManager::RenderInternal()
     CallInitializeProgressCallback(RenderingStages());
 
     // ************************************************************
-    // pass 1a : opaque (and translucent geometry if serial)
+    // pass 1 : opaque (and translucent geometry if serial)
     // ************************************************************
     avtImage_p pass = RenderGeometry();
-#if 0
-    int w,h;
-    if(*pass != NULL)
-    {
-        TRY
-        {
-            pass->GetImage().GetSize(&w, &h);
-            debug5 << "NetworkManager::RenderInternal: 0: w=" << w
-                   << ", h=" << h
-                   << ", colorChannels=" << pass->GetImage().GetNumberOfColorChannels()
-                   << endl;
-            vtkFloatArray *arr = pass->GetImage().GetZBufferVTK();
-            if(arr != NULL)
-                debug5 << "We have a zbuffer with " << arr->GetNumberOfTuples() << " tuples." << endl;
-            else
-                debug5 << "We have NO zbuffer." << endl;
 
-            if(avtDebugDumpOptions::DumpEnabled())
-                this->DumpImage(pass, "render-geom");
-        }
-        CATCH(VisItException)
-        {
-            // Catches a no input exception.
-        }
-        ENDTRY
-    }
-#endif
     // ************************************************************
-    // pass 1b : shadow mapping
+    // pass 2 : shadow mapping
     // ************************************************************
     if (renderState.shadowMap)
         NetworkManager::RenderShadows(pass);
 
     // ************************************************************
-    // pass 1c : depth cues
+    // pass 3 : depth cues
     // ************************************************************
     if (renderState.depthCues)
         NetworkManager::RenderDepthCues(pass);
 
-
     // ************************************************************
-    // pass 2 : translucent geometry if parallel
+    // pass 4 : translucent geometry if parallel
     // ************************************************************
     if (renderState.transparencyInPass2)
         pass = NetworkManager::RenderTranslucent(pass);
 
     // ************************************************************
-    // pass 3 : 2d overlays
+    // pass 5 : 2d overlays
     // ************************************************************
     RenderPostProcess(pass);
 
-#if 0
-    if(*pass != NULL)
-    {
-        TRY
-        {
-            pass->GetImage().GetSize(&w, &h);
-            debug5 << "NetworkManager::RenderInternal: 1: w=" << w
-                   << ", h=" << h
-                   << ", colorChannels=" << pass->GetImage().GetNumberOfColorChannels()
-                   << endl;
-            vtkFloatArray *arr = pass->GetImage().GetZBufferVTK();
-            if(arr != NULL)
-                debug5 << "We have a zbuffer with " << arr->GetNumberOfTuples() << " tuples." << endl;
-            else
-                debug5 << "We have NO zbuffer." << endl;
-            if(avtDebugDumpOptions::DumpEnabled())
-                this->DumpImage(pass, "render-geom-final");
-        }
-        CATCH(VisItException)
-        {
-            // Catches a no input exception.
-        }
-        ENDTRY
-    }
+#ifdef ProgrammableCompositerDEBUG
+    if (PAR_Rank() == 0)
+        writeVTK("pass_5.vtk", pass->GetImage());
 #endif
 
     avtDataObject_p output;
@@ -7181,6 +7137,11 @@ NetworkManager::RenderingStages()
 //    Brad Whitlock, Thu Sep 21 16:52:41 PDT 2017
 //    Added support for returning alpha.
 //
+//    Eric Brugger, Tue Sep 16 16:42:11 PDT 2025
+//    Enhanced the output of intermediate images to have more descriptive
+//    names and be named such that their sort order matches the order in
+//    which they are generated. I renumbered the rendering passes.
+//
 // ****************************************************************************
 
 avtImage_p
@@ -7267,8 +7228,9 @@ NetworkManager::RenderGeometry()
                 /*read a=*/renderState.orderComposite);
 
 #ifdef ProgrammableCompositerDEBUG
-            writeVTK("geom_in.vtk", ri,gi,bi,ai,zi,w,h);
+            writeVTK("pass_1a_opaque_partial.vtk", ri,gi,bi,ai,zi,w,h);
 #endif
+
             if (renderState.orderComposite)
             {
                 viswin->DisableAlphaChannel();
@@ -7334,7 +7296,7 @@ NetworkManager::RenderGeometry()
                 output = new avtImage(NULL);
                 Merge(output, ro,go,bo,ao, zo, w,h, true);
 #ifdef ProgrammableCompositerDEBUG
-                writeVTK("geom_out.vtk", ro,go,bo,ao,zo,w,h);
+                writeVTK("pass_1b_opaque_composited.vtk", ro,go,bo,ao,zo,w,h);
 #endif
             }
 
@@ -7387,6 +7349,9 @@ NetworkManager::RenderGeometry()
             compositer->AddImageInput(output, 0, 0);
             compositer->Execute();
             output = compositer->GetTypedOutput();
+#ifdef ProgrammableCompositerDEBUG
+            writeVTK("pass_1c_opaque_composited.vtk", output->GetImage());
+#endif
             delete compositer;
         }
     }
@@ -7429,13 +7394,18 @@ NetworkManager::RenderGeometry()
 //    transparent background so that transparency is preserved (if we are
 //    requesting an image that has alpha).
 //
+//    Eric Brugger, Tue Sep 16 16:42:11 PDT 2025
+//    Enhanced the output of intermediate images to have more descriptive
+//    names and be named such that their sort order matches the order in
+//    which they are generated. I renumbered the rendering passes.
+//
 // ****************************************************************************
 
 avtImage_p
 NetworkManager::RenderTranslucent(avtImage_p& input)
 {
     StackTimer t0("NetworkManager::RenderTranslucent");
-    CallProgressCallback("NetworkManager", "render pass 2", 0, 1);
+    CallProgressCallback("NetworkManager", "render pass 4", 0, 1);
 
     VisWindow *viswin = renderState.window;
 
@@ -7489,15 +7459,16 @@ NetworkManager::RenderTranslucent(avtImage_p& input)
             /*read z=*/false, /*read a=*/true);
 
 #ifdef ProgrammableCompositerDEBUG
-        writeVTK("trans_in.vtk", ri,gi,bi,ai,zi,w,h);
+        writeVTK("pass_4a_trans_in.vtk", ri,gi,bi,ai,zi,w,h);
 #endif
+
         viswin->DisableAlphaChannel();
 
         viswin->SetBackgroundMode(bgMode);
         viswin->SetBackgroundColor(bgColor[0], bgColor[1], bgColor[2]);
 
-        CallProgressCallback("NetworkManager", "render pass 2", 1, 1);
-        CallProgressCallback("NetworkManager", "composite pass 2", 0, 1);
+        CallProgressCallback("NetworkManager", "render pass 4", 1, 1);
+        CallProgressCallback("NetworkManager", "composite pass 4", 0, 1);
 
         acomp->Initialize(w,h);
         acomp->SetOrder(renderState.compositeOrder);
@@ -7537,8 +7508,9 @@ NetworkManager::RenderTranslucent(avtImage_p& input)
                         /*read z=*/false, /*read a=*/false);
 
 #ifdef ProgrammableCompositerDEBUG
-                    writeVTK("bg_in.vtk", rbi,gbi,bbi,abi,zbi,w,h);
+                    writeVTK("pass_4b_trans_background.vtk", rbi,gbi,bbi,abi,zbi,w,h);
 #endif
+
                     acomp->ApplyBackgroundImage(rbi, gbi, bbi);
                 }
             }
@@ -7553,8 +7525,9 @@ NetworkManager::RenderTranslucent(avtImage_p& input)
             acomp->GetOutput(ro,go,bo,ao, zo, true);
 
 #ifdef ProgrammableCompositerDEBUG
-            writeVTK("acomp_out.vtk", ro,go,bo,ao,zo, w,h);
+            writeVTK("pass_4c_trans_order_composited.vtk", ro,go,bo,ao,zo, w,h);
 #endif
+
             output = new avtImage(NULL);
             Merge(output, ro,go,bo,ao, zo, w,h, true);
 
@@ -7578,10 +7551,11 @@ NetworkManager::RenderTranslucent(avtImage_p& input)
             /*z=*/false, /*a=*/false);
 
 #ifdef ProgrammableCompositerDEBUG
-        writeVTK("transtic_in.vtk", rgb->GetImage());
+        writeVTK("pass_4d_trans_partial.vtk", rgb->GetImage());
 #endif
-        CallProgressCallback("NetworkManager", "render pass 2", 1, 1);
-        CallProgressCallback("NetworkManager", "composite pass 2", 0, 1);
+
+        CallProgressCallback("NetworkManager", "render pass 4", 1, 1);
+        CallProgressCallback("NetworkManager", "composite pass 4", 0, 1);
 
         int w = 0, h = 0;
         rgb->GetSize(&h, &w); // h,w is intentional.
@@ -7596,6 +7570,11 @@ NetworkManager::RenderTranslucent(avtImage_p& input)
         if ((rank == 0) || renderState.allReducePass2)
             output->GetImage().SetZBufferVTK(input->GetImage().GetZBufferVTK());
 
+#ifdef ProgrammableCompositerDEBUG
+        if ((rank == 0) || renderState.allReducePass2)
+            writeVTK("pass_4e_trans_composited.vtk", output->GetImage());
+#endif
+
         delete comp;
     }
 
@@ -7604,7 +7583,7 @@ NetworkManager::RenderTranslucent(avtImage_p& input)
         viswin->DisableDepthPeeling();
     viswin->SetBackgroundMode(bgMode);
 
-    CallProgressCallback("NetworkManager", "composite pass 2", 0, 1);
+    CallProgressCallback("NetworkManager", "composite pass 4", 0, 1);
 
     return output;
 }
@@ -7689,6 +7668,16 @@ NetworkManager::StopTimer()
 //    Burlen Loring, Tue Sep  1 14:40:31 PDT 2015
 //    Make use of renderState for active viswin.
 //
+//    Eric Brugger, Tue Sep 16 16:42:11 PDT 2025
+//    Modified the shadow light image to be the same resolution as the
+//    output image since changing the resolution of the viswin corrupted
+//    the viswin state such that the rendering of transparent geometry
+//    resulted in a black image.
+//
+//    Enhanced the output of intermediate images to have more descriptive
+//    names and be named such that their sort order matches the order in
+//    which they are generated. I renumbered the rendering passes.
+//
 // ****************************************************************************
 
 void
@@ -7718,26 +7707,39 @@ NetworkManager::RenderShadows(avtImage_p& input) const
         int width, height;
         viswin->GetSize(width, height);
 
+	//
+	// Originally, the code generated the image from the light source
+	// at twice the resolution of the image, presumably to remove some
+	// aliasing with the shadows. Unfortunately, changing the size of
+	// the vis window corrupted the state of the vis window such that
+	// rendering of transparent geometry resulted in an all black
+	// image. Because of that, that code was removed. Here is the
+	// code that computed the light image size.
+	//
+        // int light_width = (width > 2048) ? 4096 : width*2;
+        // int light_height = (height > 2048) ? 4096 : height*2;
+	//
+
         //
         // Create a light source view
         //
-        int light_width = (width > 2048) ? 4096 : width*2;
-        int light_height = (height > 2048) ? 4096 : height*2;
         avtView3D light_view;
         light_view = avtSoftwareShader::FindLightView(
                             input, cur_view, light_dir,
-                            double(light_width)/double(light_height)
+                            double(width)/double(height)
                      );
         //
         // Now create a new image from the light source.
         //
-        viswin->SetSize(light_width,light_height);
         viswin->SetView3D(light_view);
         avtImage_p myLightImage = viswin->ScreenCapture(
                                   /*viewport=*/renderState.viewportedMode, /*z=*/true
                                   );
 
-        viswin->SetSize(width,height);
+#ifdef ProgrammableCompositerDEBUG
+        writeVTK("pass_2a_shadow_partial.vtk", myLightImage->GetImage());
+#endif
+
         avtWholeImageCompositer *wic = new avtWholeImageCompositerWithZ();
         wic->SetShouldOutputZBuffer(true);
         int imageRows, imageCols;
@@ -7756,6 +7758,9 @@ NetworkManager::RenderShadows(avtImage_p& input) const
 
         if (PAR_Rank() == 0)
         {
+#ifdef ProgrammableCompositerDEBUG
+            writeVTK("pass_2b_shadow_composited.vtk", lightImage->GetImage());
+#endif
             CallProgressCallback("NetworkManager", "Synch'ing up shadows", 0, 1);
 
             double shadow_strength = renderState.windowInfo->
@@ -7763,6 +7768,10 @@ NetworkManager::RenderShadows(avtImage_p& input) const
 
             avtSoftwareShader::AddShadows(lightImage, input, light_view,
                                           cur_view, shadow_strength);
+
+#ifdef ProgrammableCompositerDEBUG
+            writeVTK("pass_2c_shadow_applied.vtk", input->GetImage());
+#endif
 
             CallProgressCallback("NetworkManager", "Synch'ing up shadows", 1, 1);
         }
@@ -7795,6 +7804,11 @@ NetworkManager::RenderShadows(avtImage_p& input) const
 //    Make use of renderState for active viswin. use const ref to rather
 //    than copy of attributes.
 //
+//    Eric Brugger, Tue Sep 16 16:42:11 PDT 2025
+//    Enhanced the output of intermediate images to have more descriptive
+//    names and be named such that their sort order matches the order in
+//    which they are generated. I renumbered the rendering passes.
+//
 // ****************************************************************************
 
 void
@@ -7817,6 +7831,10 @@ NetworkManager::RenderDepthCues(avtImage_p& input) const
              renderAtts.GetStartCuePoint(),
              renderAtts.GetEndCuePoint(),
              annoAtts.GetBackgroundColor().GetColor());
+
+#ifdef ProgrammableCompositerDEBUG
+        writeVTK("pass_3_depth_cues.vtk", input->GetImage());
+#endif
     }
     CallProgressCallback("NetworkManager", "Applying depth cueing", 1,1);
 }
