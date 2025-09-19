@@ -162,7 +162,7 @@ Controls for points are described in :ref:`plot_point_type_and_size`.
 Representation
 ''''''''''''''
 
-By default, the **Pseudocolor** plot renders as a **Surfaces**.
+By default, the **Pseudocolor** plot renders **Surfaces**.
 It can also render in **Wireframe** or **Points** mode.
 Choose the representation by checking one or any combination of the three.
 **Wireframe** and **Points** can be colored by a single color by selecting the desired color from their corresponding Color buttons, or by the default variable used for the plot.
