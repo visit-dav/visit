@@ -85,18 +85,17 @@ specular highlights.
 Shadows
 ~~~~~~~
 
-VisIt supports shadows when scalable rendering is being used. Shadows can
-be useful for increasing the realism of your visualization. The controls
-to turn on shadows can be found near the bottom of the **Advanced** tab
-(see :numref:`Figure %s <fig-MakingItPretty-RenderingOptionsAdvanced>`).
-To turn on shadows, you must turn on scalable rendering by clicking on
-the **Always** radio button under the **Use scalable rendering** label.
-Once scalable rendering has been turned on, the shadows controls become
-enabled. The default shadow strength is 50%. If you desire a stronger or
-weaker shadow, adjust the **Strength** slider until you are satisfied
-with the amount of shadow that appears in the visualization. The same
-plot is shown with and without shadows in
-:numref:`Figure %s <fig-MakingItPretty-ShadowExample>`.
+VisIt supports shadows when scalable rendering is being used.
+Shadows can be useful for increasing the realism of your visualization.
+Shadows are applied after the opaque geometry has been rendered and before the transparent geometry is rendered.
+This means that transparent geometry doesn't cast shadows and doesn't have shadows cast on it.
+Currently, the shadowing implementation only uses the first light and assumes it is a directional light.
+The controls to turn on shadows can be found about a third of the way from the top of the **Advanced** tab (see :numref:`Figure %s <fig-MakingItPretty-RenderingOptionsAdvanced>`).
+To turn on shadows, you must turn on scalable rendering by clicking on the **Always** radio button under the **Use scalable rendering** label.
+Once scalable rendering has been turned on, the shadows controls become enabled.
+The default shadow strength is 50%.
+If you desire a stronger or weaker shadow, adjust the **Strength** slider until you are satisfied with the amount of shadow that appears in the visualization.
+The same plot is shown with and without shadows in :numref:`Figure %s <fig-MakingItPretty-ShadowExample>`.
 
 .. _fig-MakingItPretty-ShadowExample:
 
@@ -107,23 +106,18 @@ plot is shown with and without shadows in
 Depth Cueing
 ~~~~~~~~~~~~
 
-VisIt supports depth cueing when scalable rendering is being used. Depth
-cueing can be useful for increasing the realism of your visualization.
-Depth cueing causes objects to be blended with the background with
-increasing distance from the camera. The controls to turn on depth
-cueing can be found near the bottom of the **Advanced** tab
-(see :numref:`Figure %s <fig-MakingItPretty-RenderingOptionsAdvanced>`).
-To turn on depth cueing, you must turn on scalable rendering by
-clicking on the **Always** radio button under the **Use scalable rendering**
-label. Once scalable rendering has been turned on, the depth cueing controls
-become enabled. By default, depth cueing is performed along the camera
-direction. The depth cueing can be done along a different direction by
-unchecking the **Cue automatically along camera depth** check box and then
-entering the coordinates defining the direction to perform the depth cueing
-in the **Manual start point** and **Manual end point** text fields. The
-coordinates are defined in the coordinate system of the simulation data.
-The same plot is shown with and without depth cueing in
-:numref:`Figure %s <fig-MakingItPretty-DepthCueingExample>`.
+VisIt supports depth cueing when scalable rendering is being used.
+Depth cueing can be useful for increasing the realism of your visualization.
+Depth cueing causes objects to be blended with the background with increasing distance from the camera.
+Depth cueing is are applied after the shadows have been applied and before the transparent geometry is rendered.
+This means that transparent geometry won't be impacted by depth cueing.
+The controls to turn on depth cueing can be found about a third of the way from the top of the **Advanced** tab (see :numref:`Figure %s <fig-MakingItPretty-RenderingOptionsAdvanced>`).
+To turn on depth cueing, you must turn on scalable rendering by clicking on the **Always** radio button under the **Use scalable rendering** label.
+Once scalable rendering has been turned on, the depth cueing controls become enabled.
+By default, depth cueing is performed along the camera direction.
+The depth cueing can be done along a different direction by unchecking the **Cue automatically along camera depth** check box and then entering the coordinates defining the direction to perform the depth cueing in the **Manual start point** and **Manual end point** text fields.
+The coordinates are defined in the coordinate system of the simulation data.
+The same plot is shown with and without depth cueing in :numref:`Figure %s <fig-MakingItPretty-DepthCueingExample>`.
 
 .. _fig-MakingItPretty-DepthCueingExample:
 
