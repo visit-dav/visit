@@ -163,8 +163,8 @@ Representation
 ''''''''''''''
 
 By default, the **Pseudocolor** plot renders **Surfaces**.
-It can also render in **Wireframe** or **Points** mode.
-Choose the representation by checking one or any combination of the three.
+It can also render a **Wireframe** or collection of **Points**.
+Choose the representation by checking one or more of the three.
 **Wireframe** and **Points** can be colored by a single color by selecting the desired color from their corresponding Color buttons, or by the default variable used for the plot.
 The checkbox for coloring by the default variable will only be enabled if **Surfaces** is disabled, because the wireframe or points will otherwise blend into the surface.
 
