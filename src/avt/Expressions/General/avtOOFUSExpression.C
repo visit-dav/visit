@@ -718,6 +718,415 @@ avtOOFUSExpression::execute_2_electric_boogaloo(avtDataTree_p inDT, avtDataTree_
     }
 }
 
+// ****************************************************************************
+// ****************************************************************************
+void
+avtOOFUSExpression::ConstantEvaluation(avtDataTree_p inputDataTree, std::vector<double> &constant_results)
+{
+    const int numChildren = inputDataTree->GetNChildren();
+
+    if (numChildren <= 0 && !inputDataTree->HasData())
+    {
+        return;
+    }
+
+    if (numChildren == 0)
+    {
+        ExecuteDataTree(&(inputDataTree->GetDataRepresentation()), constant_results);
+
+        UpdateProgress(currentProgress++, totalSteps);
+    }
+    else
+    {
+        // there is more than one input dataset to process
+        for (int childId = 0; childId < numChildren; childId ++)
+        {
+            // are children present?
+            if (inputDataTree->ChildIsPresent(childId))
+            {
+                ConstantEvaluation(inputDataTree->GetChild(childId), constant_results);
+            }
+        }
+    }
+}
+
+// ****************************************************************************
+// ****************************************************************************
+vtkDataArray *
+avtOOFUSExpression::WriteDerivedVariable(vtkDataSet *in_ds, int currentDomainsIndex, double result)
+{
+    int  i;
+
+    vtkDataArray *cell_data = NULL;
+    vtkDataArray *point_data = NULL;
+    vtkDataArray *data = NULL;
+
+    if (activeVariable == NULL)
+    {
+        //
+        // This hack is getting more and more refined.  This situation comes up
+        // when we don't know what the active variable is (mostly for the
+        // constant creation filter).  We probably need more infrastructure
+        // to handle this.
+        // Iteration 1 of this hack said take any array.
+        // Iteration 2 said take any array that isn't vtkGhostLevels, etc.
+        // Iteration 3 says take the first scalar array if one is available,
+        //             provided that array is not vtkGhostLevels, etc.
+        //             This is because most constants we create are scalar.
+        //
+        // Note: this hack used to be quite important because we would use
+        // the resulting array to determine the centering of the variable.
+        // Now we use the IsPointVariable() method.  So this data array is
+        // only used to get the type.
+        //
+        int ncellArray = in_ds->GetCellData()->GetNumberOfArrays();
+        for (i = 0 ; i < ncellArray ; i++)
+        {
+            vtkDataArray *candidate = in_ds->GetCellData()->GetArray(i);
+            if (strstr(candidate->GetName(), "vtk") != NULL)
+                continue;
+            if (strstr(candidate->GetName(), "avt") != NULL)
+                continue;
+            if (candidate->GetNumberOfComponents() == 1)
+            {
+                // Definite winner
+                cell_data = candidate;
+                break;
+            }
+            else
+                // Potential winner -- keep looking
+                cell_data = candidate;
+        }
+        int npointArray = in_ds->GetPointData()->GetNumberOfArrays();
+        for (i = 0 ; i < npointArray ; i++)
+        {
+            vtkDataArray *candidate = in_ds->GetPointData()->GetArray(i);
+            if (strstr(candidate->GetName(), "vtk") != NULL)
+                continue;
+            if (strstr(candidate->GetName(), "avt") != NULL)
+                continue;
+            if (candidate->GetNumberOfComponents() == 1)
+            {
+                // Definite winner
+                point_data = candidate;
+                break;
+            }
+            else
+                // Potential winner -- keep looking
+                point_data = candidate;
+        }
+
+        if (cell_data != NULL && cell_data->GetNumberOfComponents() == 1)
+        {
+            data = cell_data;
+            centering = AVT_ZONECENT;
+        }
+        else if (point_data != NULL && point_data->GetNumberOfComponents()== 1)
+        {
+            data = point_data;
+            centering = AVT_NODECENT;
+        }
+        else if (cell_data != NULL)
+        {
+            data = cell_data;
+            centering = AVT_ZONECENT;
+        }
+        else
+        {
+            data = point_data;
+            centering = AVT_NODECENT;
+        }
+    } 
+    else
+    {
+        cell_data = in_ds->GetCellData()->GetArray(activeVariable);
+        point_data = in_ds->GetPointData()->GetArray(activeVariable);
+
+        if (cell_data != NULL)
+        {
+            data = cell_data;
+            centering = AVT_ZONECENT;
+        }
+        else
+        {
+            data = point_data;
+            centering = AVT_NODECENT;
+        }
+    }
+
+    //
+    // Set up a VTK variable reflecting the calculated variable
+    //
+    int ncomps = 0;
+    int nvals = 0;
+    if (activeVariable == NULL || data == NULL)
+        nvals = (IsPointVariable() ? in_ds->GetNumberOfPoints() 
+                                   : in_ds->GetNumberOfCells());
+    else
+        nvals = data->GetNumberOfTuples();
+
+    vtkDataArray *dv = NULL;
+    if (data == NULL)
+    {
+        //
+        // We could not find a single array.  We must be doing something with
+        // the mesh.
+        //
+        ncomps = 1;
+        dv = CreateArrayFromMesh(in_ds);
+    }
+    else
+    {
+        ncomps = data->GetNumberOfComponents();
+        dv = CreateArray(data);
+    }
+
+    if (data == NULL)
+    {
+        // One way to get here is to have vtkPolyData Curve plots.
+        EXCEPTION2(ExpressionException, outputVariableName,
+             "An internal error occurred when "
+             "trying to calculate your expression.  Please contact a "
+             "VisIt developer.");
+    }
+
+    int noutcomps = ncomps;
+    dv->SetNumberOfComponents(noutcomps);
+    dv->SetNumberOfTuples(nvals);
+
+    //
+    // Should we send in ncomps or noutcomps?  They are the same number 
+    // unless the derived type re-defined GetNumberOfComponentsInOutput.
+    // If it did, it probably doesn't matter.  If not, then it is the same
+    // number.  So send in the input.  Really doesn't matter.
+    //
+    cur_mesh = in_ds;
+    for (int comp_id = 0; comp_id < ncomps; comp_id ++)
+    {
+        for (int tuple_id = 0; tuple_id < nvals; tuple_id ++)
+        {
+            dv->SetComponent(tuple_id, comp_id, result);
+        }
+    }
+    cur_mesh = NULL;
+
+    return dv;
+}
+
+
+// ****************************************************************************
+// ****************************************************************************
+avtDataRepresentation *
+avtOOFUSExpression::WriteData_VTK(avtDataRepresentation *in_dr, double result)
+{
+    //
+    // Get the VTK data set and domain number.
+    //
+    vtkDataSet *in_ds = in_dr->GetDataVTK();
+    int domain = in_dr->GetDomain();
+
+    //
+    // Sometimes we are asked to calculate a variable twice.  The easiest way
+    // to catch this is to see if we already have the requested variable and
+    // not re-derive it if we do.
+    //
+    vtkDataArray *dat = nullptr;
+    dat = in_ds->GetPointData()->GetArray(outputVariableName);
+    if (dat == nullptr)
+    {
+        dat = in_ds->GetCellData()->GetArray(outputVariableName);
+    }
+    if (dat != nullptr)
+    {
+        debug1 << "NOTE: variable " << outputVariableName 
+               << " already exists and it is not being recalculated." << endl;
+        dat->Register(nullptr);  // At the end of the routine, we will free this.
+    }
+
+    //
+    // Start off by having the derived type calculate the derived variable.
+    //
+    if (dat == nullptr)
+    {
+        dat = WriteDerivedVariable(in_ds, domain, result);
+        if (dat == nullptr)
+        {
+            EXCEPTION2(ExpressionException, outputVariableName, "an unknown error occurred while " 
+                  "trying to calculate your expression.  Please contact a "
+                  "VisIt developer.");
+        }
+        dat->SetName(outputVariableName);
+    }
+
+    int vardim = dat->GetNumberOfComponents();
+
+    //
+    // Now make a copy of the input and add the derived variable as its output.
+    //
+    vtkDataSet *rv = (vtkDataSet *) in_ds->NewInstance();
+    rv->ShallowCopy(in_ds);
+    int npts   = rv->GetNumberOfPoints();
+    int ncells = rv->GetNumberOfCells();
+    int ntups  = dat->GetNumberOfTuples();
+
+    bool isPoint = false;
+    if ((ntups == npts) && (ntups == ncells))
+    {
+        isPoint = IsPointVariable();
+    }
+    else if (ntups == 1) // Constant singleton.
+    {
+        isPoint = IsPointVariable();
+    }
+    else if ((ntups == ncells) && (ntups != npts))
+    {
+        isPoint = false;
+    }
+    else if ((ntups == npts) && (ntups != ncells))
+    {
+        isPoint = true;
+    }
+    else
+    {
+        debug1 << "Number of tuples cannot be point or cell variable."
+               << endl;
+        debug1 << "Var = " << dat->GetName() << endl;
+        debug1 << "Ntuples = " << ntups << endl;
+        debug1 << "Ncells = " << ncells << endl;
+        debug1 << "Npts = " << npts << endl;
+        dat->Delete();
+
+        avtDataRepresentation *out_dr = new avtDataRepresentation(rv,
+            in_dr->GetDomain(), in_dr->GetLabel());
+
+        rv->Delete();
+
+        return out_dr;
+    }
+
+    if (isPoint)
+    {
+        rv->GetPointData()->AddArray(dat);
+        if (vardim == 1)
+            rv->GetPointData()->SetActiveScalars(outputVariableName);
+        else if (vardim == 3)
+            rv->GetPointData()->SetActiveVectors(outputVariableName);
+        else if (vardim == 9)
+            rv->GetPointData()->SetActiveTensors(outputVariableName);
+    }
+    else
+    {
+        rv->GetCellData()->AddArray(dat);
+        if (vardim == 1)
+            rv->GetCellData()->SetActiveScalars(outputVariableName);
+        else if (vardim == 3)
+            rv->GetCellData()->SetActiveVectors(outputVariableName);
+        else if (vardim == 9)
+            rv->GetCellData()->SetActiveTensors(outputVariableName);
+    }
+
+    //
+    // Make sure that we don't have any memory leaks.
+    //
+    dat->Delete();
+
+    rv->GetFieldData()->AddArray(this->volumeDependent);
+
+    avtDataRepresentation *out_dr = new avtDataRepresentation(rv,
+        in_dr->GetDomain(), in_dr->GetLabel());
+
+    rv->Delete();
+
+    return out_dr;
+}
+
+// ****************************************************************************
+// ****************************************************************************
+avtDataRepresentation *
+avtOOFUSExpression::WriteData(avtDataRepresentation *in_dr, double result)
+{
+    avtDataRepresentation *out_dr = nullptr;
+    out_dr = WriteData_VTK(in_dr, result); 
+
+    return out_dr;
+}
+
+// ****************************************************************************
+// ****************************************************************************
+avtDataTree_p
+avtOOFUSExpression::WriteDataTree(avtDataRepresentation *in_dr, double result)
+{
+    avtDataRepresentation *out_dr = WriteData(in_dr, result);
+
+    if (out_dr == nullptr)
+    {
+        return nullptr;
+    }
+
+    // This code ends up creating a copy of out_dr in the data tree.
+    avtDataTree_p retval = new avtDataTree(out_dr);
+
+    // If the derived type created a new avtDataRepresentation instance then
+    // it's been copied in the avtDataTree. We need to remove the instance
+    // that was returned or we'll end up with a VTK reference count leak.
+    if(out_dr != in_dr)
+    {
+        delete out_dr;
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// ****************************************************************************
+void
+avtOOFUSExpression::WriteResult(avtDataTree_p inputDataTree, 
+                                avtDataTree_p &outputDataTree,
+                                double result)
+{
+    const int numChildren = inputDataTree->GetNChildren();
+
+    if (numChildren <= 0 && !inputDataTree->HasData())
+    {
+        return;
+    }
+
+    if (numChildren == 0)
+    {
+        outputDataTree = new avtDataTree();
+        avtDataTree_p resultDataTree = WriteDataTree(&(inputDataTree->GetDataRepresentation()), result);
+        if (*resultDataTree)
+        {
+            outputDataTree = resultDataTree;
+        }
+
+        UpdateProgress(currentProgress++, totalSteps);
+    }
+    else
+    {
+        //
+        // there is more than one input dataset to process
+        // and we need an output datatree for each
+        //
+        avtDataTree_p *localOutputDataTree = new avtDataTree_p[numChildren];
+        for (int childId = 0; childId < numChildren; childId++)
+        {
+            // are children present?
+            if (inputDataTree->ChildIsPresent(childId))
+            {
+                localOutputDataTree[childId].SetReference( new avtDataTree );
+                WriteResult(inputDataTree->GetChild(childId), localOutputDataTree[childId], result);
+            }
+            else // adults only
+            {
+                localOutputDataTree[childId] = NULL;
+            }
+        }
+        outputDataTree = new avtDataTree(numChildren, localOutputDataTree);
+        delete [] localOutputDataTree;
+    }
+}
+
 
 // ****************************************************************************
 //  Method: avtOOFUSExpression::Execute
@@ -733,35 +1142,32 @@ avtOOFUSExpression::execute_2_electric_boogaloo(avtDataTree_p inDT, avtDataTree_
 void
 avtOOFUSExpression::Execute()
 {
-    // taken from avtSIMODataTreeIterator::Execute()
-
     //
     // This will walk through the data domains in a data tree.
     //
     avtDataTree_p tree = GetInputDataTree();
-
-    std::cout << "tree->GetNumberOfLeaves() " << tree->GetNumberOfLeaves() << std::endl;
-
     avtDataTree_p newTree;
 
+    // get datasets and num domains (totalNodes)
+    vtkDataSet **data_sets = tree->GetAllLeaves(totalNodes);
 
-    if (*tree != NULL)
-    {
-        totalNodes = tree->GetNumberOfLeaves();
-        execute_2_electric_boogaloo(tree, newTree);
+    // TODO calculate progress so we can update it appropriately
+    // see conn comp expr for how
 
-        // If in threaded mode wait until Execute has completed.
-        // TODO do we really need to do this?
-        avtExecutionManagerFinishWork();
-    }
-    else
-    {
-        // This can happen when a filter serves up an empty data tree.
-        // It can also happen when we claim memory from intermediate
-        // data objects and then go back to execute them.
-        debug1 << "Unusual situation: NULL input tree to SIMO iterator.  Likely "
-               << "that an exception occurred previously." << endl;
-    }
+    // get dataset domain ids
+    std::vector<int> domain_ids;
+    tree->GetAllDomainIds(domain_ids);
+
+    std::vector<double> constant_results;
+    ConstantEvaluation(tree, constant_results);
+
+    // now we calculate result per rank
+
+    // next we calculate global result
+
+    // then write result
+
+    execute_2_electric_boogaloo(tree, newTree);
 
     if (*newTree == NULL)
     {
