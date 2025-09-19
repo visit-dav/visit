@@ -13,6 +13,7 @@
 #include <memory>
 
 class VolumeAttributes;
+class AnariAttributes;
 class QvisVolumePlotWindow;
 class QGroupBox;
 class QComboBox;
@@ -49,16 +50,7 @@ public:
     ~AnariVolumeWidget() = default;
 
     int GetRowCount() const { return (topRows + bottomRows); }
-
-    // General
-    void SetChecked(const bool);
-    void UpdateLibraryName(const std::string);
-    void UpdateLibrarySubtypes(const std::string);
-    void UpdateRendererSubtypes(const std::string);
-
-    // Dynamic
-    void UpdateRendererParameters(const stringVector &);
-    void UpdateUSDParameters(const stringVector &);
+    void UpdateAnariAttributes(const AnariAttributes &);
 
 signals:
     void currentBackendChanged(int);
@@ -78,6 +70,13 @@ private slots:
     void checkBoxToggled(bool);
 
 private:
+    void SetChecked(const bool);
+    void UpdateLibraryName(const std::string);
+    void UpdateLibrarySubtypes(const std::string);
+    void UpdateRendererSubtypes(const std::string);
+
+    void UpdateRendererParameters(const stringVector &);
+    void UpdateUSDParameters(const stringVector &);
     QWidget *CreateGeneralWidget(int &);
     QWidget *CreateUSDWidget(int &);
     void CreateDynamicWidget(anari::Device, const char *, const std::string &, bool isUSD = false);
@@ -91,6 +90,7 @@ private:
 
     QvisVolumePlotWindow *renderingWindow;
     VolumeAttributes *volumeAttributes;
+    AnariAttributes *anariAttributes;
     QStackedLayout *dynamicLayouts; // Caches the dynamic widgets
 
     // Mapping of dynamic widget key (backend:subtype:renderer) to index in

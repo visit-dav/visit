@@ -450,9 +450,6 @@ void VolumeAttributes::Init()
     materialProperties[1] = 0.75;
     materialProperties[2] = 0;
     materialProperties[3] = 15;
-    anariRendering = false;
-    anariRendererSubtype = "default";
-    usingUsdDevice = false;
 
     VolumeAttributes::SelectAll();
 }
@@ -524,13 +521,7 @@ void VolumeAttributes::Copy(const VolumeAttributes &obj)
     for(int i = 0; i < 4; ++i)
         materialProperties[i] = obj.materialProperties[i];
 
-    anariRendering = obj.anariRendering;
-    anariLibrary = obj.anariLibrary;
-    anariLibrarySubtype = obj.anariLibrarySubtype;
-    anariRendererSubtype = obj.anariRendererSubtype;
-    usingUsdDevice = obj.usingUsdDevice;
-    anariRendererParameters = obj.anariRendererParameters;
-    anariUSDParameters = obj.anariUSDParameters;
+    anariAttributes = obj.anariAttributes;
 
     VolumeAttributes::SelectAll();
 }
@@ -745,13 +736,7 @@ VolumeAttributes::operator == (const VolumeAttributes &obj) const
             (lowGradientLightingClampFlag == obj.lowGradientLightingClampFlag) &&
             (lowGradientLightingClampValue == obj.lowGradientLightingClampValue) &&
             materialProperties_equal &&
-            (anariRendering == obj.anariRendering) &&
-            (anariLibrary == obj.anariLibrary) &&
-            (anariLibrarySubtype == obj.anariLibrarySubtype) &&
-            (anariRendererSubtype == obj.anariRendererSubtype) &&
-            (usingUsdDevice == obj.usingUsdDevice) &&
-            (anariRendererParameters == obj.anariRendererParameters) &&
-            (anariUSDParameters == obj.anariUSDParameters));
+            (anariAttributes == obj.anariAttributes));
 }
 
 // ****************************************************************************
@@ -940,13 +925,7 @@ VolumeAttributes::SelectAll()
     Select(ID_lowGradientLightingClampFlag,    (void *)&lowGradientLightingClampFlag);
     Select(ID_lowGradientLightingClampValue,   (void *)&lowGradientLightingClampValue);
     Select(ID_materialProperties,              (void *)materialProperties, 4);
-    Select(ID_anariRendering,                  (void *)&anariRendering);
-    Select(ID_anariLibrary,                    (void *)&anariLibrary);
-    Select(ID_anariLibrarySubtype,             (void *)&anariLibrarySubtype);
-    Select(ID_anariRendererSubtype,            (void *)&anariRendererSubtype);
-    Select(ID_usingUsdDevice,                  (void *)&usingUsdDevice);
-    Select(ID_anariRendererParameters,         (void *)&anariRendererParameters);
-    Select(ID_anariUSDParameters,              (void *)&anariUSDParameters);
+    Select(ID_anariAttributes,                 (void *)&anariAttributes);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1261,46 +1240,16 @@ VolumeAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
         node->AddNode(new DataNode("materialProperties", materialProperties, 4));
     }
 
-    if(completeSave || !FieldsEqual(ID_anariRendering, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_anariAttributes, &defaultObject))
     {
-        addToParent = true;
-        node->AddNode(new DataNode("anariRendering", anariRendering));
-    }
-
-    if(completeSave || !FieldsEqual(ID_anariLibrary, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("anariLibrary", anariLibrary));
-    }
-
-    if(completeSave || !FieldsEqual(ID_anariLibrarySubtype, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("anariLibrarySubtype", anariLibrarySubtype));
-    }
-
-    if(completeSave || !FieldsEqual(ID_anariRendererSubtype, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("anariRendererSubtype", anariRendererSubtype));
-    }
-
-    if(completeSave || !FieldsEqual(ID_usingUsdDevice, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("usingUsdDevice", usingUsdDevice));
-    }
-
-    if(completeSave || !FieldsEqual(ID_anariRendererParameters, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("anariRendererParameters", anariRendererParameters));
-    }
-
-    if(completeSave || !FieldsEqual(ID_anariUSDParameters, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("anariUSDParameters", anariUSDParameters));
+        DataNode *anariAttributesNode = new DataNode("anariAttributes");
+        if(anariAttributes.CreateNode(anariAttributesNode, completeSave, false))
+        {
+            addToParent = true;
+            node->AddNode(anariAttributesNode);
+        }
+        else
+            delete anariAttributesNode;
     }
 
 
@@ -1569,20 +1518,8 @@ VolumeAttributes::SetFromNode(DataNode *parentNode)
         SetLowGradientLightingClampValue(node->AsDouble());
     if((node = searchNode->GetNode("materialProperties")) != 0)
         SetMaterialProperties(node->AsDoubleArray());
-    if((node = searchNode->GetNode("anariRendering")) != 0)
-        SetAnariRendering(node->AsBool());
-    if((node = searchNode->GetNode("anariLibrary")) != 0)
-        SetAnariLibrary(node->AsString());
-    if((node = searchNode->GetNode("anariLibrarySubtype")) != 0)
-        SetAnariLibrarySubtype(node->AsString());
-    if((node = searchNode->GetNode("anariRendererSubtype")) != 0)
-        SetAnariRendererSubtype(node->AsString());
-    if((node = searchNode->GetNode("usingUsdDevice")) != 0)
-        SetUsingUsdDevice(node->AsBool());
-    if((node = searchNode->GetNode("anariRendererParameters")) != 0)
-        SetAnariRendererParameters(node->AsStringVector());
-    if((node = searchNode->GetNode("anariUSDParameters")) != 0)
-        SetAnariUSDParameters(node->AsStringVector());
+    if((node = searchNode->GetNode("anariAttributes")) != 0)
+        anariAttributes.SetFromNode(node);
     if(colorControlPoints.GetNumControlPoints() < 2)
          SetDefaultColorControlPoints();
 
@@ -1912,52 +1849,10 @@ VolumeAttributes::SetMaterialProperties(const double *materialProperties_)
 }
 
 void
-VolumeAttributes::SetAnariRendering(bool anariRendering_)
+VolumeAttributes::SetAnariAttributes(const AnariAttributes &anariAttributes_)
 {
-    anariRendering = anariRendering_;
-    Select(ID_anariRendering, (void *)&anariRendering);
-}
-
-void
-VolumeAttributes::SetAnariLibrary(const std::string &anariLibrary_)
-{
-    anariLibrary = anariLibrary_;
-    Select(ID_anariLibrary, (void *)&anariLibrary);
-}
-
-void
-VolumeAttributes::SetAnariLibrarySubtype(const std::string &anariLibrarySubtype_)
-{
-    anariLibrarySubtype = anariLibrarySubtype_;
-    Select(ID_anariLibrarySubtype, (void *)&anariLibrarySubtype);
-}
-
-void
-VolumeAttributes::SetAnariRendererSubtype(const std::string &anariRendererSubtype_)
-{
-    anariRendererSubtype = anariRendererSubtype_;
-    Select(ID_anariRendererSubtype, (void *)&anariRendererSubtype);
-}
-
-void
-VolumeAttributes::SetUsingUsdDevice(bool usingUsdDevice_)
-{
-    usingUsdDevice = usingUsdDevice_;
-    Select(ID_usingUsdDevice, (void *)&usingUsdDevice);
-}
-
-void
-VolumeAttributes::SetAnariRendererParameters(const stringVector &anariRendererParameters_)
-{
-    anariRendererParameters = anariRendererParameters_;
-    Select(ID_anariRendererParameters, (void *)&anariRendererParameters);
-}
-
-void
-VolumeAttributes::SetAnariUSDParameters(const stringVector &anariUSDParameters_)
-{
-    anariUSDParameters = anariUSDParameters_;
-    Select(ID_anariUSDParameters, (void *)&anariUSDParameters);
+    anariAttributes = anariAttributes_;
+    Select(ID_anariAttributes, (void *)&anariAttributes);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2264,76 +2159,16 @@ VolumeAttributes::GetMaterialProperties()
     return materialProperties;
 }
 
-bool
-VolumeAttributes::GetAnariRendering() const
+const AnariAttributes &
+VolumeAttributes::GetAnariAttributes() const
 {
-    return anariRendering;
+    return anariAttributes;
 }
 
-const std::string &
-VolumeAttributes::GetAnariLibrary() const
+AnariAttributes &
+VolumeAttributes::GetAnariAttributes()
 {
-    return anariLibrary;
-}
-
-std::string &
-VolumeAttributes::GetAnariLibrary()
-{
-    return anariLibrary;
-}
-
-const std::string &
-VolumeAttributes::GetAnariLibrarySubtype() const
-{
-    return anariLibrarySubtype;
-}
-
-std::string &
-VolumeAttributes::GetAnariLibrarySubtype()
-{
-    return anariLibrarySubtype;
-}
-
-const std::string &
-VolumeAttributes::GetAnariRendererSubtype() const
-{
-    return anariRendererSubtype;
-}
-
-std::string &
-VolumeAttributes::GetAnariRendererSubtype()
-{
-    return anariRendererSubtype;
-}
-
-bool
-VolumeAttributes::GetUsingUsdDevice() const
-{
-    return usingUsdDevice;
-}
-
-const stringVector &
-VolumeAttributes::GetAnariRendererParameters() const
-{
-    return anariRendererParameters;
-}
-
-stringVector &
-VolumeAttributes::GetAnariRendererParameters()
-{
-    return anariRendererParameters;
-}
-
-const stringVector &
-VolumeAttributes::GetAnariUSDParameters() const
-{
-    return anariUSDParameters;
-}
-
-stringVector &
-VolumeAttributes::GetAnariUSDParameters()
-{
-    return anariUSDParameters;
+    return anariAttributes;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2371,33 +2206,9 @@ VolumeAttributes::SelectMaterialProperties()
 }
 
 void
-VolumeAttributes::SelectAnariLibrary()
+VolumeAttributes::SelectAnariAttributes()
 {
-    Select(ID_anariLibrary, (void *)&anariLibrary);
-}
-
-void
-VolumeAttributes::SelectAnariLibrarySubtype()
-{
-    Select(ID_anariLibrarySubtype, (void *)&anariLibrarySubtype);
-}
-
-void
-VolumeAttributes::SelectAnariRendererSubtype()
-{
-    Select(ID_anariRendererSubtype, (void *)&anariRendererSubtype);
-}
-
-void
-VolumeAttributes::SelectAnariRendererParameters()
-{
-    Select(ID_anariRendererParameters, (void *)&anariRendererParameters);
-}
-
-void
-VolumeAttributes::SelectAnariUSDParameters()
-{
-    Select(ID_anariUSDParameters, (void *)&anariUSDParameters);
+    Select(ID_anariAttributes, (void *)&anariAttributes);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2469,13 +2280,7 @@ VolumeAttributes::GetFieldName(int index) const
     case ID_lowGradientLightingClampFlag:    return "lowGradientLightingClampFlag";
     case ID_lowGradientLightingClampValue:   return "lowGradientLightingClampValue";
     case ID_materialProperties:              return "materialProperties";
-    case ID_anariRendering:                  return "anariRendering";
-    case ID_anariLibrary:                    return "anariLibrary";
-    case ID_anariLibrarySubtype:             return "anariLibrarySubtype";
-    case ID_anariRendererSubtype:            return "anariRendererSubtype";
-    case ID_usingUsdDevice:                  return "usingUsdDevice";
-    case ID_anariRendererParameters:         return "anariRendererParameters";
-    case ID_anariUSDParameters:              return "anariUSDParameters";
+    case ID_anariAttributes:                 return "anariAttributes";
     default:  return "invalid index";
     }
 }
@@ -2545,13 +2350,7 @@ VolumeAttributes::GetFieldType(int index) const
     case ID_lowGradientLightingClampFlag:    return FieldType_bool;
     case ID_lowGradientLightingClampValue:   return FieldType_double;
     case ID_materialProperties:              return FieldType_doubleArray;
-    case ID_anariRendering:                  return FieldType_bool;
-    case ID_anariLibrary:                    return FieldType_string;
-    case ID_anariLibrarySubtype:             return FieldType_string;
-    case ID_anariRendererSubtype:            return FieldType_string;
-    case ID_usingUsdDevice:                  return FieldType_bool;
-    case ID_anariRendererParameters:         return FieldType_stringVector;
-    case ID_anariUSDParameters:              return FieldType_stringVector;
+    case ID_anariAttributes:                 return FieldType_att;
     default:  return FieldType_unknown;
     }
 }
@@ -2621,13 +2420,7 @@ VolumeAttributes::GetFieldTypeName(int index) const
     case ID_lowGradientLightingClampFlag:    return "bool";
     case ID_lowGradientLightingClampValue:   return "double";
     case ID_materialProperties:              return "doubleArray";
-    case ID_anariRendering:                  return "bool";
-    case ID_anariLibrary:                    return "string";
-    case ID_anariLibrarySubtype:             return "string";
-    case ID_anariRendererSubtype:            return "string";
-    case ID_usingUsdDevice:                  return "bool";
-    case ID_anariRendererParameters:         return "stringVector";
-    case ID_anariUSDParameters:              return "stringVector";
+    case ID_anariAttributes:                 return "att";
     default:  return "invalid index";
     }
 }
@@ -2889,39 +2682,9 @@ VolumeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = materialProperties_equal;
         }
         break;
-    case ID_anariRendering:
+    case ID_anariAttributes:
         {  // new scope
-        retval = (anariRendering == obj.anariRendering);
-        }
-        break;
-    case ID_anariLibrary:
-        {  // new scope
-        retval = (anariLibrary == obj.anariLibrary);
-        }
-        break;
-    case ID_anariLibrarySubtype:
-        {  // new scope
-        retval = (anariLibrarySubtype == obj.anariLibrarySubtype);
-        }
-        break;
-    case ID_anariRendererSubtype:
-        {  // new scope
-        retval = (anariRendererSubtype == obj.anariRendererSubtype);
-        }
-        break;
-    case ID_usingUsdDevice:
-        {  // new scope
-        retval = (usingUsdDevice == obj.usingUsdDevice);
-        }
-        break;
-    case ID_anariRendererParameters:
-        {  // new scope
-        retval = (anariRendererParameters == obj.anariRendererParameters);
-        }
-        break;
-    case ID_anariUSDParameters:
-        {  // new scope
-        retval = (anariUSDParameters == obj.anariUSDParameters);
+        retval = (anariAttributes == obj.anariAttributes);
         }
         break;
     default: retval = false;

@@ -9,7 +9,7 @@ import llnl.visit.CommunicationBuffer;
 import llnl.visit.Plugin;
 import llnl.visit.ColorControlPointList;
 import llnl.visit.GaussianControlPointList;
-import java.util.Vector;
+import llnl.visit.AnariAttributes;
 
 // ****************************************************************************
 // Class: VolumeAttributes
@@ -28,7 +28,7 @@ import java.util.Vector;
 
 public class VolumeAttributes extends AttributeSubject implements Plugin
 {
-    private static int VolumeAttributes_numAdditionalAtts = 52;
+    private static int VolumeAttributes_numAdditionalAtts = 46;
 
     // Enum values
     public final static int RENDERER_SERIAL = 0;
@@ -134,13 +134,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         materialProperties[1] = 0.75;
         materialProperties[2] = 0;
         materialProperties[3] = 15;
-        anariRendering = false;
-        anariLibrary = new String("");
-        anariLibrarySubtype = new String("");
-        anariRendererSubtype = new String("default");
-        usingUsdDevice = false;
-        anariRendererParameters = new Vector();
-        anariUSDParameters = new Vector();
+        anariAttributes = new AnariAttributes();
     }
 
     public VolumeAttributes(int nMoreFields)
@@ -198,13 +192,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         materialProperties[1] = 0.75;
         materialProperties[2] = 0;
         materialProperties[3] = 15;
-        anariRendering = false;
-        anariLibrary = new String("");
-        anariLibrarySubtype = new String("");
-        anariRendererSubtype = new String("default");
-        usingUsdDevice = false;
-        anariRendererParameters = new Vector();
-        anariUSDParameters = new Vector();
+        anariAttributes = new AnariAttributes();
     }
 
     public VolumeAttributes(VolumeAttributes obj)
@@ -264,19 +252,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         for(i = 0; i < obj.materialProperties.length; ++i)
             materialProperties[i] = obj.materialProperties[i];
 
-        anariRendering = obj.anariRendering;
-        anariLibrary = new String(obj.anariLibrary);
-        anariLibrarySubtype = new String(obj.anariLibrarySubtype);
-        anariRendererSubtype = new String(obj.anariRendererSubtype);
-        usingUsdDevice = obj.usingUsdDevice;
-        anariRendererParameters = new Vector(obj.anariRendererParameters.size());
-        for(i = 0; i < obj.anariRendererParameters.size(); ++i)
-            anariRendererParameters.addElement(new String((String)obj.anariRendererParameters.elementAt(i)));
-
-        anariUSDParameters = new Vector(obj.anariUSDParameters.size());
-        for(i = 0; i < obj.anariUSDParameters.size(); ++i)
-            anariUSDParameters.addElement(new String((String)obj.anariUSDParameters.elementAt(i)));
-
+        anariAttributes = new AnariAttributes(obj.anariAttributes);
 
         SelectAll();
     }
@@ -305,24 +281,6 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         for(i = 0; i < 4 && materialProperties_equal; ++i)
             materialProperties_equal = (materialProperties[i] == obj.materialProperties[i]);
 
-        // Compare the elements in the anariRendererParameters vector.
-        boolean anariRendererParameters_equal = (obj.anariRendererParameters.size() == anariRendererParameters.size());
-        for(i = 0; (i < anariRendererParameters.size()) && anariRendererParameters_equal; ++i)
-        {
-            // Make references to String from Object.
-            String anariRendererParameters1 = (String)anariRendererParameters.elementAt(i);
-            String anariRendererParameters2 = (String)obj.anariRendererParameters.elementAt(i);
-            anariRendererParameters_equal = anariRendererParameters1.equals(anariRendererParameters2);
-        }
-        // Compare the elements in the anariUSDParameters vector.
-        boolean anariUSDParameters_equal = (obj.anariUSDParameters.size() == anariUSDParameters.size());
-        for(i = 0; (i < anariUSDParameters.size()) && anariUSDParameters_equal; ++i)
-        {
-            // Make references to String from Object.
-            String anariUSDParameters1 = (String)anariUSDParameters.elementAt(i);
-            String anariUSDParameters2 = (String)obj.anariUSDParameters.elementAt(i);
-            anariUSDParameters_equal = anariUSDParameters1.equals(anariUSDParameters2);
-        }
         // Create the return value
         return ((OSPRayEnabledFlag == obj.OSPRayEnabledFlag) &&
                 (OSPRayRenderType == obj.OSPRayRenderType) &&
@@ -369,13 +327,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
                 (lowGradientLightingClampFlag == obj.lowGradientLightingClampFlag) &&
                 (lowGradientLightingClampValue == obj.lowGradientLightingClampValue) &&
                 materialProperties_equal &&
-                (anariRendering == obj.anariRendering) &&
-                (anariLibrary.equals(obj.anariLibrary)) &&
-                (anariLibrarySubtype.equals(obj.anariLibrarySubtype)) &&
-                (anariRendererSubtype.equals(obj.anariRendererSubtype)) &&
-                (usingUsdDevice == obj.usingUsdDevice) &&
-                anariRendererParameters_equal &&
-                anariUSDParameters_equal);
+                (anariAttributes.equals(obj.anariAttributes)));
     }
 
     public String GetName() { return "Volume"; }
@@ -665,46 +617,10 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         Select(44);
     }
 
-    public void SetAnariRendering(boolean anariRendering_)
+    public void SetAnariAttributes(AnariAttributes anariAttributes_)
     {
-        anariRendering = anariRendering_;
+        anariAttributes = anariAttributes_;
         Select(45);
-    }
-
-    public void SetAnariLibrary(String anariLibrary_)
-    {
-        anariLibrary = anariLibrary_;
-        Select(46);
-    }
-
-    public void SetAnariLibrarySubtype(String anariLibrarySubtype_)
-    {
-        anariLibrarySubtype = anariLibrarySubtype_;
-        Select(47);
-    }
-
-    public void SetAnariRendererSubtype(String anariRendererSubtype_)
-    {
-        anariRendererSubtype = anariRendererSubtype_;
-        Select(48);
-    }
-
-    public void SetUsingUsdDevice(boolean usingUsdDevice_)
-    {
-        usingUsdDevice = usingUsdDevice_;
-        Select(49);
-    }
-
-    public void SetAnariRendererParameters(Vector anariRendererParameters_)
-    {
-        anariRendererParameters = anariRendererParameters_;
-        Select(50);
-    }
-
-    public void SetAnariUSDParameters(Vector anariUSDParameters_)
-    {
-        anariUSDParameters = anariUSDParameters_;
-        Select(51);
     }
 
     // Property getting methods
@@ -753,13 +669,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     public boolean                  GetLowGradientLightingClampFlag() { return lowGradientLightingClampFlag; }
     public double                   GetLowGradientLightingClampValue() { return lowGradientLightingClampValue; }
     public double[]                 GetMaterialProperties() { return materialProperties; }
-    public boolean                  GetAnariRendering() { return anariRendering; }
-    public String                   GetAnariLibrary() { return anariLibrary; }
-    public String                   GetAnariLibrarySubtype() { return anariLibrarySubtype; }
-    public String                   GetAnariRendererSubtype() { return anariRendererSubtype; }
-    public boolean                  GetUsingUsdDevice() { return usingUsdDevice; }
-    public Vector                   GetAnariRendererParameters() { return anariRendererParameters; }
-    public Vector                   GetAnariUSDParameters() { return anariUSDParameters; }
+    public AnariAttributes          GetAnariAttributes() { return anariAttributes; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -855,19 +765,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(44, buf))
             buf.WriteDoubleArray(materialProperties);
         if(WriteSelect(45, buf))
-            buf.WriteBool(anariRendering);
-        if(WriteSelect(46, buf))
-            buf.WriteString(anariLibrary);
-        if(WriteSelect(47, buf))
-            buf.WriteString(anariLibrarySubtype);
-        if(WriteSelect(48, buf))
-            buf.WriteString(anariRendererSubtype);
-        if(WriteSelect(49, buf))
-            buf.WriteBool(usingUsdDevice);
-        if(WriteSelect(50, buf))
-            buf.WriteStringVector(anariRendererParameters);
-        if(WriteSelect(51, buf))
-            buf.WriteStringVector(anariUSDParameters);
+            anariAttributes.Write(buf);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -1012,25 +910,8 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
             SetMaterialProperties(buf.ReadDoubleArray());
             break;
         case 45:
-            SetAnariRendering(buf.ReadBool());
-            break;
-        case 46:
-            SetAnariLibrary(buf.ReadString());
-            break;
-        case 47:
-            SetAnariLibrarySubtype(buf.ReadString());
-            break;
-        case 48:
-            SetAnariRendererSubtype(buf.ReadString());
-            break;
-        case 49:
-            SetUsingUsdDevice(buf.ReadBool());
-            break;
-        case 50:
-            SetAnariRendererParameters(buf.ReadStringVector());
-            break;
-        case 51:
-            SetAnariUSDParameters(buf.ReadStringVector());
+            anariAttributes.Read(buf);
+            Select(45);
             break;
         }
     }
@@ -1167,13 +1048,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         str = str + boolToString("lowGradientLightingClampFlag", lowGradientLightingClampFlag, indent) + "\n";
         str = str + doubleToString("lowGradientLightingClampValue", lowGradientLightingClampValue, indent) + "\n";
         str = str + doubleArrayToString("materialProperties", materialProperties, indent) + "\n";
-        str = str + boolToString("anariRendering", anariRendering, indent) + "\n";
-        str = str + stringToString("anariLibrary", anariLibrary, indent) + "\n";
-        str = str + stringToString("anariLibrarySubtype", anariLibrarySubtype, indent) + "\n";
-        str = str + stringToString("anariRendererSubtype", anariRendererSubtype, indent) + "\n";
-        str = str + boolToString("usingUsdDevice", usingUsdDevice, indent) + "\n";
-        str = str + stringVectorToString("anariRendererParameters", anariRendererParameters, indent) + "\n";
-        str = str + stringVectorToString("anariUSDParameters", anariUSDParameters, indent) + "\n";
+        str = str + indent + "anariAttributes = {\n" + anariAttributes.toString(indent + "    ") + indent + "}\n";
         return str;
     }
 
@@ -1224,12 +1099,6 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     private boolean                  lowGradientLightingClampFlag;
     private double                   lowGradientLightingClampValue;
     private double[]                 materialProperties;
-    private boolean                  anariRendering;
-    private String                   anariLibrary;
-    private String                   anariLibrarySubtype;
-    private String                   anariRendererSubtype;
-    private boolean                  usingUsdDevice;
-    private Vector                   anariRendererParameters; // vector of String objects
-    private Vector                   anariUSDParameters; // vector of String objects
+    private AnariAttributes          anariAttributes;
 }
 
