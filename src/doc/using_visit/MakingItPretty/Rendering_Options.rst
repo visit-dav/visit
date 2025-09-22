@@ -69,7 +69,10 @@ Shadows
 
 VisIt supports shadows when scalable rendering is being used.
 Shadows can be useful for increasing the realism of your visualization.
-The controls to turn on shadows can be found near the bottom of the **Advanced** tab (see :numref:`Figure %s <fig-MakingItPretty-RenderingOptionsAdvanced>`).
+Shadows are applied after the opaque geometry has been rendered and before the transparent geometry is rendered.
+This means that transparent geometry doesn't cast shadows and doesn't have shadows cast on it.
+Currently, the shadowing implementation only uses the first light and assumes it is a directional light.
+The controls to turn on shadows can be found about a third of the way from the top of the **Advanced** tab (see :numref:`Figure %s <fig-MakingItPretty-RenderingOptionsAdvanced>`).
 To turn on shadows, you must turn on scalable rendering by clicking on the **Always** radio button under the **Use scalable rendering** label.
 Once scalable rendering has been turned on, the shadows controls become enabled.
 The default shadow strength is 50%.
@@ -88,7 +91,9 @@ Depth Cueing
 VisIt supports depth cueing when scalable rendering is being used.
 Depth cueing can be useful for increasing the realism of your visualization.
 Depth cueing causes objects to be blended with the background with increasing distance from the camera.
-The controls to turn on depth cueing can be found near the bottom of the **Advanced** tab (see :numref:`Figure %s <fig-MakingItPretty-RenderingOptionsAdvanced>`).
+Depth cueing is are applied after the shadows have been applied and before the transparent geometry is rendered.
+This means that transparent geometry won't be impacted by depth cueing.
+The controls to turn on depth cueing can be found about a third of the way from the top of the **Advanced** tab (see :numref:`Figure %s <fig-MakingItPretty-RenderingOptionsAdvanced>`).
 To turn on depth cueing, you must turn on scalable rendering by clicking on the **Always** radio button under the **Use scalable rendering** label.
 Once scalable rendering has been turned on, the depth cueing controls become enabled.
 By default, depth cueing is performed along the camera direction.
