@@ -2048,6 +2048,9 @@ Engine::ProcessInput()
 //    Kathleen Biagas, Wed Aug 17, 2022
 //    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9.
 //
+//    Eric Brugger, Tue Sep 23 10:13:44 PDT 2025
+//    Added "-compositer-debug" to enable programmable compositing debug.
+//
 // ****************************************************************************
 
 void
@@ -2249,6 +2252,10 @@ Engine::ProcessCommandLine(int argc, char **argv)
                 i+= nskip;
 #endif
             }
+        }
+        else if (strcmp(argv[i], "-compositer-debug") == 0)
+        {
+            NetworkManager::EnableProgrammableCompositerDebug();
         }
         else if (strcmp(argv[i], "-vtk-debug") == 0)
         {

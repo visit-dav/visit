@@ -93,7 +93,6 @@
 #include <PlotPluginInfo.h>
 #include <StackTimer.h>
 #include <FileFunctions.h>
-//#define ProgrammableCompositerDEBUG
 //#define NetworkManagerDEBUG
 //#define NetworkManagerTIME
 #include <ProgrammableCompositer.h>
@@ -226,6 +225,8 @@ static avtDataBinning *GetDataBinningCallbackBridge(void *arg, const char *name)
 //
 // Static data members of the NetworkManager class.
 //
+bool                       NetworkManager::programmableCompositerDebug = false;
+
 InitializeProgressCallback NetworkManager::initializeProgressCallback = NULL;
 void                      *NetworkManager::initializeProgressCallbackArgs=NULL;
 ProgressCallback           NetworkManager::progressCallback = NULL;
@@ -2990,6 +2991,9 @@ NetworkManager::RenderValues(intVector plotIds, bool getZBuffer, int windowID, b
 //    names and be named such that their sort order matches the order in
 //    which they are generated. I renumbered the rendering passes.
 //
+//    Eric Brugger, Tue Sep 23 10:13:44 PDT 2025
+//    Added the ability to enable programmable compositing debug at runtime.
+//
 // ****************************************************************************
 //
 avtDataObject_p
@@ -3025,10 +3029,8 @@ NetworkManager::RenderInternal()
     // ************************************************************
     RenderPostProcess(pass);
 
-#ifdef ProgrammableCompositerDEBUG
-    if (PAR_Rank() == 0)
+    if (programmableCompositerDebug && PAR_Rank() == 0)
         writeVTK("pass_5.vtk", pass->GetImage());
-#endif
 
     avtDataObject_p output;
     CopyTo(output, pass);
@@ -7148,6 +7150,9 @@ NetworkManager::RenderingStages()
 //    names and be named such that their sort order matches the order in
 //    which they are generated. I renumbered the rendering passes.
 //
+//    Eric Brugger, Tue Sep 23 10:13:44 PDT 2025
+//    Added the ability to enable programmable compositing debug at runtime.
+//
 // ****************************************************************************
 
 avtImage_p
@@ -7233,9 +7238,8 @@ NetworkManager::RenderGeometry()
                 renderState.viewportedMode, /*read z=*/true,
                 /*read a=*/renderState.orderComposite);
 
-#ifdef ProgrammableCompositerDEBUG
-            writeVTK("pass_1a_opaque_partial.vtk", ri,gi,bi,ai,zi,w,h);
-#endif
+            if (programmableCompositerDebug)
+                writeVTK("pass_1a_opaque_partial.vtk", ri,gi,bi,ai,zi,w,h);
 
             if (renderState.orderComposite)
             {
@@ -7299,11 +7303,11 @@ NetworkManager::RenderGeometry()
 
             if ((rank == 0) || renderState.allReducePass1 || renderState.orderComposite)
             {
+                if (programmableCompositerDebug)
+                    writeVTK("pass_1b_opaque_composited.vtk", ro,go,bo,ao,zo,w,h);
+
                 output = new avtImage(NULL);
                 Merge(output, ro,go,bo,ao, zo, w,h, true);
-#ifdef ProgrammableCompositerDEBUG
-                writeVTK("pass_1b_opaque_composited.vtk", ro,go,bo,ao,zo,w,h);
-#endif
             }
 
             zcomp->Clear();
@@ -7355,9 +7359,8 @@ NetworkManager::RenderGeometry()
             compositer->AddImageInput(output, 0, 0);
             compositer->Execute();
             output = compositer->GetTypedOutput();
-#ifdef ProgrammableCompositerDEBUG
-            writeVTK("pass_1c_opaque_composited.vtk", output->GetImage());
-#endif
+            if (programmableCompositerDebug)
+                writeVTK("pass_1c_opaque_composited.vtk", output->GetImage());
             delete compositer;
         }
     }
@@ -7404,6 +7407,9 @@ NetworkManager::RenderGeometry()
 //    Enhanced the output of intermediate images to have more descriptive
 //    names and be named such that their sort order matches the order in
 //    which they are generated. I renumbered the rendering passes.
+//
+//    Eric Brugger, Tue Sep 23 10:13:44 PDT 2025
+//    Added the ability to enable programmable compositing debug at runtime.
 //
 // ****************************************************************************
 
@@ -7464,9 +7470,8 @@ NetworkManager::RenderTranslucent(avtImage_p& input)
             /*mode=*/renderState.viewportedMode,
             /*read z=*/false, /*read a=*/true);
 
-#ifdef ProgrammableCompositerDEBUG
-        writeVTK("pass_4a_trans_in.vtk", ri,gi,bi,ai,zi,w,h);
-#endif
+        if (programmableCompositerDebug)
+            writeVTK("pass_4a_trans_in.vtk", ri,gi,bi,ai,zi,w,h);
 
         viswin->DisableAlphaChannel();
 
@@ -7513,9 +7518,8 @@ NetworkManager::RenderTranslucent(avtImage_p& input)
                         /*mode=*/renderState.viewportedMode,
                         /*read z=*/false, /*read a=*/false);
 
-#ifdef ProgrammableCompositerDEBUG
-                    writeVTK("pass_4b_trans_background.vtk", rbi,gbi,bbi,abi,zbi,w,h);
-#endif
+                    if (programmableCompositerDebug)
+                        writeVTK("pass_4b_trans_background.vtk", rbi,gbi,bbi,abi,zbi,w,h);
 
                     acomp->ApplyBackgroundImage(rbi, gbi, bbi);
                 }
@@ -7530,9 +7534,8 @@ NetworkManager::RenderTranslucent(avtImage_p& input)
             float *ro = NULL, *go = NULL, *bo = NULL, *ao = NULL, *zo = NULL;
             acomp->GetOutput(ro,go,bo,ao, zo, true);
 
-#ifdef ProgrammableCompositerDEBUG
-            writeVTK("pass_4c_trans_order_composited.vtk", ro,go,bo,ao,zo, w,h);
-#endif
+            if (programmableCompositerDebug)
+                writeVTK("pass_4c_trans_order_composited.vtk", ro,go,bo,ao,zo, w,h);
 
             output = new avtImage(NULL);
             Merge(output, ro,go,bo,ao, zo, w,h, true);
@@ -7556,9 +7559,8 @@ NetworkManager::RenderTranslucent(avtImage_p& input)
             renderState.viewportedMode,
             /*z=*/false, /*a=*/false);
 
-#ifdef ProgrammableCompositerDEBUG
-        writeVTK("pass_4d_trans_partial.vtk", rgb->GetImage());
-#endif
+        if (programmableCompositerDebug)
+            writeVTK("pass_4d_trans_partial.vtk", rgb->GetImage());
 
         CallProgressCallback("NetworkManager", "render pass 4", 1, 1);
         CallProgressCallback("NetworkManager", "composite pass 4", 0, 1);
@@ -7576,10 +7578,9 @@ NetworkManager::RenderTranslucent(avtImage_p& input)
         if ((rank == 0) || renderState.allReducePass2)
             output->GetImage().SetZBufferVTK(input->GetImage().GetZBufferVTK());
 
-#ifdef ProgrammableCompositerDEBUG
-        if ((rank == 0) || renderState.allReducePass2)
+        if (programmableCompositerDebug &&
+            ((rank == 0) || renderState.allReducePass2))
             writeVTK("pass_4e_trans_composited.vtk", output->GetImage());
-#endif
 
         delete comp;
     }
@@ -7684,6 +7685,9 @@ NetworkManager::StopTimer()
 //    names and be named such that their sort order matches the order in
 //    which they are generated. I renumbered the rendering passes.
 //
+//    Eric Brugger, Tue Sep 23 10:13:44 PDT 2025
+//    Added the ability to enable programmable compositing debug at runtime.
+//
 // ****************************************************************************
 
 void
@@ -7742,9 +7746,8 @@ NetworkManager::RenderShadows(avtImage_p& input) const
                                   /*viewport=*/renderState.viewportedMode, /*z=*/true
                                   );
 
-#ifdef ProgrammableCompositerDEBUG
-        writeVTK("pass_2a_shadow_partial.vtk", myLightImage->GetImage());
-#endif
+        if (programmableCompositerDebug)
+            writeVTK("pass_2a_shadow_partial.vtk", myLightImage->GetImage());
 
         avtWholeImageCompositer *wic = new avtWholeImageCompositerWithZ();
         wic->SetShouldOutputZBuffer(true);
@@ -7764,9 +7767,8 @@ NetworkManager::RenderShadows(avtImage_p& input) const
 
         if (PAR_Rank() == 0)
         {
-#ifdef ProgrammableCompositerDEBUG
-            writeVTK("pass_2b_shadow_composited.vtk", lightImage->GetImage());
-#endif
+            if (programmableCompositerDebug)
+                writeVTK("pass_2b_shadow_composited.vtk", lightImage->GetImage());
             CallProgressCallback("NetworkManager", "Synch'ing up shadows", 0, 1);
 
             double shadow_strength = renderState.windowInfo->
@@ -7775,9 +7777,8 @@ NetworkManager::RenderShadows(avtImage_p& input) const
             avtSoftwareShader::AddShadows(lightImage, input, light_view,
                                           cur_view, shadow_strength);
 
-#ifdef ProgrammableCompositerDEBUG
-            writeVTK("pass_2c_shadow_applied.vtk", input->GetImage());
-#endif
+            if (programmableCompositerDebug)
+                writeVTK("pass_2c_shadow_applied.vtk", input->GetImage());
 
             CallProgressCallback("NetworkManager", "Synch'ing up shadows", 1, 1);
         }
@@ -7815,6 +7816,9 @@ NetworkManager::RenderShadows(avtImage_p& input) const
 //    names and be named such that their sort order matches the order in
 //    which they are generated. I renumbered the rendering passes.
 //
+//    Eric Brugger, Tue Sep 23 10:13:44 PDT 2025
+//    Added the ability to enable programmable compositing debug at runtime.
+//
 // ****************************************************************************
 
 void
@@ -7838,9 +7842,8 @@ NetworkManager::RenderDepthCues(avtImage_p& input) const
              renderAtts.GetEndCuePoint(),
              annoAtts.GetBackgroundColor().GetColor());
 
-#ifdef ProgrammableCompositerDEBUG
-        writeVTK("pass_3_depth_cues.vtk", input->GetImage());
-#endif
+        if (programmableCompositerDebug)
+            writeVTK("pass_3_depth_cues.vtk", input->GetImage());
     }
     CallProgressCallback("NetworkManager", "Applying depth cueing", 1,1);
 }
