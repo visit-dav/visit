@@ -91,7 +91,7 @@ Depth Cueing
 VisIt supports depth cueing when scalable rendering is being used.
 Depth cueing can be useful for increasing the realism of your visualization.
 Depth cueing causes objects to be blended with the background with increasing distance from the camera.
-Depth cueing is are applied after the shadows have been applied and before the transparent geometry is rendered.
+Depth cueing is applied after the shadows have been applied and before the transparent geometry is rendered.
 This means that transparent geometry won't be impacted by depth cueing.
 The controls to turn on depth cueing can be found about a third of the way from the top of the **Advanced** tab (see :numref:`Figure %s <fig-MakingItPretty-RenderingOptionsAdvanced>`).
 To turn on depth cueing, you must turn on scalable rendering by clicking on the **Always** radio button under the **Use scalable rendering** label.
