@@ -2,6 +2,14 @@
 # Project developers.  See the top-level LICENSE file for dates and other
 # details.  No copyright assignment is required to contribute to VisIt.
 
+#****************************************************************************
+#  Modifications:
+#    Eric Brugger, Mon Sep 22 16:41:58 PDT 2025
+#    I changed the logic to create the INSTALL_RPATH for parallel
+#    executables to generate a semicolon separated list instead of a
+#    space separated list.
+#
+#****************************************************************************
 
 function(DETECT_MPI_SETTINGS COMP mlibs mflags mlflags mrpath)
     # Unset any variables that may have been set before by FindMPI
@@ -80,13 +88,13 @@ function(ADD_PARALLEL_EXECUTABLE target)
         if(VISIT_PARALLEL_RPATH)
             set(PAR_RPATHS "")
             foreach(X ${CMAKE_INSTALL_RPATH})
-                set(PAR_RPATHS "${PAR_RPATHS} ${X}")
+                list(APPEND PAR_RPATHS ${X})
             endforeach()
             foreach(X ${VISIT_PARALLEL_RPATH})
-                set(PAR_RPATHS "${PAR_RPATHS} ${X}")
+                list(APPEND PAR_RPATHS ${X})
             endforeach()
             set_target_properties(${target} PROPERTIES
-                INSTALL_RPATH ${PAR_RPATHS}
+                INSTALL_RPATH "${PAR_RPATHS}"
             )
         endif()
       endif()
