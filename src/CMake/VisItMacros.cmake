@@ -21,6 +21,11 @@
 #    Kathleen Biagas, Thu May 2, 2024
 #    Use VISIT_PLUGIN_DIR when setting RUNTIME_OUTPUT_DIR for plugins.
 #
+#    Eric Brugger, Mon Sep 22 16:41:58 PDT 2025
+#    I changed the logic to create the INSTALL_RPATH for parallel
+#    libraries to generate a semicolon separated list instead of a
+#    space separated list.
+#
 #*****************************************************************************
 
 if(WIN32)
@@ -65,13 +70,13 @@ function(ADD_PARALLEL_LIBRARY target)
         if(VISIT_PARALLEL_RPATH)
             set(PAR_RPATHS "")
             foreach(X ${CMAKE_INSTALL_RPATH})
-                set(PAR_RPATHS "${PAR_RPATHS} ${X}")
+                list(APPEND PAR_RPATHS ${X})
             endforeach()
             foreach(X ${VISIT_PARALLEL_RPATH})
-                set(PAR_RPATHS "${PAR_RPATHS} ${X}")
+                list(APPEND PAR_RPATHS ${X})
             endforeach()
             set_property(TARGET ${target}
-                     APPEND PROPERTY INSTALL_RPATH ${PAR_RPATHS})
+                     APPEND PROPERTY INSTALL_RPATH "${PAR_RPATHS}")
         endif()
       endif()
 
