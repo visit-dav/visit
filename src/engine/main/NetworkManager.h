@@ -437,6 +437,9 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Change ExportDatabase atts arg from 'const &' to * so that actual dir
 //    name used can be returned in them.
 //
+//    Eric Brugger, Tue Sep 23 10:13:44 PDT 2025
+//    I added EnableProgrammableCompositerDebug.
+//
 // ****************************************************************************
 
 class ENGINE_MAIN_API NetworkManager : public EngineBase
@@ -566,6 +569,8 @@ class ENGINE_MAIN_API NetworkManager : public EngineBase
                                           long long &);
 
     void          SetCreateVisWindow(void (*cb)(int, VisWindow *&, bool &, void *), void *cbdata);
+
+    static void   EnableProgrammableCompositerDebug(void) {programmableCompositerDebug = true;};
 
  protected:
     bool               ValidNetworkId(int id) const;
@@ -748,6 +753,8 @@ class ENGINE_MAIN_API NetworkManager : public EngineBase
 
     ProgrammableCompositer<unsigned char> *zcomp;
     ProgrammableCompositer<float> *acomp;
+
+    static bool                 programmableCompositerDebug;
 
     static InitializeProgressCallback
                                 initializeProgressCallback;
