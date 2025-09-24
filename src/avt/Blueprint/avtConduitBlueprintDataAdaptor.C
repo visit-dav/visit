@@ -3323,3 +3323,80 @@ avtConduitBlueprintDataAdaptor::BlueprintToMFEM::FieldToMFEM(
 
    return res;
 }
+
+//---------------------------------------------------------------------------//
+mfem::QuadratureFunction *
+avtConduitBlueprintDataAdaptor::BlueprintToMFEM::FieldToMFEMQuadratureFunction(
+    mfem::Mesh *mesh,
+    const Node &n_field)
+{
+    bool zero_copy = true;
+    // n_conv holds converted data (when necessary for mfem api)
+    // if n_conv is used ( !n_conv.dtype().empty() ) we
+    // know that some data allocation was necessary, so we
+    // can't return a gf that zero copies the conduit data
+    Node n_conv;
+
+    const double *vals_ptr = NULL;
+
+    if (n_field["values"].dtype().is_double() &&
+        n_field["values"].is_compact())
+    {
+        vals_ptr = n_field["values"].value();
+    }
+    else
+    {
+        n_field["values"].to_double_array(n_conv["values"]);
+        vals_ptr = n_conv["values"].value();
+    }
+
+    if (zero_copy && !n_conv.dtype().is_empty())
+    {
+        //Info: "Cannot zero-copy since data conversions were necessary"
+        zero_copy = false;
+    }
+    
+   // we need basis name to create the proper mfem quad space
+   std::string qf_name = n_field["basis"].as_string();
+   
+   // QF_{ORDER}_{VDIM}
+   
+   // reverse split to parse
+   // first get VDIM
+   std::string next, s_order, s_vdim;
+   conduit::utils::rsplit_string(qf_name,"_",s_vdim,next);
+   qf_name = next;
+   // now get ORDER
+   conduit::utils::rsplit_string(qf_name,"_",s_order,next);
+   // finally, convert to ints
+   int order = conduit::utils::string_to_value<int>(s_order);
+   int vdim = conduit::utils::string_to_value<int>(s_vdim);
+    
+   mfem::QuadratureSpace *quad_space = new mfem::QuadratureSpace(mesh, order);
+   mfem::QuadratureFunction *res = new mfem::QuadratureFunction();
+
+//    mfem::FiniteElementCollection *fec = FiniteElementCollection::New(
+//                                            fec_name.c_str());
+//    mfem::FiniteElementSpace *fes = new FiniteElementSpace(mesh,
+//                                                           fec,
+//                                                           vdim,
+//                                                           ordering);
+
+   // todo: What are the ownership semnatics?
+   res->SetSpace(quad_space, const_cast<double*>(vals_ptr), vdim);
+
+//    if (zero_copy)
+//    {
+//       res->SetSpace(quad_space, const_cast<double*>(vals_ptr), vdim)
+//    }
+//    else
+//    {
+//       // copy case, this constructor will alloc the space for the quad data
+//       // create an mfem vector that wraps the conduit data
+//       Vector vals_vec(const_cast<double*>(vals_ptr),fes->GetVSize());
+//       // copy values into the result
+//       (*res) = vals_vec;
+//    }
+
+   return res;
+}

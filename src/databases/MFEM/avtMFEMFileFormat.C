@@ -846,52 +846,96 @@ avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
     JSONRootEntry &field = root->DataSet(mesh_name).Field(var_name);
     string field_path = field.Path().Expand(domain);
     bool var_is_nodal = field.Tag("assoc") == "nodes";
+    bool var_is_grid_func = field.Tag("assoc") != "quadrature";
     int  ncomps       = atoi(field.Tag("comps").c_str());
     string cat_path = root->DataSet(mesh_name).CatPath().Get();
 
-    GridFunction *gf = 0;
-    if (cat_path != "")
-    {
-        std::istringstream igfstr;
-        FetchDataFromCatFile(cat_path, field_path, igfstr); 
-
-        if (igfstr)
-            gf = new GridFunction(mesh,igfstr);   
-    }
-
-    if (!gf)
-    {
-        visit_ifstream igf(field_path.c_str());
-        if (igf().fail())
-        {
-            //failed to open gf file
-            ostringstream msg;
-            msg << "Failed to open MFEM grid function: "
-                << " field name: \""       << mesh_name << "\""
-                << " domain: "             << domain
-                << " grid function path: \"" << field_path << "\"";
-            if (cat_path != "")
-                msg << " cat path: \"" << cat_path << "\"";
-
-            EXCEPTION1(InvalidFilesException, msg.str());
-        }
-        gf = new GridFunction(mesh,igf());   
-    }
-
-    int gf_ncomps = gf->VectorDim();
-    if (gf_ncomps != ncomps)
-    {
-        EXCEPTION1(InvalidVariableException, 
-            "Expected equality of number of components.");
-    }
-
-    rv = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh, 
-                                                     gf, 
-                                                     lod, 
-                                                     m_new_refine, 
-                                                     var_is_nodal);
     
-    delete gf;
+    // grid function case
+    if(var_is_grid_func)
+    {
+        GridFunction *gf = 0;
+        if (cat_path != "")
+        {
+            std::istringstream igfstr;
+            FetchDataFromCatFile(cat_path, field_path, igfstr); 
+
+            if (igfstr)
+                gf = new GridFunction(mesh,igfstr);   
+        }
+
+        if (!gf)
+        {
+            visit_ifstream igf(field_path.c_str());
+            if (igf().fail())
+            {
+                //failed to open gf file
+                ostringstream msg;
+                msg << "Failed to open MFEM grid function: "
+                    << " field name: \""       << mesh_name << "\""
+                    << " domain: "             << domain
+                    << " grid function path: \"" << field_path << "\"";
+                if (cat_path != "")
+                    msg << " cat path: \"" << cat_path << "\"";
+
+                EXCEPTION1(InvalidFilesException, msg.str());
+            }
+            gf = new GridFunction(mesh,igf());   
+        }
+
+        int gf_ncomps = gf->VectorDim();
+        if (gf_ncomps != ncomps)
+        {
+            EXCEPTION1(InvalidVariableException, 
+                "Expected equality of number of components.");
+        }
+
+        rv = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh, 
+                                                        gf, 
+                                                        lod, 
+                                                        m_new_refine, 
+                                                        var_is_nodal);
+        
+        delete gf;
+    }
+    else // quadrature function case
+    {
+        QuadratureFunction *qf = 0;
+        if (cat_path != "")
+        {
+            std::istringstream iqfstr;
+            FetchDataFromCatFile(cat_path, field_path, iqfstr); 
+
+            if (iqfstr)
+                qf = new QuadratureFunction(mesh,igfstr);   
+        }
+
+        if (!qf)
+        {
+            visit_ifstream iqf(field_path.c_str());
+            if (iqf().fail())
+            {
+                //failed to open gf file
+                ostringstream msg;
+                msg << "Failed to open MFEM quadrature function: "
+                    << " field name: \""       << mesh_name << "\""
+                    << " domain: "             << domain
+                    << " grid function path: \"" << field_path << "\"";
+                if (cat_path != "")
+                    msg << " cat path: \"" << cat_path << "\"";
+
+                EXCEPTION1(InvalidFilesException, msg.str());
+            }
+            qf = new QuadratureFunction(mesh,iqf());   
+        }
+
+        int qf_ncomps = qf->VectorDim();
+        
+        // TODO:
+        //  rv = avtMFEMDataAdaptor::QuadratureFunctionToVTK(mesh,qf);
+        delete qf;        
+    }
+    
     delete mesh;
 
     return rv;
