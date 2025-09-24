@@ -939,7 +939,7 @@ avtOOFUSExpression::Execute()
                    "VisIt developer.");
     }
     const double local_result = *std::max_element(constant_results.begin(), 
-                                                   constant_results.end());
+                                                  constant_results.end());
 
     //
     // Calculate global result
