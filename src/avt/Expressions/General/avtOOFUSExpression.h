@@ -73,46 +73,52 @@ class EXPRESSION_API avtOOFUSExpression : public avtExpressionFilter
   private:
     void
     CalculateWithoutGhosts(vtkDataArray *in, 
-                                               vtkDataArray *out,
-                                               int ncomponents,
-                                               int ntuples);
+                           int ncomponents,
+                           int ntuples,
+                           std::vector<double> &constant_results);
 
     void
     CalculateWithGhosts(vtkDataArray *in,
-                                        vtkDataArray *out,
-                                        int ncomponents,
-                                        int ntuples,
-                                        int (getNodeOrCellValid)(vtkDataArray *, int *, int),
-                                        vtkDataArray *ghostZones,
-                                        int *nodeShouldBeIgnoredPtr);
+                        int ncomponents,
+                        int ntuples,
+                        int (getNodeOrCellValid)(vtkDataArray *, int *, int),
+                        vtkDataArray *ghostZones,
+                        int *nodeShouldBeIgnoredPtr,
+                        std::vector<double> &constant_results);
     std::vector<int>
     IdentifyGhostedNodes(vtkDataSet *in_ds,
-                                                           vtkDataArray *ghostZones,
-                                                           vtkDataArray *ghostNodes);
-    void
-    DoOperation(vtkDataArray *in, vtkDataArray *out,
-                              int ncomponents, int ntuples, vtkDataSet *in_ds);
+                         vtkDataArray *ghostZones,
+                         vtkDataArray *ghostNodes);
 
-    vtkDataArray *
-    CreateArray(vtkDataArray *in1);
+    void DoOperation(vtkDataArray *in,
+                     int ncomponents,
+                     int ntuples,
+                     vtkDataSet *in_ds,
+                     std::vector<double> &constant_results);
 
-    vtkDataArray *
-    DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex);
+    vtkDataArray *CreateArray(vtkDataArray *in1);
 
-    avtDataRepresentation *
-    ExecuteData_VTK(avtDataRepresentation *in_dr);
+    void DeriveVariable(vtkDataSet *in_ds,
+                        std::vector<double> &constant_results);
 
-    avtDataRepresentation *
-    ExecuteData(avtDataRepresentation *in_dr);
+    void ExecuteData(avtDataRepresentation *in_dr,
+                     std::vector<double> &constant_results);
 
-    avtDataTree_p
-    ExecuteDataTree(avtDataRepresentation *in_dr);
+    void ConstantEvaluation(avtDataTree_p inputDataTree,
+                            std::vector<double> &constant_results);
 
-    void
-    ExecuteDataTreeOnThread(avtDataTree_p inDT, avtDataTree_p &outDT);
+    vtkDataArray *WriteDerivedVariable(vtkDataSet *in_ds,
+                                       double result);
 
-    void
-    execute_2_electric_boogaloo(avtDataTree_p inDT, avtDataTree_p &outDT);
+    avtDataRepresentation *WriteData_VTK(avtDataRepresentation *in_dr, double result);
+
+    avtDataRepresentation *WriteData(avtDataRepresentation *in_dr, double result);
+
+    avtDataTree_p WriteDataTree(avtDataRepresentation *in_dr, double result);
+
+    void WriteResult(avtDataTree_p inputDataTree, 
+                     avtDataTree_p &outputDataTree,
+                     double result);
 };
 
 

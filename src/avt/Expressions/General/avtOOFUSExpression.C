@@ -119,9 +119,9 @@ avtOOFUSExpression::GetNumberOfComponents()
 // ****************************************************************************
 void
 avtOOFUSExpression::CalculateWithoutGhosts(vtkDataArray *in, 
-                                           vtkDataArray *out,
                                            int ncomponents,
-                                           int ntuples)
+                                           int ntuples,
+                                           std::vector<double> &constant_results)
 {
     for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
     {
@@ -136,10 +136,7 @@ avtOOFUSExpression::CalculateWithoutGhosts(vtkDataArray *in,
             }
         }
 
-        for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-        {
-            out->SetComponent(tuple_id, comp_id, comp_max);
-        }
+        constant_results.push_back(comp_max);
     }
 }
 
@@ -147,12 +144,12 @@ avtOOFUSExpression::CalculateWithoutGhosts(vtkDataArray *in,
 // ****************************************************************************
 void
 avtOOFUSExpression::CalculateWithGhosts(vtkDataArray *in,
-                                        vtkDataArray *out,
                                         int ncomponents,
                                         int ntuples,
                                         int (getNodeOrCellValid)(vtkDataArray *, int *, int),
                                         vtkDataArray *ghostZones,
-                                        int *nodeShouldBeIgnoredPtr)
+                                        int *nodeShouldBeIgnoredPtr,
+                                        std::vector<double> &constant_results)
 {
     for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
     {
@@ -186,10 +183,7 @@ avtOOFUSExpression::CalculateWithGhosts(vtkDataArray *in,
             }
         }
 
-        for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-        {
-            out->SetComponent(tuple_id, comp_id, comp_max);
-        }
+        constant_results.push_back(comp_max);
     }
 }
 
@@ -197,8 +191,8 @@ avtOOFUSExpression::CalculateWithGhosts(vtkDataArray *in,
 // ****************************************************************************
 std::vector<int>
 avtOOFUSExpression::IdentifyGhostedNodes(vtkDataSet *in_ds,
-                                                       vtkDataArray *ghostZones,
-                                                       vtkDataArray *ghostNodes)
+                                         vtkDataArray *ghostZones,
+                                         vtkDataArray *ghostNodes)
 {
     const int nPoints = in_ds->GetNumberOfPoints();
 
@@ -269,8 +263,11 @@ avtOOFUSExpression::IdentifyGhostedNodes(vtkDataSet *in_ds,
 // ****************************************************************************
 // ****************************************************************************
 void
-avtOOFUSExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
-                          int ncomponents, int ntuples, vtkDataSet *in_ds)
+avtOOFUSExpression::DoOperation(vtkDataArray *in,
+                                int ncomponents,
+                                int ntuples,
+                                vtkDataSet *in_ds,
+                                std::vector<double> &constant_results)
 {
     vtkDataArray *ghostZones = in_ds->GetCellData()->GetArray("avtGhostZones");
     vtkDataArray *ghostNodes = in_ds->GetPointData()->GetArray("avtGhostNodes");
@@ -283,17 +280,18 @@ avtOOFUSExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
             // we pass a lambda to CalculateWithGhosts() that
             // looks at the ghostZones to determine if a cell
             // is valid and ignores the nodeShouldBeIgnoredPtr.
-            CalculateWithGhosts(in, out, ncomponents, ntuples,
+            CalculateWithGhosts(in, ncomponents, ntuples,
                                 [](vtkDataArray *ghostZones,
                                    int *nodeShouldBeIgnoredPtr,
                                    int tuple_id) -> int 
                                    { return ghostZones->GetComponent(tuple_id, 0); },
                                 ghostZones,
-                                nodeShouldBeIgnoredPtr);
+                                nodeShouldBeIgnoredPtr,
+                                constant_results);
         }
         else // no ghosts or just ghost nodes
         {
-            CalculateWithoutGhosts(in, out, ncomponents, ntuples);
+            CalculateWithoutGhosts(in, ncomponents, ntuples, constant_results);
         }
     }
     else // AVT_NODECENT == centering
@@ -309,17 +307,17 @@ avtOOFUSExpression::DoOperation(vtkDataArray *in, vtkDataArray *out,
             // we pass a lambda to CalculateWithGhosts() that
             // looks at the nodeShouldBeIgnoredPtr to determine 
             // if a node is valid and ignores the ghostZones.
-            CalculateWithGhosts(in, out, ncomponents, ntuples,
+            CalculateWithGhosts(in, ncomponents, ntuples,
                                 [](vtkDataArray *ghostZones,
                                    int *nodeShouldBeIgnoredPtr,
                                    int tuple_id) -> int 
                                    { return nodeShouldBeIgnoredPtr[tuple_id]; },
                                 ghostZones,
-                                nodeShouldBeIgnoredPtr);
+                                nodeShouldBeIgnoredPtr, constant_results);
         }
         else // no ghosts
         {
-            CalculateWithoutGhosts(in, out, ncomponents, ntuples);
+            CalculateWithoutGhosts(in, ncomponents, ntuples, constant_results);
         }
     }
 }
@@ -334,8 +332,9 @@ avtOOFUSExpression::CreateArray(vtkDataArray *in1)
 
 // ****************************************************************************
 // ****************************************************************************
-vtkDataArray *
-avtOOFUSExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
+void
+avtOOFUSExpression::DeriveVariable(vtkDataSet *in_ds,
+                                   std::vector<double> &constant_results)
 {
     int  i;
 
@@ -447,7 +446,6 @@ avtOOFUSExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
     else
         nvals = data->GetNumberOfTuples();
 
-    vtkDataArray *dv = NULL;
     if (data == NULL)
     {
         //
@@ -455,12 +453,10 @@ avtOOFUSExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
         // the mesh.
         //
         ncomps = 1;
-        dv = CreateArrayFromMesh(in_ds);
     }
     else
     {
         ncomps = data->GetNumberOfComponents();
-        dv = CreateArray(data);
     }
 
     if (data == NULL)
@@ -472,10 +468,6 @@ avtOOFUSExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
              "VisIt developer.");
     }
 
-    int noutcomps = ncomps;
-    dv->SetNumberOfComponents(noutcomps);
-    dv->SetNumberOfTuples(nvals);
-
     //
     // Should we send in ncomps or noutcomps?  They are the same number 
     // unless the derived type re-defined GetNumberOfComponentsInOutput.
@@ -483,245 +475,29 @@ avtOOFUSExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
     // number.  So send in the input.  Really doesn't matter.
     //
     cur_mesh = in_ds;
-    DoOperation(data, dv, ncomps, nvals, in_ds);
+    DoOperation(data, ncomps, nvals, in_ds, constant_results);
     cur_mesh = NULL;
-
-    return dv;
 }
 
 // ****************************************************************************
 // ****************************************************************************
-avtDataRepresentation *
-avtOOFUSExpression::ExecuteData_VTK(avtDataRepresentation *in_dr)
+void
+avtOOFUSExpression::ExecuteData(avtDataRepresentation *in_dr,
+                                std::vector<double> &constant_results)
 {
     //
     // Get the VTK data set and domain number.
     //
     vtkDataSet *in_ds = in_dr->GetDataVTK();
-    int domain = in_dr->GetDomain();
-
-    //
-    // Sometimes we are asked to calculate a variable twice.  The easiest way
-    // to catch this is to see if we already have the requested variable and
-    // not re-derive it if we do.
-    //
-    vtkDataArray *dat = nullptr;
-    dat = in_ds->GetPointData()->GetArray(outputVariableName);
-    if (dat == nullptr)
-    {
-        dat = in_ds->GetCellData()->GetArray(outputVariableName);
-    }
-    if (dat != nullptr)
-    {
-        debug1 << "NOTE: variable " << outputVariableName 
-               << " already exists and it is not being recalculated." << endl;
-        dat->Register(nullptr);  // At the end of the routine, we will free this.
-    }
-
-    //
-    // Start off by having the derived type calculate the derived variable.
-    //
-    if (dat == nullptr)
-    {
-        dat = DeriveVariable(in_ds, domain);
-        if (dat == nullptr)
-        {
-            EXCEPTION2(ExpressionException, outputVariableName, "an unknown error occurred while " 
-                  "trying to calculate your expression.  Please contact a "
-                  "VisIt developer.");
-        }
-        dat->SetName(outputVariableName);
-    }
-
-    int vardim = dat->GetNumberOfComponents();
-
-    //
-    // Now make a copy of the input and add the derived variable as its output.
-    //
-    vtkDataSet *rv = (vtkDataSet *) in_ds->NewInstance();
-    rv->ShallowCopy(in_ds);
-    int npts   = rv->GetNumberOfPoints();
-    int ncells = rv->GetNumberOfCells();
-    int ntups  = dat->GetNumberOfTuples();
-
-    bool isPoint = false;
-    if ((ntups == npts) && (ntups == ncells))
-    {
-        isPoint = IsPointVariable();
-    }
-    else if (ntups == 1) // Constant singleton.
-    {
-        isPoint = IsPointVariable();
-    }
-    else if ((ntups == ncells) && (ntups != npts))
-    {
-        isPoint = false;
-    }
-    else if ((ntups == npts) && (ntups != ncells))
-    {
-        isPoint = true;
-    }
-    else
-    {
-        debug1 << "Number of tuples cannot be point or cell variable."
-               << endl;
-        debug1 << "Var = " << dat->GetName() << endl;
-        debug1 << "Ntuples = " << ntups << endl;
-        debug1 << "Ncells = " << ncells << endl;
-        debug1 << "Npts = " << npts << endl;
-        dat->Delete();
-
-        avtDataRepresentation *out_dr = new avtDataRepresentation(rv,
-            in_dr->GetDomain(), in_dr->GetLabel());
-
-        rv->Delete();
-
-        return out_dr;
-    }
-
-    if (isPoint)
-    {
-        rv->GetPointData()->AddArray(dat);
-        if (vardim == 1)
-            rv->GetPointData()->SetActiveScalars(outputVariableName);
-        else if (vardim == 3)
-            rv->GetPointData()->SetActiveVectors(outputVariableName);
-        else if (vardim == 9)
-            rv->GetPointData()->SetActiveTensors(outputVariableName);
-    }
-    else
-    {
-        rv->GetCellData()->AddArray(dat);
-        if (vardim == 1)
-            rv->GetCellData()->SetActiveScalars(outputVariableName);
-        else if (vardim == 3)
-            rv->GetCellData()->SetActiveVectors(outputVariableName);
-        else if (vardim == 9)
-            rv->GetCellData()->SetActiveTensors(outputVariableName);
-    }
-
-    //
-    // Make sure that we don't have any memory leaks.
-    //
-    dat->Delete();
-
-    rv->GetFieldData()->AddArray(this->volumeDependent);
-
-    avtDataRepresentation *out_dr = new avtDataRepresentation(rv,
-        in_dr->GetDomain(), in_dr->GetLabel());
-
-    rv->Delete();
-
-    return out_dr;
-}
-
-avtDataRepresentation *
-avtOOFUSExpression::ExecuteData(avtDataRepresentation *in_dr)
-{
-    avtDataRepresentation *out_dr = nullptr;
-
-// #ifdef HAVE_LIBVTKM
-//     if (in_dr->GetDataRepType() == DATA_REP_TYPE_VTKM ||
-//         avtCallback::GetBackendType() == GlobalAttributes::VTKM)
-//     {
-//         out_dr = ExecuteData_VTKm(in_dr);
-//     }
-//     else
-// #endif
-    {
-        out_dr = ExecuteData_VTK(in_dr); 
-    }
-
-    return out_dr;
-}
-
-// ****************************************************************************
-// ****************************************************************************
-avtDataTree_p
-avtOOFUSExpression::ExecuteDataTree(avtDataRepresentation *in_dr)
-{
-    avtDataRepresentation *out_dr = ExecuteData(in_dr);
-
-    if (out_dr == nullptr)
-    {
-        return nullptr;
-    }
-
-    // This code ends up creating a copy of out_dr in the data tree.
-    avtDataTree_p retval = new avtDataTree(out_dr);
-
-    // If the derived type created a new avtDataRepresentation instance then
-    // it's been copied in the avtDataTree. We need to remove the instance
-    // that was returned or we'll end up with a VTK reference count leak.
-    if(out_dr != in_dr)
-    {
-        delete out_dr;
-    }
-
-    return retval;
+    const int domain = in_dr->GetDomain();
+    DeriveVariable(in_ds, domain, constant_results);
 }
 
 // ****************************************************************************
 // ****************************************************************************
 void
-avtOOFUSExpression::ExecuteDataTreeOnThread(avtDataTree_p inDT, avtDataTree_p &outDT)
-{
-    avtDataTree_p retDT = ExecuteDataTree(&(inDT->GetDataRepresentation()));
-    if (*retDT)
-    {
-        outDT = retDT;
-    }
-
-    UpdateProgress(currentProgress++, totalSteps);
-}
-
-// ****************************************************************************
-// ****************************************************************************
-void
-avtOOFUSExpression::execute_2_electric_boogaloo(avtDataTree_p inDT, avtDataTree_p &outDT)
-{
-    CheckAbort();
-    int nc = inDT->GetNChildren();
-
-    if (nc <= 0 && !inDT->HasData())
-    {
-        return;
-    }
-
-    if (nc == 0)
-    {
-        outDT = new avtDataTree();
-        ExecuteDataTreeOnThread(inDT, outDT);
-    }
-    else
-    {
-        //
-        // there is more than one input dataset to process
-        // and we need an output datatree for each
-        //
-        avtDataTree_p *localOutDT = new avtDataTree_p[nc];
-        for (int j = 0; j < nc; j++)
-        {
-            // are children present?
-            if (inDT->ChildIsPresent(j))
-            {
-                localOutDT[j].SetReference( new avtDataTree );
-                execute_2_electric_boogaloo(inDT->GetChild(j), localOutDT[j]);
-            }
-            else // adults only
-            {
-                localOutDT[j] = NULL;
-            }
-        }
-        outDT = new avtDataTree(nc, localOutDT);
-        delete [] localOutDT;
-    }
-}
-
-// ****************************************************************************
-// ****************************************************************************
-void
-avtOOFUSExpression::ConstantEvaluation(avtDataTree_p inputDataTree, std::vector<double> &constant_results)
+avtOOFUSExpression::ConstantEvaluation(avtDataTree_p inputDataTree,
+                                       std::vector<double> &constant_results)
 {
     const int numChildren = inputDataTree->GetNChildren();
 
@@ -732,7 +508,7 @@ avtOOFUSExpression::ConstantEvaluation(avtDataTree_p inputDataTree, std::vector<
 
     if (numChildren == 0)
     {
-        ExecuteDataTree(&(inputDataTree->GetDataRepresentation()), constant_results);
+        ExecuteData(&(inputDataTree->GetDataRepresentation()), constant_results);
 
         UpdateProgress(currentProgress++, totalSteps);
     }
@@ -753,7 +529,8 @@ avtOOFUSExpression::ConstantEvaluation(avtDataTree_p inputDataTree, std::vector<
 // ****************************************************************************
 // ****************************************************************************
 vtkDataArray *
-avtOOFUSExpression::WriteDerivedVariable(vtkDataSet *in_ds, int currentDomainsIndex, double result)
+avtOOFUSExpression::WriteDerivedVariable(vtkDataSet *in_ds,
+                                         double result)
 {
     int  i;
 
@@ -1148,26 +925,34 @@ avtOOFUSExpression::Execute()
     avtDataTree_p tree = GetInputDataTree();
     avtDataTree_p newTree;
 
-    // get datasets and num domains (totalNodes)
-    vtkDataSet **data_sets = tree->GetAllLeaves(totalNodes);
-
     // TODO calculate progress so we can update it appropriately
     // see conn comp expr for how
 
-    // get dataset domain ids
-    std::vector<int> domain_ids;
-    tree->GetAllDomainIds(domain_ids);
-
+    //
+    // Calculate result per rank
+    //
     std::vector<double> constant_results;
     ConstantEvaluation(tree, constant_results);
+    if (constant_results.empty())
+    {
+        EXCEPTION2(ExpressionException, outputVariableName,
+                   "An internal error occurred when "
+                   "trying to calculate your expression. Please contact a "
+                   "VisIt developer.");
+    }
+    const double local_result = *std::max_element(constant_results.begin(), 
+                                                   constant_results.end());
 
-    // now we calculate result per rank
+    //
+    // Calculate global result
+    //
+    double global_result;
+    MPI_Allreduce(&local_result, &global_result, 1, MPI_DOUBLE, MPI_MAX, VISIT_MPI_COMM);
 
-    // next we calculate global result
-
-    // then write result
-
-    execute_2_electric_boogaloo(tree, newTree);
+    //
+    // Write result
+    //
+    WriteResult(tree, newTree, global_result);
 
     if (*newTree == NULL)
     {
