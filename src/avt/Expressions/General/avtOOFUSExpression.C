@@ -486,11 +486,10 @@ avtOOFUSExpression::ExecuteData(avtDataRepresentation *in_dr,
                                 std::vector<double> &constant_results)
 {
     //
-    // Get the VTK data set and domain number.
+    // Get the VTK data set
     //
     vtkDataSet *in_ds = in_dr->GetDataVTK();
-    const int domain = in_dr->GetDomain();
-    DeriveVariable(in_ds, domain, constant_results);
+    DeriveVariable(in_ds, constant_results);
 }
 
 // ****************************************************************************
@@ -700,7 +699,6 @@ avtOOFUSExpression::WriteData_VTK(avtDataRepresentation *in_dr, double result)
     // Get the VTK data set and domain number.
     //
     vtkDataSet *in_ds = in_dr->GetDataVTK();
-    int domain = in_dr->GetDomain();
 
     //
     // Sometimes we are asked to calculate a variable twice.  The easiest way
@@ -725,7 +723,7 @@ avtOOFUSExpression::WriteData_VTK(avtDataRepresentation *in_dr, double result)
     //
     if (dat == nullptr)
     {
-        dat = WriteDerivedVariable(in_ds, domain, result);
+        dat = WriteDerivedVariable(in_ds, result);
         if (dat == nullptr)
         {
             EXCEPTION2(ExpressionException, outputVariableName, "an unknown error occurred while " 
@@ -947,7 +945,11 @@ avtOOFUSExpression::Execute()
     // Calculate global result
     //
     double global_result;
+#ifdef PARALLEL
     MPI_Allreduce(&local_result, &global_result, 1, MPI_DOUBLE, MPI_MAX, VISIT_MPI_COMM);
+#else
+    global_result = local_result;
+#endif
 
     //
     // Write result
