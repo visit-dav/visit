@@ -66,21 +66,20 @@ class EXPRESSION_API avtOOFUSExpression : public avtExpressionFilter
     virtual void              LabelBoundaryNeighbors(vtkDataSet *);
 
     avtCentering              centering;
-    vtkDataSet               *cur_mesh;
     // Track if the created array is volume-dependent.
     vtkBitArray              *volumeDependent;
 
   private:
     void
     CalculateWithoutGhosts(vtkDataArray *in, 
-                           int ncomponents,
-                           int ntuples,
+                           const int ncomponents,
+                           const int ntuples,
                            std::vector<double> &constant_results);
 
     void
     CalculateWithGhosts(vtkDataArray *in,
-                        int ncomponents,
-                        int ntuples,
+                        const int ncomponents,
+                        const int ntuples,
                         int (getNodeOrCellValid)(vtkDataArray *, int *, int),
                         vtkDataArray *ghostZones,
                         int *nodeShouldBeIgnoredPtr,
@@ -91,8 +90,8 @@ class EXPRESSION_API avtOOFUSExpression : public avtExpressionFilter
                          vtkDataArray *ghostNodes);
 
     void DoOperation(vtkDataArray *in,
-                     int ncomponents,
-                     int ntuples,
+                     const int ncomponents,
+                     const int ntuples,
                      vtkDataSet *in_ds,
                      std::vector<double> &constant_results);
 
@@ -101,9 +100,6 @@ class EXPRESSION_API avtOOFUSExpression : public avtExpressionFilter
     void DeriveVariable(vtkDataSet *in_ds,
                         std::vector<double> &constant_results);
 
-    void ExecuteData(avtDataRepresentation *in_dr,
-                     std::vector<double> &constant_results);
-
     void ConstantEvaluation(avtDataTree_p inputDataTree,
                             std::vector<double> &constant_results);
 
@@ -111,8 +107,6 @@ class EXPRESSION_API avtOOFUSExpression : public avtExpressionFilter
                                        double result);
 
     avtDataRepresentation *WriteData_VTK(avtDataRepresentation *in_dr, double result);
-
-    avtDataRepresentation *WriteData(avtDataRepresentation *in_dr, double result);
 
     avtDataTree_p WriteDataTree(avtDataRepresentation *in_dr, double result);
 

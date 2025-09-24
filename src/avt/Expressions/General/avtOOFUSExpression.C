@@ -17,7 +17,6 @@
 #include <avtMetaData.h>
 #include <avtParallel.h>
 #include <avtOriginatingSource.h>
-#include <avtExecutionManager.h>
 
 #include <vtkAppendFilter.h>
 #include <vtkCharArray.h>
@@ -119,8 +118,8 @@ avtOOFUSExpression::GetNumberOfComponents()
 // ****************************************************************************
 void
 avtOOFUSExpression::CalculateWithoutGhosts(vtkDataArray *in, 
-                                           int ncomponents,
-                                           int ntuples,
+                                           const int ncomponents,
+                                           const int ntuples,
                                            std::vector<double> &constant_results)
 {
     for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
@@ -144,8 +143,8 @@ avtOOFUSExpression::CalculateWithoutGhosts(vtkDataArray *in,
 // ****************************************************************************
 void
 avtOOFUSExpression::CalculateWithGhosts(vtkDataArray *in,
-                                        int ncomponents,
-                                        int ntuples,
+                                        const int ncomponents,
+                                        const int ntuples,
                                         int (getNodeOrCellValid)(vtkDataArray *, int *, int),
                                         vtkDataArray *ghostZones,
                                         int *nodeShouldBeIgnoredPtr,
@@ -263,9 +262,9 @@ avtOOFUSExpression::IdentifyGhostedNodes(vtkDataSet *in_ds,
 // ****************************************************************************
 // ****************************************************************************
 void
-avtOOFUSExpression::DoOperation(vtkDataArray *in,
-                                int ncomponents,
-                                int ntuples,
+avtOOFUSExpression::DoOperation(vtkDataArray *inputArray,
+                                const int ncomponents,
+                                const int ntuples,
                                 vtkDataSet *in_ds,
                                 std::vector<double> &constant_results)
 {
@@ -280,7 +279,7 @@ avtOOFUSExpression::DoOperation(vtkDataArray *in,
             // we pass a lambda to CalculateWithGhosts() that
             // looks at the ghostZones to determine if a cell
             // is valid and ignores the nodeShouldBeIgnoredPtr.
-            CalculateWithGhosts(in, ncomponents, ntuples,
+            CalculateWithGhosts(inputArray, ncomponents, ntuples,
                                 [](vtkDataArray *ghostZones,
                                    int *nodeShouldBeIgnoredPtr,
                                    int tuple_id) -> int 
@@ -291,7 +290,7 @@ avtOOFUSExpression::DoOperation(vtkDataArray *in,
         }
         else // no ghosts or just ghost nodes
         {
-            CalculateWithoutGhosts(in, ncomponents, ntuples, constant_results);
+            CalculateWithoutGhosts(inputArray, ncomponents, ntuples, constant_results);
         }
     }
     else // AVT_NODECENT == centering
@@ -307,7 +306,7 @@ avtOOFUSExpression::DoOperation(vtkDataArray *in,
             // we pass a lambda to CalculateWithGhosts() that
             // looks at the nodeShouldBeIgnoredPtr to determine 
             // if a node is valid and ignores the ghostZones.
-            CalculateWithGhosts(in, ncomponents, ntuples,
+            CalculateWithGhosts(inputArray, ncomponents, ntuples,
                                 [](vtkDataArray *ghostZones,
                                    int *nodeShouldBeIgnoredPtr,
                                    int tuple_id) -> int 
@@ -317,7 +316,7 @@ avtOOFUSExpression::DoOperation(vtkDataArray *in,
         }
         else // no ghosts
         {
-            CalculateWithoutGhosts(in, ncomponents, ntuples, constant_results);
+            CalculateWithoutGhosts(inputArray, ncomponents, ntuples, constant_results);
         }
     }
 }
@@ -332,134 +331,152 @@ avtOOFUSExpression::CreateArray(vtkDataArray *in1)
 
 // ****************************************************************************
 // ****************************************************************************
+vtkDataArray *
+avtOOFUSExpression::GetDataForActiveVar(vtkDataSet *in_ds)
+{
+    vtkDataArray *cell_data = nullptr;
+    vtkDataArray *point_data = nullptr;
+    vtkDataArray *data = nullptr;
+
+    cell_data = in_ds->GetCellData()->GetArray(activeVariable);
+    point_data = in_ds->GetPointData()->GetArray(activeVariable);
+
+    if (cell_data != nullptr)
+    {
+        data = cell_data;
+        centering = AVT_ZONECENT;
+    }
+    else
+    {
+        data = point_data;
+        centering = AVT_NODECENT;
+    }
+
+    return data;
+}
+
+
+// ****************************************************************************
+// ****************************************************************************
+vtkDataArray *
+avtOOFUSExpression::GetDataForNoActiveVar(vtkDataSet *in_ds)
+{
+    vtkDataArray *cell_data = nullptr;
+    vtkDataArray *point_data = nullptr;
+    vtkDataArray *data = nullptr;
+
+    //
+    // This hack is getting more and more refined.  This situation comes up
+    // when we don't know what the active variable is (mostly for the
+    // constant creation filter).  We probably need more infrastructure
+    // to handle this.
+    // Iteration 1 of this hack said take any array.
+    // Iteration 2 said take any array that isn't vtkGhostLevels, etc.
+    // Iteration 3 says take the first scalar array if one is available,
+    //             provided that array is not vtkGhostLevels, etc.
+    //             This is because most constants we create are scalar.
+    //
+    // Note: this hack used to be quite important because we would use
+    // the resulting array to determine the centering of the variable.
+    // Now we use the IsPointVariable() method.  So this data array is
+    // only used to get the type.
+    //
+    const int ncellArray = in_ds->GetCellData()->GetNumberOfArrays();
+    for (int i = 0 ; i < ncellArray ; i++)
+    {
+        vtkDataArray *candidate = in_ds->GetCellData()->GetArray(i);
+        if (strstr(candidate->GetName(), "vtk") != NULL)
+            continue;
+        if (strstr(candidate->GetName(), "avt") != NULL)
+            continue;
+        if (candidate->GetNumberOfComponents() == 1)
+        {
+            // Definite winner
+            cell_data = candidate;
+            break;
+        }
+        else
+            // Potential winner -- keep looking
+            cell_data = candidate;
+    }
+    const int npointArray = in_ds->GetPointData()->GetNumberOfArrays();
+    for (int i = 0 ; i < npointArray ; i++)
+    {
+        vtkDataArray *candidate = in_ds->GetPointData()->GetArray(i);
+        if (strstr(candidate->GetName(), "vtk") != NULL)
+            continue;
+        if (strstr(candidate->GetName(), "avt") != NULL)
+            continue;
+        if (candidate->GetNumberOfComponents() == 1)
+        {
+            // Definite winner
+            point_data = candidate;
+            break;
+        }
+        else
+            // Potential winner -- keep looking
+            point_data = candidate;
+    }
+
+    if (cell_data != NULL && cell_data->GetNumberOfComponents() == 1)
+    {
+        data = cell_data;
+        centering = AVT_ZONECENT;
+    }
+    else if (point_data != NULL && point_data->GetNumberOfComponents()== 1)
+    {
+        data = point_data;
+        centering = AVT_NODECENT;
+    }
+    else if (cell_data != NULL)
+    {
+        data = cell_data;
+        centering = AVT_ZONECENT;
+    }
+    else
+    {
+        data = point_data;
+        centering = AVT_NODECENT;
+    }
+
+    return data;
+}
+
+// ****************************************************************************
+// ****************************************************************************
+void
+avtOOFUSExpression::GetNumCompsNumTuples(vtkDataSet *in_ds,
+                                         int &ncomps,
+                                         int &ntuples)
+{
+    if (activeVariable == nullptr)
+    {
+        ntuples = (IsPointVariable() ? 
+                   in_ds->GetNumberOfPoints() :
+                   in_ds->GetNumberOfCells());
+    }
+    else
+    {
+        ntuples = data->GetNumberOfTuples();
+    }
+
+    ncomps = data->GetNumberOfComponents();
+}
+
+
+// ****************************************************************************
+// ****************************************************************************
 void
 avtOOFUSExpression::DeriveVariable(vtkDataSet *in_ds,
                                    std::vector<double> &constant_results)
 {
-    int  i;
+    // TODO I need a way to stash this info for later so I don't have to 
+    // recompute all of this information
 
-    vtkDataArray *cell_data = NULL;
-    vtkDataArray *point_data = NULL;
-    vtkDataArray *data = NULL;
-
-    if (activeVariable == NULL)
-    {
-        //
-        // This hack is getting more and more refined.  This situation comes up
-        // when we don't know what the active variable is (mostly for the
-        // constant creation filter).  We probably need more infrastructure
-        // to handle this.
-        // Iteration 1 of this hack said take any array.
-        // Iteration 2 said take any array that isn't vtkGhostLevels, etc.
-        // Iteration 3 says take the first scalar array if one is available,
-        //             provided that array is not vtkGhostLevels, etc.
-        //             This is because most constants we create are scalar.
-        //
-        // Note: this hack used to be quite important because we would use
-        // the resulting array to determine the centering of the variable.
-        // Now we use the IsPointVariable() method.  So this data array is
-        // only used to get the type.
-        //
-        int ncellArray = in_ds->GetCellData()->GetNumberOfArrays();
-        for (i = 0 ; i < ncellArray ; i++)
-        {
-            vtkDataArray *candidate = in_ds->GetCellData()->GetArray(i);
-            if (strstr(candidate->GetName(), "vtk") != NULL)
-                continue;
-            if (strstr(candidate->GetName(), "avt") != NULL)
-                continue;
-            if (candidate->GetNumberOfComponents() == 1)
-            {
-                // Definite winner
-                cell_data = candidate;
-                break;
-            }
-            else
-                // Potential winner -- keep looking
-                cell_data = candidate;
-        }
-        int npointArray = in_ds->GetPointData()->GetNumberOfArrays();
-        for (i = 0 ; i < npointArray ; i++)
-        {
-            vtkDataArray *candidate = in_ds->GetPointData()->GetArray(i);
-            if (strstr(candidate->GetName(), "vtk") != NULL)
-                continue;
-            if (strstr(candidate->GetName(), "avt") != NULL)
-                continue;
-            if (candidate->GetNumberOfComponents() == 1)
-            {
-                // Definite winner
-                point_data = candidate;
-                break;
-            }
-            else
-                // Potential winner -- keep looking
-                point_data = candidate;
-        }
-
-        if (cell_data != NULL && cell_data->GetNumberOfComponents() == 1)
-        {
-            data = cell_data;
-            centering = AVT_ZONECENT;
-        }
-        else if (point_data != NULL && point_data->GetNumberOfComponents()== 1)
-        {
-            data = point_data;
-            centering = AVT_NODECENT;
-        }
-        else if (cell_data != NULL)
-        {
-            data = cell_data;
-            centering = AVT_ZONECENT;
-        }
-        else
-        {
-            data = point_data;
-            centering = AVT_NODECENT;
-        }
-    } 
-    else
-    {
-        cell_data = in_ds->GetCellData()->GetArray(activeVariable);
-        point_data = in_ds->GetPointData()->GetArray(activeVariable);
-
-        if (cell_data != NULL)
-        {
-            data = cell_data;
-            centering = AVT_ZONECENT;
-        }
-        else
-        {
-            data = point_data;
-            centering = AVT_NODECENT;
-        }
-    }
-
-    //
-    // Set up a VTK variable reflecting the calculated variable
-    //
-    int ncomps = 0;
-    int nvals = 0;
-    if (activeVariable == NULL || data == NULL)
-        nvals = (IsPointVariable() ? in_ds->GetNumberOfPoints() 
-                                   : in_ds->GetNumberOfCells());
-    else
-        nvals = data->GetNumberOfTuples();
-
-    if (data == NULL)
-    {
-        //
-        // We could not find a single array.  We must be doing something with
-        // the mesh.
-        //
-        ncomps = 1;
-    }
-    else
-    {
-        ncomps = data->GetNumberOfComponents();
-    }
-
-    if (data == NULL)
+    vtkDataArray *data = (activeVariable == nullptr ? 
+                          GetDataForNoActiveVar(in_ds) : 
+                          GetDataForActiveVar(in_ds));
+    if (data == nullptr)
     {
         // One way to get here is to have vtkPolyData Curve plots.
         EXCEPTION2(ExpressionException, outputVariableName,
@@ -468,28 +485,10 @@ avtOOFUSExpression::DeriveVariable(vtkDataSet *in_ds,
              "VisIt developer.");
     }
 
-    //
-    // Should we send in ncomps or noutcomps?  They are the same number 
-    // unless the derived type re-defined GetNumberOfComponentsInOutput.
-    // If it did, it probably doesn't matter.  If not, then it is the same
-    // number.  So send in the input.  Really doesn't matter.
-    //
-    cur_mesh = in_ds;
-    DoOperation(data, ncomps, nvals, in_ds, constant_results);
-    cur_mesh = NULL;
-}
+    int ncomps, tuples;
+    GetNumCompsNumTuples(ncomps, ntuples);
 
-// ****************************************************************************
-// ****************************************************************************
-void
-avtOOFUSExpression::ExecuteData(avtDataRepresentation *in_dr,
-                                std::vector<double> &constant_results)
-{
-    //
-    // Get the VTK data set
-    //
-    vtkDataSet *in_ds = in_dr->GetDataVTK();
-    DeriveVariable(in_ds, constant_results);
+    DoOperation(data, ncomps, ntuples, in_ds, constant_results);
 }
 
 // ****************************************************************************
@@ -507,7 +506,9 @@ avtOOFUSExpression::ConstantEvaluation(avtDataTree_p inputDataTree,
 
     if (numChildren == 0)
     {
-        ExecuteData(&(inputDataTree->GetDataRepresentation()), constant_results);
+        avtDataRepresentation *in_dr = &(inputDataTree->GetDataRepresentation());
+        vtkDataSet *in_ds = in_dr->GetDataVTK();
+        DeriveVariable(in_ds, constant_results);
 
         UpdateProgress(currentProgress++, totalSteps);
     }
@@ -531,133 +532,10 @@ vtkDataArray *
 avtOOFUSExpression::WriteDerivedVariable(vtkDataSet *in_ds,
                                          double result)
 {
-    int  i;
-
-    vtkDataArray *cell_data = NULL;
-    vtkDataArray *point_data = NULL;
-    vtkDataArray *data = NULL;
-
-    if (activeVariable == NULL)
-    {
-        //
-        // This hack is getting more and more refined.  This situation comes up
-        // when we don't know what the active variable is (mostly for the
-        // constant creation filter).  We probably need more infrastructure
-        // to handle this.
-        // Iteration 1 of this hack said take any array.
-        // Iteration 2 said take any array that isn't vtkGhostLevels, etc.
-        // Iteration 3 says take the first scalar array if one is available,
-        //             provided that array is not vtkGhostLevels, etc.
-        //             This is because most constants we create are scalar.
-        //
-        // Note: this hack used to be quite important because we would use
-        // the resulting array to determine the centering of the variable.
-        // Now we use the IsPointVariable() method.  So this data array is
-        // only used to get the type.
-        //
-        int ncellArray = in_ds->GetCellData()->GetNumberOfArrays();
-        for (i = 0 ; i < ncellArray ; i++)
-        {
-            vtkDataArray *candidate = in_ds->GetCellData()->GetArray(i);
-            if (strstr(candidate->GetName(), "vtk") != NULL)
-                continue;
-            if (strstr(candidate->GetName(), "avt") != NULL)
-                continue;
-            if (candidate->GetNumberOfComponents() == 1)
-            {
-                // Definite winner
-                cell_data = candidate;
-                break;
-            }
-            else
-                // Potential winner -- keep looking
-                cell_data = candidate;
-        }
-        int npointArray = in_ds->GetPointData()->GetNumberOfArrays();
-        for (i = 0 ; i < npointArray ; i++)
-        {
-            vtkDataArray *candidate = in_ds->GetPointData()->GetArray(i);
-            if (strstr(candidate->GetName(), "vtk") != NULL)
-                continue;
-            if (strstr(candidate->GetName(), "avt") != NULL)
-                continue;
-            if (candidate->GetNumberOfComponents() == 1)
-            {
-                // Definite winner
-                point_data = candidate;
-                break;
-            }
-            else
-                // Potential winner -- keep looking
-                point_data = candidate;
-        }
-
-        if (cell_data != NULL && cell_data->GetNumberOfComponents() == 1)
-        {
-            data = cell_data;
-            centering = AVT_ZONECENT;
-        }
-        else if (point_data != NULL && point_data->GetNumberOfComponents()== 1)
-        {
-            data = point_data;
-            centering = AVT_NODECENT;
-        }
-        else if (cell_data != NULL)
-        {
-            data = cell_data;
-            centering = AVT_ZONECENT;
-        }
-        else
-        {
-            data = point_data;
-            centering = AVT_NODECENT;
-        }
-    } 
-    else
-    {
-        cell_data = in_ds->GetCellData()->GetArray(activeVariable);
-        point_data = in_ds->GetPointData()->GetArray(activeVariable);
-
-        if (cell_data != NULL)
-        {
-            data = cell_data;
-            centering = AVT_ZONECENT;
-        }
-        else
-        {
-            data = point_data;
-            centering = AVT_NODECENT;
-        }
-    }
-
-    //
-    // Set up a VTK variable reflecting the calculated variable
-    //
-    int ncomps = 0;
-    int nvals = 0;
-    if (activeVariable == NULL || data == NULL)
-        nvals = (IsPointVariable() ? in_ds->GetNumberOfPoints() 
-                                   : in_ds->GetNumberOfCells());
-    else
-        nvals = data->GetNumberOfTuples();
-
-    vtkDataArray *dv = NULL;
-    if (data == NULL)
-    {
-        //
-        // We could not find a single array.  We must be doing something with
-        // the mesh.
-        //
-        ncomps = 1;
-        dv = CreateArrayFromMesh(in_ds);
-    }
-    else
-    {
-        ncomps = data->GetNumberOfComponents();
-        dv = CreateArray(data);
-    }
-
-    if (data == NULL)
+    vtkDataArray *data = (activeVariable == nullptr ? 
+                          GetDataForNoActiveVar(in_ds) : 
+                          GetDataForActiveVar(in_ds));
+    if (data == nullptr)
     {
         // One way to get here is to have vtkPolyData Curve plots.
         EXCEPTION2(ExpressionException, outputVariableName,
@@ -666,25 +544,23 @@ avtOOFUSExpression::WriteDerivedVariable(vtkDataSet *in_ds,
              "VisIt developer.");
     }
 
-    int noutcomps = ncomps;
-    dv->SetNumberOfComponents(noutcomps);
-    dv->SetNumberOfTuples(nvals);
+    //
+    // Set up a VTK variable reflecting the calculated variable
+    //
+    int ncomps, tuples;
+    GetNumCompsNumTuples(ncomps, ntuples);
 
-    //
-    // Should we send in ncomps or noutcomps?  They are the same number 
-    // unless the derived type re-defined GetNumberOfComponentsInOutput.
-    // If it did, it probably doesn't matter.  If not, then it is the same
-    // number.  So send in the input.  Really doesn't matter.
-    //
-    cur_mesh = in_ds;
+    vtkDataArray *dv = CreateArray(data);
+    dv->SetNumberOfComponents(ncomps);
+    dv->SetNumberOfTuples(ntuples);
+
     for (int comp_id = 0; comp_id < ncomps; comp_id ++)
     {
-        for (int tuple_id = 0; tuple_id < nvals; tuple_id ++)
+        for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
         {
             dv->SetComponent(tuple_id, comp_id, result);
         }
     }
-    cur_mesh = NULL;
 
     return dv;
 }
@@ -817,21 +693,11 @@ avtOOFUSExpression::WriteData_VTK(avtDataRepresentation *in_dr, double result)
 
 // ****************************************************************************
 // ****************************************************************************
-avtDataRepresentation *
-avtOOFUSExpression::WriteData(avtDataRepresentation *in_dr, double result)
-{
-    avtDataRepresentation *out_dr = nullptr;
-    out_dr = WriteData_VTK(in_dr, result); 
-
-    return out_dr;
-}
-
-// ****************************************************************************
-// ****************************************************************************
 avtDataTree_p
 avtOOFUSExpression::WriteDataTree(avtDataRepresentation *in_dr, double result)
 {
-    avtDataRepresentation *out_dr = WriteData(in_dr, result);
+    avtDataRepresentation *out_dr = nullptr;
+    out_dr = WriteData_VTK(in_dr, result);
 
     if (out_dr == nullptr)
     {
