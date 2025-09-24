@@ -13,6 +13,10 @@
 #include <errno.h>
 #ifdef  _WIN32
 # include <windows.h>
+#else
+// access `environ` pointer for env var strings in non windows oses
+#include <unistd.h>
+extern char **environ;
 #endif
 
 #include <Environment.h>
@@ -123,6 +127,83 @@ unset(const char *variable)
     debug5 << "unsetenv(" << variable << ") ignored; unsetenv not supported "
            << "on this platform." << std::endl;
 #endif
+}
+
+
+
+// ****************************************************************************
+//  Function: Environment::variable_strings
+//
+//  Purpose: Lists env var strings
+//
+//  Programmer: Cyrus Harrison
+//
+// ****************************************************************************
+void
+variable_strings(std::vector<std::string> &var_strs)
+{
+    var_strs.clear();
+#ifdef  _WIN32 // windows case
+// Interesting notes on Windows GetEnvironmentStrings
+//   https://www.os2museum.com/wp/the-strange-case-of-getenvironmentstringsa/
+//   https://devblogs.microsoft.com/oldnewthing/20130117-00/?p=5533
+//
+// I decided best course is to use ANSI version: GetEnvironmentStringsA
+
+    LPTCH lp_env_strs = GetEnvironmentStringsA();
+    std::size_t curr_len = strlen(lp_env_strs);
+    while ( curr_len  > 0 )
+    {
+        var_strs.push_back(std::string(lp_env_strs, curr_len));
+        // advance the len of the last string
+        lp_env_strs += len + 1;
+        // next len
+        curr_len = strlen(lp_env_strs);
+    }
+    
+    FreeEnvironmentStrings(lp_env_strs);
+
+#else // all other oses
+
+    char **env_var_ptr = environ;
+    while(*env_var_ptr != NULL)
+    {
+        var_strs.push_back(std::string(*env_var_ptr));
+        env_var_ptr++;
+    }
+#endif
+    
+}
+
+// ****************************************************************************
+//  Function: Environment::variable_names
+//
+//  Purpose: Lists env var names
+//
+//  Programmer: Cyrus Harrison
+//
+// ****************************************************************************
+void
+variable_names(std::vector<std::string> &names)
+{
+    names.clear();
+    // get full env var strings
+    std::vector<std::string> var_strs;
+    variable_strings(var_strs);
+    // for each strip, the var name portion is before the `=`
+    for(auto var_str : var_strs)
+    {
+        size_t eq_loc = var_str.find("=");
+        if(eq_loc!= std::string::npos)
+        {
+            names.push_back(var_str.substr(0,eq_loc));
+        }
+        else 
+        {
+            // error?
+        }
+    }
+    
 }
 
 }  /* namespace Environment */
