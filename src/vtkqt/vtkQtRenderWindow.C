@@ -13,7 +13,9 @@
 #include <QVTKInteractor.h>
 #include <vtkRenderWindow.h>
 
+
 #include <QApplication>
+#include <QScreen>
 #include <vtkUnsignedCharArray.h>
 
 #ifdef __linux__
@@ -132,6 +134,10 @@ vtkQtRenderWindow::vtkQtRenderWindow(QWidget *parent, Qt::WindowFlags f) : QMain
     // ownership of the gl widget pointer and deletes it at the
     // appropriate time.
     setCentralWidget(d->gl);
+
+    // set DPI according to the screen the window will be shown on
+    setRenderWindowDPI();
+
 }
 
 vtkQtRenderWindow::vtkQtRenderWindow(bool stereo, QWidget *parent, Qt::WindowFlags f) : QMainWindow(parent, f)
@@ -146,6 +152,9 @@ vtkQtRenderWindow::vtkQtRenderWindow(bool stereo, QWidget *parent, Qt::WindowFla
     // ownership of the gl widget pointer and deletes it at the
     // appropriate time.
     setCentralWidget(d->gl);
+
+    // set DPI according to the screen the window will be shown on
+    setRenderWindowDPI();
 }
 
 
@@ -391,6 +400,7 @@ vtkQtRenderWindow::hideEvent(QHideEvent *e)
 void
 vtkQtRenderWindow::showEvent(QShowEvent *e)
 {
+    setRenderWindowDPI();
     QMainWindow::showEvent(e);
     if(d->showEventCallback)
         (*d->showEventCallback)(d->showEventCallbackData);
@@ -415,6 +425,7 @@ vtkQtRenderWindow::showEvent(QShowEvent *e)
 void
 vtkQtRenderWindow::resizeEvent(QResizeEvent *re)
 {
+    setRenderWindowDPI();
     // Handle the resize and then record the size of the GL widget since that's
     // the size that we care about.
     QMainWindow::resizeEvent(re);
@@ -422,3 +433,33 @@ vtkQtRenderWindow::resizeEvent(QResizeEvent *re)
         d->resizeEventCallback(d->resizeEventData);
 }
 
+// ****************************************************************************
+// Method: vtkQtRenderWindow::setRenderingWindowDPI
+//
+// Purpose:
+//   Method that sets the VTK render window dpi
+//
+//
+// Programmer: Cyrus Harrison
+// Creation:   Wed Sep 24 09:04:56 PDT 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+vtkQtRenderWindow::setRenderWindowDPI()
+{
+    vtkRenderWindow *render_window = d->gl->renderWindow();
+    // Check DPI vs current screen
+    int current_screen_dpi = qRound(this->screen()->logicalDotsPerInch());
+    int current_render_window_dpi = render_window->GetDPI();
+    
+    std::cout << "setRenderWindowDPI (vtk render window) " << current_render_window_dpi << " vs (screen) " << current_screen_dpi  << std::endl;
+
+    if(current_screen_dpi != current_render_window_dpi)
+    {
+       std::cout << "changed (vtk render window) " << current_render_window_dpi << " vs (screen) " << current_screen_dpi  << std::endl;
+       render_window->SetDPI(current_screen_dpi);
+    }
+}

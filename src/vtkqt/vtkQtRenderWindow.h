@@ -61,6 +61,11 @@ protected:
     void closeEvent(QCloseEvent *) override;
     void hideEvent(QHideEvent *) override;
     void showEvent(QShowEvent *) override;
+    void setRenderWindowDPI();
+
+private slots:
+    
+    
 private:
     vtkQtRenderWindowPrivate *d;
 };
