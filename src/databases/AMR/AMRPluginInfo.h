@@ -31,7 +31,7 @@ class avtDatabaseWriter;
 
 class AMRGeneralPluginInfo : public virtual GeneralDatabasePluginInfo
 {
-public:
+  public:
     virtual const char *GetName() const;
     virtual const char *GetVersion() const;
     virtual const char *GetID() const;
@@ -44,22 +44,22 @@ public:
 
 class AMRCommonPluginInfo : public virtual CommonDatabasePluginInfo, public virtual AMRGeneralPluginInfo
 {
-public:
+  public:
     virtual DatabaseType              GetDatabaseType();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
-            int nList, int nBlock);
+                                                    int nList, int nBlock);
 };
 
 class AMRMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual AMRCommonPluginInfo
 {
-public:
+  public:
     // this makes compilers happy... remove if we ever have functions here
     virtual void dummy();
 };
 
 class AMREnginePluginInfo : public virtual EngineDatabasePluginInfo, public virtual AMRCommonPluginInfo
 {
-public:
+  public:
     virtual avtDatabaseWriter        *GetWriter(void);
 };
 

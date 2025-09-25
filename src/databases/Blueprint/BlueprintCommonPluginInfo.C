@@ -51,7 +51,7 @@ BlueprintCommonPluginInfo::SetupDatabase(const char *const *list,
         ffl[i] = new avtBlueprintFileFormat(list[i], readOptions);
     }
     avtSTMDFileFormatInterface *inter
-           = new avtSTMDFileFormatInterface(ffl, nList);
+        = new avtSTMDFileFormatInterface(ffl, nList);
     return new avtGenericDatabase(inter);
 }
 

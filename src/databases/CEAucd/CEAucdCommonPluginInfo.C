@@ -50,6 +50,6 @@ CEAucdCommonPluginInfo::SetupDatabase(const char *const *list,
         ffl[i] = new avtCEAucdFileFormat(list[i]);
     }
     avtSTMDFileFormatInterface *inter
-           = new avtSTMDFileFormatInterface(ffl, nList);
+        = new avtSTMDFileFormatInterface(ffl, nList);
     return new avtGenericDatabase(inter);
 }
