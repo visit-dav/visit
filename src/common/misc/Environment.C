@@ -138,6 +138,11 @@ unset(const char *variable)
 //
 //  Programmer: Cyrus Harrison
 //
+//  Modifications:
+//    Kathleen Biagas, Thu Sep 25, 2025
+//    Ensure lp_env_strs is not modified. Use FreeEnvironemntStringsA to
+//    match GetEnvironmentStringsA.
+//
 // ****************************************************************************
 void
 variable_strings(std::vector<std::string> &var_strs)
@@ -151,17 +156,24 @@ variable_strings(std::vector<std::string> &var_strs)
 // I decided best course is to use ANSI version: GetEnvironmentStringsA
 
     LPTCH lp_env_strs = GetEnvironmentStringsA();
-    std::size_t curr_len = strlen(lp_env_strs);
-    while ( curr_len  > 0 )
+    LPTSTR lpszVar;
+
+    if(lp_env_strs == NULL)
     {
-        var_strs.push_back(std::string(lp_env_strs, curr_len));
-        // advance the len of the last string
-        lp_env_strs += len + 1;
-        // next len
-        curr_len = strlen(lp_env_strs);
+        debug1 << "GetEnvironmentStringsA returned NULL." << endl;
+        return;
+    }
+
+    lpszVar = (LPTSTR) lp_env_strs;
+    while (*lpszVar)
+    {
+        var_strs.push_back(std::string(lpszVar));
+        lpszVar += lstrlen(lpszVar)+1;
     }
     
-    FreeEnvironmentStrings(lp_env_strs);
+    // Need to call the same version of FreeEnvironmentStrings as
+    // GetEnvironmentStrings.
+    FreeEnvironmentStringsA(lp_env_strs);
 
 #else // all other oses
 
