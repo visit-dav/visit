@@ -3,27 +3,22 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                       avtOOFUSExpression.h                       //
+//                       avtGlobalConstantExpression.h                       //
 // ************************************************************************* //
 
-#ifndef AVT_OOFUS_EXPRESSION_H
-#define AVT_OOFUS_EXPRESSION_H
+#ifndef AVT_GLOBAL_CONSTANT_EXPRESSION_H
+#define AVT_GLOBAL_CONSTANT_EXPRESSION_H
 
 #include <avtExpressionFilter.h>
-#include <vtkBitArray.h>
 
-#include <vector>
+// #include <vector>
 
 class     vtkDataArray;
-class     vtkIntArray;
 class     vtkDataSet;
-class     vtkCell;
-class     vtkUnstructuredGrid;
-class     avtIntervalTree;
 class     intermediateResults;
 
 // ****************************************************************************
-//  Class: avtOOFUSExpression
+//  Class: avtGlobalConstantExpression
 //
 //  Purpose:
 //      TODO
@@ -35,34 +30,39 @@ class     intermediateResults;
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtOOFUSExpression : public avtExpressionFilter
+class EXPRESSION_API avtGlobalConstantExpression : public avtExpressionFilter
 {
   public:
-                              avtOOFUSExpression();
-    virtual                  ~avtOOFUSExpression();
+                              avtGlobalConstantExpression();
+    virtual                  ~avtGlobalConstantExpression();
 
     virtual const char       *GetType(void)
-                                     { return "avtOOFUSExpression"; };
-    virtual const char       *GetDescription(void)
-                                      {return "Finding OOFUS";};
+                                     { return "avtGlobalConstantExpression"; };
+    virtual const char       *GetDescription(void) = 0;
+
+    // TODO do I need these?
     virtual int               NumVariableArguments() { return 1; };
     virtual int               GetVariableDimension() { return 1; };
 
   protected:
     int                       currentProgress;
     int                       totalSteps;
-
+    avtCentering              centering;
 
     virtual void              Execute(void);
 
-    virtual avtContract_p
-                              ModifyContract(avtContract_p);
-    
-    virtual bool              CheckForProperGhostZones(vtkDataSet **sets,int nsets);
-    virtual void              LabelGhostNeighbors(vtkDataSet *);
-    virtual void              LabelBoundaryNeighbors(vtkDataSet *);
+    // TODO explanation
+    virtual bool              NeedsNTuples() { return false; };
+    // TODO explanation
+    virtual bool              NeedsSums() { return false; };
 
-    avtCentering              centering;
+    // expressions like standard deviation and variance require an extra array of intermediate data
+    virtual bool              NeedsExtraIntermediateData() { return false; };
+
+    virtual void              CalculateFinalResults(const std::vector<double> &global_constant_results,
+                                                    const std::vector<double> &global_extra_constant_results,
+                                                    const std::vector<double> &global_component_sums,
+                                                    std::vector<double> &final_results) = 0;
 
   private:
     void                      CalculateWithoutGhosts(vtkDataArray *in, 
@@ -87,8 +87,6 @@ class EXPRESSION_API avtOOFUSExpression : public avtExpressionFilter
                                           const int ntuples,
                                           vtkDataSet *in_ds,
                                           std::vector<double> &per_leaf_constant_results);
-
-    vtkDataArray             *CreateArray(vtkDataArray *in1);
 
     void                      DeriveVariable(vtkDataSet *in_ds,
                                              intermediateResults &per_leaf_results);

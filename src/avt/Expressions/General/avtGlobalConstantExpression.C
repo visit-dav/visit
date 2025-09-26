@@ -3,9 +3,9 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                      avtOOFUSExpression.C                        //
+//                      avtGlobalConstantExpression.C                        //
 // ************************************************************************* //
-#include <avtOOFUSExpression.h>
+#include <avtGlobalConstantExpression.h>
 
 #include <math.h>
 
@@ -63,13 +63,23 @@
 class intermediateResults
 {
 public:
-    std::vector<double> per_leaf_constant_results;
+    // we need a vector to store results per component
+    std::vector<double> constant_results;
+    // some expressions (stdDev and variance) require a second per-component result
+    std::vector<double> extra_constant_results;
+    // we need to track each component's sum
+    std::vector<double> sums;
+    // we track the number of components, which is also the length of these vectors
     int                 ncomps;
+    // we track the number of tuples that we are reducing across
     int                 ntuples;
+    // the data array where we will place results when we are done
     vtkDataArray       *target_data_array;
 
     intermediateResults()
-        : per_leaf_constant_results(), ncomps(0), ntuples(0), target_data_array(nullptr) {}
+        : constant_results(), extra_constant_results(),
+          sum(), ncomps(0), ntuples(0), 
+          target_data_array(nullptr) {}
 
     ~intermediateResults()
     {
@@ -82,7 +92,7 @@ public:
 };
 
 // ****************************************************************************
-//  Method: avtOOFUSExpression constructor
+//  Method: avtGlobalConstantExpression constructor
 //
 //  Purpose:
 //      Defines the constructor.  Note: this should not be inlined in the
@@ -94,14 +104,14 @@ public:
 //  Modifications:
 // ****************************************************************************
 
-avtOOFUSExpression::avtOOFUSExpression()
+avtGlobalConstantExpression::avtGlobalConstantExpression()
 {
     canApplyToDirectDatabaseQOT = false;
 }
 
 
 // ****************************************************************************
-//  Method: avtOOFUSExpression destructor
+//  Method: avtGlobalConstantExpression destructor
 //
 //  Purpose:
 //      Defines the destructor.  Note: this should not be inlined in the header
@@ -113,13 +123,66 @@ avtOOFUSExpression::avtOOFUSExpression()
 //  Modifications:
 // ****************************************************************************
 
-avtOOFUSExpression::~avtOOFUSExpression()
+avtGlobalConstantExpression::~avtGlobalConstantExpression()
 {
 
 }
 
 // ****************************************************************************
-//  Method: avtOOFUSExpression::CalculateWithoutGhosts
+//  Method: avtGlobalConstantExpression::GetLocalNumTuples
+//
+//  Purpose:
+//      TODO
+//
+//  Programmer: Justin Privitera
+//  Creation:   September 26, 2025
+//
+//  Modifications:
+// ****************************************************************************
+int
+avtGlobalConstantExpression::GetLocalNumTuples(const std::map<int, intermediateResults> &intermediate_results_map)
+{
+    int total_ntuples = 0;
+    std::for_each(intermediate_results_map.begin(),
+                  intermediate_results_map.end(),
+                  [&total_ntuples](const auto &pair) { total_ntuples += pair.second.ntuples; });
+    return total_ntuples;
+}
+
+// ****************************************************************************
+//  Method: avtGlobalConstantExpression::LocalIntermediateReduction
+//
+//  Purpose:
+//      TODO
+//
+//  Programmer: Justin Privitera
+//  Creation:   September 26, 2025
+//
+//  Modifications:
+// ****************************************************************************
+double
+avtGlobalConstantExpression::LocalIntermediateReduction(const double running_reduction,
+                                                   const double intermediate_value)
+{
+    // max
+    return std::max(running_reduction, intermediate_value);
+    // // min
+    // return std::min(running_reduction, intermediate_value);
+    // // avg
+    // return running_reduction + intermediate_value;
+    // // sum
+    // return running_reduction + intermediate_value;
+    // // stddev
+    // return running_reduction + intermediate_value;
+    // // variance
+    // return running_reduction + intermediate_value;
+    // // rms
+    // return running_reduction + intermediate_value;
+}
+
+
+// ****************************************************************************
+//  Method: avtGlobalConstantExpression::GlobalIntermediateReduction
 //
 //  Purpose:
 //      TODO
@@ -130,11 +193,60 @@ avtOOFUSExpression::~avtOOFUSExpression()
 //  Modifications:
 // ****************************************************************************
 void
-avtOOFUSExpression::CalculateWithoutGhosts(vtkDataArray *in, 
-                                           const int ncomponents,
-                                           const int ntuples,
-                                           std::vector<double> &per_leaf_constant_results)
+avtGlobalConstantExpression::GlobalIntermediateReduction(std::vector<double> &local_constant_results,
+                                                         std::vector<double> &global_constant_results)
 {
+#ifdef PARALLEL
+    // max
+    MPI_Allreduce(local_constant_results.data(), global_constant_results.data(),
+                  ncomps, MPI_DOUBLE, MPI_MAX, VISIT_MPI_COMM);
+    // // min
+    // MPI_Allreduce(local_constant_results.data(), global_constant_results.data(),
+    //                   ncomps, MPI_DOUBLE, MPI_MIN, VISIT_MPI_COMM);
+    // // avg
+    // MPI_Allreduce(local_constant_results.data(), global_constant_results.data(),
+    //                   ncomps, MPI_DOUBLE, MPI_SUM, VISIT_MPI_COMM);
+    // // sum
+    // MPI_Allreduce(local_constant_results.data(), global_constant_results.data(),
+    //                   ncomps, MPI_DOUBLE, MPI_SUM, VISIT_MPI_COMM);
+    // // stddev
+    // MPI_Allreduce(local_constant_results.data(), global_constant_results.data(),
+    //                   ncomps, MPI_DOUBLE, MPI_SUM, VISIT_MPI_COMM);
+    // // variance
+    // MPI_Allreduce(local_constant_results.data(), global_constant_results.data(),
+    //                   ncomps, MPI_DOUBLE, MPI_SUM, VISIT_MPI_COMM);
+    // // rms
+    // MPI_Allreduce(local_constant_results.data(), global_constant_results.data(),
+    //                   ncomps, MPI_DOUBLE, MPI_SUM, VISIT_MPI_COMM);
+#else
+    (void) local_constant_results;
+    (void) global_constant_results;
+#endif
+}
+
+
+// ****************************************************************************
+//  Method: avtGlobalConstantExpression::CalculateWithoutGhosts
+//
+//  Purpose:
+//      TODO
+//
+//  Programmer: Justin Privitera
+//  Creation:   September 26, 2025
+//
+//  Modifications:
+// ****************************************************************************
+void
+avtGlobalConstantExpression::CalculateWithoutGhosts(vtkDataArray *in, 
+                                                    const int ncomponents,
+                                                    const int ntuples,
+                                                    std::vector<double> &constant_results,
+                                                    std::vector<double> &extra_constant_results,
+                                                    std::vector<double> &sum)
+{
+    (void) extra_constant_results;
+    (void) sum;
+
     for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
     {
         double comp_max = in->GetComponent(0, comp_id);
@@ -148,12 +260,12 @@ avtOOFUSExpression::CalculateWithoutGhosts(vtkDataArray *in,
             }
         }
 
-        per_leaf_constant_results[comp_id] = comp_max;
+        constant_results[comp_id] = comp_max;
     }
 }
 
 // ****************************************************************************
-//  Method: avtOOFUSExpression::CalculateWithGhosts
+//  Method: avtGlobalConstantExpression::CalculateWithGhosts
 //
 //  Purpose:
 //      TODO
@@ -164,14 +276,19 @@ avtOOFUSExpression::CalculateWithoutGhosts(vtkDataArray *in,
 //  Modifications:
 // ****************************************************************************
 void
-avtOOFUSExpression::CalculateWithGhosts(vtkDataArray *in,
-                                        const int ncomponents,
-                                        const int ntuples,
-                                        int (getNodeOrCellValid)(vtkDataArray *, int *, int),
-                                        vtkDataArray *ghostZones,
-                                        int *nodeShouldBeIgnoredPtr,
-                                        std::vector<double> &per_leaf_constant_results)
+avtGlobalConstantExpression::CalculateWithGhosts(vtkDataArray *in,
+                                                 const int ncomponents,
+                                                 const int ntuples,
+                                                 int (getNodeOrCellValid)(vtkDataArray *, int *, int),
+                                                 vtkDataArray *ghostZones,
+                                                 int *nodeShouldBeIgnoredPtr,
+                                                 std::vector<double> &constant_results,
+                                                 std::vector<double> &extra_constant_results,
+                                                 std::vector<double> &sum)
 {
+    (void) extra_constant_results;
+    (void) sum;
+
     for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
     {
         int start_tuple_id = 0;
@@ -204,12 +321,12 @@ avtOOFUSExpression::CalculateWithGhosts(vtkDataArray *in,
             }
         }
 
-        per_leaf_constant_results[comp_id] = comp_max;
+        constant_results[comp_id] = comp_max;
     }
 }
 
 // ****************************************************************************
-//  Method: avtOOFUSExpression::IdentifyGhostedNodes
+//  Method: avtGlobalConstantExpression::IdentifyGhostedNodes
 //
 //  Purpose:
 //      TODO
@@ -220,9 +337,9 @@ avtOOFUSExpression::CalculateWithGhosts(vtkDataArray *in,
 //  Modifications:
 // ****************************************************************************
 std::vector<int>
-avtOOFUSExpression::IdentifyGhostedNodes(vtkDataSet *in_ds,
-                                         vtkDataArray *ghostZones,
-                                         vtkDataArray *ghostNodes)
+avtGlobalConstantExpression::IdentifyGhostedNodes(vtkDataSet *in_ds,
+                                                  vtkDataArray *ghostZones,
+                                                  vtkDataArray *ghostNodes)
 {
     const int nPoints = in_ds->GetNumberOfPoints();
 
@@ -291,7 +408,7 @@ avtOOFUSExpression::IdentifyGhostedNodes(vtkDataSet *in_ds,
 }
 
 // ****************************************************************************
-//  Method: avtOOFUSExpression::DoOperation
+//  Method: avtGlobalConstantExpression::DoOperation
 //
 //  Purpose:
 //      TODO
@@ -302,11 +419,13 @@ avtOOFUSExpression::IdentifyGhostedNodes(vtkDataSet *in_ds,
 //  Modifications:
 // ****************************************************************************
 void
-avtOOFUSExpression::DoOperation(vtkDataArray *inputArray,
-                                const int ncomponents,
-                                const int ntuples,
-                                vtkDataSet *in_ds,
-                                std::vector<double> &per_leaf_constant_results)
+avtGlobalConstantExpression::DoOperation(vtkDataArray *inputArray,
+                                         const int ncomponents,
+                                         const int ntuples,
+                                         vtkDataSet *in_ds,
+                                         std::vector<double> &constant_results,
+                                         std::vector<double> &extra_constant_results,
+                                         std::vector<double> &sum)
 {
     vtkDataArray *ghostZones = in_ds->GetCellData()->GetArray("avtGhostZones");
     vtkDataArray *ghostNodes = in_ds->GetPointData()->GetArray("avtGhostNodes");
@@ -325,11 +444,14 @@ avtOOFUSExpression::DoOperation(vtkDataArray *inputArray,
                                    { return ghostZones->GetComponent(tuple_id, 0); },
                                 ghostZones,
                                 nullptr,
-                                per_leaf_constant_results);
+                                constant_results,
+                                extra_constant_results,
+                                sum);
         }
         else // no ghosts or just ghost nodes
         {
-            CalculateWithoutGhosts(inputArray, ncomponents, ntuples, per_leaf_constant_results);
+            CalculateWithoutGhosts(inputArray, ncomponents, ntuples, constant_results,
+                                   extra_constant_results, sum);
         }
     }
     else // AVT_NODECENT == centering
@@ -350,35 +472,22 @@ avtOOFUSExpression::DoOperation(vtkDataArray *inputArray,
                                    int tuple_id) -> int 
                                    { return nodeShouldBeIgnoredPtr[tuple_id]; },
                                 ghostZones,
-                                nodeShouldBeIgnored.data(), per_leaf_constant_results);
+                                nodeShouldBeIgnored.data(),
+                                constant_results,
+                                extra_constant_results,
+                                sum);
         }
         else // no ghosts
         {
-            CalculateWithoutGhosts(inputArray, ncomponents, ntuples, per_leaf_constant_results);
+            CalculateWithoutGhosts(inputArray, ncomponents, ntuples, constant_results,
+                                   extra_constant_results, sum);
         }
     }
 }
 
-// ****************************************************************************
-//  Method: avtOOFUSExpression::CreateArray
-//
-//  Purpose:
-//      TODO
-//
-//  Programmer: Justin Privitera
-//  Creation:   September 26, 2025
-//
-//  Modifications:
-// ****************************************************************************
-vtkDataArray *
-avtOOFUSExpression::CreateArray(vtkDataArray *in1)
-{
-    return in1->NewInstance();
-}
-
 
 // ****************************************************************************
-//  Method: avtOOFUSExpression::DeriveVariable
+//  Method: avtGlobalConstantExpression::DeriveVariable
 //
 //  Purpose:
 //      TODO
@@ -389,8 +498,8 @@ avtOOFUSExpression::CreateArray(vtkDataArray *in1)
 //  Modifications:
 // ****************************************************************************
 void
-avtOOFUSExpression::DeriveVariable(vtkDataSet *in_ds,
-                                   intermediateResults &per_leaf_results)
+avtGlobalConstantExpression::DeriveVariable(vtkDataSet *in_ds,
+                                            intermediateResults &per_leaf_results)
 {
     vtkDataArray *cell_data = nullptr;
     vtkDataArray *point_data = nullptr;
@@ -512,21 +621,35 @@ avtOOFUSExpression::DeriveVariable(vtkDataSet *in_ds,
 
     ncomps = data->GetNumberOfComponents();
 
-    vtkDataArray *dv = CreateArray(data);
+    vtkDataArray *dv = data->NewInstance();
     dv->SetNumberOfComponents(ncomps);
     dv->SetNumberOfTuples(ntuples);
 
     // we are caching this info so we can easily write to it later
     per_leaf_results.ncomps = ncomps;
     per_leaf_results.ntuples = ntuples;
-    per_leaf_results.per_leaf_constant_results.resize(ncomps);
+    per_leaf_results.constant_results.resize(ncomps);
+    if (NeedsExtraIntermediateData())
+    {
+        per_leaf_results.extra_constant_results.resize(ncomps);
+    }
+    if (NeedsSums())
+    {
+        per_leaf_results.sums.resize(ncomps);
+    }
     per_leaf_results.target_data_array = dv;
 
-    DoOperation(data, ncomps, ntuples, in_ds, per_leaf_results.per_leaf_constant_results);
+    DoOperation(data,
+                ncomps,
+                ntuples,
+                in_ds,
+                per_leaf_results.constant_results,
+                per_leaf_results.extra_constant_results,
+                per_leaf_results.sums);
 }
 
 // ****************************************************************************
-//  Method: avtOOFUSExpression::ConstantEvaluation
+//  Method: avtGlobalConstantExpression::ConstantEvaluation
 //
 //  Purpose:
 //      TODO
@@ -537,9 +660,9 @@ avtOOFUSExpression::DeriveVariable(vtkDataSet *in_ds,
 //  Modifications:
 // ****************************************************************************
 int
-avtOOFUSExpression::ConstantEvaluation(avtDataTree_p inputDataTree,
-                                       std::map<int, intermediateResults> &intermediate_results_map,
-                                       int leaf_number)
+avtGlobalConstantExpression::ConstantEvaluation(avtDataTree_p inputDataTree,
+                                                std::map<int, intermediateResults> &intermediate_results_map,
+                                                int leaf_number)
 {
     const int numChildren = inputDataTree->GetNChildren();
 
@@ -600,7 +723,7 @@ avtOOFUSExpression::ConstantEvaluation(avtDataTree_p inputDataTree,
 }
 
 // ****************************************************************************
-//  Method: avtOOFUSExpression::WriteData_VTK
+//  Method: avtGlobalConstantExpression::WriteData_VTK
 //
 //  Purpose:
 //      TODO
@@ -611,9 +734,9 @@ avtOOFUSExpression::ConstantEvaluation(avtDataTree_p inputDataTree,
 //  Modifications:
 // ****************************************************************************
 avtDataRepresentation *
-avtOOFUSExpression::WriteData_VTK(avtDataRepresentation *in_dr,
-                                  intermediateResults &per_leaf_results,
-                                  std::vector<double> global_constant_results)
+avtGlobalConstantExpression::WriteData_VTK(avtDataRepresentation *in_dr,
+                                           intermediateResults &per_leaf_results,
+                                           std::vector<double> global_constant_results)
 {
     //
     // Get the VTK data set.
@@ -734,7 +857,7 @@ avtOOFUSExpression::WriteData_VTK(avtDataRepresentation *in_dr,
 }
 
 // ****************************************************************************
-//  Method: avtOOFUSExpression::WriteDataTree
+//  Method: avtGlobalConstantExpression::WriteDataTree
 //
 //  Purpose:
 //      TODO
@@ -745,9 +868,9 @@ avtOOFUSExpression::WriteData_VTK(avtDataRepresentation *in_dr,
 //  Modifications:
 // ****************************************************************************
 avtDataTree_p
-avtOOFUSExpression::WriteDataTree(avtDataRepresentation *in_dr,
-                                  intermediateResults &per_leaf_results,
-                                  std::vector<double> global_constant_results)
+avtGlobalConstantExpression::WriteDataTree(avtDataRepresentation *in_dr,
+                                           intermediateResults &per_leaf_results,
+                                           std::vector<double> global_constant_results)
 {
     avtDataRepresentation *out_dr = WriteData_VTK(in_dr,
                                                   per_leaf_results,
@@ -773,7 +896,7 @@ avtOOFUSExpression::WriteDataTree(avtDataRepresentation *in_dr,
 }
 
 // ****************************************************************************
-//  Method: avtOOFUSExpression::WriteResult
+//  Method: avtGlobalConstantExpression::WriteResult
 //
 //  Purpose:
 //      TODO
@@ -784,11 +907,11 @@ avtOOFUSExpression::WriteDataTree(avtDataRepresentation *in_dr,
 //  Modifications:
 // ****************************************************************************
 int
-avtOOFUSExpression::WriteResult(avtDataTree_p inputDataTree, 
-                                avtDataTree_p &outputDataTree,
-                                std::map<int, intermediateResults> &intermediate_results_map,
-                                std::vector<double> global_constant_results,
-                                int leaf_number)
+avtGlobalConstantExpression::WriteResult(avtDataTree_p inputDataTree, 
+                                         avtDataTree_p &outputDataTree,
+                                         std::map<int, intermediateResults> &intermediate_results_map,
+                                         std::vector<double> global_constant_results,
+                                         int leaf_number)
 {
     const int numChildren = inputDataTree->GetNChildren();
 
@@ -846,7 +969,7 @@ avtOOFUSExpression::WriteResult(avtDataTree_p inputDataTree,
 
 
 // ****************************************************************************
-//  Method: avtOOFUSExpression::Execute
+//  Method: avtGlobalConstantExpression::Execute
 //
 //  Purpose:
 //      TODO
@@ -857,7 +980,7 @@ avtOOFUSExpression::WriteResult(avtDataTree_p inputDataTree,
 //  Modifications:
 // ****************************************************************************
 void
-avtOOFUSExpression::Execute()
+avtGlobalConstantExpression::Execute()
 {
     // TODO useful error messages
     // TODO parallel error checking
@@ -904,28 +1027,57 @@ avtOOFUSExpression::Execute()
     }
 
     //
-    // Calculate the local result across all domains on this rank
+    // Calculate the local results across all domains on this rank
     //
-    std::vector<double> local_constant_results = intermediate_results_map.begin()->second.per_leaf_constant_results;
+    // set our arrays to be the value of the first intermediate result array
+    std::vector<double> local_constant_results = intermediate_results_map.begin()->second.constant_results;
+    std::vector<double> local_extra_constant_results = intermediate_results_map.begin()->second.extra_constant_results;
+    std::vector<double> local_component_sums = intermediate_results_map.begin()->second.sums;
+    
+    // now iterate through the remaining arrays and update our result arrays
     std::for_each(std::next(intermediate_results_map.begin()),
                   intermediate_results_map.end(),
-                  [&local_constant_results, ncomps](const auto &pair)
+                  [&local_constant_results, &local_extra_constant_results, ncomps](const auto &pair)
                   {
-                      const auto &curr_leaf_results = pair.second.per_leaf_constant_results;
+                      const auto &curr_leaf_results = pair.second.constant_results;
                       for (int comp_id = 0; comp_id < ncomps; comp_id ++)
                       {
-                          local_constant_results[comp_id] = std::max(local_constant_results[comp_id], 
-                                                                     curr_leaf_results[comp_id]);
+                          local_constant_results[comp_id] = 
+                              LocalIntermediateReduction(local_constant_results[comp_id],
+                                                    curr_leaf_results[comp_id]);
+                      }
+                      if (NeedsExtraIntermediateData())
+                      {
+                          const auto &curr_leaf_extra_results = pair.second.extra_constant_results;
+                          for (int comp_id = 0; comp_id < ncomps; comp_id ++)
+                          {
+                              local_extra_constant_results[comp_id] = 
+                                  LocalIntermediateReduction(local_constant_results[comp_id],
+                                                        curr_leaf_extra_results[comp_id]);
+                          }
+                      }
+                      if (NeedsSums())
+                      {
+                          const auto &curr_leaf_sums = pair.second.sum;
+                          for (int comp_id = 0; comp_id < ncomps; comp_id ++)
+                          {
+                              local_component_sums[comp_id] = 
+                                  local_constant_results[comp_id] + curr_leaf_sums[comp_id];
+                          }
                       }
                   });
+
+    //
+    // Calculate the local total number of tuples
+    //
+    const int local_total_ntuples = (NeedsNTuples() ? GetLocalNumTuples(intermediate_results_map) : 0);
 
     //
     // Ensure all ranks agree on the number of components
     //
 #ifdef PARALLEL
-    int global_ncomps_max, global_ncomps_min;
-    MPI_Allreduce(&ncomps, &global_ncomps_min, 1, MPI_INT, MPI_MIN, VISIT_MPI_COMM);
-    MPI_Allreduce(&ncomps, &global_ncomps_max, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
+    const int global_ncomps_max = UnifyMaximumValue(ncomps);
+    const int global_ncomps_min = UnifyMinimumValue(ncomps);
     if (global_ncomps_min != global_ncomps_max)
     {
         EXCEPTION2(ExpressionException, outputVariableName,
@@ -935,21 +1087,62 @@ avtOOFUSExpression::Execute()
     }
 #endif
 
+    int global_ntuples = local_total_ntuples;
+#ifdef PARALLEL
+    if (NeedsNTuples())
+    {
+        SumIntAcrossAllProcessors(global_ntuples);
+    }
+#endif
+
     //
     // Calculate global result
     //
     std::vector<double> global_constant_results(ncomps);
 #ifdef PARALLEL
-    MPI_Allreduce(local_constant_results.data(), global_constant_results.data(),
-                  ncomps, MPI_DOUBLE, MPI_MAX, VISIT_MPI_COMM);
+    GlobalIntermediateReduction(local_constant_results, global_constant_results);
 #else
     global_constant_results = local_constant_results;
 #endif
+    
+    std::vector<double> global_extra_constant_results;
+    if (NeedsExtraIntermediateData())
+    {
+        global_extra_constant_results.resize(ncomps);
+#ifdef PARALLEL
+        GlobalIntermediateReduction(local_extra_constant_results, global_extra_constant_results);
+#else
+        global_extra_constant_results = local_extra_constant_results;
+#endif
+    }
+    
+    std::vector<double> global_component_sums;
+    if (NeedsSums())
+    {
+        global_component_sums.resize(ncomps);
+#ifdef PARALLEL
+        GlobalIntermediateReduction(local_component_sums, global_component_sums);
+#else
+        global_component_sums = local_component_sums;
+#endif
+    }
 
     //
     // Write result
     //
-    WriteResult(tree, newTree, intermediate_results_map, global_constant_results);
+    if (NeedsSums() || NeedsExtraIntermediateData())
+    {
+        std::vector<double> final_results;
+        CalculateFinalResults(global_constant_results,
+                              global_extra_constant_results,
+                              global_component_sums,
+                              final_results);
+        WriteResult(tree, newTree, intermediate_results_map, final_results);
+    }
+    else
+    {
+        WriteResult(tree, newTree, intermediate_results_map, global_constant_results);
+    }
 
     //
     // Lots of code assumes that the root tree is non-NULL. Put a dummy
@@ -964,248 +1157,5 @@ avtOOFUSExpression::Execute()
 
     // Set progress to complete
     UpdateProgress(totalSteps, totalSteps);
-}
-
-
-// ****************************************************************************
-//  Method: avtOOFUSExpression::CheckForProperGhostZones
-//
-//  Purpose:
-//     Checks for ghost zone info that can be used in to reduce parallel 
-//     communication. 
-//
-//  Arguments:
-//    sets        Input data sets.
-//    nsets       Number of input data sets. 
-//
-//  Programmer: Cyrus Harrison
-//  Creation:   October 10, 20078
-//
-//  Modifications:
-//    Cyrus Harrison, Tue Nov  9 10:32:01 PST 2010
-//    Added timing info.
-//
-//    Cyrus Harrison, Tue Nov  9 10:32:01 PST 2010
-//    Loosen the check for valid ghost zones.
-//
-// ****************************************************************************
-bool
-avtOOFUSExpression::CheckForProperGhostZones(vtkDataSet **sets,
-                                                      int nsets)
-{
-    int t0 = visitTimer->StartTimer();
-
-    int found_ghosts = 0;
-    int total_ncells = 0;
-    for(int i=0; i < nsets && found_ghosts == 0; i++)
-    {
-        int ncells = sets[i]->GetNumberOfCells();
-        total_ncells += ncells;
-        vtkUnsignedCharArray *gz_array = (vtkUnsignedCharArray *) sets[i]
-                                    ->GetCellData()->GetArray("avtGhostZones");
-        if(gz_array)
-        {
-            unsigned char *gz_ptr = (unsigned char *)gz_array->GetPointer(0);
-            for(int j=0; j < ncells && found_ghosts == 0; j++)
-            {
-                if(gz_ptr[j] & 1) // Bit 0 == DUPLICATED_ZONE_INTERNAL_TO_PROBLEM
-                    found_ghosts = 1;
-            }
-        }
-    }
-
-    //
-    // If we found a single instance of a proper ghost zone
-    // we want to try to use the ghost zone neighbors optimization.
-    // Note: It would be better if the data attributes simply told
-    // us that the proper type of ghost zones were generated ...
-    //
-
-    found_ghosts = UnifyMaximumValue(found_ghosts);
-
-    visitTimer->StopTimer(t0,"Check For Proper Ghost Zones");
-    return (found_ghosts == 1);
-}
-
-// ****************************************************************************
-//  Method: avtOOFUSExpression::LabelGhostNeighbors
-//
-//  Purpose:
-//     Identifies cells that have ghost neighbors, storing the info in
-//     a vtkUnsignedCharArray named "avtOnBoundary".
-//
-//  Arguments:
-//    data_set     Input mesh
-//
-//  Programmer: Cyrus Harrison
-//  Creation:   August 11, 2007
-//
-//  Modifications:
-//    Cyrus Harrison, Tue Nov  9 10:32:01 PST 2010
-//    Added timing info.
-//
-//    Cyrus Harrison, Tue Nov  9 10:32:01 PST 2010
-//    Explicit check for DUPLICATED_ZONE_INTERNAL_TO_PROBLEM.
-//
-//    Ryan Bleile, Wed Jun 11 09:53:23 CDT 2014
-//    Changed avtGhostZoneNeighbors to avtOnBoundary
-// ****************************************************************************
-void
-avtOOFUSExpression::LabelGhostNeighbors(vtkDataSet *data_set)
-{
-    int t0 = visitTimer->StartTimer();
-    // loop indices
-    int i,j,k;
-    vtkUnsignedCharArray *gz_array = (vtkUnsignedCharArray *) data_set
-                             ->GetCellData()->GetArray("avtGhostZones");
-
-    // if the data set does not have ghosts, we are done
-    if (!gz_array)
-        return;
-
-    unsigned char *gz_ptr = (unsigned char *)gz_array->GetPointer(0);
-    int ncells = data_set->GetNumberOfCells();
-
-    vtkUnsignedCharArray *gzn_array = vtkUnsignedCharArray::New();
-    gzn_array->SetName("avtOnBoundary");
-    gzn_array->SetNumberOfComponents(1);
-    gzn_array->SetNumberOfTuples(ncells);
-
-    unsigned char *gzn_ptr = (unsigned char *)gzn_array->GetPointer(0);
-
-    // init the ghost zone neighbors array
-    memset(gzn_ptr,0,ncells * sizeof(unsigned char));
-
-    for ( i=0; i < ncells; i++)
-    {
-        // if this cell has ghost zones, label it's neighbors
-        if(gz_ptr[i] & 1) // Bit 0 == DUPLICATED_ZONE_INTERNAL_TO_PROBLEM
-        {
-            // get cell neighbors
-            vtkIdList *gcell_pts = data_set->GetCell(i)->GetPointIds();
-            int ngcell_pts = gcell_pts->GetNumberOfIds();
-            for( j=0; j < ngcell_pts; j++)
-            {
-                // neighbors share points with the current cell
-                vtkIdList *gpt = vtkIdList::New();
-                gpt->SetNumberOfIds(1);
-                gpt->SetId(0,gcell_pts->GetId(j));
-                vtkIdList *nei_cells = vtkIdList::New();
-                data_set->GetCellNeighbors(i,gpt,nei_cells);
-                int nnei = nei_cells->GetNumberOfIds();
-
-                // tag neighbors
-                for ( k = 0; k < nnei; k++)
-                    gzn_ptr[nei_cells->GetId(k)] = 1;
-
-                gpt->Delete();
-                nei_cells->Delete();
-            }
-        }
-    }
-
-    data_set->GetCellData()->AddArray(gzn_array);
-    gzn_array->Delete();
-    visitTimer->StopTimer(t0,"Labeling Ghost Neighbors");
-}
-
-
-// ****************************************************************************
-//  Method: avtOOFUSExpression::LabelBoundaryNeighbors
-//
-//  Purpose:
-//     Identifies cells that lie on the boundary, storing the results in 
-//     a vtkUnsignedCharArray named "avtOnBoundary".
-//
-//  Arguments:
-//    data_set     Input mesh
-//
-//  Programmer: Hank Childs
-//  Creation:   November 30, 2013
-//
-//  Modifications:
-//    Eric Brugger, Mon Jul 21 12:06:33 PDT 2014
-//    Modified the class to work with avtDataRepresentation.
-//
-// ****************************************************************************
-
-void
-avtOOFUSExpression::LabelBoundaryNeighbors(vtkDataSet *data_set)
-{
-    int i;
-    int t0 = visitTimer->StartTimer();
-
-    int ncells = data_set->GetNumberOfCells();
-
-    // make a clone of the input that has no variable
-    // (less variables mean less operations when manipulating it)
-    vtkDataSet *clone_ds = data_set->NewInstance();
-    clone_ds->ShallowCopy(data_set);
-    int numPointArrays = clone_ds->GetPointData()->GetNumberOfArrays();
-    for (i = numPointArrays-1 ; i>=0 ; i--)
-        clone_ds->GetPointData()->RemoveArray(i);
-    int numCellArrays = clone_ds->GetCellData()->GetNumberOfArrays();
-    for (i = numCellArrays-1 ; i>=0 ; i--)
-        clone_ds->GetCellData()->RemoveArray(i);
-
-    // set up a variable that has the cell ID for each cell.
-    vtkIntArray *arr = vtkIntArray::New();
-    arr->SetNumberOfTuples(ncells);
-    for (vtkIdType i = 0 ; i < ncells ; i++)
-        arr->SetValue(i, (int)i);
-    const char *varname = "_avt_id";
-    arr->SetName(varname);
-    clone_ds->GetCellData()->AddArray(arr);
-    arr->Delete();
-
-    // use external routine to find which cells are external
-    avtFacelistFilter *flf = new avtFacelistFilter();
-    avtDataRepresentation clone_dr(clone_ds, -1, "");
-    avtDataTree_p tree = flf->FindFaces(&clone_dr,
-                                  GetInput()->GetInfo(), false, false,
-                                  true, true, NULL);
-    delete flf;
-    clone_ds->Delete();
-    // we do not need to delete tree, since it is a ref_ptr
-
-    // init the boundary neighbors array
-    vtkUnsignedCharArray *b_array = vtkUnsignedCharArray::New();
-    b_array->SetName("avtOnBoundary");
-    b_array->SetNumberOfComponents(1);
-    b_array->SetNumberOfTuples(ncells);
-    unsigned char *b_ptr = (unsigned char *)b_array->GetPointer(0);
-    memset(b_ptr,0,ncells * sizeof(unsigned char));
-
-    // go through external cells and update array for which are on boundary
-    vtkDataSet *just_exteriors = tree->GetSingleLeaf();
-    vtkIntArray *outsides = (vtkIntArray *) just_exteriors->GetCellData()->GetArray(varname);
-    int numOutsideCells = outsides->GetNumberOfTuples();
-    for (i = 0 ; i < numOutsideCells ; i++)
-        b_ptr[outsides->GetValue(i)] = 1;
-
-    data_set->GetCellData()->AddArray(b_array);
-    b_array->Delete();
-
-    visitTimer->StopTimer(t0,"Labeling Boundary Neighbors");
-}
-
-// ****************************************************************************
-//  Method: avtGradientExpression::ModifyContract
-//
-//  Purpose:
-//      Request ghost zones.
-//
-//  Programmer: Justin Privitera
-//  Creation:   August 18, 2025
-//
-//  Modifications:
-// ****************************************************************************
-avtContract_p
-avtOOFUSExpression::ModifyContract(avtContract_p in_spec)
-{
-    avtContract_p spec = 
-                            avtExpressionFilter::ModifyContract(in_spec);
-    spec->GetDataRequest()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
-    return spec;
 }
 

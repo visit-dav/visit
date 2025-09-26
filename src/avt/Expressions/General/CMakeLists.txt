@@ -39,6 +39,7 @@ set(GENERAL_SOURCES
     avtFindExternalExpression.C
     avtGeodesicVectorQuantizeExpression.C
     avtGhostZoneIdExpression.C
+    avtGlobalConstantExpression.C
     avtGradientExpression.C
     avtHSVColorComposeExpression.C
     avtIsNaNExpression.C
@@ -56,7 +57,6 @@ set(GENERAL_SOURCES
     avtNeighborEvaluatorExpression.C
     avtNMatsExpression.C
     avtNormalizeExpression.C
-    avtOOFUSExpression.C
     avtPerformColorTableLookupExpression.C
     avtPerMaterialValueExpression.C
     avtProcessorIdExpression.C
