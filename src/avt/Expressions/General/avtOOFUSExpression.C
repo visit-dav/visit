@@ -683,6 +683,7 @@ avtOOFUSExpression::WriteData_VTK(avtDataRepresentation *in_dr,
         debug1 << "Ncells = " << ncells << endl;
         debug1 << "Npts = " << npts << endl;
         dat->Delete();
+        dat = nullptr;
 
         avtDataRepresentation *out_dr = new avtDataRepresentation(rv,
             in_dr->GetDomain(), in_dr->GetLabel());
@@ -729,6 +730,7 @@ avtOOFUSExpression::WriteData_VTK(avtDataRepresentation *in_dr,
     // Make sure that we don't have any memory leaks.
     //
     dat->Delete(); // this also deletes our vtkdataset pointer in our intermediate results object
+    dat = nullptr;
 
     avtDataRepresentation *out_dr = new avtDataRepresentation(rv,
         in_dr->GetDomain(), in_dr->GetLabel());
@@ -881,8 +883,7 @@ avtOOFUSExpression::Execute()
     // Calculate per rank results
     //
     std::map<int, intermediateResults> intermediate_results_map;
-    // TODO make the final argument default init'ed to 0
-    ConstantEvaluation(tree, intermediate_results_map, 0);
+    ConstantEvaluation(tree, intermediate_results_map);
     if (intermediate_results_map.empty())
     {
         EXCEPTION2(ExpressionException, outputVariableName,
@@ -955,8 +956,7 @@ avtOOFUSExpression::Execute()
     //
     // Write result
     //
-    // TODO make the final argument default init'ed to 0
-    WriteResult(tree, newTree, intermediate_results_map, global_constant_results, 0);
+    WriteResult(tree, newTree, intermediate_results_map, global_constant_results);
 
     //
     // Lots of code assumes that the root tree is non-NULL. Put a dummy

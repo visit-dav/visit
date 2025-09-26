@@ -95,7 +95,7 @@ class EXPRESSION_API avtOOFUSExpression : public avtExpressionFilter
 
     int                       ConstantEvaluation(avtDataTree_p inputDataTree,
                                                  std::map<int, intermediateResults> &intermediate_results_map,
-                                                 int leaf_number);
+                                                 int leaf_number = 0);
 
     avtDataRepresentation    *WriteData_VTK(avtDataRepresentation *in_dr,
                                             intermediateResults &per_leaf_results,
@@ -109,7 +109,7 @@ class EXPRESSION_API avtOOFUSExpression : public avtExpressionFilter
                                           avtDataTree_p &outputDataTree,
                                           std::map<int, intermediateResults> &intermediate_results_map,
                                           std::vector<double> global_constant_results,
-                                          int leaf_number);
+                                          int leaf_number = 0);
 };
 
 
