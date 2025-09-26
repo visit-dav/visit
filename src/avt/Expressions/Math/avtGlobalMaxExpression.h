@@ -11,6 +11,8 @@
 
 #include <avtGlobalConstantExpression.h>
 
+#include <limits>
+
 class     vtkDataArray;
 
 
@@ -71,6 +73,8 @@ class EXPRESSION_API avtGlobalMaxExpression : public avtGlobalConstantExpression
                                                     const std::vector<double> &global_component_sums,
                                                     const int global_ntuples,
                                                     std::vector<double> &final_results);
+
+    virtual double            GetUnusedValue() { return std::numeric_limits<double>::lowest(); };
 };
 
 

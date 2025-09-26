@@ -825,19 +825,14 @@ avtGlobalConstantExpression::Execute()
     //
     std::map<int, intermediateResults> intermediate_results_map;
     ConstantEvaluation(tree, intermediate_results_map);
-    if (intermediate_results_map.empty())
-    {
-        EXCEPTION2(ExpressionException, outputVariableName,
-                   "An internal error occurred when "
-                   "trying to calculate your expression. Please contact a "
-                   "VisIt developer.");
-    }
 
     //
     // Ensure that the number of components is in agreement across all our local
     // results.
     //
-    const int ncomps = intermediate_results_map.begin()->second.ncomps;
+    const int ncomps = (intermediate_results_map.empty() ? 
+                        0 : 
+                        intermediate_results_map.begin()->second.ncomps);
     if (std::any_of(std::next(intermediate_results_map.begin()),
                     intermediate_results_map.end(),
                     [ncomps](const auto &pair)
@@ -854,10 +849,17 @@ avtGlobalConstantExpression::Execute()
     //
     // Calculate the local results across all domains on this rank
     //
+    std::vector<double> local_constant_results;
+    std::vector<double> local_extra_constant_results;
+    std::vector<double> local_component_sums;
+
     // set our arrays to be the value of the first intermediate result array
-    std::vector<double> local_constant_results = intermediate_results_map.begin()->second.constant_results;
-    std::vector<double> local_extra_constant_results = intermediate_results_map.begin()->second.extra_constant_results;
-    std::vector<double> local_component_sums = intermediate_results_map.begin()->second.sums;
+    if (! intermediate_results_map.empty())
+    {
+        local_constant_results = intermediate_results_map.begin()->second.constant_results;
+        local_extra_constant_results = intermediate_results_map.begin()->second.extra_constant_results;
+        local_component_sums = intermediate_results_map.begin()->second.sums;
+    }
     
     // now iterate through the remaining arrays and update our result arrays
     std::for_each(std::next(intermediate_results_map.begin()),
@@ -868,30 +870,33 @@ avtGlobalConstantExpression::Execute()
                    &local_component_sums,
                    ncomps](const auto &pair)
                   {
-                      const auto &curr_leaf_results = pair.second.constant_results;
-                      for (int comp_id = 0; comp_id < ncomps; comp_id ++)
+                      const int ntuples = pair.second.ntuples;
+                      if (ntuples > 0)
                       {
-                          local_constant_results[comp_id] = 
-                              LocalIntermediateReduction(local_constant_results[comp_id],
-                                                    curr_leaf_results[comp_id]);
-                      }
-                      if (NeedsExtraIntermediateData())
-                      {
-                          const auto &curr_leaf_extra_results = pair.second.extra_constant_results;
+                          const auto &curr_leaf_results = pair.second.constant_results;
                           for (int comp_id = 0; comp_id < ncomps; comp_id ++)
                           {
-                              local_extra_constant_results[comp_id] = 
+                              local_constant_results[comp_id] = 
                                   LocalIntermediateReduction(local_constant_results[comp_id],
-                                                        curr_leaf_extra_results[comp_id]);
+                                                             curr_leaf_results[comp_id]);
                           }
-                      }
-                      if (NeedsSums())
-                      {
-                          const auto &curr_leaf_sums = pair.second.sums;
-                          for (int comp_id = 0; comp_id < ncomps; comp_id ++)
+                          if (NeedsExtraIntermediateData())
                           {
-                              local_component_sums[comp_id] = 
-                                  local_constant_results[comp_id] + curr_leaf_sums[comp_id];
+                              const auto &curr_leaf_extra_results = pair.second.extra_constant_results;
+                              for (int comp_id = 0; comp_id < ncomps; comp_id ++)
+                              {
+                                  local_extra_constant_results[comp_id] = 
+                                      LocalIntermediateReduction(local_constant_results[comp_id],
+                                                                 curr_leaf_extra_results[comp_id]);
+                              }
+                          }
+                          if (NeedsSums())
+                          {
+                              const auto &curr_leaf_sums = pair.second.sums;
+                              for (int comp_id = 0; comp_id < ncomps; comp_id ++)
+                              {
+                                  local_component_sums[comp_id] += curr_leaf_sums[comp_id];
+                              }
                           }
                       }
                   });
@@ -904,17 +909,39 @@ avtGlobalConstantExpression::Execute()
     //
     // Ensure all ranks agree on the number of components
     //
+    int global_ncomps;
 #ifdef PARALLEL
-    const int global_ncomps_max = UnifyMaximumValue(ncomps);
-    const int global_ncomps_min = UnifyMinimumValue(ncomps);
-    if (global_ncomps_min != global_ncomps_max)
+    global_ncomps = UnifyMaximumValue(ncomps);
+    int global_ncomps_min = UnifyMinimumValue(ncomps);
+    if (global_ncomps_min != global_ncomps)
     {
-        EXCEPTION2(ExpressionException, outputVariableName,
-                   "An internal error occurred when "
-                   "trying to calculate your expression. Please contact a "
-                   "VisIt developer.");
+        if (ncomps != 0 && ncomps != global_ncomps)
+        {
+            // TODO parallel error handling
+            EXCEPTION2(ExpressionException, outputVariableName,
+                       "An internal error occurred when "
+                       "trying to calculate your expression. Please contact a "
+                       "VisIt developer.");
+        }
     }
+#else
+    global_ncomps = ncomps;
 #endif
+
+    // if we have no data on our rank, we need to prepare our arrays for parallel
+    // communication anyway
+    if (intermediate_results_map.empty())
+    {
+        const double unused_val = GetUnusedValue();
+        local_constant_results.resize(global_ncomps);
+        std::fill(local_constant_results.begin(), local_constant_results.end(), unused_val);
+        
+        local_extra_constant_results.resize(global_ncomps);
+        std::fill(local_extra_constant_results.begin(), local_extra_constant_results.end(), unused_val);
+        
+        local_component_sums.resize(global_ncomps);
+        std::fill(local_component_sums.begin(), local_component_sums.end(), 0.0);
+    }
 
     int global_ntuples = local_total_ntuples;
 #ifdef PARALLEL
@@ -927,9 +954,9 @@ avtGlobalConstantExpression::Execute()
     //
     // Calculate global result
     //
-    std::vector<double> global_constant_results(ncomps);
+    std::vector<double> global_constant_results(global_ncomps);
 #ifdef PARALLEL
-    GlobalIntermediateReduction(local_constant_results, global_constant_results, ncomps);
+    GlobalIntermediateReduction(local_constant_results, global_constant_results, global_ncomps);
 #else
     global_constant_results = local_constant_results;
 #endif
@@ -937,9 +964,9 @@ avtGlobalConstantExpression::Execute()
     std::vector<double> global_extra_constant_results;
     if (NeedsExtraIntermediateData())
     {
-        global_extra_constant_results.resize(ncomps);
+        global_extra_constant_results.resize(global_ncomps);
 #ifdef PARALLEL
-        GlobalIntermediateReduction(local_extra_constant_results, global_extra_constant_results, ncomps);
+        GlobalIntermediateReduction(local_extra_constant_results, global_extra_constant_results, global_ncomps);
 #else
         global_extra_constant_results = local_extra_constant_results;
 #endif
@@ -948,10 +975,10 @@ avtGlobalConstantExpression::Execute()
     std::vector<double> global_component_sums;
     if (NeedsSums())
     {
-        global_component_sums.resize(ncomps);
+        global_component_sums.resize(global_ncomps);
 #ifdef PARALLEL
         MPI_Allreduce(local_component_sums.data(), global_component_sums.data(),
-                      ncomps, MPI_DOUBLE, MPI_SUM, VISIT_MPI_COMM);
+                      global_ncomps, MPI_DOUBLE, MPI_SUM, VISIT_MPI_COMM);
 #else
         global_component_sums = local_component_sums;
 #endif

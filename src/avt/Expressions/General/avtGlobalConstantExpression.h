@@ -89,6 +89,8 @@ class EXPRESSION_API avtGlobalConstantExpression : public avtExpressionFilter
                                                     const int global_ntuples,
                                                     std::vector<double> &final_results) = 0;
 
+    virtual double            GetUnusedValue() { return 0.0; };
+
   private:
     int                       GetLocalNumTuples(const std::map<int, intermediateResults> &intermediate_results_map);
 
