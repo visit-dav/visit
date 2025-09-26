@@ -623,6 +623,7 @@ avtOOFUSExpression::WriteData_VTK(avtDataRepresentation *in_dr,
     //
     // Start off by having the derived type calculate the derived variable.
     //
+    // the intermediateResults destructor will free this array later 
     vtkDataArray *&dat = per_leaf_results.target_data_array;
     const int ncomps = per_leaf_results.ncomps;
     if (ncomps != 0)
@@ -682,8 +683,6 @@ avtOOFUSExpression::WriteData_VTK(avtDataRepresentation *in_dr,
         debug1 << "Ntuples = " << ntups << endl;
         debug1 << "Ncells = " << ncells << endl;
         debug1 << "Npts = " << npts << endl;
-        dat->Delete();
-        dat = nullptr;
 
         avtDataRepresentation *out_dr = new avtDataRepresentation(rv,
             in_dr->GetDomain(), in_dr->GetLabel());
@@ -725,12 +724,6 @@ avtOOFUSExpression::WriteData_VTK(avtDataRepresentation *in_dr,
             rv->GetCellData()->SetActiveTensors(outputVariableName);
         }
     }
-
-    //
-    // Make sure that we don't have any memory leaks.
-    //
-    dat->Delete(); // this also deletes our vtkdataset pointer in our intermediate results object
-    dat = nullptr;
 
     avtDataRepresentation *out_dr = new avtDataRepresentation(rv,
         in_dr->GetDomain(), in_dr->GetLabel());
