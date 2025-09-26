@@ -59,24 +59,38 @@ class EXPRESSION_API avtGlobalConstantExpression : public avtExpressionFilter
     // expressions like standard deviation and variance require an extra array of intermediate data
     virtual bool              NeedsExtraIntermediateData() { return false; };
 
-    virtual void              CalculateFinalResults(const std::vector<double> &global_constant_results,
-                                                    const std::vector<double> &global_extra_constant_results,
-                                                    const std::vector<double> &global_component_sums,
-                                                    std::vector<double> &final_results) = 0;
-
-  private:
-    void                      CalculateWithoutGhosts(vtkDataArray *in, 
+    virtual void              CalculateWithoutGhosts(vtkDataArray *in,
                                                      const int ncomponents,
                                                      const int ntuples,
-                                                     std::vector<double> &per_leaf_constant_results);
+                                                     std::vector<double> &constant_results,
+                                                     std::vector<double> &extra_constant_results,
+                                                     std::vector<double> &sum) = 0;
 
-    void                      CalculateWithGhosts(vtkDataArray *in,
+    virtual void              CalculateWithGhosts(vtkDataArray *in,
                                                   const int ncomponents,
                                                   const int ntuples,
                                                   int (getNodeOrCellValid)(vtkDataArray *, int *, int),
                                                   vtkDataArray *ghostZones,
                                                   int *nodeShouldBeIgnoredPtr,
-                                                  std::vector<double> &per_leaf_constant_results);
+                                                  std::vector<double> &constant_results,
+                                                  std::vector<double> &extra_constant_results,
+                                                  std::vector<double> &sum) = 0;
+
+    virtual double            LocalIntermediateReduction(const double running_reduction,
+                                                         const double intermediate_value) = 0;
+
+    virtual void              GlobalIntermediateReduction(std::vector<double> &local_constant_results,
+                                                          std::vector<double> &global_constant_results,
+                                                          const int ncomps) = 0;
+
+    virtual void              CalculateFinalResults(const std::vector<double> &global_constant_results,
+                                                    const std::vector<double> &global_extra_constant_results,
+                                                    const std::vector<double> &global_component_sums,
+                                                    const int global_ntuples,
+                                                    std::vector<double> &final_results) = 0;
+
+  private:
+    int                       GetLocalNumTuples(const std::map<int, intermediateResults> &intermediate_results_map);
 
     std::vector<int>          IdentifyGhostedNodes(vtkDataSet *in_ds,
                                                    vtkDataArray *ghostZones,
@@ -86,7 +100,9 @@ class EXPRESSION_API avtGlobalConstantExpression : public avtExpressionFilter
                                           const int ncomponents,
                                           const int ntuples,
                                           vtkDataSet *in_ds,
-                                          std::vector<double> &per_leaf_constant_results);
+                                          std::vector<double> &constant_results,
+                                          std::vector<double> &extra_constant_results,
+                                          std::vector<double> &sum);
 
     void                      DeriveVariable(vtkDataSet *in_ds,
                                              intermediateResults &per_leaf_results);

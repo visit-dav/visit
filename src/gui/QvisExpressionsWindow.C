@@ -455,7 +455,6 @@ const char *expr_time_iteration[] = {
 const char *expr_global[] = {
     "global_avg",
     "global_max",
-    "OOFUS",
     "global_min",
     "global_rms",
     "global_std_dev",

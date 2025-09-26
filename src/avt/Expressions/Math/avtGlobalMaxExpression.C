@@ -7,10 +7,15 @@
 // ************************************************************************* //
 
 #include <avtGlobalMaxExpression.h>
+#include <avtParallel.h>
 
 #include <vtkDataArray.h>
 
 #include <ExpressionException.h>
+
+#ifdef PARALLEL
+  #include <mpi.h>
+#endif
 
 
 // ****************************************************************************
@@ -72,10 +77,15 @@ avtGlobalMaxExpression::~avtGlobalMaxExpression()
 
 void
 avtGlobalMaxExpression::CalculateWithoutGhosts(vtkDataArray *in, 
-                                               vtkDataArray *out,
-                                               int ncomponents,
-                                               int ntuples)
+                                               const int ncomponents,
+                                               const int ntuples,
+                                               std::vector<double> &constant_results,
+                                               std::vector<double> &extra_constant_results,
+                                               std::vector<double> &sum)
 {
+    (void) extra_constant_results;
+    (void) sum;
+
     for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
     {
         double comp_max = in->GetComponent(0, comp_id);
@@ -89,10 +99,7 @@ avtGlobalMaxExpression::CalculateWithoutGhosts(vtkDataArray *in,
             }
         }
 
-        for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-        {
-            out->SetComponent(tuple_id, comp_id, comp_max);
-        }
+        constant_results[comp_id] = comp_max;
     }
 }
 
@@ -135,13 +142,18 @@ avtGlobalMaxExpression::CalculateWithoutGhosts(vtkDataArray *in,
 
 void
 avtGlobalMaxExpression::CalculateWithGhosts(vtkDataArray *in,
-                                            vtkDataArray *out,
-                                            int ncomponents,
-                                            int ntuples,
+                                            const int ncomponents,
+                                            const int ntuples,
                                             int (getNodeOrCellValid)(vtkDataArray *, int *, int),
                                             vtkDataArray *ghostZones,
-                                            int *nodeShouldBeIgnoredPtr)
+                                            int *nodeShouldBeIgnoredPtr,
+                                            std::vector<double> &constant_results,
+                                            std::vector<double> &extra_constant_results,
+                                            std::vector<double> &sum)
 {
+    (void) extra_constant_results;
+    (void) sum;
+
     for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
     {
         int start_tuple_id = 0;
@@ -156,7 +168,7 @@ avtGlobalMaxExpression::CalculateWithGhosts(vtkDataArray *in,
                 }
             }
             EXCEPTION2(ExpressionException, outputVariableName,
-                 "Everything is ghosted so the global_max expression is not valid.");
+                 "Everything is ghosted so the OOFUS expression is not valid.");
             return 0; // return so the compiler is happy
         }();
 
@@ -174,10 +186,110 @@ avtGlobalMaxExpression::CalculateWithGhosts(vtkDataArray *in,
             }
         }
 
-        for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-        {
-            out->SetComponent(tuple_id, comp_id, comp_max);
-        }
+        constant_results[comp_id] = comp_max;
     }
+}
+
+// ****************************************************************************
+//  Method: avtGlobalMaxExpression::LocalIntermediateReduction
+//
+//  Purpose:
+//      TODO
+//
+//  Programmer: Justin Privitera
+//  Creation:   September 26, 2025
+//
+//  Modifications:
+// ****************************************************************************
+double
+avtGlobalMaxExpression::LocalIntermediateReduction(const double running_reduction,
+                                                   const double intermediate_value)
+{
+    // max
+    return std::max(running_reduction, intermediate_value);
+    // // min
+    // return std::min(running_reduction, intermediate_value);
+    // // avg
+    // return running_reduction + intermediate_value;
+    // // sum
+    // return running_reduction + intermediate_value;
+    // // stddev
+    // return running_reduction + intermediate_value;
+    // // variance
+    // return running_reduction + intermediate_value;
+    // // rms
+    // return running_reduction + intermediate_value;
+}
+
+
+// ****************************************************************************
+//  Method: avtGlobalMaxExpression::GlobalIntermediateReduction
+//
+//  Purpose:
+//      TODO
+//
+//  Programmer: Justin Privitera
+//  Creation:   September 26, 2025
+//
+//  Modifications:
+// ****************************************************************************
+void
+avtGlobalMaxExpression::GlobalIntermediateReduction(std::vector<double> &local_constant_results,
+                                                    std::vector<double> &global_constant_results,
+                                                    const int ncomps)
+{
+#ifdef PARALLEL
+    // max
+    MPI_Allreduce(local_constant_results.data(), global_constant_results.data(),
+                  ncomps, MPI_DOUBLE, MPI_MAX, VISIT_MPI_COMM);
+    // // min
+    // MPI_Allreduce(local_constant_results.data(), global_constant_results.data(),
+    //                   ncomps, MPI_DOUBLE, MPI_MIN, VISIT_MPI_COMM);
+    // // avg
+    // MPI_Allreduce(local_constant_results.data(), global_constant_results.data(),
+    //                   ncomps, MPI_DOUBLE, MPI_SUM, VISIT_MPI_COMM);
+    // // sum
+    // MPI_Allreduce(local_constant_results.data(), global_constant_results.data(),
+    //                   ncomps, MPI_DOUBLE, MPI_SUM, VISIT_MPI_COMM);
+    // // stddev
+    // MPI_Allreduce(local_constant_results.data(), global_constant_results.data(),
+    //                   ncomps, MPI_DOUBLE, MPI_SUM, VISIT_MPI_COMM);
+    // // variance
+    // MPI_Allreduce(local_constant_results.data(), global_constant_results.data(),
+    //                   ncomps, MPI_DOUBLE, MPI_SUM, VISIT_MPI_COMM);
+    // // rms
+    // MPI_Allreduce(local_constant_results.data(), global_constant_results.data(),
+    //                   ncomps, MPI_DOUBLE, MPI_SUM, VISIT_MPI_COMM);
+#else
+    (void) local_constant_results;
+    (void) global_constant_results;
+#endif
+}
+
+
+// ****************************************************************************
+//  Method: avtGlobalMaxExpression::CalculateFinalResults
+//
+//  Purpose:
+//      TODO
+//
+//  Programmer: Justin Privitera
+//  Creation:   September 26, 2025
+//
+//  Modifications:
+// ****************************************************************************
+
+void
+avtGlobalMaxExpression::CalculateFinalResults(const std::vector<double> &global_constant_results,
+                                              const std::vector<double> &global_extra_constant_results,
+                                              const std::vector<double> &global_component_sums,
+                                              const int global_ntuples,
+                                              std::vector<double> &final_results)
+{
+    (void) global_constant_results;
+    (void) global_extra_constant_results;
+    (void) global_component_sums;
+    (void) global_ntuples;
+    (void) final_results;
 }
 
