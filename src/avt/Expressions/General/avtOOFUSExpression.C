@@ -552,7 +552,7 @@ avtOOFUSExpression::ConstantEvaluation(avtDataTree_p inputDataTree,
     {
         avtDataRepresentation *in_dr = &(inputDataTree->GetDataRepresentation());
         vtkDataSet *in_ds = in_dr->GetDataVTK();
-        intermediate_results_map.emplace(leaf_number);
+        intermediate_results_map.emplace(leaf_number, intermediateResults{});
 
         //
         // Sometimes we are asked to calculate a variable twice.  The easiest way
@@ -912,12 +912,12 @@ avtOOFUSExpression::Execute()
     //
     // Calculate the local result across all domains on this rank
     //
-    std::vector<double> local_constant_results = intermediate_results_map.begin()->second.per_leaf_results;
+    std::vector<double> local_constant_results = intermediate_results_map.begin()->second.per_leaf_constant_results;
     std::for_each(std::next(intermediate_results_map.begin()),
                   intermediate_results_map.end(),
                   [&local_constant_results, ncomps](const auto &pair)
                   {
-                      const auto &curr_leaf_results = pair.second.per_leaf_results;
+                      const auto &curr_leaf_results = pair.second.per_leaf_constant_results;
                       for (int comp_id = 0; comp_id < ncomps; comp_id ++)
                       {
                           local_constant_results[comp_id] = std::max(local_constant_results[comp_id], 
