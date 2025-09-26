@@ -20,6 +20,7 @@ class     vtkDataSet;
 class     vtkCell;
 class     vtkUnstructuredGrid;
 class     avtIntervalTree;
+class     intermediateResults;
 
 // ****************************************************************************
 //  Class: avtOOFUSExpression
@@ -46,15 +47,11 @@ class EXPRESSION_API avtOOFUSExpression : public avtExpressionFilter
                                       {return "Finding OOFUS";};
     virtual int               NumVariableArguments() { return 1; };
     virtual int               GetVariableDimension() { return 1; };
-    virtual int               GetNumberOfComponents();
 
   protected:
-    int                       nFinalComps;
     int                       currentProgress;
     int                       totalSteps;
-    int                       totalNodes;
 
-    int                       enableGhostNeighbors;
 
     virtual void              Execute(void);
 
@@ -66,50 +63,53 @@ class EXPRESSION_API avtOOFUSExpression : public avtExpressionFilter
     virtual void              LabelBoundaryNeighbors(vtkDataSet *);
 
     avtCentering              centering;
-    // Track if the created array is volume-dependent.
-    vtkBitArray              *volumeDependent;
 
   private:
-    void
-    CalculateWithoutGhosts(vtkDataArray *in, 
-                           const int ncomponents,
-                           const int ntuples,
-                           std::vector<double> &constant_results);
+    void                      CalculateWithoutGhosts(vtkDataArray *in, 
+                                                     const int ncomponents,
+                                                     const int ntuples,
+                                                     std::vector<double> &per_leaf_constant_results);
 
-    void
-    CalculateWithGhosts(vtkDataArray *in,
-                        const int ncomponents,
-                        const int ntuples,
-                        int (getNodeOrCellValid)(vtkDataArray *, int *, int),
-                        vtkDataArray *ghostZones,
-                        int *nodeShouldBeIgnoredPtr,
-                        std::vector<double> &constant_results);
-    std::vector<int>
-    IdentifyGhostedNodes(vtkDataSet *in_ds,
-                         vtkDataArray *ghostZones,
-                         vtkDataArray *ghostNodes);
+    void                      CalculateWithGhosts(vtkDataArray *in,
+                                                  const int ncomponents,
+                                                  const int ntuples,
+                                                  int (getNodeOrCellValid)(vtkDataArray *, int *, int),
+                                                  vtkDataArray *ghostZones,
+                                                  int *nodeShouldBeIgnoredPtr,
+                                                  std::vector<double> &per_leaf_constant_results);
 
-    void DoOperation(vtkDataArray *in,
-                     const int ncomponents,
-                     const int ntuples,
-                     vtkDataSet *in_ds,
-                     std::vector<double> &constant_results);
+    std::vector<int>          IdentifyGhostedNodes(vtkDataSet *in_ds,
+                                                   vtkDataArray *ghostZones,
+                                                   vtkDataArray *ghostNodes);
 
-    vtkDataArray *CreateArray(vtkDataArray *in1);
+    void                      DoOperation(vtkDataArray *inputArray,
+                                          const int ncomponents,
+                                          const int ntuples,
+                                          vtkDataSet *in_ds,
+                                          std::vector<double> &per_leaf_constant_results);
 
-    void DeriveVariable(vtkDataSet *in_ds,
-                        std::vector<double> &constant_results);
+    vtkDataArray             *CreateArray(vtkDataArray *in1);
 
-    void ConstantEvaluation(avtDataTree_p inputDataTree,
-                            std::vector<double> &constant_results);
+    void                      DeriveVariable(vtkDataSet *in_ds,
+                                             intermediateResults &per_leaf_results);
 
-    avtDataRepresentation *WriteData_VTK(avtDataRepresentation *in_dr, double result);
+    int                       ConstantEvaluation(avtDataTree_p inputDataTree,
+                                                 std::map<int, intermediateResults> &intermediate_results_map,
+                                                 int leaf_number);
 
-    avtDataTree_p WriteDataTree(avtDataRepresentation *in_dr, double result);
+    avtDataRepresentation    *WriteData_VTK(avtDataRepresentation *in_dr,
+                                            intermediateResults &per_leaf_results,
+                                            std::vector<double> global_constant_results);
 
-    void WriteResult(avtDataTree_p inputDataTree, 
-                     avtDataTree_p &outputDataTree,
-                     double result);
+    avtDataTree_p             WriteDataTree(avtDataRepresentation *in_dr,
+                                            intermediateResults &per_leaf_results,
+                                            std::vector<double> global_constant_results);
+
+    int                       WriteResult(avtDataTree_p inputDataTree, 
+                                          avtDataTree_p &outputDataTree,
+                                          std::map<int, intermediateResults> &intermediate_results_map,
+                                          std::vector<double> global_constant_results,
+                                          int leaf_number);
 };
 
 

@@ -49,6 +49,39 @@
 #include <vector>
 
 // ****************************************************************************
+//  Class: intermediateResults
+//
+//  Purpose:
+//      TODO
+//
+//  Programmer: Justin Privitera
+//  Creation:   September 26, 2025
+//
+//  Modifications:
+//
+// ****************************************************************************
+class intermediateResults
+{
+public:
+    std::vector<double> per_leaf_constant_results;
+    int                 ncomps;
+    int                 ntuples;
+    vtkDataArray       *target_data_array;
+
+    intermediateResults()
+        : per_leaf_constant_results(), ncomps(0), ntuples(0), target_data_array(nullptr) {}
+
+    ~intermediateResults()
+    {
+        if (target_data_array)
+        {
+            target_data_array->Delete();
+            target_data_array = nullptr;
+        }
+    }
+};
+
+// ****************************************************************************
 //  Method: avtOOFUSExpression constructor
 //
 //  Purpose:
@@ -63,17 +96,7 @@
 
 avtOOFUSExpression::avtOOFUSExpression()
 {
-    nFinalComps = 0;
-    enableGhostNeighbors = 0;
     canApplyToDirectDatabaseQOT = false;
-
-    volumeDependent = vtkBitArray::New();
-    volumeDependent->SetName("VolumeDependent");
-    volumeDependent->SetNumberOfComponents(1);
-    volumeDependent->SetNumberOfTuples(1);
-    volumeDependent->SetComponent(0, 0, false); // Default volume dependency to false
-
-    totalNodes  = 0;
 }
 
 
@@ -92,29 +115,19 @@ avtOOFUSExpression::avtOOFUSExpression()
 
 avtOOFUSExpression::~avtOOFUSExpression()
 {
-    volumeDependent->Delete();
+
 }
 
-
 // ****************************************************************************
-//  Method: avtOOFUSExpression::GetNumberOfComponents
+//  Method: avtOOFUSExpression::CalculateWithoutGhosts
 //
 //  Purpose:
-//      After expression execution returns the final number of components.
+//      TODO
 //
 //  Programmer: Justin Privitera
-//  Creation:   August 18, 2025
+//  Creation:   September 26, 2025
 //
 //  Modifications:
-//
-// ****************************************************************************
-int 
-avtOOFUSExpression::GetNumberOfComponents()
-{
-    return nFinalComps;
-}
-
-// ****************************************************************************
 // ****************************************************************************
 void
 avtOOFUSExpression::CalculateWithoutGhosts(vtkDataArray *in, 
@@ -140,6 +153,15 @@ avtOOFUSExpression::CalculateWithoutGhosts(vtkDataArray *in,
 }
 
 // ****************************************************************************
+//  Method: avtOOFUSExpression::CalculateWithGhosts
+//
+//  Purpose:
+//      TODO
+//
+//  Programmer: Justin Privitera
+//  Creation:   September 26, 2025
+//
+//  Modifications:
 // ****************************************************************************
 void
 avtOOFUSExpression::CalculateWithGhosts(vtkDataArray *in,
@@ -187,6 +209,15 @@ avtOOFUSExpression::CalculateWithGhosts(vtkDataArray *in,
 }
 
 // ****************************************************************************
+//  Method: avtOOFUSExpression::IdentifyGhostedNodes
+//
+//  Purpose:
+//      TODO
+//
+//  Programmer: Justin Privitera
+//  Creation:   September 26, 2025
+//
+//  Modifications:
 // ****************************************************************************
 std::vector<int>
 avtOOFUSExpression::IdentifyGhostedNodes(vtkDataSet *in_ds,
@@ -260,6 +291,15 @@ avtOOFUSExpression::IdentifyGhostedNodes(vtkDataSet *in_ds,
 }
 
 // ****************************************************************************
+//  Method: avtOOFUSExpression::DoOperation
+//
+//  Purpose:
+//      TODO
+//
+//  Programmer: Justin Privitera
+//  Creation:   September 26, 2025
+//
+//  Modifications:
 // ****************************************************************************
 void
 avtOOFUSExpression::DoOperation(vtkDataArray *inputArray,
@@ -320,6 +360,15 @@ avtOOFUSExpression::DoOperation(vtkDataArray *inputArray,
 }
 
 // ****************************************************************************
+//  Method: avtOOFUSExpression::CreateArray
+//
+//  Purpose:
+//      TODO
+//
+//  Programmer: Justin Privitera
+//  Creation:   September 26, 2025
+//
+//  Modifications:
 // ****************************************************************************
 vtkDataArray *
 avtOOFUSExpression::CreateArray(vtkDataArray *in1)
@@ -327,129 +376,119 @@ avtOOFUSExpression::CreateArray(vtkDataArray *in1)
     return in1->NewInstance();
 }
 
-// ****************************************************************************
-// ****************************************************************************
-vtkDataArray *
-avtOOFUSExpression::GetDataForActiveVar(vtkDataSet *in_ds)
-{
-    vtkDataArray *cell_data = nullptr;
-    vtkDataArray *point_data = nullptr;
-    vtkDataArray *data = nullptr;
-
-    cell_data = in_ds->GetCellData()->GetArray(activeVariable);
-    point_data = in_ds->GetPointData()->GetArray(activeVariable);
-
-    if (cell_data != nullptr)
-    {
-        data = cell_data;
-        centering = AVT_ZONECENT;
-    }
-    else
-    {
-        data = point_data;
-        centering = AVT_NODECENT;
-    }
-
-    return data;
-}
-
 
 // ****************************************************************************
-// ****************************************************************************
-vtkDataArray *
-avtOOFUSExpression::GetDataForNoActiveVar(vtkDataSet *in_ds)
-{
-    vtkDataArray *cell_data = nullptr;
-    vtkDataArray *point_data = nullptr;
-    vtkDataArray *data = nullptr;
-
-    //
-    // This hack is getting more and more refined.  This situation comes up
-    // when we don't know what the active variable is (mostly for the
-    // constant creation filter).  We probably need more infrastructure
-    // to handle this.
-    // Iteration 1 of this hack said take any array.
-    // Iteration 2 said take any array that isn't vtkGhostLevels, etc.
-    // Iteration 3 says take the first scalar array if one is available,
-    //             provided that array is not vtkGhostLevels, etc.
-    //             This is because most constants we create are scalar.
-    //
-    // Note: this hack used to be quite important because we would use
-    // the resulting array to determine the centering of the variable.
-    // Now we use the IsPointVariable() method.  So this data array is
-    // only used to get the type.
-    //
-    const int ncellArray = in_ds->GetCellData()->GetNumberOfArrays();
-    for (int i = 0 ; i < ncellArray ; i++)
-    {
-        vtkDataArray *candidate = in_ds->GetCellData()->GetArray(i);
-        if (strstr(candidate->GetName(), "vtk") != NULL)
-            continue;
-        if (strstr(candidate->GetName(), "avt") != NULL)
-            continue;
-        if (candidate->GetNumberOfComponents() == 1)
-        {
-            // Definite winner
-            cell_data = candidate;
-            break;
-        }
-        else
-            // Potential winner -- keep looking
-            cell_data = candidate;
-    }
-    const int npointArray = in_ds->GetPointData()->GetNumberOfArrays();
-    for (int i = 0 ; i < npointArray ; i++)
-    {
-        vtkDataArray *candidate = in_ds->GetPointData()->GetArray(i);
-        if (strstr(candidate->GetName(), "vtk") != NULL)
-            continue;
-        if (strstr(candidate->GetName(), "avt") != NULL)
-            continue;
-        if (candidate->GetNumberOfComponents() == 1)
-        {
-            // Definite winner
-            point_data = candidate;
-            break;
-        }
-        else
-            // Potential winner -- keep looking
-            point_data = candidate;
-    }
-
-    if (cell_data != NULL && cell_data->GetNumberOfComponents() == 1)
-    {
-        data = cell_data;
-        centering = AVT_ZONECENT;
-    }
-    else if (point_data != NULL && point_data->GetNumberOfComponents()== 1)
-    {
-        data = point_data;
-        centering = AVT_NODECENT;
-    }
-    else if (cell_data != NULL)
-    {
-        data = cell_data;
-        centering = AVT_ZONECENT;
-    }
-    else
-    {
-        data = point_data;
-        centering = AVT_NODECENT;
-    }
-
-    return data;
-}
-
-
-// ****************************************************************************
+//  Method: avtOOFUSExpression::DeriveVariable
+//
+//  Purpose:
+//      TODO
+//
+//  Programmer: Justin Privitera
+//  Creation:   September 26, 2025
+//
+//  Modifications:
 // ****************************************************************************
 void
 avtOOFUSExpression::DeriveVariable(vtkDataSet *in_ds,
                                    intermediateResults &per_leaf_results)
 {
-    vtkDataArray *data = (activeVariable == nullptr ? 
-                          GetDataForNoActiveVar(in_ds) : 
-                          GetDataForActiveVar(in_ds));
+    vtkDataArray *cell_data = nullptr;
+    vtkDataArray *point_data = nullptr;
+    vtkDataArray *data = nullptr;
+
+    if (activeVariable == nullptr)
+    {
+        //
+        // This hack is getting more and more refined.  This situation comes up
+        // when we don't know what the active variable is (mostly for the
+        // constant creation filter).  We probably need more infrastructure
+        // to handle this.
+        // Iteration 1 of this hack said take any array.
+        // Iteration 2 said take any array that isn't vtkGhostLevels, etc.
+        // Iteration 3 says take the first scalar array if one is available,
+        //             provided that array is not vtkGhostLevels, etc.
+        //             This is because most constants we create are scalar.
+        //
+        // Note: this hack used to be quite important because we would use
+        // the resulting array to determine the centering of the variable.
+        // Now we use the IsPointVariable() method.  So this data array is
+        // only used to get the type.
+        //
+        const int ncellArray = in_ds->GetCellData()->GetNumberOfArrays();
+        for (int i = 0 ; i < ncellArray ; i++)
+        {
+            vtkDataArray *candidate = in_ds->GetCellData()->GetArray(i);
+            if (strstr(candidate->GetName(), "vtk") != NULL)
+                continue;
+            if (strstr(candidate->GetName(), "avt") != NULL)
+                continue;
+            if (candidate->GetNumberOfComponents() == 1)
+            {
+                // Definite winner
+                cell_data = candidate;
+                break;
+            }
+            else
+                // Potential winner -- keep looking
+                cell_data = candidate;
+        }
+        const int npointArray = in_ds->GetPointData()->GetNumberOfArrays();
+        for (int i = 0 ; i < npointArray ; i++)
+        {
+            vtkDataArray *candidate = in_ds->GetPointData()->GetArray(i);
+            if (strstr(candidate->GetName(), "vtk") != NULL)
+                continue;
+            if (strstr(candidate->GetName(), "avt") != NULL)
+                continue;
+            if (candidate->GetNumberOfComponents() == 1)
+            {
+                // Definite winner
+                point_data = candidate;
+                break;
+            }
+            else
+                // Potential winner -- keep looking
+                point_data = candidate;
+        }
+
+        if (cell_data != NULL && cell_data->GetNumberOfComponents() == 1)
+        {
+            data = cell_data;
+            centering = AVT_ZONECENT;
+        }
+        else if (point_data != NULL && point_data->GetNumberOfComponents()== 1)
+        {
+            data = point_data;
+            centering = AVT_NODECENT;
+        }
+        else if (cell_data != NULL)
+        {
+            data = cell_data;
+            centering = AVT_ZONECENT;
+        }
+        else
+        {
+            data = point_data;
+            centering = AVT_NODECENT;
+        }
+    }
+    else
+    {
+        cell_data = in_ds->GetCellData()->GetArray(activeVariable);
+        point_data = in_ds->GetPointData()->GetArray(activeVariable);
+
+        if (cell_data != nullptr)
+        {
+            data = cell_data;
+            centering = AVT_ZONECENT;
+        }
+        else
+        {
+            data = point_data;
+            centering = AVT_NODECENT;
+        }
+    }
+
     if (data == nullptr)
     {
         // One way to get here is to have vtkPolyData Curve plots.
@@ -480,13 +519,22 @@ avtOOFUSExpression::DeriveVariable(vtkDataSet *in_ds,
     // we are caching this info so we can easily write to it later
     per_leaf_results.ncomps = ncomps;
     per_leaf_results.ntuples = ntuples;
-    per_leaf_results.local_results.resize(ncomps);
+    per_leaf_results.per_leaf_constant_results.resize(ncomps);
     per_leaf_results.target_data_array = dv;
 
     DoOperation(data, ncomps, ntuples, in_ds, per_leaf_results.per_leaf_constant_results);
 }
 
 // ****************************************************************************
+//  Method: avtOOFUSExpression::ConstantEvaluation
+//
+//  Purpose:
+//      TODO
+//
+//  Programmer: Justin Privitera
+//  Creation:   September 26, 2025
+//
+//  Modifications:
 // ****************************************************************************
 int
 avtOOFUSExpression::ConstantEvaluation(avtDataTree_p inputDataTree,
@@ -552,31 +600,15 @@ avtOOFUSExpression::ConstantEvaluation(avtDataTree_p inputDataTree,
 }
 
 // ****************************************************************************
-// ****************************************************************************
-// TODO move me
-class intermediateResults
-{
-public:
-    std::vector<double> per_leaf_constant_results;
-    int                 ncomps;
-    int                 ntuples;
-    vtkDataArray       *target_data_array;
-
-    intermediateResults()
-        : per_leaf_constant_results(), ncomps(0), ntuples(0), target_data_array(nullptr) {}
-
-    ~intermediateResults()
-    {
-        if (target_data_array)
-        {
-            target_data_array->Delete();
-            target_data_array = nullptr;
-        }
-    }
-};
-
-
-// ****************************************************************************
+//  Method: avtOOFUSExpression::WriteData_VTK
+//
+//  Purpose:
+//      TODO
+//
+//  Programmer: Justin Privitera
+//  Creation:   September 26, 2025
+//
+//  Modifications:
 // ****************************************************************************
 avtDataRepresentation *
 avtOOFUSExpression::WriteData_VTK(avtDataRepresentation *in_dr,
@@ -592,11 +624,11 @@ avtOOFUSExpression::WriteData_VTK(avtDataRepresentation *in_dr,
     // Start off by having the derived type calculate the derived variable.
     //
     vtkDataArray *&dat = per_leaf_results.target_data_array;
-    if (per_leaf_results.ncomps != 0)
+    const int ncomps = per_leaf_results.ncomps;
+    if (ncomps != 0)
     {
         // this case means that the variable does not already exist and 
         // we calculated it and now must write it
-        const int ncomps = per_leaf_results.ncomps;
         const int ntuples = per_leaf_results.ntuples;
         for (int comp_id = 0; comp_id < ncomps; comp_id ++)
         {
@@ -698,9 +730,6 @@ avtOOFUSExpression::WriteData_VTK(avtDataRepresentation *in_dr,
     //
     dat->Delete(); // this also deletes our vtkdataset pointer in our intermediate results object
 
-    // TODO how does volume dependence matter here? how is it supposed to work?
-    rv->GetFieldData()->AddArray(this->volumeDependent);
-
     avtDataRepresentation *out_dr = new avtDataRepresentation(rv,
         in_dr->GetDomain(), in_dr->GetLabel());
 
@@ -710,6 +739,15 @@ avtOOFUSExpression::WriteData_VTK(avtDataRepresentation *in_dr,
 }
 
 // ****************************************************************************
+//  Method: avtOOFUSExpression::WriteDataTree
+//
+//  Purpose:
+//      TODO
+//
+//  Programmer: Justin Privitera
+//  Creation:   September 26, 2025
+//
+//  Modifications:
 // ****************************************************************************
 avtDataTree_p
 avtOOFUSExpression::WriteDataTree(avtDataRepresentation *in_dr,
@@ -740,6 +778,15 @@ avtOOFUSExpression::WriteDataTree(avtDataRepresentation *in_dr,
 }
 
 // ****************************************************************************
+//  Method: avtOOFUSExpression::WriteResult
+//
+//  Purpose:
+//      TODO
+//
+//  Programmer: Justin Privitera
+//  Creation:   September 26, 2025
+//
+//  Modifications:
 // ****************************************************************************
 int
 avtOOFUSExpression::WriteResult(avtDataTree_p inputDataTree, 
@@ -818,6 +865,7 @@ void
 avtOOFUSExpression::Execute()
 {
     // TODO useful error messages
+    // TODO parallel error checking
 
     //
     // Fetch our data tree and create the output data tree
@@ -825,8 +873,9 @@ avtOOFUSExpression::Execute()
     avtDataTree_p tree = GetInputDataTree();
     avtDataTree_p newTree;
 
-    // TODO calculate progress so we can update it appropriately
-    // see conn comp expr for how
+    const int numLeaves = tree->GetNumberOfLeaves();
+    totalSteps = numLeaves * 2;
+    currentProgress = 0;
 
     //
     // Calculate per rank results
@@ -920,7 +969,8 @@ avtOOFUSExpression::Execute()
 
     SetOutputDataTree(newTree);
 
-    // TODO update progress???
+    // Set progress to complete
+    UpdateProgress(totalSteps, totalSteps);
 }
 
 
