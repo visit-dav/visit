@@ -103,9 +103,6 @@ class EXPRESSION_API avtOOFUSExpression : public avtExpressionFilter
     void ConstantEvaluation(avtDataTree_p inputDataTree,
                             std::vector<double> &constant_results);
 
-    vtkDataArray *WriteDerivedVariable(vtkDataSet *in_ds,
-                                       double result);
-
     avtDataRepresentation *WriteData_VTK(avtDataRepresentation *in_dr, double result);
 
     avtDataTree_p WriteDataTree(avtDataRepresentation *in_dr, double result);

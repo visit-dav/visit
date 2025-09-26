@@ -120,7 +120,7 @@ void
 avtOOFUSExpression::CalculateWithoutGhosts(vtkDataArray *in, 
                                            const int ncomponents,
                                            const int ntuples,
-                                           std::vector<double> &constant_results)
+                                           std::vector<double> &per_leaf_constant_results)
 {
     for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
     {
@@ -135,7 +135,7 @@ avtOOFUSExpression::CalculateWithoutGhosts(vtkDataArray *in,
             }
         }
 
-        constant_results.push_back(comp_max);
+        per_leaf_constant_results[comp_id] = comp_max;
     }
 }
 
@@ -148,7 +148,7 @@ avtOOFUSExpression::CalculateWithGhosts(vtkDataArray *in,
                                         int (getNodeOrCellValid)(vtkDataArray *, int *, int),
                                         vtkDataArray *ghostZones,
                                         int *nodeShouldBeIgnoredPtr,
-                                        std::vector<double> &constant_results)
+                                        std::vector<double> &per_leaf_constant_results)
 {
     for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
     {
@@ -182,7 +182,7 @@ avtOOFUSExpression::CalculateWithGhosts(vtkDataArray *in,
             }
         }
 
-        constant_results.push_back(comp_max);
+        per_leaf_constant_results[comp_id] = comp_max;
     }
 }
 
@@ -266,11 +266,10 @@ avtOOFUSExpression::DoOperation(vtkDataArray *inputArray,
                                 const int ncomponents,
                                 const int ntuples,
                                 vtkDataSet *in_ds,
-                                std::vector<double> &constant_results)
+                                std::vector<double> &per_leaf_constant_results)
 {
     vtkDataArray *ghostZones = in_ds->GetCellData()->GetArray("avtGhostZones");
     vtkDataArray *ghostNodes = in_ds->GetPointData()->GetArray("avtGhostNodes");
-    int *nodeShouldBeIgnoredPtr = nullptr;
 
     if (AVT_ZONECENT == centering)
     {
@@ -285,12 +284,12 @@ avtOOFUSExpression::DoOperation(vtkDataArray *inputArray,
                                    int tuple_id) -> int 
                                    { return ghostZones->GetComponent(tuple_id, 0); },
                                 ghostZones,
-                                nodeShouldBeIgnoredPtr,
-                                constant_results);
+                                nullptr,
+                                per_leaf_constant_results);
         }
         else // no ghosts or just ghost nodes
         {
-            CalculateWithoutGhosts(inputArray, ncomponents, ntuples, constant_results);
+            CalculateWithoutGhosts(inputArray, ncomponents, ntuples, per_leaf_constant_results);
         }
     }
     else // AVT_NODECENT == centering
@@ -301,7 +300,6 @@ avtOOFUSExpression::DoOperation(vtkDataArray *inputArray,
             // we need to identify which nodes should be ignored
             std::vector<int> nodeShouldBeIgnored = IdentifyGhostedNodes(
                 in_ds, ghostZones, ghostNodes);
-            nodeShouldBeIgnoredPtr = nodeShouldBeIgnored.data();
 
             // we pass a lambda to CalculateWithGhosts() that
             // looks at the nodeShouldBeIgnoredPtr to determine 
@@ -312,11 +310,11 @@ avtOOFUSExpression::DoOperation(vtkDataArray *inputArray,
                                    int tuple_id) -> int 
                                    { return nodeShouldBeIgnoredPtr[tuple_id]; },
                                 ghostZones,
-                                nodeShouldBeIgnoredPtr, constant_results);
+                                nodeShouldBeIgnored.data(), per_leaf_constant_results);
         }
         else // no ghosts
         {
-            CalculateWithoutGhosts(inputArray, ncomponents, ntuples, constant_results);
+            CalculateWithoutGhosts(inputArray, ncomponents, ntuples, per_leaf_constant_results);
         }
     }
 }
@@ -442,13 +440,26 @@ avtOOFUSExpression::GetDataForNoActiveVar(vtkDataSet *in_ds)
     return data;
 }
 
+
 // ****************************************************************************
 // ****************************************************************************
 void
-avtOOFUSExpression::GetNumCompsNumTuples(vtkDataSet *in_ds,
-                                         int &ncomps,
-                                         int &ntuples)
+avtOOFUSExpression::DeriveVariable(vtkDataSet *in_ds,
+                                   intermediateResults &per_leaf_results)
 {
+    vtkDataArray *data = (activeVariable == nullptr ? 
+                          GetDataForNoActiveVar(in_ds) : 
+                          GetDataForActiveVar(in_ds));
+    if (data == nullptr)
+    {
+        // One way to get here is to have vtkPolyData Curve plots.
+        EXCEPTION2(ExpressionException, outputVariableName,
+             "An internal error occurred when "
+             "trying to calculate your expression.  Please contact a "
+             "VisIt developer.");
+    }
+
+    int ncomps, ntuples;
     if (activeVariable == nullptr)
     {
         ntuples = (IsPointVariable() ? 
@@ -461,56 +472,66 @@ avtOOFUSExpression::GetNumCompsNumTuples(vtkDataSet *in_ds,
     }
 
     ncomps = data->GetNumberOfComponents();
-}
 
+    vtkDataArray *dv = CreateArray(data);
+    dv->SetNumberOfComponents(ncomps);
+    dv->SetNumberOfTuples(ntuples);
 
-// ****************************************************************************
-// ****************************************************************************
-void
-avtOOFUSExpression::DeriveVariable(vtkDataSet *in_ds,
-                                   std::vector<double> &constant_results)
-{
-    // TODO I need a way to stash this info for later so I don't have to 
-    // recompute all of this information
+    // we are caching this info so we can easily write to it later
+    per_leaf_results.ncomps = ncomps;
+    per_leaf_results.ntuples = ntuples;
+    per_leaf_results.local_results.resize(ncomps);
+    per_leaf_results.target_data_array = dv;
 
-    vtkDataArray *data = (activeVariable == nullptr ? 
-                          GetDataForNoActiveVar(in_ds) : 
-                          GetDataForActiveVar(in_ds));
-    if (data == nullptr)
-    {
-        // One way to get here is to have vtkPolyData Curve plots.
-        EXCEPTION2(ExpressionException, outputVariableName,
-             "An internal error occurred when "
-             "trying to calculate your expression.  Please contact a "
-             "VisIt developer.");
-    }
-
-    int ncomps, tuples;
-    GetNumCompsNumTuples(ncomps, ntuples);
-
-    DoOperation(data, ncomps, ntuples, in_ds, constant_results);
+    DoOperation(data, ncomps, ntuples, in_ds, per_leaf_results.per_leaf_constant_results);
 }
 
 // ****************************************************************************
 // ****************************************************************************
-void
+int
 avtOOFUSExpression::ConstantEvaluation(avtDataTree_p inputDataTree,
-                                       std::vector<double> &constant_results)
+                                       std::map<int, intermediateResults> &intermediate_results_map,
+                                       int leaf_number)
 {
     const int numChildren = inputDataTree->GetNChildren();
 
     if (numChildren <= 0 && !inputDataTree->HasData())
     {
-        return;
+        return leaf_number;
     }
 
     if (numChildren == 0)
     {
         avtDataRepresentation *in_dr = &(inputDataTree->GetDataRepresentation());
         vtkDataSet *in_ds = in_dr->GetDataVTK();
-        DeriveVariable(in_ds, constant_results);
+        intermediate_results_map.emplace(leaf_number);
+
+        //
+        // Sometimes we are asked to calculate a variable twice.  The easiest way
+        // to catch this is to see if we already have the requested variable and
+        // not re-derive it if we do.
+        //
+        vtkDataArray *&dat = intermediate_results_map.at(leaf_number).target_data_array;
+        dat = in_ds->GetPointData()->GetArray(outputVariableName);
+        if (dat == nullptr)
+        {
+            dat = in_ds->GetCellData()->GetArray(outputVariableName);
+        }
+        
+        if (dat != nullptr)
+        {
+            debug1 << "NOTE: variable " << outputVariableName 
+                   << " already exists and it is not being recalculated." << endl;
+            dat->Register(nullptr);  // At the end of the routine, we will free this.
+        }
+        else
+        {
+            DeriveVariable(in_ds, intermediate_results_map.at(leaf_number));
+        }
 
         UpdateProgress(currentProgress++, totalSteps);
+
+        return leaf_number + 1;
     }
     else
     {
@@ -520,96 +541,80 @@ avtOOFUSExpression::ConstantEvaluation(avtDataTree_p inputDataTree,
             // are children present?
             if (inputDataTree->ChildIsPresent(childId))
             {
-                ConstantEvaluation(inputDataTree->GetChild(childId), constant_results);
+                leaf_number = ConstantEvaluation(inputDataTree->GetChild(childId), 
+                                                 intermediate_results_map,
+                                                 leaf_number);
             }
         }
+
+        return leaf_number;
     }
 }
 
 // ****************************************************************************
 // ****************************************************************************
-vtkDataArray *
-avtOOFUSExpression::WriteDerivedVariable(vtkDataSet *in_ds,
-                                         double result)
+// TODO move me
+class intermediateResults
 {
-    vtkDataArray *data = (activeVariable == nullptr ? 
-                          GetDataForNoActiveVar(in_ds) : 
-                          GetDataForActiveVar(in_ds));
-    if (data == nullptr)
+public:
+    std::vector<double> per_leaf_constant_results;
+    int                 ncomps;
+    int                 ntuples;
+    vtkDataArray       *target_data_array;
+
+    intermediateResults()
+        : per_leaf_constant_results(), ncomps(0), ntuples(0), target_data_array(nullptr) {}
+
+    ~intermediateResults()
     {
-        // One way to get here is to have vtkPolyData Curve plots.
-        EXCEPTION2(ExpressionException, outputVariableName,
-             "An internal error occurred when "
-             "trying to calculate your expression.  Please contact a "
-             "VisIt developer.");
-    }
-
-    //
-    // Set up a VTK variable reflecting the calculated variable
-    //
-    int ncomps, tuples;
-    GetNumCompsNumTuples(ncomps, ntuples);
-
-    vtkDataArray *dv = CreateArray(data);
-    dv->SetNumberOfComponents(ncomps);
-    dv->SetNumberOfTuples(ntuples);
-
-    for (int comp_id = 0; comp_id < ncomps; comp_id ++)
-    {
-        for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+        if (target_data_array)
         {
-            dv->SetComponent(tuple_id, comp_id, result);
+            target_data_array->Delete();
+            target_data_array = nullptr;
         }
     }
-
-    return dv;
-}
+};
 
 
 // ****************************************************************************
 // ****************************************************************************
 avtDataRepresentation *
-avtOOFUSExpression::WriteData_VTK(avtDataRepresentation *in_dr, double result)
+avtOOFUSExpression::WriteData_VTK(avtDataRepresentation *in_dr,
+                                  intermediateResults &per_leaf_results,
+                                  std::vector<double> global_constant_results)
 {
     //
-    // Get the VTK data set and domain number.
+    // Get the VTK data set.
     //
     vtkDataSet *in_ds = in_dr->GetDataVTK();
 
     //
-    // Sometimes we are asked to calculate a variable twice.  The easiest way
-    // to catch this is to see if we already have the requested variable and
-    // not re-derive it if we do.
-    //
-    vtkDataArray *dat = nullptr;
-    dat = in_ds->GetPointData()->GetArray(outputVariableName);
-    if (dat == nullptr)
-    {
-        dat = in_ds->GetCellData()->GetArray(outputVariableName);
-    }
-    if (dat != nullptr)
-    {
-        debug1 << "NOTE: variable " << outputVariableName 
-               << " already exists and it is not being recalculated." << endl;
-        dat->Register(nullptr);  // At the end of the routine, we will free this.
-    }
-
-    //
     // Start off by having the derived type calculate the derived variable.
     //
-    if (dat == nullptr)
+    vtkDataArray *&dat = per_leaf_results.target_data_array;
+    if (per_leaf_results.ncomps != 0)
     {
-        dat = WriteDerivedVariable(in_ds, result);
-        if (dat == nullptr)
+        // this case means that the variable does not already exist and 
+        // we calculated it and now must write it
+        const int ncomps = per_leaf_results.ncomps;
+        const int ntuples = per_leaf_results.ntuples;
+        for (int comp_id = 0; comp_id < ncomps; comp_id ++)
         {
-            EXCEPTION2(ExpressionException, outputVariableName, "an unknown error occurred while " 
-                  "trying to calculate your expression.  Please contact a "
-                  "VisIt developer.");
+            const double global_result_for_comp = global_constant_results[comp_id];
+            for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+            {
+                dat->SetComponent(tuple_id, comp_id, global_result_for_comp);
+            }
         }
+
         dat->SetName(outputVariableName);
+
+        // the omitted else case has been handled before; if this variable
+        // already exists then we did not recalculate it, instead, we made
+        // our pointer point to the existing variable already.
     }
 
-    int vardim = dat->GetNumberOfComponents();
+    const int vardim = dat->GetNumberOfComponents();
 
     //
     // Now make a copy of the input and add the derived variable as its output.
@@ -659,28 +664,41 @@ avtOOFUSExpression::WriteData_VTK(avtDataRepresentation *in_dr, double result)
     {
         rv->GetPointData()->AddArray(dat);
         if (vardim == 1)
+        {
             rv->GetPointData()->SetActiveScalars(outputVariableName);
+        }
         else if (vardim == 3)
+        {
             rv->GetPointData()->SetActiveVectors(outputVariableName);
+        }
         else if (vardim == 9)
+        {
             rv->GetPointData()->SetActiveTensors(outputVariableName);
+        }
     }
     else
     {
         rv->GetCellData()->AddArray(dat);
         if (vardim == 1)
+        {
             rv->GetCellData()->SetActiveScalars(outputVariableName);
+        }
         else if (vardim == 3)
+        {
             rv->GetCellData()->SetActiveVectors(outputVariableName);
+        }
         else if (vardim == 9)
+        {
             rv->GetCellData()->SetActiveTensors(outputVariableName);
+        }
     }
 
     //
     // Make sure that we don't have any memory leaks.
     //
-    dat->Delete();
+    dat->Delete(); // this also deletes our vtkdataset pointer in our intermediate results object
 
+    // TODO how does volume dependence matter here? how is it supposed to work?
     rv->GetFieldData()->AddArray(this->volumeDependent);
 
     avtDataRepresentation *out_dr = new avtDataRepresentation(rv,
@@ -694,10 +712,13 @@ avtOOFUSExpression::WriteData_VTK(avtDataRepresentation *in_dr, double result)
 // ****************************************************************************
 // ****************************************************************************
 avtDataTree_p
-avtOOFUSExpression::WriteDataTree(avtDataRepresentation *in_dr, double result)
+avtOOFUSExpression::WriteDataTree(avtDataRepresentation *in_dr,
+                                  intermediateResults &per_leaf_results,
+                                  std::vector<double> global_constant_results)
 {
-    avtDataRepresentation *out_dr = nullptr;
-    out_dr = WriteData_VTK(in_dr, result);
+    avtDataRepresentation *out_dr = WriteData_VTK(in_dr,
+                                                  per_leaf_results,
+                                                  global_constant_results);
 
     if (out_dr == nullptr)
     {
@@ -720,28 +741,35 @@ avtOOFUSExpression::WriteDataTree(avtDataRepresentation *in_dr, double result)
 
 // ****************************************************************************
 // ****************************************************************************
-void
+int
 avtOOFUSExpression::WriteResult(avtDataTree_p inputDataTree, 
                                 avtDataTree_p &outputDataTree,
-                                double result)
+                                std::map<int, intermediateResults> &intermediate_results_map,
+                                std::vector<double> global_constant_results,
+                                int leaf_number)
 {
     const int numChildren = inputDataTree->GetNChildren();
 
     if (numChildren <= 0 && !inputDataTree->HasData())
     {
-        return;
+        return leaf_number;
     }
 
     if (numChildren == 0)
     {
         outputDataTree = new avtDataTree();
-        avtDataTree_p resultDataTree = WriteDataTree(&(inputDataTree->GetDataRepresentation()), result);
+        avtDataRepresentation *in_dr = &(inputDataTree->GetDataRepresentation());
+        avtDataTree_p resultDataTree = WriteDataTree(in_dr,
+                                                     intermediate_results_map.at(leaf_number),
+                                                     global_constant_results);
         if (*resultDataTree)
         {
             outputDataTree = resultDataTree;
         }
 
         UpdateProgress(currentProgress++, totalSteps);
+
+        return leaf_number + 1;
     }
     else
     {
@@ -750,21 +778,27 @@ avtOOFUSExpression::WriteResult(avtDataTree_p inputDataTree,
         // and we need an output datatree for each
         //
         avtDataTree_p *localOutputDataTree = new avtDataTree_p[numChildren];
-        for (int childId = 0; childId < numChildren; childId++)
+        for (int childId = 0; childId < numChildren; childId ++)
         {
             // are children present?
             if (inputDataTree->ChildIsPresent(childId))
             {
                 localOutputDataTree[childId].SetReference( new avtDataTree );
-                WriteResult(inputDataTree->GetChild(childId), localOutputDataTree[childId], result);
+                leaf_number = WriteResult(inputDataTree->GetChild(childId), 
+                                          localOutputDataTree[childId],
+                                          intermediate_results_map,
+                                          global_constant_results,
+                                          leaf_number);
             }
             else // adults only
             {
-                localOutputDataTree[childId] = NULL;
+                localOutputDataTree[childId] = nullptr;
             }
         }
         outputDataTree = new avtDataTree(numChildren, localOutputDataTree);
         delete [] localOutputDataTree;
+
+        return leaf_number;
     }
 }
 
@@ -783,8 +817,10 @@ avtOOFUSExpression::WriteResult(avtDataTree_p inputDataTree,
 void
 avtOOFUSExpression::Execute()
 {
+    // TODO useful error messages
+
     //
-    // This will walk through the data domains in a data tree.
+    // Fetch our data tree and create the output data tree
     //
     avtDataTree_p tree = GetInputDataTree();
     avtDataTree_p newTree;
@@ -793,45 +829,98 @@ avtOOFUSExpression::Execute()
     // see conn comp expr for how
 
     //
-    // Calculate result per rank
+    // Calculate per rank results
     //
-    std::vector<double> constant_results;
-    ConstantEvaluation(tree, constant_results);
-    if (constant_results.empty())
+    std::map<int, intermediateResults> intermediate_results_map;
+    // TODO make the final argument default init'ed to 0
+    ConstantEvaluation(tree, intermediate_results_map, 0);
+    if (intermediate_results_map.empty())
     {
         EXCEPTION2(ExpressionException, outputVariableName,
                    "An internal error occurred when "
                    "trying to calculate your expression. Please contact a "
                    "VisIt developer.");
     }
-    const double local_result = *std::max_element(constant_results.begin(), 
-                                                  constant_results.end());
+
+    //
+    // Ensure that the number of components is in agreement across all our local
+    // results.
+    //
+    const int ncomps = intermediate_results_map.begin()->second.ncomps;
+    if (std::any_of(std::next(intermediate_results_map.begin()),
+                    intermediate_results_map.end(),
+                    [ncomps](const auto &pair)
+                    {
+                        return pair.second.ncomps != ncomps;
+                    }))
+    {
+        EXCEPTION2(ExpressionException, outputVariableName,
+                   "An internal error occurred when "
+                   "trying to calculate your expression. Please contact a "
+                   "VisIt developer.");
+    }
+
+    //
+    // Calculate the local result across all domains on this rank
+    //
+    std::vector<double> local_constant_results = intermediate_results_map.begin()->second.per_leaf_results;
+    std::for_each(std::next(intermediate_results_map.begin()),
+                  intermediate_results_map.end(),
+                  [&local_constant_results, ncomps](const auto &pair)
+                  {
+                      const auto &curr_leaf_results = pair.second.per_leaf_results;
+                      for (int comp_id = 0; comp_id < ncomps; comp_id ++)
+                      {
+                          local_constant_results[comp_id] = std::max(local_constant_results[comp_id], 
+                                                                     curr_leaf_results[comp_id]);
+                      }
+                  });
+
+    //
+    // Ensure all ranks agree on the number of components
+    //
+#ifdef PARALLEL
+    int global_ncomps_max, global_ncomps_min;
+    MPI_Allreduce(&ncomps, &global_ncomps_min, 1, MPI_INT, MPI_MIN, VISIT_MPI_COMM);
+    MPI_Allreduce(&ncomps, &global_ncomps_max, 1, MPI_INT, MPI_MAX, VISIT_MPI_COMM);
+    if (global_ncomps_min != global_ncomps_max)
+    {
+        EXCEPTION2(ExpressionException, outputVariableName,
+                   "An internal error occurred when "
+                   "trying to calculate your expression. Please contact a "
+                   "VisIt developer.");
+    }
+#endif
 
     //
     // Calculate global result
     //
-    double global_result;
+    std::vector<double> global_constant_results(ncomps);
 #ifdef PARALLEL
-    MPI_Allreduce(&local_result, &global_result, 1, MPI_DOUBLE, MPI_MAX, VISIT_MPI_COMM);
+    MPI_Allreduce(local_constant_results.data(), global_constant_results.data(),
+                  ncomps, MPI_DOUBLE, MPI_MAX, VISIT_MPI_COMM);
 #else
-    global_result = local_result;
+    global_constant_results = local_constant_results;
 #endif
 
     //
     // Write result
     //
-    WriteResult(tree, newTree, global_result);
+    // TODO make the final argument default init'ed to 0
+    WriteResult(tree, newTree, intermediate_results_map, global_constant_results, 0);
 
-    if (*newTree == NULL)
+    //
+    // Lots of code assumes that the root tree is non-NULL. Put a dummy
+    // tree in its place if it is.
+    //
+    if (*newTree == nullptr)
     {
-        //
-        // Lots of code assumes that the root tree is non-NULL.  Put a dummy
-        // tree in its place.
-        //
         newTree = new avtDataTree();
     }
 
     SetOutputDataTree(newTree);
+
+    // TODO update progress???
 }
 
 
