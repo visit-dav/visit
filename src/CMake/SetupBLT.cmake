@@ -47,6 +47,20 @@ set(ENABLE_TESTS OFF CACHE BOOL "")
 message(STATUS "Setting up BLT")
 include(${BLT_SOURCE_DIR}/SetupBLT.cmake)
 
+#
+# Override some options related to RPATHS.
+#
+
+# BLT sets CMAKE_INSTALL_RPATH_USE_LINK_PATH to TRUE, which
+# turns on saving automatically generated RPATHS in installations.
+# We don't want RPATHS in installations.
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+
+# BLT sets CMAKE_INSTALL_RPATH to "${CMAKE_INSTALL_PREFIX}/lib",
+# which usually results in /usr/local/lib, which we don't want.
+set(CMAKE_INSTALL_RPATH "")
+
+
 # next message helps bracket messages sent by BLT.
 message(STATUS "Done setting up BLT")
 

@@ -410,6 +410,9 @@ typedef struct {
 //    Kathleen Biagas, Wed Aug 17, 2022
 //    Added CheckForOSPRayRendering.
 //
+//    Kathleen Biagas, Tue Aug 26, 2025
+//    Added QueryMSAAAvailability.
+//
 // ****************************************************************************
 
 class VIEWERCORE_API ViewerWindowManager : public ViewerBase
@@ -625,6 +628,8 @@ public:
     void GetDatabasesForWindows(const intVector &,stringVector &, bool) const;
 
     void CheckForOSPRayRendering(void) const;
+
+    void QueryMSAAAvailability(int windowIndex = -1);
 
   protected:
     ViewerWindowManager();

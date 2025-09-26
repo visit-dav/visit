@@ -30,6 +30,8 @@
 //  Creation:   May 11, 2016 
 //
 //  Modifications:
+//    Kathleen Biagas, Thu Aug 28, 2025
+//    Removed SetSurfaceRepresentation, no longer used.
 //
 // ****************************************************************************
 
@@ -42,7 +44,6 @@ class avtHistogramMapper : public avtMapper
 
     // From avtMapper
     virtual bool               GetLighting(void) { return false; }
-    virtual void               SetSurfaceRepresentation(int rep);
 
     // this class
     void                       SetEdgeVisibility(bool val);

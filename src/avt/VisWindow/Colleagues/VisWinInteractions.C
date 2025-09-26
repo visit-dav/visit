@@ -752,20 +752,3 @@ VisWinInteractions::SetOsprayRendering(bool enabled)
     if(hotPointInteractor)
         hotPointInteractor->SetOsprayRendering(enabled);
 }
-
-// ****************************************************************************
-//  Method: VisWinInteractions::SetAnariRendering
-//
-//  Purpose:
-//      Sets the anari rendering flag.
-//
-//  Programmer: Kevin Griffin
-//  Creation:   Wed Apr 02, 2025
-//
-// ****************************************************************************
-void
-VisWinInteractions::SetAnariRendering(bool enabled)
-{
-    if(hotPointInteractor)
-        hotPointInteractor->SetAnariRendering(enabled);
-}

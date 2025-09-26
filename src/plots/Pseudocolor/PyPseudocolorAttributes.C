@@ -378,8 +378,18 @@ PyPseudocolorAttributes_ToString(const PseudocolorAttributes *atts, const char *
     const unsigned char *wireframeColor = atts->GetWireframeColor().GetColor();
     snprintf(tmpStr, 1000, "%swireframeColor = (%d, %d, %d, %d)\n", prefix, int(wireframeColor[0]), int(wireframeColor[1]), int(wireframeColor[2]), int(wireframeColor[3]));
     str += tmpStr;
+    if(atts->GetWireframeColorByVar())
+        snprintf(tmpStr, 1000, "%swireframeColorByVar = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%swireframeColorByVar = 0\n", prefix);
+    str += tmpStr;
     const unsigned char *pointColor = atts->GetPointColor().GetColor();
     snprintf(tmpStr, 1000, "%spointColor = (%d, %d, %d, %d)\n", prefix, int(pointColor[0]), int(pointColor[1]), int(pointColor[2]), int(pointColor[3]));
+    str += tmpStr;
+    if(atts->GetPointColorByVar())
+        snprintf(tmpStr, 1000, "%spointColorByVar = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%spointColorByVar = 0\n", prefix);
     str += tmpStr;
     return str;
 }
@@ -3578,6 +3588,75 @@ PseudocolorAttributes_GetWireframeColor(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+PseudocolorAttributes_SetWireframeColorByVar(PyObject *self, PyObject *args)
+{
+    PyPseudocolorAttributesObject *obj = (PyPseudocolorAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    if(cval && (cval != obj->data->GetWireframeColorByVar() &&
+                obj->data->GetRenderSurfaces()))
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        PyErr_WarnEx(PyExc_RuntimeWarning,
+                "Cannot color wireframes by var if also rendering surfaces.\n", 0);
+        return PyInt_FromLong(0);
+    }
+    Py_XDECREF(packaged_args);
+
+    // Set the wireframeColorByVar in the object.
+    obj->data->SetWireframeColorByVar(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetWireframeColorByVar(PyObject *self, PyObject *args)
+{
+    PyPseudocolorAttributesObject *obj = (PyPseudocolorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetWireframeColorByVar()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
 PseudocolorAttributes_SetPointColor(PyObject *self, PyObject *args)
 {
     PyPseudocolorAttributesObject *obj = (PyPseudocolorAttributesObject *)self;
@@ -3651,6 +3730,75 @@ PseudocolorAttributes_GetPointColor(PyObject *self, PyObject *args)
     PyTuple_SET_ITEM(retval, 1, PyInt_FromLong(long(pointColor[1])));
     PyTuple_SET_ITEM(retval, 2, PyInt_FromLong(long(pointColor[2])));
     PyTuple_SET_ITEM(retval, 3, PyInt_FromLong(long(pointColor[3])));
+    return retval;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_SetPointColorByVar(PyObject *self, PyObject *args)
+{
+    PyPseudocolorAttributesObject *obj = (PyPseudocolorAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+   if(cval && (cval != obj->data->GetPointColorByVar() &&
+                obj->data->GetRenderSurfaces()))
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        PyErr_WarnEx(PyExc_RuntimeWarning,
+                "Cannot color points by var if also rendering surfaces.\n", 0);
+        return PyInt_FromLong(0);
+    }
+    Py_XDECREF(packaged_args);
+
+    // Set the pointColorByVar in the object.
+    obj->data->SetPointColorByVar(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetPointColorByVar(PyObject *self, PyObject *args)
+{
+    PyPseudocolorAttributesObject *obj = (PyPseudocolorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetPointColorByVar()?1L:0L);
     return retval;
 }
 
@@ -3763,8 +3911,12 @@ PyMethodDef PyPseudocolorAttributes_methods[PSEUDOCOLORATTRIBUTES_NMETH] = {
     {"GetLightingFlag", PseudocolorAttributes_GetLightingFlag, METH_VARARGS},
     {"SetWireframeColor", PseudocolorAttributes_SetWireframeColor, METH_VARARGS},
     {"GetWireframeColor", PseudocolorAttributes_GetWireframeColor, METH_VARARGS},
+    {"SetWireframeColorByVar", PseudocolorAttributes_SetWireframeColorByVar, METH_VARARGS},
+    {"GetWireframeColorByVar", PseudocolorAttributes_GetWireframeColorByVar, METH_VARARGS},
     {"SetPointColor", PseudocolorAttributes_SetPointColor, METH_VARARGS},
     {"GetPointColor", PseudocolorAttributes_GetPointColor, METH_VARARGS},
+    {"SetPointColorByVar", PseudocolorAttributes_SetPointColorByVar, METH_VARARGS},
+    {"GetPointColorByVar", PseudocolorAttributes_GetPointColorByVar, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -3975,8 +4127,12 @@ PyPseudocolorAttributes_getattro(PyObject *self, PyObject *attr_name)
         return PseudocolorAttributes_GetLightingFlag(self, NULL);
     if(strcmp(name, "wireframeColor") == 0)
         return PseudocolorAttributes_GetWireframeColor(self, NULL);
+    if(strcmp(name, "wireframeColorByVar") == 0)
+        return PseudocolorAttributes_GetWireframeColorByVar(self, NULL);
     if(strcmp(name, "pointColor") == 0)
         return PseudocolorAttributes_GetPointColor(self, NULL);
+    if(strcmp(name, "pointColorByVar") == 0)
+        return PseudocolorAttributes_GetPointColorByVar(self, NULL);
 
     PyObject *meth = Py_FindMethod(PyPseudocolorAttributes_methods, self, (char*)name);
     if (meth) return meth;
@@ -4096,8 +4252,12 @@ PyPseudocolorAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *
         obj = PseudocolorAttributes_SetLightingFlag(self, args);
     else if(strcmp(name, "wireframeColor") == 0)
         obj = PseudocolorAttributes_SetWireframeColor(self, args);
+    else if(strcmp(name, "wireframeColorByVar") == 0)
+        obj = PseudocolorAttributes_SetWireframeColorByVar(self, args);
     else if(strcmp(name, "pointColor") == 0)
         obj = PseudocolorAttributes_SetPointColor(self, args);
+    else if(strcmp(name, "pointColorByVar") == 0)
+        obj = PseudocolorAttributes_SetPointColorByVar(self, args);
 
     if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
     {

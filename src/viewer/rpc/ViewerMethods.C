@@ -11,7 +11,7 @@
 // ****************************************************************************
 // Method: ViewerMethods::ViewerMethods
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the ViewerMethods class.
 //
 // Arguments:
@@ -22,7 +22,7 @@
 // Creation:   Tue Feb 13 10:47:11 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 ViewerMethods::ViewerMethods(ViewerState *s)
@@ -34,14 +34,14 @@ ViewerMethods::ViewerMethods(ViewerState *s)
 // ****************************************************************************
 // Method: ViewerMethods::~ViewerMethods
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the ViewerMethods class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Feb 13 10:47:49 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 ViewerMethods::~ViewerMethods()
@@ -84,14 +84,14 @@ ViewerMethods::Close()
 // ****************************************************************************
 // Method: ViewerMethods::Detach
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to detach this client from the list of clients.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu May 5 17:37:55 PST 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -250,7 +250,7 @@ ViewerMethods::SetActiveWindow(int windowId, bool raiseWindow)
 // ****************************************************************************
 // Method: ViewerMethods::IconifyAllWindows
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to iconify all of its windows.
 //
 // Programmer: Brad Whitlock
@@ -280,14 +280,14 @@ ViewerMethods::IconifyAllWindows()
 // ****************************************************************************
 // Method: ViewerMethods::DeIconifyAllWindows
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to de-iconify all of its windows.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Apr 19 10:58:37 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -307,14 +307,14 @@ ViewerMethods::DeIconifyAllWindows()
 // ****************************************************************************
 // Method: ViewerMethods::ShowAllWindows
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to show all of its windows.
 //
 // Programmer: Sean Ahern
 // Creation:   Tue Apr 16 12:32:12 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -330,14 +330,14 @@ ViewerMethods::ShowAllWindows()
 // ****************************************************************************
 // Method: ViewerMethods::HideAllWindows
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to hide all of its windows.
 //
 // Programmer: Sean Ahern
 // Creation:   Tue Apr 16 12:32:33 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -404,7 +404,7 @@ ViewerMethods::ClearAllWindows()
 // ****************************************************************************
 // Method: ViewerMethods::ConnectToMetaDataServer
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer's metadata server running on hostName to connect to the
 //   program running on localHost that is listening on the specified port.
 //
@@ -463,7 +463,7 @@ ViewerMethods::ConnectToMetaDataServer(const std::string &hostName,
 //    Brad Whitlock, Wed Oct 22 12:22:44 PDT 2003
 //    I made it possible to tell the viewer that we don't want to add default
 //    plots even if the database has them.
-//   
+//
 //    Jeremy Meredith, Mon Aug 28 16:55:01 EDT 2006
 //    Added ability to force using a specific plugin when opening a file.
 //
@@ -491,7 +491,7 @@ ViewerMethods::OpenDatabase(const std::string &database, int timeState,
 // ****************************************************************************
 // Method: ViewerMethods::CloseDatabase
 //
-// Purpose: 
+// Purpose:
 //   Closes the specified database.
 //
 // Arguments:
@@ -501,7 +501,7 @@ ViewerMethods::OpenDatabase(const std::string &database, int timeState,
 // Creation:   Fri Feb 27 11:59:32 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -522,7 +522,7 @@ ViewerMethods::CloseDatabase(const std::string &database)
 // ****************************************************************************
 // Method: ViewerMethods::ActivateDatabase
 //
-// Purpose: 
+// Purpose:
 //   Activates the specified database, which makes it the active source
 //   but does not mess with time or anything like that.
 //
@@ -533,7 +533,7 @@ ViewerMethods::CloseDatabase(const std::string &database)
 // Creation:   Thu Jan 29 22:13:52 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -554,7 +554,7 @@ ViewerMethods::ActivateDatabase(const std::string &database)
 // ****************************************************************************
 // Method: ViewerMethods::CheckForNewStates
 //
-// Purpose: 
+// Purpose:
 //   Checks the specified database for new states.
 //
 // Arguments:
@@ -564,7 +564,7 @@ ViewerMethods::ActivateDatabase(const std::string &database)
 // Creation:   Thu Jan 29 22:13:52 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -725,7 +725,7 @@ ViewerMethods::RequestMetaData(const std::string &database, int ts)
 // ****************************************************************************
 // Method: ViewerMethods::ApplyNamedSelection
 //
-// Purpose: 
+// Purpose:
 //     Applies a named selection.
 //
 // Programmer: Hank Childs
@@ -751,7 +751,7 @@ ViewerMethods::ApplyNamedSelection(const std::string &selName)
 // ****************************************************************************
 // Method: ViewerMethods::CreateNamedSelection
 //
-// Purpose: 
+// Purpose:
 //     Creates a named selection.
 //
 // Programmer: Hank Childs
@@ -783,7 +783,7 @@ ViewerMethods::CreateNamedSelection(const std::string &selName)
 // ****************************************************************************
 // Method: ViewerMethods::CreateNamedSelection
 //
-// Purpose: 
+// Purpose:
 //     Creates a named selection.
 //
 // Programmer: Brad Whitlock
@@ -815,7 +815,7 @@ ViewerMethods::CreateNamedSelection(const std::string &selName,
 // ****************************************************************************
 // Method: ViewerMethods::DeleteNamedSelection
 //
-// Purpose: 
+// Purpose:
 //     Deletes a named selection.
 //
 // Programmer: Hank Childs
@@ -841,7 +841,7 @@ ViewerMethods::DeleteNamedSelection(const std::string &selName)
 // ****************************************************************************
 // Method: ViewerMethods::LoadNamedSelection
 //
-// Purpose: 
+// Purpose:
 //     Load a named selection.
 //
 // Programmer: Hank Childs
@@ -874,7 +874,7 @@ ViewerMethods::LoadNamedSelection(const std::string &selName,
 // ****************************************************************************
 // Method: ViewerMethods::SaveNamedSelection
 //
-// Purpose: 
+// Purpose:
 //     Saves a named selection.
 //
 // Programmer: Hank Childs
@@ -904,7 +904,7 @@ ViewerMethods::SaveNamedSelection(const std::string &selName)
 // ****************************************************************************
 // Method: ViewerMethods::SetNamedSelectionAutoApply
 //
-// Purpose: 
+// Purpose:
 //     Sets whether named selections are applied immediately when they change.
 //
 // Programmer: Brad Whitlock
@@ -930,7 +930,7 @@ ViewerMethods::SetNamedSelectionAutoApply(bool val)
 // ****************************************************************************
 // Method: ViewerMethods::UpdateNamedSelection
 //
-// Purpose: 
+// Purpose:
 //     Updates a named selection.
 //
 // Programmer: Brad Whitlock
@@ -960,7 +960,7 @@ ViewerMethods::UpdateNamedSelection(const std::string &selName, bool updatePlots
 // ****************************************************************************
 // Method: ViewerMethods::UpdateNamedSelection
 //
-// Purpose: 
+// Purpose:
 //     Updates a named selection.
 //
 // Programmer: Brad Whitlock
@@ -994,7 +994,7 @@ ViewerMethods::UpdateNamedSelection(const std::string &selName,
 // ****************************************************************************
 // Method: ViewerMethods::InitializeNamedSelectionVariables
 //
-// Purpose: 
+// Purpose:
 //     Updates a named selection's variables from the currently selected plot.
 //
 // Programmer: Brad Whitlock
@@ -1020,7 +1020,7 @@ ViewerMethods::InitializeNamedSelectionVariables(const std::string &selName)
 // ****************************************************************************
 // Method: ViewerMethods::ExportDatabase
 //
-// Purpose: 
+// Purpose:
 //     Exports a database.
 //
 // Programmer: Hank Childs
@@ -1045,7 +1045,7 @@ ViewerMethods::ExportDatabase()
 // ****************************************************************************
 // Method: ViewerMethods::ConstructDataBinning
 //
-// Purpose: 
+// Purpose:
 //     Construct a data binning.
 //
 // Programmer: Hank Childs
@@ -1075,7 +1075,7 @@ ViewerMethods::ConstructDataBinning()
 // ****************************************************************************
 // Method: ViewerMethods::ClearCache
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to clear the cache for the compute engine on the
 //   specified host.
 //
@@ -1112,14 +1112,14 @@ ViewerMethods::ClearCache(const std::string &hostName,const std::string &simName
 // ****************************************************************************
 // Method: ViewerMethods::ClearCacheForAllEngines
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to clear the cache on all compute engines.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Feb 26 13:37:38 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1139,7 +1139,7 @@ ViewerMethods::ClearCacheForAllEngines()
 // ****************************************************************************
 // Method: ViewerMethods::UpdateDBPluginInfo
 //
-// Purpose: 
+// Purpose:
 //     Tells the viewer to update the DB plugin info.
 //
 // Arguments:
@@ -1168,7 +1168,7 @@ ViewerMethods::UpdateDBPluginInfo(const std::string &hostName)
 // ****************************************************************************
 // Method: ViewerMethods::CreateDatabaseCorrelation
 //
-// Purpose: 
+// Purpose:
 //   Creates a database correlation for the databases using the given
 //   correlation method.
 //
@@ -1182,10 +1182,10 @@ ViewerMethods::UpdateDBPluginInfo(const std::string &hostName)
 // Creation:   Fri Jan 30 21:19:28 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
-void 
+void
 ViewerMethods::CreateDatabaseCorrelation(const std::string &name,
     const stringVector &dbs, int method, int nStates)
 {
@@ -1200,7 +1200,7 @@ ViewerMethods::CreateDatabaseCorrelation(const std::string &name,
 // ****************************************************************************
 // Method: ViewerMethods::AlterDatabaseCorrelation
 //
-// Purpose: 
+// Purpose:
 //   Alters an existing database correlation.
 //
 // Arguments:
@@ -1213,7 +1213,7 @@ ViewerMethods::CreateDatabaseCorrelation(const std::string &name,
 // Creation:   Fri Jan 30 21:19:28 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1231,7 +1231,7 @@ ViewerMethods::AlterDatabaseCorrelation(const std::string &name,
 // ****************************************************************************
 // Method: ViewerMethods::DeleteDatabaseCorrelation
 //
-// Purpose: 
+// Purpose:
 //   Deletes the named database correlation.
 //
 // Arguments:
@@ -1241,7 +1241,7 @@ ViewerMethods::AlterDatabaseCorrelation(const std::string &name,
 // Creation:   Fri Jan 30 21:24:19 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1290,15 +1290,15 @@ ViewerMethods::OpenComputeEngine(const std::string &hostName, const stringVector
 // ****************************************************************************
 // Method: ViewerMethods::CloseComputeEngine
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to close a compute engine on the specified host.
 //
 // Arguments:
 //   hostName : The host's engine that will be terminated.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Apr 30 12:23:41 PDT 2001
@@ -1308,7 +1308,7 @@ ViewerMethods::OpenComputeEngine(const std::string &hostName, const stringVector
 //    Added a simulation name to the interfaces, as some engines now
 //    can be simulations, meaning there might be more than one engine
 //    per host.
-//   
+//
 // ****************************************************************************
 void
 ViewerMethods::CloseComputeEngine(const std::string &hostName,
@@ -1330,7 +1330,7 @@ ViewerMethods::CloseComputeEngine(const std::string &hostName,
 // ****************************************************************************
 // Method: ViewerMethods::InterruptComputeEngine
 //
-// Purpose: 
+// Purpose:
 //   Interrupts the engine on the specified host.
 //
 // Arguments:
@@ -1342,7 +1342,7 @@ ViewerMethods::CloseComputeEngine(const std::string &hostName,
 // Modifications:
 //    Jeremy Meredith, Tue Jul  3 15:10:28 PDT 2001
 //    Changed the interruption mechanism.
-//   
+//
 //    Jeremy Meredith, Tue Mar 30 11:07:45 PST 2004
 //    Added a simulation name to the interfaces, as some engines now
 //    can be simulations, meaning there might be more than one engine
@@ -1572,7 +1572,7 @@ ViewerMethods::SetTimeSliderState(int ts)
 // ****************************************************************************
 // Method: ViewerMethods::SetActiveTimeSlider
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to set the active time slider.
 //
 // Arguments:
@@ -1582,7 +1582,7 @@ ViewerMethods::SetTimeSliderState(int ts)
 // Creation:   Sun Jan 25 01:57:56 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1600,7 +1600,7 @@ ViewerMethods::SetActiveTimeSlider(const std::string &ts)
 // ****************************************************************************
 // Method: ViewerMethods::StartPlotAnimation
 //
-// Purpose: 
+// Purpose:
 //   Start plot animation for some plots.
 //
 // Arguments:
@@ -1610,7 +1610,7 @@ ViewerMethods::SetActiveTimeSlider(const std::string &ts)
 // Creation:   Thu Sep 12 15:24:06 PDT 2013
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1631,7 +1631,7 @@ ViewerMethods::StartPlotAnimation(const intVector &plotIds)
 // ****************************************************************************
 // Method: ViewerMethods::StopPlotAnimation
 //
-// Purpose: 
+// Purpose:
 //   Stop plot animation for some plots.
 //
 // Arguments:
@@ -1641,7 +1641,7 @@ ViewerMethods::StartPlotAnimation(const intVector &plotIds)
 // Creation:   Thu Sep 12 15:24:06 PDT 2013
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1712,14 +1712,14 @@ ViewerMethods::PrintWindow()
 // ****************************************************************************
 // Method: ViewerMethods::DisableRedraw
 //
-// Purpose: 
+// Purpose:
 //   Disables updates for the VisWindow.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Sep 19 14:41:38 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1739,14 +1739,14 @@ ViewerMethods::DisableRedraw()
 // ****************************************************************************
 // Method: ViewerMethods::RedrawWindow
 //
-// Purpose: 
+// Purpose:
 //   Redraws the VisWindow.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Sep 19 14:42:36 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1766,7 +1766,7 @@ ViewerMethods::RedrawWindow()
 // ****************************************************************************
 // Method: ViewerMethods::ResizeWindow
 //
-// Purpose: 
+// Purpose:
 //   Resize a window.
 //
 // Arguments:
@@ -1778,7 +1778,7 @@ ViewerMethods::RedrawWindow()
 // Creation:   Thu Nov 17 16:45:08 PST 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1794,7 +1794,7 @@ ViewerMethods::ResizeWindow(int win, int w, int h)
 // ****************************************************************************
 // Method: ViewerMethods::MoveWindow
 //
-// Purpose: 
+// Purpose:
 //   Move a window.
 //
 // Arguments:
@@ -1806,7 +1806,7 @@ ViewerMethods::ResizeWindow(int win, int w, int h)
 // Creation:   Thu Nov 17 16:45:08 PST 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1822,7 +1822,7 @@ ViewerMethods::MoveWindow(int win, int x, int y)
 // ****************************************************************************
 // Method: ViewerMethods::ResizeAndMoveWindow
 //
-// Purpose: 
+// Purpose:
 //   Resize and move a window.
 //
 // Arguments:
@@ -1836,7 +1836,7 @@ ViewerMethods::MoveWindow(int win, int x, int y)
 // Creation:   Thu Nov 17 16:45:08 PST 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1854,14 +1854,14 @@ ViewerMethods::MoveAndResizeWindow(int win, int x, int y, int w, int h)
 // ****************************************************************************
 // Method: ViewerMethods::HideToolbars
 //
-// Purpose: 
+// Purpose:
 //   Hides the toolbars for the active vis window or for all vis windows.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 29 11:22:09 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1884,14 +1884,14 @@ ViewerMethods::HideToolbars(bool forAllWindows)
 // ****************************************************************************
 // Method: ViewerMethods::ShowToolbars
 //
-// Purpose: 
+// Purpose:
 //   Shows the toolbars for the active vis window or for all vis windows.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Aug 29 11:22:09 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1972,7 +1972,7 @@ ViewerMethods::AddEmbeddedPlot(int type, const std::string &var, int id)
   state->GetViewerRPC()->SetPlotType(type);
   state->GetViewerRPC()->SetVariable(var);
   state->GetViewerRPC()->SetEmbeddedPlotId(id);
-  
+
   //
   // Issue the RPC.
   //
@@ -1997,7 +1997,7 @@ void
 ViewerMethods::CopyActivePlots()
 {
     int type;                  // type of plot to add
-   
+
     //
     // Set the rpc type and arguments.
     //
@@ -2490,7 +2490,7 @@ ViewerMethods::ChangeActivePlotsVar(const std::string &var)
 // ****************************************************************************
 // Method: ViewerMethods::SetPlotDescription
 //
-// Purpose: 
+// Purpose:
 //   Set the description string for the plot.
 //
 // Arguments:
@@ -2501,7 +2501,7 @@ ViewerMethods::ChangeActivePlotsVar(const std::string &var)
 // Creation:   Tue Oct 20 11:44:49 PDT 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2523,7 +2523,7 @@ ViewerMethods::SetPlotDescription(int plotId, const std::string &description)
 // ****************************************************************************
 // Method: ViewerMethods::MovePlotOrderTowardFirst
 //
-// Purpose: 
+// Purpose:
 //   Move a plot towards the start of the plot list.
 //
 // Arguments:
@@ -2533,7 +2533,7 @@ ViewerMethods::SetPlotDescription(int plotId, const std::string &description)
 // Creation:   Tue Oct 20 11:46:00 PDT 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2554,7 +2554,7 @@ ViewerMethods::MovePlotOrderTowardFirst(int plotId)
 // ****************************************************************************
 // Method: ViewerMethods::MovePlotOrderTowardLast
 //
-// Purpose: 
+// Purpose:
 //   Move a plot towards the end of the plot list.
 //
 // Arguments:
@@ -2564,7 +2564,7 @@ ViewerMethods::MovePlotOrderTowardFirst(int plotId)
 // Creation:   Tue Oct 20 11:46:00 PDT 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2585,7 +2585,7 @@ ViewerMethods::MovePlotOrderTowardLast(int plotId)
 // ****************************************************************************
 // Method: ViewerMethods::SetPlotOrderToFirst
 //
-// Purpose: 
+// Purpose:
 //   Move a plot to the start of the plot list.
 //
 // Arguments:
@@ -2595,7 +2595,7 @@ ViewerMethods::MovePlotOrderTowardLast(int plotId)
 // Creation:   Tue Oct 20 11:46:00 PDT 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2616,7 +2616,7 @@ ViewerMethods::SetPlotOrderToFirst(int plotId)
 // ****************************************************************************
 // Method: ViewerMethods::SetPlotOrderToLast
 //
-// Purpose: 
+// Purpose:
 //   Move a plot to the end of the plot list.
 //
 // Arguments:
@@ -2626,7 +2626,7 @@ ViewerMethods::SetPlotOrderToFirst(int plotId)
 // Creation:   Tue Oct 20 11:46:00 PDT 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2662,7 +2662,7 @@ ViewerMethods::SetPlotOrderToLast(int plotId)
 //    Jeremy Meredith, Thu Jul 26 03:13:36 PDT 2001
 //    Removed all references to OperType.
 //
-//    Kathleen Bonnell,  
+//    Kathleen Bonnell,
 //    Added 'fromDefault' arg. Use it to set the bool flag in the rpc.
 //
 // ****************************************************************************
@@ -2685,7 +2685,7 @@ ViewerMethods::AddOperator(int oper, const bool fromDefault)
 // ****************************************************************************
 // Method: ViewerMethods::AddInitializedOperator
 //
-// Purpose: 
+// Purpose:
 //   Adds an operator, getting the initial attributes from the client atts.
 //
 // Arguments:
@@ -2695,7 +2695,7 @@ ViewerMethods::AddOperator(int oper, const bool fromDefault)
 // Creation:   Tue May 8 16:49:46 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2716,7 +2716,7 @@ ViewerMethods::AddInitializedOperator(int oper)
 // ****************************************************************************
 // Method: ViewerMethods::PromoteOperator
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to promote an operator for the specified plot. This means
 //   that the operator is moved to later in the pipeline.
 //
@@ -2727,7 +2727,7 @@ ViewerMethods::AddInitializedOperator(int oper)
 // Creation:   Thu Apr 10 09:31:37 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2748,7 +2748,7 @@ ViewerMethods::PromoteOperator(int operatorId)
 // ****************************************************************************
 // Method: ViewerMethods::DemoteOperator
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to demote an operator for the specified plot. This means
 //   that the operator is moved closer to the start of the pipeline.
 //
@@ -2759,7 +2759,7 @@ ViewerMethods::PromoteOperator(int operatorId)
 // Creation:   Thu Apr 10 09:31:37 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2780,7 +2780,7 @@ ViewerMethods::DemoteOperator(int operatorId)
 // ****************************************************************************
 // Method: ViewerMethods::RemoveOperator
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to remove an operator from the specified plot.
 //
 // Arguments:
@@ -2790,7 +2790,7 @@ ViewerMethods::DemoteOperator(int operatorId)
 // Creation:   Thu Apr 10 09:31:37 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2930,7 +2930,7 @@ ViewerMethods::SetPlotOptions(int type)
 //  Arguments:
 //    type      The plot type for which to reset the attributes.
 //
-//  Programmer: Brad Whitlock, 
+//  Programmer: Brad Whitlock,
 //  Creation:   Tue Aug 14 17:22:13 PST 2001
 //
 //  Modifications:
@@ -3044,7 +3044,7 @@ ViewerMethods::ResetOperatorOptions(int oper)
 //    Applies the animation attributes.
 //
 //  Programmer: Eric Brugger
-//  Creation:   November 19, 2001 
+//  Creation:   November 19, 2001
 //
 // ****************************************************************************
 
@@ -3068,8 +3068,8 @@ ViewerMethods::SetAnimationAttributes()
 //  Purpose:
 //    Applies the annotation attributes.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   June 18, 2001 
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 18, 2001
 //
 //  Modifications:
 //    Brad Whitlock, Thu Aug 30 09:53:42 PDT 2001
@@ -3094,14 +3094,14 @@ ViewerMethods::SetAnnotationAttributes()
 // ****************************************************************************
 // Method: ViewerMethods::SetDefaultAnnotationAttributes
 //
-// Purpose: 
+// Purpose:
 //   Sets the default annotation attributes.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Aug 30 09:54:29 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3121,14 +3121,14 @@ ViewerMethods::SetDefaultAnnotationAttributes()
 // ****************************************************************************
 // Method: ViewerMethods::ResetAnnotationAttributes
 //
-// Purpose: 
+// Purpose:
 //   Reset the annotation attributes to the default values.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Aug 30 09:55:07 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3148,7 +3148,7 @@ ViewerMethods::ResetAnnotationAttributes()
 // ****************************************************************************
 // Method: ViewerMethods::AddAnnotationObject
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to add a new annotation object of the specifed type.
 //
 // Arguments:
@@ -3161,7 +3161,7 @@ ViewerMethods::ResetAnnotationAttributes()
 // Creation:   Wed Oct 29 10:53:01 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3176,14 +3176,14 @@ ViewerMethods::AddAnnotationObject(int annotType, const std::string &annotName)
 // ****************************************************************************
 // Method: ViewerMethods::HideActiveAnnotationObjects
 //
-// Purpose: 
+// Purpose:
 //   Hides the active annotation objects.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Oct 29 10:54:59 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3196,14 +3196,14 @@ ViewerMethods::HideActiveAnnotationObjects()
 // ****************************************************************************
 // Method: ViewerMethods::DeleteActiveAnnotationObjects
 //
-// Purpose: 
+// Purpose:
 //   Deletes the active annotation objects.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Oct 29 10:54:59 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3216,14 +3216,14 @@ ViewerMethods::DeleteActiveAnnotationObjects()
 // ****************************************************************************
 // Method: ViewerMethods::RaiseActiveAnnotationObjects
 //
-// Purpose: 
+// Purpose:
 //   Raises the active annotation objects.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Oct 29 10:54:59 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3236,14 +3236,14 @@ ViewerMethods::RaiseActiveAnnotationObjects()
 // ****************************************************************************
 // Method: ViewerMethods::LowersActiveAnnotationObjects
 //
-// Purpose: 
+// Purpose:
 //   Lowers the active annotation objects.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Oct 29 10:54:59 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3256,7 +3256,7 @@ ViewerMethods::LowerActiveAnnotationObjects()
 // ****************************************************************************
 // Method: ViewerMethods::SetAnnotationObjectOptions
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to update the annotations using the options in the
 //   annotation options list.
 //
@@ -3264,7 +3264,7 @@ ViewerMethods::LowerActiveAnnotationObjects()
 // Creation:   Wed Oct 29 10:54:59 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3277,7 +3277,7 @@ ViewerMethods::SetAnnotationObjectOptions()
 // ****************************************************************************
 // Method: ViewerMethods::SetDefaultAnnotationObjectList
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to set the default annotation object list using the
 //   client annotation object list.
 //
@@ -3285,7 +3285,7 @@ ViewerMethods::SetAnnotationObjectOptions()
 // Creation:   Fri Nov 7 14:12:25 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3298,7 +3298,7 @@ ViewerMethods::SetDefaultAnnotationObjectList()
 // ****************************************************************************
 // Method: ViewerMethods::ResetAnnotationObjectList
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to set the client annotation object list using the
 //   default annotation object list.
 //
@@ -3306,7 +3306,7 @@ ViewerMethods::SetDefaultAnnotationObjectList()
 // Creation:   Fri Nov 7 14:12:25 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3346,14 +3346,14 @@ ViewerMethods::SetMaterialAttributes()
 // ****************************************************************************
 // Method: ViewerMethods::SetDefaultMaterialAttributes
 //
-// Purpose: 
+// Purpose:
 //   Sets the default material attributes.
 //
 // Programmer: Jeremy Meredith
 // Creation:   October 24, 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3373,14 +3373,14 @@ ViewerMethods::SetDefaultMaterialAttributes()
 // ****************************************************************************
 // Method: ViewerMethods::ResetMaterialAttributes
 //
-// Purpose: 
+// Purpose:
 //   Reset the material attributes to the default values.
 //
 // Programmer: Jeremy Meredith
 // Creation:   October 24, 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3403,7 +3403,7 @@ ViewerMethods::ResetMaterialAttributes()
 //  Purpose: Applies the mesh management attributes.
 //
 //  Programmer: Mark C. Miller
-//  Creation:   November 6, 2005 
+//  Creation:   November 6, 2005
 //
 // ****************************************************************************
 
@@ -3426,8 +3426,8 @@ ViewerMethods::SetMeshManagementAttributes()
 //
 // Purpose: Sets the default mesh management attributes.
 //
-// Programmer: Mark C. Miller 
-// Creation:   November 6, 2005 
+// Programmer: Mark C. Miller
+// Creation:   November 6, 2005
 //
 // ****************************************************************************
 
@@ -3450,8 +3450,8 @@ ViewerMethods::SetDefaultMeshManagementAttributes()
 //
 // Purpose: Reset the mesh management attributes to the default values.
 //
-// Programmer: Mark C. Miller 
-// Creation:   November 6, 2005 
+// Programmer: Mark C. Miller
+// Creation:   November 6, 2005
 //
 // ****************************************************************************
 
@@ -3503,7 +3503,7 @@ ViewerMethods::SetKeyframeAttributes()
 //    Applies the light list to the window.
 //
 //  Programmer: Brad Whitlock
-//  Creation:   Fri Sep 14 14:00:09 PST 2001 
+//  Creation:   Fri Sep 14 14:00:09 PST 2001
 //
 //  Modifications:
 //
@@ -3526,14 +3526,14 @@ ViewerMethods::SetLightList()
 // ****************************************************************************
 // Method: ViewerMethods::SetDefaultLightList
 //
-// Purpose: 
+// Purpose:
 //   Sets the default light list.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Sep 14 13:50:47 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3553,14 +3553,14 @@ ViewerMethods::SetDefaultLightList()
 // ****************************************************************************
 // Method: ViewerMethods::ResetLightList
 //
-// Purpose: 
+// Purpose:
 //   Reset the light list to the default values.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Sep 14 13:50:47 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3580,14 +3580,14 @@ ViewerMethods::ResetLightList()
 // ****************************************************************************
 // Method: ViewerMethods::ResetPickLetter
 //
-// Purpose: 
+// Purpose:
 //   Reset the pick attributes to default values.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   December 9, 2003 
+// Programmer: Kathleen Bonnell
+// Creation:   December 9, 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3607,7 +3607,7 @@ ViewerMethods::ResetPickLetter()
 // ****************************************************************************
 // Method: ViewerMethods::RenamePickLabel
 //
-// Purpose: 
+// Purpose:
 //   Rename the pick label.
 //
 // Arguments:
@@ -3618,7 +3618,7 @@ ViewerMethods::ResetPickLetter()
 // Creation:   Fri Aug 27 10:39:42 PDT 2010
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3640,14 +3640,14 @@ ViewerMethods::RenamePickLabel(const std::string &oldLabel, const std::string &n
 // ****************************************************************************
 // Method: ViewerMethods::ResetPickAttributes
 //
-// Purpose: 
+// Purpose:
 //   Reset the pick attributes to default values.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   November 26, 2003 
+// Programmer: Kathleen Bonnell
+// Creation:   November 26, 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3668,7 +3668,7 @@ ViewerMethods::ResetPickAttributes()
 // ****************************************************************************
 // Method: ViewerMethods::SetDefaultContinuousColorTable
 //
-// Purpose: 
+// Purpose:
 //   Sets the active continuous color table. This is the color table that
 //   is used for all new plots that need a continuous color table.
 //
@@ -3682,7 +3682,7 @@ ViewerMethods::ResetPickAttributes()
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
 //   In this case I changed the function name.
-//   
+//
 // ****************************************************************************
 
 void
@@ -3704,7 +3704,7 @@ ViewerMethods::SetDefaultContinuousColorTable(const std::string &colorTableName)
 // ****************************************************************************
 // Method: ViewerMethods::SetDefaultDiscreteColorTable
 //
-// Purpose: 
+// Purpose:
 //   Sets the active discrete color table. This is the color table that
 //   is used for all new plots that need a discrete color table.
 //
@@ -3718,7 +3718,7 @@ ViewerMethods::SetDefaultContinuousColorTable(const std::string &colorTableName)
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
 //   In this case I changed the function name.
-//   
+//
 // ****************************************************************************
 
 void
@@ -3735,7 +3735,7 @@ ViewerMethods::SetDefaultDiscreteColorTable(const std::string &colorTableName)
 // ****************************************************************************
 // Method: ViewerMethods::DeleteColorTable
 //
-// Purpose: 
+// Purpose:
 //   Deletes the specified color table from the list of color tables. This
 //   can cause all plots that use the deleted color table to be updated after
 //   the color table is deleted.
@@ -3747,7 +3747,7 @@ ViewerMethods::SetDefaultDiscreteColorTable(const std::string &colorTableName)
 // Creation:   Wed Jun 13 17:03:07 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3772,7 +3772,7 @@ ViewerMethods::DeleteColorTable(const std::string &colorTableName)
 // ****************************************************************************
 // Method: ViewerMethods::UpdateColorTable
 //
-// Purpose: 
+// Purpose:
 //   Forces the viewer to update all plots that use the specified color table.
 //   If the color table does not exist, then all plots that used it are reset
 //   so they use the current color table.
@@ -3784,7 +3784,7 @@ ViewerMethods::DeleteColorTable(const std::string &colorTableName)
 // Creation:   Wed Jun 13 17:20:23 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3805,7 +3805,7 @@ ViewerMethods::UpdateColorTable(const std::string &colorTableName)
 // ****************************************************************************
 // Method: ViewerMethods::ExportColorTable
 //
-// Purpose: 
+// Purpose:
 //   Forces the viewer to export the named color table to a small XML file.
 //
 // Arguments:
@@ -3815,7 +3815,7 @@ ViewerMethods::UpdateColorTable(const std::string &colorTableName)
 // Creation:   Tue Jul 1 16:48:09 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3836,14 +3836,14 @@ ViewerMethods::ExportColorTable(const std::string &colorTableName)
 // ****************************************************************************
 // Method: ViewerMethods::InvertBackgroundColor
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to swap its background color with its foreground color.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon May 6 16:51:22 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3909,7 +3909,7 @@ ViewerMethods::WriteConfigFile()
 // ****************************************************************************
 // Method: ViewerMethods::ExportEntireState
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to dump its entire state to an XML file.
 //
 // Arguments:
@@ -3922,7 +3922,7 @@ ViewerMethods::WriteConfigFile()
 // Modifications:
 //   David Camp, Thu Jul 23 09:50:33 PDT 2015
 //   Added hostname so we can export the session file to a remote host.
-//   
+//
 // ****************************************************************************
 
 void
@@ -3937,7 +3937,7 @@ ViewerMethods::ExportEntireState(const std::string &filename, const std::string 
 // ****************************************************************************
 // Method: ViewerMethods::ImportEntireState
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to set its entire state using the values stored in
 //   the named file.
 //
@@ -3952,11 +3952,11 @@ ViewerMethods::ExportEntireState(const std::string &filename, const std::string 
 // Modifications:
 //   David Camp, Thu Jul 23 09:50:33 PDT 2015
 //   Added hostname so we can import the session file from a remote host.
-//   
+//
 // ****************************************************************************
 
 void
-ViewerMethods::ImportEntireState(const std::string &filename, bool inVisItDir, 
+ViewerMethods::ImportEntireState(const std::string &filename, bool inVisItDir,
                                  const std::string &hostname)
 {
     state->GetViewerRPC()->SetRPCType(ViewerRPC::ImportEntireStateRPC);
@@ -3969,7 +3969,7 @@ ViewerMethods::ImportEntireState(const std::string &filename, bool inVisItDir,
 // ****************************************************************************
 // Method: ViewerMethods::ImportEntireStateWithDifferentSources
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to set its entire state using the values stored in
 //   the named file. It uses the sources that are provided instead of the
 //   sources in the file.
@@ -3986,11 +3986,11 @@ ViewerMethods::ImportEntireState(const std::string &filename, bool inVisItDir,
 // Modifications:
 //   David Camp, Thu Jul 23 09:50:33 PDT 2015
 //   Added hostname so we can import the session file from a remote host.
-//   
+//
 // ****************************************************************************
 
 void
-ViewerMethods::ImportEntireStateWithDifferentSources(const std::string &filename, 
+ViewerMethods::ImportEntireStateWithDifferentSources(const std::string &filename,
     bool inVisItDir, const stringVector &sources, const std::string &hostname)
 {
     state->GetViewerRPC()->SetRPCType(ViewerRPC::ImportEntireStateWithDifferentSourcesRPC);
@@ -4005,7 +4005,7 @@ ViewerMethods::ImportEntireStateWithDifferentSources(const std::string &filename
 // ****************************************************************************
 // Method: ViewerMethods::ImportEntireStateWithDifferentSourcesFromString
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to set its entire state using the values stored in
 //   the named file. It uses the sources that are provided instead of the
 //   sources in the file.
@@ -4018,11 +4018,11 @@ ViewerMethods::ImportEntireStateWithDifferentSources(const std::string &filename
 // Creation:   Tue Jul 17 16:48:07 PDT 2018
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
 ViewerMethods::ImportEntireStateWithDifferentSourcesFromString(
-    const std::string &s, 
+    const std::string &s,
     const stringVector &sources)
 {
     state->GetViewerRPC()->SetRPCType(ViewerRPC::ImportEntireStateWithDifferentSourcesRPC);
@@ -4063,7 +4063,7 @@ ViewerMethods::ReadHostProfilesFromDirectory(const std::string &dir, bool clear)
 // ****************************************************************************
 // Method: ViewerMethods::SetCenterOfRotation
 //
-// Purpose: 
+// Purpose:
 //   Sets the center of rotation.
 //
 // Arguments:
@@ -4073,7 +4073,7 @@ ViewerMethods::ReadHostProfilesFromDirectory(const std::string &dir, bool clear)
 // Creation:   Mon Dec 29 09:21:31 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4088,7 +4088,7 @@ ViewerMethods::SetCenterOfRotation(double x, double y, double z)
 // ****************************************************************************
 // Method: ViewerMethods::ChooseCenterOfRotation
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to use the point at the center of the screen as the
 //   new center of rotation.
 //
@@ -4096,7 +4096,7 @@ ViewerMethods::SetCenterOfRotation(double x, double y, double z)
 // Creation:   Mon Dec 29 09:22:02 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4120,7 +4120,7 @@ ViewerMethods::ChooseCenterOfRotation(double sx, double sy)
 // ****************************************************************************
 // Method: ViewerMethods::SetViewAxisArray
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to use the new axis array view attributes.
 //
 // Programmer: Jeremy Meredith
@@ -4145,7 +4145,7 @@ ViewerMethods::SetViewAxisArray()
 // ****************************************************************************
 // Method: ViewerMethods::SetViewCurve
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to use the new curve view attributes.
 //
 // Programmer: Eric Brugger
@@ -4170,14 +4170,14 @@ ViewerMethods::SetViewCurve()
 // ****************************************************************************
 // Method: ViewerMethods::SetView2D
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to use the new 2d view attributes.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jul 26 16:48:38 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4197,14 +4197,14 @@ ViewerMethods::SetView2D()
 // ****************************************************************************
 // Method: ViewerMethods::SetView3D
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to use the new 3d view attributes.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jul 26 16:48:38 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4224,14 +4224,14 @@ ViewerMethods::SetView3D()
 // ****************************************************************************
 //  Method: ViewerMethods::ClearViewKeyframes
 //
-//  Purpose: 
+//  Purpose:
 //    Tells the viewer to clear the view keyframes.
 //
 //  Programmer: Eric Brugger
 //  Creation:   January 3, 2003
 //
 //  Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4251,7 +4251,7 @@ ViewerMethods::ClearViewKeyframes()
 // ****************************************************************************
 //  Method: ViewerMethods::DeleteViewKeyframe
 //
-//  Purpose: 
+//  Purpose:
 //    Tells the viewer to delete the specified view keyframe.
 //
 //  Arguments:
@@ -4261,7 +4261,7 @@ ViewerMethods::ClearViewKeyframes()
 //  Creation:   January 3, 2003
 //
 //  Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4312,14 +4312,14 @@ ViewerMethods::MoveViewKeyframe(int oldFrame, int newFrame)
 // ****************************************************************************
 //  Method: ViewerMethods::SetViewKeyframe
 //
-//  Purpose: 
+//  Purpose:
 //    Tells the viewer to set a view keyframe.
 //
 //  Programmer: Eric Brugger
 //  Creation:   January 3, 2003
 //
 //  Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4339,14 +4339,14 @@ ViewerMethods::SetViewKeyframe()
 // ****************************************************************************
 // Method: ViewerMethods::ResetView
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to reset the view.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon May 6 16:40:01 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4359,14 +4359,14 @@ ViewerMethods::ResetView()
 // ****************************************************************************
 // Method: ViewerMethods::RecenterView
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to recenter the view.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon May 6 16:40:01 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4379,14 +4379,14 @@ ViewerMethods::RecenterView()
 // ****************************************************************************
 // Method: ViewerMethods::SetViewExtents
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to set the view extents.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 16 12:42:03 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4420,14 +4420,14 @@ ViewerMethods::ToggleAllowPopup()
 // ****************************************************************************
 // Method: ViewerMethods::ToggleMaintainViewMode
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to toggle the maintain view mode.
 //
 // Programmer: Eric Brugger
 // Creation:   April 18, 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4441,14 +4441,14 @@ ViewerMethods::ToggleMaintainViewMode()
 // ****************************************************************************
 // Method: ViewerMethods::ToggleFullFrameMode
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to toggle the full frame mode.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   May 13, 2003 
+// Programmer: Kathleen Bonnell
+// Creation:   May 13, 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4462,14 +4462,14 @@ ViewerMethods::ToggleFullFrameMode()
 // ****************************************************************************
 // Method: ViewerMethods::UndoView
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to undo the last view change.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon May 6 16:40:01 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4482,14 +4482,14 @@ ViewerMethods::UndoView()
 // ****************************************************************************
 // Method: ViewerMethods::RedoView
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to redo the last view change.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Mar 7 16:36:56 PST 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4502,14 +4502,14 @@ ViewerMethods::RedoView()
 // ****************************************************************************
 // Method: ViewerMethods::ToggleLockViewMode
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to lock the view.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon May 6 16:40:01 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4522,14 +4522,14 @@ ViewerMethods::ToggleLockViewMode()
 // ****************************************************************************
 // Method: ViewerMethods::ToggleLockTime
 //
-// Purpose: 
+// Purpose:
 //   Toggles the viewer's lock time flag.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Nov 11 11:47:51 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4542,14 +4542,14 @@ ViewerMethods::ToggleLockTime()
 // ****************************************************************************
 // Method: ViewerMethods::TurnOffAllLocks
 //
-// Purpose: 
+// Purpose:
 //   Turns off view, tool, time locks in all windows.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Nov 11 11:48:22 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4562,7 +4562,7 @@ ViewerMethods::TurnOffAllLocks()
 // ****************************************************************************
 // Method: ViewerMethods::ToggleLockTools
 //
-// Purpose: 
+// Purpose:
 //   Toggles the viewer's lock tools flag.
 //
 // Programmer: Brad Whitlock
@@ -4571,7 +4571,7 @@ ViewerMethods::TurnOffAllLocks()
 // Modifications:
 //    Jeremy Meredith, Fri Feb 15 13:24:51 EST 2008
 //    Fixed RPC type.
-//   
+//
 // ****************************************************************************
 
 void
@@ -4584,14 +4584,14 @@ ViewerMethods::ToggleLockTools()
 // ****************************************************************************
 // Method: ViewerMethods::ToggleSpinMode
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to toggle the spin mode.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon May 6 16:40:01 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4604,14 +4604,14 @@ ViewerMethods::ToggleSpinMode()
 // ****************************************************************************
 //  Method: ViewerMethods::ToggleCameraViewMode
 //
-//  Purpose: 
+//  Purpose:
 //    Tells the viewer to toggle the camera view mode.
 //
 //  Programmer: Eric Brugger
 //  Creation:   January 3, 2003
 //
 //  Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4624,7 +4624,7 @@ ViewerMethods::ToggleCameraViewMode()
 // ****************************************************************************
 // Method: ViewerMethods::SetWindowMode
 //
-// Purpose: 
+// Purpose:
 //   Sets the window mode.
 //
 // Arguments:
@@ -4634,7 +4634,7 @@ ViewerMethods::ToggleCameraViewMode()
 // Creation:   Mon May 6 17:01:43 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4648,14 +4648,14 @@ ViewerMethods::SetWindowMode(int mode)
 // ****************************************************************************
 // Method: ViewerMethods::ToggleBoundingBoxMode
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer whether or not bbox mode should be used.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon May 6 17:02:12 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4668,7 +4668,7 @@ ViewerMethods::ToggleBoundingBoxMode()
 // ****************************************************************************
 // Method: ViewerMethods::EnableTool
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to enable/disable a tool.
 //
 // Arguments:
@@ -4679,7 +4679,7 @@ ViewerMethods::ToggleBoundingBoxMode()
 // Creation:   Mon May 6 17:02:47 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4694,7 +4694,7 @@ ViewerMethods::EnableTool(int tool, bool enabled)
 // ****************************************************************************
 // Method: ViewerMethods::CopyViewToWindow
 //
-// Purpose: 
+// Purpose:
 //   Copies the view from one window to another window.
 //
 // Arguments:
@@ -4705,7 +4705,7 @@ ViewerMethods::EnableTool(int tool, bool enabled)
 // Creation:   Thu Jun 27 16:17:06 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4721,7 +4721,7 @@ ViewerMethods::CopyViewToWindow(int from, int to)
 // ****************************************************************************
 // Method: ViewerMethods::CopyLightingToWindow
 //
-// Purpose: 
+// Purpose:
 //   Copies the view from one window to another window.
 //
 // Arguments:
@@ -4732,7 +4732,7 @@ ViewerMethods::CopyViewToWindow(int from, int to)
 // Creation:   Thu Jun 27 16:17:06 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4748,7 +4748,7 @@ ViewerMethods::CopyLightingToWindow(int from, int to)
 // ****************************************************************************
 // Method: ViewerMethods::CopyAnnotationsToWindow
 //
-// Purpose: 
+// Purpose:
 //   Copies the annotations from one window to another window.
 //
 // Arguments:
@@ -4759,7 +4759,7 @@ ViewerMethods::CopyLightingToWindow(int from, int to)
 // Creation:   Thu Jun 27 16:17:06 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4775,7 +4775,7 @@ ViewerMethods::CopyAnnotationsToWindow(int from, int to)
 // ****************************************************************************
 // Method: ViewerMethods::CopyPlotsToWindow
 //
-// Purpose: 
+// Purpose:
 //   Copies the plots from one window to another window.
 //
 // Arguments:
@@ -4786,7 +4786,7 @@ ViewerMethods::CopyAnnotationsToWindow(int from, int to)
 // Creation:   Tue Oct 15 16:26:43 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4802,7 +4802,7 @@ ViewerMethods::CopyPlotsToWindow(int from, int to)
 // ****************************************************************************
 // Method: ViewerMethods::SetPlotSILRestriction
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to apply the SIL restriction to the selected plots in
 //   the plot list.
 //
@@ -4810,7 +4810,7 @@ ViewerMethods::CopyPlotsToWindow(int from, int to)
 // Creation:   Thu Jun 21 13:33:41 PST 2001
 //
 // Modifications:
-//   
+//
 //   Hank Childs, Mon Dec  2 14:13:55 PST 2002
 //   Account for the SIL restriction now being a pointer.
 //
@@ -4828,7 +4828,7 @@ ViewerMethods::SetPlotSILRestriction()
 // ****************************************************************************
 // Method: ViewerMethods::ProcessExpressions
 //
-// Purpose: 
+// Purpose:
 //   Issues a ProcessExpressions RPC to the viewer. This RPC tells the viewer
 //   to update its plots with new expressions.
 //
@@ -4836,7 +4836,7 @@ ViewerMethods::SetPlotSILRestriction()
 // Creation:   Wed Sep 26 16:32:00 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4852,7 +4852,7 @@ ViewerMethods::ProcessExpressions()
 // ****************************************************************************
 // Method: ViewerMethods::SetAppearanceAttributes
 //
-// Purpose: 
+// Purpose:
 //   Issues a SetAppearance RPC to the viewer. This RPC tells the viewer to
 //   update its gui colors/font/style...
 //
@@ -4860,7 +4860,7 @@ ViewerMethods::ProcessExpressions()
 // Creation:   Tue Sep 4 22:38:51 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4880,14 +4880,14 @@ ViewerMethods::SetAppearanceAttributes()
 // ****************************************************************************
 // Method: ViewerMethods::ClearPickPoints
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to clear its pick points.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon May 6 16:52:47 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4907,14 +4907,14 @@ ViewerMethods::ClearPickPoints()
 // ****************************************************************************
 // Method: ViewerMethods::RemovePicks
 //
-// Purpose: 
-//   Tells the viewer to remove a list of picks. 
+// Purpose:
+//   Tells the viewer to remove a list of picks.
 //
 // Programmer: Alister Maguire
 // Creation:   Mon Oct 16 15:41:23 PDT 2017
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4935,14 +4935,14 @@ ViewerMethods::RemovePicks(const std::string sLabels)
 // ****************************************************************************
 // Method: ViewerMethods::ClearReferenceLines
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to clear its reference lines.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon May 6 16:52:47 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4955,14 +4955,14 @@ ViewerMethods::ClearReferenceLines()
 // ****************************************************************************
 // Method: ViewerMethods::SetRenderingAttributes
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to use the new rendering attributes.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Sep 19 13:19:33 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4975,7 +4975,7 @@ ViewerMethods::SetRenderingAttributes()
 // ****************************************************************************
 // Method: ViewerMethods::SetWindowArea
 //
-// Purpose: 
+// Purpose:
 //   Sets the window area. This is the area used for the vis windows.
 //
 // Arguments:
@@ -5017,17 +5017,17 @@ ViewerMethods::SetWindowArea(int x, int y, int w, int h)
 // ****************************************************************************
 // Method: ViewerMethods::Query
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to perform a query.
 //
 // Arguments:
 //   queryParams : The parameters for the query
 //
-// Programmer: Kathleen Bonnell 
+// Programmer: Kathleen Bonnell
 // Creation:   March 1, 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -5049,17 +5049,17 @@ ViewerMethods::Query(const MapNode &queryParams)
 // ****************************************************************************
 // Method: ViewerMethods::GetQueryParameters
 //
-// Purpose: 
-//   Tells the viewer to Retrieve the default parameters for the named query. 
+// Purpose:
+//   Tells the viewer to Retrieve the default parameters for the named query.
 //
 // Arguments:
 //   queryName : The name of the query.
 //
-// Programmer: Kathleen Biagas 
-// Creation:   July 15, 2011 
+// Programmer: Kathleen Biagas
+// Creation:   July 15, 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -5085,8 +5085,8 @@ ViewerMethods::GetQueryParameters(const std::string &queryName)
 //  Purpose:
 //    Applies the global lineout attributes.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   March 4, 2003 
+//  Programmer: Kathleen Bonnell
+//  Creation:   March 4, 2003
 //
 //  Modifications:
 //
@@ -5113,8 +5113,8 @@ ViewerMethods::SetGlobalLineoutAttributes()
 //  Purpose:
 //    Applies the default pick attributes.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   December 9, 2003 
+//  Programmer: Kathleen Bonnell
+//  Creation:   December 9, 2003
 //
 //  Modifications:
 //
@@ -5141,8 +5141,8 @@ ViewerMethods::SetDefaultPickAttributes()
 //  Purpose:
 //    Applies the pick attributes.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   June 30, 2003 
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 30, 2003
 //
 //  Modifications:
 //
@@ -5166,14 +5166,14 @@ ViewerMethods::SetPickAttributes()
 // ****************************************************************************
 // Method: ViewerMethods::ResetQueryOverTimeAttributes
 //
-// Purpose: 
+// Purpose:
 //   Reset the time query attributes to default values.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   March 24, 2004 
+// Programmer: Kathleen Bonnell
+// Creation:   March 24, 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -5196,8 +5196,8 @@ ViewerMethods::ResetQueryOverTimeAttributes()
 //  Purpose:
 //    Applies the default time query attributes.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   March 24, 2004 
+//  Programmer: Kathleen Bonnell
+//  Creation:   March 24, 2004
 //
 //  Modifications:
 //
@@ -5224,8 +5224,8 @@ ViewerMethods::SetDefaultQueryOverTimeAttributes()
 //  Purpose:
 //    Applies the time query attributes.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   March 24, 2004 
+//  Programmer: Kathleen Bonnell
+//  Creation:   March 24, 2004
 //
 //  Modifications:
 //
@@ -5250,8 +5250,8 @@ ViewerMethods::SetQueryOverTimeAttributes()
 //
 //  Purpose: Tells viewer to try harder to get accurate cycles/times
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   May 27, 2005 
+//  Programmer: Mark C. Miller
+//  Creation:   May 27, 2005
 //
 // ****************************************************************************
 
@@ -5266,10 +5266,10 @@ ViewerMethods::SetTryHarderCyclesTimes(int flag)
 // ****************************************************************************
 //  Method: ViewerMethods::SetTreatAllDBsAsTimeVarying
 //
-//  Purpose: Tells viewer to treat all databases as time varying 
+//  Purpose: Tells viewer to treat all databases as time varying
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   June 11, 2007 
+//  Programmer: Mark C. Miller
+//  Creation:   June 11, 2007
 //
 // ****************************************************************************
 
@@ -5284,14 +5284,14 @@ ViewerMethods::SetTreatAllDBsAsTimeVarying(int flag)
 // ****************************************************************************
 // Method: ViewerMethods::ResetLineoutColor
 //
-// Purpose: 
+// Purpose:
 //   Reset the lineout color to default values.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   August 5, 2004 
+// Programmer: Kathleen Bonnell
+// Creation:   August 5, 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -5312,14 +5312,14 @@ ViewerMethods::ResetLineoutColor()
 // ****************************************************************************
 // Method: ViewerMethods::ResetInteractorAttributes
 //
-// Purpose: 
+// Purpose:
 //   Reset the interactor attributes to default values.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   August 16, 2004 
+// Programmer: Kathleen Bonnell
+// Creation:   August 16, 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -5342,7 +5342,7 @@ ViewerMethods::ResetInteractorAttributes()
 //  Purpose:
 //    Applies the default interactor attributes.
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   August 16, 2004
 //
 //  Modifications:
@@ -5370,8 +5370,8 @@ ViewerMethods::SetDefaultInteractorAttributes()
 //  Purpose:
 //    Applies the interactor attributes.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   August 16, 2004 
+//  Programmer: Kathleen Bonnell
+//  Creation:   August 16, 2004
 //
 //  Modifications:
 //
@@ -5396,8 +5396,8 @@ ViewerMethods::SetInteractorAttributes()
 //
 //  Purpose: Gets unix process information
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   January 5, 2005 
+//  Programmer: Mark C. Miller
+//  Creation:   January 5, 2005
 //
 // ****************************************************************************
 
@@ -5489,7 +5489,7 @@ ViewerMethods::SendSimulationCommand(const std::string &hostName,
 // ****************************************************************************
 // Method: ViewerMethods::OpenClient
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to launch the specified VisIt client - a reverse launch!
 //
 // Arguments:
@@ -5501,7 +5501,7 @@ ViewerMethods::SendSimulationCommand(const std::string &hostName,
 // Creation:   Tue May 3 15:41:29 PST 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -5518,14 +5518,14 @@ ViewerMethods::OpenClient(const std::string &clientName,
 // ****************************************************************************
 // Method: ViewerMethods::SuppressQueryOutput
 //
-// Purpose: 
+// Purpose:
 //   Shows the toolbars for the active vis window or for all vis windows.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   July 27, 2005 
+// Programmer: Kathleen Bonnell
+// Creation:   July 27, 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -5547,14 +5547,14 @@ ViewerMethods::SuppressQueryOutput(bool onOff)
 // ****************************************************************************
 // Method: ViewerMethods::SetQueryFloatFormat
 //
-// Purpose: 
-//   Sets the floating point format string used by queries. 
+// Purpose:
+//   Sets the floating point format string used by queries.
 //
 // Programmer: Cyrus Harrison
-// Creation:   September 18, 2007 
+// Creation:   September 18, 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -5576,10 +5576,10 @@ ViewerMethods::SetQueryFloatFormat(const std::string &format)
 //  Method: ViewerMethods::SetCreateMeshQualityExpressions
 //
 //  Purpose: Tells viewer to turn on/off automatic creation of MeshQuality
-//           expressions. 
+//           expressions.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   October 9, 2007 
+//  Programmer: Kathleen Bonnell
+//  Creation:   October 9, 2007
 //
 // ****************************************************************************
 
@@ -5596,10 +5596,10 @@ ViewerMethods::SetCreateMeshQualityExpressions(int flag)
 //  Method: ViewerMethods::SetCreateTimeDerivativeExpressions
 //
 //  Purpose: Tells viewer to turn on/off automatic creation of TimeDerivative
-//           expressions. 
+//           expressions.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   October 9, 2007 
+//  Programmer: Kathleen Bonnell
+//  Creation:   October 9, 2007
 //
 // ****************************************************************************
 
@@ -5615,11 +5615,11 @@ ViewerMethods::SetCreateTimeDerivativeExpressions(int flag)
 // ****************************************************************************
 //  Method: ViewerMethods::SetCreateVectorMagnitudeExpressions
 //
-//  Purpose: Tells viewer to turn on/off automatic creation of vector 
-//           magnitude expressions. 
+//  Purpose: Tells viewer to turn on/off automatic creation of vector
+//           magnitude expressions.
 //
 //  Programmer: Cyrus Harrison
-//  Creation:   November 28, 2007 
+//  Creation:   November 28, 2007
 //
 // ****************************************************************************
 
@@ -5846,3 +5846,33 @@ ViewerMethods::RegisterNewWindow(int windowId) {
     state->GetViewerRPC()->SetStringArg1(node.ToString());
     state->GetViewerRPC()->Notify();
 }
+
+
+// ****************************************************************************
+// Method: ViewerMethods::QueryMSAAAvailability
+//
+// Purpose:
+//   Tells the viewer to query the availability of MSAA.
+//
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 26, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerMethods::QueryMSAAAvailability()
+{
+    //
+    // Set the rpc type.
+    //
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::QueryMSAAAvailabilityRPC);
+
+    //
+    // Issue the RPC.
+    //
+    state->GetViewerRPC()->Notify();
+}
+

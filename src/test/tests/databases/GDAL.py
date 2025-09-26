@@ -10,6 +10,9 @@
 #  Date:       Thu Sep 8 16:35:17 PST 2005
 #
 #  Modifications:
+#    Kathleen Biagas, Tue Aug 19, 2025
+#    Antialiasing is now multi-modal. Use FXAA for antialiasing as MSAA
+#    doesn't work in the build configuration that is used for testing.
 #
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("GDAL")
@@ -95,7 +98,8 @@ def test1(datapath):
 def main():
     # Draw antialiased lines
     r = GetRenderingAttributes()
-    r.antialiasing = 1
+    # Use FXAA, since MSAA doesn't work in our testing mode
+    r.antialiasing = r.FXAA;
     SetRenderingAttributes(r)
 
     datapath = data_path("GDAL_test_data")

@@ -81,6 +81,10 @@ Navigate3D::Navigate3D(VisWindowInteractorProxy &v) : VisitInteractor(v)
 //    It will be true if the user has selected ANARI rendering in the
 //    advanced rendering dialog.
 //
+//    Kevin Griffin, Wed Aug 13 2025
+//    Removed useAnari since ANARI rendering supports the SetWindowCenter used 
+//    by the VTK camera. No longer need to pan the camera instead of the image.
+//
 // ****************************************************************************
 
 void
@@ -102,9 +106,9 @@ Navigate3D::OnTimer(void)
 
       case VTKIS_PAN:
         // Currently the SetWindowCenter called from avtViewInfo.C does not
-        // get used in the vtkOSPRayCamerNode or vtkAnariCameraNode so instead
+        // get used in the vtkOSPRayCamerNode so instead
         // pan the camera rather than the image.
-        if (useOSPRay || useAnari)
+        if (useOSPRay)
         {
             PanCamera3D(Pos[0], Pos[1]);
         }

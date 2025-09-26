@@ -15,44 +15,6 @@ const int RenderingAttributes::DEFAULT_COMPACT_DOMAINS_ACTIVATION_MODE = Auto;
 const int RenderingAttributes::DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
 
 //
-// Enum conversion methods for RenderingAttributes::GeometryRepresentation
-//
-
-static const char *GeometryRepresentation_strings[] = {
-"Surfaces", "Wireframe", "Points"
-};
-
-std::string
-RenderingAttributes::GeometryRepresentation_ToString(RenderingAttributes::GeometryRepresentation t)
-{
-    int index = int(t);
-    if(index < 0 || index >= 3) index = 0;
-    return GeometryRepresentation_strings[index];
-}
-
-std::string
-RenderingAttributes::GeometryRepresentation_ToString(int t)
-{
-    int index = (t < 0 || t >= 3) ? 0 : t;
-    return GeometryRepresentation_strings[index];
-}
-
-bool
-RenderingAttributes::GeometryRepresentation_FromString(const std::string &s, RenderingAttributes::GeometryRepresentation &val)
-{
-    val = RenderingAttributes::Surfaces;
-    for(int i = 0; i < 3; ++i)
-    {
-        if(s == GeometryRepresentation_strings[i])
-        {
-            val = (GeometryRepresentation)i;
-            return true;
-        }
-    }
-    return false;
-}
-
-//
 // Enum conversion methods for RenderingAttributes::StereoTypes
 //
 
@@ -128,6 +90,44 @@ RenderingAttributes::TriStateMode_FromString(const std::string &s, RenderingAttr
     return false;
 }
 
+//
+// Enum conversion methods for RenderingAttributes::AAMode
+//
+
+static const char *AAMode_strings[] = {
+"None", "MSAA", "FXAA"
+};
+
+std::string
+RenderingAttributes::AAMode_ToString(RenderingAttributes::AAMode t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 3) index = 0;
+    return AAMode_strings[index];
+}
+
+std::string
+RenderingAttributes::AAMode_ToString(int t)
+{
+    int index = (t < 0 || t >= 3) ? 0 : t;
+    return AAMode_strings[index];
+}
+
+bool
+RenderingAttributes::AAMode_FromString(const std::string &s, RenderingAttributes::AAMode &val)
+{
+    val = RenderingAttributes::None;
+    for(int i = 0; i < 3; ++i)
+    {
+        if(s == AAMode_strings[i])
+        {
+            val = (AAMode)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // ****************************************************************************
 // Method: RenderingAttributes::RenderingAttributes
 //
@@ -145,7 +145,9 @@ RenderingAttributes::TriStateMode_FromString(const std::string &s, RenderingAttr
 
 void RenderingAttributes::Init()
 {
-    antialiasing = false;
+    antialiasing = None;
+    MSAAAvailable = false;
+    MSAASamples = 4;
     orderComposite = true;
     depthCompositeThreads = 2;
     depthCompositeBlocking = 65536;
@@ -156,7 +158,6 @@ void RenderingAttributes::Init()
     numberOfPeels = 16;
     multiresolutionMode = false;
     multiresolutionCellSize = 0.002;
-    geometryRepresentation = Surfaces;
     stereoRendering = false;
     stereoType = CrystalEyes;
     notifyForEachRender = false;
@@ -183,10 +184,6 @@ void RenderingAttributes::Init()
     ospraySPP = 1;
     osprayAO = 0;
     osprayShadows = false;
-    anariRendering = false;
-    anariLibrarySubtype = "default";
-    anariRendererSubtype = "default";
-    usingUsdDevice = false;
 
     RenderingAttributes::SelectAll();
 }
@@ -209,6 +206,9 @@ void RenderingAttributes::Init()
 void RenderingAttributes::Copy(const RenderingAttributes &obj)
 {
     antialiasing = obj.antialiasing;
+    MSAAAvailable = obj.MSAAAvailable;
+    MSAASamples = obj.MSAASamples;
+    FXAAOpt = obj.FXAAOpt;
     orderComposite = obj.orderComposite;
     depthCompositeThreads = obj.depthCompositeThreads;
     depthCompositeBlocking = obj.depthCompositeBlocking;
@@ -219,7 +219,6 @@ void RenderingAttributes::Copy(const RenderingAttributes &obj)
     numberOfPeels = obj.numberOfPeels;
     multiresolutionMode = obj.multiresolutionMode;
     multiresolutionCellSize = obj.multiresolutionCellSize;
-    geometryRepresentation = obj.geometryRepresentation;
     stereoRendering = obj.stereoRendering;
     stereoType = obj.stereoType;
     notifyForEachRender = obj.notifyForEachRender;
@@ -249,13 +248,7 @@ void RenderingAttributes::Copy(const RenderingAttributes &obj)
     ospraySPP = obj.ospraySPP;
     osprayAO = obj.osprayAO;
     osprayShadows = obj.osprayShadows;
-    anariRendering = obj.anariRendering;
-    anariLibrary = obj.anariLibrary;
-    anariLibrarySubtype = obj.anariLibrarySubtype;
-    anariRendererSubtype = obj.anariRendererSubtype;
-    usingUsdDevice = obj.usingUsdDevice;
-    anariRendererParameters = obj.anariRendererParameters;
-    anariUSDParameters = obj.anariUSDParameters;
+    anariAttributes = obj.anariAttributes;
 
     RenderingAttributes::SelectAll();
 }
@@ -426,6 +419,9 @@ RenderingAttributes::operator == (const RenderingAttributes &obj) const
 
     // Create the return value
     return ((antialiasing == obj.antialiasing) &&
+            (MSAAAvailable == obj.MSAAAvailable) &&
+            (MSAASamples == obj.MSAASamples) &&
+            (FXAAOpt == obj.FXAAOpt) &&
             (orderComposite == obj.orderComposite) &&
             (depthCompositeThreads == obj.depthCompositeThreads) &&
             (depthCompositeBlocking == obj.depthCompositeBlocking) &&
@@ -436,7 +432,6 @@ RenderingAttributes::operator == (const RenderingAttributes &obj) const
             (numberOfPeels == obj.numberOfPeels) &&
             (multiresolutionMode == obj.multiresolutionMode) &&
             (multiresolutionCellSize == obj.multiresolutionCellSize) &&
-            (geometryRepresentation == obj.geometryRepresentation) &&
             (stereoRendering == obj.stereoRendering) &&
             (stereoType == obj.stereoType) &&
             (notifyForEachRender == obj.notifyForEachRender) &&
@@ -460,13 +455,7 @@ RenderingAttributes::operator == (const RenderingAttributes &obj) const
             (ospraySPP == obj.ospraySPP) &&
             (osprayAO == obj.osprayAO) &&
             (osprayShadows == obj.osprayShadows) &&
-            (anariRendering == obj.anariRendering) &&
-            (anariLibrary == obj.anariLibrary) &&
-            (anariLibrarySubtype == obj.anariLibrarySubtype) &&
-            (anariRendererSubtype == obj.anariRendererSubtype) &&
-            (usingUsdDevice == obj.usingUsdDevice) &&
-            (anariRendererParameters == obj.anariRendererParameters) &&
-            (anariUSDParameters == obj.anariUSDParameters));
+            (anariAttributes == obj.anariAttributes));
 }
 
 // ****************************************************************************
@@ -611,6 +600,9 @@ void
 RenderingAttributes::SelectAll()
 {
     Select(ID_antialiasing,                 (void *)&antialiasing);
+    Select(ID_MSAAAvailable,                (void *)&MSAAAvailable);
+    Select(ID_MSAASamples,                  (void *)&MSAASamples);
+    Select(ID_FXAAOpt,                      (void *)&FXAAOpt);
     Select(ID_orderComposite,               (void *)&orderComposite);
     Select(ID_depthCompositeThreads,        (void *)&depthCompositeThreads);
     Select(ID_depthCompositeBlocking,       (void *)&depthCompositeBlocking);
@@ -621,7 +613,6 @@ RenderingAttributes::SelectAll()
     Select(ID_numberOfPeels,                (void *)&numberOfPeels);
     Select(ID_multiresolutionMode,          (void *)&multiresolutionMode);
     Select(ID_multiresolutionCellSize,      (void *)&multiresolutionCellSize);
-    Select(ID_geometryRepresentation,       (void *)&geometryRepresentation);
     Select(ID_stereoRendering,              (void *)&stereoRendering);
     Select(ID_stereoType,                   (void *)&stereoType);
     Select(ID_notifyForEachRender,          (void *)&notifyForEachRender);
@@ -645,13 +636,7 @@ RenderingAttributes::SelectAll()
     Select(ID_ospraySPP,                    (void *)&ospraySPP);
     Select(ID_osprayAO,                     (void *)&osprayAO);
     Select(ID_osprayShadows,                (void *)&osprayShadows);
-    Select(ID_anariRendering,               (void *)&anariRendering);
-    Select(ID_anariLibrary,                 (void *)&anariLibrary);
-    Select(ID_anariLibrarySubtype,          (void *)&anariLibrarySubtype);
-    Select(ID_anariRendererSubtype,         (void *)&anariRendererSubtype);
-    Select(ID_usingUsdDevice,               (void *)&usingUsdDevice);
-    Select(ID_anariRendererParameters,      (void *)&anariRendererParameters);
-    Select(ID_anariUSDParameters,           (void *)&anariUSDParameters);
+    Select(ID_anariAttributes,              (void *)&anariAttributes);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -687,7 +672,31 @@ RenderingAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
     if(completeSave || !FieldsEqual(ID_antialiasing, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("antialiasing", antialiasing));
+        node->AddNode(new DataNode("antialiasing", AAMode_ToString(antialiasing)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_MSAAAvailable, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("MSAAAvailable", MSAAAvailable));
+    }
+
+    if(completeSave || !FieldsEqual(ID_MSAASamples, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("MSAASamples", MSAASamples));
+    }
+
+    if(completeSave || !FieldsEqual(ID_FXAAOpt, &defaultObject))
+    {
+        DataNode *FXAAOptNode = new DataNode("FXAAOpt");
+        if(FXAAOpt.CreateNode(FXAAOptNode, completeSave, false))
+        {
+            addToParent = true;
+            node->AddNode(FXAAOptNode);
+        }
+        else
+            delete FXAAOptNode;
     }
 
     if(completeSave || !FieldsEqual(ID_orderComposite, &defaultObject))
@@ -748,12 +757,6 @@ RenderingAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
     {
         addToParent = true;
         node->AddNode(new DataNode("multiresolutionCellSize", multiresolutionCellSize));
-    }
-
-    if(completeSave || !FieldsEqual(ID_geometryRepresentation, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("geometryRepresentation", GeometryRepresentation_ToString(geometryRepresentation)));
     }
 
     if(completeSave || !FieldsEqual(ID_stereoRendering, &defaultObject))
@@ -896,46 +899,16 @@ RenderingAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
         node->AddNode(new DataNode("osprayShadows", osprayShadows));
     }
 
-    if(completeSave || !FieldsEqual(ID_anariRendering, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_anariAttributes, &defaultObject))
     {
-        addToParent = true;
-        node->AddNode(new DataNode("anariRendering", anariRendering));
-    }
-
-    if(completeSave || !FieldsEqual(ID_anariLibrary, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("anariLibrary", anariLibrary));
-    }
-
-    if(completeSave || !FieldsEqual(ID_anariLibrarySubtype, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("anariLibrarySubtype", anariLibrarySubtype));
-    }
-
-    if(completeSave || !FieldsEqual(ID_anariRendererSubtype, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("anariRendererSubtype", anariRendererSubtype));
-    }
-
-    if(completeSave || !FieldsEqual(ID_usingUsdDevice, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("usingUsdDevice", usingUsdDevice));
-    }
-
-    if(completeSave || !FieldsEqual(ID_anariRendererParameters, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("anariRendererParameters", anariRendererParameters));
-    }
-
-    if(completeSave || !FieldsEqual(ID_anariUSDParameters, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("anariUSDParameters", anariUSDParameters));
+        DataNode *anariAttributesNode = new DataNode("anariAttributes");
+        if(anariAttributes.CreateNode(anariAttributesNode, completeSave, false))
+        {
+            addToParent = true;
+            node->AddNode(anariAttributesNode);
+        }
+        else
+            delete anariAttributesNode;
     }
 
 
@@ -975,7 +948,27 @@ RenderingAttributes::SetFromNode(DataNode *parentNode)
 
     DataNode *node;
     if((node = searchNode->GetNode("antialiasing")) != 0)
-        SetAntialiasing(node->AsBool());
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 3)
+                SetAntialiasing(AAMode(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            AAMode value;
+            if(AAMode_FromString(node->AsString(), value))
+                SetAntialiasing(value);
+        }
+    }
+    if((node = searchNode->GetNode("MSAAAvailable")) != 0)
+        SetMSAAAvailable(node->AsBool());
+    if((node = searchNode->GetNode("MSAASamples")) != 0)
+        SetMSAASamples(node->AsInt());
+    if((node = searchNode->GetNode("FXAAOpt")) != 0)
+        FXAAOpt.SetFromNode(node);
     if((node = searchNode->GetNode("orderComposite")) != 0)
         SetOrderComposite(node->AsBool());
     if((node = searchNode->GetNode("depthCompositeThreads")) != 0)
@@ -996,22 +989,6 @@ RenderingAttributes::SetFromNode(DataNode *parentNode)
         SetMultiresolutionMode(node->AsBool());
     if((node = searchNode->GetNode("multiresolutionCellSize")) != 0)
         SetMultiresolutionCellSize(node->AsFloat());
-    if((node = searchNode->GetNode("geometryRepresentation")) != 0)
-    {
-        // Allow enums to be int or string in the config file
-        if(node->GetNodeType() == INT_NODE)
-        {
-            int ival = node->AsInt();
-            if(ival >= 0 && ival < 3)
-                SetGeometryRepresentation(GeometryRepresentation(ival));
-        }
-        else if(node->GetNodeType() == STRING_NODE)
-        {
-            GeometryRepresentation value;
-            if(GeometryRepresentation_FromString(node->AsString(), value))
-                SetGeometryRepresentation(value);
-        }
-    }
     if((node = searchNode->GetNode("stereoRendering")) != 0)
         SetStereoRendering(node->AsBool());
     if((node = searchNode->GetNode("stereoType")) != 0)
@@ -1114,20 +1091,8 @@ RenderingAttributes::SetFromNode(DataNode *parentNode)
         SetOsprayAO(node->AsInt());
     if((node = searchNode->GetNode("osprayShadows")) != 0)
         SetOsprayShadows(node->AsBool());
-    if((node = searchNode->GetNode("anariRendering")) != 0)
-        SetAnariRendering(node->AsBool());
-    if((node = searchNode->GetNode("anariLibrary")) != 0)
-        SetAnariLibrary(node->AsString());
-    if((node = searchNode->GetNode("anariLibrarySubtype")) != 0)
-        SetAnariLibrarySubtype(node->AsString());
-    if((node = searchNode->GetNode("anariRendererSubtype")) != 0)
-        SetAnariRendererSubtype(node->AsString());
-    if((node = searchNode->GetNode("usingUsdDevice")) != 0)
-        SetUsingUsdDevice(node->AsBool());
-    if((node = searchNode->GetNode("anariRendererParameters")) != 0)
-        SetAnariRendererParameters(node->AsStringVector());
-    if((node = searchNode->GetNode("anariUSDParameters")) != 0)
-        SetAnariUSDParameters(node->AsStringVector());
+    if((node = searchNode->GetNode("anariAttributes")) != 0)
+        anariAttributes.SetFromNode(node);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1135,10 +1100,31 @@ RenderingAttributes::SetFromNode(DataNode *parentNode)
 ///////////////////////////////////////////////////////////////////////////////
 
 void
-RenderingAttributes::SetAntialiasing(bool antialiasing_)
+RenderingAttributes::SetAntialiasing(RenderingAttributes::AAMode antialiasing_)
 {
     antialiasing = antialiasing_;
     Select(ID_antialiasing, (void *)&antialiasing);
+}
+
+void
+RenderingAttributes::SetMSAAAvailable(bool MSAAAvailable_)
+{
+    MSAAAvailable = MSAAAvailable_;
+    Select(ID_MSAAAvailable, (void *)&MSAAAvailable);
+}
+
+void
+RenderingAttributes::SetMSAASamples(int MSAASamples_)
+{
+    MSAASamples = MSAASamples_;
+    Select(ID_MSAASamples, (void *)&MSAASamples);
+}
+
+void
+RenderingAttributes::SetFXAAOpt(const FXAAOptions &FXAAOpt_)
+{
+    FXAAOpt = FXAAOpt_;
+    Select(ID_FXAAOpt, (void *)&FXAAOpt);
 }
 
 void
@@ -1209,13 +1195,6 @@ RenderingAttributes::SetMultiresolutionCellSize(float multiresolutionCellSize_)
 {
     multiresolutionCellSize = multiresolutionCellSize_;
     Select(ID_multiresolutionCellSize, (void *)&multiresolutionCellSize);
-}
-
-void
-RenderingAttributes::SetGeometryRepresentation(RenderingAttributes::GeometryRepresentation geometryRepresentation_)
-{
-    geometryRepresentation = geometryRepresentation_;
-    Select(ID_geometryRepresentation, (void *)&geometryRepresentation);
 }
 
 void
@@ -1384,62 +1363,44 @@ RenderingAttributes::SetOsprayShadows(bool osprayShadows_)
 }
 
 void
-RenderingAttributes::SetAnariRendering(bool anariRendering_)
+RenderingAttributes::SetAnariAttributes(const AnariAttributes &anariAttributes_)
 {
-    anariRendering = anariRendering_;
-    Select(ID_anariRendering, (void *)&anariRendering);
-}
-
-void
-RenderingAttributes::SetAnariLibrary(const std::string &anariLibrary_)
-{
-    anariLibrary = anariLibrary_;
-    Select(ID_anariLibrary, (void *)&anariLibrary);
-}
-
-void
-RenderingAttributes::SetAnariLibrarySubtype(const std::string &anariLibrarySubtype_)
-{
-    anariLibrarySubtype = anariLibrarySubtype_;
-    Select(ID_anariLibrarySubtype, (void *)&anariLibrarySubtype);
-}
-
-void
-RenderingAttributes::SetAnariRendererSubtype(const std::string &anariRendererSubtype_)
-{
-    anariRendererSubtype = anariRendererSubtype_;
-    Select(ID_anariRendererSubtype, (void *)&anariRendererSubtype);
-}
-
-void
-RenderingAttributes::SetUsingUsdDevice(bool usingUsdDevice_)
-{
-    usingUsdDevice = usingUsdDevice_;
-    Select(ID_usingUsdDevice, (void *)&usingUsdDevice);
-}
-
-void
-RenderingAttributes::SetAnariRendererParameters(const stringVector &anariRendererParameters_)
-{
-    anariRendererParameters = anariRendererParameters_;
-    Select(ID_anariRendererParameters, (void *)&anariRendererParameters);
-}
-
-void
-RenderingAttributes::SetAnariUSDParameters(const stringVector &anariUSDParameters_)
-{
-    anariUSDParameters = anariUSDParameters_;
-    Select(ID_anariUSDParameters, (void *)&anariUSDParameters);
+    anariAttributes = anariAttributes_;
+    Select(ID_anariAttributes, (void *)&anariAttributes);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
 
-bool
+RenderingAttributes::AAMode
 RenderingAttributes::GetAntialiasing() const
 {
-    return antialiasing;
+    return AAMode(antialiasing);
+}
+
+bool
+RenderingAttributes::GetMSAAAvailable() const
+{
+    return MSAAAvailable;
+}
+
+int
+RenderingAttributes::GetMSAASamples() const
+{
+    return MSAASamples;
+}
+
+const FXAAOptions &
+RenderingAttributes::GetFXAAOpt() const
+{
+    return FXAAOpt;
+}
+
+FXAAOptions &
+RenderingAttributes::GetFXAAOpt()
+{
+    return FXAAOpt;
 }
 
 bool
@@ -1500,12 +1461,6 @@ float
 RenderingAttributes::GetMultiresolutionCellSize() const
 {
     return multiresolutionCellSize;
-}
-
-RenderingAttributes::GeometryRepresentation
-RenderingAttributes::GetGeometryRepresentation() const
-{
-    return GeometryRepresentation(geometryRepresentation);
 }
 
 bool
@@ -1664,81 +1619,27 @@ RenderingAttributes::GetOsprayShadows() const
     return osprayShadows;
 }
 
-bool
-RenderingAttributes::GetAnariRendering() const
+const AnariAttributes &
+RenderingAttributes::GetAnariAttributes() const
 {
-    return anariRendering;
+    return anariAttributes;
 }
 
-const std::string &
-RenderingAttributes::GetAnariLibrary() const
+AnariAttributes &
+RenderingAttributes::GetAnariAttributes()
 {
-    return anariLibrary;
-}
-
-std::string &
-RenderingAttributes::GetAnariLibrary()
-{
-    return anariLibrary;
-}
-
-const std::string &
-RenderingAttributes::GetAnariLibrarySubtype() const
-{
-    return anariLibrarySubtype;
-}
-
-std::string &
-RenderingAttributes::GetAnariLibrarySubtype()
-{
-    return anariLibrarySubtype;
-}
-
-const std::string &
-RenderingAttributes::GetAnariRendererSubtype() const
-{
-    return anariRendererSubtype;
-}
-
-std::string &
-RenderingAttributes::GetAnariRendererSubtype()
-{
-    return anariRendererSubtype;
-}
-
-bool
-RenderingAttributes::GetUsingUsdDevice() const
-{
-    return usingUsdDevice;
-}
-
-const stringVector &
-RenderingAttributes::GetAnariRendererParameters() const
-{
-    return anariRendererParameters;
-}
-
-stringVector &
-RenderingAttributes::GetAnariRendererParameters()
-{
-    return anariRendererParameters;
-}
-
-const stringVector &
-RenderingAttributes::GetAnariUSDParameters() const
-{
-    return anariUSDParameters;
-}
-
-stringVector &
-RenderingAttributes::GetAnariUSDParameters()
-{
-    return anariUSDParameters;
+    return anariAttributes;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
+
+void
+RenderingAttributes::SelectFXAAOpt()
+{
+    Select(ID_FXAAOpt, (void *)&FXAAOpt);
+}
 
 void
 RenderingAttributes::SelectSpecularColor()
@@ -1759,33 +1660,9 @@ RenderingAttributes::SelectEndCuePoint()
 }
 
 void
-RenderingAttributes::SelectAnariLibrary()
+RenderingAttributes::SelectAnariAttributes()
 {
-    Select(ID_anariLibrary, (void *)&anariLibrary);
-}
-
-void
-RenderingAttributes::SelectAnariLibrarySubtype()
-{
-    Select(ID_anariLibrarySubtype, (void *)&anariLibrarySubtype);
-}
-
-void
-RenderingAttributes::SelectAnariRendererSubtype()
-{
-    Select(ID_anariRendererSubtype, (void *)&anariRendererSubtype);
-}
-
-void
-RenderingAttributes::SelectAnariRendererParameters()
-{
-    Select(ID_anariRendererParameters, (void *)&anariRendererParameters);
-}
-
-void
-RenderingAttributes::SelectAnariUSDParameters()
-{
-    Select(ID_anariUSDParameters, (void *)&anariUSDParameters);
+    Select(ID_anariAttributes, (void *)&anariAttributes);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1813,6 +1690,9 @@ RenderingAttributes::GetFieldName(int index) const
     switch (index)
     {
     case ID_antialiasing:                 return "antialiasing";
+    case ID_MSAAAvailable:                return "MSAAAvailable";
+    case ID_MSAASamples:                  return "MSAASamples";
+    case ID_FXAAOpt:                      return "FXAAOpt";
     case ID_orderComposite:               return "orderComposite";
     case ID_depthCompositeThreads:        return "depthCompositeThreads";
     case ID_depthCompositeBlocking:       return "depthCompositeBlocking";
@@ -1823,7 +1703,6 @@ RenderingAttributes::GetFieldName(int index) const
     case ID_numberOfPeels:                return "numberOfPeels";
     case ID_multiresolutionMode:          return "multiresolutionMode";
     case ID_multiresolutionCellSize:      return "multiresolutionCellSize";
-    case ID_geometryRepresentation:       return "geometryRepresentation";
     case ID_stereoRendering:              return "stereoRendering";
     case ID_stereoType:                   return "stereoType";
     case ID_notifyForEachRender:          return "notifyForEachRender";
@@ -1847,13 +1726,7 @@ RenderingAttributes::GetFieldName(int index) const
     case ID_ospraySPP:                    return "ospraySPP";
     case ID_osprayAO:                     return "osprayAO";
     case ID_osprayShadows:                return "osprayShadows";
-    case ID_anariRendering:               return "anariRendering";
-    case ID_anariLibrary:                 return "anariLibrary";
-    case ID_anariLibrarySubtype:          return "anariLibrarySubtype";
-    case ID_anariRendererSubtype:         return "anariRendererSubtype";
-    case ID_usingUsdDevice:               return "usingUsdDevice";
-    case ID_anariRendererParameters:      return "anariRendererParameters";
-    case ID_anariUSDParameters:           return "anariUSDParameters";
+    case ID_anariAttributes:              return "anariAttributes";
     default:  return "invalid index";
     }
 }
@@ -1878,7 +1751,10 @@ RenderingAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_antialiasing:                 return FieldType_bool;
+    case ID_antialiasing:                 return FieldType_enum;
+    case ID_MSAAAvailable:                return FieldType_bool;
+    case ID_MSAASamples:                  return FieldType_int;
+    case ID_FXAAOpt:                      return FieldType_att;
     case ID_orderComposite:               return FieldType_bool;
     case ID_depthCompositeThreads:        return FieldType_int;
     case ID_depthCompositeBlocking:       return FieldType_int;
@@ -1889,7 +1765,6 @@ RenderingAttributes::GetFieldType(int index) const
     case ID_numberOfPeels:                return FieldType_int;
     case ID_multiresolutionMode:          return FieldType_bool;
     case ID_multiresolutionCellSize:      return FieldType_float;
-    case ID_geometryRepresentation:       return FieldType_enum;
     case ID_stereoRendering:              return FieldType_bool;
     case ID_stereoType:                   return FieldType_enum;
     case ID_notifyForEachRender:          return FieldType_bool;
@@ -1913,13 +1788,7 @@ RenderingAttributes::GetFieldType(int index) const
     case ID_ospraySPP:                    return FieldType_int;
     case ID_osprayAO:                     return FieldType_int;
     case ID_osprayShadows:                return FieldType_bool;
-    case ID_anariRendering:               return FieldType_bool;
-    case ID_anariLibrary:                 return FieldType_string;
-    case ID_anariLibrarySubtype:          return FieldType_string;
-    case ID_anariRendererSubtype:         return FieldType_string;
-    case ID_usingUsdDevice:               return FieldType_bool;
-    case ID_anariRendererParameters:      return FieldType_stringVector;
-    case ID_anariUSDParameters:           return FieldType_stringVector;
+    case ID_anariAttributes:              return FieldType_att;
     default:  return FieldType_unknown;
     }
 }
@@ -1944,7 +1813,10 @@ RenderingAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_antialiasing:                 return "bool";
+    case ID_antialiasing:                 return "enum";
+    case ID_MSAAAvailable:                return "bool";
+    case ID_MSAASamples:                  return "int";
+    case ID_FXAAOpt:                      return "att";
     case ID_orderComposite:               return "bool";
     case ID_depthCompositeThreads:        return "int";
     case ID_depthCompositeBlocking:       return "int";
@@ -1955,7 +1827,6 @@ RenderingAttributes::GetFieldTypeName(int index) const
     case ID_numberOfPeels:                return "int";
     case ID_multiresolutionMode:          return "bool";
     case ID_multiresolutionCellSize:      return "float";
-    case ID_geometryRepresentation:       return "enum";
     case ID_stereoRendering:              return "bool";
     case ID_stereoType:                   return "enum";
     case ID_notifyForEachRender:          return "bool";
@@ -1979,13 +1850,7 @@ RenderingAttributes::GetFieldTypeName(int index) const
     case ID_ospraySPP:                    return "int";
     case ID_osprayAO:                     return "int";
     case ID_osprayShadows:                return "bool";
-    case ID_anariRendering:               return "bool";
-    case ID_anariLibrary:                 return "string";
-    case ID_anariLibrarySubtype:          return "string";
-    case ID_anariRendererSubtype:         return "string";
-    case ID_usingUsdDevice:               return "bool";
-    case ID_anariRendererParameters:      return "stringVector";
-    case ID_anariUSDParameters:           return "stringVector";
+    case ID_anariAttributes:              return "att";
     default:  return "invalid index";
     }
 }
@@ -2015,6 +1880,21 @@ RenderingAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_antialiasing:
         {  // new scope
         retval = (antialiasing == obj.antialiasing);
+        }
+        break;
+    case ID_MSAAAvailable:
+        {  // new scope
+        retval = (MSAAAvailable == obj.MSAAAvailable);
+        }
+        break;
+    case ID_MSAASamples:
+        {  // new scope
+        retval = (MSAASamples == obj.MSAASamples);
+        }
+        break;
+    case ID_FXAAOpt:
+        {  // new scope
+        retval = (FXAAOpt == obj.FXAAOpt);
         }
         break;
     case ID_orderComposite:
@@ -2065,11 +1945,6 @@ RenderingAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_multiresolutionCellSize:
         {  // new scope
         retval = (multiresolutionCellSize == obj.multiresolutionCellSize);
-        }
-        break;
-    case ID_geometryRepresentation:
-        {  // new scope
-        retval = (geometryRepresentation == obj.geometryRepresentation);
         }
         break;
     case ID_stereoRendering:
@@ -2197,39 +2072,9 @@ RenderingAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (osprayShadows == obj.osprayShadows);
         }
         break;
-    case ID_anariRendering:
+    case ID_anariAttributes:
         {  // new scope
-        retval = (anariRendering == obj.anariRendering);
-        }
-        break;
-    case ID_anariLibrary:
-        {  // new scope
-        retval = (anariLibrary == obj.anariLibrary);
-        }
-        break;
-    case ID_anariLibrarySubtype:
-        {  // new scope
-        retval = (anariLibrarySubtype == obj.anariLibrarySubtype);
-        }
-        break;
-    case ID_anariRendererSubtype:
-        {  // new scope
-        retval = (anariRendererSubtype == obj.anariRendererSubtype);
-        }
-        break;
-    case ID_usingUsdDevice:
-        {  // new scope
-        retval = (usingUsdDevice == obj.usingUsdDevice);
-        }
-        break;
-    case ID_anariRendererParameters:
-        {  // new scope
-        retval = (anariRendererParameters == obj.anariRendererParameters);
-        }
-        break;
-    case ID_anariUSDParameters:
-        {  // new scope
-        retval = (anariUSDParameters == obj.anariUSDParameters);
+        retval = (anariAttributes == obj.anariAttributes);
         }
         break;
     default: retval = false;
@@ -2264,5 +2109,51 @@ int RenderingAttributes::GetEffectiveCompactDomainsThreshold(TriStateMode mode, 
         return autoThreshold;
     else
         return -1;
+}
+
+// ****************************************************************************
+// Method: RenderingAttributes::ProcessOldVersions
+//
+// Purpose:
+//   This method allows handling of older config/session files that may
+//   contain fields that are no longer present or have been modified/renamed.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   Aug 28, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+#include <visit-config.h>
+#ifdef VIEWER
+#include <avtCallback.h>
+#endif
+
+void
+RenderingAttributes::ProcessOldVersions(DataNode *parentNode,
+                                         const char *configVersion)
+{
+#if VISIT_OBSOLETE_AT_VERSION(3,6,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("RenderingAttributes");
+    if(searchNode == 0)
+        return;
+
+    if (VersionLessThan(configVersion, "3.5.0"))
+    {
+        DataNode *k = 0;
+        if ((k = searchNode->GetNode("geometryRepresentation")) != 0)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("geometryRepresentation", "3.6.0"));
+#endif
+            searchNode->RemoveNode(k);
+        }
+    }
+#endif
 }
 

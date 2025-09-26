@@ -279,6 +279,8 @@
                              the leading letter (A-E) indicating most to least
                              recent. The clobber_vlogs flag causes VisIt to remove
                              all debug logs and begin creating them anew.
+        -compositer-debug    Dump intermediate image results during the
+                             compositing process of scalable rendering.
         -vtk-debug           Turn on debugging of vtk objects used in pipelines.
         -pid                 Append process ids to the names of log files.
         -timing              Save timing data to files.

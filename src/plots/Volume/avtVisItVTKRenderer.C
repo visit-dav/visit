@@ -41,6 +41,11 @@
     #include <vtkOSPRayRendererNode.h>
 #endif
 
+#ifdef HAVE_ANARI
+    #include <vtkAnariPass.h>
+    #include <vtkAnariVolumeMapper.h>
+#endif
+
 #include <string>
 #include <vector>
 
@@ -621,8 +626,7 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
     }
 
     // Create a new volume mapper if needed.
-    if( m_volumeMapper == nullptr ||
-        m_OSPRayEnabled != m_atts.GetOSPRayEnabledFlag())
+    if(m_OSPRayEnabled != m_atts.GetOSPRayEnabledFlag())
     {
         m_OSPRayEnabled = m_atts.GetOSPRayEnabledFlag();
 
@@ -638,14 +642,71 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
             LOCAL_DEBUG << "OSPRay Volume Mapper "
                         << std::endl;
         }
-        else
 #endif
+    }
+#ifdef HAVE_ANARI
+    else if((m_atts.GetRendererType() == VolumeAttributes::ANARI) &&
+            (m_anariEnabled != m_atts.GetAnariAttributes().GetAnariRendering()))
+    {
+        AnariAttributes anariAtts = m_atts.GetAnariAttributes();
+        m_anariEnabled = anariAtts.GetAnariRendering();
+
+        if (m_volumeMapper != nullptr)
         {
-            m_volumeMapper = vtkGPUVolumeRayCastMapper::New();
-            LOCAL_DEBUG << "GPU Volume Ray Cast Mapper "
-                        << std::endl;
+            m_volumeMapper->Delete();
+            m_volumeMapper = nullptr;
         }
 
+        // Create the volume mapper.
+        if(m_anariEnabled)
+        {
+            LOCAL_DEBUG << "ANARI Volume Mapper " << std::endl;
+            vtkAnariVolumeMapper *anariVolumeMapper = vtkAnariVolumeMapper::New();
+            
+            if(!anariVolumeMapper->GetInitialized())
+            {
+                anariVolumeMapper->Init();
+            }
+
+            auto anariPass = anariVolumeMapper->GetAnariPass();
+
+            if(anariPass)
+            {
+                // ANARI Device Settings
+                auto vtkAD = anariPass->GetAnariDevice();
+                std::string libraryName = !anariAtts.GetAnariLibrary().empty() ? anariAtts.GetAnariLibrary()
+                                                                               : "environment";                
+                vtkAD->SetupAnariDeviceFromLibrary(libraryName.c_str(),
+                                                   anariAtts.GetAnariLibrarySubtype().c_str());
+                                                
+                // ANARI Render Settings
+                auto vtkAR = anariPass->GetAnariRenderer();
+                vtkAR->SetSubtype(anariAtts.GetAnariRendererSubtype().c_str());
+                
+                if(!anariAtts.GetUsingUsdDevice())
+                {
+                    SetAnariRendererParameters(anariPass);
+                }
+                else
+                {
+                    SetAnariUSDParameters(anariPass);
+                }
+            }
+            else 
+            {
+                LOCAL_DEBUG << "ANARI Pass is null." << std::endl;
+            }
+            
+            m_volumeMapper = anariVolumeMapper;         
+        }
+    }
+#endif
+    
+    if( m_volumeMapper == nullptr )
+    {
+        m_volumeMapper = vtkGPUVolumeRayCastMapper::New();
+            LOCAL_DEBUG << "GPU Volume Ray Cast Mapper "
+                        << std::endl;
         m_volumeMapper->SetBlendModeToComposite();
     }
 
@@ -767,10 +828,6 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
     LOCAL_DEBUG << "sampleDist: " << sampleDist << "  "
                 << std::endl;
 
-    // vtkSmartVolumeMapper::SafeDownCast( volumeMapper )->SetSampleDistance( averageSpacing * 0.1);
-
-    // vtkSmartVolumeMapper::SafeDownCast( volumeMapper )->AutoAdjustSampleDistancesOff();
-
     // Set up the volume
     m_volume->SetMapper(m_volumeMapper);
     m_volume->SetProperty(m_volumeProperty);
@@ -794,3 +851,235 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
     }
 #endif
 }
+
+#ifdef HAVE_ANARI
+// ****************************************************************************
+//  Method:  avtVisItVTKRenderer::SetAnariRendererParameters
+//
+//  Purpose:
+//    Set the ANARI Renderer parameters. This method is called when the user
+//    is using the ANARI Renderer with a non-USD device.
+//
+//  Arguments:
+//    anariPass  : the ANARI pass
+//
+//  Programmer: Kevin Griffin
+//  Creation:
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtVisItVTKRenderer::SetAnariRendererParameters(vtkAnariPass * const anariPass)
+{
+    auto anariDevice = anariPass->GetAnariDevice()->GetHandle();
+    auto anariRenderer = anariPass->GetAnariRenderer()->GetHandle();
+
+    if(anariDevice == nullptr || anariRenderer == nullptr)
+    {
+        debug5 << "[ANARI::SetAnariRendererParameters] ANARI handle is NULL" << std::endl;
+        return;
+    }
+
+    AnariAttributes anariAtts = m_atts.GetAnariAttributes();
+    auto rendererParams = anariAtts.GetAnariRendererParameters();
+    const ANARIParameter *parameterList =
+            static_cast<const ANARIParameter*>(anariGetObjectInfo(anariDevice,
+                                                                  ANARI_RENDERER,
+                                                                  anariAtts.GetAnariRendererSubtype().c_str(),
+                                                                  "parameter",
+                                                                  ANARI_PARAMETER_LIST));
+    
+    for (const auto& rendererParam : rendererParams)
+    {
+        std::string key = rendererParam.substr(0, rendererParam.find(";"));
+        std::string value = rendererParam.substr(rendererParam.find(";") + 1);
+        std::istringstream iss(value);
+        anari::DataType dataType = ANARI_UNKNOWN;
+
+        for (const ANARIParameter *param = parameterList; param && param->name != nullptr; ++param)
+        {
+            if (key == param->name)
+            {
+                dataType = param->type;
+            }
+        }
+
+        switch (dataType)
+        {
+        case ANARI_BOOL: case ANARI_INT32: case ANARI_FLOAT32: case ANARI_FLOAT64:
+            if (dataType == ANARI_BOOL)
+            {
+                int intVal;
+                iss >> intVal;
+                bool boolVal = (intVal == 1);
+                anari::setParameter(anariDevice, anariRenderer, key.c_str(), boolVal);
+            }
+            else if (dataType == ANARI_INT32)
+            {
+                int intVal;
+                iss >> intVal;
+                anari::setParameter(anariDevice, anariRenderer, key.c_str(), intVal);
+            }
+            else if (dataType == ANARI_FLOAT32)
+            {
+                float floatVal;
+                iss >> floatVal;
+                anari::setParameter(anariDevice, anariRenderer, key.c_str(), floatVal);
+            }
+            else if (dataType == ANARI_FLOAT64)
+            {
+                double doubleVal;
+                iss >> doubleVal;
+                anari::setParameter(anariDevice, anariRenderer, key.c_str(), doubleVal);
+            }
+            break;
+        case ANARI_INT32_VEC3: case ANARI_FLOAT32_VEC3: case ANARI_FLOAT64_VEC3:
+            if (dataType == ANARI_INT32_VEC3)
+            {
+                int intVals[3];
+                iss >> intVals[0] >> intVals[1] >> intVals[2];
+                anari::setParameter(anariDevice, anariRenderer, key.c_str(), ANARI_INT32_VEC3, intVals);
+            }
+            else if (dataType == ANARI_FLOAT32_VEC3)
+            {
+                float floatVals[3];
+                iss >> floatVals[0] >> floatVals[1] >> floatVals[2];
+                anari::setParameter(anariDevice, anariRenderer, key.c_str(), ANARI_FLOAT32_VEC3, floatVals);
+            }
+            else if (dataType == ANARI_FLOAT64_VEC3)
+            {
+                double doubleVals[3];
+                iss >> doubleVals[0] >> doubleVals[1] >> doubleVals[2];
+                anari::setParameter(anariDevice, anariRenderer, key.c_str(), ANARI_FLOAT64_VEC3, doubleVals);
+            }
+            break;
+        case ANARI_INT32_VEC4: case ANARI_FLOAT32_VEC4: case ANARI_FLOAT64_VEC4:
+            if (dataType == ANARI_INT32_VEC4)
+            {
+                int intVals[4];
+                iss >> intVals[0] >> intVals[1] >> intVals[2] >> intVals[3];
+                anari::setParameter(anariDevice, anariRenderer, key.c_str(), ANARI_INT32_VEC4, intVals);
+            }
+            else if (dataType == ANARI_FLOAT32_VEC4)
+            {
+                float floatVals[4];
+                iss >> floatVals[0] >> floatVals[1] >> floatVals[2] >> floatVals[3];
+                anari::setParameter(anariDevice, anariRenderer, key.c_str(), ANARI_FLOAT32_VEC4, floatVals);
+            }
+            else if (dataType == ANARI_FLOAT64_VEC4)
+            {
+                double doubleVals[4];
+                iss >> doubleVals[0] >> doubleVals[1] >> doubleVals[2] >> doubleVals[3];
+                anari::setParameter(anariDevice, anariRenderer, key.c_str(), ANARI_FLOAT64_VEC4, doubleVals);
+            }
+            break;
+        case ANARI_STRING:
+            anari::setParameter(anariDevice, anariRenderer, key.c_str(), value.c_str());
+            break;
+        default:
+            debug5 << "ANARI Datatype (" << dataType << ") Not Supported: " << key << " = " << value << std::endl;
+            break;
+        }
+    }
+
+    anari::commitParameters(anariDevice, anariRenderer);
+}
+
+// ****************************************************************************
+//  Method:  avtVisItVTKRenderer::SetAnariUsdParameters
+//
+//  Purpose:
+//    Set the ANARI USD parameters. This method is called when the user
+//    is using the ANARI Renderer with a USD device.
+//
+//  Arguments:
+//    anariPass  : the ANARI pass
+//
+//  Programmer: Kevin Griffin
+//  Creation:
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtVisItVTKRenderer::SetAnariUSDParameters(vtkAnariPass * const anariPass)
+{
+    auto anariDevice = anariPass->GetAnariDevice()->GetHandle();
+
+    if(anariDevice == nullptr)
+    {
+        debug5 << "[ANARI::SetAnariUSDParameters] Device is NULL" << std::endl;
+        return;
+    }
+
+    AnariAttributes anariAtts = m_atts.GetAnariAttributes();
+    const ANARIParameter *parameterList =
+            static_cast<const ANARIParameter*>(anariGetObjectInfo(anariDevice,
+                                                                  ANARI_DEVICE,
+                                                                  anariAtts.GetAnariLibrarySubtype().c_str(),
+                                                                  "parameter",
+                                                                  ANARI_PARAMETER_LIST));
+
+    auto usdParams = anariAtts.GetAnariUSDParameters();
+
+    for (const auto& usdParam : usdParams)
+    {
+        std::string key = usdParam.substr(0, usdParam.find(";"));
+        std::string value = usdParam.substr(usdParam.find(";") + 1);
+        std::istringstream iss(value);
+        anari::DataType dataType = ANARI_UNKNOWN;
+
+        debug5 << "USD Device Parameter: " << key << " = " << value << std::endl;
+
+        for (const ANARIParameter *param = parameterList; param && param->name != nullptr; ++param)
+        {
+            if (key == param->name)
+            {
+                dataType = param->type;
+            }
+        }
+
+        switch (dataType)
+        {
+        case ANARI_BOOL: case ANARI_INT32: case ANARI_FLOAT32: case ANARI_FLOAT64:
+            if (dataType == ANARI_BOOL)
+            {
+                int intVal;
+                iss >> intVal;
+                bool boolVal = (intVal == 1);
+                anari::setParameter(anariDevice, anariDevice, key.c_str(), boolVal);
+            }
+            else if (dataType == ANARI_INT32)
+            {
+                int intVal;
+                iss >> intVal;
+                anari::setParameter(anariDevice, anariDevice, key.c_str(), intVal);
+            }
+            else if (dataType == ANARI_FLOAT32)
+            {
+                float floatVal;
+                iss >> floatVal;
+                anari::setParameter(anariDevice, anariDevice, key.c_str(), floatVal);
+            }
+            else if (dataType == ANARI_FLOAT64)
+            {
+                double doubleVal;
+                iss >> doubleVal;
+                anari::setParameter(anariDevice, anariDevice, key.c_str(), doubleVal);
+            }
+            break;
+        case ANARI_STRING:
+            anari::setParameter(anariDevice, anariDevice, key.c_str(), dataType, value.c_str());
+            break;
+        default:
+            debug5 << "ANARI Datatype (" << dataType << ") Not Supported: " << key << " = " << value << std::endl;
+            break;
+        }
+    }
+
+    anari::commitParameters(anariDevice, anariDevice);
+}
+#endif

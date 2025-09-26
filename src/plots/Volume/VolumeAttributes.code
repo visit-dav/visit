@@ -432,7 +432,6 @@ VolumeAttributes::AnyNonTransferFunctionMembersAreDifferent(const VolumeAttribut
     return !same;
 }
 
-
 Target: xml2python
 Function: VolumeAttributes_SetFreeformOpacity
 Declaration: VolumeAttributes_SetFreeformOpacity
@@ -604,7 +603,6 @@ VolumeViewerEnginePluginInfo::~VolumeViewerEnginePluginInfo()
         vtkObjectFactory::UnRegisterFactory(volFactory);
     }
 }
-
 
 Target: xml2python
 Function: VolumeAttributes_SetMaterialProperties

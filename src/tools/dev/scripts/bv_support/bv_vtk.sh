@@ -268,6 +268,156 @@ EOF
     fi
 }
 
+function apply_vtk95_vktanari_patches
+{
+    count_patches=2
+    # patch vtkAnari files:
+   
+    # 1) support panning and zooming
+    current_patch=1
+    patch -p0 << \EOF
+*** Rendering/ANARI/vtkAnariCameraNode.cxx.orig  2025-06-23 14:12:36.000000000 -0500
+--- Rendering/ANARI/vtkAnariCameraNode.cxx	2025-08-14 10:10:09.887501406 -0500
+***************
+*** 144,155 ****
+      right = true;
+    }
+  
+!   int* const ts = this->Internals->RendererNode->GetScale();
+  
+    if (this->Internals->IsParallelProjection)
+    {
+      // height of the image plane in world units
+!     double height = cam->GetParallelScale() * 2 * ts[0];
+      anari::setParameter(this->Internals->AnariDevice, this->Internals->AnariCamera, "height",
+        static_cast<float>(height));
+    }
+--- 144,164 ----
+      right = true;
+    }
+  
+!   int* const ts = this->Internals->RendererNode->GetScale();  
+!   vtkHomogeneousTransform* transform = cam->GetUserTransform();
+!   double zoomFactor = 1.0;
+!   
+!   // Support zooming
+!   if (transform != nullptr)
+!   {
+!     auto matrix = transform->GetMatrix();
+!     zoomFactor = matrix->GetElement(0, 0);
+!   }
+  
+    if (this->Internals->IsParallelProjection)
+    {
+      // height of the image plane in world units
+!     double height = (cam->GetParallelScale() * 2 * ts[0]) / zoomFactor;
+      anari::setParameter(this->Internals->AnariDevice, this->Internals->AnariCamera, "height",
+        static_cast<float>(height));
+    }
+***************
+*** 157,162 ****
+--- 166,172 ----
+    {
+      // The field of view (angle in radians) of the frame's height
+      float fovyDegrees = static_cast<float>(cam->GetViewAngle()) * static_cast<float>(ts[0]);
++     fovyDegrees /= static_cast<float>(zoomFactor);
+      float fovyRadians = vtkMath::RadiansFromDegrees(fovyDegrees);
+      anari::setParameter(
+        this->Internals->AnariDevice, this->Internals->AnariCamera, "fovy", fovyRadians);
+***************
+*** 234,261 ****
+      static_cast<float>(myFocalPoint[2] - shiftedCamPos[2]) };
+    anari::setParameter(
+      this->Internals->AnariDevice, this->Internals->AnariCamera, "direction", cameraDirection);
+! 
+!   // Additional world-space transformation matrix
+!   vtkHomogeneousTransform* transform = cam->GetUserTransform();
+! 
+!   if (transform != nullptr)
+!   {
+!     double* matrix = transform->GetMatrix()->GetData();
+!     float matrixF[16];
+! 
+!     for (int i = 0; i < 16; i++)
+!     {
+!       matrixF[i] = static_cast<float>(matrix[i]);
+!     }
+! 
+!     anari::setParameter(
+!       this->Internals->AnariDevice, this->Internals->AnariCamera, "transform", matrixF);
+!   }
+! 
+    // Region of the sensor in normalized screen-space coordinates
+    double viewPort[4] = { 0, 0, 1, 1 };
+    this->Internals->RendererNode->GetViewport(viewPort);
+  
+    box2 imageRegion = { vec2{ static_cast<float>(viewPort[0]), static_cast<float>(viewPort[1]) },
+      vec2{ static_cast<float>(viewPort[2]), static_cast<float>(viewPort[3]) } };
+    anari::setParameter(
+--- 244,274 ----
+      static_cast<float>(myFocalPoint[2] - shiftedCamPos[2]) };
+    anari::setParameter(
+      this->Internals->AnariDevice, this->Internals->AnariCamera, "direction", cameraDirection);
+!     
+    // Region of the sensor in normalized screen-space coordinates
+    double viewPort[4] = { 0, 0, 1, 1 };
+    this->Internals->RendererNode->GetViewport(viewPort);
+  
++   // Support image panning in applications (e.g. VisIt)
++   if(!cam->GetUseExplicitProjectionTransformMatrix())
++   {
++     // Convert VTK camera window center in viewport coordinates (range is: [-1,+1],[-1,+1])
++     // to normalized screen-space coordinates (range is: [0,1],[0,1]).
++     auto windowCenter = cam->GetWindowCenter();
++     double wcx = windowCenter[0] / 2.0 + 0.5;
++     double wcy = windowCenter[1] / 2.0 + 0.5;
++ 
++     // Offset based on the width of the current viewport
++     double offsetX = (viewPort[2] - viewPort[0]) / 2.0;
++     double offsetY = (viewPort[3] - viewPort[1]) / 2.0;
++ 
++     // Adjust viewport to center around window center
++     viewPort[0] = wcx - offsetX;
++     viewPort[1] = wcy - offsetY;
++     viewPort[2] = wcx + offsetX;
++     viewPort[3] = wcy + offsetY;
++   }
++ 
+    box2 imageRegion = { vec2{ static_cast<float>(viewPort[0]), static_cast<float>(viewPort[1]) },
+      vec2{ static_cast<float>(viewPort[2]), static_cast<float>(viewPort[3]) } };
+    anari::setParameter(
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "vtk 9.5 ANARI patch ${current_patch}/${count_patches} for vtkAnariCameraNode.cxx failed."
+        return 1
+    fi
+    
+    # 2) expose internal vtkAnariPass via vtkAnariVolumeMapper
+    ((current_patch++))
+    patch -p0 << \EOF
+*** Rendering/ANARI/vtkAnariVolumeMapper.h.orig	 2025-06-23 14:12:36.000000000 -0500
+--- Rendering/ANARI/vtkAnariVolumeMapper.h	2025-08-06 16:10:00.556764266 -0500
+***************
+*** 52,57 ****
+--- 52,62 ----
+     * Allow vtkAnariSceneGraph properties to be set on the internal vtkRenderer.
+     */
+    vtkRenderer* GetInternalRenderer() const { return this->InternalRenderer; }
++   
++   /**
++    * Get the internal ANARI render pass.
++    */
++   vtkAnariPass* GetAnariPass() const { return this->InternalAnariPass; }
+  
+    //@{
+    /**
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "vtk 9.5 ANARI patch $current_patch/$count_patches for vtkAnariVolumeMapper.h failed."
+        return 1
+    fi
+}
+
 function apply_vtk_patch
 {
     if [[ ${VTK_VERSION} == 9.5.0 ]] ; then
@@ -283,6 +433,13 @@ function apply_vtk_patch
 
         # should submit a ticket to kitware
         apply_vtk95_vtkRectilinearGridReader_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+        
+        # MR will be submitted to kitware for these updates
+        # Will need to remove after next VTK update
+        apply_vtk95_vktanari_patches
         if [[ $? != 0 ]] ; then
             return 1
         fi

@@ -11,6 +11,7 @@
 #include <avtTransparencyActor.h>
 
 #include <vtkActor.h>
+#include <vtkCellDataToPointData.h>
 #include <vtkDataSet.h>
 #include <vtkDataSetMapper.h>
 #include <vtkPointGlyphMapper.h>
@@ -30,6 +31,9 @@ using std::vector;
 //    Kathleen Biagas, Tue Nov  5 11:58:15 PST 2019
 //    Added variables for handling points.
 //
+//    Kathleen Biagas, Tue Sept 2, 2025
+//    Added wireframeColorByVar and pointsColorByVar. 
+//
 // ****************************************************************************
 
 avtPseudocolorMapper::avtPseudocolorMapper() : avtVariableMapper()
@@ -38,9 +42,11 @@ avtPseudocolorMapper::avtPseudocolorMapper() : avtVariableMapper()
 
     drawWireframe = false;
     wireframeColor[0] = wireframeColor[1] = wireframeColor[2] = 0.;
+    wireframeColorByVar = false;
 
     drawPoints    = false;
     pointsColor[0] = pointsColor[1] = pointsColor[2] = 0.;
+    pointsColorByVar = false;
     glyphType = Point;
     colorByScalar = true;
     scale = 0.2;
@@ -78,6 +84,9 @@ avtPseudocolorMapper::~avtPseudocolorMapper()
 //  Creation:   November 5, 2019
 //
 //  Modifications:
+//    Kathleen Biagas, Tue Sept 2, 2025
+//    Added vtkCellDataToPointData before vtkVertexFilter if rendering points
+//    and coloring them by the default variable.
 //
 // ****************************************************************************
 
@@ -156,7 +165,16 @@ avtPseudocolorMapper::CreateActorMapperPairs(vtkDataSet **children)
             else
             {
                 vtkNew<vtkVertexFilter> vertexFilter;
-                vertexFilter->SetInputData(children[i]);
+                if(pointsColorByVar)
+                {
+                    vtkNew<vtkCellDataToPointData> cd2pd;
+                    cd2pd->SetInputData(children[i]);
+                    vertexFilter->SetInputConnection(cd2pd->GetOutputPort());
+                }
+                else
+                {
+                    vertexFilter->SetInputData(children[i]);
+                }
                 vertexFilter->VertexAtPointsOn();
                 vertexFilter->Update();
                 mappers[mi]->SetInputData(vertexFilter->GetOutput());
@@ -201,6 +219,10 @@ avtPseudocolorMapper::CustomizeMappers()
 //  Programmer: Kathleen Biagas
 //  Creation:   November 5, 2019
 //
+//  Modifications:
+//    Kathleen Biagas, Tue Sept 2, 2025
+//    Handle pointsColorbyVar and  wireframeColorByVar.
+//
 // ****************************************************************************
 
 void
@@ -222,10 +244,22 @@ avtPseudocolorMapper::CustomizeMappersInternal(bool invalidateTransparency)
             pgm->SetLookupTable(lut);
             pgm->SetGlyphType(glyphType);
             if (drawPoints)
-               pgm->ColorByScalarOff();
+            {
+                if(pointsColorByVar)
+                {
+                    pgm->ColorByScalarOn(coloringVarName);
+                }
+                else
+                {
+                    pgm->ColorByScalarOff();
+                    prop->SetColor(pointsColor);
+                }
+            }
             else
-               pgm->ColorByScalarOn(coloringVarName);
-            prop->SetColor(pointsColor);
+            {
+                pgm->ColorByScalarOn(coloringVarName);
+                prop->SetColor(pointsColor);
+            }
             if(glyphType == Point)
             {
                 prop->SetRepresentationToPoints();
@@ -264,10 +298,17 @@ avtPseudocolorMapper::CustomizeMappersInternal(bool invalidateTransparency)
             }
             else if (drawWireframe)
             {
-                mappers[i]->ScalarVisibilityOff();
                 prop->SetRepresentationToWireframe();
-                prop->SetColor(wireframeColor);
                 prop->EdgeVisibilityOff();
+                if(wireframeColorByVar)
+                {
+                    mappers[i]->ScalarVisibilityOn();
+                }
+                else
+                {
+                    mappers[i]->ScalarVisibilityOff();
+                    prop->SetColor(wireframeColor);
+                }
             }
         }
     }
@@ -406,6 +447,29 @@ avtPseudocolorMapper::SetWireframeColor(double rgb[3])
     }
 }
 
+// ****************************************************************************
+//  Method: avtPseudocolorMapper::SetWireframeColorByVar
+//
+//  Purpose:
+//     Specifies whether wireframe mode should color by var.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   August 28, 2025
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtPseudocolorMapper::SetWireframeColorByVar(bool val)
+{
+    if (wireframeColorByVar != val)
+    {
+        wireframeColorByVar = val;
+        CustomizeMappersInternal();
+    }
+}
+
 
 // ****************************************************************************
 //  Method: avtPseudocolorMapper::SetPointsColor
@@ -430,6 +494,30 @@ avtPseudocolorMapper::SetPointsColor(double rgb[3])
         pointsColor[0] = rgb[0];
         pointsColor[1] = rgb[1];
         pointsColor[2] = rgb[2];
+        CustomizeMappersInternal();
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtPseudocolorMapper::SetPointsColorByVar
+//
+//  Purpose:
+//     Specifies whether wireframe mode should color by var.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   August 28, 2025
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtPseudocolorMapper::SetPointsColorByVar(bool val)
+{
+    if (pointsColorByVar != val)
+    {
+        pointsColorByVar = val;
         CustomizeMappersInternal();
     }
 }

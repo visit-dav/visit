@@ -268,6 +268,15 @@ class BoundaryHelperFunctions
 //    Kevin Griffin, Tue Apr 21 17:41:51 PDT 2015
 //    Added the ExchangeVector method so that the Exchange*Vector methods can
 //    be called based on the underlying data type.
+// 
+//    Justin Privitera, Wed Aug 13 10:43:18 PDT 2025
+//    Combined ExchangeScalar() and ExchangeVector() into ExchangeVar().
+//    Removed ExchangeFloatScalar(), ExchangeDoubleScalar(), 
+//    ExchangeIntScalar(), ExchangeUCharScalar(), ExchangeFloatVector(),
+//    ExchangeDoubleVector(), and ExchangeIntVector() in favor of a new 
+//    templated method called ExchangeData().
+//    Added explicit template instantiation for BoundaryHelperFunctions for
+//    unsigned ints and chars.
 //
 // ****************************************************************************
 
@@ -304,13 +313,10 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
 
     std::vector<Neighbor>                  GetNeighbors(int domain);
 
-    virtual std::vector<vtkDataArray*>     ExchangeScalar(std::vector<int>   domainNum,
-                                             bool                  isPointData,
-                                             std::vector<vtkDataArray*> scalars);
-
-    virtual std::vector<vtkDataArray*>     ExchangeVector(std::vector<int> domainNum,
-                                                               bool                   isPointData,
-                                                               std::vector<vtkDataArray*>  vectors);
+    virtual std::vector<vtkDataArray*>     ExchangeVar(
+                                             std::vector<int>           domainNum,
+                                             bool                       isPointData,
+                                             std::vector<vtkDataArray*> values);
 
     virtual std::vector<avtMaterial*>      ExchangeMaterial(std::vector<int>   domainNum,
                                               std::vector<avtMaterial*>   mats);
@@ -329,34 +335,13 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
     virtual void                           ResetCachedMembers();
 
   private:
-    virtual std::vector<vtkDataArray*>     ExchangeFloatScalar(std::vector<int> domainNum,
-                                             bool                  isPointData,
-                                             std::vector<vtkDataArray*> scalars);
 
-    virtual std::vector<vtkDataArray*>     ExchangeDoubleScalar(std::vector<int> domainNum,
-                                             bool                  isPointData,
-                                             std::vector<vtkDataArray*> scalars);
-
-    virtual std::vector<vtkDataArray*>     ExchangeIntScalar(std::vector<int>  domainNum,
-                                             bool                  isPointData,
-                                             std::vector<vtkDataArray*> scalars);
-
-    virtual std::vector<vtkDataArray*>     ExchangeUCharScalar(std::vector<int> domainNum,
-                                             bool                  isPointData,
-                                             std::vector<vtkDataArray*> scalars);
-    
-    virtual std::vector<vtkDataArray*>     ExchangeFloatVector(std::vector<int> domainNum,
-                                                               bool                   isPointData,
-                                                               std::vector<vtkDataArray*>  vectors);
-    
-    virtual std::vector<vtkDataArray*>     ExchangeDoubleVector(std::vector<int> domainNum,
-                                                                bool                   isPointData,
-                                                                std::vector<vtkDataArray*>  vectors);
-    
-    virtual std::vector<vtkDataArray*>     ExchangeIntVector(std::vector<int>  domainNum,
-                                                             bool                  isPointData,
-                                                             std::vector<vtkDataArray*> vectors);
-
+    template <typename T>
+    std::vector<vtkDataArray*>             ExchangeData(
+                                              BoundaryHelperFunctions<T>* bhf,
+                                              std::vector<int>            domainNum,
+                                              bool                        isPointData,
+                                              std::vector<vtkDataArray*>  data);
 
     static bool                       createGhostsForTIntersections;
 
@@ -376,13 +361,17 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
     bool                                    haveCalculatedBoundaries;
 
     friend class BoundaryHelperFunctions<int>;
+    friend class BoundaryHelperFunctions<unsigned int>;
     friend class BoundaryHelperFunctions<float>;
     friend class BoundaryHelperFunctions<double>;
+    friend class BoundaryHelperFunctions<char>;
     friend class BoundaryHelperFunctions<unsigned char>;
 
     BoundaryHelperFunctions<int>           *bhf_int;
+    BoundaryHelperFunctions<unsigned int>  *bhf_uint;
     BoundaryHelperFunctions<float>         *bhf_float;
     BoundaryHelperFunctions<double>        *bhf_double;
+    BoundaryHelperFunctions<char>          *bhf_char;
     BoundaryHelperFunctions<unsigned char> *bhf_uchar;
 
     // helper methods

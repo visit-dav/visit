@@ -80,6 +80,9 @@
       <Field name="showInternal" label="Show Internal" type="bool">
         false
       </Field>
+      <Field name="showGenerated" label="Show generated zones" type="bool">
+        false
+      </Field>
       <Field name="pointSizePixels" label="Point size pixels" type="int">
         2
       </Field>

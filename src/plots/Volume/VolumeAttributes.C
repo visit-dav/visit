@@ -13,20 +13,21 @@
 
 static const char *Renderer_strings[] = {
 "Serial", "Parallel", "Composite",
-"Integration", "SLIVR"};
+"Integration", "SLIVR", "ANARI"
+};
 
 std::string
 VolumeAttributes::Renderer_ToString(VolumeAttributes::Renderer t)
 {
     int index = int(t);
-    if(index < 0 || index >= 5) index = 0;
+    if(index < 0 || index >= 6) index = 0;
     return Renderer_strings[index];
 }
 
 std::string
 VolumeAttributes::Renderer_ToString(int t)
 {
-    int index = (t < 0 || t >= 5) ? 0 : t;
+    int index = (t < 0 || t >= 6) ? 0 : t;
     return Renderer_strings[index];
 }
 
@@ -34,7 +35,7 @@ bool
 VolumeAttributes::Renderer_FromString(const std::string &s, VolumeAttributes::Renderer &val)
 {
     val = VolumeAttributes::Serial;
-    for(int i = 0; i < 5; ++i)
+    for(int i = 0; i < 6; ++i)
     {
         if(s == Renderer_strings[i])
         {
@@ -520,6 +521,7 @@ void VolumeAttributes::Copy(const VolumeAttributes &obj)
     for(int i = 0; i < 4; ++i)
         materialProperties[i] = obj.materialProperties[i];
 
+    anariAttributes = obj.anariAttributes;
 
     VolumeAttributes::SelectAll();
 }
@@ -733,7 +735,8 @@ VolumeAttributes::operator == (const VolumeAttributes &obj) const
             (lowGradientLightingReduction == obj.lowGradientLightingReduction) &&
             (lowGradientLightingClampFlag == obj.lowGradientLightingClampFlag) &&
             (lowGradientLightingClampValue == obj.lowGradientLightingClampValue) &&
-            materialProperties_equal);
+            materialProperties_equal &&
+            (anariAttributes == obj.anariAttributes));
 }
 
 // ****************************************************************************
@@ -922,6 +925,7 @@ VolumeAttributes::SelectAll()
     Select(ID_lowGradientLightingClampFlag,    (void *)&lowGradientLightingClampFlag);
     Select(ID_lowGradientLightingClampValue,   (void *)&lowGradientLightingClampValue);
     Select(ID_materialProperties,              (void *)materialProperties, 4);
+    Select(ID_anariAttributes,                 (void *)&anariAttributes);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1236,6 +1240,18 @@ VolumeAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
         node->AddNode(new DataNode("materialProperties", materialProperties, 4));
     }
 
+    if(completeSave || !FieldsEqual(ID_anariAttributes, &defaultObject))
+    {
+        DataNode *anariAttributesNode = new DataNode("anariAttributes");
+        if(anariAttributes.CreateNode(anariAttributesNode, completeSave, false))
+        {
+            addToParent = true;
+            node->AddNode(anariAttributesNode);
+        }
+        else
+            delete anariAttributesNode;
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -1402,7 +1418,7 @@ VolumeAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 5)
+            if(ival >= 0 && ival < 6)
                 SetRendererType(Renderer(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
@@ -1502,6 +1518,8 @@ VolumeAttributes::SetFromNode(DataNode *parentNode)
         SetLowGradientLightingClampValue(node->AsDouble());
     if((node = searchNode->GetNode("materialProperties")) != 0)
         SetMaterialProperties(node->AsDoubleArray());
+    if((node = searchNode->GetNode("anariAttributes")) != 0)
+        anariAttributes.SetFromNode(node);
     if(colorControlPoints.GetNumControlPoints() < 2)
          SetDefaultColorControlPoints();
 
@@ -1830,6 +1848,13 @@ VolumeAttributes::SetMaterialProperties(const double *materialProperties_)
     Select(ID_materialProperties, (void *)materialProperties, 4);
 }
 
+void
+VolumeAttributes::SetAnariAttributes(const AnariAttributes &anariAttributes_)
+{
+    anariAttributes = anariAttributes_;
+    Select(ID_anariAttributes, (void *)&anariAttributes);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -2134,6 +2159,18 @@ VolumeAttributes::GetMaterialProperties()
     return materialProperties;
 }
 
+const AnariAttributes &
+VolumeAttributes::GetAnariAttributes() const
+{
+    return anariAttributes;
+}
+
+AnariAttributes &
+VolumeAttributes::GetAnariAttributes()
+{
+    return anariAttributes;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -2166,6 +2203,12 @@ void
 VolumeAttributes::SelectMaterialProperties()
 {
     Select(ID_materialProperties, (void *)materialProperties, 4);
+}
+
+void
+VolumeAttributes::SelectAnariAttributes()
+{
+    Select(ID_anariAttributes, (void *)&anariAttributes);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2237,6 +2280,7 @@ VolumeAttributes::GetFieldName(int index) const
     case ID_lowGradientLightingClampFlag:    return "lowGradientLightingClampFlag";
     case ID_lowGradientLightingClampValue:   return "lowGradientLightingClampValue";
     case ID_materialProperties:              return "materialProperties";
+    case ID_anariAttributes:                 return "anariAttributes";
     default:  return "invalid index";
     }
 }
@@ -2306,6 +2350,7 @@ VolumeAttributes::GetFieldType(int index) const
     case ID_lowGradientLightingClampFlag:    return FieldType_bool;
     case ID_lowGradientLightingClampValue:   return FieldType_double;
     case ID_materialProperties:              return FieldType_doubleArray;
+    case ID_anariAttributes:                 return FieldType_att;
     default:  return FieldType_unknown;
     }
 }
@@ -2375,6 +2420,7 @@ VolumeAttributes::GetFieldTypeName(int index) const
     case ID_lowGradientLightingClampFlag:    return "bool";
     case ID_lowGradientLightingClampValue:   return "double";
     case ID_materialProperties:              return "doubleArray";
+    case ID_anariAttributes:                 return "att";
     default:  return "invalid index";
     }
 }
@@ -2634,6 +2680,11 @@ VolumeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
             materialProperties_equal = (materialProperties[i] == obj.materialProperties[i]);
 
         retval = materialProperties_equal;
+        }
+        break;
+    case ID_anariAttributes:
+        {  // new scope
+        retval = (anariAttributes == obj.anariAttributes);
         }
         break;
     default: retval = false;

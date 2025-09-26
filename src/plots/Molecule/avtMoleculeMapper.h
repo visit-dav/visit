@@ -25,6 +25,8 @@ class vtkLookupTable;
 //  Creation:   July 22, 2016 
 //
 //  Modifications:
+//    Kathleen Biagas, Thu Aug 28, 2025
+//    Remove SetSurfaceRepresentation, no longer used.
 //
 // ****************************************************************************
 
@@ -33,10 +35,6 @@ class avtMoleculeMapper : public avtMapper
   public:
                                avtMoleculeMapper();
     virtual                   ~avtMoleculeMapper();
-
-
-    // From avtMapper
-    void                       SetSurfaceRepresentation(int);
 
     // this class, called from avtPlot
     void                       SetRange(double, double);
