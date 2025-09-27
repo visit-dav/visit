@@ -5,6 +5,10 @@
       *.unv.gz
       *.iv
       *.msh
+      *.mailm
+      *.maila
+      *.mail
+      *.stl
     </FilePatterns>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
