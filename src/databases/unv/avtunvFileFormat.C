@@ -30,6 +30,7 @@
 #include <avtunvFileFormat.h>
 
 #include <string>
+#include <stdint.h>
 
 #include <vtkFloatArray.h>
 #include <vtkRectilinearGrid.h>
@@ -68,6 +69,24 @@
 
 using     std::string;
 using namespace std;
+
+#define FNV_OFFSET_BASIS 14695981039346656037ULL
+#define FNV_PRIME 1099511628211ULL
+// A function to compute a 64 bits hash using FNV-1a (Fowler–Noll–Vo) algorithm.
+// Two bunches of different data may very rarely have the same hash.
+uint64_t compute_64bitshash_fnv1a(const void *data, size_t length, uint64_t inhash)
+{
+    const uint8_t *bytes = (const uint8_t *)data;
+    uint64_t hash ;
+    hash = inhash ;
+
+    // Apply FNV-1a
+    for (size_t i = 0; i < length; i++) {
+        hash ^= bytes[i];
+        hash *= FNV_PRIME;
+    }
+    return hash;
+}
 
 // ****************************************************************************
 //  Method: avtunvFileFormat auxiliary functions and data
@@ -3237,7 +3256,6 @@ avtunvFileFormat::GetMesh(const char *meshname)
             return NULL ;
         // Computes the lowest nodes number:
         int nbn = avtunvFileFormat::getNbverticesFreeFaces(); // Number of nodes for the structure
-        fprintf(stdout,"Number of free nodes=%d\n",nbn);
 #if INTERACTIVEPLOT
         if (debuglevel >= 2) fprintf(stdout,"Number of free nodes=%d\n",nbn);
 #else
@@ -5492,6 +5510,186 @@ avtunvFileFormat::ReadFile()
 #endif
         }
 #endif
+        else if (strcasestr(filename.c_str(), ".stl") != NULL)
+        {
+            // Standard Triangle Language or Standard Tessellation Language or stereolithography
+            handle = fopen(filename.c_str(), "r");
+            if (handle == NULL)
+            {
+                EXCEPTION1(InvalidDBTypeException, "This mesh file could not be openend.");
+            }
+#if INTERACTIVEREAD
+            if (debuglevel >= 1) fprintf(stdout,"On the way to read stl file %s\n",filename.c_str());
+#else
+            debug1 << "On the way to read stl file " << filename << endl;
+#endif
+            int nbnel = 3 ; // Hard set the number of nodes for a triangle
+            int typelt=91 ; // I-Deas code for linear triangle
+            const int len = 2048; // Longest line length
+            char buf[len]; // A line length
+            char keyword[20];
+            // Local variables
+            double x,y,z ;
+            double lnods[3][3];
+            int lnod ;
+            UnvElement anUnvElement; // an element
+            (void) anUnvElement;
+            UnvNode theUnvNode ;
+            // Debugging temporary
+            UnvNode anUnvNode;
+            set<UnvNode, UnvNode::compare_UnvNode>::iterator itrg; // Global node iterator
+            // Working hash set
+            set<unvHashlab, unvHashlab::compare_unvHashlab> theset ;
+            set<unvHashlab, unvHashlab::compare_unvHashlab>::iterator itr;
+            unvHashlab curhashlab ; // Using 64 bits key
+            unvHashlab thehashlab ;
+            // Initialize
+            anUnvElement.number=0;
+            theUnvNode.number=0 ;
+            thehashlab.number=0 ;
+            while (fgets(buf, len, handle) != NULL)
+            {
+                // if (strstr((const char *)buf, "solid") != NULL)
+                sscanf(buf, "%s", keyword) ;
+                if (strcmp(keyword, "solid") == 0)
+                {
+                    nb2dmats++ ;
+#if INTERACTIVEREAD
+                    if (debuglevel >= 2) fprintf(stdout,"New set=%d\n", nb2dmats) ;
+#else
+                    debug2 << "New set=" << nb2dmats << endl;
+#endif
+                    while (fgets(buf, len, handle) != NULL)
+                    {
+                        // if (strstr((const char *)buf, "facet") != NULL)
+                        sscanf(buf, "%s", keyword) ;
+                        if (strcmp(keyword, "facet") == 0)
+                        {
+                            while (fgets(buf, len, handle) != NULL)
+                            {
+                                if (strstr((const char *)buf, "outer loop") != NULL)
+                                {
+                                    nb2dcells++ ;
+                                    anUnvElement.label = nb2dcells ;
+                                    anUnvElement.typelt = typelt;
+                                    anUnvElement.nbnel = nbnel;
+                                    anUnvElement.matid = nb2dmats ; 
+                                    anUnvElement.nodes = new int[nbnel];
+#if INTERACTIVEREAD
+                                    if (debuglevel >= 3) fprintf(stdout,"  New triangle=%d\n",nb2dcells) ;
+#else
+                                    debug3 << "  New triangle=" << nb2dcells << endl;
+#endif
+                                    for (lnod=0; lnod < 3; lnod++) {
+                                        fgets(buf, len, handle) ;
+                                        if (sscanf(buf, "%19s %lf %lf %lf", keyword, &x, &y, &z) == 4) {
+                                            if (strcmp(keyword, "vertex") == 0) {
+#if INTERACTIVEREAD
+                                                if (debuglevel >= 3) fprintf(stdout,"    Read node=(%lf, %lf, %lf)\n", x, y, z) ;
+#else
+                                                debug3 << "    Read node=(" << x << ", " << y << ", " << z << ")" << endl;
+#endif
+                                                lnods[lnod][0] = x ; lnods[lnod][1] = y ; lnods[lnod][2] = z ;
+                                                range[0] = min(range[0], lnods[lnod][0]);
+                                                range[1] = max(range[1], lnods[lnod][0]);
+                                                range[2] = min(range[2], lnods[lnod][1]);
+                                                range[3] = max(range[3], lnods[lnod][1]);
+                                                range[4] = min(range[4], lnods[lnod][2]);
+                                                range[5] = max(range[5], lnods[lnod][2]);
+                                                // Compute a hash from the node position in 3D
+                                                uint64_t crc = 0;
+#if 0
+                                                crc = (uint64_t) starpu_hash_crc32c_be_n(lnods[lnod], ((size_t)3 ) * sizeof(double), crc);
+#else
+                                                crc = compute_64bitshash_fnv1a(lnods[lnod], ((size_t)3 ) * sizeof(double), FNV_OFFSET_BASIS);
+#endif
+                                                curhashlab.label = crc ;
+                                                itr = theset.find(curhashlab) ;
+                                                if (itr != theset.end()) {
+                                                    anUnvElement.nodes[lnod] = ( 1 + itr->number ) ; // sets element local node to node label
+                                                    // For debug, detail which node is reused
+                                                    if (debuglevel >= 4) {
+                                                        anUnvNode.label = ( 1 + itr->number ) ;
+                                                        itrg = meshUnvNodes.find(anUnvNode);
+#if INTERACTIVEREAD
+                                                        fprintf(stdout,"    Reuse node[%d]=(%lf, %lf, %lf) crc=%lld\n",itr->number, itrg->x, itrg->y, itrg->z, (long long int)crc) ;
+#else
+                                                        debug4 << "    Reuse node[" << itr->number << "] x=" << itrg->x << " y=" << itrg->y << " z=" <<  itrg->z << " crc=" << crc << endl;
+#endif
+                                                    }
+                                               } else {
+                                                    // Define a new node and add to the set of nodes
+                                                    theUnvNode.x = lnods[lnod][0];
+                                                    theUnvNode.y = lnods[lnod][1];
+                                                    theUnvNode.z = lnods[lnod][2];
+                                                    theUnvNode.label = (thehashlab.number + 1) ;
+                                                    meshUnvNodes.insert(theUnvNode);
+                                                    theUnvNode.number++; // increase the total number of nodes
+                                                    // Sets the elements to nodes vector
+                                                    anUnvElement.nodes[lnod] = theUnvNode.label ; // sets element local node to node label
+                                                    // Adds a new 64 bits hash working set
+                                                    thehashlab.label = crc ;
+                                                    theset.insert(thehashlab);
+                                                    thehashlab.number++;
+#if INTERACTIVEREAD
+                                                    if (debuglevel >= 4) fprintf(stdout,"    New node[%d]=(%lf, %lf, %lf)\n",thehashlab.number, theUnvNode.x, theUnvNode.y, theUnvNode.z) ;
+#else
+                                                    debug4 << "    New node[" << thehashlab.number << "] x=" << theUnvNode.x << " y=" << theUnvNode.y << " z=" <<  theUnvNode.z << endl;
+#endif
+                                                }
+                                            } else {
+                                                // fprintf(stdout,"Error : unexpected key word '%s'\n", keyword);
+                                                EXCEPTION1(InvalidDBTypeException, "Error : unexpected key word.");
+                                            }
+                                        } else {
+                                            // fprintf(stdout,"Error : incorrect line format\n");
+                                            EXCEPTION1(InvalidDBTypeException, "Error : incorrect line format.");
+                                        }
+                                    }
+                                    // Adds new element to the list, this is a fully defined element
+                                    meshUnvElements.insert(anUnvElement) ;
+                                    anUnvElement.number++;
+                                    if (fgets(buf, len, handle) != NULL)
+                                    {
+                                        if (strstr((const char *)buf, "endloop") != NULL)
+                                        {
+                                            if (fgets(buf, len, handle) != NULL)
+                                            {
+                                                if (strstr((const char *)buf, "endfacet") != NULL)
+                                                {
+#if INTERACTIVEREAD
+                                                    if (debuglevel >= 4) fprintf(stdout,"  End of Triangle\n");
+#else
+                                                    debug4 << "  End of Triangle" << endl;
+#endif
+                                                    break ;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else if (strstr((const char *)buf, "endsolid") != NULL)
+                        {
+                            break ;
+                        }
+                    }
+                }
+            }
+            if (nb2dmats == 0)
+            {
+                EXCEPTION1(InvalidDBTypeException, "This mesh file could not be read properly.");
+            }
+            nbnodes = theUnvNode.number;
+            maxnodl = nbnodes ;
+            nbletsptyp[4] = nb2dcells ;
+#if INTERACTIVEREAD
+            if (debuglevel >= 2) fprintf(stdout,"There are #nodes=%d, #triangles=%d, #materials=%d\n", nbnodes, nb2dcells, nb2dmats) ;
+#else
+            debug2 << "There are #nodes=" << nbnodes << ", #triangles=" << nb2dcells << ", #materials=" << nb2dmats << endl;
+#endif
+        }
         else if (strcasestr(filename.c_str(), ".msh") != NULL)
         {
             // Format description in http://gmsh.info//doc/texinfo/gmsh.html#MSH-file-format
@@ -6700,7 +6898,7 @@ avtunvFileFormat::GetAuxiliaryData(const char *var, const char *type, void *,Des
 #if INTERACTIVEPLOT
     if (debuglevel >= 3) fprintf(stdout,"aux var='%s', type='%s'\n",var,type);
 #else
-    debug3 << "aux var='" << var << "', type='" << type << "%s'" << endl;
+    debug3 << "aux var='" << var << "', type='" << type << "'" << endl;
 #endif
 #ifdef MDSERVER
     return retval;
@@ -6716,6 +6914,11 @@ avtunvFileFormat::GetAuxiliaryData(const char *var, const char *type, void *,Des
             avtMaterial *mat = NULL;
             int nmats = max(nb3dmats, nb2dmats);
             nmats = max(nmats,nb1dmats) ;
+#if INTERACTIVEPLOT
+            if (debuglevel >= 3) fprintf(stdout,"nmats=%d\n",nmats);
+#else
+            debug3 << "nmats=" << nmats << endl;
+#endif
             int *matnos = new int[nmats];
             char **names = new char *[nmats];
             char str[32];
@@ -6788,6 +6991,11 @@ avtunvFileFormat::GetAuxiliaryData(const char *var, const char *type, void *,Des
                 debug3 << "2D Material #cells=" << dims[0] << endl;
 #endif
                 for (itre = meshUnvElements.begin(); itre != meshUnvElements.end(); itre++)
+#if INTERACTIVEPLOT
+                    if (debuglevel >= 5) fprintf(stdout,"Element type=%d\n",itre->typelt);
+#else
+                    debug5 << "Element type=" << itre->typelt << endl;
+#endif
                     if (avtunvFileFormat::is2DKnownElt(itre->typelt) >= 0)
                     {
                         matlist[k] = itre->matid;
@@ -6813,10 +7021,17 @@ avtunvFileFormat::GetAuxiliaryData(const char *var, const char *type, void *,Des
             {
 #if INTERACTIVEPLOT
                 if (debuglevel >= 3) fprintf(stdout,"Material #cells=%d\n",dims[0]);
+#else
+                debug3 << "Material all #cells=" << dims[0] << endl;
 #endif
                 for (itre = meshUnvElements.begin(); itre != meshUnvElements.end(); itre++)
                 {
                     matlist[k] = itre->matid;
+#if INTERACTIVEPLOT
+                    if (debuglevel >= 5) fprintf(stdout,"  mat[%d]=%d\n", k, matlist[k]);
+#else
+                    debug5 << "  mat[" << k << "]=" << matlist[k] << dims[0] << endl;
+#endif
                     k++ ;
                 }
             }
@@ -6980,9 +7195,9 @@ avtunvFileFormat::GetAuxiliaryData(const char *var, const char *type, void *,Des
         if (strstr(var, "mesh") != NULL)
         {
 #if INTERACTIVEPLOT
-            if (debuglevel >= 3) fprintf(stdout,"range = %lf,%lf\n",range[0],range[1]);
+            if (debuglevel >= 3) fprintf(stdout,"X range = %lf,%lf\n",range[0],range[1]);
 #else
-            debug3 << "range = (" << range[0] << ", " << range[1] << ")" << endl;
+            debug3 << "X range = (" << range[0] << ", " << range[1] << ")" << endl;
 #endif
             avtIntervalTree *itree = new avtIntervalTree(1, 3);
             itree->AddElement(0, range);
