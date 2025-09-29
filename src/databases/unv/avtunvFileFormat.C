@@ -3865,7 +3865,7 @@ avtunvFileFormat::ReadFile()
             handle = fopen(filename.c_str(), "r");
             if (handle == NULL)
             {
-                EXCEPTION1(InvalidDBTypeException, "This unv file could not be openend.");
+                EXCEPTION1(InvalidDBTypeException, "This unv file could not be opened.");
             }
 
 #if INTERACTIVEREAD
@@ -4344,7 +4344,7 @@ avtunvFileFormat::ReadFile()
             handle = fopen(filename.c_str(), "r");
             if (handle == NULL)
             {
-                EXCEPTION1(InvalidDBTypeException, "This mailm file could not be openend.");
+                EXCEPTION1(InvalidDBTypeException, "This mailm file could not be opened.");
             }
 #if INTERACTIVEREAD
             if (debuglevel >= 1) fprintf(stdout,"On the way to read mailm file %s\n",filename.c_str());
@@ -4519,7 +4519,7 @@ avtunvFileFormat::ReadFile()
             handle = fopen(filename.c_str(), "r");
             if (handle == NULL)
             {
-                EXCEPTION1(InvalidDBTypeException, "This mail file could not be openend.");
+                EXCEPTION1(InvalidDBTypeException, "This mail file could not be opened.");
             }
 #if INTERACTIVEREAD
             if (debuglevel >= 1) fprintf(stdout,"On the way to read mail file %s\n",filename.c_str());
@@ -4999,7 +4999,7 @@ avtunvFileFormat::ReadFile()
             gzhandle = gzopen(filename.c_str(), "r"); // Open the target file for reading
             if (gzhandle == Z_NULL)
             {
-                EXCEPTION1(InvalidDBTypeException, "This unv.gz file could not be openend.");
+                EXCEPTION1(InvalidDBTypeException, "This unv.gz file could not be opened.");
             }
 
             const int len = 2048; // Longest line length
@@ -5692,7 +5692,7 @@ avtunvFileFormat::ReadFile()
             handle = fopen(filename.c_str(), "r");
             if (handle == NULL)
             {
-                EXCEPTION1(InvalidDBTypeException, "This mesh file could not be openend.");
+                EXCEPTION1(InvalidDBTypeException, "This mesh file could not be opened.");
             }
 #if INTERACTIVEREAD
             if (debuglevel >= 1) fprintf(stdout,"On the way to read msh file %s\n",filename.c_str());
@@ -6718,7 +6718,7 @@ avtunvFileFormat::ReadFile()
             handle = fopen(filename.c_str(), "r");
             if (handle == NULL)
             {
-                EXCEPTION1(InvalidDBTypeException, "This iv file could not be openend.");
+                EXCEPTION1(InvalidDBTypeException, "This iv file could not be opened.");
             }
 #if INTERACTIVEREAD
             if (debuglevel >= 1) fprintf(stdout,"On the way to read iv file %s\n",filename.c_str());
