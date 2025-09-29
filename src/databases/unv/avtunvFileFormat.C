@@ -5598,11 +5598,7 @@ avtunvFileFormat::ReadFile()
                                                 range[5] = max(range[5], lnods[lnod][2]);
                                                 // Compute a hash from the node position in 3D
                                                 uint64_t crc = 0;
-#if 0
-                                                crc = (uint64_t) starpu_hash_crc32c_be_n(lnods[lnod], ((size_t)3 ) * sizeof(double), crc);
-#else
                                                 crc = compute_64bitshash_fnv1a(lnods[lnod], ((size_t)3 ) * sizeof(double), FNV_OFFSET_BASIS);
-#endif
                                                 curhashlab.label = crc ;
                                                 itr = theset.find(curhashlab) ;
                                                 if (itr != theset.end()) {
