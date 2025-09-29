@@ -676,6 +676,48 @@ avtMFEMDataAdaptor::BoundaryMeshToVTK(mfem::Mesh *mesh)
     return ugrid;
 }
 
+// ****************************************************************************
+//  Method: QuadratureFunctionMeshToVTK
+//
+//  Purpose:
+//    Constructs a vtkUnstructuredGrid that represents an mfem quad pts mesh.
+//
+//  Arguments:
+//    mesh:        MFEM mesh
+//.   order:       Quad Func Order
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Fri Sep 26 09:16:26 PDT 2025
+//
+// ****************************************************************************
+vtkDataSet *
+avtMFEMDataAdaptor::QuadratureFunctionMeshToVTK(mfem::Mesh *mesh, int order)
+{
+    vtkDataSet *rv = nullptr;
+   
+    // refine the mesh
+    // qauss p points, we use gauss lobatto lor'd mesh with p + 1
+    // we use the mfem quad function to get the right numbers
+
+    ///
+    // this logic for order and ref_factor is from glviz
+    // assume identical order
+    // const int order = quad_f->GetIntRule(0).GetOrder()/2; // <-- Gauss-Legendre
+    //
+    const int qpts_order = order / 2;
+    const int ref_factor = qpts_order + 1;
+    ///
+    
+    // Note:
+    // mfem::BasisType::ClosedGL is what glviz uses
+    mfem::Mesh lo_mesh = mfem::Mesh::MakeRefined(*mesh,
+                                                 ref_factor,
+                                                 mfem::BasisType::GaussLobatto);
+    
+
+    vtkDataSet *res_ds = LowOrderMeshToVTK(&lo_mesh);
+    return res_ds;
+}
 
 // ****************************************************************************
 //  Method: LegacyRefineGridFunctionToVTK
@@ -1190,4 +1232,29 @@ avtMFEMDataAdaptor::BoundaryAttributeToVTK(mfem::Mesh *mesh)
 
     return rv;
 }
-
+// ****************************************************************************
+//  Method: BoundaryAttributeToVTK
+//
+//  Purpose:
+//   Constructs a vtkDataArray that contains the quad points values
+//   for a mfem mesh. These are piece wise constant.
+//
+//  Arguments:
+//   qf:      MFEM quad function object
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Fri Sep 26 09:16:26 PDT 2025
+//
+//  Modifications:
+//
+// ****************************************************************************
+vtkDataArray *
+avtMFEMDataAdaptor::QuadratureFunctionToVTK(mfem::QuadratureFunction *qf)
+{
+    vtkDataArray *rv =nullptr;
+    
+    // TODO: Everything
+    std::cout << "YOU MADE IT HERE! Prepare to CRASH!" << std::endl;
+    return rv;
+}
+     
