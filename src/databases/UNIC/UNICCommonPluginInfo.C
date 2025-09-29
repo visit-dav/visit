@@ -50,6 +50,6 @@ UNICCommonPluginInfo::SetupDatabase(const char *const *list,
         ffl[i] = new avtUNICFileFormat(list[i]);
     }
     avtSTMDFileFormatInterface *inter
-           = new avtSTMDFileFormatInterface(ffl, nList);
+        = new avtSTMDFileFormatInterface(ffl, nList);
     return new avtGenericDatabase(inter);
 }

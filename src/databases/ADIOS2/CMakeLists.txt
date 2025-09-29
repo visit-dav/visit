@@ -46,7 +46,6 @@ ${VISIT_DATABASE_INCLUDES}
 )
 
 set(vtk_libs VTK::FiltersHybrid VTK::vtksys )
-
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 
 ADD_LIBRARY(IADIOS2Database ${LIBI_SOURCES})

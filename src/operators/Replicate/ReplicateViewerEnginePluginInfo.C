@@ -148,7 +148,10 @@ ReplicateViewerEnginePluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
 //  Method: ReplicateViewerEnginePluginInfo::UpdateOperatorAtts
 //
 //  Purpose:
-//    Update the operator attributes when using operator expressions.
+//    Update the operator attributes. This function is *only* called
+//    when the plot variable name is set or changed. The plot variable
+//    name is used in operator expressions and may be used as the
+//    'default' variable in GUIs.
 //
 //  Arguments:
 //    atts        The attribute subject to update.

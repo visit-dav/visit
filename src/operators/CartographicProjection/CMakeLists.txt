@@ -75,17 +75,13 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
 ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(ECartographicProjectionOperator_ser ${LIBE_SOURCES})
-
 set(vtk_elibsSer VTK::GeovisCore )
-
 TARGET_LINK_LIBRARIES(ECartographicProjectionOperator_ser visitcommon avtpipeline_ser avtexpressions_ser avtfilters_ser ${vtk_elibsSer} )
 SET(INSTALLTARGETS ${INSTALLTARGETS} ECartographicProjectionOperator_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(ECartographicProjectionOperator_par ${LIBE_SOURCES})
-
     set(vtk_elibsPar VTK::GeovisCore )
-
     TARGET_LINK_LIBRARIES(ECartographicProjectionOperator_par visitcommon avtpipeline_par avtexpressions_par avtfilters_par ${vtk_elibsPar} )
     SET(INSTALLTARGETS ${INSTALLTARGETS} ECartographicProjectionOperator_par)
 ENDIF(VISIT_PARALLEL)
