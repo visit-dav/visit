@@ -5516,7 +5516,7 @@ avtunvFileFormat::ReadFile()
             handle = fopen(filename.c_str(), "r");
             if (handle == NULL)
             {
-                EXCEPTION1(InvalidDBTypeException, "This mesh file could not be openend.");
+                EXCEPTION1(InvalidDBTypeException, "This mesh file could not be opened.");
             }
 #if INTERACTIVEREAD
             if (debuglevel >= 1) fprintf(stdout,"On the way to read stl file %s\n",filename.c_str());
