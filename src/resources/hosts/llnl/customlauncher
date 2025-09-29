@@ -265,6 +265,9 @@ class JobSubmitter_jsrun_LLNL(JobSubmitter):
 #   Eric Brugger, Mon Aug 26 10:54:18 PDT 2024
 #   Added an LLNL specific job launcher for jsrun.
 #
+#   Eric Brugger, Fri Sep 26 16:14:02 PDT 2025
+#   Added logic to set the LD_LIBRARY_PATH appropriately for MPI on rzadams.
+#
 ###############################################################################
 
 class LLNLLauncher(MainLauncher):
@@ -305,6 +308,13 @@ class LLNLLauncher(MainLauncher):
             self.generalArgs.host = "130.106.204.1"
         elif self.generalArgs.host == "agate5.llnl.gov":
             self.generalArgs.host = "130.106.204.3"
+
+        # Set the LD_LIBRARY_PATH on rzadams to add some paths that are
+        # missing for MPI. The paths are included on tuolumne.
+        if self.sectorname() == "rzadams":
+            ld_library_path = GETENV("LD_LIBRARY_PATH")
+            new_ld_library_path = self.joinpaths(["/opt/cray/pe/lib64:/opt/cray/lib64:/opt/cray/pe/papi/7.2.0.2/lib64:/opt/cray/libfabric/2.1/lib64", ld_library_path])
+            SETENV("LD_LIBRARY_PATH", new_ld_library_path)
 
         #
         # TODO: This is for trinity, what do we need (if anything) for crossroads (xr-fe)?
