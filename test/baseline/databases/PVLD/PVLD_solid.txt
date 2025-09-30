@@ -15,7 +15,7 @@ cyclesAreAccurate = (1)
 times = (9.49989e-05)
 timesAreAccurate = (1)
 databaseName = "VISIT_TOP_DIR/data/PVLD_test_data/velodyne.20.vld"
-fileFormat = "ParallelVelodyne_1"
+fileFormat = "PVLD_5"
 databaseComment = "explosion_Through_Name
 2bulletshidden
 1explosiveactive"
