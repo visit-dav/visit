@@ -107,7 +107,7 @@ class VISWINDOW_API VisitBoxTool : public VisitInteractiveTool
     void AddText();
     void RemoveText();
     void UpdateText();
-    void GetHotPointLabel(int index, char *str);
+    void GetHotPointLabel(int index, char *str, size_t str_len);
 
     void CreateOutline();
     void DeleteOutline();

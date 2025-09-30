@@ -58,6 +58,9 @@ avtDisplacementExpression::~avtDisplacementExpression()
 //    Kathleen Biagas, Wed Apr 4 11:50:12 PDT 2012
 //    Set return data type same as input data type.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -80,7 +83,7 @@ avtDisplacementExpression::DeriveVariable (vtkDataSet *in_ds, int currentDomains
     vtkDataArray *coord_data = in_ds->GetPointData()->GetArray(varnames[1]);
     if (coord_data == NULL)
     {
-        sprintf(msg, "The displacement expression "
+        snprintf(msg, 1024, "The displacement expression "
             "could not extract the data array for: %s", varnames[1]);
         EXCEPTION2(ExpressionException, outputVariableName, msg);
     }

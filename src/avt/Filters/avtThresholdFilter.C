@@ -342,6 +342,9 @@ avtThresholdFilter::VTKmAble(avtDataRepresentation *in_dr) const
 //
 //  Modifications:
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -468,7 +471,7 @@ avtThresholdFilter::ProcessOneChunk_VTK(avtDataRepresentation *in_dr, bool fromC
                 {
                     threshold->Delete();
 
-                    sprintf (errMsg, "Data for variable \"%s\" is not currently available.", curVarName);
+                    snprintf (errMsg, 1024, "Data for variable \"%s\" is not currently available.", curVarName);
                     debug1 << errMsg << endl;
                     EXCEPTION1(VisItException, errMsg);
                 }
@@ -1152,6 +1155,9 @@ static void UpdateNeighborCells(int pt, const int *pt_dims,
 //    Brad Whitlock, Wed Mar 21 11:52:40 PDT 2012
 //    Support more than float.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 void
@@ -1190,7 +1196,7 @@ avtThresholdFilter::GetAssignments(vtkDataSet *in_ds, const int *dims,
         else
         {
             char errMsg[1024];
-            sprintf (errMsg,
+            snprintf (errMsg, 1024,
                 "Data for variable \"%s\" is not currently available.",
                 curVarName);
             EXCEPTION1(VisItException, errMsg);

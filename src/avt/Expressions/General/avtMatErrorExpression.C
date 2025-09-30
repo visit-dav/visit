@@ -49,6 +49,11 @@ avtMatErrorExpression::~avtMatErrorExpression()
 //  Programmer: Hank Childs
 //  Creation:   January 1, 2005
 //
+//  Modifications:
+//
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 void
@@ -77,7 +82,7 @@ avtMatErrorExpression::GetMacro(std::vector<std::string> &args, std::string &ne,
         meshname = atts.GetMeshname().c_str();
     }
     char new_expr[1024];
-    sprintf(new_expr, "relative_difference(matvf(%s, %s), "
+    snprintf(new_expr, 1024, "relative_difference(matvf(%s, %s), "
                                       "mirvf(%s, zoneid(%s), %s(%s), %s))",
                            matname, mats, matname, meshname, volume,
                            meshname, mats);

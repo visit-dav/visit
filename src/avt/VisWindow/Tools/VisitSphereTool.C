@@ -548,6 +548,9 @@ VisitSphereTool::RemoveText()
 //   Jeremy Meredith, Thu May 20 10:50:29 EDT 2010
 //   Account for 3D axis scaling (3D equivalent of full-frame mode).
 //
+//   Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//   sprintf to snprintf
+//
 // ****************************************************************************
 
 void
@@ -565,7 +568,7 @@ VisitSphereTool::UpdateText()
     }
 
     char str[100];
-    sprintf(str, "Origin <%1.3g %1.3g %1.3g>", px, py, pz);
+    snprintf(str, 100, "Origin <%1.3g %1.3g %1.3g>", px, py, pz);
     originTextActor->SetInput(str);
     avtVector originScreen = ComputeWorldToDisplay(hotPoints[0].pt);
     double pt[3] = {originScreen.x, originScreen.y, 0.};
@@ -577,7 +580,7 @@ VisitSphereTool::UpdateText()
     double radius = up.norm();
     if (proxy.Get3DAxisScalingFactors(axisscale))
         radius /= axisscale[0];
-    sprintf(str, "Radius = %1.3g", radius);
+    snprintf(str, 100, "Radius = %1.3g", radius);
     for(int i = 0; i < 3; ++i)
     {
         radiusTextActor[i]->SetInput(str);

@@ -6,7 +6,7 @@
 //                       PlotDimensionalityException.C                       //
 // ************************************************************************* //
 
-#include <stdio.h>  // for sprintf
+#include <stdio.h>
 #include <PlotDimensionalityException.h>
 
 
@@ -22,6 +22,9 @@
 //
 //    Jeremy Meredith, Mon Jan 28 17:39:51 EST 2008
 //    Added WINMODE_AXISARRAY.
+//
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
 //
 // ****************************************************************************
 
@@ -75,7 +78,7 @@ PlotDimensionalityException::PlotDimensionalityException(WINDOW_MODE oldMode,
     };
 
     char  numPlotsString[30];
-    sprintf(numPlotsString, "%d", numPlots);
+    snprintf(numPlotsString, 30, "%d", numPlots);
     msg = "Tried to enter mode " + newModeS + " when there were " 
           + numPlotsString + " plots of dimension " + oldModeS;
 }

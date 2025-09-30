@@ -29,6 +29,7 @@
 
 #include <string>
 #include <vector>
+#include <sstream>
 
 // ****************************************************************************
 //  Method: avtSpecMFExpression constructor
@@ -123,6 +124,9 @@ avtSpecMFExpression::PreExecute(void)
 //    Kathleen Bonnell, Mon Jun 28 07:48:55 PDT 2004
 //    Send currentTimeState to GetMaterial. 
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -177,7 +181,7 @@ avtSpecMFExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
         else // if (matIndices.size() > 0)
         {
             char tmp[256];
-            sprintf(tmp, "%d", matIndices[0]);
+            snprintf(tmp, 256, "%d", matIndices[0]);
 
             std::string matname(tmp);
             if (currentMat == matname ||
@@ -196,27 +200,31 @@ avtSpecMFExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
     {
         const std::vector<std::string> &all_mats = 
                                                 mat->GetCompleteMaterialList();
-        char warningString[100000];
-        if (matNames.size() > 0)
-            sprintf(warningString, "Could not match up \"%s\" with "
-                    "any materials when doing the specmf expression."
-                    "\nList of valid materials is: ", 
-                    matNames[0].c_str());
+        std::ostringstream oss;
+        if(matNames.size() > 0)
+        {
+            oss << "Could not match up \"" << matNames[0] << "\" with "
+                << "any materials when doing the specmf expression."
+                << "\nList of valid materials is: ";
+        }
         else
-            sprintf(warningString, "Could not match up \"%d\" with "
-                    "any materials when doing the specmf expression."
-                    "\nList of valid materials is: ", 
-                    matIndices[0]);
-        char *tmp = warningString + strlen(warningString);
+        {
+            oss << "Could not match up \"" << matIndices[0] << "\" with "
+                << "any materials when doing the specmf expression."
+                << "\nList of valid materials is: ";
+        }
         for (size_t j = 0 ; j < all_mats.size() ; j++)
         {
             if (j < (all_mats.size()-1))
-                sprintf(tmp, "\"%s\", ", all_mats[j].c_str());
+            {
+                oss << "\"" << all_mats[j] << "\", ";
+            }
             else
-                sprintf(tmp, "\"%s\".", all_mats[j].c_str());
-            tmp += strlen(tmp);
+            {
+                oss << "\"" << all_mats[j] << "\".";
+            }
         }
-        avtCallback::IssueWarning(warningString);
+        avtCallback::IssueWarning(oss.str().c_str());
 
         // Return a null array
         vtkDoubleArray *dummy = vtkDoubleArray::New();
@@ -249,7 +257,7 @@ avtSpecMFExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
         for (size_t j = 0 ; j < specIndices.size() ; j++)
         {
             char tmp[256];
-            sprintf(tmp, "%d", specIndices[j]);
+            snprintf(tmp, 256, "%d", specIndices[j]);
 
             std::string specname(tmp);
             if (currentSpec == specname ||
@@ -285,21 +293,23 @@ avtSpecMFExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
             {
                 if (!issuedWarning)
                 {
-                    char warningString[100000];
-                    sprintf(warningString, "Could not match up \"%s\" with any"
-                              " species when doing the specmf expression.\n"
-                              "List of valid species for the given material is: ", 
-                              specNames[i].c_str());
-                    char *tmp = warningString + strlen(warningString);
+                    std::ostringstream oss;
+                    oss << "Could not match up \"" << specNames[i] << "\" with "
+                        << "any species when doing the specmf expression."
+                        << "\nList of valid species for the given material is: ";
+
                     for (size_t j = 0 ; j < all_specs.size() ; j++)
                     {
                         if (j < (all_specs.size()-1))
-                            sprintf(tmp, "\"%s\", ", all_specs[j].c_str());
+                        {
+                            oss << "\"" << all_specs[j] << "\", ";
+                        }
                         else
-                            sprintf(tmp, "\"%s\".", all_specs[j].c_str());
-                        tmp += strlen(tmp);
+                        {
+                            oss << "\"" << all_specs[j] << "\".";
+                        }
                     }
-                    avtCallback::IssueWarning(warningString);
+                    avtCallback::IssueWarning(oss.str().c_str());
                     issuedWarning = true;
                 }
             }
@@ -308,7 +318,7 @@ avtSpecMFExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
     for (size_t i = 0 ; i < specIndices.size() ; i++)
     {
         char tmp[256];
-        sprintf(tmp, "%d", specIndices[i]);
+        snprintf(tmp, 256, "%d", specIndices[i]);
 
         std::string specname(tmp);
         if (!matchedSpecIndex[i])
@@ -328,21 +338,23 @@ avtSpecMFExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
             {
                 if (!issuedWarning)
                 {
-                    char warningString[100000];
-                    sprintf(warningString, "Could not match up \"%s\" with any"
-                              " species when doing the specmf expression.\n"
-                              "List of valid species for the given material is: ", 
-                              specname.c_str());
-                    char *tmp = warningString + strlen(warningString);
+                    std::ostringstream oss;
+                    oss << "Could not match up \"" << specname << "\" with "
+                        << "any species when doing the specmf expression."
+                        << "\nList of valid species for the given material is: ";
+
                     for (size_t j = 0 ; j < all_specs.size() ; j++)
                     {
                         if (j < (all_specs.size()-1))
-                            sprintf(tmp, "\"%s\", ", all_specs[j].c_str());
+                        {
+                            oss << "\"" << all_specs[j] << "\", ";
+                        }
                         else
-                            sprintf(tmp, "\"%s\".", all_specs[j].c_str());
-                        tmp += strlen(tmp);
+                        {
+                            oss << "\"" << all_specs[j] << "\".";
+                        }
                     }
-                    avtCallback::IssueWarning(warningString);
+                    avtCallback::IssueWarning(oss.str().c_str());
                     issuedWarning = true;
                 }
             }

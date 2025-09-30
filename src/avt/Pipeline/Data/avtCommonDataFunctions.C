@@ -3427,6 +3427,7 @@ bool CCompressDataString(const unsigned char *dstr, int len,
         debug5 << "Compressed data "
                << (float) len / (float) lenZIP
                << ":1 in " << timeToCompress << " seconds" << endl;
+        // TODO: what are the proper lenghts for snprintf here?
         sprintf((char*) &dstrZIP[lenZIP], "%10d", len);
         sprintf((char*) &dstrZIP[lenZIP+10], "% 10.6f", timeToCompress);
         *newdstr = dstrZIP;

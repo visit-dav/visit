@@ -184,6 +184,10 @@ extern "C" void cli_runscript(const char *);
 //
 //    Mark C. Miller, Tue Jan 28 11:01:53 PST 2025
 //    Fix CATCH macro usage. 
+//
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 int
@@ -259,14 +263,14 @@ main(int argc, char *argv[])
             // append all parts of this arg back into one string
             if (BEGINSWITHQUOTE(argv[i]) && !ENDSWITHQUOTE(argv[i]))
             {
-                strcpy(tmpArg, argv[i]);
+                strncpy(tmpArg, argv[i],512);
                 int nArgsSkip = 1;
                 size_t tmplen = strlen(argv[i]);
                 for (int j = i+1; j < argc; j++)
                 {
                     nArgsSkip++;
-                    strcat(tmpArg, " ");
-                    strcat(tmpArg, argv[j]);
+                    strncat(tmpArg, " ",512);
+                    strncat(tmpArg, argv[j],512);
                     tmplen += (strlen(argv[j]) +1);
                     if (ENDSWITHQUOTE(argv[j]))
                         break;
@@ -279,18 +283,20 @@ main(int argc, char *argv[])
             }
             else 
             {
-                sprintf(tmpArg, "%s", argv[i]);
+                snprintf(tmpArg, 512, "%s", argv[i]);
             }
             if (runF)
             {
-                runFile = new char [strlen(tmpArg)+1];
-                sprintf(runFile, "%s", tmpArg);
+                size_t runFileLen = strlen(tmpArg)+1;
+                runFile = new char [runFileLen];
+                snprintf(runFile, runFileLen, "%s", tmpArg);
                 s_found = true;
             }
             else if(runO)
             {
+                size_t loadFileLen = strlen(tmpArg)+1;
                 loadFile = new char [strlen(tmpArg)+1];
-                sprintf(loadFile, "%s", tmpArg);
+                snprintf(loadFile, loadFileLen, "%s", tmpArg);
             }
             else
             {

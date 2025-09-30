@@ -130,6 +130,10 @@ avtVectorComposeExpression::GetVariableDimension(void)
 //
 //    Alexander Pletzer, Wed Dec  4 16:40:02 MST 2013
 //    Added support for face and edge data
+//
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 vtkDataArray *
 avtVectorComposeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
@@ -302,10 +306,10 @@ avtVectorComposeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomains
         else
         {
             char str[1024];
-            sprintf(str, "Do not know how to assemble arrays of %d and "
-                    "%d into a vector or tensor.", 
-                    data1->GetNumberOfComponents(),
-                    data2->GetNumberOfComponents());
+            snprintf(str, 1024, "Do not know how to assemble arrays of %d and "
+                     "%d into a vector or tensor.", 
+                     data1->GetNumberOfComponents(),
+                     data2->GetNumberOfComponents());
             EXCEPTION2(ExpressionException, outputVariableName, str);
         }
     }
@@ -354,7 +358,7 @@ avtVectorComposeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomains
         else
         {
             char str[1024];
-            sprintf(str, "Do not know how to assemble arrays of %d and "
+            snprintf(str, 1024, "Do not know how to assemble arrays of %d and "
                     "%d into a vector or tensor.", 
                     data1->GetNumberOfComponents(),
                     data2->GetNumberOfComponents());

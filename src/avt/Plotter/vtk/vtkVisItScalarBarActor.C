@@ -72,6 +72,9 @@ vtkStandardNewMacro(vtkVisItScalarBarActor);
 //    Brad Whitlock, Mon Feb 27 16:12:33 PST 2012
 //    Switch to vtkTextActor.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 //------------------------------------------------------------------------------
 vtkVisItScalarBarActor::vtkVisItScalarBarActor() : definedLabels(), definedDoubleLabels(), labelColorMap(), suppliedLabels(), suppliedValues(), calculatedValues()
 {
@@ -97,9 +100,9 @@ vtkVisItScalarBarActor::vtkVisItScalarBarActor() : definedLabels(), definedDoubl
   this->FontFamily = VTK_ARIAL;
   this->FontHeight = 0.015;
   this->LabelFormat = new char[10]; 
-  sprintf(this->LabelFormat,"%s","%# -9.4g");
+  snprintf(this->LabelFormat, 10, "%s","%# -9.4g");
   this->RangeFormat = new char[30]; 
-  sprintf(this->RangeFormat, "%s", "Max: %# -9.4g\nMin: %# -9.4g");
+  snprintf(this->RangeFormat, 30, "%s", "Max: %# -9.4g\nMin: %# -9.4g");
 
   this->TitleActor = vtkTextActor::New();
   this->TitleActor->GetTextProperty()->SetJustificationToLeft();
@@ -455,7 +458,7 @@ void vtkVisItScalarBarActor::BuildRange(vtkViewport *viewport)
   // create the range label
   //
   char *rangeString = new char[256];
-  sprintf(rangeString, this->RangeFormat, this->varRange[1], this->varRange[0]);
+  snprintf(rangeString, 256, this->RangeFormat, this->varRange[1], this->varRange[0]);
   this->RangeActor->SetInput(rangeString);
   delete [] rangeString;
 
@@ -526,6 +529,9 @@ void vtkVisItScalarBarActor::BuildRange(vtkViewport *viewport)
 //    Kathleen Biagas, Tue May  7 16:11:52 PDT 2013
 //    VTK's text renderer now renders empty strings as 'blobs', so send a space
 //    instead of an empty string to get around this for now.
+//
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
 //
 // ****************************************************************************
 
@@ -651,25 +657,25 @@ vtkVisItScalarBarActor::BuildLabels(vtkViewport * viewport, double bo,
             { 
             if (lv && la)
               {
-              sprintf(labelString, "%s %s", this->definedLabels[idx].c_str(), 
+              snprintf(labelString, 1024, "%s %s", this->definedLabels[idx].c_str(), 
                       this->suppliedLabels[idx].c_str());
               }
             else
               {
-              sprintf(labelString, "%s", this->definedLabels[idx].c_str() );
+              snprintf(labelString, 1024, "%s", this->definedLabels[idx].c_str() );
               }
             } 
           else if (lv && la)
             {
-            sprintf(labelString, "%s", this->suppliedLabels[idx].c_str());
+            snprintf(labelString, 1024, "%s", this->suppliedLabels[idx].c_str());
             }
           else
             {
-            sprintf(labelString, "%s", "");
+            snprintf(labelString, 1024, "%s", "");
             }
           }
         else // not using supplied labels
-          sprintf(labelString, "%s", this->definedLabels[idx].c_str());
+          snprintf(labelString, 1024, "%s", this->definedLabels[idx].c_str());
 
         // Sending an empty string or empty input to the text renderer yields
         // blobs, so send a space instead.
@@ -696,21 +702,21 @@ vtkVisItScalarBarActor::BuildLabels(vtkViewport * viewport, double bo,
               {
               std::string lf = this->LabelFormat;
               lf += " %s";
-              sprintf(labelString, lf.c_str(), this->suppliedValues[i], 
+              snprintf(labelString, 1024, lf.c_str(), this->suppliedValues[i], 
                       this->suppliedLabels[i].c_str());
               }
               else
               {
-              sprintf(labelString, this->LabelFormat, this->suppliedValues[i]);
+              snprintf(labelString, 1024, this->LabelFormat, this->suppliedValues[i]);
               }
             }
           else if (lv && la)
             {
-            sprintf(labelString, "%s", this->suppliedLabels[i].c_str());
+            snprintf(labelString, 1024, "%s", this->suppliedLabels[i].c_str());
             }
           else
             {
-            sprintf(labelString, "%s", "");
+            snprintf(labelString, 1024, "%s", "");
             }
           // Sending an empty string or empty input to the text renderer yields
           // blobs, so send a space instead.
@@ -767,7 +773,7 @@ vtkVisItScalarBarActor::BuildLabels(vtkViewport * viewport, double bo,
             val = (double) pow(10., val); 
             }
           calculatedValues.push_back(val);
-          sprintf(labelString, this->LabelFormat, val);
+          snprintf(labelString, 1024, this->LabelFormat, val);
           // Sending an empty string or empty input to the text renderer yields
           // blobs, so send a space instead.
           if (labelString[0] == '\0')
@@ -1816,6 +1822,9 @@ void vtkVisItScalarBarActor::SetDefinedLabels(const stringVector &labels)
 //    Hank Childs, Wed Sep  8 17:51:43 PDT 2004
 //    Allocate a big enough buffer for long labels.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 void vtkVisItScalarBarActor::SetDefinedLabels(const doubleVector &values)
@@ -1826,7 +1835,7 @@ void vtkVisItScalarBarActor::SetDefinedLabels(const doubleVector &values)
   char labelString[1024];
   for (size_t i = 0; i < values.size(); ++i)
     {
-    sprintf(labelString, this->LabelFormat, values[i]);
+    snprintf(labelString, 1024, this->LabelFormat, values[i]);
     this->definedLabels.push_back(labelString);
     }
 }
@@ -2153,6 +2162,13 @@ vtkVisItScalarBarActor::GetCalculatedValues(doubleVector &v)
     v = this->calculatedValues;  
 }
 
+// ****************************************************************************
+//  Modifications:
+//
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
+// ****************************************************************************
 void
 vtkVisItScalarBarActor::GetCalculatedLabels(stringVector &v)
 {
@@ -2171,7 +2187,7 @@ vtkVisItScalarBarActor::GetCalculatedLabels(stringVector &v)
         char labelString[1024];
         for (size_t i = 0; i < definedDoubleLabels.size(); ++i)
         {
-            sprintf(labelString, "%g", definedDoubleLabels[i]);
+            snprintf(labelString, 1024, "%g", definedDoubleLabels[i]);
             v.push_back(labelString);
         }
     }

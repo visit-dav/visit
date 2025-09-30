@@ -135,6 +135,9 @@ avtRevolvedVolume::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 //    Hank Childs, Thu Jul 24 13:07:06 PDT 2008
 //    Add support for polygons.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
  
 double
@@ -147,7 +150,7 @@ avtRevolvedVolume::GetZoneVolume(vtkCell *cell)
         if (!haveIssuedWarning)
         {
            char msg[1024];
-           sprintf(msg, "The revolved volume is only support for triangles and"
+           snprintf(msg, 1024, "The revolved volume is only support for triangles and"
                         " quadrilaterals.  %d is an invalid cell type.",
                          cellType);
            avtCallback::IssueWarning(msg);

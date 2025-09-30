@@ -367,6 +367,9 @@ avtCMFEExpression::ProcessArguments(ArgsExpr *args,
 //    CMFE may contain expressions, but the ParsingExprList won't contain them,
 //    so add any Expression from the donor's MetaData to the new_list.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 void
@@ -519,7 +522,7 @@ avtCMFEExpression::Execute()
         *(pel->GetList()) = original_list;
 
         char msg[1024];
-        sprintf(msg, "Unable to evaluate expression \"%s\" for doing "
+        snprintf(msg, 1024, "Unable to evaluate expression \"%s\" for doing "
                      "database comparison.", argument_expression.c_str());
         EXCEPTION2(ExpressionException, outputVariableName, msg);
     }

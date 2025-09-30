@@ -778,6 +778,11 @@ avtICAlgorithm::CalculateExtraTime()
 //  Programmer: Dave Pugmire
 //  Creation:   January 28, 2009
 //
+//  Modifications:
+//
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 void
@@ -790,7 +795,7 @@ avtICAlgorithm::ReportStatistics()
 #ifdef PARALLEL
     rank = PAR_Rank();
 #endif
-    sprintf(f, "timings%03d.txt", rank);
+    snprintf(f, 128, "timings%03d.txt", rank);
     ofstream os;
     os.open(f, ios::out);
     ReportStatistics(os);
@@ -989,6 +994,11 @@ avtICAlgorithm::PrintTiming(std::ostream &os,
 //    Dave Pugmire, Thu Feb 12 08:47:29 EST 2009
 //    Better formatting for stats output.
 //
+//  Modifications:
+//
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 void
 avtICAlgorithm::PrintCounter(std::ostream &os, 
@@ -1017,7 +1027,7 @@ avtICAlgorithm::PrintCounter(std::ostream &os,
         if (PAR_Rank() == 0)
         {
             char f[128];
-            sprintf(f, "%s_histogram.txt", str);
+            snprintf(f, 128, "%s_histogram.txt", str);
             std::ofstream hos;
             hos.open(f, ios::out);
             for (size_t i = 0; i < s.histogram.size(); i++)

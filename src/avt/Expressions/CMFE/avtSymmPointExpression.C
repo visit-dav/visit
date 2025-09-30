@@ -60,6 +60,9 @@ avtSymmPointExpression::~avtSymmPointExpression()
 //    Brad Whitlock, Tue Jan 20 16:24:40 PST 2009
 //    I changed a conversion function name.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 void
@@ -67,7 +70,7 @@ avtSymmPointExpression::GetMacro(std::vector<std::string> &args,
                                  std::string &ne, Expression::ExprType &type)
 {
     char new_expr[1024];
-    sprintf(new_expr, "%s - eval_point(%s, %s, %s)",
+    snprintf(new_expr, 1024, "%s - eval_point(%s, %s, %s)",
                  args[0].c_str(), args[0].c_str(), args[0].c_str(),
                  args[1].c_str());
     ne = new_expr;

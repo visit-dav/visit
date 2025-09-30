@@ -190,6 +190,11 @@ avtMIRvfExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 //  Programmer: Hank Childs
 //  Creation:   January 1, 2005
 //
+//  Modifications:
+//
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf, and ostringstream conversion
+//
 // ****************************************************************************
 
 void
@@ -235,7 +240,7 @@ avtMIRvfExpression::GetMaterialList(std::vector<bool> &useMat, int currentDomain
         for (size_t j = 0 ; j < matIndices.size() ; j++)
         {
             char tmp[256];
-            sprintf(tmp, "%d", matIndices[j]);
+            snprintf(tmp, 256, "%d", matIndices[j]);
 
             std::string matname(tmp);
             if (currentMat == matname ||
@@ -271,21 +276,22 @@ avtMIRvfExpression::GetMaterialList(std::vector<bool> &useMat, int currentDomain
             {
                 if (!issuedWarning)
                 {
-                    char warningString[100000];
-                    sprintf(warningString, "Could not match up \"%s\" with "
-                              "any materials when doing the matvf expression."
-                              "\nList of valid materials is: ", 
-                              matNames[i].c_str());
-                    char *tmp = warningString + strlen(warningString);
+                    std::ostringstream oss;
+                    oss << "Could not match up \"" << matNames[i] << "\" with "
+                        << "any materials when doing the mirvf expression."
+                        << "\nList of valid materials is: ";
                     for (size_t j = 0 ; j < all_mats.size() ; j++)
                     {
                         if (j < (all_mats.size()-1))
-                            sprintf(tmp, "\"%s\", ", all_mats[j].c_str());
+                        {
+                            oss << "\"" << all_mats[j] << "\", ";
+                        }
                         else
-                            sprintf(tmp, "\"%s\".", all_mats[j].c_str());
-                        tmp += strlen(tmp);
+                        {
+                            oss << "\"" << all_mats[j] << "\".";
+                        }
                     }
-                    avtCallback::IssueWarning(warningString);
+                    avtCallback::IssueWarning(oss.str().c_str());
                     issuedWarning = true;
                 }
             }
@@ -294,7 +300,7 @@ avtMIRvfExpression::GetMaterialList(std::vector<bool> &useMat, int currentDomain
     for (size_t i = 0 ; i < matIndices.size() ; i++)
     {
         char tmp[256];
-        sprintf(tmp, "%d", matIndices[i]);
+        snprintf(tmp, 256, "%d", matIndices[i]);
 
         std::string matname(tmp);
         if (!matchedMatIndex[i])
@@ -314,21 +320,22 @@ avtMIRvfExpression::GetMaterialList(std::vector<bool> &useMat, int currentDomain
             {
                 if (!issuedWarning)
                 {
-                    char warningString[100000];
-                    sprintf(warningString, "Could not match up \"%s\" with "
-                              "any materials when doing the matvf expression."
-                              "\nList of valid materials is: ", 
-                              matname.c_str());
-                    char *tmp = warningString + strlen(warningString);
+                    std::ostringstream oss;
+                    oss << "Could not match up \"" << matname << "\" with "
+                        << "any materials when doing the mirvf expression."
+                        << "\nList of valid materials is: ";
                     for (size_t j = 0 ; j < all_mats.size() ; j++)
                     {
                         if (j < (all_mats.size()-1))
-                            sprintf(tmp, "\"%s\", ", all_mats[j].c_str());
+                        {
+                            oss << "\"" << all_mats[j] << "\", ";
+                        }
                         else
-                            sprintf(tmp, "\"%s\".", all_mats[j].c_str());
-                        tmp += strlen(tmp);
+                        {
+                            oss << "\"" << all_mats[j] << "\".";
+                        }
                     }
-                    avtCallback::IssueWarning(warningString);
+                    avtCallback::IssueWarning(oss.str().c_str());
                     issuedWarning = true;
                 }
             }

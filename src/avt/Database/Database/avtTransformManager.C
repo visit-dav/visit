@@ -1910,6 +1910,9 @@ avtTransformManager::CSGToDiscrete(avtDatabaseMetaData *md,
 //    regions, so this is a significant saving. CSG meshes with thousands
 //    of regions were exhausting memory in the previous scheme.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 bool
 avtTransformManager::TransformMaterialDataset(avtDatabaseMetaData *md,
@@ -1994,7 +1997,7 @@ avtTransformManager::TransformMaterialDataset(avtDatabaseMetaData *md,
             }
 
             char dom_string[128];
-            sprintf(dom_string, "Domain %d", dom);
+            snprintf(dom_string, 128, "Domain %d", dom);
 
             avtMaterial *newmat = new avtMaterial(nmats, matnos, matnames,
                                        1, &nvals, 0, newmatlist,

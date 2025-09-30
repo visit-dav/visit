@@ -126,6 +126,9 @@ avtSideVolume::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 //    Alister Maguire, Wed Apr 21 10:55:48 PDT 2021
 //    Fixed a bug that resulted in invalid volumes.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
  
 double
@@ -136,7 +139,7 @@ avtSideVolume::GetZoneVolume(vtkCell *cell)
         if (!haveIssuedWarning)
         {
            char msg[1024];
-           sprintf(msg, "Side volumes can only be calculated for three "
+           snprintf(msg, 1024, "Side volumes can only be calculated for three "
                         "dimensional cells.  You have a cell of topological "
                         "dimension %d.  Assigning cells of this type side "
                         "volume 0.", cell->GetCellDimension());

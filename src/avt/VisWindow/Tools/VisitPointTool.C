@@ -496,6 +496,9 @@ VisitPointTool::RemoveText()
 //   Account for 3D axis scaling (3D equivalent of full-frame mode).
 //   Changed code slightly to be more legible.
 //
+//   Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//   sprintf to snprintf
+//
 // ****************************************************************************
 
 void
@@ -524,7 +527,7 @@ VisitPointTool::UpdateText()
         pz /= axisscale[2];
     }
 
-    sprintf(str, "XYZ<%1.3g %1.3g %1.3g>", px, py, pz);
+    snprintf(str, 100, "XYZ<%1.3g %1.3g %1.3g>", px, py, pz);
 
     pointTextActor->SetInput(str);
     avtVector originScreen = ComputeWorldToDisplay(hotPoints[0].pt);

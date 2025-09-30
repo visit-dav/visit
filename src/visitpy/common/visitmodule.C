@@ -1147,6 +1147,9 @@ void PickleInit()
 //    Chris Laganella, Mon Feb 14 14:37:24 EST 2022
 //    Support MultiLineString from DBOptionsAttributes
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 bool
 FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
@@ -1196,9 +1199,9 @@ FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
         if (index == -1)
         {
             if (opts.IsObsolete(name))
-                sprintf(msg, "'%s' is an Obsolete option.", name.c_str());
+                snprintf(msg, 256, "'%s' is an Obsolete option.", name.c_str());
             else
-                sprintf(msg, "There was no '%s' in the DB options.", name.c_str());
+                snprintf(msg, 256,"There was no '%s' in the DB options.", name.c_str());
             VisItErrorFunc(msg);
             return false;
         }
@@ -1210,7 +1213,7 @@ FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
                 opts.SetBool(name, PyInt_AS_LONG(value));
             else
             {
-                sprintf(msg, "Expected int to set boolean '%s'", name.c_str());
+                snprintf(msg, 256, "Expected int to set boolean '%s'", name.c_str());
                 VisItErrorFunc(msg);
                 return false;
             }
@@ -1220,7 +1223,7 @@ FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
                 opts.SetInt(name, PyInt_AS_LONG(value));
             else
             {
-                sprintf(msg, "Expected integer to set '%s'", name.c_str());
+                snprintf(msg, 256, "Expected integer to set '%s'", name.c_str());
                 VisItErrorFunc(msg);
                 return false;
             }
@@ -1232,7 +1235,7 @@ FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
                 opts.SetFloat(name, PyInt_AS_LONG(value));
             else
             {
-                sprintf(msg, "Expected float to set '%s'", name.c_str());
+                snprintf(msg, 256, "Expected float to set '%s'", name.c_str());
                 VisItErrorFunc(msg);
                 return false;
             }
@@ -1244,7 +1247,7 @@ FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
                 opts.SetDouble(name, PyInt_AS_LONG(value));
             else
             {
-                sprintf(msg, "Expected float to set '%s'", name.c_str());
+                snprintf(msg, 256, "Expected float to set '%s'", name.c_str());
                 VisItErrorFunc(msg);
                 return false;
             }
@@ -1258,7 +1261,7 @@ FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
             }
             else
             {
-                sprintf(msg, "Expected string to set '%s'", name.c_str());
+                snprintf(msg, 256, "Expected string to set '%s'", name.c_str());
                 VisItErrorFunc(msg);
                 return false;
             }
@@ -1272,7 +1275,7 @@ FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
             }
             else
             {
-                sprintf(msg, "Expected string to set '%s'", name.c_str());
+                snprintf(msg, 256, "Expected string to set '%s'", name.c_str());
                 VisItErrorFunc(msg);
                 return false;
             }
@@ -1287,7 +1290,7 @@ FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
                 int ival = PyInt_AS_LONG(value);
                 if(ival < 0 || ival >= (int)enumStrings.size())
                 {
-                    sprintf(msg,"'%d' is not a valid enum for '%s'."
+                    snprintf(msg, 256, "'%d' is not a valid enum for '%s'."
                             "\nValid options are in the range of [0,%d]."
                             "\nYou can also use the following names: ",
                             ival, name.c_str(), (int)enumStrings.size()-1);
@@ -1331,7 +1334,7 @@ FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
                     }
                     if (!found)
                     {
-                        sprintf(msg,"'%s' is not a valid enum string for '%s'."
+                        snprintf(msg, 256, "'%s' is not a valid enum string for '%s'."
                                 "\nValid options are in the range of [0,%d]."
                                 "\nYou can also use the following names: ",
                                 sval.c_str(), name.c_str(),
@@ -1351,7 +1354,7 @@ FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
                 }
                 else
                 {
-                    sprintf(msg, "Expected int or string to set enum '%s'", name.c_str());
+                    snprintf(msg, 256, "Expected int or string to set enum '%s'", name.c_str());
                     VisItErrorFunc(msg);
                     return false;
                 }
@@ -6677,6 +6680,9 @@ visit_GetSaveWindowAttributes(PyObject *self, PyObject *args)
 //   Jeremy Meredith, Tue Apr 29 15:24:51 EDT 2008
 //   Added better error message for when plugin wasn't found.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -6735,7 +6741,7 @@ visit_ExportDatabase(PyObject *self, PyObject *args)
     if (!foundMatch)
     {
         char msg[1024];
-        sprintf(msg, "\"%s\" is not a valid plugin type.  Make sure the "
+        snprintf(msg, 1024, "\"%s\" is not a valid plugin type.  Make sure the "
                 "Metadata Server is running.", db_type.c_str());
         VisItErrorFunc(msg);
         return NULL;
@@ -6743,7 +6749,7 @@ visit_ExportDatabase(PyObject *self, PyObject *args)
     if (!hasWriter)
     {
         char msg[1024];
-        sprintf(msg, "\"%s\" is a valid plugin type.  But it does *not* have\n"
+        snprintf(msg, 1024, "\"%s\" is a valid plugin type.  But it does *not* have\n"
                      "a database writer, so the database cannot be exported",
                 db_type.c_str());
         VisItErrorFunc(msg);
@@ -6778,6 +6784,9 @@ visit_ExportDatabase(PyObject *self, PyObject *args)
 //    Eric Brugger, Tue Sep 24 11:44:41 PDT 2024
 //    Added logic to open a metadata server if the list of plugin info
 //    attributes was empty.
+//
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
 //
 // ****************************************************************************
 STATIC PyObject *
@@ -6832,14 +6841,14 @@ visit_GetExportOptions(PyObject *self, PyObject *args)
     if (!foundMatch)
     {
         char msg[1024];
-        sprintf(msg, "\"%s\" is not a valid plugin name.", plugin);
+        snprintf(msg, 1024, "\"%s\" is not a valid plugin name.", plugin);
         VisItErrorFunc(msg);
         return NULL;
     }
     if (!hasWriter)
     {
         char msg[1024];
-        sprintf(msg, "\"%s\" is a valid plugin, but does not have\n"
+        snprintf(msg, 1024, "\"%s\" is a valid plugin, but does not have\n"
                 "a database writer", plugin);
         VisItErrorFunc(msg);
         return NULL;
@@ -6847,7 +6856,7 @@ visit_GetExportOptions(PyObject *self, PyObject *args)
     if (!dict)
     {
         char msg[1024];
-        sprintf(msg, "\"%s\" is a valid plugin with export capability, but\n"
+        snprintf(msg, 1024, "\"%s\" is a valid plugin with export capability, but\n"
                 "does not have any options.", plugin);
         VisItErrorFunc(msg);
         return NULL;
@@ -6937,6 +6946,9 @@ visit_DatabasePlugins(PyObject *self, PyObject *args)
 //    Added logic to open a metadata server if the list of file open
 //    options was empty.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 STATIC PyObject *
 visit_GetDefaultFileOpenOptions(PyObject *self, PyObject *args)
@@ -6985,14 +6997,14 @@ visit_GetDefaultFileOpenOptions(PyObject *self, PyObject *args)
     if (!foundMatch)
     {
         char msg[1024];
-        sprintf(msg, "\"%s\" is not a valid plugin name.", plugin);
+        snprintf(msg, 1024, "\"%s\" is not a valid plugin name.", plugin);
         VisItErrorFunc(msg);
         return NULL;
     }
     if (!dict)
     {
         char msg[1024];
-        sprintf(msg, "\"%s\" is a valid plugin, but does not "
+        snprintf(msg, 1024, "\"%s\" is a valid plugin, but does not "
                 "have options for opening files.", plugin);
         VisItErrorFunc(msg);
         return NULL;
@@ -7014,6 +7026,9 @@ visit_GetDefaultFileOpenOptions(PyObject *self, PyObject *args)
 //  Modifications:
 //    Jeremy Meredith, Tue Apr 29 15:24:51 EDT 2008
 //    Added better error message for when plugin wasn't found.
+//
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
 //
 // ****************************************************************************
 STATIC PyObject *
@@ -7059,7 +7074,7 @@ visit_SetDefaultFileOpenOptions(PyObject *self, PyObject *args)
     if (!foundMatch)
     {
         char msg[1024];
-        sprintf(msg, "\"%s\" is not a valid plugin type.  Make sure the "
+        snprintf(msg, 1024, "\"%s\" is not a valid plugin type.  Make sure the "
                 "Metadata Server is running.", plugin);
         VisItErrorFunc(msg);
         return NULL;
@@ -19525,6 +19540,9 @@ InitializeViewerProxy(ViewerProxy* proxy)
 //
 // Modifications:
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 char *
@@ -19537,11 +19555,11 @@ ReadVisItPluginDir(const char *visitProgram)
     size_t vpdLen = 0;
     const char *vpd = "VISITPLUGINDIR=";
     vpdLen = strlen(vpd);
-
-    command = (char*)malloc(strlen(visitProgram) + 1 + strlen(" -env"));
+    size_t commandLen = strlen(visitProgram) + 1 + strlen(" -env");
+    command = (char*)malloc(commandLen);
     if(command == NULL)
         return NULL;
-    sprintf(command, "%s -env", visitProgram);
+    snprintf(command, commandLen, "%s -env", visitProgram);
 #ifndef _WIN32
     p = popen(command, "r");
 #else

@@ -79,6 +79,11 @@ avtCycleQuery::PerformQuery(QueryAttributes *atts)
 //  Programmer: Hank Childs
 //  Creation:   October 4, 2003
 //
+//  Modifications:
+//
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 std::string
@@ -86,7 +91,7 @@ avtCycleQuery::GetResultMessage(void)
 {
     int cycle = GetInput()->GetInfo().GetAttributes().GetCycle();
     char msg[1024];
-    sprintf(msg, "The cycle is %d.", cycle);
+    snprintf(msg, 1024, "The cycle is %d.", cycle);
     std::string msg2 = msg;
     return msg2;
 }

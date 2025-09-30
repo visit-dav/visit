@@ -775,10 +775,10 @@ BoundaryHelperFunctions<T>::CommunicateBoundaryData(const vector<int> &domain2pr
     long global_bytes_exchanged = 0;
 #endif
     char msg[256];
-    sprintf(msg, "Ghost Zone Generation phase 3: Communicate "
-            "(global %ld items, %ld kB)",
-            global_items_exchanged,
-            global_bytes_exchanged);
+    snprintf(msg, 256, "Ghost Zone Generation phase 3: Communicate "
+             "(global %ld items, %ld kB)",
+             global_items_exchanged,
+             global_bytes_exchanged);
 
     visitTimer->StopTimer(timer_CommunicateGhost, msg);
 }

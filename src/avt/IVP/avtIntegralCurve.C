@@ -558,6 +558,9 @@ avtIntegralCurve::Advance(avtIVPField *field)
 //   Added a Serialize flag to the arguments. This is to support the restore
 //   ICs code.
 //
+//   Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//   sprintf to snprintf
+//
 // ****************************************************************************
 
 void
@@ -613,7 +616,7 @@ avtIntegralCurve::Serialize(MemStream::Mode mode, MemStream &buff,
         trk<<flush;
         trk.close();
         char tmp[64];
-        sprintf(tmp, "IC_%d.txt", (int)id);
+        snprintf(tmp, 64, "IC_%d.txt", (int)id);
         trk.open(tmp, ofstream::app);
         trk<<"De-serialize"<<endl;
     }

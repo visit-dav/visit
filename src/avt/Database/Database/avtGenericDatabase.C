@@ -686,6 +686,9 @@ avtGenericDatabase::AugmentGhostData(avtDatasetCollection &ds,
 //    Kathleen Biagas, Mon Nov 4, 2024
 //    Only call AugmengGhostData if avtMeshMetaData:hasExtraGhostInfo is true.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -1049,7 +1052,7 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
     avtDataTree_p rv = datasetCollection.AssembleDataTree(domains);
 
     char str[1024];
-    sprintf(str, "Getting dataset for %s", spec->GetVariable());
+    snprintf(str, 1024, "Getting dataset for %s", spec->GetVariable());
     visitTimer->StopTimer(timerHandle, str);
     visitTimer->DumpTimings();
 
@@ -5280,6 +5283,10 @@ avtGenericDatabase::AddOriginalNodesArray(vtkDataSet *ds, const int domain)
 //    Adjust topoDim for cases of structured grids with one dimension only
 //    one node thick (e.g. [nx][ny][1] or [nx][1][nz] or [1][ny][nz]). These
 //    are really 2D surfaces (a structured arrangement of quads) in 3 space.
+//
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -5539,11 +5546,11 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
             //
             char   buff[32];
             string label;
-            sprintf(buff, "%d;", numSelected);
+            snprintf(buff, 32, "%d;", numSelected);
             label += buff;
             for (int i = 0; i < numSelected; i++)
             {
-                sprintf(buff, "%d;", mindex[i]);
+                snprintf(buff, 32, "%d;", mindex[i]);
                 if (i == numSelected-1)
                     label += string(buff) + "mixed;";
                 else
@@ -5572,7 +5579,7 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
                     // or a material-selected non-subset plot.
                     //
                     int domOrigin  =  GetMetaData(ts)->GetMesh(meshname)->blockOrigin;
-                    sprintf(label, "%d", dom + domOrigin);
+                    snprintf(label, 40, "%d", dom + domOrigin);
                     labelStrings.push_back(label);
                 }
             }
@@ -5591,7 +5598,7 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
                     // Create a new label which is the group number.
                     //
                     int gID  =  GetMetaData(ts)->GetMesh(meshname)->groupIds[dom];
-                    sprintf(label, "%d", gID);
+                    snprintf(label, 40, "%d", gID);
                     labelStrings.push_back(label);
                 }
             }
@@ -5930,6 +5937,9 @@ avtGenericDatabase::GetGlobalZoneIds(int dom, const char *var, int ts)
 //    Mark C. Miller, Mon Apr 14 15:28:11 PDT 2008
 //    Added support for enhanced enumerated scalar functionality
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 void
 avtGenericDatabase::EnumScalarSelect(avtDatasetCollection &dsc,
@@ -5963,8 +5973,8 @@ avtGenericDatabase::EnumScalarSelect(avtDatasetCollection &dsc,
             ds->Register(NULL);
             enumThreshold->Delete();
             char errMsg[1024];
-            sprintf(errMsg, "Data for variable \"%s\" is not available.",
-                    varname.c_str());
+            snprintf(errMsg, 1024, "Data for variable \"%s\" is not available.",
+                     varname.c_str());
             EXCEPTION1(VisItException, errMsg);
         }
 
@@ -6221,6 +6231,9 @@ avtGenericDatabase::SpeciesSelect(avtDatasetCollection &dsc,
 //    algorithm to use, so it doesn't matter that we're calling Zoo code;
 //    it's not really doing interface reconstruction at all.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 void_ref_ptr
@@ -6258,22 +6271,22 @@ avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
     }
 
     char cacheLbl[1000];
-    sprintf(cacheLbl, "MIR_%s_%s_%s_%s_%s_%d_%f_%s_%d_%d_%f",
-            needValidConnectivity        ? "FullSubdiv" : "MinimalSubdiv",
-            needSmoothMaterialInterfaces ? "Smooth"     : "NotSmooth",
-            needCleanZonesOnly           ? "CleanOnly"  : "SplitMixed",
-            didGhosts                    ? "DidGhosts"  : "NoDidGhosts",
-            simplifyHeavilyMixedZones    ? "Simplify"   : "NoSimplify",
-            maxMatsPerZone,
-            isovolumeMIRVF,
-            mirAlgorithm==0 ? "TetMIR" :
-            (mirAlgorithm==1 ? "ZooMIR" :
+    snprintf(cacheLbl, 1000, "MIR_%s_%s_%s_%s_%s_%d_%f_%s_%d_%d_%f",
+             needValidConnectivity        ? "FullSubdiv" : "MinimalSubdiv",
+             needSmoothMaterialInterfaces ? "Smooth"     : "NotSmooth",
+             needCleanZonesOnly           ? "CleanOnly"  : "SplitMixed",
+             didGhosts                    ? "DidGhosts"  : "NoDidGhosts",
+             simplifyHeavilyMixedZones    ? "Simplify"   : "NoSimplify",
+             maxMatsPerZone,
+             isovolumeMIRVF,
+             mirAlgorithm==0 ? "TetMIR" :
+             (mirAlgorithm==1 ? "ZooMIR" :
              (mirAlgorithm==2 ? "IsovolumeMIR" :
-              (mirAlgorithm==3 ? "YoungsMIR" :
+             (mirAlgorithm==3 ? "YoungsMIR" :
                   "DiscreteMIR"))),
-            annealingTime,
-            mirNumIterations,
-            mirIterationDamping);
+             annealingTime,
+             mirNumIterations,
+             mirIterationDamping);
 
     //
     // See if we already have the data lying around.
@@ -6691,6 +6704,9 @@ avtGenericDatabase::ActivateTimestep(int stateIndex)
 //    labels to be created. Also, if the dataset doesn't contain
 //    any materials, don't try and look for them.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 void
@@ -6724,7 +6740,7 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
     avtSILRestriction_p silr = spec->GetRestriction();
 
     char  progressString[1024];
-    sprintf(progressString, "Reading from %s", Interface->GetType());
+    snprintf(progressString, 1024, "Reading from %s", Interface->GetType());
 
     stringVector blockNames;
     stringVector groupNames;
@@ -6750,14 +6766,14 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
         const avtScalarMetaData *smd = GetMetaData(ts)->GetScalar(var);
         int n = (int)smd->enumNames.size();
         char tmp[100];
-        sprintf(tmp,"%d",n);
+        snprintf(tmp,100,"%d",n);
         enumScalarLabel += tmp;
         enumScalarLabel += ";";
         for (int i=0; i<n; ++i)
         {
             string name = smd->enumNames[i];
             int value = smd->enumRanges[2*i];
-            sprintf(tmp, "%d", value);
+            snprintf(tmp, 100, "%d", value);
             enumScalarLabel += tmp;
             enumScalarLabel += ";";
             enumScalarLabel += name;
@@ -6891,7 +6907,7 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
             if (blockNames.empty())
             {
                 char temp[512];
-                sprintf(temp, "%d", domains[i] + domOrigin);
+                snprintf(temp, 512, "%d", domains[i] + domOrigin);
                 for (int l = 0; l < nmats; l++)
                 {
                     labels.push_back(temp);
@@ -6907,9 +6923,9 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
         {
             char temp[512];
             if (!groupNames.empty() && !gIds.empty())
-                sprintf(temp, "%s", groupNames[gIds[domains[i]]].c_str());
+                snprintf(temp, 512, "%s", groupNames[gIds[domains[i]]].c_str());
             else if (gIds.size() != 0)
-                sprintf(temp, "%d", gIds[domains[i]]);
+                snprintf(temp, 512, "%d", gIds[domains[i]]);
             else
             {
                 int pos = grpOrigin;
@@ -6919,7 +6935,7 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
                         break;
                     pos++;
                 }
-                sprintf(temp, "%d", pos);
+                snprintf(temp, 512, "%d", pos);
             }
             for (int l = 0; l < nmats; l++)
                 labels.push_back(temp);
@@ -7100,6 +7116,9 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
 //      Make sure that each processor calls ActivateTimestep on all
 //      timesteps that are requested.
 //
+//      Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//      sprintf to snprintf
+//
 // ****************************************************************************
 
 void
@@ -7172,7 +7191,7 @@ avtGenericDatabase::ReadQOTDataset(avtDatasetCollection &ds,
     ds.SetVars2nd(vars2nd);
 
     char  progressString[1024];
-    sprintf(progressString, "Reading QOT dataset from %s",
+    snprintf(progressString, 1024, "Reading QOT dataset from %s",
         Interface->GetType());
 
     const int numDomains = (const int)domains.size();
@@ -11063,6 +11082,9 @@ avtGenericDatabase::NumStagesForFetch(avtDataRequest_p spec)
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Changed dummy args for type conversion to dummy arg for data spec
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 bool
@@ -11120,7 +11142,7 @@ avtGenericDatabase::QueryScalars(const string &varName, const int dom,
                     // the info we're after is associated with incidentElements
                     for (i = 0; i < incidentElements.size(); i++)
                     {
-                        sprintf(temp, "(%d)", incidentElements[i]);
+                        snprintf(temp, 80, "(%d)", incidentElements[i]);
                         names.push_back(temp);
                         vals.push_back(scalars->GetTuple1(incidentElements[i]));
                     }
@@ -11128,7 +11150,7 @@ avtGenericDatabase::QueryScalars(const string &varName, const int dom,
                 else
                 {
                     // the info we're after is associated with element
-                    sprintf(temp, "(%d)", element);
+                    snprintf(temp, 80, "(%d)", element);
                     names.push_back(temp);
                     vals.push_back(scalars->GetTuple1(element));
                 }
@@ -11278,6 +11300,10 @@ avtGenericDatabase::QueryScalars(const string &varName, const int dom,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Changed dummy args for type conversion to dummy arg for data spec
+//
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 bool
@@ -11337,7 +11363,7 @@ avtGenericDatabase::QueryVectors(const string &varName, const int dom,
                     // info we're after is associated with incidentElements
                     for (size_t k = 0; k < incidentElements.size(); k++)
                     {
-                        sprintf(buff, "(%d)", incidentElements[k]);
+                        snprintf(buff, 80, "(%d)", incidentElements[k]);
                         names.push_back(buff);
                         vectors->GetTuple(incidentElements[k], temp);
                         mag = 0.;
@@ -11353,7 +11379,7 @@ avtGenericDatabase::QueryVectors(const string &varName, const int dom,
                 else
                 {
                     // info we're after is associated with element
-                    sprintf(buff, "(%d)", element);
+                    snprintf(buff,  80, "(%d)", element);
                     names.push_back(buff);
                     vectors->GetTuple(element, temp);
                     mag = 0.;
@@ -11421,6 +11447,10 @@ avtGenericDatabase::QueryVectors(const string &varName, const int dom,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Changed dummy args for type conversion to dummy arg for data spec
+//
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 bool
@@ -11480,7 +11510,7 @@ avtGenericDatabase::QueryTensors(const string &varName, const int dom,
                     // info we're after is associated with incidentElements
                     for (size_t k = 0; k < incidentElements.size(); k++)
                     {
-                        sprintf(buff, "(%d)", incidentElements[k]);
+                        snprintf(buff, 80, "(%d)", incidentElements[k]);
                         names.push_back(buff);
                         tensors->GetTuple(incidentElements[k], temp);
                         for (int i = 0; i < nComponents; i++)
@@ -11491,7 +11521,7 @@ avtGenericDatabase::QueryTensors(const string &varName, const int dom,
                 else
                 {
                     // info we're after is associated with element
-                    sprintf(buff, "(%d)", element);
+                    snprintf(buff, 80, "(%d)", element);
                     names.push_back(buff);
                     tensors->GetTuple(element, temp);
                     for (int i = 0; i < nComponents; i++)
@@ -11541,6 +11571,10 @@ avtGenericDatabase::QueryTensors(const string &varName, const int dom,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Changed dummy args for type conversion to dummy arg for data spec
+//
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 bool
@@ -11600,7 +11634,7 @@ avtGenericDatabase::QueryArrays(const string &varName, const int dom,
                     // info we're after is associated with incidentElements
                     for (size_t k = 0; k < incidentElements.size(); k++)
                     {
-                        sprintf(buff, "(%d)", incidentElements[k]);
+                        snprintf(buff, 80, "(%d)", incidentElements[k]);
                         names.push_back(buff);
                         array->GetTuple(incidentElements[k], temp);
                         for (int i = 0; i < nComponents; i++)
@@ -11610,7 +11644,7 @@ avtGenericDatabase::QueryArrays(const string &varName, const int dom,
                 else
                 {
                     // info we're after is associated with element
-                    sprintf(buff, "(%d)", element);
+                    snprintf(buff, 80, "(%d)", element);
                     names.push_back(buff);
                     array->GetTuple(element, temp);
                     for (int i = 0; i < nComponents; i++)
@@ -11669,6 +11703,10 @@ avtGenericDatabase::QueryArrays(const string &varName, const int dom,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Changed dummy args for type conversion to dummy arg for data spec
+//
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 bool
@@ -11728,7 +11766,7 @@ avtGenericDatabase::QuerySymmetricTensors(const string &varName,
                     // info we're after is associated with incidentElements
                     for (size_t k = 0; k < incidentElements.size(); k++)
                     {
-                        sprintf(buff, "(%d)", incidentElements[k]);
+                        snprintf(buff, 80, "(%d)", incidentElements[k]);
                         names.push_back(buff);
                         tensors->GetTuple(incidentElements[k], temp);
                         for (int i = 0; i < nComponents; i++)
@@ -11738,7 +11776,7 @@ avtGenericDatabase::QuerySymmetricTensors(const string &varName,
                 else
                 {
                     // info we're after is associated with element
-                    sprintf(buff, "(%d)", element);
+                    snprintf(buff, 80, "(%d)", element);
                     names.push_back(buff);
                     tensors->GetTuple(element, temp);
                     for (int i = 0; i < nComponents; i++)
@@ -11785,6 +11823,8 @@ avtGenericDatabase::QuerySymmetricTensors(const string &varName,
 // Creation:   Mon Apr 4 11:51:56 PDT 2005
 //
 // Modifications:
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
 //
 // ****************************************************************************
 
@@ -11837,7 +11877,7 @@ avtGenericDatabase::QueryLabels(const string &varName, const int dom,
                     // info we're after is associated with incidentElements
                     for (size_t k = 0; k < incidentElements.size(); k++)
                     {
-                        sprintf(buff, "(%d)", incidentElements[k]);
+                        snprintf(buff, 80, "(%d)", incidentElements[k]);
                         names.push_back(buff);
                         labels->GetTuple(incidentElements[k], temp);
                         for (int i = 0; i < nComponents; i++)
@@ -11847,7 +11887,7 @@ avtGenericDatabase::QueryLabels(const string &varName, const int dom,
                 else
                 {
                     // info we're after is associated with element
-                    sprintf(buff, "(%d)", element);
+                    snprintf(buff, 80, "(%d)", element);
                     names.push_back(buff);
                     labels->GetTuple(element, temp);
                     for (int i = 0; i < nComponents; i++)
@@ -11907,6 +11947,9 @@ avtGenericDatabase::QueryLabels(const string &varName, const int dom,
 //    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004
 //    Changed 'std::vector<int>' to 'intVector', 'std::vector<std::string>'
 //    to 'stringVector', and 'std::vector<double>' to 'doubleVector'.
+//
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
 //
 // ****************************************************************************
 
@@ -11970,7 +12013,7 @@ avtGenericDatabase::QueryMaterial(const string &varName, const int dom,
         for (j = 0; j < incidentElements.size(); j++)
         {
             numMatsThisZone = 0;
-            sprintf(buff, "(%d)", incidentElements[j]);
+            snprintf(buff, 80, "(%d)", incidentElements[j]);
             zoneNames.push_back(buff);
             matInfo = mat->ExtractCellMatInfo(incidentElements[j]);
             for (i = 0; i < matInfo.size(); i++)
@@ -12069,6 +12112,9 @@ avtGenericDatabase::QueryMaterial(const string &varName, const int dom,
 //    Cyrus Harrison, Fri Sep 14 14:16:38 PDT 2007
 //    Added floating point format argument
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 bool
@@ -12122,11 +12168,11 @@ avtGenericDatabase::QueryNodes(const string &varName, const int dom,
             vtkVisItUtility::GetLogicalIndices(ds, true, zone, ijk, false);
             if (dim == 2)
             {
-                sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                snprintf(buff, 80, "<%d, %d>", ijk[0], ijk[1]);
             }
             else
             {
-                sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                snprintf(buff, 80, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
             }
             dzCoords.push_back(buff);
         }
@@ -12136,11 +12182,11 @@ avtGenericDatabase::QueryNodes(const string &varName, const int dom,
             vtkVisItUtility::GetLogicalIndices(ds, true, zone, ijk, true);
             if (dim == 2)
             {
-                sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                snprintf(buff, 80, "<%d, %d>", ijk[0], ijk[1]);
             }
             else
             {
-                sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                snprintf(buff, 80, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
             }
             bzCoords.push_back(buff);
         }
@@ -12187,11 +12233,11 @@ avtGenericDatabase::QueryNodes(const string &varName, const int dom,
                                          ptIds->GetId(i), ijk, false);
                 if (dim == 2)
                 {
-                    sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                    snprintf(buff, 80, "<%d, %d>", ijk[0], ijk[1]);
                 }
                 else
                 {
-                    sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                    snprintf(buff, 80, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
                 }
                 dnCoords.push_back(buff);
             }
@@ -12202,11 +12248,11 @@ avtGenericDatabase::QueryNodes(const string &varName, const int dom,
                                          ptIds->GetId(i), ijk, true);
                 if (dim == 2)
                 {
-                    sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                    snprintf(buff, 80, "<%d, %d>", ijk[0], ijk[1]);
                 }
                 else
                 {
-                    sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                    snprintf(buff, 80, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
                 }
                 bnCoords.push_back(buff);
             }
@@ -12217,14 +12263,14 @@ avtGenericDatabase::QueryNodes(const string &varName, const int dom,
                 {
                     format = "<" + floatFormat + ", "
                                  + floatFormat + ">";
-                    sprintf(buff, format.c_str(), coord[0], coord[1]);
+                    snprintf(buff, 80, format.c_str(), coord[0], coord[1]);
                 }
                 else
                 {
                     format = "<" + floatFormat + ", "
                                  + floatFormat + ", "
                                  + floatFormat + ">";
-                    sprintf(buff, format.c_str(), coord[0], coord[1], coord[2]);
+                    snprintf(buff, 80, format.c_str(), coord[0], coord[1], coord[2]);
                 }
                 pnCoords.push_back(buff);
             }
@@ -12284,6 +12330,9 @@ avtGenericDatabase::QueryNodes(const string &varName, const int dom,
 //    Dave Bremer, Tue Feb 13 11:40:45 PST 2007
 //    Add support for format strings.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 bool
@@ -12303,20 +12352,20 @@ avtGenericDatabase::QueryMesh(const string &varName, const int ts,
     }
     if (showName)
     {
-        sprintf(temp, "%s ", mesh.c_str());
+        snprintf(temp, 256, "%s ", mesh.c_str());
         meshInfo += temp;
     }
     if (mmd->numGroups > 0 && (size_t)dom < mmd->groupIds.size())
     {
         if (strstr(mmd->groupPieceName.c_str(), "%") != NULL)
         {
-            sprintf(temp, mmd->groupPieceName.c_str(),
+            snprintf(temp, 256, mmd->groupPieceName.c_str(),
                     mmd->groupIds[dom] + mmd->groupOrigin);
             strcat(temp, " ");
         }
         else
         {
-            sprintf(temp, "%s %d " , mmd->groupPieceName.c_str(),
+            snprintf(temp, 256, "%s %d " , mmd->groupPieceName.c_str(),
                     mmd->groupIds[dom] + mmd->groupOrigin);
         }
         meshInfo += temp;
@@ -12328,20 +12377,20 @@ avtGenericDatabase::QueryMesh(const string &varName, const int ts,
         {
              if (strstr(mmd->blockPieceName.c_str(), "%") != NULL)
              {
-                 sprintf(temp, mmd->blockPieceName.c_str(),
+                 snprintf(temp,256, mmd->blockPieceName.c_str(),
                          dom + mmd->blockOrigin);
                  strcat(temp, " ");
              }
              else
              {
-                 sprintf(temp, "%s %d " , mmd->blockPieceName.c_str(),
+                 snprintf(temp, 256, "%s %d " , mmd->blockPieceName.c_str(),
                          dom + mmd->blockOrigin);
              }
              meshInfo += temp;
         }
         else
         {
-             sprintf(temp, "%s %s " , mmd->blockPieceName.c_str(),
+             snprintf(temp, 256, "%s %s " , mmd->blockPieceName.c_str(),
                      mmd->blockNames[dom].c_str());
              meshInfo += temp;
         }
@@ -12424,6 +12473,9 @@ avtGenericDatabase::QueryMesh(const string &varName, const int ts,
 //    Cyrus Harrison, Fri Sep 14 14:16:38 PDT 2007
 //    Added floating point format argument
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 bool
@@ -12477,11 +12529,11 @@ avtGenericDatabase::QueryZones(const string &varName, const int dom,
                 vtkVisItUtility::GetLogicalIndices(ds, false, minId, ijk, false);
                 if (dimension == 2)
                 {
-                    sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                    snprintf(buff, 80, "<%d, %d>", ijk[0], ijk[1]);
                 }
                 else
                 {
-                    sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                    snprintf(buff, 80, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
                 }
                 dnodeCoords.push_back(buff);
             }
@@ -12491,11 +12543,11 @@ avtGenericDatabase::QueryZones(const string &varName, const int dom,
                 vtkVisItUtility::GetLogicalIndices(ds, false, minId, ijk, true);
                 if (dimension == 2)
                 {
-                    sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                    snprintf(buff, 80, "<%d, %d>", ijk[0], ijk[1]);
                 }
                 else
                 {
-                    sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                    snprintf(buff, 80, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
                 }
                 bnodeCoords.push_back(buff);
             }
@@ -12506,14 +12558,14 @@ avtGenericDatabase::QueryZones(const string &varName, const int dom,
                 {
                     format  = "<" + floatFormat + ", "
                                   + floatFormat + ">";
-                    sprintf(buff, format.c_str(), coord[0], coord[1]);
+                    snprintf(buff, 80, format.c_str(), coord[0], coord[1]);
                 }
                 else
                 {
                     format  = "<" + floatFormat + ", "
                                   + floatFormat + ", "
                                   + floatFormat + ">";
-                    sprintf(buff, format.c_str(), coord[0], coord[1], coord[2]);
+                    snprintf(buff, 80, format.c_str(), coord[0], coord[1], coord[2]);
                 }
                 pnodeCoords.push_back(buff);
             }
@@ -12553,11 +12605,11 @@ avtGenericDatabase::QueryZones(const string &varName, const int dom,
                                               ijk, false);
                         if (dimension == 2)
                         {
-                            sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                            snprintf(buff, 80, "<%d, %d>", ijk[0], ijk[1]);
                         }
                         else
                         {
-                            sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                            snprintf(buff, 80, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
                         }
                         dzoneCoords.push_back(buff);
                     }
@@ -12568,11 +12620,11 @@ avtGenericDatabase::QueryZones(const string &varName, const int dom,
                                               ijk, true);
                         if (dimension == 2)
                         {
-                            sprintf(buff, "<%d, %d>", ijk[0], ijk[1]);
+                            snprintf(buff, 80, "<%d, %d>", ijk[0], ijk[1]);
                         }
                         else
                         {
-                            sprintf(buff, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+                            snprintf(buff, 80, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
                         }
                         bzoneCoords.push_back(buff);
                     }
@@ -12895,6 +12947,10 @@ avtGenericDatabase::ScaleMesh(vtkDataSet *ds)
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Changed dummy args for type conversion to dummy arg for data spec
+//
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 bool
@@ -12957,7 +13013,7 @@ avtGenericDatabase::QuerySpecies(const string &varName, const int dom,
         // the info we're after is associated with incidentElements
         for (i = 0; i < incidentElements.size(); i++)
         {
-            sprintf(buff, "(%d)", incidentElements[i]);
+            snprintf(buff, 80, "(%d)", incidentElements[i]);
             names.push_back(buff);
             if (getVal)
                 vals.push_back(species->GetTuple1(incidentElements[i]));
@@ -12966,7 +13022,7 @@ avtGenericDatabase::QuerySpecies(const string &varName, const int dom,
     else
     {
         // the info we're after is associated with element
-        sprintf(buff, "(%d)", element);
+        snprintf(buff, 80, "(%d)", element);
         names.push_back(buff);
         if (getVal)
             vals.push_back(species->GetTuple1(element));
@@ -13174,6 +13230,9 @@ avtGenericDatabase::FindElementForPoint(const char *var, const int ts,
 //    Dave Bremer, Tue Feb 13 11:40:45 PST 2007
 //    Add support for format strings.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 void
@@ -13192,16 +13251,16 @@ avtGenericDatabase::GetDomainName(const string &varName, const int ts,
             if ( mmd->blockNames.size() == 0)
             {
                 if (strstr(mmd->blockPieceName.c_str(), "%") != NULL)
-                    sprintf(temp, mmd->blockPieceName.c_str(),
+                    snprintf(temp, 256, mmd->blockPieceName.c_str(),
                             dom + mmd->blockOrigin);
                 else
-                    sprintf(temp, "%s %d" , mmd->blockPieceName.c_str(),
+                    snprintf(temp, 256, "%s %d" , mmd->blockPieceName.c_str(),
                             dom + mmd->blockOrigin);
                 domName = temp;
             }
             else
             {
-                 sprintf(temp, "%s %s" , mmd->blockPieceName.c_str(),
+                 snprintf(temp, 256, "%s %s" , mmd->blockPieceName.c_str(),
                          mmd->blockNames[dom].c_str());
                  domName = temp;
             }

@@ -8,8 +8,8 @@
 std::string
 avtMultiresSelection::DescriptionString()
 {
-    char str[1024];
-    sprintf(str,
+    char str[4096];
+    snprintf(str, 4096,
             "avtMultiresSelection:%f_%f_%f_%f_%f_%f_%f_%f_%f_%f_%f_%f_%f_%f_%f_%f_%f_%f_%f_%f_%f_%f_%d_%d_%f_%f_%f_%f_%f_%f_%f_%f_%f_%f_%f_%f_%f_%f_%f",
             transformMatrix[0], transformMatrix[1],
             transformMatrix[2], transformMatrix[3],

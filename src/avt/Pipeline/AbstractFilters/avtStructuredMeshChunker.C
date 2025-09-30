@@ -774,6 +774,9 @@ avtStructuredMeshChunker::CreateGhostData(MeshDescription &desc,
 //    Jeremy Meredith, Wed Aug  6 18:04:59 EDT 2008
 //    Fixed printf.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 avtStructuredMeshChunker::ZoneDesignation *
@@ -810,7 +813,7 @@ avtStructuredMeshChunker::SplitIntoSubgrids(const int *dims, vtkDataSet *in_ds,
     int t0 = visitTimer->StartTimer();
     p.ConstructPartition(cell_dims, d_plus, boxes);
     char str[1024];
-    sprintf(str, "Constructing %ld grid.", boxes.size());
+    snprintf(str, 1024, "Constructing %ld grid.", boxes.size());
     visitTimer->StopTimer(t0, str);
 
     //
@@ -864,7 +867,7 @@ avtStructuredMeshChunker::SplitIntoSubgrids(const int *dims, vtkDataSet *in_ds,
     int t1 = visitTimer->StartTimer();
     CreateUnstructuredGrid(in_ds, d_plus, data, ugrid, dims);
     char str2[1024];
-    sprintf(str2, "Creating a ugrid of size %lld", ugrid->GetNumberOfCells());
+    snprintf(str2, 1024, "Creating a ugrid of size %lld", ugrid->GetNumberOfCells());
     visitTimer->StopTimer(t1, str2);
 
     return d_plus;

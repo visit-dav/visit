@@ -145,6 +145,9 @@ avtPerMaterialValueExpression::PreExecute(void)
 //    varable. I create a local variable.
 //    Fixed a memory leak if an exception happened.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf, and ostringstream conversion
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -235,7 +238,7 @@ avtPerMaterialValueExpression::DeriveVariable(vtkDataSet *in_ds, int currentDoma
     else
     {
         char tmp[50];
-        sprintf(tmp, "%d", matNumber);
+        snprintf(tmp, 50, "%d", matNumber);
         std::string matname(tmp);
 
         // match mat # to proper index 

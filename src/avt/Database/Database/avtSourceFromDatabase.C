@@ -862,6 +862,11 @@ avtSourceFromDatabase::FetchArbitraryRefPtr(const char *name, int domain,
 //  Programmer: Hank Childs
 //  Creation:   January 10, 2011
 //
+//  Modifications:
+//
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 std::string
@@ -892,7 +897,7 @@ avtSourceFromDatabase::ManageExpressions(const char *name)
 
     // mangle in a prefix to say this is an expression.
     char str[1024];
-    sprintf(str, "__AVT_EXPR__%s", name);
+    snprintf(str, 1024, "__AVT_EXPR__%s", name);
     return std::string(str);
 }
 

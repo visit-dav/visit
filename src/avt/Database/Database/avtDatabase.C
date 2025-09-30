@@ -784,6 +784,9 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Brad Whitlock, Fri Jun 16 14:43:44 PDT 2023
 //    Make invalidating nodes/zones for data selections conditional.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 void
@@ -1126,7 +1129,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
     }
 
     char str[1024];
-    sprintf(str, "Populating Information for %s", var);
+    snprintf(str, 1024, "Populating Information for %s", var);
     visitTimer->StopTimer(timerHandle, str);
     visitTimer->DumpTimings();
 }
@@ -1454,6 +1457,10 @@ avtDatabase::Convert1DVarMDsToCurveMDs(avtDatabaseMetaData *md)
 //
 //    Eddie Rusu, Wed May  6 15:43:52 PDT 2020
 //    Added newer mesh quality metrics.
+//
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 void
@@ -1552,16 +1559,16 @@ avtDatabase::AddMeshQualityExpressions(avtDatabaseMetaData *md)
             Expression new_expr;
             char buff[1024];
             if (nmeshes == 1)
-                sprintf(buff, "mesh_quality/%s", exprs[j].mq_expr.c_str());
+                snprintf(buff, 1024, "mesh_quality/%s", exprs[j].mq_expr.c_str());
             else
-                sprintf(buff, "mesh_quality/%s/%s", name.c_str(),
+                snprintf(buff, 1024, "mesh_quality/%s/%s", name.c_str(),
                                                     exprs[j].mq_expr.c_str());
             new_expr.SetName(buff);
             bool hasSlash = (strstr(name.c_str(), "/") != NULL);
             if (hasSlash)
-                sprintf(buff,"%s(<%s>)",exprs[j].mq_expr.c_str(),name.c_str());
+                snprintf(buff, 1024, "%s(<%s>)",exprs[j].mq_expr.c_str(),name.c_str());
             else
-                sprintf(buff,"%s(%s)",exprs[j].mq_expr.c_str(),name.c_str());
+                snprintf(buff, 1024, "%s(%s)",exprs[j].mq_expr.c_str(),name.c_str());
             new_expr.SetDefinition(buff);
             new_expr.SetType(Expression::ScalarMeshVar);
             new_expr.SetAutoExpression(true);
@@ -2497,7 +2504,7 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
             }
             else
             {
-                sprintf(str_with_dir, "%s%s", dir, str_auto);
+                snprintf(str_with_dir, 2048,  "%s%s", dir, str_auto);
             }
             char *str_heap = CXX_strdup(str_with_dir);
             list.push_back(str_heap);

@@ -108,6 +108,9 @@ avtMassDistributionQuery::PreExecute(void)
 //    Add XML results, and ResultValues, allowing them to be set even if
 //    output file could not be opened.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 void
@@ -162,7 +165,7 @@ avtMassDistributionQuery::PostExecute(void)
 
     int times = 0;
     char name[1024];
-    sprintf(name, "md%d.ult", times++);
+    snprintf(name, 1024, "md%d.ult", times++);
 
     if (PAR_Rank() == 0)
     {
@@ -173,7 +176,7 @@ avtMassDistributionQuery::PostExecute(void)
             if (ifile.fail())
                 lookingForUnused = false;
             else
-                sprintf(name, "md%d.ult", times++);
+                snprintf(name, 1024, "md%d.ult", times++);
         }
     }
 
@@ -203,10 +206,11 @@ avtMassDistributionQuery::PostExecute(void)
     {
         if (totalMassFromLines == 0.)
         {
-            sprintf(msg, "The mass distribution could not be calculated "
-                    "becuase none of the lines intersected the data set."
-                    "  If you have used a fairly large number of lines, then "
-                    "this may be indicative of an error state.");
+            snprintf(msg, 1024, 
+                     "The mass distribution could not be calculated "
+                     "becuase none of the lines intersected the data set."
+                     "  If you have used a fairly large number of lines, then "
+                     "this may be indicative of an error state.");
             SetResultMessage(msg);
             return;
         }
@@ -214,7 +218,7 @@ avtMassDistributionQuery::PostExecute(void)
         ofstream ofile(name);
         if (ofile.fail())
         {
-            sprintf(msg, "Unable to write out file containing distribution.");
+            snprintf(msg, 1024, "Unable to write out file containing distribution.");
             SetResultMessage(msg);
         }
         if (!ofile.fail())

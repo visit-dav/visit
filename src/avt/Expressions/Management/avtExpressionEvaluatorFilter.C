@@ -237,6 +237,9 @@ avtExpressionEvaluatorFilter::Execute(void)
 //    Rob Sisneros, Sun Aug 29 20:13:10 CDT 2010
 //    Add a check for variables from operators.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 void
@@ -261,8 +264,8 @@ avtExpressionEvaluatorFilter::VerifyVariableTypes(void)
         if (vt != et_as_avt &&
            (!(vt == AVT_SCALAR_VAR && et_as_avt == AVT_CURVE)))
         {
-            char msg[1024];
-            sprintf(msg, "The expression variable \"%s\" was declared to be of"
+            char msg[2048];
+            snprintf(msg, 2048, "The expression variable \"%s\" was declared to be of"
                          " type %s, but is actually of type %s.  Please "
                          "confirm that the variable was declared correctly.  "
                          "Contact us via https://visit-help.llnl.gov if you believe "
@@ -276,7 +279,7 @@ avtExpressionEvaluatorFilter::VerifyVariableTypes(void)
         if(exp->GetFromOperator())
         { 
             char msg[1024];
-            sprintf(msg, "The expression variable \"%s\" was declared as an operator"
+            snprintf(msg, 1024, "The expression variable \"%s\" was declared as an operator"
                       " expression.  This variable must be removed from the contract"
                       " and created by the operator.", varname.c_str());
             EXCEPTION1(VisItException, msg);

@@ -307,6 +307,9 @@ avtSILGenerator::CreateSIL(avtDatabaseMetaData *md, avtSIL *sil)
 //     Hank Childs, Mon Dec  7 14:26:38 PST 2009
 //     Add flags for AMR efficiency.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 
 void
@@ -347,14 +350,14 @@ avtSILGenerator::AddSubsets(avtSIL *sil, int parent, int num, int origin,
             char name[1024];
             if (names.size() == (size_t)num)
             {
-                strcpy(name, names[i].c_str());
+                strncpy(name, names[i].c_str(), 1024);
             }
             else
             {
                 if (strstr(unit.c_str(), "%") != NULL)
-                    sprintf(name, unit.c_str(), i+origin);
+                    snprintf(name, 1024, unit.c_str(), i+origin);
                 else
-                    sprintf(name, "%s%d", unit.c_str(), i+origin);
+                    snprintf(name, 1024, "%s%d", unit.c_str(), i+origin);
             }
     
             // determine "identifier" for the set (only "domains" get non -1) 
@@ -421,6 +424,9 @@ avtSILGenerator::AddSubsets(avtSIL *sil, int parent, int num, int origin,
 //    Added groupNames argument. If empty or size doesn't match numGroups,
 //    names will be generated as before.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
  
 std::vector<int>
@@ -440,9 +446,9 @@ avtSILGenerator::AddGroups(avtSIL *sil, int top, int numGroups, int origin,
         if (!gNames.empty() && gNames.size() == (size_t)numGroups)
             strcpy(name, gNames[i].c_str()); 
         else if (strstr(piece.c_str(), "%") != NULL)
-            sprintf(name, piece.c_str(), i+origin);
+            snprintf(name, 1024, piece.c_str(), i+origin);
         else
-            sprintf(name, "%s%d", piece.c_str(), i+origin);
+            snprintf(name, 1024, "%s%d", piece.c_str(), i+origin);
  
         avtSILSet_p set = new avtSILSet(name, -1);
  
@@ -617,6 +623,9 @@ avtSILGenerator::AddMaterials(avtSIL *sil, int top, const string &name,
 //    Brad Whitlock, Thu Mar 8 09:45:06 PDT 2007
 //    I made it use the automatically generated avtSpeciesMetaData object.
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
  
 void
@@ -637,7 +646,7 @@ avtSILGenerator::AddSpecies(avtSIL *sil, int top,
             for (int j = 0 ; j < numSpecs; j++)
             {
                 char n[1024];
-                sprintf(n, "Mat %s, Spec %s", matnames[i].c_str(),
+                snprintf(n, 1024, "Mat %s, Spec %s", matnames[i].c_str(),
                                               specnames[j].c_str());
                 avtSILSet_p set = new avtSILSet(n, id);
                 int mIndex = sil->AddSubset(set);
@@ -680,6 +689,10 @@ avtSILGenerator::AddSpecies(avtSIL *sil, int top,
 //  Programmer: Hank Childs
 //  Creation:   September 6, 2002
 //
+//  Modifications:
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
  
 void
@@ -707,13 +720,13 @@ avtSILGenerator::AddMaterialSubsets(avtSIL *sil, const vector<int> &domList,
             char matdom_name[1024];
             if (blocknames.size() == (size_t)blocks)
             {
-                sprintf(matdom_name, "Dom=%s,Mat=%s",
-                        blocknames[i].c_str(), matnames[j].c_str());
+                snprintf(matdom_name, 1024, "Dom=%s,Mat=%s",
+                         blocknames[i].c_str(), matnames[j].c_str());
             }
             else
             {
-                sprintf(matdom_name, "Dom=%d,Mat=%s",
-                        i+origin,matnames[j].c_str());
+                snprintf(matdom_name,  1024, "Dom=%d,Mat=%s",
+                         i+origin,matnames[j].c_str());
             }
 
             //
@@ -901,6 +914,9 @@ AddEnumScalarSubgraph(avtSIL *sil,
 //    Mark C. Miller, Wed Mar 26 16:23:27 PDT 2008
 //    Added support for enumerated scalars w/graphs
 //
+//    Cyrus Harrison, Mon Jul 21 11:09:11 PDT 2025
+//    sprintf to snprintf
+//
 // ****************************************************************************
 void
 avtSILGenerator::AddEnumScalars(avtSIL *sil, int top,
@@ -911,7 +927,7 @@ avtSILGenerator::AddEnumScalars(avtSIL *sil, int top,
     for (int k=0; k<nEnums; k++)
     {
         char name[1024];
-        sprintf(name, "%s", smd->enumNames[k].c_str());
+        snprintf(name, 1024, "%s", smd->enumNames[k].c_str());
         avtSILSet_p set = new avtSILSet(name, -1);
         int dIndex = sil->AddSubset(set);
         enumList.push_back(dIndex);
