@@ -1029,6 +1029,9 @@ avtBlueprintFileFormat::ReadBlueprintSpecset(int domain,
 //    all L2 are periodic) and mark fields for those meshes as nodal because
 //    they will use legacy LOR down the line which makes all fields nodal.
 //
+//    Cyrus Harrison, Fri Sep 26 12:40:56 PDT 2025
+//    Add support for Quadrature Functions
+//
 // ****************************************************************************
 void
 avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md,
@@ -1059,10 +1062,40 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
     // ... if any exist
     std::map<std::string, std::string> topo_names_to_gf_names;
 
+    NodeConstIterator topos_itr = n_topos.children();
+
+    //
+    // gather topos that have quad funcs defined on them
+    // 
+    
+    // this is done before adding metadata for meshes 
+    // b/c we need to know if we need an extra case for quad_points
+    
+   std::set<std::string> quad_func_topos;
+    
+    if(n_mesh_info.has_child("fields"))
+    {
+        NodeConstIterator fields_itr = n_mesh_info["fields"].children();
+        while (fields_itr.has_next())
+        {
+            const Node &n_field = fields_itr.next();
+            const string var_topo_name = n_field["topology"].as_string();
+            
+            if (n_field.has_child("basis"))
+            {
+                const std::string basis = n_field["basis"].as_string();
+                if(basis.find("QF_") != std::string::npos)
+                {
+                    // found a quadrature function
+                    quad_func_topos.insert(var_topo_name);
+                }
+            }
+        }
+    }
+    
     //
     // loop over topologies
     //
-    NodeConstIterator topos_itr = n_topos.children();
 
     while(topos_itr.has_next())
     {
@@ -1186,6 +1219,20 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
                                           AVT_ZONECENT));
 
             m_mfem_mesh_map[mesh_topo_name] = true;
+            
+            if( quad_func_topos.count(topo_name) > 0 )
+            {
+                // if any field has quad func data, add a quad_points mesh
+                std::string mesh_quad_pts_topo_name = mesh_topo_name + "_quad_points";
+                avtMeshMetaData *mmd = new avtMeshMetaData(mesh_quad_pts_topo_name,
+                                                           nblocks,
+                                                           0, 0, 0,
+                                                           ndims, ndims, mt);
+
+                m_mfem_mesh_map[mesh_quad_pts_topo_name] = true; // TODO ?
+                m_mesh_and_topo_info[mesh_quad_pts_topo_name]["mesh"] = mesh_name;
+                m_mesh_and_topo_info[mesh_quad_pts_topo_name]["topo"] = topo_name + "_quad_points";
+            }
         }
         else
         {
@@ -1221,6 +1268,12 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
                     {
                         // COULD BE periodic
                         periodic_topos.insert(topo_name);
+                    }
+                    else if(basis.find("QF_") != std::string::npos)
+                    {
+                        // TODO found a quadrature function?
+                        
+                        
                     }
                 }
             }

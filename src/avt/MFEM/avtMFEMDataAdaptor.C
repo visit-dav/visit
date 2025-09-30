@@ -1251,10 +1251,52 @@ avtMFEMDataAdaptor::BoundaryAttributeToVTK(mfem::Mesh *mesh)
 vtkDataArray *
 avtMFEMDataAdaptor::QuadratureFunctionToVTK(mfem::QuadratureFunction *qf)
 {
-    vtkDataArray *rv =nullptr;
-    
-    // TODO: Everything
-    std::cout << "YOU MADE IT HERE! Prepare to CRASH!" << std::endl;
-    return rv;
+    AVT_MFEM_INFO("Creating MFEM Quadrature Function")
+
+    //mfem::QuadratureSpace *qspace = qf->FESpace();
+    const int vdim = qf->GetVDim();
+    const int qfsize = qf->Size();
+    const int ntuples = qfsize / vdim;
+
+    const double *values = qf->HostRead();
+
+    AVT_MFEM_INFO("VTKDataArray "
+                    << " quad function mesh elements: " << ntuples
+                    << " vdim: " << vdim << " "
+                    << " quad function total size: " << qfsize);
+
+    vtkDataArray *retval = vtkDoubleArray::New();
+    // vtk reqs us to set number of comps before number of tuples
+    retval->SetNumberOfComponents(vdim == 2 ? 3 : vdim);
+    // set number of tuples
+    retval->SetNumberOfTuples(ntuples);
+
+    if (vdim == 1) // scalar case
+    {
+        for (vtkIdType i = 0; i < ntuples; i ++)
+        {
+            retval->SetComponent(i, 0, (double) values[i]);
+        }
+    }
+    else // vector case
+    {
+        // NOTE: quad function is strided by vdims
+        int idx = 0;
+        for (vtkIdType j = 0; j < ntuples; j ++)
+        {
+            for (int i = 0;  i < vdim; i ++)
+            {
+                retval->SetComponent(j, i, values[idx]);
+                idx++;
+            }
+            // vtk always wants 3d for vector fields
+            if(vdim == 2)
+            {
+                retval->SetComponent(j, 2, 0.0);
+            }
+        }
+
+    }
+
+    return retval;
 }
-     

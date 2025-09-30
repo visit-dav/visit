@@ -3334,7 +3334,7 @@ avtConduitBlueprintDataAdaptor::BlueprintToMFEM::FieldToMFEMQuadratureFunction(
     // n_conv holds converted data (when necessary for mfem api)
     // if n_conv is used ( !n_conv.dtype().empty() ) we
     // know that some data allocation was necessary, so we
-    // can't return a gf that zero copies the conduit data
+    // can't return a qf that zero copies the conduit data
     Node n_conv;
 
     const double *vals_ptr = NULL;

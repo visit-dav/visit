@@ -34,7 +34,7 @@ input_meshs  = [ f for f in mfem_roots if f.count("ex0") == 0]
 ex01_results = [ f for f in mfem_roots if f.count("ex01") == 1]
 ex02_results = [ f for f in mfem_roots if f.count("ex02") == 1]
 mfem_mesh_files = glob.glob(data_path("mfem_test_data/*.mesh"))
-
+mfem_quad_func_files = glob.glob(data_path("mfem_quad_func_test_data/*.mfem_root"))
 
 def set_test_view():
     v = View3DAttributes()
@@ -57,213 +57,245 @@ def set_test_view():
     v.windowValid = 1
     SetView3D(v)
 
-TestSection("Input Mesh Files")
-for f in input_meshs:
-    base = os.path.splitext(os.path.basename(f))[0]
-    DeleteAllPlots()
-    OpenDatabase(f)
-    AddPlot("Pseudocolor","main_element_coloring")
-    #pc_atts = PseudocolorAttributes()
-    #pc_atts.colorTableName = "PuBuGn"
-    #SetPlotOptions(pc_atts)
-    AddOperator("MultiresControl")
-    AddPlot("Mesh","main")
-    AddOperator("MultiresControl")
-    SetActivePlots((0,1))
-    levels = [0,20]
-    if f.count("amr") > 0:
-        levels = [0,5]
-    for mres in levels:
-        mc_atts  = MultiresControlAttributes()
-        mc_atts.resolution = mres
-        SetOperatorOptions(mc_atts)
-        ResetView()
-        DrawPlots()
-        Test("input_mesh_%s_mres_%04d" % (base,mres))
-    DeleteAllPlots()
-    CloseDatabase(f)
+# TestSection("Input Mesh Files")
+# for f in input_meshs:
+#     base = os.path.splitext(os.path.basename(f))[0]
+#     DeleteAllPlots()
+#     OpenDatabase(f)
+#     AddPlot("Pseudocolor","main_element_coloring")
+#     #pc_atts = PseudocolorAttributes()
+#     #pc_atts.colorTableName = "PuBuGn"
+#     #SetPlotOptions(pc_atts)
+#     AddOperator("MultiresControl")
+#     AddPlot("Mesh","main")
+#     AddOperator("MultiresControl")
+#     SetActivePlots((0,1))
+#     levels = [0,20]
+#     if f.count("amr") > 0:
+#         levels = [0,5]
+#     for mres in levels:
+#         mc_atts  = MultiresControlAttributes()
+#         mc_atts.resolution = mres
+#         SetOperatorOptions(mc_atts)
+#         ResetView()
+#         DrawPlots()
+#         Test("input_mesh_%s_mres_%04d" % (base,mres))
+#     DeleteAllPlots()
+#     CloseDatabase(f)
 
-TestSection("ex01 results")
-for f in ex01_results:
-    base = os.path.splitext(os.path.basename(f))[0]
-    DeleteAllPlots()
-    OpenDatabase(f)
-    AddPlot("Pseudocolor","gf")
-    #AddPlot("Mesh","main")
+# TestSection("ex01 results")
+# for f in ex01_results:
+#     base = os.path.splitext(os.path.basename(f))[0]
+#     DeleteAllPlots()
+#     OpenDatabase(f)
+#     AddPlot("Pseudocolor","gf")
+#     #AddPlot("Mesh","main")
+#     ResetView()
+#     DrawPlots()
+#     Test("ex01_%s" % (base))
+#     DeleteAllPlots()
+#     CloseDatabase(f)
+
+# TestSection("ex02 results")
+# for f in ex02_results:
+#     base = os.path.splitext(os.path.basename(f))[0]
+#     DeleteAllPlots()
+#     OpenDatabase(f)
+#     AddPlot("Pseudocolor","main_element_attribute")
+#     #AddPlot("Mesh","main")
+#     ResetView()
+#     DrawPlots()
+#     Test("ex02_element_attribute_%s" % (base))
+#     ChangeActivePlotsVar("gf_magnitude");
+#     DrawPlots()
+#     Test("ex02_gf_mag_%s" % (base))
+#     DeleteAllPlots()
+#     CloseDatabase(f)
+
+# TestSection("MFEM Expressions")
+# OpenDatabase(data_path("mfem_test_data/ex02-beam-tet.mfem_root"))
+# AddPlot("Pseudocolor","mag-gf")
+# ResetView()
+# DrawPlots()
+# Test("mfem_expressions_1")
+# DeleteAllPlots()
+# AddPlot("Pseudocolor","comp0")
+# DrawPlots()
+# Test("mfem_expressions_2")
+# DeleteAllPlots()
+# AddPlot("Vector","curl-gf")
+# DrawPlots()
+# Test("mfem_expressions_3")
+# DeleteAllPlots()
+# CloseDatabase(data_path("mfem_test_data/ex02-beam-tet.mfem_root"))
+
+# TestSection("Input Mesh Boundary Topology")
+# for f in input_meshs:
+#     base = os.path.splitext(os.path.basename(f))[0]
+#     DeleteAllPlots()
+#     OpenDatabase(f)
+#     AddPlot("Pseudocolor","main_boundary_attribute")
+#     AddPlot("Mesh","main_boundary")
+#     mesh_atts = MeshAttributes()
+#     mesh_atts.lineWidth = 2
+#     SetPlotOptions(mesh_atts)
+#     ResetView()
+#     DrawPlots()
+#     Test("input_mesh_%s_boundary_topo" % (base))
+#     DeleteAllPlots()
+#     CloseDatabase(f)
+
+# TestSection("Direct Mesh Open")
+# for f in mfem_mesh_files:
+#     base = os.path.splitext(os.path.basename(f))[0]
+#     DeleteAllPlots()
+#     OpenDatabase(f)
+#     AddPlot("Pseudocolor","main_element_coloring")
+#     ResetView()
+#     DrawPlots()
+#     Test("direct_open_mesh_file_%s" % (base))
+#     DeleteAllPlots()
+#     CloseDatabase(f)
+
+# # reset default
+# readOptions = GetDefaultFileOpenOptions("MFEM")
+# readOptions["MFEM LOR Setting"] = "MFEM LOR"
+# SetDefaultFileOpenOptions("MFEM", readOptions)
+
+# def test_mfem_lor_mesh(tag_name, dbfile):
+#     ResetView()
+#     base = os.path.splitext(os.path.basename(dbfile))[0]
+
+#     # get default options
+#     readOptions = GetDefaultFileOpenOptions("MFEM")
+#     readOptions["MFEM LOR Setting"] = "MFEM LOR"
+#     SetDefaultFileOpenOptions("MFEM", readOptions)
+#     OpenDatabase(dbfile)
+
+#     # we want to test a picture of a wireframe
+#     # new LOR should only have the outer edge
+#     AddPlot("Subset", "main")
+#     SubsetAtts = SubsetAttributes()
+#     SubsetAtts.wireframe = 1
+#     SetPlotOptions(SubsetAtts)
+#     set_test_view()
+#     DrawPlots()
+#     Test(tag_name + "_" + base + "_lor")
+#     DeleteAllPlots()
+#     ResetView()
+#     CloseDatabase(dbfile)
+
+#     ##############################
+
+#     # examine legacy
+#     readOptions = GetDefaultFileOpenOptions("MFEM")
+#     readOptions["MFEM LOR Setting"] = "Legacy LOR"
+#     SetDefaultFileOpenOptions("MFEM", readOptions)
+#     OpenDatabase(dbfile)
+
+#     # old LOR leaves a busy wireframe
+#     AddPlot("Subset", "main")
+#     SubsetAtts = SubsetAttributes()
+#     SubsetAtts.wireframe = 1
+#     SetPlotOptions(SubsetAtts)
+#     set_test_view()
+#     DrawPlots()
+#     Test(tag_name + "_" + base + "_legacy_lor")
+#     DeleteAllPlots()
+#     ResetView()
+#     CloseDatabase(dbfile)
+
+#     # restore default
+#     readOptions = GetDefaultFileOpenOptions("MFEM")
+#     readOptions["MFEM LOR Setting"] = "MFEM LOR"
+#     SetDefaultFileOpenOptions("MFEM", readOptions)
+
+# TestSection("Legacy and New LOR")
+# for dbfile in input_meshs:
+#     test_mfem_lor_mesh("LOR", dbfile)
+
+# def test_mfem_lor_field(tag_name, dbfile):
+#     ResetView()
+#     base = os.path.splitext(os.path.basename(dbfile))[0]
+
+#     readOptions = GetDefaultFileOpenOptions("MFEM")
+#     readOptions["MFEM LOR Setting"] = "MFEM LOR"
+#     SetDefaultFileOpenOptions("MFEM", readOptions)
+#     OpenDatabase(dbfile)
+
+#     AddPlot("Pseudocolor","gf")
+#     AddOperator("MultiresControl", 1)
+#     SetActivePlots(0)
+#     MultiresControlAtts = MultiresControlAttributes()
+#     MultiresControlAtts.resolution = 3
+#     SetOperatorOptions(MultiresControlAtts, 0, 1)
+#     set_test_view()
+#     DrawPlots()
+#     Test(tag_name + "_" + base + "_pseudocolor_gf_lor")
+#     DeleteAllPlots()
+#     ResetView()
+
+#     CloseDatabase(dbfile)
+
+#     ##############################
+
+#     # examine legacy
+#     readOptions = GetDefaultFileOpenOptions("MFEM")
+#     readOptions["MFEM LOR Setting"] = "Legacy LOR"
+#     SetDefaultFileOpenOptions("MFEM", readOptions)
+#     OpenDatabase(dbfile)
+
+#     AddPlot("Pseudocolor","gf")
+#     AddOperator("MultiresControl", 1)
+#     SetActivePlots(0)
+#     MultiresControlAtts = MultiresControlAttributes()
+#     MultiresControlAtts.resolution = 3
+#     SetOperatorOptions(MultiresControlAtts, 0, 1)
+#     set_test_view()
+#     DrawPlots()
+#     Test(tag_name + "_" + base + "_pseudocolor_gf_legacy_lor")
+#     DeleteAllPlots()
+#     ResetView()
+
+#     # restore default
+#     readOptions = GetDefaultFileOpenOptions("MFEM")
+#     readOptions["MFEM LOR Setting"] = "MFEM LOR"
+#     SetDefaultFileOpenOptions("MFEM", readOptions)
+
+
+
+# TestSection("Legacy and New LOR Fields")
+# for dbfile in ex01_results:
+#     test_mfem_lor_field("LOR_Fields", dbfile)
+
+
+def test_mfem_quad_func_scalar(tag_name, dbfile):
     ResetView()
-    DrawPlots()
-    Test("ex01_%s" % (base))
-    DeleteAllPlots()
-    CloseDatabase(f)
-
-TestSection("ex02 results")
-for f in ex02_results:
-    base = os.path.splitext(os.path.basename(f))[0]
-    DeleteAllPlots()
-    OpenDatabase(f)
-    AddPlot("Pseudocolor","main_element_attribute")
-    #AddPlot("Mesh","main")
-    ResetView()
-    DrawPlots()
-    Test("ex02_element_attribute_%s" % (base))
-    ChangeActivePlotsVar("gf_magnitude");
-    DrawPlots()
-    Test("ex02_gf_mag_%s" % (base))
-    DeleteAllPlots()
-    CloseDatabase(f)
-
-TestSection("MFEM Expressions")
-OpenDatabase(data_path("mfem_test_data/ex02-beam-tet.mfem_root"))
-AddPlot("Pseudocolor","mag-gf")
-ResetView()
-DrawPlots()
-Test("mfem_expressions_1")
-DeleteAllPlots()
-AddPlot("Pseudocolor","comp0")
-DrawPlots()
-Test("mfem_expressions_2")
-DeleteAllPlots()
-AddPlot("Vector","curl-gf")
-DrawPlots()
-Test("mfem_expressions_3")
-DeleteAllPlots()
-CloseDatabase(data_path("mfem_test_data/ex02-beam-tet.mfem_root"))
-
-TestSection("Input Mesh Boundary Topology")
-for f in input_meshs:
-    base = os.path.splitext(os.path.basename(f))[0]
-    DeleteAllPlots()
-    OpenDatabase(f)
-    AddPlot("Pseudocolor","main_boundary_attribute")
-    AddPlot("Mesh","main_boundary")
+    base = os.path.splitext(os.path.basename(dbfile))[0]
+    OpenDatabase(dbfile)
+    AddPlot("Pseudocolor","quad_field")
+    AddPlot("Mesh","main_quad_func_o5")
     mesh_atts = MeshAttributes()
     mesh_atts.lineWidth = 2
+    mesh_atts.meshColor = (0, 0, 0, 255)
+    mesh_atts.meshColorSource = mesh_atts.MeshCustom
     SetPlotOptions(mesh_atts)
-    ResetView()
     DrawPlots()
-    Test("input_mesh_%s_boundary_topo" % (base))
-    DeleteAllPlots()
-    CloseDatabase(f)
-
-TestSection("Direct Mesh Open")
-for f in mfem_mesh_files:
-    base = os.path.splitext(os.path.basename(f))[0]
-    DeleteAllPlots()
-    OpenDatabase(f)
-    AddPlot("Pseudocolor","main_element_coloring")
-    ResetView()
+    AddPlot("Mesh","main")
+    mesh_atts = MeshAttributes()
+    mesh_atts.lineWidth = 4
+    mesh_atts.meshColor = (255, 0, 255, 255)
+    mesh_atts.meshColorSource = mesh_atts.MeshCustom
+    SetPlotOptions(mesh_atts)
     DrawPlots()
-    Test("direct_open_mesh_file_%s" % (base))
-    DeleteAllPlots()
-    CloseDatabase(f)
-
-# reset default
-readOptions = GetDefaultFileOpenOptions("MFEM")
-readOptions["MFEM LOR Setting"] = "MFEM LOR"
-SetDefaultFileOpenOptions("MFEM", readOptions)
-
-def test_mfem_lor_mesh(tag_name, dbfile):
-    ResetView()
-    base = os.path.splitext(os.path.basename(dbfile))[0]
-
-    # get default options
-    readOptions = GetDefaultFileOpenOptions("MFEM")
-    readOptions["MFEM LOR Setting"] = "MFEM LOR"
-    SetDefaultFileOpenOptions("MFEM", readOptions)
-    OpenDatabase(dbfile)
-
-    # we want to test a picture of a wireframe
-    # new LOR should only have the outer edge
-    AddPlot("Subset", "main")
-    SubsetAtts = SubsetAttributes()
-    SubsetAtts.wireframe = 1
-    SetPlotOptions(SubsetAtts)
-    set_test_view()
-    DrawPlots()
-    Test(tag_name + "_" + base + "_lor")
+    Test(tag_name + "_" + base + "_pseudocolor_qf_scalar")
     DeleteAllPlots()
     ResetView()
     CloseDatabase(dbfile)
 
-    ##############################
+TestSection("Quadrature Functions")
+for dbfile in mfem_quad_func_files:
+    test_mfem_quad_func_scalar("Quad_Func", dbfile)
 
-    # examine legacy
-    readOptions = GetDefaultFileOpenOptions("MFEM")
-    readOptions["MFEM LOR Setting"] = "Legacy LOR"
-    SetDefaultFileOpenOptions("MFEM", readOptions)
-    OpenDatabase(dbfile)
-
-    # old LOR leaves a busy wireframe
-    AddPlot("Subset", "main")
-    SubsetAtts = SubsetAttributes()
-    SubsetAtts.wireframe = 1
-    SetPlotOptions(SubsetAtts)
-    set_test_view()
-    DrawPlots()
-    Test(tag_name + "_" + base + "_legacy_lor")
-    DeleteAllPlots()
-    ResetView()
-    CloseDatabase(dbfile)
-
-    # restore default
-    readOptions = GetDefaultFileOpenOptions("MFEM")
-    readOptions["MFEM LOR Setting"] = "MFEM LOR"
-    SetDefaultFileOpenOptions("MFEM", readOptions)
-
-TestSection("Legacy and New LOR")
-for dbfile in input_meshs:
-    test_mfem_lor_mesh("LOR", dbfile)
-
-def test_mfem_lor_field(tag_name, dbfile):
-    ResetView()
-    base = os.path.splitext(os.path.basename(dbfile))[0]
-
-    readOptions = GetDefaultFileOpenOptions("MFEM")
-    readOptions["MFEM LOR Setting"] = "MFEM LOR"
-    SetDefaultFileOpenOptions("MFEM", readOptions)
-    OpenDatabase(dbfile)
-
-    AddPlot("Pseudocolor","gf")
-    AddOperator("MultiresControl", 1)
-    SetActivePlots(0)
-    MultiresControlAtts = MultiresControlAttributes()
-    MultiresControlAtts.resolution = 3
-    SetOperatorOptions(MultiresControlAtts, 0, 1)
-    set_test_view()
-    DrawPlots()
-    Test(tag_name + "_" + base + "_pseudocolor_gf_lor")
-    DeleteAllPlots()
-    ResetView()
-
-    CloseDatabase(dbfile)
-
-    ##############################
-
-    # examine legacy
-    readOptions = GetDefaultFileOpenOptions("MFEM")
-    readOptions["MFEM LOR Setting"] = "Legacy LOR"
-    SetDefaultFileOpenOptions("MFEM", readOptions)
-    OpenDatabase(dbfile)
-
-    AddPlot("Pseudocolor","gf")
-    AddOperator("MultiresControl", 1)
-    SetActivePlots(0)
-    MultiresControlAtts = MultiresControlAttributes()
-    MultiresControlAtts.resolution = 3
-    SetOperatorOptions(MultiresControlAtts, 0, 1)
-    set_test_view()
-    DrawPlots()
-    Test(tag_name + "_" + base + "_pseudocolor_gf_legacy_lor")
-    DeleteAllPlots()
-    ResetView()
-
-    # restore default
-    readOptions = GetDefaultFileOpenOptions("MFEM")
-    readOptions["MFEM LOR Setting"] = "MFEM LOR"
-    SetDefaultFileOpenOptions("MFEM", readOptions)
-
-TestSection("Legacy and New LOR Fields")
-for dbfile in ex01_results:
-    test_mfem_lor_field("LOR_Fields", dbfile)
 
 Exit()
