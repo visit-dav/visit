@@ -121,6 +121,7 @@ PVLDGeneralPluginInfo::GetDefaultFilePatterns() const
     std::vector<std::string> defaultPatterns;
     defaultPatterns.push_back("*.pvld");
     defaultPatterns.push_back("*.vld");
+    defaultPatterns.push_back("*.bgm");
 
     return defaultPatterns;
 }
