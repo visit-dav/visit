@@ -102,19 +102,20 @@ InitVTKLite::Initialize(const std::string &component)
 
     // Prevent vtk logger from writing to stderr.
     vtkLogger::SetStderrVerbosity(vtkLogger::Verbosity::VERBOSITY_OFF);
+
     if(DebugStream::Level1())
     {
-        // for debug levels 1-2, 
+        // for debug levels 1-2,
         auto verbosityLevel = vtkLogger::Verbosity::VERBOSITY_ERROR;
 
         // Change the verbosity based on debug level.
-        if(DebugStream::Level3())
-        {
-            verbosityLevel = vtkLogger::Verbosity::VERBOSITY_WARNING;
-        }
-        else if(DebugStream::Level5())
+        if(DebugStream::Level5())
         {
             verbosityLevel = vtkLogger::Verbosity::VERBOSITY_INFO;
+        }
+        else if(DebugStream::Level3())
+        {
+            verbosityLevel = vtkLogger::Verbosity::VERBOSITY_WARNING;
         }
 
         // only write to debug1 to prevent multiple versions of the
@@ -125,6 +126,7 @@ InitVTKLite::Initialize(const std::string &component)
                                &DebugStream::Stream1(),
                                verbosityLevel);
     }
+
 #if 0
     // Register the factory that allows VisIt objects to override vtk objects.
     vtkVisItFactory *factory = vtkVisItFactory::New();
