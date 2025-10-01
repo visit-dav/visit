@@ -833,17 +833,22 @@ avtGlobalConstantExpression::Execute()
     const int ncomps = (intermediate_results_map.empty() ? 
                         0 : 
                         intermediate_results_map.begin()->second.ncomps);
-    if (std::any_of(std::next(intermediate_results_map.begin()),
-                    intermediate_results_map.end(),
-                    [ncomps](const auto &pair)
-                    {
-                        return pair.second.ncomps != ncomps;
-                    }))
+
+    if (! intermediate_results_map.empty())
     {
-        EXCEPTION2(ExpressionException, outputVariableName,
-                   "An internal error occurred when "
-                   "trying to calculate your expression. Please contact a "
-                   "VisIt developer.");
+        if (std::any_of(std::next(intermediate_results_map.begin()),
+                        intermediate_results_map.end(),
+                        [ncomps](const auto &pair)
+                        {
+                            return pair.second.ncomps != ncomps;
+                        }))
+        {
+            // TODO parallel error checking
+            EXCEPTION2(ExpressionException, outputVariableName,
+                       "An internal error occurred when "
+                       "trying to calculate your expression. Please contact a "
+                       "VisIt developer.");
+        }
     }
 
     //
@@ -859,47 +864,47 @@ avtGlobalConstantExpression::Execute()
         local_constant_results = intermediate_results_map.begin()->second.constant_results;
         local_extra_constant_results = intermediate_results_map.begin()->second.extra_constant_results;
         local_component_sums = intermediate_results_map.begin()->second.sums;
-    }
-    
-    // now iterate through the remaining arrays and update our result arrays
-    std::for_each(std::next(intermediate_results_map.begin()),
-                  intermediate_results_map.end(),
-                  [this,
-                   &local_constant_results,
-                   &local_extra_constant_results,
-                   &local_component_sums,
-                   ncomps](const auto &pair)
-                  {
-                      const int ntuples = pair.second.ntuples;
-                      if (ntuples > 0)
+        
+        // now iterate through the remaining arrays and update our result arrays
+        std::for_each(std::next(intermediate_results_map.begin()),
+                      intermediate_results_map.end(),
+                      [this,
+                       &local_constant_results,
+                       &local_extra_constant_results,
+                       &local_component_sums,
+                       ncomps](const auto &pair)
                       {
-                          const auto &curr_leaf_results = pair.second.constant_results;
-                          for (int comp_id = 0; comp_id < ncomps; comp_id ++)
+                          const int ntuples = pair.second.ntuples;
+                          if (ntuples > 0)
                           {
-                              local_constant_results[comp_id] = 
-                                  LocalIntermediateReduction(local_constant_results[comp_id],
-                                                             curr_leaf_results[comp_id]);
-                          }
-                          if (NeedsExtraIntermediateData())
-                          {
-                              const auto &curr_leaf_extra_results = pair.second.extra_constant_results;
+                              const auto &curr_leaf_results = pair.second.constant_results;
                               for (int comp_id = 0; comp_id < ncomps; comp_id ++)
                               {
-                                  local_extra_constant_results[comp_id] = 
+                                  local_constant_results[comp_id] = 
                                       LocalIntermediateReduction(local_constant_results[comp_id],
-                                                                 curr_leaf_extra_results[comp_id]);
+                                                                 curr_leaf_results[comp_id]);
                               }
-                          }
-                          if (NeedsSums())
-                          {
-                              const auto &curr_leaf_sums = pair.second.sums;
-                              for (int comp_id = 0; comp_id < ncomps; comp_id ++)
+                              if (NeedsExtraIntermediateData())
                               {
-                                  local_component_sums[comp_id] += curr_leaf_sums[comp_id];
+                                  const auto &curr_leaf_extra_results = pair.second.extra_constant_results;
+                                  for (int comp_id = 0; comp_id < ncomps; comp_id ++)
+                                  {
+                                      local_extra_constant_results[comp_id] = 
+                                          LocalIntermediateReduction(local_constant_results[comp_id],
+                                                                     curr_leaf_extra_results[comp_id]);
+                                  }
+                              }
+                              if (NeedsSums())
+                              {
+                                  const auto &curr_leaf_sums = pair.second.sums;
+                                  for (int comp_id = 0; comp_id < ncomps; comp_id ++)
+                                  {
+                                      local_component_sums[comp_id] += curr_leaf_sums[comp_id];
+                                  }
                               }
                           }
-                      }
-                  });
+                      });
+    }
 
     //
     // Calculate the local total number of tuples
@@ -960,7 +965,7 @@ avtGlobalConstantExpression::Execute()
 #else
     global_constant_results = local_constant_results;
 #endif
-    
+
     std::vector<double> global_extra_constant_results;
     if (NeedsExtraIntermediateData())
     {
@@ -971,7 +976,7 @@ avtGlobalConstantExpression::Execute()
         global_extra_constant_results = local_extra_constant_results;
 #endif
     }
-    
+
     std::vector<double> global_component_sums;
     if (NeedsSums())
     {
