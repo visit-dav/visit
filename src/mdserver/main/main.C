@@ -112,6 +112,11 @@ bool ProcessCommandLine(int argc, char *argv[]);
 //    Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
 //    Call `avtConduitBlueprintDataAdaptor::Initialize();`.
 //
+//    Kathleen Biagas, Wed Oct 1, 2025
+//    Add a component-name string argument to InitVTKLite::Initialize.
+//    It will be used for creating a vtkLogger callback to write their log
+//    info to VisIt's debug log.
+//
 // ****************************************************************************
 
 int
@@ -122,7 +127,7 @@ MDServerMain(int argc, char *argv[])
     // Initialize error logging
     VisItInit::SetComponentName("mdserver");
     VisItInit::Initialize(argc, argv);
-    InitVTKLite::Initialize();
+    InitVTKLite::Initialize("mdserver");
     avtDatabase::SetOnlyServeUpMetaData(true);
 #ifdef HAVE_CONDUIT
     avtConduitBlueprintDataAdaptor::Initialize();
