@@ -78,8 +78,7 @@ avtGlobalVarianceExpression::CalculateWithoutGhosts(vtkDataArray *in,
                                                     const int ncomponents,
                                                     const int ntuples,
                                                     std::vector<double> &constant_results,
-                                                    std::vector<double> &extra_constant_results,
-                                                    std::vector<double> &sums)
+                                                    std::vector<double> &extra_constant_results)
 {
     for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
     {
@@ -142,8 +141,7 @@ avtGlobalVarianceExpression::CalculateWithGhosts(vtkDataArray *in,
                                                  vtkDataArray *ghostZones,
                                                  int *nodeShouldBeIgnoredPtr,
                                                  std::vector<double> &constant_results,
-                                                 std::vector<double> &extra_constant_results,
-                                                 std::vector<double> &sums)
+                                                 std::vector<double> &extra_constant_results)
 {
     for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
     {
@@ -226,14 +224,10 @@ avtGlobalVarianceExpression::GlobalIntermediateReduction(std::vector<double> &lo
 void
 avtGlobalVarianceExpression::CalculateFinalResults(const std::vector<double> &global_constant_results,
                                                    const std::vector<double> &global_extra_constant_results,
-                                                   const std::vector<double> &global_component_sums,
                                                    const int global_ncomps,
                                                    const int global_ntuples,
                                                    std::vector<double> &final_results)
 {
-    // TODO get rid of sums
-
-
     // we didn't use this to get our final answer
     (void) global_component_sums;
 

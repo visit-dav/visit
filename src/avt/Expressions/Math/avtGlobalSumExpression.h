@@ -42,11 +42,8 @@ class EXPRESSION_API avtGlobalSumExpression : public avtGlobalConstantExpression
     // to calculate the sum we don't need to take into account the number of tuples
     virtual bool              NeedsNTuples() { return false; };
     
-    // to calculate the sum we need to take into account the sum of elements
-    virtual bool              NeedsSums() { return true; };
-
     // to calculate the sum we don't need to record any other local information
-    virtual bool              NeedsIntermediateData() { return false; };
+    virtual bool              NeedsIntermediateData() { return true; };
     
     // to calculate the sum we don't need to record any other local quantity
     virtual bool              NeedsExtraIntermediateData() { return false; };
@@ -55,8 +52,7 @@ class EXPRESSION_API avtGlobalSumExpression : public avtGlobalConstantExpression
                                                      const int ncomponents,
                                                      const int ntuples,
                                                      std::vector<double> &constant_results,
-                                                     std::vector<double> &extra_constant_results,
-                                                     std::vector<double> &sums);
+                                                     std::vector<double> &extra_constant_results);
 
     virtual void              CalculateWithGhosts(vtkDataArray *in,
                                                   const int ncomponents,
@@ -65,15 +61,22 @@ class EXPRESSION_API avtGlobalSumExpression : public avtGlobalConstantExpression
                                                   vtkDataArray *ghostZones,
                                                   int *nodeShouldBeIgnoredPtr,
                                                   std::vector<double> &constant_results,
-                                                  std::vector<double> &extra_constant_results,
-                                                  std::vector<double> &sums);
+                                                  std::vector<double> &extra_constant_results);
+
+    virtual double            LocalIntermediateReduction(const double running_reduction,
+                                                         const double intermediate_value);
+
+    virtual void              GlobalIntermediateReduction(std::vector<double> &local_constant_results,
+                                                          std::vector<double> &global_constant_results,
+                                                          const int ncomps);
 
     virtual void              CalculateFinalResults(const std::vector<double> &global_constant_results,
                                                     const std::vector<double> &global_extra_constant_results,
-                                                    const std::vector<double> &global_component_sums,
                                                     const int global_ncomps,
                                                     const int global_ntuples,
                                                     std::vector<double> &final_results);
+
+    virtual double            GetUnusedValue() { return 0.0; };
 };
 
 

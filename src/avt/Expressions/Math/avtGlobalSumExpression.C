@@ -73,10 +73,8 @@ avtGlobalSumExpression::CalculateWithoutGhosts(vtkDataArray *in,
                                                const int ncomponents,
                                                const int ntuples,
                                                std::vector<double> &constant_results,
-                                               std::vector<double> &extra_constant_results,
-                                               std::vector<double> &sums)
+                                               std::vector<double> &extra_constant_results)
 {
-    (void) constant_results;
     (void) extra_constant_results;
 
     for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
@@ -88,7 +86,7 @@ avtGlobalSumExpression::CalculateWithoutGhosts(vtkDataArray *in,
             sum += val;
         }
 
-        sums[comp_id] = sum;
+        constant_results[comp_id] = sum;
     }
 }
 
@@ -137,10 +135,8 @@ avtGlobalSumExpression::CalculateWithGhosts(vtkDataArray *in,
                                             vtkDataArray *ghostZones,
                                             int *nodeShouldBeIgnoredPtr,
                                             std::vector<double> &constant_results,
-                                            std::vector<double> &extra_constant_results,
-                                            std::vector<double> &sums)
+                                            std::vector<double> &extra_constant_results)
 {
-    (void) constant_results;
     (void) extra_constant_results;
 
     for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
@@ -155,8 +151,54 @@ avtGlobalSumExpression::CalculateWithGhosts(vtkDataArray *in,
             }
         }
 
-        sums[comp_id] = sum;
+        constant_results[comp_id] = sum;
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtGlobalSumExpression::LocalIntermediateReduction
+//
+//  Purpose:
+//      TODO
+//
+//  Programmer: Justin Privitera
+//  Creation:   September 26, 2025
+//
+//  Modifications:
+// ****************************************************************************
+double
+avtGlobalSumExpression::LocalIntermediateReduction(const double running_reduction,
+                                                   const double intermediate_value)
+{
+    return running_reduction + intermediate_value;
+}
+
+
+// ****************************************************************************
+//  Method: avtGlobalSumExpression::GlobalIntermediateReduction
+//
+//  Purpose:
+//      TODO
+//
+//  Programmer: Justin Privitera
+//  Creation:   September 26, 2025
+//
+//  Modifications:
+// ****************************************************************************
+void
+avtGlobalSumExpression::GlobalIntermediateReduction(std::vector<double> &local_constant_results,
+                                                    std::vector<double> &global_constant_results,
+                                                    const int ncomps)
+{
+#ifdef PARALLEL
+    MPI_Allreduce(local_constant_results.data(), global_constant_results.data(),
+                  ncomps, MPI_DOUBLE, MPI_SUM, VISIT_MPI_COMM);
+#else
+    (void) local_constant_results;
+    (void) global_constant_results;
+    (void) ncomps;
+#endif
 }
 
 
@@ -175,19 +217,17 @@ avtGlobalSumExpression::CalculateWithGhosts(vtkDataArray *in,
 void
 avtGlobalSumExpression::CalculateFinalResults(const std::vector<double> &global_constant_results,
                                               const std::vector<double> &global_extra_constant_results,
-                                              const std::vector<double> &global_component_sums,
                                               const int global_ncomps,
                                               const int global_ntuples,
                                               std::vector<double> &final_results)
 {
     // we didn't use either of these to get our final answer
-    (void) global_constant_results;
     (void) global_extra_constant_results;
     (void) global_ncomps;
     (void) global_ntuples;
 
     // we want to avoid copying the vector
-    final_results = std::move(global_component_sums);
+    final_results = std::move(global_constant_results);
 }
 
 

@@ -55,9 +55,7 @@ class EXPRESSION_API avtGlobalConstantExpression : public avtExpressionFilter
     virtual bool              NeedsNTuples() { return false; };
 
     // TODO explanation
-    virtual bool              NeedsSums() { return false; };
-
-    // TODO explanation
+    // TODO delete me
     virtual bool              NeedsIntermediateData() { return true; };
 
     // expressions like standard deviation and variance require an extra array of intermediate data
@@ -67,8 +65,7 @@ class EXPRESSION_API avtGlobalConstantExpression : public avtExpressionFilter
                                                      const int ncomponents,
                                                      const int ntuples,
                                                      std::vector<double> &constant_results,
-                                                     std::vector<double> &extra_constant_results,
-                                                     std::vector<double> &sums) = 0;
+                                                     std::vector<double> &extra_constant_results) = 0;
 
     virtual void              CalculateWithGhosts(vtkDataArray *in,
                                                   const int ncomponents,
@@ -77,24 +74,22 @@ class EXPRESSION_API avtGlobalConstantExpression : public avtExpressionFilter
                                                   vtkDataArray *ghostZones,
                                                   int *nodeShouldBeIgnoredPtr,
                                                   std::vector<double> &constant_results,
-                                                  std::vector<double> &extra_constant_results,
-                                                  std::vector<double> &sums) = 0;
+                                                  std::vector<double> &extra_constant_results) = 0;
 
     virtual double            LocalIntermediateReduction(const double running_reduction,
-                                                         const double intermediate_value);
+                                                         const double intermediate_value) = 0;
 
     virtual void              GlobalIntermediateReduction(std::vector<double> &local_constant_results,
                                                           std::vector<double> &global_constant_results,
-                                                          const int ncomps);
+                                                          const int ncomps) = 0;
 
     virtual void              CalculateFinalResults(const std::vector<double> &global_constant_results,
                                                     const std::vector<double> &global_extra_constant_results,
-                                                    const std::vector<double> &global_component_sums,
                                                     const int global_ncomps,
                                                     const int global_ntuples,
                                                     std::vector<double> &final_results) = 0;
 
-    virtual double            GetUnusedValue() { return 0.0; };
+    virtual double            GetUnusedValue() = 0;
 
   private:
     int                       GetLocalNumTuples(const std::map<int, intermediateResults> &intermediate_results_map);
@@ -110,7 +105,6 @@ class EXPRESSION_API avtGlobalConstantExpression : public avtExpressionFilter
                                           vtkDataSet *in_ds,
                                           std::vector<double> &constant_results,
                                           std::vector<double> &extra_constant_results,
-                                          std::vector<double> &sums,
                                           int &num_non_ghosted_tuples);
 
     void                      DeriveVariable(vtkDataSet *in_ds,

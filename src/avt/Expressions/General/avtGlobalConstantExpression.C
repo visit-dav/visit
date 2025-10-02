@@ -67,8 +67,6 @@ public:
     std::vector<double> constant_results;
     // some expressions (stdDev and variance) require a second per-component result
     std::vector<double> extra_constant_results;
-    // we need to track each component's sum
-    std::vector<double> sums;
     // we need to track the number of non-ghosted tuples that we are reducing across
     int                 num_non_ghosted_tuples;
     // we track the number of components, which is also the length of these vectors
@@ -79,7 +77,7 @@ public:
     vtkDataArray       *target_data_array;
 
     intermediateResults()
-        : constant_results(), extra_constant_results(), sums(),
+        : constant_results(), extra_constant_results(),
           num_non_ghosted_tuples(0), ncomps(0), ntuples(0), 
           target_data_array(nullptr) {}
 
@@ -129,67 +127,6 @@ avtGlobalConstantExpression::avtGlobalConstantExpression()
 avtGlobalConstantExpression::~avtGlobalConstantExpression()
 {
 
-}
-
-// ****************************************************************************
-//  Method: avtGlobalConstantExpression::LocalIntermediateReduction
-//
-//  Purpose:
-//      TODO
-// 
-//  Note:
-//      This method should be implemented in children of this class if they need it.
-//      An implementation is provided here to prevent the method from being pure 
-//      virtual.
-//
-//  Programmer: Justin Privitera
-//  Creation:   September 26, 2025
-//
-//  Modifications:
-// ****************************************************************************
-double
-avtGlobalConstantExpression::LocalIntermediateReduction(const double running_reduction,
-                                                        const double intermediate_value)
-{
-    (void) intermediate_value;
-
-    EXCEPTION2(ExpressionException, outputVariableName,
-               "An internal error occurred when "
-               "trying to calculate your expression. Please contact a "
-               "VisIt developer.");
-
-    return running_reduction;
-}
-
-// ****************************************************************************
-//  Method: avtGlobalConstantExpression::GlobalIntermediateReduction
-//
-//  Purpose:
-//      TODO
-// 
-//  Note:
-//      This method should be implemented in children of this class if they need it.
-//      An implementation is provided here to prevent the method from being pure 
-//      virtual.
-//
-//  Programmer: Justin Privitera
-//  Creation:   September 26, 2025
-//
-//  Modifications:
-// ****************************************************************************
-void
-avtGlobalConstantExpression::GlobalIntermediateReduction(std::vector<double> &local_constant_results,
-                                                         std::vector<double> &global_constant_results,
-                                                         const int ncomps)
-{
-    (void) local_constant_results;
-    (void) global_constant_results;
-    (void) ncomps;
-
-    EXCEPTION2(ExpressionException, outputVariableName,
-               "An internal error occurred when "
-               "trying to calculate your expression. Please contact a "
-               "VisIt developer.");
 }
 
 // ****************************************************************************
@@ -312,7 +249,6 @@ avtGlobalConstantExpression::DoOperation(vtkDataArray *inputArray,
                                          vtkDataSet *in_ds,
                                          std::vector<double> &constant_results,
                                          std::vector<double> &extra_constant_results,
-                                         std::vector<double> &sums,
                                          int &num_non_ghosted_tuples)
 {
     // TODO we need to error here if there is no non-ghosted data
@@ -353,8 +289,7 @@ avtGlobalConstantExpression::DoOperation(vtkDataArray *inputArray,
                                 ghostZones,
                                 nullptr,
                                 constant_results,
-                                extra_constant_results,
-                                sums);
+                                extra_constant_results);
         }
         else // no ghosts or just ghost nodes
         {
@@ -363,8 +298,8 @@ avtGlobalConstantExpression::DoOperation(vtkDataArray *inputArray,
                 num_non_ghosted_tuples = ntuples;
             }
 
-            CalculateWithoutGhosts(inputArray, ncomponents, ntuples, constant_results,
-                                   extra_constant_results, sums);
+            CalculateWithoutGhosts(inputArray, ncomponents, ntuples, 
+                                   constant_results, extra_constant_results);
         }
     }
     else // AVT_NODECENT == centering
@@ -394,8 +329,7 @@ avtGlobalConstantExpression::DoOperation(vtkDataArray *inputArray,
                                 ghostZones,
                                 nodeShouldBeIgnored.data(),
                                 constant_results,
-                                extra_constant_results,
-                                sums);
+                                extra_constant_results);
         }
         else // no ghosts
         {
@@ -404,8 +338,8 @@ avtGlobalConstantExpression::DoOperation(vtkDataArray *inputArray,
                 num_non_ghosted_tuples = ntuples;
             }
 
-            CalculateWithoutGhosts(inputArray, ncomponents, ntuples, constant_results,
-                                   extra_constant_results, sums);
+            CalculateWithoutGhosts(inputArray, ncomponents, ntuples,
+                                   constant_results, extra_constant_results);
         }
     }
 }
@@ -561,10 +495,6 @@ avtGlobalConstantExpression::DeriveVariable(vtkDataSet *in_ds,
     {
         per_leaf_results.extra_constant_results.resize(ncomps);
     }
-    if (NeedsSums())
-    {
-        per_leaf_results.sums.resize(ncomps);
-    }
     per_leaf_results.target_data_array = dv;
 
     DoOperation(data,
@@ -573,7 +503,6 @@ avtGlobalConstantExpression::DeriveVariable(vtkDataSet *in_ds,
                 in_ds,
                 per_leaf_results.constant_results,
                 per_leaf_results.extra_constant_results,
-                per_leaf_results.sums,
                 per_leaf_results.num_non_ghosted_tuples);
 }
 
@@ -960,14 +889,12 @@ avtGlobalConstantExpression::Execute()
     //
     std::vector<double> local_constant_results;
     std::vector<double> local_extra_constant_results;
-    std::vector<double> local_component_sums;
 
     // set our arrays to be the value of the first intermediate result array
     if (! intermediate_results_map.empty())
     {
         local_constant_results = intermediate_results_map.begin()->second.constant_results;
         local_extra_constant_results = intermediate_results_map.begin()->second.extra_constant_results;
-        local_component_sums = intermediate_results_map.begin()->second.sums;
         
         // now iterate through the remaining arrays and update our result arrays
         std::for_each(std::next(intermediate_results_map.begin()),
@@ -975,7 +902,6 @@ avtGlobalConstantExpression::Execute()
                       [this,
                        &local_constant_results,
                        &local_extra_constant_results,
-                       &local_component_sums,
                        ncomps](const auto &pair)
                       {
                           const int ntuples = pair.second.ntuples;
@@ -999,14 +925,6 @@ avtGlobalConstantExpression::Execute()
                                       local_extra_constant_results[comp_id] = 
                                           LocalIntermediateReduction(local_constant_results[comp_id],
                                                                      curr_leaf_extra_results[comp_id]);
-                                  }
-                              }
-                              if (NeedsSums())
-                              {
-                                  const auto &curr_leaf_sums = pair.second.sums;
-                                  for (int comp_id = 0; comp_id < ncomps; comp_id ++)
-                                  {
-                                      local_component_sums[comp_id] += curr_leaf_sums[comp_id];
                                   }
                               }
                           }
@@ -1055,12 +973,6 @@ avtGlobalConstantExpression::Execute()
             local_extra_constant_results.resize(global_ncomps);
             std::fill(local_extra_constant_results.begin(), local_extra_constant_results.end(), GetUnusedValue());
         }
-        
-        if (NeedsSums())
-        {
-            local_component_sums.resize(global_ncomps);
-            std::fill(local_component_sums.begin(), local_component_sums.end(), 0.0);
-        }
     }
 
     int global_ntuples = local_total_ntuples;
@@ -1096,25 +1008,12 @@ avtGlobalConstantExpression::Execute()
 #endif
     }
 
-    std::vector<double> global_component_sums;
-    if (NeedsSums())
-    {
-#ifdef PARALLEL
-        global_component_sums.resize(global_ncomps);
-        MPI_Allreduce(local_component_sums.data(), global_component_sums.data(),
-                      global_ncomps, MPI_DOUBLE, MPI_SUM, VISIT_MPI_COMM);
-#else
-        global_component_sums = std::move(local_component_sums);
-#endif
-    }
-
     //
     // Write result
     //
     std::vector<double> final_results;
     CalculateFinalResults(global_constant_results,
                           global_extra_constant_results,
-                          global_component_sums,
                           global_ncomps,
                           global_ntuples,
                           final_results);

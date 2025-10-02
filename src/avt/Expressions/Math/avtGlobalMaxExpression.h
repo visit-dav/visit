@@ -44,9 +44,6 @@ class EXPRESSION_API avtGlobalMaxExpression : public avtGlobalConstantExpression
     // to calculate the maximum we don't need to take into account the number of tuples
     virtual bool              NeedsNTuples() { return false; };
     
-    // to calculate the maximum we don't need to take into account the sum of elements
-    virtual bool              NeedsSums() { return false; };
-
     // to calculate the maximum we need to record local maximums
     virtual bool              NeedsIntermediateData() { return true; };
     
@@ -57,8 +54,7 @@ class EXPRESSION_API avtGlobalMaxExpression : public avtGlobalConstantExpression
                                                      const int ncomponents,
                                                      const int ntuples,
                                                      std::vector<double> &constant_results,
-                                                     std::vector<double> &extra_constant_results,
-                                                     std::vector<double> &sums);
+                                                     std::vector<double> &extra_constant_results);
 
     virtual void              CalculateWithGhosts(vtkDataArray *in,
                                                   const int ncomponents,
@@ -67,8 +63,7 @@ class EXPRESSION_API avtGlobalMaxExpression : public avtGlobalConstantExpression
                                                   vtkDataArray *ghostZones,
                                                   int *nodeShouldBeIgnoredPtr,
                                                   std::vector<double> &constant_results,
-                                                  std::vector<double> &extra_constant_results,
-                                                  std::vector<double> &sums);
+                                                  std::vector<double> &extra_constant_results);
 
     virtual double            LocalIntermediateReduction(const double running_reduction,
                                                          const double intermediate_value);
@@ -79,7 +74,6 @@ class EXPRESSION_API avtGlobalMaxExpression : public avtGlobalConstantExpression
 
     virtual void              CalculateFinalResults(const std::vector<double> &global_constant_results,
                                                     const std::vector<double> &global_extra_constant_results,
-                                                    const std::vector<double> &global_component_sums,
                                                     const int global_ncomps,
                                                     const int global_ntuples,
                                                     std::vector<double> &final_results);

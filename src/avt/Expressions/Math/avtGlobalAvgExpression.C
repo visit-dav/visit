@@ -73,10 +73,8 @@ avtGlobalAvgExpression::CalculateWithoutGhosts(vtkDataArray *in,
                                                const int ncomponents,
                                                const int ntuples,
                                                std::vector<double> &constant_results,
-                                               std::vector<double> &extra_constant_results,
-                                               std::vector<double> &sums)
+                                               std::vector<double> &extra_constant_results)
 {
-    (void) constant_results;
     (void) extra_constant_results;
 
     for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
@@ -88,7 +86,7 @@ avtGlobalAvgExpression::CalculateWithoutGhosts(vtkDataArray *in,
             sum += val;
         }
 
-        sums[comp_id] = sum;
+        constant_results[comp_id] = sum;
     }
 }
 
@@ -137,10 +135,8 @@ avtGlobalAvgExpression::CalculateWithGhosts(vtkDataArray *in,
                                             vtkDataArray *ghostZones,
                                             int *nodeShouldBeIgnoredPtr,
                                             std::vector<double> &constant_results,
-                                            std::vector<double> &extra_constant_results,
-                                            std::vector<double> &sums)
+                                            std::vector<double> &extra_constant_results)
 {
-    (void) constant_results;
     (void) extra_constant_results;
 
     for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
@@ -157,8 +153,54 @@ avtGlobalAvgExpression::CalculateWithGhosts(vtkDataArray *in,
             }
         }
 
-        sums[comp_id] = sum;
+        constant_results[comp_id] = sum;
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtGlobalAvgExpression::LocalIntermediateReduction
+//
+//  Purpose:
+//      TODO
+//
+//  Programmer: Justin Privitera
+//  Creation:   September 26, 2025
+//
+//  Modifications:
+// ****************************************************************************
+double
+avtGlobalAvgExpression::LocalIntermediateReduction(const double running_reduction,
+                                                   const double intermediate_value)
+{
+    return running_reduction + intermediate_value;
+}
+
+
+// ****************************************************************************
+//  Method: avtGlobalAvgExpression::GlobalIntermediateReduction
+//
+//  Purpose:
+//      TODO
+//
+//  Programmer: Justin Privitera
+//  Creation:   September 26, 2025
+//
+//  Modifications:
+// ****************************************************************************
+void
+avtGlobalAvgExpression::GlobalIntermediateReduction(std::vector<double> &local_constant_results,
+                                                    std::vector<double> &global_constant_results,
+                                                    const int ncomps)
+{
+#ifdef PARALLEL
+    MPI_Allreduce(local_constant_results.data(), global_constant_results.data(),
+                  ncomps, MPI_DOUBLE, MPI_SUM, VISIT_MPI_COMM);
+#else
+    (void) local_constant_results;
+    (void) global_constant_results;
+    (void) ncomps;
+#endif
 }
 
 
@@ -177,13 +219,11 @@ avtGlobalAvgExpression::CalculateWithGhosts(vtkDataArray *in,
 void
 avtGlobalAvgExpression::CalculateFinalResults(const std::vector<double> &global_constant_results,
                                               const std::vector<double> &global_extra_constant_results,
-                                              const std::vector<double> &global_component_sums,
                                               const int global_ncomps,
                                               const int global_ntuples,
                                               std::vector<double> &final_results)
 {
-    // we didn't use either of these to get our final answer
-    (void) global_constant_results;
+    // we didn't use this to get our final answer
     (void) global_extra_constant_results;
 
     // we need to divide each component sum by the global number of non ghosted tuples
@@ -197,7 +237,7 @@ avtGlobalAvgExpression::CalculateFinalResults(const std::vector<double> &global_
         const double ntuples_double = static_cast<double>(global_ntuples);
         for (int comp_id = 0; comp_id < global_ncomps; comp_id ++)
         {
-            final_results[comp_id] = global_component_sums[comp_id] / ntuples_double;
+            final_results[comp_id] = global_constant_results[comp_id] / ntuples_double;
         }
     }
 }

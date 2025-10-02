@@ -80,11 +80,9 @@ avtGlobalMaxExpression::CalculateWithoutGhosts(vtkDataArray *in,
                                                const int ncomponents,
                                                const int ntuples,
                                                std::vector<double> &constant_results,
-                                               std::vector<double> &extra_constant_results,
-                                               std::vector<double> &sums)
+                                               std::vector<double> &extra_constant_results)
 {
     (void) extra_constant_results;
-    (void) sums;
 
     for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
     {
@@ -148,11 +146,9 @@ avtGlobalMaxExpression::CalculateWithGhosts(vtkDataArray *in,
                                             vtkDataArray *ghostZones,
                                             int *nodeShouldBeIgnoredPtr,
                                             std::vector<double> &constant_results,
-                                            std::vector<double> &extra_constant_results,
-                                            std::vector<double> &sums)
+                                            std::vector<double> &extra_constant_results)
 {
     (void) extra_constant_results;
-    (void) sums;
 
     for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
     {
@@ -189,6 +185,7 @@ avtGlobalMaxExpression::CalculateWithGhosts(vtkDataArray *in,
         constant_results[comp_id] = comp_max;
     }
 }
+
 
 // ****************************************************************************
 //  Method: avtGlobalMaxExpression::LocalIntermediateReduction
@@ -283,14 +280,12 @@ avtGlobalMaxExpression::GlobalIntermediateReduction(std::vector<double> &local_c
 void
 avtGlobalMaxExpression::CalculateFinalResults(const std::vector<double> &global_constant_results,
                                               const std::vector<double> &global_extra_constant_results,
-                                              const std::vector<double> &global_component_sums,
                                               const int global_ncomps,
                                               const int global_ntuples,
                                               std::vector<double> &final_results)
 {
     // we didn't use any of these to get our final answer
     (void) global_extra_constant_results;
-    (void) global_component_sums;
     (void) global_ntuples;
     (void) global_ncomps;
 

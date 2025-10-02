@@ -41,9 +41,6 @@ class EXPRESSION_API avtGlobalVarianceExpression : public avtGlobalConstantExpre
   protected:
     // to calculate the variance we need to take into account the number of tuples
     virtual bool              NeedsNTuples() { return true; };
-    
-    // to calculate the variance we need to take into account the sum of elements
-    virtual bool              NeedsSums() { return true; };
 
     // to calculate the variance we need to record local quantities
     virtual bool              NeedsIntermediateData() { return true; };
@@ -55,8 +52,7 @@ class EXPRESSION_API avtGlobalVarianceExpression : public avtGlobalConstantExpre
                                                      const int ncomponents,
                                                      const int ntuples,
                                                      std::vector<double> &constant_results,
-                                                     std::vector<double> &extra_constant_results,
-                                                     std::vector<double> &sums);
+                                                     std::vector<double> &extra_constant_results);
 
     virtual void              CalculateWithGhosts(vtkDataArray *in,
                                                   const int ncomponents,
@@ -65,8 +61,7 @@ class EXPRESSION_API avtGlobalVarianceExpression : public avtGlobalConstantExpre
                                                   vtkDataArray *ghostZones,
                                                   int *nodeShouldBeIgnoredPtr,
                                                   std::vector<double> &constant_results,
-                                                  std::vector<double> &extra_constant_results,
-                                                  std::vector<double> &sums);
+                                                  std::vector<double> &extra_constant_results);
 
     virtual double            LocalIntermediateReduction(const double running_reduction,
                                                          const double intermediate_value);
@@ -77,7 +72,6 @@ class EXPRESSION_API avtGlobalVarianceExpression : public avtGlobalConstantExpre
 
     virtual void              CalculateFinalResults(const std::vector<double> &global_constant_results,
                                                     const std::vector<double> &global_extra_constant_results,
-                                                    const std::vector<double> &global_component_sums,
                                                     const int global_ncomps,
                                                     const int global_ntuples,
                                                     std::vector<double> &final_results);
