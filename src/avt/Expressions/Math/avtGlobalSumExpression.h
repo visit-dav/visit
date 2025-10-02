@@ -42,9 +42,6 @@ class EXPRESSION_API avtGlobalSumExpression : public avtGlobalConstantExpression
     // to calculate the sum we don't need to take into account the number of tuples
     virtual bool              NeedsNTuples() { return false; };
     
-    // to calculate the sum we don't need to record any other local information
-    virtual bool              NeedsIntermediateData() { return true; };
-    
     // to calculate the sum we don't need to record any other local quantity
     virtual bool              NeedsExtraIntermediateData() { return false; };
     

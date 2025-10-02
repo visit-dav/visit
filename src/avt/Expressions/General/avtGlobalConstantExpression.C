@@ -487,10 +487,7 @@ avtGlobalConstantExpression::DeriveVariable(vtkDataSet *in_ds,
     // we are caching this info so we can easily write to it later
     per_leaf_results.ncomps = ncomps;
     per_leaf_results.ntuples = ntuples;
-    if (NeedsIntermediateData())
-    {
-        per_leaf_results.constant_results.resize(ncomps);
-    }
+    per_leaf_results.constant_results.resize(ncomps);
     if (NeedsExtraIntermediateData())
     {
         per_leaf_results.extra_constant_results.resize(ncomps);
@@ -907,15 +904,12 @@ avtGlobalConstantExpression::Execute()
                           const int ntuples = pair.second.ntuples;
                           if (ntuples > 0)
                           {
-                              if (NeedsIntermediateData())
+                              const auto &curr_leaf_results = pair.second.constant_results;
+                              for (int comp_id = 0; comp_id < ncomps; comp_id ++)
                               {
-                                  const auto &curr_leaf_results = pair.second.constant_results;
-                                  for (int comp_id = 0; comp_id < ncomps; comp_id ++)
-                                  {
-                                      local_constant_results[comp_id] = 
-                                          LocalIntermediateReduction(local_constant_results[comp_id],
-                                                                     curr_leaf_results[comp_id]);
-                                  }
+                                  local_constant_results[comp_id] = 
+                                      LocalIntermediateReduction(local_constant_results[comp_id],
+                                                                 curr_leaf_results[comp_id]);
                               }
                               if (NeedsExtraIntermediateData())
                               {
@@ -962,11 +956,8 @@ avtGlobalConstantExpression::Execute()
     // communication anyway
     if (intermediate_results_map.empty())
     {
-        if (NeedsIntermediateData())
-        {
-            local_constant_results.resize(global_ncomps);
-            std::fill(local_constant_results.begin(), local_constant_results.end(), GetUnusedValue());
-        }
+        local_constant_results.resize(global_ncomps);
+        std::fill(local_constant_results.begin(), local_constant_results.end(), GetUnusedValue());
         
         if (NeedsExtraIntermediateData())
         {
@@ -986,16 +977,12 @@ avtGlobalConstantExpression::Execute()
     //
     // Calculate global result
     //
-    std::vector<double> global_constant_results;
-    if (NeedsIntermediateData())
-    {
+    std::vector<double> global_constant_results(global_ncomps);
 #ifdef PARALLEL
-        global_constant_results.resize(global_ncomps);
-        GlobalIntermediateReduction(local_constant_results, global_constant_results, global_ncomps);
+    GlobalIntermediateReduction(local_constant_results, global_constant_results, global_ncomps);
 #else
-        global_constant_results = std::move(local_constant_results);
+    global_constant_results = std::move(local_constant_results);
 #endif
-}
 
     std::vector<double> global_extra_constant_results;
     if (NeedsExtraIntermediateData())

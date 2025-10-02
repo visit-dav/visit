@@ -42,10 +42,7 @@ class EXPRESSION_API avtGlobalVarianceExpression : public avtGlobalConstantExpre
     // to calculate the variance we need to take into account the number of tuples
     virtual bool              NeedsNTuples() { return true; };
 
-    // to calculate the variance we need to record local quantities
-    virtual bool              NeedsIntermediateData() { return true; };
-    
-    // to calculate the variance we need to record another local quantity
+    // to calculate the variance we need to record 2 local quantities
     virtual bool              NeedsExtraIntermediateData() { return true; };
     
     virtual void              CalculateWithoutGhosts(vtkDataArray *in,

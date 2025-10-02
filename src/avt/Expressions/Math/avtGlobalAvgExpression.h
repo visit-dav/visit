@@ -42,9 +42,6 @@ class EXPRESSION_API avtGlobalAvgExpression : public avtGlobalConstantExpression
     // to calculate the average we need to take into account the number of tuples
     virtual bool              NeedsNTuples() { return true; };
     
-    // to calculate the average we don't need to record any other local information
-    virtual bool              NeedsIntermediateData() { return true; };
-    
     // to calculate the average we don't need to record any other local quantity
     virtual bool              NeedsExtraIntermediateData() { return false; };
     

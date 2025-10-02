@@ -54,10 +54,6 @@ class EXPRESSION_API avtGlobalConstantExpression : public avtExpressionFilter
     // TODO explanation
     virtual bool              NeedsNTuples() { return false; };
 
-    // TODO explanation
-    // TODO delete me
-    virtual bool              NeedsIntermediateData() { return true; };
-
     // expressions like standard deviation and variance require an extra array of intermediate data
     virtual bool              NeedsExtraIntermediateData() { return false; };
 
