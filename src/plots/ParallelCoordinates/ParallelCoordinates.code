@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: InsertAxis
 Declaration: void InsertAxis(const std::string &axisName_);
 Definition:
@@ -80,6 +81,7 @@ ParallelCoordinatesAttributes::InsertAxis(const std::string &axisName_)
     SelectAll();
 }
 
+Target: xml2atts
 Function: DeleteAxis
 Declaration: void DeleteAxis(const std::string &axisName_, int minAxisCount);
 Definition:
@@ -134,6 +136,7 @@ ParallelCoordinatesAttributes::DeleteAxis(const std::string &axisName_,
     }
 }
 
+Target: xml2atts
 Function: AttributesAreConsistent
 Declaration: bool AttributesAreConsistent() const;
 Definition:
@@ -201,6 +204,7 @@ ParallelCoordinatesAttributes::AttributesAreConsistent() const
     return true;
 }
 
+Target: xml2atts
 Function: ChangesRequireRecalculation
 Declaration: bool ChangesRequireRecalculation(const ParallelCoordinatesAttributes &obj);
 Definition:
@@ -263,6 +267,7 @@ ParallelCoordinatesAttributes::ChangesRequireRecalculation(
     return false;
 }
 
+Target: xml2atts
 Function: CopyAttributes
 Declaration: virtual bool CopyAttributes(const AttributeGroup *);
 Definition:
@@ -328,6 +333,7 @@ ParallelCoordinatesAttributes::CopyAttributes(const AttributeGroup *atts)
     return retval;
 }
 
+Target: xml2atts
 Function: CreateCompatible
 Declaration: virtual AttributeSubject *CreateCompatible(const std::string &) const;
 Definition:
@@ -388,6 +394,7 @@ ParallelCoordinatesAttributes::CreateCompatible(const std::string &tname) const
     return retval;
 }
 
+Target: xml2atts
 Function: ResetAxes
 Declaration: void ResetAxes();
 Definition:
@@ -516,6 +523,7 @@ ParallelCoordinatesGUIPluginInfo::CreatePluginWizard(AttributeSubject *attr,
 
 }
 
+Target: xml2info
 Function: ParallelCoordinatesViewerEnginePluginInfo::InitializePlotAtts
 Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
@@ -636,6 +644,7 @@ ParallelCoordinatesViewerEnginePluginInfo::InitializePlotAtts(
     *(ParallelCoordinatesAttributes*)atts = *defaultAtts;
 }
 
+Target: xml2info
 Function: ParallelCoordinatesViewerEnginePluginInfo::Permits2DViewScaling
 Declaration: virtual bool Permits2DViewScaling() const;
 Definition:

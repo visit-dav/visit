@@ -3,12 +3,12 @@ Initialization: textFont1
     textFont1.GetColor().SetRgb(255, 0, 0);
     textFont1.SetScale(4);
 
-
+Target: xml2atts
 Initialization: textFont2
     textFont2.GetColor().SetRgb(0, 0, 255);
     textFont2.SetScale(4);
 
-
+Target: xml2atts
 Function: ChangesRequireRecalculation
 Declaration: virtual bool ChangesRequireRecalculation(const LabelAttributes &) const;
 Definition:
@@ -18,6 +18,7 @@ LabelAttributes::ChangesRequireRecalculation(const LabelAttributes &) const
     return false;
 }
 
+Target: xml2atts
 Function: VarChangeRequiresReset
 Declaration: virtual bool VarChangeRequiresReset(void);
 Definition:
@@ -80,6 +81,7 @@ LabelViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
     PrivateSetPlotAtts(atts, plot);
 }
 
+Target: xml2info
 Function: LabelViewerEnginePluginInfo::ReInitializePlotAtts
 Declaration: virtual void ReInitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
@@ -111,6 +113,7 @@ LabelViewerEnginePluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
     PrivateSetPlotAtts(atts, plot);
 }
 
+Target: xml2info
 Function: LabelViewerEnginePluginInfo::ResetPlotAtts
 Declaration: virtual void ResetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
@@ -142,6 +145,7 @@ LabelViewerEnginePluginInfo::ResetPlotAtts(AttributeSubject *atts,
     ReInitializePlotAtts(atts, plot);
 }
 
+Target: xml2info
 Function: LabelViewerEnginePluginInfo::PrivateSetPlotAtts
 Declaration: void PrivateSetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:

@@ -47,16 +47,16 @@
         false
       </Field>
       <Field name="var1Min" label="Variable 1 Min" type="double" enabler="var1MinFlag:true">
-        0.000000
+        0
       </Field>
       <Field name="var1Max" label="Variable 1 Max" type="double" enabler="var1MaxFlag:true">
-        1.000000
+        1
       </Field>
       <Field name="var1Scaling" label="Variable 1 scale" type="enum" subtype="Scaling">
         Linear
       </Field>
       <Field name="var1SkewFactor" label="Variable 1 skew factor" type="double" enabler="var1Scaling:Skew">
-        1.000000
+        1
       </Field>
       <Field name="var2Role" label="Variable 2 role" type="enum" subtype="VariableRole">
         Coordinate1
@@ -71,16 +71,16 @@
         false
       </Field>
       <Field name="var2Min" label="Variable 2 Min" type="double" enabler="var2MinFlag:true">
-        0.000000
+        0
       </Field>
       <Field name="var2Max" label="Variable 2 Max" type="double" enabler="var2MaxFlag:true">
-        1.000000
+        1
       </Field>
       <Field name="var2Scaling" label="Variable 2 scale" type="enum" subtype="Scaling">
         Linear
       </Field>
       <Field name="var2SkewFactor" label="Variable 2 skew factor" type="double" enabler="var2Scaling:Skew">
-        1.000000
+        1
       </Field>
       <Field name="var3Role" label="Variable 3 role" type="enum" subtype="VariableRole">
         None
@@ -95,16 +95,16 @@
         false
       </Field>
       <Field name="var3Min" label="Variable 3 Min" type="double" enabler="var3MinFlag:true">
-        0.000000
+        0
       </Field>
       <Field name="var3Max" label="Variable 3 Max" type="double" enabler="var3MaxFlag:true">
-        1.000000
+        1
       </Field>
       <Field name="var3Scaling" label="Variable 3 scale" type="enum" subtype="Scaling">
         Linear
       </Field>
       <Field name="var3SkewFactor" label="Variable 3 skew factor" type="double" enabler="var3Scaling:Skew">
-        1.000000
+        1
       </Field>
       <Field name="var4Role" label="Variable 4 role" type="enum" subtype="VariableRole">
         None
@@ -119,19 +119,19 @@
         false
       </Field>
       <Field name="var4Min" label="Variable 4 Min" type="double" enabler="var4MinFlag:true">
-        0.000000
+        0
       </Field>
       <Field name="var4Max" label="Variable 4 Max" type="double" enabler="var4MaxFlag:true">
-        1.000000
+        1
       </Field>
       <Field name="var4Scaling" label="Variable 4 scale" type="enum" subtype="Scaling">
         Linear
       </Field>
       <Field name="var4SkewFactor" label="Variable 4 skew factor" type="double" enabler="var4Scaling:Skew">
-        1.000000
+        1
       </Field>
       <Field name="pointSize" label="Point size" type="double">
-        0.050000
+        0.05
       </Field>
       <Field name="pointSizePixels" label="Point size pixels" type="int">
         1
