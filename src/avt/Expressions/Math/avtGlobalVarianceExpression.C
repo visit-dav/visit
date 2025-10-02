@@ -228,9 +228,6 @@ avtGlobalVarianceExpression::CalculateFinalResults(const std::vector<double> &gl
                                                    const int global_ntuples,
                                                    std::vector<double> &final_results)
 {
-    // we didn't use this to get our final answer
-    (void) global_component_sums;
-
     // variance = sum((x - m)^2) / N
     // where the sum is over all values, x is each value, m is the global mean
     // and N is the number of non-ghosted tuples.

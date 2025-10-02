@@ -7,8 +7,13 @@
 // ************************************************************************* //
 
 #include <avtGlobalSumExpression.h>
+#include <avtParallel.h>
 
 #include <vtkDataArray.h>
+
+#ifdef PARALLEL
+  #include <mpi.h>
+#endif
 
 
 // ****************************************************************************

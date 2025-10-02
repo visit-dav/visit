@@ -60,12 +60,6 @@ class EXPRESSION_API avtGlobalAvgExpression : public avtGlobalConstantExpression
                                                   std::vector<double> &constant_results,
                                                   std::vector<double> &extra_constant_results);
 
-    virtual void              CalculateFinalResults(const std::vector<double> &global_constant_results,
-                                                    const std::vector<double> &global_extra_constant_results,
-                                                    const int global_ncomps,
-                                                    const int global_ntuples,
-                                                    std::vector<double> &final_results);
-
     virtual double            LocalIntermediateReduction(const double running_reduction,
                                                          const double intermediate_value);
 
