@@ -31,7 +31,12 @@
 #    Alister Maguire, Tue Mar  2 10:29:37 PST 2021
 #    Added tests for NGon and NFace elements.
 #
+#    Kathleen Biagas, Tue Aug 19, 2025
+#    Use FXAA for anti-aliasing as MSAA doesn't work in the
+#    build configuration that is used for testing.
+#
 # ----------------------------------------------------------------------------
+
 RequiredDatabasePlugin("CGNS")
 
 def test0(datapath):
@@ -373,7 +378,8 @@ def testNFaceElements(datapath):
 def main():
     # Draw antialiased lines
     r = GetRenderingAttributes()
-    r.antialiasing = 1
+    # Use FXAA, since MSAA doesn't work in our testing mode
+    r.antialiasing = r.FXAA
     SetRenderingAttributes(r)
 
     datapath = data_path("CGNS_test_data")

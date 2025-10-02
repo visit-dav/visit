@@ -648,6 +648,9 @@ avtPseudocolorPlot::NeedZBufferToCompositeEvenIn2D(void)
 //    Kathleen Biagas, Tue Nov  5 11:42:38 PST 2019
 //    Remove glyphMapper.
 //
+//    Kathleen Biagas, Tue Sep 2, 2025
+//    Add wireframeColorByVar and pointsColorByVar.
+//
 // ****************************************************************************
 
 void
@@ -749,7 +752,7 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
 
     SetPointGlyphSize();
 
-    if (atts.GetRenderPoints())
+    if (atts.GetRenderPoints() && !atts.GetPointColorByVar())
     {
         mapper->ColorByScalarOff();
     }
@@ -767,10 +770,12 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
     rgb[1] = atts.GetWireframeColor().Green()/255.;
     rgb[2] = atts.GetWireframeColor().Blue()/255.;
     mapper->SetWireframeColor(rgb);
+    mapper->SetWireframeColorByVar(atts.GetWireframeColorByVar());
     rgb[0] = atts.GetPointColor().Red()/255.;
     rgb[1] = atts.GetPointColor().Green()/255.;
     rgb[2] = atts.GetPointColor().Blue()/255.;
     mapper->SetPointsColor(rgb);
+    mapper->SetPointsColorByVar(atts.GetPointColorByVar());
 }
 
 

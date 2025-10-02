@@ -631,7 +631,7 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
         m_OSPRayEnabled = m_atts.GetOSPRayEnabledFlag();
 
         if (m_volumeMapper != nullptr)
-            m_volumeMapper->Delete(); m_atts.GetResampleCentering();
+            m_volumeMapper->Delete();
 
         // Create the volume mapper.
 #ifdef HAVE_OSPRAY
@@ -646,9 +646,10 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
     }
 #ifdef HAVE_ANARI
     else if((m_atts.GetRendererType() == VolumeAttributes::ANARI) &&
-            (m_anariEnabled != m_atts.GetAnariRendering()))
+            (m_anariEnabled != m_atts.GetAnariAttributes().GetAnariRendering()))
     {
-        m_anariEnabled = m_atts.GetAnariRendering();
+        AnariAttributes anariAtts = m_atts.GetAnariAttributes();
+        m_anariEnabled = anariAtts.GetAnariRendering();
 
         if (m_volumeMapper != nullptr)
         {
@@ -673,16 +674,16 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
             {
                 // ANARI Device Settings
                 auto vtkAD = anariPass->GetAnariDevice();
-                std::string libraryName = !m_atts.GetAnariLibrary().empty() ? m_atts.GetAnariLibrary()
-                                                                            : "environment";                
+                std::string libraryName = !anariAtts.GetAnariLibrary().empty() ? anariAtts.GetAnariLibrary()
+                                                                               : "environment";                
                 vtkAD->SetupAnariDeviceFromLibrary(libraryName.c_str(),
-                                                    m_atts.GetAnariLibrarySubtype().c_str());
+                                                   anariAtts.GetAnariLibrarySubtype().c_str());
                                                 
                 // ANARI Render Settings
                 auto vtkAR = anariPass->GetAnariRenderer();
-                vtkAR->SetSubtype(m_atts.GetAnariRendererSubtype().c_str());
+                vtkAR->SetSubtype(anariAtts.GetAnariRendererSubtype().c_str());
                 
-                if(!m_atts.GetUsingUsdDevice())
+                if(!anariAtts.GetUsingUsdDevice())
                 {
                     SetAnariRendererParameters(anariPass);
                 }
@@ -881,11 +882,12 @@ avtVisItVTKRenderer::SetAnariRendererParameters(vtkAnariPass * const anariPass)
         return;
     }
 
-    auto rendererParams = m_atts.GetAnariRendererParameters();
+    AnariAttributes anariAtts = m_atts.GetAnariAttributes();
+    auto rendererParams = anariAtts.GetAnariRendererParameters();
     const ANARIParameter *parameterList =
             static_cast<const ANARIParameter*>(anariGetObjectInfo(anariDevice,
                                                                   ANARI_RENDERER,
-                                                                  m_atts.GetAnariRendererSubtype().c_str(),
+                                                                  anariAtts.GetAnariRendererSubtype().c_str(),
                                                                   "parameter",
                                                                   ANARI_PARAMETER_LIST));
     
@@ -1013,14 +1015,15 @@ avtVisItVTKRenderer::SetAnariUSDParameters(vtkAnariPass * const anariPass)
         return;
     }
 
+    AnariAttributes anariAtts = m_atts.GetAnariAttributes();
     const ANARIParameter *parameterList =
             static_cast<const ANARIParameter*>(anariGetObjectInfo(anariDevice,
                                                                   ANARI_DEVICE,
-                                                                  m_atts.GetAnariLibrarySubtype().c_str(),
+                                                                  anariAtts.GetAnariLibrarySubtype().c_str(),
                                                                   "parameter",
                                                                   ANARI_PARAMETER_LIST));
 
-    auto usdParams = m_atts.GetAnariUSDParameters();
+    auto usdParams = anariAtts.GetAnariUSDParameters();
 
     for (const auto& usdParam : usdParams)
     {

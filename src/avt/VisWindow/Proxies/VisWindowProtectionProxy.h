@@ -22,6 +22,10 @@ class     vtkPolyDataMapper2D;
 class     VisWindow;
 class     VisitInteractor;
 
+#ifdef HAVE_ANARI
+class AnariAttributes;
+#endif
+
 
 // ****************************************************************************
 //  Class: VisWindowProtectionProxy
@@ -139,6 +143,12 @@ class     VisitInteractor;
 //    Kevin Griffin, Wed 05 Mar 2025 11:59:26 AM CST
 //    Added Anari support.
 //
+//    Kathleen Biagas, Monday July 28, 2025
+//    Antialiasing is now an int (enum).
+//
+//    Kathleen Biagas, Thu Aug 28 15:39:06 PDT 2025
+//    Remove ProxiedGetSurfaceRepresentation, no longer used.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowProtectionProxy
@@ -198,12 +208,11 @@ class VISWINDOW_API VisWindowProtectionProxy
     double              ProxiedGetAmbientCoefficient();
     bool                ProxiedGetLighting();
     void                ProxiedUpdateLightPositions();
-    int                 ProxiedGetSurfaceRepresentation();
     bool                ProxiedDisableExternalRenderRequests(bool bClearImage = false);
     bool                ProxiedEnableExternalRenderRequests();
     void                ProxiedGetScaleFactorAndType(double &s, int &t);
     void                ProxiedReAddColleaguesToRenderWindow();
-    bool                ProxiedGetAntialiasing();
+    int                 ProxiedGetAntialiasing();
     bool                ProxiedGetFullFrameMode();
     bool                ProxiedGet3DAxisScalingFactors(double s[3]);
     bool                ProxiedGetSpecularFlag();
@@ -234,13 +243,7 @@ class VISWINDOW_API VisWindowProtectionProxy
     bool                ProxiedGetOsprayShadows();
 #endif
 #ifdef HAVE_ANARI
-    bool                ProxiedGetAnariRendering();
-    std::string         ProxiedGetAnariLibraryName();
-    std::string         ProxiedGetAnariLibrarySubtype();
-    std::string         ProxiedGetAnariRendererSubtype();
-    stringVector        ProxiedGetAnariRendererParameters();
-    stringVector        ProxiedGetAnariUSDParameters();
-    bool                ProxiedGetUsingUsdDevice();
+    const AnariAttributes &ProxiedGetAnariAttributes();
 #endif
 };
 
