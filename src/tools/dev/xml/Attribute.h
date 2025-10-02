@@ -138,7 +138,9 @@ class Attribute : public AttributeBase
             StartOpenTag(out, "Enum", indent);
             WriteTagAttr(out, "name", EnumType::enums[i]->type);
             FinishOpenTag(out);
-            WriteValues(out, EnumType::enums[i]->values, indent);
+            // Use the EnumType specific version of WriteValues here
+            // to handle ivalues (provided they aren't -1)
+            EnumType::enums[i]->WriteValues(out, indent);
             WriteCloseTag(out, "Enum", indent);
         }
 
