@@ -42,8 +42,11 @@ class EXPRESSION_API avtGlobalMaxExpression : public avtGlobalConstantExpression
 
   protected:
     virtual bool              NeedsNTuples() { return false; };
+    
     virtual bool              NeedsSums() { return false; };
+    
     virtual bool              NeedsExtraIntermediateData() { return false; };
+    
     virtual void              CalculateWithoutGhosts(vtkDataArray *in,
                                                      const int ncomponents,
                                                      const int ntuples,

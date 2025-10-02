@@ -168,7 +168,7 @@ avtGlobalMaxExpression::CalculateWithGhosts(vtkDataArray *in,
                 }
             }
             EXCEPTION2(ExpressionException, outputVariableName,
-                 "Everything is ghosted so the OOFUS expression is not valid.");
+                 "Everything is ghosted so the global_max expression is not valid.");
             return 0; // return so the compiler is happy
         }();
 

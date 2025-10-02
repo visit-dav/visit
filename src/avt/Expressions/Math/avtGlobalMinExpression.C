@@ -7,10 +7,15 @@
 // ************************************************************************* //
 
 #include <avtGlobalMinExpression.h>
+#include <avtParallel.h>
 
 #include <vtkDataArray.h>
 
 #include <ExpressionException.h>
+
+#ifdef PARALLEL
+  #include <mpi.h>
+#endif
 
 
 // ****************************************************************************
@@ -72,10 +77,15 @@ avtGlobalMinExpression::~avtGlobalMinExpression()
 
 void
 avtGlobalMinExpression::CalculateWithoutGhosts(vtkDataArray *in, 
-                                               vtkDataArray *out,
-                                               int ncomponents,
-                                               int ntuples)
+                                               const int ncomponents,
+                                               const int ntuples,
+                                               std::vector<double> &constant_results,
+                                               std::vector<double> &extra_constant_results,
+                                               std::vector<double> &sum)
 {
+    (void) extra_constant_results;
+    (void) sum;
+
     for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
     {
         double comp_min = in->GetComponent(0, comp_id);
@@ -89,10 +99,7 @@ avtGlobalMinExpression::CalculateWithoutGhosts(vtkDataArray *in,
             }
         }
 
-        for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-        {
-            out->SetComponent(tuple_id, comp_id, comp_min);
-        }
+        constant_results[comp_id] = comp_min;
     }
 }
 
@@ -135,13 +142,18 @@ avtGlobalMinExpression::CalculateWithoutGhosts(vtkDataArray *in,
 
 void
 avtGlobalMinExpression::CalculateWithGhosts(vtkDataArray *in,
-                                            vtkDataArray *out,
-                                            int ncomponents,
-                                            int ntuples,
+                                            const int ncomponents,
+                                            const int ntuples,
                                             int (getNodeOrCellValid)(vtkDataArray *, int *, int),
                                             vtkDataArray *ghostZones,
-                                            int *nodeShouldBeIgnoredPtr)
+                                            int *nodeShouldBeIgnoredPtr,
+                                            std::vector<double> &constant_results,
+                                            std::vector<double> &extra_constant_results,
+                                            std::vector<double> &sum)
 {
+    (void) extra_constant_results;
+    (void) sum;
+
     for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
     {
         int start_tuple_id = 0;
@@ -174,10 +186,81 @@ avtGlobalMinExpression::CalculateWithGhosts(vtkDataArray *in,
             }
         }
 
-        for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-        {
-            out->SetComponent(tuple_id, comp_id, comp_min);
-        }
+        constant_results[comp_id] = comp_min;
     }
 }
+
+
+// ****************************************************************************
+//  Method: avtGlobalMinExpression::LocalIntermediateReduction
+//
+//  Purpose:
+//      TODO
+//
+//  Programmer: Justin Privitera
+//  Creation:   September 26, 2025
+//
+//  Modifications:
+// ****************************************************************************
+double
+avtGlobalMinExpression::LocalIntermediateReduction(const double running_reduction,
+                                                   const double intermediate_value)
+{
+    return std::min(running_reduction, intermediate_value);
+}
+
+
+// ****************************************************************************
+//  Method: avtGlobalMinExpression::GlobalIntermediateReduction
+//
+//  Purpose:
+//      TODO
+//
+//  Programmer: Justin Privitera
+//  Creation:   September 26, 2025
+//
+//  Modifications:
+// ****************************************************************************
+void
+avtGlobalMinExpression::GlobalIntermediateReduction(std::vector<double> &local_constant_results,
+                                                    std::vector<double> &global_constant_results,
+                                                    const int ncomps)
+{
+#ifdef PARALLEL
+    MPI_Allreduce(local_constant_results.data(), global_constant_results.data(),
+                  ncomps, MPI_DOUBLE, MPI_MIN, VISIT_MPI_COMM);
+#else
+    (void) local_constant_results;
+    (void) global_constant_results;
+#endif
+}
+
+
+// ****************************************************************************
+//  Method: avtGlobalMinExpression::CalculateFinalResults
+//
+//  Purpose:
+//      TODO
+//
+//  Programmer: Justin Privitera
+//  Creation:   September 26, 2025
+//
+//  Modifications:
+// ****************************************************************************
+
+void
+avtGlobalMinExpression::CalculateFinalResults(const std::vector<double> &global_constant_results,
+                                              const std::vector<double> &global_extra_constant_results,
+                                              const std::vector<double> &global_component_sums,
+                                              const int global_ntuples,
+                                              std::vector<double> &final_results)
+{
+    (void) global_constant_results;
+    (void) global_extra_constant_results;
+    (void) global_component_sums;
+    (void) global_ntuples;
+    (void) final_results;
+}
+
+
 

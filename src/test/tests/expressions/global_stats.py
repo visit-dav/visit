@@ -19,6 +19,8 @@
 # 
 # ----------------------------------------------------------------------------
 
+# TODO need to do tests with multi_curv3d and multi_curv2d as well
+
 # no ghosts in curv3d
 curv3d_stats = {}
 
