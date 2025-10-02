@@ -20,6 +20,7 @@
 # ----------------------------------------------------------------------------
 
 # TODO need to do tests with multi_curv3d and multi_curv2d as well
+# TODO need to do multi-component test data
 
 # no ghosts in curv3d
 curv3d_stats = {}

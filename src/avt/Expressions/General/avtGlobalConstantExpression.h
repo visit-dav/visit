@@ -53,8 +53,12 @@ class EXPRESSION_API avtGlobalConstantExpression : public avtExpressionFilter
 
     // TODO explanation
     virtual bool              NeedsNTuples() { return false; };
+
     // TODO explanation
     virtual bool              NeedsSums() { return false; };
+
+    // TODO explanation
+    virtual bool              NeedsIntermediateData() { return true; };
 
     // expressions like standard deviation and variance require an extra array of intermediate data
     virtual bool              NeedsExtraIntermediateData() { return false; };
@@ -64,7 +68,7 @@ class EXPRESSION_API avtGlobalConstantExpression : public avtExpressionFilter
                                                      const int ntuples,
                                                      std::vector<double> &constant_results,
                                                      std::vector<double> &extra_constant_results,
-                                                     std::vector<double> &sum) = 0;
+                                                     std::vector<double> &sums) = 0;
 
     virtual void              CalculateWithGhosts(vtkDataArray *in,
                                                   const int ncomponents,
@@ -74,7 +78,7 @@ class EXPRESSION_API avtGlobalConstantExpression : public avtExpressionFilter
                                                   int *nodeShouldBeIgnoredPtr,
                                                   std::vector<double> &constant_results,
                                                   std::vector<double> &extra_constant_results,
-                                                  std::vector<double> &sum) = 0;
+                                                  std::vector<double> &sums) = 0;
 
     virtual double            LocalIntermediateReduction(const double running_reduction,
                                                          const double intermediate_value) = 0;
@@ -96,7 +100,8 @@ class EXPRESSION_API avtGlobalConstantExpression : public avtExpressionFilter
 
     std::vector<int>          IdentifyGhostedNodes(vtkDataSet *in_ds,
                                                    vtkDataArray *ghostZones,
-                                                   vtkDataArray *ghostNodes);
+                                                   vtkDataArray *ghostNodes,
+                                                   std::vector<int> &nodeShouldBeIgnored);
 
     void                      DoOperation(vtkDataArray *inputArray,
                                           const int ncomponents,
@@ -104,7 +109,8 @@ class EXPRESSION_API avtGlobalConstantExpression : public avtExpressionFilter
                                           vtkDataSet *in_ds,
                                           std::vector<double> &constant_results,
                                           std::vector<double> &extra_constant_results,
-                                          std::vector<double> &sum);
+                                          std::vector<double> &sums,
+                                          int &num_non_ghosted_tuples);
 
     void                      DeriveVariable(vtkDataSet *in_ds,
                                              intermediateResults &per_leaf_results);
@@ -115,16 +121,16 @@ class EXPRESSION_API avtGlobalConstantExpression : public avtExpressionFilter
 
     avtDataRepresentation    *WriteData_VTK(avtDataRepresentation *in_dr,
                                             intermediateResults &per_leaf_results,
-                                            std::vector<double> global_constant_results);
+                                            std::vector<double> &global_constant_results);
 
     avtDataTree_p             WriteDataTree(avtDataRepresentation *in_dr,
                                             intermediateResults &per_leaf_results,
-                                            std::vector<double> global_constant_results);
+                                            std::vector<double> &global_constant_results);
 
     int                       WriteResult(avtDataTree_p inputDataTree, 
                                           avtDataTree_p &outputDataTree,
                                           std::map<int, intermediateResults> &intermediate_results_map,
-                                          std::vector<double> global_constant_results,
+                                          std::vector<double> &global_constant_results,
                                           int leaf_number = 0);
 };
 

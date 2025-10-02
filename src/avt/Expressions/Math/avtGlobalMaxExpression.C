@@ -81,10 +81,10 @@ avtGlobalMaxExpression::CalculateWithoutGhosts(vtkDataArray *in,
                                                const int ntuples,
                                                std::vector<double> &constant_results,
                                                std::vector<double> &extra_constant_results,
-                                               std::vector<double> &sum)
+                                               std::vector<double> &sums)
 {
     (void) extra_constant_results;
-    (void) sum;
+    (void) sums;
 
     for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
     {
@@ -149,10 +149,10 @@ avtGlobalMaxExpression::CalculateWithGhosts(vtkDataArray *in,
                                             int *nodeShouldBeIgnoredPtr,
                                             std::vector<double> &constant_results,
                                             std::vector<double> &extra_constant_results,
-                                            std::vector<double> &sum)
+                                            std::vector<double> &sums)
 {
     (void) extra_constant_results;
-    (void) sum;
+    (void) sums;
 
     for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
     {
@@ -286,10 +286,12 @@ avtGlobalMaxExpression::CalculateFinalResults(const std::vector<double> &global_
                                               const int global_ntuples,
                                               std::vector<double> &final_results)
 {
-    (void) global_constant_results;
+    // we didn't use any of these to get our final answer
     (void) global_extra_constant_results;
     (void) global_component_sums;
     (void) global_ntuples;
-    (void) final_results;
+
+    // we want to avoid copying the vector
+    final_results = std::move(global_constant_results);
 }
 

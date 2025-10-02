@@ -41,10 +41,16 @@ class EXPRESSION_API avtGlobalMaxExpression : public avtGlobalConstantExpression
                                               { return "Calculating max across mesh"; };
 
   protected:
+    // to calculate the maximum we don't need to take into account the number of tuples
     virtual bool              NeedsNTuples() { return false; };
     
+    // to calculate the maximum we don't need to take into account the sum of elements
     virtual bool              NeedsSums() { return false; };
+
+    // to calculate the maximum we need to record local maximums
+    virtual bool              NeedsIntermediateData() { return true; };
     
+    // to calculate the maximum we don't need to record any other local quantity
     virtual bool              NeedsExtraIntermediateData() { return false; };
     
     virtual void              CalculateWithoutGhosts(vtkDataArray *in,
@@ -52,7 +58,7 @@ class EXPRESSION_API avtGlobalMaxExpression : public avtGlobalConstantExpression
                                                      const int ntuples,
                                                      std::vector<double> &constant_results,
                                                      std::vector<double> &extra_constant_results,
-                                                     std::vector<double> &sum);
+                                                     std::vector<double> &sums);
 
     virtual void              CalculateWithGhosts(vtkDataArray *in,
                                                   const int ncomponents,
@@ -62,7 +68,7 @@ class EXPRESSION_API avtGlobalMaxExpression : public avtGlobalConstantExpression
                                                   int *nodeShouldBeIgnoredPtr,
                                                   std::vector<double> &constant_results,
                                                   std::vector<double> &extra_constant_results,
-                                                  std::vector<double> &sum);
+                                                  std::vector<double> &sums);
 
     virtual double            LocalIntermediateReduction(const double running_reduction,
                                                          const double intermediate_value);

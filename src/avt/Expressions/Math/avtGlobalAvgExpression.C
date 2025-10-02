@@ -7,8 +7,13 @@
 // ************************************************************************* //
 
 #include <avtGlobalAvgExpression.h>
+#include <avtParallel.h>
 
 #include <vtkDataArray.h>
+
+#ifdef PARALLEL
+  #include <mpi.h>
+#endif
 
 
 // ****************************************************************************
@@ -70,10 +75,15 @@ avtGlobalAvgExpression::~avtGlobalAvgExpression()
 
 void
 avtGlobalAvgExpression::CalculateWithoutGhosts(vtkDataArray *in, 
-                                               vtkDataArray *out,
-                                               int ncomponents,
-                                               int ntuples)
+                                               const int ncomponents,
+                                               const int ntuples,
+                                               std::vector<double> &constant_results,
+                                               std::vector<double> &extra_constant_results,
+                                               std::vector<double> &sums)
 {
+    (void) constant_results;
+    (void) extra_constant_results;
+
     for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
     {
         double sum = 0;
@@ -83,11 +93,7 @@ avtGlobalAvgExpression::CalculateWithoutGhosts(vtkDataArray *in,
             sum += val;
         }
 
-        const double comp_avg = (ntuples > 0) ? sum / static_cast<double>(ntuples) : 0;
-        for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-        {
-            out->SetComponent(tuple_id, comp_id, comp_avg);
-        }
+        sums[comp_id] = sum;
     }
 }
 
@@ -130,13 +136,18 @@ avtGlobalAvgExpression::CalculateWithoutGhosts(vtkDataArray *in,
 
 void
 avtGlobalAvgExpression::CalculateWithGhosts(vtkDataArray *in,
-                                            vtkDataArray *out,
-                                            int ncomponents,
-                                            int ntuples,
+                                            const int ncomponents,
+                                            const int ntuples,
                                             int (getNodeOrCellValid)(vtkDataArray *, int *, int),
                                             vtkDataArray *ghostZones,
-                                            int *nodeShouldBeIgnoredPtr)
+                                            int *nodeShouldBeIgnoredPtr,
+                                            std::vector<double> &constant_results,
+                                            std::vector<double> &extra_constant_results,
+                                            std::vector<double> &sums)
 {
+    (void) constant_results;
+    (void) extra_constant_results;
+
     for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
     {
         double sum = 0;
