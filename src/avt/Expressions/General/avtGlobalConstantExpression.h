@@ -99,7 +99,7 @@ class EXPRESSION_API avtGlobalConstantExpression : public avtExpressionFilter
   private:
     int                       GetLocalNumTuples(const std::map<int, intermediateResults> &intermediate_results_map);
 
-    std::vector<int>          IdentifyGhostedNodes(vtkDataSet *in_ds,
+    void                      IdentifyGhostedNodes(vtkDataSet *in_ds,
                                                    vtkDataArray *ghostZones,
                                                    vtkDataArray *ghostNodes,
                                                    std::vector<int> &nodeShouldBeIgnored);

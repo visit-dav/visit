@@ -168,7 +168,7 @@ avtGlobalAvgExpression::CalculateWithGhosts(vtkDataArray *in,
 
 
 // ****************************************************************************
-//  Method: avtGlobalMaxExpression::LocalIntermediateReduction
+//  Method: avtGlobalAvgExpression::LocalIntermediateReduction
 //
 //  Purpose:
 //      TODO
@@ -179,7 +179,7 @@ avtGlobalAvgExpression::CalculateWithGhosts(vtkDataArray *in,
 //  Modifications:
 // ****************************************************************************
 double
-avtGlobalMaxExpression::LocalIntermediateReduction(const double running_reduction,
+avtGlobalAvgExpression::LocalIntermediateReduction(const double running_reduction,
                                                    const double intermediate_value)
 {
     return running_reduction + intermediate_value;
@@ -187,7 +187,7 @@ avtGlobalMaxExpression::LocalIntermediateReduction(const double running_reductio
 
 
 // ****************************************************************************
-//  Method: avtGlobalMaxExpression::GlobalIntermediateReduction
+//  Method: avtGlobalAvgExpression::GlobalIntermediateReduction
 //
 //  Purpose:
 //      TODO
@@ -198,7 +198,7 @@ avtGlobalMaxExpression::LocalIntermediateReduction(const double running_reductio
 //  Modifications:
 // ****************************************************************************
 void
-avtGlobalMaxExpression::GlobalIntermediateReduction(std::vector<double> &local_constant_results,
+avtGlobalAvgExpression::GlobalIntermediateReduction(std::vector<double> &local_constant_results,
                                                     std::vector<double> &global_constant_results,
                                                     const int ncomps)
 {
@@ -213,7 +213,7 @@ avtGlobalMaxExpression::GlobalIntermediateReduction(std::vector<double> &local_c
 
 
 // ****************************************************************************
-//  Method: avtGlobalMaxExpression::CalculateFinalResults
+//  Method: avtGlobalAvgExpression::CalculateFinalResults
 //
 //  Purpose:
 //      TODO
@@ -225,7 +225,7 @@ avtGlobalMaxExpression::GlobalIntermediateReduction(std::vector<double> &local_c
 // ****************************************************************************
 
 void
-avtGlobalMaxExpression::CalculateFinalResults(const std::vector<double> &global_constant_results,
+avtGlobalAvgExpression::CalculateFinalResults(const std::vector<double> &global_constant_results,
                                               const std::vector<double> &global_extra_constant_results,
                                               const std::vector<double> &global_component_sums,
                                               const int global_ncomps,
