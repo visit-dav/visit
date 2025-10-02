@@ -232,6 +232,7 @@ avtGlobalMinExpression::GlobalIntermediateReduction(std::vector<double> &local_c
 #else
     (void) local_constant_results;
     (void) global_constant_results;
+    (void) ncomps;
 #endif
 }
 

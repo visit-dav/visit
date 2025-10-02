@@ -68,21 +68,12 @@ class EXPRESSION_API avtGlobalAvgExpression : public avtGlobalConstantExpression
                                                   std::vector<double> &extra_constant_results,
                                                   std::vector<double> &sums);
 
-    virtual double            LocalIntermediateReduction(const double running_reduction,
-                                                         const double intermediate_value);
-
-    virtual void              GlobalIntermediateReduction(std::vector<double> &local_constant_results,
-                                                          std::vector<double> &global_constant_results,
-                                                          const int ncomps);
-
     virtual void              CalculateFinalResults(const std::vector<double> &global_constant_results,
                                                     const std::vector<double> &global_extra_constant_results,
                                                     const std::vector<double> &global_component_sums,
                                                     const int global_ncomps,
                                                     const int global_ntuples,
                                                     std::vector<double> &final_results);
-
-    virtual double            GetUnusedValue() { return 0.0; };
 };
 
 

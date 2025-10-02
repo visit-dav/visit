@@ -70,10 +70,15 @@ avtGlobalSumExpression::~avtGlobalSumExpression()
 
 void
 avtGlobalSumExpression::CalculateWithoutGhosts(vtkDataArray *in, 
-                                               vtkDataArray *out,
-                                               int ncomponents,
-                                               int ntuples)
+                                               const int ncomponents,
+                                               const int ntuples,
+                                               std::vector<double> &constant_results,
+                                               std::vector<double> &extra_constant_results,
+                                               std::vector<double> &sums)
 {
+    (void) constant_results;
+    (void) extra_constant_results;
+
     for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
     {
         double sum = 0;
@@ -83,10 +88,7 @@ avtGlobalSumExpression::CalculateWithoutGhosts(vtkDataArray *in,
             sum += val;
         }
 
-        for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-        {
-            out->SetComponent(tuple_id, comp_id, sum);
-        }
+        sums[comp_id] = sum;
     }
 }
 
@@ -129,13 +131,18 @@ avtGlobalSumExpression::CalculateWithoutGhosts(vtkDataArray *in,
 
 void
 avtGlobalSumExpression::CalculateWithGhosts(vtkDataArray *in,
-                                            vtkDataArray *out,
-                                            int ncomponents,
-                                            int ntuples,
+                                            const int ncomponents,
+                                            const int ntuples,
                                             int (getNodeOrCellValid)(vtkDataArray *, int *, int),
                                             vtkDataArray *ghostZones,
-                                            int *nodeShouldBeIgnoredPtr)
+                                            int *nodeShouldBeIgnoredPtr,
+                                            std::vector<double> &constant_results,
+                                            std::vector<double> &extra_constant_results,
+                                            std::vector<double> &sums)
 {
+    (void) constant_results;
+    (void) extra_constant_results;
+
     for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
     {
         double sum = 0;
@@ -148,10 +155,39 @@ avtGlobalSumExpression::CalculateWithGhosts(vtkDataArray *in,
             }
         }
 
-        for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-        {
-            out->SetComponent(tuple_id, comp_id, sum);
-        }
+        sums[comp_id] = sum;
     }
 }
+
+
+// ****************************************************************************
+//  Method: avtGlobalSumExpression::CalculateFinalResults
+//
+//  Purpose:
+//      TODO
+//
+//  Programmer: Justin Privitera
+//  Creation:   September 26, 2025
+//
+//  Modifications:
+// ****************************************************************************
+
+void
+avtGlobalSumExpression::CalculateFinalResults(const std::vector<double> &global_constant_results,
+                                              const std::vector<double> &global_extra_constant_results,
+                                              const std::vector<double> &global_component_sums,
+                                              const int global_ncomps,
+                                              const int global_ntuples,
+                                              std::vector<double> &final_results)
+{
+    // we didn't use either of these to get our final answer
+    (void) global_constant_results;
+    (void) global_extra_constant_results;
+    (void) global_ncomps;
+    (void) global_ntuples;
+
+    // we want to avoid copying the vector
+    final_results = std::move(global_component_sums);
+}
+
 

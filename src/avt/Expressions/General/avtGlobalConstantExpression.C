@@ -132,6 +132,67 @@ avtGlobalConstantExpression::~avtGlobalConstantExpression()
 }
 
 // ****************************************************************************
+//  Method: avtGlobalConstantExpression::LocalIntermediateReduction
+//
+//  Purpose:
+//      TODO
+// 
+//  Note:
+//      This method should be implemented in children of this class if they need it.
+//      An implementation is provided here to prevent the method from being pure 
+//      virtual.
+//
+//  Programmer: Justin Privitera
+//  Creation:   September 26, 2025
+//
+//  Modifications:
+// ****************************************************************************
+double
+avtGlobalConstantExpression::LocalIntermediateReduction(const double running_reduction,
+                                                        const double intermediate_value)
+{
+    (void) intermediate_value;
+
+    EXCEPTION2(ExpressionException, outputVariableName,
+               "An internal error occurred when "
+               "trying to calculate your expression. Please contact a "
+               "VisIt developer.");
+
+    return running_reduction;
+}
+
+// ****************************************************************************
+//  Method: avtGlobalConstantExpression::GlobalIntermediateReduction
+//
+//  Purpose:
+//      TODO
+// 
+//  Note:
+//      This method should be implemented in children of this class if they need it.
+//      An implementation is provided here to prevent the method from being pure 
+//      virtual.
+//
+//  Programmer: Justin Privitera
+//  Creation:   September 26, 2025
+//
+//  Modifications:
+// ****************************************************************************
+void
+avtGlobalConstantExpression::GlobalIntermediateReduction(std::vector<double> &local_constant_results,
+                                                         std::vector<double> &global_constant_results,
+                                                         const int ncomps)
+{
+    (void) local_constant_results;
+    (void) global_constant_results;
+    (void) ncomps;
+
+    EXCEPTION2(ExpressionException, outputVariableName,
+               "An internal error occurred when "
+               "trying to calculate your expression. Please contact a "
+               "VisIt developer.");
+}
+
+// ****************************************************************************
 //  Method: avtGlobalConstantExpression::GetLocalNumTuples
 //
 //  Purpose:

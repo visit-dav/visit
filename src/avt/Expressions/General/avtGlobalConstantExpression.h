@@ -81,11 +81,11 @@ class EXPRESSION_API avtGlobalConstantExpression : public avtExpressionFilter
                                                   std::vector<double> &sums) = 0;
 
     virtual double            LocalIntermediateReduction(const double running_reduction,
-                                                         const double intermediate_value) = 0;
+                                                         const double intermediate_value);
 
     virtual void              GlobalIntermediateReduction(std::vector<double> &local_constant_results,
                                                           std::vector<double> &global_constant_results,
-                                                          const int ncomps) = 0;
+                                                          const int ncomps);
 
     virtual void              CalculateFinalResults(const std::vector<double> &global_constant_results,
                                                     const std::vector<double> &global_extra_constant_results,

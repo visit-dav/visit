@@ -168,51 +168,6 @@ avtGlobalAvgExpression::CalculateWithGhosts(vtkDataArray *in,
 
 
 // ****************************************************************************
-//  Method: avtGlobalAvgExpression::LocalIntermediateReduction
-//
-//  Purpose:
-//      TODO
-//
-//  Programmer: Justin Privitera
-//  Creation:   September 26, 2025
-//
-//  Modifications:
-// ****************************************************************************
-double
-avtGlobalAvgExpression::LocalIntermediateReduction(const double running_reduction,
-                                                   const double intermediate_value)
-{
-    return running_reduction + intermediate_value;
-}
-
-
-// ****************************************************************************
-//  Method: avtGlobalAvgExpression::GlobalIntermediateReduction
-//
-//  Purpose:
-//      TODO
-//
-//  Programmer: Justin Privitera
-//  Creation:   September 26, 2025
-//
-//  Modifications:
-// ****************************************************************************
-void
-avtGlobalAvgExpression::GlobalIntermediateReduction(std::vector<double> &local_constant_results,
-                                                    std::vector<double> &global_constant_results,
-                                                    const int ncomps)
-{
-#ifdef PARALLEL
-    MPI_Allreduce(local_constant_results.data(), global_constant_results.data(),
-                  ncomps, MPI_DOUBLE, MPI_SUM, VISIT_MPI_COMM);
-#else
-    (void) local_constant_results;
-    (void) global_constant_results;
-#endif
-}
-
-
-// ****************************************************************************
 //  Method: avtGlobalAvgExpression::CalculateFinalResults
 //
 //  Purpose:

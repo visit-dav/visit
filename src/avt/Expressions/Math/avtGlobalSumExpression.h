@@ -9,7 +9,7 @@
 #ifndef AVT_GLOBAL_SUM_FILTER_H
 #define AVT_GLOBAL_SUM_FILTER_H
 
-#include <avtGhostAwareUnaryMathExpression.h>
+#include <avtGlobalConstantExpression.h>
 
 class     vtkDataArray;
 
@@ -28,7 +28,7 @@ class     vtkDataArray;
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtGlobalSumExpression : public avtGhostAwareUnaryMathExpression
+class EXPRESSION_API avtGlobalSumExpression : public avtGlobalConstantExpression
 {
   public:
                               avtGlobalSumExpression();
@@ -39,13 +39,41 @@ class EXPRESSION_API avtGlobalSumExpression : public avtGhostAwareUnaryMathExpre
                                               { return "Calculating sum across mesh"; };
 
   protected:
-    virtual void              CalculateWithoutGhosts(vtkDataArray *in, vtkDataArray *out,
-                                                     int ncomponents, int ntuples);
-    virtual void              CalculateWithGhosts(vtkDataArray *in, vtkDataArray *out,
-                                                  int ncomponents, int ntuples,
+    // to calculate the sum we don't need to take into account the number of tuples
+    virtual bool              NeedsNTuples() { return false; };
+    
+    // to calculate the sum we need to take into account the sum of elements
+    virtual bool              NeedsSums() { return true; };
+
+    // to calculate the sum we don't need to record any other local information
+    virtual bool              NeedsIntermediateData() { return false; };
+    
+    // to calculate the sum we don't need to record any other local quantity
+    virtual bool              NeedsExtraIntermediateData() { return false; };
+    
+    virtual void              CalculateWithoutGhosts(vtkDataArray *in,
+                                                     const int ncomponents,
+                                                     const int ntuples,
+                                                     std::vector<double> &constant_results,
+                                                     std::vector<double> &extra_constant_results,
+                                                     std::vector<double> &sums);
+
+    virtual void              CalculateWithGhosts(vtkDataArray *in,
+                                                  const int ncomponents,
+                                                  const int ntuples,
                                                   int (getNodeOrCellValid)(vtkDataArray *, int *, int),
                                                   vtkDataArray *ghostZones,
-                                                  int *nodeShouldBeIgnoredPtr);
+                                                  int *nodeShouldBeIgnoredPtr,
+                                                  std::vector<double> &constant_results,
+                                                  std::vector<double> &extra_constant_results,
+                                                  std::vector<double> &sums);
+
+    virtual void              CalculateFinalResults(const std::vector<double> &global_constant_results,
+                                                    const std::vector<double> &global_extra_constant_results,
+                                                    const std::vector<double> &global_component_sums,
+                                                    const int global_ncomps,
+                                                    const int global_ntuples,
+                                                    std::vector<double> &final_results);
 };
 
 
