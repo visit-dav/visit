@@ -9,7 +9,7 @@
 #ifndef AVT_GLOBAL_STD_DEV_FILTER_H
 #define AVT_GLOBAL_STD_DEV_FILTER_H
 
-#include <avtGhostAwareUnaryMathExpression.h>
+#include <avtGlobalConstantExpression.h>
 
 class     vtkDataArray;
 
@@ -28,7 +28,7 @@ class     vtkDataArray;
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtGlobalStdDevExpression : public avtGhostAwareUnaryMathExpression
+class EXPRESSION_API avtGlobalStdDevExpression : public avtGlobalConstantExpression
 {
   public:
                               avtGlobalStdDevExpression();
@@ -39,13 +39,41 @@ class EXPRESSION_API avtGlobalStdDevExpression : public avtGhostAwareUnaryMathEx
                                               { return "Calculating standard deviation across mesh"; };
 
   protected:
-    virtual void              CalculateWithoutGhosts(vtkDataArray *in, vtkDataArray *out,
-                                                     int ncomponents, int ntuples);
-    virtual void              CalculateWithGhosts(vtkDataArray *in, vtkDataArray *out,
-                                                  int ncomponents, int ntuples,
+    // to calculate the variance we need to take into account the number of tuples
+    virtual bool              NeedsNTuples() { return true; };
+
+    // to calculate the variance we need to record 2 local quantities
+    virtual bool              NeedsExtraIntermediateData() { return true; };
+    
+    virtual void              CalculateWithoutGhosts(vtkDataArray *in,
+                                                     const int ncomponents,
+                                                     const int ntuples,
+                                                     std::vector<double> &constant_results,
+                                                     std::vector<double> &extra_constant_results);
+
+    virtual void              CalculateWithGhosts(vtkDataArray *in,
+                                                  const int ncomponents,
+                                                  const int ntuples,
                                                   int (getNodeOrCellValid)(vtkDataArray *, int *, int),
                                                   vtkDataArray *ghostZones,
-                                                  int *nodeShouldBeIgnoredPtr);
+                                                  int *nodeShouldBeIgnoredPtr,
+                                                  std::vector<double> &constant_results,
+                                                  std::vector<double> &extra_constant_results);
+
+    virtual double            LocalIntermediateReduction(const double running_reduction,
+                                                         const double intermediate_value);
+
+    virtual void              GlobalIntermediateReduction(std::vector<double> &local_constant_results,
+                                                          std::vector<double> &global_constant_results,
+                                                          const int ncomps);
+
+    virtual void              CalculateFinalResults(const std::vector<double> &global_constant_results,
+                                                    const std::vector<double> &global_extra_constant_results,
+                                                    const int global_ncomps,
+                                                    const int global_ntuples,
+                                                    std::vector<double> &final_results);
+
+    virtual double            GetUnusedValue() { return 0.0; };
 };
 
 
