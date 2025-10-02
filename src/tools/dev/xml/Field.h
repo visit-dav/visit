@@ -88,6 +88,10 @@
 //    Kathleen Biagas, Wed Apr 30, 2025
 //    Prevent segv when SubType QString for Att or AttVector is empty.
 //
+//    Kathleen Biagas, Tue Sep 30 14:16:31 PDT 2025
+//    Use %g for Double field's GetValueAsText() method. Preserves 1e-8 and
+//    the like.
+//
 // ****************************************************************************
 
 
@@ -808,7 +812,7 @@ class Double : public virtual Field
     {
         std::vector<QString> retval;
         if (valueSet)
-            retval.push_back(QString().asprintf("%f", val));
+            retval.push_back(QString().asprintf("%g", val));
         return retval;
     }
 };
@@ -856,7 +860,7 @@ class DoubleArray : public virtual Field
         std::vector<QString> retval;
         if (valueSet)
             for (int i=0; i<length; i++)
-                retval.push_back(QString().asprintf("%f", val[i]));
+                retval.push_back(QString().asprintf("%g", val[i]));
         return retval;
     }
 };
@@ -903,7 +907,7 @@ class DoubleVector : public virtual Field
         std::vector<QString> retval;
         if (valueSet)
             for (size_t i=0; i<val.size(); i++)
-                retval.push_back(QString().asprintf("%f", val[i]));
+                retval.push_back(QString().asprintf("%g", val[i]));
         return retval;
     }
 };
@@ -1224,7 +1228,7 @@ class Opacity : public virtual Field
     {
         std::vector<QString> retval;
         if (valueSet)
-            retval.push_back(QString().asprintf("%f", val));
+            retval.push_back(QString().asprintf("%g", val));
         return retval;
     }
 };

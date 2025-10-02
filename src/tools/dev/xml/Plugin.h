@@ -98,6 +98,9 @@
 //    Added component-specific CXXFLAGS, LDFLAGS, LIBS and DEFINES support
 //    to Print.
 //
+//    Kathleen Biagas, Tue Sep 30 14:54:06 PDT 2025
+//    Remove duplication of various LIBS entries when writing out .xml file.
+//
 // ****************************************************************************
 
 class Plugin : public PluginBase
@@ -262,30 +265,6 @@ class Plugin : public PluginBase
         {
             WriteOpenTag(out, "LIBS", indent);
             WriteValues(out, libs, indent);
-            WriteCloseTag(out, "LIBS", indent);
-        }
-        if (mlibs.size() > 0)
-        {
-            StartOpenTag(out, "LIBS", indent);
-            WriteTagAttr(out, "components", "M");
-            FinishOpenTag(out);
-            WriteValues(out, mlibs, indent);
-            WriteCloseTag(out, "LIBS", indent);
-        }
-        if (elibsSer.size() > 0)
-        {
-            StartOpenTag(out, "LIBS", indent);
-            WriteTagAttr(out, "components", "ESer");
-            FinishOpenTag(out);
-            WriteValues(out, elibsSer, indent);
-            WriteCloseTag(out, "LIBS", indent);
-        }
-        if (elibsPar.size() > 0)
-        {
-            StartOpenTag(out, "LIBS", indent);
-            WriteTagAttr(out, "components", "EPar");
-            FinishOpenTag(out);
-            WriteValues(out, elibsPar, indent);
             WriteCloseTag(out, "LIBS", indent);
         }
 

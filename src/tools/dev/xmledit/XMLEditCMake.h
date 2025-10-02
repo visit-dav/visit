@@ -2,19 +2,17 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-#ifndef XMLEDITMAKEFILE_H
-#define XMLEDITMAKEFILE_H
+#ifndef XMLEDITCMAKE_H
+#define XMLEDITCMAKE_H
 
 #include <QFrame>
 
 class XMLDocument;
 class QLineEdit;
-class QButtonGroup;
-class QComboBox;
 class QCheckBox;
 
 // ****************************************************************************
-//  Class:  XMLEditMakefile
+//  Class:  XMLEditCmake
 //
 //  Purpose:
 //    Makefile editing widget for the XML editor.
@@ -52,11 +50,11 @@ class QCheckBox;
 //    to 'editingFinished' signal.
 //
 // ****************************************************************************
-class XMLEditMakefile : public QFrame
+class XMLEditCmake : public QFrame
 {
     Q_OBJECT
   public:
-    XMLEditMakefile(QWidget *p);
+    XMLEditCmake(QWidget *p);
     void SetDocument(XMLDocument *doc) { xmldoc = doc; }
     void BlockAllSignals(bool);
   public slots:

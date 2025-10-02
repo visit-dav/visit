@@ -213,6 +213,9 @@ ParseCharacters(const QString &buff_input)
 //    Make this a stand-alone class using QDomDocument and other QDom clasess
 //    since QXmlDefaultHandler and the classes that use it are removed in Qt 6.
 //
+//    Kathleen Biagas, Tue Sep 30 14:51:35 PDT 2025
+//    Added support for Conditions code for xml2cmake.
+//
 // ****************************************************************************
 
 class XMLParser
@@ -464,6 +467,7 @@ class XMLParser
 
             if (currentAttribute->codeFile)
             {
+                // Find/Set Code blocks
                 QStringList targets, names, first, second;
                 currentAttribute->codeFile->GetAllCodes(targets, names, first, second);
                 for(int i = 0; i < targets.size(); ++i)
@@ -472,6 +476,21 @@ class XMLParser
                                                                first[i],
                                                                second[i],
                                                                targets[i]));
+                }
+
+                // Find/Set Condition blocks
+                QStringList a, b, x, y, z;
+                currentAttribute->codeFile->GetAllConditions(a, b, x, y, z);
+                for(int i = 0; i < a.size(); ++i)
+                {
+                    Conditional *c = new Conditional(a[i], b[i]);
+                    if(!x.isEmpty() && !x[i].isEmpty())
+                        c->definitions= x[i];
+                    if(!y.isEmpty() && !y[i].isEmpty())
+                        c->mlinklibs= y[i];
+                    if(!z.isEmpty() && !z[i].isEmpty())
+                        c->elinklibs= z[i];
+                    currentAttribute->conditionals.push_back(c);
                 }
             }
 

@@ -251,7 +251,7 @@ class InfoGeneratorPlugin : public Plugin
                 f->target == generatorName &&
                 f->name == funcName)
             {
-                c << atts->functions[n]->def << Endl;
+                c << atts->functions[n]->def << Endl << Endl;
                 retval = true;
                 break;
             }
@@ -2014,6 +2014,7 @@ class InfoGeneratorPlugin : public Plugin
             WriteOverrideDefinition(c, name + "ViewerEnginePluginInfo::SupportsAnimation");
             WriteOverrideDefinition(c, name + "ViewerEnginePluginInfo::AnimationReset");
             WriteOverrideDefinition(c, name + "ViewerEnginePluginInfo::AnimationStep");
+            c << Endl;
         }
 
         funcName = name + "ViewerEnginePluginInfo::GetMenuName";
