@@ -315,6 +315,9 @@ avtGlobalConstantExpression::DoOperation(vtkDataArray *inputArray,
                                          std::vector<double> &sums,
                                          int &num_non_ghosted_tuples)
 {
+    // TODO we need to error here if there is no non-ghosted data
+    // pull the error (and the error includes) out of the child classes
+
     vtkDataArray *ghostZones = in_ds->GetCellData()->GetArray("avtGhostZones");
     vtkDataArray *ghostNodes = in_ds->GetPointData()->GetArray("avtGhostNodes");
 

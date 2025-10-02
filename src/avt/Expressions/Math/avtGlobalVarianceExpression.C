@@ -7,8 +7,13 @@
 // ************************************************************************* //
 
 #include <avtGlobalVarianceExpression.h>
+#include <avtParallel.h>
 
 #include <vtkDataArray.h>
+
+#ifdef PARALLEL
+  #include <mpi.h>
+#endif
 
 
 // ****************************************************************************
@@ -70,40 +75,25 @@ avtGlobalVarianceExpression::~avtGlobalVarianceExpression()
 
 void
 avtGlobalVarianceExpression::CalculateWithoutGhosts(vtkDataArray *in, 
-                                               vtkDataArray *out,
-                                               int ncomponents,
-                                               int ntuples)
+                                                    const int ncomponents,
+                                                    const int ntuples,
+                                                    std::vector<double> &constant_results,
+                                                    std::vector<double> &extra_constant_results,
+                                                    std::vector<double> &sums)
 {
     for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
     {
-        const double mean = [&]()
-        {
-            double sum = 0;
-            for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-            {
-                const double val = in->GetComponent(tuple_id, comp_id);
-                sum += val;
-            }
-            return (ntuples > 0) ? sum / static_cast<double>(ntuples) : 0;
-        }();
-        
-        const double intermediate_sum = [&]()
-        {
-            double intermediate_sum = 0;
-            for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-            {
-                const double val = in->GetComponent(tuple_id, comp_id);
-                intermediate_sum += pow(val - mean, 2);
-            }
-            return intermediate_sum;
-        }();
-
-        const double variance = intermediate_sum / static_cast<double>(ntuples);
-
+        double sum_x = 0.0;
+        double sum_x_sq = 0.0;
         for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
         {
-            out->SetComponent(tuple_id, comp_id, variance);
+            const double val = in->GetComponent(tuple_id, comp_id);
+            sum_x += val;
+            sum_x_sq += val * val;
         }
+
+        constant_results[comp_id] = sum_x;
+        extra_constant_results[comp_id] = sum_x_sq;
     }
 }
 
@@ -146,50 +136,155 @@ avtGlobalVarianceExpression::CalculateWithoutGhosts(vtkDataArray *in,
 
 void
 avtGlobalVarianceExpression::CalculateWithGhosts(vtkDataArray *in,
-                                                 vtkDataArray *out,
-                                                 int ncomponents,
-                                                 int ntuples,
+                                                 const int ncomponents,
+                                                 const int ntuples,
                                                  int (getNodeOrCellValid)(vtkDataArray *, int *, int),
                                                  vtkDataArray *ghostZones,
-                                                 int *nodeShouldBeIgnoredPtr)
+                                                 int *nodeShouldBeIgnoredPtr,
+                                                 std::vector<double> &constant_results,
+                                                 std::vector<double> &extra_constant_results,
+                                                 std::vector<double> &sums)
 {
     for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
     {
-        int num_valid_tuples = 0;
-        const double mean = [&]()
-        {
-            double sum = 0;
-            for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-            {
-                if (0 == getNodeOrCellValid(ghostZones, nodeShouldBeIgnoredPtr, tuple_id))
-                {
-                    const double val = in->GetComponent(tuple_id, comp_id);
-                    sum += val;
-                    num_valid_tuples ++;                    
-                }
-            }
-            return (num_valid_tuples > 0) ? sum / static_cast<double>(num_valid_tuples) : 0;
-        }();
-        
-        const double intermediate_sum = [&]()
-        {
-            double intermediate_sum = 0;
-            for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
-            {
-                if (0 == getNodeOrCellValid(ghostZones, nodeShouldBeIgnoredPtr, tuple_id))
-                {
-                    const double val = in->GetComponent(tuple_id, comp_id);
-                    intermediate_sum += pow(val - mean, 2);                    
-                }
-            }
-            return intermediate_sum;
-        }();
-
-        const double variance = intermediate_sum / static_cast<double>(num_valid_tuples);
-
+        double sum_x = 0.0;
+        double sum_x_sq = 0.0;
         for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
         {
-            out->SetComponent(tuple_id, comp_id, variance);
+            if (0 == getNodeOrCellValid(ghostZones, nodeShouldBeIgnoredPtr, tuple_id))
+            {
+                const double val = in->GetComponent(tuple_id, comp_id);
+                sum_x += val;
+                sum_x_sq += val * val;
+            }
+        }
+
+        constant_results[comp_id] = sum_x;
+        extra_constant_results[comp_id] = sum_x_sq;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtGlobalVarianceExpression::LocalIntermediateReduction
+//
+//  Purpose:
+//      TODO
+//
+//  Programmer: Justin Privitera
+//  Creation:   September 26, 2025
+//
+//  Modifications:
+// ****************************************************************************
+double
+avtGlobalVarianceExpression::LocalIntermediateReduction(const double running_reduction,
+                                                        const double intermediate_value)
+{
+    return running_reduction + intermediate_value;
+}
+
+
+// ****************************************************************************
+//  Method: avtGlobalVarianceExpression::GlobalIntermediateReduction
+//
+//  Purpose:
+//      TODO
+//
+//  Programmer: Justin Privitera
+//  Creation:   September 26, 2025
+//
+//  Modifications:
+// ****************************************************************************
+void
+avtGlobalVarianceExpression::GlobalIntermediateReduction(std::vector<double> &local_constant_results,
+                                                         std::vector<double> &global_constant_results,
+                                                         const int ncomps)
+{
+#ifdef PARALLEL
+    MPI_Allreduce(local_constant_results.data(), global_constant_results.data(),
+                  ncomps, MPI_DOUBLE, MPI_SUM, VISIT_MPI_COMM);
+#else
+    (void) local_constant_results;
+    (void) global_constant_results;
+    (void) ncomps;
+#endif
+}
+
+
+// ****************************************************************************
+//  Method: avtGlobalVarianceExpression::CalculateFinalResults
+//
+//  Purpose:
+//      TODO
+//
+//  Programmer: Justin Privitera
+//  Creation:   September 26, 2025
+//
+//  Modifications:
+// ****************************************************************************
+
+void
+avtGlobalVarianceExpression::CalculateFinalResults(const std::vector<double> &global_constant_results,
+                                                   const std::vector<double> &global_extra_constant_results,
+                                                   const std::vector<double> &global_component_sums,
+                                                   const int global_ncomps,
+                                                   const int global_ntuples,
+                                                   std::vector<double> &final_results)
+{
+    // TODO get rid of sums
+
+
+    // we didn't use this to get our final answer
+    (void) global_component_sums;
+
+    // variance = sum((x - m)^2) / N
+    // where the sum is over all values, x is each value, m is the global mean
+    // and N is the number of non-ghosted tuples.
+
+    // The obvious way to do this is to iterate through each tuple and subtract the
+    // mean, square it, and add that to the total. But we need the global mean
+    // to do this, which would require us to calculate the local sum and local number
+    // of non-ghosted tuples on all processors and then use parallel communication
+    // to get that information globally. We would need twice as many steps as we
+    // would like to take, as we would need to iterate through the data tree twice,
+    // and do all the parallel communication twice, first for the mean and then for
+    // the variance.
+
+    // Alternatively, we can use algebra to modify our variance formula such that 
+    // we can calculate some intermediate values and then do one parallel 
+    // communication step with multiple arrays.
+
+    // variance = sum((x - m)^2) / N
+    //          = sum(x^2 - 2xm + m^2) / N
+    //          = (sum(x^2) + sum(-2xm) + sum(m^2)) / N
+    //          = (sum(x^2) - 2m * sum(x) + N * m^2) / N
+    //          = sum(x^2) / N - 2m * sum(x) / N + m^2
+    // but remember, m = sum(x) / N, so
+    //          = sum(x^2) / N - 2 * (sum(x) / N) * (sum(x) / N) + (sum(x) / N)^2
+    //          = sum(x^2) / N - 2 * (sum(x) / N)^2 + (sum(x) / N)^2
+    //          = sum(x^2) / N - (sum(x) / N)^2
+
+    // so we only need to track the following quantities as we iterate through the data:
+    //  - sum(x)    --> stored in global_constant_results
+    //  - sum(x^2)  --> stored in global_extra_constant_results
+    //  - N         --> stored in global_ntuples
+    // then plug each into the final formula to get the variance.
+
+    final_results.resize(global_ncomps);
+    if (global_ntuples == 0)
+    {
+        std::fill(final_results.begin(), final_results.end(), 0.0);
+    }
+    else
+    {
+        const double N = static_cast<double>(global_ntuples);
+        for (int comp_id = 0; comp_id < global_ncomps; comp_id ++)
+        {
+            const double sum_x        = global_constant_results[comp_id];
+            const double sum_x_sq     = global_extra_constant_results[comp_id];
+            const double sum_x_over_N = sum_x / N;
+
+            final_results[comp_id] = (sum_x_sq / N) - sum_x_over_N * sum_x_over_N;
         }
     }
 }
