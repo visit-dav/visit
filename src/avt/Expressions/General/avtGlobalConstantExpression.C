@@ -1051,6 +1051,7 @@ avtGlobalConstantExpression::Execute()
     CalculateFinalResults(global_constant_results,
                           global_extra_constant_results,
                           global_component_sums,
+                          global_ncomps,
                           global_ntuples,
                           final_results);
     WriteResult(tree, newTree, intermediate_results_map, final_results);

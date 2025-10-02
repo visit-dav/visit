@@ -252,6 +252,7 @@ void
 avtGlobalMinExpression::CalculateFinalResults(const std::vector<double> &global_constant_results,
                                               const std::vector<double> &global_extra_constant_results,
                                               const std::vector<double> &global_component_sums,
+                                              const int global_ncomps,
                                               const int global_ntuples,
                                               std::vector<double> &final_results)
 {
@@ -259,6 +260,7 @@ avtGlobalMinExpression::CalculateFinalResults(const std::vector<double> &global_
     (void) global_extra_constant_results;
     (void) global_component_sums;
     (void) global_ntuples;
+    (void) global_ncomps;
 
     // we want to avoid copying the vector
     final_results = std::move(global_constant_results);

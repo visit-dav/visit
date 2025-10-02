@@ -162,11 +162,94 @@ avtGlobalAvgExpression::CalculateWithGhosts(vtkDataArray *in,
             }
         }
 
-        const double comp_avg = (num_valid_tuples > 0) ? sum / static_cast<double>(num_valid_tuples) : 0;
-        for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+        sums[comp_id] = sum;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtGlobalMaxExpression::LocalIntermediateReduction
+//
+//  Purpose:
+//      TODO
+//
+//  Programmer: Justin Privitera
+//  Creation:   September 26, 2025
+//
+//  Modifications:
+// ****************************************************************************
+double
+avtGlobalMaxExpression::LocalIntermediateReduction(const double running_reduction,
+                                                   const double intermediate_value)
+{
+    return running_reduction + intermediate_value;
+}
+
+
+// ****************************************************************************
+//  Method: avtGlobalMaxExpression::GlobalIntermediateReduction
+//
+//  Purpose:
+//      TODO
+//
+//  Programmer: Justin Privitera
+//  Creation:   September 26, 2025
+//
+//  Modifications:
+// ****************************************************************************
+void
+avtGlobalMaxExpression::GlobalIntermediateReduction(std::vector<double> &local_constant_results,
+                                                    std::vector<double> &global_constant_results,
+                                                    const int ncomps)
+{
+#ifdef PARALLEL
+    MPI_Allreduce(local_constant_results.data(), global_constant_results.data(),
+                  ncomps, MPI_DOUBLE, MPI_SUM, VISIT_MPI_COMM);
+#else
+    (void) local_constant_results;
+    (void) global_constant_results;
+#endif
+}
+
+
+// ****************************************************************************
+//  Method: avtGlobalMaxExpression::CalculateFinalResults
+//
+//  Purpose:
+//      TODO
+//
+//  Programmer: Justin Privitera
+//  Creation:   September 26, 2025
+//
+//  Modifications:
+// ****************************************************************************
+
+void
+avtGlobalMaxExpression::CalculateFinalResults(const std::vector<double> &global_constant_results,
+                                              const std::vector<double> &global_extra_constant_results,
+                                              const std::vector<double> &global_component_sums,
+                                              const int global_ncomps,
+                                              const int global_ntuples,
+                                              std::vector<double> &final_results)
+{
+    // we didn't use either of these to get our final answer
+    (void) global_constant_results;
+    (void) global_extra_constant_results;
+
+    // we need to divide each component sum by the global number of non ghosted tuples
+    final_results.resize(global_ncomps);
+    if (global_ntuples == 0)
+    {
+        std::fill(final_results.begin(), final_results.end(), 0.0);
+    }
+    else
+    {
+        const double ntuples_double = static_cast<double>(global_ntuples);
+        for (int comp_id = 0; comp_id < global_ncomps; comp_id ++)
         {
-            out->SetComponent(tuple_id, comp_id, comp_avg);
+            final_results[comp_id] = global_component_sums[comp_id] / ntuples_double;
         }
     }
 }
+
 

@@ -244,22 +244,22 @@ avtGlobalMaxExpression::GlobalIntermediateReduction(std::vector<double> &local_c
                   ncomps, MPI_DOUBLE, MPI_MAX, VISIT_MPI_COMM);
     // // min
     // MPI_Allreduce(local_constant_results.data(), global_constant_results.data(),
-    //                   ncomps, MPI_DOUBLE, MPI_MIN, VISIT_MPI_COMM);
+    //               ncomps, MPI_DOUBLE, MPI_MIN, VISIT_MPI_COMM);
     // // avg
     // MPI_Allreduce(local_constant_results.data(), global_constant_results.data(),
-    //                   ncomps, MPI_DOUBLE, MPI_SUM, VISIT_MPI_COMM);
+    //               ncomps, MPI_DOUBLE, MPI_SUM, VISIT_MPI_COMM);
     // // sum
     // MPI_Allreduce(local_constant_results.data(), global_constant_results.data(),
-    //                   ncomps, MPI_DOUBLE, MPI_SUM, VISIT_MPI_COMM);
+    //               ncomps, MPI_DOUBLE, MPI_SUM, VISIT_MPI_COMM);
     // // stddev
     // MPI_Allreduce(local_constant_results.data(), global_constant_results.data(),
-    //                   ncomps, MPI_DOUBLE, MPI_SUM, VISIT_MPI_COMM);
+    //               ncomps, MPI_DOUBLE, MPI_SUM, VISIT_MPI_COMM);
     // // variance
     // MPI_Allreduce(local_constant_results.data(), global_constant_results.data(),
-    //                   ncomps, MPI_DOUBLE, MPI_SUM, VISIT_MPI_COMM);
+    //               ncomps, MPI_DOUBLE, MPI_SUM, VISIT_MPI_COMM);
     // // rms
     // MPI_Allreduce(local_constant_results.data(), global_constant_results.data(),
-    //                   ncomps, MPI_DOUBLE, MPI_SUM, VISIT_MPI_COMM);
+    //               ncomps, MPI_DOUBLE, MPI_SUM, VISIT_MPI_COMM);
 #else
     (void) local_constant_results;
     (void) global_constant_results;
@@ -283,6 +283,7 @@ void
 avtGlobalMaxExpression::CalculateFinalResults(const std::vector<double> &global_constant_results,
                                               const std::vector<double> &global_extra_constant_results,
                                               const std::vector<double> &global_component_sums,
+                                              const int global_ncomps,
                                               const int global_ntuples,
                                               std::vector<double> &final_results)
 {
@@ -290,6 +291,7 @@ avtGlobalMaxExpression::CalculateFinalResults(const std::vector<double> &global_
     (void) global_extra_constant_results;
     (void) global_component_sums;
     (void) global_ntuples;
+    (void) global_ncomps;
 
     // we want to avoid copying the vector
     final_results = std::move(global_constant_results);

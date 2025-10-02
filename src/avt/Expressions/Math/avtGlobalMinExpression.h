@@ -80,6 +80,7 @@ class EXPRESSION_API avtGlobalMinExpression : public avtGlobalConstantExpression
     virtual void              CalculateFinalResults(const std::vector<double> &global_constant_results,
                                                     const std::vector<double> &global_extra_constant_results,
                                                     const std::vector<double> &global_component_sums,
+                                                    const int global_ncomps,
                                                     const int global_ntuples,
                                                     std::vector<double> &final_results);
 
