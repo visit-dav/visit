@@ -549,7 +549,6 @@ VolumeViewerEnginePluginInfo::Permits2DViewScaling() const
     return false;
 }
 
-
 Target: xml2python
 Function: VolumeAttributes_SetMaterialProperties
 Declaration: VolumeAttributes_SetMaterialProperties

@@ -31,3 +31,4 @@ ZipWrapperCommonPluginInfo::SetupDatabase(const char *const *list,
                new avtZipWrapperFileFormatInterface(list, nList, nBlock,
                                                     readOptions, this));
 }
+

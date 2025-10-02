@@ -12,7 +12,7 @@ class QLineEdit;
 class QCheckBox;
 
 // ****************************************************************************
-//  Class:  XMLEditCmake
+//  Class:  XMLEditCMake
 //
 //  Purpose:
 //    Makefile editing widget for the XML editor.
@@ -50,11 +50,11 @@ class QCheckBox;
 //    to 'editingFinished' signal.
 //
 // ****************************************************************************
-class XMLEditCmake : public QFrame
+class XMLEditCMake : public QFrame
 {
     Q_OBJECT
   public:
-    XMLEditCmake(QWidget *p);
+    XMLEditCMake(QWidget *p);
     void SetDocument(XMLDocument *doc) { xmldoc = doc; }
     void BlockAllSignals(bool);
   public slots:
