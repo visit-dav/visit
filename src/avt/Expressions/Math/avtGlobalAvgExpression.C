@@ -147,14 +147,12 @@ avtGlobalAvgExpression::CalculateWithGhosts(vtkDataArray *in,
     for (int comp_id = 0; comp_id < ncomponents; comp_id ++)
     {
         double sum = 0;
-        int num_valid_tuples = 0;
         for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
         {
             if (0 == getNodeOrCellValid(ghostZones, nodeShouldBeIgnoredPtr, tuple_id))
             {
                 const double val = in->GetComponent(tuple_id, comp_id);
                 sum += val;
-                num_valid_tuples ++;
             }
         }
 

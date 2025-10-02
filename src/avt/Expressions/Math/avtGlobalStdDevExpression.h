@@ -39,10 +39,10 @@ class EXPRESSION_API avtGlobalStdDevExpression : public avtGlobalConstantExpress
                                               { return "Calculating standard deviation across mesh"; };
 
   protected:
-    // to calculate the variance we need to take into account the number of tuples
+    // to calculate the std dev we need to take into account the number of tuples
     virtual bool              NeedsNTuples() { return true; };
 
-    // to calculate the variance we need to record 2 local quantities
+    // to calculate the std dev we need to record 2 local quantities
     virtual bool              NeedsExtraIntermediateData() { return true; };
     
     virtual void              CalculateWithoutGhosts(vtkDataArray *in,
