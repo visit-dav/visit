@@ -4,20 +4,20 @@
       <Enum name="CentroidSource">
         Manual
         Auto
-       </Enum>
+      </Enum>
       <Field name="R0" label="R0: toroidal radius" type="double">
-        1.500000
+        1.5
       </Field>
       <Field name="r" label="r: poloidal radius" type="double">
-        0.200000
+        0.2
       </Field>
       <Field name="centroidSource" label="Centroid Source" type="enum" subtype="CentroidSource">
         Manual
       </Field>
       <Field name="centroid" label="Centroid (R,phi,Z)" type="doubleArray" length="3" enabler="centroidSource:Manual">
-        0.000000
-        0.000000
-        0.000000
+        0
+        0
+        0
       </Field>
       <Field name="project2D" label="Project to XY plane" type="bool">
         true

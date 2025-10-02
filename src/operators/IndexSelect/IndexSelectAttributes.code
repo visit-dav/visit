@@ -196,3 +196,4 @@ IndexSelectViewerEnginePluginInfo::InitializeOperatorAtts(AttributeSubject *atts
 
    UpdateOperatorAtts(isAtts, plot);
 }
+
