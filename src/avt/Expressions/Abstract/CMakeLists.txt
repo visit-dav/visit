@@ -14,6 +14,7 @@ set(ABSTRACT_SOURCES
     avtComparisonExpression.C
     avtExpressionFilter.C
     avtExpressionDataTreeIterator.C
+    avtGlobalConstantExpression.C
     avtMacroExpressionFilter.C
     avtMultipleInputExpressionFilter.C
     avtMultipleInputMathExpression.C

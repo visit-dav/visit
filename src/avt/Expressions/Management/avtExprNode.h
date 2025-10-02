@@ -120,6 +120,7 @@ class EXPRESSION_API avtFunctionExpr : public avtExprNode, public FunctionExpr
     avtExpressionFilter *CreateMeshQualityFilters(const std::string &) const;
     avtExpressionFilter *CreateMeshFilters(const std::string &) const;
     avtExpressionFilter *CreateImageProcessingFilters(const std::string &) const;
+    avtExpressionFilter *CreateGlobalConstantFilters(const std::string &) const;
     avtExpressionFilter *CreateMaterialFilters(const std::string &) const;
     avtExpressionFilter *CreateCMFEFilters(const std::string &) const;
     avtExpressionFilter *CreateConditionalFilters(const std::string &) const;

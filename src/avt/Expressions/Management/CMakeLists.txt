@@ -17,6 +17,7 @@ set(MANAGEMENT_SOURCES
     avtFunctionExpr_CreateCMFEFilters.C
     avtFunctionExpr_CreateConditionalFilters.C
     avtFunctionExpr_CreateImageProcessingFilters.C
+    avtFunctionExpr_CreateGlobalConstantFilters.C
     avtFunctionExpr_CreateMaterialFilters.C
     avtFunctionExpr_CreateMathFilters.C
     avtFunctionExpr_CreateMeshFilters.C

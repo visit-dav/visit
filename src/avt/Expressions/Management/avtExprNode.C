@@ -511,6 +511,8 @@ avtFunctionExpr::CreateFilters(string functionName)
         return f;
     if((f = CreateTimeAndValueFilters(functionName)) != 0)
         return f;
+    if((f = CreateGlobalConstantFilters(functionName)) != 0)
+        return f;
 
     if (functionName == "enumerate")
         return new avtApplyEnumerationExpression();
