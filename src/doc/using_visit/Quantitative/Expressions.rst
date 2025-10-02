@@ -2188,6 +2188,44 @@ smallest neighbor Function: ``smallest_neighbor()`` : ``smallest_neighbor(expr0)
 neighbor average Function: ``neighbor_average()`` : ``neighbor_average(expr0)``
     No description available.
 
+Global Constant Expressions
+"""""""""""""""""""""""""""
+
+.. _Global_Average_Expression_Function:
+
+Global Average Function: ``global_avg()`` : ``global_avg(expr0)``
+    Depending on if ``expr0`` is a nodal or zonal variable, this function will calculate the single-component average or multi-component averages for ``expr0`` across all the nodes or zones of the mesh and paint the result(s) on every node or zone, yielding a constant-valued expression.
+
+.. _Global_Maximum_Expression_Function:
+
+Global Maximum Function: ``global_max()`` : ``global_max(expr0)``
+    Depending on if ``expr0`` is a nodal or zonal variable, this function will calculate the single-component maximum or multi-component maximums for ``expr0`` across all the nodes or zones of the mesh and paint the result(s) on every node or zone, yielding a constant-valued expression.
+
+.. _Global_Minimum_Expression_Function:
+
+Global Minimum Function: ``global_min()`` : ``global_min(expr0)``
+    Depending on if ``expr0`` is a nodal or zonal variable, this function will calculate the single-component minimum or multi-component minimums for ``expr0`` across all the nodes or zones of the mesh and paint the result(s) on every node or zone, yielding a constant-valued expression.
+
+.. _Global_Sum_Expression_Function:
+
+Global Sum Function: ``global_sum()`` : ``global_sum(expr0)``
+    Depending on if ``expr0`` is a nodal or zonal variable, this function will calculate the single-component sum or multi-component sums for ``expr0`` across all the nodes or zones of the mesh and paint the result(s) on every node or zone, yielding a constant-valued expression.
+
+.. _Global_Standard_Deviation_Expression_Function:
+
+Global Standard Deviation Function: ``global_std_dev()`` : ``global_std_dev(expr0)``
+    Depending on if ``expr0`` is a nodal or zonal variable, this function will calculate the single-component standard deviation or multi-component standard deviations for ``expr0`` across all the nodes or zones of the mesh and paint the result(s) on every node or zone, yielding a constant-valued expression.
+
+.. _Global_Variance_Expression_Function:
+
+Global Variance Function: ``global_variance()`` : ``global_variance(expr0)``
+    Depending on if ``expr0`` is a nodal or zonal variable, this function will calculate the single-component variance or multi-component variances for ``expr0`` across all the nodes or zones of the mesh and paint the result(s) on every node or zone, yielding a constant-valued expression.
+
+.. _Global_RMS_Expression_Function:
+
+Global RMS Function: ``global_rms()`` : ``global_rms(expr0)``
+    Depending on if ``expr0`` is a nodal or zonal variable, this function will calculate the single-component root mean square or multi-component root mean squares for ``expr0`` across all the nodes or zones of the mesh and paint the result(s) on every node or zone, yielding a constant-valued expression.
+
 .. _Expression_Compatibility_Gotchas:
 
 Expression Compatibility Gotchas
