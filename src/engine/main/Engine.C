@@ -780,6 +780,11 @@ public:
 //   Kathleen Biagas, Wed June 18, 2025
 //   Remove vtkOffScreenRenderingFactory, no longer needed (VTK 9.5)
 //
+//   Kathleen Biagas, Wed Oct 1, 2025
+//   Add a component-name string argument to InitVTK::Initialize.
+//   It will be used for creating a vtkLogger callback to write their log
+//   info to VisIt's debug log.
+//
 // ****************************************************************************
 
 void
@@ -793,7 +798,13 @@ Engine::InitializeCompute()
     }
 
     int setupTimer = visitTimer->StartTimer();
-    InitVTK::Initialize();
+    std::string compName("engine");
+#ifdef PARALLEL
+    compName += std::string("_par_") + std::to_string(PAR_Rank());
+#else
+    compName += std::string("_ser");
+#endif
+    InitVTK::Initialize(compName);
     InitVTKRendering::Initialize();
 #ifdef HAVE_LIBVTKM
     vtkm::cont::Initialize();

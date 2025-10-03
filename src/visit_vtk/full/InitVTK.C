@@ -12,7 +12,6 @@
 #include <vtkObjectFactory.h>
 #include <vtkVersion.h>
 #include <vtkVisItCellDataToPointData.h>
-#include <vtkLogger.h>
 #include <visit-config.h>
 
 
@@ -107,21 +106,23 @@ vtkVisItObjectFactory::vtkVisItObjectFactory()
 //    Kathleen Biagas, Thu Jul 17, 2025
 //    Stifle vtkLogger output to terminal by setting its verbosity level OFF.
 //    Avoids lots of console output, even from vtkWarning or vtkDebug macros
-//    which we capture in our debug logs.
+//    which we capture in our debug logs. 
+//
+//    Kathleen Biagas, Wed Oct 1, 2025
+//    Move vtkLogger logic to InitVTKLite.  Pass component argument
+//    to InitVTKLite::Initialize.
 //
 // ****************************************************************************
 
 void
-InitVTK::Initialize(void)
+InitVTK::Initialize(const std::string &component)
 {
-    InitVTKLite::Initialize();
+    InitVTKLite::Initialize(component);
 
     // Register the factory that allows VisIt objects to override vtk objects.
     vtkVisItObjectFactory *factory = vtkVisItObjectFactory::New();
     vtkObjectFactory::RegisterFactory(factory);
     factory->Delete();
-
-    vtkLogger::SetStderrVerbosity(vtkLogger::Verbosity::VERBOSITY_OFF);
 }
 
 
