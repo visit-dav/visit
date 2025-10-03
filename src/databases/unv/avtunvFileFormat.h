@@ -173,8 +173,8 @@ protected:
     int nbnodes ; // Total number of nodes in the mesh
     int maxnodl ; // Maximum node label in the mesh
     int nb3dmats ; // Highest material number for 3D elements
-    int nb2dmats ; // Highest material number for 3D elements
-    int nb1dmats ; // Highest material number for 3D elements
+    int nb2dmats ; // Highest material number for 2D elements
+    int nb1dmats ; // Highest material number for 1D elements
     int nb3dcells ; // Store the total number of volume cells
     int nb2dcells ; // Store the total number of surface cells
     int nb1dcells ; // Store the total number of surface cells
