@@ -324,8 +324,13 @@ class Attribute : public AttributeBase
             out << "Target: " << c->target << Endl;
             currentTarget = c->target;
             out << "Constant: " << c->name << Endl;
-            out << "Declaration: " << c->decl << Endl;
-            out << "Definition: " << c->def << Endl;
+            out << "Declaration:";
+            if(!c->decl.isEmpty() && c->decl.at(0) != '\n')
+                 out << " " << c->decl;
+            out << Endl;
+            out << "Definition:";
+            if(!c->def.isEmpty() && c->def.at(0) != '\n')
+                out << Endl << c->def;
             out << Endl;
         }
 

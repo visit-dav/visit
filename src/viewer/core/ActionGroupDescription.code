@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: ActionGroupDescription
 Declaration: ActionGroupDescription(const std::string &n);
 Definition:
@@ -7,6 +8,7 @@ ActionGroupDescription::ActionGroupDescription(const std::string &n) :
     visible = true;
 }
 
+Target: xml2atts
 Function: AddAction
 Declaration: void AddAction(ViewerRPC::ViewerRPCType t);
 Definition:
@@ -16,6 +18,7 @@ ActionGroupDescription::AddAction(ViewerRPC::ViewerRPCType t)
     actions.push_back(ViewerRPC::ViewerRPCType_ToString(t));
 }
 
+Target: xml2atts
 Function: GetAction
 Declaration: ViewerRPC::ViewerRPCType GetAction(int index) const;
 Definition:

@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: avtVarMetaData2
 Declaration: avtVarMetaData(private_tmfs_t, std::string, std::string, avtCentering);
 Definition:
@@ -41,6 +42,7 @@ avtVarMetaData::avtVarMetaData(private_tmfs_t tmfs, std::string n, std::string m
     centering = c;
 }
 
+Target: xml2atts
 Function: avtVarMetaData3
 Declaration: avtVarMetaData(private_tmfs_t, std::string, std::string, avtCentering, double, double);
 Definition:
@@ -88,6 +90,7 @@ avtVarMetaData::avtVarMetaData(private_tmfs_t tmfs, std::string n, std::string m
     SetExtents(extents);
 }
 
+Target: xml2atts
 Function: SetExtents
 Declaration: void SetExtents(const double *);
 Definition:
@@ -125,6 +128,7 @@ avtVarMetaData::SetExtents(const double *extents)
     }
 }
 
+Target: xml2atts
 Function: UnsetExtents
 Declaration: void UnsetExtents();
 Definition:
@@ -134,6 +138,7 @@ avtVarMetaData::UnsetExtents()
     hasDataExtents = false;
 }
 
+Target: xml2atts
 Function: Print
 Declaration: void Print(ostream &, int = 0) const;
 Definition:

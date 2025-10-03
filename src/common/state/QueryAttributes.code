@@ -1,6 +1,8 @@
+Target: xml2atts
 Initialization: defaultVars
     defaultVars.push_back("default");
 
+Target: xml2atts
 Function: SetVariables
 Declaration: void SetVariables(const stringVector &variables_);
 Definition:
@@ -10,6 +12,7 @@ QueryAttributes::SetVariables(const stringVector &variables_)
    queryInputParams["vars"] = variables_;
 }
 
+Target: xml2atts
 Function: GetName
 Declaration: const std::string &GetName() const;
 Definition:
@@ -21,6 +24,7 @@ QueryAttributes::GetName() const
     return defaultName;
 }
 
+Target: xml2atts
 Function: GetName2
 Declaration: std::string &GetName();
 Definition:
@@ -32,6 +36,7 @@ QueryAttributes::GetName()
     return defaultName;
 }
 
+Target: xml2atts
 Function: GetVariables
 Declaration: const stringVector &GetVariables() const;
 Definition:
@@ -43,6 +48,7 @@ QueryAttributes::GetVariables() const
     return defaultVars;
 }
 
+Target: xml2atts
 Function: GetVariables2
 Declaration: stringVector &GetVariables();
 Definition:
@@ -54,6 +60,7 @@ QueryAttributes::GetVariables()
     return defaultVars;
 }
 
+Target: xml2atts
 Function: Reset
 Declaration: void Reset();
 Definition:
@@ -82,6 +89,7 @@ QueryAttributes::Reset()
     SelectAll();
 }
 
+Target: xml2atts
 Function: PrintSelf
 Declaration: void PrintSelf(ostream &os);
 Definition:
@@ -97,6 +105,7 @@ QueryAttributes::PrintSelf(ostream &os)
     os << "Results: <" << resultsMessage.c_str() << ">\n";
 }
 
+Target: xml2atts
 Function: SetResultsValue
 Declaration: void SetResultsValue(const double);
 Definition:
@@ -107,6 +116,7 @@ QueryAttributes::SetResultsValue(const double val)
     resultsValue[0] = val;
 }
 
+Target: xml2atts
 Function: SetResultsValues
 Declaration: void SetResultsValues(const double*, const int);
 Definition:
@@ -119,6 +129,7 @@ QueryAttributes::SetResultsValues(const double *vals, const int numVals)
         resultsValue.push_back(vals[i]);
 }
 
+Target: xml2atts
 Function: Move Assignment
 Declaration: QueryAttributes &operator=(QueryAttributes&&);
 Definition:
@@ -129,6 +140,7 @@ QueryAttributes::operator=(QueryAttributes &&obj)
     return *this;
 }
 
+Target: xml2atts
 Function: Move Constructor
 Declaration: QueryAttributes(QueryAttributes&&);
 Definition:
@@ -138,6 +150,7 @@ QueryAttributes::QueryAttributes(QueryAttributes &&obj)
     Move(std::move(obj));
 }
 
+Target: xml2atts
 Function: Move
 Declaration: void Move(QueryAttributes&&);
 Definition:

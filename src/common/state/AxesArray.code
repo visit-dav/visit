@@ -1,3 +1,4 @@
+Target: xml2atts
 Initialization: axes
     //axes.GetTitle().SetTitle("");
 

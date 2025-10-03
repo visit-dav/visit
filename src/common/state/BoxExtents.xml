@@ -1,5 +1,11 @@
 <?xml version="1.0"?>
-  <Attribute name="BoxExtents" purpose="Attributes for an axis-aligned box" exportAPI="STATE_API" exportInclude="state_exports.h">
-    <Field name="extents" type="doubleArray" length="6"> 0. 0. 0. 0. 0. 0.</Field>
+  <Attribute name="BoxExtents" purpose="Attributes for an axis-aligned box" persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="extents" label="extents" type="doubleArray" length="6">
+      0
+      0
+      0
+      0
+      0
+      0
+    </Field>
   </Attribute>
-

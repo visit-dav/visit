@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: DeclareMethod
 Declaration: void DeclareMethod(const std::string &name, const std::string &proto);
 Definition:
@@ -10,6 +11,7 @@ ClientInformation::DeclareMethod(const std::string &name, const std::string &pro
     SelectMethodPrototypes();
 }
 
+Target: xml2atts
 Function: GetMethodIndex
 Declaration: int GetMethodIndex(const std::string &name) const;
 Definition:
@@ -25,6 +27,7 @@ ClientInformation::GetMethodIndex(const std::string &name) const
     return -1;
 }
 
+Target: xml2atts
 Function: GetMethod
 Declaration: std::string GetMethod(int i) const;
 Definition:
@@ -36,6 +39,7 @@ ClientInformation::GetMethod(int i) const
     return "";
 }
 
+Target: xml2atts
 Function: GetMethodPrototype
 Declaration: std::string GetMethodPrototype(int i) const;
 Definition:
@@ -47,6 +51,7 @@ ClientInformation::GetMethodPrototype(int i) const
     return "";
 }
 
+Target: xml2atts
 Function: ClearMethods
 Declaration: void ClearMethods();
 Definition:

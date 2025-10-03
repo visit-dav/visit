@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: operator[]
 Declaration: Expression *operator[](const char *);
 Definition:
@@ -20,6 +21,7 @@ ExpressionList::operator[](const char *varname)
     return 0;
 }
 
+Target: xml2atts
 Function: CreateNode
 Declaration: virtual bool CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd);
 Definition:
@@ -73,6 +75,7 @@ ExpressionList::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
     return (addToParent || forceAdd);
 }
 
+Target: xml2atts
 Function: GetAllVarNames
 Declaration: const stringVector GetAllVarNames(const std::string &dbN) const;
 Definition:
@@ -109,6 +112,7 @@ ExpressionList::GetAllVarNames(const std::string &dbN) const
     return vars;
 }
 
+Target: xml2atts
 Function: SortExpressions
 Declaration: virtual void SortExpressions(void);
 Definition:
@@ -135,3 +139,4 @@ ExpressionList::SortExpressions(void)
     sort(expressions.begin(), expressions.end(), comp);
     resetMe();
 }
+

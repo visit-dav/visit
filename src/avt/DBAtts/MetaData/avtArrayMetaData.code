@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: avtArrayMetaData2
 Declaration: avtArrayMetaData(std::string, std::string, avtCentering, int);
 Definition:
@@ -29,6 +30,7 @@ avtArrayMetaData::avtArrayMetaData(std::string n, std::string mn,
     }
 }
 
+Target: xml2atts
 Function: avtArrayMetaData3
 Declaration: avtArrayMetaData(std::string, std::string, avtCentering, int, const stringVector &);
 Definition:
@@ -57,6 +59,7 @@ avtArrayMetaData::avtArrayMetaData(std::string n, std::string mn,
     compNames = cn;
 }
 
+Target: xml2atts
 Function: Print
 Declaration: void Print(ostream &, int = 0) const;
 Definition:

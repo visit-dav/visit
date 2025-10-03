@@ -1,11 +1,14 @@
+Target: xml2atts
 Initialization: userName
     userName = defaultUserName;
 
+Target: xml2atts
 Function: defaultUserName
 Declaration: static std::string defaultUserName;
 Definition:
 std::string MachineProfile::defaultUserName("notset");
 
+Target: xml2atts
 Function: UserName
 Declaration: const std::string &UserName() const;
 Definition:
@@ -28,6 +31,7 @@ MachineProfile::UserName() const
     return userName;
 }
 
+Target: xml2atts
 Function: Default
 Declaration: static MachineProfile Default(const std::string &host=std::string(), const std::string &user=std::string());
 Definition:
@@ -65,6 +69,7 @@ MachineProfile::Default(const std::string &host, const std::string &user)
     return profile;
 }
 
+Target: xml2atts
 Function: SplitHostPattern
 Declaration: static std::vector<std::string> SplitHostPattern(const std::string &host);
 Definition:
@@ -109,6 +114,7 @@ MachineProfile::SplitHostPattern(const std::string &host)
     return vec;
 }
 
+Target: xml2atts
 Function: ProfileMatchesHost
 Declaration: bool ProfileMatchesHost(const std::string&) const;
 Definition:
@@ -152,6 +158,7 @@ MachineProfile::ProfileMatchesHost(const std::string &h) const
     return match;
 }
 
+Target: xml2atts
 Function: GetShortHostname
 Declaration: std::string GetShortHostname() const;
 Definition:
@@ -171,6 +178,7 @@ MachineProfile::GetShortHostname() const
     return GetShortHostname(host);
 }
 
+Target: xml2atts
 Function: GetShortHostname_static
 Declaration: static std::string GetShortHostname(const std::string &host);
 Definition:
@@ -249,6 +257,7 @@ MachineProfile::GetShortHostname(const std::string &host)
         return shortname;
 }
 
+Target: xml2atts
 Function: GetDefaultUserName_static
 Declaration: static const std::string &GetDefaultUserName();
 Definition:
@@ -269,6 +278,7 @@ MachineProfile::GetDefaultUserName()
     return defaultUserName;
 }
 
+Target: xml2atts
 Function: SetDefaultUserName_static
 Declaration: static void SetDefaultUserName(const std::string &n);
 Definition:
@@ -289,6 +299,7 @@ MachineProfile::SetDefaultUserName(const std::string &n)
     defaultUserName = n;
 }
 
+Target: xml2atts
 Function: GetActiveLaunchProfile
 Declaration: LaunchProfile *GetActiveLaunchProfile() const;
 Definition:
@@ -301,6 +312,7 @@ MachineProfile::GetActiveLaunchProfile() const
     return (LaunchProfile*)launchProfiles[activeProfile];
 }
 
+Target: xml2atts
 Function: SetFromNode
 Declaration: bool SetFromNode(DataNode *parentNode);
 Definition:
@@ -451,6 +463,7 @@ MachineProfile::SetFromNode(DataNode *parentNode)
         SetActiveProfile(GetNumLaunchProfiles() > 0 ? 0 : -1);
 }
 
+Target: xml2atts
 Function: CreateNode
 Declaration: bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
 Definition:
@@ -567,6 +580,7 @@ MachineProfile::CreateNode(DataNode *parentNode,
     return true;
 }
 
+Target: xml2atts
 Function: SelectOnlyDifferingFields
 Declaration: void SelectOnlyDifferingFields(MachineProfile &other);
 Definition:
@@ -656,6 +670,7 @@ MachineProfile::SelectOnlyDifferingFields(MachineProfile &other)
     }
 }
 
+Target: xml2atts
 Function: SetMaximumNodes
 Declaration: void SetMaximumNodes(int);
 Definition:
@@ -683,6 +698,7 @@ MachineProfile::SetMaximumNodes(int nnodes)
     }
 }
 
+Target: xml2atts
 Function: SetMaximumProcessors
 Declaration: void SetMaximumProcessors(int);
 Definition:
@@ -710,6 +726,7 @@ MachineProfile::SetMaximumProcessors(int nprocs)
     }
 }
 
+Target: xml2atts
 Function: Print
 Declaration: void Print(ostream &) const;
 Definition:
