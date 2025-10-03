@@ -268,6 +268,10 @@ class JobSubmitter_jsrun_LLNL(JobSubmitter):
 #   Eric Brugger, Fri Sep 26 16:14:02 PDT 2025
 #   Added logic to set the LD_LIBRARY_PATH appropriately for MPI on rzadams.
 #
+#   Eric Brugger, Thu Oct  2 16:39:43 PDT 2025
+#   Added logic to set the LD_LIBBRARY_PATH to include the path to libfi.so
+#   on elcap, rzadams and tuolumne.
+#
 ###############################################################################
 
 class LLNLLauncher(MainLauncher):
@@ -334,6 +338,15 @@ class LLNLLauncher(MainLauncher):
         if sys_type == "toss_4_x86_64" or sys_type == "toss_4_x86_64_ib":
             mpi_ld_library_paths = ["/usr/tce/packages/mvapich2-tce/mvapich2-2.3.6-gcc-10.3.1/lib"]
             SETENV("LD_LIBRARY_PATH", self.joinpaths(mpi_ld_library_paths))
+
+        #
+        # Set the LD_LIBRARY_PATH to include the path to libfi.so, which is
+        # used by ADIOS2, on elcap, rzadams and tuolumne.
+        #
+        if sys_type == "toss_4_x86_64_ib_cray":
+            ld_library_path = GETENV("LD_LIBRARY_PATH")
+            new_ld_library_path = self.joinpaths(["/opt/cray/pe/cce/20.0.0/cce/x86_64/lib", ld_library_path])
+            SETENV("LD_LIBRARY_PATH", new_ld_library_path)
 
         # Unset LD_PRELOAD
         UNSETENV("LD_PRELOAD")
