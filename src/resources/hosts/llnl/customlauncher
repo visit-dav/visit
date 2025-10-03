@@ -269,7 +269,7 @@ class JobSubmitter_jsrun_LLNL(JobSubmitter):
 #   Added logic to set the LD_LIBRARY_PATH appropriately for MPI on rzadams.
 #
 #   Eric Brugger, Thu Oct  2 16:39:43 PDT 2025
-#   Added logic to set the LD_LIBBRARY_PATH to include the path to libfi.so
+#   Added logic to set the LD_LIBRARY_PATH to include the path to libfi.so
 #   on elcap, rzadams and tuolumne.
 #
 ###############################################################################
