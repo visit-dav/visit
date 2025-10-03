@@ -74,8 +74,8 @@ Follow these steps to update the version on the splashscreen.
 
    The splashscreen in GIMP.
 
-You'll see that the file has several layers to it. There are four layers for
-each of the four splash screen images that get randomly choosen from when
+You'll see that the file has several layers to it. There are six layers for
+each of the six splash screen images that get randomly choosen from when
 starting VisIt_ or are cycled through when you select *About* in the *Help*
 menu.
 
@@ -83,11 +83,11 @@ menu.
 5. Save the file.
 
 Now you are ready to create the png images that are actually read in
-by Qt. When you open the XCF file all the layers corresponding to the four
+by Qt. When you open the XCF file all the layers corresponding to the six
 different splashscreen images will be enabled. When you save the first image
 you will have them all shown. To save the second image you will hide the
 layer corresponding to the first splashscreen image. You will successively
-hide one additional layer until you have saved all four of the png images.
+hide one additional layer until you have saved all six of the png images.
 
 6. Go to *File->Export As* and change *Name* to ``VisIt1.png``.
 7. Click on *Export*. 
@@ -98,7 +98,7 @@ hide one additional layer until you have saved all four of the png images.
 
    Hiding the Background1 layer in GIMP.
 
-10. Repeat steps 6 - 9, saving images ``VisIt2.png``, ``VisIt3.png`` and ``VisIt4.png``.
+10. Repeat steps 6 - 9, saving images ``VisIt2.png``, ``VisIt3.png``, ``VisIt4.png``, ``VisIt5.png`` and ``VisIt6.png``.
 
 The images saved by GIMP result in warning messages when read by Qt. To
 modify the images so that the warning message disappears do the following. ::
@@ -107,10 +107,14 @@ modify the images so that the warning message disappears do the following. ::
     convert VisIt2.png VisIt2a.png
     convert VisIt3.png VisIt3a.png
     convert VisIt4.png VisIt4a.png
+    convert VisIt5.png VisIt5a.png
+    convert VisIt6.png VisIt6a.png
     mv VisIt1a.png VisIt1.png
     mv VisIt2a.png VisIt2.png
     mv VisIt3a.png VisIt3.png
     mv VisIt4a.png VisIt4.png
+    mv VisIt5a.png VisIt5.png
+    mv VisIt6a.png VisIt6.png
 
 11. Copy the files to ``src/resources/images``.
 
