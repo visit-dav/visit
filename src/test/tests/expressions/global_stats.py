@@ -19,16 +19,19 @@
 # 
 # ----------------------------------------------------------------------------
 
-# TODO need to do tests with multi_curv3d and multi_curv2d as well
+# TODO need to do tests with multi_curv2d as well
+# TODO need to do multi component tests
 
-# no ghosts in curv3d
+#
+# no ghosts, single domain, single component
+#
 curv3d_stats = {}
 
 # zonal stats
 curv3d_stats["max_d"] = 4.9557
 curv3d_stats["min_d"] = 2.03471
 curv3d_stats["num_d"] = 36000 # num non-ghosted zones
-curv3d_stats["sum_d"] = 125827.3203125
+curv3d_stats["sum_d"] = 125827.320313
 curv3d_stats["avg_d"] = 3.4952
 curv3d_stats["std_d"] = 0.864568 # standard deviation
 curv3d_stats["var_d"] = 0.747478 # variance
@@ -39,19 +42,23 @@ curv3d_stats["max_u"] = 1
 curv3d_stats["min_u"] = -1
 curv3d_stats["num_u"] = 39401 # num non-ghosted nodes
 curv3d_stats["sum_u"] = -93
-curv3d_stats["avg_u"] = -0.00236035
+curv3d_stats["avg_u"] = -0.002360
 curv3d_stats["std_u"] = 0.740144 # standard deviation
 curv3d_stats["var_u"] = 0.547814 # variance
 curv3d_stats["rms_u"] = 0.740148 # root mean square
 
-# no ghosts in multi_curv3d
+#################################################
+
+#
+# no ghosts, multi-domain, single component
+#
 multi_curv3d_stats = {}
 
 # zonal stats
 multi_curv3d_stats["max_d"] = 4.9557
 multi_curv3d_stats["min_d"] = 2.03471
 multi_curv3d_stats["num_d"] = 36000 # num non-ghosted zones
-multi_curv3d_stats["sum_d"] = 125827.3359375
+multi_curv3d_stats["sum_d"] = 125827.335938
 multi_curv3d_stats["avg_d"] = 3.4952
 multi_curv3d_stats["std_d"] = 0.864568 # standard deviation
 multi_curv3d_stats["var_d"] = 0.747478 # variance
@@ -62,19 +69,23 @@ multi_curv3d_stats["max_u"] = 1
 multi_curv3d_stats["min_u"] = -1
 multi_curv3d_stats["num_u"] = 31958 # num non-ghosted nodes
 multi_curv3d_stats["sum_u"] = -57.868796
-multi_curv3d_stats["avg_u"] = -0.00181077
+multi_curv3d_stats["avg_u"] = -0.001811
 multi_curv3d_stats["std_u"] = 0.741448 # standard deviation
 multi_curv3d_stats["var_u"] = 0.549746 # variance
 multi_curv3d_stats["rms_u"] = 0.741450 # root mean square
 
-# yes ghosts in curv2d
+#################################################
+
+#
+# yes ghosts, single domain, single component
+#
 curv2d_stats = {}
 
 # zonal stats
 curv2d_stats["max_d"] = 4.8808
 curv2d_stats["min_d"] = 2.1096
 curv2d_stats["num_d"] = 988 # num non-ghosted zones
-curv2d_stats["sum_d"] = 3453.2609271746946
+curv2d_stats["sum_d"] = 3453.260927
 curv2d_stats["avg_d"] = 3.4952
 curv2d_stats["std_d"] = 0.821312 # standard deviation
 curv2d_stats["var_d"] = 0.674554 # variance
@@ -84,18 +95,48 @@ curv2d_stats["rms_d"] = 3.5904 # root mean square
 curv2d_stats["max_u"] = 1
 curv2d_stats["min_u"] = -1
 curv2d_stats["num_u"] = 1053 # num non-ghosted nodes
-curv2d_stats["sum_u"] = 67.70071411132812
-curv2d_stats["avg_u"] = 0.0642932
-curv2d_stats["std_u"] = 0.7122947573661804 # standard deviation
+curv2d_stats["sum_u"] = 67.700714
+curv2d_stats["avg_u"] = 0.064293
+curv2d_stats["std_u"] = 0.712294 # standard deviation
 curv2d_stats["var_u"] = 0.507364 # variance
 curv2d_stats["rms_u"] = 0.715191 # root mean square
 
-baseline_stats = {}
-baseline_stats["curvmesh3d"] = curv3d_stats
-baseline_stats["mesh1"]      = multi_curv3d_stats
-baseline_stats["curvmesh2d"] = curv2d_stats
+#################################################
 
-def test_stat(shortstatname, longstatname, meshname, varname, vartype):
+#
+# yes ghosts, multi domain, single component
+#
+multi_curv2d_stats = {}
+
+# zonal stats
+multi_curv2d_stats["max_d"] = 4.955698
+multi_curv2d_stats["min_d"] = 2.034708
+multi_curv2d_stats["num_d"] = 1200 # num non-ghosted zones
+multi_curv2d_stats["sum_d"] = 4194.244629
+multi_curv2d_stats["avg_d"] = 3.4952
+multi_curv2d_stats["std_d"] = 0.864568 # standard deviation
+multi_curv2d_stats["var_d"] = 0.747477 # variance
+multi_curv2d_stats["rms_d"] = 3.60054541 # root mean square
+
+# nodal stats
+multi_curv2d_stats["max_u"] = 1
+multi_curv2d_stats["min_u"] = -1
+multi_curv2d_stats["num_u"] = 1435 # num non-ghosted nodes
+multi_curv2d_stats["sum_u"] = 2.05621
+multi_curv2d_stats["avg_u"] = 0.0014329
+multi_curv2d_stats["std_u"] = 0.73645 # standard deviation
+multi_curv2d_stats["var_u"] = 0.542359 # variance
+multi_curv2d_stats["rms_u"] = 0.73645139 # root mean square
+
+#################################################
+
+baseline_stats = {}
+baseline_stats["curv3d.silo/curvmesh3d"]  = curv3d_stats
+baseline_stats["multi_curv3d.silo/mesh1"] = multi_curv3d_stats
+baseline_stats["curv2d.silo/curvmesh2d"]  = curv2d_stats
+baseline_stats["multi_curv2d.silo/mesh1"] = multi_curv2d_stats
+
+def test_stat(shortstatname, longstatname, filename, meshname, varname, vartype):
 	AddPlot("Pseudocolor", shortstatname + "_" + varname + "_" + vartype)
 	DrawPlots()
 	Query("MinMax")
@@ -104,17 +145,17 @@ def test_stat(shortstatname, longstatname, meshname, varname, vartype):
 	# across the mesh.
 	if vartype == "zonal":
 		TestValueEQ("Test " + longstatname + " 1 for " + varname, q['min'], 
-			baseline_stats[meshname][shortstatname + "_" + varname])
+			baseline_stats[filename + "/" + meshname][shortstatname + "_" + varname])
 		TestValueEQ("Test " + longstatname + " 2 for " + varname, q['max'], 
-			baseline_stats[meshname][shortstatname + "_" + varname])
+			baseline_stats[filename + "/" + meshname][shortstatname + "_" + varname])
 	else:
 		TestValueEQ("Test " + longstatname + " 1 for " + varname, q['min'], 
-			baseline_stats[meshname][shortstatname + "_" + varname])
+			baseline_stats[filename + "/" + meshname][shortstatname + "_" + varname])
 		TestValueEQ("Test " + longstatname + " 2 for " + varname, q['max'], 
-			baseline_stats[meshname][shortstatname + "_" + varname])
+			baseline_stats[filename + "/" + meshname][shortstatname + "_" + varname])
 	DeleteAllPlots()
 
-def test_stats_for_var(meshname, varname, vartype):
+def test_stats_for_var(filename, meshname, varname, vartype):
 	# define our expressions
 	if vartype == "zonal":
 		# every zone will have a value of 1
@@ -131,31 +172,37 @@ def test_stats_for_var(meshname, varname, vartype):
 	DefineScalarExpression("sum_" + varname + "_" + vartype, "global_sum(" + varname + ")")
 	DefineScalarExpression("var_" + varname + "_" + vartype, "global_variance(" + varname + ")")
 
-	test_stat("avg", "Average",            meshname, varname, vartype)
-	test_stat("max", "Maximum",            meshname, varname, vartype)
-	test_stat("min", "Minimum",            meshname, varname, vartype)
-	test_stat("num", "Number",             meshname, varname, vartype)
-	test_stat("rms", "Root Mean Square",   meshname, varname, vartype)
-	test_stat("std", "Standard Deviation", meshname, varname, vartype)
-	test_stat("sum", "Sum",                meshname, varname, vartype)
-	test_stat("var", "Variance",           meshname, varname, vartype)
+	test_stat("avg", "Average",            filename, meshname, varname, vartype)
+	test_stat("max", "Maximum",            filename, meshname, varname, vartype)
+	test_stat("min", "Minimum",            filename, meshname, varname, vartype)
+	test_stat("num", "Number",             filename, meshname, varname, vartype)
+	test_stat("rms", "Root Mean Square",   filename, meshname, varname, vartype)
+	test_stat("std", "Standard Deviation", filename, meshname, varname, vartype)
+	test_stat("sum", "Sum",                filename, meshname, varname, vartype)
+	test_stat("var", "Variance",           filename, meshname, varname, vartype)
 
-TestSection("No Ghosts, Single Domain")
+TestSection("No Ghosts, Single Domain, Single Component")
 OpenDatabase(silo_data_path("curv3d.silo"))
-test_stats_for_var(meshname="curvmesh3d", varname="d", vartype="zonal") # zonal var
-test_stats_for_var(meshname="curvmesh3d", varname="u", vartype="nodal") # nodal var
+test_stats_for_var(filename="curv3d.silo", meshname="curvmesh3d", varname="d", vartype="zonal") # zonal var
+test_stats_for_var(filename="curv3d.silo", meshname="curvmesh3d", varname="u", vartype="nodal") # nodal var
 CloseDatabase(silo_data_path("curv3d.silo"))
 
-TestSection("No Ghosts, Multi Domain")
+TestSection("No Ghosts, Multi Domain, Single Component")
 OpenDatabase(silo_data_path("multi_curv3d.silo"))
-test_stats_for_var(meshname="mesh1", varname="d", vartype="zonal") # zonal var
-test_stats_for_var(meshname="mesh1", varname="u", vartype="nodal") # nodal var
+test_stats_for_var(filename="multi_curv3d.silo", meshname="mesh1", varname="d", vartype="zonal") # zonal var
+test_stats_for_var(filename="multi_curv3d.silo", meshname="mesh1", varname="u", vartype="nodal") # nodal var
 CloseDatabase(silo_data_path("multi_curv3d.silo"))
 
-TestSection("Yes Ghosts, Single Domain")
+TestSection("Yes Ghosts, Single Domain, Single Component")
 OpenDatabase(silo_data_path("curv2d.silo"))
-test_stats_for_var(meshname="curvmesh2d", varname="d", vartype="zonal") # zonal var
-test_stats_for_var(meshname="curvmesh2d", varname="u", vartype="nodal") # nodal var
+test_stats_for_var(filename="curv2d.silo", meshname="curvmesh2d", varname="d", vartype="zonal") # zonal var
+test_stats_for_var(filename="curv2d.silo", meshname="curvmesh2d", varname="u", vartype="nodal") # nodal var
 CloseDatabase(silo_data_path("curv2d.silo"))
+
+TestSection("Yes Ghosts, Multi Domain, Single Component")
+OpenDatabase(silo_data_path("multi_curv2d.silo"))
+test_stats_for_var(filename="multi_curv2d.silo", meshname="mesh1", varname="d", vartype="zonal") # zonal var
+test_stats_for_var(filename="multi_curv2d.silo", meshname="mesh1", varname="u", vartype="nodal") # nodal var
+CloseDatabase(silo_data_path("multi_curv2d.silo"))
 
 Exit()
