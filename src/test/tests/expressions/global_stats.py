@@ -20,7 +20,6 @@
 # ----------------------------------------------------------------------------
 
 # TODO need to do tests with multi_curv3d and multi_curv2d as well
-# TODO need to do multi-component test data
 
 # no ghosts in curv3d
 curv3d_stats = {}
@@ -45,14 +44,14 @@ curv3d_stats["std_u"] = 0.740144 # standard deviation
 curv3d_stats["var_u"] = 0.547814 # variance
 curv3d_stats["rms_u"] = 0.740148 # root mean square
 
-# no ghosts in curv3d
+# no ghosts in multi_curv3d
 multi_curv3d_stats = {}
 
 # zonal stats
 multi_curv3d_stats["max_d"] = 4.9557
 multi_curv3d_stats["min_d"] = 2.03471
 multi_curv3d_stats["num_d"] = 36000 # num non-ghosted zones
-multi_curv3d_stats["sum_d"] = 125827.3203125
+multi_curv3d_stats["sum_d"] = 125827.3359375
 multi_curv3d_stats["avg_d"] = 3.4952
 multi_curv3d_stats["std_d"] = 0.864568 # standard deviation
 multi_curv3d_stats["var_d"] = 0.747478 # variance
@@ -64,9 +63,9 @@ multi_curv3d_stats["min_u"] = -1
 multi_curv3d_stats["num_u"] = 31958 # num non-ghosted nodes
 multi_curv3d_stats["sum_u"] = -57.868796
 multi_curv3d_stats["avg_u"] = -0.00181077
-multi_curv3d_stats["std_u"] = 0.740144 # standard deviation
-multi_curv3d_stats["var_u"] = 0.547814 # variance
-multi_curv3d_stats["rms_u"] = 0.740148 # root mean square
+multi_curv3d_stats["std_u"] = 0.741448 # standard deviation
+multi_curv3d_stats["var_u"] = 0.549746 # variance
+multi_curv3d_stats["rms_u"] = 0.741450 # root mean square
 
 # yes ghosts in curv2d
 curv2d_stats = {}

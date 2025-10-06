@@ -241,7 +241,6 @@ avtGlobalRMSExpression::CalculateFinalResults(const std::vector<double> &global_
         const double ntuples_double = static_cast<double>(global_ntuples);
         for (int comp_id = 0; comp_id < global_ncomps; comp_id ++)
         {
-            std::cout << "sum_x_sq " << global_constant_results[comp_id] << std::endl;
             final_results[comp_id] = sqrt(global_constant_results[comp_id] / ntuples_double);
         }
     }
