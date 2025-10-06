@@ -917,7 +917,7 @@ avtGlobalConstantExpression::Execute()
                                   for (int comp_id = 0; comp_id < ncomps; comp_id ++)
                                   {
                                       local_extra_constant_results[comp_id] = 
-                                          LocalIntermediateReduction(local_constant_results[comp_id],
+                                          LocalIntermediateReduction(local_extra_constant_results[comp_id],
                                                                      curr_leaf_extra_results[comp_id]);
                                   }
                               }

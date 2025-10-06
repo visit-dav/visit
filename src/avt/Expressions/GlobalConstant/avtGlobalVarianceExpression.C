@@ -275,6 +275,12 @@ avtGlobalVarianceExpression::CalculateFinalResults(const std::vector<double> &gl
             const double sum_x_sq     = global_extra_constant_results[comp_id];
             const double sum_x_over_N = sum_x / N;
 
+            std::cout << "sum_x " << sum_x << std::endl;
+            std::cout << "sum_x_sq " << sum_x_sq << std::endl;
+            std::cout << "sum_x_over_N " << sum_x_over_N << std::endl;
+            std::cout << "sum_x_sq / N " << (sum_x_sq / N) << std::endl;
+            std::cout << "sum_x_over_N * sum_x_over_N " << (sum_x_over_N * sum_x_over_N) << std::endl;
+
             final_results[comp_id] = (sum_x_sq / N) - sum_x_over_N * sum_x_over_N;
         }
     }

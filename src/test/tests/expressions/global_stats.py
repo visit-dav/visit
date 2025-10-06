@@ -28,7 +28,7 @@ curv3d_stats = {}
 # zonal stats
 curv3d_stats["max_d"] = 4.9557
 curv3d_stats["min_d"] = 2.03471
-curv3d_stats["num_d"] = 36000 # num zones
+curv3d_stats["num_d"] = 36000 # num non-ghosted zones
 curv3d_stats["sum_d"] = 125827.3203125
 curv3d_stats["avg_d"] = 3.4952
 curv3d_stats["std_d"] = 0.864568 # standard deviation
@@ -38,12 +38,35 @@ curv3d_stats["rms_d"] = 3.60055 # root mean square
 # nodal stats
 curv3d_stats["max_u"] = 1
 curv3d_stats["min_u"] = -1
-curv3d_stats["num_u"] = 39401 # num nodes
+curv3d_stats["num_u"] = 39401 # num non-ghosted nodes
 curv3d_stats["sum_u"] = -93
 curv3d_stats["avg_u"] = -0.00236035
 curv3d_stats["std_u"] = 0.740144 # standard deviation
 curv3d_stats["var_u"] = 0.547814 # variance
 curv3d_stats["rms_u"] = 0.740148 # root mean square
+
+# no ghosts in curv3d
+multi_curv3d_stats = {}
+
+# zonal stats
+multi_curv3d_stats["max_d"] = 4.9557
+multi_curv3d_stats["min_d"] = 2.03471
+multi_curv3d_stats["num_d"] = 36000 # num non-ghosted zones
+multi_curv3d_stats["sum_d"] = 125827.3203125
+multi_curv3d_stats["avg_d"] = 3.4952
+multi_curv3d_stats["std_d"] = 0.864568 # standard deviation
+multi_curv3d_stats["var_d"] = 0.747478 # variance
+multi_curv3d_stats["rms_d"] = 3.60055 # root mean square
+
+# nodal stats
+multi_curv3d_stats["max_u"] = 1
+multi_curv3d_stats["min_u"] = -1
+multi_curv3d_stats["num_u"] = 31958 # num non-ghosted nodes
+multi_curv3d_stats["sum_u"] = -57.868796
+multi_curv3d_stats["avg_u"] = -0.00181077
+multi_curv3d_stats["std_u"] = 0.740144 # standard deviation
+multi_curv3d_stats["var_u"] = 0.547814 # variance
+multi_curv3d_stats["rms_u"] = 0.740148 # root mean square
 
 # yes ghosts in curv2d
 curv2d_stats = {}
@@ -51,7 +74,7 @@ curv2d_stats = {}
 # zonal stats
 curv2d_stats["max_d"] = 4.8808
 curv2d_stats["min_d"] = 2.1096
-curv2d_stats["num_d"] = 988 # num zones
+curv2d_stats["num_d"] = 988 # num non-ghosted zones
 curv2d_stats["sum_d"] = 3453.2609271746946
 curv2d_stats["avg_d"] = 3.4952
 curv2d_stats["std_d"] = 0.821312 # standard deviation
@@ -61,7 +84,7 @@ curv2d_stats["rms_d"] = 3.5904 # root mean square
 # nodal stats
 curv2d_stats["max_u"] = 1
 curv2d_stats["min_u"] = -1
-curv2d_stats["num_u"] = 1053 # num nodes
+curv2d_stats["num_u"] = 1053 # num non-ghosted nodes
 curv2d_stats["sum_u"] = 67.70071411132812
 curv2d_stats["avg_u"] = 0.0642932
 curv2d_stats["std_u"] = 0.7122947573661804 # standard deviation
@@ -70,6 +93,7 @@ curv2d_stats["rms_u"] = 0.715191 # root mean square
 
 baseline_stats = {}
 baseline_stats["curvmesh3d"] = curv3d_stats
+baseline_stats["mesh1"]      = multi_curv3d_stats
 baseline_stats["curvmesh2d"] = curv2d_stats
 
 def test_stat(shortstatname, longstatname, meshname, varname, vartype):
@@ -117,16 +141,22 @@ def test_stats_for_var(meshname, varname, vartype):
 	test_stat("sum", "Sum",                meshname, varname, vartype)
 	test_stat("var", "Variance",           meshname, varname, vartype)
 
-# no ghosts
+TestSection("No Ghosts, Single Domain")
 OpenDatabase(silo_data_path("curv3d.silo"))
-test_stats_for_var("curvmesh3d", "d", "zonal") # zonal var
-test_stats_for_var("curvmesh3d", "u", "nodal") # nodal var
+test_stats_for_var(meshname="curvmesh3d", varname="d", vartype="zonal") # zonal var
+test_stats_for_var(meshname="curvmesh3d", varname="u", vartype="nodal") # nodal var
 CloseDatabase(silo_data_path("curv3d.silo"))
 
-# yes ghosts
+TestSection("No Ghosts, Multi Domain")
+OpenDatabase(silo_data_path("multi_curv3d.silo"))
+test_stats_for_var(meshname="mesh1", varname="d", vartype="zonal") # zonal var
+test_stats_for_var(meshname="mesh1", varname="u", vartype="nodal") # nodal var
+CloseDatabase(silo_data_path("multi_curv3d.silo"))
+
+TestSection("Yes Ghosts, Single Domain")
 OpenDatabase(silo_data_path("curv2d.silo"))
-test_stats_for_var("curvmesh2d", "d", "zonal") # zonal var
-test_stats_for_var("curvmesh2d", "u", "nodal") # nodal var
+test_stats_for_var(meshname="curvmesh2d", varname="d", vartype="zonal") # zonal var
+test_stats_for_var(meshname="curvmesh2d", varname="u", vartype="nodal") # nodal var
 CloseDatabase(silo_data_path("curv2d.silo"))
 
 Exit()

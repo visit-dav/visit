@@ -152,7 +152,7 @@ avtGlobalRMSExpression::CalculateWithGhosts(vtkDataArray *in,
             if (0 == getNodeOrCellValid(ghostZones, nodeShouldBeIgnoredPtr, tuple_id))
             {
                 const double val = in->GetComponent(tuple_id, comp_id);
-                sum_of_squares += pow(val, 2);
+                sum_of_squares += val * val;
             }
         }
 
@@ -229,7 +229,7 @@ avtGlobalRMSExpression::CalculateFinalResults(const std::vector<double> &global_
     // we didn't use this to get our final answer
     (void) global_extra_constant_results;
 
-    // we need to divide each component sumof squares by the global number of 
+    // we need to divide each component sum of squares by the global number of 
     // non ghosted tuples and take the square root
     final_results.resize(global_ncomps);
     if (global_ntuples == 0)
@@ -241,6 +241,7 @@ avtGlobalRMSExpression::CalculateFinalResults(const std::vector<double> &global_
         const double ntuples_double = static_cast<double>(global_ntuples);
         for (int comp_id = 0; comp_id < global_ncomps; comp_id ++)
         {
+            std::cout << "sum_x_sq " << global_constant_results[comp_id] << std::endl;
             final_results[comp_id] = sqrt(global_constant_results[comp_id] / ntuples_double);
         }
     }
