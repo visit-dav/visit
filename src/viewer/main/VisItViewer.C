@@ -143,6 +143,10 @@ VisItViewer::Finalize()
 // Creation:   Mon Aug 18 16:32:59 PDT 2008
 //
 // Modifications:
+//   Kathleen Biagas, Wed Oct 1, 2025
+//   Add a component-name string argument to InitVTK::Initialize.
+//   It will be used for creating a vtkLogger callback to write their log
+//   info to VisIt's debug log.
 //
 // ****************************************************************************
 
@@ -155,7 +159,7 @@ VisItViewer::VisItViewer() : visitHome()
     // Initialize the error logging.
     //
     VisItInit::ComponentRegisterErrorFunction(ViewerErrorCallback, (void*)viewer);
-    InitVTK::Initialize();
+    InitVTK::Initialize("viewer");
     InitVTKRendering::Initialize();
     avtCallback::RegisterWarningCallback(ViewerWarningCallback,
                                          (void*)viewer);
