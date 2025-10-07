@@ -251,7 +251,7 @@ class InfoGeneratorPlugin : public Plugin
                 f->target == generatorName &&
                 f->name == funcName)
             {
-                c << atts->functions[n]->def << Endl << Endl;
+                c << atts->functions[n]->def << Endl;
                 retval = true;
                 break;
             }
