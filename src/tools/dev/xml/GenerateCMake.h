@@ -204,6 +204,10 @@
 //    Kathleen Biagas, Thu Jul 24, 2025 
 //    vtkm::vtkmdiympi_nompi needs to be handled differently. 
 //
+//    Kathleen Biagas, Tue Oct  7 11:56:25 PDT 2025
+//    Remove WIN32DEFINES (windefs) support, now handled as a Conditional
+//    Definitions in .code file.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -1121,18 +1125,6 @@ class CMakeGeneratorPlugin : public Plugin
         }
         if (!defs.empty())
             out << Endl;
-
-        // Pass Win32-only defines
-        if (!windefs.empty())
-        {
-            out << "if(WIN32)" << Endl;
-            for (size_t i=0; i<windefs.size(); i++)
-            {
-                out << "    add_compile_definitions(" << windefs[i] << ")" << Endl;
-            }
-            out << "endif()"<< Endl;
-            out << Endl;
-        }
 
         WriteCMake_ConditionalDefinitions(out);
 
