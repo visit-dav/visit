@@ -110,35 +110,48 @@ avtGlobalMaxExpression::CalculateWithoutGhosts(vtkDataArray *in,
 //  Method: avtGlobalMaxExpression::CalculateWithGhosts
 //
 //  Purpose:
-//      We provide a more complicated calculation that takes ghost data into account.
-//      The way this works is it takes a function called getNodeOrCellValid() that is 
-//      defined based on if we are working with zonal or nodal data. getNodeOrCellValid()
-//      itself takes two pointers and an index called tuple_id.
+//      We provide a more complicated calculation that takes ghost data into
+//      account. The way this works is it takes a function called
+//      getNodeOrCellValid() that is defined based on if we are working with 
+//      zonal or nodal data. getNodeOrCellValid() itself takes two pointers and
+//      an index called tuple_id.
 //
 //  Arguments:
-//      in            The input data array.
-//      out           The output data array.
-//      ncomponents   The number of components ('1' for scalar, '2' or '3' for
-//                    vectors, etc.)
-//      ntuples       The number of tuples (ie 'npoints' or 'ncells')
-//      getNodeOrCellValid A function that takes a vtkDataArray*, and int*, and
-//                    an int, and returns an int. This function is used to test
-//                    if a given zone or node is ghosted out. A value of zero
-//                    means it should be counted, which was chosen because
-//                    a ghost value of zero means no the zone or node is not
-//                    ghosted. For zonal variables, the caller passes a 
-//                    getNodeOrCellValid function that examines the ghost zones
-//                    vtkDataArray array. For nodal variables, the caller 
-//                    passes a getNodeOrCellValid function that examines the
-//                    nodeShouldBeIgnoredPtr, which has an entry for each node.
-//      ghostZones    A pointer to the ghost zones array. Could be null.
+//      in                     The input data array.
+//      ncomponents            The number of components ('1' for scalar, '2' or
+//                             '3' for vectors, etc.)
+//      ntuples                The number of tuples (ie 'npoints' or 'ncells')
+//      getNodeOrCellValid     A function that takes a vtkDataArray*, and int*,
+//                             and an int, and returns an int. This function is
+//                             used to test if a given zone or node is ghosted
+//                             out. A value of zero means it should be counted,
+//                             which was chosen because a ghost value of zero 
+//                             means no the zone or node is not ghosted. For
+//                             zonal variables, the caller passes a 
+//                             getNodeOrCellValid function that examines the 
+//                             ghost zones vtkDataArray array. For nodal 
+//                             variables, the caller passes a 
+//                             getNodeOrCellValid function that examines the
+//                             nodeShouldBeIgnoredPtr, which has an entry for
+//                             each node.
+//      ghostZones             A pointer to the ghost zones array. Could be
+//                             nullptr.
 //      nodeShouldBeIgnoredPtr A pointer to an array we constructed that 
-//                    records if each node is ghosted out or not.
+//                             records if each node is ghosted out or not.
+//      constant_results       A vector to store per-component results.
+//      extra_constant_results A vector to store additional per-component
+//                             results.
 //
 //  Programmer: Justin Privitera
 //  Creation:   09/30/24
 //
 //  Modifications:
+//      Justin Privitera, Wed Oct  8 14:13:21 PDT 2025
+//      Removed the output data array parameter.
+//      Added constant_results and extra_constant_results parameters.
+//      We now store the max result in the constant_results vector.
+//      Removed error case now that we have ensured we only get to this method
+//      if we know we have some non-ghosted tuples.
 //
 // ****************************************************************************
 
