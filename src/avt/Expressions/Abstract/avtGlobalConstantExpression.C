@@ -7,46 +7,15 @@
 // ************************************************************************* //
 #include <avtGlobalConstantExpression.h>
 
-#include <math.h>
-
-#include <avtDatabaseMetaData.h>
-#include <avtExprNode.h>
-#include <avtExpressionEvaluatorFilter.h>
-#include <avtFacelistFilter.h>
-#include <avtIntervalTree.h>
-#include <avtMetaData.h>
 #include <avtParallel.h>
-#include <avtOriginatingSource.h>
 
-#include <vtkAppendFilter.h>
-#include <vtkCharArray.h>
-#include <vtkCell.h>
 #include <vtkCellData.h>
-#include <vtkCellType.h>
 #include <vtkDataSet.h>
-#include <vtkDataSetRemoveGhostCells.h>
-#include <vtkIntArray.h>
 #include <vtkPointData.h>
-#include <vtkUnsignedCharArray.h>
-#include <vtkUnstructuredGrid.h>
-#include <vtkUnstructuredGridRelevantPointsFilter.h>
-#include <vtkUnstructuredGridWriter.h>
-#include <vtkUnstructuredGridReader.h>
-#include <vtkVisItUtility.h>
+#include <vtkDataArray.h>
 
-#include <sstream>
 #include <DebugStream.h>
 #include <ExpressionException.h>
-#include <TimingsManager.h>
-#include <Utility.h>
-
-
-#ifdef PARALLEL
-  #include <mpi.h>
-#endif
-
-#include <string>
-#include <vector>
 
 // ****************************************************************************
 //  Class: intermediateResults

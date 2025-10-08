@@ -11,8 +11,6 @@
 
 #include <avtExpressionFilter.h>
 
-// #include <vector>
-
 class     vtkDataArray;
 class     vtkDataSet;
 class     intermediateResults;
