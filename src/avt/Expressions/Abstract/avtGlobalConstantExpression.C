@@ -1037,7 +1037,7 @@ avtGlobalConstantExpression::Execute()
     }
 
     //
-    Calculate the local total number of non-ghosted tuples
+    // Calculate the local total number of non-ghosted tuples
     //
     const int local_total_ntuples = (NeedsNTuples() ? GetLocalNumTuples(intermediate_results_map) : 0);
 
