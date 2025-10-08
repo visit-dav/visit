@@ -232,6 +232,7 @@ avtGlobalRMSExpression::CalculateFinalResults(const std::vector<double> &global_
     // we need to divide each component sum of squares by the global number of 
     // non ghosted tuples and take the square root
     final_results.resize(global_ncomps);
+    // TODO this case doesn't make any sense
     if (global_ntuples == 0)
     {
         std::fill(final_results.begin(), final_results.end(), 0.0);

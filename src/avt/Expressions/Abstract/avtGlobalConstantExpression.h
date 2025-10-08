@@ -40,10 +40,8 @@ class EXPRESSION_API avtGlobalConstantExpression : public avtExpressionFilter
                                      { return "avtGlobalConstantExpression"; };
     virtual const char       *GetDescription(void) = 0;
 
-    // TODO do I need these?
+    // TODO do I need this?
     virtual int               NumVariableArguments() { return 1; };
-    virtual int               GetVariableDimension() { return 1; };
-
   protected:
     int                       currentProgress;
     int                       totalSteps;
