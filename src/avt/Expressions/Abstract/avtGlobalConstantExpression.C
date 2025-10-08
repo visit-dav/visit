@@ -45,7 +45,7 @@ public:
     // some expressions (global_std and global_var) require a second per-component result
     std::vector<double> extra_constant_results;
 
-    // sometimes we need to track the number of non-ghosted tuples that we are reducing across
+    // we track the number of non-ghosted tuples that we are reducing across
     int                 num_non_ghosted_tuples;
 
     // we track the number of components, which is also the length of these vectors
