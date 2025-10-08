@@ -202,7 +202,8 @@ avtGlobalSumExpression::LocalIntermediateReduction(const double running_reductio
 //  Method: avtGlobalSumExpression::GlobalIntermediateReduction
 //
 //  Purpose:
-//      TODO
+//      The parent class needs each child to tell it how to reduce arrays
+//      globally. In this case, we perform a sum reduction with MPI.
 //
 //  Programmer: Justin Privitera
 //  Creation:   September 26, 2025

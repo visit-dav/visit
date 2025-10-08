@@ -228,7 +228,8 @@ avtGlobalMaxExpression::LocalIntermediateReduction(const double running_reductio
 //  Method: avtGlobalMaxExpression::GlobalIntermediateReduction
 //
 //  Purpose:
-//      TODO
+//      The parent class needs each child to tell it how to reduce arrays
+//      globally. In this case, we perform a max reduction with MPI.
 //
 //  Programmer: Justin Privitera
 //  Creation:   September 26, 2025

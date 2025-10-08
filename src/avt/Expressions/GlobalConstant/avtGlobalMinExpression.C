@@ -209,7 +209,7 @@ avtGlobalMinExpression::CalculateWithGhosts(vtkDataArray *in,
 //
 //  Purpose:
 //      The parent class needs each child to tell it how to reduce elements
-//      locally. In this case, we take the maximum of the two values.
+//      locally. In this case, we take the minimum of the two values.
 //
 //  Programmer: Justin Privitera
 //  Creation:   September 26, 2025
@@ -228,7 +228,8 @@ avtGlobalMinExpression::LocalIntermediateReduction(const double running_reductio
 //  Method: avtGlobalMinExpression::GlobalIntermediateReduction
 //
 //  Purpose:
-//      TODO
+//      The parent class needs each child to tell it how to reduce arrays
+//      globally. In this case, we perform a min reduction with MPI.
 //
 //  Programmer: Justin Privitera
 //  Creation:   September 26, 2025
