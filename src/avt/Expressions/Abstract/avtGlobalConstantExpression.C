@@ -42,7 +42,7 @@ public:
     // we need a vector to store results per component
     std::vector<double> constant_results;
 
-    // some expressions (global_std_dev and global_variance) require a second per-component result
+    // some expressions (global_std and global_var) require a second per-component result
     std::vector<double> extra_constant_results;
 
     // sometimes we need to track the number of non-ghosted tuples that we are reducing across

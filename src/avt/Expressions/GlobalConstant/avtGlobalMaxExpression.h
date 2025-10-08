@@ -27,6 +27,12 @@ class     vtkDataArray;
 //  Creation:   09/30/24
 //
 //  Modifications:
+//      Justin Privitera, Wed Oct  8 14:13:21 PDT 2025
+//      Changed inheritance from avtGhostAwareUnaryMathExpression to 
+//      avtGlobalConstantExpression, which required adding NeedsNTuples(),
+//      NeedsExtraIntermediateData(), LocalIntermediateReduction(),
+//      GlobalIntermediateReduction(), CalculateFinalResults(), and 
+//      GetUnusedValue().
 //
 // ****************************************************************************
 
@@ -75,6 +81,10 @@ class EXPRESSION_API avtGlobalMaxExpression : public avtGlobalConstantExpression
                                                     const int global_ntuples,
                                                     std::vector<double> &final_results);
 
+    // For cases where there is no data, we need to provide a value that will not interfere 
+    // with reductions. In the case of global_max, the safe value is
+    // std::numeric_limits<double>::lowest(), which will disappear when calculating the 
+    // maximum between two values or arrays.
     virtual double            GetUnusedValue() { return std::numeric_limits<double>::lowest(); };
 };
 
