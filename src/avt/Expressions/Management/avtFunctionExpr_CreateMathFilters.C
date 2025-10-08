@@ -64,6 +64,9 @@
 //   Justin Privitera, Mon Oct 28 15:26:44 PDT 2024
 //   Added global_avg, global_max, global_min, global_rms, global_std_dev, 
 //   global_sum, and global_variance.
+// 
+//   Justin Privitera, Wed Oct  8 14:13:21 PDT 2025
+//   Moved global expressions to avtFunctionExpr_CreateGlobalConstantFilters.C
 //
 // ****************************************************************************
 

@@ -29,6 +29,9 @@ class ExprPipelineState;
 //
 //    Kathleen Biagas, Thu May  1 17:11:14 PDT 2014
 //    Change avtFloatContExpr arg to double.
+// 
+//    Justin Privitera, Wed Oct  8 14:13:21 PDT 2025
+//    Added avtFunctionExpr::CreateGlobalConstantFilters().
 //
 
 

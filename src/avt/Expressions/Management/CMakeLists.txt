@@ -4,6 +4,8 @@
 
 #*****************************************************************************
 # Modifications:
+#   Justin Privitera, Wed Oct  8 14:13:21 PDT 2025
+#   Added avtFunctionExpr_CreateGlobalConstantFilters.C
 #
 #*****************************************************************************
 

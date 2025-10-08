@@ -9,6 +9,7 @@
 # 
 #   Justin Privitera, Thu Oct  2 16:27:11 PDT 2025
 #   Removed avtGhostAwareUnaryMathExpression.C
+#   Added avtGlobalConstantExpression.C
 #
 #*****************************************************************************
 

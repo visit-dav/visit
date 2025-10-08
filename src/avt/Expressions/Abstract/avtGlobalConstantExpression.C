@@ -9,10 +9,10 @@
 
 #include <avtParallel.h>
 
-#include <vtkCellData.h>
 #include <vtkDataSet.h>
-#include <vtkPointData.h>
 #include <vtkDataArray.h>
+#include <vtkCellData.h>
+#include <vtkPointData.h>
 
 #include <DebugStream.h>
 #include <ExpressionException.h>
@@ -21,12 +21,12 @@
 //  Class: intermediateResults
 //
 //  Purpose:
-//      This class contains data arrays that we use to reduce across domains and 
-//      processors. It also can track the number of non-ghosted tuples, which is
-//      needed by some expressions. It also tracks the number of components and 
-//      number of tuples, which are used to set up the output vtkDataArray where
-//      results are to be placed at the end of expression execution. This class
-//      also holds a pointer to that vtkDataArray.
+//      This class contains data arrays that we use to reduce across domains 
+//      and processors. It tracks the number of non-ghosted tuples, which is
+//      needed globally and by some expressions. It also tracks the number of
+//      components and number of tuples, which are used to set up the output
+//      vtkDataArray where results are to be placed at the end of expression
+//      execution. This class also holds a pointer to that vtkDataArray.
 //      Instances of this class are passed down the call stack for use in 
 //      various methods that require different pieces of the stored information.
 //
@@ -963,6 +963,7 @@ avtGlobalConstantExpression::Execute()
     avtDataTree_p newTree;
 
     const int numLeaves = tree->GetNumberOfLeaves();
+    // we visit each leaf twice so we record progress based on those visits
     totalSteps = numLeaves * 2;
     currentProgress = 0;
 

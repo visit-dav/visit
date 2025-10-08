@@ -283,6 +283,8 @@ def test_stat(shortstatname, longstatname, filename, meshname, varname, vartype,
 		TestValueEQ("Test " + longstatname + " 2 for " + varname + comp, q['max'], 
 			baseline_stats[filename + "/" + meshname][shortstatname + "_" + varname + "/" + comp])
 		DeleteAllPlots()
+		if ncomps > 1:
+			DeleteExpression(plot_varname + comp)
 
 def test_stats_for_var(filename, meshname, varname, vartype, ncomps=1):
 	if ncomps > 1:

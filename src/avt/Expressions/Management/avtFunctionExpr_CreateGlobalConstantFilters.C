@@ -20,7 +20,7 @@
 // Method: avtFunctionExpr::CreateGlobalConstantFilters
 //
 // Purpose: 
-//   Creates math filters.
+//   Creates global constant filters.
 //
 // Arguments:
 //   functionName : The name of the expression filter to create.

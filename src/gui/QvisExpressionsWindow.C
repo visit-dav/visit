@@ -185,6 +185,10 @@
 //
 //    Justin Privitera, Wed Nov  6 16:41:21 PST 2024
 //    Added displacement to vector expressions.
+// 
+//    Justin Privitera, Wed Oct  8 14:13:21 PDT 2025
+//    Renamed "global_variance" to "global_var" and "global_std_dev" to 
+//    "global_std".
 //
 // ****************************************************************************
 
