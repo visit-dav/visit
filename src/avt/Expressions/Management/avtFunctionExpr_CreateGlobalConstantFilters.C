@@ -50,11 +50,11 @@ avtFunctionExpr::CreateGlobalConstantFilters(const std::string &functionName) co
         f = new avtGlobalMinExpression();
     else if (functionName == "global_rms")
         f = new avtGlobalRMSExpression();
-    else if (functionName == "global_std_dev")
+    else if (functionName == "global_std")
         f = new avtGlobalStdDevExpression();
     else if (functionName == "global_sum")
         f = new avtGlobalSumExpression();
-    else if (functionName == "global_variance")
+    else if (functionName == "global_var")
         f = new avtGlobalVarianceExpression();
 
     debug5 << "Exiting  avtFunctionExpr::CreateGlobalConstantFilters(const string&)" << std::endl;

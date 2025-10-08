@@ -457,9 +457,9 @@ const char *expr_global[] = {
     "global_max",
     "global_min",
     "global_rms",
-    "global_std_dev",
+    "global_std",
     "global_sum",
-    "global_variance",
+    "global_var",
     NULL
 };
 

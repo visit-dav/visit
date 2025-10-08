@@ -87,7 +87,6 @@ public:
 
 avtGlobalConstantExpression::avtGlobalConstantExpression()
 {
-    // TODO do I need this
     canApplyToDirectDatabaseQOT = false;
 }
 
@@ -948,8 +947,7 @@ avtGlobalConstantExpression::WriteResult(avtDataTree_p inputDataTree,
 void
 avtGlobalConstantExpression::Execute()
 {
-    // TODO useful error messages
-    // TODO parallel error checking
+    int error = 0;
 
     //
     // Fetch our data tree and create the output data tree
@@ -984,13 +982,28 @@ avtGlobalConstantExpression::Execute()
                             return pair.second.ncomps != ncomps;
                         }))
         {
-            // TODO parallel error checking
-            EXCEPTION2(ExpressionException, outputVariableName,
-                       "An internal error occurred when "
-                       "trying to calculate your expression. Please contact a "
-                       "VisIt developer.");
+            error = 1;
         }
     }
+
+    const std::string local_ncomps_disagree_msg = 
+            "An internal error occurred when trying to calculate "
+            "your expression. The number of variable components "
+            "does not match across the dataset. Please contact a "
+            "VisIt developer.";
+#ifdef PARALLEL
+    error = UnifyMaximumValue(error);
+    if (1 == error)
+    {
+        EXCEPTION2(ExpressionException, outputVariableName, local_ncomps_disagree_msg);
+    }
+#else
+    // non MPI case, throw error
+    if (1 == error)
+    {
+        EXCEPTION2(ExpressionException, outputVariableName, local_ncomps_disagree_msg);
+    }
+#endif
 
     //
     // Calculate the local results across all domains on this rank
@@ -1050,12 +1063,21 @@ avtGlobalConstantExpression::Execute()
     int global_ncomps_min = UnifyMinimumValue(ncomps);
     if (global_ncomps_min != global_ncomps)
     {
+        // We may have a mismatch if some processors have no data.
+        // we support that case, so we only want to error if processors
+        // that have data disagree on the number of components, which is
+        // extremely unlikely.
         if (ncomps != 0 && ncomps != global_ncomps)
         {
-            // TODO parallel error handling
+            error = 1;
+        }
+        error = UnifyMaximumValue(error);
+        if (1 == error)
+        {
             EXCEPTION2(ExpressionException, outputVariableName,
-                       "An internal error occurred when "
-                       "trying to calculate your expression. Please contact a "
+                       "An internal error occurred when trying to calculate "
+                       "your expression. The global number of variable components "
+                       "does not match across the dataset. Please contact a "
                        "VisIt developer.");
         }
     }

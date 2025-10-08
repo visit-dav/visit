@@ -2213,12 +2213,12 @@ Global Sum Function: ``global_sum()`` : ``global_sum(expr0)``
 
 .. _Global_Standard_Deviation_Expression_Function:
 
-Global Standard Deviation Function: ``global_std_dev()`` : ``global_std_dev(expr0)``
+Global Standard Deviation Function: ``global_std()`` : ``global_std(expr0)``
     Depending on if ``expr0`` is a nodal or zonal variable, this function will calculate the single-component standard deviation or multi-component standard deviations for ``expr0`` across all the nodes or zones of the mesh and paint the result(s) on every node or zone, yielding a constant-valued expression.
 
 .. _Global_Variance_Expression_Function:
 
-Global Variance Function: ``global_variance()`` : ``global_variance(expr0)``
+Global Variance Function: ``global_var()`` : ``global_var(expr0)``
     Depending on if ``expr0`` is a nodal or zonal variable, this function will calculate the single-component variance or multi-component variances for ``expr0`` across all the nodes or zones of the mesh and paint the result(s) on every node or zone, yielding a constant-valued expression.
 
 .. _Global_RMS_Expression_Function:
