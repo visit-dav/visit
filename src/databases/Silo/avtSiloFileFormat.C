@@ -1147,7 +1147,7 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // to read the extra data arrays, except for material names and
     // numbers and colors.
     //
-    DBSetDataReadMask2(DBMatMatnames|DBMatMatnos|DBMatMatcolors);
+    DBSetDataReadMask2(DBMatMatnames|DBMatMatnos|DBMatMatcolors|DBMBNamesAndTypes|DBMBOptions);
 
     //
     // Do a recursive search through the subdirectories.
