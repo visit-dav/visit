@@ -11,8 +11,6 @@
 
 #include <vtkDataArray.h>
 
-#include <ExpressionException.h>
-
 #ifdef PARALLEL
   #include <mpi.h>
 #endif
@@ -163,8 +161,8 @@ avtGlobalMaxExpression::CalculateWithGhosts(vtkDataArray *in,
                     return in->GetComponent(tuple_id, comp_id);
                 }
             }
-            EXCEPTION2(ExpressionException, outputVariableName,
-                 "Everything is ghosted so the global_max expression is not valid.");
+            // we will not hit this return because we already ensured in the caller that
+            // there are more than 0 non-ghosted tuples.
             return 0; // return so the compiler is happy
         }();
 
@@ -202,20 +200,7 @@ double
 avtGlobalMaxExpression::LocalIntermediateReduction(const double running_reduction,
                                                    const double intermediate_value)
 {
-    // max
     return std::max(running_reduction, intermediate_value);
-    // // min
-    // return std::min(running_reduction, intermediate_value);
-    // // avg
-    // return running_reduction + intermediate_value;
-    // // sum
-    // return running_reduction + intermediate_value;
-    // // stddev
-    // return running_reduction + intermediate_value;
-    // // variance
-    // return running_reduction + intermediate_value;
-    // // rms
-    // return running_reduction + intermediate_value;
 }
 
 
@@ -236,27 +221,8 @@ avtGlobalMaxExpression::GlobalIntermediateReduction(std::vector<double> &local_c
                                                     const int ncomps)
 {
 #ifdef PARALLEL
-    // max
     MPI_Allreduce(local_constant_results.data(), global_constant_results.data(),
                   ncomps, MPI_DOUBLE, MPI_MAX, VISIT_MPI_COMM);
-    // // min
-    // MPI_Allreduce(local_constant_results.data(), global_constant_results.data(),
-    //               ncomps, MPI_DOUBLE, MPI_MIN, VISIT_MPI_COMM);
-    // // avg
-    // MPI_Allreduce(local_constant_results.data(), global_constant_results.data(),
-    //               ncomps, MPI_DOUBLE, MPI_SUM, VISIT_MPI_COMM);
-    // // sum
-    // MPI_Allreduce(local_constant_results.data(), global_constant_results.data(),
-    //               ncomps, MPI_DOUBLE, MPI_SUM, VISIT_MPI_COMM);
-    // // stddev
-    // MPI_Allreduce(local_constant_results.data(), global_constant_results.data(),
-    //               ncomps, MPI_DOUBLE, MPI_SUM, VISIT_MPI_COMM);
-    // // variance
-    // MPI_Allreduce(local_constant_results.data(), global_constant_results.data(),
-    //               ncomps, MPI_DOUBLE, MPI_SUM, VISIT_MPI_COMM);
-    // // rms
-    // MPI_Allreduce(local_constant_results.data(), global_constant_results.data(),
-    //               ncomps, MPI_DOUBLE, MPI_SUM, VISIT_MPI_COMM);
 #else
     (void) local_constant_results;
     (void) global_constant_results;

@@ -11,8 +11,6 @@
 
 #include <vtkDataArray.h>
 
-#include <ExpressionException.h>
-
 #ifdef PARALLEL
   #include <mpi.h>
 #endif
@@ -163,8 +161,8 @@ avtGlobalMinExpression::CalculateWithGhosts(vtkDataArray *in,
                     return in->GetComponent(tuple_id, comp_id);
                 }
             }
-            EXCEPTION2(ExpressionException, outputVariableName,
-                 "Everything is ghosted so the global_min expression is not valid.");
+            // we will not hit this return because we already ensured in the caller that
+            // there are more than 0 non-ghosted tuples.
             return 0; // return so the compiler is happy
         }();
 

@@ -268,6 +268,7 @@ avtGlobalConstantExpression::IdentifyGhostedNodes(vtkDataSet *in_ds,
 //    will then be reduced later and used to calculate the final result of the 
 //    expression. I also added num_non_ghosted_tuples, which is set here and 
 //    used up the callstack if requested.
+//    I also handle the case where all tuples are ghosted out.
 // ****************************************************************************
 void
 avtGlobalConstantExpression::DoOperation(vtkDataArray *inputArray,
@@ -278,9 +279,6 @@ avtGlobalConstantExpression::DoOperation(vtkDataArray *inputArray,
                                          std::vector<double> &extra_constant_results,
                                          int &num_non_ghosted_tuples)
 {
-    // TODO we need to error here if there is no non-ghosted data
-    // pull the error (and the error includes) out of the child classes
-
     vtkDataArray *ghostZones = in_ds->GetCellData()->GetArray("avtGhostZones");
     vtkDataArray *ghostNodes = in_ds->GetPointData()->GetArray("avtGhostNodes");
 
@@ -288,21 +286,40 @@ avtGlobalConstantExpression::DoOperation(vtkDataArray *inputArray,
     {
         if (ghostZones)
         {
-            if (NeedsNTuples())
+            num_non_ghosted_tuples = [&]() -> int 
             {
-                num_non_ghosted_tuples = [&]() -> int 
+                int running_sum = 0;
+                for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
                 {
-                    int running_sum = 0;
-                    for (int tuple_id = 0; tuple_id < ntuples; tuple_id ++)
+                    // 0 means it is NOT ghosted
+                    if (0 == ghostZones->GetComponent(tuple_id, 0))
                     {
-                        // 0 means it is NOT ghosted
-                        if (0 == ghostZones->GetComponent(tuple_id, 0))
-                        {
-                            running_sum ++;
-                        }
+                        running_sum ++;
                     }
-                    return running_sum;
-                }();
+                }
+                return running_sum;
+            }();
+
+            // If there is no data for this leaf, that is not an error. It just means
+            // that we should not take the per-component results for this leaf into 
+            // account when reducing. Luckily we have a mechanism for this already.
+            // We can fill our local data with the "Unused Value" specified by this 
+            // expression, which is a special value that will be thrown away in 
+            // reductions. For example, the global_sum expression has an unused value
+            // of "0". It's reduction operations use addition, so 0 is harmlessly 
+            // added to the total. The global_max expression has an unused value of 
+            // std::numeric_limits<double>::lowest(), which disappears when we reduce 
+            // by taking the max.
+            if (num_non_ghosted_tuples == 0)
+            {
+                std::fill(constant_results.begin(), constant_results.end(), GetUnusedValue());
+                if (NeedsExtraIntermediateData())
+                {
+                    std::fill(extra_constant_results.begin(), extra_constant_results.end(), GetUnusedValue());
+                }
+                // We can return early since we have already appropriately filled the
+                // data arrays.
+                return;
             }
 
             // we pass a lambda to CalculateWithGhosts() that
@@ -320,10 +337,7 @@ avtGlobalConstantExpression::DoOperation(vtkDataArray *inputArray,
         }
         else // no ghosts or just ghost nodes
         {
-            if (NeedsNTuples())
-            {
-                num_non_ghosted_tuples = ntuples;
-            }
+            num_non_ghosted_tuples = ntuples;
 
             CalculateWithoutGhosts(inputArray, ncomponents, ntuples, 
                                    constant_results, extra_constant_results);
@@ -338,11 +352,30 @@ avtGlobalConstantExpression::DoOperation(vtkDataArray *inputArray,
             std::vector<int> nodeShouldBeIgnored;
             IdentifyGhostedNodes(in_ds, ghostZones, ghostNodes, nodeShouldBeIgnored);
 
-            if (NeedsNTuples())
+            num_non_ghosted_tuples = std::count(nodeShouldBeIgnored.begin(),
+                                                nodeShouldBeIgnored.end(),
+                                                0); // 0 means it is NOT ghosted
+
+            // If there is no data for this leaf, that is not an error. It just means
+            // that we should not take the per-component results for this leaf into 
+            // account when reducing. Luckily we have a mechanism for this already.
+            // We can fill our local data with the "Unused Value" specified by this 
+            // expression, which is a special value that will be thrown away in 
+            // reductions. For example, the global_sum expression has an unused value
+            // of "0". It's reduction operations use addition, so 0 is harmlessly 
+            // added to the total. The global_max expression has an unused value of 
+            // std::numeric_limits<double>::lowest(), which disappears when we reduce 
+            // by taking the max.
+            if (num_non_ghosted_tuples == 0)
             {
-                num_non_ghosted_tuples = std::count(nodeShouldBeIgnored.begin(),
-                                                    nodeShouldBeIgnored.end(),
-                                                    0); // 0 means it is NOT ghosted
+                std::fill(constant_results.begin(), constant_results.end(), GetUnusedValue());
+                if (NeedsExtraIntermediateData())
+                {
+                    std::fill(extra_constant_results.begin(), extra_constant_results.end(), GetUnusedValue());
+                }
+                // We can return early since we have already appropriately filled the
+                // data arrays.
+                return;
             }
 
             // we pass a lambda to CalculateWithGhosts() that
@@ -360,10 +393,7 @@ avtGlobalConstantExpression::DoOperation(vtkDataArray *inputArray,
         }
         else // no ghosts
         {
-            if (NeedsNTuples())
-            {
-                num_non_ghosted_tuples = ntuples;
-            }
+            num_non_ghosted_tuples = ntuples;
 
             CalculateWithoutGhosts(inputArray, ncomponents, ntuples,
                                    constant_results, extra_constant_results);
