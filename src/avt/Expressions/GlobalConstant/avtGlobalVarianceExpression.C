@@ -186,7 +186,8 @@ avtGlobalVarianceExpression::CalculateWithGhosts(vtkDataArray *in,
 //  Method: avtGlobalVarianceExpression::LocalIntermediateReduction
 //
 //  Purpose:
-//      TODO
+//      The parent class needs each child to tell it how to reduce elements
+//      locally. In this case, we add elements together.
 //
 //  Programmer: Justin Privitera
 //  Creation:   September 26, 2025

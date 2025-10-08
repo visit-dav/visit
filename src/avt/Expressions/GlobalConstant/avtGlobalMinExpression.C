@@ -208,7 +208,8 @@ avtGlobalMinExpression::CalculateWithGhosts(vtkDataArray *in,
 //  Method: avtGlobalMinExpression::LocalIntermediateReduction
 //
 //  Purpose:
-//      TODO
+//      The parent class needs each child to tell it how to reduce elements
+//      locally. In this case, we take the maximum of the two values.
 //
 //  Programmer: Justin Privitera
 //  Creation:   September 26, 2025
