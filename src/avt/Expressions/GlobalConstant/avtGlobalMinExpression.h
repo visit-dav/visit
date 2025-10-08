@@ -42,13 +42,13 @@ class EXPRESSION_API avtGlobalMinExpression : public avtGlobalConstantExpression
                               avtGlobalMinExpression();
     virtual                  ~avtGlobalMinExpression();
 
-    virtual const char       *GetType(void)   { return "avtGlobalMinExpression"; };
+    virtual const char       *GetType(void)   { return "avtGlobalMinExpression"; }
     virtual const char       *GetDescription(void) 
-                                              { return "Calculating min across mesh"; };
+                                              { return "Calculating min across mesh"; }
 
   protected:
     // to calculate the minimum we don't need to record any other local quantity
-    virtual bool              NeedsExtraIntermediateData() { return false; };
+    virtual bool              NeedsExtraIntermediateData() { return false; }
     
     virtual void              CalculateWithoutGhosts(vtkDataArray *in,
                                                      const int ncomponents,
@@ -82,7 +82,7 @@ class EXPRESSION_API avtGlobalMinExpression : public avtGlobalConstantExpression
     // with reductions. In the case of global_min, the safe value is
     // std::numeric_limits<double>::max(), which will disappear when calculating the 
     // minimum between two values or arrays.
-    virtual double            GetUnusedValue() { return std::numeric_limits<double>::max(); };
+    virtual double            GetUnusedValue() { return std::numeric_limits<double>::max(); }
 };
 
 

@@ -40,13 +40,13 @@ class EXPRESSION_API avtGlobalRMSExpression : public avtGlobalConstantExpression
                               avtGlobalRMSExpression();
     virtual                  ~avtGlobalRMSExpression();
 
-    virtual const char       *GetType(void)   { return "avtGlobalRMSExpression"; };
+    virtual const char       *GetType(void)   { return "avtGlobalRMSExpression"; }
     virtual const char       *GetDescription(void) 
-                                              { return "Calculating root mean square across mesh"; };
+                                              { return "Calculating root mean square across mesh"; }
 
   protected:
     // to calculate the RMS we don't need to record any other local quantity
-    virtual bool              NeedsExtraIntermediateData() { return false; };
+    virtual bool              NeedsExtraIntermediateData() { return false; }
     
     virtual void              CalculateWithoutGhosts(vtkDataArray *in,
                                                      const int ncomponents,
@@ -79,7 +79,7 @@ class EXPRESSION_API avtGlobalRMSExpression : public avtGlobalConstantExpression
     // For cases where there is no data, we need to provide a value that will not interfere 
     // with reductions. In the case of global_rms, the safe value is 0.0, which will
     // disappear when summing two values or arrays.
-    virtual double            GetUnusedValue() { return 0.0; };
+    virtual double            GetUnusedValue() { return 0.0; }
 };
 
 

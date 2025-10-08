@@ -1001,17 +1001,12 @@ avtGlobalConstantExpression::Execute()
             "VisIt developer.";
 #ifdef PARALLEL
     error = UnifyMaximumValue(error);
-    if (1 == error)
-    {
-        EXCEPTION2(ExpressionException, outputVariableName, local_ncomps_disagree_msg);
-    }
-#else
-    // non MPI case, throw error
-    if (1 == error)
-    {
-        EXCEPTION2(ExpressionException, outputVariableName, local_ncomps_disagree_msg);
-    }
 #endif
+
+    if (1 == error)
+    {
+        EXCEPTION2(ExpressionException, outputVariableName, local_ncomps_disagree_msg);
+    }
 
     //
     // Calculate the local results across all domains on this rank

@@ -40,13 +40,13 @@ class EXPRESSION_API avtGlobalStdDevExpression : public avtGlobalConstantExpress
                               avtGlobalStdDevExpression();
     virtual                  ~avtGlobalStdDevExpression();
 
-    virtual const char       *GetType(void)   { return "avtGlobalStdDevExpression"; };
+    virtual const char       *GetType(void)   { return "avtGlobalStdDevExpression"; }
     virtual const char       *GetDescription(void) 
-                                              { return "Calculating standard deviation across mesh"; };
+                                              { return "Calculating standard deviation across mesh"; }
 
   protected:
     // to calculate the std dev we need to record 2 local quantities
-    virtual bool              NeedsExtraIntermediateData() { return true; };
+    virtual bool              NeedsExtraIntermediateData() { return true; }
     
     virtual void              CalculateWithoutGhosts(vtkDataArray *in,
                                                      const int ncomponents,
@@ -79,7 +79,7 @@ class EXPRESSION_API avtGlobalStdDevExpression : public avtGlobalConstantExpress
     // For cases where there is no data, we need to provide a value that will not interfere 
     // with reductions. In the case of global_std, the safe value is 0.0, which will
     // disappear when summing two values or arrays.
-    virtual double            GetUnusedValue() { return 0.0; };
+    virtual double            GetUnusedValue() { return 0.0; }
 };
 
 

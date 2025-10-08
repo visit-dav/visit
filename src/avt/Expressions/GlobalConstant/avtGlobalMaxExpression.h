@@ -42,13 +42,13 @@ class EXPRESSION_API avtGlobalMaxExpression : public avtGlobalConstantExpression
                               avtGlobalMaxExpression();
     virtual                  ~avtGlobalMaxExpression();
 
-    virtual const char       *GetType(void)   { return "avtGlobalMaxExpression"; };
+    virtual const char       *GetType(void)   { return "avtGlobalMaxExpression"; }
     virtual const char       *GetDescription(void) 
-                                              { return "Calculating max across mesh"; };
+                                              { return "Calculating max across mesh"; }
 
   protected:    
     // to calculate the maximum we don't need to record any other local quantity
-    virtual bool              NeedsExtraIntermediateData() { return false; };
+    virtual bool              NeedsExtraIntermediateData() { return false; }
     
     virtual void              CalculateWithoutGhosts(vtkDataArray *in,
                                                      const int ncomponents,
@@ -82,7 +82,7 @@ class EXPRESSION_API avtGlobalMaxExpression : public avtGlobalConstantExpression
     // with reductions. In the case of global_max, the safe value is
     // std::numeric_limits<double>::lowest(), which will disappear when calculating the 
     // maximum between two values or arrays.
-    virtual double            GetUnusedValue() { return std::numeric_limits<double>::lowest(); };
+    virtual double            GetUnusedValue() { return std::numeric_limits<double>::lowest(); }
 };
 
 

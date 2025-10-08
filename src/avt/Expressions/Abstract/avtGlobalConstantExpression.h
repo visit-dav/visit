@@ -42,10 +42,10 @@ class EXPRESSION_API avtGlobalConstantExpression : public avtExpressionFilter
     virtual                  ~avtGlobalConstantExpression();
 
     virtual const char       *GetType(void)
-                                     { return "avtGlobalConstantExpression"; };
+                                     { return "avtGlobalConstantExpression"; }
     virtual const char       *GetDescription(void) = 0;
 
-    virtual int               NumVariableArguments() { return 1; };
+    virtual int               NumVariableArguments() { return 1; }
   protected:
     int                       currentProgress;
     int                       totalSteps;
@@ -59,7 +59,7 @@ class EXPRESSION_API avtGlobalConstantExpression : public avtExpressionFilter
     // final answer, so we provide this method as a toggle for children of 
     // avtGlobalConstantExpression to enable computation with an additional
     // data array.
-    virtual bool              NeedsExtraIntermediateData() { return false; };
+    virtual bool              NeedsExtraIntermediateData() { return false; }
 
     // All children of this class must implement a method to perform a reduction across
     // a data tree leaf without taking into account ghost zones or nodes. This class

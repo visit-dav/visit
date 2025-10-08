@@ -40,13 +40,13 @@ class EXPRESSION_API avtGlobalSumExpression : public avtGlobalConstantExpression
                               avtGlobalSumExpression();
     virtual                  ~avtGlobalSumExpression();
 
-    virtual const char       *GetType(void)   { return "avtGlobalSumExpression"; };
+    virtual const char       *GetType(void)   { return "avtGlobalSumExpression"; }
     virtual const char       *GetDescription(void) 
-                                              { return "Calculating sum across mesh"; };
+                                              { return "Calculating sum across mesh"; }
 
   protected:
     // to calculate the sum we don't need to record any other local quantity
-    virtual bool              NeedsExtraIntermediateData() { return false; };
+    virtual bool              NeedsExtraIntermediateData() { return false; }
     
     virtual void              CalculateWithoutGhosts(vtkDataArray *in,
                                                      const int ncomponents,
@@ -79,7 +79,7 @@ class EXPRESSION_API avtGlobalSumExpression : public avtGlobalConstantExpression
     // For cases where there is no data, we need to provide a value that will not interfere 
     // with reductions. In the case of global_sum, the safe value is 0.0, which will
     // disappear when summing two values or arrays.
-    virtual double            GetUnusedValue() { return 0.0; };
+    virtual double            GetUnusedValue() { return 0.0; }
 };
 
 

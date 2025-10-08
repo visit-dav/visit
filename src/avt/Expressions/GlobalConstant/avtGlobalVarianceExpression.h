@@ -40,13 +40,13 @@ class EXPRESSION_API avtGlobalVarianceExpression : public avtGlobalConstantExpre
                               avtGlobalVarianceExpression();
     virtual                  ~avtGlobalVarianceExpression();
 
-    virtual const char       *GetType(void)   { return "avtGlobalVarianceExpression"; };
+    virtual const char       *GetType(void)   { return "avtGlobalVarianceExpression"; }
     virtual const char       *GetDescription(void) 
-                                              { return "Calculating variance across mesh"; };
+                                              { return "Calculating variance across mesh"; }
 
   protected:
     // to calculate the variance we need to record 2 local quantities
-    virtual bool              NeedsExtraIntermediateData() { return true; };
+    virtual bool              NeedsExtraIntermediateData() { return true; }
     
     virtual void              CalculateWithoutGhosts(vtkDataArray *in,
                                                      const int ncomponents,
@@ -79,7 +79,7 @@ class EXPRESSION_API avtGlobalVarianceExpression : public avtGlobalConstantExpre
     // For cases where there is no data, we need to provide a value that will not interfere 
     // with reductions. In the case of global_var, the safe value is 0.0, which will
     // disappear when summing two values or arrays.
-    virtual double            GetUnusedValue() { return 0.0; };
+    virtual double            GetUnusedValue() { return 0.0; }
 };
 
 
