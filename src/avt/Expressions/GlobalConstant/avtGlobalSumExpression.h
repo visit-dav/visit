@@ -11,7 +11,7 @@
 
 #include <avtGlobalConstantExpression.h>
 
-class     vtkDataArray;
+class vtkDataArray;
 
 
 // ****************************************************************************

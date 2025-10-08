@@ -13,7 +13,7 @@
 
 #include <limits>
 
-class     vtkDataArray;
+class vtkDataArray;
 
 
 // ****************************************************************************
