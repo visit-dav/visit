@@ -290,6 +290,11 @@ avtSamplePointExtractorBase::Execute(void)
 //    Kathleen Biagas, Wed Apr 18 16:53:21 PDT 2018
 //    Added call to DoSampling, for derived classes.
 //
+//    Eric Brugger, Wed Oct  8 13:52:05 PDT 2025
+//    Fixed a memory leak in ExecuteTree where the datatree_childindex
+//    structures in the nodes stack weren't getting freed. I now free
+//    the top element before popping the stack.
+//
 // ****************************************************************************
 
 struct datatree_childindex
@@ -341,10 +346,12 @@ avtSamplePointExtractorBase::ExecuteTree(avtDataTree_p dt)
     {
         datatree_childindex *ci=nodes.top();
         avtDataTree_p ch=ci->dt;
+	int idx = ci->idx;
 
+	delete ci;
+	nodes.pop();
         if (ch->GetNChildren() != 0)
         {
-            nodes.pop();  // if it has children, it never gets processed below
             for (int i = 0; i < ch->GetNChildren(); i++)
             {
                 if (ch->ChildIsPresent(i))
@@ -359,8 +366,6 @@ avtSamplePointExtractorBase::ExecuteTree(avtDataTree_p dt)
             continue;
         }
 
-        nodes.pop();
-
         if (*ch == NULL || (ch->GetNChildren() <= 0 && (!(ch->HasData()))))
             continue;
 
@@ -368,7 +373,7 @@ avtSamplePointExtractorBase::ExecuteTree(avtDataTree_p dt)
         vtkDataSet *ds = ch->GetDataRepresentation().GetDataVTK();
 
         // Performed by derived classes
-        DoSampling(ds, ci->idx);
+        DoSampling(ds, idx);
 
         UpdateProgress(10*currentNode+9, 10*totalNodes);
         currentNode++;
