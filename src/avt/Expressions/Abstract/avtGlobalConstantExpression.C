@@ -21,7 +21,14 @@
 //  Class: intermediateResults
 //
 //  Purpose:
-//      TODO
+//      This class contains data arrays that we use to reduce across domains and 
+//      processors. It also can track the number of non-ghosted tuples, which is
+//      needed by some expressions. It also tracks the number of components and 
+//      number of tuples, which are used to set up the output vtkDataArray where
+//      results are to be placed at the end of expression execution. This class
+//      also holds a pointer to that vtkDataArray.
+//      Instances of this class are passed down the call stack for use in 
+//      various methods that require different pieces of the stored information.
 //
 //  Programmer: Justin Privitera
 //  Creation:   September 26, 2025
@@ -34,14 +41,19 @@ class intermediateResults
 public:
     // we need a vector to store results per component
     std::vector<double> constant_results;
-    // some expressions (stdDev and variance) require a second per-component result
+
+    // some expressions (global_std_dev and global_variance) require a second per-component result
     std::vector<double> extra_constant_results;
-    // we need to track the number of non-ghosted tuples that we are reducing across
+
+    // sometimes we need to track the number of non-ghosted tuples that we are reducing across
     int                 num_non_ghosted_tuples;
+
     // we track the number of components, which is also the length of these vectors
     int                 ncomps;
+
     // we track the number of tuples for setting up our output arrays
     int                 ntuples;
+
     // the data array where we will place results when we are done
     vtkDataArray       *target_data_array;
 
@@ -102,7 +114,8 @@ avtGlobalConstantExpression::~avtGlobalConstantExpression()
 //  Method: avtGlobalConstantExpression::GetLocalNumTuples
 //
 //  Purpose:
-//      TODO
+//      Sums the local number of non-ghosted tuples recorded by the 
+//      intermediate_results_map.
 //
 //  Programmer: Justin Privitera
 //  Creation:   September 26, 2025
@@ -110,7 +123,8 @@ avtGlobalConstantExpression::~avtGlobalConstantExpression()
 //  Modifications:
 // ****************************************************************************
 int
-avtGlobalConstantExpression::GetLocalNumTuples(const std::map<int, intermediateResults> &intermediate_results_map)
+avtGlobalConstantExpression::GetLocalNumTuples(
+    const std::map<int, intermediateResults> &intermediate_results_map)
 {
     int total_ntuples = 0;
     std::for_each(intermediate_results_map.begin(),
@@ -123,12 +137,25 @@ avtGlobalConstantExpression::GetLocalNumTuples(const std::map<int, intermediateR
 //  Method: avtGlobalConstantExpression::IdentifyGhostedNodes
 //
 //  Purpose:
-//      TODO
+//      This function determines which nodes ought to be used if we are
+//      taking ghosts into account. We mark all nodes touching non-ghosted 
+//      zones as good to count, and mark all nodes that are ghost nodes
+//      as nodes that should not be counted.
+// 
+//  Returns:
+//      A vector that is number of nodes long containing true when the node
+//      should be ignored in calculations and false when the node should
+//      not be ignored.
 //
 //  Programmer: Justin Privitera
-//  Creation:   September 26, 2025
+//  Creation:   10/24/24
 //
 //  Modifications:
+//    Justin Privitera, Tue Oct  7 17:37:07 PDT 2025
+//    This method was moved from avtGhostAwareUnaryMathExpression, which was
+//    deleted, to avtGlobalConstantExpression.
+//    I also changed it to take a reference to a vector of ints instead of
+//    returning one.
 // ****************************************************************************
 void
 avtGlobalConstantExpression::IdentifyGhostedNodes(vtkDataSet *in_ds,
@@ -204,12 +231,44 @@ avtGlobalConstantExpression::IdentifyGhostedNodes(vtkDataSet *in_ds,
 //  Method: avtGlobalConstantExpression::DoOperation
 //
 //  Purpose:
-//      TODO
+//      All ghost-aware unary expressions have the same underlying logic, which
+//      we provide here. If we are operating on zonal data, we need to check
+//      for ghost zones and only calculate using the non-ghosted zones. If we 
+//      are operating on nodal data, we need to use IdentifyGhostedNodes() to
+//      determine which nodes we can use. We then call CalculateWithGhosts() or
+//      CalculateWithoutGhosts() which are defined in classes that inherit from
+//      avtGhostAwareUnaryMathExpression. CalculateWithoutGhosts() is an 
+//      optimized path that we can use when there are no ghosts we need to 
+//      worry about.
+//
+//  Arguments:
+//      inputArray             The input data array.
+//      ncomponents            The number of components ('1' for scalar, '2' or 
+//                             '3' for vectors, etc.)
+//      ntuples                The number of tuples (i.e. 'npoints' or 'ncells')
+//      in_ds                  The input dataset.
+//      constant_results       An array where we can store intermediate data to
+//                             be reduced locally and globally.
+//      extra_constant_results An additional array where we can store
+//                             intermediate data to be reduced locally and
+//                             globally.
+//      num_non_ghosted_tuples The number of non-ghosted tuples, to be set here
+//                             and passed back up the call-chain for use 
+//                             elsewhere.
 //
 //  Programmer: Justin Privitera
-//  Creation:   September 26, 2025
+//  Creation:   09/30/24
 //
 //  Modifications:
+//    Justin Privitera, Tue Oct  7 17:37:07 PDT 2025
+//    This method was moved from avtGhostAwareUnaryMathExpression, which was
+//    deleted, to avtGlobalConstantExpression.
+//    I removed the output vtkDataArray as we no longer write to the output in
+//    this method. I added constant_results and extra_constant_results 
+//    arguments, which are data arrays where we can store computed data that
+//    will then be reduced later and used to calculate the final result of the 
+//    expression. I also added num_non_ghosted_tuples, which is set here and 
+//    used up the callstack if requested.
 // ****************************************************************************
 void
 avtGlobalConstantExpression::DoOperation(vtkDataArray *inputArray,
@@ -318,12 +377,33 @@ avtGlobalConstantExpression::DoOperation(vtkDataArray *inputArray,
 //  Method: avtGlobalConstantExpression::DeriveVariable
 //
 //  Purpose:
-//      TODO
+//      Derives a variable based on the input dataset.
 //
-//  Programmer: Justin Privitera
-//  Creation:   September 26, 2025
+//  Arguments:
+//      inDS      The input dataset.
+//
+//  Returns:      void
+//
+//  Programmer:   Sean Ahern
+//  Creation:     Wed Jun 12 16:44:28 PDT 2002
+//
+//  Notes:
+//      Sean Ahern, Fri Jun 14 11:52:33 PDT 2002
+//      Since the centering that's stored in
+//      GetInput()->GetInfo().GetAttributes().GetCentering() is not on a
+//      per-variable basis, we can't rely on it for the centering
+//      information.  Instead, get the scalars from the point and cell
+//      data.  Whichever one is non-NULL is the one we want.
+
+//      Justin Privitera, Tue Oct  7 17:37:07 PDT 2025
+//      This method was borrowed from avtUnaryMathExpression and then modified.
 //
 //  Modifications:
+//    Justin Privitera, Tue Oct  7 17:37:07 PDT 2025
+//    We no longer need to pass the currentDomainsIndex so it was removed as an
+//    argument.
+//    This method now has a void return type and stores results in the 
+//    per_leaf_results intermediateResults object that is passed in.
 // ****************************************************************************
 void
 avtGlobalConstantExpression::DeriveVariable(vtkDataSet *in_ds,
@@ -476,7 +556,15 @@ avtGlobalConstantExpression::DeriveVariable(vtkDataSet *in_ds,
 //  Method: avtGlobalConstantExpression::ConstantEvaluation
 //
 //  Purpose:
-//      TODO
+//      This method serves as the entry point into calcualting intermediate 
+//      results. It traverses the input data tree recursively, numbering the
+//      leaves as it goes and added calculated data for them into the 
+//      intermediate_results_map based on the unique leaf number.
+// 
+//  Notes:
+//      Justin Privitera, Tue Oct  7 17:37:07 PDT 2025
+//      This method was taken from avtSIMODataTreeIterator::Execute and heavily
+//      modified.
 //
 //  Programmer: Justin Privitera
 //  Creation:   September 26, 2025
@@ -517,7 +605,7 @@ avtGlobalConstantExpression::ConstantEvaluation(avtDataTree_p inputDataTree,
         {
             debug1 << "NOTE: variable " << outputVariableName 
                    << " already exists and it is not being recalculated." << endl;
-            dat->Register(nullptr);  // At the end of the routine, we will free this.
+            dat->Register(nullptr);
         }
         else
         {
@@ -895,7 +983,7 @@ avtGlobalConstantExpression::Execute()
     }
 
     //
-    // Calculate the local total number of tuples
+    Calculate the local total number of non-ghosted tuples
     //
     const int local_total_ntuples = (NeedsNTuples() ? GetLocalNumTuples(intermediate_results_map) : 0);
 
