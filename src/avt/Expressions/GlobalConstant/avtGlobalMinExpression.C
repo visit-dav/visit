@@ -60,16 +60,22 @@ avtGlobalMinExpression::~avtGlobalMinExpression()
 //      about ghosts.
 //
 //  Arguments:
-//      in            The input data array.
-//      out           The output data array.
-//      ncomponents   The number of components ('1' for scalar, '2' or '3' for
-//                    vectors, etc.)
-//      ntuples       The number of tuples (ie 'npoints' or 'ncells')
+//      in                     The input data array.
+//      ncomponents            The number of components ('1' for scalar, '2' or 
+//                             '3' for vectors, etc.)
+//      ntuples                The number of tuples (ie 'npoints' or 'ncells')
+//      constant_results       A vector to store per-component results.
+//      extra_constant_results A vector to store additional per-component
+//                             results.
 //
 //  Programmer: Justin Privitera
 //  Creation:   09/30/24
 //
 //  Modifications:
+//      Justin Privitera, Wed Oct  8 14:13:21 PDT 2025
+//      Removed the output data array parameter.
+//      Added constant_results and extra_constant_results parameters.
+//      We now store the min result in the constant_results vector.
 //
 // ****************************************************************************
 
