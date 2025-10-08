@@ -138,6 +138,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Added a descriptive error message for when a movie encoding format is not supported on the current platform.</li>
   <li>Fixed a bug where rendering with shadows would result in an all black image except for the annotations when the image contained transparent geometry.</li>
   <li>Fixed a bug where RPATHs weren't stripped from distributions. This could lead to issues for users that didn't build the distribution. It could also cause issues when a distribution is installed on a machine different from where it was built.</li>
+  <li>Eliminated a couple of memory leaks. The first was in the operator that removes ghost zones and calculates external faces. The second was in the Resample operator.</li>
 </ul>
 
 <a name="Build_features"></a>
