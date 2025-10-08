@@ -248,19 +248,14 @@ avtGlobalAvgExpression::CalculateFinalResults(const std::vector<double> &global_
     // we didn't use this to get our final answer
     (void) global_extra_constant_results;
 
-    // we need to divide each component sum by the global number of non ghosted tuples
     final_results.resize(global_ncomps);
-    if (global_ntuples == 0)
+
+    // we need to divide each component sum by the global number of non ghosted tuples
+    // we have already ensured that global_ntuples is not 0.
+    const double N = static_cast<double>(global_ntuples);
+    for (int comp_id = 0; comp_id < global_ncomps; comp_id ++)
     {
-        std::fill(final_results.begin(), final_results.end(), 0.0);
-    }
-    else
-    {
-        const double ntuples_double = static_cast<double>(global_ntuples);
-        for (int comp_id = 0; comp_id < global_ncomps; comp_id ++)
-        {
-            final_results[comp_id] = global_constant_results[comp_id] / ntuples_double;
-        }
+        final_results[comp_id] = global_constant_results[comp_id] / N;
     }
 }
 

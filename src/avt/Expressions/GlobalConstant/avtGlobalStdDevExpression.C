@@ -283,22 +283,17 @@ avtGlobalStdDevExpression::CalculateFinalResults(const std::vector<double> &glob
     // then plug each into the final formula to get the variance.
 
     final_results.resize(global_ncomps);
-    if (global_ntuples == 0)
+    
+    // we have already ensured that global_ntuples is not 0.
+    const double N = static_cast<double>(global_ntuples);
+    for (int comp_id = 0; comp_id < global_ncomps; comp_id ++)
     {
-        std::fill(final_results.begin(), final_results.end(), 0.0);
-    }
-    else
-    {
-        const double N = static_cast<double>(global_ntuples);
-        for (int comp_id = 0; comp_id < global_ncomps; comp_id ++)
-        {
-            const double sum_x        = global_constant_results[comp_id];
-            const double sum_x_sq     = global_extra_constant_results[comp_id];
-            const double sum_x_over_N = sum_x / N;
-            const double variance     = (sum_x_sq / N) - sum_x_over_N * sum_x_over_N;
+        const double sum_x        = global_constant_results[comp_id];
+        const double sum_x_sq     = global_extra_constant_results[comp_id];
+        const double sum_x_over_N = sum_x / N;
+        const double variance     = (sum_x_sq / N) - sum_x_over_N * sum_x_over_N;
 
-            final_results[comp_id] = sqrt(variance);
-        }
+        final_results[comp_id] = sqrt(variance);
     }
 }
 
