@@ -638,10 +638,25 @@ avtGlobalConstantExpression::ConstantEvaluation(avtDataTree_p inputDataTree,
 //  Method: avtGlobalConstantExpression::WriteData_VTK
 //
 //  Purpose:
-//      TODO
+//      Does the actual VTK code to modify the dataset.
 //
-//  Programmer: Justin Privitera
-//  Creation:   September 26, 2025
+//  Arguments:
+//      in_dr                   The input data representation.
+//      per_leaf_results        An object containing the output vtkDataArray
+//                              pointer, the number of components, and the
+//                              number of tuples.
+//      global_constant_results A vector containing a single global result per
+//                              variable component.
+//
+//  Returns:      The output data representation.
+//
+//  Programmer:   Hank Childs/Justin Privitera
+//  Creation:     June 7, 2002/October 7, 2025
+// 
+//  Notes:
+//      Justin Privitera, Tue Oct  7 17:37:07 PDT 2025
+//      Taken from avtExpressionDataTreeIterator::ExecuteData and heavily
+//      modified.
 //
 //  Modifications:
 // ****************************************************************************
@@ -772,11 +787,25 @@ avtGlobalConstantExpression::WriteData_VTK(avtDataRepresentation *in_dr,
 //  Method: avtGlobalConstantExpression::WriteDataTree
 //
 //  Purpose:
-//      TODO
+//      Serves as a wrapper for the WriteData_VTK method.
 //
-//  Programmer: Justin Privitera
-//  Creation:   September 26, 2025
+//  Arguments:
+//      in_dr   The data representation to pass to the derived type.
+//      per_leaf_results        An object containing the output vtkDataArray
+//                              pointer, the number of components, and the
+//                              number of tuples.
+//      global_constant_results A vector containing a single global result per
+//                              variable component, to be written to the 
+//                              output.
 //
+//  Programmer: Kathleen Bonnell/Justin Privitera
+//  Creation:   February 9, 2001/October 7, 2025
+// 
+//  Notes:
+//      Justin Privitera, Tue Oct  7 17:37:07 PDT 2025
+//      Taken from avtDataTreeIterator::ExecuteDataTree and heavily
+//      modified.
+// 
 //  Modifications:
 // ****************************************************************************
 avtDataTree_p
@@ -811,10 +840,29 @@ avtGlobalConstantExpression::WriteDataTree(avtDataRepresentation *in_dr,
 //  Method: avtGlobalConstantExpression::WriteResult
 //
 //  Purpose:
-//      TODO
+//    A recursive Execute method.  Walks down the tree and calls the virtual 
+//    function ExecuteDataTree on the leaves.
 //
-//  Programmer: Justin Privitera
-//  Creation:   September 26, 2025
+//  Arguments:
+//      inputDataTree            The tree to traverse.
+//      outputDataTree           The new tree we are writing the results to.
+//      intermediate_results_map A map containing the, for each leaf number,
+//                               an object holding the output vtkDataArray
+//                               pointer, the number of components, and the
+//                               number of tuples.
+//      global_constant_results  A vector containing a single global result per
+//                               variable component, to be written to the 
+//                               output.
+//      leaf_number              The current unique leaf number. We assign a 
+//                               unique number to each leaf.
+//
+//  Programmer:  Kathleen Bonnell/Justin Privitera
+//  Creation:    April 12, 2001/October 7, 2025
+//
+//  Notes:
+//      Justin Privitera, Tue Oct  7 17:37:07 PDT 2025
+//      Taken from avtSIMODataTreeIterator::Execute and heavily
+//      modified.
 //
 //  Modifications:
 // ****************************************************************************
@@ -884,7 +932,13 @@ avtGlobalConstantExpression::WriteResult(avtDataTree_p inputDataTree,
 //  Method: avtGlobalConstantExpression::Execute
 //
 //  Purpose:
-//      TODO
+//      Calculated a global constant expression result in a several steps:
+//      1. Fetch the data tree.
+//      2. Calculate local results for each data tree leaf.
+//      3. Reduce those results across the local rank.
+//      4. Reduce that result across all global ranks.
+//      5. Calculate final results with the global data.
+//      6. Write those results to a new data tree.
 //
 //  Programmer: Justin Privitera
 //  Creation:   August 18, 2025
