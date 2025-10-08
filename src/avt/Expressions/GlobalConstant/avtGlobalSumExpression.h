@@ -27,7 +27,7 @@ class     vtkDataArray;
 //  Modifications:
 //      Justin Privitera, Wed Oct  8 14:13:21 PDT 2025
 //      Changed inheritance from avtGhostAwareUnaryMathExpression to 
-//      avtGlobalConstantExpression, which required adding NeedsNTuples(),
+//      avtGlobalConstantExpression, which required adding
 //      NeedsExtraIntermediateData(), LocalIntermediateReduction(),
 //      GlobalIntermediateReduction(), CalculateFinalResults(), and 
 //      GetUnusedValue().
@@ -45,9 +45,6 @@ class EXPRESSION_API avtGlobalSumExpression : public avtGlobalConstantExpression
                                               { return "Calculating sum across mesh"; };
 
   protected:
-    // to calculate the sum we don't need to take into account the number of tuples
-    virtual bool              NeedsNTuples() { return false; };
-    
     // to calculate the sum we don't need to record any other local quantity
     virtual bool              NeedsExtraIntermediateData() { return false; };
     

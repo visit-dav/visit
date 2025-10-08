@@ -53,12 +53,6 @@ class EXPRESSION_API avtGlobalConstantExpression : public avtExpressionFilter
 
     virtual void              Execute(void);
 
-    // some expressions (like global_avg) need to know the global number of 
-    // non-ghosted tuples in order to calculate a final answer, so we provide
-    // this method as a toggle for children of avtGlobalConstantExpression to
-    // enable tracking the number of non-ghosted tuples, locally and globally.
-    virtual bool              NeedsNTuples() { return false; };
-
     // some expressions (like global_std_dev and global_variance) require an 
     // extra array of intermediate data, as they have additional quantities 
     // that must be accumulated across all processors in order to calculate a 
@@ -127,8 +121,6 @@ class EXPRESSION_API avtGlobalConstantExpression : public avtExpressionFilter
     virtual double            GetUnusedValue() = 0;
 
   private:
-    int                       GetLocalNumTuples(const std::map<int, intermediateResults> &intermediate_results_map);
-
     void                      IdentifyGhostedNodes(vtkDataSet *in_ds,
                                                    vtkDataArray *ghostZones,
                                                    vtkDataArray *ghostNodes,

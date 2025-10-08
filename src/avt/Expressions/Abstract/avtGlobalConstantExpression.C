@@ -110,29 +110,6 @@ avtGlobalConstantExpression::~avtGlobalConstantExpression()
 }
 
 // ****************************************************************************
-//  Method: avtGlobalConstantExpression::GetLocalNumTuples
-//
-//  Purpose:
-//      Sums the local number of non-ghosted tuples recorded by the 
-//      intermediate_results_map.
-//
-//  Programmer: Justin Privitera
-//  Creation:   September 26, 2025
-//
-//  Modifications:
-// ****************************************************************************
-int
-avtGlobalConstantExpression::GetLocalNumTuples(
-    const std::map<int, intermediateResults> &intermediate_results_map)
-{
-    int total_ntuples = 0;
-    std::for_each(intermediate_results_map.begin(),
-                  intermediate_results_map.end(),
-                  [&total_ntuples](const auto &pair) { total_ntuples += pair.second.num_non_ghosted_tuples; });
-    return total_ntuples;
-}
-
-// ****************************************************************************
 //  Method: avtGlobalConstantExpression::IdentifyGhostedNodes
 //
 //  Purpose:
@@ -1082,7 +1059,15 @@ avtGlobalConstantExpression::Execute()
     //
     // Calculate the local total number of non-ghosted tuples
     //
-    const int local_total_ntuples = (NeedsNTuples() ? GetLocalNumTuples(intermediate_results_map) : 0);
+    const int local_total_ntuples = 
+        [&intermediate_results_map]() -> int
+        {
+            int total_ntuples = 0;
+            std::for_each(intermediate_results_map.begin(),
+                          intermediate_results_map.end(),
+                          [&total_ntuples](const auto &pair) { total_ntuples += pair.second.num_non_ghosted_tuples; });
+            return total_ntuples;
+        }();
 
     //
     // Ensure all ranks agree on the number of components
@@ -1131,11 +1116,17 @@ avtGlobalConstantExpression::Execute()
 
     int global_ntuples = local_total_ntuples;
 #ifdef PARALLEL
-    if (NeedsNTuples())
-    {
-        SumIntAcrossAllProcessors(global_ntuples);
-    }
+    SumIntAcrossAllProcessors(global_ntuples);
 #endif
+
+    if (0 == global_ntuples)
+    {
+        EXCEPTION2(ExpressionException, outputVariableName,
+                   "An internal error occurred when trying to calculate "
+                   "your expression. There are no non-ghosted tuples, "
+                   "making the global expression invalid. Please contact a "
+                   "VisIt developer.");
+    }
 
     //
     // Calculate global result
