@@ -21,7 +21,8 @@ class     intermediateResults;
 //  Class: avtGlobalConstantExpression
 //
 //  Purpose:
-//      TODO
+//      A class of expressions that result in a constant-valued variable
+//      across the entire mesh.
 //
 //  Programmer: Justin Privitera
 //  Creation:   August 18, 2025
@@ -40,7 +41,6 @@ class EXPRESSION_API avtGlobalConstantExpression : public avtExpressionFilter
                                      { return "avtGlobalConstantExpression"; };
     virtual const char       *GetDescription(void) = 0;
 
-    // TODO do I need this?
     virtual int               NumVariableArguments() { return 1; };
   protected:
     int                       currentProgress;
@@ -49,10 +49,18 @@ class EXPRESSION_API avtGlobalConstantExpression : public avtExpressionFilter
 
     virtual void              Execute(void);
 
-    // TODO explanation
+    // some expressions (like global_avg) need to know the global number of 
+    // non-ghosted tuples in order to calculate a final answer, so we provide
+    // this method as a toggle for children of avtGlobalConstantExpression to
+    // enable tracking the number of non-ghosted tuples, locally and globally.
     virtual bool              NeedsNTuples() { return false; };
 
-    // expressions like standard deviation and variance require an extra array of intermediate data
+    // some expressions (like global_std_dev and global_variance) require an 
+    // extra array of intermediate data, as they have additional quantities 
+    // that must be accumulated across all processors in order to calculate a 
+    // final answer, so we provide this method as a toggle for children of 
+    // avtGlobalConstantExpression to enable computation with an additional
+    // data array.
     virtual bool              NeedsExtraIntermediateData() { return false; };
 
     virtual void              CalculateWithoutGhosts(vtkDataArray *in,
