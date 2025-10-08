@@ -21,6 +21,7 @@
 #  Modifications:
 #    Justin Privitera, Tue Oct  7 16:44:16 PDT 2025
 #    Added multi domain and multi component tests.
+#    Updated to reflect new names for standard deviation and variance exprs.
 # ----------------------------------------------------------------------------
 
 #################################################
@@ -302,9 +303,9 @@ def test_stats_for_var(filename, meshname, varname, vartype, ncomps=1):
 		DefineArrayExpression("min_" + varname + "_" + vartype, "global_min(" + varname + ")")
 		DefineArrayExpression("num_" + varname + "_" + vartype, "global_sum(one)")
 		DefineArrayExpression("rms_" + varname + "_" + vartype, "global_rms(" + varname + ")")
-		DefineArrayExpression("std_" + varname + "_" + vartype, "global_std_dev(" + varname + ")")
+		DefineArrayExpression("std_" + varname + "_" + vartype, "global_std(" + varname + ")")
 		DefineArrayExpression("sum_" + varname + "_" + vartype, "global_sum(" + varname + ")")
-		DefineArrayExpression("var_" + varname + "_" + vartype, "global_variance(" + varname + ")")
+		DefineArrayExpression("var_" + varname + "_" + vartype, "global_var(" + varname + ")")
 	else:
 		# define our expressions
 		if vartype == "zonal":
@@ -318,9 +319,9 @@ def test_stats_for_var(filename, meshname, varname, vartype, ncomps=1):
 		DefineScalarExpression("min_" + varname + "_" + vartype, "global_min(" + varname + ")")
 		DefineScalarExpression("num_" + varname + "_" + vartype, "global_sum(one)")
 		DefineScalarExpression("rms_" + varname + "_" + vartype, "global_rms(" + varname + ")")
-		DefineScalarExpression("std_" + varname + "_" + vartype, "global_std_dev(" + varname + ")")
+		DefineScalarExpression("std_" + varname + "_" + vartype, "global_std(" + varname + ")")
 		DefineScalarExpression("sum_" + varname + "_" + vartype, "global_sum(" + varname + ")")
-		DefineScalarExpression("var_" + varname + "_" + vartype, "global_variance(" + varname + ")")
+		DefineScalarExpression("var_" + varname + "_" + vartype, "global_var(" + varname + ")")
 
 	test_stat("avg", "Average",            filename, meshname, varname, vartype, ncomps)
 	test_stat("max", "Maximum",            filename, meshname, varname, vartype, ncomps)
