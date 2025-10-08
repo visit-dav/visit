@@ -234,7 +234,12 @@ avtGlobalVarianceExpression::GlobalIntermediateReduction(std::vector<double> &lo
 //  Method: avtGlobalVarianceExpression::CalculateFinalResults
 //
 //  Purpose:
-//      TODO
+//      Some global constant expressions have their final result after reducing
+//      with MPI. But others need several global quantities to be computed
+//      before they can calculate a final result.
+//      "global_var" requires the global sum, the global sum of squares, and
+//      the global number of non-ghosted tuples to be computed to calculate
+//      the final result.
 //
 //  Programmer: Justin Privitera
 //  Creation:   September 26, 2025

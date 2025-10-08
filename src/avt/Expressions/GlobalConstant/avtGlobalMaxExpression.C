@@ -256,7 +256,10 @@ avtGlobalMaxExpression::GlobalIntermediateReduction(std::vector<double> &local_c
 //  Method: avtGlobalMaxExpression::CalculateFinalResults
 //
 //  Purpose:
-//      TODO
+//      Some global constant expressions have their final result after reducing
+//      with MPI. But others need several global quantities to be computed
+//      before they can calculate a final result.
+//      "global_max" has no further required computations after reduction.
 //
 //  Programmer: Justin Privitera
 //  Creation:   September 26, 2025

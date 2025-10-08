@@ -230,7 +230,12 @@ avtGlobalAvgExpression::GlobalIntermediateReduction(std::vector<double> &local_c
 //  Method: avtGlobalAvgExpression::CalculateFinalResults
 //
 //  Purpose:
-//      TODO
+//      Some global constant expressions have their final result after reducing
+//      with MPI. But others need several global quantities to be computed
+//      before they can calculate a final result.
+//      "global_avg" requires the global sum and the global number of
+//      non-ghosted tuples to be computed so that we can divide the two
+//      quantities.
 //
 //  Programmer: Justin Privitera
 //  Creation:   September 26, 2025
