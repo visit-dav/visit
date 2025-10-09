@@ -17,6 +17,8 @@
 //  Creation:    Sep 29, 2025
 //
 //  Modifications:
+//    Kathleen Biagas, Thu Oct 9, 2025
+//    Added cxxflags.
 //
 // ****************************************************************************
 
@@ -30,6 +32,7 @@ class Conditional
     QString target;
     QString condition;
     QString definitions;
+    QString cxxflags;
     QString mlinklibs;
     QString elinklibs;
   public:
