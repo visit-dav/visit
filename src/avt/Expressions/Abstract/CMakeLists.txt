@@ -6,6 +6,10 @@
 # Modifications:
 #   Justin Privitera, Mon Oct 28 10:15:57 PDT 2024
 #   Added avtGhostAwareUnaryMathExpression.C
+# 
+#   Justin Privitera, Thu Oct  2 16:27:11 PDT 2025
+#   Removed avtGhostAwareUnaryMathExpression.C
+#   Added avtGlobalConstantExpression.C
 #
 #*****************************************************************************
 
@@ -14,12 +18,12 @@ set(ABSTRACT_SOURCES
     avtComparisonExpression.C
     avtExpressionFilter.C
     avtExpressionDataTreeIterator.C
+    avtGlobalConstantExpression.C
     avtMacroExpressionFilter.C
     avtMultipleInputExpressionFilter.C
     avtMultipleInputMathExpression.C
     avtSingleInputExpressionFilter.C
-    avtUnaryMathExpression.C
-    avtGhostAwareUnaryMathExpression.C)
+    avtUnaryMathExpression.C)
 
 target_sources(avtexpressions_ser PRIVATE ${ABSTRACT_SOURCES})
 target_include_directories(avtexpressions_ser PUBLIC .)
