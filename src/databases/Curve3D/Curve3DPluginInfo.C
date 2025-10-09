@@ -119,10 +119,10 @@ std::vector<std::string>
 Curve3DGeneralPluginInfo::GetDefaultFilePatterns() const
 {
     std::vector<std::string> defaultPatterns;
-    defaultPatterns.push_back("*.curve3d");
     defaultPatterns.push_back("*.curve3D");
-    defaultPatterns.push_back("*.curve3d.gz");
+    defaultPatterns.push_back("*.curve3d");
     defaultPatterns.push_back("*.curve3D.gz");
+    defaultPatterns.push_back("*.curve3d.gz");
 
     return defaultPatterns;
 }

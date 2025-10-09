@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ****************************************************************************
-//                               PVLDPluginInfo.h
+//  PVLDPluginInfo.h
 // ****************************************************************************
 
 #ifndef PVLD_PLUGIN_INFO_H

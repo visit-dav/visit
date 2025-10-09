@@ -48,9 +48,7 @@ public class QueryAttributes extends AttributeSubject
 
         resultsMessage = new String("");
         resultsValue = new Vector();
-        resultsValue.addElement(new Double(0));
         floatResultsValue = new Vector();
-        floatResultsValue.addElement(new Float(0));
         timeStep = 0;
         varTypes = new Vector();
         pipeIndex = -1;
@@ -70,9 +68,7 @@ public class QueryAttributes extends AttributeSubject
 
         resultsMessage = new String("");
         resultsValue = new Vector();
-        resultsValue.addElement(new Double(0));
         floatResultsValue = new Vector();
-        floatResultsValue.addElement(new Float(0));
         timeStep = 0;
         varTypes = new Vector();
         pipeIndex = -1;

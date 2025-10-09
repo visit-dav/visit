@@ -55,7 +55,6 @@
 #endif
 
 #ifdef HAVE_ANARI
-    #include <vtkLogger.h>
     #include <vtkAnariSceneGraph.h>
     #include <vtkAnariVisItViewNodeFactory.h>
     #include <vtkViewNodeFactory.h>
@@ -285,6 +284,9 @@ vtkStandardNewMacro(vtkBackgroundPass);
 //   Kathleen Biagas, Thu Aug 28 15:37:48 PDT 2025
 //   Removes surfaceRepresentation, no longer used.
 //
+//   Kathleen Biagas, Wed Oct 1, 2025
+//   Removed vtkLogger settings, now handled in InitVTKLite.
+//
 // ****************************************************************************
 
 VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
@@ -359,20 +361,6 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
 
     anariRendering = false;
 #ifdef HAVE_ANARI
-    // For VisIt debug levels 1-3
-    auto vtkVerbosity = vtkLogger::Verbosity::VERBOSITY_ERROR;
-
-    if(DebugStream::Level4())
-    {
-        vtkVerbosity = vtkLogger::Verbosity::VERBOSITY_WARNING;
-    }
-    else if(DebugStream::Level5())
-    {
-        vtkVerbosity = vtkLogger::Verbosity::VERBOSITY_INFO;
-    }
-
-    vtkLogger::SetStderrVerbosity(vtkVerbosity);
-
     anariAttributes = AnariAttributes();
     anariPass = CreateAnariPass();
 #endif

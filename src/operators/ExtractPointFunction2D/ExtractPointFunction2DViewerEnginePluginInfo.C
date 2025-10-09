@@ -148,7 +148,10 @@ ExtractPointFunction2DViewerEnginePluginInfo::InitializeOperatorAtts(AttributeSu
 //  Method: ExtractPointFunction2DViewerEnginePluginInfo::UpdateOperatorAtts
 //
 //  Purpose:
-//    Update the operator attributes when using operator expressions.
+//    Update the operator attributes. This function is *only* called
+//    when the plot variable name is set or changed. The plot variable
+//    name is used in operator expressions and may be used as the
+//    'default' variable in GUIs.
 //
 //  Arguments:
 //    atts        The attribute subject to update.
