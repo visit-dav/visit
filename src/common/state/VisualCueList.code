@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: SetFrom
 Declaration: void SetFrom(const std::vector<const VisualCueInfo*>& cues);
 Definition:

@@ -76,6 +76,12 @@
 //    Kathleen Biagas, Thu Aug 25 14:17:22 MST 2011
 //    Added persistent flag for fields.
 //
+//    Kathleen Biagas, Mon Sep 29 09:16:57 PDT 2025
+//    Ensure 'Target:' designation always written to .code file.
+//
+//    Kathleen Biagas, Tue Sep 30 16:10:32 PDT 2025
+//    Add handling of conditionals in SaveCodeFile.
+//
 // ****************************************************************************
 
 class Attribute : public AttributeBase
@@ -132,7 +138,9 @@ class Attribute : public AttributeBase
             StartOpenTag(out, "Enum", indent);
             WriteTagAttr(out, "name", EnumType::enums[i]->type);
             FinishOpenTag(out);
-            WriteValues(out, EnumType::enums[i]->values, indent);
+            // Use the EnumType specific version of WriteValues here
+            // to handle ivalues (provided they aren't -1)
+            EnumType::enums[i]->WriteValues(out, indent);
             WriteCloseTag(out, "Enum", indent);
         }
 
@@ -269,11 +277,8 @@ class Attribute : public AttributeBase
         for (i=0; i<codes.size(); i++)
         {
             Code *c = codes[i];
-            if(currentTarget != c->target)
-            {
-                out << "Target: " << c->target << Endl;
-                currentTarget = c->target;
-            }
+            out << "Target: " << c->target << Endl;
+            currentTarget = c->target;
             out << "Code: " << c->name << Endl;
             out << "Prefix:" << Endl;
             if (! c->prefix.isEmpty())
@@ -302,11 +307,8 @@ class Attribute : public AttributeBase
                 QString initcode(it->second);
                 if(!initcode.isEmpty())
                 {
-                    if(currentTarget != it->first)
-                    {
-                        out << "Target: " << it->first << Endl;
-                        currentTarget = it->first;
-                    }
+                    out << "Target: " << it->first << Endl;
+                    currentTarget = it->first;
 
                     out << "Initialization: " << f->name << Endl;
                     out << initcode << Endl;
@@ -319,30 +321,43 @@ class Attribute : public AttributeBase
         for (i=0; i<constants.size(); i++)
         {
             Constant *c = constants[i];
-            if(currentTarget != c->target)
-            {
-                out << "Target: " << c->target << Endl;
-                currentTarget = c->target;
-            }
+            out << "Target: " << c->target << Endl;
+            currentTarget = c->target;
             out << "Constant: " << c->name << Endl;
-            out << "Declaration: " << c->decl << Endl;
-            out << "Definition: " << c->def << Endl;
+            out << "Declaration:";
+            if(!c->decl.isEmpty() && c->decl.at(0) != '\n')
+                 out << " " << c->decl;
+            out << Endl;
+            out << "Definition:";
+            if(!c->def.isEmpty() && c->def.at(0) != '\n')
+                out << Endl << c->def;
             out << Endl;
         }
 
         for (i=0; i<functions.size(); i++)
         {
             Function *f = functions[i];
-            if(currentTarget != f->target)
-            {
-                out << "Target: " << f->target << Endl;
-                currentTarget = f->target;
-            }
+            out << "Target: " << f->target << Endl;
+            currentTarget = f->target;
             out << "Function: " << f->name << Endl;
             out << "Declaration: " << f->decl << Endl;
             out << "Definition:" << Endl << f->def << Endl;
             if (!(f->def.isEmpty()) && !(f->def.right(1) == "\n"))
                 out << Endl;
+        }
+        for (i=0; i<conditionals.size(); i++)
+        {
+            Conditional *c = conditionals[i];
+            out << "Target: " << c->target << Endl;
+            currentTarget = c->target;
+            out << "Condition: " << c->condition << Endl;
+            if(!c->definitions.isEmpty())
+                out << "Definitions: " << c->definitions << Endl;
+            if(!c->mlinklibs.isEmpty())
+                out << "MLinkLibraries: " << c->mlinklibs << Endl;
+            if(!c->elinklibs.isEmpty())
+                out << "ELinkLibraries: " << c->elinklibs << Endl;
+            out << Endl;
         }
 
         f->close();

@@ -56,14 +56,14 @@
       false
     </Field>
     <Field name="minSpatialExtents" label="Minimum spatial extents" type="doubleArray" length="3" access="public">
-      0.000000
-      0.000000
-      0.000000
+      0
+      0
+      0
     </Field>
     <Field name="maxSpatialExtents" label="Maximum spatial extents" type="doubleArray" length="3" access="public">
-      0.000000
-      0.000000
-      0.000000
+      0
+      0
+      0
     </Field>
     <Field name="numBlocks" label="Number of domains" type="int" access="public">
       1
@@ -143,22 +143,22 @@
       false
     </Field>
     <Field name="rectilinearGridTransform" label="RectilinearGrid transform" type="doubleArray" length="16" access="public">
-      1.000000
-      0.000000
-      0.000000
-      0.000000
-      0.000000
-      1.000000
-      0.000000
-      0.000000
-      0.000000
-      0.000000
-      1.000000
-      0.000000
-      0.000000
-      0.000000
-      0.000000
-      1.000000
+      1
+      0
+      0
+      0
+      0
+      1
+      0
+      0
+      0
+      0
+      1
+      0
+      0
+      0
+      0
+      1
     </Field>
     <Field name="nodeOrigin" label="nodeOrigin" type="int" access="public">
       0

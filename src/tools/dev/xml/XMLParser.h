@@ -213,6 +213,13 @@ ParseCharacters(const QString &buff_input)
 //    Make this a stand-alone class using QDomDocument and other QDom clasess
 //    since QXmlDefaultHandler and the classes that use it are removed in Qt 6.
 //
+//    Kathleen Biagas, Tue Sep 30 14:51:35 PDT 2025
+//    Added support for Conditions code for xml2cmake.
+//
+//    Kathleen Biagas, Tue Oct  7 11:56:25 PDT 2025
+//    Remove WIN32DEFINES (windefs) support, now handled as a Conditional
+//    Definitions in .code file.
+//
 // ****************************************************************************
 
 class XMLParser
@@ -323,10 +330,6 @@ class XMLParser
                 // case with no flags (libs for all components)
                 if (currentDefComponents & COMP_ALL)
                     currentPlugin->defs.push_back(strings[i]);
-            }
-            else if (currentTag == "WIN32DEFINES")
-            {
-                currentPlugin->windefs.push_back(strings[i]);
             }
             else if (currentTag == "LDFLAGS")
             {
@@ -464,6 +467,7 @@ class XMLParser
 
             if (currentAttribute->codeFile)
             {
+                // Find/Set Code blocks
                 QStringList targets, names, first, second;
                 currentAttribute->codeFile->GetAllCodes(targets, names, first, second);
                 for(int i = 0; i < targets.size(); ++i)
@@ -472,6 +476,21 @@ class XMLParser
                                                                first[i],
                                                                second[i],
                                                                targets[i]));
+                }
+
+                // Find/Set Condition blocks
+                QStringList a, b, x, y, z;
+                currentAttribute->codeFile->GetAllConditions(a, b, x, y, z);
+                for(int i = 0; i < a.size(); ++i)
+                {
+                    Conditional *c = new Conditional(a[i], b[i]);
+                    if(!x.isEmpty() && !x[i].isEmpty())
+                        c->definitions= x[i];
+                    if(!y.isEmpty() && !y[i].isEmpty())
+                        c->mlinklibs= y[i];
+                    if(!z.isEmpty() && !z[i].isEmpty())
+                        c->elinklibs= z[i];
+                    currentAttribute->conditionals.push_back(c);
                 }
             }
 
@@ -638,9 +657,6 @@ class XMLParser
                 }
                 currentDefComponents = comps_current;
             }
-        }
-        else if (tag == "WIN32DEFINES")
-        {
         }
         else if (tag == "LDFLAGS")
         {
@@ -975,9 +991,6 @@ class XMLParser
         else if (tag == "DEFINES")
         {
             currentDefComponents = COMP_NONE;
-        }
-        else if (tag == "WIN32DEFINES")
-        {
         }
         else if (tag == "LDFLAGS")
         {

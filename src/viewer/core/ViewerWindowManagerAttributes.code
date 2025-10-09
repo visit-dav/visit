@@ -1,3 +1,4 @@
+Target: xml2atts
 Initialization: actionConfigurations
     // Initialize the action groups.
     DataNode *parentNode = new DataNode("parent");
@@ -87,6 +88,7 @@ Initialization: actionConfigurations
     SetFromNode(parentNode);
     delete parentNode;
 
+Target: xml2atts
 Function: CreateNode
 Declaration: virtual bool CreateNode(DataNode *parentNode, bool);
 Definition:
@@ -138,6 +140,7 @@ ViewerWindowManagerAttributes::CreateNode(DataNode *parentNode, bool, bool)
     return true;
 }
 
+Target: xml2atts
 Function: SetFromNode
 Declaration: virtual void SetFromNode(DataNode *parentNode);
 Definition:
@@ -209,6 +212,7 @@ ViewerWindowManagerAttributes::SetFromNode(DataNode *parentNode)
         SetLargeIcons(node->AsBool());
 }
 
+Target: xml2atts
 Function: RemoveActionFromNode
 Declaration: void RemoveActionFromNode(DataNode *, const char *, ViewerRPC::ViewerRPCType);
 Definition:
@@ -240,6 +244,7 @@ ViewerWindowManagerAttributes::RemoveActionFromNode(DataNode *node,
     RemoveActionFromNode(node, actionGroupName, actionName.c_str());
 }
 
+Target: xml2atts
 Function: RemoveActionFromNode2
 Declaration: void RemoveActionFromNode(DataNode *, const char *, const char *);
 Definition:
@@ -294,7 +299,7 @@ ViewerWindowManagerAttributes::RemoveActionFromNode(DataNode *node,
     }
 }
 
-
+Target: xml2atts
 Function: AddAction
 Declaration: void AddAction(DataNode *, const char *, ViewerRPC::ViewerRPCType);
 Definition:
@@ -357,6 +362,7 @@ ViewerWindowManagerAttributes::AddAction(DataNode *node,
     }
 }
 
+Target: xml2atts
 Function: AddActionGroup
 Declaration: void AddActionGroup(DataNode *, ActionGroupDescription &);
 Definition:

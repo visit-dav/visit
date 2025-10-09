@@ -32,3 +32,4 @@ const ColorAttribute AnnotationAttributes::GetDiscernibleBackgroundColor() const
 
     return retval;
 }
+

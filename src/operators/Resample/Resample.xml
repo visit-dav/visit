@@ -13,19 +13,19 @@
         true
       </Field>
       <Field name="startX" label="Start X" type="double" enabler="useExtents:false">
-        0.000000
+        0
       </Field>
       <Field name="endX" label="End X" type="double" enabler="useExtents:false">
-        1.000000
+        1
       </Field>
       <Field name="samplesX" label="Samples in X" type="int">
         10
       </Field>
       <Field name="startY" label="Start Y" type="double" enabler="useExtents:false">
-        0.000000
+        0
       </Field>
       <Field name="endY" label="End Y" type="double" enabler="useExtents:false">
-        1.000000
+        1
       </Field>
       <Field name="samplesY" label="Samples in Y" type="int">
         10
@@ -34,10 +34,10 @@
         true
       </Field>
       <Field name="startZ" label="Start Z" type="double" enabler="is3D:true">
-        0.000000
+        0
       </Field>
       <Field name="endZ" label="End Z" type="double" enabler="is3D:true">
-        1.000000
+        1
       </Field>
       <Field name="samplesZ" label="Samples in Z" type="int" enabler="is3D:true">
         10
@@ -49,7 +49,7 @@
         default
       </Field>
       <Field name="defaultValue" label="Value for uncovered regions" type="double">
-        0.000000
+        0
       </Field>
       <Field name="distributedResample" label="Distribute resampled data\nset across all processors\n(parallel only)?" type="bool">
         true

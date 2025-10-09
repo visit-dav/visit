@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: ClearArgs
 Declaration: void ClearArgs();
 Definition:
@@ -12,6 +13,7 @@ ClientMethod::ClearArgs()
     SelectStringArgs();
 }
 
+Target: xml2atts
 Function: AddArgument
 Declaration: void AddArgument(int);
 Definition:
@@ -22,6 +24,7 @@ ClientMethod::AddArgument(int val)
     SelectIntArgs();
 }
 
+Target: xml2atts
 Function: AddArgument2
 Declaration: void AddArgument(double);
 Definition:
@@ -32,6 +35,7 @@ ClientMethod::AddArgument(double val)
     SelectDoubleArgs();
 }
 
+Target: xml2atts
 Function: AddArgument3
 Declaration: void AddArgument(const std::string &);
 Definition:

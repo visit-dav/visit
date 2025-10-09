@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: SetNumStates
 Declaration: void         SetNumStates(int);
 Definition:
@@ -38,6 +39,7 @@ avtDatabaseMetaData::SetNumStates(int n)
     }
 }
 
+Target: xml2atts
 Function: SetTemporalExtents
 Declaration: void         SetTemporalExtents(double, double);
 Definition:
@@ -69,6 +71,7 @@ avtDatabaseMetaData::SetTemporalExtents(double min, double max)
     maxTemporalExtents = max;
 }
 
+Target: xml2atts
 Function: SetFormatCanDoDomainDecomposition
 Declaration: void         SetFormatCanDoDomainDecomposition(bool can);
 Definition:
@@ -115,6 +118,7 @@ avtDatabaseMetaData::SetFormatCanDoDomainDecomposition(bool can)
     formatCanDoDomainDecomposition = can;
 }
 
+Target: xml2atts
 Function: SetFormatCanDoMultires
 Declaration: void         SetFormatCanDoMultires(bool can);
 Definition:
@@ -164,6 +168,7 @@ avtDatabaseMetaData::SetFormatCanDoMultires(bool can)
     Select(ID_formatCanDoMultires, (void *)&formatCanDoMultires);
 }
 
+Target: xml2atts
 Function: SetCycle
 Declaration: void         SetCycle(int, int);
 Definition:
@@ -191,6 +196,7 @@ avtDatabaseMetaData::SetCycle(int ts, int c)
     }
 }
 
+Target: xml2atts
 Function: SetCycleIsAccurate
 Declaration: void         SetCycleIsAccurate(bool, int);
 Definition:
@@ -216,6 +222,7 @@ avtDatabaseMetaData::SetCycleIsAccurate(bool b, int ts)
         cyclesAreAccurate[ts] = (b ? 1 : 0);
 }
 
+Target: xml2atts
 Function: SetCyclesAreAccurate
 Declaration: void         SetCyclesAreAccurate(bool);
 Definition:
@@ -242,6 +249,7 @@ avtDatabaseMetaData::SetCyclesAreAccurate(bool b)
     }
 }
 
+Target: xml2atts
 Function: IsCycleAccurate
 Declaration: bool         IsCycleAccurate(int) const;
 Definition:
@@ -269,6 +277,7 @@ avtDatabaseMetaData::IsCycleAccurate(int ts) const
     return false;
 }
 
+Target: xml2atts
 Function: AreAllCyclesAccurateAndValid
 Declaration: bool         AreAllCyclesAccurateAndValid(int=-1) const;
 Definition:
@@ -310,6 +319,7 @@ avtDatabaseMetaData::AreAllCyclesAccurateAndValid(int expectedNumStates) const
     return true;
 }
 
+Target: xml2atts
 Function: SetTime
 Declaration: void         SetTime(int, double);
 Definition:
@@ -337,6 +347,7 @@ avtDatabaseMetaData::SetTime(int ts, double t)
     }
 }
 
+Target: xml2atts
 Function: SetTimeIsAccurate
 Declaration: void         SetTimeIsAccurate(bool, int);
 Definition:
@@ -362,6 +373,7 @@ avtDatabaseMetaData::SetTimeIsAccurate(bool b, int ts)
         timesAreAccurate[ts] = (b ? 1 : 0);
 }
 
+Target: xml2atts
 Function: SetTimesAreAccurate
 Declaration: void         SetTimesAreAccurate(bool);
 Definition:
@@ -388,6 +400,7 @@ avtDatabaseMetaData::SetTimesAreAccurate(bool b)
     }
 }
 
+Target: xml2atts
 Function: IsTimeAccurate
 Declaration: bool         IsTimeAccurate(int) const;
 Definition:
@@ -415,6 +428,7 @@ avtDatabaseMetaData::IsTimeAccurate(int ts) const
     return false;
 }
 
+Target: xml2atts
 Function: AreAllTimesAccurateAndValid
 Declaration: bool         AreAllTimesAccurateAndValid(int=-1) const;
 Definition:
@@ -455,6 +469,7 @@ avtDatabaseMetaData::AreAllTimesAccurateAndValid(int expectedNumStates) const
     return true;
 }
 
+Target: xml2atts
 Function: ReplaceForbiddenCharacters
 Declaration: void         ReplaceForbiddenCharacters(void);
 Definition:
@@ -767,6 +782,7 @@ avtDatabaseMetaData::ReplaceForbiddenCharacters(void)
     }
 }
 
+Target: xml2atts
 Function: Add1
 Declaration: void         Add(avtMeshMetaData *);
 Definition:
@@ -824,6 +840,7 @@ avtDatabaseMetaData::Add(avtMeshMetaData *mmd)
     }
 }
 
+Target: xml2atts
 Function: Add2
 Declaration: void         Add(avtScalarMetaData *);
 Definition:
@@ -844,6 +861,7 @@ avtDatabaseMetaData::Add(avtScalarMetaData *smd)
     scalars.push_back(smd);
 }
 
+Target: xml2atts
 Function: Add3
 Declaration: void         Add(avtVectorMetaData *);
 Definition:
@@ -864,6 +882,7 @@ avtDatabaseMetaData::Add(avtVectorMetaData *vmd)
     vectors.push_back(vmd);
 }
 
+Target: xml2atts
 Function: Add4
 Declaration: void         Add(avtTensorMetaData *);
 Definition:
@@ -884,6 +903,7 @@ avtDatabaseMetaData::Add(avtTensorMetaData *tmd)
     tensors.push_back(tmd);
 }
 
+Target: xml2atts
 Function: Add5
 Declaration: void         Add(avtSymmetricTensorMetaData *);
 Definition:
@@ -904,6 +924,7 @@ avtDatabaseMetaData::Add(avtSymmetricTensorMetaData *stmd)
     symmTensors.push_back(stmd);
 }
 
+Target: xml2atts
 Function: Add6
 Declaration: void         Add(avtArrayMetaData *);
 Definition:
@@ -924,6 +945,7 @@ avtDatabaseMetaData::Add(avtArrayMetaData *tmd)
     arrays.push_back(tmd);
 }
 
+Target: xml2atts
 Function: Add7
 Declaration: void         Add(avtMaterialMetaData *);
 Definition:
@@ -944,6 +966,7 @@ avtDatabaseMetaData::Add(avtMaterialMetaData *mmd)
     materials.push_back(mmd);
 }
 
+Target: xml2atts
 Function: Add8
 Declaration: void         Add(avtSpeciesMetaData *);
 Definition:
@@ -964,6 +987,7 @@ avtDatabaseMetaData::Add(avtSpeciesMetaData *smd)
     species.push_back(smd);
 }
 
+Target: xml2atts
 Function: Add9
 Declaration: void         Add(avtCurveMetaData *);
 Definition:
@@ -984,6 +1008,7 @@ avtDatabaseMetaData::Add(avtCurveMetaData *cmd)
     curves.push_back(cmd);
 }
 
+Target: xml2atts
 Function: Add11
 Declaration: void         Add(avtLabelMetaData *);
 Definition:
@@ -1004,6 +1029,7 @@ avtDatabaseMetaData::Add(avtLabelMetaData *lmd)
     labels.push_back(lmd);
 }
 
+Target: xml2atts
 Function: Add12
 Declaration: void         Add(avtDefaultPlotMetaData *);
 Definition:
@@ -1024,6 +1050,7 @@ avtDatabaseMetaData::Add(avtDefaultPlotMetaData *pmd)
     defaultPlots.push_back(pmd);
 }
 
+Target: xml2atts
 Function: GetMesh1
 Declaration: const avtMeshMetaData        *GetMesh(int) const;
 Definition:
@@ -1055,6 +1082,7 @@ avtDatabaseMetaData::GetMesh(int n) const
     return (const avtMeshMetaData *)meshes[n];
 }
 
+Target: xml2atts
 Function: GetMesh2
 Declaration: const avtMeshMetaData        *GetMesh(const std::string&) const;
 Definition:
@@ -1083,6 +1111,7 @@ avtDatabaseMetaData::GetMesh(const std::string &n) const
     return NULL;
 }
 
+Target: xml2atts
 Function: GetScalar1
 Declaration: const avtScalarMetaData      *GetScalar(int) const;
 Definition:
@@ -1114,6 +1143,7 @@ avtDatabaseMetaData::GetScalar(int n) const
     return (const avtScalarMetaData *)scalars[n];
 }
 
+Target: xml2atts
 Function: GetScalar2
 Declaration: const avtScalarMetaData      *GetScalar(const std::string&) const;
 Definition:
@@ -1142,6 +1172,7 @@ avtDatabaseMetaData::GetScalar(const std::string &n) const
     return NULL;
 }
 
+Target: xml2atts
 Function: GetVector1
 Declaration: const avtVectorMetaData      *GetVector(int) const;
 Definition:
@@ -1173,6 +1204,7 @@ avtDatabaseMetaData::GetVector(int n) const
     return (const avtVectorMetaData *)vectors[n];
 }
 
+Target: xml2atts
 Function: GetVector2
 Declaration: const avtVectorMetaData      *GetVector(const std::string&) const;
 Definition:
@@ -1201,6 +1233,7 @@ avtDatabaseMetaData::GetVector(const std::string &n) const
     return NULL;
 }
 
+Target: xml2atts
 Function: GetTensor1
 Declaration: const avtTensorMetaData      *GetTensor(int) const;
 Definition:
@@ -1230,6 +1263,7 @@ avtDatabaseMetaData::GetTensor(int n) const
     return (const avtTensorMetaData *)tensors[n];
 }
 
+Target: xml2atts
 Function: GetTensor2
 Declaration: const avtTensorMetaData      *GetTensor(const std::string&) const;
 Definition:
@@ -1256,6 +1290,7 @@ avtDatabaseMetaData::GetTensor(const std::string &n) const
     return NULL;
 }
 
+Target: xml2atts
 Function: GetSymmTensor1
 Declaration: const avtSymmetricTensorMetaData *GetSymmTensor(int) const;
 Definition:
@@ -1287,6 +1322,7 @@ avtDatabaseMetaData::GetSymmTensor(int n) const
     return (const avtSymmetricTensorMetaData *)symmTensors[n];
 }
 
+Target: xml2atts
 Function: GetSymmTensor2
 Declaration: const avtSymmetricTensorMetaData *GetSymmTensor(const std::string&) const;
 Definition:
@@ -1314,6 +1350,7 @@ avtDatabaseMetaData::GetSymmTensor(const std::string &n) const
     return NULL;
 }
 
+Target: xml2atts
 Function: GetArray1
 Declaration: const avtArrayMetaData       *GetArray(int) const;
 Definition:
@@ -1345,6 +1382,7 @@ avtDatabaseMetaData::GetArray(int n) const
     return (const avtArrayMetaData *)arrays[n];
 }
 
+Target: xml2atts
 Function: GetArray2
 Declaration: const avtArrayMetaData       *GetArray(const std::string&) const;
 Definition:
@@ -1371,6 +1409,7 @@ avtDatabaseMetaData::GetArray(const std::string &n) const
     return NULL;
 }
 
+Target: xml2atts
 Function: GetMaterial1
 Declaration: const avtMaterialMetaData    *GetMaterial(int) const;
 Definition:
@@ -1402,6 +1441,7 @@ avtDatabaseMetaData::GetMaterial(int n) const
     return (const avtMaterialMetaData *)materials[n];
 }
 
+Target: xml2atts
 Function: GetMaterial2
 Declaration: const avtMaterialMetaData    *GetMaterial(const std::string&) const;
 Definition:
@@ -1433,6 +1473,7 @@ avtDatabaseMetaData::GetMaterial(const std::string &n) const
     return NULL;
 }
 
+Target: xml2atts
 Function: GetSpecies2
 Declaration: const avtSpeciesMetaData     *GetSpecies(const std::string&) const;
 Definition:
@@ -1461,6 +1502,7 @@ avtDatabaseMetaData::GetSpecies(const std::string &n) const
     return NULL;
 }
 
+Target: xml2atts
 Function: GetCurve1
 Declaration: const avtCurveMetaData       *GetCurve(int) const;
 Definition:
@@ -1492,6 +1534,7 @@ avtDatabaseMetaData::GetCurve(int n) const
     return (const avtCurveMetaData *)curves[n];
 }
 
+Target: xml2atts
 Function: GetCurve2
 Declaration: const avtCurveMetaData       *GetCurve(const std::string&) const;
 Definition:
@@ -1521,6 +1564,7 @@ avtDatabaseMetaData::GetCurve(const std::string &n) const
     return NULL;
 }
 
+Target: xml2atts
 Function: GetLabel1
 Declaration: const avtLabelMetaData       *GetLabel(int) const;
 Definition:
@@ -1552,6 +1596,7 @@ avtDatabaseMetaData::GetLabel(int n) const
     return (const avtLabelMetaData *)labels[n];
 }
 
+Target: xml2atts
 Function: GetLabel2
 Declaration: const avtLabelMetaData       *GetLabel(const std::string&) const;
 Definition:
@@ -1580,6 +1625,7 @@ avtDatabaseMetaData::GetLabel(const std::string &n) const
     return NULL;
 }
 
+Target: xml2atts
 Function: GetDefaultPlot
 Declaration: const avtDefaultPlotMetaData *GetDefaultPlot(int) const;
 Definition:
@@ -1611,6 +1657,7 @@ avtDatabaseMetaData::GetDefaultPlot(int n) const
     return (const avtDefaultPlotMetaData *)defaultPlots[n];
 }
 
+Target: xml2atts
 Function: SetBlocksForMesh
 Declaration: void         SetBlocksForMesh(int index, int nBlocks);
 Definition:
@@ -1641,6 +1688,7 @@ avtDatabaseMetaData::SetBlocksForMesh(int index, int nBlocks)
     GetMeshes(index).numBlocks = nBlocks;
 }
 
+Target: xml2atts
 Function: SetContainsGhostZones
 Declaration: void         SetContainsGhostZones(std::string name, avtGhostType);
 Definition:
@@ -1677,6 +1725,7 @@ avtDatabaseMetaData::SetContainsGhostZones(std::string name, avtGhostType val)
     }
 }
 
+Target: xml2atts
 Function: GetContainsGhostZones
 Declaration: avtGhostType GetContainsGhostZones(std::string name) const;
 Definition:
@@ -1708,6 +1757,7 @@ avtDatabaseMetaData::GetContainsGhostZones(std::string name) const
     return AVT_MAYBE_GHOSTS;
 }
 
+Target: xml2atts
 Function: SetContainsOriginalCells
 Declaration: void         SetContainsOriginalCells(std::string name, bool);
 Definition:
@@ -1744,6 +1794,7 @@ avtDatabaseMetaData::SetContainsOriginalCells(std::string name, bool val)
     }
 }
 
+Target: xml2atts
 Function: SetContainsOriginalNodes
 Declaration: void         SetContainsOriginalNodes(std::string name, bool);
 Definition:
@@ -1777,6 +1828,7 @@ avtDatabaseMetaData::SetContainsOriginalNodes(std::string name, bool val)
     }
 }
 
+Target: xml2atts
 Function: SetContainsGlobalNodeIds
 Declaration: void         SetContainsGlobalNodeIds(std::string name, bool);
 Definition:
@@ -1804,6 +1856,7 @@ avtDatabaseMetaData::SetContainsGlobalNodeIds(std::string name, bool val)
     }
 }
 
+Target: xml2atts
 Function: SetContainsGlobalZoneIds
 Declaration: void         SetContainsGlobalZoneIds(std::string name, bool);
 Definition:
@@ -1831,6 +1884,7 @@ avtDatabaseMetaData::SetContainsGlobalZoneIds(std::string name, bool val)
     }
 }
 
+Target: xml2atts
 Function: SetZonesWereSplit
 Declaration: void         SetZonesWereSplit(std::string name, bool);
 Definition:
@@ -1858,6 +1912,7 @@ avtDatabaseMetaData::SetZonesWereSplit(std::string name, bool val)
     }
 }
 
+Target: xml2atts
 Function: AddGroupInformation
 Declaration: void         AddGroupInformation(int nGroups, int nBlocks, intVector &blockIds);
 Definition:
@@ -1892,6 +1947,7 @@ avtDatabaseMetaData::AddGroupInformation(int nGroups, int nBlocks,
     }
 }
 
+Target: xml2atts
 Function: SetExtents
 Declaration: void         SetExtents(std::string, const double *);
 Definition:
@@ -1959,6 +2015,7 @@ avtDatabaseMetaData::SetExtents(std::string name, const double *extents)
     }
 }
 
+Target: xml2atts
 Function: UnsetExtents
 Declaration: void         UnsetExtents();
 Definition:
@@ -1993,6 +2050,7 @@ avtDatabaseMetaData::UnsetExtents(void)
     }
 }
 
+Target: xml2atts
 Function: AddExpression
 Declaration: void                AddExpression(Expression *);
 Definition:
@@ -2021,6 +2079,7 @@ avtDatabaseMetaData::AddExpression(Expression *_expr)
     exprList.AddExpressions(expr);
 }
 
+Target: xml2atts
 Function: GetExpression
 Declaration: const Expression   *GetExpression(int) const;
 Definition:
@@ -2041,6 +2100,7 @@ avtDatabaseMetaData::GetExpression(int expr) const
     return &(exprList[expr]);
 }
 
+Target: xml2atts
 Function: GetNumberOfExpressions
 Declaration: int                 GetNumberOfExpressions(void) const;
 Definition:
@@ -2061,6 +2121,7 @@ avtDatabaseMetaData::GetNumberOfExpressions(void) const
     return exprList.GetNumExpressions();
 }
 
+Target: xml2atts
 Function: ConvertCSGDomainToBlockAndRegion
 Declaration: bool         ConvertCSGDomainToBlockAndRegion(const char *const var, int *domain, int *region) const;
 Definition:
@@ -2121,6 +2182,7 @@ avtDatabaseMetaData::ConvertCSGDomainToBlockAndRegion(const char *const var,
     return false;
 }
 
+Target: xml2atts
 Function: GetNDomains
 Declaration: int          GetNDomains(const std::string &) const;
 Definition:
@@ -2177,6 +2239,7 @@ avtDatabaseMetaData::GetNDomains(const std::string &var) const
     EXCEPTION1(InvalidVariableException, var);
 }
 
+Target: xml2atts
 Function: DetermineVarType
 Declaration: avtVarType   DetermineVarType(std::string, bool = true) const;
 Definition:
@@ -2355,6 +2418,7 @@ avtDatabaseMetaData::DetermineVarType(std::string var_in, bool do_expr) const
     return AVT_UNKNOWN_TYPE;
 }
 
+Target: xml2atts
 Function: DetermineSubsetType
 Declaration: avtSubsetType   DetermineSubsetType(const std::string &) const;
 Definition:
@@ -2452,6 +2516,7 @@ avtDatabaseMetaData::DetermineSubsetType(const std::string &inVar) const
     return AVT_UNKNOWN_SUBSET;
 }
 
+Target: xml2atts
 Function: MeshForVar
 Declaration: std::string  MeshForVar(const std::string &) const;
 Definition:
@@ -2650,6 +2715,7 @@ avtDatabaseMetaData::MeshForVar(const std::string &invar) const
     EXCEPTION1(InvalidVariableException, var);
 }
 
+Target: xml2atts
 Function: MaterialOnMesh
 Declaration: std::string  MaterialOnMesh(const std::string &) const;
 Definition:
@@ -2720,6 +2786,7 @@ avtDatabaseMetaData::MaterialOnMesh(const std::string &mesh) const
     EXCEPTION1(VisItException,err_msg.c_str());
 }
 
+Target: xml2atts
 Function: SpeciesOnMesh
 Declaration: std::string  SpeciesOnMesh(const std::string &) const;
 Definition:
@@ -2759,6 +2826,7 @@ avtDatabaseMetaData::SpeciesOnMesh(const std::string &mesh) const
     EXCEPTION1(InvalidVariableException, mesh);
 }
 
+Target: xml2atts
 Function: GetMaterialOnMesh
 Declaration: const avtMaterialMetaData *GetMaterialOnMesh(const std::string &) const;
 Definition:
@@ -2812,6 +2880,7 @@ avtDatabaseMetaData::GetMaterialOnMesh(const std::string &mesh) const
     return rv;
 }
 
+Target: xml2atts
 Function: GetSpeciesOnMesh
 Declaration: const avtSpeciesMetaData  *GetSpeciesOnMesh(const std::string &) const;
 Definition:
@@ -2850,6 +2919,7 @@ avtDatabaseMetaData::GetSpeciesOnMesh(const std::string &mesh) const
     return NULL;
 }
 
+Target: xml2atts
 Function: GetAllVariableNames
 Declaration: const stringVector GetAllVariableNames(const std::string &) const;
 Definition:
@@ -2927,6 +2997,7 @@ avtDatabaseMetaData::GetAllVariableNames(const std::string &activeVar) const
     return vars;
 }
 
+Target: xml2atts
 Function: GetAllMeshNames
 Declaration: stringVector GetAllMeshNames(void) const;
 Definition:
@@ -2958,6 +3029,7 @@ avtDatabaseMetaData::GetAllMeshNames() const
     return meshNames;
 }
 
+Target: xml2atts
 Function: Print
 Declaration: void         Print(ostream &, int = 0) const;
 Definition:
@@ -3349,6 +3421,7 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
     }
 }
 
+Target: xml2atts
 Function: RegisterWarningCallback
 Declaration: void  RegisterWarningCallback(void (*)(const char *));
 Definition:
@@ -3370,16 +3443,19 @@ avtDatabaseMetaData::RegisterWarningCallback(void (*WC)(const char *))
     haveWarningCallback = true;
 }
 
+Target: xml2atts
 Function: WarnCallbackData1
 Declaration: static void (*WarningCallback)(const char *);
 Definition:
 void    (*avtDatabaseMetaData::WarningCallback)(const char *) = NULL;
 
+Target: xml2atts
 Function: WarnCallbackData2
 Declaration: static bool haveWarningCallback;
 Definition:
 bool    avtDatabaseMetaData::haveWarningCallback = false;
 
+Target: xml2atts
 Function: IssueWarning
 Declaration: void IssueWarning(const char *msg) const;
 Definition:
@@ -3409,6 +3485,7 @@ avtDatabaseMetaData::IssueWarning(const char *msg) const
     }
 }
 
+Target: xml2atts
 Function: VarIsCompound
 Declaration: bool VarIsCompound(const std::string &inVar) const;
 Definition:
@@ -3463,6 +3540,7 @@ avtDatabaseMetaData::VarIsCompound(const std::string &v) const
     return false;
 }
 
+Target: xml2atts
 Function: ParseCompoundForVar
 Declaration: void ParseCompoundForVar(const std::string &inVar, std::string &outVar) const;
 Definition:
@@ -3519,6 +3597,7 @@ avtDatabaseMetaData::ParseCompoundForVar(const std::string &inVar,
     }
 }
 
+Target: xml2atts
 Function: ParseCompoundForMesh
 Declaration: void ParseCompoundForMesh(const std::string &inVar, std::string &meshName) const;
 Definition:
@@ -3561,6 +3640,7 @@ avtDatabaseMetaData::ParseCompoundForMesh(const std::string &inVar,
     outVar = inVar.substr(beg, end - beg);
 }
 
+Target: xml2atts
 Function: ParseCompoundForCategory
 Declaration: void ParseCompoundForCategory(const std::string &inVar, std::string &meshName) const;
 Definition:
@@ -3601,6 +3681,7 @@ avtDatabaseMetaData::ParseCompoundForCategory(const std::string &inVar,
     outVar = inVar.substr(0, beg);
 }
 
+Target: xml2atts
 Function: VariableNamesEqual
 Declaration: bool VariableNamesEqual(const std::string &v1, const std::string &v2) const;
 Definition:
@@ -3647,11 +3728,13 @@ avtDatabaseMetaData::VariableNamesEqual(const std::string &v1, const std::string
         return v2.substr(1) == v1 || v2new.substr(1) == v1;
 }
 
+Target: xml2atts
 Function: CycleFromFilenameRegex
 Declaration: static std::string cycleFromFilenameRegex;
 Definition:
 std::string avtDatabaseMetaData::cycleFromFilenameRegex;
 
+Target: xml2atts
 Function: SetCycleFromFilenameRegex
 Declaration: static void SetCycleFromFilenameRegex(const char *re);
 Definition:
@@ -3685,6 +3768,7 @@ avtDatabaseMetaData::SetCycleFromFilenameRegex(const char *re)
     cycleFromFilenameRegex = re;
 }
 
+Target: xml2atts
 Function: GetCycleFromFilenameRegex
 Declaration: static std::string GetCycleFromFilenameRegex();
 Definition:
@@ -3704,6 +3788,7 @@ avtDatabaseMetaData::GetCycleFromFilenameRegex()
     return cycleFromFilenameRegex;
 }
 
+Target: xml2atts
 Function: AddDefaultSILRestrictionDescription
 Declaration: void AddDefaultSILRestrictionDescription(const std::string&);
 Definition:
@@ -3726,6 +3811,7 @@ avtDatabaseMetaData::AddDefaultSILRestrictionDescription(const std::string& setN
     Select(ID_suggestedDefaultSILRestriction, (void *)&suggestedDefaultSILRestriction);
 }
 
+Target: xml2atts
 Function: Add10
 Declaration: void         Add(avtSubsetsMetaData *);
 Definition:
@@ -3746,6 +3832,7 @@ avtDatabaseMetaData::Add(avtSubsetsMetaData *smd)
     subsets.push_back(smd);
 }
 
+Target: xml2atts
 Function: GetRestrictedMatnos
 Declaration: const intVector& GetRestrictedMatnos(const std::string&) const;
 Definition:
@@ -3776,6 +3863,7 @@ const intVector& avtDatabaseMetaData::GetRestrictedMatnos(const std::string& var
     return dummy;
 }
 
+Target: xml2atts
 Function: Empty
 Declaration: bool Empty() const;
 Definition:
@@ -3793,6 +3881,7 @@ bool avtDatabaseMetaData::Empty() const
     return (GetNumMeshes() == 0 && GetNumCurves() == 0);
 }
 
+Target: xml2atts
 Function: GetGhostZoneTypesPresent
 Declaration: int GetGhostZoneTypesPresent(std::string name) const;
 Definition:
@@ -3823,6 +3912,7 @@ avtDatabaseMetaData::GetGhostZoneTypesPresent(std::string name) const
     return AVT_NO_GHOST_ZONES;
 }
 
+Target: xml2atts
 Function: ClearGhostTypesPresent
 Declaration: void ClearGhostTypesPresent(std::string name);
 Definition:
@@ -3853,6 +3943,7 @@ avtDatabaseMetaData::ClearGhostTypesPresent(std::string name)
     }
 }
 
+Target: xml2atts
 Function: AddGhostZoneTypePresent
 Declaration: void AddGhostZoneTypePresent(std::string name, avtGhostsZonesPresent v);
 Definition:
@@ -3885,6 +3976,7 @@ avtDatabaseMetaData::AddGhostZoneTypePresent(std::string name,
     }
 }
 
+Target: xml2atts
 Function: GetTotalVarCount
 Declaration: int GetTotalVarCount(void) const;
 Definition:
@@ -3914,6 +4006,7 @@ avtDatabaseMetaData::GetTotalVarCount(void) const
            GetNumberOfExpressions();
 }
 
+Target: xml2atts
 Function: GetSEGEnvVarName
 Declaration: char const *GetSEGEnvVarName(void) const;
 Definition:
@@ -3933,6 +4026,7 @@ avtDatabaseMetaData::GetSEGEnvVarName() const
     return "VISIT_FORCE_SPECULATIVE_EXPRESSION_GENERATION";
 }
 
+Target: xml2atts
 Function: GetSEGWarningString
 Declaration: char const *GetSEGWarningString(void) const;
 Definition:
@@ -3969,6 +4063,7 @@ avtDatabaseMetaData::GetSEGWarningString() const
     return msg;
 }
 
+Target: xml2atts
 Function: IssueSEGWarningMessage
 Declaration: void IssueSEGWarningMessage(void) const;
 Definition:
@@ -3991,6 +4086,7 @@ avtDatabaseMetaData::IssueSEGWarningMessage() const
 #endif
 }
 
+Target: xml2atts
 Function: ShouldDisableSEG
 Declaration: bool ShouldDisableSEG(bool envOverride=false) const;
 Definition:
@@ -4009,3 +4105,4 @@ avtDatabaseMetaData::ShouldDisableSEG(bool envOverride) const
 {
     return GetTotalVarCount() > 1000 && !envOverride;
 }
+

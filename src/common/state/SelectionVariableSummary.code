@@ -1,8 +1,9 @@
+Target: xml2atts
 Initialization: histogram
 for(int i = 0; i < 256; ++i)
     histogram[i] = 0.;
 
-
+Target: xml2atts
 Function: SetHistogram
 Declaration: void SetHistogram(int index, double value);
 Definition:
@@ -13,6 +14,7 @@ SelectionVariableSummary::SetHistogram(int index, double value)
         histogram[index] = value;
 }
 
+Target: xml2atts
 Function: NormalizedHistogram
 Declaration: void NormalizedHistogram(float hist[256]) const;
 Definition:
@@ -41,3 +43,4 @@ SelectionVariableSummary::NormalizedHistogram(float hist[256]) const
             hist[i] = (float)(histogram[i] / maxval);
     }
 }
+

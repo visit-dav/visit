@@ -37,3 +37,4 @@ SPCTHCommonPluginInfo::SetupDatabase(const char *const *list,
            = new avtMTMDFileFormatInterface(ffl, 1);
     return new avtGenericDatabase(inter);
 }
+

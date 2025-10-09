@@ -13,6 +13,7 @@ VectorAttributes::ChangesRequireRecalculation(const VectorAttributes &obj)
             (origOnly != obj.origOnly));
 }
 
+Target: xml2atts
 Function: GetAnimationScale
 Declaration: double GetAnimationScale() const;
 Definition:
@@ -48,6 +49,7 @@ VectorViewerEnginePluginInfo::SupportsAnimation() const
     return true;
 }
 
+Target: xml2info
 Function: VectorViewerEnginePluginInfo::AnimationReset
 Declaration: virtual bool AnimationReset(AttributeSubject *atts, const avtPlotMetaData &plot);
 Definition:
@@ -79,7 +81,7 @@ VectorViewerEnginePluginInfo::AnimationReset(AttributeSubject *atts, const avtPl
     return true;
 }
 
-
+Target: xml2info
 Function: VectorViewerEnginePluginInfo::AnimationStep
 Declaration: virtual bool AnimationStep(AttributeSubject *atts, const avtPlotMetaData &plot);
 Definition:

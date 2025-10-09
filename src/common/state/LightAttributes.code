@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: operator =
 Declaration: LightAttributes &operator=(const LightAttributes &obj);
 Definition:
@@ -20,6 +21,7 @@ LightAttributes::operator = (const LightAttributes &obj)
     return *this;
 }
 
+Target: xml2atts
 Function: SetEnabledFlag
 Declaration: void SetEnabledFlag(bool enabledFlag_);
 Definition:
@@ -32,3 +34,4 @@ LightAttributes::SetEnabledFlag(bool enabledFlag_)
         Select(1, (void *)&enabledFlag);
     }
 }
+

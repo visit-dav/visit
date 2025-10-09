@@ -33,7 +33,7 @@ ${VISIT_DATABASE_INCLUDES}
 )
 
 if(WIN32)
-    add_compile_definitions(${CGNS_WIN32_DEFINES})
+    add_definitions(${CGNS_WIN32_DEFINES})
 endif()
 
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${CGNS_LIBRARY_DIR} )

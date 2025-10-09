@@ -4,10 +4,10 @@
       false
     </Field>
     <Field name="minTemporalExtents" label="Minimum temporal extents" type="double">
-      0.000000
+      0
     </Field>
     <Field name="maxTemporalExtents" label="Maximum temporal extents" type="double">
-      0.000000
+      0
     </Field>
     <Field name="numStates" label="Number of time states" type="int">
       0

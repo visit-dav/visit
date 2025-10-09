@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: GetNumTypes
 Declaration: static int GetNumTypes();
 Definition:
@@ -27,6 +28,7 @@ Expression::GetNumTypes()
     return 10;
 }
 
+Target: xml2atts
 Function: GetTypeString
 Declaration: static const char * GetTypeString(const Expression::ExprType t);
 Definition:
@@ -74,6 +76,7 @@ Expression::GetTypeString(const Expression::ExprType t)
     }
 }
 
+Target: xml2atts
 Function: GetTypeId
 Declaration: static Expression::ExprType GetTypeId(const std::string s);
 Definition:
@@ -116,3 +119,4 @@ Expression::GetTypeId(const std::string s)
     else
         return Unknown;
 }
+

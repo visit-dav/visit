@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="MFIXCDF" type="database" label="MFIXCDF" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="true" filePatternsStrict="false" opensWholeDirectory="false">
+  <Plugin name="MFIXCDF" type="database" label="MFIXCDF" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="true" haslicense="false" filePatternsStrict="false" opensWholeDirectory="false">
     <CXXFLAGS>
       ${NETCDF_INCLUDE_DIR}
     </CXXFLAGS>
@@ -9,9 +9,6 @@
     <LIBS>
       ${NETCDF_LIB}
     </LIBS>
-    <WIN32DEFINES>
-      ${NETCDF_WIN32_DEFINES}
-    </WIN32DEFINES>
     <FilePatterns>
       .nc
     </FilePatterns>
@@ -23,6 +20,6 @@
       avtMFIXCDFFileFormat.C
       avtMFIXCDFOptions.C
     </Files>
-    <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
+    <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="MFIXCDF.code">
     </Attribute>
   </Plugin>
