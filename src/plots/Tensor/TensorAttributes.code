@@ -12,6 +12,7 @@ TensorAttributes::ChangesRequireRecalculation(const TensorAttributes &obj)
             (origOnly != obj.origOnly));
 }
 
+Target: xml2atts
 Function: GetAnimationScale
 Declaration: double GetAnimationScale() const;
 Definition:
@@ -47,6 +48,7 @@ TensorViewerEnginePluginInfo::SupportsAnimation() const
     return true;
 }
 
+Target: xml2info
 Function: TensorViewerEnginePluginInfo::AnimationReset
 Declaration: virtual bool AnimationReset(AttributeSubject *atts, const avtPlotMetaData &plot);
 Definition:
@@ -78,7 +80,7 @@ TensorViewerEnginePluginInfo::AnimationReset(AttributeSubject *atts, const avtPl
     return true;
 }
 
-
+Target: xml2info
 Function: TensorViewerEnginePluginInfo::AnimationStep
 Declaration: virtual bool AnimationStep(AttributeSubject *atts, const avtPlotMetaData &plot);
 Definition:

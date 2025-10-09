@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: AddQuery
 Declaration: void AddQuery(const std::string &name, QueryType t, Groups g, WindowType w, int num_input, int allowedVars, QueryMode qMode, int numVars = 1, int reqVars = 0);
 Definition:
@@ -44,6 +45,7 @@ QueryList::AddQuery(const std::string &name, QueryType t, Groups g, WindowType w
     requiresVarSelection.push_back(reqVars);
 }
 
+Target: xml2atts
 Function: QueryExists
 Declaration: bool QueryExists(const std::string &name, QueryType t);
 Definition:
@@ -80,6 +82,7 @@ QueryList::QueryExists(const std::string &name, QueryType t)
     return match;
 }
 
+Target: xml2atts
 Function: NumberOfInputsForQuery
 Declaration: int NumberOfInputsForQuery(const std::string &name);
 Definition:
@@ -111,6 +114,7 @@ QueryList::NumberOfInputsForQuery(const std::string &name)
     return -1;
 }
 
+Target: xml2atts
 Function: AllowedVarsForQuery
 Declaration: int AllowedVarsForQuery(const std::string &name);
 Definition:
@@ -142,6 +146,7 @@ QueryList::AllowedVarsForQuery(const std::string &name)
     return -1;
 }
 
+Target: xml2atts
 Function: TimeQueryAvailable
 Declaration: bool TimeQueryAvailable(const std::string &name) ;
 Definition:
@@ -175,6 +180,7 @@ QueryList::TimeQueryAvailable(const std::string &name)
     return canDoTime;
 }
 
+Target: xml2atts
 Function: GetWindowType
 Declaration: int GetWindowType(const std::string &name) ;
 Definition:
@@ -208,6 +214,7 @@ QueryList::GetWindowType(const std::string &name)
     return wt;
 }
 
+Target: xml2atts
 Function: NumberOfVarsForQuery
 Declaration: int NumberOfVarsForQuery(const std::string &name);
 Definition:
@@ -239,6 +246,7 @@ QueryList::NumberOfVarsForQuery(const std::string &name)
     return -1;
 }
 
+Target: xml2atts
 Function: RegularQueryAvailable
 Declaration: bool RegularQueryAvailable(const std::string &name) ;
 Definition:
@@ -272,6 +280,7 @@ QueryList::RegularQueryAvailable(const std::string &name)
     return canDoRegular;
 }
 
+Target: xml2atts
 Function: GetQueryType
 Declaration: int GetQueryType(const std::string &name) ;
 Definition:

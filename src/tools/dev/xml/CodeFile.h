@@ -41,8 +41,12 @@
 //
 //    Kathleen Biagas, Wed Oct  9 09:59:59 PDT 2013
 //    Added 'Condition' keyword, for conditional xml2cmake code.
+// 
+//    Kathleen Biagas, Tue Sep 30 14:57:43 PDT 2025
+//    Added GetAllConditions so that XMLEdit can read them in.
 //
 // ****************************************************************************
+
 class CodeFile
 {
   private:
@@ -225,6 +229,43 @@ class CodeFile
             }
         }
         return retval;
+    }
+
+    void GetAllConditions(QStringList &t, QStringList &c, QStringList &d,
+                      QStringList &m, QStringList &e) const
+    {
+        QString target, cond, ctype, val;
+
+        for(cPVMit it = condition.begin(); it != condition.end(); ++it)
+        {
+            SplitKey(it->first, target, ctype);
+            QStringPairVector sec = it->second;
+            for (size_t i = 0; i < sec.size(); ++i)
+            {
+                cond = sec[i].first;
+                val  = sec[i].second;
+            }
+            t.push_back(target);
+            c.push_back(cond);
+            if(ctype == "Definitions:")
+            {
+                d.push_back(val);
+                m.push_back("");
+                e.push_back("");
+            }
+            else if(ctype == "MLinkLibraries:")
+            {
+                m.push_back(val);
+                d.push_back("");
+                e.push_back("");
+            }
+            else if(ctype == "ELinkLibraries:")
+            {
+                e.push_back(val);
+                d.push_back("");
+                m.push_back("");
+            }
+        }
     }
 
 private:

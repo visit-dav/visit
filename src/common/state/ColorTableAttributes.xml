@@ -15,13 +15,13 @@
     <Field name="tagsMatchAny" label="tagsMatchAny" type="bool" internal="true">
       true
     </Field>
-    <Field name="tagListNames" label="tagListNames" type="stringVector" init="true" internal="true">
+    <Field name="tagListNames" label="tagListNames" type="stringVector" internal="true" init="true">
     </Field>
-    <Field name="tagListActive" label="tagListActive" type="intVector" init="true" internal="true">
+    <Field name="tagListActive" label="tagListActive" type="intVector" internal="true" init="true">
     </Field>
-    <Field name="tagListNumRefs" label="tagListNumRefs" type="intVector" init="true" internal="true">
+    <Field name="tagListNumRefs" label="tagListNumRefs" type="intVector" internal="true" init="true">
     </Field>
-    <Field name="tagListTableItemFlag" label="tagListTableItemFlag" type="intVector" init="true" internal="true">
+    <Field name="tagListTableItemFlag" label="tagListTableItemFlag" type="intVector" internal="true" init="true">
     </Field>
     <Field name="tagChangesTag" label="tagChangesTag" type="stringVector" internal="true">
     </Field>

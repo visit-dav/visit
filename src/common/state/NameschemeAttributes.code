@@ -1,3 +1,4 @@
+Target: xml2atts
 Code: NameschemeAttributes.C
 Prefix:
 // This is a hack to work around fact that we cannot define variables
@@ -15,6 +16,7 @@ static map<const void*, Namescheme*> nameschemesMap;
 static map<const void*, bool> getNameCalledMap;
 Postfix:
 
+Target: xml2atts
 Code: ~NameschemeAttributes
 Prefix:
     // Clear any map entries for 'this' object.
@@ -29,6 +31,7 @@ Prefix:
         getNameCalledMap.erase(it3);
 Postfix:
 
+Target: xml2atts
 Function: AddExternalArray
 Declaration: void AddExternalArray(const char *name, const int *data, int len);
 Definition:
@@ -53,6 +56,7 @@ void NameschemeAttributes::AddExternalArray(const char * name, const int *data, 
         externalArrayData.push_back(data[i]);
 }
 
+Target: xml2atts
 Function: AddExternalArray2
 Declaration: void AddExternalArray(const std::string &name, const std::vector<int> &data);
 Definition:
@@ -64,6 +68,7 @@ void NameschemeAttributes::AddExternalArray(const string &name, const vector<int
     AddExternalArray(name.c_str(), &data[0], (int) data.size());
 }
 
+Target: xml2atts
 Function: SetAllNames
 Declaration: void SetAllNames(const char *const *const names, int count);
 Definition:
@@ -89,6 +94,7 @@ void NameschemeAttributes::SetAllNames(const char *const *const names, int count
         allExplicitNames.push_back(names[i]);
 }
 
+Target: xml2atts
 Function: SetName
 Declaration: void SetName(int i, const char *name);
 Definition:
@@ -110,6 +116,7 @@ void NameschemeAttributes::SetName(int i, const char *name)
     explicitNames.push_back(name);
 }
 
+Target: xml2atts
 Function: SetName2
 Declaration: void SetName(int i, const std::string &n);
 Definition:
@@ -121,6 +128,7 @@ void NameschemeAttributes::SetName(int i, const string &n)
     SetName(i, n.c_str());
 }
 
+Target: xml2atts
 Function: GetName
 Declaration: const char *GetName(int n) const;
 Definition:
@@ -216,6 +224,7 @@ const char *NameschemeAttributes::GetName(int n) const
     return tmpname;
 }
 
+Target: xml2atts
 Function: SetAllNames2
 Declaration: void SetAllNames(const std::vector<std::string> &names);
 Definition:
@@ -230,6 +239,7 @@ void NameschemeAttributes::SetAllNames(const vector<string> &names)
         allExplicitNames.push_back(names[i]);
 }
 
+Target: xml2atts
 Function: CheckIfGetNameCalled
 Declaration: void CheckIfGetNameCalled();
 Definition:

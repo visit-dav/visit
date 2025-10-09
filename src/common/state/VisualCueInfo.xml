@@ -27,7 +27,7 @@
       0
     </Field>
     <Field name="opacity" label="opacity" type="opacity">
-      1.000000
+      1
     </Field>
     <Field name="highlightColor" label="highlightColor" type="floatArray" length="3" persistent="false">
       0.000000

@@ -1,0 +1,62 @@
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
+
+#ifndef XMLEDITCONDITIONAL_H
+#define XMLEDITCONDITIONAL_H
+
+#include <QFrame>
+
+class XMLDocument;
+class QLineEdit;
+class QListWidget;
+class QTextEdit;
+class QPushButton;
+
+// ****************************************************************************
+//  Class:  XMLEditConditional
+//
+//  Purpose:
+//    Code snippet editing widget for the XML editor.
+//
+//  Programmer:  Kathleen Biagas 
+//  Creation:    Sep 29, 2025
+//
+//  Modifications:
+//
+// ****************************************************************************
+class XMLEditConditional : public QFrame
+{
+    Q_OBJECT
+  public:
+    XMLEditConditional(QWidget *p);
+    void SetDocument(XMLDocument *doc) { xmldoc = doc; }
+    void BlockAllSignals(bool);
+  public slots:
+    void UpdateWindowContents();
+    void UpdateWindowSensitivity();
+    void UpdateWindowSingleItem();
+    void conditionTextChanged();
+    void conditionTextChanged(const QString&);
+    void definitionsChanged();
+    void mlinklibsChanged();
+    void elinklibsChanged();
+    void conditionlistNew();
+    void conditionlistDel();
+  private:
+    int CountConditions(const QString &) const;
+
+    XMLDocument     *xmldoc;
+
+    QPushButton    *newButton;
+    QPushButton    *delButton;
+
+    QListWidget    *conditionList;
+    QLineEdit      *condition;
+    QLineEdit      *target;
+    QTextEdit      *definitions;
+    QTextEdit      *mlinklibs;
+    QTextEdit      *elinklibs;
+};
+
+#endif

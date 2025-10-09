@@ -3,10 +3,10 @@
     <Field name="name" label="Variable name" type="string">
     </Field>
     <Field name="minimum" label="Variable minimum" type="double">
-      0.000000
+      0
     </Field>
     <Field name="maximum" label="Variable maximum" type="double">
-      0.000000
+      0
     </Field>
     <Field name="histogram" label="Histogram" type="doubleArray" length="256" init="true">
     </Field>

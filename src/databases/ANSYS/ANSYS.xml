@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
-  <Plugin name="ANSYS" type="database" label="ANSYS" version="1.0" enabled="true" mdspecificcode="true" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="false">
+  <Plugin name="ANSYS" type="database" label="ANSYS" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="false" haslicense="false" filePatternsStrict="false" opensWholeDirectory="false">
     <FilePatterns>
-      *.inp 
+      *.inp
       *.cdb
     </FilePatterns>
-    <Attribute name="" purpose="" persistent="false">
+    <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>

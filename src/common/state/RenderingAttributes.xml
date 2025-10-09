@@ -46,7 +46,7 @@
       false
     </Field>
     <Field name="occlusionRatio" label="occlusion ratio" type="double">
-      0.000000
+      0
     </Field>
     <Field name="numberOfPeels" label="number of peels" type="int">
       16
@@ -91,7 +91,7 @@
       false
     </Field>
     <Field name="shadowStrength" label="Shadow Strength" type="double">
-      0.500000
+      0.5
     </Field>
     <Field name="doDepthCueing" label="Do Depth Cueing" type="bool">
       false
@@ -100,14 +100,14 @@
       true
     </Field>
     <Field name="startCuePoint" label="startCuePoint" type="doubleArray" length="3">
-      -10.000000
-      0.000000
-      0.000000
+      -10
+      0
+      0
     </Field>
     <Field name="endCuePoint" label="endCuePoint" type="doubleArray" length="3">
-      10.000000
-      0.000000
-      0.000000
+      10
+      0
+      0
     </Field>
     <Field name="compressionActivationMode" label="compressionActivationMode" type="enum" subtype="TriStateMode">
       Never

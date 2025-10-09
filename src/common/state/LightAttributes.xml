@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="LightAttributes" purpose="This class is a light in a light list." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="LightAttributes.code">
+  <Attribute name="LightAttributes" purpose="This class is a light in a light list." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="LightAttributes.code">
     <Enum name="LightType">
       Ambient
       Object
@@ -15,18 +15,18 @@
       Camera
     </Field>
     <Field name="direction" label="direction" type="doubleArray" length="3">
-      0.000000
-      0.000000
-      -1.000000
+      0
+      0
+      -1
     </Field>
-    <Field name="color" label="color" type="color">
+    <Field name="color" label="color" type="color" length="4">
       255
       255
       255
       255
     </Field>
     <Field name="brightness" label="brightness" type="double">
-      1.000000
+      1
     </Field>
     <Function name="operator =" user="false" member="true">
     </Function>

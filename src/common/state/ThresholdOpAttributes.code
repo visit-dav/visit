@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: SupplyMissingDefaultsIfAppropriate
 Declaration: void SupplyMissingDefaultsIfAppropriate();
 Definition:
@@ -76,6 +77,7 @@ ThresholdOpAttributes::SupplyMissingDefaultsIfAppropriate()
     }
 }
 
+Target: xml2atts
 Function: AttributesAreConsistent
 Declaration: bool AttributesAreConsistent() const;
 Definition:
@@ -119,6 +121,7 @@ ThresholdOpAttributes::AttributesAreConsistent() const
     return true;
 }
 
+Target: xml2atts
 Function: ForceAttributeConsistency
 Declaration: void ForceAttributeConsistency();
 Definition:
@@ -197,6 +200,7 @@ ThresholdOpAttributes::ForceAttributeConsistency()
     }
 }
 
+Target: xml2atts
 Function: SwitchDefaultVariableNameToTrueName
 Declaration: void SwitchDefaultVariableNameToTrueName();
 Definition:

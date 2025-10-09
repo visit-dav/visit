@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: CreateConstructionAtts
 Declaration: ConstructDataBinningAttributes CreateConstructionAtts(void);
 Definition:
@@ -153,6 +154,7 @@ DataBinningCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md
     return el;
 }
 
+Target: xml2info
 Function: DataBinningViewerEnginePluginInfo::UpdateOperatorAtts
 Declaration: virtual void DataBinningViewerEnginePluginInfo::UpdateOperatorAtts(AttributeSubject *atts, const avtPlotMetaData &plot, const bool fromDefault);
 Definition:

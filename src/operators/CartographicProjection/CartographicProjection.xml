@@ -24,7 +24,7 @@
         aitoff
       </Field>
       <Field name="centralMeridian" label="Central Meridian" type="double">
-        0.000000
+        0
       </Field>
     </Attribute>
   </Plugin>

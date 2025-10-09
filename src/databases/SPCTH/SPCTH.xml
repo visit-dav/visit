@@ -1,14 +1,18 @@
 <?xml version="1.0"?>
-  <Plugin name="SPCTH" type="database" label="CTH simulation files" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false" filePatternsStrict="false" opensWholeDirectory="false">
-    <Files components="M,E">
-       avtSPCTHFileFormat.C
-       SpyFile.C
-    </Files>
+  <Plugin name="SPCTH" type="database" label="CTH simulation files" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false" haslicense="false" filePatternsStrict="false" opensWholeDirectory="false">
     <FilePatterns>
       *.spcth
       *spcth
       *.cth
     </FilePatterns>
+    <Files components="M">
+      avtSPCTHFileFormat.C
+      SpyFile.C
+    </Files>
+    <Files components="E">
+      avtSPCTHFileFormat.C
+      SpyFile.C
+    </Files>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="SPCTH.code">
       <Function name="SPCTHCommonPluginInfo::SetupDatabase" user="false" member="true">
       </Function>

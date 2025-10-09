@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
-  <Plugin name="XSF" type="database" label="XSF" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="false">
+  <Plugin name="XSF" type="database" label="XSF" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="false" haslicense="false" filePatternsStrict="false" opensWholeDirectory="false">
     <FilePatterns>
       *.xsf
     </FilePatterns>
+    <Attribute name="" purpose="" persistent="true" keyframe="true">
+    </Attribute>
   </Plugin>

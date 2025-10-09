@@ -42,6 +42,7 @@ SubsetAttributes::ChangesRequireRecalculation(const SubsetAttributes &obj)
             changingPointType);
 }
 
+Target: xml2atts
 Function: VarChangeRequiresReset
 Declaration: virtual bool VarChangeRequiresReset(void);
 Definition:
@@ -51,6 +52,7 @@ SubsetAttributes::VarChangeRequiresReset()
     return true;
 }
 
+Target: xml2atts
 Function: CreateCompatible
 Declaration: virtual AttributeSubject *CreateCompatible(const std::string &) const;
 Definition:
@@ -90,7 +92,6 @@ SubsetAttributes::CreateCompatible(const std::string &tname) const
 
     return retval;
 }
-
 
 Target: xml2python
 Function: PySubsetAttributes_SetDefaults
@@ -153,6 +154,7 @@ SubsetViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
     PrivateSetPlotAtts(atts, plot);
 }
 
+Target: xml2info
 Function: SubsetViewerEnginePluginInfo::ReInitializePlotAtts
 Declaration: virtual void ReInitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
@@ -184,6 +186,7 @@ SubsetViewerEnginePluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
     PrivateSetPlotAtts(atts, plot);
 }
 
+Target: xml2info
 Function: SubsetViewerEnginePluginInfo::ResetPlotAtts
 Declaration: virtual void ResetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
@@ -227,6 +230,7 @@ SubsetViewerEnginePluginInfo::ResetPlotAtts(AttributeSubject *atts,
     PrivateSetPlotAtts(atts, plot);
 }
 
+Target: xml2info
 Function: SubsetViewerEnginePluginInfo::PrivateSetPlotAtts
 Declaration: void   PrivateSetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:

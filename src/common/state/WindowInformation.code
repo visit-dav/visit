@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: SetFromNode
 Declaration: virtual void SetFromNode(DataNode *parentNode);
 Definition:
@@ -48,6 +49,7 @@ WindowInformation::SetFromNode(DataNode *parentNode)
         SetFullFrame(node->AsBool());
 }
 
+Target: xml2atts
 Function: CreateNode
 Declaration: virtual bool CreateNode(DataNode *parentNode, bool, bool);
 Definition:
@@ -146,3 +148,4 @@ WindowInformation::CreateNode(DataNode *parentNode, bool completeSave, bool forc
 
     return (addToParent || forceAdd);
 }
+

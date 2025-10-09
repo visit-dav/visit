@@ -1,3 +1,4 @@
+Target: xml2atts
 Initialization: xAxis
     xAxis.GetTitle().SetTitle("X-Axis");
     xAxis.GetTitle().GetFont().SetFont(FontAttributes::Courier);
@@ -7,6 +8,7 @@ Initialization: xAxis
     xAxis.GetLabel().GetFont().SetBold(true);
     xAxis.GetLabel().GetFont().SetItalic(true);
 
+Target: xml2atts
 Initialization: yAxis
     yAxis.GetTitle().SetTitle("Y-Axis");
     yAxis.GetTitle().GetFont().SetFont(FontAttributes::Courier);
@@ -15,7 +17,6 @@ Initialization: yAxis
     yAxis.GetLabel().GetFont().SetFont(FontAttributes::Courier);
     yAxis.GetLabel().GetFont().SetBold(true);
     yAxis.GetLabel().GetFont().SetItalic(true);
-
 
 Target: xml2atts
 Function: CreateNode

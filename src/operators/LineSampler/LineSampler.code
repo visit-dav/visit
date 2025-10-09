@@ -24,6 +24,7 @@ LineSamplerViewerEnginePluginInfo::GetClientAtts(AttributeSubject *atts)
 //    *(LineSamplerAttributes *)atts = *clientAtts;
 }
 
+Target: xml2info
 Function: LineSamplerViewerEnginePluginInfo::GetClientAtts3
 Declaration: virtual void GetClientAtts(AttributeSubject *atts, const bool activeOperator, const bool applyToAll);
 Definition:
@@ -111,3 +112,4 @@ LineSamplerViewerEnginePluginInfo::GetClientAtts(AttributeSubject *atts,
     *(LineSamplerAttributes *)atts = *clientAtts;
   }
 }
+

@@ -25,6 +25,7 @@ CurveAttributes::CopyAttributes(const AttributeGroup *atts)
     return retval;
 }
 
+Target: xml2atts
 Function: CreateCompatible
 Declaration: virtual AttributeSubject *CreateCompatible(const std::string &) const;
 Definition:
@@ -49,6 +50,7 @@ CurveAttributes::CreateCompatible(const std::string &tname) const
     return retval;
 }
 
+Target: xml2atts
 Function: ChangesRequireRecalculation
 Declaration: bool ChangesRequireRecalculation(const CurveAttributes &) const;
 Definition:
@@ -105,6 +107,7 @@ CurveViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
         plot.GetBackgroundColor(), plot.GetForegroundColor());
 }
 
+Target: xml2info
 Function: CurveViewerEnginePluginInfo::SetAutonomousColors
 Declaration: void SetAutonomousColors(AttributeSubject *, double const *, double const *);
 Definition:
@@ -170,6 +173,7 @@ CurveViewerEnginePluginInfo::SetAutonomousColors(AttributeSubject *atts,
     }
 }
 
+Target: xml2info
 Function: CurveViewerEnginePluginInfo::PermitsCurveViewScaling
 Declaration: virtual bool PermitsCurveViewScaling() const;
 Definition:
@@ -179,6 +183,7 @@ CurveViewerEnginePluginInfo::PermitsCurveViewScaling() const
     return true;
 }
 
+Target: xml2info
 Function: CurveViewerEnginePluginInfo::SupportsAnimation
 Declaration: virtual bool SupportsAnimation() const;
 Definition:
@@ -201,6 +206,7 @@ CurveViewerEnginePluginInfo::SupportsAnimation() const
     return true;
 }
 
+Target: xml2info
 Function: CurveViewerEnginePluginInfo::AnimationReset
 Declaration: virtual bool AnimationReset(AttributeSubject *atts, const avtPlotMetaData &plot);
 Definition:
@@ -242,6 +248,7 @@ CurveViewerEnginePluginInfo::AnimationReset(AttributeSubject *atts, const avtPlo
     return update;
 }
 
+Target: xml2info
 Function: CurveViewerEnginePluginInfo::AnimationStep
 Declaration: virtual bool AnimationStep(AttributeSubject *atts, const avtPlotMetaData &plot);
 Definition:
