@@ -19,14 +19,13 @@ class     intermediateResults;
 //  Class: avtGlobalConstantExpression
 //
 //  Purpose:
-//      A class of expressions that result in a constant-valued variable
-//      across the entire mesh. There are several levels of reductions that
-//      make this possible:
-//      1. Each data tree leaf contains some number of tuples that are reduced
-//         across.
-//      2. Then a reduction is performed across all of the tree leaf results.
-//      3. If we are running in parallel, a reduction is performed across all
-//         of the global results.
+//      A class of expressions that require various levels of *reduction* operations before
+//      obtaining a single constant value over the whole mesh.
+//      There are several levels of reductions involved:
+//      1. Each data tree leaf contains some number of tuples that are reduced over the leaf.
+//      2. Then a reduction is performed across all of the data tree leaves.
+//      3. Finally, when/if we are running in parallel, a reduction is performed across all
+//      parallel tasks.
 //
 //  Programmer: Justin Privitera
 //  Creation:   August 18, 2025
