@@ -29,7 +29,7 @@
       5
     </Field>
     <Field name="iterationDamping" label="Iteration damping factor" type="float">
-      0.4
+      0.400000
     </Field>
     <Field name="simplifyHeavilyMixedZones" label="Simplify Heavily Mixed Zones" type="bool">
       false

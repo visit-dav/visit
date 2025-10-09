@@ -14,15 +14,15 @@
         true
       </Field>
       <Field name="axis" label="Axis of revolution" type="doubleArray" length="3" enabler="autoAxis:false">
-        1.000000
-        0.000000
-        0.000000
+        1
+        0
+        0
       </Field>
       <Field name="startAngle" label="Start angle" type="double">
-        0.000000
+        0
       </Field>
       <Field name="stopAngle" label="Stop angle" type="double">
-        360.000000
+        360
       </Field>
       <Field name="steps" label="Number of steps" type="int">
         30

@@ -49,7 +49,7 @@
         Unknown
       </Field>
       <Field name="opacity" label="opacity" type="opacity">
-        1.000000
+        1
       </Field>
       <Field name="wireframe" label="wireframe" type="bool">
         false
@@ -61,7 +61,7 @@
         0
       </Field>
       <Field name="pointSize" label="Point size" type="double">
-        0.050000
+        0.05
       </Field>
       <Field name="pointType" label="Point Type" type="glyphtype">
         Point

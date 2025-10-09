@@ -1,3 +1,4 @@
+Target: xml2atts
 Code: SetFromNode
 Prefix:
 Postfix:
@@ -6,6 +7,7 @@ Postfix:
     while(category.size() < id.size())
         category.push_back("?");
 
+Target: xml2atts
 Function: GetIndexByID
 Declaration: int GetIndexByID(const std::string &s) const;
 Definition:
@@ -32,6 +34,7 @@ PluginManagerAttributes::GetIndexByID(const std::string &s) const
     return -1;
 }
 
+Target: xml2atts
 Function: AddPlugin
 Declaration: void AddPlugin(const std::string &n,const std::string &t,const std::string &v,const std::string &i,bool e);
 Definition:
@@ -69,6 +72,7 @@ PluginManagerAttributes::AddPlugin(const std::string &n,
     SelectAll();
 }
 
+Target: xml2atts
 Function: RemovePlugin
 Declaration: void RemovePlugin(const std::string &s);
 Definition:
@@ -103,6 +107,7 @@ PluginManagerAttributes::RemovePlugin(const std::string &s)
     SelectAll();
 }
 
+Target: xml2atts
 Function: UniqueCategories
 Declaration: void UniqueCategories(const std::string &t, stringVector &c) const;
 Definition:
@@ -136,6 +141,7 @@ PluginManagerAttributes::UniqueCategories(const std::string &t, stringVector &c)
     std::sort(c.begin(), c.end());
 }
 
+Target: xml2atts
 Function: GetPluginCategoryName
 Declaration: std::string GetPluginCategoryName(const std::string &s) const;
 Definition:
@@ -164,6 +170,7 @@ PluginManagerAttributes::GetPluginCategoryName(const std::string &s) const
     return c;
 }
 
+Target: xml2atts
 Function: SetPluginCategoryName
 Declaration: void SetPluginCategoryName(const std::string &s, const std::string &c);
 Definition:
@@ -191,6 +198,7 @@ PluginManagerAttributes::SetPluginCategoryName(const std::string &s, const std::
     }
 }
 
+Target: xml2atts
 Function: PluginCategoryNameNotSet
 Declaration: bool PluginCategoryNameNotSet(const std::string &s) const;
 Definition:
@@ -212,3 +220,4 @@ PluginManagerAttributes::PluginCategoryNameNotSet(const std::string &s) const
 {
     return GetPluginCategoryName(s) == "?";
 }
+

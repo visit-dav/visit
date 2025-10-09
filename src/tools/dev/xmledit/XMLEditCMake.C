@@ -3,21 +3,18 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include "XMLEditStd.h"
-#include "XMLEditMakefile.h"
+#include "XMLEditCMake.h"
 
 #include <XMLDocument.h>
-#include <QButtonGroup>
 #include <QCheckBox>
-#include <QComboBox>
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
-#include <QRadioButton>
 
 #include <Plugin.h>
 
 // ****************************************************************************
-//  Constructor:  XMLEditMakefile::XMLEditMakefile
+//  Constructor:  XMLEditCMake::XMLEditCMake
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
@@ -55,7 +52,7 @@
 //
 // ****************************************************************************
 
-XMLEditMakefile::XMLEditMakefile(QWidget *p)
+XMLEditCMake::XMLEditCMake(QWidget *p)
     : QFrame(p)
 {
     QGridLayout *topLayout = new QGridLayout(this);
@@ -297,7 +294,7 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p)
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::UpdateWindowContents
+//  Method:  XMLEditCMake::UpdateWindowContents
 //
 //  Purpose:
 //    Update the window based on the current state.
@@ -329,7 +326,7 @@ XMLEditMakefile::XMLEditMakefile(QWidget *p)
 //
 // ****************************************************************************
 void
-XMLEditMakefile::UpdateWindowContents()
+XMLEditCMake::UpdateWindowContents()
 {
     BlockAllSignals(true);
 
@@ -429,7 +426,7 @@ XMLEditMakefile::UpdateWindowContents()
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::UpdateWindowSensitivity
+//  Method:  XMLEditCMake::UpdateWindowSensitivity
 //
 //  Purpose:
 //    Enable/disable widget sensitivity based on the current state.
@@ -461,7 +458,7 @@ XMLEditMakefile::UpdateWindowContents()
 //
 // ****************************************************************************
 void
-XMLEditMakefile::UpdateWindowSensitivity()
+XMLEditCMake::UpdateWindowSensitivity()
 {
     bool plugin = (xmldoc->docType == "Plugin");
 
@@ -511,7 +508,7 @@ XMLEditMakefile::UpdateWindowSensitivity()
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::BlockAllSignals
+//  Method:  XMLEditCMake::BlockAllSignals
 //
 //  Purpose:
 //    Blocks/unblocks signals to the widgets.  This lets them get
@@ -547,7 +544,7 @@ XMLEditMakefile::UpdateWindowSensitivity()
 //
 // ****************************************************************************
 void
-XMLEditMakefile::BlockAllSignals(bool block)
+XMLEditCMake::BlockAllSignals(bool block)
 {
     CXXFLAGS->blockSignals(block);
     LDFLAGS->blockSignals(block);
@@ -599,7 +596,7 @@ XMLEditMakefile::BlockAllSignals(bool block)
 
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::cxxflagsTextChanged
+//  Method:  XMLEditCMake::cxxflagsTextChanged
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
@@ -610,13 +607,13 @@ XMLEditMakefile::BlockAllSignals(bool block)
 //
 // ****************************************************************************
 void
-XMLEditMakefile::cxxflagsTextChanged()
+XMLEditCMake::cxxflagsTextChanged()
 {
     xmldoc->plugin->cxxflags = SplitValues(CXXFLAGS->text());
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::ldflagsTextChanged
+//  Method:  XMLEditCMake::ldflagsTextChanged
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
@@ -627,13 +624,13 @@ XMLEditMakefile::cxxflagsTextChanged()
 //
 // ****************************************************************************
 void
-XMLEditMakefile::ldflagsTextChanged()
+XMLEditCMake::ldflagsTextChanged()
 {
     xmldoc->plugin->ldflags = SplitValues(LDFLAGS->text());
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::libsTextChanged
+//  Method:  XMLEditCMake::libsTextChanged
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
@@ -644,13 +641,13 @@ XMLEditMakefile::ldflagsTextChanged()
 //
 // ****************************************************************************
 void
-XMLEditMakefile::libsTextChanged()
+XMLEditCMake::libsTextChanged()
 {
     xmldoc->plugin->libs = SplitValues(LIBS->text());
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::defsTextChanged
+//  Method:  XMLEditCMake::defsTextChanged
 //
 //  Programmer:  Kathleen Biagas
 //  Creation:    November 6, 2014
@@ -661,13 +658,13 @@ XMLEditMakefile::libsTextChanged()
 //
 // ****************************************************************************
 void
-XMLEditMakefile::defsTextChanged()
+XMLEditCMake::defsTextChanged()
 {
     xmldoc->plugin->defs = SplitValues(DEFINES->text());
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::gfilesTextChanged
+//  Method:  XMLEditCMake::gfilesTextChanged
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
@@ -678,13 +675,13 @@ XMLEditMakefile::defsTextChanged()
 //
 // ****************************************************************************
 void
-XMLEditMakefile::gfilesTextChanged()
+XMLEditCMake::gfilesTextChanged()
 {
     xmldoc->plugin->gfiles = SplitValues(GFiles->text());
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::glibsTextChanged
+//  Method:  XMLEditCMake::glibsTextChanged
 //
 //  Programmer:  Cyrus Harrison
 //  Creation:    September 19, 2008
@@ -695,14 +692,14 @@ XMLEditMakefile::gfilesTextChanged()
 //
 // ****************************************************************************
 void
-XMLEditMakefile::glibsTextChanged()
+XMLEditCMake::glibsTextChanged()
 {
     xmldoc->plugin->glibs = SplitValues(GLibs->text());
 }
 
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::sfilesTextChanged
+//  Method:  XMLEditCMake::sfilesTextChanged
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
@@ -713,13 +710,13 @@ XMLEditMakefile::glibsTextChanged()
 //
 // ****************************************************************************
 void
-XMLEditMakefile::sfilesTextChanged()
+XMLEditCMake::sfilesTextChanged()
 {
     xmldoc->plugin->sfiles = SplitValues(SFiles->text());
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::vfilesTextChanged
+//  Method:  XMLEditCMake::vfilesTextChanged
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
@@ -730,13 +727,13 @@ XMLEditMakefile::sfilesTextChanged()
 //
 // ****************************************************************************
 void
-XMLEditMakefile::vfilesTextChanged()
+XMLEditCMake::vfilesTextChanged()
 {
     xmldoc->plugin->vfiles = SplitValues(VFiles->text());
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::vlibsTextChanged
+//  Method:  XMLEditCMake::vlibsTextChanged
 //
 //  Programmer:  Cyrus Harrison
 //  Creation:    September 19, 2008
@@ -747,13 +744,13 @@ XMLEditMakefile::vfilesTextChanged()
 //
 // ****************************************************************************
 void
-XMLEditMakefile::vlibsTextChanged()
+XMLEditCMake::vlibsTextChanged()
 {
     xmldoc->plugin->vlibs = SplitValues(VLibs->text());
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::mfilesTextChanged
+//  Method:  XMLEditCMake::mfilesTextChanged
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
@@ -764,13 +761,13 @@ XMLEditMakefile::vlibsTextChanged()
 //
 // ****************************************************************************
 void
-XMLEditMakefile::mfilesTextChanged()
+XMLEditCMake::mfilesTextChanged()
 {
     xmldoc->plugin->mfiles = SplitValues(MFiles->text());
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::mlibsTextChanged
+//  Method:  XMLEditCMake::mlibsTextChanged
 //
 //  Programmer:  Cyrus Harrison
 //  Creation:    September 19, 2008
@@ -781,13 +778,13 @@ XMLEditMakefile::mfilesTextChanged()
 //
 // ****************************************************************************
 void
-XMLEditMakefile::mlibsTextChanged()
+XMLEditCMake::mlibsTextChanged()
 {
     xmldoc->plugin->mlibs = SplitValues(MLibs->text());
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::efilesTextChanged
+//  Method:  XMLEditCMake::efilesTextChanged
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
@@ -798,13 +795,13 @@ XMLEditMakefile::mlibsTextChanged()
 //
 // ****************************************************************************
 void
-XMLEditMakefile::efilesTextChanged()
+XMLEditCMake::efilesTextChanged()
 {
     xmldoc->plugin->efiles = SplitValues(EFiles->text());
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::elibsSerTextChanged
+//  Method:  XMLEditCMake::elibsSerTextChanged
 //
 //  Programmer:  Cyrus Harrison
 //  Creation:    September 19, 2008
@@ -819,13 +816,13 @@ XMLEditMakefile::efilesTextChanged()
 //
 // ****************************************************************************
 void
-XMLEditMakefile::elibsSerTextChanged()
+XMLEditCMake::elibsSerTextChanged()
 {
     xmldoc->plugin->elibsSer = SplitValues(ELibsSer->text());
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::elibsParTextChanged
+//  Method:  XMLEditCMake::elibsParTextChanged
 //
 //  Programmer:  Cyrus Harrison
 //  Creation:    September 19, 2008
@@ -840,13 +837,13 @@ XMLEditMakefile::elibsSerTextChanged()
 //
 // ****************************************************************************
 void
-XMLEditMakefile::elibsParTextChanged()
+XMLEditCMake::elibsParTextChanged()
 {
     xmldoc->plugin->elibsPar = SplitValues(ELibsPar->text());
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::wfilesTextChanged
+//  Method:  XMLEditCMake::wfilesTextChanged
 //
 //  Programmer:  Sean Ahern
 //  Creation:    Mon Nov 18 13:55:18 PST 2002
@@ -857,13 +854,13 @@ XMLEditMakefile::elibsParTextChanged()
 //
 // ****************************************************************************
 void
-XMLEditMakefile::wfilesTextChanged()
+XMLEditCMake::wfilesTextChanged()
 {
     xmldoc->plugin->wfiles = SplitValues(WFiles->text());
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::vwfilesTextChanged
+//  Method:  XMLEditCMake::vwfilesTextChanged
 //
 //  Programmer:  Brad Whitlock
 //  Creation:    Fri Feb 23 17:53:33 PST 2007
@@ -874,34 +871,34 @@ XMLEditMakefile::wfilesTextChanged()
 //
 // ****************************************************************************
 void
-XMLEditMakefile::vwfilesTextChanged()
+XMLEditCMake::vwfilesTextChanged()
 {
     xmldoc->plugin->vwfiles = SplitValues(VWFiles->text());
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::customgfilesChanged
+//  Method:  XMLEditCMake::customgfilesChanged
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
 // ****************************************************************************
 void
-XMLEditMakefile::customgfilesChanged()
+XMLEditCMake::customgfilesChanged()
 {
     xmldoc->plugin->customgfiles = customGFiles->isChecked();
     UpdateWindowContents();
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::customglibsChanged
+//  Method:  XMLEditCMake::customglibsChanged
 //
 //  Programmer:  Cyrus Harrison
 //  Creation:    September 19, 2008
 //
 // ****************************************************************************
 void
-XMLEditMakefile::customglibsChanged()
+XMLEditCMake::customglibsChanged()
 {
     xmldoc->plugin->customglibs = customGLibs->isChecked();
     UpdateWindowContents();
@@ -909,91 +906,91 @@ XMLEditMakefile::customglibsChanged()
 
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::customsfilesChanged
+//  Method:  XMLEditCMake::customsfilesChanged
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
 // ****************************************************************************
 void
-XMLEditMakefile::customsfilesChanged()
+XMLEditCMake::customsfilesChanged()
 {
     xmldoc->plugin->customsfiles = customSFiles->isChecked();
     UpdateWindowContents();
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::customvfilesChanged
+//  Method:  XMLEditCMake::customvfilesChanged
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
 // ****************************************************************************
 void
-XMLEditMakefile::customvfilesChanged()
+XMLEditCMake::customvfilesChanged()
 {
     xmldoc->plugin->customvfiles = customVFiles->isChecked();
     UpdateWindowContents();
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::customvlibsChanged
+//  Method:  XMLEditCMake::customvlibsChanged
 //
 //  Programmer:  Cyrus Harrison
 //  Creation:    September 19, 2008
 //
 // ****************************************************************************
 void
-XMLEditMakefile::customvlibsChanged()
+XMLEditCMake::customvlibsChanged()
 {
     xmldoc->plugin->customvlibs = customVLibs->isChecked();
     UpdateWindowContents();
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::custommfilesChanged
+//  Method:  XMLEditCMake::custommfilesChanged
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
 // ****************************************************************************
 void
-XMLEditMakefile::custommfilesChanged()
+XMLEditCMake::custommfilesChanged()
 {
     xmldoc->plugin->custommfiles = customMFiles->isChecked();
     UpdateWindowContents();
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::custommlibsChanged
+//  Method:  XMLEditCMake::custommlibsChanged
 //
 //  Programmer:  Cyrus Harrison
 //  Creation:    September 19, 2008
 //
 // ****************************************************************************
 void
-XMLEditMakefile::custommlibsChanged()
+XMLEditCMake::custommlibsChanged()
 {
     xmldoc->plugin->custommlibs = customMLibs->isChecked();
     UpdateWindowContents();
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::customefilesChanged
+//  Method:  XMLEditCMake::customefilesChanged
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
 // ****************************************************************************
 void
-XMLEditMakefile::customefilesChanged()
+XMLEditCMake::customefilesChanged()
 {
     xmldoc->plugin->customefiles = customEFiles->isChecked();
     UpdateWindowContents();
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::customelibsSerChanged
+//  Method:  XMLEditCMake::customelibsSerChanged
 //
 //  Programmer:  Cyrus Harrison
 //  Creation:    September 19, 2008
@@ -1004,14 +1001,14 @@ XMLEditMakefile::customefilesChanged()
 //
 // ****************************************************************************
 void
-XMLEditMakefile::customelibsSerChanged()
+XMLEditCMake::customelibsSerChanged()
 {
     xmldoc->plugin->customelibsSer = customELibsSer->isChecked();
     UpdateWindowContents();
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::customelibsParChanged
+//  Method:  XMLEditCMake::customelibsParChanged
 //
 //  Programmer:  Cyrus Harrison
 //  Creation:    September 19, 2008
@@ -1022,49 +1019,49 @@ XMLEditMakefile::customelibsSerChanged()
 //
 // ****************************************************************************
 void
-XMLEditMakefile::customelibsParChanged()
+XMLEditCMake::customelibsParChanged()
 {
     xmldoc->plugin->customelibsPar = customELibsPar->isChecked();
     UpdateWindowContents();
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::customwfilesChanged
+//  Method:  XMLEditCMake::customwfilesChanged
 //
 //  Programmer:  Sean Ahern
 //  Creation:    Fri Nov 15 15:29:19 PST 2002
 //
 // ****************************************************************************
 void
-XMLEditMakefile::customwfilesChanged()
+XMLEditCMake::customwfilesChanged()
 {
     xmldoc->plugin->customwfiles = customWFiles->isChecked();
     UpdateWindowContents();
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::customvwfilesChanged
+//  Method:  XMLEditCMake::customvwfilesChanged
 //
 //  Programmer:  Brad Whitlock
 //  Creation:    Fri Feb 23 17:54:08 PST 2007
 //
 // ****************************************************************************
 void
-XMLEditMakefile::customvwfilesChanged()
+XMLEditCMake::customvwfilesChanged()
 {
     xmldoc->plugin->customvwfiles = customVWFiles->isChecked();
     UpdateWindowContents();
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::mdSpecificCodeChanged
+//  Method:  XMLEditCMake::mdSpecificCodeChanged
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    July  7, 2004
 //
 // ****************************************************************************
 void
-XMLEditMakefile::mdSpecificCodeChanged()
+XMLEditCMake::mdSpecificCodeChanged()
 {
     xmldoc->plugin->has_MDS_specific_code = mdSpecificCode->isChecked();
     UpdateWindowContents();
@@ -1072,21 +1069,21 @@ XMLEditMakefile::mdSpecificCodeChanged()
 
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::engSpecificCodeChanged
+//  Method:  XMLEditCMake::engSpecificCodeChanged
 //
 //  Programmer:  Cyrus Harrison
 //  Creation:    March  7, 2007
 //
 // ****************************************************************************
 void
-XMLEditMakefile::engSpecificCodeChanged()
+XMLEditCMake::engSpecificCodeChanged()
 {
     xmldoc->plugin->hasEngineSpecificCode = engSpecificCode->isChecked();
     UpdateWindowContents();
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::mcxxflagsTextChanged
+//  Method:  XMLEditCMake::mcxxflagsTextChanged
 //
 //  Programmer:  Kathleen Biagas
 //  Creation:    May 4, 2022
@@ -1097,13 +1094,13 @@ XMLEditMakefile::engSpecificCodeChanged()
 //
 // ****************************************************************************
 void
-XMLEditMakefile::mcxxflagsTextChanged()
+XMLEditCMake::mcxxflagsTextChanged()
 {
     xmldoc->plugin->mcxxflags = SplitValues(MCXXFlags->text());
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::mldflagsTextChanged
+//  Method:  XMLEditCMake::mldflagsTextChanged
 //
 //  Programmer:  Kathleen Biagas
 //  Creation:    May 4, 2022
@@ -1114,13 +1111,13 @@ XMLEditMakefile::mcxxflagsTextChanged()
 //
 // ****************************************************************************
 void
-XMLEditMakefile::mldflagsTextChanged()
+XMLEditCMake::mldflagsTextChanged()
 {
     xmldoc->plugin->mldflags = SplitValues(MLDFlags->text());
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::mdefsTextChanged
+//  Method:  XMLEditCMake::mdefsTextChanged
 //
 //  Programmer:  Kathleen Biagas
 //  Creation:    May 4, 2022
@@ -1131,13 +1128,13 @@ XMLEditMakefile::mldflagsTextChanged()
 //
 // ****************************************************************************
 void
-XMLEditMakefile::mdefsTextChanged()
+XMLEditCMake::mdefsTextChanged()
 {
     xmldoc->plugin->mdefs = SplitValues(MDefines->text());
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::ecxxflagsSerTextChanged
+//  Method:  XMLEditCMake::ecxxflagsSerTextChanged
 //
 //  Programmer:  Kathleen Biagas
 //  Creation:    May 4, 2022
@@ -1148,13 +1145,13 @@ XMLEditMakefile::mdefsTextChanged()
 //
 // ****************************************************************************
 void
-XMLEditMakefile::ecxxflagsSerTextChanged()
+XMLEditCMake::ecxxflagsSerTextChanged()
 {
     xmldoc->plugin->ecxxflagsSer = SplitValues(ECXXFlagsSer->text());
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::eldflagsSerTextChanged
+//  Method:  XMLEditCMake::eldflagsSerTextChanged
 //
 //  Programmer:  Kathleen Biagas
 //  Creation:    May 4, 2022
@@ -1165,13 +1162,13 @@ XMLEditMakefile::ecxxflagsSerTextChanged()
 //
 // ****************************************************************************
 void
-XMLEditMakefile::eldflagsSerTextChanged()
+XMLEditCMake::eldflagsSerTextChanged()
 {
     xmldoc->plugin->eldflagsSer = SplitValues(ELDFlagsSer->text());
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::edefsSerTextChanged
+//  Method:  XMLEditCMake::edefsSerTextChanged
 //
 //  Programmer:  Kathleen Biagas
 //  Creation:    May 4, 2022
@@ -1182,13 +1179,13 @@ XMLEditMakefile::eldflagsSerTextChanged()
 //
 // ****************************************************************************
 void
-XMLEditMakefile::edefsSerTextChanged()
+XMLEditCMake::edefsSerTextChanged()
 {
     xmldoc->plugin->edefsSer = SplitValues(EDefinesSer->text());
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::ecxxflagsParTextChanged
+//  Method:  XMLEditCMake::ecxxflagsParTextChanged
 //
 //  Programmer:  Kathleen Biagas
 //  Creation:    May 4, 2022
@@ -1199,13 +1196,13 @@ XMLEditMakefile::edefsSerTextChanged()
 //
 // ****************************************************************************
 void
-XMLEditMakefile::ecxxflagsParTextChanged()
+XMLEditCMake::ecxxflagsParTextChanged()
 {
     xmldoc->plugin->ecxxflagsPar = SplitValues(ECXXFlagsPar->text());
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::eldflagsParTextChanged
+//  Method:  XMLEditCMake::eldflagsParTextChanged
 //
 //  Programmer:  Kathleen Biagas
 //  Creation:    May 4, 2022
@@ -1216,13 +1213,13 @@ XMLEditMakefile::ecxxflagsParTextChanged()
 //
 // ****************************************************************************
 void
-XMLEditMakefile::eldflagsParTextChanged()
+XMLEditCMake::eldflagsParTextChanged()
 {
     xmldoc->plugin->eldflagsPar = SplitValues(ELDFlagsPar->text());
 }
 
 // ****************************************************************************
-//  Method:  XMLEditMakefile::edefsParTextChanged
+//  Method:  XMLEditCMake::edefsParTextChanged
 //
 //  Programmer:  Kathleen Biagas
 //  Creation:    May 4, 2022
@@ -1233,7 +1230,7 @@ XMLEditMakefile::eldflagsParTextChanged()
 //
 // ****************************************************************************
 void
-XMLEditMakefile::edefsParTextChanged()
+XMLEditCMake::edefsParTextChanged()
 {
     xmldoc->plugin->edefsPar = SplitValues(EDefinesPar->text());
 }

@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: SetPoint1
 Declaration: void SetPoint1(double,double,double);
 Definition:
@@ -24,6 +25,7 @@ Line::SetPoint1(double x, double y, double z)
     Select(0, (void*)point1, 3);
 }
 
+Target: xml2atts
 Function: SetPoint2
 Declaration: void SetPoint2(double,double,double);
 Definition:

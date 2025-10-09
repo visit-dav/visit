@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: SetFromNode
 Declaration: virtual void SetFromNode(DataNode *parentNode);
 Definition:
@@ -67,5 +68,4 @@ MeshManagementAttributes::SetFromNode(DataNode *parentNode)
     if((node = searchNode->GetNode("passNativeCSG")) != 0)
         SetPassNativeCSG(node->AsBool());
 }
-
 

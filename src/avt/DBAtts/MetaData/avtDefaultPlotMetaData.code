@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: avtDefaultPlotMetaData2
 Declaration: avtDefaultPlotMetaData(const std::string &, const std::string &);
 Definition:
@@ -26,6 +27,7 @@ avtDefaultPlotMetaData::avtDefaultPlotMetaData(const std::string &p,
     plotVar       = v;
 }
 
+Target: xml2atts
 Function: AddAttribute
 Declaration: void AddAttribute(const std::string& attr);
 Definition:
@@ -48,6 +50,7 @@ avtDefaultPlotMetaData::AddAttribute(const std::string& attr)
     plotAttributes.push_back(attr);
 }
 
+Target: xml2atts
 Function: Print
 Declaration: void Print(ostream &, int = 0) const;
 Definition:

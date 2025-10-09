@@ -1,3 +1,4 @@
+Target: xml2atts
 Constant: namedColors
 Declaration:
 Definition:
@@ -928,6 +929,7 @@ static named_color_t namedColors[] =
 static const int numNamedColors = sizeof(namedColors) /
                                   sizeof(named_color_t);
 
+Target: xml2atts
 Function: ColorAttribute
 Declaration: ColorAttribute(int red, int green, int blue, int alpha = 255);
 Definition:
@@ -955,6 +957,35 @@ ColorAttribute::ColorAttribute(int red, int green, int blue, int alpha) :
     color[3] = (unsigned char)(alpha & 255);
 }
 
+Target: xml2java
+Function: ColorAttribute2
+Declaration: ColorAttribute2
+Definition:
+    public ColorAttribute(int r, int g, int b)
+    {
+        super(1);
+        color = new byte[4];
+        color[0] = (byte)(0xff & r);
+        color[1] = (byte)(0xff & g);
+        color[2] = (byte)(0xff & b);
+        color[3] = (byte)(0xff & 255);
+    }
+
+Target: xml2java
+Function: ColorAttribute3
+Declaration: ColorAttribute3
+Definition:
+    public ColorAttribute(int r, int g, int b, int a)
+    {
+        super(1);
+        color = new byte[4];
+        color[0] = (byte)(0xff & r);
+        color[1] = (byte)(0xff & g);
+        color[2] = (byte)(0xff & b);
+        color[3] = (byte)(0xff & a);
+    }
+
+Target: xml2atts
 Function: SetRgb
 Declaration: void SetRgb(int red, int green, int blue);
 Definition:
@@ -966,6 +997,7 @@ ColorAttribute::SetRgb(int red, int green, int blue)
     color[2] = (unsigned char)blue;
 }
 
+Target: xml2atts
 Function: GetRgb
 Declaration: void GetRgb(double c[3]) const;
 Definition:
@@ -977,6 +1009,7 @@ ColorAttribute::GetRgb(double c[3]) const
     c[2] = double(color[2]) / 255.;
 }
 
+Target: xml2atts
 Function: SetRgba
 Declaration: void SetRgba(int red, int green, int blue, int alpha);
 Definition:
@@ -989,6 +1022,7 @@ ColorAttribute::SetRgba(int red, int green, int blue, int alpha)
     color[3] = (unsigned char)alpha;
 }
 
+Target: xml2atts
 Function: GetRgba
 Declaration: void GetRgba(double c[4]) const;
 Definition:
@@ -1001,7 +1035,7 @@ ColorAttribute::GetRgba(double c[4]) const
     c[3] = double(color[3]) / 255.;
 }
 
-
+Target: xml2atts
 Function: SetRed
 Declaration: void SetRed(int red);
 Definition:
@@ -1011,6 +1045,7 @@ ColorAttribute::SetRed(int red)
     color[0] = (unsigned char)(red & 255);
 }
 
+Target: xml2atts
 Function: SetGreen
 Declaration: void SetGreen(int green);
 Definition:
@@ -1020,6 +1055,7 @@ ColorAttribute::SetGreen(int green)
     color[1] = (unsigned char)(green & 255);
 }
 
+Target: xml2atts
 Function: SetBlue
 Declaration: void SetBlue(int blue);
 Definition:
@@ -1029,6 +1065,7 @@ ColorAttribute::SetBlue(int blue)
     color[2] = (unsigned char)(blue & 255);
 }
 
+Target: xml2atts
 Function: SetAlpha
 Declaration: void SetAlpha(int alpha);
 Definition:
@@ -1038,6 +1075,7 @@ ColorAttribute::SetAlpha(int alpha)
     color[3] = (unsigned char)(alpha & 255);
 }
 
+Target: xml2atts
 Function: Red
 Declaration: int Red() const;
 Definition:
@@ -1047,6 +1085,17 @@ ColorAttribute::Red() const
     return (int)color[0];
 }
 
+Target: xml2java
+Function: Red
+Declaration: Red
+Definition:
+    public int Red()
+    {
+       int mask = 0xff;
+       return mask & color[0];
+    }
+
+Target: xml2atts
 Function: Green
 Declaration: int Green() const;
 Definition:
@@ -1056,6 +1105,17 @@ ColorAttribute::Green() const
     return (int)color[1];
 }
 
+Target: xml2java
+Function: Green
+Declaration: Green
+Definition:
+    public int Green()
+    {
+       int mask = 0xff;
+       return mask & color[1];
+    }
+
+Target: xml2atts
 Function: Blue
 Declaration: int Blue() const;
 Definition:
@@ -1065,6 +1125,17 @@ ColorAttribute::Blue() const
     return (int)color[2];
 }
 
+Target: xml2java
+Function: Blue
+Declaration: Blue
+Definition:
+    public int Blue()
+    {
+       int mask = 0xff;
+       return mask & color[2];
+    }
+
+Target: xml2atts
 Function: Alpha
 Declaration: int Alpha() const;
 Definition:
@@ -1074,6 +1145,17 @@ ColorAttribute::Alpha() const
     return (int)color[3];
 }
 
+Target: xml2java
+Function: Alpha
+Declaration: Alpha
+Definition:
+    public int Alpha()
+    {
+       int mask = 0xff;
+       return mask & color[3];
+    }
+
+Target: xml2atts
 Function: CreateNode
 Declaration: virtual bool CreateNode(DataNode *, bool, bool);
 Definition:
@@ -1111,6 +1193,7 @@ ColorAttribute::CreateNode(DataNode *parentNode, bool, bool)
     return true;
 }
 
+Target: xml2atts
 Function: SetRgba2
 Declaration: void SetRgba2(double c[4]);
 Definition:
@@ -1122,6 +1205,7 @@ void ColorAttribute::SetRgba2(double c[4])
     color[3] = (unsigned char)((float)c[3] * 255.f);
 }
 
+Target: xml2atts
 Function: SetByName
 Declaration: bool SetByName(const char *const colorName);
 Definition:
@@ -1181,6 +1265,7 @@ bool ColorAttribute::SetByName(const char *const colorName)
     return false;
 }
 
+Target: xml2atts
 Function: GetByName
 Declaration: const char *GetByName() const;
 Definition:
@@ -1205,6 +1290,7 @@ const char *ColorAttribute::GetByName() const
     return "unknown";
 }
 
+Target: xml2atts
 Function: RgbStrToRgb
 Declaration: static bool RgbStrToRgb(const char *const s, unsigned char rgb[3]);
 Definition:
@@ -1249,6 +1335,7 @@ ColorAttribute::RgbStrToRgb(const char *const s, unsigned char rgb[3])
     return true;
 }
 
+Target: xml2atts
 Function: RgbToRgbStr
 Declaration: static void RgbToRgbStr(unsigned char rgb[3], char *s);
 Definition:
@@ -1285,6 +1372,7 @@ ColorAttribute::RgbToRgbStr(unsigned char rgb[3], char *s)
     }
 }
 
+Target: xml2atts
 Function: Blend
 Declaration: static ColorAttribute Blend(const ColorAttribute &a, const ColorAttribute &b, double t);
 Definition:
@@ -1306,67 +1394,4 @@ ColorAttribute::Blend(const ColorAttribute &a, const ColorAttribute &b, double t
     int newA = ((1. - t) * double(a.Alpha()) + t * double(b.Alpha()));
     return ColorAttribute(newR, newG, newB, newA);
 }
-
-Target: xml2java
-Function: Red
-Declaration: Red
-Definition:
-    public int Red()
-    {
-       int mask = 0xff;
-       return mask & color[0];
-    }
-
-Function: Green
-Declaration: Green
-Definition:
-    public int Green()
-    {
-       int mask = 0xff;
-       return mask & color[1];
-    }
-
-Function: Blue
-Declaration: Blue
-Definition:
-    public int Blue()
-    {
-       int mask = 0xff;
-       return mask & color[2];
-    }
-
-Function: Alpha
-Declaration: Alpha
-Definition:
-    public int Alpha()
-    {
-       int mask = 0xff;
-       return mask & color[3];
-    }
-
-Function: ColorAttribute2
-Declaration: ColorAttribute2
-Definition:
-    public ColorAttribute(int r, int g, int b)
-    {
-        super(1);
-        color = new byte[4];
-        color[0] = (byte)(0xff & r);
-        color[1] = (byte)(0xff & g);
-        color[2] = (byte)(0xff & b);
-        color[3] = (byte)(0xff & 255);
-    }
-
-Function: ColorAttribute3
-Declaration: ColorAttribute3
-Definition:
-    public ColorAttribute(int r, int g, int b, int a)
-    {
-        super(1);
-        color = new byte[4];
-        color[0] = (byte)(0xff & r);
-        color[1] = (byte)(0xff & g);
-        color[2] = (byte)(0xff & b);
-        color[3] = (byte)(0xff & a);
-    }
 

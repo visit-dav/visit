@@ -14,10 +14,10 @@
       false
     </Field>
     <Field name="minSpatialExtents" label="Minimum spatial extents" type="double" access="public">
-      0.000000
+      0
     </Field>
     <Field name="maxSpatialExtents" label="Maximum spatial extents" type="double" access="public">
-      0.000000
+      0
     </Field>
     <Field name="from1DScalarName" label="Name  of 1D scalar this curve object was interpreted from" type="string" access="public">
     </Field>

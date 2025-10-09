@@ -77,6 +77,7 @@ StatisticalTrendsCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaDa
     return el;
 }
 
+Target: xml2info
 Function: StatisticalTrendsViewerEnginePluginInfo::UpdateOperatorAtts
 Declaration: virtual void InitializeOperatorAtts(AttributeSubject *atts, const avtPlotMetaData &plot, const bool fromDefault);
 Definition:
@@ -136,6 +137,7 @@ StatisticalTrendsViewerEnginePluginInfo::UpdateOperatorAtts(AttributeSubject *at
     }
 }
 
+Target: xml2info
 Function: StatisticalTrendsViewerEnginePluginInfo::GetOperatorVarDescription
 Declaration: virtual std::string GetOperatorVarDescription(AttributeSubject *atts, const avtPlotMetaData &plot);
 Definition:

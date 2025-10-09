@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: CopyAttributes
 Declaration: bool ThreeSliceAttributes::CopyAttributes(const AttributeGroup *atts)
 Definition:
@@ -40,6 +41,7 @@ ThreeSliceAttributes::CopyAttributes(const AttributeGroup *atts)
     return true;
 }
 
+Target: xml2atts
 Function: CreateCompatible
 Declaration: AttributeSubject * ThreeSliceAttributes::CreateCompatible(const std::string &tname) const
 Definition:
