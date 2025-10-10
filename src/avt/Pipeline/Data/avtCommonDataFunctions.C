@@ -483,7 +483,7 @@ CGetNumberOfOriginalZones(avtDataRepresentation &data, void *arg, bool &)
 //    I removed a "Register" call on the output polydata that was causing
 //    a memory leak. There was no need to increase the reference count
 //    since creating an avtDataRepresentation from it increases the
-//    reference cound.
+//    reference count.
 //
 // ****************************************************************************
 
