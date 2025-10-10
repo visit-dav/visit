@@ -346,10 +346,10 @@ avtSamplePointExtractorBase::ExecuteTree(avtDataTree_p dt)
     {
         datatree_childindex *ci=nodes.top();
         avtDataTree_p ch=ci->dt;
-	int idx = ci->idx;
+	    int idx = ci->idx;
 
-	delete ci;
-	nodes.pop();
+	    delete ci;
+	    nodes.pop();
         if (ch->GetNChildren() != 0)
         {
             for (int i = 0; i < ch->GetNChildren(); i++)
