@@ -208,6 +208,12 @@
 //    Remove WIN32DEFINES (windefs) support, now handled as a Conditional
 //    Definitions in .code file.
 //
+//    Kathleen Biagas, Thu Oct  9, 2025
+//    Add support for Conditional CXXFlags.
+//    Modified Condition Definitions to write 'add_compile_definitions'
+//    instead of 'add_definitions' which requires -D prefix to be part of
+//    the definition.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -514,7 +520,24 @@ class CMakeGeneratorPlugin : public Plugin
             for (int i = 0; i < conditions.size(); ++i)
             {
                 out << "if(" << conditions[i] << ")" << Endl;
-                out << "    add_definitions(";
+                out << "    add_compile_definitions(";
+                out << defs[i];
+                out << ")" << Endl;
+                out << "endif()" << Endl;
+                out << Endl;
+            }
+        }
+    }
+
+    void WriteCMake_ConditionalCXXFlags(QTextStream &out)
+    {
+        QStringList conditions, defs;
+        if(GetCondition("CXXFlags:", conditions, defs))
+        {
+            for (int i = 0; i < conditions.size(); ++i)
+            {
+                out << "if(" << conditions[i] << ")" << Endl;
+                out << "    add_compile_options(";
                 out << defs[i];
                 out << ")" << Endl;
                 out << "endif()" << Endl;
@@ -841,6 +864,7 @@ class CMakeGeneratorPlugin : public Plugin
             out << Endl;
 
         WriteCMake_ConditionalDefinitions(out);
+        WriteCMake_ConditionalCXXFlags(out);
 
         if (!vtk9_libs.empty())
         {
@@ -1127,6 +1151,7 @@ class CMakeGeneratorPlugin : public Plugin
             out << Endl;
 
         WriteCMake_ConditionalDefinitions(out);
+        WriteCMake_ConditionalCXXFlags(out);
 
         if (!vtk9_libs.empty())
         {
