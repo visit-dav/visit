@@ -31,7 +31,7 @@ ${VISIT_DATABASE_INCLUDES}
 )
 
 if(WIN32)
-    add_definitions(${NETCDF_WIN32_DEFINES})
+    add_compile_definitions(${NETCDF_WIN32_DEFINES})
 endif()
 
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${NETCDF_LIBRARY_DIR} )

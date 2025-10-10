@@ -23,6 +23,8 @@ class QPushButton;
 //  Creation:    Sep 29, 2025
 //
 //  Modifications:
+//    Kathleen Biagas, Thu Oct 9, 2025
+//    Add support for cxxflags.
 //
 // ****************************************************************************
 class XMLEditConditional : public QFrame
@@ -39,6 +41,7 @@ class XMLEditConditional : public QFrame
     void conditionTextChanged();
     void conditionTextChanged(const QString&);
     void definitionsChanged();
+    void cxxflagsChanged();
     void mlinklibsChanged();
     void elinklibsChanged();
     void conditionlistNew();
@@ -55,6 +58,7 @@ class XMLEditConditional : public QFrame
     QLineEdit      *condition;
     QLineEdit      *target;
     QTextEdit      *definitions;
+    QTextEdit      *cxxflags;
     QTextEdit      *mlinklibs;
     QTextEdit      *elinklibs;
 };

@@ -82,6 +82,9 @@
 //    Kathleen Biagas, Tue Sep 30 16:10:32 PDT 2025
 //    Add handling of conditionals in SaveCodeFile.
 //
+//    Kathleen Biagas, Thu Oct 9, 2025
+//    Add cxxflags to conditionals.
+//
 // ****************************************************************************
 
 class Attribute : public AttributeBase
@@ -353,6 +356,8 @@ class Attribute : public AttributeBase
             out << "Condition: " << c->condition << Endl;
             if(!c->definitions.isEmpty())
                 out << "Definitions: " << c->definitions << Endl;
+            if(!c->cxxflags.isEmpty())
+                out << "CXXFlags: " << c->cxxflags << Endl;
             if(!c->mlinklibs.isEmpty())
                 out << "MLinkLibraries: " << c->mlinklibs << Endl;
             if(!c->elinklibs.isEmpty())

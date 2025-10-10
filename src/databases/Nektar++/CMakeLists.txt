@@ -38,7 +38,7 @@ ${VISIT_DATABASE_INCLUDES}
 ADD_DEFINITIONS(${NEKTAR++_DEFINITIONS})
 
 if(LINUX)
-    add_definitions(-fext-numeric-literals)
+    add_compile_options(-fext-numeric-literals)
 endif()
 
 set(vtk_libs VTK::IOXML )
