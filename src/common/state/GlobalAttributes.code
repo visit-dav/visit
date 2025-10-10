@@ -1,3 +1,4 @@
+Target: xml2atts
 Initialization: userDirForSessionFiles
 #ifdef _WIN32
     userDirForSessionFiles = true;
@@ -5,6 +6,7 @@ Initialization: userDirForSessionFiles
     userDirForSessionFiles = false;
 #endif
 
+Target: xml2atts
 Function: CreateNode
 Declaration: virtual bool CreateNode(DataNode *node, bool, bool);
 Definition:
@@ -261,6 +263,7 @@ GlobalAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
     return (addToParent || forceAdd);
 }
 
+Target: xml2atts
 Function: SetFromNode
 Declaration: virtual void SetFromNode(DataNode *node);
 Definition:

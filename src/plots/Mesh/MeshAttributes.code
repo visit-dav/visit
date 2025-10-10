@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: ChangesRequireRecalculation
 Declaration: bool ChangesRequireRecalculation(const MeshAttributes &, const int);
 Definition:
@@ -57,6 +58,7 @@ MeshAttributes::ChangesRequireRecalculation(const MeshAttributes &obj,
             (showInternal != obj.showInternal && spatDim == 3));
 }
 
+Target: xml2atts
 Function: CreateCompatible
 Declaration: virtual AttributeSubject *CreateCompatible(const std::string &) const;
 Definition:
@@ -121,6 +123,7 @@ MeshViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
         plot.GetBackgroundColor(), plot.GetForegroundColor());
 }
 
+Target: xml2info
 Function: MeshViewerEnginePluginInfo::SetAutonomousColors
 Declaration: void SetAutonomousColors(AttributeSubject *, double const *, double const *);
 Definition:

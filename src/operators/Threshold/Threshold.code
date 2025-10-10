@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: CopyAttributes
 Declaration: bool CopyAttributes(const AttributeGroup *atts);
 Definition:
@@ -86,6 +87,7 @@ ThresholdAttributes::CopyAttributes(const AttributeGroup *atts)
     return retval;
 }
 
+Target: xml2atts
 Function: CreateNode
 Declaration: virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
 Definition:
@@ -182,6 +184,7 @@ ThresholdAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
     return (addToParent || forceAdd);
 }
 
+Target: xml2atts
 Function: SetFromNode
 Declaration: virtual void SetFromNode(DataNode *node);
 Definition:
@@ -291,6 +294,7 @@ ThresholdViewerEnginePluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
     UpdateOperatorAtts(initAtts, plot);
 }
 
+Target: xml2info
 Function: ThresholdEnginePluginInfo::AllocAvtPluginFilter
 Declaration: virtual avtPluginFilter *AllocAvtPluginFilter();
 Definition:

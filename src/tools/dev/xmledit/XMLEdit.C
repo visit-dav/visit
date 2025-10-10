@@ -11,7 +11,7 @@
 #include <QTabWidget>
 
 #include <XMLEditAttribute.h>
-#include <XMLEditMakefile.h>
+#include <XMLEditCMake.h>
 #include <XMLEditPlugin.h>
 #include <XMLEditEnums.h>
 #include <XMLEditFields.h>
@@ -19,6 +19,7 @@
 #include <XMLEditConstants.h>
 #include <XMLEditIncludes.h>
 #include <XMLEditCode.h>
+#include <XMLEditConditional.h>
 #include <XMLDocument.h>
 #include <XMLToolIds.h>
 #include <XMLEditCodeGeneratorWindow.h>
@@ -39,7 +40,12 @@
 //    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
 //    First pass at porting to Qt 4.4.0
 //
+//    Kathleen Biagas, Tue Sep 30 14:36:55 PDT 2025
+//    Renamed XMLEditMakefile to XMLEditCMake.
+//    Add tab for XMLEditConditional.
+//
 // ****************************************************************************
+
 XMLEdit::XMLEdit(const QString &file, QWidget *p)
     : QMainWindow(p)
 {
@@ -61,8 +67,8 @@ XMLEdit::XMLEdit(const QString &file, QWidget *p)
     plugintab = new XMLEditPlugin(this);
     tabs->addTab(plugintab, tr("Plugin"));
 
-    makefiletab = new XMLEditMakefile(this);
-    tabs->addTab(makefiletab, tr("CMake"));
+    cmaketab = new XMLEditCMake(this);
+    tabs->addTab(cmaketab, tr("CMake"));
 
     attributetab = new XMLEditAttribute(this);
     tabs->addTab(attributetab, tr("Attribute"));
@@ -84,6 +90,9 @@ XMLEdit::XMLEdit(const QString &file, QWidget *p)
 
     codetab = new XMLEditCode(this);
     tabs->addTab(codetab, tr("Code"));
+
+    conditionaltab = new XMLEditConditional(this);
+    tabs->addTab(conditionaltab, tr("Conditional"));
 
     connect(tabs, SIGNAL(currentChanged(int)),
             this, SLOT(updateTab(int)));
@@ -196,6 +205,10 @@ XMLEdit::save()
 //    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
 //    First pass at porting to Qt 4.4.0
 //
+//    Kathleen Biagas, Tue Sep 30 14:36:55 PDT 2025
+//    Renamed makefiletale to cmaketab.
+//    Add conditionaltab.
+//
 // ****************************************************************************
 void
 XMLEdit::OpenFile(const QString &file)
@@ -206,7 +219,7 @@ XMLEdit::OpenFile(const QString &file)
     xmldoc->open(filename);
 
     plugintab->SetDocument(xmldoc);
-    makefiletab->SetDocument(xmldoc);
+    cmaketab->SetDocument(xmldoc);
     attributetab->SetDocument(xmldoc);
     enumstab->SetDocument(xmldoc);
     fieldstab->SetDocument(xmldoc);
@@ -214,9 +227,10 @@ XMLEdit::OpenFile(const QString &file)
     constantstab->SetDocument(xmldoc);
     includestab->SetDocument(xmldoc);
     codetab->SetDocument(xmldoc);
+    conditionaltab->SetDocument(xmldoc);
 
     plugintab->UpdateWindowContents();
-    makefiletab->UpdateWindowContents();
+    cmaketab->UpdateWindowContents();
     attributetab->UpdateWindowContents();
     enumstab->UpdateWindowContents();
     fieldstab->UpdateWindowContents();
@@ -224,6 +238,7 @@ XMLEdit::OpenFile(const QString &file)
     constantstab->UpdateWindowContents();
     includestab->UpdateWindowContents();
     codetab->UpdateWindowContents();
+    conditionaltab->UpdateWindowContents();
 
     setWindowTitle(tr("XMLEdit: %1").arg(file));
 }
@@ -269,14 +284,19 @@ XMLEdit::SaveFile(const QString &file)
 //    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
 //    First pass at porting to Qt 4.4.0
 //
+//    Kathleen Biagas, Tue Sep 30 14:36:55 PDT 2025
+//    Renamed makefiletale to cmaketab.
+//    Add conditionaltab.
+//
 // ****************************************************************************
+
 void
 XMLEdit::updateTab(int tab)
 {
     if (tab == 0)
         plugintab->UpdateWindowContents();
     else if (tab == 1)
-        makefiletab->UpdateWindowContents();
+        cmaketab->UpdateWindowContents();
     else if (tab == 2)
         attributetab->UpdateWindowContents();
     else if (tab == 3)
@@ -291,6 +311,8 @@ XMLEdit::updateTab(int tab)
         includestab->UpdateWindowContents();
     else if (tab == 8)
         codetab->UpdateWindowContents();
+    else if (tab == 9)
+        conditionaltab->UpdateWindowContents();
     else
         cerr << "UNKNOWN TAB IN " << __FILE__ << " LINE " << __LINE__ << endl;
 }

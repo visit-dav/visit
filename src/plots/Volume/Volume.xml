@@ -4,18 +4,6 @@
       ${VISIT_INCLUDE_DIR}/avt/Expressions/Abstract
       ${VISIT_INCLUDE_DIR}/avt/Expressions/General
     </CXXFLAGS>
-    <LIBS components="ESer">
-      avtexpressions_ser
-      avtfilters_ser
-      VTK::RenderingVolume
-      VTK::RenderingVolumeOpenGL2
-    </LIBS>
-    <LIBS components="EPar">
-      avtexpressions_par
-      avtfilters_par
-      VTK::RenderingVolume
-      VTK::RenderingVolumeOpenGL2
-    </LIBS>
     <Files components="V">
       avtVolumeRenderer.C
       avtVolumeFilter.C
@@ -138,13 +126,13 @@
         0
       </Field>
       <Field name="OSPRayAODistance" label="OSPRayAODistance" type="double">
-        100000.000000
+        100000
       </Field>
       <Field name="OSPRayMinContribution" label="OSPRayMinContribution" type="double">
-        0.001000
+        0.001
       </Field>
       <Field name="OSPRayMaxContribution" label="OSPRayMaxContribution" type="double">
-        2.000000
+        2
       </Field>
       <Field name="legendFlag" label="legendFlag" type="bool">
         true
@@ -216,7 +204,7 @@
         Linear
       </Field>
       <Field name="skewFactor" label="skewFactor" type="double" enabler="scaling:Skew">
-        1.000000
+        1
       </Field>
       <Field name="limitsMode" label="Limits Mode" type="enum" subtype="LimitsMode">
         OriginalData
@@ -234,13 +222,13 @@
         false
       </Field>
       <Field name="lowGradientLightingClampValue" label="lowGradientLightingClampFlag" type="double">
-        1.000000
+        1
       </Field>
       <Field name="materialProperties" label="materialProperties" type="doubleArray" length="4">
-        0.400000
-        0.750000
-        0.000000
-        15.000000
+        0.4
+        0.75
+        0
+        15
       </Field>
       <Field name="anariAttributes" label="ANARI attributes" type="att" subtype="AnariAttributes">
       </Field>
@@ -267,10 +255,6 @@
       <Function name="VolumeAttributes_SetFreeformOpacity" user="false" member="true">
       </Function>
       <Function name="VolumeViewerEnginePluginInfo::Permits2DViewScaling" user="false" member="true">
-      </Function>
-      <Function name="VolumeViewerEnginePluginInfo::InitializeGlobalObjects" user="false" member="true">
-      </Function>
-      <Function name="VolumeViewerEnginePluginInfo::~VolumeViewerEnginePluginInfo" user="true" member="true">
       </Function>
       <Function name="VolumeAttributes_SetMaterialProperties" user="false" member="true">
       </Function>

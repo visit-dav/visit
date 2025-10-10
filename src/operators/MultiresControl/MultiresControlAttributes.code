@@ -15,7 +15,7 @@ void QvisMultiresControlWindow::resolutionLevelChanged(int val)
     }
 }
 
-
+Target: xml2window
 Function: resolutionProcessText
 Declaration: void QvisMultiresControlWindow::resolutionProcessText();
 Definition:
@@ -28,3 +28,4 @@ void QvisMultiresControlWindow::resolutionProcessText()
 
     Apply();
 }
+

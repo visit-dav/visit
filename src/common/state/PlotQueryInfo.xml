@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="PlotQueryInfo" persistent="false" purpose="This class is a ." exportAPI="STATE_API" exportInclude="state_exports.h">
+  <Attribute name="PlotQueryInfo" purpose="This class is a ." persistent="false" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h">
     <Enum name="ChangeType">
       None
       Database
@@ -13,7 +13,13 @@
       RemoveLast
       CacheIndex
     </Enum>
-    <Field name="changeType" type="enum" subtype="ChangeType">None</Field>
-    <Field name="oldFrameIndex" type="int" >0</Field>
-    <Field name="newFrameIndex" type="int" >0</Field>
+    <Field name="changeType" label="changeType" type="enum" subtype="ChangeType">
+      None
+    </Field>
+    <Field name="oldFrameIndex" label="oldFrameIndex" type="int">
+      0
+    </Field>
+    <Field name="newFrameIndex" label="newFrameIndex" type="int">
+      0
+    </Field>
   </Attribute>

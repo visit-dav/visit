@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: Initialize
 Declaration: void Initialize(const double, const std::string &);
 Definition:
@@ -27,6 +28,7 @@ MinMaxInfo::Initialize(const double val, const std::string &t)
     matName = "NO_MAT";
 }
 
+Target: xml2atts
 Function: TransformCoord
 Declaration: void TransformCoord(const avtMatrix *trans);
 Definition:
@@ -56,6 +58,7 @@ MinMaxInfo::TransformCoord(const avtMatrix *trans)
     }
 }
 
+Target: xml2atts
 Function: EquivalentForOutput
 Declaration: bool  EquivalentForOutput (const MinMaxInfo &obj) const;
 Definition:

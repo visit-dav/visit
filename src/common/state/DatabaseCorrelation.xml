@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="DatabaseCorrelation" purpose="This class encapsulates a database correlation, which is a mapping of one or more databases to a set of indices that go from 0 to N." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="DatabaseCorrelation.code">
+  <Attribute name="DatabaseCorrelation" purpose="This class encapsulates a database correlation, which is a mapping of one or more databases to a set of indices that go from 0 to N." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="DatabaseCorrelation.code">
     <Enum name="CorrelationMethod">
       IndexForIndexCorrelation
       StretchedIndexCorrelation

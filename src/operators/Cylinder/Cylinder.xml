@@ -2,17 +2,17 @@
   <Plugin name="Cylinder" type="operator" label="Cylinder" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="Cylinder.xpm" category="Selection">
     <Attribute name="CylinderAttributes" purpose="Contain the attributes for a cylinder" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="CylinderAttributes.code">
       <Field name="point1" label="Endpoint 1" type="doubleArray" length="3">
-        0.000000
-        0.000000
-        0.000000
+        0
+        0
+        0
       </Field>
       <Field name="point2" label="Endpoint 2" type="doubleArray" length="3">
-        1.000000
-        0.000000
-        0.000000
+        1
+        0
+        0
       </Field>
       <Field name="radius" label="Radius" type="double">
-        1.000000
+        1
       </Field>
       <Field name="inverse" label="Inverse" type="bool">
         false

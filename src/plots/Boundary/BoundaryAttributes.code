@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: ChangesRequireRecalculation
 Declaration: bool ChangesRequireRecalculation(const BoundaryAttributes &obj);
 Definition:
@@ -21,6 +22,7 @@ BoundaryAttributes::ChangesRequireRecalculation(const BoundaryAttributes &obj)
             (smoothingLevel != obj.smoothingLevel));
 }
 
+Target: xml2atts
 Function: VarChangeRequiresReset
 Declaration: virtual bool VarChangeRequiresReset(void);
 Definition:
@@ -91,6 +93,7 @@ BoundaryViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
     PrivateSetPlotAtts(atts, plot);
 }
 
+Target: xml2info
 Function: BoundaryViewerEnginePluginInfo::ReInitializePlotAtts
 Declaration: virtual void ReInitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
@@ -122,6 +125,7 @@ BoundaryViewerEnginePluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
     PrivateSetPlotAtts(atts, plot);
 }
 
+Target: xml2info
 Function: BoundaryViewerEnginePluginInfo::ResetPlotAtts
 Declaration: virtual void ResetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
@@ -164,6 +168,7 @@ BoundaryViewerEnginePluginInfo::ResetPlotAtts(AttributeSubject *atts,
     PrivateSetPlotAtts(atts, plot);
 }
 
+Target: xml2info
 Function: BoundaryViewerEnginePluginInfo::PrivateSetPlotAtts
 Declaration: void   PrivateSetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:

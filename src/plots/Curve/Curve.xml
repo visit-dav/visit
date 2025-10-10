@@ -57,7 +57,7 @@
         Point
       </Field>
       <Field name="pointSize" label="pointSize" type="double" enabler="showPoints:true">
-        5.000000
+        5
       </Field>
       <Field name="pointFillMode" label="pointFillMode" type="enum" subtype="FillMode" enabler="showPoints:true">
         Static
@@ -95,7 +95,7 @@
         255
       </Field>
       <Field name="timeCueBallSize" label="Time Cue Ball Size" type="double" enabler="doBallTimeCue:true">
-        0.010000
+        0.01
       </Field>
       <Field name="doLineTimeCue" label="Do Line Time Curve" type="bool">
         false
@@ -113,7 +113,7 @@
         false
       </Field>
       <Field name="timeForTimeCue" label="timeForTimeCue" type="double">
-        0.000000
+        0
       </Field>
       <Field name="fillMode" label="Fill Mode" type="enum" subtype="CurveFillMode">
         NoFill
@@ -166,6 +166,5 @@
       <Include file="source" quoted="false" target="xml2python">
         visit-config.h
       </Include>
-
     </Attribute>
   </Plugin>

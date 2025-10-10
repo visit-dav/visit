@@ -106,6 +106,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Fixed a bug causing the min, max, and divide expressions to crash the compute engine when given a single variable as input. Min and max now return the result of that single variable, and divide throws an error instead of crashing.</li>
   <li>The Verdict mesh quality library that is builtin to VisIt was enhanced to handle degenerate hexahedra. This improves expressions and queries that use the Verdict library.</li>
+  <li>Changed the <code>global_variance</code> expression to <code>global_var</code> and the <code>global_std_dev</code> expression to <code>global_std</code>.</li>
 </ul>
 
 <a name="Query_changes"></a>
@@ -138,6 +139,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Added a descriptive error message for when a movie encoding format is not supported on the current platform.</li>
   <li>Fixed a bug where rendering with shadows would result in an all black image except for the annotations when the image contained transparent geometry.</li>
   <li>Fixed a bug where RPATHs weren't stripped from distributions. This could lead to issues for users that didn't build the distribution. It could also cause issues when a distribution is installed on a machine different from where it was built.</li>
+  <li>Fixed a bug with global mesh expressions causing them to only work on single domain data. They now function across all domains in parallel and in serial.</li>
   <li>Eliminated a couple of memory leaks. The first was in the operator that removes ghost zones and calculates external faces. The second was in the Resample operator.</li>
 </ul>
 
@@ -164,7 +166,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 3.5</font></b></p>
 <ul>
-  <li>Developer Change 1</li>
+  <li>xmledit and other xml code gen tools have been fixed such that all logic in a '.code' file will be properly displayed in 'xmledit' and also saved accurately when 'save' issued from xmledit.  The 'Target' designator is now always written to the .code file, even if the target is the default 'xml2atts' target.</li>
   <li>Developer Change 2</li>
 </ul>
 

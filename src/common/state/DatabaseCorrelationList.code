@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: FindCorrelation
 Declaration: DatabaseCorrelation *FindCorrelation(const std::string &name) const;
 Definition:
@@ -19,6 +20,7 @@ DatabaseCorrelationList::FindCorrelation(const std::string &name) const
     return retval;
 }
 
+Target: xml2atts
 Function: PrintOperator
 Declaration: ostream &operator <<(ostream &, const DatabaseCorrelationList &cL);
 Definition:
@@ -34,6 +36,7 @@ operator << (ostream &os, const DatabaseCorrelationList &cL)
    return os;
 }
 
+Target: xml2atts
 Function: RemoveCorrelation
 Declaration: bool RemoveCorrelation(const std::string &name);
 Definition:
@@ -73,6 +76,7 @@ DatabaseCorrelationList::RemoveCorrelation(const std::string &name)
     return (delIndex>=0);
 }
 
+Target: xml2atts
 Function: CreateNode
 Declaration: bool CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd);
 Definition:

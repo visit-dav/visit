@@ -9,7 +9,7 @@
       Arial
     </Field>
     <Field name="scale" label="Scale" type="double">
-      1.000000
+      1
     </Field>
     <Field name="useForegroundColor" label="Use foreground color" type="bool">
       true

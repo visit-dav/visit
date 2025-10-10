@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="PlotInfoAttributes" purpose="contains info set by the executed plot." persistent="false" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="PlotInfoAttributes.code">
+  <Attribute name="PlotInfoAttributes" purpose="contains info set by the executed plot." persistent="false" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="PlotInfoAttributes.code">
     <Field name="data" label="Data" type="MapNode" internal="true">
     </Field>
     <Function name="PrintSelf" user="true" member="true">
@@ -8,7 +8,7 @@
     </Function>
     <Function name="Merge" user="true" member="true">
     </Function>
-    <Include file="header" quoted="false"> 
+    <Include file="header" quoted="false">
       visitstream.h
     </Include>
   </Attribute>

@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: PrintSelf
 Declaration: void PrintSelf(ostream &os);
 Definition:
@@ -267,6 +268,7 @@ PickAttributes::PrintSelf(ostream &os)
         os << "Set up to create concise Output.\n";
 }
 
+Target: xml2atts
 Function: CreateOutputString
 Declaration: void CreateOutputString(std::string &os, bool withLetter = true);
 Definition:
@@ -744,6 +746,7 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
     }
 }
 
+Target: xml2atts
 Function: PrepareForNewPick
 Declaration: void PrepareForNewPick();
 Definition:
@@ -868,6 +871,7 @@ PickAttributes::PrepareForNewPick()
     inputTopoDim = -1;
 }
 
+Target: xml2atts
 Function: CreateConciseOutputString
 Declaration: void CreateConciseOutputString(std::string &os, bool withLetter = true);
 Definition:
@@ -1246,6 +1250,7 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
     }
 }
 
+Target: xml2atts
 Function: SetRayPoint1
 Declaration: void SetRayPoint1(const doubleVector &);
 Definition:
@@ -1270,6 +1275,7 @@ PickAttributes::SetRayPoint1(const doubleVector & _v)
     rayPoint1[2] = _v[2];
 }
 
+Target: xml2atts
 Function: SetRayPoint2
 Declaration: void SetRayPoint2(const doubleVector &);
 Definition:
@@ -1294,6 +1300,7 @@ PickAttributes::SetRayPoint2(const doubleVector &_v)
     rayPoint2[2] = _v[2];
 }
 
+Target: xml2atts
 Function: AddLine
 Declaration: void AddLine(const double *_c0, const double *_c1, const int &pos);
 Definition:
@@ -1327,6 +1334,7 @@ PickAttributes::AddLine(const double *_c0, const double *_c1, const int &pos)
 
 }
 
+Target: xml2atts
 Function: Notify
 Declaration: void Notify();
 Definition:
@@ -1365,6 +1373,7 @@ PickAttributes::Notify()
     }
 }
 
+Target: xml2atts
 Function: ClearLines
 Declaration: void ClearLines();
 Definition:
@@ -1387,6 +1396,7 @@ PickAttributes::ClearLines()
     cellCoordinates.clear();
 }
 
+Target: xml2atts
 Function: CreateOutputMapNode
 Declaration: void CreateOutputMapNode(MapNode &m, bool withLetter);
 Definition:
@@ -1544,6 +1554,7 @@ PickAttributes::CreateOutputMapNode(MapNode &m, bool withLetter)
     }
 }
 
+Target: xml2atts
 Function: CreateXMLString
 Declaration: void CreateXMLString(std::string &os, bool withLetter = true);
 Definition:
@@ -1594,6 +1605,7 @@ PyPickAttributes_GetLogString()
     return s;
 }
 
+Target: xml2python
 Function: PyPickAttributes_CallLogRoutine
 Declaration: static void PyPickAttributes_CallLogRoutine(Subject *subj, void *data)
 Definition:
