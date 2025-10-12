@@ -77,10 +77,11 @@ ${VISIT_INCLUDE_DIR}/avt/Expressions/Abstract
 ${VISIT_INCLUDE_DIR}/avt/Expressions/General
 )
 
+#anari/AnariParameterInfo.C)
+
 if(HAVE_ANARI)
     list(APPEND LIBG_SOURCES
-        anari/AnariVolumeWidget.C
-        anari/AnariParameterInfo.C)
+        anari/AnariVolumeWidget.C)
     include_directories(AFTER ${CMAKE_CURRENT_SOURCE_DIR}/anari)
 endif(HAVE_ANARI)
 

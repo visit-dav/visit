@@ -99,6 +99,8 @@ private:
 #ifdef HAVE_ANARI
     bool m_anariEnabled{false};
 
+    bool SetAnariLibrary(vtkAnariPass * const);
+    void SetAnariRendererSubtype(vtkAnariPass * const);
     void SetAnariRendererParameters(vtkAnariPass * const);
     void SetAnariUSDParameters(vtkAnariPass * const);
 #endif

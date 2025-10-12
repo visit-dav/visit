@@ -58,6 +58,7 @@
     #include <vtkAnariSceneGraph.h>
     #include <vtkAnariVisItViewNodeFactory.h>
     #include <vtkViewNodeFactory.h>
+    #include <vtkLogger.h>
 #endif
 
 #include <limits>
@@ -361,6 +362,7 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
 
     anariRendering = false;
 #ifdef HAVE_ANARI
+    vtkLogger::SetStderrVerbosity(vtkLogger::VERBOSITY_INFO);
     anariAttributes = AnariAttributes();
     anariPass = CreateAnariPass();
 #endif
@@ -1671,6 +1673,9 @@ VisWinRendering::ScreenRender(avtImageType imgT,
     else
     {
         // not given any image to upload. just render.
+        #ifdef HAVE_ANARi
+        anariRendering = false;
+        #endif
         RenderRenderWindow();
     }
 
@@ -3364,52 +3369,53 @@ VisWinRendering::SetAnariAttributes(const AnariAttributes &atts)
     if(anariAttributes == atts)
         return; // No change
 
-    auto oldAtts = anariAttributes;
+    const AnariAttributes oldAtts = anariAttributes;
     anariAttributes = atts;
+    anariRendering = atts.GetAnariRendering();
     
-    // Anari library changed
-    if(oldAtts.GetAnariLibrary() != anariAttributes.GetAnariLibrary())
+    // Anari library or library subtype changed
+    if(oldAtts.GetAnariLibrary() != anariAttributes.GetAnariLibrary() || 
+       oldAtts.GetAnariLibrarySubtype() != anariAttributes.GetAnariLibrarySubtype())
     {
-        SetAnariLibrary(anariAttributes.GetAnariLibrary());
-    }
-    // Anari library subtype changed
-    else if(oldAtts.GetAnariLibrarySubtype() != anariAttributes.GetAnariLibrarySubtype())
-    {
-        SetAnariLibrarySubtype(anariAttributes.GetAnariLibrarySubtype());
-    }
+        SetAnariLibrary();
+        SetAnariRendererSubtype();
 
-    // Anari renderer subtype changed
-    if(oldAtts.GetAnariRendererSubtype() != anariAttributes.GetAnariRendererSubtype())
-    {
-        SetAnariRendererSubtype(anariAttributes.GetAnariRendererSubtype());
+        if(!anariAttributes.GetUsingUsdDevice())
+        {
+            SetAnariRendererParameters();
+        }
+        else
+        {
+            SetAnariUSDParameters();
+        }
     }
-    
-    // Anari renderer parameters changed
-    if(oldAtts.GetAnariRendererParameters() != anariAttributes.GetAnariRendererParameters())
+    else 
     {
-        SetAnariRendererParameters(anariAttributes.GetAnariRendererParameters());
-    }
+        // Anari renderer subtype changed
+        if(oldAtts.GetAnariRendererSubtype() != anariAttributes.GetAnariRendererSubtype())
+        {
+            SetAnariRendererSubtype();
+        }
+        
+        // Anari renderer parameters changed
+        if(oldAtts.GetAnariRendererParameters() != anariAttributes.GetAnariRendererParameters())
+        {
+            SetAnariRendererParameters();
+        }
 
-    // Anari USD parameters changed
-    if(oldAtts.GetAnariUSDParameters() != anariAttributes.GetAnariUSDParameters())
-    {
-        SetAnariUSDParameters(anariAttributes.GetAnariUSDParameters());
-    }
-
-    if(oldAtts.GetAnariRendering() != anariAttributes.GetAnariRendering())
-    {
-        SetAnariRendering(anariAttributes.GetAnariRendering());
+        // Anari USD parameters changed
+        if(oldAtts.GetAnariUSDParameters() != anariAttributes.GetAnariUSDParameters())
+        {
+            SetAnariUSDParameters();
+        }
     }
 }
 
 // ****************************************************************************
-// Method: VisWinRendering::SetAnariRendering
+// Method: VisWinRendering::SetAnariLibrary
 //
 // Purpose:
-//   Sets the ANARI rendering flag
-//
-// Arguments:
-//   enabled : true if ANARI rendering is enabled, otherwise false
+//   Called when the ANARI library or library subtype changes
 //
 // Programmer:  Kevin Griffin
 // Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
@@ -3417,64 +3423,31 @@ VisWinRendering::SetAnariAttributes(const AnariAttributes &atts)
 // ****************************************************************************
 
 void
-VisWinRendering::SetAnariRendering(const bool enabled)
+VisWinRendering::SetAnariLibrary()
 {
-    anariRendering = enabled;
-
-    if (enabled)
+    if(this->anariPass != nullptr)
     {
-        canvas->SetPass(anariPass);
-    }
-    else
-    {
+        this->anariPass->Delete();
+        this->anariPass = nullptr;
         canvas->SetPass(nullptr);
     }
-}
 
-// ****************************************************************************
-// Method: VisWinRendering::SetAnariLibraryName
-//
-// Purpose:
-//   Sets the ANARI library name
-//
-// Arguments:
-//   name : The ANARI back-end library name
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
+    this->anariPass = this->CreateAnariPass();
 
-void
-VisWinRendering::SetAnariLibrary(const std::string name)
-{
-    auto anariLibrarySubtype = anariAttributes.GetAnariLibrarySubtype();
-    auto* ad = anariPass->GetAnariDevice();
-    ad->SetupAnariDeviceFromLibrary(name.c_str(), anariLibrarySubtype.c_str());
-    debug5 << "Back-end Name: " << name.c_str() << std::endl;
-}
-
-// ****************************************************************************
-// Method: VisWinRendering::SetAnariLibrarySubtype
-//
-// Purpose:
-//   Sets the ANARI Library subtype
-//
-// Arguments:
-//   subtype : back-end device subtype name
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-void
-VisWinRendering::SetAnariLibrarySubtype(const std::string subtype)
-{
     auto anariLibraryName = anariAttributes.GetAnariLibrary();
-    auto* ad = anariPass->GetAnariDevice();
-    ad->SetupAnariDeviceFromLibrary(anariLibraryName.c_str(), subtype.c_str());
-    debug5 << "Back-end subtype: " << subtype.c_str() << std::endl;
+    auto anariLibrarySubtype = anariAttributes.GetAnariLibrarySubtype();
+    auto* ad = this->anariPass->GetAnariDevice();
+    const bool success = ad->SetupAnariDeviceFromLibrary(anariLibraryName.c_str(), anariLibrarySubtype.c_str());
+    
+    if(!success)
+    {
+        debug5 << "[ANARI] Failed to set ANARI library to " << anariLibraryName.c_str() << " with subtype " << anariLibrarySubtype.c_str() << std::endl;
+        this->anariAttributes.SetAnariRendering(false);
+        this->anariRendering = false;
+        return;
+    }
+    
+    debug5 << "[ANARI] Back-end Name: " << anariLibraryName.c_str() << std::endl;
 }
 
 // ****************************************************************************
@@ -3492,11 +3465,12 @@ VisWinRendering::SetAnariLibrarySubtype(const std::string subtype)
 // ****************************************************************************
 
 void
-VisWinRendering::SetAnariRendererSubtype(const std::string subtype)
+VisWinRendering::SetAnariRendererSubtype()
 {
+    auto subtype = anariAttributes.GetAnariRendererSubtype();
     auto* ar = anariPass->GetAnariRenderer();
     ar->SetSubtype(subtype.c_str());
-    debug5 << "Renderer subtype: " << subtype.c_str() << std::endl;
+    debug5 << "[ANARI] Renderer subtype: " << subtype.c_str() << std::endl;
 }
 
 // ****************************************************************************
@@ -3505,16 +3479,13 @@ VisWinRendering::SetAnariRendererSubtype(const std::string subtype)
 // Purpose:
 //   Sets the vector of param:value strings used to set ANARI renderer params.
 //
-// Arguments:
-//   rendererParams  The list of param:value strings
-//
 // Programmer:  Kevin Griffin
 // Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
 //
 // ****************************************************************************
 
 void
-VisWinRendering::SetAnariRendererParameters(const stringVector &rendererParams)
+VisWinRendering::SetAnariRendererParameters()
 {
     auto anariDevice = this->anariPass->GetAnariDevice()->GetHandle();
     auto anariRenderer = this->anariPass->GetAnariRenderer()->GetHandle();
@@ -3532,6 +3503,8 @@ VisWinRendering::SetAnariRendererParameters(const stringVector &rendererParams)
                                                                   anariRendererSubtype.c_str(),
                                                                   "parameter",
                                                                   ANARI_PARAMETER_LIST));
+
+    const stringVector &rendererParams = anariAttributes.GetAnariRendererParameters();
 
     for (const auto& rendererParam : rendererParams)
     {
@@ -3621,7 +3594,7 @@ VisWinRendering::SetAnariRendererParameters(const stringVector &rendererParams)
             anari::setParameter(anariDevice, anariRenderer, key.c_str(), value.c_str());
             break;
         default:
-            debug5 << "ANARI Datatype (" << dataType << ") Not Supported: " << key << " = " << value << std::endl;
+            debug5 << "[ANARI] Datatype (" << dataType << ") Not Supported: " << key << " = " << value << std::endl;
             break;
         }
     }
@@ -3635,16 +3608,13 @@ VisWinRendering::SetAnariRendererParameters(const stringVector &rendererParams)
 // Purpose:
 //   Sets the vector of param:value strings used to set ANARI USD parameters
 //
-// Arguments:
-//   usdParams  The list of param:value strings
-//
 // Programmer:  Kevin Griffin
 // Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
 //
 // ****************************************************************************
 
 void
-VisWinRendering::SetAnariUSDParameters(const stringVector &usdParams)
+VisWinRendering::SetAnariUSDParameters()
 {
     auto anariDevice = this->anariPass->GetAnariDevice()->GetHandle();
 
@@ -3661,6 +3631,8 @@ VisWinRendering::SetAnariUSDParameters(const stringVector &usdParams)
                                                                   anariLibrarySubtype.c_str(),
                                                                   "parameter",
                                                                   ANARI_PARAMETER_LIST));
+    
+    const stringVector &usdParams = anariAttributes.GetAnariUSDParameters();
 
     for (const auto& usdParam : usdParams)
     {
@@ -3669,7 +3641,7 @@ VisWinRendering::SetAnariUSDParameters(const stringVector &usdParams)
         std::istringstream iss(value);
         anari::DataType dataType = ANARI_UNKNOWN;
 
-        debug5 << "USD Device Parameter: " << key << " = " << value << std::endl;
+        debug5 << "[ANARI] USD Device Parameter: " << key << " = " << value << std::endl;
 
         for (const ANARIParameter *param = parameterList; param && param->name != nullptr; ++param)
         {
@@ -3712,7 +3684,7 @@ VisWinRendering::SetAnariUSDParameters(const stringVector &usdParams)
             anari::setParameter(anariDevice, anariDevice, key.c_str(), dataType, value.c_str());
             break;
         default:
-            debug5 << "ANARI Datatype (" << dataType << ") Not Supported: " << key << " = " << value << std::endl;
+            debug5 << "[ANARI] Datatype (" << dataType << ") Not Supported: " << key << " = " << value << std::endl;
             break;
         }
     }
