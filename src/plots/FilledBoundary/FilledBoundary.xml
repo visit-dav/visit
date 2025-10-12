@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-  <Plugin name="FilledBoundary" type="plot" label="Filled Boundary" version="1.0" enabled="true" vartype="material" iconFile="FilledBoundary.xpm">
-    <Attribute name="FilledBoundaryAttributes" purpose="This class contains the plot attributes for the filled boundary plot." persistent="true" codefile="FilledBoundaryAttributes.code">
+  <Plugin name="FilledBoundary" type="plot" label="Filled Boundary" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" vartype="material" iconFile="FilledBoundary.xpm">
+    <Attribute name="FilledBoundaryAttributes" purpose="This class contains the plot attributes for the filled boundary plot." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="FilledBoundaryAttributes.code">
       <Enum name="ColoringMethod">
         ColorBySingleColor
         ColorByMultipleColors
@@ -21,14 +21,14 @@
       <Field name="lineWidth" label="lineWidth" type="linewidth">
         0
       </Field>
-      <Field name="singleColor" label="singleColor" type="color">
+      <Field name="singleColor" label="singleColor" type="color" length="4">
       </Field>
       <Field name="multiColor" label="multiColor" type="att" subtype="ColorAttributeList">
       </Field>
       <Field name="boundaryNames" label="boundaryNames" type="stringVector">
       </Field>
       <Field name="opacity" label="opacity" type="opacity">
-        1.000000
+        1
       </Field>
       <Field name="wireframe" label="wireframe" type="bool">
         false
@@ -42,19 +42,19 @@
       <Field name="cleanZonesOnly" label="cleanZonesOnly" type="bool">
         false
       </Field>
-      <Field name="mixedColor" label="mixedColor" type="color">
+      <Field name="mixedColor" label="mixedColor" type="color" length="4">
         255
         255
         255
         255
       </Field>
       <Field name="pointSize" label="Point size" type="double">
-        0.050000
+        0.05
       </Field>
       <Field name="pointType" label="Point Type" type="glyphtype">
         Point
       </Field>
-       <Field name="pointSizeVarEnabled" label="Point size by var enabled" type="bool">
+      <Field name="pointSizeVarEnabled" label="Point size by var enabled" type="bool">
         false
       </Field>
       <Field name="pointSizeVar" label="Point size by var" type="variablename" vartypes="01000000000">

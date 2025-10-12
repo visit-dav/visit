@@ -52,3 +52,4 @@ ExtractPointFunction2DCommonPluginInfo::GetCreatedExpressions(const avtDatabaseM
 
     return el;
 }
+

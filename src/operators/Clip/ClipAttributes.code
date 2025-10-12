@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: CopyAttributes
 Declaration: virtual bool CopyAttributes(const AttributeGroup *);
 Definition:
@@ -112,6 +113,7 @@ ClipAttributes::CopyAttributes(const AttributeGroup *atts)
     return retval;
 }
 
+Target: xml2atts
 Function: CreateCompatible
 Declaration: virtual AttributeSubject *CreateCompatible(const std::string &) const;
 Definition:
@@ -216,6 +218,7 @@ ClipAttributes::CreateCompatible(const std::string &tname) const
     return retval;
 }
 
+Target: xml2atts
 Function: EqualTo
 Declaration: virtual bool EqualTo(const AttributeGroup *atts) const;
 Definition:

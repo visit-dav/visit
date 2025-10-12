@@ -5,13 +5,13 @@
         false
       </Field>
       <Field name="xGridSpacing" label="X grid spacing" type="double" enabler="useXGridSpacing:true">
-        1.000000
+        1
       </Field>
       <Field name="useYGridSpacing" label="Use Y grid spacing" type="bool">
         false
       </Field>
       <Field name="yGridSpacing" label="Y grid spacing" type="double" enabler="useYGridSpacing:true">
-        1.000000
+        1
       </Field>
     </Attribute>
   </Plugin>

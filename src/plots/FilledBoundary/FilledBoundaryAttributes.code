@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: ChangesRequireRecalculation
 Declaration: bool ChangesRequireRecalculation(const FilledBoundaryAttributes &obj);
 Definition:
@@ -33,6 +34,7 @@ FilledBoundaryAttributes::ChangesRequireRecalculation(const FilledBoundaryAttrib
             needSecondaryVar);
 }
 
+Target: xml2atts
 Function: VarChangeRequiresReset
 Declaration: virtual bool VarChangeRequiresReset(void);
 Definition:
@@ -41,7 +43,6 @@ FilledBoundaryAttributes::VarChangeRequiresReset()
 {
     return true;
 }
-
 
 Target: xml2python
 Function: PyFilledBoundaryAttributes_SetDefaults
@@ -105,6 +106,7 @@ FilledBoundaryViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
     PrivateSetPlotAtts(atts, plot);
 }
 
+Target: xml2info
 Function: FilledBoundaryViewerEnginePluginInfo::ReInitializePlotAtts
 Declaration: virtual void ReInitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
@@ -133,6 +135,7 @@ FilledBoundaryViewerEnginePluginInfo::ReInitializePlotAtts(AttributeSubject *att
     PrivateSetPlotAtts(atts, plot);
 }
 
+Target: xml2info
 Function: FilledBoundaryViewerEnginePluginInfo::ResetPlotAtts
 Declaration: virtual void ResetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
@@ -176,6 +179,7 @@ FilledBoundaryViewerEnginePluginInfo::ResetPlotAtts(AttributeSubject *atts,
     PrivateSetPlotAtts(atts, plot);
 }
 
+Target: xml2info
 Function: FilledBoundaryViewerEnginePluginInfo::PrivateSetPlotAtts
 Declaration: void   PrivateSetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
@@ -397,3 +401,4 @@ FilledBoundaryViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     defaultAtts->SetBoundaryNames(sv);
     defaultAtts->SetMultiColor(cal);
 }
+

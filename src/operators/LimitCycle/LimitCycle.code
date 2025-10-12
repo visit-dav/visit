@@ -60,6 +60,7 @@ LimitCycleAttributes::CopyAttributes(const AttributeGroup *atts)
     return retval;
 }
 
+Target: xml2atts
 Function: CreateCompatible
 Declaration: AttributeSubject *CreateCompatible(const std::string &tname) const
 Definition:
@@ -112,6 +113,7 @@ LimitCycleAttributes::CreateCompatible(const std::string &tname) const
     return retval;
 }
 
+Target: xml2atts
 Function: ChangesRequireRecalculation
 Declaration: bool ChangesRequireRecalculation(const LimitCycleAttributes &) const;
 Definition:

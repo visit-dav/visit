@@ -1,17 +1,14 @@
 <?xml version="1.0"?>
-  <Plugin name="CGNS" type="database" label="CGNS" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false" skipInfoGen="true">
+  <Plugin name="CGNS" type="database" label="CGNS" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false" haslicense="false" filePatternsStrict="false" opensWholeDirectory="false">
     <CXXFLAGS>
       ${CGNS_INCLUDE_DIR}
     </CXXFLAGS>
-    <LIBS>
-      ${CGNS_LIB}
-    </LIBS>
     <LDFLAGS>
       ${CGNS_LIBRARY_DIR}
     </LDFLAGS>
-    <WIN32DEFINES>
-      ${CGNS_WIN32_DEFINES}
-    </WIN32DEFINES>
+    <LIBS>
+      ${CGNS_LIB}
+    </LIBS>
     <FilePatterns>
       *.cgns.*.*
       *.cgns
@@ -24,6 +21,6 @@
       avtCGNSFileReader.C
       avtCGNSFileFormat.C
     </Files>
-    <Attribute name="" purpose="" persistent="true">
+    <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="CGNS.code">
     </Attribute>
   </Plugin>

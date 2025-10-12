@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: avtTensorMetaData2
 Declaration: avtTensorMetaData(std::string, std::string, avtCentering, int);
 Definition:
@@ -30,6 +31,7 @@ avtTensorMetaData::avtTensorMetaData(std::string n, std::string mn,
     dim = vd;
 }
 
+Target: xml2atts
 Function: Print
 Declaration: void Print(ostream &, int = 0) const;
 Definition:

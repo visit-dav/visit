@@ -1,3 +1,4 @@
+Target: xml2atts
 Initialization: outputToCurrentDirectory
 #if defined(_WIN32)
     outputToCurrentDirectory = false;
@@ -5,6 +6,7 @@ Initialization: outputToCurrentDirectory
     outputToCurrentDirectory = true;
 #endif
 
+Target: xml2atts
 Initialization: outputDirectory
 #if defined(_WIN32)
     const char *visitHome = getenv("VISITUSERHOME");
@@ -28,6 +30,7 @@ Initialization: outputDirectory
     outputDirectory = ".";
 #endif
 
+Target: xml2atts
 Function: CurrentFormatIsImageFormat
 Declaration: bool CurrentFormatIsImageFormat(void);
 Definition:
@@ -66,6 +69,7 @@ SaveWindowAttributes::CurrentFormatIsImageFormat(void)
     return false;
 }
 
+Target: xml2atts
 Function: CurrentFormatSupportsAlpha
 Declaration: bool CurrentFormatSupportsAlpha();
 Definition:

@@ -9,22 +9,22 @@
         Some
       </Field>
       <Field name="minx" label="X-Minimum" type="double">
-        0.000000
+        0
       </Field>
       <Field name="maxx" label="X-Maximum" type="double">
-        1.000000
+        1
       </Field>
       <Field name="miny" label="Y-Minimum" type="double">
-        0.000000
+        0
       </Field>
       <Field name="maxy" label="Y-Maximum" type="double">
-        1.000000
+        1
       </Field>
       <Field name="minz" label="Z-Minimum" type="double">
-        0.000000
+        0
       </Field>
       <Field name="maxz" label="Z-Maximum" type="double">
-        1.000000
+        1
       </Field>
       <Field name="inverse" label="Inverse" type="bool">
         false

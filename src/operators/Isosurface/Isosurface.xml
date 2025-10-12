@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-  <Plugin name="Isosurface" type="operator" label="Isosurface" version="1.0" iconFile="Isosurface.xpm" category="Slicing">
-    <Attribute name="IsosurfaceAttributes" purpose="Attributes for the isosurface operator" persistent="true">
+  <Plugin name="Isosurface" type="operator" label="Isosurface" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="Isosurface.xpm" category="Slicing">
+    <Attribute name="IsosurfaceAttributes" purpose="Attributes for the isosurface operator" persistent="true" keyframe="true" exportAPI="" exportInclude="">
       <Enum name="Select_by">
         Level
         Value
@@ -24,13 +24,13 @@
         false
       </Field>
       <Field name="min" label="min" type="double" enabler="minFlag:true">
-        0.000000
+        0
       </Field>
       <Field name="maxFlag" label="maxFlag" type="bool">
         false
       </Field>
       <Field name="max" label="max" type="double" enabler="maxFlag:true">
-        1.000000
+        1
       </Field>
       <Field name="scaling" label="scaling" type="enum" subtype="Scaling">
         Linear

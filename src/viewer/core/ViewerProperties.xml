@@ -53,21 +53,21 @@
     <Field name="fallbackFormats" label="Fallback formats from command line" type="stringVector">
     </Field>
     <Field name="debugLevel" label="Debug level" type="int">
-       0
+      0
     </Field>
     <Field name="bufferDebug" label="Buffer debug logs" type="bool">
-       false
+      false
     </Field>
     <Field name="forceSSHTunneling" label="Force ssh tunneling" type="bool">
-       false
+      false
     </Field>
     <Field name="inExecute" label="In Execute" type="bool">
-       false
+      false
     </Field>
     <Field name="inLaunch" label="In Launch" type="bool">
-       false
+      false
     </Field>
     <Field name="decorateDebug" label="Decorate level 1 debug logs with __FILE__ and __LINE__" type="bool">
-       false
+      false
     </Field>
   </Attribute>

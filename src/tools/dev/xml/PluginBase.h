@@ -74,6 +74,10 @@
 //    Kathleen Biagas, Tue May 3, 2022
 //    Added support for component-specific CXXFLAGS, LDFLAGS and DEFINES.
 //
+//    Kathleen Biagas, Tue Oct  7 11:56:25 PDT 2025
+//    Remove WIN32DEFINES (windefs) support, now handled as a Conditional
+//    Definitions in .code file.
+//
 // ****************************************************************************
 
 class PluginBase
@@ -106,7 +110,6 @@ public:
     std::vector<QString> ldflags;
     std::vector<QString> libs;
     std::vector<QString> defs;
-    std::vector<QString> windefs;
     std::vector<QString> filePatterns;        // for DB plugins
     bool                 filePatternsStrict;  // for DB plugins
     bool                 opensWholeDirectory; // for DB plugins
@@ -173,7 +176,6 @@ public:
           ldflags(),
           libs(),
           defs(),
-          windefs(),
           filePatterns(),
           filePatternsStrict(false),
           opensWholeDirectory(false),

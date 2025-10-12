@@ -78,31 +78,31 @@
     <Field name="activeVariable" label="activeVariable" type="string" internal="true" persistent="false">
     </Field>
     <Field name="pickPoint" label="pickPoint" type="doubleArray" length="3" internal="true" persistent="false">
-      0.000000
-      0.000000
-      0.000000
+      0
+      0
+      0
     </Field>
     <Field name="cellPoint" label="cellPoint" type="doubleArray" length="3" internal="true" persistent="false">
-      0.000000
-      0.000000
-      0.000000
+      0
+      0
+      0
     </Field>
     <Field name="nodePoint" label="nodePoint" type="doubleArray" length="3" internal="true" persistent="false">
-      0.000000
-      0.000000
-      0.000000
+      0
+      0
+      0
     </Field>
     <Field name="plotBounds" label="plotBounds" type="doubleVector" internal="true" persistent="false">
     </Field>
     <Field name="rayPoint1" label="rayPoint1" type="doubleArray" length="3" internal="true" persistent="false">
-      0.000000
-      0.000000
-      0.000000
+      0
+      0
+      0
     </Field>
     <Field name="rayPoint2" label="rayPoint2" type="doubleArray" length="3" internal="true" persistent="false">
-      0.000000
-      0.000000
-      0.000000
+      0
+      0
+      0
     </Field>
     <Field name="meshInfo" label="MeshInfo" type="string" internal="true" persistent="false">
     </Field>
@@ -254,9 +254,9 @@
       false
     </Field>
     <Field name="previousPoint" label="previousPoint" type="doubleArray" length="3" internal="true">
-      0.000000
-      0.000000
-      0.000000
+      0
+      0
+      0
     </Field>
     <Field name="showDistanceToPrevious" label="showDistanceToPrevious" type="bool" internal="true">
       false

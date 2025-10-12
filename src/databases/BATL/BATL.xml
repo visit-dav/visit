@@ -1,8 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="BATL" type="database" label="BATL" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="true" filePatternsStrict="false">
-    <FilePatterns>
-      *.batl
-    </FilePatterns>
+  <Plugin name="BATL" type="database" label="BATL" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="true" haslicense="false" filePatternsStrict="false" opensWholeDirectory="false">
     <CXXFLAGS>
       ${HDF5_INCLUDE_DIR}
     </CXXFLAGS>
@@ -10,8 +7,11 @@
       ${HDF5_LIBRARY_DIR}
     </LDFLAGS>
     <LIBS>
-      ${HDF5_LIB} 
+      ${HDF5_LIB}
     </LIBS>
+    <FilePatterns>
+      *.batl
+    </FilePatterns>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>

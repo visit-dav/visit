@@ -5,19 +5,19 @@
         false
       </Field>
       <Field name="xVector" label="Vector for X" type="doubleArray" length="3" enabler="useUnitCellVectors:false">
-        1.000000
-        0.000000
-        0.000000
+        1
+        0
+        0
       </Field>
       <Field name="yVector" label="Vector for Y" type="doubleArray" length="3" enabler="useUnitCellVectors:false">
-        0.000000
-        1.000000
-        0.000000
+        0
+        1
+        0
       </Field>
       <Field name="zVector" label="Vector for Z" type="doubleArray" length="3" enabler="useUnitCellVectors:false">
-        0.000000
-        0.000000
-        1.000000
+        0
+        0
+        1
       </Field>
       <Field name="xReplications" label="Replications in X" type="int">
         1
@@ -38,9 +38,9 @@
         false
       </Field>
       <Field name="newPeriodicOrigin" label="New periodic atom origin" type="doubleArray" length="3" enabler="shiftPeriodicAtomOrigin:true">
-        0.000000
-        0.000000
-        0.000000
+        0
+        0
+        0
       </Field>
     </Attribute>
   </Plugin>

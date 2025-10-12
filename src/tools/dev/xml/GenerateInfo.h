@@ -2014,6 +2014,7 @@ class InfoGeneratorPlugin : public Plugin
             WriteOverrideDefinition(c, name + "ViewerEnginePluginInfo::SupportsAnimation");
             WriteOverrideDefinition(c, name + "ViewerEnginePluginInfo::AnimationReset");
             WriteOverrideDefinition(c, name + "ViewerEnginePluginInfo::AnimationStep");
+            c << Endl;
         }
 
         funcName = name + "ViewerEnginePluginInfo::GetMenuName";

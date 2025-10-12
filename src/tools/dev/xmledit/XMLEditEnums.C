@@ -229,6 +229,10 @@ XMLEditEnums::UpdateWindowSensitivity()
 //   Cyrus Harrison, Thu May 15 15:04:20 PDT 2008
 //   Ported to Qt 4.4
 //
+//   Kathleen Biagas, Thu Oct 2, 2025
+//   Use EnumType specific JoinValues as it handles the ivalues which
+//   we only want to see if they aren't -1.
+//
 // ****************************************************************************
 void
 XMLEditEnums::UpdateWindowSingleItem()
@@ -245,7 +249,7 @@ XMLEditEnums::UpdateWindowSingleItem()
     {
         EnumType *e = EnumType::FindEnum(enumlist->currentItem()->text());
         name->setText(e->type);
-        valuelist->setText(JoinValues(e->values, '\n'));
+        valuelist->setText(e->JoinValues('\n'));
     }
     UpdateWindowSensitivity();
     BlockAllSignals(false);

@@ -86,7 +86,7 @@ if(HAVE_ANARI)
 endif(HAVE_ANARI)
 
 if(VISIT_SLIVR)
-    add_definitions(-DVISIT_SLIVR)
+    add_compile_definitions(VISIT_SLIVR)
 endif()
 
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )

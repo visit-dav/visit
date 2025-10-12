@@ -48,13 +48,13 @@
         false
       </Field>
       <Field name="min" label="Min" type="double" enabler="minFlag:true">
-        0.000000
+        0
       </Field>
       <Field name="maxFlag" label="Use max" type="bool">
         false
       </Field>
       <Field name="max" label="Max" type="double" enabler="maxFlag:true">
-        1.000000
+        1
       </Field>
       <Field name="colorByMagnitude" label="color by magnitude" type="bool">
         true
@@ -75,7 +75,7 @@
         true
       </Field>
       <Field name="scale" label="Scale" type="double">
-        0.250000
+        0.25
       </Field>
       <Field name="scaleByMagnitude" label="Scale by magnitude" type="bool">
         true
@@ -90,7 +90,7 @@
         true
       </Field>
       <Field name="headSize" label="Head size" type="double">
-        0.250000
+        0.25
       </Field>
       <Field name="lineStem" label="Draw stem as line" type="enum" subtype="LineStem">
         Line
@@ -99,7 +99,7 @@
         0
       </Field>
       <Field name="stemWidth" label="Stem width" type="double">
-        0.080000
+        0.08
       </Field>
       <Field name="vectorOrigin" label="Vector Origin" type="enum" subtype="OriginType">
         Tail

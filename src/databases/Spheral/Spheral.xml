@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
-  <Plugin name="Spheral" type="database" label="Spheral++ file format reader" version="1.0" dbtype="STMD">
+  <Plugin name="Spheral" type="database" label="Spheral++ file format reader" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="false" haslicense="false" filePatternsStrict="false" opensWholeDirectory="false">
     <FilePatterns>
       *.sv
       *.spheral
     </FilePatterns>
-    <Attribute name="" purpose="" persistent="false" exportAPI="" exportInclude="">
+    <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>

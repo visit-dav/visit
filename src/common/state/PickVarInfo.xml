@@ -55,6 +55,6 @@
       stdio.h
     </Include>
     <Include file="source" quoted="false">
-      cstring 
+      cstring
     </Include>
   </Attribute>

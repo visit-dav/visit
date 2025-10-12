@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: avtSpeciesMetaData2
 Declaration: avtSpeciesMetaData(const std::string &n, const std::string &meshn, const std::string &matn, int nummat, const intVector &ns, const std::vector<stringVector> &sn);
 Definition:
@@ -48,6 +49,7 @@ avtSpeciesMetaData::avtSpeciesMetaData(const std::string &n,
     validVariable = true;
 }
 
+Target: xml2atts
 Function: Print
 Declaration: void Print(ostream &, int = 0) const;
 Definition:

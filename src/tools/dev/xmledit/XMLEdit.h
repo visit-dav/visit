@@ -12,7 +12,7 @@ class QTabWidget;
 class XMLDocument;
 
 class XMLEditAttribute;
-class XMLEditMakefile;
+class XMLEditCMake;
 class XMLEditPlugin;
 class XMLEditEnums;
 class XMLEditFields;
@@ -20,6 +20,7 @@ class XMLEditFunctions;
 class XMLEditConstants;
 class XMLEditIncludes;
 class XMLEditCode;
+class XMLEditConditional;
 class XMLEditCodeGeneratorWindow;
 
 // ****************************************************************************
@@ -38,7 +39,12 @@ class XMLEditCodeGeneratorWindow;
 //    Cyrus Harrison, Thu May 15 16:00:46 PDT 200
 //    First pass at porting to Qt 4.4.0
 //
+//    Kathleen Biagas, Tue Sep 30 14:41:58 PDT 2025
+//    Rename XMLEditMakefile to XMLEditCMake.
+//    Add XMLEditConditional.
+//
 // ****************************************************************************
+//
 class XMLEdit : public QMainWindow
 {
     Q_OBJECT
@@ -59,7 +65,7 @@ class XMLEdit : public QMainWindow
     XMLDocument *xmldoc;
 
     XMLEditPlugin    *plugintab;
-    XMLEditMakefile  *makefiletab;
+    XMLEditCMake     *cmaketab;
     XMLEditAttribute *attributetab;
     XMLEditEnums     *enumstab;
     XMLEditFields    *fieldstab;
@@ -67,6 +73,7 @@ class XMLEdit : public QMainWindow
     XMLEditConstants *constantstab;
     XMLEditIncludes  *includestab;
     XMLEditCode      *codetab;
+    XMLEditConditional *conditionaltab;
 
     XMLEditCodeGeneratorWindow *codeGenerationWindow;
 };

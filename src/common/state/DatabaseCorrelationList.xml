@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="DatabaseCorrelationList" purpose="This class contains the database correlations that we know about." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="DatabaseCorrelationList.code">
+  <Attribute name="DatabaseCorrelationList" purpose="This class contains the database correlations that we know about." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="DatabaseCorrelationList.code">
     <Enum name="WhenToCorrelate">
       CorrelateAlways
       CorrelateNever
