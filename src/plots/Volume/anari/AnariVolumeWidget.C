@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include <AnariVolumeWidget.h>
-#include <AnariParameterInfo.h>
+#include <anari/AnariParameterInfo.h>
 #include <QvisVolumePlotWindow.h>
 #include <VolumeAttributes.h>
 #include <DebugStream.h>
@@ -985,7 +985,102 @@ AnariVolumeWidget::UpdateRendererSubtypes(const std::string subtype)
 void
 AnariVolumeWidget::UpdateRendererParameters(const stringVector &params)
 {
-    auto widget = dynamicLayouts->currentWidget();
+    // Loop through all widgets in the current layout
+    for(int i = 0; i < dynamicLayouts->count(); ++i)
+    {        
+        if(i == this->dynamicLayoutMap[AnariVolumeWidget::DEFAULT_WIDGET_KEY] ||
+           i == this->dynamicLayoutMap[AnariVolumeWidget::USD_WIDGET_KEY])
+        {
+            // No renderer parameters to update
+            continue;
+        }
+
+        auto widget = dynamicLayouts->widget(i);
+        auto children = widget->findChildren<QWidget *>();
+
+        for (const auto& param : params)
+        {
+            std::string key = param.substr(0, param.find(";"));
+            std::string value = param.substr(param.find(";") + 1);
+
+            for(auto child : children)
+            {
+                std::string name = child->objectName().toStdString();
+
+                if(name.empty())
+                {
+                    continue;
+                }
+
+                if(name == key)
+                {
+                    if(qobject_cast<QSpinBox *>(child) != nullptr)
+                    {
+                        auto spinBox = qobject_cast<QSpinBox *>(child);
+                        spinBox->blockSignals(true);
+
+                        try
+                        {
+                            auto val = std::stoi(value);
+                            spinBox->setValue(val);
+                        }
+                        catch(...)
+                        {
+                            debug5 << "[ANARI] UpdateRendererParameters - Could not convert value to int: " << value;
+                        }
+
+                        spinBox->blockSignals(false);
+                    }
+                    else if(qobject_cast<QLineEdit *>(child) != nullptr)
+                    {
+                        auto lineEdit = qobject_cast<QLineEdit *>(child);
+                        lineEdit->blockSignals(true);
+                        lineEdit->setText(QString::fromStdString(value));
+                        lineEdit->blockSignals(false);
+                    }
+                    else if(qobject_cast<QCheckBox *>(child) != nullptr)
+                    {
+                        auto checkBox = qobject_cast<QCheckBox *>(child);
+                        checkBox->blockSignals(true);
+                        checkBox->setChecked(value == "1");
+                        checkBox->blockSignals(false);
+                    }
+                    else if(qobject_cast<QComboBox *>(child) != nullptr)
+                    {
+                        auto comboBox = qobject_cast<QComboBox *>(child);
+                        comboBox->blockSignals(true);
+                        comboBox->setCurrentText(QString::fromStdString(value));
+                        comboBox->blockSignals(false);
+                    }
+
+                    break;
+                }
+            }
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: AnariVolumeWidget::UpdateUSDParameters
+//
+// Purpose:
+//   Updates the USD UI elements.
+//
+// Arguments:
+//   params the list of parameters to update
+//
+// Programmer: Kevin Griffin
+// Creation: Mon Oct 6 10:20:01 CST 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+AnariVolumeWidget::UpdateUSDParameters(const stringVector &params)
+{
+    const int usdWidgetIndex = this->dynamicLayoutMap[AnariVolumeWidget::USD_WIDGET_KEY];
+    auto widget = dynamicLayouts->widget(usdWidgetIndex);
     auto children = widget->findChildren<QWidget *>();
 
     for (const auto& param : params)
@@ -1004,24 +1099,7 @@ AnariVolumeWidget::UpdateRendererParameters(const stringVector &params)
 
             if(name == key)
             {
-                if(qobject_cast<QSpinBox *>(child) != nullptr)
-                {
-                    auto spinBox = qobject_cast<QSpinBox *>(child);
-                    spinBox->blockSignals(true);
-
-                    try
-                    {
-                        auto val = std::stoi(value);
-                        spinBox->setValue(val);
-                    }
-                    catch(...)
-                    {
-                        debug5 << "[ANARI] UpdateRendererParameters - Could not convert value to int: " << value;
-                    }
-
-                    spinBox->blockSignals(false);
-                }
-                else if(qobject_cast<QLineEdit *>(child) != nullptr)
+                if(qobject_cast<QLineEdit *>(child) != nullptr)
                 {
                     auto lineEdit = qobject_cast<QLineEdit *>(child);
                     lineEdit->blockSignals(true);
@@ -1035,26 +1113,11 @@ AnariVolumeWidget::UpdateRendererParameters(const stringVector &params)
                     checkBox->setChecked(value == "1");
                     checkBox->blockSignals(false);
                 }
-                else if(qobject_cast<QComboBox *>(child) != nullptr)
-                {
-                    auto comboBox = qobject_cast<QComboBox *>(child);
-                    comboBox->blockSignals(true);
-                    comboBox->setCurrentText(QString::fromStdString(value));
-                    comboBox->blockSignals(false);
-                }
 
                 break;
             }
         }
     }
-}
-
-void
-AnariVolumeWidget::UpdateUSDParameters(const stringVector &params)
-{
-    // TODO: Implement
-    // 1. Get the current dynamic widget
-    // 2. Update each widget matching name with the new value
 }
 
 // ****************************************************************************
