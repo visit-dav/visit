@@ -362,7 +362,6 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
 
     anariRendering = false;
 #ifdef HAVE_ANARI
-    vtkLogger::SetStderrVerbosity(vtkLogger::VERBOSITY_INFO);
     anariAttributes = AnariAttributes();
     anariPass = CreateAnariPass();
 #endif
