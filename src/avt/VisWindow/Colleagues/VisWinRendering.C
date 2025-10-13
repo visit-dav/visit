@@ -58,7 +58,6 @@
     #include <vtkAnariSceneGraph.h>
     #include <vtkAnariVisItViewNodeFactory.h>
     #include <vtkViewNodeFactory.h>
-    #include <vtkLogger.h>
 #endif
 
 #include <limits>
@@ -1672,9 +1671,6 @@ VisWinRendering::ScreenRender(avtImageType imgT,
     else
     {
         // not given any image to upload. just render.
-        #ifdef HAVE_ANARi
-        anariRendering = false;
-        #endif
         RenderRenderWindow();
     }
 
