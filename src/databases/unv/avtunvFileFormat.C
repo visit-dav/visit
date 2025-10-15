@@ -4574,7 +4574,7 @@ avtunvFileFormat::ReadFile()
                             buf[i1] = 'E' ;
                     }
                     strncpy(sousbuf, buf, (size_t)10) ;
-                    sousbuf[9] = '\0';
+                    sousbuf[10] = '\0';
                     sscanf(sousbuf, "%d", &label) ;
                     sscanf(buf+10, "%lf%lf%lf", &x, &y, &z) ;
 #if INTERACTIVEREAD
