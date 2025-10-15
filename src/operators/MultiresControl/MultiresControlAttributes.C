@@ -24,6 +24,7 @@ void MultiresControlAttributes::Init()
 {
     resolution = 0;
     maxResolution = 1;
+    refinementMethod = "Legacy";
 
     MultiresControlAttributes::SelectAll();
 }
@@ -47,6 +48,7 @@ void MultiresControlAttributes::Copy(const MultiresControlAttributes &obj)
 {
     resolution = obj.resolution;
     maxResolution = obj.maxResolution;
+    refinementMethod = obj.refinementMethod;
     info = obj.info;
 
     MultiresControlAttributes::SelectAll();
@@ -207,6 +209,7 @@ MultiresControlAttributes::operator == (const MultiresControlAttributes &obj) co
     // Create the return value
     return ((resolution == obj.resolution) &&
             (maxResolution == obj.maxResolution) &&
+            (refinementMethod == obj.refinementMethod) &&
             (info == obj.info));
 }
 
@@ -351,9 +354,10 @@ MultiresControlAttributes::NewInstance(bool copy) const
 void
 MultiresControlAttributes::SelectAll()
 {
-    Select(ID_resolution,    (void *)&resolution);
-    Select(ID_maxResolution, (void *)&maxResolution);
-    Select(ID_info,          (void *)&info);
+    Select(ID_resolution,       (void *)&resolution);
+    Select(ID_maxResolution,    (void *)&maxResolution);
+    Select(ID_refinementMethod, (void *)&refinementMethod);
+    Select(ID_info,             (void *)&info);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -396,6 +400,12 @@ MultiresControlAttributes::CreateNode(DataNode *parentNode, bool completeSave, b
     {
         addToParent = true;
         node->AddNode(new DataNode("maxResolution", maxResolution));
+    }
+
+    if(completeSave || !FieldsEqual(ID_refinementMethod, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("refinementMethod", refinementMethod));
     }
 
     if(completeSave || !FieldsEqual(ID_info, &defaultObject))
@@ -444,6 +454,8 @@ MultiresControlAttributes::SetFromNode(DataNode *parentNode)
         SetResolution(node->AsInt());
     if((node = searchNode->GetNode("maxResolution")) != 0)
         SetMaxResolution(node->AsInt());
+    if((node = searchNode->GetNode("refinementMethod")) != 0)
+        SetRefinementMethod(node->AsString());
     if((node = searchNode->GetNode("info")) != 0)
         SetInfo(node->AsString());
 }
@@ -464,6 +476,13 @@ MultiresControlAttributes::SetMaxResolution(int maxResolution_)
 {
     maxResolution = maxResolution_;
     Select(ID_maxResolution, (void *)&maxResolution);
+}
+
+void
+MultiresControlAttributes::SetRefinementMethod(const std::string &refinementMethod_)
+{
+    refinementMethod = refinementMethod_;
+    Select(ID_refinementMethod, (void *)&refinementMethod);
 }
 
 void
@@ -490,6 +509,18 @@ MultiresControlAttributes::GetMaxResolution() const
 }
 
 const std::string &
+MultiresControlAttributes::GetRefinementMethod() const
+{
+    return refinementMethod;
+}
+
+std::string &
+MultiresControlAttributes::GetRefinementMethod()
+{
+    return refinementMethod;
+}
+
+const std::string &
 MultiresControlAttributes::GetInfo() const
 {
     return info;
@@ -504,6 +535,12 @@ MultiresControlAttributes::GetInfo()
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
+
+void
+MultiresControlAttributes::SelectRefinementMethod()
+{
+    Select(ID_refinementMethod, (void *)&refinementMethod);
+}
 
 void
 MultiresControlAttributes::SelectInfo()
@@ -535,9 +572,10 @@ MultiresControlAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_resolution:    return "resolution";
-    case ID_maxResolution: return "maxResolution";
-    case ID_info:          return "info";
+    case ID_resolution:       return "resolution";
+    case ID_maxResolution:    return "maxResolution";
+    case ID_refinementMethod: return "refinementMethod";
+    case ID_info:             return "info";
     default:  return "invalid index";
     }
 }
@@ -562,9 +600,10 @@ MultiresControlAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_resolution:    return FieldType_int;
-    case ID_maxResolution: return FieldType_int;
-    case ID_info:          return FieldType_string;
+    case ID_resolution:       return FieldType_int;
+    case ID_maxResolution:    return FieldType_int;
+    case ID_refinementMethod: return FieldType_string;
+    case ID_info:             return FieldType_string;
     default:  return FieldType_unknown;
     }
 }
@@ -589,9 +628,10 @@ MultiresControlAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_resolution:    return "int";
-    case ID_maxResolution: return "int";
-    case ID_info:          return "string";
+    case ID_resolution:       return "int";
+    case ID_maxResolution:    return "int";
+    case ID_refinementMethod: return "string";
+    case ID_info:             return "string";
     default:  return "invalid index";
     }
 }
@@ -626,6 +666,11 @@ MultiresControlAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) co
     case ID_maxResolution:
         {  // new scope
         retval = (maxResolution == obj.maxResolution);
+        }
+        break;
+    case ID_refinementMethod:
+        {  // new scope
+        retval = (refinementMethod == obj.refinementMethod);
         }
         break;
     case ID_info:

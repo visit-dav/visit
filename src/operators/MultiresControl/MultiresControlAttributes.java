@@ -24,7 +24,7 @@ import llnl.visit.Plugin;
 
 public class MultiresControlAttributes extends AttributeSubject implements Plugin
 {
-    private static int MultiresControlAttributes_numAdditionalAtts = 3;
+    private static int MultiresControlAttributes_numAdditionalAtts = 4;
 
     public MultiresControlAttributes()
     {
@@ -32,6 +32,7 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
 
         resolution = 0;
         maxResolution = 1;
+        refinementMethod = new String("Legacy");
         info = new String("");
     }
 
@@ -41,6 +42,7 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
 
         resolution = 0;
         maxResolution = 1;
+        refinementMethod = new String("Legacy");
         info = new String("");
     }
 
@@ -50,6 +52,7 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
 
         resolution = obj.resolution;
         maxResolution = obj.maxResolution;
+        refinementMethod = new String(obj.refinementMethod);
         info = new String(obj.info);
 
         SelectAll();
@@ -70,6 +73,7 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
         // Create the return value
         return ((resolution == obj.resolution) &&
                 (maxResolution == obj.maxResolution) &&
+                (refinementMethod.equals(obj.refinementMethod)) &&
                 (info.equals(obj.info)));
     }
 
@@ -89,15 +93,22 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
         Select(1);
     }
 
+    public void SetRefinementMethod(String refinementMethod_)
+    {
+        refinementMethod = refinementMethod_;
+        Select(2);
+    }
+
     public void SetInfo(String info_)
     {
         info = info_;
-        Select(2);
+        Select(3);
     }
 
     // Property getting methods
     public int    GetResolution() { return resolution; }
     public int    GetMaxResolution() { return maxResolution; }
+    public String GetRefinementMethod() { return refinementMethod; }
     public String GetInfo() { return info; }
 
     // Write and read methods.
@@ -108,6 +119,8 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
         if(WriteSelect(1, buf))
             buf.WriteInt(maxResolution);
         if(WriteSelect(2, buf))
+            buf.WriteString(refinementMethod);
+        if(WriteSelect(3, buf))
             buf.WriteString(info);
     }
 
@@ -122,6 +135,9 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
             SetMaxResolution(buf.ReadInt());
             break;
         case 2:
+            SetRefinementMethod(buf.ReadString());
+            break;
+        case 3:
             SetInfo(buf.ReadString());
             break;
         }
@@ -132,6 +148,7 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
         String str = new String();
         str = str + intToString("resolution", resolution, indent) + "\n";
         str = str + intToString("maxResolution", maxResolution, indent) + "\n";
+        str = str + stringToString("refinementMethod", refinementMethod, indent) + "\n";
         str = str + stringToString("info", info, indent) + "\n";
         return str;
     }
@@ -140,6 +157,7 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
     // Attributes
     private int    resolution;
     private int    maxResolution;
+    private String refinementMethod;
     private String info;
 }
 

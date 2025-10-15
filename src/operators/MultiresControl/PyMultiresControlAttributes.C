@@ -45,6 +45,8 @@ PyMultiresControlAttributes_ToString(const MultiresControlAttributes *atts, cons
     str += tmpStr;
     snprintf(tmpStr, 1000, "%smaxResolution = %d\n", prefix, atts->GetMaxResolution());
     str += tmpStr;
+    snprintf(tmpStr, 1000, "%srefinementMethod = \"%s\"\n", prefix, atts->GetRefinementMethod().c_str());
+    str += tmpStr;
     snprintf(tmpStr, 1000, "%sinfo = \"%s\"\n", prefix, atts->GetInfo().c_str());
     str += tmpStr;
     return str;
@@ -208,6 +210,55 @@ MultiresControlAttributes_GetMaxResolution(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+MultiresControlAttributes_SetRefinementMethod(PyObject *self, PyObject *args)
+{
+    PyMultiresControlAttributesObject *obj = (PyMultiresControlAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the refinementMethod in the object.
+    obj->data->SetRefinementMethod(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+MultiresControlAttributes_GetRefinementMethod(PyObject *self, PyObject *args)
+{
+    PyMultiresControlAttributesObject *obj = (PyMultiresControlAttributesObject *)self;
+    PyObject *retval = PyString_FromString(obj->data->GetRefinementMethod().c_str());
+    return retval;
+}
+
+/*static*/ PyObject *
 MultiresControlAttributes_SetInfo(PyObject *self, PyObject *args)
 {
     PyMultiresControlAttributesObject *obj = (PyMultiresControlAttributesObject *)self;
@@ -265,6 +316,8 @@ PyMethodDef PyMultiresControlAttributes_methods[MULTIRESCONTROLATTRIBUTES_NMETH]
     {"GetResolution", MultiresControlAttributes_GetResolution, METH_VARARGS},
     {"SetMaxResolution", MultiresControlAttributes_SetMaxResolution, METH_VARARGS},
     {"GetMaxResolution", MultiresControlAttributes_GetMaxResolution, METH_VARARGS},
+    {"SetRefinementMethod", MultiresControlAttributes_SetRefinementMethod, METH_VARARGS},
+    {"GetRefinementMethod", MultiresControlAttributes_GetRefinementMethod, METH_VARARGS},
     {"SetInfo", MultiresControlAttributes_SetInfo, METH_VARARGS},
     {"GetInfo", MultiresControlAttributes_GetInfo, METH_VARARGS},
     {NULL, NULL}
@@ -295,6 +348,8 @@ PyMultiresControlAttributes_getattro(PyObject *self, PyObject *attr_name)
         return MultiresControlAttributes_GetResolution(self, NULL);
     if(strcmp(name, "maxResolution") == 0)
         return MultiresControlAttributes_GetMaxResolution(self, NULL);
+    if(strcmp(name, "refinementMethod") == 0)
+        return MultiresControlAttributes_GetRefinementMethod(self, NULL);
     if(strcmp(name, "info") == 0)
         return MultiresControlAttributes_GetInfo(self, NULL);
 
@@ -316,6 +371,8 @@ PyMultiresControlAttributes_setattro(PyObject *self, PyObject *attr_name, PyObje
         obj = MultiresControlAttributes_SetResolution(self, args);
     else if(strcmp(name, "maxResolution") == 0)
         obj = MultiresControlAttributes_SetMaxResolution(self, args);
+    else if(strcmp(name, "refinementMethod") == 0)
+        obj = MultiresControlAttributes_SetRefinementMethod(self, args);
     else if(strcmp(name, "info") == 0)
         obj = MultiresControlAttributes_SetInfo(self, args);
 

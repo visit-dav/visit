@@ -10,6 +10,9 @@
       <Field name="maxResolution" label="Number of available resolutions" type="int">
         1
       </Field>
+      <Field name="refinementMethod" label="mfem refinement method" type="string">
+        "Legacy"
+      </Field>
       <Field name="info" label="Info" type="string" enabler="resolution:-1">
       </Field>
       <Function name="resolutionLevelChanged" user="false" member="true">

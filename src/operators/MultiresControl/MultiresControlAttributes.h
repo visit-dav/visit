@@ -50,16 +50,20 @@ public:
 
     // Property selection methods
     virtual void SelectAll();
+    void SelectRefinementMethod();
     void SelectInfo();
 
     // Property setting methods
     void SetResolution(int resolution_);
     void SetMaxResolution(int maxResolution_);
+    void SetRefinementMethod(const std::string &refinementMethod_);
     void SetInfo(const std::string &info_);
 
     // Property getting methods
     int               GetResolution() const;
     int               GetMaxResolution() const;
+    const std::string &GetRefinementMethod() const;
+          std::string &GetRefinementMethod();
     const std::string &GetInfo() const;
           std::string &GetInfo();
 
@@ -79,6 +83,7 @@ public:
     enum {
         ID_resolution = 0,
         ID_maxResolution,
+        ID_refinementMethod,
         ID_info,
         ID__LAST
     };
@@ -86,12 +91,13 @@ public:
 private:
     int         resolution;
     int         maxResolution;
+    std::string refinementMethod;
     std::string info;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define MULTIRESCONTROLATTRIBUTES_TMFS "iis"
+#define MULTIRESCONTROLATTRIBUTES_TMFS "iiss"
 
 #endif
