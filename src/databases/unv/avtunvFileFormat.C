@@ -30,7 +30,7 @@
 #include <avtunvFileFormat.h>
 
 #include <string>
-#include <stdint.h>
+#include <cstdint>
 
 #include <vtkFloatArray.h>
 #include <vtkRectilinearGrid.h>
@@ -4548,7 +4548,7 @@ avtunvFileFormat::ReadFile()
             if (igtyp == 3)
             {
                 // This is the ARL format:
-                char sousbuf[10];
+                char sousbuf[16];
                 int ic ;
                 int nbcells ;
                 sscanf(buf+4, "%d%d%d", &nbnodes, &nbcells, &nb2dmats) ;
@@ -4574,7 +4574,7 @@ avtunvFileFormat::ReadFile()
                             buf[i1] = 'E' ;
                     }
                     strncpy(sousbuf, buf, (size_t)10) ;
-                    sousbuf[10] = '\0';
+                    sousbuf[9] = '\0';
                     sscanf(sousbuf, "%d", &label) ;
                     sscanf(buf+10, "%lf%lf%lf", &x, &y, &z) ;
 #if INTERACTIVEREAD
@@ -4721,7 +4721,7 @@ avtunvFileFormat::ReadFile()
             else if (igtyp > 0)
             {
                 // This is the legacy format:
-                char sousbuf[10];
+                char sousbuf[16];
                 int ic ;
                 for (ic=0; ic < 4; ic++)
                 {
