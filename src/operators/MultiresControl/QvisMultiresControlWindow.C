@@ -8,6 +8,7 @@
 #include <QLabel>
 #include <QGridLayout>
 #include <QSlider>
+#include <QComboBox>
 
 #include "QvisMultiresControlWindow.h"
 #include <DebugStream.h>
@@ -37,7 +38,9 @@ QvisMultiresControlWindow::QvisMultiresControlWindow(const int type,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad),
       resolution(NULL),
-      resolutionLevelLabel(NULL)
+      resolutionLevelLabel(NULL),
+      refinementMethodLabel(NULL),
+      refinementMethod(NULL)
 {
     atts = subj;
     fileServer->Attach(this);
@@ -108,6 +111,17 @@ QvisMultiresControlWindow::CreateWindowContents()
             SLOT(updateResolutionLevelLabel(int)));
     connect(this->resolution, SIGNAL(sliderReleased()), this,
             SLOT(resolutionLevelChanged()));
+
+    refinementMethodLabel = new QLabel(this);
+    refinementMethodLabel->setText(tr("MFEM Refinement Method:"));
+    mainLayout->addWidget(refinementMethodLabel, 1, 0);
+
+    refinementMethod = new QComboBox(this);
+    refinementMethod->addItem(tr("New Refine"));
+    refinementMethod->addItem(tr("Legacy"));
+    connect(refinementMethod, SIGNAL(activated(int)),
+            this, SLOT(refinementMethodChanged(int)));
+    mainLayout->addWidget(refinementMethod, 1, 1);
 }
 
 
@@ -262,6 +276,26 @@ QvisMultiresControlWindow::resolutionLevelChanged()
     {
         UpdateLabelText(val);
         atts->SetResolution(val);
+        SetUpdate(false);
+        Apply();
+    }
+}
+
+
+void
+QvisMultiresControlWindow::refinementMethodChanged(int val)
+{
+    // TODO use an enum or something this is terrible
+    const std::string currRefinementMethod = atts->GetRefinementMethod();
+    if (val == 0 && currRefinementMethod != "Legacy") // legacy
+    {
+        atts->SetRefinementMethod("Legacy");
+        SetUpdate(false);
+        Apply();
+    }
+    else if (val == 1 && currRefinementMethod != "New Refine") // new refine
+    {
+        atts->SetRefinementMethod("New Refine");
         SetUpdate(false);
         Apply();
     }

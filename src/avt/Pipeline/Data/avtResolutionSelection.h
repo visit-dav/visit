@@ -74,10 +74,14 @@ public:
 
     // added functionality
     virtual void         setResolution(int r) { mResolution = r; }
+    virtual void         setRefinementMethod(const std::string &newRefinementMethod) 
+                            { mRefinementMethod = newRefinementMethod; }
     virtual int          resolution() const { return mResolution; }
+    virtual std::string  refinementMethod() const { return mRefinementMethod; }
 
 private:
-    int mResolution;
+    int         mResolution;
+    std::string mRefinementMethod;
 };
 
 #endif // _AVT_RESOLUTION_SELECTION_H_

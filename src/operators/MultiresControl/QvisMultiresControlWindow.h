@@ -11,6 +11,7 @@
 class MultiresControlAttributes;
 class QLabel;
 class QSlider;
+class QComboBox;
 
 // ****************************************************************************
 // Class: QvisMultiresControlWindow
@@ -48,9 +49,12 @@ class QvisMultiresControlWindow : public QvisOperatorWindow
   private slots:
     void updateResolutionLevelLabel(int val);
     void resolutionLevelChanged();
+    void refinementMethodChanged(int val);
   private:
-    QSlider* resolution;
-    QLabel *resolutionLevelLabel;
+    QSlider   *resolution;
+    QLabel    *resolutionLevelLabel;
+    QLabel    *refinementMethodLabel;
+    QComboBox *refinementMethod;
 
     MultiresControlAttributes *atts;
 };

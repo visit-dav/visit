@@ -11,7 +11,7 @@
         1
       </Field>
       <Field name="refinementMethod" label="mfem refinement method" type="string">
-        "Legacy"
+        "New Refine"
       </Field>
       <Field name="info" label="Info" type="string" enabler="resolution:-1">
       </Field>
