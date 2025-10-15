@@ -17,6 +17,8 @@
 #include <DebugStream.h>
 #include <ExpressionException.h>
 
+#include <algorithm>
+
 // ****************************************************************************
 //  Class: intermediateResults
 //
