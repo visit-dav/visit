@@ -6987,6 +6987,7 @@ avtunvFileFormat::GetAuxiliaryData(const char *var, const char *type, void *,Des
                 debug3 << "2D Material #cells=" << dims[0] << endl;
 #endif
                 for (itre = meshUnvElements.begin(); itre != meshUnvElements.end(); itre++)
+                {
 #if INTERACTIVEPLOT
                     if (debuglevel >= 5) fprintf(stdout,"Element type=%d\n",itre->typelt);
 #else
@@ -6997,6 +6998,7 @@ avtunvFileFormat::GetAuxiliaryData(const char *var, const char *type, void *,Des
                         matlist[k] = itre->matid;
                         k++ ;
                     }
+                }
             }
             else if (strcmp(var, "wiremats") == 0)
             {
