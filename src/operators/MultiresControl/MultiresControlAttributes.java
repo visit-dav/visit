@@ -32,7 +32,7 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
 
         resolution = 0;
         maxResolution = 1;
-        refinementMethod = new String("Legacy");
+        refinementMethod = new String("New Refine");
         info = new String("");
     }
 
@@ -42,7 +42,7 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
 
         resolution = 0;
         maxResolution = 1;
-        refinementMethod = new String("Legacy");
+        refinementMethod = new String("New Refine");
         info = new String("");
     }
 

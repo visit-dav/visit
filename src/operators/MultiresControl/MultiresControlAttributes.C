@@ -24,7 +24,7 @@ void MultiresControlAttributes::Init()
 {
     resolution = 0;
     maxResolution = 1;
-    refinementMethod = "Legacy";
+    refinementMethod = "New Refine";
 
     MultiresControlAttributes::SelectAll();
 }
