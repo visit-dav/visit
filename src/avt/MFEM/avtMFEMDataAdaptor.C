@@ -983,9 +983,25 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     mfem::FiniteElementSpace lo_fes(&lo_mesh, lo_col, ho_fes->GetVDim());
     mfem::GridFunction lo_gf(&lo_fes);
     // transform the higher order function to a low order function somehow
-    mfem::OperatorHandle hi_to_lo;
-    lo_fes.GetTransferOperator(*ho_fes, hi_to_lo);
-    hi_to_lo.Ptr()->Mult(*gf, lo_gf);
+
+    if (basis.find("NURBS_") != std::string::npos)
+    {
+        if ( ho_fes->GetVDim() == 1 )
+        {
+            mfem::GridFunctionCoefficient gf_cf(gf);
+            lo_gf.ProjectCoefficient(gf_cf);
+        }
+        else
+        {
+            mfem::VectorGridFunctionCoefficient gf_cf(gf);
+            lo_gf.ProjectCoefficient(gf_cf);
+        }
+    else
+    {
+        mfem::OperatorHandle hi_to_lo;
+        lo_fes.GetTransferOperator(*ho_fes, hi_to_lo);
+        hi_to_lo.Ptr()->Mult(*gf, lo_gf);
+    }
 
     vtkDataArray *retval = LowOrderGridFunctionToVTK(&lo_gf);
     
