@@ -996,6 +996,7 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
             mfem::VectorGridFunctionCoefficient gf_cf(gf);
             lo_gf.ProjectCoefficient(gf_cf);
         }
+    }
     else
     {
         mfem::OperatorHandle hi_to_lo;
