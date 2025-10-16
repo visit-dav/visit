@@ -157,19 +157,8 @@ avtBlueprintFileFormat::avtBlueprintFileFormat(const char *filename, DBOptionsAt
       m_specset_info(),
       m_mfem_mesh_map(),
       m_mfem_material_map(),
-      m_new_refine(true)
+      m_refinement_method("New Refine")
 {
-    if (opts->GetEnum("MFEM LOR Setting") == 0)
-    {
-        // legacy LOR was requested
-        m_new_refine = false;
-    }
-    else
-    {
-        // new LOR was requested
-        m_new_refine = true;
-    }    
-
     m_tree_cache = new avtBlueprintTreeCache();
 }
 
@@ -1280,7 +1269,7 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
                     // fall back to legacy LOR.
                     cent = AVT_NODECENT;
                 }
-                else if (m_new_refine) // if new LOR is turned on
+                else if (m_refinement_method == "New Refine") // if new LOR is turned on
                 {
                     const std::string basis = n_field["basis"].as_string();
                     // H1 is nodal
@@ -2370,7 +2359,7 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
             res = avtMFEMDataAdaptor::RefineMeshToVTK(mesh,
                                                       domain,
                                                       m_selected_lod+1,
-                                                      m_new_refine);
+                                                      m_refinement_method == "New Refine");
 
             // cleanup the mfem mesh
             delete mesh;
@@ -2843,7 +2832,7 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                 res = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh,
                                                                   gf,
                                                                   m_selected_lod+1,
-                                                                  m_new_refine);
+                                                                  m_refinement_method == "New Refine");
 
                 // cleanup mfem data
                 delete gf;
@@ -2899,7 +2888,7 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
             res = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh,
                                                               gf,
                                                               m_selected_lod+1,
-                                                              m_new_refine);
+                                                              m_refinement_method == "New Refine");
 
             // cleanup mfem data
             delete gf;
@@ -3337,6 +3326,7 @@ avtBlueprintFileFormat::RegisterDataSelections(
             const avtResolutionSelection* sel =
                 static_cast<const avtResolutionSelection*>(*sels[i]);
             this->m_selected_lod = sel->resolution();
+            this->m_refinement_method = sel->refinementMethod();
             (*applied)[i] = true;
         }
     }

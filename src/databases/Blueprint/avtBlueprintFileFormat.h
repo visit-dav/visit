@@ -170,6 +170,7 @@ class avtBlueprintFileFormat : public avtSTMDFileFormat
     avtBlueprintTreeCache  *m_tree_cache;
   
     int                    m_selected_lod;
+    std::string            m_refinement_method;
 
     conduit::Node          m_mesh_and_topo_info;
     conduit::Node          m_matset_info;
@@ -179,9 +180,6 @@ class avtBlueprintFileFormat : public avtSTMDFileFormat
     std::map<std::string,std::pair<std::string,int> > m_mfem_material_map;
 
     std::set<std::string>  m_curve_names;
-
-    bool                   m_new_refine;
-
 };
 
 
