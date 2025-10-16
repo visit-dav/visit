@@ -977,6 +977,7 @@ avtMFEMFileFormat::RegisterDataSelections(const std::vector<avtDataSelection_p>&
             const avtResolutionSelection* sel =
                 static_cast<const avtResolutionSelection*>(*sels[i]);
             this->selectedLOD = sel->resolution();
+            this->m_new_refine = sel->refinementMethod() == "New Refine";
             (*applied)[i] = true;
         }
     }
