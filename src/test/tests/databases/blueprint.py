@@ -322,7 +322,7 @@ def test_poly(tag_name):
 
 def test_mfem(tag_name, example_name, protocol):
     readOptions = GetDefaultFileOpenOptions("Blueprint")
-    readOptions["MFEM LOR Setting"] = "Legacy LOR"
+    readOptions["Default MFEM LOR Setting"] = "Legacy LOR"
     SetDefaultFileOpenOptions("Blueprint", readOptions)
 
     dbfile = mfem_test_file(example_name,protocol)
@@ -353,7 +353,7 @@ def test_mfem(tag_name, example_name, protocol):
     CloseDatabase(dbfile)
 
     # reset read options to default
-    readOptions["MFEM LOR Setting"] = "MFEM LOR"
+    readOptions["Default MFEM LOR Setting"] = "MFEM LOR"
     SetDefaultFileOpenOptions("Blueprint", readOptions)
 
     # check periodic results fall back to old LOR
@@ -394,7 +394,7 @@ def test_mfem_lor_mesh(tag_name, example_name, protocol, devilray = False, numbe
 
     # get default options
     readOptions = GetDefaultFileOpenOptions("Blueprint")
-    readOptions["MFEM LOR Setting"] = "MFEM LOR"
+    readOptions["Default MFEM LOR Setting"] = "MFEM LOR"
     SetDefaultFileOpenOptions("Blueprint", readOptions)
     OpenDatabase(dbfile)
 
@@ -415,7 +415,7 @@ def test_mfem_lor_mesh(tag_name, example_name, protocol, devilray = False, numbe
 
     # examine legacy
     readOptions = GetDefaultFileOpenOptions("Blueprint")
-    readOptions["MFEM LOR Setting"] = "Legacy LOR"
+    readOptions["Default MFEM LOR Setting"] = "Legacy LOR"
     SetDefaultFileOpenOptions("Blueprint", readOptions)
     OpenDatabase(dbfile)
 
@@ -433,12 +433,12 @@ def test_mfem_lor_mesh(tag_name, example_name, protocol, devilray = False, numbe
 
     # restore default
     readOptions = GetDefaultFileOpenOptions("Blueprint")
-    readOptions["MFEM LOR Setting"] = "MFEM LOR"
+    readOptions["Default MFEM LOR Setting"] = "MFEM LOR"
     SetDefaultFileOpenOptions("Blueprint", readOptions)
 
 def test_mfem_lor_field(tag_name, name, number, pseudocolor_fields, vector_fields):
     readOptions = GetDefaultFileOpenOptions("Blueprint")
-    readOptions["MFEM LOR Setting"] = "MFEM LOR"
+    readOptions["Default MFEM LOR Setting"] = "MFEM LOR"
     SetDefaultFileOpenOptions("Blueprint", readOptions)
     dbfile = devilray_mfem_test_file(name, number)
     OpenDatabase(dbfile)
