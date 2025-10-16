@@ -168,6 +168,10 @@ QvisMultiresControlWindow::UpdateWindow(bool doAll)
     }
     debug1 << atts->GetMaxResolution() << " levels of detail available.\n";
 
+    this->refinementMethod->blockSignals(true);
+    this->refinementMethod->setCurrentText(atts->GetRefinementMethod().c_str());
+    this->refinementMethod->blockSignals(false);
+
     this->resolution->blockSignals(true);
     this->resolution->setValue(atts->GetResolution());
     this->resolution->setMaximum(std::max(0, atts->GetMaxResolution()));
@@ -205,6 +209,11 @@ QvisMultiresControlWindow::GetCurrentValues(int which_widget)
     if(which_widget == MultiresControlAttributes::ID_resolution || doAll)
     {
         atts->SetResolution(this->resolution->value());
+    }
+    // Do refinement method
+    if(which_widget == MultiresControlAttributes::ID_refinementMethod || doAll)
+    {
+        atts->SetRefinementMethod(this->refinementMethod->currentText().toStdString());
     }
 }
 
