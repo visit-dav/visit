@@ -131,6 +131,10 @@
 # 
 #    Justin Privitera, Tue Feb 11 14:15:05 PST 2025
 #    Added test for the far clipping plane actually clipping results.
+# 
+#    Justin Privitera, Fri Oct 17 16:39:39 PDT 2025
+#    Blueprint tests now use "blueprint <output type>" instead of just 
+#    "<output type>" to test the name change.
 # ----------------------------------------------------------------------------
 
 import os

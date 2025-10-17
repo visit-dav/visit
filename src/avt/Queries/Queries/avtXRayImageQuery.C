@@ -1381,6 +1381,10 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    Kathleen Biagas, Thu Aug 21, 2025
 //    Use VISIT_SLASH_STRING instead of "/" when constructing
 //    out_filename_w_path.
+// 
+//    Justin Privitera, Fri Oct 17 16:39:39 PDT 2025
+//    Use new file_types array in lieu of file_protocols, which is now only
+//    used to specify the Blueprint file protocol.
 //
 // ****************************************************************************
 
