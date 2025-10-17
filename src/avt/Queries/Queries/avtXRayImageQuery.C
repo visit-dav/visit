@@ -1680,7 +1680,6 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 conduit::Node opts;
                 opts["suffix"] = "none";
                 // save out
-                std::cout << file_protocols[outputType] << std::endl;
                 conduit::relay::io::blueprint::save_mesh(data_out,
                                                          out_filename_w_path.c_str(),
                                                          file_protocols[outputType],
