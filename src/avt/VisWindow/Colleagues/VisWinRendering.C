@@ -2701,16 +2701,19 @@ VisWinRendering::SetMSAASamples(int numSamples)
 // Creation:   August 26, 2025
 //
 // Modifications:
+//   Kathleen Biagas, Thu Oct 16, 2025.
+//   Check of olgWin is valid, prevent possible crash.
 //
 // ****************************************************************************
-//
+
 bool
 VisWinRendering::MSAAAvailable()
 {
 #ifdef GL_MAX_SAMPLES
     vtkOpenGLRenderWindow* oglWin = vtkOpenGLRenderWindow::SafeDownCast(GetRenderWindow());
     int msamples = 0;
-    oglWin->GetState()->vtkglGetIntegerv(GL_MAX_SAMPLES, &msamples);
+    if(oglWin)
+        oglWin->GetState()->vtkglGetIntegerv(GL_MAX_SAMPLES, &msamples);
     return (msamples > 1);
 #endif
     return false;
