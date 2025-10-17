@@ -131,6 +131,17 @@
 # 
 #    Justin Privitera, Tue Feb 11 14:15:05 PST 2025
 #    Added test for the far clipping plane actually clipping results.
+# 
+#    Justin Privitera, Fri Oct 17 15:31:04 PDT 2025
+#    Fixed array compose error in the setup blueprint test infrastructure, so
+#    now parr is p1, p2, p3 instead of p1, p2, *d3*.
+#    Turned off divide_emis_by_absorb for some blueprint tests, yielding much
+#    more interesting slices that demonstrate the multiple energy group
+#    output.
+#    Added rotation to the 3d image topo and spatial topo mesh tests to
+#    demonstrate the nature of the blueprint output like we do in Ascent.
+#    Added divide_emis_by_absorb to the query_result_options class so that
+#    tests can toggle it on and off in creating their conduit baselines.
 # ----------------------------------------------------------------------------
 
 import os
