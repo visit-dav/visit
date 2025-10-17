@@ -80,9 +80,9 @@ QvisXRayImageQueryWidget::QvisXRayImageQueryWidget(QWidget *parent,
     imageFormat->addItem(tr("tiff"));
     imageFormat->addItem(tr("rawfloats"));
     imageFormat->addItem(tr("bov"));
-    imageFormat->addItem(tr("json"));
-    imageFormat->addItem(tr("hdf5"));
-    imageFormat->addItem(tr("yaml"));
+    imageFormat->addItem(tr("blueprint json"));
+    imageFormat->addItem(tr("blueprint hdf5"));
+    imageFormat->addItem(tr("blueprint yaml"));
     imageFormat->setCurrentIndex(1);
     topLayout->addWidget(imageFormat, 0, 1);
 

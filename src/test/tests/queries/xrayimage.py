@@ -902,9 +902,9 @@ def blueprint_test(output_type, outdir, testtextnumber, testname):
     
     teardown_bp_test()
 
-blueprint_test("hdf5", conduit_dir_hdf5, 32, "Blueprint_HDF5_X_Ray_Output")
-blueprint_test("json", conduit_dir_json, 34, "Blueprint_JSON_X_Ray_Output")
-blueprint_test("yaml", conduit_dir_yaml, 36, "Blueprint_YAML_X_Ray_Output")
+blueprint_test("blueprint hdf5", conduit_dir_hdf5, 32, "Blueprint_HDF5_X_Ray_Output")
+blueprint_test("blueprint json", conduit_dir_json, 34, "Blueprint_JSON_X_Ray_Output")
+blueprint_test("blueprint yaml", conduit_dir_yaml, 36, "Blueprint_YAML_X_Ray_Output")
 
 #
 # test detector height and width are always positive in blueprint output
