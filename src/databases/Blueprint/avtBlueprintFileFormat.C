@@ -1062,8 +1062,6 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
     // ... if any exist
     std::map<std::string, std::string> topo_names_to_gf_names;
 
-    NodeConstIterator topos_itr = n_topos.children();
-
     //
     // gather topos that have quad funcs defined on them
     // 
@@ -1142,6 +1140,7 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
         debug5 << std::endl;
     }
 
+    NodeConstIterator topos_itr = n_topos.children();
     //
     // loop over topologies
     //
@@ -1259,6 +1258,27 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
         mmd->LODs = 20;
         md->Add(mmd);
 
+        // check for assocated quad func meshes
+        if(topos_to_quad_func_topos.count(topo_name) )
+        {
+            BP_PLUGIN_INFO("Adding quadtrature function meshes for topology: " << topo_name );
+            // loop over all qf topos assoc'd with this main topo
+            // add a mesh for each
+            for(auto qf_topo : topos_to_quad_func_topos[topo_name])
+            {
+                std::string mesh_qf_name = mesh_name + "_" + qf_topo;
+                BP_PLUGIN_INFO("Adding quadtrature function mesh: " << mesh_qf_name);
+                md->Add( new avtMeshMetaData(mesh_qf_name,
+                                                nblocks,
+                                                0, 0, 0,
+                                                ndims, ndims, mt));
+                m_mfem_mesh_map[mesh_qf_name] = true;
+                m_mesh_and_topo_info[mesh_qf_name]["mesh"] = mesh_name;
+                m_mesh_and_topo_info[mesh_qf_name]["topo"] = qf_topo;
+                m_mesh_and_topo_info[mesh_qf_name]["quad_func"] = "true";
+            }
+        }
+
         if(is_mfem_mesh)
         {
             // if we have a mfem mesh, add extra element_color variable
@@ -1267,27 +1287,6 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
                                           AVT_ZONECENT));
 
             m_mfem_mesh_map[mesh_topo_name] = true;
-
-            // check for assocated quad func meshes
-            if(topos_to_quad_func_topos.count(topo_name) )
-            {
-                BP_PLUGIN_INFO("Adding quadtrature function meshes for topology: " << topo_name );
-                // loop over all qf topos assoc'd with this main topo
-                // add a mesh for each
-                for(auto qf_topo : topos_to_quad_func_topos[topo_name])
-                {
-                    std::string mesh_qf_name = mesh_name + "_" + qf_topo;
-                    BP_PLUGIN_INFO("Adding quadtrature function mesh: " << mesh_qf_name);
-                    md->Add( new avtMeshMetaData(mesh_qf_name,
-                                                 nblocks,
-                                                 0, 0, 0,
-                                                 ndims, ndims, mt));
-                    m_mfem_mesh_map[mesh_qf_name] = true;
-                    m_mesh_and_topo_info[mesh_qf_name]["mesh"] = mesh_name;
-                    m_mesh_and_topo_info[mesh_qf_name]["topo"] = qf_topo;
-                    m_mesh_and_topo_info[mesh_qf_name]["quad_func"] = "true";
-                }
-            }
         }
         else
         {

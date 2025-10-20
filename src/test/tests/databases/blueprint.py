@@ -72,6 +72,9 @@
 #    Justin Privitera, Thu Jul 24 16:02:50 PDT 2025
 #    Added more robust unstructured points test.
 #
+#    Cyrus Harrison, Mon Oct 20 16:43:00 PDT 2025
+#    Added mfem quadrature function example tests.
+#
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("Blueprint")
 
@@ -93,6 +96,7 @@ bp_unstructured_uniform_dir = "blueprint_v0.9.1_uniform_coords_unstructured_topo
 bp_mixed_topos_dir = "blueprint_v0.9.2_mixed_topo_data"
 bp_specset_dir = "blueprint_v0.9.2_specset_example"
 bp_unstructured_points_dir = "blueprint_v0.9.4_unstructured_points"
+bp_mfem_quad_func_dir = "blueprint_v0.9.5_mfem_quad_func_examples"
 
 braid_2d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_2d_examples.blueprint_root_hdf5"))
 braid_3d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_3d_examples.blueprint_root_hdf5"))
@@ -216,6 +220,8 @@ devilray_mfem_examples.append(devilray_mfem_example("laghos_tg.cycle", "000350",
 devilray_mfem_examples.append(devilray_mfem_example("taylor_green.cycle", "001860", ["mesh_nodes_magnitude", "density", "specific_internal_energy", "velocity_magnitude"], ["velocity"], "3d"))
 devilray_mfem_examples.append(devilray_mfem_example("tri_beam", "000000", ["mesh_nodes_magnitude"], ["mesh_nodes"], "2d"))
 devilray_mfem_examples.append(devilray_mfem_example("warbly_cube", "000000", ["mesh_nodes_magnitude"], [], "3d"))
+
+bp_mfem_quad_func_examples = glob.glob(data_path(pjoin(bp_mfem_quad_func_dir,"*.root")))
 
 def full_mesh_name(mesh_name):
     return mesh_name + "_mesh"
@@ -962,6 +968,54 @@ def test_blueprint_0_9_4():
         ResetView()
     CloseDatabase(unstructured_points)
 
+def test_mfem_quad_func(tag_name, dbfile, var_name):
+    ResetView()
+    base = os.path.splitext(os.path.basename(dbfile))[0]
+    OpenDatabase(dbfile)
+    # get the mesh metadata and find the mesh with "quad_func"
+    md = GetMetaData(dbfile)
+    plot_type = ""
+    qf_mesh_name = ""
+    full_var_name = ""
+    for i in range(md.GetNumScalars()):
+        smd = md.GetScalars(i)
+        if smd.name.count(var_name) > 0:
+            full_var_name = smd.name
+            plot_type = "Pseudocolor"
+            qf_mesh_name = smd.meshName
+    for i in range(md.GetNumVectors()):
+        vmd = md.GetVectors(i)
+        if vmd.name.count(var_name) > 0:
+            full_var_name = vmd.name
+            plot_type = "Vector"
+            qf_mesh_name = vmd.meshName
+    AddPlot(plot_type, full_var_name)
+    AddPlot("Mesh",qf_mesh_name)
+    mesh_atts = MeshAttributes()
+    mesh_atts.lineWidth = 2
+    mesh_atts.meshColor = (0, 0, 0, 255)
+    mesh_atts.meshColorSource = mesh_atts.MeshCustom
+    SetPlotOptions(mesh_atts)
+    DrawPlots()
+    AddPlot("Mesh","mesh_main")
+    mesh_atts = MeshAttributes()
+    mesh_atts.lineWidth = 4
+    mesh_atts.meshColor = (255, 0, 255, 255)
+    mesh_atts.meshColorSource = mesh_atts.MeshCustom
+    SetPlotOptions(mesh_atts)
+    DrawPlots()
+    Test(tag_name + "_" + base + "_qf_plot")
+    DeleteAllPlots()
+    ResetView()
+    CloseDatabase(dbfile)
+
+def test_blueprint_0_9_5():
+    TestSection("Quadrature Functions")
+    for dbfile in bp_mfem_quad_func_examples:
+        tag = "Quad_Func_" + os.path.splitext(os.path.basename(dbfile))[0]
+        test_mfem_quad_func(tag, dbfile, "quad_field")
+
+
 def main():
     test_blueprint_json_hdf5()
     test_blueprint_MFEM()
@@ -974,6 +1028,7 @@ def main():
     test_blueprint_0_9_1()
     test_blueprint_0_9_2()
     test_blueprint_0_9_4()
+    test_blueprint_0_9_5()
 
 main()
 Exit()
