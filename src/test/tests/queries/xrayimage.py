@@ -132,6 +132,10 @@
 #    Justin Privitera, Tue Feb 11 14:15:05 PST 2025
 #    Added test for the far clipping plane actually clipping results.
 # 
+#    Justin Privitera, Fri Oct 17 16:39:39 PDT 2025
+#    Blueprint tests now use "blueprint <output type>" instead of just 
+#    "<output type>" to test the name change.
+#
 #    Justin Privitera, Fri Oct 17 15:31:04 PDT 2025
 #    Fixed array compose error in the setup blueprint test infrastructure, so
 #    now parr is p1, p2, p3 instead of p1, p2, *d3*.
@@ -944,9 +948,9 @@ def blueprint_test(output_type, outdir, testtextnumber, testname):
     
     teardown_bp_test()
 
-blueprint_test("hdf5", conduit_dir_hdf5, 32, "Blueprint_HDF5_X_Ray_Output")
-blueprint_test("json", conduit_dir_json, 34, "Blueprint_JSON_X_Ray_Output")
-blueprint_test("yaml", conduit_dir_yaml, 36, "Blueprint_YAML_X_Ray_Output")
+blueprint_test("blueprint hdf5", conduit_dir_hdf5, 32, "Blueprint_HDF5_X_Ray_Output")
+blueprint_test("blueprint json", conduit_dir_json, 34, "Blueprint_JSON_X_Ray_Output")
+blueprint_test("blueprint yaml", conduit_dir_yaml, 36, "Blueprint_YAML_X_Ray_Output")
 
 #
 # test detector height and width are always positive in blueprint output
