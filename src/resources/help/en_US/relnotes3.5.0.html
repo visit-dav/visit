@@ -106,6 +106,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Fixed a bug causing the min, max, and divide expressions to crash the compute engine when given a single variable as input. Min and max now return the result of that single variable, and divide throws an error instead of crashing.</li>
   <li>The Verdict mesh quality library that is builtin to VisIt was enhanced to handle degenerate hexahedra. This improves expressions and queries that use the Verdict library.</li>
+  <li>Changed the <code>global_variance</code> expression to <code>global_var</code> and the <code>global_std_dev</code> expression to <code>global_std</code>.</li>
 </ul>
 
 <a name="Query_changes"></a>
@@ -114,7 +115,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The X Ray Image Query now clips results beyond the far clipping plane.</li>
   <li>The Verdict mesh quality library that is builtin to VisIt was enhanced to handle generate hexahedra. This improves expressions and queries that use the Verdict library.</li>
   <li>Fixed a bug with the X Ray Image Query where VisIt would in some rare instances either crash or create an image that was too dark when running in parallel.</li>
-</ul>
+  <li>The X Ray Image Query Blueprint output types now have "blueprint" in their names, so, for example, "hdf5" is now "blueprint hdf5". The original names are still supported.</li>
 </ul>
 
 <a name="Bugs_fixed"></a>
@@ -138,6 +139,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Added a descriptive error message for when a movie encoding format is not supported on the current platform.</li>
   <li>Fixed a bug where rendering with shadows would result in an all black image except for the annotations when the image contained transparent geometry.</li>
   <li>Fixed a bug where RPATHs weren't stripped from distributions. This could lead to issues for users that didn't build the distribution. It could also cause issues when a distribution is installed on a machine different from where it was built.</li>
+  <li>Fixed a bug with global mesh expressions causing them to only work on single domain data. They now function across all domains in parallel and in serial.</li>
 </ul>
 
 <a name="Build_features"></a>

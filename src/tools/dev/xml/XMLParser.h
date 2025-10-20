@@ -220,6 +220,9 @@ ParseCharacters(const QString &buff_input)
 //    Remove WIN32DEFINES (windefs) support, now handled as a Conditional
 //    Definitions in .code file.
 //
+//    Kathleen Biagas, Thu Oct  9
+//    Add conditional cxx flags.
+//
 // ****************************************************************************
 
 class XMLParser
@@ -479,13 +482,15 @@ class XMLParser
                 }
 
                 // Find/Set Condition blocks
-                QStringList a, b, x, y, z;
-                currentAttribute->codeFile->GetAllConditions(a, b, x, y, z);
+                QStringList a, b, w, x, y, z;
+                currentAttribute->codeFile->GetAllConditions(a, b, w, x, y, z);
                 for(int i = 0; i < a.size(); ++i)
                 {
                     Conditional *c = new Conditional(a[i], b[i]);
+                    if(!w.isEmpty() && !w[i].isEmpty())
+                        c->definitions= w[i];
                     if(!x.isEmpty() && !x[i].isEmpty())
-                        c->definitions= x[i];
+                        c->cxxflags= x[i];
                     if(!y.isEmpty() && !y[i].isEmpty())
                         c->mlinklibs= y[i];
                     if(!z.isEmpty() && !z[i].isEmpty())

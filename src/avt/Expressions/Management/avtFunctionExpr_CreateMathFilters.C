@@ -31,15 +31,6 @@
 #include <avtTanExpression.h>
 #include <avtTanhExpression.h>
 
-// global expressions
-#include <avtGlobalAvgExpression.h>
-#include <avtGlobalMaxExpression.h>
-#include <avtGlobalMinExpression.h>
-#include <avtGlobalRMSExpression.h>
-#include <avtGlobalStdDevExpression.h>
-#include <avtGlobalSumExpression.h>
-#include <avtGlobalVarianceExpression.h>
-
 #include <DebugStream.h>
 
 #include <string>
@@ -73,6 +64,9 @@
 //   Justin Privitera, Mon Oct 28 15:26:44 PDT 2024
 //   Added global_avg, global_max, global_min, global_rms, global_std_dev, 
 //   global_sum, and global_variance.
+// 
+//   Justin Privitera, Wed Oct  8 14:13:21 PDT 2025
+//   Moved global expressions to avtFunctionExpr_CreateGlobalConstantFilters.C
 //
 // ****************************************************************************
 
@@ -106,20 +100,6 @@ avtFunctionExpr::CreateMathFilters(const std::string &functionName) const
         f = new avtExpExpression();
     else if (functionName == "floor")
         f = new avtFloorExpression();
-    else if (functionName == "global_avg")
-        f = new avtGlobalAvgExpression();
-    else if (functionName == "global_max")
-        f = new avtGlobalMaxExpression();
-    else if (functionName == "global_min")
-        f = new avtGlobalMinExpression();
-    else if (functionName == "global_rms")
-        f = new avtGlobalRMSExpression();
-    else if (functionName == "global_std_dev")
-        f = new avtGlobalStdDevExpression();
-    else if (functionName == "global_sum")
-        f = new avtGlobalSumExpression();
-    else if (functionName == "global_variance")
-        f = new avtGlobalVarianceExpression();
     else if (functionName == "ln")
         f = new avtNaturalLogExpression();
     else if ((functionName == "log") || (functionName == "log10"))

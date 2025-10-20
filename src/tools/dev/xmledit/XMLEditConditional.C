@@ -24,6 +24,8 @@
 //  Creation:    Sep 29, 2025
 //
 //  Modificiations:
+//    Kathleen Biagas, Thu Oct 9, 2025
+//    Add cxxflags.
 //
 // ****************************************************************************
 
@@ -74,6 +76,15 @@ XMLEditConditional::XMLEditConditional(QWidget *p)
     topLayout->addWidget(definitions, row,0, 1,2);
     row++;
 
+    topLayout->addWidget(new QLabel(tr("CXXFlags"), this), row, 0);
+    row++;
+
+    cxxflags = new QTextEdit(this);
+    cxxflags->setFont(monospaced);
+    cxxflags->setWordWrapMode(QTextOption::NoWrap);
+    topLayout->addWidget(cxxflags, row,0, 1,2);
+    row++;
+
     topLayout->addWidget(new QLabel(tr("MLinkLibraries"), this), row, 0);
     row++;
 
@@ -101,6 +112,8 @@ XMLEditConditional::XMLEditConditional(QWidget *p)
             this, SLOT(conditionTextChanged()));
     connect(definitions, SIGNAL(textChanged()),
             this, SLOT(definitionsChanged()));
+    connect(cxxflags, SIGNAL(textChanged()),
+            this, SLOT(cxxflagsChanged()));
     connect(mlinklibs, SIGNAL(textChanged()),
             this, SLOT(mlinklibsChanged()));
     connect(elinklibs, SIGNAL(textChanged()),
@@ -150,6 +163,8 @@ XMLEditConditional::UpdateWindowContents()
 //  Creation:    Sep 29, 2025
 //
 //  Modifications:
+//    Kathleen Biagas, Thu Oct 9, 2025
+//    Add cxxflags.
 //
 // ****************************************************************************
 
@@ -162,6 +177,7 @@ XMLEditConditional::UpdateWindowSensitivity()
     target->setEnabled(active);
     condition->setEnabled(active);
     definitions->setEnabled(active);
+    cxxflags->setEnabled(active);
     mlinklibs->setEnabled(active);
     elinklibs->setEnabled(active);
 }
@@ -176,6 +192,8 @@ XMLEditConditional::UpdateWindowSensitivity()
 //  Creation:    Sep 29, 2025
 //
 //  Modifications:
+//    Kathleen Biagas, Thu Oct 9, 2025
+//    Add cxxflags.
 //
 // ****************************************************************************
 
@@ -191,6 +209,7 @@ XMLEditConditional::UpdateWindowSingleItem()
         target->setText("");
         condition->setText("");
         definitions->setText("");
+        cxxflags->setText("");
         mlinklibs->setText("");
         elinklibs->setText("");
     }
@@ -200,6 +219,7 @@ XMLEditConditional::UpdateWindowSingleItem()
         target->setText(c->target);
         condition->setText(c->condition);
         definitions->setText(c->definitions);
+        cxxflags->setText(c->cxxflags);
         mlinklibs->setText(c->mlinklibs);
         elinklibs->setText(c->elinklibs);
     }
@@ -222,6 +242,8 @@ XMLEditConditional::UpdateWindowSingleItem()
 //  Creation:    Sep 29, 2025
 //
 //  Modifications:
+//    Kathleen Biagas, Thu Oct 9, 2025
+//    Add cxxflags.
 //
 // ****************************************************************************
 void
@@ -231,6 +253,7 @@ XMLEditConditional::BlockAllSignals(bool block)
     target->blockSignals(block);
     condition->blockSignals(block);
     definitions->blockSignals(block);
+    cxxflags->blockSignals(block);
     mlinklibs->blockSignals(block);
     elinklibs->blockSignals(block);
 }
@@ -299,6 +322,28 @@ XMLEditConditional::definitionsChanged()
     Conditional *c = a->conditionals[index];
 
     c->definitions = definitions->toPlainText();
+}
+
+// ****************************************************************************
+//  Method:  XMLEditConditional::cxxflagsChanged
+//
+//  Programmer:  Kathleen Biagas
+//  Creation:    Oct 9, 2025
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+XMLEditConditional::cxxflagsChanged()
+{
+    Attribute *a = xmldoc->attribute;
+    int index = conditionList->currentRow();
+    if (index == -1)
+        return;
+    Conditional *c = a->conditionals[index];
+
+    c->cxxflags = cxxflags->toPlainText();
 }
 
 // ****************************************************************************

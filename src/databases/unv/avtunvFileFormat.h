@@ -11,6 +11,7 @@
 
 #include <avtSTSDFileFormat.h>
 
+#include <cstdint>
 #include <string>
 #include <vector>
 #include <set>
@@ -51,6 +52,19 @@ public:
             return (n1.label < n2.label);
         };
     };
+};
+
+class unvHashlab { // A 64 bits hash for nodes positions
+public:
+  int number;     // Numbered nodes
+  uint64_t label; // Hash value
+  struct compare_unvHashlab
+  {
+    bool operator () (const unvHashlab& n1, const unvHashlab& n2) const
+    {
+      return (n1.label < n2.label);
+    };
+  };
 };
 
 class UnvInterface { // Interface class
@@ -159,9 +173,9 @@ protected:
     char * fileinfo_str ;
     int nbnodes ; // Total number of nodes in the mesh
     int maxnodl ; // Maximum node label in the mesh
-    int nb3dmats ; // Highest material numbre for 3D elements
-    int nb2dmats ; // Highest material numbre for 3D elements
-    int nb1dmats ; // Highest material numbre for 3D elements
+    int nb3dmats ; // Highest material number for 3D elements
+    int nb2dmats ; // Highest material number for 2D elements
+    int nb1dmats ; // Highest material number for 1D elements
     int nb3dcells ; // Store the total number of volume cells
     int nb2dcells ; // Store the total number of surface cells
     int nb1dcells ; // Store the total number of surface cells

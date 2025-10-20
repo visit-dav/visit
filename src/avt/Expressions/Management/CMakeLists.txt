@@ -4,6 +4,8 @@
 
 #*****************************************************************************
 # Modifications:
+#   Justin Privitera, Wed Oct  8 14:13:21 PDT 2025
+#   Added avtFunctionExpr_CreateGlobalConstantFilters.C
 #
 #*****************************************************************************
 
@@ -17,6 +19,7 @@ set(MANAGEMENT_SOURCES
     avtFunctionExpr_CreateCMFEFilters.C
     avtFunctionExpr_CreateConditionalFilters.C
     avtFunctionExpr_CreateImageProcessingFilters.C
+    avtFunctionExpr_CreateGlobalConstantFilters.C
     avtFunctionExpr_CreateMaterialFilters.C
     avtFunctionExpr_CreateMathFilters.C
     avtFunctionExpr_CreateMeshFilters.C

@@ -9,6 +9,9 @@
 #          avtGlobalMinExpression.C,     avtGlobalRMSExpression.C, 
 #          avtGlobalStdDevExpression.C,  avtGlobalSumExpression.C, 
 #      and avtGlobalVarianceExpression.C
+# 
+#    Justin Privitera, Thu Oct  2 16:03:05 PDT 2025
+#    Moved all global expressions to the GlobalConstant folder.
 #
 #*****************************************************************************
 
@@ -40,13 +43,6 @@ set(MATH_SOURCES
     avtFloorExpression.C
     avtIdentityExpression.C
     avtInverseExpression.C
-    avtGlobalAvgExpression.C
-    avtGlobalMaxExpression.C
-    avtGlobalMinExpression.C
-    avtGlobalRMSExpression.C
-    avtGlobalStdDevExpression.C
-    avtGlobalSumExpression.C
-    avtGlobalVarianceExpression.C
     avtNaturalLogExpression.C
     avtPolarCoordinatesExpression.C
     avtRadianToDegreeExpression.C

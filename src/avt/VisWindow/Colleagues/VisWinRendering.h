@@ -543,12 +543,10 @@ private:
 
 #ifdef HAVE_ANARI
     vtkAnariPass                *CreateAnariPass();
-    void                        SetAnariRendering(const bool);
-    void                        SetAnariLibrary(const std::string);
-    void                        SetAnariLibrarySubtype(const std::string);
-    void                        SetAnariRendererSubtype(const std::string);
-    void                        SetAnariRendererParameters(const stringVector &);
-    void                        SetAnariUSDParameters(const stringVector &);
+    void                        SetAnariLibrary();
+    void                        SetAnariRendererSubtype();
+    void                        SetAnariRendererParameters();
+    void                        SetAnariUSDParameters();
 #endif
 };
 
