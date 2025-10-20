@@ -1133,7 +1133,8 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
     {
         debug5 << "Quadrature function meshes based on topology `"
                <<  qf_itr.first 
-               << "` : "
+               << "` : ";
+
         for(auto qf_topo : qf_itr.second)
         {
             debug5 << qf_topo << " ";

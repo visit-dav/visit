@@ -21,6 +21,9 @@
 #    Cyrus Harrison, Tue Oct 29 10:52:33 PDT 2024
 #    Added wedge example mesh.
 #
+#    Cyrus Harrison, Mon Oct 20 11:17:19 PDT 2025
+#    Added quadrature function examples
+#
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("MFEM")
 
@@ -269,12 +272,26 @@ def set_test_view():
 #     test_mfem_lor_field("LOR_Fields", dbfile)
 
 
-def test_mfem_quad_func_scalar(tag_name, dbfile):
+def test_mfem_quad_func(tag_name, dbfile, var_name):
     ResetView()
     base = os.path.splitext(os.path.basename(dbfile))[0]
     OpenDatabase(dbfile)
-    AddPlot("Pseudocolor","quad_field")
-    AddPlot("Mesh","main_quad_func_o5")
+    # get the mesh metadata and find the mesh with "quad_func"
+    md = GetMetaData(dbfile)
+    plot_type = ""
+    qf_mesh_name = ""
+    for i in range(md.GetNumScalars()):
+        smd = md.GetScalars(i)
+        if smd.name == var_name:
+            plot_type = "Pseudocolor"
+            qf_mesh_name = smd.meshName
+    for i in range(md.GetNumVectors()):
+        vmd = md.GetVectors(i)
+        if vmd.name == var_name:
+            plot_type = "Vector"
+            qf_mesh_name = vmd.meshName
+    AddPlot(plot_type, var_name)
+    AddPlot("Mesh",qf_mesh_name)
     mesh_atts = MeshAttributes()
     mesh_atts.lineWidth = 2
     mesh_atts.meshColor = (0, 0, 0, 255)
@@ -288,14 +305,14 @@ def test_mfem_quad_func_scalar(tag_name, dbfile):
     mesh_atts.meshColorSource = mesh_atts.MeshCustom
     SetPlotOptions(mesh_atts)
     DrawPlots()
-    Test(tag_name + "_" + base + "_pseudocolor_qf_scalar")
+    Test(tag_name + "_" + base + "_qf_plot")
     DeleteAllPlots()
     ResetView()
     CloseDatabase(dbfile)
 
 TestSection("Quadrature Functions")
 for dbfile in mfem_quad_func_files:
-    test_mfem_quad_func_scalar("Quad_Func", dbfile)
-
+    tag = "Quad_Func_" + os.path.splitext(os.path.basename(dbfile))[0]
+    test_mfem_quad_func(tag, dbfile, "quad_field")
 
 Exit()
