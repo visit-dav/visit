@@ -45,6 +45,9 @@
 //    Kathleen Biagas, Tue Sep 30 14:57:43 PDT 2025
 //    Added GetAllConditions so that XMLEdit can read them in.
 //
+//    Kathleen Biagas, Thu Oct 9, 2025
+//    Added CXXFlags to conditions.
+//
 // ****************************************************************************
 
 class CodeFile
@@ -232,7 +235,7 @@ class CodeFile
     }
 
     void GetAllConditions(QStringList &t, QStringList &c, QStringList &d,
-                      QStringList &m, QStringList &e) const
+                      QStringList &cf, QStringList &m, QStringList &e) const
     {
         QString target, cond, ctype, val;
 
@@ -250,6 +253,14 @@ class CodeFile
             if(ctype == "Definitions:")
             {
                 d.push_back(val);
+                cf.push_back("");
+                m.push_back("");
+                e.push_back("");
+            }
+            if(ctype == "CXXFlags:")
+            {
+                cf.push_back(val);
+                d.push_back("");
                 m.push_back("");
                 e.push_back("");
             }
@@ -257,12 +268,14 @@ class CodeFile
             {
                 m.push_back(val);
                 d.push_back("");
+                cf.push_back("");
                 e.push_back("");
             }
             else if(ctype == "ELinkLibraries:")
             {
                 e.push_back(val);
                 d.push_back("");
+                cf.push_back("");
                 m.push_back("");
             }
         }
@@ -429,8 +442,9 @@ private:
 
     void ParseCondition(QString &buff, const QString &name, QTextStream &in)
     {
-        const char *keys[14] = {"Includes:", \
+        const char *keys[15] = {"Includes:", \
                                 "Definitions:", \
+                                "CXXFlags:", \
                                 "ILinkLibraries:", \
                                 "GLinkLibraries:", \
                                 "VLinkLibraries:", \
@@ -446,7 +460,7 @@ private:
         buff = in.readLine();
         while (!in.atEnd() && GetKeyword(buff).isNull())
         {
-            for (int i = 0; i < 14; ++i)
+            for (int i = 0; i < 15; ++i)
             {
                 QString key(keys[i]);
                 if (buff.left(key.size()) == key)

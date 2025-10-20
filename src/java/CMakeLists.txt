@@ -40,6 +40,9 @@
 #   Kathleen Biags, Thu Aug 14, 2025
 #   Add FXAAOptions.
 #
+#   Kevin Griffin, Mon Oct 13 10:43:00 AM CDT 2025
+#   Add AnariAttributes.
+#
 #****************************************************************************
 
 PROJECT(JavaClient)
@@ -77,6 +80,7 @@ SET(JAVA_GEN_METADATA_OBJECTS
 # State Objects
 #####################
 SET(JAVA_GEN_STATE_OBJECTS
+    AnariAttributes
     AnimationAttributes 
     AnnotationAttributes 
     AnnotationObject 
@@ -235,6 +239,7 @@ avtVectorMetaData.java
 )
 
 SET(PACKAGE_STATE_SOURCES
+AnariAttributes.java
 AnimationAttributes.java 
 AnnotationAttributes.java 
 AnnotationObject.java 
