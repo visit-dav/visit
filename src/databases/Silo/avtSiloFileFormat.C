@@ -1147,7 +1147,11 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // to read the extra data arrays, except for material names and
     // numbers and colors.
     //
+#if SILO_VERSION_GE(4,11,0)
     DBSetDataReadMask2(DBMatMatnames|DBMatMatnos|DBMatMatcolors|DBMBNamesAndTypes|DBMBOptions);
+#else
+DBSetDataReadMask2(DBMatMatnames|DBMatMatnos|DBMatMatcolors);
+#endif
 
     //
     // Do a recursive search through the subdirectories.
