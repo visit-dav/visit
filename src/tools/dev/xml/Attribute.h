@@ -85,6 +85,10 @@
 //    Kathleen Biagas, Thu Oct 9, 2025
 //    Add cxxflags to conditionals.
 //
+//    Kathleen Biagas, Mon Oct 20, 2025
+//    Don't use QIODevice::Text when writing on Windows as it writes CR\LF
+//    and we want to use unix-style line endings.
+//
 // ****************************************************************************
 
 class Attribute : public AttributeBase
@@ -268,7 +272,11 @@ class Attribute : public AttributeBase
             return;
 
         QFile *f = new QFile(codeFile->FileName());
+#ifdef _WIN32
+        if (!f->open(QIODevice::WriteOnly))
+#else
         if (!f->open(QIODevice::WriteOnly | QIODevice::Text))
+#endif
         {
             delete f;
             throw "Could not open code file for saving\n";
