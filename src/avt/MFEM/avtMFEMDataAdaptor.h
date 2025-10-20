@@ -88,6 +88,15 @@ public:
 
       static vtkDataArray *QuadratureFunctionToVTK(mfem::QuadratureFunction *qf);
 
+      // Helpers for Quadrature Function style basis strings
+      static bool          CheckBasisStringForQuadratureFunction(const std::string &basis);
+      static void          ParseQuadratureFunctionBasisString(const std::string &basis,
+                                                              int &qf_order,
+                                                              int &qf_vdim);
+      static std::string   GenerateQuadratureFunctionBasisString(mfem::QuadratureFunction *qf);
+      static std::string   GenerateQuadratureFunctionBasisString(int qf_order,
+                                                                 int qf_vdim);
+
 
 };
 

@@ -28,6 +28,7 @@
 // visit includes
 //-----------------------------------------------------------------------------
 #include "InvalidVariableException.h"
+#include <StringHelpers.h>
 
 #include "avtMFEMLogging.h"
 
@@ -704,6 +705,8 @@ avtMFEMDataAdaptor::QuadratureFunctionMeshToVTK(mfem::Mesh *mesh, int order)
     // assume identical order
     // const int order = quad_f->GetIntRule(0).GetOrder()/2; // <-- Gauss-Legendre
     //
+    // The order which can be perfectly integated is equal to (2 * p -1) quad points
+    // gauss lobatto lor'd mesh with p + 1 == order / 2 +1
     const int qpts_order = order / 2;
     const int ref_factor = qpts_order + 1;
     ///
@@ -1300,3 +1303,119 @@ avtMFEMDataAdaptor::QuadratureFunctionToVTK(mfem::QuadratureFunction *qf)
 
     return retval;
 }
+
+// ****************************************************************************
+//  Method: CheckBasisStringForQuadratureFunction
+//
+//  Purpose:
+//   Checks if the basis string has a `QF_` prefix, which indicates
+//   a QuadratureFunction
+//
+//  Arguments:
+//   basis:     MFEM style basis string
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Fri Oct 10 15:09:42 PDT 2025
+//
+//  Modifications:
+//
+// ****************************************************************************
+bool
+avtMFEMDataAdaptor::CheckBasisStringForQuadratureFunction(const std::string &basis)
+{
+    return basis.find("QF_") != std::string::npos;
+}
+
+// ****************************************************************************
+//  Method: ParseQuadratureFunctionBasisString
+//
+//  Purpose:
+//   Parse Order and VDim details from a Quadrature Function style basis
+//   string.
+//
+//  Arguments:
+//   basis:     MFEM style basis string
+//   qf_order:  Order result
+//   qf_vdim:   VDim Result
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Fri Oct 10 15:09:42 PDT 2025
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+avtMFEMDataAdaptor::ParseQuadratureFunctionBasisString(const std::string &basis,
+                                                       int &qf_order,
+                                                       int &qf_vdim)
+{
+    // the pattern used to encode the quad space params is:
+    // QF_{ORDER}_{VDIM}
+    //
+    // ORDER is the degree of the polynmials for the quad rule
+    // VDIM  is the number of components at each quad point (scalar, vector, etc)
+    //
+    // Note: Order == 2*(quad points) -1
+    //
+    // split to parse
+    std::vector<std::string> toks = StringHelpers::split(basis,'_');
+
+    // there should be 3 tokends
+    if(toks.size() != 3)
+    {
+        //TODO ERROR, bad qf basis string
+    }
+
+    // ORDER
+    StringHelpers::StringToInt(toks[1],qf_order);
+    // VDIM
+    StringHelpers::StringToInt(toks[2],qf_vdim);
+}
+
+// ****************************************************************************
+//  Method: GenerateQuadratureFunctionBasisString
+//
+//  Purpose:
+//   Create a Quadrature Function Basis String from a QuadratureFunction
+//   object.
+//
+//  Arguments:
+//   qf:     MFEM QuadratureFunction object
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Fri Oct 10 15:09:42 PDT 2025
+//
+//  Modifications:
+//
+// ****************************************************************************
+std::string
+avtMFEMDataAdaptor::GenerateQuadratureFunctionBasisString(mfem::QuadratureFunction *qf)
+{
+    return GenerateQuadratureFunctionBasisString(qf->GetSpace()->GetOrder(),
+                                                 qf->GetVDim());
+}
+// ****************************************************************************
+//  Method: GenerateQuadratureFunctionBasisString
+//
+//  Purpose:
+//   Create a Quadrature Function Basis String for a given order and vdim.
+//
+//  Arguments:
+//   qf_order:  Order
+//   qf_vdim:   VDim
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Fri Oct 10 15:09:42 PDT 2025
+//
+//  Modifications:
+//
+// ****************************************************************************
+std::string
+avtMFEMDataAdaptor::GenerateQuadratureFunctionBasisString(int qf_order,
+                                                          int qf_vdim)
+{
+    std::ostringstream oss;
+    oss << "QF_"<< qf_order << "_" << qf_vdim;
+    return oss.str();
+}
+

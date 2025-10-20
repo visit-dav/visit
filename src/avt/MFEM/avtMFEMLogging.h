@@ -23,7 +23,6 @@
 
 #define AVT_MFEM_INFO(  msg  )                                      \
 {                                                                   \
-    std::cout << msg << std::endl;                                  \
     debug5 << msg << std::endl;                                     \
 }                                                                   \
 

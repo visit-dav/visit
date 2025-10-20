@@ -38,6 +38,9 @@
 using namespace conduit;
 using namespace mfem;
 
+
+#include <avtMFEMDataAdaptor.h>
+
 // ****************************************************************************
 //  Method: Initialize
 //
@@ -3338,16 +3341,76 @@ avtConduitBlueprintDataAdaptor::BlueprintToMFEM::FieldToMFEMQuadratureFunction(
     Node n_conv;
 
     const double *vals_ptr = NULL;
+    int vdim = 1;
 
-    if (n_field["values"].dtype().is_double() &&
-        n_field["values"].is_compact())
+    if (n_field["values"].dtype().is_object())
     {
-        vals_ptr = n_field["values"].value();
+        vdim = n_field["values"].number_of_children();
+
+        // need to check that we have doubles and
+        // cover supported layouts
+        if ( n_field["values"][0].dtype().is_double() )
+        {
+            // quad funcs use what mfem calls byVDIM
+            // and what conduit calls interleaved
+            // check for interleaved
+            if (blueprint::mcarray::is_interleaved(n_field["values"]))
+            {
+                // conduit mcarray interleaved == mfem byVDIM
+                vals_ptr = n_field["values"].child(0).value();
+            }
+            else
+            {
+                // for mcarray generic case --  default to byVDIM
+                // aka interleaved
+                blueprint::mcarray::to_interleaved(n_field["values"],
+                                                  n_conv["values"]);
+                vals_ptr = n_conv["values"].child(0).value();
+            }
+        }
+        else // convert to doubles and use interleaved
+        {
+            Node n_tmp;
+            // check all vals, if we don't have doubles convert
+            // to doubles
+            NodeConstIterator itr = n_field["values"].children();
+            while (itr.has_next())
+            {
+                const Node &c_vals = itr.next();
+                std::string c_name = itr.name();
+
+                if ( c_vals.dtype().is_double() )
+                {
+                    // zero copy current coords
+                    n_tmp[c_name].set_external(c_vals);
+
+                }
+                else
+                {
+                    // convert
+                    c_vals.to_double_array(n_tmp[c_name]);
+                }
+            }
+
+            // for mcarray generic case --  default to byVDIM
+            // aka interleaved
+            blueprint::mcarray::to_interleaved(n_tmp,
+                                               n_conv["values"]);
+            vals_ptr = n_conv["values"].child(0).value();
+        }
     }
-    else
+    else // scalar case
     {
-        n_field["values"].to_double_array(n_conv["values"]);
-        vals_ptr = n_conv["values"].value();
+        if (n_field["values"].dtype().is_double() &&
+            n_field["values"].is_compact())
+        {
+            vals_ptr = n_field["values"].value();
+        }
+        else
+        {
+            n_field["values"].to_double_array(n_conv["values"]);
+            vals_ptr = n_conv["values"].value();
+        }
     }
 
     if (zero_copy && !n_conv.dtype().is_empty())
@@ -3355,48 +3418,37 @@ avtConduitBlueprintDataAdaptor::BlueprintToMFEM::FieldToMFEMQuadratureFunction(
         //Info: "Cannot zero-copy since data conversions were necessary"
         zero_copy = false;
     }
-    
-   // we need basis name to create the proper mfem quad space
-   std::string qf_name = n_field["basis"].as_string();
-   
+
+   // we need basis name to create the proper mfem quad space and quad func
+   // the pattern used to encode the quad space params is:
    // QF_{ORDER}_{VDIM}
+   // ORDER is the degree of the polynmials for the quad rule
+   // VDIM  is the number of components at each quad point (scalar, vector, etc)
    
-   // reverse split to parse
-   // first get VDIM
-   std::string next, s_order, s_vdim;
-   conduit::utils::rsplit_string(qf_name,"_",s_vdim,next);
-   qf_name = next;
-   // now get ORDER
-   conduit::utils::rsplit_string(qf_name,"_",s_order,next);
-   // finally, convert to ints
-   int order = conduit::utils::string_to_value<int>(s_order);
-   int vdim = conduit::utils::string_to_value<int>(s_vdim);
-    
-   mfem::QuadratureSpace *quad_space = new mfem::QuadratureSpace(mesh, order);
+   int qf_order = 0;
+   int qf_vdim  = 0;
+   std::string qf_name = n_field["basis"].as_string();
+   avtMFEMDataAdaptor::ParseQuadratureFunctionBasisString(qf_name, qf_order, qf_vdim);
+   // note: qf_vim should equal vdim
+
+   mfem::QuadratureSpace *quad_space = new mfem::QuadratureSpace(mesh, qf_order);
    mfem::QuadratureFunction *res = new mfem::QuadratureFunction();
 
-//    mfem::FiniteElementCollection *fec = FiniteElementCollection::New(
-//                                            fec_name.c_str());
-//    mfem::FiniteElementSpace *fes = new FiniteElementSpace(mesh,
-//                                                           fec,
-//                                                           vdim,
-//                                                           ordering);
-
-   // todo: What are the ownership semnatics?
-   res->SetSpace(quad_space, const_cast<double*>(vals_ptr), vdim);
-
-//    if (zero_copy)
-//    {
-//       res->SetSpace(quad_space, const_cast<double*>(vals_ptr), vdim)
-//    }
-//    else
-//    {
-//       // copy case, this constructor will alloc the space for the quad data
-//       // create an mfem vector that wraps the conduit data
-//       Vector vals_vec(const_cast<double*>(vals_ptr),fes->GetVSize());
-//       // copy values into the result
-//       (*res) = vals_vec;
-//    }
+   if (zero_copy)
+   {
+      res->SetSpace(quad_space, const_cast<double*>(vals_ptr), vdim);
+      res->SetOwnsSpace(true);
+   }
+   else
+   {
+      res->SetSpace(quad_space, vdim);
+      res->SetOwnsSpace(true);
+      // copy case, this constructor will alloc the space for the quad data
+      // create an mfem vector that wraps the conduit data
+      Vector vals_vec(const_cast<double*>(vals_ptr),res->Size());
+      // copy values into the result
+      (*res) = vals_vec;
+   }
 
    return res;
 }
