@@ -26,6 +26,9 @@ class QPushButton;
 //    Kathleen Biagas, Thu Oct 9, 2025
 //    Add support for cxxflags.
 //
+//    Kathleen Biagas, Tue Oct 21, 2025
+//    Add support for vlinklibs.
+//
 // ****************************************************************************
 class XMLEditConditional : public QFrame
 {
@@ -43,6 +46,7 @@ class XMLEditConditional : public QFrame
     void definitionsChanged();
     void cxxflagsChanged();
     void mlinklibsChanged();
+    void vlinklibsChanged();
     void elinklibsChanged();
     void conditionlistNew();
     void conditionlistDel();
@@ -60,6 +64,7 @@ class XMLEditConditional : public QFrame
     QTextEdit      *definitions;
     QTextEdit      *cxxflags;
     QTextEdit      *mlinklibs;
+    QTextEdit      *vlinklibs;
     QTextEdit      *elinklibs;
 };
 

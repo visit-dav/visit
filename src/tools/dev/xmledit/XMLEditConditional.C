@@ -7,6 +7,7 @@
 
 #include <XMLDocument.h>
 #include <Attribute.h>
+#include <CodeFile.h>
 #include <QLabel>
 #include <QLayout>
 #include <QListWidget>
@@ -26,6 +27,9 @@
 //  Modificiations:
 //    Kathleen Biagas, Thu Oct 9, 2025
 //    Add cxxflags.
+//
+//    Kathleen Biagas, Tue Oct 21, 2025
+//    Add support for vlinklibs.
 //
 // ****************************************************************************
 
@@ -94,6 +98,15 @@ XMLEditConditional::XMLEditConditional(QWidget *p)
     topLayout->addWidget(mlinklibs, row,0, 1,2);
     row++;
 
+    topLayout->addWidget(new QLabel(tr("VLinkLibraries"), this), row, 0);
+    row++;
+
+    vlinklibs = new QTextEdit(this);
+    vlinklibs->setFont(monospaced);
+    vlinklibs->setWordWrapMode(QTextOption::NoWrap);
+    topLayout->addWidget(vlinklibs, row,0, 1,2);
+    row++;
+
     topLayout->addWidget(new QLabel(tr("ELinkLibraries"), this), row, 0);
     row++;
     elinklibs = new QTextEdit(this);
@@ -116,6 +129,8 @@ XMLEditConditional::XMLEditConditional(QWidget *p)
             this, SLOT(cxxflagsChanged()));
     connect(mlinklibs, SIGNAL(textChanged()),
             this, SLOT(mlinklibsChanged()));
+    connect(vlinklibs, SIGNAL(textChanged()),
+            this, SLOT(vlinklibsChanged()));
     connect(elinklibs, SIGNAL(textChanged()),
             this, SLOT(elinklibsChanged()));
     connect(newButton, SIGNAL(clicked()),
@@ -134,6 +149,8 @@ XMLEditConditional::XMLEditConditional(QWidget *p)
 //  Creation:    Sep 29, 2025
 //
 //  Modifications:
+//    Kathleen Biagas, Tue Oct 21, 2025
+//    Conditions now stored in CodeFile.
 //
 // ****************************************************************************
 
@@ -142,11 +159,14 @@ XMLEditConditional::UpdateWindowContents()
 {
     BlockAllSignals(true);
 
-    Attribute *a = xmldoc->attribute;
     conditionList->clear();
-    for (size_t i=0; i<a->conditionals.size(); i++)
+    CodeFile *codeFile = xmldoc->attribute->codeFile;
+    if(codeFile)
     {
-        conditionList->addItem(a->conditionals[i]->condition);
+        for (size_t i = 0; i < codeFile->conditions.size(); i++)
+        {
+            conditionList->addItem(codeFile->conditions[i].condition);
+        }
     }
 
     BlockAllSignals(false);
@@ -166,6 +186,9 @@ XMLEditConditional::UpdateWindowContents()
 //    Kathleen Biagas, Thu Oct 9, 2025
 //    Add cxxflags.
 //
+//    Kathleen Biagas, Tue Oct 21, 2025
+//    Add vlinklibs.
+//
 // ****************************************************************************
 
 void
@@ -179,6 +202,7 @@ XMLEditConditional::UpdateWindowSensitivity()
     definitions->setEnabled(active);
     cxxflags->setEnabled(active);
     mlinklibs->setEnabled(active);
+    vlinklibs->setEnabled(active);
     elinklibs->setEnabled(active);
 }
 
@@ -195,6 +219,10 @@ XMLEditConditional::UpdateWindowSensitivity()
 //    Kathleen Biagas, Thu Oct 9, 2025
 //    Add cxxflags.
 //
+//    Kathleen Biagas, Tue Oct 21, 2025
+//    Add vlinklibs.
+//    Conditions now stored in CodeFile.
+//
 // ****************************************************************************
 
 void
@@ -202,7 +230,6 @@ XMLEditConditional::UpdateWindowSingleItem()
 {
     BlockAllSignals(true);
 
-    Attribute *a = xmldoc->attribute;
     int index = conditionList->currentRow();
     if (index == -1)
     {
@@ -211,17 +238,31 @@ XMLEditConditional::UpdateWindowSingleItem()
         definitions->setText("");
         cxxflags->setText("");
         mlinklibs->setText("");
+        vlinklibs->setText("");
         elinklibs->setText("");
     }
     else
     {
-        Conditional *c = a->conditionals[index];
-        target->setText(c->target);
-        condition->setText(c->condition);
-        definitions->setText(c->definitions);
-        cxxflags->setText(c->cxxflags);
-        mlinklibs->setText(c->mlinklibs);
-        elinklibs->setText(c->elinklibs);
+        CodeFile *codeFile = xmldoc->attribute->codeFile;
+        if(codeFile && !codeFile->conditions.empty())
+        {
+            Conditional c = codeFile->conditions[index];
+            target->setText(c.target);
+            condition->setText(c.condition);
+            for (auto const& [key, val] : c.keyVals)
+            {
+                if(key == "Definitions:")
+                    definitions->setText(val);
+                else if(key == "CXXFlags:")
+                    cxxflags->setText(val);
+                else if(key == "MLinkLibraries:")
+                    mlinklibs->setText(val);
+                else if(key == "VLinkLibraries:")
+                    vlinklibs->setText(val);
+                else if(key == "ELinkLibraries:")
+                    elinklibs->setText(val);
+            }
+        }
     }
 
     UpdateWindowSensitivity();
@@ -245,6 +286,9 @@ XMLEditConditional::UpdateWindowSingleItem()
 //    Kathleen Biagas, Thu Oct 9, 2025
 //    Add cxxflags.
 //
+//    Kathleen Biagas, Tue Oct 21, 2025
+//    Add vlinklibs.
+//
 // ****************************************************************************
 void
 XMLEditConditional::BlockAllSignals(bool block)
@@ -255,6 +299,7 @@ XMLEditConditional::BlockAllSignals(bool block)
     definitions->blockSignals(block);
     cxxflags->blockSignals(block);
     mlinklibs->blockSignals(block);
+    vlinklibs->blockSignals(block);
     elinklibs->blockSignals(block);
 }
 
@@ -266,6 +311,8 @@ XMLEditConditional::BlockAllSignals(bool block)
 //  Creation:    Sep 29, 2025
 //
 //  Modifications:
+//    Kathleen Biagas, Tue Oct 21, 2025
+//    Conditions now stored in CodeFile.
 //
 // ****************************************************************************
 
@@ -278,24 +325,25 @@ XMLEditConditional::conditionTextChanged()
 void
 XMLEditConditional::conditionTextChanged(const QString &text)
 {
-    Attribute *a = xmldoc->attribute;
     int index = conditionList->currentRow();
     if (index == -1)
         return;
 
+    CodeFile *codeFile = xmldoc->attribute->codeFile;
     QString newcondition = text.trimmed();
 
     bool alreadyExists = false;
-    for (size_t j=0 && !alreadyExists; j<a->conditionals.size(); j++)
-        alreadyExists = (newcondition == a->conditionals[j]->condition);
+    for (size_t j=0 && !alreadyExists; j < codeFile->conditions.size(); j++)
+        alreadyExists = (newcondition == codeFile->conditions[j].condition);
 
     if(alreadyExists)
     {
         QMessageBox::warning(0, "VisIt", QString("Warning, Condition %1 already exists, choose another condition.").arg(newcondition), QMessageBox::Ok);
         return;
     }
-    Conditional *c = a->conditionals[index];
-    c->condition = newcondition;
+
+    Conditional c = codeFile->conditions[index];
+    c.condition = newcondition;
     BlockAllSignals(true);
     conditionList->item(index)->setText(newcondition);
     BlockAllSignals(false);
@@ -309,19 +357,19 @@ XMLEditConditional::conditionTextChanged(const QString &text)
 //  Creation:    Sep 29, 2025
 //
 //  Modifications:
+//    Kathleen Biagas, Tue Oct 21, 2025
+//    Conditions now stored in CodeFile.
 //
 // ****************************************************************************
 
 void
 XMLEditConditional::definitionsChanged()
 {
-    Attribute *a = xmldoc->attribute;
     int index = conditionList->currentRow();
     if (index == -1)
         return;
-    Conditional *c = a->conditionals[index];
-
-    c->definitions = definitions->toPlainText();
+    Conditional c = xmldoc->attribute->codeFile->conditions[index];
+    c.keyVals["Definitions:"] = definitions->toPlainText();
 }
 
 // ****************************************************************************
@@ -331,19 +379,19 @@ XMLEditConditional::definitionsChanged()
 //  Creation:    Oct 9, 2025
 //
 //  Modifications:
+//    Kathleen Biagas, Tue Oct 21, 2025
+//    Conditions now stored in CodeFile.
 //
 // ****************************************************************************
 
 void
 XMLEditConditional::cxxflagsChanged()
 {
-    Attribute *a = xmldoc->attribute;
     int index = conditionList->currentRow();
     if (index == -1)
         return;
-    Conditional *c = a->conditionals[index];
-
-    c->cxxflags = cxxflags->toPlainText();
+    Conditional c = xmldoc->attribute->codeFile->conditions[index];
+    c.keyVals["CXXFlags:"] = cxxflags->toPlainText();
 }
 
 // ****************************************************************************
@@ -353,19 +401,40 @@ XMLEditConditional::cxxflagsChanged()
 //  Creation:    Sep 29, 2025
 //
 //  Modifications:
+//    Kathleen Biagas, Tue Oct 21, 2025
+//    Conditions now stored in CodeFile.
 //
 // ****************************************************************************
 
 void
 XMLEditConditional::mlinklibsChanged()
 {
-    Attribute *a = xmldoc->attribute;
     int index = conditionList->currentRow();
     if (index == -1)
         return;
-    Conditional *c = a->conditionals[index];
+    Conditional c = xmldoc->attribute->codeFile->conditions[index];
+    c.keyVals["MLinkLibraries:"] = mlinklibs->toPlainText();
+}
 
-    c->mlinklibs = mlinklibs->toPlainText();
+// ****************************************************************************
+//  Method:  XMLEditConditional::vlinklibsChanged
+//
+//  Programmer:  Kathleen Biagas
+//  Creation:    Oct 21, 2025 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+XMLEditConditional::vlinklibsChanged()
+{
+    CodeFile *codeFile = xmldoc->attribute->codeFile;
+    int index = conditionList->currentRow();
+    if (index == -1)
+        return;
+    Conditional c = codeFile->conditions[index];
+    c.keyVals["VLinkLibraries:"] = vlinklibs->toPlainText();
 }
 
 // ****************************************************************************
@@ -375,19 +444,20 @@ XMLEditConditional::mlinklibsChanged()
 //  Creation:    Sep 29, 2025
 //
 //  Modifications:
+//    Kathleen Biagas, Tue Oct 21, 2025
+//    Conditions now stored in CodeFile.
 //
 // ****************************************************************************
 
 void
 XMLEditConditional::elinklibsChanged()
 {
-    Attribute *a = xmldoc->attribute;
+    CodeFile *codeFile = xmldoc->attribute->codeFile;
     int index = conditionList->currentRow();
     if (index == -1)
         return;
-    Conditional *c = a->conditionals[index];
-
-    c->elinklibs = elinklibs->toPlainText();
+    Conditional c = codeFile->conditions[index];
+    c.keyVals["ELinkLibraries:"] = elinklibs->toPlainText();
 }
 
 // ****************************************************************************
@@ -397,13 +467,22 @@ XMLEditConditional::elinklibsChanged()
 //  Creation:    Sep 29, 2025
 //
 //  Modifications:
+//    Kathleen Biagas, Tue Oct 21, 2025
+//    Conditions now stored in CodeFile.
+//    Added test for existence of codeFile.
 //
 // ****************************************************************************
 
 void
 XMLEditConditional::conditionlistNew()
 {
-    Attribute *a = xmldoc->attribute;
+    if(!xmldoc->attribute->codeFile)
+    {
+        QMessageBox::warning(0, "VisIt", QString("Warning, Conditionals require a code file, but none has been specified."), QMessageBox::Ok);
+        return;
+    }
+ 
+    CodeFile *codeFile = xmldoc->attribute->codeFile;
     int newid = 1;
     bool okay = false;
     QString newcondition;
@@ -420,9 +499,8 @@ XMLEditConditional::conditionlistNew()
             newid++;
     }
 
-    Conditional *c = new Conditional("xml2cmake", newcondition);
-
-    a->conditionals.push_back(c);
+    Conditional c("xml2cmake", newcondition);
+    codeFile->conditions.push_back(c);
     UpdateWindowContents();
     for (int i=0; i<conditionList->count(); i++)
     {
@@ -441,29 +519,31 @@ XMLEditConditional::conditionlistNew()
 //  Creation:    Sep 29, 2025
 //
 //  Modifications:
+//    Kathleen Biagas, Tue Oct 21, 2025
+//    Conditions now stored in CodeFile.
 //
 // ****************************************************************************
 
 void
 XMLEditConditional::conditionlistDel()
 {
-    Attribute *a = xmldoc->attribute;
     int index = conditionList->currentRow();
 
     if (index == -1)
         return;
 
-    Conditional *c = a->conditionals[index];
-    std::vector<Conditional*> newlist;
-    for (size_t i=0; i<a->conditionals.size(); i++)
+    CodeFile *codeFile = xmldoc->attribute->codeFile;
+    if(codeFile)
     {
-        if (a->conditionals[i] != c)
-            newlist.push_back(a->conditionals[i]);
+        Conditional c = codeFile->conditions[index];
+        std::vector<Conditional> newlist;
+        for (size_t i = 0; i < codeFile->conditions.size(); i++)
+        {
+            if (codeFile->conditions[i] != c)
+                newlist.push_back(codeFile->conditions[i]);
+        }
+        codeFile->conditions = newlist;
     }
-    a->conditionals = newlist;
-
-    delete c;
-
     UpdateWindowContents();
 
     if (index >= conditionList->count())
