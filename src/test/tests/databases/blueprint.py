@@ -1012,8 +1012,7 @@ def test_mfem_quad_func(tag_name, dbfile, var_name):
 def test_blueprint_0_9_5():
     TestSection("Quadrature Functions")
     for dbfile in bp_mfem_quad_func_examples:
-        tag = "Quad_Func_" + os.path.splitext(os.path.basename(dbfile))[0]
-        test_mfem_quad_func(tag, dbfile, "quad_field")
+        test_mfem_quad_func("bp_quadrature_data", dbfile, "quad_field")
 
 
 def main():

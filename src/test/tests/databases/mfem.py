@@ -312,7 +312,6 @@ def test_mfem_quad_func(tag_name, dbfile, var_name):
 
 TestSection("Quadrature Functions")
 for dbfile in mfem_quad_func_files:
-    tag = "Quad_Func_" + os.path.splitext(os.path.basename(dbfile))[0]
-    test_mfem_quad_func(tag, dbfile, "quad_field")
+    test_mfem_quad_func("quadrature_data", dbfile, "quad_field")
 
 Exit()
