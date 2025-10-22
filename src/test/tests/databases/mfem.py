@@ -25,7 +25,7 @@
 RequiredDatabasePlugin("MFEM")
 
 readOptions = GetDefaultFileOpenOptions("MFEM")
-readOptions["MFEM LOR Setting"] = "Legacy LOR"
+readOptions["MFEM LOR Setting"] = "Discontinuous Refine"
 SetDefaultFileOpenOptions("MFEM", readOptions)
 
 mfem_roots  = glob.glob(data_path("mfem_test_data/*.mfem_root"))
@@ -160,7 +160,7 @@ for f in mfem_mesh_files:
 
 # reset default
 readOptions = GetDefaultFileOpenOptions("MFEM")
-readOptions["MFEM LOR Setting"] = "MFEM LOR"
+readOptions["MFEM LOR Setting"] = "LOR Projection (Default)"
 SetDefaultFileOpenOptions("MFEM", readOptions)
 
 def test_mfem_lor_mesh(tag_name, dbfile):
@@ -169,7 +169,7 @@ def test_mfem_lor_mesh(tag_name, dbfile):
 
     # get default options
     readOptions = GetDefaultFileOpenOptions("MFEM")
-    readOptions["MFEM LOR Setting"] = "MFEM LOR"
+    readOptions["MFEM LOR Setting"] = "LOR Projection (Default)"
     SetDefaultFileOpenOptions("MFEM", readOptions)
     OpenDatabase(dbfile)
 
@@ -190,7 +190,7 @@ def test_mfem_lor_mesh(tag_name, dbfile):
 
     # examine legacy
     readOptions = GetDefaultFileOpenOptions("MFEM")
-    readOptions["MFEM LOR Setting"] = "Legacy LOR"
+    readOptions["MFEM LOR Setting"] = "Discontinuous Refine"
     SetDefaultFileOpenOptions("MFEM", readOptions)
     OpenDatabase(dbfile)
 
@@ -208,7 +208,7 @@ def test_mfem_lor_mesh(tag_name, dbfile):
 
     # restore default
     readOptions = GetDefaultFileOpenOptions("MFEM")
-    readOptions["MFEM LOR Setting"] = "MFEM LOR"
+    readOptions["MFEM LOR Setting"] = "LOR Projection (Default)"
     SetDefaultFileOpenOptions("MFEM", readOptions)
 
 TestSection("Legacy and New LOR")
@@ -220,7 +220,7 @@ def test_mfem_lor_field(tag_name, dbfile):
     base = os.path.splitext(os.path.basename(dbfile))[0]
 
     readOptions = GetDefaultFileOpenOptions("MFEM")
-    readOptions["MFEM LOR Setting"] = "MFEM LOR"
+    readOptions["MFEM LOR Setting"] = "LOR Projection (Default)"
     SetDefaultFileOpenOptions("MFEM", readOptions)
     OpenDatabase(dbfile)
 
@@ -243,7 +243,7 @@ def test_mfem_lor_field(tag_name, dbfile):
 
     # examine legacy
     readOptions = GetDefaultFileOpenOptions("MFEM")
-    readOptions["MFEM LOR Setting"] = "Legacy LOR"
+    readOptions["MFEM LOR Setting"] = "Discontinuous Refine"
     SetDefaultFileOpenOptions("MFEM", readOptions)
     OpenDatabase(dbfile)
 
@@ -262,7 +262,7 @@ def test_mfem_lor_field(tag_name, dbfile):
 
     # restore default
     readOptions = GetDefaultFileOpenOptions("MFEM")
-    readOptions["MFEM LOR Setting"] = "MFEM LOR"
+    readOptions["MFEM LOR Setting"] = "LOR Projection (Default)"
     SetDefaultFileOpenOptions("MFEM", readOptions)
 
 TestSection("Legacy and New LOR Fields")
