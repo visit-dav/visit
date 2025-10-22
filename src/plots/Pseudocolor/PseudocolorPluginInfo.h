@@ -62,6 +62,7 @@ class PseudocolorGUIPluginInfo : public virtual GUIPlotPluginInfo, public virtua
 class PseudocolorViewerEnginePluginInfo : public virtual ViewerEnginePlotPluginInfo, public virtual PseudocolorCommonPluginInfo
 {
   public:
+    virtual ~PseudocolorViewerEnginePluginInfo();
     virtual AttributeSubject *GetClientAtts();
     virtual AttributeSubject *GetDefaultAtts();
     virtual void SetClientAtts(AttributeSubject *atts);
