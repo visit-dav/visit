@@ -25,6 +25,14 @@
 class MultiresControlAttributes : public AttributeSubject
 {
 public:
+    enum refinementMethod
+    {
+        LOR_Projection_Default,
+        Discontinuous_Refine,
+        LOR_Nodal_Projection,
+        LOR_Zonal_Projection
+    };
+
     // These constructors are for objects of this class
     MultiresControlAttributes();
     MultiresControlAttributes(const MultiresControlAttributes &obj);
@@ -50,20 +58,18 @@ public:
 
     // Property selection methods
     virtual void SelectAll();
-    void SelectRefinementMethod();
     void SelectInfo();
 
     // Property setting methods
     void SetResolution(int resolution_);
     void SetMaxResolution(int maxResolution_);
-    void SetRefinementMethod(const std::string &refinementMethod_);
+    void SetRefMethod(refinementMethod refMethod_);
     void SetInfo(const std::string &info_);
 
     // Property getting methods
     int               GetResolution() const;
     int               GetMaxResolution() const;
-    const std::string &GetRefinementMethod() const;
-          std::string &GetRefinementMethod();
+    refinementMethod  GetRefMethod() const;
     const std::string &GetInfo() const;
           std::string &GetInfo();
 
@@ -71,6 +77,12 @@ public:
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
     virtual void SetFromNode(DataNode *node);
 
+    // Enum conversion functions
+    static std::string refinementMethod_ToString(refinementMethod);
+    static bool refinementMethod_FromString(const std::string &, refinementMethod &);
+protected:
+    static std::string refinementMethod_ToString(int);
+public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -83,7 +95,7 @@ public:
     enum {
         ID_resolution = 0,
         ID_maxResolution,
-        ID_refinementMethod,
+        ID_refMethod,
         ID_info,
         ID__LAST
     };
@@ -91,13 +103,13 @@ public:
 private:
     int         resolution;
     int         maxResolution;
-    std::string refinementMethod;
+    int         refMethod;
     std::string info;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define MULTIRESCONTROLATTRIBUTES_TMFS "iiss"
+#define MULTIRESCONTROLATTRIBUTES_TMFS "iiis"
 
 #endif

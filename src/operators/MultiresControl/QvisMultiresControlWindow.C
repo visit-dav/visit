@@ -15,6 +15,14 @@
 #include <FileServerList.h>
 #include <MultiresControlAttributes.h>
 
+enum class refinementMethod
+{
+    LOR_Projection_Default,
+    Discontinuous_Refine,
+    LOR_Nodal_Projection,
+    LOR_Zonal_Projection
+};
+
 
 // ****************************************************************************
 // Method: QvisMultiresControlWindow::QvisMultiresControlWindow
@@ -117,8 +125,10 @@ QvisMultiresControlWindow::CreateWindowContents()
     mainLayout->addWidget(refinementMethodLabel, 1, 0);
 
     refinementMethod = new QComboBox(this);
-    refinementMethod->addItem(tr("New Refine"));
-    refinementMethod->addItem(tr("Legacy"));
+    refinementMethod->addItem(tr("LOR Projection (Default)"));
+    refinementMethod->addItem(tr("Discontinuous Refine"));
+    refinementMethod->addItem(tr("LOR Nodal Projection"));
+    refinementMethod->addItem(tr("LOR Zonal Projection"));
     connect(refinementMethod, SIGNAL(activated(int)),
             this, SLOT(refinementMethodChanged(int)));
     mainLayout->addWidget(refinementMethod, 1, 1);
@@ -169,7 +179,7 @@ QvisMultiresControlWindow::UpdateWindow(bool doAll)
     debug1 << atts->GetMaxResolution() << " levels of detail available.\n";
 
     this->refinementMethod->blockSignals(true);
-    this->refinementMethod->setCurrentText(atts->GetRefinementMethod().c_str());
+    this->refinementMethod->setCurrentIndex(atts->GetRefMethod());
     this->refinementMethod->blockSignals(false);
 
     this->resolution->blockSignals(true);
@@ -211,9 +221,9 @@ QvisMultiresControlWindow::GetCurrentValues(int which_widget)
         atts->SetResolution(this->resolution->value());
     }
     // Do refinement method
-    if(which_widget == MultiresControlAttributes::ID_refinementMethod || doAll)
+    if(which_widget == MultiresControlAttributes::ID_refMethod || doAll)
     {
-        atts->SetRefinementMethod(this->refinementMethod->currentText().toStdString());
+        atts->SetRefMethod(static_cast<MultiresControlAttributes::refinementMethod>(this->refinementMethod->currentIndex()));
     }
 }
 
@@ -294,17 +304,10 @@ QvisMultiresControlWindow::resolutionLevelChanged()
 void
 QvisMultiresControlWindow::refinementMethodChanged(int val)
 {
-    // TODO use an enum or something this is terrible
-    const std::string currRefinementMethod = atts->GetRefinementMethod();
-    if (val == 0 && currRefinementMethod != "Legacy") // legacy
+    const int currRefinementMethod = atts->GetRefMethod();
+    if (val != currRefinementMethod)
     {
-        atts->SetRefinementMethod("Legacy");
-        SetUpdate(false);
-        Apply();
-    }
-    else if (val == 1 && currRefinementMethod != "New Refine") // new refine
-    {
-        atts->SetRefinementMethod("New Refine");
+        atts->SetRefMethod(static_cast<MultiresControlAttributes::refinementMethod>(val));
         SetUpdate(false);
         Apply();
     }

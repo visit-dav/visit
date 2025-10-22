@@ -46,6 +46,14 @@ class vtkDataArray;
 class AVTMFEM_API avtMFEMDataAdaptor
 {
 public:
+      enum class refinementMethod
+      {
+          LOR_Projection_Default,
+          Discontinuous_Refine,
+          LOR_Nodal_Projection,
+          LOR_Zonal_Projection
+      };
+
       static vtkDataSet   *LegacyRefineMeshToVTK(mfem::Mesh *mesh,
                                                  int domain,
                                                  int lod);

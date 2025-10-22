@@ -45,8 +45,29 @@ PyMultiresControlAttributes_ToString(const MultiresControlAttributes *atts, cons
     str += tmpStr;
     snprintf(tmpStr, 1000, "%smaxResolution = %d\n", prefix, atts->GetMaxResolution());
     str += tmpStr;
-    snprintf(tmpStr, 1000, "%srefinementMethod = \"%s\"\n", prefix, atts->GetRefinementMethod().c_str());
-    str += tmpStr;
+    const char *refMethod_names = "LOR_Projection_Default, Discontinuous_Refine, LOR_Nodal_Projection, LOR_Zonal_Projection";
+    switch (atts->GetRefMethod())
+    {
+      case MultiresControlAttributes::LOR_Projection_Default:
+          snprintf(tmpStr, 1000, "%srefMethod = %sLOR_Projection_Default  # %s\n", prefix, prefix, refMethod_names);
+          str += tmpStr;
+          break;
+      case MultiresControlAttributes::Discontinuous_Refine:
+          snprintf(tmpStr, 1000, "%srefMethod = %sDiscontinuous_Refine  # %s\n", prefix, prefix, refMethod_names);
+          str += tmpStr;
+          break;
+      case MultiresControlAttributes::LOR_Nodal_Projection:
+          snprintf(tmpStr, 1000, "%srefMethod = %sLOR_Nodal_Projection  # %s\n", prefix, prefix, refMethod_names);
+          str += tmpStr;
+          break;
+      case MultiresControlAttributes::LOR_Zonal_Projection:
+          snprintf(tmpStr, 1000, "%srefMethod = %sLOR_Zonal_Projection  # %s\n", prefix, prefix, refMethod_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     snprintf(tmpStr, 1000, "%sinfo = \"%s\"\n", prefix, atts->GetInfo().c_str());
     str += tmpStr;
     return str;
@@ -210,51 +231,70 @@ MultiresControlAttributes_GetMaxResolution(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-MultiresControlAttributes_SetRefinementMethod(PyObject *self, PyObject *args)
+MultiresControlAttributes_SetRefMethod(PyObject *self, PyObject *args)
 {
     PyMultiresControlAttributesObject *obj = (PyMultiresControlAttributesObject *)self;
 
     PyObject *packaged_args = 0;
 
-    // Handle args packaged as first member of a tuple of size one
+    // Handle args packaged into a tuple of size one
     // if we think the unpackaged args matches our needs
     if (PySequence_Check(args) && PySequence_Size(args) == 1)
     {
         packaged_args = PySequence_GetItem(args, 0);
-        if (PyUnicode_Check(packaged_args))
+        if (PyNumber_Check(packaged_args))
             args = packaged_args;
     }
 
-    if (!PyUnicode_Check(args))
+    if (PySequence_Check(args))
     {
         Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
     }
 
-    char const *val = PyUnicode_AsUTF8(args);
-    std::string cval = std::string(val);
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
 
-    if (val == 0 && PyErr_Occurred())
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
-        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 4)
+    {
+        std::stringstream ss;
+        ss << "An invalid refMethod value was given." << std::endl;
+        ss << "Valid values are in the range [0,3]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " LOR_Projection_Default";
+        ss << ", Discontinuous_Refine";
+        ss << ", LOR_Nodal_Projection";
+        ss << ", LOR_Zonal_Projection";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
     Py_XDECREF(packaged_args);
 
-    // Set the refinementMethod in the object.
-    obj->data->SetRefinementMethod(cval);
+    // Set the refMethod in the object.
+    obj->data->SetRefMethod(MultiresControlAttributes::refinementMethod(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-MultiresControlAttributes_GetRefinementMethod(PyObject *self, PyObject *args)
+MultiresControlAttributes_GetRefMethod(PyObject *self, PyObject *args)
 {
     PyMultiresControlAttributesObject *obj = (PyMultiresControlAttributesObject *)self;
-    PyObject *retval = PyString_FromString(obj->data->GetRefinementMethod().c_str());
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetRefMethod()));
     return retval;
 }
 
@@ -316,8 +356,8 @@ PyMethodDef PyMultiresControlAttributes_methods[MULTIRESCONTROLATTRIBUTES_NMETH]
     {"GetResolution", MultiresControlAttributes_GetResolution, METH_VARARGS},
     {"SetMaxResolution", MultiresControlAttributes_SetMaxResolution, METH_VARARGS},
     {"GetMaxResolution", MultiresControlAttributes_GetMaxResolution, METH_VARARGS},
-    {"SetRefinementMethod", MultiresControlAttributes_SetRefinementMethod, METH_VARARGS},
-    {"GetRefinementMethod", MultiresControlAttributes_GetRefinementMethod, METH_VARARGS},
+    {"SetRefMethod", MultiresControlAttributes_SetRefMethod, METH_VARARGS},
+    {"GetRefMethod", MultiresControlAttributes_GetRefMethod, METH_VARARGS},
     {"SetInfo", MultiresControlAttributes_SetInfo, METH_VARARGS},
     {"GetInfo", MultiresControlAttributes_GetInfo, METH_VARARGS},
     {NULL, NULL}
@@ -348,8 +388,17 @@ PyMultiresControlAttributes_getattro(PyObject *self, PyObject *attr_name)
         return MultiresControlAttributes_GetResolution(self, NULL);
     if(strcmp(name, "maxResolution") == 0)
         return MultiresControlAttributes_GetMaxResolution(self, NULL);
-    if(strcmp(name, "refinementMethod") == 0)
-        return MultiresControlAttributes_GetRefinementMethod(self, NULL);
+    if(strcmp(name, "refMethod") == 0)
+        return MultiresControlAttributes_GetRefMethod(self, NULL);
+    if(strcmp(name, "LOR_Projection_Default") == 0)
+        return PyInt_FromLong(long(MultiresControlAttributes::LOR_Projection_Default));
+    if(strcmp(name, "Discontinuous_Refine") == 0)
+        return PyInt_FromLong(long(MultiresControlAttributes::Discontinuous_Refine));
+    if(strcmp(name, "LOR_Nodal_Projection") == 0)
+        return PyInt_FromLong(long(MultiresControlAttributes::LOR_Nodal_Projection));
+    if(strcmp(name, "LOR_Zonal_Projection") == 0)
+        return PyInt_FromLong(long(MultiresControlAttributes::LOR_Zonal_Projection));
+
     if(strcmp(name, "info") == 0)
         return MultiresControlAttributes_GetInfo(self, NULL);
 
@@ -371,8 +420,8 @@ PyMultiresControlAttributes_setattro(PyObject *self, PyObject *attr_name, PyObje
         obj = MultiresControlAttributes_SetResolution(self, args);
     else if(strcmp(name, "maxResolution") == 0)
         obj = MultiresControlAttributes_SetMaxResolution(self, args);
-    else if(strcmp(name, "refinementMethod") == 0)
-        obj = MultiresControlAttributes_SetRefinementMethod(self, args);
+    else if(strcmp(name, "refMethod") == 0)
+        obj = MultiresControlAttributes_SetRefMethod(self, args);
     else if(strcmp(name, "info") == 0)
         obj = MultiresControlAttributes_SetInfo(self, args);
 

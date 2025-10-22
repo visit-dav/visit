@@ -3337,7 +3337,7 @@ avtBlueprintFileFormat::RegisterDataSelections(
             const avtResolutionSelection* sel =
                 static_cast<const avtResolutionSelection*>(*sels[i]);
             this->m_selected_lod = sel->resolution();
-            this->m_new_refine = sel->refinementMethod() == "New Refine";
+            this->m_new_refine = sel->refinementMethod() == 0;
             (*applied)[i] = true;
         }
     }

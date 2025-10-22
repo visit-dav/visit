@@ -40,7 +40,7 @@ std::string
 avtResolutionSelection::DescriptionString()
 {
     char str[1024];  
-    sprintf(str, "avtResolutionSelection:%d, %s", mResolution, mRefinementMethod);
+    sprintf(str, "avtResolutionSelection:%d, %d", mResolution, mRefinementMethod);
     return std::string(str);
 }
 

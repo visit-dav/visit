@@ -26,13 +26,20 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
 {
     private static int MultiresControlAttributes_numAdditionalAtts = 4;
 
+    // Enum values
+    public final static int REFINEMENTMETHOD_LOR_PROJECTION_DEFAULT = 0;
+    public final static int REFINEMENTMETHOD_DISCONTINUOUS_REFINE = 1;
+    public final static int REFINEMENTMETHOD_LOR_NODAL_PROJECTION = 2;
+    public final static int REFINEMENTMETHOD_LOR_ZONAL_PROJECTION = 3;
+
+
     public MultiresControlAttributes()
     {
         super(MultiresControlAttributes_numAdditionalAtts);
 
         resolution = 0;
         maxResolution = 1;
-        refinementMethod = new String("New Refine");
+        refMethod = REFINEMENTMETHOD_LOR_PROJECTION_DEFAULT;
         info = new String("");
     }
 
@@ -42,7 +49,7 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
 
         resolution = 0;
         maxResolution = 1;
-        refinementMethod = new String("New Refine");
+        refMethod = REFINEMENTMETHOD_LOR_PROJECTION_DEFAULT;
         info = new String("");
     }
 
@@ -52,7 +59,7 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
 
         resolution = obj.resolution;
         maxResolution = obj.maxResolution;
-        refinementMethod = new String(obj.refinementMethod);
+        refMethod = obj.refMethod;
         info = new String(obj.info);
 
         SelectAll();
@@ -73,7 +80,7 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
         // Create the return value
         return ((resolution == obj.resolution) &&
                 (maxResolution == obj.maxResolution) &&
-                (refinementMethod.equals(obj.refinementMethod)) &&
+                (refMethod == obj.refMethod) &&
                 (info.equals(obj.info)));
     }
 
@@ -93,9 +100,9 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
         Select(1);
     }
 
-    public void SetRefinementMethod(String refinementMethod_)
+    public void SetRefMethod(int refMethod_)
     {
-        refinementMethod = refinementMethod_;
+        refMethod = refMethod_;
         Select(2);
     }
 
@@ -108,7 +115,7 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
     // Property getting methods
     public int    GetResolution() { return resolution; }
     public int    GetMaxResolution() { return maxResolution; }
-    public String GetRefinementMethod() { return refinementMethod; }
+    public int    GetRefMethod() { return refMethod; }
     public String GetInfo() { return info; }
 
     // Write and read methods.
@@ -119,7 +126,7 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
         if(WriteSelect(1, buf))
             buf.WriteInt(maxResolution);
         if(WriteSelect(2, buf))
-            buf.WriteString(refinementMethod);
+            buf.WriteInt(refMethod);
         if(WriteSelect(3, buf))
             buf.WriteString(info);
     }
@@ -135,7 +142,7 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
             SetMaxResolution(buf.ReadInt());
             break;
         case 2:
-            SetRefinementMethod(buf.ReadString());
+            SetRefMethod(buf.ReadInt());
             break;
         case 3:
             SetInfo(buf.ReadString());
@@ -148,7 +155,16 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
         String str = new String();
         str = str + intToString("resolution", resolution, indent) + "\n";
         str = str + intToString("maxResolution", maxResolution, indent) + "\n";
-        str = str + stringToString("refinementMethod", refinementMethod, indent) + "\n";
+        str = str + indent + "refMethod = ";
+        if(refMethod == REFINEMENTMETHOD_LOR_PROJECTION_DEFAULT)
+            str = str + "REFINEMENTMETHOD_LOR_PROJECTION_DEFAULT";
+        if(refMethod == REFINEMENTMETHOD_DISCONTINUOUS_REFINE)
+            str = str + "REFINEMENTMETHOD_DISCONTINUOUS_REFINE";
+        if(refMethod == REFINEMENTMETHOD_LOR_NODAL_PROJECTION)
+            str = str + "REFINEMENTMETHOD_LOR_NODAL_PROJECTION";
+        if(refMethod == REFINEMENTMETHOD_LOR_ZONAL_PROJECTION)
+            str = str + "REFINEMENTMETHOD_LOR_ZONAL_PROJECTION";
+        str = str + "\n";
         str = str + stringToString("info", info, indent) + "\n";
         return str;
     }
@@ -157,7 +173,7 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
     // Attributes
     private int    resolution;
     private int    maxResolution;
-    private String refinementMethod;
+    private int    refMethod;
     private String info;
 }
 
