@@ -37,6 +37,10 @@
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
 
+#include <vtkSmartPointer.h>
+#include <vtkSTLReader.h>
+#include <vtkPolyData.h>
+
 #include <vtkCellArray.h>
 #include <vtkPoints.h>
 #include <vtkCellType.h>
@@ -46,14 +50,18 @@
 #include <avtIntervalTree.h>
 #include <avtMaterial.h>
 
+#include <avtDatabase.h>
 #include <avtDatabaseMetaData.h>
 
+#include <DBOptionsAttributes.h>
 #include <Expression.h>
 
-#include <InvalidVariableException.h>
 #include <DebugStream.h>
+#include <ImproperUseException.h>
+#include <InvalidVariableException.h>
 #include <InvalidDBTypeException.h>
 #include <InvalidFilesException.h>
+#include <DBOptionsAttributes.h>
 
 #include <TimingsManager.h>
 
@@ -2073,7 +2081,8 @@ int avtunvFileFormat::getNbfreeSets ()
 //
 // ****************************************************************************
 
-avtunvFileFormat::avtunvFileFormat(const char *fname) : avtSTSDFileFormat(fname)
+avtunvFileFormat::avtunvFileFormat(const char *fname, const DBOptionsAttributes *readOpts)
+    : avtSTSDFileFormat(fname)
 {
     // INITIALIZE DATA MEMBERS
     fileRead = false;
@@ -2154,6 +2163,7 @@ avtunvFileFormat::FreeUpResources(void)
     // Remove Materials if any
     meshUnvInterfaces.clear();
     listUnvInterfaces.clear() ;
+    headerMaterials.clear() ;
 
     if (fileinfo_str != NULL) {
         free(fileinfo_str) ;
@@ -2326,6 +2336,10 @@ avtunvFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             int ij2 = (label % 32768) - 32 ;
             sprintf(str, "interface_%d_%d", ij1, ij2);
         }
+        else if (headerMaterials.size() > 0)
+        {
+            sprintf(str, "%s", headerMaterials[i].c_str());
+        }
 #if INTERACTIVEREAD
         if (debuglevel >= 4) fprintf(stdout,"Material %s.\n",str);
 #else
@@ -2390,9 +2404,10 @@ avtunvFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                     sprintf(str, "INN%d", i);
 
 #if INTERACTIVEREAD
-                if (debuglevel >= 4) fprintf(stdout,"Boundary %s.\n",str);
+                if (debuglevel >= 4 && i < 10) fprintf(stdout,"Boundary %s.\n",str);
 #else
-                debug4 << "Boundary " << str << endl;
+                if (i < 10)
+                    debug4 << "Boundary " << str << endl;
 #endif
                 fnames.push_back(str);
             }
@@ -3837,7 +3852,6 @@ avtunvFileFormat::ReadFile()
         EXCEPTION1(InvalidFilesException, filename.c_str());
     }
 
-
     debuglevel = 0;
     if (DebugStream::Level5())
         debuglevel = 5;
@@ -4625,7 +4639,7 @@ avtunvFileFormat::ReadFile()
                     sscanf(sousbuf, "%d", &label) ;
 
                     strncpy(sousbuf, buf+8, (size_t)4) ;
-                    sousbuf[12] = '\0';
+                    sousbuf[4] = '\0';
                     nbnel = 0 ;
                     if (strncmp(sousbuf, "TR3", (size_t)3) == 0)
                     {
@@ -5527,7 +5541,8 @@ avtunvFileFormat::ReadFile()
             int typelt=91 ; // I-Deas code for linear triangle
             const int len = 2048; // Longest line length
             char buf[len]; // A line length
-            char keyword[20];
+            char keyword[16];
+            char sname[32];
             // Local variables
             double x,y,z ;
             double lnods[3][3];
@@ -5554,6 +5569,8 @@ avtunvFileFormat::ReadFile()
                 if (strcmp(keyword, "solid") == 0)
                 {
                     nb2dmats++ ;
+                    if (sscanf(buf, "%s %31s", keyword, sname) == 2)
+                        headerMaterials.push_back(sname);
 #if INTERACTIVEREAD
                     if (debuglevel >= 2) fprintf(stdout,"New set=%d\n", nb2dmats) ;
 #else
@@ -5582,7 +5599,7 @@ avtunvFileFormat::ReadFile()
 #endif
                                     for (lnod=0; lnod < 3; lnod++) {
                                         fgets(buf, len, handle) ;
-                                        if (sscanf(buf, "%19s %lf %lf %lf", keyword, &x, &y, &z) == 4) {
+                                        if (sscanf(buf, "%s %lf %lf %lf", keyword, &x, &y, &z) == 4) {
                                             if (strcmp(keyword, "vertex") == 0) {
 #if INTERACTIVEREAD
                                                 if (debuglevel >= 3) fprintf(stdout,"    Read node=(%lf, %lf, %lf)\n", x, y, z) ;
@@ -5642,6 +5659,11 @@ avtunvFileFormat::ReadFile()
                                             EXCEPTION1(InvalidDBTypeException, "Error : incorrect line format.");
                                         }
                                     }
+#if INTERACTIVEREAD
+                                    if (debuglevel >= 4) fprintf(stdout,"    New elt[%d]=(%d, %d, %d)\n", anUnvElement.number, anUnvElement.nodes[0], anUnvElement.nodes[1], anUnvElement.nodes[2]) ;
+#else
+                                    debug4 << "    New elt[" << anUnvElement.number << "] n1=" << anUnvElement.nodes[0] << " n2=" << anUnvElement.nodes[1] << " n3=" <<  anUnvElement.nodes[2] << endl;
+#endif
                                     // Adds new element to the list, this is a fully defined element
                                     meshUnvElements.insert(anUnvElement) ;
                                     anUnvElement.number++;
@@ -5675,8 +5697,81 @@ avtunvFileFormat::ReadFile()
             }
             if (nb2dmats == 0)
             {
-                EXCEPTION1(InvalidDBTypeException, "This mesh file could not be read properly.");
+                // Try harder to read the file: it may be a binary file.
+                // https://chat.mistral.ai/chat
+                // "Donne-moi un programme en C++ qui lit un fichier STL avec la classe vtkSTLReader
+                // et affiche les positions des noeuds et des elements."
+                vtkSmartPointer<vtkSTLReader> reader = vtkSmartPointer<vtkSTLReader>::New();
+                // vtkSTLReader *reader = vtkSTLReader::New();
+                reader->SetFileName(filename.c_str());
+                reader->Update();
+                // Get the mesh (vtkPolyData)
+                vtkPolyData* polydata = reader->GetOutput();
+                
+                // Get the points (nodes)
+                vtkPoints* points = polydata->GetPoints();
+                if (!points) {
+                    EXCEPTION1(InvalidDBTypeException, "Mesh file does not contain any node.");
+                }
+                // Now get the triangles
+                vtkCellArray* cells = polydata->GetPolys();
+                if (!cells) {
+                    EXCEPTION1(InvalidDBTypeException, "Mesh file does not contain any triangle.");
+                }
+
+                // Now fill the nodes
+                vtkIdType nombreDePoints = points->GetNumberOfPoints();
+                for (vtkIdType i = 0; i < nombreDePoints; ++i)
+                {
+                    double* coord = points->GetPoint(i);
+                    x = coord[0] ; y = coord[1] ; z = coord[2] ;
+                    // double coord[3]; points->GetPoint(i, coord);
+                    range[0] = min(range[0],x);
+                    range[1] = max(range[1],x);
+                    range[2] = min(range[2],y);
+                    range[3] = max(range[3],y);
+                    range[4] = min(range[4],z);
+                    range[5] = max(range[5],z);
+                    theUnvNode.label = (theUnvNode.number + 1);
+                    theUnvNode.x = x;
+                    theUnvNode.y = y;
+                    theUnvNode.z = z;
+#if INTERACTIVEREAD
+                    if (debuglevel >= 4) fprintf(stdout,"    New node[%d]=(%lf, %lf, %lf)\n",theUnvNode.number, theUnvNode.x, theUnvNode.y, theUnvNode.z) ;
+#else
+                    debug4 << "    New node[" << theUnvNode.number << "] x=" << theUnvNode.x << " y=" << theUnvNode.y << " z=" <<  theUnvNode.z << endl;
+#endif
+                    meshUnvNodes.insert(theUnvNode);
+                    theUnvNode.number++;
+                }
+                // Now fill the elements
+                // https://mammouth.ai/shared/a0c05ecc-b58d-4955-8c10-da3ad80e1332
+                vtkIdType nombreDeCellules = cells->GetNumberOfCells();
+                vtkSmartPointer<vtkIdList> idsPoints = vtkSmartPointer<vtkIdList>::New();
+                cells->InitTraversal();
+                nb2dmats=1 ; // There is no sub-block within a binary file
+                while (cells->GetNextCell(idsPoints))
+                {
+                    nb2dcells++;
+                    anUnvElement.label = (anUnvElement.number + 1) ;
+                    anUnvElement.typelt = typelt;
+                    anUnvElement.matid = nb2dmats;
+                    anUnvElement.nodes = new int[nbnel];
+                    for (vtkIdType i = 0; i < idsPoints->GetNumberOfIds(); i++)
+                    {
+                        anUnvElement.nodes[i] = 1 + (int) idsPoints->GetId(i);
+                    }
+#if INTERACTIVEREAD
+                    if (debuglevel >= 4) fprintf(stdout,"    New elt[%d]=(%d, %d, %d)\n", anUnvElement.number, anUnvElement.nodes[0], anUnvElement.nodes[1], anUnvElement.nodes[2]) ;
+#else
+                    debug4 << "    New elt[" << anUnvElement.number << "] n1=" << anUnvElement.nodes[0] << " n2=" << anUnvElement.nodes[1] << " n3=" <<  anUnvElement.nodes[2] << endl;
+#endif
+                    // Adds new element to the list, this is a fully defined element
+                    meshUnvElements.insert(anUnvElement);
+                    anUnvElement.number++;
+                }
             }
+            // Epilog, prints some synthetic infos
             nbnodes = theUnvNode.number;
             maxnodl = nbnodes ;
             nbletsptyp[4] = nb2dcells ;
@@ -6927,16 +7022,18 @@ avtunvFileFormat::GetAuxiliaryData(const char *var, const char *type, void *,Des
                     int ij1 = (label >> 15) - 32  ;
                     int ij2 = (label % 32768) - 32 ;
                     sprintf(str, "interface_%d_%d", ij1, ij2);
-                    names[i] = new char[strlen(str)+1];
-                    sprintf(names[i], "%s", str);
                     matnos[i] = i;
+                }
+                else if (headerMaterials.size() > 0)
+                {
+                    sprintf(str, "%s", headerMaterials[i].c_str());
                 }
                 else
                 {
                     sprintf(str, "mat%d", i+1);
-                    names[i] = new char[strlen(str)+1];
-                    sprintf(names[i], "%s", str);
                 }
+                names[i] = new char[strlen(str)+1];
+                sprintf(names[i], "%s", str);
 #if INTERACTIVEPLOT
                 if (debuglevel >= 4) fprintf(stdout,"Material %s.\n",names[i]);
 #else
