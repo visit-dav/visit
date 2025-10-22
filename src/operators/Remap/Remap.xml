@@ -3,7 +3,7 @@
     <CXXFLAGS>
       ${VISIT_INCLUDE_DIR}/third_party_builtin/verdict
     </CXXFLAGS>
-    <Attribute name="RemapAttributes" purpose="Atts for Remap operator" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="RemapAttributes.code">
+    <Attribute name="RemapAttributes" purpose="Atts for Remap operator" persistent="true" keyframe="true" exportAPI="" exportInclude="">
       <Enum name="VariableTypes">
         intrinsic
         extrinsic
@@ -12,19 +12,19 @@
         true
       </Field>
       <Field name="startX" label="Start X" type="double" enabler="useExtents:false">
-        0.000000
+        0
       </Field>
       <Field name="endX" label="End X" type="double" enabler="useExtents:false">
-        1.000000
+        1
       </Field>
       <Field name="cellsX" label="Cells in X" type="int">
         10
       </Field>
       <Field name="startY" label="Start Y" type="double" enabler="useExtents:false">
-        0.000000
+        0
       </Field>
       <Field name="endY" label="End Y" type="double" enabler="useExtents:false">
-        1.000000
+        1
       </Field>
       <Field name="cellsY" label="Cells in Y" type="int">
         10
@@ -33,10 +33,10 @@
         true
       </Field>
       <Field name="startZ" label="Start Z" type="double" enabler="is3D:true">
-        0.000000
+        0
       </Field>
       <Field name="endZ" label="End Z" type="double" enabler="is3D:true">
-        1.000000
+        1
       </Field>
       <Field name="cellsZ" label="Cells in Z" type="int" enabler="is3D:true">
         10

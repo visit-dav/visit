@@ -1,20 +1,17 @@
 <?xml version="1.0"?>
-  <Plugin name="Boxlib3D" type="database" label="Boxlib3D" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="false" filePatternsStrict="true">
+  <Plugin name="Boxlib3D" type="database" label="Boxlib3D" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="false" haslicense="false" filePatternsStrict="true" opensWholeDirectory="false">
     <CXXFLAGS>
       ${BOXLIB_INCLUDE_DIR}
     </CXXFLAGS>
-    <DEFINES>
-      -DBL_SPACEDIM=3
-    </DEFINES>
-    <WIN32DEFINES>
-      ${BOXLIB_WIN32_DEFINES}
-    </WIN32DEFINES>
     <LDFLAGS>
       ${BOXLIB_LIBRARY_DIR}
     </LDFLAGS>
     <LIBS>
       ${BOXLIB_3D_LIB}
     </LIBS>
+    <DEFINES>
+      -DBL_SPACEDIM=3
+    </DEFINES>
     <FilePatterns>
       *.boxlib3d
       Header
@@ -27,6 +24,6 @@
       avtBoxlibFileFormat.C
       BoxLibHelper.C
     </Files>
-    <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
+    <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="" codefile="Boxlib3D.code">
     </Attribute>
   </Plugin>

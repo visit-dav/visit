@@ -645,45 +645,42 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
 #endif
     }
 #ifdef HAVE_ANARI
-    else if((m_atts.GetRendererType() == VolumeAttributes::ANARI) &&
-            (m_anariEnabled != m_atts.GetAnariAttributes().GetAnariRendering()))
+    else if(m_atts.GetRendererType() == VolumeAttributes::ANARI)
     {
-        AnariAttributes anariAtts = m_atts.GetAnariAttributes();
-        m_anariEnabled = anariAtts.GetAnariRendering();
+        auto anariAttributes = m_atts.GetAnariAttributes();
 
-        if (m_volumeMapper != nullptr)
+        bool prevAnariEnabled = m_anariEnabled;
+        m_anariEnabled = anariAttributes.GetAnariRendering();
+
+        if(prevAnariEnabled != m_anariEnabled)
         {
-            m_volumeMapper->Delete();
-            m_volumeMapper = nullptr;
+            if(m_volumeMapper != nullptr)
+            {
+                m_volumeMapper->Delete();
+                m_volumeMapper = nullptr;
+            }
         }
 
-        // Create the volume mapper.
         if(m_anariEnabled)
         {
             LOCAL_DEBUG << "ANARI Volume Mapper " << std::endl;
+
             vtkAnariVolumeMapper *anariVolumeMapper = vtkAnariVolumeMapper::New();
-            
+            m_volumeMapper = anariVolumeMapper;
+
             if(!anariVolumeMapper->GetInitialized())
             {
                 anariVolumeMapper->Init();
             }
 
-            auto anariPass = anariVolumeMapper->GetAnariPass();
+            auto* anariPass = anariVolumeMapper->GetAnariPass();
+            bool success = SetAnariLibrary(anariPass);
 
-            if(anariPass)
+            if(success)
             {
-                // ANARI Device Settings
-                auto vtkAD = anariPass->GetAnariDevice();
-                std::string libraryName = !anariAtts.GetAnariLibrary().empty() ? anariAtts.GetAnariLibrary()
-                                                                               : "environment";                
-                vtkAD->SetupAnariDeviceFromLibrary(libraryName.c_str(),
-                                                   anariAtts.GetAnariLibrarySubtype().c_str());
-                                                
-                // ANARI Render Settings
-                auto vtkAR = anariPass->GetAnariRenderer();
-                vtkAR->SetSubtype(anariAtts.GetAnariRendererSubtype().c_str());
-                
-                if(!anariAtts.GetUsingUsdDevice())
+                SetAnariRendererSubtype(anariPass);
+
+                if(!anariAttributes.GetUsingUsdDevice())
                 {
                     SetAnariRendererParameters(anariPass);
                 }
@@ -694,10 +691,15 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
             }
             else 
             {
-                LOCAL_DEBUG << "ANARI Pass is null." << std::endl;
+                if(anariVolumeMapper != nullptr)
+                {
+                    anariVolumeMapper->Delete();
+                    anariVolumeMapper = nullptr;
+                }
+
+                m_volumeMapper = nullptr;
+                m_anariEnabled = false;
             }
-            
-            m_volumeMapper = anariVolumeMapper;         
         }
     }
 #endif
@@ -853,6 +855,78 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
 }
 
 #ifdef HAVE_ANARI
+
+// ****************************************************************************
+//  Method:  avtVisItVTKRenderer::SetAnariLibrary
+//
+//  Purpose:
+//    Set the ANARI library and device.
+//
+//  Arguments:
+//    anariPass  : the ANARI pass
+//
+//  Programmer: Kevin Griffin
+//  Creation:
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+avtVisItVTKRenderer::SetAnariLibrary(vtkAnariPass * const anariPass)
+{
+    auto anariAttributes = m_atts.GetAnariAttributes();
+    
+    if(anariPass == nullptr)
+    {
+        debug5 << "[ANARI::Volume::SetAnariLibrary] ANARI Pass is NULL" << std::endl;
+        return false;
+    }
+
+    auto libraryName = !anariAttributes.GetAnariLibrary().empty() ? anariAttributes.GetAnariLibrary()
+                                                                  : "environment";
+    auto deviceName = anariAttributes.GetAnariLibrarySubtype();
+
+    auto* ad = anariPass->GetAnariDevice();
+    const bool success = ad->SetupAnariDeviceFromLibrary(libraryName.c_str(), deviceName.c_str());
+
+    debug5 << "[ANARI::Volume] Back-end Name: " << libraryName.c_str() << std::endl;
+    return success;
+}
+
+// ****************************************************************************
+//  Method:  avtVisItVTKRenderer::SetRendererSubtype
+//
+//  Purpose:
+//    Set the ANARI Renderer subtype.
+//
+//  Arguments:
+//    anariPass  : the ANARI pass
+//
+//  Programmer: Kevin Griffin
+//  Creation:
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void 
+avtVisItVTKRenderer::SetAnariRendererSubtype(vtkAnariPass * const anariPass)
+{
+    auto anariAttributes = m_atts.GetAnariAttributes();
+
+    if(anariPass == nullptr)
+    {
+        debug5 << "[ANARI::Volume::SetAnariRendererSubtype] ANARI Pass is NULL" << std::endl;
+        return;
+    }
+
+    auto subtype = anariAttributes.GetAnariRendererSubtype();
+    auto* ar = anariPass->GetAnariRenderer();
+    ar->SetSubtype(subtype.c_str());
+    debug5 << "[ANARI::Volume] Renderer subtype: " << subtype.c_str() << std::endl;
+}
+
 // ****************************************************************************
 //  Method:  avtVisItVTKRenderer::SetAnariRendererParameters
 //
@@ -873,21 +947,27 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
 void
 avtVisItVTKRenderer::SetAnariRendererParameters(vtkAnariPass * const anariPass)
 {
+    if(anariPass == nullptr)
+    {
+        debug5 << "[ANARI::Volume::SetAnariRendererParameters] ANARI Pass is NULL" << std::endl;
+        return;
+    }
+
     auto anariDevice = anariPass->GetAnariDevice()->GetHandle();
     auto anariRenderer = anariPass->GetAnariRenderer()->GetHandle();
 
     if(anariDevice == nullptr || anariRenderer == nullptr)
     {
-        debug5 << "[ANARI::SetAnariRendererParameters] ANARI handle is NULL" << std::endl;
+        debug5 << "[ANARI::Volume::SetAnariRendererParameters] ANARI handle is NULL" << std::endl;
         return;
     }
 
-    AnariAttributes anariAtts = m_atts.GetAnariAttributes();
-    auto rendererParams = anariAtts.GetAnariRendererParameters();
+    auto anariAttributes = m_atts.GetAnariAttributes();
+    auto rendererParams = anariAttributes.GetAnariRendererParameters();
     const ANARIParameter *parameterList =
             static_cast<const ANARIParameter*>(anariGetObjectInfo(anariDevice,
                                                                   ANARI_RENDERER,
-                                                                  anariAtts.GetAnariRendererSubtype().c_str(),
+                                                                  anariAttributes.GetAnariRendererSubtype().c_str(),
                                                                   "parameter",
                                                                   ANARI_PARAMETER_LIST));
     
@@ -1007,11 +1087,17 @@ avtVisItVTKRenderer::SetAnariRendererParameters(vtkAnariPass * const anariPass)
 void
 avtVisItVTKRenderer::SetAnariUSDParameters(vtkAnariPass * const anariPass)
 {
+    if(anariPass == nullptr)
+    {
+        debug5 << "[ANARI::Volume::SetAnariUSDParameters] ANARI Pass is NULL" << std::endl;
+        return;
+    }
+
     auto anariDevice = anariPass->GetAnariDevice()->GetHandle();
 
     if(anariDevice == nullptr)
     {
-        debug5 << "[ANARI::SetAnariUSDParameters] Device is NULL" << std::endl;
+        debug5 << "[ANARI::Volume::SetAnariUSDParameters] Device is NULL" << std::endl;
         return;
     }
 
@@ -1032,7 +1118,7 @@ avtVisItVTKRenderer::SetAnariUSDParameters(vtkAnariPass * const anariPass)
         std::istringstream iss(value);
         anari::DataType dataType = ANARI_UNKNOWN;
 
-        debug5 << "USD Device Parameter: " << key << " = " << value << std::endl;
+        debug5 << "[ANARI::Volume] USD Device Parameter: " << key << " = " << value << std::endl;
 
         for (const ANARIParameter *param = parameterList; param && param->name != nullptr; ++param)
         {
@@ -1075,7 +1161,7 @@ avtVisItVTKRenderer::SetAnariUSDParameters(vtkAnariPass * const anariPass)
             anari::setParameter(anariDevice, anariDevice, key.c_str(), dataType, value.c_str());
             break;
         default:
-            debug5 << "ANARI Datatype (" << dataType << ") Not Supported: " << key << " = " << value << std::endl;
+            debug5 << "[ANARI::Volume] Datatype (" << dataType << ") Not Supported: " << key << " = " << value << std::endl;
             break;
         }
     }

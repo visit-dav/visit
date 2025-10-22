@@ -1,4 +1,5 @@
-Function:  ColorControlPoint
+Target: xml2atts
+Function: ColorControlPoint
 Declaration: ColorControlPoint(float pos, unsigned char r, unsigned char g, unsigned char b, unsigned char a);
 Definition:
 // ****************************************************************************
@@ -23,3 +24,4 @@ ColorControlPoint::ColorControlPoint(float pos, unsigned char r,
     colors[2] = b;
     colors[3] = a;
 }
+

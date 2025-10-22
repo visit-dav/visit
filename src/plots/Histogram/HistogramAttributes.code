@@ -40,6 +40,7 @@ HistogramAttributes::ChangesRequireRecalculation(const HistogramAttributes &obj)
     return false;
 }
 
+Target: xml2atts
 Function: VarChangeRequiresReset
 Declaration: virtual bool VarChangeRequiresReset(void);
 Definition:
@@ -49,6 +50,7 @@ HistogramAttributes::VarChangeRequiresReset()
     return true;
 }
 
+Target: xml2atts
 Function: CopyAttributes
 Declaration: virtual bool CopyAttributes(const AttributeGroup *);
 Definition:
@@ -132,6 +134,7 @@ HistogramViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
         hatts->SetBasedOn(HistogramAttributes::ManyZonesForSingleVar);
 }
 
+Target: xml2info
 Function: HistogramViewerEnginePluginInfo::ReInitializePlotAtts
 Declaration: virtual void ReInitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
@@ -178,6 +181,7 @@ HistogramViewerEnginePluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
         hatts->SetBasedOn(HistogramAttributes::ManyZonesForSingleVar);
 }
 
+Target: xml2info
 Function: HistogramViewerEnginePluginInfo::ResetPlotAtts
 Declaration: virtual void ResetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
@@ -205,6 +209,7 @@ HistogramViewerEnginePluginInfo::ResetPlotAtts(AttributeSubject *atts,
     ReInitializePlotAtts(atts, plot);
 }
 
+Target: xml2info
 Function: HistogramViewerEnginePluginInfo::ProvidesLegend
 Declaration: virtual bool ProvidesLegend() const;
 Definition:

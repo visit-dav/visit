@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: ChangesRequireRecalculation
 Declaration: bool ChangesRequireRecalculation(const SpreadsheetAttributes &) const;
 Definition:
@@ -7,6 +8,7 @@ SpreadsheetAttributes::ChangesRequireRecalculation(const SpreadsheetAttributes &
     return (subsetName != obj.subsetName);
 }
 
+Target: xml2atts
 Function: CopyAttributes
 Declaration: bool CopyAttributes(const AttributeGroup *atts);
 Definition:
@@ -100,6 +102,7 @@ SpreadsheetAttributes::CopyAttributes(const AttributeGroup *atts)
     return true;
 }
 
+Target: xml2atts
 Function: CreateCompatible
 Declaration: virtual AttributeSubject *CreateCompatible(const std::string &) const;
 Definition:
@@ -131,6 +134,7 @@ SpreadsheetAttributes::CreateCompatible(const std::string &tname) const
     return retval;
 }
 
+Target: xml2atts
 Function: SetSubsetName
 Declaration: void SetSubsetName(const std::string &subsetName_);
 Definition:
@@ -160,6 +164,7 @@ SpreadsheetAttributes::SetSubsetName(const std::string &subsetName_)
     Select(0, (void *)&subsetName);
 }
 
+Target: xml2atts
 Function: CreateNode
 Declaration: bool CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd);
 Definition:
@@ -298,6 +303,7 @@ SpreadsheetViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
     PrivateSetPlotAtts(atts, plot);
 }
 
+Target: xml2info
 Function: SpreadsheetViewerEnginePluginInfo::ReInitializePlotAtts
 Declaration: virtual void ReInitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
@@ -325,6 +331,7 @@ SpreadsheetViewerEnginePluginInfo::ReInitializePlotAtts(AttributeSubject *atts,
     PrivateSetPlotAtts(atts, plot);
 }
 
+Target: xml2info
 Function: SpreadsheetViewerEnginePluginInfo::ResetPlotAtts
 Declaration: virtual void ResetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
@@ -356,6 +363,7 @@ SpreadsheetViewerEnginePluginInfo::ResetPlotAtts(AttributeSubject *atts,
     PrivateSetPlotAtts(atts, plot);
 }
 
+Target: xml2info
 Function: SpreadsheetViewerEnginePluginInfo::ProvidesLegend
 Declaration: virtual bool ProvidesLegend() const;
 Definition:
@@ -365,6 +373,7 @@ SpreadsheetViewerEnginePluginInfo::ProvidesLegend() const
     return false;
 }
 
+Target: xml2info
 Function: SpreadsheetViewerPluginInfo::AlternateDisplayCreate
 Declaration: virtual void *AlternateDisplayCreate(ViewerPlot *plot);
 Definition:
@@ -408,6 +417,7 @@ SpreadsheetViewerPluginInfo::AlternateDisplayCreate(ViewerPlot *plot)
     return dpy;
 }
 
+Target: xml2info
 Function: SpreadsheetViewerPluginInfo::AlternateDisplayDestroy
 Declaration: virtual void AlternateDisplayDestroy(void *dpy);
 Definition:
@@ -437,6 +447,7 @@ SpreadsheetViewerPluginInfo::AlternateDisplayDestroy(void *dpy)
     }
 }
 
+Target: xml2info
 Function: SpreadsheetViewerPluginInfo::AlternateDisplayClear
 Declaration: virtual void AlternateDisplayClear(void *dpy);
 Definition:
@@ -466,6 +477,7 @@ SpreadsheetViewerPluginInfo::AlternateDisplayClear(void *dpy)
     }
 }
 
+Target: xml2info
 Function: SpreadsheetViewerPluginInfo::AlternateDisplayHide
 Declaration: virtual void AlternateDisplayHide(void *dpy);
 Definition:
@@ -495,6 +507,7 @@ SpreadsheetViewerPluginInfo::AlternateDisplayHide(void *dpy)
     }
 }
 
+Target: xml2info
 Function: SpreadsheetViewerPluginInfo::AlternateDisplayShow
 Declaration: virtual void AlternateDisplayShow(void *dpy);
 Definition:
@@ -528,6 +541,7 @@ SpreadsheetViewerPluginInfo::AlternateDisplayShow(void *dpy)
     }
 }
 
+Target: xml2info
 Function: SpreadsheetViewerPluginInfo::AlternateDisplayIconify
 Declaration: virtual void AlternateDisplayIconify(void *dpy);
 Definition:
@@ -557,6 +571,7 @@ SpreadsheetViewerPluginInfo::AlternateDisplayIconify(void *dpy)
     }
 }
 
+Target: xml2info
 Function: SpreadsheetViewerPluginInfo::AlternateDisplayDeIconify
 Declaration: virtual void AlternateDisplayDeIconify(void *dpy);
 Definition:
@@ -586,6 +601,7 @@ SpreadsheetViewerPluginInfo::AlternateDisplayDeIconify(void *dpy)
     }
 }
 
+Target: xml2info
 Function: SpreadsheetViewerEnginePluginInfo::PrivateSetPlotAtts
 Declaration: void   PrivateSetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
@@ -671,6 +687,7 @@ SpreadsheetViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     }
 }
 
+Target: xml2info
 Function: SpreadsheetViewerEnginePluginInfo::Permits2DViewScaling
 Declaration: virtual bool Permits2DViewScaling() const;
 Definition:

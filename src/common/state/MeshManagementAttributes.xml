@@ -1,14 +1,14 @@
 <?xml version="1.0"?>
-  <Attribute name="MeshManagementAttributes" purpose="Global variables controlling reading and conversion of non-standard meshes" persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="MeshManagementAttributes.code">
+  <Attribute name="MeshManagementAttributes" purpose="Global variables controlling reading and conversion of non-standard meshes" persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="MeshManagementAttributes.code">
     <Enum name="DiscretizationModes">
       Uniform
       Adaptive
       MultiPass
     </Enum>
     <Field name="discretizationTolerance" label="discretizationTolerance" type="doubleVector">
-      0.020000
-      0.025000
-      0.050000
+      0.02
+      0.025
+      0.05
     </Field>
     <Field name="discretizationToleranceX" label="discretizationToleranceX" type="doubleVector">
     </Field>

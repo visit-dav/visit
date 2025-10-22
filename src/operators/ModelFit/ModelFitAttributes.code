@@ -65,3 +65,4 @@ ModelFitCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md) c
     delete e;
     return expressions;
 }
+

@@ -6,12 +6,6 @@
       ${NEKTAR++_TP_LIBRARY_DIRS}
       ${ACCELERATE_FRAMEWORK_LINK_FLAGS}
     </LDFLAGS>
-    <LIBS components="ESer">
-      avtivp_ser
-    </LIBS>
-    <LIBS components="EPar">
-      avtivp_par
-    </LIBS>
     <Files components="V">
     </Files>
     <Files components="E">
@@ -83,29 +77,29 @@
         SpecifiedLine
       </Field>
       <Field name="lineStart" label="Line start" type="doubleArray" length="3" enabler="sourceType:SpecifiedLine">
-        0.000000
-        0.000000
-        0.000000
+        0
+        0
+        0
       </Field>
       <Field name="lineEnd" label="Line end" type="doubleArray" length="3" enabler="sourceType:SpecifiedLine">
-        1.000000
-        0.000000
-        0.000000
+        1
+        0
+        0
       </Field>
       <Field name="planeOrigin" label="Plane origin" type="doubleArray" length="3" enabler="sourceType:SpecifiedPlane">
-        0.000000
-        0.000000
-        0.000000
+        0
+        0
+        0
       </Field>
       <Field name="planeNormal" label="Plane normal" type="doubleArray" length="3" enabler="sourceType:SpecifiedPlane">
-        0.000000
-        0.000000
-        1.000000
+        0
+        0
+        1
       </Field>
       <Field name="planeUpAxis" label="Plane up axis" type="doubleArray" length="3" enabler="sourceType:SpecifiedPlane">
-        0.000000
-        1.000000
-        0.000000
+        0
+        1
+        0
       </Field>
       <Field name="sampleDensity0" label="sampleDensity0" type="int">
         2
@@ -128,45 +122,45 @@
         false
       </Field>
       <Field name="termDistance" label="Distance for Termination" type="double" enabler="terminateByDistance:true">
-        10.000000
+        10
       </Field>
       <Field name="terminateByTime" label="Use the time criteria for termination" type="bool">
         false
       </Field>
       <Field name="termTime" label="Time Elapsed for Particle Before Termination" type="double" enabler="terminateByTime:true">
-        10.000000
+        10
       </Field>
       <Field name="maxStepLength" label="maximum step length" type="double">
-        0.100000
+        0.1
       </Field>
       <Field name="limitMaximumTimestep" label="Limit Maximum Timestep (DoPri only)?" type="bool">
         false
       </Field>
       <Field name="maxTimeStep" label="maximum time step length" type="double">
-        0.100000
+        0.1
       </Field>
       <Field name="relTol" label="rel. tolerance" type="double">
-        0.000100
+        0.0001
       </Field>
       <Field name="absTolSizeType" label="AbsoluteToleranceSizeType" type="enum" subtype="SizeType">
         FractionOfBBox
       </Field>
       <Field name="absTolAbsolute" label="abs. tolerance" type="double" enabler="absTolSizeType:Absolute">
-        0.000001
+        1e-06
       </Field>
       <Field name="absTolBBox" label="AbsTolBBox" type="double" enabler="absTolSizeType:FractionOfBBox">
-        0.000001
+        1e-06
       </Field>
       <Field name="fieldType" label="Field" type="enum" subtype="FieldType">
         Default
       </Field>
       <Field name="fieldConstant" label="Constant" type="double" enabler="fieldType:FlashField">
-        1.000000
+        1
       </Field>
       <Field name="velocitySource" label="Starting velocity" type="doubleArray" length="3" enabler="fieldType:FlashField">
-        0.000000
-        0.000000
-        0.000000
+        0
+        0
+        0
       </Field>
       <Field name="integrationType" label="Integrator" type="enum" subtype="IntegrationType">
         DormandPrince
@@ -190,22 +184,22 @@
         false
       </Field>
       <Field name="pathlinesOverrideStartingTime" label="Starting Time" type="double" enabler="pathlines:true">
-        0.000000
+        0
       </Field>
       <Field name="pathlinesPeriod" label="Pathlines Period" type="double">
-        0.0
+        0
       </Field>
       <Field name="pathlinesCMFE" label="CMFE" type="enum" subtype="PathlinesCMFE">
         POS_CMFE
       </Field>
       <Field name="sampleDistance0" label="sampleDistance0" type="double">
-        10.000000
+        10
       </Field>
       <Field name="sampleDistance1" label="sampleDistance1" type="double">
-        10.000000
+        10
       </Field>
       <Field name="sampleDistance2" label="sampleDistance2" type="double">
-        10.000000
+        10
       </Field>
       <Field name="fillInterior" label="fillInterior" type="bool">
         true
@@ -223,7 +217,7 @@
         false
       </Field>
       <Field name="cycleTolerance" label="Cycle tolerance" type="double">
-        1.0e-6
+        1e-06
       </Field>
       <Field name="maxIterations" label="Maximum interations" type="int">
         10
@@ -231,8 +225,7 @@
       <Field name="showPartialResults" label="Show partial cycle results" type="bool">
         true
       </Field>
-      <Field name="showReturnDistances" label="Iteration once and show
-                                               the sign return distances" type="bool">
+      <Field name="showReturnDistances" label="Iteration once and show                                                the sign return distances" type="bool">
         false
       </Field>
       <Field name="issueAdvectionWarnings" label="Issue warning when the advection stops before the limits" type="bool">
@@ -254,16 +247,16 @@
         true
       </Field>
       <Field name="criticalPointThreshold" label="criticalPointThreshold" type="double" enabler="issueCriticalPointsWarnings:true">
-        0.001000
+        0.001
       </Field>
       <Field name="correlationDistanceAngTol" label="correlationDistanceAngTol" type="double">
-        5.000000
+        5
       </Field>
       <Field name="correlationDistanceMinDistAbsolute" label="correlationDistanceMinDistAbsolute" type="double">
-        1.000000
+        1
       </Field>
       <Field name="correlationDistanceMinDistBBox" label="correlationDistanceMinDistBBox" type="double">
-        0.005000
+        0.005
       </Field>
       <Field name="correlationDistanceMinDistType" label="correlationDistanceMinDistType" type="enum" subtype="SizeType">
         FractionOfBBox

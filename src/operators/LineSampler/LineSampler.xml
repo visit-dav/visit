@@ -1,8 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="LineSampler" type="operator" label="LineSampler"
-          version="1.0" enabled="false" mdspecificcode="false"
-          engspecificcode="false" onlyengine="false" noengine="false"
-          iconFile="LineSampler.xpm" category="Slicing">
+  <Plugin name="LineSampler" type="operator" label="LineSampler" version="1.0" enabled="false" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="LineSampler.xpm" category="Slicing">
     <Files components="W">
     </Files>
     <Attribute name="LineSamplerAttributes" purpose="This class contains attributes for the line sampler operator." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="LineSampler.code">
@@ -90,7 +87,7 @@
         1
       </Field>
       <Field name="toroidalArrayAngle" label="Toroidal angle between arrays" type="double">
-        5.000000
+        5
       </Field>
       <Field name="nChannels" label="Number of channels" type="int">
         5
@@ -98,26 +95,25 @@
       <Field name="channelProjection" label="Channel projection" type="enum" subtype="ChannelProjection">
         Parallel
       </Field>
-      <Field name="channelLayoutType" label="Channel layout"
-             type="enum" subtype="ChannelLayoutType">
-        ChannelRelative        
-       </Field>
+      <Field name="channelLayoutType" label="Channel layout" type="enum" subtype="ChannelLayoutType">
+        ChannelRelative
+      </Field>
       <Field name="channelOffset" label="Parallel/Grid: Offset between channels" type="double">
-        0.100
+        0.1
       </Field>
       <Field name="channelAngle" label="Divergent: Angle between channels" type="double">
-        5.000000
+        5
       </Field>
       <Field name="nRows" label="Grid: Number of rows" type="int">
         1
       </Field>
       <Field name="rowOffset" label="Grid: Offset between rows" type="double">
-        0.100
+        0.1
       </Field>
       <Field name="arrayOrigin" label="Array origin (R,Phi,Z)" type="doubleArray" length="3">
-        0.000000
-        0.000000
-        0.000000
+        0
+        0
+        0
       </Field>
       <Field name="arrayAxis" label="Array axis direction" type="enum" subtype="ArrayAxis">
         Z
@@ -128,18 +124,17 @@
       <Field name="poloidalAngleStop" label="Poloidal stop angle" type="double">
         220
       </Field>
-
       <Field name="poloialAngle" label="Poloidal angle" type="double">
-        0.000000
+        0
       </Field>
       <Field name="poloialRTilt" label="Poloidal plane R-tilt" type="double">
-        0.000000
+        0
       </Field>
       <Field name="poloialZTilt" label="Poloidal plane Z-tilt" type="double">
-        0.000000
+        0
       </Field>
       <Field name="toroidalAngle" label="Toroidal angle" type="double">
-        0.000000
+        0
       </Field>
       <Field name="flipToroidalAngle" label="Flip toroidal angle" type="bool">
         false
@@ -151,16 +146,16 @@
         Three
       </Field>
       <Field name="donotApplyToAll" label="Donot apply to all" type="bool">
-        True
+        true
       </Field>
       <Field name="heightPlotScale" label="1D plot height scale" type="double">
-        1.000000
+        1
       </Field>
       <Field name="channelPlotOffset" label="1D plot channel offset" type="double">
-        0.000000
+        0
       </Field>
       <Field name="arrayPlotOffset" label="1D plot array offset" type="double">
-        0.000000
+        0
       </Field>
       <Field name="displayTime" label="View time" type="enum" subtype="DisplayTime">
         Step
@@ -169,16 +164,16 @@
         Line
       </Field>
       <Field name="radius" label="Cylinder radius" type="double">
-        0.100000
+        0.1
       </Field>
       <Field name="divergence" label="Cone divergence" type="double">
-        1.000000
+        1
       </Field>
       <Field name="channelProfile" label="Channel Profile" type="enum" subtype="ChannelProfile">
         TopHat
       </Field>
       <Field name="standardDeviation" label="Standard deviation" type="double">
-        1.000000
+        1
       </Field>
       <Field name="sampleDistance" label="Linear sample distance" type="double">
         0.1
@@ -187,7 +182,7 @@
         1
       </Field>
       <Field name="sampleArc" label="Radial sample arc" type="double">
-        10.0
+        10
       </Field>
       <Field name="channelIntegration" label="Channel integration" type="enum" subtype="ChannelIntegration">
         NoChannelIntegration
@@ -207,7 +202,6 @@
       <Field name="toroidalAngleStride" label="Toroidal stride angle" type="double">
         1
       </Field>
-
       <Field name="timeSampling" label="Time sampling" type="enum" subtype="TimeSampling">
         CurrentTimeStep
       </Field>
@@ -221,23 +215,23 @@
         1
       </Field>
       <Field name="channelList" label="List of Channels" type="doubleVector">
-        0.000000
-        0.000000
-        0.000000
-        90.000000
+        0
+        0
+        0
+        90
       </Field>
       <Field name="wallList" label="Wall point list" type="doubleVector">
-        0.000000
-        0.000000
+        0
+        0
       </Field>
       <Field name="nChannelListArrays" label="Number of arrays" type="int">
         1
       </Field>
       <Field name="channelListToroidalArrayAngle" label="Toroidal angle between arrays" type="double">
-        5.000000
+        5
       </Field>
       <Field name="channelListToroidalAngle" label="Toroidal angle" type="double">
-        0.000000
+        0
       </Field>
       <Function name="LineSamplerViewerEnginePluginInfo::GetClientAtts1" user="false" member="true">
       </Function>

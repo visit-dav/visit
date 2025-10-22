@@ -1,3 +1,18 @@
+Target: xml2python
+Code: VISIT_PY_TYPE_OBJ
+Prefix:
+// Re-define tp slots for this custom object
+#undef VISIT_PY_TYPE_OBJ_TP_SLOTS
+#define VISIT_PY_TYPE_OBJ_TP_SLOTS(VSObjName)                          \
+    VISIT_PY_TYPE_OBJ_SLOT2(VSObjName, doc, purpose);                  \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, dealloc);                       \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, getattro);                      \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, str);                           \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, richcompare);                   \
+    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, methods)
+Postfix:
+
+Target: xml2atts
 Function: GetCorrelatedTimeStates
 Declaration: bool GetCorrelatedTimeStates(int state, intVector &states) const;
 Definition:
@@ -43,6 +58,7 @@ DatabaseCorrelation::GetCorrelatedTimeStates(int state, intVector &states) const
     return retval;
 }
 
+Target: xml2atts
 Function: SetNumStates
 Declaration: void SetNumStates(int nstates);
 Definition:
@@ -129,6 +145,7 @@ DatabaseCorrelation::SetNumStates(int nStates)
     //
 }
 
+Target: xml2atts
 Function: AddDatabase
 Declaration: void AddDatabase(const std::string &database, int nStates, const doubleVector &times, const intVector &cycles);
 Definition:
@@ -349,6 +366,7 @@ DatabaseCorrelation::AddDatabase(const std::string &database, int nStates,
     }
 }
 
+Target: xml2atts
 Function: UsesDatabase
 Declaration: bool UsesDatabase(const std::string &database) const;
 Definition:
@@ -379,6 +397,7 @@ DatabaseCorrelation::UsesDatabase(const std::string &database) const
            databaseNames.end();
 }
 
+Target: xml2atts
 Function: GetNumDatabases
 Declaration: int GetNumDatabases() const;
 Definition:
@@ -401,6 +420,7 @@ DatabaseCorrelation::GetNumDatabases() const
     return databaseNames.size();
 }
 
+Target: xml2atts
 Function: GetCorrelatedTimeState
 Declaration: int GetCorrelatedTimeState(const std::string &db, int state) const;
 Definition:
@@ -446,6 +466,7 @@ DatabaseCorrelation::GetCorrelatedTimeState(const std::string &db, int state) co
     return retval;
 }
 
+Target: xml2atts
 Function: GetInverseCorrelatedTimeState
 Declaration: int GetInverseCorrelatedTimeState(const std::string &db, int state) const;
 Definition:
@@ -497,6 +518,7 @@ DatabaseCorrelation::GetInverseCorrelatedTimeState(const std::string &db,
     return retval;
 }
 
+Target: xml2atts
 Function: OutputOperator
 Declaration: STATE_API ostream& operator << (ostream &os, const DatabaseCorrelation &);
 Definition:
@@ -574,6 +596,7 @@ operator << (ostream &os, const DatabaseCorrelation &correlation)
     return os;
 }
 
+Target: xml2atts
 Function: GetCondensedCycleForState
 Declaration: int GetCondensedCycleForState(int state) const;
 Definition:
@@ -607,6 +630,7 @@ DatabaseCorrelation::GetCondensedCycleForState(int state) const
     return retval;
 }
 
+Target: xml2atts
 Function: GetCondensedTimeForState
 Declaration: double GetCondensedTimeForState(int state) const;
 Definition:
@@ -640,6 +664,7 @@ DatabaseCorrelation::GetCondensedTimeForState(int state) const
     return retval;
 }
 
+Target: xml2atts
 Function: GetMethodName
 Declaration: const char *GetMethodName() const;
 Definition:
@@ -659,6 +684,7 @@ DatabaseCorrelation::GetMethodName() const
     return GetMethodNameFromMethod(GetMethod());
 }
 
+Target: xml2atts
 Function: GetMethodNameFromMethod
 Declaration: static const char *GetMethodNameFromMethod(int m);
 Definition:
@@ -978,7 +1004,6 @@ Definition:
 // REMOVED  DatabaseCorrelation_SetCondensedCycles
 ///////////////////////////////////////////////////////////////////////////////
 
-
 Target: xml2python
 Function: DatabaseCorrelation_GetCorrelatedTimeStates
 Declaration: DatabaseCorrelation_GetCorrelatedTimeStates
@@ -1234,16 +1259,3 @@ PyMethodDef PyDatabaseCorrelation_methods[] = {
     {NULL, NULL}
 };
 
-Code: VISIT_PY_TYPE_OBJ
-Prefix:
-// Re-define tp slots for this custom object
-#undef VISIT_PY_TYPE_OBJ_TP_SLOTS
-#define VISIT_PY_TYPE_OBJ_TP_SLOTS(VSObjName)                          \
-    VISIT_PY_TYPE_OBJ_SLOT2(VSObjName, doc, purpose);                  \
-    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, dealloc);                       \
-    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, getattro);                      \
-    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, str);                           \
-    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, richcompare);                   \
-    VISIT_PY_TYPE_OBJ_SLOT1(VSObjName, methods)
-
-Postfix:

@@ -209,6 +209,7 @@ VTKCommonPluginInfo::SetupDatabase(const char *const *list,
     return db;
 }
 
+Target: xml2info
 Function: VTKCommonPluginInfo::GetDatabaseType
 Declaration: DatabaseType VTKCommonPluginInfo::GetDatabaseType();
 Definition:

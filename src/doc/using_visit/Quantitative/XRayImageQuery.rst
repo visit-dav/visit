@@ -192,16 +192,16 @@ Output Types
 |      | (5 prior to       | of a text header file describing a           |
 |      | VisIt_ 3.4)       | rawfloats file.                              |
 +------+-------------------+----------------------------------------------+
-|      | "json" or 5       | Conduit JSON output.                         |
-|      | (6 prior to       |                                              |
+|      | "blueprint json"  | Conduit JSON output.                         |
+|      | or 5 (6 prior to  |                                              |
 |      | VisIt_ 3.4)       |                                              |
 +------+-------------------+----------------------------------------------+
-|      | "hdf5" or 6       | Conduit HDF5 output.                         |
-|      | (7 prior to       |                                              |
+|      | "blueprint hdf5"  | Conduit HDF5 output.                         |
+|      | or 6 (7 prior to  |                                              |
 |      | VisIt_ 3.4)       |                                              |
 +------+-------------------+----------------------------------------------+
-|      | "yaml" or 7       | Conduit YAML output.                         |
-|      | (8 prior to       |                                              |
+|      | "blueprint yaml"  | Conduit YAML output.                         |
+|      | or 7 (8 prior to  |                                              |
 |      | VisIt_ 3.4)       |                                              |
 +------+-------------------+----------------------------------------------+
 
@@ -358,7 +358,7 @@ Here is an example:
 
    params = dict()
    params["image_size"] = (400, 300)
-   params["output_type"] = "hdf5"
+   params["output_type"] = "blueprint hdf5"
    params["focus"] = (0., 2.5, 10.)
    params["perspective"] = 1
    params["near_plane"] = -25.
@@ -396,7 +396,7 @@ The second way to call the query is the old style of argument passing:
       vars)
 
    # An example
-   Query("XRay Image", "hdf5", ".", 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 400, 300, ("d", "p"))
+   Query("XRay Image", "blueprint hdf5", ".", 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 400, 300, ("d", "p"))
 
 This way of calling the query exclusively makes use of the :ref:`Simplified_Camera_Specification`.
 
@@ -558,7 +558,7 @@ We call the query as usual, although there are a few extra arguments we can prov
 
    params = dict()
    params["image_size"] = (400, 300)
-   params["output_type"] = "hdf5"
+   params["output_type"] = "blueprint hdf5"
    params["focus"] = (0., 2.5, 10.)
    params["perspective"] = 1
    params["near_plane"] = -25.
@@ -2139,7 +2139,7 @@ The later Python code examples assume that the following has already been run:
    params = dict()
    params["image_size"] = (400, 300)
    # One of the Blueprint output types
-   params["output_type"] = "hdf5"
+   params["output_type"] = "blueprint hdf5"
    params["focus"] = (0., 2.5, 10.)
    params["perspective"] = 1
    params["near_plane"] = -25.

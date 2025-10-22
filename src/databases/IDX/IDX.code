@@ -38,3 +38,4 @@ IDXCommonPluginInfo::SetupDatabase(const char *const *list,
 
     return new avtGenericDatabase(inter);
 }
+

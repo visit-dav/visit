@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: avtVectorMetaData2
 Declaration: avtVectorMetaData(std::string, std::string, avtCentering, int);
 Definition:
@@ -36,6 +37,7 @@ avtVectorMetaData::avtVectorMetaData(std::string n, std::string mn,
     varDim = vd;
 }
 
+Target: xml2atts
 Function: avtVectorMetaData3
 Declaration: avtVectorMetaData(std::string, std::string, avtCentering, int, const double *);
 Definition:
@@ -74,6 +76,7 @@ avtVectorMetaData::avtVectorMetaData(std::string n, std::string mn,
     SetExtents(extents);
 }
 
+Target: xml2atts
 Function: SetExtents
 Declaration: void SetExtents(const double *);
 Definition:
@@ -114,6 +117,7 @@ avtVectorMetaData::SetExtents(const double *extents)
     }
 }
 
+Target: xml2atts
 Function: UnsetExtents
 Declaration: void UnsetExtents();
 Definition:
@@ -123,6 +127,7 @@ avtVectorMetaData::UnsetExtents()
     hasDataExtents = false;
 }
 
+Target: xml2atts
 Function: Print
 Declaration: void Print(ostream &, int = 0) const;
 Definition:

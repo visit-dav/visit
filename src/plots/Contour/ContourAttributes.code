@@ -1,3 +1,4 @@
+Target: xml2atts
 Code: SetContourNLevels
 Prefix:
     if(contourNLevels < 1)
@@ -8,18 +9,21 @@ Postfix:
     // Grow the color vector.
     EnlargeMultiColor(contourNLevels);
 
+Target: xml2atts
 Code: SetContourPercent
 Prefix:
 Postfix:
     // Grow the color vector.
     EnlargeMultiColor((int)contourPercent.size());
 
+Target: xml2atts
 Code: SetContourValue
 Prefix:
 Postfix:
     // Grow the color vector.
     EnlargeMultiColor((int)contourValue.size());
 
+Target: xml2atts
 Code: SetDefaultPalette
 Prefix:
 Postfix:
@@ -31,11 +35,13 @@ Postfix:
     else
         EnlargeMultiColor((int)contourPercent.size());
 
+Target: xml2atts
 Constant: MAX_CONTOURS
 Declaration: static const int MAX_CONTOURS;
 Definition: const int ContourAttributes::MAX_CONTOURS = 100;
 
 
+Target: xml2atts
 Function: ChangesRequireRecalculation
 Declaration: bool ChangesRequireRecalculation(const ContourAttributes &obj);
 Definition:
@@ -54,6 +60,7 @@ ContourAttributes::ChangesRequireRecalculation(const ContourAttributes &obj)
             (wireframe != obj.wireframe));
 }
 
+Target: xml2atts
 Function: SetContourValue
 Declaration: void SetContourValue(int i, double d);
 Definition:
@@ -64,6 +71,7 @@ ContourAttributes::SetContourValue(int i, double d)
     Select(7, (void *)&contourValue);
 }
 
+Target: xml2atts
 Function: SetContourPercent
 Declaration: void SetContourPercent(int i, double d);
 Definition:
@@ -74,6 +82,7 @@ ContourAttributes::SetContourPercent(int i, double d)
     Select(8, (void *)&contourPercent);
 }
 
+Target: xml2atts
 Function: EnlargeMultiColor
 Declaration: void EnlargeMultiColor(int newSize);
 Definition:
@@ -158,6 +167,7 @@ ContourAttributes::EnlargeMultiColor(int newSize)
     }
 }
 
+Target: xml2atts
 Function: ColorIsChanged
 Declaration: bool ColorIsChanged(int index) const;
 Definition:
@@ -189,6 +199,7 @@ ContourAttributes::ColorIsChanged(int index) const
     return (i < changedColors.size());
 }
 
+Target: xml2atts
 Function: MarkColorAsChanged
 Declaration: void MarkColorAsChanged(int index);
 Definition:
@@ -217,6 +228,7 @@ ContourAttributes::MarkColorAsChanged(int index)
     }
 }
 
+Target: xml2atts
 Function: CreateNode
 Declaration: virtual bool CreateNode(DataNode *, bool, bool);
 Definition:
@@ -401,6 +413,7 @@ ContourAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forc
     return (addToParent || forceAdd);
 }
 
+Target: xml2atts
 Function: SetFromNode
 Declaration: virtual void SetFromNode(DataNode *);
 Definition:
@@ -511,6 +524,7 @@ ContourAttributes::SetFromNode(DataNode *parentNode)
         SetWireframe(node->AsBool());
 }
 
+Target: xml2atts
 Function: SetValue1
 Declaration: virtual bool SetValue(const std::string &name, const int &value);
 Definition:
@@ -529,6 +543,7 @@ ContourAttributes::SetValue(const std::string &name, const int &value)
     return retval;
 }
 
+Target: xml2atts
 Function: SetValue2
 Declaration: virtual bool SetValue(const std::string &name, const doubleVector &value);
 Definition:
@@ -579,6 +594,7 @@ ContourViewerEnginePluginInfo::InitializeGlobalObjects()
     InitializeDefaultPalette(defaultAtts);
 }
 
+Target: xml2info
 Function: ContourViewerEnginePluginInfo::InitializePlotAtts
 Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
@@ -617,6 +633,7 @@ ContourViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
     InitializeDefaultPalette(contour);
 }
 
+Target: xml2info
 Function: ContourViewerEnginePluginInfo::InitializeDefaultPalette
 Declaration: static void InitializeDefaultPalette(ContourAttributes *);
 Definition:

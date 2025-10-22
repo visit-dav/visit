@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: addVariable
 Declaration: void addVariable(const std::string &variableName_);
 Definition:
@@ -19,6 +20,7 @@ ExtrudeStackedAttributes::addVariable(const std::string &variableName_)
     InsertVariable(variableName_, scalarVariableNames.size());
 }
 
+Target: xml2atts
 Function: InsertVariable
 Declaration: void InsertVariable(const std::string &variableName_, const int index = 0);
 Definition:
@@ -101,6 +103,7 @@ ExtrudeStackedAttributes::InsertVariable(const std::string &variableName_, const
     SelectAll();
 }
 
+Target: xml2atts
 Function: DeleteVariable
 Declaration: void DeleteVariable(const std::string &variableName_, int minVariableCount);
 Definition:
@@ -144,6 +147,7 @@ ExtrudeStackedAttributes::DeleteVariable(const std::string &variableName_,
     }
 }
 
+Target: xml2atts
 Function: AttributesAreConsistent
 Declaration: bool AttributesAreConsistent() const;
 Definition:
@@ -184,64 +188,6 @@ ExtrudeStackedAttributes::AttributesAreConsistent() const
     }
 
     return true;
-}
-
-Function: CopyAttributes
-Declaration: virtual bool CopyAttributes(const AttributeGroup *);
-Definition:
-// ****************************************************************************
-//  Method: ExtrudeStackedAttributes::CopyAttributes
-//
-//  Purpose: Sets the attributes from another attribute group
-//
-//  Programmer: Allen Sanderson
-//  Creation:   August 31, 2023
-//
-// ****************************************************************************
-bool
-ExtrudeStackedAttributes::CopyAttributes(const AttributeGroup *atts)
-{
-    bool retval = false;
-
-    if(TypeName() == atts->TypeName())
-    {
-        // Call the assignment operator.
-        const ExtrudeStackedAttributes *tmp =
-            (const ExtrudeStackedAttributes *)atts;
-        *this = *tmp;
-        retval = true;
-    }
-    else if (atts->TypeName() == "VariableRestrictionAttributes")
-    {
-        const VariableRestrictionAttributes *ar =
-            (const VariableRestrictionAttributes *)atts;
-
-        if (scalarVariableNames.size() == 0)
-        {
-            visualVariableNames = ar->GetNames();
-            extentMinima = ar->GetMinima();
-            extentMaxima = ar->GetMaxima();
-            extentScale  = ar->GetScale();
-        }
-        else
-        {
-            for (size_t i=0; i<extentMinima.size(); i++)
-            {
-                extentMinima[i] = ar->GetMinima()[i];
-                extentMaxima[i] = ar->GetMaxima()[i];
-                extentScale[i] = ar->GetScale()[i];
-            }
-        }
-
-        SelectVisualVariableNames();
-        SelectExtentMinima();
-        SelectExtentMaxima();
-        SelectExtentScale();
-
-        retval = true;
-    }
-
-    return retval;
 }
 
 Target: xml2info

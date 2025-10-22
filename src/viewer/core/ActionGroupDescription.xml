@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="ActionGroupDescription" purpose="This class contains the attributes that describe an action group." persistent="true" codefile="ActionGroupDescription.code" exportAPI="VIEWERCORE_API" exportInclude="viewercore_exports.h">
+  <Attribute name="ActionGroupDescription" purpose="This class contains the attributes that describe an action group." persistent="true" keyframe="true" exportAPI="VIEWERCORE_API" exportInclude="viewercore_exports.h" codefile="ActionGroupDescription.code">
     <Field name="name" label="name" type="string">
     </Field>
     <Field name="actions" label="actions" type="stringVector">

@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: CreateNode
 Declaration: bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
 Definition:
@@ -275,6 +276,7 @@ LaunchProfile::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd
     return (addToParent || forceAdd);
 }
 
+Target: xml2atts
 Function: SelectOnlyDifferingFields
 Declaration: void SelectOnlyDifferingFields(LaunchProfile &other);
 Definition:

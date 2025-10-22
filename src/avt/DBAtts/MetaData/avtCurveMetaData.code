@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: avtCurveMetaData2
 Declaration: avtCurveMetaData(const std::string &n);
 Definition:
@@ -33,6 +34,7 @@ avtCurveMetaData::avtCurveMetaData(const std::string &n)
     originalName  = name;
 }
 
+Target: xml2atts
 Function: avtCurveMetaData3
 Declaration: avtCurveMetaData(const std::string &n, double minS, double maxS, double minE, double maxE);
 Definition:
@@ -70,6 +72,7 @@ avtCurveMetaData::avtCurveMetaData(const std::string &n, double minS, double max
     maxDataExtents = maxE;
 }
 
+Target: xml2atts
 Function: SetSpatialExtents
 Declaration: void SetSpatialExtents(const double *);
 Definition:
@@ -104,6 +107,7 @@ avtCurveMetaData::SetSpatialExtents(const double *extents)
     }
 }
 
+Target: xml2atts
 Function: UnsetSpatialExtents
 Declaration: void UnsetSpatialExtents();
 Definition:
@@ -113,6 +117,7 @@ avtCurveMetaData::UnsetSpatialExtents()
     hasSpatialExtents = false;
 }
 
+Target: xml2atts
 Function: SetDataExtents
 Declaration: void SetDataExtents(const double *);
 Definition:
@@ -147,6 +152,7 @@ avtCurveMetaData::SetDataExtents(const double *extents)
     }
 }
 
+Target: xml2atts
 Function: UnsetDataExtents
 Declaration: void UnsetDataExtents();
 Definition:
@@ -156,6 +162,7 @@ avtCurveMetaData::UnsetDataExtents()
     hasDataExtents = false;
 }
 
+Target: xml2atts
 Function: Print
 Declaration: void Print(ostream &, int = 0) const;
 Definition:
