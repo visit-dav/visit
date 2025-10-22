@@ -7,7 +7,6 @@
 #include <QTextStream>
 #include "Function.h"
 #include "Code.h"
-#include "Conditional.h"
 #include "Constant.h"
 #include "CodeFile.h"
 #include "Include.h"

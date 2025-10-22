@@ -39,6 +39,7 @@ class XMLEditConditional : public QFrame
     void BlockAllSignals(bool);
   public slots:
     void UpdateWindowContents();
+    void UpdateTextEditSizes();
     void UpdateWindowSensitivity();
     void UpdateWindowSingleItem();
     void conditionTextChanged();

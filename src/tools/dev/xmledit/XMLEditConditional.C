@@ -75,6 +75,7 @@ XMLEditConditional::XMLEditConditional(QWidget *p)
     QFont monospaced("Courier");
 
     definitions = new QTextEdit(this);
+    definitions->setTabChangesFocus(true);
     definitions->setFont(monospaced);
     definitions->setWordWrapMode(QTextOption::NoWrap);
     topLayout->addWidget(definitions, row,0, 1,2);
@@ -137,6 +138,37 @@ XMLEditConditional::XMLEditConditional(QWidget *p)
             this, SLOT(conditionlistNew()));
     connect(delButton, SIGNAL(clicked()),
             this, SLOT(conditionlistDel()));
+
+    // manage initial sizes
+    UpdateTextEditSizes();
+}
+
+// ****************************************************************************
+//  Method:  XMLEditConditional::UpdateTextEditSizes
+//
+//  Purpose:
+//    Update the text edit sizes
+//
+//  Programmer:  Kathleen Biagas
+//  Creation:    October 21, 2025
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+XMLEditConditional::UpdateTextEditSizes()
+{
+    QSize s = definitions->document()->size().toSize();
+    definitions->setFixedHeight(s.height());
+    s = cxxflags->document()->size().toSize();
+    cxxflags->setFixedHeight(s.height());
+    s = mlinklibs->document()->size().toSize();
+    mlinklibs->setFixedHeight(s.height());
+    s = vlinklibs->document()->size().toSize();
+    vlinklibs->setFixedHeight(s.height());
+    s = elinklibs->document()->size().toSize();
+    elinklibs->setFixedHeight(s.height());
 }
 
 // ****************************************************************************
@@ -165,7 +197,7 @@ XMLEditConditional::UpdateWindowContents()
     {
         for (size_t i = 0; i < codeFile->conditions.size(); i++)
         {
-            conditionList->addItem(codeFile->conditions[i].condition);
+            conditionList->addItem(codeFile->conditions[i]->condition);
         }
     }
 
@@ -246,10 +278,10 @@ XMLEditConditional::UpdateWindowSingleItem()
         CodeFile *codeFile = xmldoc->attribute->codeFile;
         if(codeFile && !codeFile->conditions.empty())
         {
-            Conditional c = codeFile->conditions[index];
-            target->setText(c.target);
-            condition->setText(c.condition);
-            for (auto const& [key, val] : c.keyVals)
+            Conditional *c = codeFile->conditions[index];
+            target->setText(c->target);
+            condition->setText(c->condition);
+            for (auto const& [key, val] : c->keyVals)
             {
                 if(key == "Definitions:")
                     definitions->setText(val);
@@ -334,7 +366,7 @@ XMLEditConditional::conditionTextChanged(const QString &text)
 
     bool alreadyExists = false;
     for (size_t j=0 && !alreadyExists; j < codeFile->conditions.size(); j++)
-        alreadyExists = (newcondition == codeFile->conditions[j].condition);
+        alreadyExists = (newcondition == codeFile->conditions[j]->condition);
 
     if(alreadyExists)
     {
@@ -342,8 +374,8 @@ XMLEditConditional::conditionTextChanged(const QString &text)
         return;
     }
 
-    Conditional c = codeFile->conditions[index];
-    c.condition = newcondition;
+    Conditional *c = codeFile->conditions[index];
+    c->condition = newcondition;
     BlockAllSignals(true);
     conditionList->item(index)->setText(newcondition);
     BlockAllSignals(false);
@@ -368,8 +400,12 @@ XMLEditConditional::definitionsChanged()
     int index = conditionList->currentRow();
     if (index == -1)
         return;
-    Conditional c = xmldoc->attribute->codeFile->conditions[index];
-    c.keyVals["Definitions:"] = definitions->toPlainText();
+
+    Conditional *c = xmldoc->attribute->codeFile->conditions[index];
+    c->keyVals["Definitions:"] = definitions->toPlainText();
+
+    QSize s = definitions->document()->size().toSize();
+    definitions->setFixedHeight(s.height());
 }
 
 // ****************************************************************************
@@ -390,8 +426,11 @@ XMLEditConditional::cxxflagsChanged()
     int index = conditionList->currentRow();
     if (index == -1)
         return;
-    Conditional c = xmldoc->attribute->codeFile->conditions[index];
-    c.keyVals["CXXFlags:"] = cxxflags->toPlainText();
+    Conditional *c = xmldoc->attribute->codeFile->conditions[index];
+    c->keyVals["CXXFlags:"] = cxxflags->toPlainText();
+
+    QSize s = cxxflags->document()->size().toSize();
+    cxxflags->setFixedHeight(s.height());
 }
 
 // ****************************************************************************
@@ -412,8 +451,11 @@ XMLEditConditional::mlinklibsChanged()
     int index = conditionList->currentRow();
     if (index == -1)
         return;
-    Conditional c = xmldoc->attribute->codeFile->conditions[index];
-    c.keyVals["MLinkLibraries:"] = mlinklibs->toPlainText();
+    Conditional *c = xmldoc->attribute->codeFile->conditions[index];
+    c->keyVals["MLinkLibraries:"] = mlinklibs->toPlainText();
+
+    QSize s = mlinklibs->document()->size().toSize();
+    mlinklibs->setFixedHeight(s.height());
 }
 
 // ****************************************************************************
@@ -433,8 +475,11 @@ XMLEditConditional::vlinklibsChanged()
     int index = conditionList->currentRow();
     if (index == -1)
         return;
-    Conditional c = codeFile->conditions[index];
-    c.keyVals["VLinkLibraries:"] = vlinklibs->toPlainText();
+    Conditional *c = codeFile->conditions[index];
+    c->keyVals["VLinkLibraries:"] = vlinklibs->toPlainText();
+
+    QSize s = vlinklibs->document()->size().toSize();
+    vlinklibs->setFixedHeight(s.height());
 }
 
 // ****************************************************************************
@@ -456,8 +501,11 @@ XMLEditConditional::elinklibsChanged()
     int index = conditionList->currentRow();
     if (index == -1)
         return;
-    Conditional c = codeFile->conditions[index];
-    c.keyVals["ELinkLibraries:"] = elinklibs->toPlainText();
+    Conditional *c = codeFile->conditions[index];
+    c->keyVals["ELinkLibraries:"] = elinklibs->toPlainText();
+
+    QSize s = elinklibs->document()->size().toSize();
+    elinklibs->setFixedHeight(s.height());
 }
 
 // ****************************************************************************
@@ -478,8 +526,11 @@ XMLEditConditional::conditionlistNew()
 {
     if(!xmldoc->attribute->codeFile)
     {
-        QMessageBox::warning(0, "VisIt", QString("Warning, Conditionals require a code file, but none has been specified."), QMessageBox::Ok);
-        return;
+        QString codefilename(xmldoc->filename);
+        // remove '.xml'
+        codefilename.chop(4);
+        codefilename.append(".code");
+        xmldoc->attribute->codeFile = new CodeFile(codefilename);
     }
  
     CodeFile *codeFile = xmldoc->attribute->codeFile;
@@ -499,7 +550,7 @@ XMLEditConditional::conditionlistNew()
             newid++;
     }
 
-    Conditional c("xml2cmake", newcondition);
+    Conditional *c = new Conditional("xml2cmake", newcondition);
     codeFile->conditions.push_back(c);
     UpdateWindowContents();
     for (int i=0; i<conditionList->count(); i++)
@@ -535,8 +586,8 @@ XMLEditConditional::conditionlistDel()
     CodeFile *codeFile = xmldoc->attribute->codeFile;
     if(codeFile)
     {
-        Conditional c = codeFile->conditions[index];
-        std::vector<Conditional> newlist;
+        Conditional *c = codeFile->conditions[index];
+        std::vector<Conditional *> newlist;
         for (size_t i = 0; i < codeFile->conditions.size(); i++)
         {
             if (codeFile->conditions[i] != c)
@@ -549,4 +600,6 @@ XMLEditConditional::conditionlistDel()
     if (index >= conditionList->count())
         index = conditionList->count()-1;
     conditionList->setCurrentRow(index);
+
+    UpdateTextEditSizes();
 }

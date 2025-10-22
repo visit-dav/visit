@@ -74,7 +74,7 @@ class CodeFile
     QStringPairMap    constant;
     QStringQStringMap init;
   public:
-    std::vector<Conditional> conditions;
+    std::vector<Conditional *> conditions;
 
     CodeFile(const QString &f) : filename(f)
     {
@@ -225,11 +225,11 @@ class CodeFile
         bool retval = false;
         for (size_t i = 0; i < conditions.size(); ++i)
         {
-            Conditional c = conditions[i];
-            if (target == c.target && c.keyVals.count(condType) != 0)
+            Conditional *c = conditions[i];
+            if (target == c->target && c->keyVals.count(condType) != 0)
             {
-                cond += c.condition;
-                val  += c.keyVals.at(condType);
+                cond += c->condition;
+                val  += c->keyVals.at(condType);
                 retval = true;
             }
         }
@@ -397,12 +397,12 @@ private:
 
     void ParseCondition(QString &buff, const QString &name, QTextStream &in)
     {
-        Conditional cond(currentTarget, name);
+        Conditional *cond = new Conditional(currentTarget, name);
         bool addConditional = false;
         buff = in.readLine();
         while (!in.atEnd() && GetKeyword(buff).isNull())
         {
-            addConditional |= cond.ParseCondition(buff);
+            addConditional |= cond->ParseCondition(buff);
             buff = in.readLine();
         }
         if(addConditional)

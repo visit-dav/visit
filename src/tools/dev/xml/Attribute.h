@@ -365,9 +365,9 @@ class Attribute : public AttributeBase
         {
             for (i=0; i < codeFile->conditions.size(); i++)
             {
-                Conditional c = codeFile->conditions[i];
-                c.WriteToCodeFile(out); 
-                currentTarget = c.target;
+                Conditional *c = codeFile->conditions[i];
+                c->WriteToCodeFile(out); 
+                currentTarget = c->target;
             }
         }
 
