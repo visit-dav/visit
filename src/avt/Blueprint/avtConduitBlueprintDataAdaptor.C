@@ -3422,14 +3422,14 @@ avtConduitBlueprintDataAdaptor::BlueprintToMFEM::FieldToMFEMQuadratureFunction(
    // we need basis name to create the proper mfem quad space and quad func
    // the pattern used to encode the quad space params is:
    // QF_{ORDER}_{VDIM}
-   // ORDER is the degree of the polynmials for the quad rule
+   // ORDER is the degree of the polynomials for the quad rule
    // VDIM  is the number of components at each quad point (scalar, vector, etc)
    
    int qf_order = 0;
    int qf_vdim  = 0;
    std::string qf_name = n_field["basis"].as_string();
    avtMFEMDataAdaptor::ParseQuadratureFunctionBasisString(qf_name, qf_order, qf_vdim);
-   // note: qf_vim should equal vdim
+   // note: qf_vdim should equal vdim
 
    mfem::QuadratureSpace *quad_space = new mfem::QuadratureSpace(mesh, qf_order);
    mfem::QuadratureFunction *res = new mfem::QuadratureFunction();

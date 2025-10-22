@@ -1267,7 +1267,7 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
             for(auto qf_topo : topos_to_quad_func_topos[topo_name])
             {
                 std::string mesh_qf_name = mesh_name + "_" + qf_topo;
-                BP_PLUGIN_INFO("Adding quadtrature function mesh: " << mesh_qf_name);
+                BP_PLUGIN_INFO("Adding quadrature function mesh: " << mesh_qf_name);
                 md->Add( new avtMeshMetaData(mesh_qf_name,
                                                 nblocks,
                                                 0, 0, 0,
