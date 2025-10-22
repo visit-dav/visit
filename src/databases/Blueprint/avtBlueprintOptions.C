@@ -36,9 +36,11 @@ GetBlueprintReadOptions(void)
 {
     DBOptionsAttributes *rv = new DBOptionsAttributes;
     std::vector<std::string> mfem_lor_setting;
-    mfem_lor_setting.push_back("Legacy LOR");
-    mfem_lor_setting.push_back("MFEM LOR");
-    rv->SetEnum("MFEM LOR Setting", 1);
+    mfem_lor_setting.push_back("LOR Projection (Default)");
+    mfem_lor_setting.push_back("Discontinuous Refine");
+    mfem_lor_setting.push_back("LOR Nodal Projection");
+    mfem_lor_setting.push_back("LOR Zonal Projection");
+    rv->SetEnum("MFEM LOR Setting", 0);
     rv->SetEnumStrings("MFEM LOR Setting", mfem_lor_setting);
 
     return rv;

@@ -161,13 +161,13 @@ avtBlueprintFileFormat::avtBlueprintFileFormat(const char *filename, DBOptionsAt
 {
     if (opts->GetEnum("MFEM LOR Setting") == 0)
     {
-        // legacy LOR was requested
-        m_new_refine = false;
+        // new LOR was requested
+        m_new_refine = true;
     }
     else
     {
-        // new LOR was requested
-        m_new_refine = true;
+        // legacy LOR was requested
+        m_new_refine = false;
     }    
 
     m_tree_cache = new avtBlueprintTreeCache();

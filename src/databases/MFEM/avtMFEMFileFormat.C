@@ -74,12 +74,12 @@ avtMFEMFileFormat::avtMFEMFileFormat(const char *filename,
     root        = NULL;
     if (readOpts->GetEnum("MFEM LOR Setting") == 0)
     {
-        // legacy LOR was requested
+        // new LOR was requested
         m_new_refine = false;
     }
     else
     {
-        // new LOR was requested
+        // legacy LOR was requested
         m_new_refine = true;
     }    
 }
