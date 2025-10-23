@@ -697,7 +697,7 @@ avtMFEMDataAdaptor::QuadratureFunctionMeshToVTK(mfem::Mesh *mesh, int order)
     vtkDataSet *rv = nullptr;
    
     // refine the mesh
-    // qauss p points, we use gauss lobatto lor'd mesh with p + 1
+    // gauss p points, we use gauss lobatto lor'd mesh with p + 1
     // we use the mfem quad function to get the right numbers
 
     ///
