@@ -146,8 +146,6 @@ class VISWINDOW_API VisitInteractor : public vtkInteractorStyleTrackballCamera
 
     void                        SetOsprayRendering(bool enabled)
                                                   { useOSPRay = enabled; }
-    void                        SetAnariRendering(bool enabled)
-                                                  { useAnari = enabled; }
 
   protected:
     VisWindowInteractorProxy   &proxy;
@@ -165,7 +163,6 @@ class VISWINDOW_API VisitInteractor : public vtkInteractorStyleTrackballCamera
     float                       MotionFactor;
 
     bool                        useOSPRay;
-    bool                        useAnari;
     void                        PrepTrackball();
     void                        NewButtonPress();
 

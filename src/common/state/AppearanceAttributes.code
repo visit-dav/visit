@@ -1,6 +1,8 @@
+Target: xml2atts
 Initialization: style
     InitializeStyle();
 
+Target: xml2atts
 Function: InitializeStyle
 Declaration: void InitializeStyle();
 Definition:

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="MinMaxInfo" purpose="Results storage for MinMaxQuery." persistent="false" exportAPI="QUERY_API" exportInclude="query_exports.h" codefile="MinMaxInfo.code">
+  <Attribute name="MinMaxInfo" purpose="Results storage for MinMaxQuery." persistent="false" keyframe="true" exportAPI="QUERY_API" exportInclude="query_exports.h" codefile="MinMaxInfo.code">
     <Field name="elementNum" label="elementNum" type="int">
       -1
     </Field>
@@ -7,7 +7,7 @@
       -1
     </Field>
     <Field name="mvalue" label="mvalue" type="double">
-      0.000000
+      0
     </Field>
     <Field name="coord" label="coord" type="doubleArray" length="3">
     </Field>

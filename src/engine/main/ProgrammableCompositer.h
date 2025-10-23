@@ -294,7 +294,6 @@ void AddPointData(vtkDataSet *d, const char *name, T *p, size_t n, int keep, int
 }
 
 
-#ifdef ProgrammableCompositerDEBUG
 #include <vtkImageData.h>
 #include <vtkDataArray.h>
 #include <vtkPointData.h>
@@ -377,10 +376,6 @@ void writeVTK(const char *file, avtImageRepresentation &aim)
     dw->Delete();
     id->Delete();
 }
-#endif
-
-
-
 
 
 

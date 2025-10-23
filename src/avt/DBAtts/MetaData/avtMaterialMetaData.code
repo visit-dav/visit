@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: avtMaterialMetaData2
 Declaration: avtMaterialMetaData(const std::string &, const std::string &, int, const stringVector &);
 Definition:
@@ -35,6 +36,7 @@ avtMaterialMetaData::avtMaterialMetaData(const std::string &n, const std::string
     materialNames = names;
 }
 
+Target: xml2atts
 Function: avtMaterialMetaData3
 Declaration: avtMaterialMetaData(const std::string &, const std::string &, int, const stringVector &, const stringVector &);
 Definition:
@@ -59,6 +61,7 @@ avtMaterialMetaData::avtMaterialMetaData(const std::string &n,
     colorNames = colors;
 }
 
+Target: xml2atts
 Function: avtMaterialMetaData4
 Declaration: avtMaterialMetaData(const std::string &, const std::string &, int);
 Definition:
@@ -85,6 +88,7 @@ avtMaterialMetaData::avtMaterialMetaData(const std::string &n,
     }
 }
 
+Target: xml2atts
 Function: Print
 Declaration: void Print(ostream &, int = 0) const;
 Definition:

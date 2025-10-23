@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: avtBaseVarMetaData2
 Declaration: avtBaseVarMetaData(private_tmfs_t, std::string, std::string);
 Definition:
@@ -45,6 +46,7 @@ avtBaseVarMetaData::avtBaseVarMetaData(private_tmfs_t tmfs, std::string n,
     meshName = mn;
 }
 
+Target: xml2atts
 Function: Print
 Declaration: void Print(ostream &, int = 0) const;
 Definition:

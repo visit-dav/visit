@@ -1,4 +1,4 @@
 Target: xml2cmake
 Condition: LINUX
-Definitions: -fext-numeric-literals
+CXXFlags: -fext-numeric-literals
 

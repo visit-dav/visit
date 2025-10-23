@@ -50,6 +50,6 @@ TCGACommonPluginInfo::SetupDatabase(const char *const *list,
         ffl[i] = new avtTCGAFileFormat(list[i]);
     }
     avtSTMDFileFormatInterface *inter
-           = new avtSTMDFileFormatInterface(ffl, nList);
+        = new avtSTMDFileFormatInterface(ffl, nList);
     return new avtGenericDatabase(inter);
 }

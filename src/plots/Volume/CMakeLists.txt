@@ -49,7 +49,6 @@ avtVolumeResampleFilter.C
 ${COMMON_SOURCES}
 )
 
-
 IF(ICET_FOUND)
     # If we have Ice-T then add -DHAVE_ICET to the compilation flags.
     # We need to link with OpenGL on Mac when we have IceT.
@@ -78,8 +77,16 @@ ${VISIT_INCLUDE_DIR}/avt/Expressions/Abstract
 ${VISIT_INCLUDE_DIR}/avt/Expressions/General
 )
 
+#anari/AnariParameterInfo.C)
+
+if(HAVE_ANARI)
+    list(APPEND LIBG_SOURCES
+        anari/AnariVolumeWidget.C)
+    include_directories(AFTER ${CMAKE_CURRENT_SOURCE_DIR}/anari)
+endif(HAVE_ANARI)
+
 if(VISIT_SLIVR)
-    add_definitions(-DVISIT_SLIVR)
+    add_compile_definitions(VISIT_SLIVR)
 endif()
 
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )

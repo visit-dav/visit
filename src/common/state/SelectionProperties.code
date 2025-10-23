@@ -1,11 +1,16 @@
+Target: xml2atts
 Constant: MIN
 Declaration: static const double MIN;
-Definition: const double SelectionProperties::MIN = -FLT_MAX;
+Definition:
+const double SelectionProperties::MIN = -FLT_MAX;
 
+Target: xml2atts
 Constant: MAX
 Declaration: static const double MAX;
-Definition: const double SelectionProperties::MAX = FLT_MAX;
+Definition:
+const double SelectionProperties::MAX = FLT_MAX;
 
+Target: xml2atts
 Function: GetOriginatingPlot
 Declaration: const std::string &GetOriginatingPlot() const;
 Definition:
@@ -16,6 +21,7 @@ SelectionProperties::GetOriginatingPlot() const
     return GetSource();
 }
 
+Target: xml2atts
 Function: SetOriginatingPlot
 Declaration: void SetOriginatingPlot(const std::string &);
 Definition:

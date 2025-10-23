@@ -1,9 +1,11 @@
+Target: xml2atts
 Code: SetNWellBores
 Prefix:
 Postfix:
     // Grow the color vector.
     EnlargeMultiColor(nWellBores);
 
+Target: xml2atts
 Function: EnlargeMultiColor
 Declaration: void EnlargeMultiColor(int newSize);
 Definition:
@@ -82,6 +84,7 @@ WellBoreAttributes::EnlargeMultiColor(int newSize)
     }
 }
 
+Target: xml2atts
 Function: ColorIsChanged
 Declaration: bool ColorIsChanged(int index) const;
 Definition:
@@ -113,6 +116,7 @@ WellBoreAttributes::ColorIsChanged(int index) const
     return (i < changedColors.size());
 }
 
+Target: xml2atts
 Function: MarkColorAsChanged
 Declaration: void MarkColorAsChanged(int index);
 Definition:
@@ -141,6 +145,7 @@ WellBoreAttributes::MarkColorAsChanged(int index)
     }
 }
 
+Target: xml2atts
 Function: ChangesRequireRecalculation
 Declaration: bool ChangesRequireRecalculation(const WellBoreAttributes &);
 Definition:
@@ -191,6 +196,7 @@ WellBoreViewerEnginePluginInfo::InitializeGlobalObjects()
     InitializeDefaultPalette(defaultAtts);
 }
 
+Target: xml2info
 Function: WellBoreViewerEnginePluginInfo::InitializePlotAtts
 Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
@@ -222,6 +228,7 @@ WellBoreViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
     InitializeDefaultPalette(wellBore);
 }
 
+Target: xml2info
 Function: WellBoreViewerEnginePluginInfo::InitializeDefaultPalette
 Declaration: static void InitializeDefaultPalette(WellBoreAttributes *);
 Definition:

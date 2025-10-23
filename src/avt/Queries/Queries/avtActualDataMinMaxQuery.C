@@ -31,6 +31,10 @@
 //    Tell condense filter to bypass its heuristic and force execution of
 //    relevant points filter.
 //
+//    Kathleen Biagas, Thu Aug 7, 2025
+//    Remove setting of avtCondenseDatasetFilter's 'BypassHeuristic', it is no
+//    longer available.
+//
 // ****************************************************************************
 
 avtActualDataMinMaxQuery::avtActualDataMinMaxQuery(bool min, bool max)
@@ -38,7 +42,6 @@ avtActualDataMinMaxQuery::avtActualDataMinMaxQuery(bool min, bool max)
 {
     condense = new avtCondenseDatasetFilter;
     condense->KeepAVTandVTK(true);
-    condense->BypassHeuristic(true);
 }
 
 

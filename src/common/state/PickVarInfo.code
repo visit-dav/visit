@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: PrintSelf
 Declaration: void PrintSelf(ostream &os);
 Definition:
@@ -120,6 +121,7 @@ PickVarInfo::PrintSelf(ostream &os)
     }
 }
 
+Target: xml2atts
 Function: CreateOutputString
 Declaration: void CreateOutputString(std::string &, const std::string &);
 Definition:
@@ -427,6 +429,7 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
     }
 }
 
+Target: xml2atts
 Function: PrintTensor
 Declaration: void PrintTensor(std::string &, const std::vector<double> &, int, int, int);
 Definition:
@@ -518,6 +521,7 @@ PickVarInfo::PrintTensor(std::string &os, const std::vector<double> &values,
     }
 }
 
+Target: xml2atts
 Function: PrintSymmetricTensor
 Declaration: void PrintSymmetricTensor(std::string &, const std::vector<double> &, int, int, int);
 Definition:
@@ -603,6 +607,7 @@ PickVarInfo::PrintSymmetricTensor(std::string &os,
     }
 }
 
+Target: xml2atts
 Function: HasInfo
 Declaration: bool HasInfo(void);
 Definition:
@@ -623,7 +628,7 @@ PickVarInfo::HasInfo()
     return (!(names.empty() && mixNames.empty()));
 }
 
-
+Target: xml2atts
 Function: PrintArray
 Declaration: void PrintArray(std::string &, const std::vector<double> &, int, int, int);
 Definition:
@@ -674,6 +679,7 @@ PickVarInfo::PrintArray(std::string &os,
     }
 }
 
+Target: xml2atts
 Function: CreateOutputMapNode
 Declaration: void CreateOutputMapNode(const std::string &, MapNode &);
 Definition:

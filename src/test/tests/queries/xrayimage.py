@@ -131,6 +131,21 @@
 # 
 #    Justin Privitera, Tue Feb 11 14:15:05 PST 2025
 #    Added test for the far clipping plane actually clipping results.
+# 
+#    Justin Privitera, Fri Oct 17 16:39:39 PDT 2025
+#    Blueprint tests now use "blueprint <output type>" instead of just 
+#    "<output type>" to test the name change.
+#
+#    Justin Privitera, Fri Oct 17 15:31:04 PDT 2025
+#    Fixed array compose error in the setup blueprint test infrastructure, so
+#    now parr is p1, p2, p3 instead of p1, p2, *d3*.
+#    Turned off divide_emis_by_absorb for some blueprint tests, yielding much
+#    more interesting slices that demonstrate the multiple energy group
+#    output.
+#    Added rotation to the 3d image topo and spatial topo mesh tests to
+#    demonstrate the nature of the blueprint output like we do in Ascent.
+#    Added divide_emis_by_absorb to the query_result_options class so that
+#    tests can toggle it on and off in creating their conduit baselines.
 # ----------------------------------------------------------------------------
 
 import os
@@ -495,7 +510,7 @@ def setup_bp_test():
     DefineScalarExpression("d3", 'd * 3')
     DefineScalarExpression("p3", 'p * 3')
     DefineArrayExpression("darr", "array_compose(d1,d2,d3)")
-    DefineArrayExpression("parr", "array_compose(p1,p2,d3)")
+    DefineArrayExpression("parr", "array_compose(p1,p2,p3)")
     AddPlot("Pseudocolor", "d")
     DrawPlots()
 
@@ -561,9 +576,9 @@ perspective_str: \"parallel\""""
 UNITS_OFF = 0
 UNITS_ON = 1
 
-def test_bp_state_xray_query(testname, xray_query, num_bins, abs_name, emis_name, units):
-    yaml_text = f"""divide_emis_by_absorb: 1
-divide_emis_by_absorb_str: \"yes\"
+def test_bp_state_xray_query(testname, xray_query, num_bins, abs_name, emis_name, units, divide_emis_by_absorb):
+    yaml_text = f"""divide_emis_by_absorb: {"1" if divide_emis_by_absorb else "0"}
+divide_emis_by_absorb_str: {"yes" if divide_emis_by_absorb else "no"}
 num_x_pixels: 300
 num_y_pixels: 200
 num_bins: {num_bins}
@@ -608,7 +623,7 @@ ENERGY_GROUP_BOUNDS_MISMATCH = 1
 ENERGY_GROUP_BOUNDS = 2
 
 class query_result_options:
-    def __init__(self, num_bins, abs_name, emis_name, bin_state, units, int_max, pl_max):
+    def __init__(self, num_bins, abs_name, emis_name, bin_state, units, int_max, pl_max, divide_emis_by_absorb):
         self.num_bins = num_bins
         self.abs_name = abs_name
         self.emis_name = emis_name
@@ -616,6 +631,7 @@ class query_result_options:
         self.units = units
         self.int_max = int_max
         self.pl_max = pl_max
+        self.divide_emis_by_absorb = divide_emis_by_absorb
 
 def test_bp_data(testname, conduit_db, qro):
     xrayout = conduit.Node()
@@ -632,7 +648,7 @@ def test_bp_data(testname, conduit_db, qro):
 
     test_bp_state_xray_view(testname, xray_state["xray_view"])
     test_bp_state_xray_query(testname, xray_state["xray_query"],
-        qro.num_bins, qro.abs_name, qro.emis_name, qro.units)
+        qro.num_bins, qro.abs_name, qro.emis_name, qro.units, qro.divide_emis_by_absorb)
     test_bp_state_xray_data(testname, xray_state["xray_data"], qro.int_max, qro.pl_max)
 
     # test data embedded within the fields
@@ -719,12 +735,34 @@ def z_slice(zval, mesh_name):
     SliceAtts.meshName = mesh_name
     SetOperatorOptions(SliceAtts, 0, 1)
 
+def full_mesh_rotated_view():
+    View3DAtts = View3DAttributes()
+    View3DAtts.viewNormal = (0.67, 0.33, 0.67)
+    View3DAtts.focus = (150, 100, 1.5)
+    View3DAtts.viewUp = (-0.2, 0.95, -0.2)
+    View3DAtts.viewAngle = 30
+    View3DAtts.parallelScale = 180
+    View3DAtts.nearPlane = -360
+    View3DAtts.farPlane = 360
+    SetView3D(View3DAtts)
+
+def spatial_mesh_rotated_view():
+    View3DAtts = View3DAttributes()
+    View3DAtts.viewNormal = (0.67, 0.33, 0.67)
+    View3DAtts.focus = (7.5, 5, 0.5)
+    View3DAtts.viewUp = (-0.2, 0.95, -0.2)
+    View3DAtts.viewAngle = 30
+    View3DAtts.parallelScale = 15.
+    View3DAtts.nearPlane = -18
+    View3DAtts.farPlane = 18
+    SetView3D(View3DAtts)
+
 def blueprint_test(output_type, outdir, testtextnumber, testname):
     for i in range(0, 2):
         setup_bp_test()
 
         # common place for args
-        divide_emis_by_absorb = 1
+        divide_emis_by_absorb = 0
         origin = (0.0, 2.5, 10.0)
         theta = 0
         phi = 0
@@ -795,7 +833,9 @@ def blueprint_test(output_type, outdir, testtextnumber, testname):
 
         AddPlot("Pseudocolor", "mesh_image_topo/intensities")
         DrawPlots()
+        full_mesh_rotated_view()
         Test(testname + "_image_topo_intensities_" + calltype)
+        ResetView()
         DeleteAllPlots()
 
         # test some slices
@@ -808,7 +848,9 @@ def blueprint_test(output_type, outdir, testtextnumber, testname):
 
         AddPlot("Pseudocolor", "mesh_image_topo/path_length")
         DrawPlots()
+        full_mesh_rotated_view()
         Test(testname + "_image_topo_path_length_" + calltype)
+        ResetView()
         DeleteAllPlots()
 
         # test some slices
@@ -825,7 +867,9 @@ def blueprint_test(output_type, outdir, testtextnumber, testname):
 
         AddPlot("Pseudocolor", "mesh_spatial_topo/intensities_spatial")
         DrawPlots()
+        spatial_mesh_rotated_view()
         Test(testname + "_spatial_topo_intensities_" + calltype)
+        ResetView()
         DeleteAllPlots()
 
         # test some slices
@@ -838,7 +882,9 @@ def blueprint_test(output_type, outdir, testtextnumber, testname):
 
         AddPlot("Pseudocolor", "mesh_spatial_topo/path_length_spatial")
         DrawPlots()
+        spatial_mesh_rotated_view()
         Test(testname + "_spatial_topo_path_length_" + calltype)
+        ResetView()
         DeleteAllPlots()
 
         # test some slices
@@ -883,7 +929,7 @@ def blueprint_test(output_type, outdir, testtextnumber, testname):
     
     qro = query_result_options(num_bins=3, abs_name="darr", emis_name="parr", \
         bin_state=ENERGY_GROUP_BOUNDS, units=units, \
-        int_max=1.0, pl_max=892.02587890625)
+        int_max=2.94868183135986, pl_max=892.02587890625, divide_emis_by_absorb=False)
     test_bp_data(testname + str(i), conduit_db, qro) # bounds
     
     setup_bp_test()
@@ -891,20 +937,20 @@ def blueprint_test(output_type, outdir, testtextnumber, testname):
     Query("XRay Image", output_type, outdir, 1, 0.0, 2.5, 10.0, 0, 0, 15., 10., 300, 200, ("d", "p"), [1,2,3])
     qro = query_result_options(num_bins=1, abs_name="d", emis_name="p", \
         bin_state=ENERGY_GROUP_BOUNDS_MISMATCH, units=UNITS_OFF, \
-        int_max=0.241531997919083, pl_max=148.670989990234)
+        int_max=0.241531997919083, pl_max=148.670989990234, divide_emis_by_absorb=True)
     test_bp_data(testname + str(i), conduit_db, qro) # bounds mismatch
     
     Query("XRay Image", output_type, outdir, 1, 0.0, 2.5, 10.0, 0, 0, 15., 10., 300, 200, ("d", "p"))
     qro = query_result_options(num_bins=1, abs_name="d", emis_name="p", \
         bin_state=NO_ENERGY_GROUP_BOUNDS, units=UNITS_OFF, \
-        int_max=0.241531997919083, pl_max=148.670989990234)
+        int_max=0.241531997919083, pl_max=148.670989990234, divide_emis_by_absorb=True)
     test_bp_data(testname + str(i), conduit_db, qro) # no bounds
     
     teardown_bp_test()
 
-blueprint_test("hdf5", conduit_dir_hdf5, 32, "Blueprint_HDF5_X_Ray_Output")
-blueprint_test("json", conduit_dir_json, 34, "Blueprint_JSON_X_Ray_Output")
-blueprint_test("yaml", conduit_dir_yaml, 36, "Blueprint_YAML_X_Ray_Output")
+blueprint_test("blueprint hdf5", conduit_dir_hdf5, 32, "Blueprint_HDF5_X_Ray_Output")
+blueprint_test("blueprint json", conduit_dir_json, 34, "Blueprint_JSON_X_Ray_Output")
+blueprint_test("blueprint yaml", conduit_dir_yaml, 36, "Blueprint_YAML_X_Ray_Output")
 
 #
 # test detector height and width are always positive in blueprint output

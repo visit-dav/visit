@@ -12,10 +12,10 @@
         FractionOfBBox
       </Field>
       <Field name="radiusFractionBBox" label="Radius" type="double" enabler="tubeRadiusType:FractionOfBBox">
-        0.010000
+        0.01
       </Field>
       <Field name="radiusAbsolute" label="Radius" type="double" enabler="tubeRadiusType:Absolute">
-        1.000000
+        1
       </Field>
       <Field name="scaleVariable" label="Tube width scaling variable" type="variablename" enabler="scaleByVarFlag:true" vartypes="01000000000">
       </Field>

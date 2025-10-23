@@ -27,6 +27,7 @@ using std::ostringstream;
 #include <ConfigureInfo.h>
 #include <DebugStreamFull.h>
 #include <DebugStream.h>
+#include <Environment.h>
 #include <InstallationFunctions.h>
 #include <TimingsManager.h>
 #include <visit-config.h>
@@ -108,6 +109,59 @@ NewHandler(void)
     debug1 << "This component has run out of memory." << endl;
     abort(); // HOOKS_IGNORE
 }
+
+// ****************************************************************************
+//  Function: GetRelevantEnvVars()
+//
+//  Purpose:
+//      Creates a list of active env vars that are relevent to VisIt
+//      Used to write active env vars to logs
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   August 21, 2001
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+GetRelevantEnvVars(std::vector<std::string> &res)
+{
+    res.clear();
+    
+    // check if the var starts with any of relevent pattern
+    std::vector<std::string> relevant_patterns = {"VISIT",
+                                                  "LIBRARY_PATH",
+                                                  "LIBPATH",
+                                                  "DYLD_"
+                                                  "LD_LIBRARY",
+                                                  "LD_PRELOAD",
+                                                  "PATH",
+                                                  "TMPDIR",
+                                                  "USER",
+                                                  "DISPLAY",
+                                                  "TRAP_FPE",
+                                                  "MESA_",
+                                                  "PYTHON",
+                                                  "VTK_",
+                                                  "QT_"};
+
+    std::vector<std::string> env_vars;
+    Environment::variable_strings(env_vars);
+    // loop over env vars
+    for(auto var_str: env_vars)
+    {
+        // loop over patterns
+        for(auto pat: relevant_patterns )
+        {
+            // check if evn var starts with the pattern
+            if(var_str.find(pat) == 0)
+            {
+                res.push_back(var_str);
+            }
+        }
+    }
+}
+
 
 // ****************************************************************************
 //  Function: VisItInit::Initialize
@@ -214,6 +268,9 @@ NewHandler(void)
 //
 //    Eric Brugger, Tue Jan 29 09:09:44 PST 2019
 //    I modified the method to work with Git.
+//
+//    Cyrus Harrison, Wed Sep 24 10:48:27 PDT 2025
+//    Added env vars info to debug stream on startup.
 //
 // ****************************************************************************
 
@@ -422,7 +479,16 @@ VisItInit::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool si
         oss << argv[i] << " ";
     oss << endl;
     debug1 << oss.str();
-
+    
+    // add all env vars to debug1
+    std::vector<std::string> var_strs;
+    GetRelevantEnvVars(var_strs);
+    debug1 << "Process Environment Variables:" << std::endl;
+    for(auto var_str: var_strs)
+    {
+        debug1 << var_str << std::endl;
+    }
+    
     TimingsManager::Initialize(progname);
     // In case TimingsManager was already initialized...
     visitTimer->SetFilename(progname);

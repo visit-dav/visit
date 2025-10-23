@@ -30,6 +30,9 @@ Definition:
 //    Kathleen Biagas, Wed Jun  10 10:00:03 PDT 2020
 //    Added test for changing point type.
 //
+//    Cyrus Harrison, Fri Jul 18 14:30:07 PDT 2025
+//    Added test for changing show generated.
+//
 // ****************************************************************************
 
 bool
@@ -51,9 +54,11 @@ MeshAttributes::ChangesRequireRecalculation(const MeshAttributes &obj,
 
     return ( needSecondaryVar || changingPointType ||
             (smoothingLevel != obj.smoothingLevel) ||
+            (showGenerated != obj.showGenerated) ||
             (showInternal != obj.showInternal && spatDim == 3));
 }
 
+Target: xml2atts
 Function: CreateCompatible
 Declaration: virtual AttributeSubject *CreateCompatible(const std::string &) const;
 Definition:
@@ -118,6 +123,7 @@ MeshViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
         plot.GetBackgroundColor(), plot.GetForegroundColor());
 }
 
+Target: xml2info
 Function: MeshViewerEnginePluginInfo::SetAutonomousColors
 Declaration: void SetAutonomousColors(AttributeSubject *, double const *, double const *);
 Definition:
@@ -181,3 +187,4 @@ MeshViewerEnginePluginInfo::SetAutonomousColors(AttributeSubject *atts,
     if (attsChanged)
         SetClientAtts(atts);
 }
+

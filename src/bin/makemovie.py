@@ -515,6 +515,9 @@ class MakeMovie(object):
     #   I added code to set the number of digits in the movie file names
     #   based on the number needed rather than always four.
     #
+    #   Cyrus Harrison, Thu Sep 11 13:41:05 PDT 2025
+    #   Removed sm format.
+    #
     ###########################################################################
 
     def __init__(self):
@@ -527,20 +530,19 @@ class MakeMovie(object):
         self.FMT_WINDOWSCOMPATIBLE = 3
         self.FMT_SUPPORTS_STEREO = 4
         self.formatInfo = {
-            "ppm"  : [("ppm", ),       "ppm",  None, 1, 0],\
-            "tiff" : [("tif", "tiff"), "tiff", None, 1, 0],\
-            "jpeg" : [("jpeg", "jpg"), "jpeg", None, 1, 0],\
-            "bmp"  : [("bmp",),        "bmp",  None, 1, 0],\
-            "rgb"  : [("rgb",),        "rgb",  None, 1, 0],\
-            "png"  : [("png",),        "png",  None, 1, 0],\
-            "mpeg" : [("mpg", "mpeg"), "png", "mpg", 1, 0],\
-            "qt"   : [("mov", "qt"),   "png", "mov", 0, 0],\
-            "sm"   : [("sm",),         "png",  "sm", 0, 1]\
+            "ppm"  : [("ppm", ),       "ppm",  None, 1, 0],
+            "tiff" : [("tif", "tiff"), "tiff", None, 1, 0],
+            "jpeg" : [("jpeg", "jpg"), "jpeg", None, 1, 0],
+            "bmp"  : [("bmp",),        "bmp",  None, 1, 0],
+            "rgb"  : [("rgb",),        "rgb",  None, 1, 0],
+            "png"  : [("png",),        "png",  None, 1, 0],
+            "mpeg" : [("mpg", "mpeg"), "png", "mpg", 1, 0],
+            "qt"   : [("mov", "qt"),   "png", "mov", 0, 0],
         }
 
         # See if there are any other encoders that we can use.
         for fmt in encoding.encoders():
-            if fmt not in ("mpg", "mov", "sm"):
+            if fmt not in ("mpg", "mov"):
                 self.formatInfo[fmt] = [(fmt,), "jpeg", fmt, 0, 0]
 
         self.STEREO_NONE = 0
@@ -1050,6 +1052,9 @@ class MakeMovie(object):
     #   Brad Whitlock, Thu Apr  4 10:46:58 PDT 2013
     #   Change how the format is determined.
     #
+    #   Cyrus Harrison, Thu Sep 11 13:51:24 PDT 2025
+    #   Error on unsupported format
+    #
     ###########################################################################
 
     def RequestFormat(self, fmtName, w, h, stereoName):
@@ -1061,7 +1066,8 @@ class MakeMovie(object):
             for ext in self.formatInfo[k][self.FMT_EXTENSIONS]:
                 if fmtName == ext:
                     fmt = k
-
+        if fmt == "":
+            self.UnsupportedFormatError(fmtName)
         sfmt = self.stereoNameToType[stereoName]
         formatString = ""
         # If we're making MPEG then restrict the resolution to multiples of 16.
@@ -1592,9 +1598,10 @@ class MakeMovie(object):
         any_formats_get_encoded = 0
         for format in self.movieFormats:
             fmt = format[1]
-            if self.formatInfo[fmt][self.FMT_ENCODER] != None:
+            if self.FormatInfo(fmt)[self.FMT_ENCODER] != None:
                 any_formats_get_encoded = 1
                 break
+
 
         if any_formats_get_encoded == 1:
             # Determine the name of the directory to use.
@@ -1669,7 +1676,7 @@ class MakeMovie(object):
             initialFrameValue = self.initialFrameValue
 
             fmt = format[1]
-            if self.formatInfo[fmt][self.FMT_ENCODER] != None:
+            if self.FormatInfo(fmt)[self.FMT_ENCODER] != None:
                 initialFrameValue = 0
 
             # Stereo format
@@ -1698,7 +1705,7 @@ class MakeMovie(object):
             self.Debug(5, "SaveImage: %s" % s.fileName)
 
             # Determine the format of the frame that VisIt needs to save.
-            frameFormat = self.formatInfo[format[1]][self.FMT_INPUTFORMAT]
+            frameFormat = self.FormatInfo(format[1])[self.FMT_INPUTFORMAT]
             if(frameFormat == "ppm"):
                 s.format =  s.PPM
             elif(frameFormat == "tiff"):
@@ -2300,11 +2307,11 @@ class MakeMovie(object):
         index = 0
         for format in self.movieFormats:
             fmt = format[1]
-            if self.formatInfo[fmt][self.FMT_ENCODER] != None:
+            if self.FormatInfo(fmt)[self.FMT_ENCODER] != None:
                 self.percentAllocationFrameGen = 0.9
                 self.percentAllocationEncode = 0.1
                 if format[4] == self.STEREO_LEFTRIGHT:
-                    if not self.formatInfo[fmt][self.FMT_SUPPORTS_STEREO]:
+                    if not self.FormatInfo(fmt)[self.FMT_SUPPORTS_STEREO]:
                         msg = "Left/Right stereo is not supported for %s movies. VisIt will instead create stereo PPM files." % fmt
                         self.ClientMessageBox(msg)
                         self.Log(msg)
@@ -2505,7 +2512,7 @@ class MakeMovie(object):
     ###########################################################################
 
     def OutputExtension(self, fmt):
-        return "." + self.formatInfo[fmt][self.FMT_EXTENSIONS][0]
+        return "." + self.FormatInfo(fmt)[self.FMT_EXTENSIONS][0]
 
     ###########################################################################
     # Method: EncodeMPEGMovie
@@ -2537,7 +2544,7 @@ class MakeMovie(object):
                      if ((30./i) != self.fps):
                          print("Because of limitations in MPEG encoding, the ")
                          print("movie will be encoded at %f frames per second" %(30./i))
-            frameExt = self.OutputExtension(self.formatInfo["mpeg"][self.FMT_INPUTFORMAT])
+            frameExt = self.OutputExtension(self.FormatInfo("mpeg")[self.FMT_INPUTFORMAT])
             framePattern = self.tmpDir + self.slash + imageFormatString + frameExt
             absMovieName = self.outputDir + self.slash + moviename
 
@@ -2643,7 +2650,7 @@ class MakeMovie(object):
                          print("movie will be encoded at %f frames per second" %(30./i))
 
             # Now create symbolic links to the images at that pad rate.
-            formatExt = self.OutputExtension(self.formatInfo["mpeg"][self.FMT_INPUTFORMAT])
+            formatExt = self.OutputExtension(self.FormatInfo("mpeg")[self.FMT_INPUTFORMAT])
             linkbase = "mpeg_link"
             linkindex = 0
             doSymlink = "symlink" in dir(os)
@@ -2834,7 +2841,7 @@ class MakeMovie(object):
                  if ((30./i) != self.fps):
                      print("Because of limitations in MPEG encoding, the ")
                      print("movie will be encoded at %f frames per second" %(30./i))
-        formatExt = "." + self.formatInfo[fmt][self.FMT_INPUTFORMAT]
+        formatExt = "." + self.FormatInfo(fmt)[self.FMT_INPUTFORMAT]
         framePattern = self.tmpDir + self.slash + imageFormatString + formatExt
         absMovieName = self.outputDir + self.slash + moviename
 
@@ -2846,109 +2853,6 @@ class MakeMovie(object):
             msg = "The movie encoder used in the visit_utils module did not complete successfully."
 
         return (success, moviename, msg)
-
-    ###########################################################################
-    # Method: EncodeStreamingMovie
-    #
-    # Purpose:    This method creates a streaming movie.
-    #
-    # Programmer: Brad Whitlock
-    # Date:       Mon Jul 28 13:58:06 PST 2003
-    #
-    # Modifications:
-    #   Hank Childs, Thu Apr  1 07:45:06 PST 2004
-    #   Added frames per second.
-    #
-    #   Brad Whitlock, Tue May 10 11:41:31 PDT 2005
-    #   I made it pass back more information.
-    #
-    #   Brad Whitlock, Mon Jul 25 15:19:15 PST 2005
-    #   I made it use the extension for the filename since it did not have
-    #   that and was not working.
-    #
-    #   Brad Whitlock, Mon Nov 6 16:44:58 PST 2006
-    #   Added support for stereo.
-    #
-    #   Brad Whitlock, Thu Apr  4 14:59:38 PDT 2013
-    #   Use formatInfo. Use current location for img2sm at LC.
-    #
-    ###########################################################################
-
-    def EncodeStreamingMovie(self, moviename, imageFormatString, xres, yres, stereo):
-        self.Debug(1, "EncodeStreamingMovie")
-        retval = 0
-
-        # Look for the location of the img2sm command. The code to get the 
-        # latest at LC is adapted from visit_utils.
-        img2sm = ""
-        if CommandInPath("img2sm"):
-            img2sm = "img2sm"
-        else:
-            if 'SYS_TYPE' in os.environ:
-                res = os.path.join("/usr/gapps/asciviz/blockbuster/latest",os.environ["SYS_TYPE"],"bin/img2sm")
-                if os.path.exists(res):
-                    img2sm = res
-
-        if img2sm != "":
-            # Determine the image extension
-            ext = "." + self.formatInfo["sm"][self.FMT_INPUTFORMAT]
-
-            # Execute the img2sm command
-            r = 0
-            if stereo == self.STEREO_LEFTRIGHT:
-                # All of the frames are named left*, right* so we need to temporarily
-                # rename them all to some common file base where left and right alternate.
-                lastSlash = imageFormatString.find(self.slash)
-                if lastSlash != -1:
-                    leftFmt = imageFormatString[:lastSlash+1] + "left_" + imageFormatString[lastSlash+1:] + ext
-                    rightFmt = imageFormatString[:lastSlash+1] + "right_" + imageFormatString[lastSlash+1:] + ext
-                else:
-                    leftFmt = "left_" + imageFormatString + ext
-                    rightFmt = "right_" + imageFormatString + ext
-                imageFormatStringWext = imageFormatString + ext
-                index = 0
-                for i in range(self.numFrames):
-                    leftFile = leftFmt % i
-                    newFile = imageFormatStringWext % index
-                    CopyFile(leftFile, newFile, 1)
-                    self.Debug(5, "cp %s %s" % (leftFile, newFile))
-                    index = index + 1
-
-                    rightFile = rightFmt % i
-                    newFile = imageFormatStringWext % index
-                    CopyFile(rightFile, newFile, 1)
-                    self.Debug(5, "cp %s %s" % (leftFile, newFile))
-                    index = index + 1
-
-                # Now make the stereo movie.
-                format = self.tmpDir + self.slash + imageFormatString
-                command = "%s -rle -stereo -fps %d -first 0 -last %d -form pnm %s%s %s" % \
-                          (img2sm, self.fps, (self.numFrames-1)*2, format, ext, moviename)
-                self.Debug(1, command)
-                r = os.system(command)
-            else:
-                format = self.tmpDir + self.slash + imageFormatString
-                command = "%s -rle -fps %d -first 0 -last %d -form png %s%s %s" % \
-                          (img2sm, self.fps, self.numFrames-1, format, ext, moviename)
-                self.Debug(1, command)
-                r = os.system(command)
-
-            if(r == 0):
-                retval = (1, moviename, "")
-            else:
-                s =     "The img2sm program was not successful. No streaming movie\n"
-                s = s + "was created. You can access the raw source frames in:\n"
-                s = s + "%s." % self.tmpDir
-                retval = (0, moviename, s)
-        else:
-            s =     "The command \"img2sm\", which is required to make \n"
-            s = s + "streaming movies, could not be located so your source \n"
-            s = s + "frames cannot be automatically converted into a streaming\n"
-            s = s + "movie. You can, however, still access the frames of your \n"
-            s = s + "movie in: %s.\n" % self.tmpDir
-            retval = (0, moviename, s)
-
-        return retval
 
     ###########################################################################
     # Method: MakeMovieName
@@ -3033,6 +2937,9 @@ class MakeMovie(object):
     #   Brad Whitlock, Wed Apr  3 17:45:51 PDT 2013
     #   Change how encoders are invoked.
     #
+    #   Cyrus Harrison, Thu Sep 11 13:42:10 PDT 2025
+    #   Removed sm format.
+    #
     ###########################################################################
 
     def EncodeFrames(self):
@@ -3042,7 +2949,7 @@ class MakeMovie(object):
         nEncodedMovies = 0
         for format in self.movieFormats:
             fmt = format[1]
-            if self.formatInfo[fmt][self.FMT_ENCODER] != None:
+            if self.FormatInfo(fmt)[self.FMT_ENCODER] != None:
                 nEncodedMovies = nEncodedMovies + 1
 
         # Send a "stage transition" by changing the text.
@@ -3085,10 +2992,7 @@ Message from \"visit -movie\" running on %s.\n\n""" % host
             if(fmt == "mpeg"):
                 val = self.EncodeMPEGMovie(movieName, formatString, xres, yres)
                 encodeMovie = 1
-            elif(fmt == "sm"):
-                val = self.EncodeStreamingMovie(movieName, formatString, xres, yres, stereo)
-                encodeMovie = 1
-            elif self.formatInfo[fmt][self.FMT_ENCODER] != None:
+            elif self.FormatInfo(fmt)[self.FMT_ENCODER] != None:
                 val = self.EncodeMovie(fmt, movieName, formatString, xres, yres, stereo)
                 encodeMovie = 1
 
@@ -3155,6 +3059,43 @@ Message from \"visit -movie\" running on %s.\n\n""" % host
 
         return safeToRemoveFrames
 
+    ###########################################################################
+    # Method: FormatInfo
+    #
+    # Purpose:    Access format info with error message if format is invalid
+    #
+    # Programmer: Cyrus Harrison
+    # Date:       Thu Sep 11 13:16:24 PDT 2025
+    #
+    ###########################################################################
+    def FormatInfo(self,fmt):
+        if not fmt in self.formatInfo:
+            self.UnsupportedFormatError(fmt)
+        else:
+            return self.formatInfo[fmt]
+    
+    ###########################################################################
+    # Method: UnsupportedFormatError
+    #
+    # Purpose:    Displays an error for unsupported formats and exits 
+    #
+    # Programmer: Cyrus Harrison
+    # Date:       Thu Sep 11 13:16:24 PDT 2025
+    #
+    ###########################################################################
+    def UnsupportedFormatError(self,fmt):
+        print(f"Error! Encoding format '{fmt}' is not supported on this platform.")
+        keys = list(self.formatInfo.keys())
+        keys.sort()
+        supported_fmts = []
+        for k in keys:
+            if self.formatInfo[k][self.FMT_ENCODER] != None:
+                for ext in self.formatInfo[k][self.FMT_EXTENSIONS]:
+                    supported_fmts.append(ext)
+        print("Supported formats: ",supported_fmts)
+        sys.exit(-1)
+
+    
     ###########################################################################
     # Method: Cleanup
     #

@@ -39,7 +39,7 @@
     <Field name="varForReductionOperator" label="varForReductionOperator" type="string">
     </Field>
     <Field name="undefinedValue" label="Undefined Value" type="double">
-      0.000000
+      0
     </Field>
     <Field name="binningScheme" label="Binning Scheme" type="enum" subtype="BinningScheme">
       Uniform

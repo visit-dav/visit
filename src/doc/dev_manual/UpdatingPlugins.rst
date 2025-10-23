@@ -46,15 +46,20 @@ Tag                Purpose                                Supported components
 
 *xml2cmake* also supports the *Conditional* addition of an include directory, definition, link library or source file.
 The condition is a CMake variable that describes something related to the build: e.g. an OS-specification (*WIN32, LINUX, MACOS*), the availability of a third-party library (*HAVE_CONDUIT*) or a build option that can be toggled on/off (*VISIT_PARALLEL*). 
-Conditionals must be specified in the *.code* file with *Target* specified as *xml2cmake*, as seen in the code file for the Volume plot:
+Conditionals must be specified in the *.code* file with *Target* specified as *xml2cmake*.
 
-.. literalinclude:: ../../plots/Volume/VolumeAttributes.code
-    :lines: 656-658
+Here's example lines for a .code file::
 
-These conditionals create these lines in the CMakeLists.txt:
+    Target: xml2cmake
+    Condition: VISIT_SLIVR
+    Definitions: -DVISIT_SLIVR
 
-.. literalinclude:: ../../plots/Volume/CMakeLists.txt
-    :lines: 81-83
+The above conditional creates these lines in the CMakeLists.txt::
+
+    if(VISIT_SLIVR)
+        add_definitions(-DVISIT_SLIVR)
+    endif()
+
 
 Info files
 ----------
@@ -68,10 +73,11 @@ Here is the *Displace* operator's code file:
 
 .. literalinclude:: ../../operators/Displace/Displace.code
 
-and the corresponding entry in the .xml file
+and the corresponding entry in the .xml file::
 
-.. literalinclude:: ../../operators/Displace/Displace.xml
-    :lines: 13-14
+    <Function name="DisplaceEnginePluginInfo::AllocAvtPluginFilter" user="false" member="true">
+    </Function>
+
 
 Attributes
 ----------

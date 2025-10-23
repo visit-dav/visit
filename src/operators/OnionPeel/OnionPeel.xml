@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-  <Plugin name="OnionPeel" type="operator" label="Onion Peel" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" iconFile="OnionPeel.xpm" category="Selection">
-    <Attribute name="OnionPeelAttributes" purpose="Attributes for the onion peel operator" persistent="true" codefile="OnionPeel.code">
+  <Plugin name="OnionPeel" type="operator" label="Onion Peel" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="OnionPeel.xpm" category="Selection">
+    <Attribute name="OnionPeelAttributes" purpose="Attributes for the onion peel operator" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="OnionPeel.code">
       <Enum name="NodeFace">
         Node
         Face

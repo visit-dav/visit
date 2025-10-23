@@ -12,7 +12,7 @@
       0
     </Field>
     <Field name="transparency" label="Transparency" type="double">
-      0.000000
+      0
     </Field>
     <Field name="omitWindow" label="Omit Window" type="bool">
       false

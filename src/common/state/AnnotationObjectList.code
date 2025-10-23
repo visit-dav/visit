@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: ProcessOldVersions
 Declaration: virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 Definition:
@@ -36,6 +37,7 @@ AnnotationObjectList::ProcessOldVersions(DataNode *parentNode,
     }
 }
 
+Target: xml2atts
 Function: RemoveAnnotation2
 Declaration: bool RemoveAnnotation(const std::string &);
 Definition:
@@ -64,6 +66,7 @@ AnnotationObjectList::RemoveAnnotation(const std::string &name)
     return false;
 }
 
+Target: xml2atts
 Function: GetNewObjectName
 Declaration: std::string GetNewObjectName() const;
 Definition:
@@ -96,6 +99,7 @@ AnnotationObjectList::GetNewObjectName() const
     return name;
 }
 
+Target: xml2atts
 Function: IndexForName
 Declaration: int IndexForName(const std::string &name) const;
 Definition:
@@ -144,6 +148,7 @@ Definition:
         return null;
     }
 
+Target: xml2java
 Function: SetTimeSliderOptions
 Declaration: SetTimeSliderOptions
 Definition:
@@ -193,6 +198,7 @@ Definition:
         }
     }
 
+Target: xml2java
 Function: SetText2DOptions
 Declaration: SetText2DOptions
 Definition:
@@ -237,6 +243,7 @@ Definition:
         }
     }
 
+Target: xml2java
 Function: SetText3DOptions
 Declaration: SetText3DOptions
 Definition:
@@ -288,6 +295,7 @@ Definition:
         }
     }
 
+Target: xml2java
 Function: SetLine2DOptions
 Declaration: SetLine2DOptions
 Definition:
@@ -329,6 +337,7 @@ Definition:
         }
     }
 
+Target: xml2java
 Function: SetLine3DOptions
 Declaration: SetLine3DOptions
 Definition:
@@ -391,6 +400,7 @@ Definition:
         }
     }
 
+Target: xml2java
 Function: SetImageOptions
 Declaration: SetImageOptions
 Definition:
@@ -437,6 +447,7 @@ Definition:
         }
     }
 
+Target: xml2java
 Function: SetLegendOptions
 Declaration: SetLegendOptions
 Definition:
@@ -509,3 +520,4 @@ Definition:
             annot.SetVisible(visible);
         }
     }
+

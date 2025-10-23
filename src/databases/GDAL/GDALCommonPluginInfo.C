@@ -50,6 +50,6 @@ GDALCommonPluginInfo::SetupDatabase(const char *const *list,
         ffl[i] = new avtGDALFileFormat(list[i]);
     }
     avtSTMDFileFormatInterface *inter
-           = new avtSTMDFileFormatInterface(ffl, nList);
+        = new avtSTMDFileFormatInterface(ffl, nList);
     return new avtGenericDatabase(inter);
 }

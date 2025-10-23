@@ -6,6 +6,7 @@
 #define ANARI_PARAMETER_INFO_H
 
 #include <anari/anari_cpp.hpp>
+#include <gui_exports.h>
 
 #include <iostream>
 #include <vector>
@@ -23,7 +24,7 @@
 // Modifications:
 //
 // ****************************************************************************
-class AnariParameterInfo
+class GUI_API AnariParameterInfo
 {
 public:
     // Default Constructor

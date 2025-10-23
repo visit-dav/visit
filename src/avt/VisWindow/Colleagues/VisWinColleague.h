@@ -90,6 +90,9 @@ class     ColorAttribute;
 //    Burlen Loring, Thu Oct  8 12:53:58 PDT 2015
 //    Fix a compiler warning
 //
+//    Kathleen Biagas, Thu Aug 28 15:33:26 PDT 2025
+//    Remove SetSurfaceRepresentation, no longer used.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinColleague
@@ -128,8 +131,6 @@ class VISWINDOW_API VisWinColleague
 
     virtual void              MotionBegin(void)    {;};
     virtual void              MotionEnd(void)      {;};
-
-    virtual void              SetSurfaceRepresentation(int) {;};
 
     virtual void              SetSpecularProperties(bool,double,double,
                                                     const ColorAttribute&) {;};

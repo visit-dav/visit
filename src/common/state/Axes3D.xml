@@ -46,12 +46,12 @@
       false
     </Field>
     <Field name="bboxLocation" label="Bounding box location" type="doubleArray" length="6" enabler="setBBoxLocation:true">
-      0.000000
-      1.000000
-      0.000000
-      1.000000
-      0.000000
-      1.000000
+      0
+      1
+      0
+      1
+      0
+      1
     </Field>
     <Field name="triadColor" label="Triad Color" type="intArray" length="3" access="protected">
       0

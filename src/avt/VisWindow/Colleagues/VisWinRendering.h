@@ -16,6 +16,7 @@
 #include <avtImage.h>
 #include <avtImageType.h>
 #include <ColorAttribute.h>
+#include <FXAAOptions.h>
 
 #if defined(HAVE_OSPRAY)
 #include <vtkOSPRayPass.h>
@@ -23,6 +24,7 @@
 
 #ifdef HAVE_ANARI
 #include <vtkAnariPass.h>
+#include <AnariAttributes.h>
 #endif
 
 class vtkInteractorStyle;
@@ -223,6 +225,21 @@ class VisWindowColleagueProxy;
 //    Kathleen Biagas, Tue Jun 24, 2025
 //    Make anariRendering and osprayRendering ivars available always.
 //
+//    Kathleen Biagas, Monday July 28, 2025
+//    Antialiasing is now an int.
+//
+//    Kathleen Biagas, Thu Aug 14, 2025
+//    Add msaaSamples, fxaaOptions and Set/Get methods.
+//
+//    Kathleen Biagas, Tue Aug 26, 2025
+//    Add MSAAAvailable.
+//
+//    Kathleen Biagas, Thu Aug 28 15:33:26 PDT 2025
+//    Remove SetSurfaceRepresentation, no longer used.
+//
+//    Kevin Griffin, Tue Sep 16, 2025
+//    Switched to using AnariAttributes.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRendering : public VisWinColleague
@@ -316,18 +333,26 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
 
     void                     SetRenderInfoCallback(void(*callback)(void *), void *);
     void                     SetRenderEventCallback(void(*callback)(void *,bool), void *);
-    void                     SetAntialiasing(bool enabled);
-    bool                     GetAntialiasing() const
-                                 { return antialiasing; };
+
+    // Antialiasing
+    void                     SetAntialiasing(int);
+    int                      GetAntialiasing() const
+                                 { return antialiasing; }
+
+    void                     SetMSAASamples(int);
+    int                      GetMSAASamples() const
+                                 { return msaaSamples; }
+    bool                     MSAAAvailable();
+
+    void                     SetFXAAOptions(const FXAAOptions *);
+    const FXAAOptions       *GetFXAAOptions() const;
+
     void                     GetRenderTimes(double times[6]) const;
     void                     SetStereoRendering(bool enabled, int type);
     bool                     GetStereo() const
                                  { return stereo; };
     int                      GetStereoType() const
                                  { return stereoType; };
-    virtual void             SetSurfaceRepresentation(int rep);
-    int                      GetSurfaceRepresentation() const
-                                 { return surfaceRepresentation; };
     virtual void             SetSpecularProperties(bool,double,double,
                                                    const ColorAttribute&);
     bool                     GetSpecularFlag() const
@@ -414,21 +439,8 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
                                  { return viewIs3D; }
 #endif
 #ifdef HAVE_ANARI
-    void                    SetAnariRendering(const bool);
-    bool                    GetAnariRendering() const { return anariRendering; }
-    void                    SetAnariLibraryName(const std::string);
-    std::string             GetAnariLibraryName() const { return anariLibraryName; }
-    void                    SetAnariLibrarySubtype(const std::string);
-    std::string             GetAnariLibrarySubtype() const { return anariLibrarySubtype; }
-    void                    SetAnariRendererSubtype(const std::string);
-    std::string             GetAnariRendererSubtype() const { return anariRendererSubtype; }
-    void                    SetAnariRendererParameters(const stringVector &);
-    stringVector            GetAnariRendererParameters() const { return anariRendererParameters; }
-    void                    SetAnariUSDParameters(const stringVector &);
-    stringVector            GetAnariUSDParameters() const { return anariUSDParameters; }
-    void                    SetUsingUsdDevice(const bool);
-    bool                    GetUsingUsdDevice() const { return usingUsdDevice; }
-    vtkAnariPass            *CreateAnariPass();
+    void                    SetAnariAttributes(const AnariAttributes &);
+    const AnariAttributes   &GetAnariAttributes() const { return anariAttributes; }    
 #endif
 
     virtual void            *CreateToolbar(const char *) { return 0; };
@@ -453,10 +465,11 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     vtkRenderer                  *foreground {nullptr};
     bool                          needsUpdate;
     bool                          realized;
-    bool                          antialiasing;
+    int                           antialiasing;
+    int                           msaaSamples;
+    FXAAOptions                   fxaaOptions;
     bool                          stereo;
     int                           stereoType;
-    int                           surfaceRepresentation;
     bool                          specularFlag;
     double                        specularCoeff;
     double                        specularPower;
@@ -479,17 +492,11 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     bool                          osprayShadows {false};
     vtkOSPRayPass                *osprayPass {nullptr};
 #endif
-    bool                        anariRendering {false};
+    bool                          anariRendering {false};
 #ifdef HAVE_ANARI
-    std::string                 anariLibraryName;
-    std::string                 anariLibrarySubtype;
-    std::string                 anariRendererSubtype;
-    stringVector                anariRendererParameters;
-    stringVector                anariUSDParameters;
-    bool                        usingUsdDevice;
-    vtkAnariPass                *anariPass {nullptr};
+    AnariAttributes               anariAttributes;    
+    vtkAnariPass                  *anariPass {nullptr};
 #endif
-
     void                          (*renderInfo)(void *);
     void                         *renderInfoData {nullptr};
     void                          (*renderEvent)(void *,bool);
@@ -533,6 +540,14 @@ private:
                              { setRenderUpdate = _setRenderUpdate; }
     bool                     GetRenderUpdate() const
                              { return setRenderUpdate; }
+
+#ifdef HAVE_ANARI
+    vtkAnariPass                *CreateAnariPass();
+    void                        SetAnariLibrary();
+    void                        SetAnariRendererSubtype();
+    void                        SetAnariRendererParameters();
+    void                        SetAnariUSDParameters();
+#endif
 };
 
 #include <cstdlib>

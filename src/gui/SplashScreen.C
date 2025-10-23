@@ -20,7 +20,7 @@
 #include <ConfigureInfo.h>
 
 #define TIMER_DURATION 2*1000     // 2 seconds
-#define NUM_PIX 4
+#define NUM_PIX 6
 
 // ****************************************************************************
 //  Method: SplashScreen::SplashScreen
@@ -272,6 +272,9 @@
 //    Cyrus Harrison, Tue Mar 19 16:02:47 PDT 2024
 //    Changed the date on the splash screen to April 2024.
 //
+//    Eric Brugger, Fri Oct  3 09:46:05 PDT 2025
+//    Changed the splash screen to use 6 images instead of 4.
+//
 // ****************************************************************************
 
 SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
@@ -316,6 +319,10 @@ SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
          pictures.push_back(QPixmap(GetVisItResourcesFile(VISIT_RESOURCES_IMAGES, "VisIt3.png").c_str()));
     if(firstPicture == 3 || cyclePictures)
          pictures.push_back(QPixmap(GetVisItResourcesFile(VISIT_RESOURCES_IMAGES, "VisIt4.png").c_str()));
+    if(firstPicture == 4 || cyclePictures)
+         pictures.push_back(QPixmap(GetVisItResourcesFile(VISIT_RESOURCES_IMAGES, "VisIt5.png").c_str()));
+    if(firstPicture == 5 || cyclePictures)
+         pictures.push_back(QPixmap(GetVisItResourcesFile(VISIT_RESOURCES_IMAGES, "VisIt6.png").c_str()));
 
     // If we have more stuff than just a version number in the version
     // string then draw that information onto the splashscreen.
@@ -499,14 +506,19 @@ SplashScreen::CreateAboutButtons()
 //   Kathleen Biagas, Wed Apr  5 13:04:35 PDT 2023
 //   Replace obosolete desktop() with primaryScreen().
 //
+//   Kathleen Biagas, Mon Aug 18, 2025 
+//   Replace 'primaryScreen()->geometry()' with
+//   'primaryScreen()->availableGeometry()' since the latter takes into
+//   account window manager reserved space like the Windows taskbar. 
+//
 // ****************************************************************************
 
 void
 SplashScreen::show()
 {
     // Figure out where to put the window
-    int     W = qApp->primaryScreen()->geometry().width();
-    int     H = qApp->primaryScreen()->geometry().height();
+    int     W = qApp->primaryScreen()->availableGeometry().width();
+    int     H = qApp->primaryScreen()->availableGeometry().height();
     move((W - pictures[0].width()) / 2, (H - pictures[0].height()) / 2);
 
     // Show the window

@@ -103,12 +103,21 @@ vtkVisItObjectFactory::vtkVisItObjectFactory()
 //    Hank Childs, Wed May  5 10:15:48 PDT 2004
 //    Use the VisIt graphics factory to override the standard polydata mapper.
 //
+//    Kathleen Biagas, Thu Jul 17, 2025
+//    Stifle vtkLogger output to terminal by setting its verbosity level OFF.
+//    Avoids lots of console output, even from vtkWarning or vtkDebug macros
+//    which we capture in our debug logs. 
+//
+//    Kathleen Biagas, Wed Oct 1, 2025
+//    Move vtkLogger logic to InitVTKLite.  Pass component argument
+//    to InitVTKLite::Initialize.
+//
 // ****************************************************************************
 
 void
-InitVTK::Initialize(void)
+InitVTK::Initialize(const std::string &component)
 {
-    InitVTKLite::Initialize();
+    InitVTKLite::Initialize(component);
 
     // Register the factory that allows VisIt objects to override vtk objects.
     vtkVisItObjectFactory *factory = vtkVisItObjectFactory::New();

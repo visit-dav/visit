@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: avtMeshMetaData2
 Declaration: avtMeshMetaData(const int *, const double *, std::string, int, int, int, int, int, int, avtMeshType);
 Definition:
@@ -103,6 +104,7 @@ avtMeshMetaData::avtMeshMetaData(const int *bounds, const double *extents,
     SetBounds(bounds);
 }
 
+Target: xml2atts
 Function: avtMeshMetaData3
 Declaration: avtMeshMetaData(std::string, int, int, int, int, int, int, avtMeshType);
 Definition:
@@ -206,6 +208,7 @@ avtMeshMetaData::avtMeshMetaData(std::string s, int nb, int bo, int co, int go,
     SetBounds(0);
 }
 
+Target: xml2atts
 Function: SetExtents
 Declaration: void SetExtents(const double *);
 Definition:
@@ -257,6 +260,7 @@ avtMeshMetaData::SetExtents(const double *extents)
     }
 }
 
+Target: xml2atts
 Function: UnsetExtents
 Declaration: void UnsetExtents();
 Definition:
@@ -266,6 +270,7 @@ avtMeshMetaData::UnsetExtents()
     hasSpatialExtents = false;
 }
 
+Target: xml2atts
 Function: SetBounds
 Declaration: void SetBounds(const int *);
 Definition:
@@ -307,6 +312,7 @@ avtMeshMetaData::SetBounds(const int *bounds)
     }
 }
 
+Target: xml2atts
 Function: UnsetBounds
 Declaration: void UnsetBounds();
 Definition:
@@ -316,6 +322,7 @@ avtMeshMetaData::UnsetBounds()
     hasLogicalBounds = false;
 }
 
+Target: xml2atts
 Function: SetNumberCells
 Declaration: void SetNumberCells(const int);
 Definition:
@@ -341,6 +348,7 @@ avtMeshMetaData::SetNumberCells(const int nCells)
     numberCells = (nCells > 0 ? nCells : 0 );
 }
 
+Target: xml2atts
 Function: UnsetNumberCells
 Declaration: void UnsetNumberCells();
 Definition:
@@ -350,6 +358,7 @@ avtMeshMetaData::UnsetNumberCells()
     hasNumberCells = false;
 }
 
+Target: xml2atts
 Function: Print
 Declaration: void Print(ostream &, int = 0) const;
 Definition:
@@ -768,6 +777,7 @@ avtMeshMetaData::Print(ostream &out, int indent) const
     }
 }
 
+Target: xml2atts
 Function: SetAMRInfo
 Declaration: void SetAMRInfo(const std::string &levelName, const std::string &patchName, int origin,const std::vector<int> &patchesPerLevel);
 Definition:

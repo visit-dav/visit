@@ -8,7 +8,6 @@
       Information
     </Enum>
     <Field name="text" label="text" type="string">
-      
     </Field>
     <Field name="unicode" label="unicode" type="ucharVector">
     </Field>

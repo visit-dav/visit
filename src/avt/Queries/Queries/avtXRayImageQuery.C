@@ -70,20 +70,61 @@ inline bool filenameSchemeValid(int ftype)
 
 // To add new output types, these are the changes to make:
 //    1) increment `NUM_OUTPUT_TYPES` by however many output types you are planning to add
-//    2) add new entries to the `file_protocols` and `file_extensions` arrays
-//    3) add new constants for your output types (make sure in the same order as in `file_protocols`)
+//    2) add new entries to the `file_types`, `file_protocols`, and `file_extensions` arrays
+//    3) add new constants for your output types (make sure in the same order as in `file_types`)
 //    4) optional: add new inline functions to check for your output type or types; see below for examples
 //    5) add new cases where necessary (probably just in `avtXRayImageQuery::Execute`)
 //    6) add them to `src/gui/QvisXRayImageQueryWidget.C` in the constructor.
 
 // a constant for how many valid output types there are
-const int NUM_OUTPUT_TYPES = 8;
+const int NUM_OUTPUT_TYPES = 11;
 
 // member `outputType` indexes these arrays
-const char *file_protocols[NUM_OUTPUT_TYPES] = {"jpeg", "png", "tif", "bof", "bov", 
-    /*conduit blueprint output types */ "json", "hdf5", "yaml"}; // removed conduit_bin and conduit_json
-const char *file_extensions[NUM_OUTPUT_TYPES] = {"jpg", "png", "tif", "bof", "bov", 
-    /*conduit blueprint output types */ "root", "root", "root"};
+const char *file_types[NUM_OUTPUT_TYPES] = {
+    "jpeg",
+    "png",
+    "tif",
+    "bof",
+    "bov", 
+    // conduit blueprint output types
+    "json",
+    "hdf5",
+    "yaml",
+    // these "output types" are just aliases to the existing blueprint output types
+    // so that users can say "blueprint hdf5" instead of just "hdf5" to avoid any
+    // potential confusion.
+    "blueprint json",
+    "blueprint hdf5",
+    "blueprint yaml"};
+
+const char *file_protocols[NUM_OUTPUT_TYPES] = {
+    // we need no protocols for the first 5 output types
+    "",
+    "",
+    "",
+    "",
+    "",
+    // conduit blueprint output types
+    "json",
+    "hdf5",
+    "yaml",
+    "json",
+    "hdf5",
+    "yaml"};
+
+const char *file_extensions[NUM_OUTPUT_TYPES] = {
+    "jpg",
+    "png",
+    "tif",
+    "bof",
+    "bov",
+    /*conduit blueprint output types */
+    "root",
+    "root",
+    "root",
+    "root",
+    "root",
+    "root"};
 
 // constants for each of the output types
 const int JPEG_OUT = 0;
@@ -91,9 +132,12 @@ const int PNG_OUT = 1;
 const int TIF_OUT = 2;
 const int RAWFLOATS_OUT = 3;
 const int BOV_OUT = 4;
-const int BLUEPRINT_JSON_OUT = 5;
-const int BLUEPRINT_HDF5_OUT = 6;
-const int BLUEPRINT_YAML_OUT = 7;
+const int BLUEPRINT_JSON_OUT1 = 5;
+const int BLUEPRINT_HDF5_OUT1 = 6;
+const int BLUEPRINT_YAML_OUT1 = 7;
+const int BLUEPRINT_JSON_OUT2 = 8;
+const int BLUEPRINT_HDF5_OUT2 = 9;
+const int BLUEPRINT_YAML_OUT2 = 10;
 
 // an output type is valid if it is an int in [0,NUM_OUTPUT_TYPES)
 inline bool outputTypeValid(int otype)
@@ -113,8 +157,12 @@ inline bool outputTypeIsRawfloatsOrBov(int otype)
 
 inline bool outputTypeIsBlueprint(int otype)
 {
-    return otype == BLUEPRINT_HDF5_OUT || otype == BLUEPRINT_JSON_OUT || 
-        otype == BLUEPRINT_YAML_OUT;
+    return otype == BLUEPRINT_HDF5_OUT1 ||
+           otype == BLUEPRINT_JSON_OUT1 || 
+           otype == BLUEPRINT_YAML_OUT1 ||
+           otype == BLUEPRINT_HDF5_OUT2 ||
+           otype == BLUEPRINT_JSON_OUT2 || 
+           otype == BLUEPRINT_YAML_OUT2;
 }
 
 inline bool multipleOutputFiles(int otype, int numBins)
@@ -1089,7 +1137,7 @@ avtXRayImageQuery::SetOutputType(const std::string &type)
     while (i < NUM_OUTPUT_TYPES)
     {
         // the output type indexes the file extensions array
-        if (type == file_protocols[i])
+        if (type == file_types[i])
         {
             outputType = i;
             return;
@@ -1329,7 +1377,15 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 // 
 //    Justin Privitera, Wed Nov 29 15:10:59 PST 2023
 //    Handle windows-style file paths.
+//
+//    Kathleen Biagas, Thu Aug 21, 2025
+//    Use VISIT_SLASH_STRING instead of "/" when constructing
+//    out_filename_w_path.
 // 
+//    Justin Privitera, Fri Oct 17 16:39:39 PDT 2025
+//    Use new file_types array in lieu of file_protocols, which is now only
+//    used to specify the Blueprint file protocol.
+//
 // ****************************************************************************
 
 void
@@ -1504,7 +1560,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             baseName << "output";
 
         // does NOT contain the file extension
-        std::string out_filename_w_path{(outputDir == "." ? "" : outputDir + "/") + baseName.str()};
+        std::string out_filename_w_path{(outputDir == "." ? "" : outputDir + VISIT_SLASH_STRING) + baseName.str()};
 
         //
         // Write out the intensity and path length. The path length is only
@@ -1648,7 +1704,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             std::ostringstream err_oss;
             err_oss << "ERROR: Visit was not installed with conduit, "
                         << "which is needed for output type "
-                        << file_protocols[outputType]
+                        << file_types[outputType]
                         << "." << std::endl;
             SetResultMessage(err_oss.str());
             EXCEPTION1(VisItException, err_oss.str());
@@ -1659,7 +1715,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             // this is safe because at the beginning of the function we check that the output type is valid
             std::ostringstream err_oss;
             err_oss << "ERROR: No logic implemented for output type "
-                        << file_protocols[outputType]
+                        << file_types[outputType]
                         << "." << std::endl;
             SetResultMessage(err_oss.str());
             EXCEPTION1(VisItException, err_oss.str());
@@ -1713,7 +1769,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             // this is safe because at the beginning of the function we check that the output type is valid
             std::ostringstream err_oss;
             err_oss << "ERROR: No output message implemented for output type "
-                        << file_protocols[outputType] << "." << std::endl;
+                        << file_types[outputType] << "." << std::endl;
             SetResultMessage(err_oss.str());
             EXCEPTION1(VisItException, err_oss.str());
         }
@@ -1724,7 +1780,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         result_node["result message"] = buf.str();
         result_node["filenames"] = filenames;
         result_node["number of files"] = static_cast<int>(filenames.size());
-        result_node["file protocol"] = file_protocols[outputType];
+        result_node["file protocol"] = file_types[outputType];
         result_node["file extension"] = file_extensions[outputType];
         result_node["filename scheme"] = filename_schemes[filenameScheme];
         SetXmlResult(result_node.ToXML());

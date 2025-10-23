@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: GetActiveLaunchProfileForHost
 Declaration: LaunchProfile *GetActiveLaunchProfileForHost(const std::string &hostName) const;
 Definition:
@@ -27,6 +28,7 @@ HostProfileList::GetActiveLaunchProfileForHost(const std::string &hostName) cons
     return machine ? machine->GetActiveLaunchProfile() : NULL;
 }
 
+Target: xml2atts
 Function: GetMachineProfileForHost
 Declaration: MachineProfile *GetMachineProfileForHost(const std::string &hostName) const;
 Definition:

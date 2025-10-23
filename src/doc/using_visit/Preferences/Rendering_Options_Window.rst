@@ -27,53 +27,7 @@ The **Antialiasing**, and **Specular lighting** options are covered in the
 
     The basic rendering options
 
-Changing surface representations
-""""""""""""""""""""""""""""""""
 
-Sometimes when visualizing large or complex databases, drawing plots with
-all of their shaded surfaces can take too long to be interactive, even for
-fast graphics hardware. To combat this problem, VisIt_ provides an option
-to view all of the plots in the visualization window as wireframe outlines
-or point clouds instead of as shaded surfaces (see
-:numref:`Figure %s<Preferences-SurfaceRepresentations>`). While being less
-visually informative, plots drawn as wireframe outlines or as clouds of
-points can still be useful for visualizations since it is possible to do
-the setup work like setting the view before switching back to a surface
-representation that is more costly to draw. To change the surface
-representation used to draw plots click on either the **Surfaces**,
-**Wireframe** or **Points** radio buttons below the **Draw objects as**
-label.
-
-.. _Preferences-SurfaceRepresentations:
-
-.. figure:: images/SurfaceRepresentations.png
-
-    The different surface representations
-
-Using display lists
-"""""""""""""""""""
-
-VisIt_ benefits from the use of hardware accelerated graphics and one of the
-concepts central to hardware accelerated graphics is the display list. A
-display list is a sequence of simple graphics commands that are stored in
-a computer's graphics hardware so the hardware can draw the object described
-by the display list several times more quickly than it could if the graphics
-commands were issued directly. VisIt_ tries to make maximum use of display
-lists when necessary so it can draw plots as fast as possible.
-
-By default, VisIt_ decides when to and when not to use display lists.
-Typically, when running VisIt_ on a local workstation with plots that result
-in fewer than a couple million graphics primitives, VisIt_ does not use
-display lists because the cost of creating them is more expensive than just
-drawing the graphics primitives without display lists. When running on a
-Unix version of VisIt_ on a remote computer and displaying the results
-back to a workstation using an X-server, it is almost always advantageous
-to create display lists for plot geometry. Without display lists, VisIt_
-must transmit the plot geometry over the network to the X-server every time
-it renders an image. VisIt_ can be set to either use or not use display
-lists all the time. To change the way VisIt_ uses display lists click on
-either the **Auto**, **Always** or **Never** radio buttons below the
-**Use display lists** label.
 
 Stereo images
 """""""""""""

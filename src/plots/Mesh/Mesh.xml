@@ -54,7 +54,7 @@
         Auto
       </Field>
       <Field name="pointSize" label="Point size" type="double">
-        0.050000
+        0.05
       </Field>
       <Field name="opaqueColor" label="Color" type="color" length="4">
         255
@@ -80,11 +80,14 @@
       <Field name="showInternal" label="Show Internal" type="bool">
         false
       </Field>
+      <Field name="showGenerated" label="Show generated zones" type="bool">
+        false
+      </Field>
       <Field name="pointSizePixels" label="Point size pixels" type="int">
         2
       </Field>
       <Field name="opacity" label="Opacity" type="opacity">
-        1.000000
+        1
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>

@@ -41,13 +41,16 @@ enhancements and bug-fixes that were added to this release.</p>
   <li><a href="https://matplotlib.org/cmocean/">cmocean</a> color maps were added.</li>
   <li>Added '-python-log-file' command line option to control the name of the file used to log python methods (default='visitlog.py').</li>
   <li>Add individual stress components to the PVLD plugin metadata.</li>
+  <li>Refactored how to import visit into a stand alone python module. This is now done via the 'visit_launcher' module, avoiding module namespace issues.</li>
+  <li>Antialiasing is no longer an on/off option, there are two modes: MSAA (when available) and FXAA. The default is still no antialiasing.</li>
+  <li>Added environment variable logging to VisIt's debug vlog files.</li>
 </ul>
 
 <a name="Advanced_features"></a>
 <p><b><font size="4">Advanced features added in version 3.5</font></b></p>
 <ul>
-  <li>Advanced Feature 1</li>
-  <li>Advanced Feature 2</li>
+  <li>Ghost Zone exchange was enhanced to handle not only scalars, material species, and vectors as before, but also tensors, symmetric tensors, and array variables.</li>
+  <li>The <code>-compositer-debug</code> command line option was added, which dumps intermediate image results during the compositing process of scalable rendering.</li>
 </ul>
 
 <a name="GUI_changes"></a>
@@ -58,6 +61,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Disabled rich text paste support in the Commands Window and Expressions Editor. Avoids battles with cut and pasted text from editors that embed formatting, such as vscode.</li>
   <li>Fixed a bug causing Color Table Window tags to be duplicated when loading a session file.</li>
   <li>Save session file now takes existing session file names into account to avoid naming collisions.</li>
+  <li>Fixed a bug where bottom of main GUI window would be hidden behind the Windows taskbar.</li>
 </ul>
 
 <a name="CLI_changes"></a>
@@ -67,6 +71,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Ultrawrapper has been removed from VisIt. For similar functionality, please see: <a href=https://pydv.readthedocs.io/en/latest/>PyDV</a>.</li>
   <li>CLI objects and functions improved in various ways including fixing <code>dir()</code> for them.</li>
   <li><code>apropos()</code> help function is improved with additional arguments to control searches.</li>
+  <li>Enhanced <code>DefineArrayExpression</code>, <code>DefineCurveExpression</code>, <code>DefineMaterialExpression</code>, <code>DefineMeshExpression</code>, <code>DefineScalarExpression</code>, <code>DefineSpeciesExpression</code>, <code>DefineTensorExpression</code> and <code>DefineVectorExpression</code> to take a list of expression names and expression definitions in addition to a single name of an expression and a single definition of an expression. Defining many expressions at once when the Graphical User Interface is active is much faster than defining them one at a time.</li>
 </ul>
 
 <a name="File_format"></a>
@@ -78,12 +83,14 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The Blueprint writer now supports YAML and JSON exports.</li>
   <li>Fixed a bug in the Blueprint reader causing unstructured points topology fields to display incorrectly.</li>
   <li>Fixed a bug in the Blueprint reader causing successful reading of Sidre data to trigger the failure case, leading to significantly degraded performance.</li>
+  <li>The VisItXdmf reader has been removed, it hasn't been maintained. The Xdmf reader that utilizes the Xdmf library is still available.</li>
 </ul>
 
 <a name="Plot_changes"></a>
 <p><b><font size="4">Changes to VisIt's plots in version 3.5</font></b></p>
 <ul>
-  <li>Plot Change 1</li>
+  <li>Added ANARI rendering support for volume plots.</li>
+  <li>Enhanced the Pseudocolor plot to allow using the default variable for coloring the wireframe and points, as long as rendering of surfaces is turned off.</li>
   <li>Plot Change 2</li>
 </ul>
 
@@ -99,6 +106,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Fixed a bug causing the min, max, and divide expressions to crash the compute engine when given a single variable as input. Min and max now return the result of that single variable, and divide throws an error instead of crashing.</li>
   <li>The Verdict mesh quality library that is builtin to VisIt was enhanced to handle degenerate hexahedra. This improves expressions and queries that use the Verdict library.</li>
+  <li>Changed the <code>global_variance</code> expression to <code>global_var</code> and the <code>global_std_dev</code> expression to <code>global_std</code>.</li>
 </ul>
 
 <a name="Query_changes"></a>
@@ -107,7 +115,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The X Ray Image Query now clips results beyond the far clipping plane.</li>
   <li>The Verdict mesh quality library that is builtin to VisIt was enhanced to handle generate hexahedra. This improves expressions and queries that use the Verdict library.</li>
   <li>Fixed a bug with the X Ray Image Query where VisIt would in some rare instances either crash or create an image that was too dark when running in parallel.</li>
-</ul>
+  <li>The X Ray Image Query Blueprint output types now have "blueprint" in their names, so, for example, "hdf5" is now "blueprint hdf5". The original names are still supported.</li>
 </ul>
 
 <a name="Bugs_fixed"></a>
@@ -126,6 +134,14 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a memory bug in AMR plugin when reading velocity magnitude.</li>
   <li>In the PVLD plugin, show SPH in metadata at the first time step even when there are no SPH particles initially.</li>
   <li>Fixed a viewer crash with transparency.</li>
+  <li>Fixed a bug when CLI would not exit if GUI was also open and exit was initiated from the GUI.</li>
+  <li>Fixed a command recording bug with the Expression window where all the operator generated expressions would get recorded.</li>
+  <li>Added a descriptive error message for when a movie encoding format is not supported on the current platform.</li>
+  <li>Fixed a bug where rendering with shadows would result in an all black image except for the annotations when the image contained transparent geometry.</li>
+  <li>Fixed a bug where RPATHs weren't stripped from distributions. This could lead to issues for users that didn't build the distribution. It could also cause issues when a distribution is installed on a machine different from where it was built.</li>
+  <li>Fixed crash loading SILO files when compiled with version 4.11 of the SILO library.</li>
+  <li>Fixed a bug with global mesh expressions causing them to only work on single domain data. They now function across all domains in parallel and in serial.</li>
+  <li>Eliminated a couple of memory leaks. The first was in the operator that removes ghost zones and calculates external faces. The second was in the Resample operator.</li>
 </ul>
 
 <a name="Build_features"></a>
@@ -145,12 +161,13 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Patches were added to bv_pidx.sh, bv_advio.sh and bv_cfitsio.sh that allow successful compilation on Fedora40 with gcc14.</li>
   <li>OpenEXR version was upated to 3.3.4</li>
   <li>Updated build_visit to build VTK-m 2.3.0.</li>
+  <li>Added a patch to bv_vtk.sh that exposes the vtkAnariPass in the ANARI volume mapper and adds panning and zooming capabilities to the ANARI camera.</li>
 </ul>
 
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 3.5</font></b></p>
 <ul>
-  <li>Developer Change 1</li>
+  <li>xmledit and other xml code gen tools have been fixed such that all logic in a '.code' file will be properly displayed in 'xmledit' and also saved accurately when 'save' issued from xmledit.  The 'Target' designator is now always written to the .code file, even if the target is the default 'xml2atts' target. Unix-style line endings are now always used when writing files from 'xmledit'.</li>
   <li>Developer Change 2</li>
 </ul>
 
