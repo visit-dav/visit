@@ -32,14 +32,14 @@
       0
     </Field>
     <Field name="gradBG1" label="gradBG1" type="doubleArray" length="3">
-      0.000000
-      0.000000
-      1.000000
+      0
+      0
+      1
     </Field>
     <Field name="gradBG2" label="gradBG2" type="doubleArray" length="3">
-      0.000000
-      0.000000
-      0.000000
+      0
+      0
+      0
     </Field>
     <Field name="gradientBackgroundStyle" label="Gradient background style" type="int">
       0

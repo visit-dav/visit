@@ -8,6 +8,7 @@
 #include <QTextStream>
 
 #include <vector>
+#include <iostream>
 
 // ****************************************************************************
 //  Class:  EnumType
@@ -30,6 +31,11 @@
 //
 //    Brad Whitlock, Tue Sep 26 12:12:34 PDT 2017
 //    Support adding enum int values.
+//
+//    Kathleen Biagas, Thu Oct 2, 2025
+//    Add WriteValues and JoinValues to handle adding the integer values.
+//    I added it here rather than XMLParserUtil.h since the way it is handled
+//    is specific to EnumType.
 //
 // ****************************************************************************
 class EnumType
@@ -85,6 +91,31 @@ class EnumType
         if (index >= values.size())
             throw QString("tried to access out-of-bounds enum type %1").arg(index);
         return ivalues[index];
+    }
+    void WriteValues(QTextStream &out, QString &indent)
+    {
+        indent += "  ";
+        for (size_t i=0; i<values.size(); i++)
+        {
+            QString s(indent + values[i]);
+            if(ivalues[i] >= 0)
+                s += QString("=%1").arg(ivalues[i]);
+            out << s << Endl;
+        }
+        indent = indent.left(indent.length()-2);
+    }
+    QString JoinValues(char j)
+    {
+        QString output;
+        for (size_t i=0; i<values.size(); i++)
+        {
+            output += values[i];
+            if(ivalues[i] >= 0)
+                output += QString("=%1").arg(ivalues[i]);
+            if(i < values.size() -1)
+                output += j;
+        }
+        return output;
     }
     void Print(QTextStream &out)
     {

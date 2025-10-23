@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="StatusAttributes" purpose="This class contains the status that is displayed in the GUI's status bar." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="StatusAttributes.code">
+  <Attribute name="StatusAttributes" purpose="This class contains the status that is displayed in the GUI's status bar." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="StatusAttributes.code">
     <Field name="sender" label="sender" type="string">
       viewer
     </Field>
@@ -7,7 +7,6 @@
       false
     </Field>
     <Field name="statusMessage" label="statusMessage" type="string">
-      
     </Field>
     <Field name="unicode" label="statusMessageUnicode" type="ucharVector">
     </Field>

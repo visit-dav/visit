@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: EnlargeMultiColor
 Declaration: void EnlargeMultiColor(int newSize);
 Definition:
@@ -76,6 +77,7 @@ MultiCurveAttributes::EnlargeMultiColor(int newSize)
     }
 }
 
+Target: xml2atts
 Function: ColorIsChanged
 Declaration: bool ColorIsChanged(int index) const;
 Definition:
@@ -107,6 +109,7 @@ MultiCurveAttributes::ColorIsChanged(int index) const
     return (i < changedColors.size());
 }
 
+Target: xml2atts
 Function: MarkColorAsChanged
 Declaration: void MarkColorAsChanged(int index);
 Definition:
@@ -135,6 +138,7 @@ MultiCurveAttributes::MarkColorAsChanged(int index)
     }
 }
 
+Target: xml2atts
 Function: ChangesRequireRecalculation
 Declaration: bool ChangesRequireRecalculation(const MultiCurveAttributes &) const;
 Definition:
@@ -176,7 +180,6 @@ MultiCurveAttributes::ChangesRequireRecalculation(const MultiCurveAttributes &ob
     return false;
 }
 
-
 Target: xml2info
 Function: MultiCurveViewerEnginePluginInfo::InitializeGlobalObjects
 Declaration: static void InitializeGlobalObjects();
@@ -206,6 +209,7 @@ MultiCurveViewerEnginePluginInfo::InitializeGlobalObjects()
     InitializeDefaultPalette(defaultAtts);
 }
 
+Target: xml2info
 Function: MultiCurveViewerEnginePluginInfo::InitializePlotAtts
 Declaration: virtual void InitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);
 Definition:
@@ -237,6 +241,7 @@ MultiCurveViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
     InitializeDefaultPalette(multiCurve);
 }
 
+Target: xml2info
 Function: MultiCurveViewerEnginePluginInfo::InitializeDefaultPalette
 Declaration: static void InitializeDefaultPalette(MultiCurveAttributes *);
 Definition:

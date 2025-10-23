@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: SetPointF
 Declaration: void SetPointF(int i, const float *pt);
 Definition:
@@ -28,6 +29,7 @@ VisualCueInfo::SetPointF(int i, const float *pt)
     Select(0,(void*)&points);
 }
 
+Target: xml2atts
 Function: GetPointF
 Declaration: bool GetPointF(int i, float *pt) const;
 Definition:
@@ -56,6 +58,7 @@ VisualCueInfo::GetPointF(int i, float *pt) const
     return true;
 }
 
+Target: xml2atts
 Function: SetFromP
 Declaration: void SetFromP(const PickAttributes *pa);
 Definition:
@@ -87,6 +90,7 @@ VisualCueInfo::SetFromP(const PickAttributes *pa)
     }
 }
 
+Target: xml2atts
 Function: SetFromL
 Declaration: void SetFromL(const Line *line);
 Definition:
@@ -105,6 +109,7 @@ VisualCueInfo::SetFromL(const Line *line)
     SetColor(line->GetColor());
 }
 
+Target: xml2atts
 Function: SetPointD
 Declaration: void SetPointD(int i, const double *pt);
 Definition:
@@ -135,6 +140,7 @@ VisualCueInfo::SetPointD(int i, const double *pt)
     Select(0,(void*)&points);
 }
 
+Target: xml2atts
 Function: GetPointD
 Declaration: bool GetPointD(int i, double *pt) const;
 Definition:

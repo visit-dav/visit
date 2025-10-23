@@ -32,7 +32,7 @@ def InitializeView():
 def test0(datapath):
     TestSection("Solid")
     db = pjoin(datapath,"velodyne.20.vld")
-    OpenDatabase(db,0,"ParallelVelodyne_1")
+    OpenDatabase(db,0,"PVLD_5")
     md = GetMetaData(db)
     TestText("PVLD_solid", str(md))
     AddPlot("Pseudocolor", "Solid/Pressure")
@@ -52,7 +52,7 @@ def test0(datapath):
 def test1(datapath):
     TestSection("Surface")
 
-    OpenDatabase(pjoin(datapath,"velodyne.20.vld"),0,"ParallelVelodyne_1")
+    OpenDatabase(pjoin(datapath,"velodyne.20.vld"),0,"PVLD_5")
     AddPlot("Pseudocolor", "Surface/Velocity_0")
     DrawPlots()
     InitializeView()
@@ -62,7 +62,7 @@ def test1(datapath):
 def test2(datapath):
     TestSection("SPH")
 
-    OpenDatabase(pjoin(datapath,"velodyne.20.vld"),0,"ParallelVelodyne_1")
+    OpenDatabase(pjoin(datapath,"velodyne.20.vld"),0,"PVLD_5")
     AddPlot("Pseudocolor", "SPH/Density")
     DrawPlots()
     InitializeView()

@@ -50,6 +50,6 @@ DDCMDCommonPluginInfo::SetupDatabase(const char *const *list,
         ffl[i] = new avtDDCMDFileFormat(list[i]);
     }
     avtSTMDFileFormatInterface *inter
-           = new avtSTMDFileFormatInterface(ffl, nList);
+        = new avtSTMDFileFormatInterface(ffl, nList);
     return new avtGenericDatabase(inter);
 }

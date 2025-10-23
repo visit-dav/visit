@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: PrintSelf
 Declaration: void PrintSelf(ostream &os);
 Definition:
@@ -8,7 +9,7 @@ PlotInfoAttributes::PrintSelf(ostream &os)
     os << data.ToXML();
 }
 
-
+Target: xml2atts
 Function: Reset
 Declaration: void Reset();
 Definition:
@@ -19,7 +20,7 @@ PlotInfoAttributes::Reset()
     SelectData();
 }
 
-
+Target: xml2atts
 Function: Merge
 Declaration: void Merge(const PlotInfoAttributes &obj);
 Definition:
@@ -29,5 +30,4 @@ PlotInfoAttributes::Merge(const PlotInfoAttributes &obj)
     data.Merge(obj.GetData());
     SelectData();
 }
-
 

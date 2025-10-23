@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
   <Plugin name="Slice" type="operator" label="Slice" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="Slice.xpm" category="Slicing">
+    <CXXFLAGS>
+      -I${VTKm_INCLUDE_DIRS}
+    </CXXFLAGS>
     <Attribute name="SliceAttributes" purpose="This class contains attributes for the arbitrary slice." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="SliceAttributes.code">
-      <CXXFLAGS>
-        -I${VTKm_INCLUDE_DIRS}
-      </CXXFLAGS>
       <Enum name="AxisType">
         XAxis
         YAxis
@@ -22,15 +22,15 @@
         Intercept
       </Field>
       <Field name="originPoint" label="originPoint" type="doubleArray" length="3" enabler="originType:Point">
-        0.000000
-        0.000000
-        0.000000
+        0
+        0
+        0
       </Field>
       <Field name="originIntercept" label="originIntercept" type="double" enabler="originType:Intercept">
-        0.000000
+        0
       </Field>
       <Field name="originPercent" label="originPercent" type="double" enabler="originType:Percent">
-        0.000000
+        0
       </Field>
       <Field name="originZone" label="originZone" type="int" enabler="originType:Zone">
         0
@@ -39,17 +39,17 @@
         0
       </Field>
       <Field name="normal" label="normal" type="doubleArray" length="3">
-        0.000000
-        -1.000000
-        0.000000
+        0
+        -1
+        0
       </Field>
       <Field name="axisType" label="axisType" type="enum" subtype="AxisType" ignoreeq="true">
         YAxis
       </Field>
       <Field name="upAxis" label="upAxis" type="doubleArray" length="3">
-        0.000000
-        0.000000
-        1.000000
+        0
+        0
+        1
       </Field>
       <Field name="project2d" label="project2d" type="bool">
         true
@@ -70,10 +70,10 @@
         default
       </Field>
       <Field name="theta" label="theta" type="double">
-        0.000000
+        0
       </Field>
       <Field name="phi" label="phi" type="double">
-        0.000000
+        0
       </Field>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>

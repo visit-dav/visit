@@ -1,3 +1,11 @@
+Target: xml2python
+Code: PySaveSubWindowsAttributes_ToString
+Prefix:
+    // To squelch a warning
+    (void)tmpStr;
+Postfix:
+
+Target: xml2atts
 Function: GetAttsForWindow
 Declaration: SaveSubWindowAttributes &GetAttsForWindow(int win);
 Definition:
@@ -72,11 +80,4 @@ SaveSubWindowsAttributes::GetAttsForWindow(int win)
 
     EXCEPTION1(VisItException, "Window ID is out of range");
 }
-
-Target: xml2python
-Code: PySaveSubWindowsAttributes_ToString
-Prefix:
-    // To squelch a warning
-    (void)tmpStr;
-Postfix:
 

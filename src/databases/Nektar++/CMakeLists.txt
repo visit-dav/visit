@@ -38,11 +38,10 @@ ${VISIT_DATABASE_INCLUDES}
 ADD_DEFINITIONS(${NEKTAR++_DEFINITIONS})
 
 if(LINUX)
-    add_definitions(-fext-numeric-literals)
+    add_compile_options(-fext-numeric-literals)
 endif()
 
 set(vtk_libs VTK::IOXML )
-
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${NEKTAR++_LIBRARY_DIR} ${NEKTAR++_LIBRARY_DIRS} ${NEKTAR++_TP_LIBRARY_DIRS} ${ACCELERATE_FRAMEWORK_LINK_FLAGS} )
 
 ADD_LIBRARY(INektarPPDatabase ${LIBI_SOURCES})

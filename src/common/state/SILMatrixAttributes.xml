@@ -1,9 +1,17 @@
 <?xml version="1.0"?>
-  <Attribute name="SILMatrixAttributes" purpose="This class contain the information needed to represent a SIL Matrix." exportAPI="STATE_API" exportInclude="state_exports.h">
-    <Field name="set1" type="intVector"></Field>
-    <Field name="category1" type="string"></Field>
-    <Field name="role1" type="int">0</Field>
-    <Field name="set2" type="intVector"></Field>
-    <Field name="category2" type="string"></Field>
-    <Field name="role2" type="int">0</Field>
+  <Attribute name="SILMatrixAttributes" purpose="This class contain the information needed to represent a SIL Matrix." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="set1" label="set1" type="intVector">
+    </Field>
+    <Field name="category1" label="category1" type="string">
+    </Field>
+    <Field name="role1" label="role1" type="int">
+      0
+    </Field>
+    <Field name="set2" label="set2" type="intVector">
+    </Field>
+    <Field name="category2" label="category2" type="string">
+    </Field>
+    <Field name="role2" label="role2" type="int">
+      0
+    </Field>
   </Attribute>

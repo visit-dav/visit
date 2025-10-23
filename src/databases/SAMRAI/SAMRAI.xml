@@ -1,15 +1,17 @@
 <?xml version="1.0"?>
-  <Plugin name="SAMRAI" type="database" label="SAMRAI" version="1.0" mdspecificcode="true" dbtype="STMD">
-    <FilePatterns> 
-      *.samrai 
-    </FilePatterns>
-    <CXXFLAGS> 
-      ${HDF5_INCLUDE_DIR} 
+  <Plugin name="SAMRAI" type="database" label="SAMRAI" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="false" haslicense="false" filePatternsStrict="false" opensWholeDirectory="false">
+    <CXXFLAGS>
+      ${HDF5_INCLUDE_DIR}
     </CXXFLAGS>
-    <LDFLAGS>  
-      ${HDF5_LIBRARY_DIR} 
+    <LDFLAGS>
+      ${HDF5_LIBRARY_DIR}
     </LDFLAGS>
-    <LIBS>     
-      ${HDF5_LIB} 
+    <LIBS>
+      ${HDF5_LIB}
     </LIBS>
+    <FilePatterns>
+      *.samrai
+    </FilePatterns>
+    <Attribute name="" purpose="" persistent="true" keyframe="true">
+    </Attribute>
   </Plugin>

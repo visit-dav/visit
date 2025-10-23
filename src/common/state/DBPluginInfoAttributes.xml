@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="DBPluginInfoAttributes" purpose="This class contains the attributes for all the database plugins." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+  <Attribute name="DBPluginInfoAttributes" purpose="This class contains the attributes for all the database plugins." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h">
     <Field name="types" label="types" type="stringVector">
     </Field>
     <Field name="hasWriter" label="hasWriter" type="intVector">
@@ -13,6 +13,5 @@
     <Field name="license" label="license" type="stringVector">
     </Field>
     <Field name="host" label="host" type="string">
-      ""
     </Field>
   </Attribute>

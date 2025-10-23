@@ -1,8 +1,18 @@
 <?xml version="1.0"?>
-  <Attribute name="GaussianControlPoint" purpose="This class contains the information for a gaussian in the opacity bar." exportAPI="STATE_API" exportInclude="state_exports.h">
-    <Field name="x" type="float">0.0</Field>
-    <Field name="height" type="float">0.0</Field>
-    <Field name="width" type="float">0.001</Field>
-    <Field name="xBias" type="float">0.0</Field>
-    <Field name="yBias" type="float">0.0</Field>
+  <Attribute name="GaussianControlPoint" purpose="This class contains the information for a gaussian in the opacity bar." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="x" label="x" type="float">
+      0.000000
+    </Field>
+    <Field name="height" label="height" type="float">
+      0.000000
+    </Field>
+    <Field name="width" label="width" type="float">
+      0.001000
+    </Field>
+    <Field name="xBias" label="xBias" type="float">
+      0.000000
+    </Field>
+    <Field name="yBias" label="yBias" type="float">
+      0.000000
+    </Field>
   </Attribute>

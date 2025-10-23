@@ -51,7 +51,7 @@
         Linear
       </Field>
       <Field name="skewFactor" label="Skew factor" type="double" enabler="scaling:Skew">
-        1.000000
+        1
       </Field>
       <Field name="limitsMode" label="Limits Mode" type="enum" subtype="LimitsMode">
         OriginalData
@@ -60,7 +60,7 @@
         false
       </Field>
       <Field name="min" label="Minimum" type="double" enabler="minFlag:true">
-        0.000000
+        0
       </Field>
       <Field name="useBelowMinColor" label="useBelowMinColor" type="bool" enabler="minFlag:true">
         false
@@ -71,7 +71,7 @@
         false
       </Field>
       <Field name="max" label="Maximum" type="double" enabler="maxFlag:true">
-        1.000000
+        1
       </Field>
       <Field name="useAboveMaxColor" label="useAboveMaxColor" type="bool" enabler="maxFlag:true">
         false
@@ -93,13 +93,13 @@
       <Field name="opacityVariable" label="opacityVariable" type="string">
       </Field>
       <Field name="opacity" label="opacity" type="double">
-        1.000000
+        1
       </Field>
       <Field name="opacityVarMin" label="opacityVarMin" type="double">
-        0.000000
+        0
       </Field>
       <Field name="opacityVarMax" label="opacityVarMax" type="double">
-        1.000000
+        1
       </Field>
       <Field name="opacityVarMinFlag" label="opacityVarMinFlag" type="bool">
         false
@@ -108,7 +108,7 @@
         false
       </Field>
       <Field name="pointSize" label="Point size" type="double">
-        0.050000
+        0.05
       </Field>
       <Field name="pointType" label="Point Type" type="glyphtype">
         Point
@@ -135,10 +135,10 @@
         FractionOfBBox
       </Field>
       <Field name="tubeRadiusAbsolute" label="Radius (Absolute)" type="double" enabler="tubeRadiusSizeType:Absolute">
-        0.125000
+        0.125
       </Field>
       <Field name="tubeRadiusBBox" label="Radius (BBox Fraction)" type="double" enabler="tubeRadiusSizeType:FractionOfBBox">
-        0.005000
+        0.005
       </Field>
       <Field name="tubeRadiusVarEnabled" label="Tube Radius by var enabled" type="bool">
         false
@@ -146,7 +146,7 @@
       <Field name="tubeRadiusVar" label="Tube radius variable" type="string">
       </Field>
       <Field name="tubeRadiusVarRatio" label="Tube radius variable ration" type="double">
-        10.000000
+        10
       </Field>
       <Field name="tailStyle" label="Tail style" type="enum" subtype="EndPointStyle">
         None
@@ -158,16 +158,16 @@
         FractionOfBBox
       </Field>
       <Field name="endPointRadiusAbsolute" label="endPointRadiusAbsolute" type="double" enabler="endPointRadiusSizeType:Absolute">
-        0.125000
+        0.125
       </Field>
       <Field name="endPointRadiusBBox" label="Radius (BBox Fraction)" type="double" enabler="endPointRadiusSizeType:FractionOfBBox">
-        0.050000
+        0.05
       </Field>
       <Field name="endPointResolution" label="End point resolution" type="int">
         10
       </Field>
       <Field name="endPointRatio" label="End point ratio" type="double">
-        5.000000
+        5
       </Field>
       <Field name="endPointRadiusVarEnabled" label="End point radius by var enabled" type="bool">
         false
@@ -175,7 +175,7 @@
       <Field name="endPointRadiusVar" label="End point radius variable" type="string">
       </Field>
       <Field name="endPointRadiusVarRatio" label="End point radius variable ration" type="double">
-        10.000000
+        10
       </Field>
       <Field name="renderSurfaces" label="Render surfaces" type="int">
         1

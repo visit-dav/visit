@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: AddOperator
 Declaration: void AddOperator(int op, const char *name);
 Definition:
@@ -10,6 +11,7 @@ Plot::AddOperator(int op, const char *name)
     Select(ID_operatorNames, (void *)&operatorNames);
 }
 
+Target: xml2atts
 Function: ClearAllOperators
 Declaration: void ClearAllOperators();
 Definition:
@@ -25,6 +27,7 @@ Plot::ClearAllOperators()
     }
 }
 
+Target: xml2atts
 Function: GetNumOperators
 Declaration: int  GetNumOperators() const;
 Definition:
@@ -34,6 +37,7 @@ Plot::GetNumOperators() const
     return operators.size();
 }
 
+Target: xml2atts
 Function: GetOperator
 Declaration: int  GetOperator(int i) const;
 Definition:
@@ -43,6 +47,7 @@ Plot::GetOperator(int i) const
     return operators[i];
 }
 
+Target: xml2atts
 Function: GetOperatorName
 Declaration: const std::string  &GetOperatorName(int i) const;
 Definition:
@@ -52,6 +57,7 @@ Plot::GetOperatorName(int i) const
     return operatorNames[i];
 }
 
+Target: xml2atts
 Function: RemoveLastOperator
 Declaration: void RemoveLastOperator();
 Definition:

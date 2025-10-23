@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: FindIndex
 Declaration: int FindIndex(const std::string &name) const;
 Definition:
@@ -32,6 +33,7 @@ DBOptionsAttributes::FindIndex(const std::string &name) const
     return -1;
 }
 
+Target: xml2atts
 Function: SetBool
 Declaration: void SetBool(const std::string &name, bool defaultValue);
 Definition:
@@ -60,6 +62,7 @@ DBOptionsAttributes::SetBool(const std::string &name, bool defaultValue)
         optBools[bIndex] = defaultValue;
 }
 
+Target: xml2atts
 Function: GetBool
 Declaration: bool GetBool(const std::string &name) const;
 Definition:
@@ -87,6 +90,7 @@ DBOptionsAttributes::GetBool(const std::string &name) const
     return optBools[bIndex] != 0;
 }
 
+Target: xml2atts
 Function: SetFloat
 Declaration: void SetFloat(const std::string &name, float defaultValue);
 Definition:
@@ -115,6 +119,7 @@ DBOptionsAttributes::SetFloat(const std::string &name, float defaultValue)
         optFloats[bIndex] = defaultValue;
 }
 
+Target: xml2atts
 Function: GetFloat
 Declaration: float GetFloat(const std::string &name) const;
 Definition:
@@ -142,6 +147,7 @@ DBOptionsAttributes::GetFloat(const std::string &name) const
     return (float) optFloats[bIndex];
 }
 
+Target: xml2atts
 Function: SetDouble
 Declaration: void SetDouble(const std::string &name, double defaultValue);
 Definition:
@@ -170,6 +176,7 @@ DBOptionsAttributes::SetDouble(const std::string &name, double defaultValue)
         optDoubles[bIndex] = defaultValue;
 }
 
+Target: xml2atts
 Function: GetDouble
 Declaration: double GetDouble(const std::string &name) const;
 Definition:
@@ -197,6 +204,7 @@ DBOptionsAttributes::GetDouble(const std::string &name) const
     return optDoubles[bIndex];
 }
 
+Target: xml2atts
 Function: SetInt
 Declaration: void SetInt(const std::string &name, int defaultValue);
 Definition:
@@ -225,6 +233,7 @@ DBOptionsAttributes::SetInt(const std::string &name, int defaultValue)
         optInts[bIndex] = defaultValue;
 }
 
+Target: xml2atts
 Function: GetInt
 Declaration: int GetInt(const std::string &name) const;
 Definition:
@@ -252,6 +261,7 @@ DBOptionsAttributes::GetInt(const std::string &name) const
     return optInts[bIndex];
 }
 
+Target: xml2atts
 Function: SetString
 Declaration: void SetString(const std::string &name, const std::string &defaultValue);
 Definition:
@@ -280,6 +290,7 @@ DBOptionsAttributes::SetString(const std::string &name, const std::string &defau
         optStrings[bIndex] = defaultValue;
 }
 
+Target: xml2atts
 Function: GetString
 Declaration: const std::string &GetString(const std::string &name) const;
 Definition:
@@ -307,6 +318,7 @@ DBOptionsAttributes::GetString(const std::string &name) const
     return optStrings[bIndex];
 }
 
+Target: xml2atts
 Function: SetEnum
 Declaration: void SetEnum(const std::string &name, int defaultValue);
 Definition:
@@ -341,6 +353,7 @@ DBOptionsAttributes::SetEnum(const std::string &name, int defaultValue)
         optEnums[bIndex] = defaultValue;
 }
 
+Target: xml2atts
 Function: GetEnum
 Declaration: int GetEnum(const std::string &name) const;
 Definition:
@@ -368,6 +381,7 @@ DBOptionsAttributes::GetEnum(const std::string &name) const
     return optEnums[bIndex];
 }
 
+Target: xml2atts
 Function: SetEnumStrings
 Declaration: void SetEnumStrings(const std::string &name, const std::vector<std::string> &values);
 Definition:
@@ -411,6 +425,7 @@ DBOptionsAttributes::SetEnumStrings(const std::string &name,
     enumStringsSizes[eIndex] = values.size();
 }
 
+Target: xml2atts
 Function: GetMultiLineString
 Declaration: const std::string &GetMultiLineString(const std::string &name) const;
 Definition:
@@ -433,6 +448,7 @@ DBOptionsAttributes::GetMultiLineString(const std::string &name) const
     return optMultiLineStrings[bIndex];
 }
 
+Target: xml2atts
 Function: SetMultiLineString
 Declaration: void SetMultiLineString(const std::string &name, const std::string &defaultValue);
 Definition:
@@ -463,6 +479,7 @@ DBOptionsAttributes::SetMultiLineString(const std::string &name,
     }
 }
 
+Target: xml2atts
 Function: GetNumberOfOptions
 Declaration: int GetNumberOfOptions(void) const;
 Definition:
@@ -472,6 +489,7 @@ DBOptionsAttributes::GetNumberOfOptions(void) const
     return names.size();
 }
 
+Target: xml2atts
 Function: GetType
 Declaration: DBOptionsAttributes::OptionType GetType(int) const;
 Definition:
@@ -484,6 +502,7 @@ DBOptionsAttributes::GetType(int index) const
     return (DBOptionsAttributes::OptionType) types[index];
 }
 
+Target: xml2atts
 Function: GetEnumStrings
 Declaration: std::vector<std::string> GetEnumStrings(const std::string &name) const;
 Definition:
@@ -520,6 +539,7 @@ DBOptionsAttributes::GetEnumStrings(const std::string &name) const
     return rv;
 }
 
+Target: xml2atts
 Function: GetName
 Declaration: std::string GetName(int) const;
 Definition:
@@ -529,6 +549,7 @@ DBOptionsAttributes::GetName(int idx) const
     return names[idx];
 }
 
+Target: xml2atts
 Function: SetObsolete
 Declaration: void SetObsolete(const std::string &name);
 Definition:
@@ -548,6 +569,7 @@ DBOptionsAttributes::SetObsolete(const std::string &name)
     obsoleteNames.push_back(name);
 }
 
+Target: xml2atts
 Function: IsObsolete
 Declaration: bool IsObsolete(const std::string &name) const;
 Definition:
@@ -571,6 +593,7 @@ DBOptionsAttributes::IsObsolete(const std::string &name) const
     return false;
 }
 
+Target: xml2atts
 Function: Merge
 Declaration: bool Merge(const DBOptionsAttributes &obj);
 Definition:

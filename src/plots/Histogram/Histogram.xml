@@ -60,10 +60,10 @@
         false
       </Field>
       <Field name="min" label="Minimum" type="double" enabler="minFlag:true">
-        0.000000
+        0
       </Field>
       <Field name="max" label="Maximum" type="double" enabler="maxFlag:true">
-        1.000000
+        1
       </Field>
       <Field name="numBins" label="Number of Bins" type="int" enabler="basedOn:ManyZonesForSingleVar">
         32

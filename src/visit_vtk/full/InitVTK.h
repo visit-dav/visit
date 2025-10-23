@@ -9,6 +9,7 @@
 #ifndef INIT_VTK_H
 #define INIT_VTK_H
 #include <visit_vtk_exports.h>
+#include <string>
 
 // ****************************************************************************
 //  Module: InitVTK
@@ -19,11 +20,17 @@
 //  Programmer: Hank Childs
 //  Creation:   April 24, 2001
 //
+//  Modifications:
+//    Kathleen Biagas, Wed Oct 1, 2025
+//    Add optional string argument. It will be passed to
+//    InitVTKLite::Initialize, and used to create a callback to write their
+//    log info to VisIt's debug log.
+//
 // ****************************************************************************
 
 namespace InitVTK
 {
-    VISIT_VTK_API void Initialize();
+    VISIT_VTK_API void Initialize(const std::string & = "");
 }
 
 #endif
