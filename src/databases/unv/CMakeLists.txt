@@ -16,12 +16,15 @@ SET(LIBM_SOURCES
 unvMDServerPluginInfo.C
 ${COMMON_SOURCES}
 avtunvFileFormat.C
+avtunvOptions.C
 )
 
 SET(LIBE_SOURCES
 unvEnginePluginInfo.C
 ${COMMON_SOURCES}
 avtunvFileFormat.C
+avtunvWriter.C
+avtunvOptions.C
 )
 
 INCLUDE_DIRECTORIES(
@@ -37,19 +40,19 @@ SET(INSTALLTARGETS IunvDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MunvDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MunvDatabase visitcommon avtdbatts avtdatabase_ser ${ZLIB_LIBRARY} )
+    TARGET_LINK_LIBRARIES(MunvDatabase visitcommon avtdbatts avtdatabase_ser ${ZLIB_LIBRARY} ${vtk_libs} )
     ADD_TARGET_DEFINITIONS(MunvDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MunvDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EunvDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EunvDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${ZLIB_LIBRARY} )
+TARGET_LINK_LIBRARIES(EunvDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${ZLIB_LIBRARY} ${vtk_libs} )
 ADD_TARGET_DEFINITIONS(EunvDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EunvDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EunvDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EunvDatabase_par visitcommon avtpipeline_par avtdatabase_par ${ZLIB_LIBRARY} )
+    TARGET_LINK_LIBRARIES(EunvDatabase_par visitcommon avtpipeline_par avtdatabase_par ${ZLIB_LIBRARY} ${vtk_libs} )
     ADD_TARGET_DEFINITIONS(EunvDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EunvDatabase_par)
 ENDIF(VISIT_PARALLEL)
