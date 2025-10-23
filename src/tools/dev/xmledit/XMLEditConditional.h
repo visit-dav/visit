@@ -8,9 +8,9 @@
 #include <QFrame>
 
 class XMLDocument;
+class QLabel;
 class QLineEdit;
 class QListWidget;
-class QTextEdit;
 class QPushButton;
 
 // ****************************************************************************
@@ -29,7 +29,12 @@ class QPushButton;
 //    Kathleen Biagas, Tue Oct 21, 2025
 //    Add support for vlinklibs.
 //
+//    Kathleen Biagas, Thu Oct 23, 2025
+//    Changed use of QTextEdit to QLineEdit. Added QLabel ivars to assist
+//    with visuals when widgets are disabled.
+//
 // ****************************************************************************
+
 class XMLEditConditional : public QFrame
 {
     Q_OBJECT
@@ -39,7 +44,6 @@ class XMLEditConditional : public QFrame
     void BlockAllSignals(bool);
   public slots:
     void UpdateWindowContents();
-    void UpdateTextEditSizes();
     void UpdateWindowSensitivity();
     void UpdateWindowSingleItem();
     void conditionTextChanged();
@@ -60,13 +64,27 @@ class XMLEditConditional : public QFrame
     QPushButton    *delButton;
 
     QListWidget    *conditionList;
+
+    QLabel         *conditionLabel;
     QLineEdit      *condition;
+
+    QLabel         *targetLabel;
     QLineEdit      *target;
-    QTextEdit      *definitions;
-    QTextEdit      *cxxflags;
-    QTextEdit      *mlinklibs;
-    QTextEdit      *vlinklibs;
-    QTextEdit      *elinklibs;
+
+    QLabel         *defLabel;
+    QLineEdit      *definitions;
+
+    QLabel         *flagsLabel;
+    QLineEdit      *cxxflags;
+
+    QLabel         *mlinkLabel;
+    QLineEdit      *mlinklibs;
+
+    QLabel         *vlinkLabel;
+    QLineEdit      *vlinklibs;
+
+    QLabel         *elinkLabel;
+    QLineEdit      *elinklibs;
 };
 
 #endif
