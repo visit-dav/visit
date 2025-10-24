@@ -1360,16 +1360,29 @@ avtMFEMDataAdaptor::ParseQuadratureFunctionBasisString(const std::string &basis,
     // split to parse
     std::vector<std::string> toks = StringHelpers::split(basis,'_');
 
-    // there should be 3 tokends
+    // there should be 3 tokens
     if(toks.size() != 3)
     {
-        //TODO ERROR, bad qf basis string
+        //bad qf basis string
+        AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                            "Invalid quadrature function basis string: " << basis  << std::endl
+                            << "Expected: QF_{ORDER}_{VDIM}");
     }
 
     // ORDER
-    StringHelpers::StringToInt(toks[1],qf_order);
+    if(!StringHelpers::StringToInt(toks[1],qf_order))
+    {
+        // error
+        AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                            "Failed to parse quadrature function order from " << toks[1]);
+    }
     // VDIM
-    StringHelpers::StringToInt(toks[2],qf_vdim);
+    if(!StringHelpers::StringToInt(toks[2],qf_vdim))
+    {
+        // error
+        AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                            "Failed to parse quadrature function vdim from " << toks[1]);
+    }
 }
 
 // ****************************************************************************
