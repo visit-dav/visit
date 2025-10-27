@@ -673,10 +673,10 @@ def test_bp_data(testname, conduit_db, qro):
     spatial_coords_y = xray_coordsets["spatial_coords/values/y"]
     energy_group_bounds = xray_coordsets["spatial_coords/values/z"]
     energy_group_info = xray_coordsets["spatial_coords/info"]
-    TestValueEQ(testname + "_data_SpatialExtents0", [spatial_coords_x[0], spatial_coords_y[0]], [0.0, 0.0])
-    TestValueEQ(testname + "_data_SpatialExtents1", [spatial_coords_x[1], spatial_coords_y[1]], [0.05, 0.05])
-    TestValueEQ(testname + "_data_SpatialExtents2", [spatial_coords_x[2], spatial_coords_y[2]], [0.1, 0.1])
-    TestValueEQ(testname + "_data_SpatialExtents3", [spatial_coords_x[-1], spatial_coords_y[-1]], [15.0, 10.0])
+    TestValueEQ(testname + "_data_SpatialExtents0", [spatial_coords_x[0], spatial_coords_y[0]], [-7.5, -5.0])
+    TestValueEQ(testname + "_data_SpatialExtents1", [spatial_coords_x[1], spatial_coords_y[1]], [-7.45, -4.95])
+    TestValueEQ(testname + "_data_SpatialExtents2", [spatial_coords_x[2], spatial_coords_y[2]], [-7.4, -4.9])
+    TestValueEQ(testname + "_data_SpatialExtents3", [spatial_coords_x[-1], spatial_coords_y[-1]], [7.5, 5.0])
 
     if (qro.bin_state == NO_ENERGY_GROUP_BOUNDS):
         TestValueEQ(testname + "_data_EnergyGroupInfo", energy_group_info, "Energy group bounds not provided.")
@@ -749,7 +749,7 @@ def full_mesh_rotated_view():
 def spatial_mesh_rotated_view():
     View3DAtts = View3DAttributes()
     View3DAtts.viewNormal = (0.67, 0.33, 0.67)
-    View3DAtts.focus = (7.5, 5, 0.5)
+    View3DAtts.focus = (0, 0, 0.5)
     View3DAtts.viewUp = (-0.2, 0.95, -0.2)
     View3DAtts.viewAngle = 30
     View3DAtts.parallelScale = 15.
