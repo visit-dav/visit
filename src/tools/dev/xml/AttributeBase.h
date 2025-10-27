@@ -7,7 +7,6 @@
 #include <QTextStream>
 #include "Function.h"
 #include "Code.h"
-#include "Conditional.h"
 #include "Constant.h"
 #include "CodeFile.h"
 #include "Include.h"
@@ -36,6 +35,9 @@
 //    Kathleen Biagas, Tue Sep 30 14:58:55 PDT 2025
 //    Keep track of conditionals (used by xml2cmake).
 //
+//    Kathleen Biagas, Tue Oct 21 2025
+//    Removed conditionals, now completely handled in CodeFile.h
+//
 // ****************************************************************************
 
 class AttributeBase
@@ -51,7 +53,6 @@ public:
     std::vector<Constant*>  constants;
     std::vector<Include*>   includes;
     std::vector<Code*>      codes;
-    std::vector<Conditional*>  conditionals;
     CodeFile          *codeFile;
     bool               custombase;
     QString            baseClass;
@@ -70,7 +71,6 @@ public:
           constants(),
           includes(),
           codes(),
-          conditionals(),
           codeFile(NULL),
           custombase(false),
           baseClass(bc)
@@ -104,9 +104,6 @@ public:
         for (i = 0; i < codes.size(); ++i)
             delete codes[i];
         codes.clear();
-        for (i = 0; i < conditionals.size(); ++i)
-            delete conditionals[i];
-        conditionals.clear();
 
         delete codeFile;
     }

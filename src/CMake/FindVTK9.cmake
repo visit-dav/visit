@@ -24,6 +24,9 @@
 #  Kathleen Biagas, Thu Jun 19, 2025
 #  Remove support for VTK < 9.5. Simplify some logic.
 #
+#  Kathleen Biagas, Mon Oct 20, 2025 
+#  Change ospray check to 'ospray_FOUND' instead of 'OSPRAY_FOUND'.
+#
 #*****************************************************************************
 
 # Use the VTK_DIR hint from the config-site .cmake file
@@ -59,7 +62,7 @@ if(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     set(Qt${QT_VERSION_MAJOR}_DIR ${VISIT_QT_DIR}/lib/cmake/Qt${QT_VERSION_MAJOR})
 endif()
 
-if(OSPRAY_FOUND)
+if(ospray_FOUND)
     list(APPEND REQ_VTK_MODS RenderingRayTracing)
 endif()
 

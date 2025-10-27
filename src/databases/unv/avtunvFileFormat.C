@@ -30,7 +30,7 @@
 #include <avtunvFileFormat.h>
 
 #include <string>
-#include <stdint.h>
+#include <cstdint>
 
 #include <vtkFloatArray.h>
 #include <vtkRectilinearGrid.h>
@@ -4548,7 +4548,7 @@ avtunvFileFormat::ReadFile()
             if (igtyp == 3)
             {
                 // This is the ARL format:
-                char sousbuf[10];
+                char sousbuf[16];
                 int ic ;
                 int nbcells ;
                 sscanf(buf+4, "%d%d%d", &nbnodes, &nbcells, &nb2dmats) ;
@@ -4721,7 +4721,7 @@ avtunvFileFormat::ReadFile()
             else if (igtyp > 0)
             {
                 // This is the legacy format:
-                char sousbuf[10];
+                char sousbuf[16];
                 int ic ;
                 for (ic=0; ic < 4; ic++)
                 {
@@ -6987,6 +6987,7 @@ avtunvFileFormat::GetAuxiliaryData(const char *var, const char *type, void *,Des
                 debug3 << "2D Material #cells=" << dims[0] << endl;
 #endif
                 for (itre = meshUnvElements.begin(); itre != meshUnvElements.end(); itre++)
+                {
 #if INTERACTIVEPLOT
                     if (debuglevel >= 5) fprintf(stdout,"Element type=%d\n",itre->typelt);
 #else
@@ -6997,6 +6998,7 @@ avtunvFileFormat::GetAuxiliaryData(const char *var, const char *type, void *,Des
                         matlist[k] = itre->matid;
                         k++ ;
                     }
+                }
             }
             else if (strcmp(var, "wiremats") == 0)
             {

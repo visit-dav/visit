@@ -57,6 +57,9 @@
 // 
 //    Justin Privitera, Fri Jun 16 17:17:14 PDT 2023
 //    Added view width override and non square pixels.
+// 
+//    Justin Privitera, Fri Oct 17 16:39:39 PDT 2025
+//    Changed "hdf5", "yaml", and "json" to have "blueprint" in the name.
 //
 // ****************************************************************************
 
@@ -80,9 +83,9 @@ QvisXRayImageQueryWidget::QvisXRayImageQueryWidget(QWidget *parent,
     imageFormat->addItem(tr("tiff"));
     imageFormat->addItem(tr("rawfloats"));
     imageFormat->addItem(tr("bov"));
-    imageFormat->addItem(tr("json"));
-    imageFormat->addItem(tr("hdf5"));
-    imageFormat->addItem(tr("yaml"));
+    imageFormat->addItem(tr("blueprint json"));
+    imageFormat->addItem(tr("blueprint hdf5"));
+    imageFormat->addItem(tr("blueprint yaml"));
     imageFormat->setCurrentIndex(1);
     topLayout->addWidget(imageFormat, 0, 1);
 

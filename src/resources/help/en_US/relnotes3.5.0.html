@@ -115,7 +115,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The X Ray Image Query now clips results beyond the far clipping plane.</li>
   <li>The Verdict mesh quality library that is builtin to VisIt was enhanced to handle generate hexahedra. This improves expressions and queries that use the Verdict library.</li>
   <li>Fixed a bug with the X Ray Image Query where VisIt would in some rare instances either crash or create an image that was too dark when running in parallel.</li>
-</ul>
+  <li>The X Ray Image Query Blueprint output types now have "blueprint" in their names, so, for example, "hdf5" is now "blueprint hdf5". The original names are still supported.</li>
 </ul>
 
 <a name="Bugs_fixed"></a>
@@ -139,7 +139,9 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Added a descriptive error message for when a movie encoding format is not supported on the current platform.</li>
   <li>Fixed a bug where rendering with shadows would result in an all black image except for the annotations when the image contained transparent geometry.</li>
   <li>Fixed a bug where RPATHs weren't stripped from distributions. This could lead to issues for users that didn't build the distribution. It could also cause issues when a distribution is installed on a machine different from where it was built.</li>
+  <li>Fixed crash loading SILO files when compiled with version 4.11 of the SILO library.</li>
   <li>Fixed a bug with global mesh expressions causing them to only work on single domain data. They now function across all domains in parallel and in serial.</li>
+  <li>Eliminated a couple of memory leaks. The first was in the operator that removes ghost zones and calculates external faces. The second was in the Resample operator.</li>
 </ul>
 
 <a name="Build_features"></a>
@@ -165,7 +167,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 3.5</font></b></p>
 <ul>
-  <li>xmledit and other xml code gen tools have been fixed such that all logic in a '.code' file will be properly displayed in 'xmledit' and also saved accurately when 'save' issued from xmledit.  The 'Target' designator is now always written to the .code file, even if the target is the default 'xml2atts' target.</li>
+  <li>xmledit and other xml code gen tools have been fixed such that all logic in a '.code' file will be properly displayed in 'xmledit' and also saved accurately when 'save' issued from xmledit.  The 'Target' designator is now always written to the .code file, even if the target is the default 'xml2atts' target. Unix-style line endings are now always used when writing files from 'xmledit'.</li>
   <li>Developer Change 2</li>
 </ul>
 

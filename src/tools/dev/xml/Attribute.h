@@ -85,6 +85,14 @@
 //    Kathleen Biagas, Thu Oct 9, 2025
 //    Add cxxflags to conditionals.
 //
+//    Kathleen Biagas, Mon Oct 20, 2025
+//    Don't use QIODevice::Text when writing on Windows as it writes CR\LF
+//    and we want to use unix-style line endings.
+//
+//    Kathleen Biagas, Tue Oct 21, 2025
+//    Change how Conditionals are handled, they are now stored in and
+//    accessed from CodeFile.
+//
 // ****************************************************************************
 
 class Attribute : public AttributeBase
@@ -268,7 +276,11 @@ class Attribute : public AttributeBase
             return;
 
         QFile *f = new QFile(codeFile->FileName());
+#ifdef _WIN32
+        if (!f->open(QIODevice::WriteOnly))
+#else
         if (!f->open(QIODevice::WriteOnly | QIODevice::Text))
+#endif
         {
             delete f;
             throw "Could not open code file for saving\n";
@@ -348,21 +360,15 @@ class Attribute : public AttributeBase
             if (!(f->def.isEmpty()) && !(f->def.right(1) == "\n"))
                 out << Endl;
         }
-        for (i=0; i<conditionals.size(); i++)
+
+        if(codeFile && !codeFile->conditions.empty())
         {
-            Conditional *c = conditionals[i];
-            out << "Target: " << c->target << Endl;
-            currentTarget = c->target;
-            out << "Condition: " << c->condition << Endl;
-            if(!c->definitions.isEmpty())
-                out << "Definitions: " << c->definitions << Endl;
-            if(!c->cxxflags.isEmpty())
-                out << "CXXFlags: " << c->cxxflags << Endl;
-            if(!c->mlinklibs.isEmpty())
-                out << "MLinkLibraries: " << c->mlinklibs << Endl;
-            if(!c->elinklibs.isEmpty())
-                out << "ELinkLibraries: " << c->elinklibs << Endl;
-            out << Endl;
+            for (i=0; i < codeFile->conditions.size(); i++)
+            {
+                Conditional *c = codeFile->conditions[i];
+                c->WriteToCodeFile(out); 
+                currentTarget = c->target;
+            }
         }
 
         f->close();

@@ -20,7 +20,7 @@
 #include <ConfigureInfo.h>
 
 #define TIMER_DURATION 2*1000     // 2 seconds
-#define NUM_PIX 4
+#define NUM_PIX 6
 
 // ****************************************************************************
 //  Method: SplashScreen::SplashScreen
@@ -272,6 +272,9 @@
 //    Cyrus Harrison, Tue Mar 19 16:02:47 PDT 2024
 //    Changed the date on the splash screen to April 2024.
 //
+//    Eric Brugger, Fri Oct  3 09:46:05 PDT 2025
+//    Changed the splash screen to use 6 images instead of 4.
+//
 // ****************************************************************************
 
 SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
@@ -316,6 +319,10 @@ SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
          pictures.push_back(QPixmap(GetVisItResourcesFile(VISIT_RESOURCES_IMAGES, "VisIt3.png").c_str()));
     if(firstPicture == 3 || cyclePictures)
          pictures.push_back(QPixmap(GetVisItResourcesFile(VISIT_RESOURCES_IMAGES, "VisIt4.png").c_str()));
+    if(firstPicture == 4 || cyclePictures)
+         pictures.push_back(QPixmap(GetVisItResourcesFile(VISIT_RESOURCES_IMAGES, "VisIt5.png").c_str()));
+    if(firstPicture == 5 || cyclePictures)
+         pictures.push_back(QPixmap(GetVisItResourcesFile(VISIT_RESOURCES_IMAGES, "VisIt6.png").c_str()));
 
     // If we have more stuff than just a version number in the version
     // string then draw that information onto the splashscreen.
