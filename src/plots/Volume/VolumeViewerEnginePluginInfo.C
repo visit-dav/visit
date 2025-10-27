@@ -161,6 +161,7 @@ VolumeViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
 {
     *(VolumeAttributes*)atts = *defaultAtts;
 }
+
 // ****************************************************************************
 //  Method: VolumeViewerEnginePluginInfo::GetMenuName
 //

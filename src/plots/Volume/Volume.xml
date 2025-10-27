@@ -13,7 +13,6 @@
       avtICETCompositor.C
     </Files>
     <LIBS components="V">
-      VTK::RenderingVolume
       VTK::RenderingVolumeOpenGL2
     </LIBS>
     <Files components="E">
@@ -28,13 +27,11 @@
     <LIBS components="ESer">
       avtexpressions_ser
       avtfilters_ser
-      VTK::RenderingVolume
       VTK::RenderingVolumeOpenGL2
     </LIBS>
     <LIBS components="EPar">
       avtexpressions_par
       avtfilters_par
-      VTK::RenderingVolume
       VTK::RenderingVolumeOpenGL2
     </LIBS>
     <Attribute name="VolumeAttributes" purpose="This class contains the plot attributes for the volume plot." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="VolumeAttributes.code">
