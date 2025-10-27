@@ -319,7 +319,8 @@ void avtCurveConstructorFilter::Execute()
 //    multi-curve output.
 //
 //    Kathleen Biagas, Mon Oct 27, 2025
-//    Ensure ouputArray is cleared in the case it contains too many points.
+//    Changed logic surrounding outputArray: don't add anything to it if
+//    the size will be more than 100000 items.
 //
 // ****************************************************************************
 
@@ -508,16 +509,20 @@ avtCurveConstructorFilter::CreateSingleOutput(avtDataTree_p inTree, const string
     }
     nPoints = sortedXC->GetNumberOfTuples();
     outGrid->SetDimensions(nPoints, 1, 1);
-    outputArray.clear();
-    for (int i = 0; i < nPoints; i++)
-    {
-        outputArray.push_back(sortedXC->GetTuple1(i));
-        outputArray.push_back(sortedVal->GetTuple1(i));
-    }
+
     string varname = (!label.empty() ? label : (pipelineVariable != NULL ? pipelineVariable : "Curve"));
+
+    outputArray.clear();
     // Limit outputArray size that we send back to the client.
-    if(outputArray.size() < 100000)
+    if(nPoints*2 < 100000)
     {
+        for (int i = 0; i < nPoints; i++)
+        {
+            outputArray.push_back(sortedXC->GetTuple1(i));
+            outputArray.push_back(sortedVal->GetTuple1(i));
+        }
+
+        // if there will be more than 1 output curve
         if (count > 1)
         {
             outputInfo[varname] = outputArray;
@@ -526,7 +531,6 @@ avtCurveConstructorFilter::CreateSingleOutput(avtDataTree_p inTree, const string
     }
     else
     {
-        outputArray.clear();
         debug5 << "Curve constructor filter does not send curves that contain "
                   "more than 100K values to the client." << endl;
     }
