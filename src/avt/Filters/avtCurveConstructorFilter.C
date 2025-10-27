@@ -318,6 +318,9 @@ void avtCurveConstructorFilter::Execute()
 //    Utilize same varname for single-curve output as would be used for
 //    multi-curve output.
 //
+//    Kathleen Biagas, Mon Oct 27, 2025
+//    Ensure ouputArray is cleared in the case it contains too many points.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -523,6 +526,7 @@ avtCurveConstructorFilter::CreateSingleOutput(avtDataTree_p inTree, const string
     }
     else
     {
+        outputArray.clear();
         debug5 << "Curve constructor filter does not send curves that contain "
                   "more than 100K values to the client." << endl;
     }
