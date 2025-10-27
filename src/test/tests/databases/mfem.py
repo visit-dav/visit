@@ -76,7 +76,7 @@ for f in input_meshs:
     for mres in levels:
         mc_atts = MultiresControlAttributes()
         mc_atts.resolution = mres
-        mc_atts.refMethod = MultiresControlAtts.Discontinuous_Refine
+        mc_atts.refMethod = mc_atts.Discontinuous_Refine
         SetOperatorOptions(mc_atts)
         ResetView()
         DrawPlots()
@@ -229,7 +229,7 @@ def test_mfem_lor_field(tag_name, dbfile):
     SetActivePlots(0)
     MultiresControlAtts = MultiresControlAttributes()
     MultiresControlAtts.resolution = 3
-    MultiresControlAtts.refMethod = MultiresControlAttributes.LOR_Projection_Default
+    MultiresControlAtts.refMethod = MultiresControlAtts.LOR_Projection_Default
     SetOperatorOptions(MultiresControlAtts, 0, 1)
     set_test_view()
     DrawPlots()
@@ -252,7 +252,7 @@ def test_mfem_lor_field(tag_name, dbfile):
     SetActivePlots(0)
     MultiresControlAtts = MultiresControlAttributes()
     MultiresControlAtts.resolution = 3
-    MultiresControlAtts.refMethod = MultiresControlAttributes.LOR_Projection_Default
+    MultiresControlAtts.refMethod = MultiresControlAtts.LOR_Projection_Default
     SetOperatorOptions(MultiresControlAtts, 0, 1)
     set_test_view()
     DrawPlots()
