@@ -354,7 +354,7 @@ avtMFEMDataAdaptor::LowOrderMeshToVTK(mfem::Mesh *mesh)
 //    mesh:        MFEM mesh to be refined
 //    domain:      domain id
 //    lod:         number of refinement steps
-//    new_refine:  switch for using the new LOR or legacy LOR
+//    ref_method:  chosen MFEM LOR method
 //
 //  Programmer: Justin Privitera
 //  Creation:   Wed Apr 13 13:53:06 PDT 2022
@@ -384,11 +384,11 @@ vtkDataSet *
 avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
                                     int domain,
                                     int lod,
-                                    bool new_refine)
+                                    refinementMethod ref_method)
 {
     AVT_MFEM_INFO("Creating Refined MFEM Mesh with lod:" << lod);
 
-    if (!new_refine)
+    if (ref_method == refinementMethod::Discontinuous_Refine)
     {
         AVT_MFEM_INFO("Using Legacy LOR to refine mesh.");
         return LegacyRefineMeshToVTK(mesh, domain, lod);
@@ -416,66 +416,84 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
 
     AVT_MFEM_INFO("High Order Mesh is not periodic.");
 
-    // mfem::Mesh::MakeRefined does not yet support pyramids
-    if(mesh->GetNE() > 0)
+    if (ref_method == refinementMethod::LOR_Projection_Default)
     {
-        if(mesh->GetElement(0)->GetType() == mfem::Element::PYRAMID)
+        // mfem::Mesh::MakeRefined does not yet support pyramids
+        if(mesh->GetNE() > 0)
         {
-            AVT_MFEM_EXCEPTION1(InvalidVariableException,
-                                "Current MFEM implementation does not support refining Meshes with Pyramids.");
+            if(mesh->GetElement(0)->GetType() == mfem::Element::PYRAMID)
+            {
+                AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                                    "Current MFEM implementation does not support refining Meshes with Pyramids.");
+            }
         }
+
+        // refine the mesh
+        mfem::Mesh lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::GaussLobatto);
+
+        vtkDataSet *res_ds = LowOrderMeshToVTK(&lo_mesh);
+
+        /// ----------------
+        // add original cell ids, which associate our refined elements with the
+        // original mfem elements.
+        /// ----------------
+        // NOTE:
+        //  This counting pattern follows the implementation of
+        // mfem::Mesh::MakeRefined. If its implementation changes significantly,
+        // we will have to adapt this logic as well.
+        /// ----------------
+
+        int orig_nelems = mesh->GetNE();
+
+        GeometryRefiner refiner;
+        refiner.SetType(BasisType::GetQuadrature1D(mfem::BasisType::GaussLobatto));
+
+        int lor_nelems = lo_mesh.GetNE();
+
+        vtkUnsignedIntArray *orig_cell_ids = vtkUnsignedIntArray::New();
+        orig_cell_ids->SetName("avtOriginalCellNumbers");
+        orig_cell_ids->SetNumberOfComponents(2);
+        orig_cell_ids->SetNumberOfTuples(lor_nelems);
+
+        unsigned int *orig_cell_ids_ptr = orig_cell_ids->GetPointer(0);
+
+        int orig_cell_ids_idx=0;
+        // assoc refined elements with orig element
+        for (int el = 0; el < orig_nelems; el++)
+        {
+           Geometry::Type geom = mesh->GetElementGeometry(el);
+
+           int nvert = Geometry::NumVerts[geom];
+           RefinedGeometry &RG = *refiner.Refine(geom, lod);
+
+           for (int j = 0; j < RG.RefGeoms.Size()/nvert; j++)
+           {
+               orig_cell_ids_ptr[orig_cell_ids_idx] = static_cast<unsigned int>(domain);
+               orig_cell_ids_ptr[orig_cell_ids_idx+1] = static_cast<unsigned int>(el);
+               orig_cell_ids_idx+=2;
+           }
+        }
+
+        res_ds->GetCellData()->AddArray(orig_cell_ids);
+        orig_cell_ids->Delete();
+
+        return res_ds;
     }
-
-    // refine the mesh
-    mfem::Mesh lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::GaussLobatto);
-
-    vtkDataSet *res_ds = LowOrderMeshToVTK(&lo_mesh);
-
-    /// ----------------
-    // add original cell ids, which associate our refined elements with the
-    // original mfem elements.
-    /// ----------------
-    // NOTE:
-    //  This counting pattern follows the implementation of
-    // mfem::Mesh::MakeRefined. If its implementation changes significantly,
-    // we will have to adapt this logic as well.
-    /// ----------------
-
-    int orig_nelems = mesh->GetNE();
-
-    GeometryRefiner refiner;
-    refiner.SetType(BasisType::GetQuadrature1D(mfem::BasisType::GaussLobatto));
-
-    int lor_nelems = lo_mesh.GetNE();
-
-    vtkUnsignedIntArray *orig_cell_ids = vtkUnsignedIntArray::New();
-    orig_cell_ids->SetName("avtOriginalCellNumbers");
-    orig_cell_ids->SetNumberOfComponents(2);
-    orig_cell_ids->SetNumberOfTuples(lor_nelems);
-
-    unsigned int *orig_cell_ids_ptr = orig_cell_ids->GetPointer(0);
-
-    int orig_cell_ids_idx=0;
-    // assoc refined elements with orig element
-    for (int el = 0; el < orig_nelems; el++)
+    else if (ref_method == refinementMethod::LOR_Nodal_Projection)
     {
-       Geometry::Type geom = mesh->GetElementGeometry(el);
-
-       int nvert = Geometry::NumVerts[geom];
-       RefinedGeometry &RG = *refiner.Refine(geom, lod);
-
-       for (int j = 0; j < RG.RefGeoms.Size()/nvert; j++)
-       {
-           orig_cell_ids_ptr[orig_cell_ids_idx] = static_cast<unsigned int>(domain);
-           orig_cell_ids_ptr[orig_cell_ids_idx+1] = static_cast<unsigned int>(el);
-           orig_cell_ids_idx+=2;
-       }
+        AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                            "TODO MFEM LOR refinement method not implemented: " << ref_method);
     }
-
-    res_ds->GetCellData()->AddArray(orig_cell_ids);
-    orig_cell_ids->Delete();
-
-    return res_ds;
+    else if (ref_method == refinementMethod::LOR_Nodal_Projection)
+    {
+        AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                            "TODO MFEM LOR refinement method not implemented: " << ref_method);
+    }
+    else
+    {
+        AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                            "Unknown MFEM LOR refinement method: " << ref_method);
+    }
 }
 
 
@@ -864,7 +882,7 @@ avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
 //   mesh:         MFEM mesh for the field
 //   gf:           MFEM Grid Function for the field
 //   lod:          number of refinement steps
-//   new_refine:   switch for using the new LOR or legacy LOR
+//   ref_method:   chosen MFEM LOR method
 //
 //  Programmer: Justin Privitera
 //  Creation:   Fri May  6 15:23:56 PDT 2022
@@ -895,12 +913,12 @@ vtkDataArray *
 avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
                                             mfem::GridFunction *gf,
                                             int lod,
-                                            bool new_refine,
+                                            refinementMethod ref_method,
                                             bool var_is_nodal)
 {
     AVT_MFEM_INFO("Creating Refined MFEM Field with lod:" << lod);
 
-    if (!new_refine)
+    if (ref_method == refinementMethod::Discontinuous_Refine)
     {
         AVT_MFEM_INFO("Using Legacy LOR to refine grid function.");
         return LegacyRefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
@@ -928,70 +946,88 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
 
     AVT_MFEM_INFO("High Order Mesh is not periodic.");
 
-    mfem::FiniteElementSpace *ho_fes = gf->FESpace();
-    if(!ho_fes)
+    if (ref_method == refinementMethod::LOR_Projection_Default)
     {
-        AVT_MFEM_EXCEPTION1(InvalidVariableException, 
-            "RefineGridFunctionToVTK: high order gf finite element space is null");
-    }
-    // create the low order grid function
-    mfem::FiniteElementCollection *lo_col;
+        mfem::FiniteElementSpace *ho_fes = gf->FESpace();
+        if(!ho_fes)
+        {
+            AVT_MFEM_EXCEPTION1(InvalidVariableException, 
+                "RefineGridFunctionToVTK: high order gf finite element space is null");
+        }
+        // create the low order grid function
+        mfem::FiniteElementCollection *lo_col;
 
-    // H1 is nodal
-    // L2 is zonal
+        // H1 is nodal
+        // L2 is zonal
 
-    std::string basis(gf->FESpace()->FEColl()->Name());
-    // we may have more than just L2 or H1 at this point
-    bool l2 = basis.find("L2_") != std::string::npos;
-    bool h1 = basis.find("H1_") != std::string::npos;
-    bool node_centered;
-    if (h1 && l2)
-    {
-        AVT_MFEM_EXCEPTION1(InvalidVariableException, 
-            "RefineGridFunctionToVTK: grid function cannot be both H1 and L2");
+        std::string basis(gf->FESpace()->FEColl()->Name());
+        // we may have more than just L2 or H1 at this point
+        bool l2 = basis.find("L2_") != std::string::npos;
+        bool h1 = basis.find("H1_") != std::string::npos;
+        bool node_centered;
+        if (h1 && l2)
+        {
+            AVT_MFEM_EXCEPTION1(InvalidVariableException, 
+                "RefineGridFunctionToVTK: grid function cannot be both H1 and L2");
+        }
+        else if (!h1 && !l2) // defer
+        {
+            AVT_MFEM_INFO("WARNING: RefineGridFunctionToVTK: Grid Function is "
+                          "neither H1 nor L2. Deferring to arguments to determine "
+                          "if grid function is nodal or zonal.");
+            node_centered = var_is_nodal; 
+            // the only danger is that var_is_nodal has a default value
+            // however, the mfem plugin will always pass var_is_nodal, and the 
+            // blueprint plugin always produces h1 or l2.
+        }
+        // This case will override whatever was passed in for var_is_nodal
+        else
+            node_centered = h1 && !l2;
+
+        if (node_centered != var_is_nodal)
+            AVT_MFEM_INFO("WARNING: RefineGridFunctionToVTK: nodal determination mismatch, is var_is_nodal using default value?")
+
+        if (node_centered)
+        {
+            lo_col = new mfem::LinearFECollection;
+        }
+        else
+        {
+            int p = 0; // single scalar
+            lo_col = new mfem::L2_FECollection(p, mesh->Dimension(), 1);
+        }
+        
+        // refine the mesh and convert to vtk
+        // it would be nice if this was cached somewhere but we will do it again
+        mfem::Mesh lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::GaussLobatto);
+        mfem::FiniteElementSpace lo_fes(&lo_mesh, lo_col, ho_fes->GetVDim());
+        mfem::GridFunction lo_gf(&lo_fes);
+        // transform the higher order function to a low order function somehow
+        mfem::OperatorHandle hi_to_lo;
+        lo_fes.GetTransferOperator(*ho_fes, hi_to_lo);
+        hi_to_lo.Ptr()->Mult(*gf, lo_gf);
+
+        vtkDataArray *retval = LowOrderGridFunctionToVTK(&lo_gf);
+        
+        delete lo_col;
+
+        return retval;
     }
-    else if (!h1 && !l2) // defer
+    else if (ref_method == refinementMethod::LOR_Nodal_Projection)
     {
-        AVT_MFEM_INFO("WARNING: RefineGridFunctionToVTK: Grid Function is "
-                      "neither H1 nor L2. Deferring to arguments to determine "
-                      "if grid function is nodal or zonal.");
-        node_centered = var_is_nodal; 
-        // the only danger is that var_is_nodal has a default value
-        // however, the mfem plugin will always pass var_is_nodal, and the 
-        // blueprint plugin always produces h1 or l2.
+        AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                            "TODO MFEM LOR refinement method not implemented: " << ref_method);
     }
-    // This case will override whatever was passed in for var_is_nodal
+    else if (ref_method == refinementMethod::LOR_Nodal_Projection)
+    {
+        AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                            "TODO MFEM LOR refinement method not implemented: " << ref_method);
+    }
     else
-        node_centered = h1 && !l2;
-
-    if (node_centered != var_is_nodal)
-        AVT_MFEM_INFO("WARNING: RefineGridFunctionToVTK: nodal determination mismatch, is var_is_nodal using default value?")
-
-    if (node_centered)
     {
-        lo_col = new mfem::LinearFECollection;
+        AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                            "Unknown MFEM LOR refinement method: " << ref_method);
     }
-    else
-    {
-        int p = 0; // single scalar
-        lo_col = new mfem::L2_FECollection(p, mesh->Dimension(), 1);
-    }
-    
-    // refine the mesh and convert to vtk
-    // it would be nice if this was cached somewhere but we will do it again
-    mfem::Mesh lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::GaussLobatto);
-    mfem::FiniteElementSpace lo_fes(&lo_mesh, lo_col, ho_fes->GetVDim());
-    mfem::GridFunction lo_gf(&lo_fes);
-    // transform the higher order function to a low order function somehow
-    mfem::OperatorHandle hi_to_lo;
-    lo_fes.GetTransferOperator(*ho_fes, hi_to_lo);
-    hi_to_lo.Ptr()->Mult(*gf, lo_gf);
-
-    vtkDataArray *retval = LowOrderGridFunctionToVTK(&lo_gf);
-    
-    delete lo_col;
-
-    return retval;
 }
 
 // ****************************************************************************

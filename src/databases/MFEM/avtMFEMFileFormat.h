@@ -9,6 +9,9 @@
 #ifndef AVT_MFEM_FILE_FORMAT_H
 #define AVT_MFEM_FILE_FORMAT_H
 
+// NOTE: This is from avtmfem lib
+#include "avtMFEMDataAdaptor.h"
+
 #include <avtSTMDFileFormat.h>
 #include <avtDataSelection.h>
 
@@ -103,7 +106,7 @@ class avtMFEMFileFormat : public avtSTMDFileFormat
                                                           std::istringstream &imeshstr);
     std::map<std::string, std::pair<size_t,size_t> > catFileMap;
 
-    bool                            m_new_refine;
+    avtMFEMDataAdaptor::refinementMethod m_refinement_method;
 };
 
 #endif

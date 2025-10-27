@@ -68,20 +68,44 @@ using namespace mfem;
 
 avtMFEMFileFormat::avtMFEMFileFormat(const char *filename, 
                                      const DBOptionsAttributes *readOpts)
-    : avtSTMDFileFormat(&filename, 1)
+    : avtSTMDFileFormat(&filename, 1),
+      m_refinement_method(avtMFEMDataAdaptor::refinementMethod::LOR_Projection_Default)
 {
     selectedLOD = 0;
     root        = NULL;
-    if (readOpts->GetEnum("MFEM LOR Setting") == 0)
+    
+    const int default_refinement_method = readOpts->GetEnum("MFEM LOR Setting");
+
+    // LOR Projection (Default)
+    if (default_refinement_method == 0)
     {
-        // new LOR was requested
-        m_new_refine = false;
+        m_refinement_method = avtMFEMDataAdaptor::refinementMethod::LOR_Projection_Default;
     }
-    else
+    // Discontinuous Refine
+    else if (default_refinement_method == 1)
     {
-        // legacy LOR was requested
-        m_new_refine = true;
-    }    
+        m_refinement_method = avtMFEMDataAdaptor::refinementMethod::Discontinuous_Refine;
+    }
+    // LOR Nodal Projection
+    else if (default_refinement_method == 2)
+    {
+        m_refinement_method = avtMFEMDataAdaptor::refinementMethod::LOR_Nodal_Projection;
+    }
+    // LOR Zonal Projection
+    else if (default_refinement_method == 3)
+    {
+        m_refinement_method = avtMFEMDataAdaptor::refinementMethod::LOR_Zonal_Projection;
+    }
+    // Legacy LOR
+    else if (default_refinement_method == 4)
+    {
+        m_refinement_method = avtMFEMDataAdaptor::refinementMethod::Discontinuous_Refine;
+    }
+    // MFEM LOR
+    else if (default_refinement_method == 5)
+    {
+        m_refinement_method = avtMFEMDataAdaptor::refinementMethod::LOR_Projection_Default;
+    }
 }
 
 // ****************************************************************************
@@ -591,7 +615,7 @@ avtMFEMFileFormat::GetMesh(int domain, const char *meshname)
         res_ds = avtMFEMDataAdaptor::RefineMeshToVTK(mesh,
                                                      domain,
                                                      selectedLOD+1,
-                                                     m_new_refine);
+                                                     m_refinement_method);
     }
     delete mesh;
 
@@ -888,7 +912,7 @@ avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
     rv = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh, 
                                                      gf, 
                                                      lod, 
-                                                     m_new_refine, 
+                                                     m_refinement_method, 
                                                      var_is_nodal);
     
     delete gf;
@@ -977,7 +1001,7 @@ avtMFEMFileFormat::RegisterDataSelections(const std::vector<avtDataSelection_p>&
             const avtResolutionSelection* sel =
                 static_cast<const avtResolutionSelection*>(*sels[i]);
             this->selectedLOD = sel->resolution();
-            this->m_new_refine = sel->refinementMethod() == 0;
+            this->m_refinement_method = static_cast<avtMFEMDataAdaptor::refinementMethod>(sel->refinementMethod());
             (*applied)[i] = true;
         }
     }

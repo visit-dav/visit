@@ -7,6 +7,8 @@
 #include <avtmfem_exports.h>
 #include <mfem.hpp>
 
+#include <ostream>
+
 //-----------------------------------------------------------------------------
 // vtk forward decls
 //-----------------------------------------------------------------------------
@@ -63,7 +65,7 @@ public:
       static vtkDataSet   *RefineMeshToVTK(mfem::Mesh *mesh,
                                            int domain,
                                            int lod,
-                                           bool new_refine);
+                                           refinementMethod ref_method);
 
       static vtkDataSet   *BoundaryMeshToVTK(mfem::Mesh *mesh);
 
@@ -77,7 +79,7 @@ public:
       static vtkDataArray *RefineGridFunctionToVTK(mfem::Mesh *mesh,
                                                    mfem::GridFunction *gf,
                                                    int lod,
-                                                   bool new_refine,
+                                                   refinementMethod ref_method,
                                                    bool var_is_nodal = true);
 
       static vtkDataArray *RefineElementColoringToVTK(mfem::Mesh *mesh,
@@ -88,7 +90,20 @@ public:
                                                        int lod);
 
       static vtkDataArray *BoundaryAttributeToVTK(mfem::Mesh *mesh);
-
 };
+
+inline std::ostream& operator<<(std::ostream& os, avtMFEMDataAdaptor::refinementMethod method)
+{
+    using refinementMethod = avtMFEMDataAdaptor::refinementMethod;
+    switch(method)
+    {
+        case refinementMethod::LOR_Projection_Default:   os << "LOR_Projection_Default"; break;
+        case refinementMethod::Discontinuous_Refine:     os << "Discontinuous_Refine"; break;
+        case refinementMethod::LOR_Nodal_Projection:     os << "LOR_Nodal_Projection"; break;
+        case refinementMethod::LOR_Zonal_Projection:     os << "LOR_Zonal_Projection"; break;
+        default:                                         os << "Unknown refinementMethod"; break;
+    }
+    return os;
+}
 
 #endif

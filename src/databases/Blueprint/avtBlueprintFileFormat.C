@@ -157,18 +157,40 @@ avtBlueprintFileFormat::avtBlueprintFileFormat(const char *filename, DBOptionsAt
       m_specset_info(),
       m_mfem_mesh_map(),
       m_mfem_material_map(),
-      m_new_refine(true)
+      m_refinement_method(avtMFEMDataAdaptor::refinementMethod::LOR_Projection_Default)
 {
-    if (opts->GetEnum("MFEM LOR Setting") == 0)
+    const int default_refinement_method = opts->GetEnum("MFEM LOR Setting");
+
+    // LOR Projection (Default)
+    if (default_refinement_method == 0)
     {
-        // new LOR was requested
-        m_new_refine = true;
+        m_refinement_method = avtMFEMDataAdaptor::refinementMethod::LOR_Projection_Default;
     }
-    else
+    // Discontinuous Refine
+    else if (default_refinement_method == 1)
     {
-        // legacy LOR was requested
-        m_new_refine = false;
-    }    
+        m_refinement_method = avtMFEMDataAdaptor::refinementMethod::Discontinuous_Refine;
+    }
+    // LOR Nodal Projection
+    else if (default_refinement_method == 2)
+    {
+        m_refinement_method = avtMFEMDataAdaptor::refinementMethod::LOR_Nodal_Projection;
+    }
+    // LOR Zonal Projection
+    else if (default_refinement_method == 3)
+    {
+        m_refinement_method = avtMFEMDataAdaptor::refinementMethod::LOR_Zonal_Projection;
+    }
+    // Legacy LOR
+    else if (default_refinement_method == 4)
+    {
+        m_refinement_method = avtMFEMDataAdaptor::refinementMethod::Discontinuous_Refine;
+    }
+    // MFEM LOR
+    else if (default_refinement_method == 5)
+    {
+        m_refinement_method = avtMFEMDataAdaptor::refinementMethod::LOR_Projection_Default;
+    }
 
     m_tree_cache = new avtBlueprintTreeCache();
 }
@@ -1280,7 +1302,7 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
                     // fall back to legacy LOR.
                     cent = AVT_NODECENT;
                 }
-                else if (m_new_refine) // if new LOR is turned on
+                else if (m_refinement_method != avtMFEMDataAdaptor::refinementMethod::Discontinuous_Refine) // if new LOR is turned on
                 {
                     const std::string basis = n_field["basis"].as_string();
                     // H1 is nodal
@@ -2370,7 +2392,7 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
             res = avtMFEMDataAdaptor::RefineMeshToVTK(mesh,
                                                       domain,
                                                       m_selected_lod+1,
-                                                      m_new_refine);
+                                                      m_refinement_method);
 
             // cleanup the mfem mesh
             delete mesh;
@@ -2843,7 +2865,7 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                 res = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh,
                                                                   gf,
                                                                   m_selected_lod+1,
-                                                                  m_new_refine);
+                                                                  m_refinement_method);
 
                 // cleanup mfem data
                 delete gf;
@@ -2899,7 +2921,7 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
             res = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh,
                                                               gf,
                                                               m_selected_lod+1,
-                                                              m_new_refine);
+                                                              m_refinement_method);
 
             // cleanup mfem data
             delete gf;
@@ -3337,7 +3359,7 @@ avtBlueprintFileFormat::RegisterDataSelections(
             const avtResolutionSelection* sel =
                 static_cast<const avtResolutionSelection*>(*sels[i]);
             this->m_selected_lod = sel->resolution();
-            this->m_new_refine = sel->refinementMethod() == 0;
+            this->m_refinement_method = static_cast<avtMFEMDataAdaptor::refinementMethod>(sel->refinementMethod());
             (*applied)[i] = true;
         }
     }
