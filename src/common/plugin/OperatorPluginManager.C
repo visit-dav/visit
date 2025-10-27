@@ -543,6 +543,9 @@ OperatorPluginManager::FreeViewerPluginInfo()
 // Creation:   August 20, 2002
 //
 // Modifications:
+//   Eric Brugger, Mon Oct 27 15:49:49 PDT 2025
+//   Added code to free the client and default attributes since the
+//   enginePluginInfo destructor doesn't.
 //   
 // ****************************************************************************
 
@@ -550,7 +553,11 @@ void
 OperatorPluginManager::FreeEnginePluginInfo()
 {
     for (size_t i=0; i<enginePluginInfo.size(); i++)
+    {
+        delete enginePluginInfo[i]->GetClientAtts();
+        delete enginePluginInfo[i]->GetDefaultAtts();
         delete enginePluginInfo[i];
+    }
     enginePluginInfo.clear();
 }
 
