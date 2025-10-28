@@ -972,11 +972,14 @@ def test_mfem_quad_func(tag_name, dbfile, var_name):
     ResetView()
     base = os.path.splitext(os.path.basename(dbfile))[0]
     OpenDatabase(dbfile)
-    # get the mesh metadata and find the mesh with "quad_func"
+    # get the mesh metadata and find the mesh and vars
     md = GetMetaData(dbfile)
     plot_type = ""
     qf_mesh_name = ""
     full_var_name = ""
+    # current example data sets  have a single field that is
+    # either a scalar or vector field, this logic finds
+    # which case and the quad func mesh name
     for i in range(md.GetNumScalars()):
         smd = md.GetScalars(i)
         if smd.name.count(var_name) > 0:

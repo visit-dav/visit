@@ -1432,3 +1432,98 @@ avtMFEMDataAdaptor::GenerateQuadratureFunctionBasisString(int qf_order,
     return oss.str();
 }
 
+// ****************************************************************************
+//  Method: CheckMeshNameForQuadratureFunctionString
+//
+//  Purpose:
+//   Checks if the mesh name represents a QuadratureFunction mesh.
+//
+//  Arguments:
+//   mesh_name:     Mesh Name
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Mon Oct 27 14:43:23 PDT 2025
+//
+//  Modifications:
+//
+// ****************************************************************************
+bool
+avtMFEMDataAdaptor::CheckMeshNameForQuadratureFunctionString(const std::string &mesh_name)
+{
+    return mesh_name.find("_quad_func_o") != std::string::npos;
+}
+
+// ****************************************************************************
+//  Method: ParseQuadratureFunctionMeshString
+//
+//  Purpose:
+//   Parses the base mesh name and order from a Quadrature Function mesh name
+//
+//  Arguments:
+//   qf_mesh_name:    qf style mesh name
+//   base_mesh_name:  parsed base mesh name (output) 
+//   qf_order:        parsed quad func order (output)
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Fri Oct 10 15:09:42 PDT 2025
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+avtMFEMDataAdaptor::ParseQuadratureFunctionMeshString(const std::string &qf_mesh_name,
+                                                      std::string &base_mesh_name,
+                                                      int &qf_order)
+{
+    qf_order = -1; // -1 == not quad points case
+    base_mesh_name = ""; // empty == not quad points case
+
+    // check for fetch of quad points mesh
+    // {mesh_name}_quad_func_o{order}
+
+    std::string qf_indicator = "_quad_func_o";
+    size_t qf_str_idx = qf_mesh_name.find(qf_indicator);
+    if(qf_str_idx != std::string::npos)
+    {
+        // quadrature points are a special variant of the main mfem mesh
+        // fetch w/o quad pts suffix
+        // extract the order from mesh name
+        std::string order_str = qf_mesh_name.substr(qf_str_idx + qf_indicator.size());
+        base_mesh_name = qf_mesh_name.substr(0, qf_str_idx);
+        // parse order
+        if(!StringHelpers::StringToInt(order_str,qf_order))
+        {
+            // error
+            AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                                "Failed to parse quadrature function mesh order from "
+                                <<order_str);
+        }
+    }
+}
+
+// ****************************************************************************
+//  Method: GenerateQuadratureFunctionMeshName
+//
+//  Purpose:
+//   Creates a Quadrature Function mesh name from base mesh and order
+//
+//  Arguments:
+//   base_mesh:  Base mesh name
+//   qf_order:   Quadrature Function order
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Fri Oct 10 15:09:42 PDT 2025
+//
+//  Modifications:
+//
+// ****************************************************************************
+std::string
+avtMFEMDataAdaptor::GenerateQuadratureFunctionMeshName(const std::string &base_mesh,
+                                                       int qf_order)
+{
+    // the mesh name associated is:
+    // {base_mesh}_quad_func_o{order}
+    std::ostringstream oss;
+    oss << base_mesh << "_quad_func_o" << qf_order;
+    return oss.str();
+}

@@ -59,7 +59,6 @@ def set_test_view():
     v.shear = (0, 0, 1)
     v.windowValid = 1
     SetView3D(v)
-
 TestSection("Input Mesh Files")
 for f in input_meshs:
     base = os.path.splitext(os.path.basename(f))[0]

@@ -652,20 +652,16 @@ avtMFEMFileFormat::GetMesh(int domain, const char *meshname)
 
     // check for fetch of quad points mesh
     // {mesh_name}_quad_func_o{order}
-
-    std::string quadpts_indicator = "_quad_func_o";
-    size_t quadpts_str_idx = mesh_name.find(quadpts_indicator);
+    bool quadpts_mesh = avtMFEMDataAdaptor::CheckMeshNameForQuadratureFunctionString(mesh_name);
     int quadpts_order = -1; // -1 == not quad points case
-    bool quadpts_mesh = false;
-    if(quadpts_str_idx != std::string::npos)
+
+    // if quadpts mesh find order and the base mesh name
+    if(quadpts_mesh)
     {
-        quadpts_mesh = true;
-        // quadrature points are a special variant of the main mfem mesh
-        // fetch w/o quad pts suffix
-        // extract the order from mesh name
-        std::string order_str = mesh_name.substr(quadpts_str_idx + quadpts_indicator.size());
-        mesh_name = mesh_name.substr(0, quadpts_str_idx);
-        StringHelpers::StringToInt(order_str,quadpts_order);
+        std::string qf_mesh_name = mesh_name;
+        avtMFEMDataAdaptor::ParseQuadratureFunctionMeshString(qf_mesh_name,
+                                                              mesh_name,
+                                                              quadpts_order);
     }
 
     Mesh *mesh = FetchMesh(mesh_name,domain);

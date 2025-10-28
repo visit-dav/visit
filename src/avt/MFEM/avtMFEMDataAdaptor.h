@@ -97,6 +97,12 @@ public:
       static std::string   GenerateQuadratureFunctionBasisString(int qf_order,
                                                                  int qf_vdim);
 
+      static bool          CheckMeshNameForQuadratureFunctionString(const std::string &mesh_name);
+      static void          ParseQuadratureFunctionMeshString(const std::string &qf_mesh_name,
+                                                             std::string &base_mesh_name,
+                                                             int &qf_order);
+      static std::string   GenerateQuadratureFunctionMeshName(const std::string &base_mesh,
+                                                              int qf_order);
 
 };
 

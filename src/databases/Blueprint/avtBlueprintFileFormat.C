@@ -1100,10 +1100,8 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
 
                     // topo associated with this will be:
                     // {topo_name}_quad_func_o{order}
-                    std::ostringstream oss;
-                    oss << var_topo_name << "_quad_func_o" << qf_order;
                     // construct the concrete name
-                    std::string qf_topo_name =  oss.str();
+                    std::string qf_topo_name = avtMFEMDataAdaptor::GenerateQuadratureFunctionMeshName(var_topo_name, qf_order);
 
                     BP_PLUGIN_INFO(field_name << " is defined on " << qf_topo_name);
 
@@ -2404,21 +2402,16 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
 
         // check for fetch of quad points mesh
         // {mesh_name}_quad_func_o{order}
-
+        bool is_qf_mesh = avtMFEMDataAdaptor::CheckMeshNameForQuadratureFunctionString(abs_meshname_str);
         int qf_order = -1; // -1 == not quad points case
-        bool is_qf_mesh = false;
 
-        std::string qf_indicator = "_quad_func_o";
-        size_t qf_str_idx = abs_meshname_str.find(qf_indicator);
-        if(qf_str_idx != std::string::npos)
+        // if quadpts mesh find order and the base mesh name
+        if(is_qf_mesh)
         {
-            is_qf_mesh = true;
-            // quadrature points are a special variant of the main mfem mesh
-            // fetch w/o quad pts suffix
-            // extract the order from mesh name
-            std::string order_str = abs_meshname_str.substr(qf_str_idx + qf_indicator.size());
-            abs_meshname_str = abs_meshname_str.substr(0, qf_str_idx);
-            StringHelpers::StringToInt(order_str,qf_order);
+            std::string qf_mesh_name = abs_meshname_str;
+            avtMFEMDataAdaptor::ParseQuadratureFunctionMeshString(qf_mesh_name,
+                                                                  abs_meshname_str,
+                                                                  qf_order);
         }
 
         BP_PLUGIN_INFO(abs_meshname << " is quad func mesh = " << is_qf_mesh);
@@ -3010,15 +3003,17 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
             // we need an mfem mesh to construct a grid function or quadrature function
 
             // check for qfunc mesh
-            std::string qf_indicator = "_quad_func_o";
-            size_t qf_str_idx = abs_meshname.find(qf_indicator);
-            bool is_qf = false;
-            if(qf_str_idx != std::string::npos)
+            // {mesh_name}_quad_func_o{order}
+            bool is_qf_mesh = avtMFEMDataAdaptor::CheckMeshNameForQuadratureFunctionString(abs_meshname);
+            int qf_order = -1; // -1 == not quad points case
+
+            // if quadpts mesh find order and the base mesh name
+            if(is_qf_mesh)
             {
-                is_qf = true;
-                // quadrature points are a special variant of the main mfem mesh
-                // we need to fetch the base mesh to construct a quadrature function
-                abs_meshname = abs_meshname.substr(0, qf_str_idx);
+                std::string qf_mesh_name = abs_meshname;
+                avtMFEMDataAdaptor::ParseQuadratureFunctionMeshString(qf_mesh_name,
+                                                                      abs_meshname,
+                                                                      qf_order);
                 BP_PLUGIN_INFO("base mesh for quadrature function  is: " <<abs_meshname);
             }
 
@@ -3048,7 +3043,7 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
             mfem::Mesh *mesh = avtConduitBlueprintDataAdaptor::BlueprintToMFEM::MeshToMFEM(n_mesh);
 
             // quad func case
-            if(is_qf)
+            if(is_qf_mesh)
             {
                 BP_PLUGIN_INFO("creating mfem quadrature function");
                 mfem::QuadratureFunction *qf = avtConduitBlueprintDataAdaptor::BlueprintToMFEM::FieldToMFEMQuadratureFunction(mesh,
