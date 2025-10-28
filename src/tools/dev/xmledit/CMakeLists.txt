@@ -19,31 +19,33 @@ set(xmledit_SOURCES
     XMLDocument.C
     XMLEdit.C
     XMLEditAttribute.C
+    XMLEditCMake.C
     XMLEditCode.C
     XMLEditCodeGeneratorWindow.C
     XMLEditCodeSelectionDialog.C
+    XMLEditConditional.C
     XMLEditConstants.C
     XMLEditEnums.C
     XMLEditFields.C
     XMLEditFunctions.C
     XMLEditIncludes.C
     XMLEditMain.C
-    XMLEditMakefile.C
     XMLEditPlugin.C)
 
 set(xmledit_HEADERS
     XMLDocument.h
     XMLEdit.h
     XMLEditAttribute.h
+    XMLEditCMake.h
     XMLEditCode.h
     XMLEditCodeGeneratorWindow.h
     XMLEditCodeSelectionDialog.h
+    XMLEditConditional.h
     XMLEditConstants.h
     XMLEditEnums.h
     XMLEditFields.h
     XMLEditFunctions.h
     XMLEditIncludes.h
-    XMLEditMakefile.h
     XMLEditPlugin.h
     XMLEditStd.h
     XMLToolIds.h)

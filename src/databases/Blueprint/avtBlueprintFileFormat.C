@@ -2452,6 +2452,9 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
 // 
 //    Justin Privitera, Sat Jun 29 14:22:21 PDT 2024
 //    Handle the polytopal mixed topology case.
+// 
+//    Justin Privitera, Thu Jul 24 16:02:50 PDT 2025
+//    Pass n_coords to FieldToVTK().
 //
 // ****************************************************************************
 
@@ -2849,7 +2852,8 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
             else
             {
                 // low-order case, use vtk
-                res = avtConduitBlueprintDataAdaptor::BlueprintToVTK::FieldToVTK(*topo_ptr,
+                res = avtConduitBlueprintDataAdaptor::BlueprintToVTK::FieldToVTK(n_coords,
+                                                                                 *topo_ptr,
                                                                                  *field_ptr);
             }
         }

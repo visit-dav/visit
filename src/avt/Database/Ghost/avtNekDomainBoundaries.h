@@ -59,6 +59,9 @@ class avtMaterial;
 //    Eric Brugger, Tue Dec 11 09:46:02 PST 2018
 //    Corrected a bug generating ghost nodes for Nek5000 files where all the
 //    nodes were marked as ghost when the mesh was 2D.
+// 
+//    Justin Privitera, Thu Aug 14 11:13:28 PDT 2025
+//    Combined ExchangeScalar() and ExchangeVector() into ExchangeVar().
 //
 // ****************************************************************************
 
@@ -74,14 +77,11 @@ class DATABASE_API avtNekDomainBoundaries : public avtDomainBoundaries
     virtual std::vector<vtkDataSet*>       ExchangeMesh(std::vector<int>       domainNum,
                                                std::vector<vtkDataSet*>   meshes);
 
-    virtual std::vector<vtkDataArray*>     ExchangeScalar(std::vector<int>     domainNum,
-                                               bool                  isPointData,
-                                               std::vector<vtkDataArray*> scalars);
+    virtual std::vector<vtkDataArray*>     ExchangeVar(
+                                               std::vector<int>           domainNum,
+                                               bool                       isPointData,
+                                               std::vector<vtkDataArray*> values);
     
-    virtual std::vector<vtkDataArray*>     ExchangeVector(std::vector<int> domainNum,
-                                                       bool isPointData,
-                                                       std::vector<vtkDataArray*> vectors);
-
     virtual std::vector<avtMaterial*>      ExchangeMaterial(std::vector<int>   domainNum,
                                               std::vector<avtMaterial*>   mats);
 

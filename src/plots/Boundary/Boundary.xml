@@ -28,7 +28,7 @@
       <Field name="boundaryNames" label="boundaryNames" type="stringVector">
       </Field>
       <Field name="opacity" label="opacity" type="opacity">
-        1.000000
+        1
       </Field>
       <Field name="wireframe" label="wireframe" type="bool">
         false

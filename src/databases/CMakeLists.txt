@@ -207,6 +207,9 @@
 #    Eric Brugger, Mon May 1 15:28:30 PST 2023
 #    Add HTG plugin.
 #
+#    Kathleen Biagas, Mon Aug 18, 2025
+#    Remove VisItXDMF reader.
+#
 #****************************************************************************
 
 include(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
@@ -347,13 +350,6 @@ CHECK_THIRDPARTY_SATISFIED(Vs HDF5)
 CHECK_THIRDPARTY_SATISFIED(XGC HDF5)
 CHECK_THIRDPARTY_SATISFIED(MOAB MOAB)
 CHECK_THIRDPARTY_SATISFIED(Xolotl HDF5)
-
-# if we don't have the xdmf lib, we can fall back to VisIt's xdmf reader
-# that only uses hdf5
-if(NOT XDMF_FOUND)
-    CHECK_THIRDPARTY_SATISFIED(VisItXdmf HDF5)
-endif()
-
 
 CHECK_THIRDPARTY_SATISFIED(ADIOS ADIOS)
 CHECK_THIRDPARTY_SATISFIED(ADIOS2 ADIOS2)

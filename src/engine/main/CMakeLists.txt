@@ -55,6 +55,10 @@
 #    Kathleen Biagas, Thu Oct 3, 2024
 #    Utilize visit_add_library.
 #
+#    Kathleen Biagas, Wed Jun 18, 2025
+#    Remove visit_vtk_offscreen, no longer needed (VTK 9.5).
+#    Remove unnecessary LIBRARY_OUTPUT_DIRECTORY in link_directories call.
+#
 #****************************************************************************
 
 set(LIBENGINE_SOURCES
@@ -110,11 +114,6 @@ if(CONDUIT_FOUND AND MFEM_FOUND)
     list(APPEND LIBENGINE_DEPENDS mfem avtblueprint)
 endif()
 
-if(VTK_VERSION VERSION_LESS "9.4.0")
-    if(HAVE_OSMESA)
-        list(APPEND LIBENGINE_DEPENDS visit_vtk_offscreen)
-    endif()
-endif()
 
 #************************** SERIAL LIBRARY ************************************
 visit_add_library(

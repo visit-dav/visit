@@ -51,6 +51,9 @@
 #   Cyrus Harrison, Thu Mar  9 11:30:26 PST 2023
 #   Fixed typo in vtk-m link for avtpipeline_par
 #
+#   Eric Brugger, Mon Jun 16 13:38:54 PDT 2025
+#   Replace "vtkm_" libraries with "vtkm::".
+#
 #****************************************************************************/
 
 
@@ -91,9 +94,9 @@ endif()
 if(HAVE_VTKM)
     visit_append_list(
         NAME  avtpipeline_ser_DEPENDS
-        ITEMS vtkm_cont
-              vtkm_filter_contour
-              vtkm_filter_entity_extraction)
+        ITEMS vtkm::cont
+              vtkm::filter_contour
+              vtkm::filter_entity_extraction)
     if(VTKm_ENABLE_KOKKOS)
         visit_append_list(
             NAME  avtpipeline_ser_DEPENDS

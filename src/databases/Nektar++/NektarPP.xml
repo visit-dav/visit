@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="NektarPP" type="database" label="avtNektarPP" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="true" filePatternsStrict="false" opensWholeDirectory="false">
+  <Plugin name="NektarPP" type="database" label="avtNektarPP" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="true" haslicense="false" filePatternsStrict="false" opensWholeDirectory="false">
     <CXXFLAGS>
       ${NEKTAR++_INCLUDE_DIR}
       ${NEKTAR++_INCLUDE_DIRS}
@@ -22,7 +22,11 @@
       vtkIOXML
     </LIBS>
     <FilePatterns>
-      *.chk *.fld *.xml *.rst *.bse
+      *.chk
+      *.fld
+      *.xml
+      *.rst
+      *.bse
     </FilePatterns>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="NektarPP.code">
     </Attribute>

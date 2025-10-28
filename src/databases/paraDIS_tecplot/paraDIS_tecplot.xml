@@ -1,17 +1,17 @@
 <?xml version="1.0"?>
-  <Plugin name="paraDIS_tecplot" type="database" label="paraDIS simulation dump metafile" version="1.0a1" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="false" filePatternsStrict="false">
+  <Plugin name="paraDIS_tecplot" type="database" label="paraDIS simulation dump metafile" version="1.0a1" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="false" haslicense="false" filePatternsStrict="false" opensWholeDirectory="false">
     <CXXFLAGS>
-        -IRC_cpp_lib
+      -IRC_cpp_lib
     </CXXFLAGS>
     <DEFINES>
-        NO_BOOST
+      NO_BOOST
     </DEFINES>
     <FilePatterns>
-        *.fld
-        *.field
-        *.cyl
-        *.cylinder
-        *.dat
+      *.fld
+      *.field
+      *.cyl
+      *.cylinder
+      *.dat
     </FilePatterns>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>

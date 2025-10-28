@@ -10,6 +10,7 @@
 #include <misc_exports.h>
 
 #include <string>
+#include <vector>
 
 namespace Environment
 {
@@ -53,5 +54,27 @@ namespace Environment
     //
     // ***********************************************************************
     void MISC_API unset(const char *);
+
+
+    // ***********************************************************************
+    //  Function: Environment::variable_strings
+    //
+    //  Purpose: Lists env var strings (names and values)
+    //
+    //  Programmer: Cyrus Harrison
+    //
+    // ***********************************************************************
+    void MISC_API variable_strings(std::vector<std::string> &var_strs);
+    
+    // ***********************************************************************
+    //  Function: Environment::variable_names
+    //
+    //  Purpose: Lists env var names
+    //
+    //  Programmer: Cyrus Harrison
+    //
+    // ***********************************************************************
+    void MISC_API variable_names(std::vector<std::string> &names);
+
 }
 #endif

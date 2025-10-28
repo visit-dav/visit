@@ -37,6 +37,12 @@
 #   Eric Brugger, Thu Aug  5 11:21:21 PDT 2021
 #   Removed support for SeedMe.
 #
+#   Kathleen Biags, Thu Aug 14, 2025
+#   Add FXAAOptions.
+#
+#   Kevin Griffin, Mon Oct 13 10:43:00 AM CDT 2025
+#   Add AnariAttributes.
+#
 #****************************************************************************
 
 PROJECT(JavaClient)
@@ -74,6 +80,7 @@ SET(JAVA_GEN_METADATA_OBJECTS
 # State Objects
 #####################
 SET(JAVA_GEN_STATE_OBJECTS
+    AnariAttributes
     AnimationAttributes 
     AnnotationAttributes 
     AnnotationObject 
@@ -108,6 +115,7 @@ SET(JAVA_GEN_STATE_OBJECTS
     ExpressionList 
     FileOpenOptions 
     FontAttributes 
+    FXAAOptions 
     GaussianControlPoint 
     GaussianControlPointList 
     GlobalAttributes 
@@ -231,6 +239,7 @@ avtVectorMetaData.java
 )
 
 SET(PACKAGE_STATE_SOURCES
+AnariAttributes.java
 AnimationAttributes.java 
 AnnotationAttributes.java 
 AnnotationObject.java 
@@ -265,6 +274,7 @@ Expression.java
 ExpressionList.java 
 FileOpenOptions.java 
 FontAttributes.java 
+FXAAOptions.java 
 GaussianControlPoint.java 
 GaussianControlPointList.java 
 GlobalAttributes.java 

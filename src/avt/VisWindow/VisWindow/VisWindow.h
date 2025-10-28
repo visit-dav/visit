@@ -21,6 +21,7 @@
 #include <VisCallback.h>
 
 #include <AnnotationAttributes.h>
+#include <FXAAOptions.h>
 #include <InteractorAttributes.h>
 #include <LightList.h>
 
@@ -38,6 +39,10 @@
 #include <PickPointInfo.h>
 #include <LineoutInfo.h>
 #include <VisualCueInfo.h>
+
+#ifdef HAVE_ANARI
+#include <AnariAttributes.h>
+#endif
 
 class vtkCallbackCommand;
 class vtkRenderer;
@@ -442,6 +447,21 @@ class VisitInteractor;
 //    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9:
 //    add initialization of nullptr to pointer ivars.
 //
+//    Kathleen Biagas, Monday July 28, 2025
+//    Antialiasing is now an int (enum).
+//
+//    Kathleen Biagas, Thu Aug 14, 2025
+//    Add Set/Get MSAASamples and FXAAOptions.
+//
+//    Kathleen Biagas, Tue Aug 26, 2025
+//    Add MSAAAvailable.
+//
+//    Kathleen Biagas, Thu Aug 28 15:41:28 PDT 2025
+//    Remove Set/GetSurfaceRepresentation, no longer used.
+//
+//    Kevin Griffin, Tue Sep 9, 2025
+//    Added Set/Get AnariAttributes when built with ANARI support.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -665,8 +685,13 @@ public:
     // Rendering options.
     void                 SetRenderInfoCallback(VisCallback *cb, void *data);
     void                 SetRenderEventCallback(void (*cb)(void *, bool), void *data);
-    void                 SetAntialiasing(bool enabled);
-    bool                 GetAntialiasing() const;
+    void                 SetAntialiasing(int);
+    int                  GetAntialiasing() const;
+    void                 SetMSAASamples(int);
+    int                  GetMSAASamples() const;
+    bool                 MSAAAvailable() const;
+    void                 SetFXAAOptions(const FXAAOptions *);
+    const FXAAOptions   *GetFXAAOptions() const;
     void                 SetOrderComposite(bool enabled);
     bool                 GetOrderComposite() const;
     void                 SetDepthCompositeThreads(size_t n);
@@ -696,8 +721,6 @@ public:
     bool                 GetStereo() const;
     int                  GetStereoType() const;
     bool                 IsDirect(void);
-    void                 SetSurfaceRepresentation(int rep);
-    int                  GetSurfaceRepresentation() const;
     int                  GetNumPrimitives() const;
     void                 SetNotifyForEachRender(bool val);
     bool                 GetNotifyForEachRender() const;
@@ -723,48 +746,8 @@ public:
     bool                 GetOsprayShadows() const;
 #endif
 #ifdef HAVE_ANARI
-    void                SetAnariRendering(const bool);
-    bool                GetAnariRendering() const;
-    void                SetAnariSPP(const int);
-    int                 GetAnariSPP() const;
-    void                SetAnariAO(const int);
-    int                 GetAnariAO() const;
-    void                SetAnariLibraryName(const std::string);
-    std::string         GetAnariLibraryName() const;
-    void                SetAnariLibrarySubtype(const std::string);
-    std::string         GetAnariLibrarySubtype() const;
-    void                SetAnariRendererSubtype(const std::string);
-    std::string         GetAnariRendererSubtype() const;
-    void                SetUseAnariDenoiser(const bool);
-    bool                GetUseAnariDenoiser() const;
-    void                SetAnariLightFalloff(const float);
-    float               GetAnariLightFalloff() const;
-    void                SetAnariAmbientIntensity(const float);
-    float               GetAnariAmbientIntensity() const;
-    void                SetAnariMaxDepth(const int);
-    int                 GetAnariMaxDepth() const;
-    void                SetAnariRValue(const float);
-    float               GetAnariRValue() const;
-    void                SetAnariDebugMethod(const std::string);
-    std::string         GetAnariDebugMethod() const;
-    void                SetUsdDir(const std::string);
-    std::string         GetUsdDir() const;
-    void                SetUsdAtCommit(const bool);
-    bool                GetUsdAtCommit() const;
-    void                SetUsdOutputBinary(const bool);
-    bool                GetUsdOutputBinary() const;
-    void                SetUsdOutputMaterial(const bool);
-    bool                GetUsdOutputMaterial() const;
-    void                SetUsdOutputPreviewSurface(const bool);
-    bool                GetUsdOutputPreviewSurface() const;
-    void                SetUsdOutputMDL(const bool);
-    bool                GetUsdOutputMDL() const;
-    void                SetUsdOutputMDLColors(const bool);
-    bool                GetUsdOutputMDLColors() const;
-    void                SetUsdOutputDisplayColors(const bool);
-    bool                GetUsdOutputDisplayColors() const;
-    void                SetUsingUsdDevice(const bool);
-    bool                GetUsingUsdDevice() const;
+    void                 SetAnariAttributes(const AnariAttributes &);
+    const AnariAttributes &GetAnariAttributes() const;
 #endif
     void                 SetSpecularProperties(bool,double,double,
                                                const ColorAttribute&);

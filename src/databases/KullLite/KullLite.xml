@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
-  <Plugin name="KullLite" label="KullLite" type="database" dbtype="STMD" version="1.0">
+  <Plugin name="KullLite" type="database" label="KullLite" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="false" haslicense="false" filePatternsStrict="false" opensWholeDirectory="false">
     <FilePatterns>
-       *.pdb
-       *.mkf
+      *.pdb
+      *.mkf
     </FilePatterns>
     <LIBS>
        pdb
     </LIBS>
-    <Attribute name="" purpose="" persistent="true" exportAPI="" exportInclude="" codefile="KullLite.code">
+    <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="KullLite.code">
       <Function name="KullLiteCommonPluginInfo::SetupDatabase" user="false" member="true">
       </Function>
     </Attribute>

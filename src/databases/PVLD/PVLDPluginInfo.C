@@ -48,7 +48,7 @@ PVLDGeneralPluginInfo::GetName() const
 const char *
 PVLDGeneralPluginInfo::GetVersion() const
 {
-    return "1";
+    return "5";
 }
 
 // ****************************************************************************
@@ -67,7 +67,7 @@ PVLDGeneralPluginInfo::GetVersion() const
 const char *
 PVLDGeneralPluginInfo::GetID() const
 {
-    return "PVLD_1";
+    return "PVLD_5";
 }
 // ****************************************************************************
 //  Method: PVLDGeneralPluginInfo::EnabledByDefault
@@ -121,6 +121,7 @@ PVLDGeneralPluginInfo::GetDefaultFilePatterns() const
     std::vector<std::string> defaultPatterns;
     defaultPatterns.push_back("*.pvld");
     defaultPatterns.push_back("*.vld");
+    defaultPatterns.push_back("*.bgm");
 
     return defaultPatterns;
 }

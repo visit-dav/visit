@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: GetSelection
 Declaration: int GetSelection(const std::string &name) const;
 Definition:
@@ -16,6 +17,7 @@ SelectionList::GetSelection(const std::string &name) const
     return retval;
 }
 
+Target: xml2atts
 Function: GetSelectionSummary
 Declaration: int GetSelectionSummary(const std::string &name) const;
 Definition:
@@ -34,6 +36,7 @@ SelectionList::GetSelectionSummary(const std::string &name) const
     return retval;
 }
 
+Target: xml2atts
 Function: SetFromNode
 Declaration: bool SetFromNode(DataNode *parentNode);
 Definition:
@@ -96,6 +99,7 @@ SelectionList::SetFromNode(DataNode *parentNode)
     ClearSelectionSummarys();
 }
 
+Target: xml2atts
 Function: CreateNode
 Declaration: bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
 Definition:
@@ -148,3 +152,4 @@ SelectionList::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd
 
     return (addToParent || forceAdd);
 }
+

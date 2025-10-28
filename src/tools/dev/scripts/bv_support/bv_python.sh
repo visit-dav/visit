@@ -339,8 +339,8 @@ function bv_python_info
     export PY_CHARSET_NORMALIZER_BUILD_DIR="charset-normalizer-3.2.0"
     export PY_CHARSET_NORMALIZER_SHA256_CHECKSUM=""
 
-    export PY_CERTIFI_FILE="certifi-2023.5.7.tar.gz"
-    export PY_CERTIFI_BUILD_DIR="certifi-2023.5.7"
+    export PY_CERTIFI_FILE="python-certifi-2025.07.09.tar.gz"
+    export PY_CERTIFI_BUILD_DIR="python-certifi-2025.07.09"
     export PY_CERTIFI_SHA256_CHECKSUM=""
 
     export PY_FLITCORE_FILE="flit_core-3.9.0.tar.gz"

@@ -356,6 +356,9 @@ set -e
 #
 #   Eric Brugger, Mon May 19 12:43:30 PDT 2025
 #   Added crossroads.
+# 
+#   Justin Privitera, Thu Oct  9 14:12:13 PDT 2025
+#   Removed lassen, rzansel, and sierra (blueOS).
 #
 #-----------------------------------------------------------------------
 
@@ -401,13 +404,11 @@ esac
 # Parse the execute line, providing default values for error checking.
 #
 poodle=false
-lassen=false
 rzwhippet=false
 rzvernal=false
 tuolumne=false
 elcap=false
 magma=false
-sierra=false
 crossroads=false
 
 dist=undefined
@@ -426,18 +427,6 @@ do
          poodle=true
          machine_name="poodle"
          config_site="poodle18.cmake"
-         shift
-         ;;
-      -lassen)
-         lassen=true
-         machine_name="lassen"
-         config_site="lassen708.cmake"
-         shift
-         ;;
-      -rzansel)
-         lassen=true # piggy back off of lassen
-         machine_name="rzansel"
-         config_site="rzansel61.cmake"
          shift
          ;;
       -rzwhippet)
@@ -476,12 +465,6 @@ do
          config_site="magma190.cmake"
          shift
          ;;
-      -sierra)
-         sierra=true
-         machine_name="sierra"
-         config_site="sierra4358.cmake"
-         shift
-         ;;
       -crossroads)
          crossroads=true
          machine_name="crossroads"
@@ -502,9 +485,8 @@ if [ "$dist" = "undefined" ]
 then
    echo "Usage: [-<machine name>] -d <distribution>"
    echo "Valid machine names:"
-   echo "    poodle lassen rzwhippet rzvernal tuolumne rzadams rzansel elcap"
+   echo "    poodle rzwhippet rzvernal tuolumne rzadams elcap"
    echo "    magma (LC, x86_64)"
-   echo "    sierra (LC, ppc)"
    echo "    crossroads (LANL, x86_64)"
    echo "distribution should be the name of the distribution file minus the '.tar.gz'"
    exit
@@ -543,8 +525,8 @@ fi
 #
 # create the build script
 #
-if [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
-   [ "$rzvernal" = true ] || [ "$magma" = true ] || [ "$sierra" = true ] || \
+if [ "$poodle" = true ] || [ "$rzwhippet" = true ] || \
+   [ "$rzvernal" = true ] || [ "$magma" = true ] || \
    [ "$tuolumne" = true ] || [ "$elcap" = true ] || \
    [ "$crossroads" = true ]; then
    rm -f machine_specific_build_script
@@ -565,10 +547,6 @@ if [ "$poodle" = true ]; then
 XLOCALEDIR=/usr/lib/X11/locale
 PATH=/usr/bin/X11:\$PATH
 PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.2/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/:\$PATH
-EOF
-elif [ "$lassen" = true ] || [ "$sierra" = true ]; then
-cat <<EOF >> machine_specific_build_script
-export PATH=/usr/workspace/visit/visit/thirdparty_shared/3.4.2/blueos/cmake/3.24.3/linux-ppc64le_gcc-8.3/bin/:\$PATH
 EOF
 elif [ "$rzwhippet" = true ] || [ "$magma" = true ]; then
 cat <<EOF >> machine_specific_build_script
@@ -603,7 +581,7 @@ fi
 # housekeeping
 #
 if [ "$poodle" = true ] || [ "$magma" = true ] || [ "$rzvernal" = true ] || \
-   [ "$rzwhippet" = true ] || [ "$lassen" = true ] || [ "$sierra" = true ] || \
+   [ "$rzwhippet" = true ] || \
    [ "$tuolumne" = true ] || [ "$elcap" = true ]; then
    cat <<EOF >> machine_specific_build_script
 if test ! -d /usr/tmp/$user/$machine_name ; then
@@ -652,13 +630,6 @@ cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE
 cmake --build build --target manuals >> buildlog 2>&1
 cmake --build build --target package -j 24 >> buildlog 2>&1
 EOF
-elif [ "$lassen" = true ] || [ "$sierra" = true ]; then
-cat <<EOF >> machine_specific_build_script
-# skip manuals, old openssl on lassen undermines us
-cmake -S $dist/src -B build -DVISIT_CONFIG_SITE=\$CONFIG_SITE -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_ENABLE_MANUALS=OFF -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> buildlog 2>&1
-# cmake --build build --target manuals >> buildlog 2>&1
-cmake --build build --target package -j 24 >> buildlog 2>&1
-EOF
 else
    echo "case for $machine_name not implemented. Bailing out."
    exit
@@ -682,13 +653,6 @@ cp buildlog $result_dir/buildlog.$machine_name
 rm -f $result_dir/visit\$ver2.linux-x86_64-gfx942-$machine_name.tar.gz
 cp build/visit\$ver2.linux-x86_64-gfx942.tar.gz $result_dir/visit\$ver2.linux-x86_64-gfx942-$machine_name.tar.gz
 EOF
-elif [ "$lassen" = true ] || [ "$sierra" = true ]; then
-   cat <<EOF >> machine_specific_build_script
-rm -f $result_dir/buildlog.$machine_name
-cp buildlog $result_dir/buildlog.$machine_name
-rm -f $result_dir/visit\$ver2.linux-ppc64le-$machine_name.tar.gz
-cp build/visit\$ver2.linux-ppc64le.tar.gz $result_dir/visit\$ver2.linux-ppc64le-$machine_name.tar.gz
-EOF
 else
    echo "case for $machine_name not implemented. Bailing out."
    exit
@@ -698,7 +662,7 @@ fi
 # result log
 #
 if [ "$poodle" = true ] || [ "$magma" = true ] || [ "$rzvernal" = true ] || \
-   [ "$rzwhippet" = true ] || [ "$lassen" = true ] || [ "$sierra" = true ] || \
+   [ "$rzwhippet" = true ] || \
    [ "$tuolumne" = true ] || [ "$elcap" = true ] || \
    [ "$crossroads" = true ]; then
    cat <<EOF >> machine_specific_build_script
@@ -725,12 +689,12 @@ fi
 #
 # email
 #
-if [ "$poodle" = true ] || [ "$lassen" = true ] || [ "$rzwhippet" = true ] || \
+if [ "$poodle" = true ] || [ "$rzwhippet" = true ] || \
    [ "$rzvernal" = true ] || [ "$tuolumne" = true ]; then
    cat <<EOF >> machine_specific_build_script
 mail  -s "VisIt build ($dist): $machine_name" $emailName < resultlog
 EOF
-elif [ "$magma" = true ] || [ "$sierra" = true ] || [ "$elcap" = true ] || \
+elif [ "$magma" = true ] || [ "$elcap" = true ] || \
    [ "$crossroads" = true ]; then
    # nothing to do for this case
    cat <<EOF >> machine_specific_build_script

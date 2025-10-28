@@ -1,9 +1,12 @@
+Target: xml2atts
 Initialization: xAxis
     xAxis.GetTitle().SetTitle("X-Axis");
 
+Target: xml2atts
 Initialization: yAxis
     yAxis.GetTitle().SetTitle("Y-Axis");
 
+Target: xml2atts
 Initialization: zAxis
     zAxis.GetTitle().SetTitle("Z-Axis");
 

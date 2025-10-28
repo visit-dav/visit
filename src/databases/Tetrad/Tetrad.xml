@@ -1,10 +1,12 @@
 <?xml version="1.0"?>
-  <Plugin name="Tetrad" label="Tetrad" type="database" dbtype="MTSD" version="1.0">
-    <FilePatterns> 
-      *.h5 
-      *.hdf5 
+  <Plugin name="Tetrad" type="database" label="Tetrad" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="false" haslicense="false" filePatternsStrict="false" opensWholeDirectory="false">
+    <FilePatterns>
+      *.h5
+      *.hdf5
     </FilePatterns>
     <LIBS>     
       hdf5
     </LIBS>
+    <Attribute name="" purpose="" persistent="true" keyframe="true">
+    </Attribute>
   </Plugin>

@@ -27,6 +27,9 @@
 #    Kevin Griffin, Tue Aug  4 11:31:09 PDT 2020
 #    Added ExternalSurface test
 #
+#    Kathleen Biagas, Tue Sep  2 17:19:43 PDT 2025
+#    Add new Rendering tests, to test wireframe/pointsColorByVar.
+#
 # ----------------------------------------------------------------------------
 
 import itertools
@@ -503,6 +506,39 @@ def ObjectRenderingOptions():
 
     DeleteAllPlots()
     CloseDatabase(silo_data_path("rect3d.silo"))
+
+
+    OpenDatabase(silo_data_path("curv2d.silo"))
+    # zonal var
+    AddPlot("Pseudocolor", "p")
+    # get default atts
+    pc = PseudocolorAttributes()
+    pc.renderSurfaces = 0
+    pc.renderWireframe = 1
+    pc.wireframeColorByVar = 1
+    SetPlotOptions(pc)
+    DrawPlots()
+
+    v2 = GetView2D()
+    v2.windowCoords = (-2.85195, 0.980222, 0.882053, 4.57737)
+    SetView2D(v2)
+    Test("pseudocolor_rendering_options_%02d" %next(idx))
+    # nodal var
+    ChangeActivePlotsVar("u")
+    Test("pseudocolor_rendering_options_%02d" %next(idx))
+
+    pc.renderWireframe = 0
+    pc.wireframeColorByVar = 0
+    pc.renderPoints = 1
+    pc.pointColorByVar = 1
+    SetPlotOptions(pc)
+    Test("pseudocolor_rendering_options_%02d" %next(idx))
+    # back to zonal var
+    ChangeActivePlotsVar("d")
+    Test("pseudocolor_rendering_options_%02d" %next(idx))
+    DeleteAllPlots()
+    CloseDatabase(silo_data_path("curv2d.silo"))
+
 
 def ExternalSurface():
     TestSection("External Surface")

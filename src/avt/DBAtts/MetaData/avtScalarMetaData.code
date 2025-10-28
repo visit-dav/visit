@@ -1,11 +1,14 @@
+Target: xml2atts
 Initialization: enumAlwaysExclude
     enumAlwaysExclude[0] = +DBL_MAX;
     enumAlwaysExclude[1] = -DBL_MAX;
 
+Target: xml2atts
 Initialization: enumAlwaysInclude
     enumAlwaysInclude[0] = +DBL_MAX;
     enumAlwaysInclude[1] = -DBL_MAX;
 
+Target: xml2atts
 Function: avtScalarMetaData2
 Declaration: avtScalarMetaData(std::string, std::string, avtCentering);
 Definition:
@@ -49,6 +52,7 @@ avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn,
     avtScalarMetaData::Init();
 }
 
+Target: xml2atts
 Function: avtScalarMetaData3
 Declaration: avtScalarMetaData(std::string, std::string, avtCentering, double, double);
 Definition:
@@ -94,6 +98,7 @@ avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn,
     avtScalarMetaData::Init();
 }
 
+Target: xml2atts
 Function: Print
 Declaration: void Print(ostream &, int = 0) const;
 Definition:
@@ -185,6 +190,7 @@ avtScalarMetaData::Print(ostream &out, int indent) const
     }
 }
 
+Target: xml2atts
 Function: AddEnumGraphEdge
 Declaration: void AddEnumGraphEdge(int head, int tail, std::string edgeName = std::string(""));
 Definition:
@@ -213,6 +219,7 @@ avtScalarMetaData::AddEnumGraphEdge(int head, int tail, std::string edgeName)
     }
 }
 
+Target: xml2atts
 Function: AddEnumNameValue
 Declaration: int AddEnumNameValue(std::string name, double val);
 Definition:
@@ -234,6 +241,7 @@ avtScalarMetaData::AddEnumNameValue(std::string name, double val)
     return (int)enumNames.size() - 1;
 }
 
+Target: xml2atts
 Function: AddEnumNameRange
 Declaration: int AddEnumNameRange(std::string name, double min, double max);
 Definition:
@@ -260,6 +268,7 @@ avtScalarMetaData::AddEnumNameRange(std::string name, double min, double max)
     return (int)enumNames.size() - 1;
 }
 
+Target: xml2atts
 Function: SetEnumAlwaysExcludeValue
 Declaration: void SetEnumAlwaysExcludeValue(double val);
 Definition:
@@ -278,6 +287,7 @@ avtScalarMetaData::SetEnumAlwaysExcludeValue(double val)
     enumAlwaysExclude[1] = val;
 }
 
+Target: xml2atts
 Function: SetEnumAlwaysExcludeRange
 Declaration: void SetEnumAlwaysExcludeRange(double min, double max);
 Definition:
@@ -296,6 +306,7 @@ avtScalarMetaData::SetEnumAlwaysExcludeRange(double min, double max)
     enumAlwaysExclude[1] = max;
 }
 
+Target: xml2atts
 Function: SetEnumAlwaysIncludeValue
 Declaration: void SetEnumAlwaysIncludeValue(double val);
 Definition:
@@ -314,6 +325,7 @@ avtScalarMetaData::SetEnumAlwaysIncludeValue(double val)
     enumAlwaysInclude[1] = val;
 }
 
+Target: xml2atts
 Function: SetEnumAlwaysIncludeRange
 Declaration: void SetEnumAlwaysIncludeRange(double min, double max);
 Definition:
@@ -332,6 +344,7 @@ avtScalarMetaData::SetEnumAlwaysIncludeRange(double min, double max)
     enumAlwaysInclude[1] = max;
 }
 
+Target: xml2atts
 Function: BuildEnumNChooseRMap
 Declaration: static void BuildEnumNChooseRMap(int n, int maxr, std::vector<std::vector<int> > &ptMap);
 Definition:
@@ -363,6 +376,7 @@ avtScalarMetaData::BuildEnumNChooseRMap(int n, int maxr, std::vector<std::vector
             ptMap[row][col] = int(NChooseR(n-row-1,col));
 }
 
+Target: xml2atts
 Function: NChooseR
 Declaration: static double NChooseR(int n, int r);
 Definition:
@@ -400,6 +414,7 @@ double avtScalarMetaData::NChooseR(int n, int r)
     return result;
 }
 
+Target: xml2atts
 Function: ComboValFromDigits
 Declaration: static void ComboValFromDigits(const std::vector<std::vector<int> > &ptMap, const std::list<int> &digits, double *id);
 Definition:
@@ -433,6 +448,7 @@ avtScalarMetaData::ComboValFromDigits(const std::vector<std::vector<int> > &ptMa
     *id -= 1;
 }
 
+Target: xml2atts
 Function: ComboDigitsFromVal
 Declaration: static void ComboDigitsFromVal(double id, int n, int maxr, const std::vector<std::vector<int> > &ptMap, std::list<int> &digits);
 Definition:
@@ -485,6 +501,7 @@ avtScalarMetaData::ComboDigitsFromVal(double id, int n, int maxr,
     }
 }
 
+Target: xml2atts
 Function: UpdateValByInsertingDigit
 Declaration: static void UpdateValByInsertingDigit(double *id, int n, int maxr, const std::vector<std::vector<int> > &ptMap, int newDigit);
 Definition:

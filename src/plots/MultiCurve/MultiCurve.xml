@@ -18,7 +18,7 @@
       <Field name="colorType" label="Color type" type="enum" subtype="ColoringMethod">
         ColorByMultipleColors
       </Field>
-      <Field name="singleColor" label="singleColor" type="color">
+      <Field name="singleColor" label="singleColor" type="color" length="4">
         255
         0
         0
@@ -36,13 +36,13 @@
         false
       </Field>
       <Field name="yAxisTickSpacing" label="yAxisTickSpacing" type="double" enabler="useYAxisTickSpacing:true">
-        1.
+        1
       </Field>
       <Field name="displayMarkers" label="Display markers" type="bool">
         true
       </Field>
       <Field name="markerScale" label="Marker scale" type="double">
-        1.
+        1
       </Field>
       <Field name="markerLineWidth" label="Marker line width" type="linewidth">
         0

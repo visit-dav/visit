@@ -122,8 +122,6 @@
 
 #include <QvisWizard.h>
 
-#include <QvisVisItUpdate.h>
-
 #include <SplashScreen.h>
 #include <WindowMetrics.h>
 
@@ -637,6 +635,9 @@ GUI_LogQtMessages(QtMsgType type, const QMessageLogContext &context, const QStri
 //   Kathleen Biagas, Wed Apr  5 12:46:04 PDT 2023
 //   Remove commented out section around obsolete function setColorSpec.
 //
+//   Cyrus Harrison, Wed Jul 16 09:27:32 PDT 2025
+//   Finished removal of VisIt Update GUI option related logic.
+//
 // ****************************************************************************
 
 QvisGUIApplication::QvisGUIApplication(int &argc, char **argv, ViewerProxy *proxy) :
@@ -697,7 +698,6 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv, ViewerProxy *prox
     allowSocketRead = false;
     keepAliveTimer = 0;
     allowFileSelectionChange = true;
-    visitUpdate = 0;
     saveMovieWizard = 0;
     setupCMFEWizard = 0;
     interpreter = 0;
@@ -4587,33 +4587,51 @@ QvisGUIApplication::SaveSession()
 //
 //   Kathleen Biagas, Thu Jan 21, 2021
 //   Replace QString::asprintf with QString.arg as suggested by Qt docs.
+// 
+//   Justin Privitera, Fri Jul 11 13:20:38 PDT 2025
+//   We take existing files in the directory we are going to save into account,
+//   updating the session count as needed.
 //
 // ****************************************************************************
 
 void
 QvisGUIApplication::SaveSessionAs()
 {
-    // Create the name of a VisIt session file to use.
     QString defaultFile;
-    if(sessionHost.empty())
+
+    bool keepTrying = true;
+    while (keepTrying)
     {
-        defaultFile = QString("%1visit%2.session")
-            .arg(sessionDir.c_str())
-            .arg(sessionCount,4,10,QLatin1Char('0'));
-    }
-    else
-    {
-#ifdef _WIN32
-        if (sessionDir.substr(0,2) == "\\\\")
+        keepTrying = false;
+
+        // Create the name of a VisIt session file to use.
+        if(sessionHost.empty())
+        {
             defaultFile = QString("%1visit%2.session")
                 .arg(sessionDir.c_str())
                 .arg(sessionCount,4,10,QLatin1Char('0'));
+        }
         else
-#endif
-        defaultFile = QString("%1:%2visit%3.session")
-                .arg(sessionHost.c_str())
-                .arg(sessionDir.c_str())
-                .arg(sessionCount,4,10,QLatin1Char('0'));
+        {
+    #ifdef _WIN32
+            if (sessionDir.substr(0,2) == "\\\\")
+                defaultFile = QString("%1visit%2.session")
+                    .arg(sessionDir.c_str())
+                    .arg(sessionCount,4,10,QLatin1Char('0'));
+            else
+    #endif
+            defaultFile = QString("%1:%2visit%3.session")
+                    .arg(sessionHost.c_str())
+                    .arg(sessionDir.c_str())
+                    .arg(sessionCount,4,10,QLatin1Char('0'));
+        }
+
+        ifstream ifile(defaultFile.toStdString());
+        if (!ifile.fail())
+        {
+            sessionCount ++;
+            keepTrying = true;
+        }
     }
 
     // Get the name of the file that the user saved.

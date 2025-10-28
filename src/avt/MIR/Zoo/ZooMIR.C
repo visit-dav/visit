@@ -23,7 +23,6 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkTriangulationTables.h>
-#include <vtkObjectFactory.h>
 
 #include <VisItArray.h>
 #include "BitUtils.h"

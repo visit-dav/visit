@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: PlotList2
 Declaration: void AddPlot(const Plot &p, int id);
 Definition:
@@ -12,6 +13,7 @@ PlotList::AddPlot(const Plot &p, int id)
     Select(0, (void *)&plots);
 }
 
+Target: xml2atts
 Function: FirstSelectedIndex
 Declaration: int FirstSelectedIndex() const;
 Definition:
@@ -23,3 +25,4 @@ PlotList::FirstSelectedIndex() const
             return i;
     return -1;
 }
+

@@ -50,6 +50,6 @@ SimV2CommonPluginInfo::SetupDatabase(const char *const *list,
         ffl[i] = new avtSimV2FileFormat(list[i]);
     }
     avtSTMDFileFormatInterface *inter
-           = new avtSTMDFileFormatInterface(ffl, nList);
+        = new avtSTMDFileFormatInterface(ffl, nList);
     return new avtGenericDatabase(inter);
 }

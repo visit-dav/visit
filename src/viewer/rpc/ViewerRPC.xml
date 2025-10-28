@@ -212,6 +212,7 @@
       StopPlotAnimationRPC
       ReadHostProfilesFromDirectoryRPC
       SetRemoveDuplicateNodesRPC
+      QueryMSAAAvailabilityRPC
       MaxRPC
     </Enum>
     <Field name="RPCType" label="RPCType" type="enum" subtype="ViewerRPCType">
@@ -268,9 +269,9 @@
     <Field name="queryName" label="queryName" type="string">
     </Field>
     <Field name="queryPoint1" label="queryPoint1" type="doubleArray" length="3">
-      0.000000
-      0.000000
-      0.000000
+      0
+      0
+      0
     </Field>
     <Field name="toolId" label="toolId" type="int">
       0

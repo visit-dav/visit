@@ -3473,9 +3473,6 @@ VisWindow::GetToolUpdateMode() const
 void
 VisWindow::SetInteractor(VisitInteractor *i)
 {
-#ifdef HAVE_ANARI
-    i->SetAnariRendering(rendering->GetAnariRendering());
-#endif
     rendering->SetInteractor(i);
 }
 
@@ -6107,8 +6104,7 @@ size_t VisWindow::GetAlphaCompositeBlocking() const
 //   Sets the window's antialiasing mode.
 //
 // Arguments:
-//   enabled : Whether or not antialiasing is enabled.
-//   frames  : The number of frames to use for AA.
+//   aaMode :  The antialiasing mode.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 23 14:06:02 PST 2002
@@ -6120,14 +6116,17 @@ size_t VisWindow::GetAlphaCompositeBlocking() const
 //   Kathleen Bonnell, Mon Sep 29 13:15:20 PDT 2003
 //   Added call to RecalculateRenderOrder.
 //
+//   Kathleen Biagas, Monday July 28, 2025
+//   Antialiasing is now an int (enum).
+//
 // ****************************************************************************
 
 void
-VisWindow::SetAntialiasing(bool enabled)
+VisWindow::SetAntialiasing(int aaMode)
 {
-    if (enabled != rendering->GetAntialiasing())
+    if (aaMode != rendering->GetAntialiasing())
     {
-        rendering->SetAntialiasing(enabled);
+        rendering->SetAntialiasing(aaMode);
         RecalculateRenderOrder();
     }
 }
@@ -6144,14 +6143,115 @@ VisWindow::SetAntialiasing(bool enabled)
 // Creation:   Mon Sep 23 14:06:46 PST 2002
 //
 // Modifications:
+//   Kathleen Biagas, Monday July 28, 2025
+//   Antialiasing is now an int (enum).
 //
 // ****************************************************************************
 
-bool
+int
 VisWindow::GetAntialiasing() const
 {
     return rendering->GetAntialiasing();
 }
+
+// ****************************************************************************
+// Method: VisWindow::SetMSAASamples
+//
+// Purpose:
+//   Sets the window's MSAASamples
+//
+// Arguments:
+//   numSamp  : The number of MSAA samples to use for AA.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+VisWindow::SetMSAASamples(int numSamp)
+{
+    rendering->SetMSAASamples(numSamp);
+}
+
+// ****************************************************************************
+// Method: VisWindow::GetMSAASamples
+//
+// Returns:    The window's MSAASamples.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+int
+VisWindow::GetMSAASamples() const
+{
+    return rendering->GetMSAASamples();
+}
+
+
+// ****************************************************************************
+// Method: VisWindow::MSAAAvailable
+//
+// Returns:    Whether or not MSAA is available.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 26, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+VisWindow::MSAAAvailable() const
+{
+    return rendering->MSAAAvailable();
+}
+
+// ****************************************************************************
+// Method: VisWindow::SetFXAAOptions
+//
+// Purpose:
+//   Sets the options for FXAA.
+//
+// Arguments:
+//   fxaaOpt : The new FXAA options
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+VisWindow::SetFXAAOptions(const FXAAOptions *fxaaOpt)
+{
+    rendering->SetFXAAOptions(fxaaOpt);
+}
+
+// ****************************************************************************
+// Method: VisWindow::GetFXAAOptions
+//
+// Purpose:
+//   Returns a pointer to the window's FXAAOptions.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// ****************************************************************************
+
+const FXAAOptions *
+VisWindow::GetFXAAOptions() const
+{
+    return rendering->GetFXAAOptions();
+}
+
 
 // ****************************************************************************
 // Method: VisWindow::SetMultiresolutionMode
@@ -6348,50 +6448,6 @@ VisWindow::IsDirect(void)
     return rendering->IsDirect();
 }
 
-// ****************************************************************************
-// Method: VisWindow::SetSurfaceRepresentation
-//
-// Purpose:
-//   Sets the window's surface representation.
-//
-// Arguments:
-//   rep : The window's new surface representation.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Sep 23 14:11:19 PST 2002
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-VisWindow::SetSurfaceRepresentation(int rep)
-{
-    std::vector< VisWinColleague * >::iterator it;
-    for (it = colleagues.begin() ; it != colleagues.end() ; it++)
-    {
-        (*it)->SetSurfaceRepresentation(rep);
-    }
-}
-
-// ****************************************************************************
-// Method: VisWindow::GetSurfaceRepresentation
-//
-// Purpose:
-//   Gets the window's surface representation.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Sep 23 14:11:50 PST 2002
-//
-// Modifications:
-//
-// ****************************************************************************
-
-int
-VisWindow::GetSurfaceRepresentation() const
-{
-    return rendering->GetSurfaceRepresentation();
-}
 
 // ****************************************************************************
 // Method: VisWindow::SetSpecularProperties
@@ -6969,14 +7025,13 @@ VisWindow::GetOsprayShadows() const
 
 #ifdef HAVE_ANARI
 // ****************************************************************************
-// Method: VisWindow::SetAnariRendering
+// Method: VisWindow::SetAnariAttributes
 //
 // Purpose:
-//   Sets the ANARI rendering flag
+//   Sets the ANARI attributes
 //
 // Arguments:
-//   enabled    if true enable ANARI rendering, otherwise disable ANARI
-//              rendering
+//   attrs    The ANARI attributes to set
 //
 // Programmer:  Kevin Griffin
 // Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
@@ -6984,857 +7039,29 @@ VisWindow::GetOsprayShadows() const
 // ****************************************************************************
 
 void
-VisWindow::SetAnariRendering(const bool enabled)
+VisWindow::SetAnariAttributes(const AnariAttributes &attrs)
 {
-    if (enabled != GetAnariRendering())
-    {
-        rendering->SetAnariRendering(enabled);
-        interactions->SetAnariRendering(enabled);
-    }
+    rendering->SetAnariAttributes(attrs);
 }
 
 // ****************************************************************************
-// Method: VisWindow::GetAnariRendering
+// Method: VisWindow::GetAnariAttributes
 //
 // Purpose:
-//   Returns the ANARI rendering flag
+//   Returns the ANARI attributes
 //
-// Returns:    The ANARI rendering flag
+// Returns:    The ANARI attributes
 //
 // Programmer:  Kevin Griffin
 // Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
 //
 // ****************************************************************************
 
-bool
-VisWindow::GetAnariRendering() const
+const AnariAttributes &
+VisWindow::GetAnariAttributes() const
 {
-    return rendering->GetAnariRendering();
+    return rendering->GetAnariAttributes();
 }
-
-// ****************************************************************************
-// Method: VisWindow::SetUseAnariDenoiser
-//
-// Purpose:
-//   Sets the ANARI denoiser flag
-//
-// Arguments:
-//   enabled    if true enable the denoiser during rendering.
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-void
-VisWindow::SetUseAnariDenoiser(const bool enabled)
-{
-    if (enabled != GetUseAnariDenoiser())
-    {
-        rendering->SetUseAnariDenoiser(enabled);
-    }
-}
-
-// ****************************************************************************
-// Method: VisWindow::GetUseAnariDenoiser
-//
-// Purpose:
-//   Returns the ANARI denoiser flag
-//
-// Returns:    The ANARI denoiser flag
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-bool
-VisWindow::GetUseAnariDenoiser() const
-{
-    return rendering->GetUseAnariDenoiser();
-}
-
-// ****************************************************************************
-// Method: VisWindow::SetAnariSPP
-//
-// Purpose:
-//   Sets the ANARI samples per pixel
-//
-// Arguments:
-//   val : The new number of samples per pixel
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-void
-VisWindow::SetAnariSPP(const int val)
-{
-    if (val != GetAnariSPP())
-    {
-        rendering->SetAnariSPP(val);
-    }
-}
-
-// ****************************************************************************
-// Method: VisWindow::GetAnariSPP
-//
-// Purpose:
-//   Returns the ANARI samples per pixel
-//
-// Returns:    The ANARI samples per pixel
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-int
-VisWindow::GetAnariSPP() const
-{
-    return rendering->GetAnariSPP();
-}
-
-// ****************************************************************************
-// Method: VisWindow::SetAnariAO
-//
-// Purpose:
-//   Sets the ANARI ambient occlusion samples
-//
-// Arguments:
-//   val : The new number of ambient occlusion samples
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-void
-VisWindow::SetAnariAO(const int val)
-{
-    if (val != GetAnariAO())
-    {
-        rendering->SetAnariAO(val);
-    }
-}
-
-// ****************************************************************************
-// Method: VisWindow::GetAnariAO
-//
-// Purpose:
-//   Returns the ANARI ambient occlusion samples
-//
-// Returns:    The ANARI ambient occlusion samples
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-int
-VisWindow::GetAnariAO() const
-{
-    return rendering->GetAnariAO();
-}
-
-// ****************************************************************************
-// Method: VisWindow::SetAnariLibraryName
-//
-// Purpose:
-//   Set ANARI back-end rendering library name
-//
-// Arguments:
-//   name : back-end rendering library name
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-void
-VisWindow::SetAnariLibraryName(const std::string name)
-{
-    if(name.compare(GetAnariLibraryName()) != 0)
-    {
-        rendering->SetAnariLibraryName(name);
-    }
-}
-
-// ****************************************************************************
-// Method: VisWindow::GetAnariLibraryName
-//
-// Purpose:
-//   Returns the ANARI back-end rendering library name
-//
-// Returns:    the ANARI back-end rendering library name
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-std::string
-VisWindow::GetAnariLibraryName() const
-{
-    return rendering->GetAnariLibraryName();
-}
-
-// ****************************************************************************
-// Method: VisWindow::SetAnariLibrarySubtype
-//
-// Purpose:
-//   Set ANARI back-end rendering library subtype name
-//
-// Arguments:
-//   name : back-end rendering library subtype name
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-void
-VisWindow::SetAnariLibrarySubtype(const std::string name)
-{
-    if(name.compare(GetAnariLibrarySubtype()) != 0)
-    {
-        rendering->SetAnariLibrarySubtype(name);
-    }
-}
-
-// ****************************************************************************
-// Method: VisWindow::GetAnariLibrarySubtype
-//
-// Purpose:
-//   Returns the ANARI back-end rendering library subtype name
-//
-// Returns:    the ANARI back-end rendering library subtype name
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-std::string
-VisWindow::GetAnariLibrarySubtype() const
-{
-    return rendering->GetAnariLibrarySubtype();
-}
-
-// ****************************************************************************
-// Method: VisWindow::SetAnariRendererSubtype
-//
-// Purpose:
-//   Set ANARI back-end renderer subtype
-//
-// Arguments:
-//   subtype    back-end renderer subtype
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-void
-VisWindow::SetAnariRendererSubtype(const std::string subtype)
-{
-    if(subtype.compare(GetAnariRendererSubtype()) != 0)
-    {
-        rendering->SetAnariRendererSubtype(subtype);
-    }
-}
-
-// ****************************************************************************
-// Method: VisWindow::GetAnariRendererSubtype
-//
-// Purpose:
-//   Returns the ANARI back-end renderer subtype
-//
-// Returns:    the ANARI back-end renderer subtype
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-std::string
-VisWindow::GetAnariRendererSubtype() const
-{
-    return rendering->GetAnariRendererSubtype();
-}
-
-// ****************************************************************************
-// Method: VisWindow::SetAnariLightFalloff
-//
-// Purpose:
-//   Sets the light falloff value used by the back-end renderer
-//
-// Arguments:
-//   val    the light falloff value
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-void
-VisWindow::SetAnariLightFalloff(const float val)
-{
-    if(GetAnariLightFalloff() != val)
-    {
-        rendering->SetAnariLightFalloff(val);
-    }
-}
-
-// ****************************************************************************
-// Method: VisWindow::GetAnariLightFalloff
-//
-// Purpose:
-//   Gets the light falloff value used by the back-end renderer
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-float
-VisWindow::GetAnariLightFalloff() const
-{
-    return rendering->GetAnariLightFalloff();
-}
-
-// ****************************************************************************
-// Method: VisWindow::SetAnariAmbientIntensity
-//
-// Purpose:
-//   Sets the ambient intensity value used by the back-end renderer.
-//
-// Arguments:
-//   val    the ambient intensity value
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-void
-VisWindow::SetAnariAmbientIntensity(const float val)
-{
-    if(GetAnariAmbientIntensity() != val)
-    {
-        rendering->SetAnariAmbientIntensity(val);
-    }
-}
-
-// ****************************************************************************
-// Method: VisWindow::GetAnariAmbientIntensity
-//
-// Purpose:
-//   Gets the ambient intensity value used by the back-end renderer.
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-float
-VisWindow::GetAnariAmbientIntensity() const
-{
-    return rendering->GetAnariAmbientIntensity();
-}
-
-// ****************************************************************************
-// Method: VisWindow::SetAnariMaxDepth
-//
-// Purpose:
-//   Sets the max depth value used by the back-end renderer.
-//
-// Arguments:
-//   val    the max depth value
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-void
-VisWindow::SetAnariMaxDepth(const int val)
-{
-    if(GetAnariMaxDepth() != val)
-    {
-        rendering->SetAnariMaxDepth(val);
-    }
-}
-
-// ****************************************************************************
-// Method: VisWindow::GetAnariMaxDepth
-//
-// Purpose:
-//   Gets the max depth value used by the back-end renderer.
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-int
-VisWindow::GetAnariMaxDepth() const
-{
-    return rendering->GetAnariMaxDepth();
-}
-
-// ****************************************************************************
-// Method: VisWindow::SetAnariRValue
-//
-// Purpose:
-//   Sets the R value used by the back-end renderer.
-//
-// Arguments:
-//   val    the R value
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-void
-VisWindow::SetAnariRValue(const float val)
-{
-    if(GetAnariRValue() != val)
-    {
-        rendering->SetAnariRValue(val);
-    }
-}
-
-// ****************************************************************************
-// Method: VisWindow::GetAnariRValue
-//
-// Purpose:
-//   Gets the R value used by the back-end renderer.
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-float
-VisWindow::GetAnariRValue() const
-{
-    return rendering->GetAnariRValue();
-}
-
-// ****************************************************************************
-// Method: VisWindow::SetAnariDebugMethod
-//
-// Purpose:
-//   Sets the debug method to use by the back-end debug renderer.
-//
-// Arguments:
-//   method     the debug method
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-void
-VisWindow::SetAnariDebugMethod(const std::string method)
-{
-    if(method.compare(GetAnariDebugMethod()) != 0)
-    {
-        rendering->SetAnariDebugMethod(method);
-    }
-}
-
-// ****************************************************************************
-// Method: VisWindow::GetAnariDebugMethod
-//
-// Purpose:
-//   Gets the debug method to use by the back-end debug renderer.
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-std::string
-VisWindow::GetAnariDebugMethod() const
-{
-    return rendering->GetAnariDebugMethod();
-}
-
-// ****************************************************************************
-// Method: VisWindow::SetUsdDir
-//
-// Purpose:
-//   Sets the directory for saving USD output from the USD back-end.
-//
-// Arguments:
-//   outDir     the output directory
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-void
-VisWindow::SetUsdDir(const std::string outDir)
-{
-    if(outDir.compare(GetUsdDir()) != 0)
-    {
-        rendering->SetUsdDir(outDir);
-    }
-}
-
-// ****************************************************************************
-// Method: VisWindow::GetUsdDir
-//
-// Purpose:
-//   Gets the directory for saving USD output from the USD back-end.
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-std::string
-VisWindow::GetUsdDir() const
-{
-    return rendering->GetUsdDir();
-}
-
-// ****************************************************************************
-// Method: VisWindow::SetUsdAtCommit
-//
-// Purpose:
-//   Sets the output USD at anariCommit flag for the USD back-end.
-//
-// Arguments:
-//   val    true if USD output is created when anariCommit is called,
-//          otherwise USD output is created when anariRenderFrame is called
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-void
-VisWindow::SetUsdAtCommit(const bool val)
-{
-    if(val != GetUsdAtCommit())
-    {
-        rendering->SetUsdAtCommit(val);
-    }
-}
-
-// ****************************************************************************
-// Method: VisWindow::GetUsdAtCommit
-//
-// Purpose:
-//   Gets the output USD at anariCommit flag for the USD back-end.
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-bool
-VisWindow::GetUsdAtCommit() const
-{
-    return rendering->GetUsdAtCommit();
-}
-
-// ****************************************************************************
-// Method: VisWindow::SetUsdOutputBinary
-//
-// Purpose:
-//   Sets the output USD in binary format flag for the USD back-end.
-//
-// Arguments:
-//   val    true if USD output will be binary, otherwise USD output is text.
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-void
-VisWindow::SetUsdOutputBinary(const bool val)
-{
-    if(val != GetUsdOutputBinary())
-    {
-        rendering->SetUsdOutputBinary(val);
-    }
-}
-
-// ****************************************************************************
-// Method: VisWindow::GetUsdOutputBinary
-//
-// Purpose:
-//   Gets the output USD in binary format flag for the USD back-end.
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-bool
-VisWindow::GetUsdOutputBinary() const
-{
-    return rendering->GetUsdOutputBinary();
-}
-
-// ****************************************************************************
-// Method: VisWindow::SetUsdOutputMaterial
-//
-// Purpose:
-//   Sets the output USD material objects flag for the USD back-end.
-//
-// Arguments:
-//   val    true if USD material objects should be output, otherwise false
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-void
-VisWindow::SetUsdOutputMaterial(const bool val)
-{
-    if(val != GetUsdOutputMaterial())
-    {
-        rendering->SetUsdOutputMaterial(val);
-    }
-}
-
-// ****************************************************************************
-// Method: VisWindow::GetUsdOutputMaterial
-//
-// Purpose:
-//   Gets the output USD material objects flag for the USD back-end.
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-bool
-VisWindow::GetUsdOutputMaterial() const
-{
-    return rendering->GetUsdOutputMaterial();
-}
-
-// ****************************************************************************
-// Method: VisWindow::SetUsdOutputPreviewSurface
-//
-// Purpose:
-//   Sets the output USD preview surface prims for material objects flag for
-//   the USD back-end.
-//
-// Arguments:
-//   val    true if USD previewsurface shader prims should be output for material
-//          objects, otherwise false
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-void
-VisWindow::SetUsdOutputPreviewSurface(const bool val)
-{
-    if(val != GetUsdOutputPreviewSurface())
-    {
-        rendering->SetUsdOutputPreviewSurface(val);
-    }
-}
-
-// ****************************************************************************
-// Method: VisWindow::GetUsdOutputPreviewSurface
-//
-// Purpose:
-//   Gets the output USD preview surface prims for material objects flag for
-//   the USD back-end.
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-bool
-VisWindow::GetUsdOutputPreviewSurface() const
-{
-    return rendering->GetUsdOutputPreviewSurface();
-}
-
-// ****************************************************************************
-// Method: VisWindow::SetUsdOutputMDL
-//
-// Purpose:
-//   Sets the output USD mdl shader prims for material objects flag for the USD
-//   back-end.
-//
-// Arguments:
-//   val    true if USD mdl shader prims should be output for material objects,
-//          otherwise false
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-void
-VisWindow::SetUsdOutputMDL(const bool val)
-{
-    if(val != GetUsdOutputMDL())
-    {
-        rendering->SetUsdOutputMDL(val);
-    }
-}
-
-// ****************************************************************************
-// Method: VisWindow::GetUsdOutputMDL
-//
-// Purpose:
-//   Gets the output USD mdl shader prims for material objects flag for the USD
-//   back-end.
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-bool
-VisWindow::GetUsdOutputMDL() const
-{
-    return rendering->GetUsdOutputMDL();
-}
-
-// ****************************************************************************
-// Method: VisWindow::SetUsdOutputMDLColors
-//
-// Purpose:
-//   Sets the output USD mdl colors for material objects flag for the USD
-//   back-end.
-//
-// Arguments:
-//   val    true if USD mdl colors should be included in the output for
-//          material objects, otherwise false
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-void
-VisWindow::SetUsdOutputMDLColors(const bool val)
-{
-    if(val != GetUsdOutputMDLColors())
-    {
-        rendering->SetUsdOutputMDLColors(val);
-    }
-}
-
-// ****************************************************************************
-// Method: VisWindow::GetUsdOutputMDLColors
-//
-// Purpose:
-//   Gets the output USD mdl colors for material objects flag for the USD
-//   back-end.
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-bool
-VisWindow::GetUsdOutputMDLColors() const
-{
-    return rendering->GetUsdOutputMDLColors();
-}
-
-// ****************************************************************************
-// Method: VisWindow::SetUsdOutputDisplayColors
-//
-// Purpose:
-//   Sets the output USD display colors flag for the USD back-end.
-//
-// Arguments:
-//   val    true if USD display colors should be included in the output,
-//          otherwise false
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-void
-VisWindow::SetUsdOutputDisplayColors(const bool val)
-{
-    if(val != GetUsdOutputDisplayColors())
-    {
-        rendering->SetUsdOutputDisplayColors(val);
-    }
-}
-
-// ****************************************************************************
-// Method: VisWindow::GetUsdOutputDisplayColors
-//
-// Purpose:
-//   Gets the output USD display colors flag for the USD back-end.
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-bool
-VisWindow::GetUsdOutputDisplayColors() const
-{
-    return rendering->GetUsdOutputDisplayColors();
-}
-
-// ****************************************************************************
-// Method: VisWindow::SetUsingUsdDevice
-//
-// Purpose:
-//   Sets the using USD device flag for the USD back-end.
-//
-// Arguments:
-//   val    true if using the USD back-end, otherwise false
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-void
-VisWindow::SetUsingUsdDevice(const bool val)
-{
-    if(val != GetUsingUsdDevice())
-    {
-        rendering->SetUsingUsdDevice(val);
-    }
-}
-
-// ****************************************************************************
-// Method: VisWindow::GetUsingUsdDevice
-//
-// Purpose:
-//   Gets the using USD device flag for the USD back-end.
-//
-// Programmer:  Kevin Griffin
-// Creation:    Thu 26 Oct 2023 09:51:22 AM PDT
-//
-// ****************************************************************************
-
-bool
-VisWindow::GetUsingUsdDevice() const
-{
-    return rendering->GetUsingUsdDevice();
-}
-
 #endif
 
 // ****************************************************************************

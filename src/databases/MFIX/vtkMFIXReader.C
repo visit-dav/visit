@@ -639,7 +639,7 @@ void vtkMFIXReader::MakeMesh(vtkUnstructuredGrid *output1,
     for (int j = 0; j <= this->VariableNames->GetMaxId(); j++)
       {
       this->CellDataArray[ j ] = vtkFloatArray::New();
-      this->CellDataArray[ j ]->SetName(this->VariableNames->GetValue(j));
+      this->CellDataArray[ j ]->SetName(this->VariableNames->GetValue(j).c_str());
       this->CellDataArray[ j ]->
         SetNumberOfComponents(this->VariableComponents->GetValue(j));
       }
@@ -717,7 +717,7 @@ int vtkMFIXReader::RequestInformation(
     for (int j = 0; j <= this->VariableNames->GetMaxId(); j++)
       {
       this->CellDataArraySelection->AddArray(
-        this->VariableNames->GetValue(j));
+        this->VariableNames->GetValue(j).c_str());
       }
 
     this->NumberOfPoints = (this->IMaximum2+1)
@@ -2215,7 +2215,7 @@ void vtkMFIXReader::GetVariableAtTimestep(int vari , int tstep,
   // <10 scalars and <10 ReactionRates (need to change this)
 
   char variableName[256];
-  strcpy(variableName, this->VariableNames->GetValue(vari));
+  strcpy(variableName, this->VariableNames->GetValue(vari).c_str());
   int spx = this->VariableIndexToSPX->GetValue(vari);
   char fileName[256];
 

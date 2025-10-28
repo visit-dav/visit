@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Exodus" label="Exodus" type="database" dbtype="MTSD" version="1.0" hasoptions="true">
+  <Plugin name="Exodus" type="database" label="Exodus" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="true" haslicense="false" filePatternsStrict="false" opensWholeDirectory="false">
     <FilePatterns>
     *.ex
     *.e
@@ -39,7 +39,7 @@
     <LIBS>
       netcdf
     </LIBS>
-    <Attribute name="" purpose="" persistent="true" exportAPI="" exportInclude="" codefile="Exodus.code">
+    <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="Exodus.code">
       <Function name="ExodusCommonPluginInfo::SetupDatabase" user="false" member="true">
       </Function>
     </Attribute>

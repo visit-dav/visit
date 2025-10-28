@@ -186,6 +186,10 @@ XMLDocument::open(const QString &file)
 //    Kathleen Biagas, Thu May 1, 2025
 //    Add error checking for empty 'subtype' for 'att' or 'attVector' type.
 //
+//    Kathleen Biagas, Mon Oct 20, 2025
+//    Don't use QIODevice::Text when writing on Windows as it writes CR\LF
+//    and we want to use unix-style line endings.
+//
 // ****************************************************************************
 void
 XMLDocument::save(const QString &file)
@@ -232,7 +236,7 @@ XMLDocument::save(const QString &file)
                     QString("The enabler for field %1 must have at least one value.").arg(attribute->fields[i]->name));
                 return;
             }
-            if ((attribute->fields[i]->type == "att" || 
+            if ((attribute->fields[i]->type == "att" ||
                  attribute->fields[i]->type == "attVector") &&
                  attribute->fields[i]->GetSubtype().isEmpty())
             {
@@ -273,8 +277,11 @@ XMLDocument::save(const QString &file)
 
 
     QFile outfile(file);
-
+#ifdef _WIN32
+    if (!outfile.open(QIODevice::WriteOnly))
+#else
     if (!outfile.open(QIODevice::WriteOnly | QIODevice::Text))
+#endif
     {
         QMessageBox::warning(0,"Error","Could not open xml file for saving!");
         return;

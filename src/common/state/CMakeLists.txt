@@ -10,6 +10,12 @@
 #   Kathleen Biagas, Thu May 16, 2024
 #   Using blt, so create lists for sources, headers, includes.
 #
+#   Kathleen Biagas, Thu Aug 14, 2025
+#   Add FXAAOptions.
+#
+#   Kevin Griffin, Wed Sep 10, 2025
+#   Refactored ANARI rendering options into AnariAttributes
+#
 #****************************************************************************
 
 # Add XML Code Gen Targets
@@ -25,6 +31,7 @@
 #
 
 foreach(obj_name
+    AnariAttributes
     AnimationAttributes
     AnnotationAttributes
     AnnotationObject
@@ -62,6 +69,7 @@ foreach(obj_name
     Expression
     FileOpenOptions
     FontAttributes
+    FXAAOptions
     GaussianControlPoint
     GaussianControlPointList
     GlobalAttributes
@@ -140,7 +148,8 @@ endforeach()
 # Adding contents of this dir as SOURCES to visitcommon
 visit_append_list(
     NAME  visitcommon_SOURCES
-    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/AnimationAttributes.C
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/AnariAttributes.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/AnimationAttributes.C
           ${CMAKE_CURRENT_SOURCE_DIR}/AnnotationAttributes.C
           ${CMAKE_CURRENT_SOURCE_DIR}/AnnotationObject.C
           ${CMAKE_CURRENT_SOURCE_DIR}/AnnotationObjectList.C
@@ -185,6 +194,7 @@ visit_append_list(
           ${CMAKE_CURRENT_SOURCE_DIR}/ExpressionList.C
           ${CMAKE_CURRENT_SOURCE_DIR}/FileOpenOptions.C
           ${CMAKE_CURRENT_SOURCE_DIR}/FontAttributes.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/FXAAOptions.C
           ${CMAKE_CURRENT_SOURCE_DIR}/GaussianControlPoint.C
           ${CMAKE_CURRENT_SOURCE_DIR}/GaussianControlPointList.C
           ${CMAKE_CURRENT_SOURCE_DIR}/GlobalAttributes.C
@@ -272,7 +282,8 @@ visit_append_list(
 
 visit_append_list(
     NAME  visitcommon_HEADERS
-    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/AnimationAttributes.h
+    ITEMS ${CMAKE_CURRENT_SOURCE_DIR}/AnariAttributes.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/AnimationAttributes.h
           ${CMAKE_CURRENT_SOURCE_DIR}/AnnotationAttributes.h
           ${CMAKE_CURRENT_SOURCE_DIR}/AnnotationObject.h
           ${CMAKE_CURRENT_SOURCE_DIR}/AnnotationObjectList.h
@@ -317,6 +328,7 @@ visit_append_list(
           ${CMAKE_CURRENT_SOURCE_DIR}/ExpressionList.h
           ${CMAKE_CURRENT_SOURCE_DIR}/FileOpenOptions.h
           ${CMAKE_CURRENT_SOURCE_DIR}/FontAttributes.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/FXAAOptions.h
           ${CMAKE_CURRENT_SOURCE_DIR}/GaussianControlPoint.h
           ${CMAKE_CURRENT_SOURCE_DIR}/GaussianControlPointList.h
           ${CMAKE_CURRENT_SOURCE_DIR}/GlobalAttributes.h

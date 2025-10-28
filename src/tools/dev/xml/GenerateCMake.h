@@ -204,11 +204,6 @@
 //    visit_add_database_plugin.  Thus most of the CMake logic resides
 //    there instead of here, where it can be hard to parse to make changes.
 //
-//    This generator also now supports a 'Verbatim' tag in code files which
-//    can specify specialized CMake logic that should be add 'Pre' or 'Post'
-//    calls to visit_add_xxx_plugin. As of this writing the Volume plot is the
-//    only plugin utilizing this functionality.
-//
 //    Removed no-longer used code.
 //
 // ****************************************************************************
@@ -441,7 +436,7 @@ class CMakeGeneratorPlugin : public Plugin
     }
 
     void
-    WriteCMake_AdditionalCode(QTextStream &out)
+    WriteCMake_AdditionalCode(QTextStream &out, bool prefix)
     {
         if (atts != NULL && atts->codeFile != NULL)
         {
@@ -451,11 +446,11 @@ class CMakeGeneratorPlugin : public Plugin
             {
                 if (targets[i] == "xml2cmake")
                 {
-                    if (!first[i].isEmpty())
+                    if (prefix && !first[i].isEmpty())
                     {
                         out << first[i] << Endl;
                     }
-                    if (!second[i].isEmpty())
+                    else if (!prefix && !second[i].isEmpty())
                     {
                         out << second[i] << Endl;
                     }
@@ -585,26 +580,11 @@ class CMakeGeneratorPlugin : public Plugin
         return hasDefines;
     }
 
-    void WriteCMake_PluginVerbatim(QTextStream &out, QString prepost)
-    {
-        if (atts != NULL && atts->codeFile != NULL)
-        {
-            QStringList logic;
-            if(atts->codeFile->GetVerbatim(prepost, logic))
-            {
-                out << Endl;
-                out << "\n" << logic[0] << Endl;
-                //out << Endl;
-            }
-        }
-    }
-            
-
     void WriteCMake_PlotOperator(QTextStream &out,
                          const QString &guilibname,
                          const QString &viewerlibname)
     {
-        WriteCMake_PluginVerbatim(out, "Pre");
+        WriteCMake_AdditionalCode(out, true);
         bool hasDefines = WriteCMake_PluginConditionalDefinitions(out);
         bool hasIncludes = WriteCMake_PluginConditionalIncludes(out);
         bool hasGLibs  = WriteCMake_PluginConditionalLibs(out, "G");
@@ -655,14 +635,14 @@ class CMakeGeneratorPlugin : public Plugin
 
         out << ")" << Endl;
 
-        WriteCMake_PluginVerbatim(out, "Post");
+        WriteCMake_AdditionalCode(out, false);
     }
 
     void WriteCMake_DatabasePlugin(QTextStream &out)
     {
         bool useFortran = false;
 
-        WriteCMake_PluginVerbatim(out, "Pre");
+        WriteCMake_AdditionalCode(out, true);
         bool hasDefines = WriteCMake_PluginConditionalDefinitions(out);
         bool hasIncludes = WriteCMake_PluginConditionalIncludes(out);
         bool hasMLibs  = WriteCMake_PluginConditionalLibs(out, "M");
@@ -705,7 +685,7 @@ class CMakeGeneratorPlugin : public Plugin
 
         out << ")" << Endl;
 
-        WriteCMake_PluginVerbatim(out, "Post");
+        WriteCMake_AdditionalCode(out, false);
         out << Endl;
     }
 
@@ -807,8 +787,6 @@ class CMakeGeneratorPlugin : public Plugin
             WriteCMake_DatabasePlugin(out);
         else
             WriteCMake_PlotOperator(out, guilibname, viewerlibname);
-
-        WriteCMake_AdditionalCode(out);
     }
 
 private:

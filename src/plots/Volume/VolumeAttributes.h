@@ -9,6 +9,7 @@
 
 #include <ColorControlPointList.h>
 #include <GaussianControlPointList.h>
+#include <AnariAttributes.h>
 
 // ****************************************************************************
 // Class: VolumeAttributes
@@ -34,7 +35,8 @@ public:
         Parallel,
         Composite,
         Integration,
-        SLIVR
+        SLIVR,
+        ANARI
     };
     enum ResampleType
     {
@@ -125,6 +127,7 @@ public:
     void SelectOpacityVariable();
     void SelectFreeformOpacity();
     void SelectMaterialProperties();
+    void SelectAnariAttributes();
 
     // Property setting methods
     void SetOSPRayEnabledFlag(bool OSPRayEnabledFlag_);
@@ -172,6 +175,7 @@ public:
     void SetLowGradientLightingClampFlag(bool lowGradientLightingClampFlag_);
     void SetLowGradientLightingClampValue(double lowGradientLightingClampValue_);
     void SetMaterialProperties(const double *materialProperties_);
+    void SetAnariAttributes(const AnariAttributes &anariAttributes_);
 
     // Property getting methods
     bool                           GetOSPRayEnabledFlag() const;
@@ -224,6 +228,8 @@ public:
     double                         GetLowGradientLightingClampValue() const;
     const double                   *GetMaterialProperties() const;
           double                   *GetMaterialProperties();
+    const AnariAttributes          &GetAnariAttributes() const;
+          AnariAttributes          &GetAnariAttributes();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -346,6 +352,7 @@ public:
         ID_lowGradientLightingClampFlag,
         ID_lowGradientLightingClampValue,
         ID_materialProperties,
+        ID_anariAttributes,
         ID__LAST
     };
 
@@ -395,11 +402,12 @@ private:
     bool                     lowGradientLightingClampFlag;
     double                   lowGradientLightingClampValue;
     double                   materialProperties[4];
+    AnariAttributes          anariAttributes;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define VOLUMEATTRIBUTES_TMFS "bibbbbbbiidddbbafiaiiisUbfbfbfbfbiiiidiifibdD"
+#define VOLUMEATTRIBUTES_TMFS "bibbbbbbiidddbbafiaiiisUbfbfbfbfbiiiidiifibdDa"
 
 #endif

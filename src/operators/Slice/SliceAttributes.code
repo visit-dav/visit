@@ -1,13 +1,16 @@
+Target: xml2atts
 Code: SetAxisType
 Prefix:
 Postfix:
     UpdateOrthogonalAxes();
 
+Target: xml2atts
 Code: SetFlip
 Prefix:
 Postfix:
     UpdateOrthogonalAxes();
 
+Target: xml2atts
 Function: CopyAttributes
 Declaration: virtual bool CopyAttributes(const AttributeGroup *);
 Definition:
@@ -86,6 +89,7 @@ SliceAttributes::CopyAttributes(const AttributeGroup *atts)
     return retval;
 }
 
+Target: xml2atts
 Function: CreateCompatible
 Declaration: virtual AttributeSubject *CreateCompatible(const std::string &) const;
 Definition:
@@ -197,6 +201,7 @@ SliceAttributes::CreateCompatible(const std::string &tname) const
     return retval;
 }
 
+Target: xml2atts
 Function: UpdateOrthogonalAxes
 Declaration: void UpdateOrthogonalAxes();
 Definition:
@@ -291,6 +296,7 @@ SliceAttributes::UpdateOrthogonalAxes()
     Select(8, (void *)upAxis, 3);
 }
 
+Target: xml2atts
 Function: EqualTo
 Declaration: virtual bool EqualTo(const AttributeGroup *atts) const;
 Definition:
@@ -356,6 +362,7 @@ SliceAttributes::EqualTo(const AttributeGroup *atts) const
     return true;
 }
 
+Target: xml2atts
 Function: SetValue1
 Declaration: virtual bool SetValue(const std::string &name, const int &value);
 Definition:
@@ -374,6 +381,7 @@ SliceAttributes::SetValue(const std::string &name, const int &value)
     return retval;
 }
 
+Target: xml2atts
 Function: SetValue2
 Declaration: virtual bool SetValue(const std::string &name, const bool &value);
 Definition:
@@ -393,6 +401,6 @@ SliceAttributes::SetValue(const std::string &name, const bool &value)
 }
 
 Target: xml2cmake
-Condition: HAVE_VTKM
-ELinkLibraries: vtkm_cont vtkm_filter_core vtkm_filter_contour vtkm_worklet vtkm_filter_vector_analysis
+Condition: HAVE_LIBVTKM
+ELinkLibraries: vtkm::cont vtkm::filter_core vtkm::filter_contour vtkm::filter_multi_block vtkm::worklet vtkm::filter_vector_analysis vtkm::vtkmdiympi_nompi
 

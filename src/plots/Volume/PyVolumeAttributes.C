@@ -9,6 +9,7 @@
 #include <Py2and3Support.h>
 #include <PyColorControlPointList.h>
 #include <PyGaussianControlPointList.h>
+#include <PyAnariAttributes.h>
 
 // ****************************************************************************
 // Module: PyVolumeAttributes
@@ -246,7 +247,8 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix, co
     str += tmpStr;
     snprintf(tmpStr, 1000, "%ssamplesPerRay = %d\n", prefix, atts->GetSamplesPerRay());
     str += tmpStr;
-    const char *rendererType_names = "Serial, Parallel, Composite, Integration, SLIVR";
+    const char *rendererType_names = "Serial, Parallel, Composite, Integration, SLIVR, "
+        "ANARI";
     switch (atts->GetRendererType())
     {
       case VolumeAttributes::Serial:
@@ -267,6 +269,10 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix, co
           break;
       case VolumeAttributes::SLIVR:
           snprintf(tmpStr, 1000, "%srendererType = %sSLIVR  # %s\n", prefix, prefix, rendererType_names);
+          str += tmpStr;
+          break;
+      case VolumeAttributes::ANARI:
+          snprintf(tmpStr, 1000, "%srendererType = %sANARI  # %s\n", prefix, prefix, rendererType_names);
           str += tmpStr;
           break;
       default:
@@ -407,6 +413,11 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix, co
         }
         snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
+    }
+    { // new scope
+        std::string objPrefix(prefix);
+        objPrefix += "anariAttributes.";
+        str += PyAnariAttributes_ToString(&atts->GetAnariAttributes(), objPrefix.c_str(), forLogging);
     }
     return str;
 }
@@ -2533,17 +2544,18 @@ VolumeAttributes_SetRendererType(PyObject *self, PyObject *args)
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
 
-    if (cval < 0 || cval >= 5)
+    if (cval < 0 || cval >= 6)
     {
         std::stringstream ss;
         ss << "An invalid rendererType value was given." << std::endl;
-        ss << "Valid values are in the range [0,4]." << std::endl;
+        ss << "Valid values are in the range [0,5]." << std::endl;
         ss << "You can also use the following symbolic names:";
         ss << " Serial";
         ss << ", Parallel";
         ss << ", Composite";
         ss << ", Integration";
         ss << ", SLIVR";
+        ss << ", ANARI";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -3197,6 +3209,39 @@ VolumeAttributes_GetMaterialProperties(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+VolumeAttributes_SetAnariAttributes(PyObject *self, PyObject *args)
+{
+    PyVolumeAttributesObject *obj = (PyVolumeAttributesObject *)self;
+
+    PyObject *newValue = NULL;
+    if(!PyArg_ParseTuple(args, "O", &newValue))
+        return NULL;
+    if(!PyAnariAttributes_Check(newValue))
+        return PyErr_Format(PyExc_TypeError, "Field anariAttributes can be set only with AnariAttributes objects");
+
+    obj->data->SetAnariAttributes(*PyAnariAttributes_FromPyObject(newValue));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+VolumeAttributes_GetAnariAttributes(PyObject *self, PyObject *args)
+{
+    PyVolumeAttributesObject *obj = (PyVolumeAttributesObject *)self;
+    // Since the new object will point to data owned by this object,
+    // we need to increment the reference count.
+    Py_INCREF(self);
+
+    PyObject *retval = PyAnariAttributes_Wrap(&obj->data->GetAnariAttributes());
+    // Set the object's parent so the reference to the parent can be decref'd
+    // when the child goes out of scope.
+    PyAnariAttributes_SetParent(retval, self);
+
+    return retval;
+}
+
 
 
 PyMethodDef PyVolumeAttributes_methods[VOLUMEATTRIBUTES_NMETH] = {
@@ -3292,6 +3337,8 @@ PyMethodDef PyVolumeAttributes_methods[VOLUMEATTRIBUTES_NMETH] = {
     {"GetLowGradientLightingClampValue", VolumeAttributes_GetLowGradientLightingClampValue, METH_VARARGS},
     {"SetMaterialProperties", VolumeAttributes_SetMaterialProperties, METH_VARARGS},
     {"GetMaterialProperties", VolumeAttributes_GetMaterialProperties, METH_VARARGS},
+    {"SetAnariAttributes", VolumeAttributes_SetAnariAttributes, METH_VARARGS},
+    {"GetAnariAttributes", VolumeAttributes_GetAnariAttributes, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -3426,6 +3473,8 @@ PyVolumeAttributes_getattro(PyObject *self, PyObject *attr_name)
         return PyInt_FromLong(long(VolumeAttributes::Integration));
     if(strcmp(name, "SLIVR") == 0)
         return PyInt_FromLong(long(VolumeAttributes::SLIVR));
+    if(strcmp(name, "ANARI") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::ANARI));
 
     if(strcmp(name, "gradientType") == 0)
         return VolumeAttributes_GetGradientType(self, NULL);
@@ -3488,6 +3537,8 @@ PyVolumeAttributes_getattro(PyObject *self, PyObject *attr_name)
         return VolumeAttributes_GetLowGradientLightingClampValue(self, NULL);
     if(strcmp(name, "materialProperties") == 0)
         return VolumeAttributes_GetMaterialProperties(self, NULL);
+    if(strcmp(name, "anariAttributes") == 0)
+        return VolumeAttributes_GetAnariAttributes(self, NULL);
 
     PyObject *meth = Py_FindMethod(PyVolumeAttributes_methods, self, (char*)name);
     if (meth) return meth;
@@ -3593,6 +3644,8 @@ PyVolumeAttributes_setattro(PyObject *self, PyObject *attr_name, PyObject *args)
         obj = VolumeAttributes_SetLowGradientLightingClampValue(self, args);
     else if(strcmp(name, "materialProperties") == 0)
         obj = VolumeAttributes_SetMaterialProperties(self, args);
+    else if(strcmp(name, "anariAttributes") == 0)
+        obj = VolumeAttributes_SetAnariAttributes(self, args);
 
     if (obj == &NULL_PY_OBJ && PyObject_GenericSetAttr(self, attr_name, args) == 0)
     {

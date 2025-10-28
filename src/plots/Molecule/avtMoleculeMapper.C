@@ -56,27 +56,6 @@ avtMoleculeMapper::~avtMoleculeMapper()
 
 
 // ****************************************************************************
-//  Method: avtMoleculeMapper::SetSurfaceRepresentation
-//
-//  Purpose:
-//      Sets the drawable's surface representation.
-//
-//  Arguments:
-//      rep : The new surface representation.
-//
-//  Programmer: Kathleen Biagas 
-//  Creation:   July 22, 2016
-//
-// ****************************************************************************
-
-void
-avtMoleculeMapper::SetSurfaceRepresentation(int globalRep)
-{
-  // This is global rep, don't allow it to set anything for now.
-}
-
-
-// ****************************************************************************
 //  Method: avtMoleculeMapper::CustomizeMappers
 //
 //  Purpose:

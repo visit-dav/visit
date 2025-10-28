@@ -87,6 +87,9 @@
 // 
 //   Justin Privitera, Mon Aug 28 09:57:59 PDT 2023
 //   Removed `tagsMatchAny`.
+// 
+//   Justin Privitera, Tue Jul 15 14:04:58 PDT 2025
+//   Added `actuallyUpdateWindow`.
 //
 // ****************************************************************************
 
@@ -104,6 +107,7 @@ QvisColorTableWindow::QvisColorTableWindow(
     colorTableTypeGroup = 0;
     searchTerm = QString("");
     tagEdit = QString("");
+    actuallyUpdateWindow = true;
 }
 
 // ****************************************************************************
@@ -724,11 +728,20 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
 // 
 //   Justin Privitera, Tue Sep  5 12:49:42 PDT 2023
 //   Changing tags match all or any now triggers updateNames.
+// 
+//   Justin Privitera, Tue Jul 15 14:04:58 PDT 2025
+//   Check if we actually want to update the window and allow for early return
+//   if not.
 // ****************************************************************************
 
 void
 QvisColorTableWindow::UpdateWindow(bool doAll)
 {
+    if (!actuallyUpdateWindow)
+    {
+        return;
+    }
+
     bool updateNames = false;
     bool updateColorPoints = false;
 
@@ -923,8 +936,8 @@ QvisColorTableWindow::UpdateEditor()
 //    Justin Privitera, Wed Sep 21 16:51:24 PDT 2022
 //    Make sure the refcount for the "No Tags" tag is updated properly.
 // 
-//     Justin Privitera, Thu Sep 29 15:22:38 PDT 2022
-//     Replaced braces w/ equals to avoid init list behavior.
+//    Justin Privitera, Thu Sep 29 15:22:38 PDT 2022
+//    Replaced braces w/ equals to avoid init list behavior.
 // 
 //    Justin Privitera, Mon Feb 13 14:32:02 PST 2023
 //    Tagging is always enabled, so any code relating to making it optional
@@ -945,6 +958,9 @@ QvisColorTableWindow::UpdateEditor()
 //    unconditional since we can guarantee that all tag names that arrive there
 //    do not have a tag table entry.
 //    Added a const to the last step.
+// 
+//    Justin Privitera, Tue Jul 15 14:04:58 PDT 2025
+//    Notify the CTAtts observers that it has changed. See note below.
 //
 // ****************************************************************************
 
@@ -983,6 +999,25 @@ QvisColorTableWindow::UpdateTagTable()
         });
 
     tagTable->sortByColumn(1, Qt::AscendingOrder);
+
+    // Why do we need to do this? The Color Table Window (CTWindow) modifies 
+    // the Color Table Attributes (CTAtts) by calling 
+    //     colorAtts->SetTagTableItemFlag(currtag, true);
+    // up above, which tells the CTAtts that a tag table item exists for a 
+    // given tag. We need to notify all the CTAtts observers that the CTAtts 
+    // has changed so they can update accordingly. Thus we call 
+    //     colorAtts->Notify();
+    // However, the CTWindow is itself a CTAtts watcher, and notifying the 
+    // observers that the CTAtts have changed has the unwanted effect of 
+    // causing the CTWindow to update itself, leading to this function being
+    // called, which again calls Notify(), which leads to infinite recursion.
+    // We do need the observers to know about these changes, but we need the 
+    // CTWindow to not react, since it is making the changes, so we need a 
+    // switch to control whether or not the CTWindow should actually get 
+    // updated. We turn it off, call Notify(), and then turn it back on.
+    actuallyUpdateWindow = false;
+    colorAtts->Notify();
+    actuallyUpdateWindow = true;
 }
 
 

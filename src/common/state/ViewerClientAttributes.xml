@@ -23,7 +23,7 @@
       300
     </Field>
     <Field name="imageResolutionPcnt" label="imageResolutionPcnt" type="double">
-      100.000000
+      100
     </Field>
     <Field name="externalClient" label="externalClient" type="bool">
       false

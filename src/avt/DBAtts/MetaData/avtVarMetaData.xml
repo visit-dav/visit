@@ -12,10 +12,10 @@
       false
     </Field>
     <Field name="minDataExtents" label="Minimum data extents" type="double" access="public">
-      0.000000
+      0
     </Field>
     <Field name="maxDataExtents" label="Maximum data extents" type="double" access="public">
-      0.000000
+      0
     </Field>
     <Field name="matRestricted" label="Material numbers variable is restricted to" type="intVector" access="public">
     </Field>

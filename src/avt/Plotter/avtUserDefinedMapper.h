@@ -51,6 +51,9 @@ class     vtkUserDefinedMapperBridge;
 //    Brad Whitlock, Wed Feb 7 16:03:22 PST 2007
 //    Added SetAlternateDisplay.
 //
+//    Kathleen Biagas, Thu Aug 28 15:31:22 PDT 2025
+//    Remove SetSurfaceRepresentation.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtUserDefinedMapper : public avtMapper
@@ -65,7 +68,6 @@ class PLOTTER_API avtUserDefinedMapper : public avtMapper
     virtual void               GlobalLightingOn(void);
     virtual void               GlobalLightingOff(void);
     virtual void               GlobalSetAmbientCoefficient(const double);
-    virtual void               SetSurfaceRepresentation(int rep);
     virtual void               SetSpecularProperties(bool,double,double,
                                                       const ColorAttribute&);
 

@@ -117,6 +117,12 @@
 //    Kevin Griffin, Wed 05 Mar 2025 11:59:26 AM CST
 //    Added Anari support.
 //
+//    Kathleen Biagas, Monday July 28, 2025
+//    Antialiasing is now an int (enum).
+//
+//    Kathleen Biagas, Thu Aug 28 15:39:06 PDT 2025
+//    Remove GetSurfaceRepresentation, no longer used.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
@@ -186,9 +192,6 @@ class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
     void                UpdateLightPositions()
                                   { ProxiedUpdateLightPositions(); }
 
-    int                 GetSurfaceRepresentation()
-                                  { return ProxiedGetSurfaceRepresentation(); }
-
     bool                DisableExternalRenderRequests(bool bClearImage = false)
                                   { return ProxiedDisableExternalRenderRequests(bClearImage); }
 
@@ -201,7 +204,7 @@ class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
     void                ReAddColleaguesToRenderWindow()
                                   { ProxiedReAddColleaguesToRenderWindow(); }
 
-    bool                GetAntialiasing()
+    int                 GetAntialiasing()
                                   { return ProxiedGetAntialiasing(); }
 
     bool                GetFullFrameMode()
@@ -263,27 +266,7 @@ class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
 #endif
 
 #ifdef HAVE_ANARI
-    bool        GetAnariRendering()         { return ProxiedGetAnariRendering(); }
-    int         GetAnariSPP()               { return ProxiedGetAnariSPP(); }
-    int         GetAnariAO()                { return ProxiedGetAnariAO(); }
-    std::string GetAnariLibraryName()       { return ProxiedGetAnariLibraryName(); }
-    std::string GetAnariLibrarySubtype()    { return ProxiedGetAnariLibrarySubtype(); }
-    std::string GetAnariRendererSubtype()   { return ProxiedGetAnariRendererSubtype(); }
-    bool        GetUseAnariDenoiser()       { return ProxiedGetUseAnariDenoiser(); }
-    float       GetAnariLightFalloff()      { return ProxiedGetAnariLightFalloff(); }
-    float       GetAnariAmbientIntensity()  { return ProxiedGetAnariAmbientIntensity(); }
-    int         GetAnariMaxDepth()          { return ProxiedGetAnariMaxDepth(); }
-    float       GetAnariRValue()            { return ProxiedGetAnariRValue(); }
-    std::string GetAnariDebugMethod()       { return ProxiedGetAnariDebugMethod(); }
-    std::string GetUsdDir()                 { return ProxiedGetUsdDir(); }
-    bool        GetUsdAtCommit()            { return ProxiedGetUsdAtCommit(); }
-    bool        GetUsdOutputBinary()        { return ProxiedGetUsdOutputBinary(); }
-    bool        GetUsdOutputMaterial()      { return ProxiedGetUsdOutputMaterial(); }
-    bool        GetUsdOutputPreviewSurface()    { return ProxiedGetUsdOutputPreviewSurface(); }
-    bool        GetUsdOutputMDL()               { return ProxiedGetUsdOutputMDL(); }
-    bool        GetUsdOutputMDLColors()         { return ProxiedGetUsdOutputMDLColors(); }
-    bool        GetUsdOutputDisplayColors()     { return ProxiedGetUsdOutputDisplayColors(); }
-    bool        GetUsingUsdDevice()         { return ProxiedGetUsingUsdDevice(); }
+    const AnariAttributes &GetAnariAttributes() { return ProxiedGetAnariAttributes(); }
 #endif
 };
 

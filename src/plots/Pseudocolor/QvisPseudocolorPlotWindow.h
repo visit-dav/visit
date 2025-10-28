@@ -95,6 +95,9 @@ class PseudocolorAttributes;
 //   visibility and/or enabled state of certain controls based on the rendering
 //   type(s) in effect.
 //
+//   Kathleen Biagas, Tue Sep 2, 2025
+//   Added widgets/slots for wireframeColorByVar and pointsColorByVar.
+//
 // ****************************************************************************
 
 class QvisPseudocolorPlotWindow : public QvisPostableWindowObserver
@@ -180,8 +183,10 @@ private slots:
     void renderSurfacesChanged(bool);
     void renderWireframeChanged(bool);
     void wireframeColorChanged(const QColor &color);
+    void wireframeColorByVarToggled(bool val);
     void renderPointsChanged(bool);
     void pointColorChanged(const QColor &color);
+    void pointColorByVarToggled(bool val);
 
     void legendToggled(bool on);
     void lightingToggled(bool on);
@@ -266,9 +271,13 @@ private:
     QLabel                *renderLabel;
     QCheckBox             *renderSurfaces;
     QCheckBox             *renderWireframe;
+    QLabel                *wireframeRenderColorLabel;
     QvisColorButton       *wireframeRenderColor;
+    QCheckBox             *wireframeRenderColorByVar;
     QCheckBox             *renderPoints;
+    QLabel                *pointsRenderColorLabel;
     QvisColorButton       *pointsRenderColor;
+    QCheckBox             *pointsRenderColorByVar;
     QButtonGroup          *smoothingLevelButtons;
 
     QCheckBox             *legendToggle;

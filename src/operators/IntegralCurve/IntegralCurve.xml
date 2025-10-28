@@ -98,64 +98,64 @@
         SpecifiedPoint
       </Field>
       <Field name="pointSource" label="Starting point" type="doubleArray" length="3" enabler="sourceType:SpecifiedPoint">
-        0.000000
-        0.000000
-        0.000000
+        0
+        0
+        0
       </Field>
       <Field name="lineStart" label="Line start" type="doubleArray" length="3" enabler="sourceType:SpecifiedLine">
-        0.000000
-        0.000000
-        0.000000
+        0
+        0
+        0
       </Field>
       <Field name="lineEnd" label="Line end" type="doubleArray" length="3" enabler="sourceType:SpecifiedLine">
-        1.000000
-        0.000000
-        0.000000
+        1
+        0
+        0
       </Field>
       <Field name="planeOrigin" label="Plane origin" type="doubleArray" length="3" enabler="sourceType:SpecifiedPlane">
-        0.000000
-        0.000000
-        0.000000
+        0
+        0
+        0
       </Field>
       <Field name="planeNormal" label="Plane normal" type="doubleArray" length="3" enabler="sourceType:SpecifiedPlane">
-        0.000000
-        0.000000
-        1.000000
+        0
+        0
+        1
       </Field>
       <Field name="planeUpAxis" label="Plane up axis" type="doubleArray" length="3" enabler="sourceType:SpecifiedPlane">
-        0.000000
-        1.000000
-        0.000000
+        0
+        1
+        0
       </Field>
       <Field name="radius" label="Radius" type="double">
-        1.000000
+        1
       </Field>
       <Field name="sphereOrigin" label="Sphere origin" type="doubleArray" length="3" enabler="sourceType:SpecifiedSphere">
-        0.000000
-        0.000000
-        0.000000
+        0
+        0
+        0
       </Field>
       <Field name="boxExtents" label="Box extents" type="doubleArray" length="6" enabler="sourceType:SpecifiedBox">
-        0.000000
-        1.000000
-        0.000000
-        1.000000
-        0.000000
-        1.000000
+        0
+        1
+        0
+        1
+        0
+        1
       </Field>
       <Field name="useWholeBox" label="Use Whole Box" type="bool" enabler="sourceType:SpecifiedBox">
         true
       </Field>
       <Field name="pointList" label="List of Points" type="doubleVector" enabler="sourceType:PointList">
-        0.000000
-        0.000000
-        0.000000
-        1.000000
-        0.000000
-        0.000000
-        0.000000
-        1.000000
-        0.000000
+        0
+        0
+        0
+        1
+        0
+        0
+        0
+        1
+        0
       </Field>
       <Field name="fieldData" label="Field Data" type="doubleVector" enabler="sourceType:FieldData">
       </Field>
@@ -183,45 +183,45 @@
         false
       </Field>
       <Field name="termDistance" label="Distance for Termination" type="double" enabler="terminateByDistance:true">
-        10.000000
+        10
       </Field>
       <Field name="terminateByTime" label="Use the time criteria for termination" type="bool">
         false
       </Field>
       <Field name="termTime" label="Time Elapsed for Particle Before Termination" type="double" enabler="terminateByTime:true">
-        10.000000
+        10
       </Field>
       <Field name="maxStepLength" label="maximum step length" type="double">
-        0.100000
+        0.1
       </Field>
       <Field name="limitMaximumTimestep" label="Limit Maximum Timestep (DoPri only)?" type="bool">
         false
       </Field>
       <Field name="maxTimeStep" label="maximum time step length" type="double">
-        0.100000
+        0.1
       </Field>
       <Field name="relTol" label="rel. tolerance" type="double">
-        0.000100
+        0.0001
       </Field>
       <Field name="absTolSizeType" label="AbsoluteToleranceSizeType" type="enum" subtype="SizeType">
         FractionOfBBox
       </Field>
       <Field name="absTolAbsolute" label="abs. tolerance" type="double" enabler="absTolSizeType:Absolute">
-        0.000001
+        1e-06
       </Field>
       <Field name="absTolBBox" label="AbsTolBBox" type="double" enabler="absTolSizeType:FractionOfBBox">
-        0.000001
+        1e-06
       </Field>
       <Field name="fieldType" label="Field" type="enum" subtype="FieldType">
         Default
       </Field>
       <Field name="fieldConstant" label="Constant" type="double" enabler="fieldType:FlashField">
-        1.000000
+        1
       </Field>
       <Field name="velocitySource" label="Starting velocity" type="doubleArray" length="3" enabler="fieldType:FlashField">
-        0.000000
-        0.000000
-        0.000000
+        0
+        0
+        0
       </Field>
       <Field name="integrationType" label="Integrator" type="enum" subtype="IntegrationType">
         DormandPrince
@@ -245,10 +245,10 @@
         false
       </Field>
       <Field name="pathlinesOverrideStartingTime" label="Starting Time" type="double" enabler="pathlines:true">
-        0.000000
+        0
       </Field>
       <Field name="pathlinesPeriod" label="Pathlines Period" type="double">
-        0.000000
+        0
       </Field>
       <Field name="pathlinesCMFE" label="CMFE" type="enum" subtype="PathlinesCMFE">
         POS_CMFE
@@ -266,25 +266,25 @@
         false
       </Field>
       <Field name="cropBegin" label="cropBegin" type="double">
-        0.000000
+        0
       </Field>
       <Field name="cropEndFlag" label="Crop to" type="bool">
         false
       </Field>
       <Field name="cropEnd" label="cropEnd" type="double">
-        0.000000
+        0
       </Field>
       <Field name="cropValue" label="Crop value" type="enum" subtype="CropValue">
         Time
       </Field>
       <Field name="sampleDistance0" label="sampleDistance0" type="double">
-        10.000000
+        10
       </Field>
       <Field name="sampleDistance1" label="sampleDistance1" type="double">
-        10.000000
+        10
       </Field>
       <Field name="sampleDistance2" label="sampleDistance2" type="double">
-        10.000000
+        10
       </Field>
       <Field name="fillInterior" label="fillInterior" type="bool">
         true
@@ -317,16 +317,16 @@
         true
       </Field>
       <Field name="criticalPointThreshold" label="criticalPointThreshold" type="double" enabler="issueCriticalPointsWarnings:true">
-        0.001000
+        0.001
       </Field>
       <Field name="correlationDistanceAngTol" label="correlationDistanceAngTol" type="double">
-        5.000000
+        5
       </Field>
       <Field name="correlationDistanceMinDistAbsolute" label="correlationDistanceMinDistAbsolute" type="double">
-        1.000000
+        1
       </Field>
       <Field name="correlationDistanceMinDistBBox" label="correlationDistanceMinDistBBox" type="double">
-        0.005000
+        0.005
       </Field>
       <Field name="correlationDistanceMinDistType" label="correlationDistanceMinDistType" type="enum" subtype="SizeType">
         FractionOfBBox

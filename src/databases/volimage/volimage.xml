@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="volimage" type="database" label="WPP Volume Image" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="false" specifiedFilenames="false">
+  <Plugin name="volimage" type="database" label="WPP Volume Image" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="false" haslicense="false" filePatternsStrict="false" opensWholeDirectory="false">
     <FilePatterns>
       *3D.ux
       *3D.uy

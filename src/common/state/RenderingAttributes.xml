@@ -1,10 +1,5 @@
 <?xml version="1.0"?>
   <Attribute name="RenderingAttributes" purpose="This class contains special rendering attributes like antialiasing and stero settings." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="RenderingAttributes.code">
-    <Enum name="GeometryRepresentation">
-      Surfaces
-      Wireframe
-      Points
-    </Enum>
     <Enum name="StereoTypes">
       RedBlue
       Interlaced
@@ -16,8 +11,21 @@
       Always
       Auto
     </Enum>
-    <Field name="antialiasing" label="antialiasing" type="bool">
+    <Enum name="AAMode">
+      None
+      MSAA
+      FXAA
+    </Enum>
+    <Field name="antialiasing" label="antialiasing" type="enum" subtype="AAMode">
+      None
+    </Field>
+    <Field name="MSAAAvailable" label="MSAA Available" type="bool" internal="true">
       false
+    </Field>
+    <Field name="MSAASamples" label="MSAA Samples" type="int">
+      4
+    </Field>
+    <Field name="FXAAOpt" label="FXAAOpt" type="att" subtype="FXAAOptions" enabler="antialiasing:FXAA">
     </Field>
     <Field name="orderComposite" label="Order Composite" type="bool">
       true
@@ -38,7 +46,7 @@
       false
     </Field>
     <Field name="occlusionRatio" label="occlusion ratio" type="double">
-      0.000000
+      0
     </Field>
     <Field name="numberOfPeels" label="number of peels" type="int">
       16
@@ -48,9 +56,6 @@
     </Field>
     <Field name="multiresolutionCellSize" label="multiresolutionCellSize" type="float">
       0.002000
-    </Field>
-    <Field name="geometryRepresentation" label="geometryRepresentation" type="enum" subtype="GeometryRepresentation">
-      Surfaces
     </Field>
     <Field name="stereoRendering" label="stereoRendering" type="bool">
       false
@@ -86,7 +91,7 @@
       false
     </Field>
     <Field name="shadowStrength" label="Shadow Strength" type="double">
-      0.500000
+      0.5
     </Field>
     <Field name="doDepthCueing" label="Do Depth Cueing" type="bool">
       false
@@ -95,14 +100,14 @@
       true
     </Field>
     <Field name="startCuePoint" label="startCuePoint" type="doubleArray" length="3">
-      -10.000000
-      0.000000
-      0.000000
+      -10
+      0
+      0
     </Field>
     <Field name="endCuePoint" label="endCuePoint" type="doubleArray" length="3">
-      10.000000
-      0.000000
-      0.000000
+      10
+      0
+      0
     </Field>
     <Field name="compressionActivationMode" label="compressionActivationMode" type="enum" subtype="TriStateMode">
       Never
@@ -128,69 +133,13 @@
     <Field name="osprayShadows" label="OSPRay shadows" type="bool">
       false
     </Field>
-    <Field name="anariRendering" label="ANARI Rendering" type="bool">
-      false
-    </Field>
-    <Field name="anariSPP" label="Renderer Samples Per Pixel" type="int">
-      1
-    </Field>
-    <Field name="anariAO" label="Renderer Ambient Occlusion Samples" type="int">
-      0
-    </Field>
-    <Field name="anariLibrary" label="ANARI Back-end Device" type="string">
-    </Field>
-    <Field name="anariLibrarySubtype" label="ANARI Back-end Device Subtype" type="string">
-      default
-    </Field>
-    <Field name="anariRendererSubtype" label="ANARI Renderer Subtype" type="string">
-      default
-    </Field>
-    <Field name="useAnariDenoiser" label="Denoiser" type="bool">
-      false
-    </Field>
-    <Field name="anariLightFalloff" label="Renderer Light Falloff" type="float">
-      1.000000
-    </Field>
-    <Field name="anariAmbientIntensity" label="Renderer Ambient Intensity" type="float">
-      1.000000
-    </Field>
-    <Field name="anariMaxDepth" label="Renderer Max Depth" type="int">
-      0
-    </Field>
-    <Field name="anariRValue" label="Renderer R Value" type="float">
-      1.000000
-    </Field>
-    <Field name="anariDebugMethod" label="Renderer Debug Method" type="string">
-    </Field>
-    <Field name="usdDir" label="USD Output Directory" type="string">
-    </Field>
-    <Field name="usdAtCommit" label="USD At Commit" type="bool">
-      false
-    </Field>
-    <Field name="usdOutputBinary" label="USD Output Binary" type="bool">
-      true
-    </Field>
-    <Field name="usdOutputMaterial" label="USD Output Material" type="bool">
-      true
-    </Field>
-    <Field name="usdOutputPreviewSurface" label="USD Output Preview Surface" type="bool">
-      true
-    </Field>
-    <Field name="usdOutputMDL" label="USD Output MDL" type="bool">
-      true
-    </Field>
-    <Field name="usdOutputMDLColors" label="USD Output MDL Colors" type="bool">
-      true
-    </Field>
-    <Field name="usdOutputDisplayColors" label="USD Output Display Colors" type="bool">
-      true
-    </Field>
-    <Field name="usingUsdDevice" label="Using USD Device" type="bool">
-      false
+    <Field name="anariAttributes" label="ANARI attributes " type="att" subtype="AnariAttributes">
     </Field>
     <Function name="GetEffectiveScalableThreshold" user="true" member="true">
     </Function>
     <Function name="GetEffectiveCompactDomainsThreshold" user="true" member="true">
+    </Function>
+    <Function name="ProcessOldVersions" user="true" member="true">
     </Function>
     <Constant name="DEFAULT_SCALABLE_AUTO_THRESHOLD" member="true">
     </Constant>

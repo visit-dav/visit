@@ -10,6 +10,9 @@
 #   Kevin Griffin, Mon 03 Mar 2025 04:23:27 PM CST
 #   Added support for ANARI
 #
+#   Kathleen Biagas, Tue Jun 24, 2025
+#   Removed vtkVisItDataSetMapper.
+#
 #****************************************************************************
 
 
@@ -32,7 +35,6 @@ visit_append_list(
           ${CMAKE_CURRENT_SOURCE_DIR}/vtkVisItAxisActor.C
           ${CMAKE_CURRENT_SOURCE_DIR}/vtkVisItAxisActor2D.C
           ${CMAKE_CURRENT_SOURCE_DIR}/vtkVisItCubeAxesActor.C
-          ${CMAKE_CURRENT_SOURCE_DIR}/vtkVisItDataSetMapper.C
           ${CMAKE_CURRENT_SOURCE_DIR}/vtkVisItFullFrameMapper2D.C
           ${CMAKE_CURRENT_SOURCE_DIR}/vtkVisItScalarBarActor.C
           ${CMAKE_CURRENT_SOURCE_DIR}/vtkVisItScalarBarWithOpacityActor.C
@@ -66,7 +68,6 @@ visit_append_list(
           ${CMAKE_CURRENT_SOURCE_DIR}/vtkVisItAxisActor.h
           ${CMAKE_CURRENT_SOURCE_DIR}/vtkVisItAxisActor2D.h
           ${CMAKE_CURRENT_SOURCE_DIR}/vtkVisItCubeAxesActor.h
-          ${CMAKE_CURRENT_SOURCE_DIR}/vtkVisItDataSetMapper.h
           ${CMAKE_CURRENT_SOURCE_DIR}/vtkVisItFullFrameMapper2D.h
           ${CMAKE_CURRENT_SOURCE_DIR}/vtkVisItScalarBarActor.h
           ${CMAKE_CURRENT_SOURCE_DIR}/vtkVisItScalarBarWithOpacityActor.h

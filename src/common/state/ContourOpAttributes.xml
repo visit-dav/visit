@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="ContourOpAttributes" purpose="This class contains the operator attributes for the contour operator." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+  <Attribute name="ContourOpAttributes" purpose="This class contains the operator attributes for the contour operator." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h">
     <Enum name="ContourMethod">
       Level
       Value
@@ -25,10 +25,10 @@
       false
     </Field>
     <Field name="min" label="min" type="double">
-      0.000000
+      0
     </Field>
     <Field name="max" label="max" type="double">
-      1.000000
+      1
     </Field>
     <Field name="scaling" label="scaling" type="enum" subtype="ContourScaling">
     </Field>

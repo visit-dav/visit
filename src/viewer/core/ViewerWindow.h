@@ -31,6 +31,10 @@
 
 #include <ExternalRenderRequestInfo.h>
 
+#ifdef HAVE_ANARI
+#include <AnariAttributes.h>
+#endif
+
 class AnnotationObjectList;
 class AttributeSubject;
 class AttributeSubjectMap;
@@ -466,6 +470,21 @@ class ViewerPlotList;
 //    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9:
 //    Initialize to nullptr all pointer ivars.
 //
+//    Kathleen Biagas, Monday July 28, 2025.
+//    Antialiasing is now an int (enum).
+//
+//    Kathleen Biagas, Thu Aug 14, 2025
+//    Add Set/Get MSAASamples.
+//
+//    Kathleen Biagas, Tue Aug 26, 2025
+//    Add MSAAAvailable.
+//
+//    Kathleen Biagas, Thu Aug 28 15:44:48 PDT 2025
+//    Removed Set/GetSurfaceRepresentation, no longer used.
+//
+//    Kevin Griffin, Tue Sep 9, 2025
+//    Added Set/Get AnariAttributes when built with ANARI support.
+//
 // ****************************************************************************
 
 class VIEWERCORE_API ViewerWindow : public ViewerBase
@@ -667,8 +686,13 @@ public:
                               avtImageType imgT, bool needZBuffer);
 
     // Rendering options.
-    void SetAntialiasing(bool enabled);
-    bool GetAntialiasing() const;
+    void SetAntialiasing(int);
+    int  GetAntialiasing() const;
+    void SetMSAASamples(int);
+    int  GetMSAASamples() const;
+    bool MSAAAvailable() const;
+    void SetFXAAOptions(const FXAAOptions *);
+    const FXAAOptions *GetFXAAOptions() const;
     void SetOrderComposite(bool enabled);
     bool GetOrderComposite() const;
     void SetDepthCompositeThreads(int n);
@@ -693,8 +717,6 @@ public:
     void SetStereoRendering(bool enabled, int type);
     bool GetStereo() const;
     int  GetStereoType() const;
-    void SetSurfaceRepresentation(int rep);
-    int  GetSurfaceRepresentation() const;
     int  GetNumPrimitives() const;
     long long GetNumberOfCells(bool polysOnly = false) const;
     void SetNotifyForEachRender(bool val);
@@ -740,48 +762,8 @@ public:
     bool GetOsprayShadows() const;
 #endif
 #ifdef HAVE_ANARI
-    void                SetAnariRendering(const bool enabled);
-    bool                GetAnariRendering() const;
-    void                SetAnariSPP(const int val);
-    int                 GetAnariSPP() const;
-    void                SetAnariAO(const int val);
-    int                 GetAnariAO() const;
-    void                SetAnariLibraryName(const std::string name);
-    std::string         GetAnariLibraryName() const;
-    void                SetAnariLibrarySubtype(const std::string subtype);
-    std::string         GetAnariLibrarySubtype() const;
-    void                SetAnariRendererSubtype(const std::string subtype);
-    std::string         GetAnariRendererSubtype() const;
-    void                SetUseAnariDenoiser(const bool enabled);
-    bool                GetUseAnariDenoiser() const;
-    void                SetAnariLightFalloff(const float val);
-    float               GetAnariLightFalloff() const;
-    void                SetAnariAmbientIntensity(const float val);
-    float               GetAnariAmbientIntensity() const;
-    void                SetAnariMaxDepth(const int val);
-    int                 GetAnariMaxDepth() const;
-    void                SetAnariRValue(const float val);
-    float               GetAnariRValue() const;
-    void                SetAnariDebugMethod(const std::string method);
-    std::string         GetAnariDebugMethod() const;
-    void                SetUsdDir(const std::string usdDir);
-    std::string         GetUsdDir() const;
-    void                SetUsdAtCommit(const bool val);
-    bool                GetUsdAtCommit() const;
-    void                SetUsdOutputBinary(const bool val);
-    bool                GetUsdOutputBinary() const;
-    void                SetUsdOutputMaterial(const bool val);
-    bool                GetUsdOutputMaterial() const;
-    void                SetUsdOutputPreviewSurface(const bool val);
-    bool                GetUsdOutputPreviewSurface() const;
-    void                SetUsdOutputMDL(const bool val);
-    bool                GetUsdOutputMDL() const;
-    void                SetUsdOutputMDLColors(const bool val);
-    bool                GetUsdOutputMDLColors() const;
-    void                SetUsdOutputDisplayColors(const bool val);
-    bool                GetUsdOutputDisplayColors() const;
-    void                SetUsingUsdDevice(const bool val);
-    bool                GetUsingUsdDevice() const;
+    void                  SetAnariAttributes(const AnariAttributes &);
+    const AnariAttributes &GetAnariAttributes() const;
 #endif
 
     void Lineout(const bool);

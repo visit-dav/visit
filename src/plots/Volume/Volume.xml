@@ -7,6 +7,9 @@
       avtVisItVTKRenderFilter.C
       avtICETCompositor.C
     </Files>
+    <LIBS components="V">
+      VTK::RenderingVolumeOpenGL2
+    </LIBS>
     <Files components="E">
       avtVolumeRenderer.C
       avtLowerResolutionVolumeFilter.C
@@ -15,20 +18,14 @@
       avtICETCompositor.C
       avtVolumeResampleFilter.C
     </Files>
-    <LIBS components="V">
-      VTK::RenderingVolume
-      VTK::RenderingVolumeOpenGL2
-    </LIBS>
     <LIBS components="ESer">
       avtexpressions_ser
       avtfilters_ser
-      VTK::RenderingVolume
       VTK::RenderingVolumeOpenGL2
     </LIBS>
     <LIBS components="EPar">
       avtexpressions_par
       avtfilters_par
-      VTK::RenderingVolume
       VTK::RenderingVolumeOpenGL2
     </LIBS>
     <Attribute name="VolumeAttributes" purpose="This class contains the plot attributes for the volume plot." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="VolumeAttributes.code">
@@ -38,6 +35,7 @@
         Composite
         Integration
         SLIVR
+        ANARI
       </Enum>
       <Enum name="ResampleType">
         NoResampling
@@ -88,7 +86,6 @@
         SciVis
         PathTracer
       </Enum>
-
       <Field name="OSPRayEnabledFlag" label="Enable OSPRay" type="bool">
         false
       </Field>
@@ -120,13 +117,13 @@
         0
       </Field>
       <Field name="OSPRayAODistance" label="OSPRayAODistance" type="double">
-        100000.0
+        100000
       </Field>
       <Field name="OSPRayMinContribution" label="OSPRayMinContribution" type="double">
         0.001
       </Field>
       <Field name="OSPRayMaxContribution" label="OSPRayMaxContribution" type="double">
-        2.0
+        2
       </Field>
       <Field name="legendFlag" label="legendFlag" type="bool">
         true
@@ -198,7 +195,7 @@
         Linear
       </Field>
       <Field name="skewFactor" label="skewFactor" type="double" enabler="scaling:Skew">
-        1.000000
+        1
       </Field>
       <Field name="limitsMode" label="Limits Mode" type="enum" subtype="LimitsMode">
         OriginalData
@@ -216,13 +213,15 @@
         false
       </Field>
       <Field name="lowGradientLightingClampValue" label="lowGradientLightingClampFlag" type="double">
-        1.000000
+        1
       </Field>
       <Field name="materialProperties" label="materialProperties" type="doubleArray" length="4">
-        0.400000
-        0.750000
-        0.000000
-        15.000000
+        0.4
+        0.75
+        0
+        15
+      </Field>
+      <Field name="anariAttributes" label="ANARI attributes" type="att" subtype="AnariAttributes">
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
@@ -247,10 +246,6 @@
       <Function name="VolumeAttributes_SetFreeformOpacity" user="false" member="true">
       </Function>
       <Function name="VolumeViewerEnginePluginInfo::Permits2DViewScaling" user="false" member="true">
-      </Function>
-      <Function name="VolumeViewerEnginePluginInfo::InitializeGlobalObjects" user="false" member="true">
-      </Function>
-      <Function name="VolumeViewerEnginePluginInfo::~VolumeViewerEnginePluginInfo" user="true" member="true">
       </Function>
       <Function name="VolumeAttributes_SetMaterialProperties" user="false" member="true">
       </Function>

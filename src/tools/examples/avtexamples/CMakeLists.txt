@@ -29,8 +29,7 @@
 #   Remove untested, unused EGL logic.
 #
 #****************************************************************************
-
-
+return()
 
 set(avtexamples_COMMON_DEPENDS
     ${engine_ser_exe_IDatabase}
@@ -43,7 +42,6 @@ set(avtexamples_COMMON_DEPENDS
     visitcommon
     visit_vtk
     ${ALL_THIRDPARTY_IO_LIB}
-    ${OPENGL_LIBRARIES}
     Threads::Threads)
 
 ## avtFilterExample
@@ -52,7 +50,6 @@ visit_add_executable(
     SOURCES     avtFilterExample.C
     INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
     DEPENDS_ON  ${avtexamples_COMMON_DEPENDS}
-                ${OSMESA_LIBRARIES}
     FOLDER      tools/examples/avtexamples)
 
 ## avtRenderExample
@@ -65,7 +62,6 @@ visit_add_executable(
                 avtview
                 avtviswindow_ser
                 avtwriter_ser
-                ${OSMESA_LIBRARIES}
     FOLDER      tools/examples/avtexamples)
 
 ## avtPluginExample
@@ -75,7 +71,6 @@ visit_add_executable(
     INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
                 ${VISIT_SOURCE_DIR}/avt/Plotter
     DEPENDS_ON  ${avtexamples_COMMON_DEPENDS}
-                ${OSMESA_LIBRARIES}
     FOLDER      tools/examples/avtexamples)
 
 ## avtPlotPluginExample
@@ -88,7 +83,6 @@ visit_add_executable(
                 avtview
                 avtviswindow_ser
                 avtwriter_ser
-                ${OSMESA_LIBRARIES}
     FOLDER      tools/examples/avtexamples)
 
 ## networkManagerExample
@@ -101,10 +95,7 @@ visit_add_executable(
                 avtview
                 avtviswindow_ser
                 avtwriter_ser
-                engine_ser
-    FOLDER      tools/examples/avtexamples)
-
-## qt examples
+    FOLDER      tools/examples/networkManager)
 
 # qvtkopenglExample
 visit_add_executable(
@@ -122,7 +113,6 @@ visit_add_executable(
                 VTK::FiltersSources
                 VTK::InteractionStyle
                 VTK::RenderingOpenGL2
-                ${OPENGL_LIBRARIES}
     FOLDER      tools/examples/avtexamples)
  
 # qtvtkExample
@@ -141,38 +131,5 @@ visit_add_executable(
                 VTK::FiltersSources
                 VTK::InteractionStyle
                 VTK::RenderingOpenGL2
-                ${OPENGL_LIBRARIES}
     FOLDER      tools/examples/avtexamples)
-
-set_target_properties(qvtkopenglExample qtvtkExample PROPERTIES AUTOMOC ON)
-
-# qtviswinExample
-visit_add_executable(
-    NAME        qtviswinExample
-    SOURCES     qtviswinExample.C
-    DEPENDS_ON  visitcommon
-                avtdbatts
-                avtview
-                avtmath
-                avtpipeline_ser
-                avtplotter_ser
-                avtfilters_ser
-                avtviswindow_ser
-                avtqtviswindow
-                winutil
-                ${QT_QTGUI_LIBRARY}
-                ${QT_QTOPENGL_LIBRARY}
-                ${QT_QTNETWORK_LIBRARY}
-                ${QT_QTCORE_LIBRARY}
-                VTK::GUISupportQt
-    FOLDER      tools/examples/avtexamples)
-
-qt6_disable_unicode_defines(qtviswinExample)
-
-if(VISIT_STATIC)
-    set_target_properties( avtFilterExample avtRenderExample avtPluginExample
-        avtPlotPluginExample networkManagerExample qvtkopenglExample
-        qtvtkExample qtvtkExample qtviswinExample
-        PROPERTIES LINK_DIRECTORIES ${ALL_THIRDPARTY_IO_LIBRARY_DIR})
-endif()
 

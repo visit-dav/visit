@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
-  <Plugin name="MM5" type="database" label="MM5" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false">
+  <Plugin name="MM5" type="database" label="MM5" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="false" haslicense="false" filePatternsStrict="false" opensWholeDirectory="false">
     <FilePatterns>
       *.mm5
     </FilePatterns>
     <Files components="M,E">
       MM5.C
     </Files>
-    <Attribute name="" purpose="" persistent="false">
+    <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>

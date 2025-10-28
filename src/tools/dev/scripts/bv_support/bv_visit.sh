@@ -387,12 +387,12 @@ function build_visit
     #
     info "Building VisIt . . . (~50 minutes)"
     if [[ "${PY_BUILD_SPHINX}" == "yes" ]] ; then
-        $MAKE $MAKE_OPT_FLAGS manuals
+        ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS --target manuals
         if [[ $? != 0 ]] ; then
             warn "Building the VisIt manuals failed.  Continuing"
         fi
     fi
-    $MAKE $MAKE_OPT_FLAGS
+    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
         warn "VisIt build failed.  Giving up"
         return 1
@@ -403,7 +403,7 @@ function build_visit
     # Package VisIt
     #
     info "Packaging VisIt ... (~10 minutes)"
-    $MAKE $MAKE_OPT_FLAGS package
+    ${CMAKE_COMMAND} --build . $MAKE_OPT_FLAGS --target package
     if [[ $? != 0 ]] ; then
         warn "VisIt package failed.  Giving up"
         return 1
@@ -416,7 +416,7 @@ function build_visit
     # Install VisIt
     #
     if [[ "${VISIT_INSTALL_PREFIX}" != "" ]] ; then
-        $MAKE $MAKE_OPT_FLAGS install
+        ${CMAKE_COMMAND} --install .
         if [[ $? != 0 ]] ; then
             warn "VisIt installation failed.  Giving up"
             return 1

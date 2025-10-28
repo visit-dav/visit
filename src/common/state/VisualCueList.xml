@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="VisualCueList" purpose="container object for shipping vectors of visual cues" persistent="false" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="VisualCueList.code">
+  <Attribute name="VisualCueList" purpose="container object for shipping vectors of visual cues" persistent="false" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="VisualCueList.code">
     <Field name="cues" label="cues" type="attVector" subtype="VisualCueInfo">
     </Field>
     <Function name="SetFrom" user="true" member="true">

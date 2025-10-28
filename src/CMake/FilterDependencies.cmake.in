@@ -34,6 +34,13 @@
 #    Kathleen Biagas, Wed May 7, 2025
 #    Adjust filtering of boost lib dir.
 #
+#    Eric Brugger, Wed Jul 16 15:29:56 PDT 2025
+#    Update for VTKm 2.3.0.
+#
+#    Kathleen Biagas, Thu July 17, 2025
+#    Adjust filtering of OPENEXR with version 3.3.4, Add OPENEXR_VERSION,
+#    remove support for older OPENEXR.
+#
 #****************************************************************************/
 cmake_policy(SET CMP0011 NEW)
 cmake_policy(SET CMP0057 NEW)
@@ -42,6 +49,7 @@ set(VISIT_BINARY_DIR  @VISIT_BINARY_DIR@)
 set(VISIT_PYTHON_DIR  @VISIT_PYTHON_DIR@)
 set(VISIT_ZLIB_DIR    @VISIT_ZLIB_DIR@)
 set(VISIT_BOOST_DIR   @VISIT_BOOST_DIR@)
+set(OPENEXR_VERSION   @OPENEXR_VERSION@)
 set(VISIT_OPENEXR_DIR @VISIT_OPENEXR_DIR@)
 set(VISIT_QWT_DIR     @VISIT_QWT_DIR@)
 set(VTK_TARGETS       @VTK_VALID_TARGETS@)
@@ -116,13 +124,13 @@ function(FILTER_VISIT_LIB_DEPENDENCIES filename)
             endif()
         endif()
         if(VISIT_OPENEXR_DIR)
-            if(APPLE) # built as dynamic on apple and window
-                string(REPLACE "${VISIT_OPENEXR_DIR}/lib"
+            if(OPENEXR_VERSION AND OPENEXR_VERSION GREATER_EQUAL 3.3.4)
+                set(libdir lib)
+                if(EXISTS ${VISIT_OPENEXR_DIR}/lib64)
+                    set(libdir lib64)
+                endif()
+                string(REPLACE "${VISIT_OPENEXR_DIR}/${libdir}"
                                "\${VISIT_LIBRARY_DIR}"
-                                line "${line}")
-            elseif(UNIX) # built as static on linux
-                string(REPLACE "${VISIT_OPENEXR_DIR}/lib"
-                               "\${VISIT_ARCHIVE_DIR}"
                                 line "${line}")
             endif()
         endif()
@@ -241,6 +249,9 @@ function(FILTER_VISIT_LIB_DEPENDENCIES filename)
               set(skip_next_token TRUE)
               continue()
             elseif(${token} MATCHES "icet")
+              # Static libs, not necessary to be listed as a dependency here
+              continue()
+            elseif(${token} MATCHES "vtkm::")
               # Static libs, not necessary to be listed as a dependency here
               continue()
             elseif(${token} MATCHES "vtkm_")

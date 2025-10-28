@@ -63,23 +63,21 @@ IF(NOT VISIT_DBIO_ONLY)
     list(APPEND visitconvert_DEPENDS
         avtmath
         avtview
-        visit_verdict
-        ${OPENGL_LIBRARIES})
+        visit_verdict)
 
     list(APPEND visitconvert_DEPENDS_SER
         avtdbin_ser
         avtexpressions_ser
         avtfilters_ser
         avtmir_ser
-        avtplotter_ser
-        ${OSMESA_LIBRARIES})
+        avtplotter_ser)
+
     list(APPEND visitconvert_DEPENDS_PAR
         avtdbin_par
         avtexpressions_par
         avtfilters_par
         avtmir_par
-        avtplotter_par
-        ${OSMESA_LIBRARIES})
+        avtplotter_par)
 endif()
 
 #********************************* SERIAL ************************************

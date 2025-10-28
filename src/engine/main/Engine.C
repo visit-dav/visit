@@ -90,13 +90,6 @@
 #include <vtkm/cont/Initialize.h>
 #endif
 
-#include <visit-config.h>
-#if LIB_VERSION_LE(VTK,9,2,6)
-#ifdef HAVE_OSMESA
-#  include <vtkOffScreenRenderingFactory.h>
-#endif
-#endif
-
 #include <string>
 using std::string;
 #include <vector>
@@ -777,12 +770,20 @@ public:
 //
 //   Alok Hota, Tue Feb 23 19:10:32 PST 2016
 //   Add support for OSPRay.
-// 
+//
 //   Justin Privitera, Wed Aug 24 11:08:51 PDT 2022
 //   Call `avtConduitBlueprintDataAdaptor::Initialize();`.
 //
 //   Eric Brugger, Fri Feb 24 14:57:15 PST 2023
 //   I replaced vtkh with vtkm.
+//
+//   Kathleen Biagas, Wed June 18, 2025
+//   Remove vtkOffScreenRenderingFactory, no longer needed (VTK 9.5)
+//
+//   Kathleen Biagas, Wed Oct 1, 2025
+//   Add a component-name string argument to InitVTK::Initialize.
+//   It will be used for creating a vtkLogger callback to write their log
+//   info to VisIt's debug log.
 //
 // ****************************************************************************
 
@@ -797,7 +798,13 @@ Engine::InitializeCompute()
     }
 
     int setupTimer = visitTimer->StartTimer();
-    InitVTK::Initialize();
+    std::string compName("engine");
+#ifdef PARALLEL
+    compName += std::string("_par_") + std::to_string(PAR_Rank());
+#else
+    compName += std::string("_ser");
+#endif
+    InitVTK::Initialize(compName);
     InitVTKRendering::Initialize();
 #ifdef HAVE_VTKM
     vtkm::cont::Initialize();
@@ -807,15 +814,7 @@ Engine::InitializeCompute()
 #endif
     if (avtCallback::GetSoftwareRendering())
     {
-        // Install factory for  VisIt's OffScreen Render Window overrides
-#if LIB_VERSION_LE(VTK,9,2,6)
-#ifdef HAVE_OSMESA
-        debug1 << mName << "Offscreen rendering will use offscreen factory." << endl;
-        vtkOffScreenRenderingFactory::ForceOffScreen();
-#else
-        debug1 << mName << "Offscreen rendering will use GL." << endl;
-#endif
-#endif
+        debug1 << mName << "Setting up for offscreen rendering." << endl;
     }
     else
     {
@@ -2060,6 +2059,9 @@ Engine::ProcessInput()
 //    Kathleen Biagas, Wed Aug 17, 2022
 //    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9.
 //
+//    Eric Brugger, Tue Sep 23 10:13:44 PDT 2025
+//    Added "-compositer-debug" to enable programmable compositing debug.
+//
 // ****************************************************************************
 
 void
@@ -2261,6 +2263,10 @@ Engine::ProcessCommandLine(int argc, char **argv)
                 i+= nskip;
 #endif
             }
+        }
+        else if (strcmp(argv[i], "-compositer-debug") == 0)
+        {
+            NetworkManager::EnableProgrammableCompositerDebug();
         }
         else if (strcmp(argv[i], "-vtk-debug") == 0)
         {

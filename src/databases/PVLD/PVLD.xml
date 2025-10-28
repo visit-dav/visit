@@ -1,7 +1,9 @@
 <?xml version="1.0"?>
-  <Plugin name="PVLD" type="database" label="Partitioned Velodyne plot file" version="1" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="false" filePatternsStrict="false" opensWholeDirectory="false">
+  <Plugin name="PVLD" type="database" label="Partitioned Velodyne plot file" version="5" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="false" haslicense="false" filePatternsStrict="false" opensWholeDirectory="false">
     <FilePatterns>
-      *.pvld *.vld
+      *.pvld
+      *.vld
+      *.bgm
     </FilePatterns>
     <LIBS>     
       hdf5

@@ -1380,23 +1380,3 @@ VisitHotPointInteractor::SetInteractor(vtkRenderWindowInteractor *rwi)
     //
     vtkInteractorStyle::SetInteractor(rwi);
 }
-
-// ****************************************************************************
-//  Method: VisitHotPointInteractor::SetAnariRendering
-//
-//  Purpose:
-//    Sets the anari rendering flag for the current interactor.
-//
-//  Arguments:
-//    enabled : True if ANARI rendering is enabled, otherwise false.
-//
-//  Programmer: Kevin Griffin, Mon Apr 10, 2025
-//
-// ****************************************************************************
-
-void
-VisitHotPointInteractor::SetAnariRendering(bool enabled)
-{
-    useAnari = enabled;
-    currentInteractor->SetAnariRendering(enabled);
-}

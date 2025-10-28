@@ -354,6 +354,11 @@
 //   Kathleen Biagas, Wed Apr 19 14:45:53 PDT 2023
 //   Replace '+' operator for '|' for QKeySequence.
 //
+//   Kathleen Biagas, Mon Aug 18, 2025 
+//   Replace 'primaryScreen()->geometry()' with
+//   'primaryScreen()->availableGeometry()' since the latter takes into
+//   account window manager reserved space like the Windows taskbar. 
+//
 // ****************************************************************************
 #include <InstallationFunctions.h>
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -749,7 +754,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     spinModeAct = winPopup->addAction(tr("Spin mode"),
                                      this, SLOT(toggleSpinMode()));
 
-    if(qApp->primaryScreen()->geometry().height() < MIN_WINDOW_HEIGHT_BEFORE_POSTING_MAIN)
+    if(qApp->primaryScreen()->availableGeometry().height() < MIN_WINDOW_HEIGHT_BEFORE_POSTING_MAIN)
     {
         splitter = 0;
 
@@ -765,7 +770,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
         pmw->ContentsWidget()->setMinimumHeight(400);
         CreateMainContents(pmw);
 
-        SetDefaultSplitterSizes(qApp->primaryScreen()->geometry().height());
+        SetDefaultSplitterSizes(qApp->primaryScreen()->availableGeometry().height());
 
         // Post the window
         pmw->post(true);
@@ -791,7 +796,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
         notepad = new QvisNotepadArea(splitter);
 
         // May want to read these from the config file but here are the defaults.
-        SetDefaultSplitterSizes(qApp->primaryScreen()->geometry().height());
+        SetDefaultSplitterSizes(qApp->primaryScreen()->availableGeometry().height());
     }
 
     // Add the Help menu

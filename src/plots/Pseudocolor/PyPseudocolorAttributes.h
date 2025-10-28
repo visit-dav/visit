@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define PSEUDOCOLORATTRIBUTES_NMETH 109
+#define PSEUDOCOLORATTRIBUTES_NMETH 113
 void           PyPseudocolorAttributes_StartUp(PseudocolorAttributes *subj, void *data);
 void           PyPseudocolorAttributes_CloseDown();
 PyMethodDef *  PyPseudocolorAttributes_GetMethodTable(int *nMethods);

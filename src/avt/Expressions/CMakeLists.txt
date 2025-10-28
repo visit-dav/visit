@@ -68,6 +68,9 @@
 #    Eric Brugger, Fri Feb 24 14:57:15 PST 2023
 #    I removed the reference to the vtkm include directories since I
 #    removed all the code that depended on them.
+# 
+#    Justin Privitera, Wed Oct  8 14:13:21 PDT 2025
+#    Added "GlobalConstant" subdirectory.
 #
 #*****************************************************************************
 
@@ -76,6 +79,7 @@ add_subdirectory(Conditional)
 add_subdirectory(CMFE)
 add_subdirectory(Derivations)
 add_subdirectory(General)
+add_subdirectory(GlobalConstant)
 add_subdirectory(ImageProcessing)
 add_subdirectory(Management)
 add_subdirectory(Math)

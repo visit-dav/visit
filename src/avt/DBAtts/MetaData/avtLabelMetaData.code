@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: avtLabelMetaData2
 Declaration: avtLabelMetaData(const std::string &, const std::string &, avtCentering);
 Definition:

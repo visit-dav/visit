@@ -240,6 +240,7 @@ public:
         StopPlotAnimationRPC,
         ReadHostProfilesFromDirectoryRPC,
         SetRemoveDuplicateNodesRPC,
+        QueryMSAAAvailabilityRPC,
         MaxRPC
     };
 

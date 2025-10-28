@@ -213,6 +213,20 @@ ParseCharacters(const QString &buff_input)
 //    Make this a stand-alone class using QDomDocument and other QDom clasess
 //    since QXmlDefaultHandler and the classes that use it are removed in Qt 6.
 //
+//    Kathleen Biagas, Tue Sep 30 14:51:35 PDT 2025
+//    Added support for Conditions code for xml2cmake.
+//
+//    Kathleen Biagas, Tue Oct  7 11:56:25 PDT 2025
+//    Remove WIN32DEFINES (windefs) support, now handled as a Conditional
+//    Definitions in .code file.
+//
+//    Kathleen Biagas, Thu Oct  9, 2025
+//    Add conditional cxx flags.
+//
+//    Kathleen Biagas, Tue Oct 20, 2025
+//    Removed logic surrounding Conditions, now only store in code file and
+//    no need to copy to Attribute.
+//
 // ****************************************************************************
 
 class XMLParser
@@ -323,10 +337,6 @@ class XMLParser
                 // case with no flags (libs for all components)
                 if (currentDefComponents & COMP_ALL)
                     currentPlugin->defs.push_back(strings[i]);
-            }
-            else if (currentTag == "WIN32DEFINES")
-            {
-                currentPlugin->windefs.push_back(strings[i]);
             }
             else if (currentTag == "LDFLAGS")
             {
@@ -464,6 +474,7 @@ class XMLParser
 
             if (currentAttribute->codeFile)
             {
+                // Find/Set Code blocks
                 QStringList targets, names, first, second;
                 currentAttribute->codeFile->GetAllCodes(targets, names, first, second);
                 for(int i = 0; i < targets.size(); ++i)
@@ -638,9 +649,6 @@ class XMLParser
                 }
                 currentDefComponents = comps_current;
             }
-        }
-        else if (tag == "WIN32DEFINES")
-        {
         }
         else if (tag == "LDFLAGS")
         {
@@ -983,9 +991,6 @@ class XMLParser
         else if (tag == "DEFINES")
         {
             currentDefComponents = COMP_NONE;
-        }
-        else if (tag == "WIN32DEFINES")
-        {
         }
         else if (tag == "LDFLAGS")
         {

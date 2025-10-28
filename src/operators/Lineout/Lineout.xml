@@ -2,14 +2,14 @@
   <Plugin name="Lineout" type="operator" label="Lineout" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="Lineout.xpm" category="Analysis" createExpression="true" exprInType="scalar" exprOutType="curve">
     <Attribute name="LineoutAttributes" purpose="Attributes for the Lineout operator." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="LineoutAttributes.code">
       <Field name="point1" label="Point 1" type="doubleArray" length="3">
-        0.000000
-        0.000000
-        0.000000
+        0
+        0
+        0
       </Field>
       <Field name="point2" label="Point 2" type="doubleArray" length="3">
-        1.000000
-        1.000000
-        0.000000
+        1
+        1
+        0
       </Field>
       <Field name="interactive" label="Interactive" type="bool">
         false

@@ -19,8 +19,9 @@
 #include <DebugStream.h>
 
 #ifdef _WIN32
-// We built OpenEXR as a DLL on Windows.
+// We built OpenEXR,IMath as a DLL on Windows.
 #define OPENEXR_DLL
+#define IMATH_DLL
 #endif
 
 #include <ImfInputFile.h>

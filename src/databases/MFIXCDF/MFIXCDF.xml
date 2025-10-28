@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
-  <Plugin name="MFIXCDF" type="database" label="MFIXCDF" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="true" filePatternsStrict="false" opensWholeDirectory="false">
+  <Plugin name="MFIXCDF" type="database" label="MFIXCDF" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="true" haslicense="false" filePatternsStrict="false" opensWholeDirectory="false">
     <LIBS>
       netcdf
     </LIBS>
     <FilePatterns>
       .nc
     </FilePatterns>
-    <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
+    <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="MFIXCDF.code">
     </Attribute>
   </Plugin>

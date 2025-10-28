@@ -9,6 +9,7 @@ import llnl.visit.CommunicationBuffer;
 import llnl.visit.Plugin;
 import llnl.visit.ColorControlPointList;
 import llnl.visit.GaussianControlPointList;
+import llnl.visit.AnariAttributes;
 
 // ****************************************************************************
 // Class: VolumeAttributes
@@ -27,7 +28,7 @@ import llnl.visit.GaussianControlPointList;
 
 public class VolumeAttributes extends AttributeSubject implements Plugin
 {
-    private static int VolumeAttributes_numAdditionalAtts = 45;
+    private static int VolumeAttributes_numAdditionalAtts = 46;
 
     // Enum values
     public final static int RENDERER_SERIAL = 0;
@@ -35,12 +36,13 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     public final static int RENDERER_COMPOSITE = 2;
     public final static int RENDERER_INTEGRATION = 3;
     public final static int RENDERER_SLIVR = 4;
+    public final static int RENDERER_ANARI = 5;
 
-    public final static int RESAMPLETYPE_ONLYIFREQUIRED = 0;
-    public final static int RESAMPLETYPE_SINGLEDOMAIN = 1;
-    public final static int RESAMPLETYPE_PARALLELREDISTRIBUTE = 2;
-    public final static int RESAMPLETYPE_PARALLELPERRANK = 3;
-    public final static int RESAMPLETYPE_NORESAMPLING = 4;
+    public final static int RESAMPLETYPE_NORESAMPLING = 0;
+    public final static int RESAMPLETYPE_ONLYIFREQUIRED = 1;
+    public final static int RESAMPLETYPE_SINGLEDOMAIN = 2;
+    public final static int RESAMPLETYPE_PARALLELREDISTRIBUTE = 3;
+    public final static int RESAMPLETYPE_PARALLELPERRANK = 4;
 
     public final static int RESAMPLECENTERING_NATIVECENTERING = 0;
     public final static int RESAMPLECENTERING_NODALCENTERING = 1;
@@ -132,6 +134,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         materialProperties[1] = 0.75;
         materialProperties[2] = 0;
         materialProperties[3] = 15;
+        anariAttributes = new AnariAttributes();
     }
 
     public VolumeAttributes(int nMoreFields)
@@ -189,6 +192,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         materialProperties[1] = 0.75;
         materialProperties[2] = 0;
         materialProperties[3] = 15;
+        anariAttributes = new AnariAttributes();
     }
 
     public VolumeAttributes(VolumeAttributes obj)
@@ -248,6 +252,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         for(i = 0; i < obj.materialProperties.length; ++i)
             materialProperties[i] = obj.materialProperties[i];
 
+        anariAttributes = new AnariAttributes(obj.anariAttributes);
 
         SelectAll();
     }
@@ -321,7 +326,8 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
                 (lowGradientLightingReduction == obj.lowGradientLightingReduction) &&
                 (lowGradientLightingClampFlag == obj.lowGradientLightingClampFlag) &&
                 (lowGradientLightingClampValue == obj.lowGradientLightingClampValue) &&
-                materialProperties_equal);
+                materialProperties_equal &&
+                (anariAttributes.equals(obj.anariAttributes)));
     }
 
     public String GetName() { return "Volume"; }
@@ -611,6 +617,12 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         Select(44);
     }
 
+    public void SetAnariAttributes(AnariAttributes anariAttributes_)
+    {
+        anariAttributes = anariAttributes_;
+        Select(45);
+    }
+
     // Property getting methods
     public boolean                  GetOSPRayEnabledFlag() { return OSPRayEnabledFlag; }
     public int                      GetOSPRayRenderType() { return OSPRayRenderType; }
@@ -657,6 +669,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     public boolean                  GetLowGradientLightingClampFlag() { return lowGradientLightingClampFlag; }
     public double                   GetLowGradientLightingClampValue() { return lowGradientLightingClampValue; }
     public double[]                 GetMaterialProperties() { return materialProperties; }
+    public AnariAttributes          GetAnariAttributes() { return anariAttributes; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -751,6 +764,8 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
             buf.WriteDouble(lowGradientLightingClampValue);
         if(WriteSelect(44, buf))
             buf.WriteDoubleArray(materialProperties);
+        if(WriteSelect(45, buf))
+            anariAttributes.Write(buf);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -894,6 +909,10 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         case 44:
             SetMaterialProperties(buf.ReadDoubleArray());
             break;
+        case 45:
+            anariAttributes.Read(buf);
+            Select(45);
+            break;
         }
     }
 
@@ -932,6 +951,8 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         str = str + "\n";
         str = str + indent + "opacityControlPoints = {\n" + opacityControlPoints.toString(indent + "    ") + indent + "}\n";
         str = str + indent + "resampleType = ";
+        if(resampleType == RESAMPLETYPE_NORESAMPLING)
+            str = str + "RESAMPLETYPE_NORESAMPLING";
         if(resampleType == RESAMPLETYPE_ONLYIFREQUIRED)
             str = str + "RESAMPLETYPE_ONLYIFREQUIRED";
         if(resampleType == RESAMPLETYPE_SINGLEDOMAIN)
@@ -940,8 +961,6 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
             str = str + "RESAMPLETYPE_PARALLELREDISTRIBUTE";
         if(resampleType == RESAMPLETYPE_PARALLELPERRANK)
             str = str + "RESAMPLETYPE_PARALLELPERRANK";
-        if(resampleType == RESAMPLETYPE_NORESAMPLING)
-            str = str + "RESAMPLETYPE_NORESAMPLING";
         str = str + "\n";
         str = str + intToString("resampleTarget", resampleTarget, indent) + "\n";
         str = str + indent + "resampleCentering = ";
@@ -975,6 +994,8 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
             str = str + "RENDERER_INTEGRATION";
         if(rendererType == RENDERER_SLIVR)
             str = str + "RENDERER_SLIVR";
+        if(rendererType == RENDERER_ANARI)
+            str = str + "RENDERER_ANARI";
         str = str + "\n";
         str = str + indent + "gradientType = ";
         if(gradientType == GRADIENTTYPE_CENTEREDDIFFERENCES)
@@ -1027,6 +1048,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         str = str + boolToString("lowGradientLightingClampFlag", lowGradientLightingClampFlag, indent) + "\n";
         str = str + doubleToString("lowGradientLightingClampValue", lowGradientLightingClampValue, indent) + "\n";
         str = str + doubleArrayToString("materialProperties", materialProperties, indent) + "\n";
+        str = str + indent + "anariAttributes = {\n" + anariAttributes.toString(indent + "    ") + indent + "}\n";
         return str;
     }
 
@@ -1077,5 +1099,6 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     private boolean                  lowGradientLightingClampFlag;
     private double                   lowGradientLightingClampValue;
     private double[]                 materialProperties;
+    private AnariAttributes          anariAttributes;
 }
 

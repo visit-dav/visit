@@ -64,6 +64,9 @@
 #   Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
 #   Change pthread to Threads::Threads.
 #
+#   Eric Brugger, Mon Jun 16 13:38:54 PDT 2025
+#   Replace "vtkm_" libraries with "vtkm::".
+#
 #****************************************************************************/
 
 set(avtfilters_SOURCES
@@ -211,10 +214,10 @@ list(APPEND avtfilters_DEPENDS
 
 if(HAVE_VTKM)
     list(APPEND avtfilters_DEPENDS
-        vtkm_cont
-        vtkm_filter_contour
-        vtkm_filter_entity_extraction
-        vtkm_filter_field_conversion)
+        vtkm::cont
+        vtkm::filter_contour
+        vtkm::filter_entity_extraction
+        vtkm::filter_field_conversion)
     if(NOT WIN32)
         list(APPEND avtfilters_DEPENDS Threads::Threads)
     endif()

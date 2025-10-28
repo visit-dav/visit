@@ -32,11 +32,15 @@
 #  Eric Brugger, Tue Jul 25 11:23:55 EDT 2023
 #  Change CMAKE_THREAD_LIBS to Threads::Threads.
 #
-#   Kathleen Biagas, Tue Sep 5, 2023
-#   Remove untested, unused EGL logic.
+#  Kathleen Biagas, Tue Sep 5, 2023
+#  Remove untested, unused EGL logic.
 #
-#   Kathleen Biagas, Thu Oct 3, 2024
-#   Utilize visit_add_library.
+#  Kathleen Biagas, Thu Oct 3, 2024
+#  Utilize visit_add_library.
+#
+#  Kathleen Biagas, Wed Jun 18, 2025
+#  Remove visit_vtk_offscreen, no longer needed (VTK 9.5).
+#  Remove unnecessary call to LINK_DIRECTORIES with LIBRARY_OUTPUT_DIRECTORY.
 #
 #****************************************************************************
 
@@ -121,11 +125,6 @@ set(VIEWERLIB_DEPENDS
     ${QT_QTNETWORK_LIBRARY}
     VTK::GUISupportQt)
     
-if(VTK_VERSION VERSION_LESS "9.4.0")
-    if(HAVE_OSMESA)
-        list(APPEND VIEWERLIB_DEPENDS visit_vtk_offscreen)
-    endif()
-endif()
 
 if(VISIT_STATIC)
     list(APPEND VIEWERLIB_DEPENDS

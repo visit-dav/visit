@@ -2,18 +2,14 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-#include <visit-config.h>
-#if LIB_VERSION_GE(VTK,9,4,0)
 #include <vtk_glad.h>
-#else
-#include <vtk_glew.h>
-#endif
 
 #include <vtkQtRenderWindow.h>
 
 #include <QVTKOpenGLNativeWidget.h>
 
 #include <vtkGenericOpenGLRenderWindow.h>
+#include <vtkOpenGLRenderWindow.h>
 #include <QVTKInteractor.h>
 #include <vtkRenderWindow.h>
 
@@ -71,6 +67,11 @@
 //   on OSX. Eliminated the call to setWindowFlags for OSX since it causes
 //   the toolbar window to not render correctly.
 //
+//   Kathleen Biagas, Wed May 14, 2025
+//   Ensure GlobalMaximumNumberOfMultiSamples is always set (may be defaulted
+//   to 0 on Mac by VTK).  Set MultiSamples to 0, since VisIt's Antialiasing
+//   is OFF by default.
+//
 // ****************************************************************************
 
 class VTKQT_API vtkQtRenderWindowPrivate
@@ -87,10 +88,9 @@ public:
         showEventCallback = NULL;
         showEventCallbackData = NULL;
 
-        // With Qt5 there an issue with QVTKWidget2 asking for an
-        // alpha channel (at least for OS X). However, not asking for
-        // the channel seems to be benign. In addition, the 2D view
-        // bounds and picking are off.
+        // Ensure this is set for Mac
+        vtkOpenGLRenderWindow::SetGlobalMaximumNumberOfMultiSamples(8);
+
         gl = new QVTKOpenGLNativeWidget(w);
         if (!gl->renderWindow())
         {
@@ -99,7 +99,9 @@ public:
             renWin->Delete();
         }
         gl->renderWindow()->AlphaBitPlanesOn();
-        gl->renderWindow()->SetStereoRender( stereo );
+        gl->renderWindow()->SetStereoRender(stereo);
+        // Default to MSAA turned off
+        gl->renderWindow()->SetMultiSamples(0);
     }
 
     virtual ~vtkQtRenderWindowPrivate()

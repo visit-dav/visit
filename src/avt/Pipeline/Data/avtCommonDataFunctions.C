@@ -479,6 +479,12 @@ CGetNumberOfOriginalZones(avtDataRepresentation &data, void *arg, bool &)
 //    Kathleen Biagas, Tues Jun 10, 2025
 //    Only look for singleton cell data arrays if number of cells > 1.
 //
+//    Eric Brugger, Wed Oct  8 11:01:38 PDT 2025
+//    I removed a "Register" call on the output polydata that was causing
+//    a memory leak. There was no need to increase the reference count
+//    since creating an avtDataRepresentation from it increases the
+//    reference count.
+//
 // ****************************************************************************
 
 void
@@ -539,7 +545,6 @@ CConvertUnstructuredGridToPolyData(avtDataRepresentation &data, void *dataAndKey
         geoFilter->SetInputData(ds);
         geoFilter->Update();
         vtkPolyData *out_pd = geoFilter->GetOutput();
-        out_pd->Register(NULL);
 
         for(size_t i = 0; i < pdsingletons.size(); ++i)
             out_pd->GetPointData()->AddArray(pdsingletons[i]);
@@ -3879,7 +3884,8 @@ CGetTopologicalDim(avtDataRepresentation &data, void *info, bool &success)
         {
             int localDim = -1;
             vtkStructuredGrid *sg = vtkStructuredGrid::SafeDownCast(ds);
-            int *dims = sg->GetDimensions();
+            int dims[3];
+            sg->GetDimensions(dims);
             if (dims[0] > 1 && dims[1] > 1 && dims[2] > 1)
             {
                 localDim = 3; // All 3 dims > 1 node thick

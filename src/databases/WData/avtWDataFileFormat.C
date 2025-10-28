@@ -65,10 +65,10 @@ int WDataVariable::loadCycle(int cycleid)
 
         if (ierr == 0 && d2f == 1) // downgrade precision
         {
-            int bs = (int)(wdata_get_blocksize(md, &md->var[vid]) / sizeof(double));
-            double *dd = (double *)data;
-            float *df = (float *)data;
-            for (int i = 0; i < bs; i++)
+            int bs = wdata_get_blocklength_full(md, &md->var[vid]);
+            double *dd = (double*)data;
+            float *df = (float*)data;
+            for(int i=0; i<bs; i++)
                 df[i] = (float)dd[i];
         }
     }
@@ -278,8 +278,9 @@ bool WDataComplexVariable::getVariable(const char *_varname, int cycleid, float 
 // =======================================================================================
 // ============================= WDataVectorVariable =====================================
 // =======================================================================================
-WDataVectorVariable::WDataVectorVariable(wdata_metadata *wdmd, int varid, int precdowngrade) : WDataVariable(wdmd, varid, precdowngrade)
+WDataVectorVariable::WDataVectorVariable(wdata_metadata *wdmd, int varid, int precdowngrade, int dim) : WDataVariable(wdmd, varid, precdowngrade)
 {
+    vdim=dim;
     // allocate memory for data
     int bs = wdata_get_blocklength(md);
     data = new double[bs * 3];
@@ -291,6 +292,8 @@ WDataVectorVariable::WDataVectorVariable(wdata_metadata *wdmd, int varid, int pr
     // create list of varaibles
     varname.push_back(md->var[vid].name);
     varunit.push_back(md->var[vid].unit);
+    debug4<<"[WDATA] WDataVectorVariable::WDataVectorVariable: vid="<<vid<<" var.name="<<md->var[vid].name
+          <<" var.unit="<<md->var[vid].unit<<endl;
 
     // check links
     for (int i = 0; i < md->nlink; i++)
@@ -298,6 +301,8 @@ WDataVectorVariable::WDataVectorVariable(wdata_metadata *wdmd, int varid, int pr
         {
             varname.push_back(md->link[i].name);
             varunit.push_back(md->var[vid].unit);
+            debug4<<"[WDATA] WDataVectorVariable::WDataVectorVariable: link-id="<<i<<" link.name="<<md->link[i].name
+                <<" var.unit="<<md->var[vid].unit<<endl;
         }
 }
 
@@ -318,17 +323,51 @@ bool WDataVectorVariable::getVariable(const char *_varname, int cycleid, float *
 
     int ix, iy, iz;
     int ixyz1 = 0, ixyz2 = 0;
-    for (ix = 0; ix < md->nx; ix++)
-        for (iy = 0; iy < md->ny; iy++)
-            for (iz = 0; iz < md->nz; iz++)
-            {
-                ixyz2 = ix + md->nx * iy + md->nx * md->ny * iz;
-                data_for_visit[3 * ixyz2 + 0] = (float)dataVx[ixyz1];
-                data_for_visit[3 * ixyz2 + 1] = (float)dataVy[ixyz1];
-                data_for_visit[3 * ixyz2 + 2] = (float)dataVz[ixyz1];
-                //             debug4<<"[XXXX]"<<ix<<" "<<iy<<" "<<iz<<" "<<ixyz1<<" "<<ixyz2<<" "<<data[ixyz1]<<endl;
-                ixyz1++;
-            }
+
+    if(vdim==3)
+    {
+        for (ix = 0; ix < md->nx; ix++)
+            for (iy = 0; iy < md->ny; iy++)
+                for (iz = 0; iz < md->nz; iz++)
+                {
+                    ixyz2 = ix + md->nx * iy + md->nx * md->ny * iz;
+                    data_for_visit[3 * ixyz2 + 0] = (float)dataVx[ixyz1];
+                    data_for_visit[3 * ixyz2 + 1] = (float)dataVy[ixyz1];
+                    data_for_visit[3 * ixyz2 + 2] = (float)dataVz[ixyz1];
+                    //             debug4<<"[XXXX]"<<ix<<" "<<iy<<" "<<iz<<" "<<ixyz1<<" "<<ixyz2<<" "<<data[ixyz1]<<endl;
+                    ixyz1++;
+                }
+    }
+
+    if(vdim==2)
+    {
+        for (ix = 0; ix < md->nx; ix++)
+            for (iy = 0; iy < md->ny; iy++)
+                for (iz = 0; iz < md->nz; iz++)
+                {
+                    ixyz2 = ix + md->nx * iy + md->nx * md->ny * iz;
+                    data_for_visit[3 * ixyz2 + 0] = (float)dataVx[ixyz1];
+                    data_for_visit[3 * ixyz2 + 1] = (float)dataVy[ixyz1];
+                    data_for_visit[3 * ixyz2 + 2] = 0.0;
+                    //             debug4<<"[XXXX]"<<ix<<" "<<iy<<" "<<iz<<" "<<ixyz1<<" "<<ixyz2<<" "<<data[ixyz1]<<endl;
+                    ixyz1++;
+                }
+    }
+
+    if(vdim==1)
+    {
+        for (ix = 0; ix < md->nx; ix++)
+            for (iy = 0; iy < md->ny; iy++)
+                for (iz = 0; iz < md->nz; iz++)
+                {
+                    ixyz2 = ix + md->nx * iy + md->nx * md->ny * iz;
+                    data_for_visit[3 * ixyz2 + 0] = (float)dataVx[ixyz1];
+                    data_for_visit[3 * ixyz2 + 1] = 0.0;
+                    data_for_visit[3 * ixyz2 + 2] = 0.0;
+                    //             debug4<<"[XXXX]"<<ix<<" "<<iy<<" "<<iz<<" "<<ixyz1<<" "<<ixyz2<<" "<<data[ixyz1]<<endl;
+                    ixyz1++;
+                }
+    }
 
     return true;
 }
@@ -347,12 +386,7 @@ avtWDataFileFormat::avtWDataFileFormat(const char *filename)
     // INITIALIZE DATA MEMBERS
 
     // rest values
-    wdmd.nx = 0;
-    wdmd.ny = 0;
-    wdmd.nz = 0;
-    wdmd.dx = 0.0;
-    wdmd.dy = 0.0;
-    wdmd.dz = 0.0;
+    wdata_reset_metadata(&wdmd);
     int ierr;
 
     ierr = wdata_parse_metadata_file(filename, &wdmd);
@@ -374,24 +408,17 @@ avtWDataFileFormat::avtWDataFileFormat(const char *filename)
         wdmd.ny = 1;
     }
 
-    //     std::string str = filename;
-    //     unsigned found = str.find_last_of("/\\");
-    //     std::string path = str.substr(0,found);
-    //     debug4<<"[WDATA] avtWDataFileFormat::avtWDataFileFormat: path="<<path<<endl;
-    //     if(path!="")
-    //     {
-    //         str = path + "/" + wdmd.prefix;
-    //         // debug4<<"[WDATA] avtWDataFileFormat::avtWDataFileFormat: str="<<str<<endl;
-    //         strcpy(wdmd.prefix, str.c_str());
-    //     }
-    //     debug4<<"[WDATA] avtWDataFileFormat::avtWDataFileFormat: wdmd.prefix="<<wdmd.prefix<<endl;
-
     // create list of variables
     WDataVariable *_var;
     int _correct_type;
     for (int i = 0; i < wdmd.nvar; i++)
     {
+        char vtype[MD_CHAR_LGTH];
+        int vdim;
         _correct_type = 1;
+
+        debug4<<"[WDATA] avtWDataFileFormat::avtWDataFileFormat: var.name="<<wdmd.var[i].name
+              <<", var.type="<<wdmd.var[i].type<<endl;
 
         if (strcmp(wdmd.var[i].type, "real") == 0)
             _var = new WDataRealVariable(&wdmd, i, 1);
@@ -405,19 +432,27 @@ avtWDataFileFormat::avtWDataFileFormat(const char *filename)
             _var = new WDataComplexVariable(&wdmd, i, 1);
         else if (strcmp(wdmd.var[i].type, "complex8") == 0)
             _var = new WDataComplexVariable(&wdmd, i, 0);
-        else if (strcmp(wdmd.var[i].type, "vector") == 0)
-            _var = new WDataVectorVariable(&wdmd, i, 1);
-        else if (strcmp(wdmd.var[i].type, "vector8") == 0)
-            _var = new WDataVectorVariable(&wdmd, i, 1);
-        else if (strcmp(wdmd.var[i].type, "vector4") == 0)
-            _var = new WDataVectorVariable(&wdmd, i, 0);
+        else if(wdata_vectorvar_decompose(&wdmd.var[i],vtype,&vdim)==WDATA_OK) // vector type
+        {
+            debug4<<"[WDATA] avtWDataFileFormat::avtWDataFileFormat: VECTOR: var.name="<<wdmd.var[i].name
+              <<", var.type="<<vtype<<", vdim="<<vdim<<endl;
+                 if (strcmp(vtype, "vector") == 0)
+                _var = new WDataVectorVariable(&wdmd, i, 1, vdim);
+            else if (strcmp(vtype, "vector8") == 0)
+                _var = new WDataVectorVariable(&wdmd, i, 1, vdim);
+            else if (strcmp(vtype, "vector4") == 0)
+                _var = new WDataVectorVariable(&wdmd, i, 0, vdim);
+            else 
+                _correct_type = 0;
+        }
         else
             _correct_type = 0;
 
-        if (_correct_type == 1)
+        if(_correct_type == 1)
             variable.push_back(_var);
     }
 
+    // prepare dbcomment
 // fill comment section
 #define MAX_REC_LEN 1024
     FILE *inp;
@@ -527,7 +562,33 @@ avtWDataFileFormat::avtWDataFileFormat(const char *filename)
         fclose(inp);
     }
 
+    for(int i=0; i<wdmd.ntxt; i++)
+    {
+        str = wdmd.txt[i].filename;
+        if(str == "logger.h" || str == "problem-definition.h" || str == "predefines.h") continue; // skip special files of W-SLDA
+
+        wdata_get_txt_fullname(&wdmd, wdmd.txt[i].filename, s);
+        str = s;
+        inp = fopen(str.c_str(), "r");
+        if (inp != NULL) // if file exists
+        {
+            dbcomment += "\n";
+            dbcomment += "========================================================================================================================\n";
+            dbcomment += "====================================================== ";
+            dbcomment += wdmd.txt[i].filename;
+            dbcomment +=" ======================================================\n";
+            dbcomment += "========================================================================================================================\n";
+            while (fgets(s, MAX_REC_LEN, inp) != NULL)
+                dbcomment += s;
+
+            fclose(inp);
+        }
+    }
+
     dbcomment += "========================================================================================================================\n";
+
+
+
 #undef MAX_REC_LEN
 }
 
@@ -712,6 +773,7 @@ avtWDataFileFormat::GetMesh(int timestate, const char *meshname)
     int ndims = 3;
     int dims[3];
     int i;
+    double xyz;
 
     dims[0] = wdmd.nx;
     dims[1] = wdmd.ny;
@@ -723,22 +785,31 @@ avtWDataFileFormat::GetMesh(int timestate, const char *meshname)
     coords[0] = vtkFloatArray::New();
     coords[0]->SetNumberOfTuples(dims[0]);
     float *xarray = (float *)coords[0]->GetVoidPointer(0);
-    for (i = 0; i < wdmd.nx; i++)
-        xarray[i] = (float)(wdmd.dx * i);
+    for (i = 0; i < wdmd.nx; i++) {
+        wdata_get_x(&wdmd, i, &xyz);
+        // debug4 << "[WDATA] wdata_get_x("<<i<<")="<<xyz << endl;
+        xarray[i] = (float)(xyz);
+    }
 
     // Read the Y coordinates from the file.
     coords[1] = vtkFloatArray::New();
     coords[1]->SetNumberOfTuples(dims[1]);
     float *yarray = (float *)coords[1]->GetVoidPointer(0);
-    for (i = 0; i < wdmd.ny; i++)
-        yarray[i] = (float)(wdmd.dy * i);
+    for (i = 0; i < wdmd.ny; i++) {
+        wdata_get_y(&wdmd, i, &xyz);
+        // debug4 << "[WDATA] wdata_get_y("<<i<<")="<<xyz << endl;
+        yarray[i] = (float)(xyz);
+    }
 
     // Read the Z coordinates from the file.
     coords[2] = vtkFloatArray::New();
     coords[2]->SetNumberOfTuples(dims[2]);
     float *zarray = (float *)coords[2]->GetVoidPointer(0);
-    for (i = 0; i < wdmd.nz; i++)
-        zarray[i] = (float)(wdmd.dz * i);
+    for (i = 0; i < wdmd.nz; i++) {
+        wdata_get_z(&wdmd, i, &xyz);
+        // debug4 << "[WDATA] wdata_get_z("<<i<<")="<<xyz << endl;
+        zarray[i] = (float)(xyz);
+    }
 
     //
     // Create the vtkRectilinearGrid object and set its dimensions
@@ -823,6 +894,8 @@ avtWDataFileFormat::GetVectorVar(int timestate, const char *varname)
     rv->SetNumberOfTuples(ntuples);
     float *_data = (float *)rv->GetVoidPointer(0);
 
+    debug4<<"[WDATA] avtWDataFileFormat::GetVectorVar: timestate="<<timestate
+          <<", varname="<<varname<<endl;
     bool hasdata;
     for (int ii = 0; ii < variable.size(); ii++)
     {
@@ -830,5 +903,6 @@ avtWDataFileFormat::GetVectorVar(int timestate, const char *varname)
         if (hasdata)
             return rv;
     }
+    debug4<<"[WDATA] avtWDataFileFormat::GetVectorVar: NULL!"<<endl;
     return NULL;
 }

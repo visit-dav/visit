@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="ADIOS" type="database" label="ADIOS" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="true" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false" filePatternsStrict="false" opensWholeDirectory="false">
+  <Plugin name="ADIOS" type="database" label="ADIOS" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="true" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false" haslicense="false" filePatternsStrict="false" opensWholeDirectory="false">
     <FilePatterns>
       *.bp
     </FilePatterns>

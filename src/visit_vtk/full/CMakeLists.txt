@@ -82,6 +82,7 @@ set(visit_vtk_SOURCES
     vtkVisItClipper.C
     vtkVisItContourFilter.C
     vtkVisItCutter.C
+    vtkVisItDataSetWriter.C
     vtkVisItExtractGrid.C
     vtkVisItExtractRectilinearGrid.C
     vtkVisItFeatureEdges.C
@@ -134,6 +135,7 @@ set(visit_vtk_HEADERS
     vtkVisItClipper.h
     vtkVisItContourFilter.h
     vtkVisItCutter.h
+    vtkVisItDataSetWriter.h
     vtkVisItExtractGrid.h
     vtkVisItExtractRectilinearGrid.h
     vtkVisItFeatureEdges.h
@@ -154,18 +156,6 @@ set(visit_vtk_HEADERS
 if(OPENEXR_FOUND)
     list(APPEND visit_vtk_SOURCES vtkOpenEXRWriter.C)
     list(APPEND visit_vtk_HEADERS vtkOpenEXRWriter.h)
-endif()
-
-if(VTK_VERSION VERSION_LESS "9.4.0")
-    list(APPEND visit_vtk_SOURCES
-         vtkVisItRectilinearGrid.C
-         vtkVisItStructuredGrid.C)
-    list(APPEND visit_vtk_HEADERS
-         vtkVisItRectilinearGrid.h
-         vtkVisItStructuredGrid.h)
-else()
-    list(APPEND visit_vtk_SOURCES vtkVisItDataSetWriter.C)
-    list(APPEND visit_vtk_HEADERS vtkVisItDataSetWriter.h)
 endif()
 
 visit_add_library(

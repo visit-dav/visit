@@ -2368,6 +2368,12 @@ ViewerWindow::InvertBackgroundColor()
 //   Kevin Griffin, Thu Mar 6 15:51:48 CST 2025
 //   Added ANARI
 //
+//   Kathleen Biagas, Thu Aug 14, 2025
+//   Added new RenderingAttributes items: MSAASamples, FXAAOptions.
+//
+//   Kathleen Biagas, Thu Aug 28 15:46:01 PDT 2025
+//   Removed call to SetSurfaceRepresentation, no longer used.
+//
 // ****************************************************************************
 
 void
@@ -2382,6 +2388,8 @@ ViewerWindow::CopyGeneralAttributes(const ViewerWindow *source)
     // If new rendering attributes are introduced ALL of the above
     // classes (in multiple places) must be updated.
     SetAntialiasing(source->GetAntialiasing());
+    SetMSAASamples(source->GetMSAASamples());
+    SetFXAAOptions(source->GetFXAAOptions());
     SetOrderComposite(source->GetOrderComposite());
     SetDepthCompositeThreads(source->GetDepthCompositeThreads());
     SetAlphaCompositeThreads(source->GetAlphaCompositeThreads());
@@ -2393,7 +2401,6 @@ ViewerWindow::CopyGeneralAttributes(const ViewerWindow *source)
     SetMultiresolutionMode(source->GetMultiresolutionMode());
     SetMultiresolutionCellSize(source->GetMultiresolutionCellSize());
     SetStereoRendering(source->GetStereo(), source->GetStereoType());
-    SetSurfaceRepresentation(source->GetSurfaceRepresentation());
     SetNotifyForEachRender(source->GetNotifyForEachRender());
     SetScalableAutoThreshold(source->GetScalableAutoThreshold());
     SetScalableActivationMode(source->GetScalableActivationMode());
@@ -2417,26 +2424,7 @@ ViewerWindow::CopyGeneralAttributes(const ViewerWindow *source)
 #endif
 
 #ifdef HAVE_ANARI
-    SetAnariRendering(source->GetAnariRendering());
-    SetUseAnariDenoiser(source->GetUseAnariDenoiser());
-    SetAnariSPP(source->GetAnariSPP());
-    SetAnariAO(source->GetAnariAO());
-    SetAnariLibraryName(source->GetAnariLibraryName());
-    SetAnariLibrarySubtype(source->GetAnariLibrarySubtype());
-    SetAnariRendererSubtype(source->GetAnariRendererSubtype());
-    SetAnariLightFalloff(source->GetAnariLightFalloff());
-    SetAnariAmbientIntensity(source->GetAnariAmbientIntensity());
-    SetAnariMaxDepth(source->GetAnariMaxDepth());
-    SetAnariRValue(source->GetAnariRValue());
-    SetAnariDebugMethod(source->GetAnariDebugMethod());
-    SetUsdDir(source->GetUsdDir());
-    SetUsdAtCommit(source->GetUsdAtCommit());
-    SetUsdOutputBinary(source->GetUsdOutputBinary());
-    SetUsdOutputMaterial(source->GetUsdOutputMaterial());
-    SetUsdOutputPreviewSurface(source->GetUsdOutputPreviewSurface());
-    SetUsdOutputMDL(source->GetUsdOutputMDL());
-    SetUsdOutputMDLColors(source->GetUsdOutputMDLColors());
-    SetUsdOutputDisplayColors(source->GetUsdOutputDisplayColors());
+    SetAnariAttributes(source->GetAnariAttributes());
 #endif
 
     //
@@ -6472,14 +6460,23 @@ RotateAroundY(const avtView3D &curView, double angle,
 //   Jeremy Meredith, Fri Apr 30 14:39:07 EDT 2010
 //   Added automatic depth cueing mode.
 //
-//    Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
-//    Add compact domain options.
+//   Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
+//   Add compact domain options.
 //
-//    Eric Brugger, Thu Oct 27 15:47:36 PDT 2011
-//    I added a multi resolution display capability for 2d.
+//   Eric Brugger, Thu Oct 27 15:47:36 PDT 2011
+//   I added a multi resolution display capability for 2d.
 //
-//    Kevin Griffin, Thu Mar 6 15:51:48 CST 2025
-//    Added ANARI
+//   Kevin Griffin, Thu Mar 6 15:51:48 CST 2025
+//   Added ANARI
+//
+//   Kathleen Biagas, Monday July 28, 2025.
+//   Antialiasing is now an int (enum).
+//
+//   Kathleen Biagas, Thu Aug 14, 2025
+//   Added new RenderingAttributes items: MSAASamples, FXAAOptions.
+//
+//    Kathleen Biagas, Thu Aug 28 15:46:38 PDT 2025
+//    Removed renderAtts.SetGeometryRepresentation, it no longer exists.
 //
 // ****************************************************************************
 
@@ -6562,7 +6559,10 @@ debug5 << "GetWindowAttributes: size=" << size[0] << ", " << size[1] << endl;
     renderAtts.SetCompactDomainsAutoThreshold(GetCompactDomainsAutoThreshold());
     renderAtts.SetCompactDomainsActivationMode((RenderingAttributes::TriStateMode) GetCompactDomainsActivationMode());
 
-    renderAtts.SetAntialiasing(GetAntialiasing());
+    renderAtts.SetAntialiasing((RenderingAttributes::AAMode) GetAntialiasing());
+    renderAtts.SetMSAASamples(GetMSAASamples());
+    renderAtts.SetMSAAAvailable(MSAAAvailable());
+    renderAtts.SetFXAAOpt(*(GetFXAAOptions()));
 
     renderAtts.SetOrderComposite(GetOrderComposite());
 
@@ -6577,9 +6577,6 @@ debug5 << "GetWindowAttributes: size=" << size[0] << ", " << size[1] << endl;
 
     renderAtts.SetMultiresolutionMode(GetMultiresolutionMode());
     renderAtts.SetMultiresolutionCellSize(GetMultiresolutionCellSize());
-
-    renderAtts.SetGeometryRepresentation(
-       (RenderingAttributes::GeometryRepresentation) GetSurfaceRepresentation());
 
     renderAtts.SetSpecularFlag(GetSpecularFlag());
     renderAtts.SetSpecularCoeff(GetSpecularCoeff());
@@ -6610,27 +6607,7 @@ debug5 << "GetWindowAttributes: size=" << size[0] << ", " << size[1] << endl;
 #endif
 
 #ifdef HAVE_ANARI
-    renderAtts.SetAnariRendering(GetAnariRendering());
-    renderAtts.SetUseAnariDenoiser(GetUseAnariDenoiser());
-    renderAtts.SetAnariSPP(GetAnariSPP());
-    renderAtts.SetAnariAO(GetAnariAO());
-    renderAtts.SetAnariLibrary(GetAnariLibraryName());
-    renderAtts.SetAnariLibrarySubtype(GetAnariLibrarySubtype());
-    renderAtts.SetAnariRendererSubtype(GetAnariRendererSubtype());
-    renderAtts.SetAnariLightFalloff(GetAnariLightFalloff());
-    renderAtts.SetAnariAmbientIntensity(GetAnariAmbientIntensity());
-    renderAtts.SetAnariMaxDepth(GetAnariMaxDepth());
-    renderAtts.SetAnariRValue(GetAnariRValue());
-    renderAtts.SetAnariDebugMethod(GetAnariDebugMethod());
-    renderAtts.SetUsdDir(GetUsdDir());
-    renderAtts.SetUsdAtCommit(GetUsdAtCommit());
-    renderAtts.SetUsdOutputBinary(GetUsdOutputBinary());
-    renderAtts.SetUsdOutputMaterial(GetUsdOutputMaterial());
-    renderAtts.SetUsdOutputPreviewSurface(GetUsdOutputPreviewSurface());
-    renderAtts.SetUsdOutputMDL(GetUsdOutputMDL());
-    renderAtts.SetUsdOutputMDLColors(GetUsdOutputMDLColors());
-    renderAtts.SetUsdOutputDisplayColors(GetUsdOutputDisplayColors());
-    renderAtts.SetUsingUsdDevice(GetUsingUsdDevice());
+    renderAtts.SetAnariAttributes(GetAnariAttributes());
 #endif
 
     winAtts.SetRenderAtts(renderAtts);
@@ -7384,8 +7361,7 @@ ViewerWindow::UpdateVisualCueList(VisualCueList& visCues) const
 //   Sets the window's AA mode.
 //
 // Arguments:
-//   enabled : Whether or not AA is enabled.
-//   frames  : The number of frames to use.
+//   aaMode :  The AA mode to use.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 23 14:38:31 PST 2002
@@ -7394,12 +7370,15 @@ ViewerWindow::UpdateVisualCueList(VisualCueList& visCues) const
 //   Kathleen Bonnell, Wed Dec  4 17:38:27 PST 2002
 //   Removed frames argument, no longer needed.
 //
+//   Kathleen Biagas, Monday July 28, 2025.
+//   Antialiasing is now an int (enum).
+//
 // ****************************************************************************
 
 void
-ViewerWindow::SetAntialiasing(bool enabled)
+ViewerWindow::SetAntialiasing(int aaMode)
 {
-    visWindow->SetAntialiasing(enabled);
+    visWindow->SetAntialiasing(aaMode);
 }
 
 // ****************************************************************************
@@ -7412,13 +7391,121 @@ ViewerWindow::SetAntialiasing(bool enabled)
 // Creation:   Mon Sep 23 14:39:11 PST 2002
 //
 // Modifications:
+//    Kathleen Biagas, Monday July 28, 2025.
+//    Antialiasing is now an int (enum).
+//
+// ****************************************************************************
+
+int
+ViewerWindow::GetAntialiasing() const
+{
+    return visWindow->GetAntialiasing();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::SetMSAASamples
+//
+// Purpose:
+//   Sets the window's MSAASamples.
+//
+// Arguments:
+//   numSamp : The number of MSAASamples to use.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetMSAASamples(int numSamp)
+{
+    visWindow->SetMSAASamples(numSamp);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::GetMSAASamples
+//
+// Purpose:
+//   Returns the window's MSAASamples.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+int
+ViewerWindow::GetMSAASamples() const
+{
+    return visWindow->GetMSAASamples();
+}
+
+
+// ****************************************************************************
+// Method: ViewerWindow::MSAAAvailable
+//
+// Purpose:
+//   Returns the availablility of MSAA.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 26, 2025
+//
+// Modifications:
 //
 // ****************************************************************************
 
 bool
-ViewerWindow::GetAntialiasing() const
+ViewerWindow::MSAAAvailable() const
 {
-    return visWindow->GetAntialiasing();
+    return visWindow->MSAAAvailable();
+}
+
+
+// ****************************************************************************
+//  Method: ViewerWindow::SetFXAAOptions
+//
+//  Purpose:
+//    Set the FXAAoptions of the window.
+//
+//  Arguments:
+//    atts      The FXAAOptions for this window.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   August 14, 2025
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetFXAAOptions(const FXAAOptions *atts)
+{
+    visWindow->SetFXAAOptions(atts);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::GetFXAAOptions
+//
+// Purpose:
+//   Returns a pointer to the VisWindow's FXAAOptions.
+//
+// Note:       Note that the pointer returned by this method cannot be used
+//             to set attributes of the fxaaOptions attributes.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 14, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+const FXAAOptions *
+ViewerWindow::GetFXAAOptions() const
+{
+    return (const FXAAOptions *)visWindow->GetFXAAOptions();
 }
 
 
@@ -7791,44 +7878,6 @@ int
 ViewerWindow::GetStereoType() const
 {
     return visWindow->GetStereoType();
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::SetSurfaceRepresentation
-//
-// Purpose:
-//   Sets the window's surface representation.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Sep 23 14:41:42 PST 2002
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-ViewerWindow::SetSurfaceRepresentation(int rep)
-{
-    visWindow->SetSurfaceRepresentation(rep);
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::GetSurfaceRepresentation
-//
-// Purpose:
-//   Returns the window's surface representation.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Sep 23 14:41:59 PST 2002
-//
-// Modifications:
-//
-// ****************************************************************************
-
-int
-ViewerWindow::GetSurfaceRepresentation() const
-{
-    return visWindow->GetSurfaceRepresentation();
 }
 
 // ****************************************************************************
@@ -8757,41 +8806,9 @@ ViewerWindow::GetOsprayShadows() const
 
 #ifdef HAVE_ANARI
 // ****************************************************************************
-// Method:  ViewerWindow::SetAnariRendering
+// Method:  ViewerWindow::SetAnariAttributes
 //
-// Purpose: Set/Get ANARI rendering flag
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-void
-ViewerWindow::SetAnariRendering(const bool enabled)
-{
-    visWindow->SetAnariRendering(enabled);
-}
-
-// ****************************************************************************
-// Method:  ViewerWindow::GetAnariRendering
-//
-// Purpose: Set/Get ANARI rendering flag
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-bool
-ViewerWindow::GetAnariRendering() const
-{
-    return visWindow->GetAnariRendering();
-}
-
-// ****************************************************************************
-// Method:  ViewerWindow::SetUseAnariDenoiser
-//
-// Purpose: Set/Get ANARI denoiser flag
+// Purpose: Set ANARI rendering attributes
 //
 // Programmer:  Kevin Griffin
 // Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
@@ -8799,636 +8816,25 @@ ViewerWindow::GetAnariRendering() const
 // ****************************************************************************
 
 void
-ViewerWindow::SetUseAnariDenoiser(const bool enabled)
+ViewerWindow::SetAnariAttributes(const AnariAttributes &atts)
 {
-    visWindow->SetUseAnariDenoiser(enabled);
+    visWindow->SetAnariAttributes(atts);
 }
 
 // ****************************************************************************
-// Method:  ViewerWindow::GetUseAnariDenoiser
+// Method:  ViewerWindow::GetAnariAttributes
 //
-// Purpose: Set/Get ANARI denoiser flag
+// Purpose: Get ANARI rendering attributes
 //
 // Programmer:  Kevin Griffin
 // Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
 //
 // ****************************************************************************
 
-bool
-ViewerWindow::GetUseAnariDenoiser() const
+const AnariAttributes &
+ViewerWindow::GetAnariAttributes() const
 {
-    return visWindow->GetUseAnariDenoiser();
-}
-
-// ****************************************************************************
-// Method:  ViewerWindow::SetAnariSPP
-//
-// Purpose: Set ANARI samples per pixel
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-void
-ViewerWindow::SetAnariSPP(const int val)
-{
-    visWindow->SetAnariSPP(val);
-}
-
-// ****************************************************************************
-// Method:  ViewerWindow::GetAnariSPP
-//
-// Purpose: Get ANARI samples per pixel
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-int
-ViewerWindow::GetAnariSPP() const
-{
-    return visWindow->GetAnariSPP();
-}
-
-// ****************************************************************************
-// Method:  ViewerWindow::SetAnariAO
-//
-// Purpose: Set ANARI ambient occlusion samples per pixel
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-void
-ViewerWindow::SetAnariAO(const int val)
-{
-    visWindow->SetAnariAO(val);
-}
-
-// ****************************************************************************
-// Method:  ViewerWindow::GetAnariAO
-//
-// Purpose: Get ANARI ambient occlusion samples per pixel
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-int
-ViewerWindow::GetAnariAO() const
-{
-    return visWindow->GetAnariAO();
-}
-
-// ****************************************************************************
-// Method:  ViewerWindow::SetAnariLibraryName
-//
-// Purpose: Set ANARI back-end device library name
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-void
-ViewerWindow::SetAnariLibraryName(const std::string name)
-{
-    visWindow->SetAnariLibraryName(name);
-}
-
-// ****************************************************************************
-// Method:  ViewerWindow::GetAnariLibraryName
-//
-// Purpose: Get ANARI back-end device library name
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-std::string
-ViewerWindow::GetAnariLibraryName() const
-{
-    return visWindow->GetAnariLibraryName();
-}
-
-// ****************************************************************************
-// Method:  ViewerWindow::SetAnariLibrarySubtype
-//
-// Purpose: Set ANARI back-end device library subtype name
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-void
-ViewerWindow::SetAnariLibrarySubtype(const std::string subtype)
-{
-    visWindow->SetAnariLibrarySubtype(subtype);
-}
-
-// ****************************************************************************
-// Method:  ViewerWindow::GetAnariLibrarySubtype
-//
-// Purpose: Get ANARI back-end device library subtype name
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-std::string
-ViewerWindow::GetAnariLibrarySubtype() const
-{
-    return visWindow->GetAnariLibrarySubtype();
-}
-
-// ****************************************************************************
-// Method:  ViewerWindow::SetAnariRendererSubtype
-//
-// Purpose: Set ANARI back-end device renderer subtype
-//
-// Arguments:
-//   subtype the renderer subtype name
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-void
-ViewerWindow::SetAnariRendererSubtype(const std::string subtype)
-{
-    visWindow->SetAnariRendererSubtype(subtype);
-}
-
-// ****************************************************************************
-// Method:  ViewerWindow::GetAnariRendererSubtype
-//
-// Purpose: Get ANARI back-end renderer subtype
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-std::string
-ViewerWindow::GetAnariRendererSubtype() const
-{
-    return visWindow->GetAnariRendererSubtype();
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::SetAnariLightFalloff
-//
-// @see VisWindow::SetAnariLightFalloff
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-void
-ViewerWindow::SetAnariLightFalloff(const float val)
-{
-    visWindow->SetAnariLightFalloff(val);
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::GetAnariLightFalloff
-//
-// @see VisWindow::GetAnariLightFalloff
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-float
-ViewerWindow::GetAnariLightFalloff() const
-{
-    return visWindow->GetAnariLightFalloff();
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::SetAnariAmbientIntensity
-//
-// @see VisWindow::SetAnariAmbientIntensity
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-void
-ViewerWindow::SetAnariAmbientIntensity(const float val)
-{
-    visWindow->SetAnariAmbientIntensity(val);
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::GetAnariAmbientIntensity
-//
-// @see VisWindow::GetAnariAmbientIntensity
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-float
-ViewerWindow::GetAnariAmbientIntensity() const
-{
-    return visWindow->GetAnariAmbientIntensity();
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::SetAnariMaxDepth
-//
-// @see VisWindow::SetAnariMaxDepth
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-void
-ViewerWindow::SetAnariMaxDepth(const int val)
-{
-    visWindow->SetAnariMaxDepth(val);
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::GetAnariMaxDepth
-//
-// @see VisWindow::GetAnariMaxDepth
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-int
-ViewerWindow::GetAnariMaxDepth() const
-{
-    return visWindow->GetAnariMaxDepth();
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::SetAnariRValue
-//
-// @see VisWindow::SetAnariRValue
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-void
-ViewerWindow::SetAnariRValue(const float val)
-{
-    visWindow->SetAnariRValue(val);
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::GetAnariRValue
-//
-// @see VisWindow::GetAnariRValue
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-float
-ViewerWindow::GetAnariRValue() const
-{
-    return visWindow->GetAnariRValue();
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::SetAnariDebugMethod
-//
-// @see VisWindow::SetAnariDebugMethod
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-void
-ViewerWindow::SetAnariDebugMethod(const std::string method)
-{
-    visWindow->SetAnariDebugMethod(method);
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::GetAnariDebugMethod
-//
-// @see VisWindow::GetAnariDebugMethod
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-std::string
-ViewerWindow::GetAnariDebugMethod() const
-{
-    return visWindow->GetAnariDebugMethod();
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::SetUsdDir
-//
-// @see VisWindow::SetUsdDir
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-void
-ViewerWindow::SetUsdDir(const std::string usdDir)
-{
-     visWindow->SetUsdDir(usdDir);
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::GetUsdDir
-//
-// @see VisWindow::GetUsdDir
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-std::string
-ViewerWindow::GetUsdDir() const
-{
-    return visWindow->GetUsdDir();
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::SetUsdAtCommit
-//
-// @see VisWindow::SetUsdAtCommit
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-void
-ViewerWindow::SetUsdAtCommit(const bool val)
-{
-    visWindow->SetUsdAtCommit(val);
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::GetUsdAtCommit
-//
-// @see VisWindow::GetUsdAtCommit
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-bool
-ViewerWindow::GetUsdAtCommit() const
-{
-    return visWindow->GetUsdAtCommit();
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::SetUsdOutputBinary
-//
-// @see VisWindow::SetUsdOutputBinary
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-void
-ViewerWindow::SetUsdOutputBinary(const bool val)
-{
-    visWindow->SetUsdOutputBinary(val);
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::GetUsdOutputBinary
-//
-// @see VisWindow::GetUsdOutputBinary
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-bool
-ViewerWindow::GetUsdOutputBinary() const
-{
-    return visWindow->GetUsdOutputBinary();
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::SetUsdOutputMaterial
-//
-// @see VisWindow::SetUsdOutputMaterial
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-void
-ViewerWindow::SetUsdOutputMaterial(const bool val)
-{
-    visWindow->SetUsdOutputMaterial(val);
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::GetUsdOutputMaterial
-//
-// @see VisWindow::GetUsdOutputMaterial
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-bool
-ViewerWindow::GetUsdOutputMaterial() const
-{
-    return visWindow->GetUsdOutputMaterial();
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::SetUsdOutputPreviewSurface
-//
-// @see VisWindow::SetUsdOutputPreviewSurface
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-void
-ViewerWindow::SetUsdOutputPreviewSurface(const bool val)
-{
-    visWindow->SetUsdOutputPreviewSurface(val);
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::GetUsdOutputPreviewSurface
-//
-// @see VisWindow::GetUsdOutputPreviewSurface
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-bool
-ViewerWindow::GetUsdOutputPreviewSurface() const
-{
-    return visWindow->GetUsdOutputPreviewSurface();
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::SetUsdOutputMDL
-//
-// @see VisWindow::SetUsdOutputMDL
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-void
-ViewerWindow::SetUsdOutputMDL(const bool val)
-{
-    visWindow->SetUsdOutputMDL(val);
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::GetUsdOutputMDL
-//
-// @see VisWindow::GetUsdOutputMDL
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-bool
-ViewerWindow::GetUsdOutputMDL() const
-{
-    return visWindow->GetUsdOutputMDL();
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::SetUsdOutputMDLColors
-//
-// @see VisWindow::SetUsdOutputMDLColors
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-void
-ViewerWindow::SetUsdOutputMDLColors(const bool val)
-{
-    visWindow->SetUsdOutputMDLColors(val);
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::GetUsdOutputMDLColors
-//
-// @see VisWindow::GetUsdOutputMDLColors
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-bool
-ViewerWindow::GetUsdOutputMDLColors() const
-{
-    return visWindow->GetUsdOutputMDLColors();
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::SetUsdOutputDisplayColors
-//
-// @see VisWindow::SetUsdOutputDisplayColors
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-void
-ViewerWindow::SetUsdOutputDisplayColors(const bool val)
-{
-    visWindow->SetUsdOutputDisplayColors(val);
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::GetUsdOutputDisplayColors
-//
-// @see VisWindow::GetUsdOutputDisplayColors
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-bool
-ViewerWindow::GetUsdOutputDisplayColors() const
-{
-    return visWindow->GetUsdOutputDisplayColors();
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::SetUsingUsdDevice
-//
-// @see VisWindow::SetUsingUsdDevice
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-void
-ViewerWindow::SetUsingUsdDevice(const bool val)
-{
-    visWindow->SetUsingUsdDevice(val);
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::GetUsingUsdDevice
-//
-// @see VisWindow::GetUsingUsdDevice
-//
-// Programmer:  Kevin Griffin
-// Creation:    Fri 01 Apr 2022 10:47:52 AM PDT
-//
-// ****************************************************************************
-
-bool
-ViewerWindow::GetUsingUsdDevice() const
-{
-    return visWindow->GetUsingUsdDevice();
+    return visWindow->GetAnariAttributes();
 }
 #endif
 
@@ -9529,6 +8935,12 @@ ViewerWindow::GetUsingUsdDevice() const
 //   Kevin Griffin, Fri Mar 6 15:51:48 CST 2025
 //   Added ANARI
 //
+//   Kathleen Biagas, Thu Aug 14, 2025
+//   Added new RenderingAttributes items: MSAASamples, FXAAOptions.
+//
+//   Kathleen Biagas, Thu Aug 28 15:46:38 PDT 2025
+//   Removed surfaceRepresentation, no longer used.
+//
 // ****************************************************************************
 
 void
@@ -9611,6 +9023,10 @@ ViewerWindow::CreateNode(DataNode *parentNode,
         // classes (in multiple places) must be updated.
 
         windowNode->AddNode(new DataNode("antialiasing", GetAntialiasing()));
+        windowNode->AddNode(new DataNode("MSAASamples", GetMSAASamples()));
+        FXAAOptions fxaaOpt(*visWindow->GetFXAAOptions());
+        fxaaOpt.CreateNode(windowNode, true, true);
+
         windowNode->AddNode(new DataNode("orderComposite", GetOrderComposite()));
 
         windowNode->AddNode(new DataNode("depthCompositeThreads", GetDepthCompositeThreads()));
@@ -9624,8 +9040,6 @@ ViewerWindow::CreateNode(DataNode *parentNode,
         windowNode->AddNode(new DataNode("multiresolutionMode", GetMultiresolutionMode()));
         windowNode->AddNode(new DataNode("multiresolutionCellSize", GetMultiresolutionCellSize()));
 
-        // AKA geometryRepresentation in the rendering attrbiutes.
-        windowNode->AddNode(new DataNode("surfaceRepresentation", GetSurfaceRepresentation()));
         windowNode->AddNode(new DataNode("stereoRendering", GetStereo()));
         windowNode->AddNode(new DataNode("stereoType", GetStereoType()));
         windowNode->AddNode(new DataNode("notifyForEachRender", GetNotifyForEachRender()));
@@ -9658,28 +9072,9 @@ ViewerWindow::CreateNode(DataNode *parentNode,
 #endif
 
 #ifdef HAVE_ANARI
-        windowNode->AddNode(new DataNode("anariRendering", GetAnariRendering()));
-        windowNode->AddNode(new DataNode("anariSPP", GetAnariSPP()));
-        windowNode->AddNode(new DataNode("anariAO", GetAnariAO()));
-        windowNode->AddNode(new DataNode("anariLibraryName", GetAnariLibraryName()));
-        windowNode->AddNode(new DataNode("anariLibrarySubtype", GetAnariLibrarySubtype()));
-        windowNode->AddNode(new DataNode("anariRendererSubtype", GetAnariRendererSubtype()));
-        windowNode->AddNode(new DataNode("anariLightFalloff", GetAnariLightFalloff()));
-        windowNode->AddNode(new DataNode("anariAmbientIntensity", GetAnariAmbientIntensity()));
-        windowNode->AddNode(new DataNode("anariMaxDepth", GetAnariMaxDepth()));
-        windowNode->AddNode(new DataNode("anariRValue", GetAnariRValue()));
-        windowNode->AddNode(new DataNode("anariDebugMethod", GetAnariDebugMethod()));
-        windowNode->AddNode(new DataNode("anariDenoiser", GetUseAnariDenoiser()));
-        windowNode->AddNode(new DataNode("anariUSDOutputLocation", GetUsdDir()));
-        windowNode->AddNode(new DataNode("anariUSDOutputBinary", GetUsdOutputBinary()));
-        windowNode->AddNode(new DataNode("anariUSDOutputMaterial", GetUsdOutputMaterial()));
-        windowNode->AddNode(new DataNode("anariUSDOutputPreviewSurface", GetUsdOutputPreviewSurface()));
-        windowNode->AddNode(new DataNode("anariUSDOutputMDL", GetUsdOutputMDL()));
-        windowNode->AddNode(new DataNode("anariUSDOutputMDLColors", GetUsdOutputMDLColors()));
-        windowNode->AddNode(new DataNode("anariUSDOutputDisplayColors", GetUsdOutputDisplayColors()));
-        windowNode->AddNode(new DataNode("anariUsingUsdDevice", GetUsingUsdDevice()));
-#endif
-
+        AnariAttributes anariAtts(visWindow->GetAnariAttributes());
+        anariAtts.CreateNode(windowNode, true, true);
+#endif   
         //
         // View
         //
@@ -9876,6 +9271,15 @@ ViewerWindow::CreateNode(DataNode *parentNode,
 //   Kevin Griffin, Thu Mar 6 15:51:48 CST 2025
 //   Added ANARI
 //
+//   Kathleen Biagas, Monday July 28, 2025.
+//   Antialiasing is now an int (enum).
+//
+//   Kathleen Biagas, Thu Aug 14, 2025
+//   Added new RenderingAttributes items: MSAASamples, FXAAOptions.
+//
+//   Kathleen Biagas, Thu Aug 28 15:46:38 PDT 2025
+//   Removed surfaceRepresentation, no longer used.
+//
 // ****************************************************************************
 
 bool
@@ -10005,7 +9409,20 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
     // classes (in multiple places) must be updated.
 
     if((node = windowNode->GetNode("antialiasing")) != 0)
-        SetAntialiasing(node->AsBool());
+        SetAntialiasing(node->AsInt());
+    if((node = windowNode->GetNode("MSAASamples")) != 0)
+        SetMSAASamples(node->AsInt());
+    //
+    // Read in and set the FXAAOptions
+    //
+    if((node = windowNode->GetNode("FXAAOptions")) != 0)
+    {
+        FXAAOptions fxaaOpt;
+        fxaaOpt.ProcessOldVersions(windowNode, configVersion.c_str());
+        fxaaOpt.SetFromNode(windowNode);
+        SetFXAAOptions(&fxaaOpt);
+    }
+
     if((node = windowNode->GetNode("orderComposite")) != 0)
         SetOrderComposite(node->AsBool());
     if((node = windowNode->GetNode("depthCompositeThreads")) != 0)
@@ -10026,8 +9443,6 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
         SetMultiresolutionMode(node->AsBool());
     if((node = windowNode->GetNode("multiresolutionCellSize")) != 0)
         SetMultiresolutionCellSize(node->AsDouble());
-    if((node = windowNode->GetNode("surfaceRepresentation")) != 0)
-        SetSurfaceRepresentation(node->AsInt());
     int stereoType = 0;
     if((node = windowNode->GetNode("stereoType")) != 0)
         stereoType = node->AsInt();
@@ -10157,46 +9572,13 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
 #endif
 
 #ifdef HAVE_ANARI
-    if((node = windowNode->GetNode("anariRendering")) != 0)
-        SetAnariRendering(node->AsBool());
-    if((node = windowNode->GetNode("anariSPP")) != 0)
-        SetAnariSPP(node->AsInt());
-    if((node = windowNode->GetNode("anariAO")) != 0)
-        SetAnariAO(node->AsInt());
-    if((node = windowNode->GetNode("anariLibraryName")) != 0)
-        SetAnariLibraryName(node->AsString());
-    if((node = windowNode->GetNode("anariLibrarySubtype")) != 0)
-        SetAnariLibrarySubtype(node->AsString());
-    if((node = windowNode->GetNode("anariRendererSubtype")) != 0)
-        SetAnariRendererSubtype(node->AsString());
-    if((node = windowNode->GetNode("anariLightFalloff")) != 0)
-        SetAnariLightFalloff(node->AsFloat());
-    if((node = windowNode->GetNode("anariAmbientIntensity")) != 0)
-        SetAnariAmbientIntensity(node->AsFloat());
-    if((node = windowNode->GetNode("anariMaxDepth")) != 0)
-        SetAnariMaxDepth(node->AsInt());
-    if((node = windowNode->GetNode("anariRValue")) != 0)
-        SetAnariRValue(node->AsFloat());
-    if((node = windowNode->GetNode("anariDebugMethod")) != 0)
-        SetAnariDebugMethod(node->AsString());
-    if((node = windowNode->GetNode("anariDenoiser")) != 0)
-        SetUseAnariDenoiser(node->AsBool());
-    if((node = windowNode->GetNode("anariUSDOutputLocation")) != 0)
-        SetUsdDir(node->AsString());
-    if((node = windowNode->GetNode("anariUSDOutputBinary")) != 0)
-        SetUsdOutputBinary(node->AsBool());
-    if((node = windowNode->GetNode("anariUSDOutputMaterial")) != 0)
-        SetUsdOutputMaterial(node->AsBool());
-    if((node = windowNode->GetNode("anariUSDOutputPreviewSurface")) != 0)
-        SetUsdOutputPreviewSurface(node->AsBool());
-    if((node = windowNode->GetNode("anariUSDOutputMDL")) != 0)
-        SetUsdOutputMDL(node->AsBool());
-    if((node = windowNode->GetNode("anariUSDOutputMDLColors")) != 0)
-        SetUsdOutputMDLColors(node->AsBool());
-    if((node = windowNode->GetNode("anariUSDOutputDisplayColors")) != 0)
-        SetUsdOutputDisplayColors(node->AsBool());
-    if((node = windowNode->GetNode("anariUsingUsdDevice")) != 0)
-        SetUsingUsdDevice(node->AsBool());
+    if((node = windowNode->GetNode("AnariAttributes")) != 0)
+    {
+        AnariAttributes anariAtts;
+        anariAtts.ProcessOldVersions(windowNode, configVersion.c_str());
+        anariAtts.SetFromNode(windowNode);
+        SetAnariAttributes(anariAtts);
+    }
 #endif
 
     //

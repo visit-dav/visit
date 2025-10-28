@@ -11,6 +11,7 @@
 #include <map>
 #include <utility>
 
+#include <Conditional.h>
 #include <XMLParserUtil.h>
 
 // ****************************************************************************
@@ -41,21 +42,28 @@
 //
 //    Kathleen Biagas, Wed Oct  9 09:59:59 PDT 2013
 //    Added 'Condition' keyword, for conditional xml2cmake code.
+// 
+//    Kathleen Biagas, Tue Sep 30 14:57:43 PDT 2025
+//    Added GetAllConditions so that XMLEdit can read them in.
 //
-//    Kathleen Biagas, Thu Nov 21, 2024
-//    Added 'Verbatim' keyword, for xml2cmake code to be added 'Pre' or 'Post'
-//    auto-generated code. 
+//    Kathleen Biagas, Thu Oct 9, 2025
+//    Added CXXFlags to conditions.
+//
+//    Kathleen Biagas, Tue Oct 21, 2025
+//    Conditionals now handled by a std::vector of Conditional.
+//    Modified GetCondition accordingly.
+//    Removed GetAllConditions.
+//    Moved bulk of ParseCondition logic into Conditional class.
+//    Removed QStringPairVector and QStringQStringPairVectorMap and their
+//    iterators, as they were only used for conditionals.
 //
 // ****************************************************************************
+
 class CodeFile
 {
   private:
     typedef std::map<QString, std::pair<QString,QString> > QStringPairMap;
     typedef std::map<QString, QString> QStringQStringMap;
-    typedef std::vector<std::pair<QString,QString> > QStringPairVector;
-    typedef std::map<QString, QStringPairVector > QStringQStringPairVectorMap;
-    typedef QStringQStringPairVectorMap::iterator PVMit;
-    typedef QStringQStringPairVectorMap::const_iterator cPVMit;
     QString currentTarget;
     QString filename;
     QString filepath;
@@ -65,9 +73,9 @@ class CodeFile
     QStringPairMap    var;
     QStringPairMap    constant;
     QStringQStringMap init;
-    QStringQStringMap verbatim;
-    QStringQStringPairVectorMap    condition;
   public:
+    std::vector<Conditional *> conditions;
+
     CodeFile(const QString &f) : filename(f)
     {
         currentTarget = "xml2atts";
@@ -128,10 +136,6 @@ class CodeFile
                 else if (keyword == "Condition:")
                 {
                     ParseCondition(buff, name, in);
-                }
-                else if (keyword == "Verbatim:")
-                {
-                    ParseVerbatim(buff, name, in);
                 }
             }
             else
@@ -210,12 +214,6 @@ class CodeFile
     {
         return GetItem(init, name, targets, def);
     }
-
-    bool GetVerbatim(const QString &name, QStringList &logic)
-    {
-        QStringList dummy;
-        return GetItem(verbatim, name, dummy, logic);
-    }
     void GetAllInits(QStringList &targets, QStringList &names, QStringList &def) const
     {
         GetAllItems(init, targets, names, def);
@@ -225,17 +223,13 @@ class CodeFile
                       QStringList &cond, QStringList &val) const
     {
         bool retval = false;
-        QString key = MakeKey(target, condType);
-        for(cPVMit it = condition.begin(); it != condition.end(); ++it)
+        for (size_t i = 0; i < conditions.size(); ++i)
         {
-            if(it->first == key)
+            Conditional *c = conditions[i];
+            if (target == c->target && c->keyVals.count(condType) != 0)
             {
-                QStringPairVector sec = it->second;
-                for (size_t i = 0; i < sec.size(); ++i)
-                {
-                    cond += sec[i].first;
-                    val  += sec[i].second;
-                }
+                cond += c->condition;
+                val  += c->keyVals.at(condType);
                 retval = true;
             }
         }
@@ -274,10 +268,6 @@ private:
         else if (buff.left(10) == "Condition:")
         {
             keyword = buff.left(10);
-        }
-        else if (buff.left(9) == "Verbatim:")
-        {
-            keyword = buff.left(9);
         }
 
         return keyword;
@@ -407,72 +397,16 @@ private:
 
     void ParseCondition(QString &buff, const QString &name, QTextStream &in)
     {
-        const char *keys[14] = {"Includes:", \
-                                "Definitions:", \
-                                "ILinkLibraries:", \
-                                "GLinkLibraries:", \
-                                "VLinkLibraries:", \
-                                "SLinkLibraries:", \
-                                "MLinkLibraries:", \
-                                "ELinkLibraries:", \
-                                "ISources:", \
-                                "GSources:", \
-                                "VSources:", \
-                                "SSources:", \
-                                "MSources:", \
-                                "ESources:"};
+        Conditional *cond = new Conditional(currentTarget, name);
+        bool addConditional = false;
         buff = in.readLine();
         while (!in.atEnd() && GetKeyword(buff).isNull())
         {
-            for (int i = 0; i < 14; ++i)
-            {
-                QString key(keys[i]);
-                if (buff.left(key.size()) == key)
-                {
-                    QString value(buff.mid(key.size()).trimmed());
-                    while (value.right(1) == "\n")
-                        value = value.left(value.length() - 1);
-                    if (!value.isEmpty())
-                    {
-                        QString thisKey = Key(key);
-                        PVMit it;
-                        std::pair<QString, QString> p(name, value);
-                        for(it = condition.begin(); it != condition.end(); ++it)
-                        {
-                            if (thisKey == it->first)
-                                break;
-                        }
-                        if (it == condition.end())
-                        {
-                            QStringPairVector pv;
-                            pv.push_back(p);
-                            condition[thisKey] = pv;
-                        }
-                        else
-                        {
-                            it->second.push_back(p);
-                        }
-                    }
-                    break;
-                }
-            }
+            addConditional |= cond->ParseCondition(buff);
             buff = in.readLine();
         }
-    }
-    void ParseVerbatim(QString &buff, const QString &name, QTextStream &in)
-    {
-        QString verb;
-        buff = in.readLine();
-        while (!in.atEnd() && GetKeyword(buff).isNull())
-        {
-            verb += buff + "\n";
-            buff = in.readLine();
-            if(in.atEnd())
-                verb += buff + "\n";
-        }
-        while (verb.right(2) == "\n\n")
-            verb = verb.left(verb.length() - 1);
-        verbatim[Key(name)] = verb;
+        if(addConditional)
+            conditions.push_back(cond);
     }
 
     QString Key(const QString &key) const

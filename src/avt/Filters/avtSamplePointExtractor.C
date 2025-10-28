@@ -1310,8 +1310,7 @@ avtSamplePointExtractor::ExtractPolygon(vtkPolygon *poly, vtkDataSet *ds, int po
 {
     vtkIdList *ptIds = vtkIdList::New();
     int ptId, offset;
-    
-    poly->Triangulate(ptIds);
+    poly->TriangulateLocalIds(0, ptIds);
     
     if(poly->GetCellDimension() == 2)   // Triangle
     {

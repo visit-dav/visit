@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
-  <Plugin name="EnSight" type="database" label="EnSight" version="1.0" enabled="true" dbtype="MTMD" haswriter="false">
+  <Plugin name="EnSight" type="database" label="EnSight" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false" haslicense="false" filePatternsStrict="false" opensWholeDirectory="false">
     <LIBS>
       vtkIOEnSight
     </LIBS>
     <FilePatterns>
       *.case
     </FilePatterns>
-    <Attribute name="" purpose="" persistent="false" exportAPI="" exportInclude="">
+    <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>

@@ -20,6 +20,10 @@
 #    Kathleen Biagas, Thu Oct 3, 2024
 #    Utilize visit_add_library.
 #
+#    Kathleen Biagas, Wed Jun 18, 2025
+#    Remove visit_vtk_offscreen, no longer needed (VTK 9.5).  Remove
+#    unnececssary call to link_directories with LIBRARY_OUTPUT_DIRECTORY.
+#
 #****************************************************************************
 
 #
@@ -109,12 +113,6 @@ set(VIEWERCORE_DEPENDS
     avtview
     avtmath
     Threads::Threads)
-
-if(VTK_VERSION VERSION_LESS "9.4.0")
-    if(HAVE_OSMESA)
-        list(APPEND VIEWERCORE_DEPENDS visit_vtk_offscreen)
-    endif()
-endif()
 
 
 #******************** The viewercore_ser library ******************************

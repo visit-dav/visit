@@ -67,6 +67,12 @@
 #  Remove DatabaseCorrelation, View2DAttributes, View3DAttributes from
 #  code-gen skipping. All customizations are in the .code files now.
 #
+#  Kathleen Biagas, Thu Aug 14, 2025
+#  Add FXAAOptions.
+#
+#  Kevin Griffin, Wed Sep 10, 2025
+#  Add AnariAttributes.
+#
 #****************************************************************************
 
 #########################################################
@@ -126,6 +132,7 @@ set(PY_GEN_METADATA_OBJECTS
 #####################
 
 set(PY_GEN_STATE_OBJECTS
+    AnariAttributes
     AnimationAttributes
     AnnotationAttributes
     Axes2D
@@ -148,6 +155,7 @@ set(PY_GEN_STATE_OBJECTS
     ExpressionList
     FontAttributes
     FileOpenOptions
+    FXAAOptions
     GaussianControlPoint
     GaussianControlPointList
     GlobalAttributes
@@ -326,6 +334,7 @@ set(METADATA_HEADERS
 
 
 set(GENERATED_PY_SOURCES
+    visitpy/PyAnariAttributes.C
     visitpy/PyAnimationAttributes.C
     visitpy/PyAnnotationAttributes.C
     visitpy/PyAxes2D.C
@@ -350,6 +359,7 @@ set(GENERATED_PY_SOURCES
     visitpy/PyExpressionList.C
     visitpy/PyFontAttributes.C
     visitpy/PyFileOpenOptions.C
+    visitpy/PyFXAAOptions.C
     visitpy/PyGaussianControlPoint.C
     visitpy/PyGaussianControlPointList.C
     visitpy/PyGlobalAttributes.C
@@ -391,6 +401,7 @@ set(GENERATED_PY_SOURCES
     visitpy/PyWindowInformation.C)
 
 set(GENERATED_PY_HEADERS
+    visitpy/PyAnariAttributes.h
     visitpy/PyAnimationAttributes.h
     visitpy/PyAnnotationAttributes.h
     visitpy/PyAxes2D.h
@@ -415,6 +426,7 @@ set(GENERATED_PY_HEADERS
     visitpy/PyExpressionList.h
     visitpy/PyFontAttributes.h
     visitpy/PyFileOpenOptions.h
+    visitpy/PyFXAAOptions.h
     visitpy/PyGaussianControlPoint.h
     visitpy/PyGaussianControlPointList.h
     visitpy/PyGlobalAttributes.h
@@ -557,21 +569,18 @@ if(NOT VISIT_STATIC)
 endif()
 
 #
-# For module setup of the pure python parts of the visit module
+# For module setup pure python visit modules
 #
-add_subdirectory(visitmodule)
-# the visitmodule subdir added above creates the visitmodule_py_setup target
-# visitmodule needs to depend on it so it is built after the py module,
-# otherwise pip install will overwrite the directory and delete visitmodule.so
-target_link_libraries(visitmodule PRIVATE visitmodule_py_setup)
+add_subdirectory(visit_module)
+add_subdirectory(visit_launcher)
 add_subdirectory(visit_utils)
 add_subdirectory(visit_flow)
 
+# the visit compiled module depends on the dir structure from the python shell
+target_link_libraries(visitmodule PRIVATE visit_module_py_setup)
 
 if(VISIT_PYTHON_FILTERS)
     add_subdirectory(pyavt)
     add_subdirectory(mpicom)
 endif()
-
-add_subdirectory(pyui)
 

@@ -43,10 +43,10 @@
         false
       </Field>
       <Field name="dim1MinRange" label="Min" type="double">
-        0.000000
+        0
       </Field>
       <Field name="dim1MaxRange" label="Max" type="double">
-        1.000000
+        1
       </Field>
       <Field name="dim1NumBins" label="Number of bins" type="int">
         50
@@ -60,10 +60,10 @@
         false
       </Field>
       <Field name="dim2MinRange" label="Min" type="double" enabler="numDimensions:Two,Three">
-        0.000000
+        0
       </Field>
       <Field name="dim2MaxRange" label="Max" type="double" enabler="numDimensions:Two,Three">
-        1.000000
+        1
       </Field>
       <Field name="dim2NumBins" label="Number of bins" type="int" enabler="numDimensions:Two,Three">
         50
@@ -77,10 +77,10 @@
         false
       </Field>
       <Field name="dim3MinRange" label="Min" type="double" enabler="numDimensions:Three">
-        0.000000
+        0
       </Field>
       <Field name="dim3MaxRange" label="Max" type="double" enabler="numDimensions:Three">
-        1.000000
+        1
       </Field>
       <Field name="dim3NumBins" label="Number of bins" type="int" enabler="numDimensions:Three">
         50
@@ -94,7 +94,7 @@
       <Field name="varForReduction" label="Variable" type="variablename" enabler="reductionOperator:Average,Minimum,Maximum,StandardDeviation,Variance,Sum" vartypes="01000000000">
       </Field>
       <Field name="emptyVal" label="Value for Bins With No Data" type="double">
-        0.000000
+        0
       </Field>
       <Field name="outputType" label="Output Type" type="enum" subtype="OutputType">
         OutputOnBins

@@ -1,19 +1,14 @@
-#/usr/workspace/visit/visit/thirdparty_shared/3.4.2/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/cmake
+#/usr/workspace/visit/visit/thirdparty_shared/3.5.0/toss4/cmake/3.31.8/linux-x86_64_gcc-10.3/bin/cmake
 ##
-## ./build_visit generated host.cmake
-## created: Tue Nov 26 11:20:10 PST 2024
-## system: Linux poodle18 4.18.0-553.22.1.1toss.t4.x86_64 #1 SMP Tue Sep 24 16:50:00 PDT 2024 x86_64 x86_64 x86_64 GNU/Linux
-## by: justin
+## ./build_visit3_4_9 generated host.cmake
+## created: Fri Sep  5 11:11:56 PDT 2025
+## system: Linux poodle17 4.18.0-553.69.1.1toss.t4.x86_64 #1 SMP Mon Aug 11 16:36:31 PDT 2025 x86_64 x86_64 x86_64 GNU/Linux
+## by: brugger
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-
-if(USE_VTK94)
-    SET(VISITHOME /usr/workspace/visit/visit/thirdparty_shared/3.4.9-vtk94/toss4)
-else()
-    SET(VISITHOME /usr/workspace/visit/visit/thirdparty_shared/3.4.2/toss4)
-endif()
+SET(VISITHOME /usr/WS1/visit/visit/thirdparty_shared/3.5.0/toss4)
 SET(VISITARCH linux-x86_64_gcc-10.3)
 
 ### NOTE: Modified from build_visit output
@@ -33,14 +28,8 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRI
 ## Parallel Build Setup.
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
-### NOTE: Modified from build_visit output
-#-------
-VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/include TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/include TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/lib -Wl,-rpath=/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/lib" TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS     mpich mpl)
-VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH "/usr/tce/packages/mvapich2/mvapich2-2.3.6-gcc-10.3.1/lib")
-#-------
+## (configured w/ mpi compiler wrapper)
+VISIT_OPTION_DEFAULT(VISIT_MPI_COMPILER /usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/bin/mpicc TYPE FILEPATH)
 
 ##
 ## VisIt Thread Option
@@ -71,7 +60,7 @@ VISIT_OPTION_DEFAULT(VISIT_DDT ON TYPE BOOL)
 ##
 ## ZLIB
 ##
-SETUP_APP_VERSION(ZLIB 1.2.13)
+SETUP_APP_VERSION(ZLIB 1.3.1)
 VISIT_OPTION_DEFAULT(VISIT_ZLIB_DIR ${VISITHOME}/zlib/${ZLIB_VERSION}/${VISITARCH})
 
 ##
@@ -79,26 +68,18 @@ VISIT_OPTION_DEFAULT(VISIT_ZLIB_DIR ${VISITHOME}/zlib/${ZLIB_VERSION}/${VISITARC
 ##
 VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/3.9.18/${VISITARCH})
 
-if(USE_VTK94)
-    ##
-    ## OSMesa
-    ##
-    VISIT_OPTION_DEFAULT(VISIT_OSMESA_DIR ${VISITHOME}/osmesa/17.3.9/${VISITARCH})
-
-else()
-    ##
-    ## LLVM
-    ##
-    VISIT_OPTION_DEFAULT(VISIT_LLVM_DIR ${VISITHOME}/llvm/6.0.1/${VISITARCH})
-
-    ##
-    ## MesaGL
-    ##
-    VISIT_OPTION_DEFAULT(VISIT_MESAGL_DIR ${VISITHOME}/mesagl/17.3.9/${VISITARCH})
-endif()
+##
+## LLVM
+##
+VISIT_OPTION_DEFAULT(VISIT_LLVM_DIR ${VISITHOME}/llvm/6.0.1/${VISITARCH})
 
 ##
-## QT6
+## MesaGL
+##
+VISIT_OPTION_DEFAULT(VISIT_MESAGL_DIR ${VISITHOME}/mesagl/17.3.9/${VISITARCH})
+
+##
+## QT
 ##
 SETUP_APP_VERSION(QT 6.4.2)
 VISIT_OPTION_DEFAULT(VISIT_QT_DIR ${VISITHOME}/qt/6.4.2/${VISITARCH})
@@ -112,19 +93,13 @@ VISIT_OPTION_DEFAULT(VISIT_OSPRAY_DIR ${VISITHOME}/ospray/${OSPRAY_VERSION}/${VI
 ##
 ## ANARI
 ##
-if(USE_VTK94)
-    SETUP_APP_VERSION(ANARI 0.13.1)
-    VISIT_OPTION_DEFAULT(VISIT_ANARI_DIR ${VISITHOME}/anari/${ANARI_VERSION}/${VISITARCH})
-endif()
+SETUP_APP_VERSION(ANARI 0.14.1)
+VISIT_OPTION_DEFAULT(VISIT_ANARI_DIR ${VISITHOME}/anari/${ANARI_VERSION}/${VISITARCH})
 
 ##
 ## VTK
 ##
-if(USE_VTK94)
-    SETUP_APP_VERSION(VTK 9.4.1)
-else()
-    SETUP_APP_VERSION(VTK 9.2.6)
-endif()
+SETUP_APP_VERSION(VTK 9.5.0)
 VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/${VTK_VERSION}/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_VTK_LIBDEP zlib TYPE STRING)
 
@@ -147,6 +122,7 @@ VISIT_OPTION_DEFAULT(VISIT_HDF5_MPI_LIBDEP zlib szip TYPE STRING)
 ##
 SETUP_APP_VERSION(ADIOS 1.13.1)
 VISIT_OPTION_DEFAULT(VISIT_ADIOS_DIR ${VISITHOME}/adios/${ADIOS_VERSION}/${VISITARCH})
+
 ##
 ## BLOSC2
 ##
@@ -198,8 +174,8 @@ VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP hdf5 zlib TYPE STRING)
 ##
 ## Conduit
 ##
-SETUP_APP_VERSION(CONDUIT 0.9.2)
-VISIT_OPTION_DEFAULT(VISIT_CONDUIT_DIR ${VISITHOME}/conduit/v0.9.2/${VISITARCH})
+SETUP_APP_VERSION(CONDUIT 0.9.4)
+VISIT_OPTION_DEFAULT(VISIT_CONDUIT_DIR ${VISITHOME}/conduit/v0.9.4/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_CONDUIT_LIBDEP hdf5 silo TYPE STRING)
 
 ##
@@ -228,7 +204,7 @@ VISIT_OPTION_DEFAULT(VISIT_ICET_DIR ${VISITHOME}/icet/77c708f9090236b576669b74c5
 ##
 ## MFEM
 ##
-VISIT_OPTION_DEFAULT(VISIT_MFEM_DIR ${VISITHOME}/mfem/4.6/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_MFEM_DIR ${VISITHOME}/mfem/4.8/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_MFEM_LIBDEP conduit zlib fms TYPE STRING)
 
 ##
@@ -253,7 +229,7 @@ VISIT_OPTION_DEFAULT(VISIT_NETCDF_LIBDEP hdf5 TYPE STRING)
 ##
 ## OpenEXR
 ##
-VISIT_OPTION_DEFAULT(VISIT_OPENEXR_DIR ${VISITHOME}/openexr/2.2.0/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_OPENEXR_DIR ${VISITHOME}/openexr/3.3.4/${VISITARCH})
 
 ##
 ## PIDX
@@ -276,7 +252,7 @@ VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR ${VISITHOME}/uintah/${UINTAH_VERSION}/${VI
 ##
 ## VTKM
 ##
-VISIT_OPTION_DEFAULT(VISIT_VTKM_DIR ${VISITHOME}/vtkm/v1.9.0/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_VTKM_DIR ${VISITHOME}/vtkm/v2.3.0/${VISITARCH})
 
 ##
 ## Xdmf

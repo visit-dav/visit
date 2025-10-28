@@ -53,6 +53,9 @@
 #   Kevin Griffin, Wed 05 Mar 2025 03:46:12 PM CST
 #   Added anari/AnariRenderingWidget
 #
+#   Kevin Griffin, Thu 05 Jun 2025
+#   Added anari/AnariParameterInfo
+#
 #****************************************************************************
 
 set(GUILIB_SOURCES
@@ -210,7 +213,6 @@ set(GUILIB_SOURCES
     QvisVCRControl.C
     QvisViewportWidget.C
     QvisViewWindow.C
-    QvisVisItUpdate.C
     QvisWindowBase.C
     QvisWizard.C
     QvisXRayImageQueryWidget.C
@@ -218,6 +220,7 @@ set(GUILIB_SOURCES
     SplashScreen.C
     WidgetDataNode.C
     $<$<BOOL:${QWT_FOUND}>:QvisStripChart.C>
+    $<$<BOOL:${HAVE_ANARI}>:anari/AnariParameterInfo.C>
     $<$<BOOL:${HAVE_ANARI}>:anari/AnariRenderingWidget.C>)
 
 set(GUILIB_HEADERS
@@ -376,7 +379,6 @@ set(GUILIB_HEADERS
     QvisVCRControl.h
     QvisViewportWidget.h
     QvisViewWindow.h
-    QvisVisItUpdate.h
     QvisWindowBase.h
     QvisWizard.h
     QvisXRayImageQueryWidget.h
@@ -386,6 +388,7 @@ set(GUILIB_HEADERS
     WidgetDataNode.h
     gui_exports.h
     $<$<BOOL:${QWT_FOUND}>:QvisStripChart.h>
+    $<$<BOOL:${HAVE_ANARI}>:anari/AnariParameterInfo.h>
     $<$<BOOL:${HAVE_ANARI}>:anari/AnariRenderingWidget.h>)
 
 set(GUI_DEPENDS

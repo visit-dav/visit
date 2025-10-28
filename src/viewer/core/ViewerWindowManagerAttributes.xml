@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="ViewerWindowManagerAttributes" purpose="This class contains the attributes that dictate where viewer windows are positioned, etc." persistent="true" codefile="ViewerWindowManagerAttributes.code" exportAPI="VIEWERCORE_API" exportInclude="viewercore_exports.h">
+  <Attribute name="ViewerWindowManagerAttributes" purpose="This class contains the attributes that dictate where viewer windows are positioned, etc." persistent="true" keyframe="true" exportAPI="VIEWERCORE_API" exportInclude="viewercore_exports.h" codefile="ViewerWindowManagerAttributes.code">
     <Field name="actionConfigurations" label="actionConfigurations" type="attVector" subtype="ActionGroupDescription" init="true">
     </Field>
     <Field name="toolbarsVisible" label="Toolbars visible" type="bool">

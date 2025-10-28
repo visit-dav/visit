@@ -178,6 +178,10 @@
 #   Eric Brugger, Mon Mar  3 09:11:37 PST 2025
 #   Include the actual hostname in the name of the sbatch output filename.
 # 
+#   Cyrus Harrison, 
+#   Removed cuda LD_LIBRARY_PATH Wed Sep 10 11:57:45 PDT 2025
+# 
+
 
 # Determine the users name and e-mail address.
 #
@@ -408,9 +412,6 @@ cd $testDir/$workingDir
 mkdir build
 cd build
 export PATH=\$PATH:/usr/bin/X11
-export PATH=/usr/tce/packages/cuda/cuda-8.0/bin:\$PATH
-export CUDA_HOME=/usr/tce/packages/cuda/cuda-8.0
-export LD_LIBRARY_PATH=/usr/tce/packages/cuda/cuda-8.0/lib64:\$LD_LIBRARY_PATH
 
 # since gcc-7 or 6 isn't the default, make sure to set CC and CXX, otherwise
 # pluginVsInstall tests won't use the right compiler
@@ -516,7 +517,7 @@ for m in \$modes; do
 
 
     # Run the test
-    ./run_visit_test_suite.sh  --parallel-launch "srun" -o \$resDir -m "\$m" -n 2 --cmake $cmakeCmd >> ../../buildlog 2>&1
+    ./run_visit_test_suite.sh  --parallel-launch "srun" -o \$resDir -m "\$m" -n 1 --cmake $cmakeCmd >> ../../buildlog 2>&1
 
     # Move the results to the consolidation directory
     mv \$resDir/html \$dateTag/\$theMode
@@ -633,6 +634,9 @@ if test "$post" = "true" ; then
     else
         $repoDir/src/tools/dev/scripts/visit-notify-test-failure -host $testHost
     fi
+
+    # log current quota usage
+    python3 $repoDir/src/tools/dev/scripts/visit-check-lc-workspace-quota.py >> /usr/workspace/visit/QUOTA_HISTORY.txt
 
     # If its the first day of the month, purge test results from 3 months ago.
     if test "\$(date +%d)" = "01" ; then

@@ -100,15 +100,15 @@ VisWinView::GetViewInfo(void)
 //    flag will be true if ANARI rendering is enabled in the advanced
 //    rendering dialog.
 //
+//    Kevin Griffin, Thu Aug 14, 2025
+//    Removed useAnari.
+//
 // ****************************************************************************
 
 void
 VisWinView::SetViewInfo(const avtViewInfo &vI)
 {
     viewInfo = vI;
-#ifdef HAVE_ANARI
-    viewInfo.useAnari = mediator.GetAnariRendering();
-#endif
     viewInfo.SetCameraFromView(mediator.GetCanvas()->GetActiveCamera());
 
     //

@@ -22,9 +22,9 @@ public:
     {
         PVLD_Reader::ReadSolidBlockMesh( nb, vcrd, elmt );
     }
-    bool ReadSolidBlockData( const char* varname, int nb, std::vector<int>& dims, std::vector<float>& data )
+    bool ReadSolidBlockData( const char* varname, int nb, std::vector<int>& dims, std::vector<float>& data, std::vector<int>& idata )
     {
-        return PVLD_Reader::ReadSolidBlockData( varname, nb, dims, data );
+        return PVLD_Reader::ReadSolidBlockData( varname, nb, dims, data, idata );
     }
     void ReadSolidMaterial()
     {
@@ -37,9 +37,9 @@ public:
     {
         PVLD_Reader::ReadShellBlockMesh( nb, vcrd, elmt );
     }
-    bool ReadShellBlockData( const char* varname, int nb, std::vector<int>& dims, std::vector<float>& data )
+    bool ReadShellBlockData( const char* varname, int nb, std::vector<int>& dims, std::vector<float>& data, std::vector<int>& idata )
     {
-        return PVLD_Reader::ReadShellBlockData( varname, nb, dims, data );
+        return PVLD_Reader::ReadShellBlockData( varname, nb, dims, data, idata );
     }
     void ReadShellMaterial()
     {
@@ -52,9 +52,9 @@ public:
     {
         PVLD_Reader::ReadSurfaceBlockMesh( nb, vcrd, elmt );
     }
-    bool ReadSurfaceBlockData( const char* varname, int nb, std::vector<int>& dims, std::vector<float>& data )
+    bool ReadSurfaceBlockData( const char* varname, int nb, std::vector<int>& dims, std::vector<float>& data, std::vector<int>& idata )
     {
-        return PVLD_Reader::ReadSurfaceBlockData( varname, nb, dims, data );
+        return PVLD_Reader::ReadSurfaceBlockData( varname, nb, dims, data, idata );
     }
     void ReadSurfaceMaterial()
     {
@@ -68,6 +68,8 @@ protected:
                              std::vector<int>& vmap, std::vector<float>& vcrd, std::vector<int>& elmt );
     void ReadSolidBlockData( hid_t file_id, int varInd, int blkInd,
                              std::vector<int>& dims, std::vector<float>& edat );
+    void ReadSolidBlockData( hid_t file_id, int varInd, int blkInd,
+                             std::vector<int>& dims, std::vector<int>& edat );
     void ReadSolidBlockHistoryData( hid_t fid, int blkInd, int varInd,
                                     std::vector<int>& dims, std::vector<float>& data );
 
@@ -75,6 +77,8 @@ protected:
                              std::vector<int>& vmap, std::vector<float>& vcrd, std::vector<int>& elmt );
     void ReadShellBlockData( hid_t file_id, int varInd, int blkInd,
                              std::vector<int>& dims, std::vector<float>& edat );
+    void ReadShellBlockData( hid_t file_id, int varInd, int blkInd,
+                             std::vector<int>& dims, std::vector<int>& edat );
     void ReadShellBlockHistoryData( hid_t fid, int blkInd, int varInd,
                                     std::vector<int>& dims, std::vector<float>& data );
 
@@ -82,6 +86,8 @@ protected:
                                std::vector<int>& vmap, std::vector<float>& vcrd, std::vector<int>& elmt );
     void ReadSurfaceBlockData( hid_t file_id, int varInd, int blkInd,
                                std::vector<int>& dims, std::vector<float>& edat );
+    void ReadSurfaceBlockData( hid_t file_id, int varInd, int blkInd,
+                               std::vector<int>& dims, std::vector<int>& edat );
 
 
 protected:
@@ -94,12 +100,6 @@ protected:
     void ReadHistoryDataInfo( hid_t fid, const char* meshname,
                               const std::vector<int>& part,
                               int& mxnb, std::vector<int>& hvpart );
-    // void ReadMaterialHistoryInfo( hid_t fid, const char* meshname,
-    //                 const std::vector<int>& part,
-    //                 const std::vector<int>& eidx,
-    //                 int& mxnb,
-    //                 std::vector<int>& hvprt,
-    //                 std::vector<int>& hvsft );
 
     void ReadRawData( hid_t fid, const char* grpname, const char* varname,
                       const std::vector<int>& dims,
@@ -134,6 +134,7 @@ protected:
     std::vector<int>         solid_elmdef_;
     std::string              solid_varnam_;
     std::vector<float>       solid_elmvar_;
+    std::vector<int>         solid_elmvari_;
 
     // shell
     std::vector<int>         shell_prtsft_;
@@ -143,6 +144,7 @@ protected:
     std::vector<int>         shell_elmdef_;
     std::string              shell_varnam_;
     std::vector<float>       shell_elmvar_;
+    std::vector<int>         shell_elmvari_;
 
     // surface
     std::vector<int>         surf_prtsft_;
@@ -151,6 +153,7 @@ protected:
     std::vector<int>         surf_elmdef_;
     std::string              surf_varnam_;
     std::vector<float>       surf_elmvar_;
+    std::vector<int>         surf_elmvari_;
 
 
 };

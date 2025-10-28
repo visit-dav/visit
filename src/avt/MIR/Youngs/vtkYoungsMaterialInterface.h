@@ -11,7 +11,6 @@
 #ifndef VTK_YOUNGS_MATERIAL_INTERFACE__C
 #define VTK_YOUNGS_MATERIAL_INTERFACE__C
 
-#include <vtkObjectFactory.h>
 #include <vtkSetGet.h>
 #include <vtkDataSet.h>
 

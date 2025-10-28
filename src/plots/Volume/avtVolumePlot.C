@@ -635,7 +635,8 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
     if (atts.GetRendererType() == VolumeAttributes::Composite ||
         atts.GetRendererType() == VolumeAttributes::Integration ||
         atts.GetRendererType() == VolumeAttributes::SLIVR ||
-        atts.GetRendererType() == VolumeAttributes::Parallel)
+        atts.GetRendererType() == VolumeAttributes::Parallel ||
+        atts.GetRendererType() == VolumeAttributes::ANARI)
     {
         volumeFilter = new avtVolumeFilter();
         volumeFilter->SetAttributes(atts);

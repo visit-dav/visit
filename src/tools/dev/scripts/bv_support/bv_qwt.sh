@@ -36,7 +36,7 @@ function bv_qwt_depends_on
     if [[ "$USE_SYSTEM_QWT" == "yes" || "$USE_ALT_QWT" == "yes" ]]; then
         echo ""
     else
-        echo "qt6"
+        echo "qt"
     fi
 }
 
@@ -305,7 +305,7 @@ function build_qwt
     # Build Qwt
     #
     info "Configuring Qwt . . . (~1 minute)"
-    ${QT6_BIN_DIR}/qmake qwt.pro
+    ${QT_BIN_DIR}/qmake qwt.pro
 
     if [[ $? != 0 ]] ; then
         warn "Qwt project build failed.  Giving up"

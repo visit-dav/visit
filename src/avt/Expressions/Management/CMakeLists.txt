@@ -4,6 +4,8 @@
 
 #*****************************************************************************
 # Modifications:
+#   Justin Privitera, Wed Oct  8 14:13:21 PDT 2025
+#   Added avtFunctionExpr_CreateGlobalConstantFilters.C
 #
 #*****************************************************************************
 
@@ -17,6 +19,7 @@ visit_append_list(
           ${CMAKE_CURRENT_SOURCE_DIR}/avtExprNodeFactory.C
           ${CMAKE_CURRENT_SOURCE_DIR}/avtFunctionExpr_CreateCMFEFilters.C
           ${CMAKE_CURRENT_SOURCE_DIR}/avtFunctionExpr_CreateConditionalFilters.C
+          ${CMAKE_CURRENT_SOURCE_DIR}/avtFunctionExpr_CreateGlobalConstantFilters.C
           ${CMAKE_CURRENT_SOURCE_DIR}/avtFunctionExpr_CreateImageProcessingFilters.C
           ${CMAKE_CURRENT_SOURCE_DIR}/avtFunctionExpr_CreateMaterialFilters.C
           ${CMAKE_CURRENT_SOURCE_DIR}/avtFunctionExpr_CreateMathFilters.C

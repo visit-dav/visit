@@ -4,3 +4,4 @@ visit_add_operator_plugin(
     ONAME      CartographicProjection
     ESERLIBS   VTK::GeovisCore
     EPARLIBS   VTK::GeovisCore)
+
