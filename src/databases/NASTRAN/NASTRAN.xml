@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
-  <Plugin name="NASTRAN" type="database" label="NASTRAN Bulk data" version="1.0" enabled="true" mdspecificcode="true" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="true">
+  <Plugin name="NASTRAN" type="database" label="NASTRAN Bulk data" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="true" haslicense="false" filePatternsStrict="false" opensWholeDirectory="false">
     <FilePatterns>
       *.nas
       *.f06
     </FilePatterns>
-    <Attribute name="" purpose="" persistent="false">
+    <Attribute name="" purpose="" persistent="false" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>

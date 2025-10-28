@@ -41,10 +41,10 @@
       File
     </Field>
     <Field name="databaseInfoTimeScale" label="Time scale" type="double">
-      1.
+      1
     </Field>
     <Field name="databaseInfoTimeOffset" label="Time offset" type="double">
-      0.
+      0
     </Field>
     <Field name="legendInfoFlag" label="legendInfoFlag" type="bool">
       true

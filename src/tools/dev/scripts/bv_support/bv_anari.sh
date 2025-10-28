@@ -85,7 +85,6 @@ function bv_anari_host_profile
         echo "##" >> $HOSTCONF
 
 	echo "SETUP_APP_VERSION(ANARI $ANARI_VERSION)" >> $HOSTCONF
-        echo "VISIT_OPTION_DEFAULT(VISIT_ANARI ON TYPE BOOL)" >> $HOSTCONF
 
         if [[ "$USE_ALT_ANARI" == "yes" ]] ; then
 	    echo "VISIT_OPTION_DEFAULT(VISIT_ANARI_DIR $ALT_ANARI_DIR)" >> $HOSTCONF

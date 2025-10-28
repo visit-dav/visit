@@ -1,3 +1,4 @@
+Target: xml2atts
 Initialization: light7
     SetDefaultEnabledStates();
 
@@ -31,6 +32,7 @@ LightList::GetLight(int i) const
         return light7;
 }
 
+Target: xml2atts
 Function: GetLight2
 Declaration: LightAttributes &GetLight(int i);
 Definition:
@@ -55,6 +57,7 @@ LightList::GetLight(int i)
         return light7;
 }
 
+Target: xml2atts
 Function: NumLights
 Declaration: int NumLights() const;
 Definition:
@@ -64,6 +67,7 @@ LightList::NumLights() const
     return 8;
 }
 
+Target: xml2atts
 Function: SelectLight
 Declaration: void SelectLight(int i);
 Definition:
@@ -88,6 +92,7 @@ LightList::SelectLight(int i)
         SelectLight7();
 }
 
+Target: xml2atts
 Function: SetLight
 Declaration: void SetLight(int i, const LightAttributes &l);
 Definition:
@@ -112,6 +117,7 @@ LightList::SetLight(int i, const LightAttributes &l)
         SetLight7(l);
 }
 
+Target: xml2atts
 Function: SetDefaultEnabledStates
 Declaration: void SetDefaultEnabledStates();
 Definition:
@@ -130,6 +136,22 @@ LightList::SetDefaultEnabledStates()
 }
 
 Target: xml2java
+Function: SetDefaultEnabledStates
+Declaration: SetDefaultEnabledStates
+Definition:
+    public void SetDefaultEnabledStates()
+    {
+        light0.SetEnabledFlag(true);
+        light1.SetEnabledFlag(false);
+        light2.SetEnabledFlag(false);
+        light3.SetEnabledFlag(false);
+        light4.SetEnabledFlag(false);
+        light5.SetEnabledFlag(false);
+        light6.SetEnabledFlag(false);
+        light7.SetEnabledFlag(false);
+    }
+
+Target: xml2java
 Function: SetAllEnabled
 Declaration: SetAllEnabled
 Definition:
@@ -146,17 +168,3 @@ Definition:
         SelectAll();
     }
 
-Function: SetDefaultEnabledStates
-Declaration: SetDefaultEnabledStates
-Definition:
-    public void SetDefaultEnabledStates()
-    {
-        light0.SetEnabledFlag(true);
-        light1.SetEnabledFlag(false);
-        light2.SetEnabledFlag(false);
-        light3.SetEnabledFlag(false);
-        light4.SetEnabledFlag(false);
-        light5.SetEnabledFlag(false);
-        light6.SetEnabledFlag(false);
-        light7.SetEnabledFlag(false);
-    }

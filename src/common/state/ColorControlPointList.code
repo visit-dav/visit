@@ -73,6 +73,7 @@ ColorControlPointList::EvalCubicSpline(float t, const float *allX, const float *
     return (Y[1] + dy1*u + ddy2*u*u + dddy3*u*u*(u-dx));
 }
 
+Target: xml2atts
 Function: GetColorsCubicSpline
 Declaration: void GetColorsCubicSpline(unsigned char *rgb, int ncolors, unsigned char *alpha=NULL) const;
 Definition:
@@ -164,6 +165,7 @@ ColorControlPointList::GetColorsCubicSpline(unsigned char *rgb,
     delete [] a;
 }
 
+Target: xml2atts
 Function: GetColors
 Declaration: void GetColors(unsigned char *rgb, int ncolors, unsigned char *alpha=NULL) const;
 Definition:
@@ -516,6 +518,7 @@ ColorControlPointList::GetColors(unsigned char *rgb,
     delete [] newPts_a;
 }
 
+Target: xml2atts
 Function: SetFromNode
 Declaration: bool SetFromNode(DataNode *parentNode);
 Definition:
@@ -647,6 +650,7 @@ ColorControlPointList::SetFromNode(DataNode *parentNode)
         SetBuiltIn(node->AsBool());
 }
 
+Target: xml2atts
 Function: CreateNode
 Declaration: bool CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd);
 Definition:
@@ -729,6 +733,7 @@ ColorControlPointList::CreateNode(DataNode *parentNode, bool completeSave, bool 
     return (addToParent || forceAdd);
 }
 
+Target: xml2atts
 Function: CompactCreateNode
 Declaration: bool CompactCreateNode(DataNode *parentNode, bool completeSave, bool forceAdd);
 Definition:
@@ -826,6 +831,7 @@ ColorControlPointList::CompactCreateNode(DataNode *parentNode, bool completeSave
     return (addToParent || forceAdd);
 }
 
+Target: xml2atts
 Function: AddTag
 Declaration: void AddTag(const std::string newtag);
 Definition:
@@ -865,6 +871,7 @@ ColorControlPointList::AddTag(const std::string newtag)
     }
 }
 
+Target: xml2atts
 Function: RemoveTag
 Declaration: void RemoveTag(const std::string tag);
 Definition:
@@ -902,6 +909,7 @@ ColorControlPointList::RemoveTag(const std::string tag)
     }
 }
 
+Target: xml2atts
 Function: ClearTags
 Declaration: void ClearTags();
 Definition:
@@ -930,6 +938,7 @@ ColorControlPointList::ClearTags()
     Select(ID_tagNames, (void *)&tagNames);
 }
 
+Target: xml2atts
 Function: GetTag
 Declaration: std::string GetTag(const int index) const;
 Definition:
@@ -957,6 +966,7 @@ ColorControlPointList::GetTag(const int index) const
     return "";
 }
 
+Target: xml2atts
 Function: GetNumTags
 Declaration: int GetNumTags() const;
 Definition:
@@ -981,6 +991,7 @@ ColorControlPointList::GetNumTags() const
     return tagNames.size();
 }
 
+Target: xml2atts
 Function: GetTagsAsString
 Declaration: std::string GetTagsAsString() const;
 Definition:
@@ -1019,6 +1030,7 @@ ColorControlPointList::GetTagsAsString() const
     return tags;
 }
 
+Target: xml2atts
 Function: HasTag
 Declaration: bool HasTag(const std::string tag) const;
 Definition:
@@ -1049,6 +1061,7 @@ ColorControlPointList::HasTag(const std::string tag) const
     return false;
 }
 
+Target: xml2atts
 Function: GetTagIndex
 Declaration: int GetTagIndex(const std::string tag) const;
 Definition:
@@ -1074,6 +1087,7 @@ ColorControlPointList::GetTagIndex(const std::string tag) const
     return -1;
 }
 
+Target: xml2atts
 Function: ValidateTag
 Declaration: std::pair<bool, std::string> ValidateTag(const std::string tag) const;
 Definition:
@@ -1121,6 +1135,7 @@ ColorControlPointList::ValidateTag(const std::string currtag) const
     return std::make_pair(success, outstr);
 }
 
+Target: xml2atts
 Function: SetNumControlPoints
 Declaration: void SetNumControlPoints(const int n);
 Definition:

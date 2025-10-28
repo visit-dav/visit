@@ -11,6 +11,7 @@ PyGlobalLineoutAttributes_GetLogString()
     return s;
 }
 
+Target: xml2python
 Function: PyGlobalLineoutAttributes_CallLogRoutine
 Declaration: static void PyGlobalLineoutAttributes_CallLogRoutine(Subject *subj, void *data)
 Definition:

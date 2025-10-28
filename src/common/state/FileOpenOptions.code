@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: MergeNewFromPluginInfo
 Declaration: void MergeNewFromPluginInfo(const DBPluginInfoAttributes*);
 Definition:
@@ -136,47 +137,7 @@ FileOpenOptions::MergeNewFromPluginInfo(const DBPluginInfoAttributes *dbinfo)
     }
 }
 
-Function: GetOpenOptionsForID
-Declaration: const DBOptionsAttributes *GetOpenOptionsForID(const std::string&);
-Definition:
-const DBOptionsAttributes*
-FileOpenOptions::GetOpenOptionsForID(const std::string &id)
-{
-    for (size_t i=0; i<typeIDs.size(); i++)
-    {
-        if (typeIDs[i] == id)
-            return (const DBOptionsAttributes*)(openOptions[i]);
-    }
-    return NULL;
-}
-
-Function: IsIDEnabled
-Declaration: bool IsIDEnabled(const std::string&);
-Definition:
-// ****************************************************************************
-// Method:  FileOpenOptions::IsIDEnabled
-//
-// Purpose:
-//   Convenience function to find the Enabled value for the given id.
-//
-// Arguments:
-//   id         the id for which to search
-//
-// Programmer:  Jeremy Meredith
-// Creation:    December 30, 2009
-//
-// ****************************************************************************
-bool
-FileOpenOptions::IsIDEnabled(const std::string &id)
-{
-    for (size_t i=0; i<typeIDs.size(); i++)
-    {
-        if (typeIDs[i] == id)
-            return Enabled[i];
-    }
-    return true; // default is what, true?
-}
-
+Target: xml2atts
 Function: AddAssumedFormatsToPreferred
 Declaration: void AddAssumedFormatsToPreferred(const stringVector &formats);
 Definition:
@@ -229,7 +190,7 @@ FileOpenOptions::AddAssumedFormatsToPreferred(const stringVector &given)
     SelectPreferredIDs();
 }
 
-
+Target: xml2atts
 Function: AddFallbackFormatsToPreferred
 Declaration: void AddFallbackFormatsToPreferred(const stringVector &given);
 Definition:
@@ -280,3 +241,47 @@ FileOpenOptions::AddFallbackFormatsToPreferred(const stringVector &given)
     }
     SelectPreferredIDs();
 }
+
+Target: xml2atts
+Function: GetOpenOptionsForID
+Declaration: const DBOptionsAttributes *GetOpenOptionsForID(const std::string&);
+Definition:
+const DBOptionsAttributes*
+FileOpenOptions::GetOpenOptionsForID(const std::string &id)
+{
+    for (size_t i=0; i<typeIDs.size(); i++)
+    {
+        if (typeIDs[i] == id)
+            return (const DBOptionsAttributes*)(openOptions[i]);
+    }
+    return NULL;
+}
+
+Target: xml2atts
+Function: IsIDEnabled
+Declaration: bool IsIDEnabled(const std::string&);
+Definition:
+// ****************************************************************************
+// Method:  FileOpenOptions::IsIDEnabled
+//
+// Purpose:
+//   Convenience function to find the Enabled value for the given id.
+//
+// Arguments:
+//   id         the id for which to search
+//
+// Programmer:  Jeremy Meredith
+// Creation:    December 30, 2009
+//
+// ****************************************************************************
+bool
+FileOpenOptions::IsIDEnabled(const std::string &id)
+{
+    for (size_t i=0; i<typeIDs.size(); i++)
+    {
+        if (typeIDs[i] == id)
+            return Enabled[i];
+    }
+    return true; // default is what, true?
+}
+

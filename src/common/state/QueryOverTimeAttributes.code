@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: CreateNode
 Declaration: virtual bool CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd);
 Definition:
@@ -85,6 +86,7 @@ QueryOverTimeAttributes::CreateNode(DataNode *parentNode, bool completeSave, boo
     return (addToParent || forceAdd);
 }
 
+Target: xml2atts
 Function: SetFromNode
 Declaration: virtual void SetFromNode(DataNode *parentNode);
 Definition:
@@ -158,6 +160,7 @@ PyQueryOverTimeAttributes_GetLogString()
     return s;
 }
 
+Target: xml2python
 Function: PyQueryOverTimeAttributes_CallLogRoutine
 Declaration: static void PyQueryOverTimeAttributes_CallLogRoutine(Subject *subj, void *data)
 Definition:

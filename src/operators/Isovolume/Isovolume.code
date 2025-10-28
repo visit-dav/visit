@@ -1,4 +1,4 @@
 Target: xml2cmake
-Condition:       HAVE_LIBVTKM
-ELinkLibraries:  vtkm::cont vtkm::filter_core vtkm::filter_contour vtkm::filter_entity_extraction vtkm::filter_field_conversion vtkm::worklet vtkm::vtkmdiympi_nompi
+Condition: HAVE_LIBVTKM
+ELinkLibraries: vtkm::cont vtkm::filter_core vtkm::filter_contour vtkm::filter_entity_extraction vtkm::filter_field_conversion vtkm::worklet vtkm::vtkmdiympi_nompi
 

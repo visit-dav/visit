@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: CopyAttributes
 Declaration: virtual bool CopyAttributes(const AttributeGroup *);
 Definition:
@@ -42,6 +43,7 @@ SimilarityTransformAttributes::CopyAttributes(const AttributeGroup *atts)
     return retval;
 }
 
+Target: xml2atts
 Function: CreateCompatible
 Declaration: virtual AttributeSubject *CreateCompatible(const std::string &) const;
 Definition:
@@ -93,6 +95,7 @@ SimilarityTransformAttributes::CreateCompatible(const std::string &tname) const
     return retval;
 }
 
+Target: xml2atts
 Function: SetFromNode
 Declaration: void SetFromNode(DataNode *parentNode)
 Definition:
@@ -234,5 +237,4 @@ SimilarityTransformAttributes::SetFromNode(DataNode *parentNode)
     if((node = searchNode->GetNode("transformVectors")) != 0)
         SetTransformVectors(node->AsBool());
 }
-
 

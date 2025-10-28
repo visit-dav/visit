@@ -1,22 +1,23 @@
 <?xml version="1.0"?>
-  <Plugin name="LCS" type="operator" label="LCS" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" category="Integral Curves" createExpression="true" exprInType="vector" exprOutType="scalar,vector" iconFile="LCS.xpm">
-    <Attribute name="LCSAttributes" purpose="Attributes for LCS" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="LCSAttributes.code">
+  <Plugin name="LCS" type="operator" label="LCS" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="LCS.xpm" category="Integral Curves" createExpression="true" exprInType="vector" exprOutType="scalar,vector">
+    <LDFLAGS>
+      ${NEKTAR++_LIBRARY_DIR}
+      ${NEKTAR++_LIBRARY_DIRS}
+      ${NEKTAR++_TP_LIBRARY_DIRS}
+      ${ACCELERATE_FRAMEWORK_LINK_FLAGS}
+    </LDFLAGS>
     <Files components="E">
       avtLCSFilter.C
       avtLCSFilterFTLE.C
       avtLCSFilterFSLE.C
     </Files>
-    <LDFLAGS>
-      ${NEKTAR++_LIBRARY_DIR} ${NEKTAR++_LIBRARY_DIRS} ${NEKTAR++_TP_LIBRARY_DIRS} ${ACCELERATE_FRAMEWORK_LINK_FLAGS}
-    </LDFLAGS>
-    <LIBS>
-    </LIBS>
     <LIBS components="ESer">
       avtivp_ser
     </LIBS>
     <LIBS components="EPar">
       avtivp_par
     </LIBS>
+    <Attribute name="LCSAttributes" purpose="Attributes for LCS" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="LCSAttributes.code">
       <Enum name="SourceType">
         NativeMesh
         RegularGrid
@@ -107,17 +108,17 @@
         Full
       </Field>
       <Field name="StartPosition" label="Subset Start" type="doubleArray" length="3" enabler="UseDataSetStart:Subset">
-        0.000000
-        0.000000
-        0.000000
+        0
+        0
+        0
       </Field>
       <Field name="UseDataSetEnd" label="End at DataSet Extent" type="enum" subtype="Extents" enabler="sourceType:RegularGrid">
         Full
       </Field>
       <Field name="EndPosition" label="Subset End" type="doubleArray" length="3" enabler="UseDataSetEnd:Subset">
-        1.000000
-        1.000000
-        1.000000
+        1
+        1
+        1
       </Field>
       <Field name="integrationDirection" label="Integration Direction" type="enum" subtype="IntegrationDirection">
         Forward
@@ -126,7 +127,7 @@
         None
       </Field>
       <Field name="auxiliaryGridSpacing" label="Auxiliary grid sspacing" type="double" enabler="auxiliaryGrid:2D">
-        0.000100
+        0.0001
       </Field>
       <Field name="maxSteps" label="Maximum number of steps" type="int">
         1000
@@ -141,7 +142,7 @@
         Largest
       </Field>
       <Field name="eigenWeight" label="Weight" type="double" enabler="eigenComponent:Combination">
-        1.000000
+        1
       </Field>
       <Field name="operatorType" label="Operator type" type="enum" subtype="OperatorType">
         BaseValue
@@ -153,51 +154,51 @@
         false
       </Field>
       <Field name="termSize" label="Size for Termination" type="double" enabler="terminateBySize:true">
-        10.000000
+        10
       </Field>
       <Field name="terminateByDistance" label="Use the distance criteria for termination" type="bool">
         false
       </Field>
       <Field name="termDistance" label="Distance for Termination" type="double" enabler="terminateByDistance:true">
-        10.000000
+        10
       </Field>
       <Field name="terminateByTime" label="Use the time criteria for termination" type="bool">
         false
       </Field>
       <Field name="termTime" label="Time Elapsed for Particle Before Termination" type="double" enabler="terminateByTime:true">
-        10.000000
+        10
       </Field>
       <Field name="maxStepLength" label="maximum step length" type="double">
-        0.100000
+        0.1
       </Field>
       <Field name="limitMaximumTimestep" label="Limit Maximum Timestep (DoPri only)?" type="bool">
         false
       </Field>
       <Field name="maxTimeStep" label="maximum time step length" type="double">
-        0.100000
+        0.1
       </Field>
       <Field name="relTol" label="rel. tolerance" type="double">
-        0.000100
+        0.0001
       </Field>
       <Field name="absTolSizeType" label="AbsoluteToleranceSizeType" type="enum" subtype="SizeType">
         FractionOfBBox
       </Field>
       <Field name="absTolAbsolute" label="abs. tolerance" type="double" enabler="absTolSizeType:Absolute">
-        0.000001
+        1e-06
       </Field>
       <Field name="absTolBBox" label="AbsTolBBox" type="double" enabler="absTolSizeType:FractionOfBBox">
-        0.000001
+        1e-06
       </Field>
       <Field name="fieldType" label="Field" type="enum" subtype="FieldType">
         Default
       </Field>
       <Field name="fieldConstant" label="Constant" type="double" enabler="fieldType:FlashField">
-        1.000000
+        1
       </Field>
       <Field name="velocitySource" label="Starting velocity" type="doubleArray" length="3" enabler="fieldType:FlashField">
-        0.000000
-        0.000000
-        0.000000
+        0
+        0
+        0
       </Field>
       <Field name="integrationType" label="Integrator" type="enum" subtype="IntegrationType">
         DormandPrince
@@ -224,22 +225,22 @@
         false
       </Field>
       <Field name="pathlinesOverrideStartingTime" label="Starting Time" type="double" enabler="pathlines:true">
-        0.000000
+        0
       </Field>
       <Field name="pathlinesPeriod" label="Pathlines Period" type="double">
-        0.000000
+        0
       </Field>
       <Field name="pathlinesCMFE" label="CMFE" type="enum" subtype="PathlinesCMFE">
         POS_CMFE
       </Field>
       <Field name="thresholdLimit" label="Threshold limit" type="double">
-        0.100000
+        0.1
       </Field>
       <Field name="radialLimit" label="Radial crop distance" type="double">
-        0.100000
+        0.1
       </Field>
       <Field name="boundaryLimit" label="Boundary crop distance" type="double">
-        0.100000
+        0.1
       </Field>
       <Field name="seedLimit" label="Maximum number of seeds" type="int">
         10
@@ -263,7 +264,7 @@
         true
       </Field>
       <Field name="criticalPointThreshold" label="criticalPointThreshold" type="double" enabler="issueCriticalPointsWarnings:true">
-        0.001000
+        0.001
       </Field>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>

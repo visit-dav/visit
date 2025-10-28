@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: SetValue1
 Declaration: virtual bool SetValue(const std::string &name, const double &value);
 Definition:

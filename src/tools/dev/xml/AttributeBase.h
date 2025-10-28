@@ -32,6 +32,12 @@
 //    Hank Childs, Mon Nov  8 21:26:55 PST 2010
 //    Make default persistent value be true.
 //
+//    Kathleen Biagas, Tue Sep 30 14:58:55 PDT 2025
+//    Keep track of conditionals (used by xml2cmake).
+//
+//    Kathleen Biagas, Tue Oct 21 2025
+//    Removed conditionals, now completely handled in CodeFile.h
+//
 // ****************************************************************************
 
 class AttributeBase

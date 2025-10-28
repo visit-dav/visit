@@ -5,7 +5,7 @@
     </Files>
     <Attribute name="DisplaceAttributes" purpose="This class contains attributes for the displace operator." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="Displace.code">
       <Field name="factor" label="Displacement multiplier " type="double">
-        1.000000
+        1
       </Field>
       <Field name="variable" label="variable" type="variablename" vartypes="00010000000">
         default
