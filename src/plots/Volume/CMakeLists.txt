@@ -137,6 +137,13 @@ IF(VISIT_PARALLEL)
 ENDIF(VISIT_PARALLEL)
 
 
+if(ICET_FOUND)
+    target_link_libraries(EVolumePlot_ser ${ICET_FULLPATH_LIB})
+    if(PARALLEL)
+       target_link_libraries(EVolumePlot_par ${ICET_FULLPATH_LIB})
+    endif()
+endif()
+
 if(HAVE_ANARI)
     target_sources(GVolumePlot PUBLIC
         anari/AnariVolumeWidget.C)
