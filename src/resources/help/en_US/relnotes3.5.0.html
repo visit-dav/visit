@@ -142,6 +142,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed crash loading SILO files when compiled with version 4.11 of the SILO library.</li>
   <li>Fixed a bug with global mesh expressions causing them to only work on single domain data. They now function across all domains in parallel and in serial.</li>
   <li>Eliminated a couple of memory leaks. The first was in the operator that removes ghost zones and calculates external faces. The second was in the Resample operator.</li>
+  <li>Fixed a crash with Curve plot when Curve contained more than 100000 points.</li>
 </ul>
 
 <a name="Build_features"></a>
