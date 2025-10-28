@@ -155,7 +155,6 @@ PseudocolorViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
 {
     *(PseudocolorAttributes*)atts = *defaultAtts;
 }
-
 // ****************************************************************************
 //  Method: PseudocolorViewerEnginePluginInfo::GetMenuName
 //
