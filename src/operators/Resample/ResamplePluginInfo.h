@@ -56,7 +56,6 @@ class ResampleGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtu
 class ResampleViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginInfo, public virtual ResampleCommonPluginInfo
 {
   public:
-    virtual ~ResampleViewerEnginePluginInfo();
     virtual AttributeSubject *GetClientAtts();
     virtual AttributeSubject *GetDefaultAtts();
     virtual void SetClientAtts(AttributeSubject *atts);

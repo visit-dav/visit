@@ -483,9 +483,6 @@ PlotPluginManager::FreeViewerPluginInfo()
 // Creation:   August 20, 2002
 //
 // Modifications:
-//   Eric Brugger, Mon Oct 27 15:49:49 PDT 2025
-//   Added code to free the client and default attributes since the
-//   enginePluginInfo destructor doesn't.
 //   
 // ****************************************************************************
 
@@ -493,11 +490,7 @@ void
 PlotPluginManager::FreeEnginePluginInfo()
 {
     for (size_t i=0; i<enginePluginInfo.size(); i++)
-    {
-        delete enginePluginInfo[i]->GetClientAtts();
-        delete enginePluginInfo[i]->GetDefaultAtts();
         delete enginePluginInfo[i];
-    }
     enginePluginInfo.clear();
 }
 
@@ -520,6 +513,29 @@ PlotPluginManager::FreeScriptingPluginInfo()
     for (size_t i=0; i<scriptingPluginInfo.size(); i++)
         delete scriptingPluginInfo[i];
     scriptingPluginInfo.clear();
+}
+
+// ****************************************************************************
+//  Method: PlotPluginManager::FreeEnginePluginInfoAtts
+//
+//  Purpose:
+//    Free the engine plugin information AttributeSubjects.
+//
+//  Programmer: Eric Brugger
+//  Creation:   October 28, 2025
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+PlotPluginManager::FreeEnginePluginInfoAtts()
+{
+    for (size_t i=0; i<enginePluginInfo.size(); i++)
+    {
+        delete enginePluginInfo[i]->GetClientAtts();
+        delete enginePluginInfo[i]->GetDefaultAtts();
+    }
 }
 
 // ****************************************************************************
