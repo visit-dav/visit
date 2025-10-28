@@ -2702,7 +2702,7 @@ VisWinRendering::SetMSAASamples(int numSamples)
 //
 // Modifications:
 //   Kathleen Biagas, Thu Oct 16, 2025.
-//   Check of olgWin is valid, prevent possible crash.
+//   Check if olgWin is valid, prevent possible crash.
 //
 // ****************************************************************************
 

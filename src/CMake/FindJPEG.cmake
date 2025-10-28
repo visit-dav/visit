@@ -42,15 +42,18 @@ if(JPEG_DIR)
     if(JPEG_FOUND)
         ####
         # VTK needs this var set in order to find our version of jpeg
-        set(JPEG_LIBRARY ${_jpeg_LIBRARY})
+        #set(JPEG_LIBRARY ${_jpeg_LIBRARY})
         ####
 
         blt_import_library(
             NAME        jpeg
             INCLUDES    $<BUILD_INTERFACE:${_jpeg_INCLUDE_DIR}>
-                        $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/jpeg/include>
+                        $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/jpeg>
             LIBRARIES   $<BUILD_INTERFACE:${_jpeg_LIBRARY}>
             EXPORTABLE  ON)
+
+       # for now, satisfy vtk interface this way
+       add_library(JPEG::JPEG ALIAS jpeg)
 
        # need just the library name for  INSTALL_INTERFACE
         get_filename_component(libjpeg ${_jpeg_LIBRARY} NAME)

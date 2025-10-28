@@ -43,8 +43,6 @@ set(protocol_DEPENDS
     ${vtkjpeg_LIBRARIES}
     ${vtkpng_LIBRARIES}
     ${ALL_THIRDPARTY_IO_LIB}
-    ${MESA_LIB}
-    ${OPENGL_LIBRARIES}
     Threads::Threads)
 
 if(NOT WIN32)

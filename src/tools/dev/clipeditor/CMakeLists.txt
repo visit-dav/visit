@@ -75,8 +75,7 @@ visit_add_executable(
     HEADERS     ${clipeditor_HEADERS}
     INCLUDES    ${CMAKE_CURRENT_SOURCE_DIR}
                 ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
-    DEPENDS_ON  ${RELEVANT_QT_LIBS}
-                ${OPENGL_LIBRARIES})
+    DEPENDS_ON  ${RELEVANT_QT_LIBS})
 
 set_target_properties(clipeditor PROPERTIES AUTOMOC ON)
 

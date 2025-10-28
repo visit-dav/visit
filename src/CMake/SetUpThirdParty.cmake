@@ -340,7 +340,7 @@ function(visit_import_third_party pkg)
             blt_import_library(
                 NAME        ${LNAME}
                 INCLUDES    $<BUILD_INTERFACE:${_${pkg}_INCLUDE_DIR}>
-                            $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/${LNAME}/include>
+                            $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/${LNAME}>
                 EXPORTABLE  ON)
             visit_install_export_targets(${LNAME})
             if(${VISIT_${pkg}_SKIP_INSTALL})
@@ -410,7 +410,7 @@ function(visit_import_third_party pkg)
         blt_import_library(
             NAME        ${LNAME}
             INCLUDES    $<BUILD_INTERFACE:${_${pkg}_INCLUDE_DIR}>
-                        $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/${LNAME}/include>
+                        $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/${LNAME}>
             LIBRARIES   ${buildlibs}
             EXPORTABLE  ON)
 

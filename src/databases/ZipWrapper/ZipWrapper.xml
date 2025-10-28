@@ -7,7 +7,6 @@
     </FilePatterns>
     <Files components="M">
       avtZipWrapperFileFormatInterface.C
-      avtZipWrapperOptions.C
     </Files>
     <Files components="E">
       avtZipWrapperFileFormatInterface.C

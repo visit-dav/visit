@@ -54,7 +54,7 @@ if(ZLIB_DIR)
 
     if(ZLIB_FOUND)
         ## VTK needs this set to find our zlib instead of system
-        set(ZLIB_LIBRARY ${_zlib_LIBRARY})
+        #set(ZLIB_LIBRARY ${_zlib_LIBRARY})
         ###
 
 
@@ -64,6 +64,9 @@ if(ZLIB_DIR)
                         $<INSTALL_INTERFACE:${VISIT_INSTALLED_VERSION_INCLUDE}/zlib>
             LIBRARIES   $<BUILD_INTERFACE:${_zlib_LIBRARY}>
             EXPORTABLE  ON)
+
+        # for now, satisfy vtk interface this way
+        add_library(ZLIB::ZLIB ALIAS zlib)
 
         # need just the library name for  INSTALL_INTERFACE
         get_filename_component(libz ${_zlib_LIBRARY} NAME)

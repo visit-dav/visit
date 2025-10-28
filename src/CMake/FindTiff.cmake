@@ -13,5 +13,7 @@
 
 if(WIN32 AND VISIT_TIFF_DIR)
     visit_import_third_party(TIFF LIBS tiff)
+    # for now, satisfy the vtk interface this way
+    add_library(TIFF::TIFF ALIAS tiff)
 endif()
 

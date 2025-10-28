@@ -8199,7 +8199,7 @@ avtGenericDatabase::ExchangeVariable(avtVarType type,
 //
 //    Kathleen Biagas, Thu Aug 21, 2025
 //    Pass true for 'isPrimary' to ExchangeVariable when exchanging
-//    pipeline primarhy variables.
+//    pipeline primary variables.
 //
 // ****************************************************************************
 
