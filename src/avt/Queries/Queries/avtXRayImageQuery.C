@@ -2677,6 +2677,9 @@ avtXRayImageQuery::WriteBlueprintMetadata(conduit::Node &metadata,
 //    Justin Privitera, Mon Aug  7 15:49:36 PDT 2023
 //    Warn to debug when missing energy group bounds for blueprint output and
 //    when provided energy group bounds are not the right size.
+// 
+//    Justin Privitera, Wed Oct 29 12:12:31 PDT 2025
+//    Adjusted the spatial extents meshes to be centered at the origin.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT

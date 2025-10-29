@@ -146,6 +146,10 @@
 #    demonstrate the nature of the blueprint output like we do in Ascent.
 #    Added divide_emis_by_absorb to the query_result_options class so that
 #    tests can toggle it on and off in creating their conduit baselines.
+# 
+#    Justin Privitera, Wed Oct 29 12:12:31 PDT 2025
+#    Updated spatial extents meshes tests to take into account that now they
+#    are centered at the origin.
 # ----------------------------------------------------------------------------
 
 import os
