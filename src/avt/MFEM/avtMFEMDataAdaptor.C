@@ -1004,8 +1004,8 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
         mfem::Mesh lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::GaussLobatto);
         mfem::FiniteElementSpace lo_fes(&lo_mesh, lo_col, ho_fes->GetVDim());
         mfem::GridFunction lo_gf(&lo_fes);
-        // transform the higher order function to a low order function somehow
-        mfem::OperatorHandle hi_to_lo;
+        // transform the higher order function to a low order function
+        mfem::OperatorHandle hi_to_lo(mfem::Operator::ANY_TYPE);
         lo_fes.GetTransferOperator(*ho_fes, hi_to_lo);
         hi_to_lo.Ptr()->Mult(*gf, lo_gf);
 
