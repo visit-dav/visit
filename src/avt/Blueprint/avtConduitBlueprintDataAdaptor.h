@@ -10,7 +10,9 @@
 //-----------------------------------------------------------------------------
 // mfem includes
 //-----------------------------------------------------------------------------
+#ifdef HAVE_LIBMFEM
 #include <mfem.hpp>
+#endif
 
 //-----------------------------------------------------------------------------
 // vtk forward decls
@@ -107,6 +109,7 @@ public:
                                        const int ndims);
     };
 
+#ifdef HAVE_LIBMFEM
     class AVTBLUEPRINT_API BlueprintToMFEM
     {
     public:
@@ -119,6 +122,7 @@ public:
         static mfem::QuadratureFunction *FieldToMFEMQuadratureFunction(mfem::Mesh *mesh,
                                                                        const conduit::Node &field);
     };
+#endif
 };
 
 #endif
