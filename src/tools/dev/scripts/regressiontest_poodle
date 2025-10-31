@@ -180,6 +180,9 @@
 # 
 #   Cyrus Harrison, 
 #   Removed cuda LD_LIBRARY_PATH Wed Sep 10 11:57:45 PDT 2025
+#
+#   Eric Brugger, Fri Oct 31 13:53:46 PDT 2025
+#   I changed some output to go to the buildlog instead of standard out.
 # 
 
 
