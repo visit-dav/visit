@@ -463,7 +463,7 @@ fi
 cat ./make.out >> ../buildlog
 cat ./make.err >> ../buildlog
 
-echo "Source build completed at: \`date\`"
+echo "Source build completed at: \`date\`" >> ../buildlog
 
 # Copy stripack lib for ffp plugin tests
 cp /usr/workspace/wsa/visit/visit/thirdparty_shared/3.3.2/toss4/stripack/libstripack.so ./lib/.
@@ -476,13 +476,13 @@ if test "$debug" = "true" ; then
 fi
 cd ../
 
-echo "Data build completed at: \`date\`"
+echo "Data build completed at: \`date\`" >> ../buildlog
 
 if test "$debug" = "true" ; then
     echo "Starting install:\`date\`" | mail -s "Starting install" $userEmail
 fi
 
-echo "Starting install:\`date\`"
+echo "Starting install:\`date\`" >> ../buildlog
 
 # Install the package
 version=\`cat $repoDir/src/VERSION\`
@@ -494,13 +494,13 @@ if test "$debug" = "true" ; then
 fi
 cat ./install_log >> ../buildlog
 
-echo "Install completed at: \`date\`"
+echo "Install completed at: \`date\`" >> ../buildlog
 
 if test "$debug" = "true" ; then
     echo "Starting tests:\`date\`" | mail -s "Starting tests" $userEmail
 fi
 
-echo "Starting tests:\`date\`"
+echo "Starting tests:\`date\`" >> ../buildlog
 
 # Run the tests, consolidating the results in one directory
 cd $testDir/$workingDir/build/test
@@ -513,7 +513,7 @@ for m in \$modes; do
         echo "runtest with mode = \$m" | mail -s "runtest with mode = \$m" $userEmail
     fi
 
-    echo "runtest with mode = \$m"
+    echo "runtest with mode = \$m" >> ../../buildlog
 
 
     # Run the test
@@ -524,7 +524,7 @@ for m in \$modes; do
     if test "$debug" = "true" ; then
         echo "Test \$m completed at: \`date\`" | mail -s "Tests completed" $userEmail
     fi
-    echo "Test \$m completed at: \`date\`"
+    echo "Test \$m completed at: \`date\`" >> ../../buildlog
 done
 
 EOF
