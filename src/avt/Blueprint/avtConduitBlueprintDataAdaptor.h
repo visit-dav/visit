@@ -115,6 +115,9 @@ public:
 
         static mfem::GridFunction *FieldToMFEM(mfem::Mesh *mesh,
                                                const conduit::Node &field);
+
+        static mfem::QuadratureFunction *FieldToMFEMQuadratureFunction(mfem::Mesh *mesh,
+                                                                       const conduit::Node &field);
     };
 };
 

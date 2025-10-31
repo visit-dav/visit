@@ -582,8 +582,17 @@ class CMakeGeneratorPlugin : public Plugin
         }
     }
 
+    // ----------------------------------------------------------------
+    //  Modifications:
+    //    Kathleen Biagas, Tue Oct 21, 2025
+    //    Added 'prefix' argument that specifies whether we want the
+    //    'Prefix' code (prefix==true) or 'Postfix' code (prefix == false).
+    //    Updated logic accordingly and added a beginning newline to keep
+    //    the CMakeLists.txt legible.
+    // ----------------------------------------------------------------
+
     void
-    WriteCMake_AdditionalCode(QTextStream &out)
+    WriteCMake_AdditionalCode(QTextStream &out, bool prefix)
     {
         if (atts != NULL && atts->codeFile != NULL)
         {
@@ -593,13 +602,13 @@ class CMakeGeneratorPlugin : public Plugin
             {
                 if (targets[i] == "xml2cmake")
                 {
-                    if (!first[i].isEmpty())
+                    if (prefix && !first[i].isEmpty())
                     {
-                        out << first[i] << Endl;
+                        out << "\n" << first[i] << Endl;
                     }
-                    if (!second[i].isEmpty())
+                    else if (!prefix && !second[i].isEmpty())
                     {
-                        out << second[i] << Endl;
+                        out << "\n" << second[i] << Endl;
                     }
                 }
             }
@@ -739,6 +748,13 @@ class CMakeGeneratorPlugin : public Plugin
         return false;
     }
 
+    // ----------------------------------------------------------------
+    //  Modifications:
+    //    Kathleen Biagas, Tue Oct 21, 2025
+    //    Added Calls to WriteCMake_AdditionalCode to get Prefix and
+    //    Postfix 'Code:' logic if present.
+    // ----------------------------------------------------------------
+
     void WriteCMake_PlotOperator(QTextStream &out,
                          const QString &guilibname,
                          const QString &viewerlibname)
@@ -752,6 +768,9 @@ class CMakeGeneratorPlugin : public Plugin
             out << "ADD_" << type.toUpper() << "_CODE_GEN_TARGETS(" << name << ")" << Endl;
             out << Endl;
         }
+
+        WriteCMake_AdditionalCode(out, true);
+
         out << "SET(COMMON_SOURCES" << Endl;
         out << name << "PluginInfo.C" << Endl;
         out << name << "CommonPluginInfo.C" << Endl;
@@ -995,6 +1014,8 @@ class CMakeGeneratorPlugin : public Plugin
 
         CMakeAdd_EngineTargets(out);
 
+        WriteCMake_AdditionalCode(out, false);
+
         out << "VISIT_INSTALL_" << type.toUpper() << "_PLUGINS(${INSTALLTARGETS})" << Endl;
 
         if (using_dev)
@@ -1012,6 +1033,13 @@ class CMakeGeneratorPlugin : public Plugin
 #endif
     }
 
+    // ----------------------------------------------------------------
+    //  Modifications:
+    //    Kathleen Biagas, Tue Oct 21, 2025
+    //    Added Calls to WriteCMake_AdditionalCode to get Prefix and
+    //    Postfix 'Code:' logic if present.
+    // ----------------------------------------------------------------
+
     void WriteCMake_Database(QTextStream &out)
     {
         bool useFortran = false;
@@ -1026,6 +1054,9 @@ class CMakeGeneratorPlugin : public Plugin
         out << ")" << Endl;
         out << Endl;
         }
+
+        WriteCMake_AdditionalCode(out, true);
+
         out << "SET(COMMON_SOURCES" << Endl;
         out << ""<<name<<"PluginInfo.C" << Endl;
         out << ""<<name<<"CommonPluginInfo.C" << Endl;
@@ -1221,6 +1252,9 @@ class CMakeGeneratorPlugin : public Plugin
         {
             CMakeAdd_EngineTargets(out);
         }
+
+        WriteCMake_AdditionalCode(out, false);
+
         out << "VISIT_INSTALL_DATABASE_PLUGINS(${INSTALLTARGETS})" << Endl;
         if (using_dev)
         {
@@ -1231,6 +1265,13 @@ class CMakeGeneratorPlugin : public Plugin
         out << Endl;
     }
 
+    // ----------------------------------------------------------------
+    //  Modifications:
+    //    Kathleen Biagas, Tue Oct 21, 2025
+    //    Removed call to WriteCMake_AdditionalCode.  The calls are
+    //    now made in WriteCMake_Database and WriteCMake_PlotOperator
+    //    functions to handle both Prefix and Postfix code.
+    // ----------------------------------------------------------------
     void WriteCMake(QTextStream &out)
     {
         const char *visithome = getenv("VISITARCHHOME");
@@ -1329,8 +1370,6 @@ class CMakeGeneratorPlugin : public Plugin
             WriteCMake_Database(out);
         else
             WriteCMake_PlotOperator(out, guilibname, viewerlibname);
-
-        WriteCMake_AdditionalCode(out);
     }
 
 private:
