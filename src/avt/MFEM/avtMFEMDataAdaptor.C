@@ -485,7 +485,7 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
         AVT_MFEM_EXCEPTION1(InvalidVariableException,
                             "TODO MFEM LOR refinement method not implemented: " << ref_method);
     }
-    else if (ref_method == refinementMethod::LOR_Nodal_Projection)
+    else if (ref_method == refinementMethod::LOR_Zonal_Projection)
     {
         AVT_MFEM_EXCEPTION1(InvalidVariableException,
                             "TODO MFEM LOR refinement method not implemented: " << ref_method);
@@ -1021,7 +1021,7 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
         AVT_MFEM_EXCEPTION1(InvalidVariableException,
                             "TODO MFEM LOR refinement method not implemented: " << ref_method);
     }
-    else if (ref_method == refinementMethod::LOR_Nodal_Projection)
+    else if (ref_method == refinementMethod::LOR_Zonal_Projection)
     {
         AVT_MFEM_EXCEPTION1(InvalidVariableException,
                             "TODO MFEM LOR refinement method not implemented: " << ref_method);
