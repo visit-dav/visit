@@ -29,6 +29,9 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}
 
 # Add link directories
 link_directories(${LIBRARY_OUTPUT_DIRECTORY} ${CONDUIT_LIBRARY_DIR})
+if (MFEM_FOUND)
+    link_directories(${MFEM_LIBRARY_DIR})
+endif ()
 
 add_library(avtblueprint ${AVTBLUEPRINT_SOURCES})
 
@@ -37,7 +40,6 @@ set(vtklibs lightweight_visit_vtk VTK::CommonCore VTK::FiltersCore)
 target_link_libraries(avtblueprint visitcommon ${CONDUIT_LIB} ${vtklibs})
 if (MFEM_FOUND)
     target_link_libraries(avtblueprint avtmfem ${MFEM_LIB})
-    link_directories(${LIBRARY_OUTPUT_DIRECTORY} ${MFEM_LIBRARY_DIR})
 endif ()
 target_include_directories(avtblueprint PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
