@@ -14,6 +14,15 @@
       *.mail
       *.stl
     </FilePatterns>
+    <Files components="M">
+      avtunvFileFormat.C
+      avtunvOptions.C
+    </Files>
+    <Files components="E">
+      avtunvFileFormat.C
+      avtunvWriter.C
+      avtunvOptions.C
+    </Files>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>
