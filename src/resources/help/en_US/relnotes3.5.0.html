@@ -51,6 +51,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Ghost Zone exchange was enhanced to handle not only scalars, material species, and vectors as before, but also tensors, symmetric tensors, and array variables.</li>
   <li>The <code>-compositer-debug</code> command line option was added, which dumps intermediate image results during the compositing process of scalable rendering.</li>
+  <li>Added host profiles for ANL systems Aurora and Polaris. Removed hosts for ANL systems Cooley and Theta, as they were decommissioned.</li>
 </ul>
 
 <a name="GUI_changes"></a>
@@ -84,6 +85,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug in the Blueprint reader causing unstructured points topology fields to display incorrectly.</li>
   <li>Fixed a bug in the Blueprint reader causing successful reading of Sidre data to trigger the failure case, leading to significantly degraded performance.</li>
   <li>The VisItXdmf reader has been removed, it hasn't been maintained. The Xdmf reader that utilizes the Xdmf library is still available.</li>
+  <li>Added support for MFEM Quadrature Functions to the MFEM and Blueprint database plugins.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -142,6 +144,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed crash loading SILO files when compiled with version 4.11 of the SILO library.</li>
   <li>Fixed a bug with global mesh expressions causing them to only work on single domain data. They now function across all domains in parallel and in serial.</li>
   <li>Eliminated a couple of memory leaks. The first was in the operator that removes ghost zones and calculates external faces. The second was in the Resample operator.</li>
+  <li>Fixed a crash with Curve plot when Curve contained more than 100000 points.</li>
 </ul>
 
 <a name="Build_features"></a>

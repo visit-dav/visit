@@ -75,6 +75,9 @@ class ScriptingOperatorPluginInfo;
 //    I added stuff to enable categories to be accessed for any plugin whose
 //    libI was loaded.
 //
+//    Eric Brugger, Tue Oct 28 13:39:08 PDT 2025
+//    I added FreeEnginePluginInfoAtts.
+//
 // ****************************************************************************
 
 class PLUGIN_API OperatorPluginManager : public PluginManager
@@ -88,6 +91,8 @@ class PLUGIN_API OperatorPluginManager : public PluginManager
                                                const char *pluginDir = 0,
                                                bool readInfo = true,
                                                PluginBroadcaster *broadcaster=0);
+
+    void                            FreeEnginePluginInfoAtts();
 
     virtual void                    ReloadPlugins();
 
