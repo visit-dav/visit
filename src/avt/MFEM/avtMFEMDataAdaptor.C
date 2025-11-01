@@ -28,6 +28,7 @@
 // visit includes
 //-----------------------------------------------------------------------------
 #include "InvalidVariableException.h"
+#include <StringHelpers.h>
 
 #include "avtMFEMLogging.h"
 
@@ -676,6 +677,50 @@ avtMFEMDataAdaptor::BoundaryMeshToVTK(mfem::Mesh *mesh)
     return ugrid;
 }
 
+// ****************************************************************************
+//  Method: QuadratureFunctionMeshToVTK
+//
+//  Purpose:
+//    Constructs a vtkUnstructuredGrid that represents an mfem quad pts mesh.
+//
+//  Arguments:
+//    mesh:        MFEM mesh
+//.   order:       Quad Func Order
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Fri Sep 26 09:16:26 PDT 2025
+//
+// ****************************************************************************
+vtkDataSet *
+avtMFEMDataAdaptor::QuadratureFunctionMeshToVTK(mfem::Mesh *mesh, int order)
+{
+    vtkDataSet *rv = nullptr;
+   
+    // refine the mesh
+    // gauss p points, we use gauss lobatto lor'd mesh with p + 1
+    // we use the mfem quad function to get the right numbers
+
+    ///
+    // this logic for order and ref_factor is from glviz
+    // assume identical order
+    // const int order = quad_f->GetIntRule(0).GetOrder()/2; // <-- Gauss-Legendre
+    //
+    // The order which can be perfectly integated is equal to (2 * p -1) quad points
+    // gauss lobatto lor'd mesh with p + 1 == order / 2 +1
+    const int qpts_order = order / 2;
+    const int ref_factor = qpts_order + 1;
+    ///
+    
+    // Note:
+    // mfem::BasisType::ClosedGL is what glviz uses
+    mfem::Mesh lo_mesh = mfem::Mesh::MakeRefined(*mesh,
+                                                 ref_factor,
+                                                 mfem::BasisType::GaussLobatto);
+    
+
+    vtkDataSet *res_ds = LowOrderMeshToVTK(&lo_mesh);
+    return res_ds;
+}
 
 // ****************************************************************************
 //  Method: LegacyRefineGridFunctionToVTK
@@ -1190,4 +1235,295 @@ avtMFEMDataAdaptor::BoundaryAttributeToVTK(mfem::Mesh *mesh)
 
     return rv;
 }
+// ****************************************************************************
+//  Method: BoundaryAttributeToVTK
+//
+//  Purpose:
+//   Constructs a vtkDataArray that contains the quad points values
+//   for a mfem mesh. These are piece wise constant.
+//
+//  Arguments:
+//   qf:      MFEM quad function object
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Fri Sep 26 09:16:26 PDT 2025
+//
+//  Modifications:
+//
+// ****************************************************************************
+vtkDataArray *
+avtMFEMDataAdaptor::QuadratureFunctionToVTK(mfem::QuadratureFunction *qf)
+{
+    AVT_MFEM_INFO("Creating MFEM Quadrature Function")
 
+    //mfem::QuadratureSpace *qspace = qf->FESpace();
+    const int vdim = qf->GetVDim();
+    const int qfsize = qf->Size();
+    const int ntuples = qfsize / vdim;
+
+    const double *values = qf->HostRead();
+
+    AVT_MFEM_INFO("VTKDataArray "
+                    << " quad function mesh elements: " << ntuples
+                    << " vdim: " << vdim << " "
+                    << " quad function total size: " << qfsize);
+
+    vtkDataArray *retval = vtkDoubleArray::New();
+    // vtk reqs us to set number of comps before number of tuples
+    retval->SetNumberOfComponents(vdim == 2 ? 3 : vdim);
+    // set number of tuples
+    retval->SetNumberOfTuples(ntuples);
+
+    if (vdim == 1) // scalar case
+    {
+        for (vtkIdType i = 0; i < ntuples; i ++)
+        {
+            retval->SetComponent(i, 0, (double) values[i]);
+        }
+    }
+    else // vector case
+    {
+        // NOTE: quad function is strided by vdims
+        int idx = 0;
+        for (vtkIdType j = 0; j < ntuples; j ++)
+        {
+            for (int i = 0;  i < vdim; i ++)
+            {
+                retval->SetComponent(j, i, values[idx]);
+                idx++;
+            }
+            // vtk always wants 3d for vector fields
+            if(vdim == 2)
+            {
+                retval->SetComponent(j, 2, 0.0);
+            }
+        }
+
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+//  Method: CheckBasisStringForQuadratureFunction
+//
+//  Purpose:
+//   Checks if the basis string has a `QF_` prefix, which indicates
+//   a QuadratureFunction
+//
+//  Arguments:
+//   basis:     MFEM style basis string
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Fri Oct 10 15:09:42 PDT 2025
+//
+//  Modifications:
+//
+// ****************************************************************************
+bool
+avtMFEMDataAdaptor::CheckBasisStringForQuadratureFunction(const std::string &basis)
+{
+    return basis.find("QF_") != std::string::npos;
+}
+
+// ****************************************************************************
+//  Method: ParseQuadratureFunctionBasisString
+//
+//  Purpose:
+//   Parse Order and VDim details from a Quadrature Function style basis
+//   string.
+//
+//  Arguments:
+//   basis:     MFEM style basis string
+//   qf_order:  Order result
+//   qf_vdim:   VDim Result
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Fri Oct 10 15:09:42 PDT 2025
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+avtMFEMDataAdaptor::ParseQuadratureFunctionBasisString(const std::string &basis,
+                                                       int &qf_order,
+                                                       int &qf_vdim)
+{
+    // the pattern used to encode the quad space params is:
+    // QF_{ORDER}_{VDIM}
+    //
+    // ORDER is the degree of the polynmials for the quad rule
+    // VDIM  is the number of components at each quad point (scalar, vector, etc)
+    //
+    // Note: Order == 2*(quad points) -1
+    //
+    // split to parse
+    std::vector<std::string> toks = StringHelpers::split(basis,'_');
+
+    // there should be 3 tokens
+    if(toks.size() != 3)
+    {
+        //bad qf basis string
+        AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                            "Invalid quadrature function basis string: " << basis  << std::endl
+                            << "Expected: QF_{ORDER}_{VDIM}");
+    }
+
+    // ORDER
+    if(!StringHelpers::StringToInt(toks[1],qf_order))
+    {
+        // error
+        AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                            "Failed to parse quadrature function order from " << toks[1]);
+    }
+    // VDIM
+    if(!StringHelpers::StringToInt(toks[2],qf_vdim))
+    {
+        // error
+        AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                            "Failed to parse quadrature function vdim from " << toks[1]);
+    }
+}
+
+// ****************************************************************************
+//  Method: GenerateQuadratureFunctionBasisString
+//
+//  Purpose:
+//   Create a Quadrature Function Basis String from a QuadratureFunction
+//   object.
+//
+//  Arguments:
+//   qf:     MFEM QuadratureFunction object
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Fri Oct 10 15:09:42 PDT 2025
+//
+//  Modifications:
+//
+// ****************************************************************************
+std::string
+avtMFEMDataAdaptor::GenerateQuadratureFunctionBasisString(mfem::QuadratureFunction *qf)
+{
+    return GenerateQuadratureFunctionBasisString(qf->GetSpace()->GetOrder(),
+                                                 qf->GetVDim());
+}
+// ****************************************************************************
+//  Method: GenerateQuadratureFunctionBasisString
+//
+//  Purpose:
+//   Create a Quadrature Function Basis String for a given order and vdim.
+//
+//  Arguments:
+//   qf_order:  Order
+//   qf_vdim:   VDim
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Fri Oct 10 15:09:42 PDT 2025
+//
+//  Modifications:
+//
+// ****************************************************************************
+std::string
+avtMFEMDataAdaptor::GenerateQuadratureFunctionBasisString(int qf_order,
+                                                          int qf_vdim)
+{
+    std::ostringstream oss;
+    oss << "QF_"<< qf_order << "_" << qf_vdim;
+    return oss.str();
+}
+
+// ****************************************************************************
+//  Method: CheckMeshNameForQuadratureFunctionString
+//
+//  Purpose:
+//   Checks if the mesh name represents a QuadratureFunction mesh.
+//
+//  Arguments:
+//   mesh_name:     Mesh Name
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Mon Oct 27 14:43:23 PDT 2025
+//
+//  Modifications:
+//
+// ****************************************************************************
+bool
+avtMFEMDataAdaptor::CheckMeshNameForQuadratureFunctionString(const std::string &mesh_name)
+{
+    return mesh_name.find("_quad_func_o") != std::string::npos;
+}
+
+// ****************************************************************************
+//  Method: ParseQuadratureFunctionMeshString
+//
+//  Purpose:
+//   Parses the base mesh name and order from a Quadrature Function mesh name
+//
+//  Arguments:
+//   qf_mesh_name:    qf style mesh name
+//   base_mesh_name:  parsed base mesh name (output) 
+//   qf_order:        parsed quad func order (output)
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Fri Oct 10 15:09:42 PDT 2025
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+avtMFEMDataAdaptor::ParseQuadratureFunctionMeshString(const std::string &qf_mesh_name,
+                                                      std::string &base_mesh_name,
+                                                      int &qf_order)
+{
+    qf_order = -1; // -1 == not quad points case
+    base_mesh_name = ""; // empty == not quad points case
+
+    // check for fetch of quad points mesh
+    // {mesh_name}_quad_func_o{order}
+
+    std::string qf_indicator = "_quad_func_o";
+    size_t qf_str_idx = qf_mesh_name.find(qf_indicator);
+    if(qf_str_idx != std::string::npos)
+    {
+        // quadrature points are a special variant of the main mfem mesh
+        // fetch w/o quad pts suffix
+        // extract the order from mesh name
+        std::string order_str = qf_mesh_name.substr(qf_str_idx + qf_indicator.size());
+        base_mesh_name = qf_mesh_name.substr(0, qf_str_idx);
+        // parse order
+        if(!StringHelpers::StringToInt(order_str,qf_order))
+        {
+            // error
+            AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                                "Failed to parse quadrature function mesh order from "
+                                <<order_str);
+        }
+    }
+}
+
+// ****************************************************************************
+//  Method: GenerateQuadratureFunctionMeshName
+//
+//  Purpose:
+//   Creates a Quadrature Function mesh name from base mesh and order
+//
+//  Arguments:
+//   base_mesh:  Base mesh name
+//   qf_order:   Quadrature Function order
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Fri Oct 10 15:09:42 PDT 2025
+//
+//  Modifications:
+//
+// ****************************************************************************
+std::string
+avtMFEMDataAdaptor::GenerateQuadratureFunctionMeshName(const std::string &base_mesh,
+                                                       int qf_order)
+{
+    // the mesh name associated is:
+    // {base_mesh}_quad_func_o{order}
+    std::ostringstream oss;
+    oss << base_mesh << "_quad_func_o" << qf_order;
+    return oss.str();
+}

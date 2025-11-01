@@ -324,6 +324,9 @@ XMLEditCMake::XMLEditCMake(QWidget *p)
 //    Kathleen Biagas, Wed May 4, 2022
 //    Added support for component-specific DEFINES, CXXFLAGS, and LDFLAGS.
 //
+//    Kathleen Biagas, Thu Oct 23, 2025 
+//    Set text of Defines from correct plugin variable. 
+//
 // ****************************************************************************
 void
 XMLEditCMake::UpdateWindowContents()
@@ -336,7 +339,7 @@ XMLEditCMake::UpdateWindowContents()
         CXXFLAGS->setText(JoinValues(p->cxxflags, ' '));
         LDFLAGS->setText(JoinValues(p->ldflags, ' '));
         LIBS->setText(JoinValues(p->libs, ' '));
-        DEFINES->setText(JoinValues(p->libs, ' '));
+        DEFINES->setText(JoinValues(p->defs, ' '));
         // gui
         if (p->customgfiles)
             GFiles->setText(JoinValues(p->gfiles, ' '));
@@ -456,47 +459,55 @@ XMLEditCMake::UpdateWindowContents()
 //    Kathleen Biagas, Wed May 4, 2022
 //    Added support for component-specific DEFINES, CXXFLAGS, and LDFLAGS.
 //
+//    Kathleen Biagas, Thu Oct 23, 2025
+//    Disable Gui and Viewer widgets if plugin type isn't Database.
+//    Only enable MDServer widgets if pluging type is Database.
+//
 // ****************************************************************************
 void
 XMLEditCMake::UpdateWindowSensitivity()
 {
     bool plugin = (xmldoc->docType == "Plugin");
+    bool isDB = plugin && xmldoc->plugin->type == "database";
 
     CXXFLAGS->setEnabled(plugin);
     LDFLAGS->setEnabled(plugin);
     LIBS->setEnabled(plugin);
     DEFINES->setEnabled(plugin);
-    GFiles->setEnabled(plugin && xmldoc->plugin->customgfiles);
-    customGFiles->setEnabled(plugin);
-    GLibs->setEnabled(plugin && xmldoc->plugin->customglibs);
-    customGLibs->setEnabled(plugin);
+    GFiles->setEnabled(plugin && !isDB && xmldoc->plugin->customgfiles);
+    customGFiles->setEnabled(plugin && !isDB);
+    GLibs->setEnabled(plugin && !isDB  && xmldoc->plugin->customglibs);
+    customGLibs->setEnabled(plugin && !isDB);
     SFiles->setEnabled(plugin && xmldoc->plugin->customsfiles);
     customSFiles->setEnabled(plugin);
-    VFiles->setEnabled(plugin && xmldoc->plugin->customvfiles);
-    customVFiles->setEnabled(plugin);
-    VLibs->setEnabled(plugin && xmldoc->plugin->customvlibs);
-    customVLibs->setEnabled(plugin);
-    MFiles->setEnabled(plugin && xmldoc->plugin->custommfiles);
-    customMFiles->setEnabled(plugin);
-    MLibs->setEnabled(plugin && xmldoc->plugin->custommlibs);
-    customMLibs->setEnabled(plugin);
+    VFiles->setEnabled(plugin && !isDB && xmldoc->plugin->customvfiles);
+    customVFiles->setEnabled(plugin && !isDB);
+    VLibs->setEnabled(plugin && !isDB && xmldoc->plugin->customvlibs);
+    customVLibs->setEnabled(plugin && !isDB);
+    MFiles->setEnabled(plugin && isDB && xmldoc->plugin->custommfiles);
+    customMFiles->setEnabled(plugin && isDB);
+    MLibs->setEnabled(plugin && isDB && xmldoc->plugin->custommlibs);
+    customMLibs->setEnabled(plugin && isDB);
     EFiles->setEnabled(plugin && xmldoc->plugin->customefiles);
     customEFiles->setEnabled(plugin);
     ELibsSer->setEnabled(plugin && xmldoc->plugin->customelibsSer);
     customELibsSer->setEnabled(plugin);
     ELibsPar->setEnabled(plugin && xmldoc->plugin->customelibsPar);
     customELibsPar->setEnabled(plugin);
-    WFiles->setEnabled(plugin && xmldoc->plugin->customwfiles);
-    customWFiles->setEnabled(plugin);
-    VWFiles->setEnabled(plugin && xmldoc->plugin->customvwfiles);
-    customVWFiles->setEnabled(plugin);
-    engSpecificCode->setEnabled(plugin);
-    // only enable for a database plugin
-    mdSpecificCode->setEnabled(plugin && xmldoc->plugin->type =="database");
 
-    MCXXFlags->setEnabled(plugin);
-    MLDFlags->setEnabled(plugin);
-    MDefines->setEnabled(plugin);
+    WFiles->setEnabled(plugin  && !isDB && xmldoc->plugin->customwfiles);
+    customWFiles->setEnabled(plugin && !isDB);
+    VWFiles->setEnabled(plugin && !isDB && xmldoc->plugin->customvwfiles);
+    customVWFiles->setEnabled(plugin && !isDB);
+
+    engSpecificCode->setEnabled(plugin);
+
+    // only enable for a database plugin
+    mdSpecificCode->setEnabled(plugin && isDB);
+
+    MCXXFlags->setEnabled(plugin && isDB);
+    MLDFlags->setEnabled(plugin && isDB);
+    MDefines->setEnabled(plugin && isDB);
 
     ECXXFlagsSer->setEnabled(plugin);
     ELDFlagsSer->setEnabled(plugin);

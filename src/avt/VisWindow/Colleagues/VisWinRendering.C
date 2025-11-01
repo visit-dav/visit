@@ -287,6 +287,11 @@ vtkStandardNewMacro(vtkBackgroundPass);
 //   Kathleen Biagas, Wed Oct 1, 2025
 //   Removed vtkLogger settings, now handled in InitVTKLite.
 //
+//   Eric Brugger, Fri Oct 31 10:52:11 PDT 2025
+//   Added the render event vtkCallbackCommand pointer to the class so
+//   that it could be explicitly deleted since it wasn't getting deleted
+//   using a vtkSmartPointer.
+//
 // ****************************************************************************
 
 VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
@@ -309,7 +314,8 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
     scalableAutoThreshold(RenderingAttributes::DEFAULT_SCALABLE_ACTIVATION_MODE),
     compactDomainsActivationMode(RenderingAttributes::DEFAULT_COMPACT_DOMAINS_ACTIVATION_MODE),
     compactDomainsAutoThreshold(RenderingAttributes:: DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD),
-    setRenderUpdate(true)
+    setRenderUpdate(true),
+    command(NULL)
 {
     background = vtkRenderer::New();
     background->SetInteractive(0);
@@ -381,8 +387,13 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
 //    Moved the deletion of the render window to the end to the end of the
 //    routine to avoid a crash.
 //
-//   Kathleen Biagas, Wed Aug 17, 2022
-//   Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9.
+//    Kathleen Biagas, Wed Aug 17, 2022
+//    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9.
+//
+//    Eric Brugger, Fri Oct 31 10:52:11 PDT 2025
+//    Added the render event vtkCallbackCommand pointer to the class so
+//    that it could be explicitly deleted since it wasn't getting deleted
+//    using a vtkSmartPointer.
 //
 // ****************************************************************************
 
@@ -402,6 +413,11 @@ VisWinRendering::~VisWinRendering()
     {
         foreground->Delete();
         foreground = nullptr;
+    }
+    if (command != nullptr)
+    {
+        command->Delete();
+        command = nullptr;
     }
 #if defined(HAVE_OSPRAY)
     if (osprayPass != nullptr)
@@ -443,6 +459,11 @@ VisWinRendering::~VisWinRendering()
 //    Burlen Loring, Thu Oct  8 10:38:18 PDT 2015
 //    fix a compiler warning
 //
+//    Eric Brugger, Fri Oct 31 10:52:11 PDT 2025
+//    Added the render event vtkCallbackCommand pointer to the class so
+//    that it could be explicitly deleted since it wasn't getting deleted
+//    using a vtkSmartPointer.
+//
 // ****************************************************************************
 
 static void renderEventCallback(vtkObject*, unsigned long, void* clientdata, void* calldata)
@@ -466,7 +487,7 @@ VisWinRendering::InitializeRenderWindow(vtkRenderWindow *renWin)
         renWin->SetStereoCapableWindow(1);
     }
 
-    vtkSmartPointer<vtkCallbackCommand> command = vtkCallbackCommand::New();
+    command = vtkCallbackCommand::New();
     command->SetCallback(renderEventCallback);
     command->SetClientData(this);
 

@@ -691,6 +691,66 @@ JSONRoot::ParseJSONFile(const std::string &json_root_file)
     ParseJSONString(json, root_dir);
 }
 
+// ****************************************************************************
+//  Method: ExtractJSONValue
+//
+//  Purpose: Helper to convert parsed JSON value to a tag string
+//
+//  Programmer:  Cyrus Harrison
+//  Creation:    Tue Sep 30 09:19:42 PDT 2025
+//
+//  Modifications:
+//
+// **************************************************************************** 
+std::string
+ExtractJSONValue(const rapidjson::Value &val)
+{
+    std::ostringstream oss;
+    // json root api provides strings, but value may not be a string,
+    // it could be a number.
+    //
+    // fetching wrong type will lead to crash, so handle string + 
+    // all numeric cases.
+    if(val.IsString())
+    {
+        oss << val.GetString();
+    }
+    else if(val.IsNumber())
+    {
+        if(val.IsUint())
+        {
+            oss << val.GetUint();
+        }
+        else if(val.IsInt())
+        {
+            oss << val.GetInt();
+        }
+        else if(val.IsUint64())
+        {
+            oss << val.GetUint64();
+        }
+        else if(val.IsInt64())
+        {
+            oss << val.GetInt64();
+        }
+        else if(val.IsDouble())
+        {
+            oss << val.GetDouble();
+        }
+    }
+    else
+    {
+        // unsupported tag type
+        ostringstream msg;
+        msg << "Unsupported JSON tag type: " << val.GetType()
+            << ", tags must be a JSON string or number";
+        EXCEPTION1(InvalidFilesException, msg.str());
+    }
+
+    return oss.str();
+ 
+}
+
 
 // ****************************************************************************
 //  Method: JSONRoot::ParseJSONString
@@ -710,6 +770,9 @@ JSONRoot::ParseJSONFile(const std::string &json_root_file)
 //
 //   Cyrus Harrison, Fri Mar  3 10:50:30 PST 2023
 //   Refactor to split parsing json string and reading from file
+//
+//   Cyrus Harrison, Tue Sep 30 09:17:07 PDT 2025
+//   Support numeric tags.
 //
 // **************************************************************************** 
 void 
@@ -767,8 +830,8 @@ JSONRoot::ParseJSONString(const std::string &json,
                     const rapidjson::Value &mesh_tags = json_dset["mesh"]["tags"];
                     for (rapidjson::Value::ConstMemberIterator tags_itr = mesh_tags.MemberBegin(); 
                          tags_itr != mesh_tags.MemberEnd(); ++tags_itr)
-                    {      
-                        curr_dset.Mesh().Tag(tags_itr->name.GetString()) = tags_itr->value.GetString();
+                    {
+                        curr_dset.Mesh().Tag(tags_itr->name.GetString()) = ExtractJSONValue(tags_itr->value);
                     }
                 }
                 // handle fields
@@ -786,8 +849,8 @@ JSONRoot::ParseJSONString(const std::string &json,
                         const rapidjson::Value &json_tags = json_field["tags"];
                         for (rapidjson::Value::ConstMemberIterator tags_itr = json_tags.MemberBegin(); 
                              tags_itr != json_tags.MemberEnd(); ++tags_itr)
-                        {      
-                            curr_field.Tag(tags_itr->name.GetString()) = tags_itr->value.GetString();
+                        {
+                            curr_field.Tag(tags_itr->name.GetString()) = ExtractJSONValue(tags_itr->value);
                         }
                      }
                  }
