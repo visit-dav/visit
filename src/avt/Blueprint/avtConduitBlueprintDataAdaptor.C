@@ -38,8 +38,6 @@
 using namespace conduit;
 
 
-#include <avtMFEMDataAdaptor.h>
-
 // ****************************************************************************
 //  Method: Initialize
 //
@@ -2784,6 +2782,8 @@ ConduitElementShapeSize(const std::string &shape_name)
 #ifdef HAVE_LIBMFEM
 
 using namespace mfem;
+
+#include <avtMFEMDataAdaptor.h>
 
 // ****************************************************************************
 mfem::Geometry::Type

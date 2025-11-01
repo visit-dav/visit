@@ -37,12 +37,17 @@ add_library(avtblueprint ${AVTBLUEPRINT_SOURCES})
 
 set(vtklibs lightweight_visit_vtk VTK::CommonCore VTK::FiltersCore)
 
-target_link_libraries(avtblueprint visitcommon ${CONDUIT_LIB} ${vtklibs})
-if (MFEM_FOUND)
-    target_link_libraries(avtblueprint avtmfem ${MFEM_LIB})
-endif ()
+target_link_libraries(avtblueprint PUBLIC
+    visitcommon
+    ${CONDUIT_LIB}
+    ${vtklibs}
+    $<$<BOOL:"${MFEM_FOUND}">:avtmfem ${MFEM_LIB}>
+)
+
 target_include_directories(avtblueprint PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
+    ${CONDUIT_INCLUDE_DIR}
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<$<BOOL:"${MFEM_FOUND}">:${MFEM_INCLUDE_DIR}>
 )
 
 VISIT_INSTALL_TARGETS(avtblueprint)

@@ -4,6 +4,7 @@
 
 #ifndef AVT_CONDUIT_BLUEPRINT_DATA_ADAPTOR_H
 #define AVT_CONDUIT_BLUEPRINT_DATA_ADAPTOR_H
+#include <visit-config.h>
 #include <avtblueprint_exports.h>
 #include <conduit.hpp>
 
