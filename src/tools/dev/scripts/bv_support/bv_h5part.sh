@@ -528,14 +528,10 @@ function build_h5part
     fi
 
     if [[ "$OPSYS" == "Darwin" ]]; then
-        export DYLD_LIBRARY_PATH="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib":\
-               "$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":\
-               $DYLD_LIBRARY_PATH
+        export DYLD_LIBRARY_PATH="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib:$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib:$DYLD_LIBRARY_PATH"
         SOARG="--enable-shared"
     else
-        export LD_LIBRARY_PATH="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib":\
-               "$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":\
-               $LD_LIBRARY_PATH
+        export LD_LIBRARY_PATH="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib:$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib:$LD_LIBRARY_PATH"
         SOARG=""
     fi
     if [[ "$FC_COMPILER" == "no" ]] ; then
