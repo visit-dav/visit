@@ -27,6 +27,7 @@
 #include <AnariAttributes.h>
 #endif
 
+class vtkCallbackCommand;
 class vtkInteractorStyle;
 class vtkPolyDataMapper2D;
 class vtkRenderer;
@@ -239,6 +240,11 @@ class VisWindowColleagueProxy;
 //
 //    Kevin Griffin, Tue Sep 16, 2025
 //    Switched to using AnariAttributes.
+//
+//    Eric Brugger, Fri Oct 31 10:52:11 PDT 2025
+//    Added the render event vtkCallbackCommand pointer to the class so
+//    that it could be explicitly deleted since it wasn't getting deleted
+//    using a vtkSmartPointer.
 //
 // ****************************************************************************
 
@@ -524,6 +530,7 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     int                           compactDomainsAutoThreshold;
 
     // render options
+    vtkCallbackCommand           *command {nullptr};
     bool                          setRenderUpdate;
     void                          InitializeRenderWindow(vtkRenderWindow *);
     void                          ResetCounters();
