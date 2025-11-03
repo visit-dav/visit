@@ -465,6 +465,9 @@ function(visit_import_third_party pkg)
             endif()
         endif()
         set(${pkg}_FOUND true CACHE BOOL "${pkg} library found" FORCE)
+        foreach(l ${tplibs})
+           unset(${l} CACHE)
+        endforeach()
     endif()
 endfunction()
 
@@ -588,3 +591,4 @@ if(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 endif()
 
 unset(VISIT_TP_PERMS)
+

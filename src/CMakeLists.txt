@@ -1021,6 +1021,9 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/CMake/visitConfig.cmake
 
 # install the target files
 install(EXPORT visitTargets
-        NAMESPACE visit::
+        DESTINATION ${VISIT_INSTALLED_VERSION}/cmake)
+
+# install BLT
+install(DIRECTORY ${VISIT_SOURCE_DIR}/blt
         DESTINATION ${VISIT_INSTALLED_VERSION}/cmake)
 

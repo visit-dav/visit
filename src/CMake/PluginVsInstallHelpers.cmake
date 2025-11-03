@@ -42,29 +42,19 @@
 #******************************************************************************
 
 
-
-foreach(VTK_TARGET ${VTK_LIBRARIES})
-    if(TARGET ${VTK_TARGET})
-        list(APPEND VTK_VALID_TARGETS  ${VTK_TARGET})
-    endif()
-endforeach()
-
-
 # needed by PluginVsInstall
 
-install(FILES ${VISIT_SOURCE_DIR}/CMake/VisItMacros.cmake
-        DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}
-        PERMISSIONS OWNER_READ OWNER_WRITE
-                    GROUP_READ GROUP_WRITE
-                    WORLD_READ
-        )
+install(
+    FILES       ${VISIT_SOURCE_DIR}/CMake/CheckMinimumCompilerVersion.cmake
+                ${VISIT_SOURCE_DIR}/CMake/FindDependencies.cmake
+                ${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake
+                ${VISIT_SOURCE_DIR}/CMake/SetupBLT.cmake
+                ${VISIT_SOURCE_DIR}/CMake/VisItMacros.cmake
+    DESTINATION ${VISIT_INSTALLED_VERSION}/cmake
+    PERMISSIONS OWNER_READ OWNER_WRITE
+                GROUP_READ GROUP_WRITE
+                WORLD_READ)
 
-install(FILES ${VISIT_SOURCE_DIR}/CMake/CheckMinimumCompilerVersion.cmake
-        DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}
-        PERMISSIONS OWNER_READ OWNER_WRITE
-                    GROUP_READ GROUP_WRITE
-                    WORLD_READ
-        )
 
 # extract just the filename from these TP libs that specify full path
 set(check_libs SILO XDMF OPENEXR)
@@ -242,7 +232,7 @@ else(NOT WIN32)
         file(WRITE ${VISIT_BINARY_DIR}/CMake/VisItGenerator.cmake
             "set(CMAKE_GENERATOR \"${CMAKE_GENERATOR}\" CACHE INTERNAL \"\" FORCE)")
         install(FILES ${VISIT_BINARY_DIR}/CMake/VisItGenerator.cmake
-                DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}
+                DESTINATION ${VISIT_INSTALLED_VERSION}/cmake
                 PERMISSIONS OWNER_READ OWNER_WRITE
                             GROUP_READ GROUP_WRITE
                             WORLD_READ
@@ -334,20 +324,20 @@ unset(filtered_VISIT_PARALLEL_INCLUDE)
 # Done with Creating CMake/PluginVsInstall.cmake
 #-----------------------------------------------------------------------------
 
-export_library_dependencies(${VISIT_BINARY_DIR}/include/VisItLibraryDependencies.cmake.in)
+#export_library_dependencies(${VISIT_BINARY_DIR}/include/VisItLibraryDependencies.cmake.in)
 
 
 
-configure_file(${VISIT_SOURCE_DIR}/CMake/FilterDependencies.cmake.in
-              ${VISIT_BINARY_DIR}/include/FilterDependencies.cmake
-              @ONLY)
-install(SCRIPT "${VISIT_BINARY_DIR}/include/FilterDependencies.cmake")
+#configure_file(${VISIT_SOURCE_DIR}/CMake/FilterDependencies.cmake.in
+#              ${VISIT_BINARY_DIR}/include/FilterDependencies.cmake
+#              @ONLY)
+#install(SCRIPT "${VISIT_BINARY_DIR}/include/FilterDependencies.cmake")
 
-install(FILES
-        ${VISIT_BINARY_DIR}/include/VisItLibraryDependencies.cmake
-        DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}
-        PERMISSIONS OWNER_READ OWNER_WRITE
-                    GROUP_READ GROUP_WRITE
-                    WORLD_READ
-        )
+#install(FILES
+#        ${VISIT_BINARY_DIR}/include/VisItLibraryDependencies.cmake
+#        DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}
+#        PERMISSIONS OWNER_READ OWNER_WRITE
+#                    GROUP_READ GROUP_WRITE
+#                    WORLD_READ
+#        )
 
