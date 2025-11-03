@@ -202,4 +202,25 @@ SaveWindowAtts.width = 1024
 SaveWindowAtts.height = 1024
 Test("unv_07", SaveWindowAtts)
 
+DeleteAllPlots()
+CloseDatabase(pjoin(datapath, "poly.msh"))
+
+OpenDatabase(pjoin(datapath,"two_trianglesbin.stl"), 0, "unv")
+AddPlot("FilledBoundary", "materials(mesh)", 1, 1)
+AddPlot("Mesh", "mesh", 1, 1)
+AddPlot("Vector", "normals2d", 1, 1)
+DrawPlots()
+Test("unv_08")
+DeleteAllPlots()
+CloseDatabase(pjoin(datapath,"two_trianglesbin.stl"))
+
+OpenDatabase(pjoin(datapath,"two_triangles.stl"), 0, "unv")
+AddPlot("FilledBoundary", "materials(mesh)", 1, 1)
+AddPlot("Mesh", "mesh", 1, 1)
+AddPlot("Vector", "normals2d", 1, 1)
+DrawPlots()
+Test("unv_09")
+DeleteAllPlots()
+CloseDatabase(pjoin(datapath,"two_triangles.stl"))
+
 Exit()

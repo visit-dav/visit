@@ -6,8 +6,8 @@
 //                            avtunvFileFormat.h                           //
 // ************************************************************************* //
 
-#ifndef AVT_unv_FILE_FORMAT_H
-#define AVT_unv_FILE_FORMAT_H
+#ifndef AVT_UNV_FILE_FORMAT_H
+#define AVT_UNV_FILE_FORMAT_H
 
 #include <avtSTSDFileFormat.h>
 
@@ -16,6 +16,8 @@
 #include <vector>
 #include <set>
 #include <zlib.h>
+
+class DBOptionsAttributes;
 
 // Define my classes for the mesh
 class UnvRange { // Element class
@@ -96,6 +98,7 @@ public:
     std::string name ;
     std::vector<UnvFace> faces;
 };
+
 // ****************************************************************************
 //  Class: avtunvFileFormat
 //
@@ -109,9 +112,9 @@ public:
 
 class avtunvFileFormat : public avtSTSDFileFormat
 {
-public:
-    avtunvFileFormat(const char *filename);
-    virtual           ~avtunvFileFormat() {;};
+  public:
+                       avtunvFileFormat(const char *fname, const DBOptionsAttributes *);
+    virtual           ~avtunvFileFormat() {;}
 
     //
     // This is used to return unconvention data -- ranging from material
@@ -139,11 +142,12 @@ public:
     virtual vtkDataArray  *GetVar(const char *);
     virtual vtkDataArray  *GetVectorVar(const char *);
 
-protected:
+  protected:
     // DATA MEMBERS
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
     virtual void           ReadFile();
+
     virtual int is3DKnownElt(int ); // Provides 3D element value in connectivity nodefac array
     virtual int is2DKnownElt(int ); // Provides 2D element value in connectivity nodefac array
     virtual int is1DKnownElt(int ); // Provides 1D element value in connectivity nodefac array
@@ -198,6 +202,7 @@ protected:
     std::vector<UnvFace> freeUnvFaces; // List of free faces for 3D mesh.
     std::set<UnvInterface, UnvInterface::compare_UnvInterface> meshUnvInterfaces;
     std::vector<UnvInterface> listUnvInterfaces;
+    std::vector<std::string> headerMaterials;
 };
 
 
