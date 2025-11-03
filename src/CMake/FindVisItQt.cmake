@@ -160,6 +160,18 @@ if(NOT VISIT_QT_SKIP_INSTALL)
                            NAMESPACE "Qt${QT_MAJOR_VERSION}::"
                            INCBASE "qt"
                            ITEMS ${qttargs})
+
+    # QT also has a non-versioned namespace, so add these items, too.
+    set(qttargs)
+    foreach(mod ${visit_qt_modules})
+        list(APPEND qttargs Qt::${mod})
+    endforeach()
+    create_lib_setup_cmake(KIT "QT"
+                           NAMESPACE "Qt::"
+                           INCBASE "qt"
+                           ITEMS ${qttargs}
+                           SKIP_HEADER)
+
     # need a few extras in the Setup file.
 
     set(fname ${VISIT_BINARY_DIR}/SetupQT.cmake)
@@ -168,20 +180,6 @@ if(NOT VISIT_QT_SKIP_INSTALL)
     file(APPEND ${fname} "\nfunction(qt6_disable_unicode_defines target)\n")
     file(APPEND ${fname} "    set_target_properties(\${target} PROPERTIES QT_NO_UNICODE_DEFINES TRUE)\n")
     file(APPEND ${fname} "endfunction()\n")
-
-    file(RENAME ${VISIT_BINARY_DIR}/SetupQT.cmake ${VISIT_BINARY_DIR}/SetupQT6.cmake)
-    install(FILES ${VISIT_BINARY_DIR}/SetupQT6.cmake
-            DESTINATION ${VISIT_INSTALLED_VERSION}/cmake)
-
-    # unversioned
-    set(qttargs)
-    foreach(mod ${visit_qt_modules})
-        list(APPEND qttargs Qt::${mod})
-    endforeach()
-    create_lib_setup_cmake(KIT "QT"
-                           NAMESPACE "Qt::"
-                           INCBASE "qt"
-                           ITEMS ${qttargs})
 
     if(APPLE)
         # Add Qt archives (lib*.a)
@@ -270,4 +268,3 @@ if(NOT VISIT_QT_SKIP_INSTALL)
          THIRD_PARTY_INSTALL_LIBRARY(${VISIT_QT_DIR}/lib/libQt${QT_MAJOR_VERSION}XcbQpa.so)
     endif()
 endif()
-
