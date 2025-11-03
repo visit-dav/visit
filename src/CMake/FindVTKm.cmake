@@ -32,7 +32,7 @@
 #   Eric Brugger, Wed Sep  4 10:31:31 PT 2024
 #   Modified the logic to also install static libraries. I also fixed a
 #   bug that prevented installing dependent libraries.
-# 
+#
 #   Eric Brugger, Mon Jun 16 13:38:54 PDT 2025
 #   Replace vtkm_filter with vtkm::filter.
 #
@@ -56,59 +56,70 @@ if (VISIT_VTKM_DIR)
    message(STATUS "  VTKm_VERSION_FULL = ${VTKm_VERSION_FULL}")
    message(STATUS "  VTKm_VERSION = ${VTKm_VERSION}")
 
-   set(VTKm_INCLUDE_DIRS "${VTKM_DIR}/include/vtkm-${VTKm_VERSION_MAJOR}.${VTKm_VERSION_MINOR}"
-                         "${VTKM_DIR}/include/vtkm-${VTKm_VERSION_MAJOR}.${VTKm_VERSION_MINOR}/vtkm/thirdparty/diy/vtkmdiy/include"
-                         "${VTKM_DIR}/include/vtkm-${VTKm_VERSION_MAJOR}.${VTKm_VERSION_MINOR}/vtkm/thirdparty/lcl/vtkmlcl"
-       CACHE STRING "VTKm include directories")
+   if(VISIT_INSTALL_THIRD_PARTY AND NOT VISIT_VTKM_SKIP_INSTALL)
+       set(vtkm_short ${VTKm_VERSION_MAJOR}.${VTKm_VERSION_MINOR})
 
-   # use the vtkm CMake properties to find locations and all interface
-   # link dependencies. This looks for shared libraries. We are currently
-   # building static libraries, so this is basically a noop, but if we
-   # ever change to shared libraries, this may be needed.
-   function(get_lib_loc_and_install _lib)
-       get_target_property(ttype ${_lib} TYPE)
-       if (ttype STREQUAL "INTERFACE_LIBRARY")
-           return()
-       endif()
-       get_target_property(i_loc ${_lib} IMPORTED_LOCATION)
-       if (NOT i_loc)
-         get_target_property(i_loc ${_lib} IMPORTED_LOCATION_RELEASE)
-       endif()
-       if (NOT i_loc)
-         get_target_property(i_loc ${_lib} IMPORTED_LOCATION_RELWITHDEBINFO)
-       endif()
-       if(i_loc)
-           THIRD_PARTY_INSTALL_LIBRARY(${i_loc})
-       endif()
-   endfunction()
+       # use the vtkm CMake properties to find locations and all interface
+       # link dependencies.
+       function(get_lib_loc_and_install _lib)
+           get_target_property(i_loc ${_lib} IMPORTED_LOCATION)
+           if (NOT i_loc)
+               get_target_property(i_loc ${_lib} IMPORTED_LOCATION_RELEASE)
+           endif()
+           if(i_loc)
+               THIRD_PARTY_INSTALL_LIBRARY(${i_loc})
+           endif()
+       endfunction()
 
-   get_target_property(VTKM_INT_LL vtkm::filter INTERFACE_LINK_LIBRARIES)
-   # pluginVsInstall test for Slice on Windows revealed need for this module
-   # and its link dependencies to be installed, too.
-   get_target_property(VTKM_DIY_LL vtkm::diy INTERFACE_LINK_LIBRARIES)
-   set(addl_ll)
-   foreach(vtkmll ${VTKM_INT_LL} ${VTKM_DIY_LL})
-       get_lib_loc_and_install(${vtkmll})
-       get_target_property(VTKM_LL_DEP ${vtkmll} INTERFACE_LINK_LIBRARIES)
-       if(VTKM_LL_DEP)
-           foreach(ll_dep ${VTKM_LL_DEP})
-               # only process libraries that start with vtkm
-	       string(SUBSTRING ${ll_dep} 0 4 ll_dep_prefix)
-               if ("${ll_dep_prefix}" STREQUAL "vtkm")
-                   # don't process duplicates
-                   if (NOT ${ll_dep} IN_LIST VTKM_INT_LL AND
-                       NOT ${ll_dep} IN_LIST addl_ll)
-                       get_lib_loc_and_install(${ll_dep})
-                       list(APPEND addl_ll ${ll_dep})
+       get_target_property(VTKM_INT_LL vtkm::filter INTERFACE_LINK_LIBRARIES)
+       # pluginVsInstall test for Slice on Windows revealed need for this module
+       # and its link dependencies to be installed, too.
+       get_target_property(VTKM_DIY_LL vtkm::diy INTERFACE_LINK_LIBRARIES)
+       set(addl_ll)
+       foreach(vtkmll ${VTKM_INT_LL} ${VTKM_DIY_LL})
+           get_lib_loc_and_install(${vtkmll})
+           get_target_property(VTKM_LL_DEP ${vtkmll} INTERFACE_LINK_LIBRARIES)
+           if(VTKM_LL_DEP)
+               foreach(ll_dep ${VTKM_LL_DEP})
+                   # only process libraries that start with vtkm
+	           string(SUBSTRING ${ll_dep} 0 4 ll_dep_prefix)
+                   if ("${ll_dep_prefix}" STREQUAL "vtkm")
+                       # don't process duplicates
+                       if (NOT ${ll_dep} IN_LIST VTKM_INT_LL AND
+                           NOT ${ll_dep} IN_LIST addl_ll)
+                           get_lib_loc_and_install(${ll_dep})
+                           list(APPEND addl_ll ${ll_dep})
+                       endif()
                    endif()
-               endif()
-           endforeach()
-       endif()
-   endforeach()
-   unset(addl_ll)
+               endforeach()
+           endif()
+       endforeach()
+       unset(addl_ll)
 
-   if(VISIT_INSTALL_THIRD_PARTY AND NOT VISIT_HEADERS_SKIP_INSTALL)
-       THIRD_PARTY_INSTALL_INCLUDE(vtkm ${VTKM_DIR}/include)
-   endif()
+       if(NOT VISIT_HEADERS_SKIP_INSTALL)
+           install(DIRECTORY ${VTKM_DIR}/include/vtkm-${vtkm_short}
+                DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}
+                FILE_PERMISSIONS OWNER_WRITE OWNER_READ
+                                 GROUP_WRITE GROUP_READ
+                                 WORLD_READ
+                DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
+                                      GROUP_WRITE GROUP_READ GROUP_EXECUTE
+                                      WORLD_READ WORLD_EXECUTE)
+       endif()
+
+        # write SetupVTKM.cmake 
+        include(${VISIT_SOURCE_DIR}/CMake/WriteThirdPartySetup.cmake)
+        set(target_list vtkm::filter)
+        create_lib_setup_cmake(KIT "VTKM"
+                               NAMESPACE "vtkm::"
+                               INCBASE "vtkm-${vtkm_short}"
+                               ITEMS ${target_list}
+                               SIMPLE_INCLUDE true)
+        unset(target_list)
+
+        file(APPEND ${VISIT_BINARY_DIR}/SetupVTKM.cmake "\nadd_library(vtkm::loguru INTERFACE IMPORTED)\n")
+        file(APPEND ${VISIT_BINARY_DIR}/SetupVTKM.cmake "set_target_properties(vtkm::loguru PROPERTIES INTERFACE_LINK_LIBRARIES \"Threads::Threads\")\n")
+        file(APPEND ${VISIT_BINARY_DIR}/SetupVTKM.cmake "\nadd_library(vtkm::diy_developer_flags INTERFACE IMPORTED)\n")
+    endif()
 endif()
 

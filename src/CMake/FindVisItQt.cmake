@@ -94,6 +94,13 @@ set(QT_QTXML_LIBRARY          ${Qt${QT_MAJOR_VERSION}Xml_LIBRARIES})
 set(QT_QTOPENGLWIDGETS_LIBRARY ${Qt${QT_MAJOR_VERSION}OpenGLWidgets_LIBRARIES})
 
 if(NOT VISIT_QT_SKIP_INSTALL)
+    # install headers
+    install(DIRECTORY ${VISIT_QT_DIR}/include/
+            DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/qt)
+    install(DIRECTORY ${VISIT_QT_DIR}/mkspecs/
+            DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/qt)
+
+
     # moc
     get_target_property(moc_location Qt${QT_MAJOR_VERSION}::moc LOCATION)
     install(PROGRAMS ${moc_location}
@@ -101,47 +108,82 @@ if(NOT VISIT_QT_SKIP_INSTALL)
             PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
                         GROUP_WRITE GROUP_READ GROUP_EXECUTE
                                     WORLD_READ WORLD_EXECUTE)
+    unset(moc_location)
+
+    # automoc parser
+    get_target_property(automoc_location Qt${QT_MAJOR_VERSION}::cmake_automoc_parser LOCATION)
+    install(PROGRAMS ${automoc_location}
+            DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
+            PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
+                        GROUP_WRITE GROUP_READ GROUP_EXECUTE
+                                    WORLD_READ WORLD_EXECUTE)
+    unset(automoc_location)
+
 
     foreach(mod ${visit_qt_modules})
-        list(APPEND qt_libs_install Qt${QT_MAJOR_VERSION}::${mod})
+        set(qt_lib Qt${QT_MAJOR_VERSION}::${mod})
 
         if(APPLE)
             if(EXISTS ${VISIT_QT_DIR}/lib/Qt${mod}.framework)
                 THIRD_PARTY_INSTALL_LIBRARY(${VISIT_QT_DIR}/lib/Qt${mod}.framework)
             else()
-                get_target_property(lib_loc Qt${QT_MAJOR_VERSION}::${mod} LOCATION)
-                THIRD_PARTY_INSTALL_LIBRARY(${lib_loc})
+                get_target_property(qtlib_location ${qt_lib} LOCATION)
             endif()
         else()
-            # headers
-            foreach(H ${Qt${QT_MAJOR_VERSION}${mod}_INCLUDE_DIRS})
-                if(${H} MATCHES "/include/Qt")
-                    INSTALL(DIRECTORY ${H}
-                            DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/qt/include
-                            FILE_PERMISSIONS OWNER_WRITE OWNER_READ
-                                             GROUP_WRITE GROUP_READ
-                                             WORLD_READ
-                            DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
-                                                  GROUP_WRITE GROUP_READ GROUP_EXECUTE
-                                                  WORLD_READ WORLD_EXECUTE)
-                endif()
-            endforeach()
+            if(WIN32)
+                get_target_property(qtlib_location ${qt_lib} IMPORTED_IMPLIB)
+            else()
+                get_target_property(qtlib_location ${qt_lib} IMPORTED_LOCATION)
+                # On Linux, the library names are Qtxxx.so.${QT_VERSION}
+                # We need to remove the version part so that
+                # THIRD_PARTY_INSTALL_LIBRARY will work correctly.
+                string(REPLACE ".${Qt${QT_MAJOR_VERSION}Core_VERSION}" ""
+                       qtlib_location ${qtlib_location})
+            endif()
         endif()
+        THIRD_PARTY_INSTALL_LIBRARY(${qtlib_location})
+
+        unset(libname)
+        unset(qtlib_location)
+        unset(qt_lib)
     endforeach()
 
-    if(APPLE)
-        file(GLOB QT_INCLUDES "${VISIT_QT_DIR}/include/Qt*")
-        foreach(H ${QT_INCLUDES})
-            install(DIRECTORY ${H}
-                    DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/qt/include
-                    FILE_PERMISSIONS OWNER_WRITE OWNER_READ
-                                     GROUP_WRITE GROUP_READ
-                                                 WORLD_READ
-                    DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
-                                          GROUP_WRITE GROUP_READ GROUP_EXECUTE
-                                                      WORLD_READ WORLD_EXECUTE)
-        endforeach()
 
+    # create SetupQT.cmake
+    set(qttargs)
+    foreach(mod ${visit_qt_modules})
+        list(APPEND qttargs Qt${QT_MAJOR_VERSION}::${mod})
+    endforeach()
+    list(APPEND qttargs Qt${QT_MAJOR_VERSION}::moc)
+    list(APPEND qttargs Qt${QT_MAJOR_VERSION}::cmake_automoc_parser)
+    create_lib_setup_cmake(KIT "QT"
+                           NAMESPACE "Qt${QT_MAJOR_VERSION}::"
+                           INCBASE "qt"
+                           ITEMS ${qttargs})
+    # need a few extras in the Setup file.
+
+    set(fname ${VISIT_BINARY_DIR}/SetupQT.cmake)
+    file(APPEND ${fname} "\nadd_library(WrapAtomic::WrapAtomic INTERFACE IMPORTED)\n")
+    file(APPEND ${fname} "\nadd_library(WrapOpenGL::WrapOpenGL INTERFACE IMPORTED)\n")
+    file(APPEND ${fname} "\nfunction(qt6_disable_unicode_defines target)\n")
+    file(APPEND ${fname} "    set_target_properties(\${target} PROPERTIES QT_NO_UNICODE_DEFINES TRUE)\n")
+    file(APPEND ${fname} "endfunction()\n")
+
+    file(RENAME ${VISIT_BINARY_DIR}/SetupQT.cmake ${VISIT_BINARY_DIR}/SetupQT6.cmake)
+    install(FILES ${VISIT_BINARY_DIR}/SetupQT6.cmake
+            DESTINATION ${VISIT_INSTALLED_VERSION}/cmake)
+
+    # unversioned
+    set(qttargs)
+    foreach(mod ${visit_qt_modules})
+        list(APPEND qttargs Qt::${mod})
+    endforeach()
+    create_lib_setup_cmake(KIT "QT"
+                           NAMESPACE "Qt::"
+                           INCBASE "qt"
+                           ITEMS ${qttargs})
+
+    if(APPLE)
         # Add Qt archives (lib*.a)
         file(GLOB QT_ARCHIVES "${VISIT_QT_DIR}/lib/*.a")
         foreach(T ${QT_ARCHIVES})
@@ -150,24 +192,6 @@ if(NOT VISIT_QT_SKIP_INSTALL)
                 PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
                             GROUP_WRITE GROUP_READ GROUP_EXECUTE
                                         WORLD_READ WORLD_EXECUTE)
-        endforeach()
-    else()
-        foreach(qtlib ${qt_libs_install})
-            if(${QT_MAJOR_VERSION} EQUAL 5)
-                get_target_property(qtlib_location ${qtlib} LOCATION)
-            elseif(WIN32)
-                get_target_property(qtlib_location ${qtlib} IMPORTED_IMPLIB)
-            else()
-                get_target_property(qtlib_location ${qtlib} IMPORTED_LOCATION)
-            endif()
-            # On Linux, the library names are Qtxxx.so.${QT_VERSION}
-            # We need to remove the version part so that
-            # THIRD_PARTY_INSTALL_LIBRARY will work correctly.
-            if (LINUX)
-                string(REPLACE ".${Qt${QT_MAJOR_VERSION}Core_VERSION}" ""
-                       qtlib_location ${qtlib_location})
-            endif()
-            THIRD_PARTY_INSTALL_LIBRARY(${qtlib_location})
         endforeach()
     endif()
 
