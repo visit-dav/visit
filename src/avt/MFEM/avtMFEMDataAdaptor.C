@@ -874,6 +874,33 @@ avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
 }
 
 // ****************************************************************************
+mfem::GridFunction *
+ConvertVectorFEToL2(mfem::GridFunction *vec_gf)
+{
+    mfem::Mesh *mesh = vec_gf->FESpace()->GetMesh();
+    const int dim = mesh->Dimension();
+    const int p = vec_gf->FESpace()->GetMaxElementOrder();
+
+    // Return NULL if vec_gf is not as expected -- vector FE with vdim == 1:
+    if (vec_gf->FESpace()->FEColl()->GetRangeType(dim) !=
+        FiniteElement::RangeType::VECTOR ||
+        vec_gf->FESpace()->GetVDim() != 1)
+    {
+        return nullptr;
+    }
+
+    FiniteElementCollection *l2_fec =
+        new L2_FECollection(p, dim, BasisType::GaussLobatto);
+    FiniteElementSpace *l2_fes =
+        new FiniteElementSpace(mesh, l2_fec, vec_gf->VectorDim());
+    GridFunction *l2_gf = new GridFunction(l2_fes);
+    l2_gf->MakeOwner(l2_fec);
+    vec_gf->ProjectVectorFieldOn(*l2_gf);
+    return l2_gf;
+}
+
+
+// ****************************************************************************
 //  Method: RefineGridFunctionToVTK
 //
 //  Purpose:
@@ -966,35 +993,38 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
         // we may have more than just L2 or H1 at this point
         bool l2 = basis.find("L2_") != std::string::npos;
         bool h1 = basis.find("H1_") != std::string::npos;
-        bool node_centered;
-        if (h1 && l2)
+        // TODO is this correct?
+        bool hdiv = basis.find("Hdiv_") != std::string::npos;
+        bool hcurl = basis.find("Hcurl_") != std::string::npos;
+
+        const int bases = static_cast<int>(l2) +
+                          static_cast<int>(h1) +
+                          static_cast<int>(hdiv) +
+                          static_cast<int>(hcurl);
+        // we must enforce only a single basis type
+        if (bases != 1)
         {
             AVT_MFEM_EXCEPTION1(InvalidVariableException, 
-                "RefineGridFunctionToVTK: grid function cannot be both H1 and L2");
+                "RefineGridFunctionToVTK: grid function must be one of either H1, L2, Hdiv, or Hcurl."
+                "Unsupported basis type in " << basis);
         }
-        else if (!h1 && !l2) // defer
+
+        mfem::GridFunction *gf_to_use = gf;
+        if (hdiv || hcurl)
         {
-            AVT_MFEM_INFO("WARNING: RefineGridFunctionToVTK: Grid Function is "
-                          "neither H1 nor L2. Deferring to arguments to determine "
-                          "if grid function is nodal or zonal.");
-            node_centered = var_is_nodal; 
-            // the only danger is that var_is_nodal has a default value
-            // however, the mfem plugin will always pass var_is_nodal, and the 
-            // blueprint plugin always produces h1 or l2.
+            gf_to_use = ConvertVectorFEToL2(gf);
+            l2 = true;
+            hdiv = hcurl = false;
         }
-        // This case will override whatever was passed in for var_is_nodal
-        else
-            node_centered = h1 && !l2;
 
-        if (node_centered != var_is_nodal)
-            AVT_MFEM_INFO("WARNING: RefineGridFunctionToVTK: nodal determination mismatch, is var_is_nodal using default value?")
-
-        if (node_centered)
+        if (h1)
         {
+            // node centered
             lo_col = new mfem::LinearFECollection;
         }
-        else
+        else // l2
         {
+            // element centered
             int p = 0; // single scalar
             lo_col = new mfem::L2_FECollection(p, mesh->Dimension(), 1);
         }
@@ -1008,7 +1038,7 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
         // using a matrix free transfer operator
         mfem::OperatorHandle hi_to_lo(mfem::Operator::ANY_TYPE);
         lo_fes.GetTransferOperator(*ho_fes, hi_to_lo);
-        hi_to_lo.Ptr()->Mult(*gf, lo_gf);
+        hi_to_lo.Ptr()->Mult(*gf_to_use, lo_gf);
 
         vtkDataArray *retval = LowOrderGridFunctionToVTK(&lo_gf);
         
