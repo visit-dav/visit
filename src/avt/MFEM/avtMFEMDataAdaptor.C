@@ -975,92 +975,94 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
 
     AVT_MFEM_INFO("High Order Mesh is not periodic.");
 
-    if (ref_method == refinementMethod::LOR_Projection_Default)
+    mfem::FiniteElementSpace *ho_fes = gf->FESpace();
+    if(!ho_fes)
     {
-        mfem::FiniteElementSpace *ho_fes = gf->FESpace();
-        if(!ho_fes)
-        {
-            AVT_MFEM_EXCEPTION1(InvalidVariableException, 
-                "RefineGridFunctionToVTK: high order gf finite element space is null");
-        }
-        // create the low order grid function
-        mfem::FiniteElementCollection *lo_col;
-
-        // H1 is nodal
-        // L2 is zonal
-
-        std::string basis(gf->FESpace()->FEColl()->Name());
-        // we may have more than just L2 or H1 at this point
-        bool l2 = basis.find("L2_") != std::string::npos;
-        bool h1 = basis.find("H1_") != std::string::npos;
-        // TODO is this correct?
-        bool hdiv = basis.find("Hdiv_") != std::string::npos;
-        bool hcurl = basis.find("Hcurl_") != std::string::npos;
-
-        const int bases = static_cast<int>(l2) +
-                          static_cast<int>(h1) +
-                          static_cast<int>(hdiv) +
-                          static_cast<int>(hcurl);
-        // we must enforce only a single basis type
-        if (bases != 1)
-        {
-            AVT_MFEM_EXCEPTION1(InvalidVariableException, 
-                "RefineGridFunctionToVTK: grid function must be one of either H1, L2, Hdiv, or Hcurl."
-                "Unsupported basis type in " << basis);
-        }
-
-        mfem::GridFunction *gf_to_use = gf;
-        if (hdiv || hcurl)
-        {
-            gf_to_use = ConvertVectorFEToL2(gf);
-            l2 = true;
-            hdiv = hcurl = false;
-        }
-
-        if (h1)
-        {
-            // node centered
-            lo_col = new mfem::LinearFECollection;
-        }
-        else // l2
-        {
-            // element centered
-            int p = 0; // single scalar
-            lo_col = new mfem::L2_FECollection(p, mesh->Dimension(), 1);
-        }
-        
-        // refine the mesh and convert to vtk
-        // it would be nice if this was cached somewhere but we will do it again
-        mfem::Mesh lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::GaussLobatto);
-        mfem::FiniteElementSpace lo_fes(&lo_mesh, lo_col, ho_fes->GetVDim());
-        mfem::GridFunction lo_gf(&lo_fes);
-        // transform the higher order function to a low order function
-        // using a matrix free transfer operator
-        mfem::OperatorHandle hi_to_lo(mfem::Operator::ANY_TYPE);
-        lo_fes.GetTransferOperator(*ho_fes, hi_to_lo);
-        hi_to_lo.Ptr()->Mult(*gf_to_use, lo_gf);
-
-        vtkDataArray *retval = LowOrderGridFunctionToVTK(&lo_gf);
-        
-        delete lo_col;
-
-        return retval;
+        AVT_MFEM_EXCEPTION1(InvalidVariableException, 
+            "RefineGridFunctionToVTK: high order gf finite element space is null");
     }
-    else if (ref_method == refinementMethod::LOR_Nodal_Projection)
+    // create the low order grid function
+    mfem::FiniteElementCollection *lo_col;
+
+    // H1 is nodal
+    // L2 is zonal
+
+    std::string basis(gf->FESpace()->FEColl()->Name());
+    // we may have more than just L2 or H1 at this point
+    bool l2 = basis.find("L2_") != std::string::npos;
+    bool h1 = basis.find("H1_") != std::string::npos;
+    // TODO is this correct? We need test data
+    bool hdiv = basis.find("Hdiv_") != std::string::npos;
+    bool hcurl = basis.find("Hcurl_") != std::string::npos;
+
+    const int bases = static_cast<int>(l2) +
+                      static_cast<int>(h1) +
+                      static_cast<int>(hdiv) +
+                      static_cast<int>(hcurl);
+    // we must enforce only a single basis type
+    if (bases != 1)
     {
+        AVT_MFEM_EXCEPTION1(InvalidVariableException, 
+            "RefineGridFunctionToVTK: grid function must be one of either H1, L2, Hdiv, or Hcurl."
+            "Unsupported basis type in " << basis);
+    }
+
+    mfem::GridFunction *gf_to_use = gf;
+    bool delete_gf_to_use = false;
+    if (hdiv || hcurl)
+    {
+        gf_to_use = ConvertVectorFEToL2(gf);
+        l2 = true;
+        hdiv = hcurl = false;
+        delete_gf_to_use = true;
+    }
+
+    if (ref_method == refinementMethod::LOR_Nodal_Projection)
+    {
+        // TODO must convert all to H1
         AVT_MFEM_EXCEPTION1(InvalidVariableException,
                             "TODO MFEM LOR refinement method not implemented: " << ref_method);
     }
     else if (ref_method == refinementMethod::LOR_Zonal_Projection)
     {
+        // TODO must convert all to L2
         AVT_MFEM_EXCEPTION1(InvalidVariableException,
                             "TODO MFEM LOR refinement method not implemented: " << ref_method);
     }
-    else
+
+    if (h1)
     {
-        AVT_MFEM_EXCEPTION1(InvalidVariableException,
-                            "Unknown MFEM LOR refinement method: " << ref_method);
+        // node centered
+        lo_col = new mfem::LinearFECollection;
     }
+    else // l2
+    {
+        // element centered
+        int p = 0; // single scalar
+        lo_col = new mfem::L2_FECollection(p, mesh->Dimension(), 1);
+    }
+    
+    // refine the mesh and convert to vtk
+    // it would be nice if this was cached somewhere but we will do it again
+    mfem::Mesh lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::GaussLobatto);
+    mfem::FiniteElementSpace lo_fes(&lo_mesh, lo_col, ho_fes->GetVDim());
+    mfem::GridFunction lo_gf(&lo_fes);
+    // transform the higher order function to a low order function
+    // using a matrix free transfer operator
+    mfem::OperatorHandle hi_to_lo(mfem::Operator::ANY_TYPE);
+    lo_fes.GetTransferOperator(*ho_fes, hi_to_lo);
+    hi_to_lo.Ptr()->Mult(*gf_to_use, lo_gf);
+
+    vtkDataArray *retval = LowOrderGridFunctionToVTK(&lo_gf);
+
+    if (delete_gf_to_use)
+    {
+        delete gf_to_use;
+    }
+    
+    delete lo_col;
+
+    return retval;
 }
 
 // ****************************************************************************
