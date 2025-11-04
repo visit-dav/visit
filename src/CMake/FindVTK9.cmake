@@ -126,7 +126,7 @@ else(VISIT_VTK_SKIP_INSTALL)
           set(LIBNAME   ${pathnameandprefix}${vtk_component}${sepchar}${vtk_short}.${SO_EXT})
         elseif(${vtk_component} MATCHES "WrappingPythonCore")
           # also needs PYTHON_VERSION
-          set(LIBNAME   ${pathnameandprefix}vtk${vtk_component}${PYTHON_VERSION}${sepchar}${vtk_short}.${SO_EXT})
+          set(LIBNAME   ${pathnameandprefix}vtk${vtk_component}${PYTHON_COMPAT_VERSION}${sepchar}${vtk_short}.${SO_EXT})
         else()
             set(LIBNAME   ${pathnameandprefix}vtk${vtk_component}${sepchar}${vtk_short}.${SO_EXT})
         endif()

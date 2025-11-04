@@ -58,13 +58,6 @@ if(NOT WIN32 AND NOT APPLE)
     list(APPEND avtquery_ser_DEPENDS ${LIBRT})
 endif()
 
-if(VISIT_PYTHON_FILTERS)
-    visit_append_list(
-        NAME avtquery_ser_INCLUDES
-        ITEMS $<BUILD_INTERFACE:>${PYTHON_INCLUDE_PATH})
-endif()
-
-
 set(avtquery_par_SOURCES  ${avtquery_ser_SOURCES})
 set(avtquery_par_HEADERS  ${avtquery_ser_HEADERS})
 set(avtquery_par_INCLUDES ${avtquery_ser_INCLUDES})

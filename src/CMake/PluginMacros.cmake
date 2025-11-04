@@ -257,7 +257,6 @@ function(visit_add_plot_plugin)
         message(FATAL_ERROR "Incomplete arguments to visit_add_plot_plugin. Required: PNAME")
     endif()
 
-    project(${plot_PNAME}_plot)
 
     # if doing dev build ??
     if(NOT ${plot_DISABLE_AUTOGEN})
@@ -398,7 +397,6 @@ function(visit_add_plot_plugin)
                            ${COMMON_HEADERS}
                 INCLUDES   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
                            $<BUILD_INTERFACE:${VISIT_BINARY_DIR}/include>
-                           $<BUILD_INTERFACE:${PYTHON_INCLUDE_DIR}>
                 DEPENDS_ON visitcommon visitpy ${PYTHON_LIBRARY} ${plot_SLIBS}
                 SKIP_INSTALL)
 
@@ -464,13 +462,14 @@ function(visit_add_operator_plugin)
     #   EPARLIBS          additional libraries for the parallel engine targets
     #   DEFINES           any defines for viewer,engine targets
     #   DISABLE_AUTOGEN   disable xml autogeneration
+    #   PUBLIC_BUILD      Indicates building plugin from installed VisIt
 
 
     # NOTES:  not all of the target link libraries being added to the
     # targets here are necessary for every operator.  They are being added
     # for convenience to ease plugin developement
 
-    set(OPTS DISABLE_AUTOGEN)
+    set(OPTS DISABLE_AUTOGEN PUBLIC_BUILD)
     set(VALS ONAME)
     set(MVALS GSRC VSRC ESRC GLIBS VLIBS SLIBS ESERLIBS EPARLIBS DEFINES)
     cmake_parse_arguments(operator "${OPTS}" "${VALS}" "${MVALS}" ${ARGN})
@@ -481,8 +480,7 @@ function(visit_add_operator_plugin)
 
     project(${operator_ONAME}_operator)
 
-    # if doing dev build ??
-    if(NOT ${operator_DISABLE_AUTOGEN})
+    if(NOT (${operator_PUBLIC_BUILD} OR ${operator_DISABLE_AUTOGEN}))
         ADD_OPERATOR_CODE_GEN_TARGETS(${operator_ONAME})
     endif()
 
@@ -642,7 +640,6 @@ function(visit_add_operator_plugin)
                            ${COMMON_HEADERS}
                 INCLUDES   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
                            $<BUILD_INTERFACE:${VISIT_BINARY_DIR}/include>
-                           $<BUILD_INTERFACE:${PYTHON_INCLUDE_DIR}>
                 DEPENDS_ON visitcommon visitpy ${PYTHON_LIBRARY} ${operator_SLIBS}
                 SKIP_INSTALL)
 

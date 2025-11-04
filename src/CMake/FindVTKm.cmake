@@ -114,7 +114,7 @@ if (VISIT_VTKM_DIR)
                                NAMESPACE "vtkm::"
                                INCBASE "vtkm-${vtkm_short}"
                                ITEMS ${target_list}
-                               SIMPLE_INCLUDE true)
+                               NESTED_INCLUDES true)
         unset(target_list)
 
         file(APPEND ${VISIT_BINARY_DIR}/SetupVTKM.cmake "\nadd_library(vtkm::loguru INTERFACE IMPORTED)\n")

@@ -49,7 +49,6 @@ target_include_directories(pysimV2 PUBLIC
     $<BUILD_INTERFACE:${VISIT_SOURCE_DIR}/sim/V2/swig/python>
     $<BUILD_INTERFACE:${VISIT_BINARY_DIR}/sim/V2/swig/python>
     $<BUILD_INTERFACE:${VISIT_BINARY_DIR}/include>
-    $<BUILD_INTERFACE:${PYTHON_INCLUDE_PATH}>
     $<BUILD_INTERFACE:${VISIT_INCLUDE_DIR}/visitpy/common>
     $<$<BOOL:${SIMV2_USE_NUMPY}>:$<BUILD_INTERFACE:${NUMPY_INCLUDE_DIRS}>>)
 

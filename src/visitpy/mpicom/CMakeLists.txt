@@ -41,8 +41,7 @@ if(VISIT_PARALLEL)
 
     target_include_directories(mpicom PRIVATE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/>
-        $<BUILD_INTERFACE:${VISIT_SOURCE_DIR}/visitpy/common>
-        $<BUILD_INTERFACE:${PYTHON_INCLUDE_PATH}>)
+        $<BUILD_INTERFACE:${VISIT_SOURCE_DIR}/visitpy/common>)
 
     if(UNIX)
         set_target_properties(mpicom PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing")

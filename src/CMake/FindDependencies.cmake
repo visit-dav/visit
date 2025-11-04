@@ -43,13 +43,18 @@ endif()
 # Import Qt's CMake targets
 ###############################################################################
 
-include(${CMAKE_CURRENT_LIST_DIR}/SetupQt6.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/SetupQt.cmake)
 
 # satisfy VTK
 if(HAVE_OSMESA)
     add_library(OSMesa::OSMesa SHARED IMPORTED)
 endif()
+
+###############################################################################
+# Import Python's CMake targets
+###############################################################################
+
+include(${CMAKE_CURRENT_LIST_DIR}/SetupPYTHON.cmake)
 
 ###############################################################################
 # Import VTK's CMake targets

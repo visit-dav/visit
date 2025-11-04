@@ -632,7 +632,10 @@ class CMakeGeneratorPlugin : public Plugin
         // engine libs
         WriteCMake_PluginLibs(out, "ESER", elibsSer, hasELibs);
         WriteCMake_PluginLibs(out, "EPAR", elibsPar, hasELibs);
-
+        if(!using_dev)
+        {
+            out << "\n    PUBLIC_BUILD";
+        }
         out << ")" << Endl;
 
         WriteCMake_AdditionalCode(out, false);
@@ -737,22 +740,21 @@ class CMakeGeneratorPlugin : public Plugin
         // include something in the generated output.
         if(!using_dev)
         {
-            out << "CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)" << Endl;
+            out << "cmake_minimum_required(VERSION 3.24 FATAL_ERROR)\n" << Endl;
+            out << "project(" << name << "_" << type << "_plugin)\n" << Endl;
             if(installpublic)
             {
-                out << "SET(VISIT_PLUGIN_DIR \"" << qvisitplugdirpub
+                out << "set(VISIT_PLUGIN_DIR \"" << qvisitplugdirpub
                     << "\")" << Endl;
             }
             else // installprivate or default
             {
-                out << "SET(VISIT_PLUGIN_DIR \"" << qvisitplugdirpri
+                out << "set(VISIT_PLUGIN_DIR \"" << qvisitplugdirpri
                     << "\")" << Endl;
             }
 
-            out << "INCLUDE(\"" << qvisithome
-                << "/include/PluginVsInstall.cmake\")" << Endl;
-            out << "INCLUDE(\"" << qvisithome
-                << "/include/VisItLibraryDependencies.cmake\")" << Endl;
+            out << "include(\"" << qvisithome
+                << "/cmake/visitConfig.cmake\")" << Endl;
             out << Endl;
         }
         else
@@ -761,12 +763,12 @@ class CMakeGeneratorPlugin : public Plugin
             // or private.
             if(installpublic)
             {
-               out << "SET(VISIT_PLUGIN_DIR " << qvisitplugdirpub << ")" << Endl;
+               out << "set(VISIT_PLUGIN_DIR " << qvisitplugdirpub << ")" << Endl;
             }
 
             if(installprivate)
             {
-               out << "SET(VISIT_PLUGIN_DIR " << qvisitplugdirpri << ")" << Endl;
+               out << "set(VISIT_PLUGIN_DIR " << qvisitplugdirpri << ")" << Endl;
             }
         }
 

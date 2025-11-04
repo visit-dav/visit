@@ -91,12 +91,6 @@ visit_append_list(
     ITEMS visitcommon avtdbatts)
 
 
-if(VISIT_PYTHON_FILTERS)
-    visit_append_list(
-        NAME avtexpressions_ser_INCLUDES
-        ITEMS $<BUILD_INTERFACE:${PYTHON_INCLUDE_PATH}>)
-endif()
-
 set(avtexpressions_par_SOURCES  ${avtexpressions_ser_SOURCES})
 set(avtexpressions_par_HEADERS  ${avtexpressions_ser_HEADERS})
 set(avtexpressions_par_INCLUDES ${avtexpressions_ser_INCLUDES})
