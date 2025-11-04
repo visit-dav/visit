@@ -52,6 +52,7 @@ set(VISIT_SLIVR                  @VISIT_SLIVR@)
 set(HAVE_OSPRAY                  @HAVE_OSPRAY@)
 set(HAVE_ANARI                   @HAVE_ANARI@)
 set(HAVE_VTKM                    @HAVE_VTKM@)
+set(HAVE_ICET                    @HAVE_ICET@)
 
 
 #include files with functions/macros
@@ -74,4 +75,13 @@ add_library(TIFF::TIFF ALIAS tiff)
 set(BLT_CXX_STD @BLT_CXX_STD@)
 set(BLT_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/blt)
 include(${CMAKE_CURRENT_LIST_DIR}/SetupBLT.cmake)
+
+
+cmake_path(SET VISIT_INCLUDE_DIR NORMALIZE ${CMAKE_CURRENT_LIST_DIR}/../include/visit)
+
+if(TARGET silo)
+    add_library(pdb ALIAS silo)
+    set(HAVE_PDB TRUE) 
+endif()
+
 

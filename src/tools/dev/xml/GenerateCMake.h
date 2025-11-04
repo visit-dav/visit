@@ -261,31 +261,12 @@ class CMakeGeneratorPlugin : public Plugin
                 QString tmp(libs[i]);
 
                 // convert to VTK:: form for VTK-9
-                if (using_dev)
-                {
-                    QString tmp2(libs[i]);
-                    if (tmp2 == "vtksys")
-                        tmp2.prepend("VTK::");
-                    else
-                        tmp2.replace(0,3,"VTK::");
-                    libs[i] = tmp2;
-                }
+                QString tmp2(libs[i]);
+                if (tmp2 == "vtksys")
+                    tmp2.prepend("VTK::");
                 else
-                {
-                    tmp.append(vtkversion);
-                    libs[i] = tmp;
-                }
-            }
-            else if(libs[i].startsWith("VTK::"))
-            {
-                if (!using_dev)
-                {
-                    // for plugin-vs-install, need to
-                    // replace 'VTK::' with 'vtk' and append the version
-                    QString tmp(libs[i].replace(QString("VTK::"), QString("vtk")));
-                    tmp.append(vtkversion);
-                    libs[i] = tmp;
-                }
+                    tmp2.replace(0,3,"VTK::");
+                libs[i] = tmp2;
             }
         }
     }

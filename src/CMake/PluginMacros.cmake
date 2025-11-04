@@ -242,13 +242,14 @@ function(visit_add_plot_plugin)
     #   EPARLIBS          additional libraries for the parallel engine targets
     #   DEFINES           any defines for viewer,engine targets
     #   DISABLE_AUTOGEN   disable xml autogeneration
+    #   PUBLIC_BUILD      Indicates building plugin from installed VisIt
 
 
     # NOTES:  not all of the target link libraries being added to the
     # targets here are necessary for every plot.  They are being added
     # for convenience to ease plugin developement
 
-    set(OPTS DISABLE_AUTOGEN)
+    set(OPTS DISABLE_AUTOGEN PUBLIC_BUILD)
     set(VALS PNAME)
     set(MVALS GSRC VSRC ESRC GLIBS VLIBS SLIBS ESERLIBS EPARLIBS DEFINES)
     cmake_parse_arguments(plot "${OPTS}" "${VALS}" "${MVALS}" ${ARGN})
@@ -258,8 +259,7 @@ function(visit_add_plot_plugin)
     endif()
 
 
-    # if doing dev build ??
-    if(NOT ${plot_DISABLE_AUTOGEN})
+    if(NOT (${plot_PUBLIC_BUILD} OR ${plot_DISABLE_AUTOGEN}))
         ADD_PLOT_CODE_GEN_TARGETS(${plot_PNAME})
     endif()
 
@@ -445,7 +445,9 @@ function(visit_add_plot_plugin)
     # one of these is not needed for plugin vs install, which one?
     VISIT_INSTALL_PLOT_PLUGINS(${INSTALLTARGETS})
     VISIT_PLUGIN_TARGET_OUTPUT_DIR(plots ${INSTALLTARGETS})
-    VISIT_PLUGIN_TARGET_FOLDER(plots ${plot_PNAME} ${INSTALLTARGETS})
+    if(NOT ${plot_PUBLIC_BUILD})
+        VISIT_PLUGIN_TARGET_FOLDER(plots ${plot_PNAME} ${INSTALLTARGETS})
+    endif()
 endfunction()
 
 function(visit_add_operator_plugin)
@@ -689,7 +691,9 @@ function(visit_add_operator_plugin)
     # one of these is not needed for plugin vs install, which one?
     VISIT_INSTALL_OPERATOR_PLUGINS(${INSTALLTARGETS})
     VISIT_PLUGIN_TARGET_OUTPUT_DIR(operators ${INSTALLTARGETS})
-    VISIT_PLUGIN_TARGET_FOLDER(operators ${operator_ONAME} ${INSTALLTARGETS})
+    if(NOT ${operator_PUBLIC_BUILD})
+        VISIT_PLUGIN_TARGET_FOLDER(operators ${operator_ONAME} ${INSTALLTARGETS})
+    endif()
 endfunction()
 
 function(visit_add_database_plugin)
