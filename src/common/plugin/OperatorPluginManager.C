@@ -576,6 +576,29 @@ OperatorPluginManager::FreeScriptingPluginInfo()
 }
 
 // ****************************************************************************
+// Method: OperatorPluginManager::FreeEnginePluginInfoAtts
+//
+// Purpose: 
+//   Free the engine plugin information AttributeSubjects.
+//
+// Programmer: Eric Brugger
+// Creation:   October 28, 2025
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+OperatorPluginManager::FreeEnginePluginInfoAtts()
+{
+    for (size_t i=0; i<enginePluginInfo.size(); i++)
+    {
+        delete enginePluginInfo[i]->GetClientAtts();
+        delete enginePluginInfo[i]->GetDefaultAtts();
+    }
+}
+
+// ****************************************************************************
 //  Method: OperatorPluginManager::ReloadPlugins
 //
 //  Purpose:
