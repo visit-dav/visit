@@ -43,7 +43,7 @@ endif()
 # Import Qt's CMake targets
 ###############################################################################
 
-include(${CMAKE_CURRENT_LIST_DIR}/SetupQt.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/SetupQT.cmake)
 
 # satisfy VTK
 if(HAVE_OSMESA)
@@ -67,7 +67,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/SetupVTK.cmake)
 ###############################################################################
 
 if(HAVE_VTKM)
-    include(${CMAKE_CURRENT_LIST_DIR}/SetupVTKm.cmake)
+    include(${CMAKE_CURRENT_LIST_DIR}/SetupVTKM.cmake)
 endif()
 
 ###############################################################################

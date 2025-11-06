@@ -46,7 +46,6 @@ set(VISIT_PYTHON_SCRIPTING       @VISIT_PYTHON_SCRIPTING@)
 set(VISIT_SERVER_COMPONENTS_ONLY @VISIT_SERVER_COMPONENTS_ONLY@)
 set(VISIT_ENGINE_ONLY            @VISIT_ENGINE_ONLY@)
 set(VISIT_DBIO_ONLY              @VISIT_DBIO_ONLY@)
-set(VISIT_PARALLEL               @VISIT_PARALLEL@)
 set(VISIT_JAVA                   @VISIT_JAVA@)
 set(VISIT_SLIVR                  @VISIT_SLIVR@)
 set(HAVE_OSPRAY                  @HAVE_OSPRAY@)
@@ -54,12 +53,17 @@ set(HAVE_ANARI                   @HAVE_ANARI@)
 set(HAVE_VTKM                    @HAVE_VTKM@)
 set(HAVE_ICET                    @HAVE_ICET@)
 
+set(VISIT_PARALLEL               @VISIT_PARALLEL@)
+set(VISIT_PARALLEL_CXXFLAGS      @VISIT_PARALLEL_CXXFLAGS@)
+set(VISIT_PARALLEL_RPATH         @VISIT_PARALLEL_RPATH@)
+set(VISIT_PARALLEL_DEFINES       @VISIT_PARALLEL_DEFINES@)
+set(VISIT_PARALLEL_INCLUDE       @VISIT_PARALLEL_INCLUDE@)
+set(VISIT_PARALLEL_LINK_DIRS     @VISIT_PARALLEL_LINK_DIRS@)
+set(VISIT_PARALLEL_LIBS          @VISIT_PARALLEL_LIBS@)
 
 #include files with functions/macros
 include(${CMAKE_CURRENT_LIST_DIR}/VisItMacros.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/PluginMacros.cmake)
-
-
 
 # Include Find module for TP dependencies
 include(${CMAKE_CURRENT_LIST_DIR}/FindDependencies.cmake)
@@ -69,9 +73,11 @@ include(${CMAKE_CURRENT_LIST_DIR}/visitTargets.cmake)
 
 # satisfy some VTK dependencies
 add_library(ZLIB::ZLIB ALIAS zlib)
-add_library(TIFF::TIFF ALIAS tiff)
 
-# Include .cmake files with necessary functions/macros for PluginVsInstall.
+if(TARGET tiff)
+  add_library(TIFF::TIFF ALIAS tiff)
+endif()
+
 set(BLT_CXX_STD @BLT_CXX_STD@)
 set(BLT_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/blt)
 include(${CMAKE_CURRENT_LIST_DIR}/SetupBLT.cmake)

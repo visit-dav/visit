@@ -61,7 +61,6 @@ class Conditional
 
     inline static const char *keys[] =
         {"Definitions:", \
-         "Includes:", \
          "CXXFlags:", \
          "VLinkLibraries:", \
          "MLinkLibraries:", \

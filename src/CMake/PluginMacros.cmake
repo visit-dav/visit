@@ -709,13 +709,14 @@ function(visit_add_database_plugin)
     #   DEFINES           any defines
     #   INCLUDES          additional include directories
     #   DISABLE_AUTOGEN   disable xml autogeneration
+    #   PUBLIC_BUILD      Indicates building plugin from installed VisIt
 
 
     # NOTES:  not all of the target link libraries being added to the
     # targets here are necessary for every database.  They are being added
     # for convenience to ease plugin developement
 
-    set(OPTS DISABLE_AUTOGEN)
+    set(OPTS DISABLE_AUTOGEN PUBLIC_BUILD)
     set(VALS DNAME)
     set(MVALS MSRC ESRC LIBS MLIBS ESERLIBS EPARLIBS DEFINES INCLUDES)
     cmake_parse_arguments(database "${OPTS}" "${VALS}" "${MVALS}" ${ARGN})
@@ -727,7 +728,7 @@ function(visit_add_database_plugin)
     project(${database_DNAME}_database)
 
     # if doing dev build ??
-    if(NOT ${database_DISABLE_AUTOGEN})
+    if(NOT (${database_PUBLIC_BUILD} OR ${database_DISABLE_AUTOGEN}))
         ADD_DATABASE_CODE_GEN_TARGETS(${database_DNAME})
     endif()
 
@@ -877,6 +878,8 @@ function(visit_add_database_plugin)
     # one of these is not needed for plugin vs install, which one?
     VISIT_INSTALL_DATABASE_PLUGINS(${INSTALLTARGETS})
     VISIT_PLUGIN_TARGET_OUTPUT_DIR(databases ${INSTALLTARGETS})
-    VISIT_PLUGIN_TARGET_FOLDER(databases ${database_DNAME} ${INSTALLTARGETS})
+    if(NOT ${database_PUBLIC_BUILD})
+        VISIT_PLUGIN_TARGET_FOLDER(databases ${database_DNAME} ${INSTALLTARGETS})
+    endif()
 endfunction()
 

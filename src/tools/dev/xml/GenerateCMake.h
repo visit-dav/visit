@@ -666,6 +666,10 @@ class CMakeGeneratorPlugin : public Plugin
         // engine libs
         WriteCMake_PluginLibs(out, "ESER", elibsSer, hasELibs);
         WriteCMake_PluginLibs(out, "EPAR", elibsPar, hasELibs);
+        if(!using_dev)
+        {
+            out << "\n    PUBLIC_BUILD";
+        }
 
         out << ")" << Endl;
 
