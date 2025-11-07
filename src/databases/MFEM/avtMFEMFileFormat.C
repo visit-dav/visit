@@ -354,7 +354,6 @@ avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         vector<string> field_names;
         vector<string> qf_mesh_names;
         dset.Fields(field_names);
-        bool have_qf = false;
 
         std::string qf_mesh_base_name =  dset_names[i] + "_quad_func_o";
 
@@ -362,11 +361,11 @@ avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         {
             JSONRootEntry &field = dset.Field(field_names[j]);
 
-            int ilod = md->GetMeshes(i).LODs;
+            int ilod = 0;
             if(field.HasTag("lod"))
             {
                 std::string slod = field.Tag("lod");
-                ilod = std::min(ilod,atoi(slod.c_str()));
+                ilod = atoi(slod.c_str());
             }
 
             selectedLOD = std::max(selectedLOD,ilod);
