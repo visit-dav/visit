@@ -1,14 +1,28 @@
 <?xml version="1.0"?>
-  <Plugin name="unv" type="database" label="UNV" version="" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="false" filePatternsStrict="false" opensWholeDirectory="false">
+  <Plugin name="unv" type="database" label="UNV" version="" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="true" hasoptions="true" haslicense="false" filePatternsStrict="false" opensWholeDirectory="false">
+    <LIBS>
+      ${ZLIB_LIBRARY}
+      vtkIOGeometry
+    </LIBS>
     <FilePatterns>
       *.unv
       *.unv.gz
       *.iv
       *.msh
+      *.mailm
+      *.maila
+      *.mail
+      *.stl
     </FilePatterns>
+    <Files components="M">
+      avtunvFileFormat.C
+      avtunvOptions.C
+    </Files>
+    <Files components="E">
+      avtunvFileFormat.C
+      avtunvWriter.C
+      avtunvOptions.C
+    </Files>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
-    <LIBS>
-      ${ZLIB_LIBRARY}
-    </LIBS>
   </Plugin>

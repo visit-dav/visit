@@ -30,14 +30,14 @@
       false
     </Field>
     <Field name="position" label="Position" type="doubleArray" length="3">
-      0.000000
-      0.000000
-      0.000000
+      0
+      0
+      0
     </Field>
     <Field name="position2" label="Position2" type="doubleArray" length="3">
-      0.000000
-      0.000000
-      0.000000
+      0
+      0
+      0
     </Field>
     <Field name="textColor" label="Text color" type="color" length="4">
     </Field>
@@ -63,7 +63,7 @@
       false
     </Field>
     <Field name="doubleAttribute1" label="Double attribute 1" type="double">
-      0.000000
+      0
     </Field>
     <Field name="intAttribute1" label="Integer attribute 1" type="int">
       0
@@ -73,6 +73,6 @@
     <Function name="SetFromNode" user="false" member="true">
     </Function>
     <Include file="source" quoted="false">
-        visit-config.h
+      visit-config.h
     </Include>
   </Attribute>

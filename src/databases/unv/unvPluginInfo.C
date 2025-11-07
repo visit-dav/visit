@@ -103,7 +103,7 @@ unvGeneralPluginInfo::EnabledByDefault() const
 bool
 unvGeneralPluginInfo::HasWriter() const
 {
-    return false;
+    return true;
 }
 // ****************************************************************************
 //  Method:  unvGeneralPluginInfo::GetDefaultFilePatterns
@@ -123,6 +123,10 @@ unvGeneralPluginInfo::GetDefaultFilePatterns() const
     defaultPatterns.push_back("*.unv.gz");
     defaultPatterns.push_back("*.iv");
     defaultPatterns.push_back("*.msh");
+    defaultPatterns.push_back("*.mailm");
+    defaultPatterns.push_back("*.maila");
+    defaultPatterns.push_back("*.mail");
+    defaultPatterns.push_back("*.stl");
 
     return defaultPatterns;
 }

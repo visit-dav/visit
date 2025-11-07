@@ -1138,7 +1138,7 @@ class InfoGeneratorPlugin : public Plugin
                         c << "        ffl[i] = new avt"<<name<<"FileFormat(list[i]);" << Endl;
                     c << "    }" << Endl;
                     c << "    avtSTMDFileFormatInterface *inter" << Endl;
-                    c << "           = new avtSTMDFileFormatInterface(ffl, nList);" << Endl;
+                    c << "        = new avtSTMDFileFormatInterface(ffl, nList);" << Endl;
                     c << "    return new avtGenericDatabase(inter);" << Endl;
                 }
                 else if (dbtype == "MTSD")
@@ -2014,6 +2014,7 @@ class InfoGeneratorPlugin : public Plugin
             WriteOverrideDefinition(c, name + "ViewerEnginePluginInfo::SupportsAnimation");
             WriteOverrideDefinition(c, name + "ViewerEnginePluginInfo::AnimationReset");
             WriteOverrideDefinition(c, name + "ViewerEnginePluginInfo::AnimationStep");
+            c << Endl;
         }
 
         funcName = name + "ViewerEnginePluginInfo::GetMenuName";

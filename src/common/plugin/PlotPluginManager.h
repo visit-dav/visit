@@ -74,6 +74,9 @@ class ScriptingPlotPluginInfo;
 //    Brad Whitlock, Wed Jun 17 10:24:46 PDT 2009
 //    I added arguments to Initialize.
 //
+//    Eric Brugger, Tue Oct 28 13:39:08 PDT 2025
+//    I added FreeEnginePluginInfoAtts.
+//
 // ****************************************************************************
 
 class PLUGIN_API PlotPluginManager : public PluginManager
@@ -87,6 +90,8 @@ class PLUGIN_API PlotPluginManager : public PluginManager
                                                const char *plugindir = 0,
                                                bool readInfo = true,
                                                PluginBroadcaster *broadcaster=0);
+
+    void                            FreeEnginePluginInfoAtts();
 
     virtual void                    ReloadPlugins();
 

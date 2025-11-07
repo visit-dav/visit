@@ -36,7 +36,6 @@ ${VISIT_DATABASE_INCLUDES}
 )
 
 set(vtk_libs VTK::CommonSystem VTK::vtksys )
-
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 
 ADD_LIBRARY(IOpenFOAMDatabase ${LIBI_SOURCES})

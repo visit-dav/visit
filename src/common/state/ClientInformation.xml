@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="ClientInformation" purpose="This class contains the attributes that describe the client" persistent="false" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="ClientInformation.code">
+  <Attribute name="ClientInformation" purpose="This class contains the attributes that describe the client" persistent="false" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="ClientInformation.code">
     <Field name="clientName" label="Client name" type="string">
     </Field>
     <Field name="methodNames" label="Method names" type="stringVector">

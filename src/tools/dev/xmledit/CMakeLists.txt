@@ -13,6 +13,10 @@
 #   Kathleen Biagas, Tue May 5, 2023
 #   Disable qt6 forcing of defines for UNICODE.
 #
+#   Kathleen Biagas, Tue Sep 30 14:34:07 PDT 2025
+#   Renamed XMLEditMakefile to XMLEditCMake.
+#   Add XMLEditConditional.
+#
 #****************************************************************************
 
 SET(XMLEDIT_SOURCES
@@ -27,9 +31,10 @@ XMLEditFunctions.C
 XMLEditCode.C
 XMLEditCodeGeneratorWindow.C
 XMLEditCodeSelectionDialog.C
+XMLEditConditional.C
 XMLEditConstants.C
 XMLEditIncludes.C
-XMLEditMakefile.C
+XMLEditCMake.C
 )
 
 INCLUDE_DIRECTORIES(

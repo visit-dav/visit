@@ -1,3 +1,31 @@
+Target: xml2python
+Code: PseudocolorAttributes_SetPointColorByVar
+Prefix:
+Postfix:
+   if(cval && (cval != obj->data->GetPointColorByVar() &&
+                obj->data->GetRenderSurfaces()))
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        PyErr_WarnEx(PyExc_RuntimeWarning,
+                "Cannot color points by var if also rendering surfaces.\n", 0);
+        return PyInt_FromLong(0);
+    }
+
+Target: xml2python
+Code: PseudocolorAttributes_SetWireframeColorByVar
+Prefix:
+Postfix:
+    if(cval && (cval != obj->data->GetWireframeColorByVar() &&
+                obj->data->GetRenderSurfaces()))
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        PyErr_WarnEx(PyExc_RuntimeWarning,
+                "Cannot color wireframes by var if also rendering surfaces.\n", 0);
+        return PyInt_FromLong(0);
+    }
+
 Target: xml2atts
 Function: ChangesRequireRecalculation
 Declaration: bool ChangesRequireRecalculation(const PseudocolorAttributes &) const;
@@ -124,6 +152,7 @@ PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &
 
 }
 
+Target: xml2atts
 Function: Print
 Declaration: void Print(ostream &, bool) const;
 Definition:
@@ -176,6 +205,7 @@ PseudocolorAttributes::Print(ostream &out, bool selected_only) const
     out << "}";
 }
 
+Target: xml2atts
 Function: CreateCompatible
 Declaration: virtual AttributeSubject *CreateCompatible(const std::string &) const;
 Definition:
@@ -241,34 +271,4 @@ PseudocolorAttributes::CreateCompatible(const std::string &tname) const
 
     return retval;
 }
-
-
-Target: xml2python
-Code: PseudocolorAttributes_SetWireframeColorByVar
-Prefix:
-Postfix:
-    if(cval && (cval != obj->data->GetWireframeColorByVar() &&
-                obj->data->GetRenderSurfaces()))
-    {
-        Py_XDECREF(packaged_args);
-        PyErr_Clear();
-        PyErr_WarnEx(PyExc_RuntimeWarning,
-                "Cannot color wireframes by var if also rendering surfaces.\n", 0);
-        return PyInt_FromLong(0);
-    }
-
-
-Target: xml2python
-Code: PseudocolorAttributes_SetPointColorByVar
-Prefix:
-Postfix:
-   if(cval && (cval != obj->data->GetPointColorByVar() &&
-                obj->data->GetRenderSurfaces()))
-    {
-        Py_XDECREF(packaged_args);
-        PyErr_Clear();
-        PyErr_WarnEx(PyExc_RuntimeWarning,
-                "Cannot color points by var if also rendering surfaces.\n", 0);
-        return PyInt_FromLong(0);
-    }
 

@@ -486,6 +486,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //
 //    Kathleen Biagas, Wed June 15, 2022
 //    Added crack_width.
+// 
+//    Justin Privitera, Wed Oct  8 14:13:21 PDT 2025
+//    Added call to CreateGlobalConstantFilters().
 //
 // ****************************************************************************
 
@@ -510,6 +513,8 @@ avtFunctionExpr::CreateFilters(string functionName)
     if((f = CreateImageProcessingFilters(functionName)) != 0)
         return f;
     if((f = CreateTimeAndValueFilters(functionName)) != 0)
+        return f;
+    if((f = CreateGlobalConstantFilters(functionName)) != 0)
         return f;
 
     if (functionName == "enumerate")

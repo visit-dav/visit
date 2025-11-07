@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: Print
 Declaration: void Print(ostream &, int = 0) const;
 Definition:
@@ -152,6 +153,7 @@ avtSubsetsMetaData::Print(ostream &out, int indent) const
     }
 }
 
+Target: xml2atts
 Function: AddGraphEdge
 Declaration: void AddGraphEdge(int head, int tail);
 Definition:
@@ -173,6 +175,7 @@ avtSubsetsMetaData::AddGraphEdge(int head, int tail)
     graphEdges.push_back(tail);
 }
 
+Target: xml2atts
 Function: SetChunksForSet
 Declaration: void SetChunksForSet(int setId, std::vector<int> &chunks);
 Definition:
@@ -190,6 +193,7 @@ void avtSubsetsMetaData::SetChunksForSet(int setId, std::vector<int> &chunks)
     SetChunksForSet(setId, &chunks[0], (int) chunks.size());
 }
 
+Target: xml2atts
 Function: avtSubsetsMetaData1
 Declaration: avtSubsetsMetaData(const char *catName, int catCount, int maxTopoDim);
 Definition:
@@ -210,6 +214,7 @@ avtSubsetsMetaData::avtSubsetsMetaData(const char *catName, int catCount, int ma
     this->maxTopoDim = maxTopoDim;
 }
 
+Target: xml2atts
 Function: avtSubsetsMetaData2
 Declaration: avtSubsetsMetaData(const std::string &catName, int catCount, int maxTopoDim);
 Definition:
@@ -227,6 +232,7 @@ avtSubsetsMetaData::avtSubsetsMetaData(const std::string &catName, int catCount,
     *this = avtSubsetsMetaData(catName.c_str(), catCount, maxTopoDim);
 }
 
+Target: xml2atts
 Function: SetChunksForSet2
 Declaration: void SetChunksForSet(int setId, const int *chunks, int len);
 Definition:

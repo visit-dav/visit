@@ -165,6 +165,9 @@ QvisRenderingWindow::~QvisRenderingWindow()
 //   Kathleen Biagas, Thu Aug 28 15:52:57 PDT 2025
 //   Removed objectRepresentation widget, no longer used.
 //
+//   Kathleen Biagas, Thu Oct 15, 2025
+//   Removed remnant of widgets associated with objectRepresentation.
+//
 // ****************************************************************************
 
 QWidget *
@@ -503,17 +506,6 @@ QvisRenderingWindow::CreateBasicPage()
             this, SLOT(processMultiresolutionSmallestCellText()));
 
     mrLayout->addRow(multiresolutionSmallestCellLabel, multiresolutionSmallestCellLineEdit);
-
-    //
-    // Create the surface rep widgets.
-    //
-    QGroupBox *drawObj = new QGroupBox(tr("Draw objects as"));
-    drawObj->setCheckable(false);
-    basicLayout->addWidget(drawObj);
-
-    QGridLayout *objLayout = new QGridLayout();
-    objLayout->setContentsMargins(10,10,10,10);
-    drawObj->setLayout(objLayout);
 
     //
     // Create the stereo widgets.

@@ -204,6 +204,16 @@
 //    Kathleen Biagas, Thu Jul 24, 2025 
 //    vtkm::vtkmdiympi_nompi needs to be handled differently. 
 //
+//    Kathleen Biagas, Tue Oct  7 11:56:25 PDT 2025
+//    Remove WIN32DEFINES (windefs) support, now handled as a Conditional
+//    Definitions in .code file.
+//
+//    Kathleen Biagas, Thu Oct  9, 2025
+//    Add support for Conditional CXXFlags.
+//    Modified Condition Definitions to write 'add_compile_definitions'
+//    instead of 'add_definitions' which requires -D prefix to be part of
+//    the definition.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -510,7 +520,24 @@ class CMakeGeneratorPlugin : public Plugin
             for (int i = 0; i < conditions.size(); ++i)
             {
                 out << "if(" << conditions[i] << ")" << Endl;
-                out << "    add_definitions(";
+                out << "    add_compile_definitions(";
+                out << defs[i];
+                out << ")" << Endl;
+                out << "endif()" << Endl;
+                out << Endl;
+            }
+        }
+    }
+
+    void WriteCMake_ConditionalCXXFlags(QTextStream &out)
+    {
+        QStringList conditions, defs;
+        if(GetCondition("CXXFlags:", conditions, defs))
+        {
+            for (int i = 0; i < conditions.size(); ++i)
+            {
+                out << "if(" << conditions[i] << ")" << Endl;
+                out << "    add_compile_options(";
                 out << defs[i];
                 out << ")" << Endl;
                 out << "endif()" << Endl;
@@ -555,8 +582,17 @@ class CMakeGeneratorPlugin : public Plugin
         }
     }
 
+    // ----------------------------------------------------------------
+    //  Modifications:
+    //    Kathleen Biagas, Tue Oct 21, 2025
+    //    Added 'prefix' argument that specifies whether we want the
+    //    'Prefix' code (prefix==true) or 'Postfix' code (prefix == false).
+    //    Updated logic accordingly and added a beginning newline to keep
+    //    the CMakeLists.txt legible.
+    // ----------------------------------------------------------------
+
     void
-    WriteCMake_AdditionalCode(QTextStream &out)
+    WriteCMake_AdditionalCode(QTextStream &out, bool prefix)
     {
         if (atts != NULL && atts->codeFile != NULL)
         {
@@ -566,13 +602,13 @@ class CMakeGeneratorPlugin : public Plugin
             {
                 if (targets[i] == "xml2cmake")
                 {
-                    if (!first[i].isEmpty())
+                    if (prefix && !first[i].isEmpty())
                     {
-                        out << first[i] << Endl;
+                        out << "\n" << first[i] << Endl;
                     }
-                    if (!second[i].isEmpty())
+                    else if (!prefix && !second[i].isEmpty())
                     {
-                        out << second[i] << Endl;
+                        out << "\n" << second[i] << Endl;
                     }
                 }
             }
@@ -712,6 +748,13 @@ class CMakeGeneratorPlugin : public Plugin
         return false;
     }
 
+    // ----------------------------------------------------------------
+    //  Modifications:
+    //    Kathleen Biagas, Tue Oct 21, 2025
+    //    Added Calls to WriteCMake_AdditionalCode to get Prefix and
+    //    Postfix 'Code:' logic if present.
+    // ----------------------------------------------------------------
+
     void WriteCMake_PlotOperator(QTextStream &out,
                          const QString &guilibname,
                          const QString &viewerlibname)
@@ -725,6 +768,9 @@ class CMakeGeneratorPlugin : public Plugin
             out << "ADD_" << type.toUpper() << "_CODE_GEN_TARGETS(" << name << ")" << Endl;
             out << Endl;
         }
+
+        WriteCMake_AdditionalCode(out, true);
+
         out << "SET(COMMON_SOURCES" << Endl;
         out << name << "PluginInfo.C" << Endl;
         out << name << "CommonPluginInfo.C" << Endl;
@@ -837,6 +883,7 @@ class CMakeGeneratorPlugin : public Plugin
             out << Endl;
 
         WriteCMake_ConditionalDefinitions(out);
+        WriteCMake_ConditionalCXXFlags(out);
 
         if (!vtk9_libs.empty())
         {
@@ -967,6 +1014,8 @@ class CMakeGeneratorPlugin : public Plugin
 
         CMakeAdd_EngineTargets(out);
 
+        WriteCMake_AdditionalCode(out, false);
+
         out << "VISIT_INSTALL_" << type.toUpper() << "_PLUGINS(${INSTALLTARGETS})" << Endl;
 
         if (using_dev)
@@ -984,6 +1033,13 @@ class CMakeGeneratorPlugin : public Plugin
 #endif
     }
 
+    // ----------------------------------------------------------------
+    //  Modifications:
+    //    Kathleen Biagas, Tue Oct 21, 2025
+    //    Added Calls to WriteCMake_AdditionalCode to get Prefix and
+    //    Postfix 'Code:' logic if present.
+    // ----------------------------------------------------------------
+
     void WriteCMake_Database(QTextStream &out)
     {
         bool useFortran = false;
@@ -998,6 +1054,9 @@ class CMakeGeneratorPlugin : public Plugin
         out << ")" << Endl;
         out << Endl;
         }
+
+        WriteCMake_AdditionalCode(out, true);
+
         out << "SET(COMMON_SOURCES" << Endl;
         out << ""<<name<<"PluginInfo.C" << Endl;
         out << ""<<name<<"CommonPluginInfo.C" << Endl;
@@ -1122,19 +1181,8 @@ class CMakeGeneratorPlugin : public Plugin
         if (!defs.empty())
             out << Endl;
 
-        // Pass Win32-only defines
-        if (!windefs.empty())
-        {
-            out << "if(WIN32)" << Endl;
-            for (size_t i=0; i<windefs.size(); i++)
-            {
-                out << "    add_compile_definitions(" << windefs[i] << ")" << Endl;
-            }
-            out << "endif()"<< Endl;
-            out << Endl;
-        }
-
         WriteCMake_ConditionalDefinitions(out);
+        WriteCMake_ConditionalCXXFlags(out);
 
         if (!vtk9_libs.empty())
         {
@@ -1204,6 +1252,9 @@ class CMakeGeneratorPlugin : public Plugin
         {
             CMakeAdd_EngineTargets(out);
         }
+
+        WriteCMake_AdditionalCode(out, false);
+
         out << "VISIT_INSTALL_DATABASE_PLUGINS(${INSTALLTARGETS})" << Endl;
         if (using_dev)
         {
@@ -1214,6 +1265,13 @@ class CMakeGeneratorPlugin : public Plugin
         out << Endl;
     }
 
+    // ----------------------------------------------------------------
+    //  Modifications:
+    //    Kathleen Biagas, Tue Oct 21, 2025
+    //    Removed call to WriteCMake_AdditionalCode.  The calls are
+    //    now made in WriteCMake_Database and WriteCMake_PlotOperator
+    //    functions to handle both Prefix and Postfix code.
+    // ----------------------------------------------------------------
     void WriteCMake(QTextStream &out)
     {
         const char *visithome = getenv("VISITARCHHOME");
@@ -1312,8 +1370,6 @@ class CMakeGeneratorPlugin : public Plugin
             WriteCMake_Database(out);
         else
             WriteCMake_PlotOperator(out, guilibname, viewerlibname);
-
-        WriteCMake_AdditionalCode(out);
     }
 
 private:

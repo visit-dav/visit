@@ -152,3 +152,4 @@ OnionPeelViewerEnginePluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
 
     UpdateOperatorAtts(opAtts, plot);
 }
+

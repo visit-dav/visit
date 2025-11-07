@@ -1,3 +1,4 @@
+Target: xml2atts
 Function: CopyAttributes
 Declaration: virtual bool CopyAttributes(const AttributeGroup *);
 Definition:
@@ -42,6 +43,7 @@ BoxAttributes::CopyAttributes(const AttributeGroup *atts)
     return retval;
 }
 
+Target: xml2atts
 Function: CreateCompatible
 Declaration: virtual AttributeSubject *CreateCompatible(const std::string &) const;
 Definition:

@@ -4,10 +4,10 @@
       <Field name="variable" label="Dump Variable" type="variablename" vartypes="01000000000">
       </Field>
       <Field name="lowerBound" label="Lower Bound" type="double">
-        -9999999999999999538762658202121142272.000000
+        -1e+37
       </Field>
       <Field name="upperBound" label="Upper Bound" type="double">
-        9999999999999999538762658202121142272.000000
+        1e+37
       </Field>
       <Field name="outputFile" label="Output File" type="string">
         visit_zonedump.zod

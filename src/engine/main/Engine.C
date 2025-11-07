@@ -428,6 +428,9 @@ Engine::Engine() : EngineBase(), viewerArgs(), destinationFormat(), rpcExecutors
 //    Brad Whitlock, Mon Oct 10 11:23:14 PDT 2011
 //    Added enginePropertiesRPC.
 //
+//    Eric Brugger, Tue Oct 28 13:39:08 PDT 2025
+//    I added code to delete the plot and operator plugin AttributeSubjects.
+//
 // ****************************************************************************
 
 Engine::~Engine()
@@ -455,6 +458,12 @@ Engine::~Engine()
 #ifdef DEBUG_MEMORY_LEAKS
     delete parsingExprList;
 #endif
+
+    // Delete the plot and operator plugin AttributeSubjects. The plot
+    // and operator plugin info classes don't delete them so we are
+    // deleting them here.
+    netmgr->GetPlotPluginManager()->FreeEnginePluginInfoAtts();
+    netmgr->GetOperatorPluginManager()->FreeEnginePluginInfoAtts();
 
     // Delete the network manager last since it deletes plugin managers
     // and our RPC's may need to call plugin AttributeSubject destructors.
@@ -780,6 +789,11 @@ public:
 //   Kathleen Biagas, Wed June 18, 2025
 //   Remove vtkOffScreenRenderingFactory, no longer needed (VTK 9.5)
 //
+//   Kathleen Biagas, Wed Oct 1, 2025
+//   Add a component-name string argument to InitVTK::Initialize.
+//   It will be used for creating a vtkLogger callback to write their log
+//   info to VisIt's debug log.
+//
 // ****************************************************************************
 
 void
@@ -793,7 +807,13 @@ Engine::InitializeCompute()
     }
 
     int setupTimer = visitTimer->StartTimer();
-    InitVTK::Initialize();
+    std::string compName("engine");
+#ifdef PARALLEL
+    compName += std::string("_par_") + std::to_string(PAR_Rank());
+#else
+    compName += std::string("_ser");
+#endif
+    InitVTK::Initialize(compName);
     InitVTKRendering::Initialize();
 #ifdef HAVE_LIBVTKM
     vtkm::cont::Initialize();

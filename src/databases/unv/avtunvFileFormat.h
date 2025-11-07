@@ -6,15 +6,18 @@
 //                            avtunvFileFormat.h                           //
 // ************************************************************************* //
 
-#ifndef AVT_unv_FILE_FORMAT_H
-#define AVT_unv_FILE_FORMAT_H
+#ifndef AVT_UNV_FILE_FORMAT_H
+#define AVT_UNV_FILE_FORMAT_H
 
 #include <avtSTSDFileFormat.h>
 
+#include <cstdint>
 #include <string>
 #include <vector>
 #include <set>
 #include <zlib.h>
+
+class DBOptionsAttributes;
 
 // Define my classes for the mesh
 class UnvRange { // Element class
@@ -53,6 +56,19 @@ public:
     };
 };
 
+class unvHashlab { // A 64 bits hash for nodes positions
+public:
+  int number;     // Numbered nodes
+  uint64_t label; // Hash value
+  struct compare_unvHashlab
+  {
+    bool operator () (const unvHashlab& n1, const unvHashlab& n2) const
+    {
+      return (n1.label < n2.label);
+    };
+  };
+};
+
 class UnvInterface { // Interface class
 public:
     int number;
@@ -82,6 +98,7 @@ public:
     std::string name ;
     std::vector<UnvFace> faces;
 };
+
 // ****************************************************************************
 //  Class: avtunvFileFormat
 //
@@ -95,9 +112,9 @@ public:
 
 class avtunvFileFormat : public avtSTSDFileFormat
 {
-public:
-    avtunvFileFormat(const char *filename);
-    virtual           ~avtunvFileFormat() {;};
+  public:
+                       avtunvFileFormat(const char *fname, const DBOptionsAttributes *);
+    virtual           ~avtunvFileFormat() {;}
 
     //
     // This is used to return unconvention data -- ranging from material
@@ -125,11 +142,12 @@ public:
     virtual vtkDataArray  *GetVar(const char *);
     virtual vtkDataArray  *GetVectorVar(const char *);
 
-protected:
+  protected:
     // DATA MEMBERS
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
     virtual void           ReadFile();
+
     virtual int is3DKnownElt(int ); // Provides 3D element value in connectivity nodefac array
     virtual int is2DKnownElt(int ); // Provides 2D element value in connectivity nodefac array
     virtual int is1DKnownElt(int ); // Provides 1D element value in connectivity nodefac array
@@ -159,9 +177,9 @@ protected:
     char * fileinfo_str ;
     int nbnodes ; // Total number of nodes in the mesh
     int maxnodl ; // Maximum node label in the mesh
-    int nb3dmats ; // Highest material numbre for 3D elements
-    int nb2dmats ; // Highest material numbre for 3D elements
-    int nb1dmats ; // Highest material numbre for 3D elements
+    int nb3dmats ; // Highest material number for 3D elements
+    int nb2dmats ; // Highest material number for 2D elements
+    int nb1dmats ; // Highest material number for 1D elements
     int nb3dcells ; // Store the total number of volume cells
     int nb2dcells ; // Store the total number of surface cells
     int nb1dcells ; // Store the total number of surface cells
@@ -184,6 +202,7 @@ protected:
     std::vector<UnvFace> freeUnvFaces; // List of free faces for 3D mesh.
     std::set<UnvInterface, UnvInterface::compare_UnvInterface> meshUnvInterfaces;
     std::vector<UnvInterface> listUnvInterfaces;
+    std::vector<std::string> headerMaterials;
 };
 
 

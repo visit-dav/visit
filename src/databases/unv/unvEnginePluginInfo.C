@@ -3,6 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include <unvPluginInfo.h>
+#include <avtunvWriter.h>
 
 VISIT_DATABASE_PLUGIN_ENTRY(unv,Engine)
 
@@ -21,6 +22,6 @@ VISIT_DATABASE_PLUGIN_ENTRY(unv,Engine)
 avtDatabaseWriter *
 unvEnginePluginInfo::GetWriter(void)
 {
-    return NULL;
+    return new avtunvWriter(writeOptions);
 }
 
