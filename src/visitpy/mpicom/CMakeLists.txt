@@ -20,6 +20,9 @@
 #  For PYTHON_ADD_PIP_SETUP change DEST_DIR from lib/site-packages to
 #  simply site-packages. The lib part handled in PYTHON_ADD_PIP_SETUP.
 #
+#  Kathleen Biagas, Thu Nov 6, 2025
+#  Use MPI::MPI_C target for linking with mpi.
+#
 #****************************************************************************
 
 set(MPICOM_PY_SOURCES py_src/__init__.py

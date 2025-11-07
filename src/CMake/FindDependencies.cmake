@@ -19,6 +19,9 @@ if(LINUX)
     find_package(X11 REQUIRED)
 endif()
 
+if(VISIT_PARALLEL)
+    include(${CMAKE_CURRENT_LIST_DIR}/VisItParallel.cmake)
+endif()
 
 # some things needed by VTK that aren't automatically setup yet:
 

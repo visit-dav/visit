@@ -727,6 +727,13 @@ class CMakeGeneratorPlugin : public Plugin
         {
             out << "cmake_minimum_required(VERSION 3.24 FATAL_ERROR)\n" << Endl;
             out << "project(" << name << "_" << type << "_plugin)\n" << Endl;
+
+            out << "# if you want to use a particular instance of MPI" << Endl;
+            out << "# uncomment one of the following and fill in with" << Endl;
+            out << "# a path proper for your MPI installation." << Endl;
+            out << "# set(VISIT_MPI_COMPILER /path/to/mpicc)" << Endl;
+            out << "# set(VISIT_MPI_HOME /path/to/mpi_root_dir)\n" << Endl;
+
             if(installpublic)
             {
                 out << "set(VISIT_PLUGIN_DIR \"" << qvisitplugdirpub
