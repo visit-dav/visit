@@ -294,6 +294,9 @@ avtMFEMFileFormat::FetchDataFromCatFile(string const &cat_path, string const &ob
 //
 //    Cyrus Harrison, Fri Sep 26 09:06:42 PDT 2025
 //    Add support for Quadrature Functions
+// 
+//    Justin Privitera, Fri Nov  7 14:12:05 PST 2025
+//    Fixed a bug causing the LOD to be set to the maximum.
 //
 // ****************************************************************************
 void
