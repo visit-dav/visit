@@ -1257,7 +1257,7 @@ avtDatabaseWriter::GroupWrite(const std::string &plotName,
                 // RemoveUnusedPoints returns input dataset or new cleaned dataset
                 vtkDataSet *clean_ds = RemoveUnusedPoints(in_ds);
 
-                WriteChunk(in_ds, chunkID, domainId, label);
+                WriteChunk(clean_ds, chunkID, domainId, label);
                 chunkID++;
                 ++nWritten;
 
