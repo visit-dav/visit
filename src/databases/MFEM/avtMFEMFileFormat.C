@@ -294,6 +294,9 @@ avtMFEMFileFormat::FetchDataFromCatFile(string const &cat_path, string const &ob
 //
 //    Cyrus Harrison, Fri Sep 26 09:06:42 PDT 2025
 //    Add support for Quadrature Functions
+// 
+//    Justin Privitera, Fri Nov  7 14:12:05 PST 2025
+//    Fixed a bug causing the LOD to be set to the maximum.
 //
 // ****************************************************************************
 void
@@ -354,7 +357,6 @@ avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         vector<string> field_names;
         vector<string> qf_mesh_names;
         dset.Fields(field_names);
-        bool have_qf = false;
 
         std::string qf_mesh_base_name =  dset_names[i] + "_quad_func_o";
 
@@ -362,11 +364,11 @@ avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         {
             JSONRootEntry &field = dset.Field(field_names[j]);
 
-            int ilod = md->GetMeshes(i).LODs;
+            int ilod = 0;
             if(field.HasTag("lod"))
             {
                 std::string slod = field.Tag("lod");
-                ilod = std::min(ilod,atoi(slod.c_str()));
+                ilod = atoi(slod.c_str());
             }
 
             selectedLOD = std::max(selectedLOD,ilod);
