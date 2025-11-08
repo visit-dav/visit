@@ -1566,6 +1566,36 @@ function printvariables
     done
 }
 
+function printfiles
+{
+    printf "The list of third party library files that are downloaded.\n"
+
+    # Loop over the different groups (required, optional, extra).
+    for (( bv_i=0; bv_i < ${#grouplibs_name[*]}; ++bv_i ))
+    do
+        group=`echo ${grouplibs_name[$bv_i]} | sed 's/./\U&/'`
+        printf "\n${group} files:\n\n"
+
+        # Loop over the libraries in the current group.
+        for lib in `echo ${grouplibs_deps[$bv_i]}`;
+        do
+            # Convert the library name from lower to upper case.
+            lib2=`echo "${lib}" | tr 'a-z' 'A-Z'`
+            # Only print environment variables that contain "FILE".
+            # There is one exception "PYTHON_FILE_SUFFIX", which we
+            # want to ignore.
+            # We only want the library name, so take the part after
+            # the "=" sign.
+            printenv | grep ${lib2} | grep "FILE" | grep -v "SUFFIX" | cut -d "=" -f 2
+            # If we are doing the Python library, we also want
+            # environment that start with "PY".
+            if [[ "$lib2" == PYTHON ]]; then
+                printenv | grep "PY_" | grep "FILE" | cut -d "=" -f 2
+            fi
+        done
+    done
+}
+
 # *************************************************************************** #
 # Modifications:
 #   Kathleen Biagas, Friday May 16, 2025
@@ -1689,6 +1719,7 @@ function usage
     printf "%-20s <%s>\n" "--log-file"  "filename"
     printf "%-20s %s [%s]\n" ""  "Write build log to provided filename" "$LOG_FILE"
     printf "%-20s %s [%s]\n" "--print-vars" "Display user settable environment variables" "no"
+    printf "%-20s %s [%s]\n" "--print-files" "Display the third party library files that are downloaded" "no"
     printf "%-20s %s\n" "--server-components-only" ""
     printf "%-20s %s\n" "" "Only build VisIt's server components"
     printf "%-20s %s [%s]\n" "" "(mdserver,vcl,engine)." "$DO_SERVER_COMPONENTS_ONLY"
