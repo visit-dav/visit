@@ -110,7 +110,7 @@
 #    tuolumne. Set the LD_LIBRARY_PATH on elcap and tuolumne.
 #
 #    Eric Brugger, Mon Nov 10 13:30:01 PST 2025
-#    Collapsed the 3 cases for elcap, rzadams and tuolumne into
+#    Collapsed the 3 build cases for elcap, rzadams and tuolumne into
 #    tuolumne since they are now the same.
 #
 #-----------------------------------------------------------------------
