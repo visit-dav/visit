@@ -1566,6 +1566,69 @@ function printvariables
     done
 }
 
+function printfiles
+{
+    # The output is either "txt" or "html".
+    output=$1
+
+    # Output the heading. Either a title or the table tag.
+    if [[ "$output" == txt ]]; then
+        printf "The list of third party library files that are downloaded.\n"
+    else
+        printf "<table>\n"
+    fi
+
+    # Loop over the different groups (required, optional, extra).
+    for (( bv_i=0; bv_i < ${#grouplibs_name[*]}; ++bv_i ))
+    do
+        group=`echo ${grouplibs_name[$bv_i]} | sed 's/./\U&/'`
+        if [[ "$output" == txt ]]; then
+            printf "\n${group} files:\n\n"
+        else
+            printf "<tr><td><b>${group}</b></td></tr>\n"
+        fi
+
+        # Loop over the libraries in the current group.
+        for lib in `echo ${grouplibs_deps[$bv_i]}`;
+        do
+            # Convert the library name from lower to upper case.
+            lib2=`echo "${lib}" | tr 'a-z' 'A-Z'`
+            # Only print environment variables that contain "FILE".
+            # There is one exception "PYTHON_FILE_SUFFIX", which we
+            # want to ignore.
+            # We only want the library name, so take the part after
+            # the "=" sign.
+            lib2_libs=`printenv | grep ${lib2} | grep "FILE" | grep -v "SUFFIX" | cut -d "=" -f 2`
+            for lib2_lib in `echo ${lib2_libs}`;
+            do
+	        if [[ "$output" == txt ]]; then
+                    printf "${lib2_lib}\n"
+                else
+                    printf "<tr><td>${lib2_lib}</td></tr>\n"
+                fi
+            done
+            # If we are doing the Python library, we also want
+            # environment that start with "PY".
+            if [[ "$lib2" == PYTHON ]]; then
+                lib2_libs=`printenv | grep "PY_" | grep "FILE" | cut -d "=" -f 2`
+                for lib2_lib in `echo ${lib2_libs}`;
+                do
+	            if [[ "$output" == txt ]]; then
+                        printf "${lib2_lib}\n"
+                    else
+                        printf "<tr><td>${lib2_lib}</td></tr>\n"
+                    fi
+                done
+            fi
+        done
+    done
+
+    # Output closing table tag if html.
+    if [[ "$output" == html ]]; then
+        printf "</table>\n"
+    fi
+}
+
 # *************************************************************************** #
 # Modifications:
 #   Kathleen Biagas, Friday May 16, 2025
@@ -1689,6 +1752,8 @@ function usage
     printf "%-20s <%s>\n" "--log-file"  "filename"
     printf "%-20s %s [%s]\n" ""  "Write build log to provided filename" "$LOG_FILE"
     printf "%-20s %s [%s]\n" "--print-vars" "Display user settable environment variables" "no"
+    printf "%-20s %s [%s]\n" "--print-files" "Display the third party libraries" "no"
+    printf "%-20s %s [%s]\n" "--print-files-html" "Display the third party libraries as html" "no"
     printf "%-20s %s\n" "--server-components-only" ""
     printf "%-20s %s\n" "" "Only build VisIt's server components"
     printf "%-20s %s [%s]\n" "" "(mdserver,vcl,engine)." "$DO_SERVER_COMPONENTS_ONLY"
