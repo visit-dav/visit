@@ -466,7 +466,6 @@ vtkQtRenderWindow::moveEvent(QMoveEvent *re)
 // Purpose:
 //   Method that sets the VTK render window dpi
 //
-//
 // Programmer: Cyrus Harrison
 // Creation:   Wed Sep 24 09:04:56 PDT 2025
 //
