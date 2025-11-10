@@ -396,7 +396,7 @@ void vtkVisItScalarBarActor::BuildTitle(vtkViewport *viewport)
   //
   // Set the font properties.
   //
-  int fontSize =  int(GetScaledFontSize(viewport, FontHeight));
+  int fontSize =  int(GetDPIScaledFontSize(viewport, FontHeight));
 
   vtkTextProperty *tprop = this->TitleActor->GetTextProperty();
   tprop->SetFontSize(fontSize);
