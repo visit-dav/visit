@@ -183,6 +183,10 @@
 #
 #   Eric Brugger, Fri Oct 31 13:53:46 PDT 2025
 #   I changed some output to go to the buildlog instead of standard out.
+#
+#   Eric Brugger, Fri Nov  7 10:32:18 PST 2025
+#   I changed the time limit on the batch job from 8 to 10 hours. I
+#   increased the number of cores used to build visit from 36 to 56.
 # 
 
 
@@ -343,7 +347,7 @@ hostname >> ../buildlog 2>&1
 git --version >> ../buildlog 2>&1
 echo "rm -f .git/index.lock" >> ../buildlog 2>&1
 rm -f .git/index.lock >> ../buildlog 2>&1
-echo "git checkout develop" >> ../buildlog 2>&1
+echo "git checkout develop started at: \`date\`" >> ../buildlog 2>&1
 git checkout develop >> ../buildlog 2>&1
 
 # ensure submodule is up to date
@@ -453,9 +457,9 @@ else
         $repoDir/src >> ../buildlog 2>&1
 fi
 
-make -k -j 36 1>./make.out 2>./make.err
+make -k -j 56 1>./make.out 2>./make.err
 make -k manuals 1>./make.out 2>./make.err
-make -k -j 36 package 1>./make.out 2>./make.err
+make -k -j 56 package 1>./make.out 2>./make.err
 if test $? -ne 0; then
     echo "Source build FAILED at: \`date\`" | mail -s "Source build FAILED" $userEmail
     exit 1
@@ -680,7 +684,7 @@ if test "$testHost" = "poodle" ; then
     hostName=`hostname`
     subTag=`date +%Y-%m-%d-%H:%M`
     ./checkout_poodle $subTag
-    sbatch --partition=pbatch --account=wbronze --time=8:00:00 --ntasks=36 --nodes=1 --tasks-per-node=36 -o ${hostName}_testit_${subTag}.out ./runit_poodle $subTag
+    sbatch --partition=pbatch --account=wbronze --time=10:00:00 --ntasks=56 --nodes=1 --tasks-per-node=56 -o ${hostName}_testit_${subTag}.out ./runit_poodle $subTag
     sleep 28800
     ./postit_poodle $subTag
 fi
