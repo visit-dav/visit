@@ -374,6 +374,9 @@ int vtkVisItScalarBarActor::RenderOverlay(vtkViewport *viewport)
 //    Brad Whitlock, Mon Feb 27 16:12:33 PST 2012
 //    Switch to vtkTextActor.
 //
+//    Cyrus Harrison, Mon Nov 10 11:46:19 PST 2025
+//    Use DPI aware text scaling helper.
+//
 // ****************************************************************************
 
 // Build the title for this actor 
@@ -393,7 +396,7 @@ void vtkVisItScalarBarActor::BuildTitle(vtkViewport *viewport)
   //
   // Set the font properties.
   //
-  int fontSize = (int)(FontHeight * viewSize[1]); 
+  int fontSize =  int(GetScaledFontSize(viewport, FontHeight));
 
   vtkTextProperty *tprop = this->TitleActor->GetTextProperty();
   tprop->SetFontSize(fontSize);
@@ -430,6 +433,9 @@ void vtkVisItScalarBarActor::BuildTitle(vtkViewport *viewport)
 //    No longer call AdjustRangeFormat ... just use the number format from
 //    input.
 //
+//    Cyrus Harrison, Mon Nov 10 11:46:19 PST 2025
+//    Use DPI aware text scaling helper.
+
 void vtkVisItScalarBarActor::BuildRange(vtkViewport *viewport)
 {
   int* viewSize = viewport->GetSize(); 
@@ -459,7 +465,7 @@ void vtkVisItScalarBarActor::BuildRange(vtkViewport *viewport)
   this->RangeActor->SetInput(rangeString);
   delete [] rangeString;
 
-  int fontSize = (int)(this->FontHeight * viewSize[1]); 
+  int fontSize =  int(GetDPIScaledFontSize(viewport, FontHeight));
 
   vtkTextProperty *rprop = this->RangeActor->GetTextProperty();
   rprop->SetFontSize(fontSize);
@@ -526,6 +532,9 @@ void vtkVisItScalarBarActor::BuildRange(vtkViewport *viewport)
 //    Kathleen Biagas, Tue May  7 16:11:52 PDT 2013
 //    VTK's text renderer now renders empty strings as 'blobs', so send a space
 //    instead of an empty string to get around this for now.
+//
+//    Cyrus Harrison, Mon Nov 10 11:46:19 PST 2025
+//    Use DPI aware text scaling helper.
 //
 // ****************************************************************************
 
@@ -782,7 +791,7 @@ vtkVisItScalarBarActor::BuildLabels(vtkViewport * viewport, double bo,
         break;
     }  // end switch
 
-  int fontSize = (int)(FontHeight * viewSize[1]); 
+  int fontSize =  int(GetDPIScaledFontSize(viewport, FontHeight));
 
   for (i = 0; i < this->NumberOfLabelsBuilt; ++i)
     {
@@ -1129,6 +1138,9 @@ vtkVisItScalarBarActor::BuildTics(double origin, double width,
 //    Brad Whitlock, Mon Feb 27 16:12:33 PST 2012
 //    Switch to vtkTextActor.
 //
+//    Cyrus Harrison, Mon Nov 10 11:46:19 PST 2025
+//    Use DPI aware text scaling helper.
+//
 // **********************************************************************
 
 void vtkVisItScalarBarActor::BuildColorBar(vtkViewport *viewport)
@@ -1145,7 +1157,7 @@ void vtkVisItScalarBarActor::BuildColorBar(vtkViewport *viewport)
   //
   // Determine the size and position of the color bar
   //
-  int halfFontSize = (int)((this->FontHeight * viewSize[1]) / 2.);
+  int halfFontSize = int(GetDPIScaledFontSize(viewport, FontHeight) / 2.0 );
 
   double barOrigin;
   int rsizePixels[2];
@@ -2206,4 +2218,35 @@ vtkVisItScalarBarActor::GetTextActorSize(vtkViewport *viewport,
   mapper->SetTextProperty(text->GetTextProperty());
   mapper->GetSize(viewport, size);
   mapper->Delete();
+}
+
+
+// ****************************************************************************
+// Method: vtkVisItScalarBarActor::GetDPIScaledFontSize
+//
+// Purpose:
+//   Helper for font size scaling that takes into account DPI settings
+//
+// Arguments:
+//   viewport    Pointer to vtk viewport
+//   fontHeight  Desired font height (usally this->FontHeight)
+//
+// Returns:  Scaled font size
+//
+//
+// Programmer: Cyrus Harrison
+// Creation:   Mon Nov 10 11:03:28 PST 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+double
+vtkVisItScalarBarActor::GetDPIScaledFontSize(vtkViewport *viewport,
+                                             double fontHeight)
+{
+  // Desired size seems relative to common dpi (72)
+  // divide DPI to avoid extra large fonts
+  vtkWindow *win = viewport->GetVTKWindow();
+  double desiredSizePixels = (viewport->GetSize()[1] * fontHeight * 72.0 / double(win->GetDPI()));
+  return desiredSizePixels * 1.05;
 }

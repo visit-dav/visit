@@ -420,17 +420,44 @@ vtkQtRenderWindow::showEvent(QShowEvent *e)
 //
 // Modifications:
 //
+//  Cyrus Harrison, Mon Nov 10 10:20:38 PST 2025
+//  Call setRenderWindowDPI to detect DPI changes due display window changes
+//
 // ****************************************************************************
 
 void
 vtkQtRenderWindow::resizeEvent(QResizeEvent *re)
 {
+    // force check of current DPI
     setRenderWindowDPI();
     // Handle the resize and then record the size of the GL widget since that's
     // the size that we care about.
     QMainWindow::resizeEvent(re);
     if (d->resizeEventCallback)
         d->resizeEventCallback(d->resizeEventData);
+}
+
+// ****************************************************************************
+// Method: vtkQtRenderWindow::moveEvent
+//
+// Purpose:
+//   Method that gets called by qt when a move event occurs.
+//
+// Arguments:
+//   re        A pointer to the Qt move event structure.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Mon Nov 10 10:20:38 PST 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+vtkQtRenderWindow::moveEvent(QMoveEvent *re)
+{
+    setRenderWindowDPI();
+    QMainWindow::moveEvent(re);
 }
 
 // ****************************************************************************
@@ -454,12 +481,10 @@ vtkQtRenderWindow::setRenderWindowDPI()
     // Check DPI vs current screen
     int current_screen_dpi = qRound(this->screen()->logicalDotsPerInch());
     int current_render_window_dpi = render_window->GetDPI();
-    
-    std::cout << "setRenderWindowDPI (vtk render window) " << current_render_window_dpi << " vs (screen) " << current_screen_dpi  << std::endl;
 
     if(current_screen_dpi != current_render_window_dpi)
     {
-       std::cout << "changed (vtk render window) " << current_render_window_dpi << " vs (screen) " << current_screen_dpi  << std::endl;
-       render_window->SetDPI(current_screen_dpi);
+        // force dpi detection
+        render_window->DetectDPI();
     }
 }
