@@ -11,6 +11,7 @@
 //-----------------------------------------------------------------------------
 // visit includes
 //-----------------------------------------------------------------------------
+#include <visit-config.h>
 #include "avtDatabaseMetaData.h"
 #include "avtResolutionSelection.h"
 
@@ -57,7 +58,9 @@
 //-----------------------------------------------------------------------------
 // mfem includes
 //-----------------------------------------------------------------------------
+#ifdef HAVE_LIBMFEM
 #include "mfem.hpp"
+#endif
 
 
 #ifdef PARALLEL
@@ -78,7 +81,9 @@
 
 using std::string;
 using namespace conduit;
+#ifdef HAVE_LIBMFEM
 using namespace mfem;
+#endif
 
 const std::string avtBlueprintFileFormat::DISPLAY_NAME("display_name");
 
@@ -1160,9 +1165,14 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
 
         if(n_topo.has_child("grid_function"))
         {
+#ifdef HAVE_LIBMFEM
             BP_PLUGIN_INFO(mesh_topo_name << " is an mfem mesh");
             is_mfem_mesh = true;
             topo_names_to_gf_names[topo_name] = n_topo["grid_function"].as_string();
+#else
+            BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                "Detected mfem mesh, but mfem blueprints are not enabled");
+#endif
         }
 
         string coordset_name = n_topo["coordset"].as_string();
@@ -1259,6 +1269,7 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
         // check for assocated quad func meshes
         if(topos_to_quad_func_topos.count(topo_name) )
         {
+#ifdef HAVE_LIBMFEM
             BP_PLUGIN_INFO("Adding quadtrature function meshes for topology: " << topo_name );
             // loop over all qf topos assoc'd with this main topo
             // add a mesh for each
@@ -1275,10 +1286,20 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
                 m_mesh_and_topo_info[mesh_qf_name]["topo"] = qf_topo;
                 m_mesh_and_topo_info[mesh_qf_name]["quad_func"] = "true";
             }
+#else
+            BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                "Detected quadtrature function mesh which requires mfem support");
+#endif
         }
 
         if(is_mfem_mesh)
         {
+#ifndef HAVE_LIBMFEM
+            std::ostringstream err_oss;
+            err_oss << "avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata: "
+                        << "detected an mfem mesh when mfem is disabled"
+            BP_PLUGIN_EXCEPTION1(VisItException, err_oss.str());
+#endif
             // if we have a mfem mesh, add extra element_color variable
             md->Add(new avtScalarMetaData(mesh_topo_name + "/element_coloring",
                                           mesh_topo_name,
@@ -1374,6 +1395,7 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
             }
             else if (n_field.has_child("basis"))
             {
+#ifdef HAVE_LIBMFEM
                 // if any of the fields are mfem grid funcs, we may have to
                 // treat the mesh as an mfem mesh, even if it lacks a basis func
                 m_mfem_mesh_map[var_topo_name] = true;
@@ -1420,6 +1442,10 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
                         cent = AVT_ZONECENT;
                     }
                 }
+#else
+                BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                    "Detected mfem grid functions which require mfem support");
+#endif
             }
 
             // special 1D case
