@@ -1568,13 +1568,25 @@ function printvariables
 
 function printfiles
 {
-    printf "The list of third party library files that are downloaded.\n"
+    # The output is either "txt" or "html".
+    output=$1
+
+    # Output the heading. Either a title or the table tag.
+    if [[ "$output" == txt ]]; then
+        printf "The list of third party library files that are downloaded.\n"
+    else
+        printf "<table>\n"
+    fi
 
     # Loop over the different groups (required, optional, extra).
     for (( bv_i=0; bv_i < ${#grouplibs_name[*]}; ++bv_i ))
     do
         group=`echo ${grouplibs_name[$bv_i]} | sed 's/./\U&/'`
-        printf "\n${group} files:\n\n"
+        if [[ "$output" == txt ]]; then
+            printf "\n${group} files:\n\n"
+        else
+            printf "<tr><td><b>${group}</b></td></tr>\n"
+        fi
 
         # Loop over the libraries in the current group.
         for lib in `echo ${grouplibs_deps[$bv_i]}`;
@@ -1586,14 +1598,35 @@ function printfiles
             # want to ignore.
             # We only want the library name, so take the part after
             # the "=" sign.
-            printenv | grep ${lib2} | grep "FILE" | grep -v "SUFFIX" | cut -d "=" -f 2
+            lib2_libs=`printenv | grep ${lib2} | grep "FILE" | grep -v "SUFFIX" | cut -d "=" -f 2`
+            for lib2_lib in `echo ${lib2_libs}`;
+            do
+	        if [[ "$output" == txt ]]; then
+                    printf "${lib2_lib}\n"
+                else
+                    printf "<tr><td>${lib2_lib}</td></tr>\n"
+                fi
+            done
             # If we are doing the Python library, we also want
             # environment that start with "PY".
             if [[ "$lib2" == PYTHON ]]; then
-                printenv | grep "PY_" | grep "FILE" | cut -d "=" -f 2
+                lib2_libs=`printenv | grep "PY_" | grep "FILE" | cut -d "=" -f 2`
+                for lib2_lib in `echo ${lib2_libs}`;
+                do
+	            if [[ "$output" == txt ]]; then
+                        printf "${lib2_lib}\n"
+                    else
+                        printf "<tr><td>${lib2_lib}</td></tr>\n"
+                    fi
+                done
             fi
         done
     done
+
+    # Output closing table tag if html.
+    if [[ "$output" == html ]]; then
+        printf "</table>\n"
+    fi
 }
 
 # *************************************************************************** #
