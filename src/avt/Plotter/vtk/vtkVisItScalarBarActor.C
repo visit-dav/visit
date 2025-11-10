@@ -2233,7 +2233,6 @@ vtkVisItScalarBarActor::GetTextActorSize(vtkViewport *viewport,
 //
 // Returns:  Scaled font size
 //
-//
 // Programmer: Cyrus Harrison
 // Creation:   Mon Nov 10 11:03:28 PST 2025
 //
