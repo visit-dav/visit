@@ -536,7 +536,6 @@ void vtkVisItAxisActor2D::PrintSelf(ostream& os, vtkIndent indent)
 
 void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
 {
-
   int i, *x;
   vtkIdType ptIds[2];
   double p1[3], p2[3];
