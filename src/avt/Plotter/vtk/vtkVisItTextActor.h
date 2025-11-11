@@ -35,9 +35,12 @@ public:
   vtkGetMacro(TextHeight, float);
 
   void ComputeScaledFont(vtkViewport *viewport) override;
+
 protected:
   float TextHeight;
 
+  double GetDPIScaledFontSize(vtkViewport *viewport,
+                              double fontHeight);
   vtkVisItTextActor();
   ~vtkVisItTextActor();
 };
