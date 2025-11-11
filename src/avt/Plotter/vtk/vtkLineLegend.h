@@ -164,6 +164,8 @@ protected:
 private:
   vtkLineLegend(const vtkLineLegend&);
   void operator=(const vtkLineLegend&);
+  double         GetDPIScaledFontSize(vtkViewport *viewport,
+                                      double fontHeight);
 };
 
 
