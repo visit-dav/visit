@@ -57,10 +57,13 @@ public:
     void SetShowCallback(void (*callback)(void *), void*);
 
 protected:
+    void moveEvent(QMoveEvent* ) override;
     void resizeEvent(QResizeEvent *) override;
     void closeEvent(QCloseEvent *) override;
     void hideEvent(QHideEvent *) override;
     void showEvent(QShowEvent *) override;
+    void setRenderWindowDPI();
+
 private:
     vtkQtRenderWindowPrivate *d;
 };

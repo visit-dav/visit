@@ -347,6 +347,7 @@ protected:
   virtual void BuildColorBar(vtkViewport *);
   void BuildBoundingBox(vtkViewport *viewport);
   void GetTextActorSize(vtkViewport *viewport, vtkTextActor *text, int size[2]);
+  double GetDPIScaledFontSize(vtkViewport *viewport, double fontHeight);
 
   bool   ShouldCollapseDiscrete(void);
 
