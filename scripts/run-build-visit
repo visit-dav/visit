@@ -109,6 +109,10 @@
 #    Enabled IceT on elcap and rzadams. Enabled Moab on elcap and
 #    tuolumne. Set the LD_LIBRARY_PATH on elcap and tuolumne.
 #
+#    Eric Brugger, Mon Nov 10 13:30:01 PST 2025
+#    Collapsed the 3 build cases for elcap, rzadams and tuolumne into
+#    tuolumne since they are now the same.
+#
 #-----------------------------------------------------------------------
 
 #
@@ -119,8 +123,6 @@ rzwhippet=false
 rzvernal=false
 crossroads=false
 tuolumne=false
-elcap=false
-rzadams=false
 
 machine_name="unknown"
 
@@ -164,13 +166,11 @@ do
          ;;
       -rzadams)
          tuolumne=true
-         rzadams=true
          machine_name="rzadams"
          shift
          ;;
       -elcap)
          tuolumne=true
-         elcap=true
          machine_name="elcap"
          shift
          ;;
@@ -300,30 +300,6 @@ elif [ "$crossroads" = true ]; then
        --no-adios --no-gdal --no-nektarpp \
        --meson --ninja --xcb --xkbcommon --qwt --parallel \
        --no-visit --makeflags -j16 --thirdparty-path ${dest_dir}
-# We can probably compact the 3 cases back down into 1 since they
-# are all the same. We can verify this after doing the installs on
-# all 3 systems.
-# The cases for elcap and rzadams must be before tuolumne.
-# If any of these 3 machines is set then tuolumne is always set, but
-# if elcap or rzadams is also set, then we want the code for that
-# case to be run. By having them earlier in the if then, elif cases
-# we get that behaviour.
-elif [ "$elcap" = true ]; then
-   export LD_LIBRARY_PATH="/opt/cray/pe/lib64:/opt/cray/lib64:/opt/cray/pe/papi/7.2.0.2/lib64:/opt/cray/libfabric/2.1/lib64:${LD_LIBRARY_PATH}"
-   env CC=gcc \
-       CXX=g++ \
-       PAR_COMPILER=cc \
-       PAR_COMPILER_CXX=CC \
-       ./$build_visit_script --group ${dest_group} --required --optional --osmesa --parallel \
-       --qwt --no-uintah --no-visit --makeflags -j24 --thirdparty-path ${dest_dir}
-elif [ "$rzadams" = true ]; then
-   export LD_LIBRARY_PATH="/opt/cray/pe/lib64:/opt/cray/lib64:/opt/cray/pe/papi/7.2.0.2/lib64:/opt/cray/libfabric/2.1/lib64:${LD_LIBRARY_PATH}"
-   env CC=gcc \
-       CXX=g++ \
-       PAR_COMPILER=cc \
-       PAR_COMPILER_CXX=CC \
-       ./$build_visit_script --group ${dest_group} --required --optional --osmesa --parallel \
-       --qwt --no-uintah --no-visit --makeflags -j24 --thirdparty-path ${dest_dir}
 elif [ "$tuolumne" = true ]; then
    export LD_LIBRARY_PATH="/opt/cray/pe/lib64:/opt/cray/lib64:/opt/cray/pe/papi/7.2.0.2/lib64:/opt/cray/libfabric/2.1/lib64:${LD_LIBRARY_PATH}"
    env CC=gcc \

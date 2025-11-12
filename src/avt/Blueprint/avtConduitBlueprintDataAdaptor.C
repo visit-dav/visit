@@ -36,10 +36,7 @@
 #include <vtkVisItUtility.h>
 
 using namespace conduit;
-using namespace mfem;
 
-
-#include <avtMFEMDataAdaptor.h>
 
 // ****************************************************************************
 //  Method: Initialize
@@ -2782,6 +2779,12 @@ ConduitElementShapeSize(const std::string &shape_name)
     return res;
 }
 
+#ifdef HAVE_LIBMFEM
+
+using namespace mfem;
+
+#include <avtMFEMDataAdaptor.h>
+
 // ****************************************************************************
 mfem::Geometry::Type
 ElementShapeNameToMFEMShape(const std::string &shape_name)
@@ -3452,3 +3455,5 @@ avtConduitBlueprintDataAdaptor::BlueprintToMFEM::FieldToMFEMQuadratureFunction(
 
    return res;
 }
+
+#endif // HAVE_LIBMFEM

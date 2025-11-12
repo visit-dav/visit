@@ -401,7 +401,8 @@ private:
   void BuildAxis(vtkViewport *viewport);
 
   void           SetNumberOfLabelsBuilt(const int);
-
+  double         GetDPIScaledFontSize(vtkViewport *viewport,
+                                      double fontHeight);
   vtkTextActor  *TitleActor;
 
   vtkTextActor **LabelActors;
