@@ -769,7 +769,24 @@ def degen_hex_metrics():
     SetQueryOutputToValue()
     TestValueEQ("Volume of hex2 mesh", Query("Volume"), 4)
 
+def colmajor_vector_var():
+    """Handle col-major reordering for vector vars"""
+
+    OpenDatabase(silo_data_path("quadf77.silo"))
+
+    AddPlot("Label","f")
+    ResetView()
+    DrawPlots()
+    v = GetView3D()
+    v.imageZoom = 0.8
+    SetView3D(v)
+    TestAutoName()
+    DeleteAllPlots()
+
+    CloseDatabase(silo_data_path("quadf77.silo"))
+
 curvilinear_3d_surface()
 degen_hex_metrics()
+colmajor_vector_var()
 
 Exit()
