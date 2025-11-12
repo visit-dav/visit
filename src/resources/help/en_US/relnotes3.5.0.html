@@ -146,6 +146,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug with global mesh expressions causing them to only work on single domain data. They now function across all domains in parallel and in serial.</li>
   <li>Eliminated a couple of memory leaks. The first was in the operator that removes ghost zones and calculates external faces. The second was in the Resample operator.</li>
   <li>Fixed a crash with Curve plot when Curve contained more than 100000 points.</li>
+  <li>Fixed a problem where Silo plugin would not handle major_order setting for vector variables.</li>
 </ul>
 
 <a name="Build_features"></a>
