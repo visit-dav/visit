@@ -172,6 +172,11 @@ vtkLineLegend::RenderOverlay(vtkViewport *viewport)
 
 
 // Build the title for this actor 
+//
+// Modifications:
+//   Cyrus Harrison, Tue Nov 11 13:04:39 PST 2025
+//   Use dpi aware font scaling
+//
 //-----------------------------------------------------------------------------
 void 
 vtkLineLegend::BuildTitle(vtkViewport *viewport)
@@ -189,9 +194,8 @@ vtkLineLegend::BuildTitle(vtkViewport *viewport)
   //
   // Set the font properties.
   //
-  int fontSize = (int)(FontHeight * viewSize[1]); 
   vtkTextProperty *tprop = this->TitleMapper->GetTextProperty();
-  tprop->SetFontSize(fontSize);
+  tprop->SetFontSize(int(GetDPIScaledFontSize(viewport,FontHeight)));
   tprop->SetBold(this->Bold);
   tprop->SetItalic(this->Italic);
   tprop->SetShadow(this->Shadow);
@@ -584,5 +588,35 @@ vtkLineLegend::ShallowCopy(vtkProp *prop)
 
   // Now do superclass
   this->Superclass::ShallowCopy(prop);
+}
+
+
+// ****************************************************************************
+// Method: vtkLineLegend::GetDPIScaledFontSize
+//
+// Purpose:
+//   Helper for font size scaling that takes into account DPI settings
+//
+// Arguments:
+//   viewport    Pointer to vtk viewport
+//   fontHeight  Desired font height
+//
+// Returns:  Scaled font size
+//
+// Programmer: Cyrus Harrison
+// Creation:   Mon Nov 10 11:03:28 PST 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+double
+vtkLineLegend::GetDPIScaledFontSize(vtkViewport *viewport,
+                                    double fontHeight)
+{
+  // Desired size seems relative to common dpi (72)
+  // divide DPI to avoid extra large fonts
+  vtkWindow *win = viewport->GetVTKWindow();
+  double desiredSizePixels = (viewport->GetSize()[1] * fontHeight * 72.0 / double(win->GetDPI()));
+  return desiredSizePixels;// * 1.05;
 }
 
