@@ -13,7 +13,8 @@
 #include <avtPlot.h>
 
 #include <TensorAttributes.h>
-
+ 
+class     vtkSphereSource;
 class     avtTensorFilter;
 class     avtTensorGlyphMapper;
 class     avtGhostZoneFilter;
@@ -45,6 +46,9 @@ class     avtLookupTable;
 //    Kathleen Biagas, Wed Feb 29 13:10:11 MST 2012
 //    Add GetExtraInfoForPick.
 //
+//    Eric Brugger, Thu Nov 13 10:41:42 PST 2025
+//    Fix a memory leak with the vtkSphereSource.
+//
 // ****************************************************************************
 
 class avtTensorPlot : public avtPointDataPlot
@@ -68,6 +72,7 @@ class avtTensorPlot : public avtPointDataPlot
     TensorAttributes            atts;
     bool                        colorsInitialized;
 
+    vtkSphereSource            *sphere;
     avtTensorGlyphMapper       *tensorMapper;
     avtVariableLegend          *varLegend;
     avtLegend_p                 varLegendRefPtr;
