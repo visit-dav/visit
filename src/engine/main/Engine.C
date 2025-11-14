@@ -428,6 +428,9 @@ Engine::Engine() : EngineBase(), viewerArgs(), destinationFormat(), rpcExecutors
 //    Brad Whitlock, Mon Oct 10 11:23:14 PDT 2011
 //    Added enginePropertiesRPC.
 //
+//    Eric Brugger, Tue Oct 28 13:39:08 PDT 2025
+//    I added code to delete the plot and operator plugin AttributeSubjects.
+//
 // ****************************************************************************
 
 Engine::~Engine()
@@ -455,6 +458,12 @@ Engine::~Engine()
 #ifdef DEBUG_MEMORY_LEAKS
     delete parsingExprList;
 #endif
+
+    // Delete the plot and operator plugin AttributeSubjects. The plot
+    // and operator plugin info classes don't delete them so we are
+    // deleting them here.
+    netmgr->GetPlotPluginManager()->FreeEnginePluginInfoAtts();
+    netmgr->GetOperatorPluginManager()->FreeEnginePluginInfoAtts();
 
     // Delete the network manager last since it deletes plugin managers
     // and our RPC's may need to call plugin AttributeSubject destructors.

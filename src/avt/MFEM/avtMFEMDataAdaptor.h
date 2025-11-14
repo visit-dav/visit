@@ -43,6 +43,9 @@ class vtkDataArray;
 //    Cyrus Harrison, Thu Mar  2 09:36:49 PST 2023
 //    Added boundary mesh relater helpers
 //
+//    Cyrus Harrison Mon Sep 29 13:31:18 PDT 2025
+//    Added quadtrature function helpers.
+//
 // ****************************************************************************
 
 class AVTMFEM_API avtMFEMDataAdaptor
@@ -68,6 +71,8 @@ public:
                                            refinementMethod ref_method);
 
       static vtkDataSet   *BoundaryMeshToVTK(mfem::Mesh *mesh);
+      static vtkDataSet   *QuadratureFunctionMeshToVTK(mfem::Mesh *mesh,
+                                                       int order);
 
       static vtkDataArray *LegacyRefineGridFunctionToVTK(mfem::Mesh *mesh,
                                                          mfem::GridFunction *gf,
@@ -90,6 +95,25 @@ public:
                                                        int lod);
 
       static vtkDataArray *BoundaryAttributeToVTK(mfem::Mesh *mesh);
+
+      static vtkDataArray *QuadratureFunctionToVTK(mfem::QuadratureFunction *qf);
+
+      // Helpers for Quadrature Function style basis strings
+      static bool          CheckBasisStringForQuadratureFunction(const std::string &basis);
+      static void          ParseQuadratureFunctionBasisString(const std::string &basis,
+                                                              int &qf_order,
+                                                              int &qf_vdim);
+      static std::string   GenerateQuadratureFunctionBasisString(mfem::QuadratureFunction *qf);
+      static std::string   GenerateQuadratureFunctionBasisString(int qf_order,
+                                                                 int qf_vdim);
+
+      static bool          CheckMeshNameForQuadratureFunctionString(const std::string &mesh_name);
+      static void          ParseQuadratureFunctionMeshString(const std::string &qf_mesh_name,
+                                                             std::string &base_mesh_name,
+                                                             int &qf_order);
+      static std::string   GenerateQuadratureFunctionMeshName(const std::string &base_mesh,
+                                                              int qf_order);
+
 };
 
 inline std::ostream& operator<<(std::ostream& os, avtMFEMDataAdaptor::refinementMethod method)

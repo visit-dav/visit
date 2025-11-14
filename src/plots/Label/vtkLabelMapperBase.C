@@ -130,14 +130,21 @@ vtkLabelMapperBase::vtkLabelMapperBase() :
 //   Brad Whitlock, Mon Oct 25 16:12:27 PST 2004
 //   Changed the routine to release the display lists.
 //
+//   Eric Brugger, Tue Nov 11 13:41:42 PST 2025
+//   Removed unnecessary deletions and deletions that were casuing a crash.
+//   Added necessary deletions.
+//
 // ****************************************************************************
 
 vtkLabelMapperBase::~vtkLabelMapperBase()
 {
-    this->NodeLabelProperty->Delete();
-    this->CellLabelProperty->Delete();
-    // vtkSmartPointer handles deletion of the vtk objects.
-    this->TextMappers.clear(); 
+    ClearLabelCaches();
+
+    if (this->LabelBins)
+    {
+        delete[] this->LabelBins;
+        this->LabelBins = NULL;
+    }
 }
 
 //----------------------------------------------------------------------------

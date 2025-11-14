@@ -29,6 +29,10 @@
 //    to the actual ones currently being used.
 //     Should be easy to update when new keys are needed.
 //
+//    Kathleen Biagas, Tue Nov  4 16:38:29 PST 2025
+//    When loopling through 'keys' in ParseCondition, use # of keys instead of
+//    'sizeof(keys)'.  Prevents crash.
+//
 // ****************************************************************************
 
 class Conditional
@@ -65,7 +69,7 @@ class Conditional
     bool ParseCondition(QString &buff)
     {
         bool success = false;
-        for (size_t i = 0; i < sizeof(keys) && !success; ++i)
+        for (size_t i = 0; i < 5 && !success; ++i)
         {
             QString key(keys[i]);
             if (buff.left(key.size()) == key)

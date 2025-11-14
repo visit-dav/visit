@@ -11,6 +11,7 @@
 //-----------------------------------------------------------------------------
 // visit includes
 //-----------------------------------------------------------------------------
+#include <visit-config.h>
 #include "avtDatabaseMetaData.h"
 #include "avtResolutionSelection.h"
 
@@ -57,7 +58,9 @@
 //-----------------------------------------------------------------------------
 // mfem includes
 //-----------------------------------------------------------------------------
+#ifdef HAVE_LIBMFEM
 #include "mfem.hpp"
+#endif
 
 
 #ifdef PARALLEL
@@ -78,7 +81,9 @@
 
 using std::string;
 using namespace conduit;
+#ifdef HAVE_LIBMFEM
 using namespace mfem;
+#endif
 
 const std::string avtBlueprintFileFormat::DISPLAY_NAME("display_name");
 
@@ -1051,6 +1056,9 @@ avtBlueprintFileFormat::ReadBlueprintSpecset(int domain,
 //    all L2 are periodic) and mark fields for those meshes as nodal because
 //    they will use legacy LOR down the line which makes all fields nodal.
 //
+//    Cyrus Harrison, Fri Sep 26 12:40:56 PDT 2025
+//    Add support for Quadrature Functions
+//
 // ****************************************************************************
 void
 avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md,
@@ -1082,10 +1090,85 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
     std::map<std::string, std::string> topo_names_to_gf_names;
 
     //
+    // gather topos that have quad funcs defined on them
+    // 
+
+    // this is done before adding metadata for meshes 
+    // b/c we need to know if we need an extra cases for quad funcs
+
+    std::map<std::string, std::vector<std::string>> topos_to_quad_func_topos;
+    std::map<std::string, std::string> quad_func_fields_to_quad_func_topos;
+
+    if(n_mesh_info.has_child("fields"))
+    {
+        NodeConstIterator fields_itr = n_mesh_info["fields"].children();
+        while (fields_itr.has_next())
+        {
+            const Node &n_field = fields_itr.next();
+            const string field_name = fields_itr.name();
+            const string var_topo_name = n_field["topology"].as_string();
+
+            if (n_field.has_child("basis"))
+            {
+                const std::string basis = n_field["basis"].as_string();
+                if(avtMFEMDataAdaptor::CheckBasisStringForQuadratureFunction(basis))
+                {
+                    BP_PLUGIN_INFO(field_name << " is an mfem quadrature function");
+                    // found a quadrature function
+                    // quad func of specific order is a mesh visit can plot
+                    // we need to know the order, parsing from:
+                    // QF_{ORDER}_{VDIM}
+
+                    int qf_order = 0;
+                    int qf_vdim   = 0;
+                    avtMFEMDataAdaptor::ParseQuadratureFunctionBasisString(basis,
+                                                                           qf_order,
+                                                                           qf_vdim);
+
+                    // topo associated with this will be:
+                    // {topo_name}_quad_func_o{order}
+                    // construct the concrete name
+                    std::string qf_topo_name = avtMFEMDataAdaptor::GenerateQuadratureFunctionMeshName(var_topo_name, qf_order);
+
+                    BP_PLUGIN_INFO(field_name << " is defined on " << qf_topo_name);
+
+                    // we keep a map from main topos to quad func topos
+                    auto &mapped_qf_topos = topos_to_quad_func_topos[var_topo_name];
+                    // check if we have already added this to the map
+                    if(std::find(mapped_qf_topos.begin(),
+                                 mapped_qf_topos.end(),
+                                 qf_topo_name) == mapped_qf_topos.end() )
+                    {
+                        // we have not added this yet, do so
+                        mapped_qf_topos.push_back(qf_topo_name);
+                    }
+                    // associate the field with this quad func topo name
+                    quad_func_fields_to_quad_func_topos[field_name] = qf_topo_name;
+                }
+            }
+        }
+    }
+
+    //
+    // print main topo to quad func topos maps
+    //
+    for(auto const &qf_itr  : topos_to_quad_func_topos)
+    {
+        debug5 << "Quadrature function meshes based on topology `"
+               <<  qf_itr.first 
+               << "` : ";
+
+        for(auto qf_topo : qf_itr.second)
+        {
+            debug5 << qf_topo << " ";
+        }
+        debug5 << std::endl;
+    }
+
+    NodeConstIterator topos_itr = n_topos.children();
+    //
     // loop over topologies
     //
-    NodeConstIterator topos_itr = n_topos.children();
-
     while(topos_itr.has_next())
     {
         avtMeshType mt = AVT_UNKNOWN_MESH;
@@ -1104,9 +1187,14 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
 
         if(n_topo.has_child("grid_function"))
         {
+#ifdef HAVE_LIBMFEM
             BP_PLUGIN_INFO(mesh_topo_name << " is an mfem mesh");
             is_mfem_mesh = true;
             topo_names_to_gf_names[topo_name] = n_topo["grid_function"].as_string();
+#else
+            BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                "Detected mfem mesh, but mfem blueprints are not enabled");
+#endif
         }
 
         string coordset_name = n_topo["coordset"].as_string();
@@ -1200,8 +1288,40 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
         mmd->LODs = 20;
         md->Add(mmd);
 
+        // check for assocated quad func meshes
+        if(topos_to_quad_func_topos.count(topo_name) )
+        {
+#ifdef HAVE_LIBMFEM
+            BP_PLUGIN_INFO("Adding quadtrature function meshes for topology: " << topo_name );
+            // loop over all qf topos assoc'd with this main topo
+            // add a mesh for each
+            for(auto qf_topo : topos_to_quad_func_topos[topo_name])
+            {
+                std::string mesh_qf_name = mesh_name + "_" + qf_topo;
+                BP_PLUGIN_INFO("Adding quadrature function mesh: " << mesh_qf_name);
+                md->Add( new avtMeshMetaData(mesh_qf_name,
+                                                nblocks,
+                                                0, 0, 0,
+                                                ndims, ndims, mt));
+                m_mfem_mesh_map[mesh_qf_name] = true;
+                m_mesh_and_topo_info[mesh_qf_name]["mesh"] = mesh_name;
+                m_mesh_and_topo_info[mesh_qf_name]["topo"] = qf_topo;
+                m_mesh_and_topo_info[mesh_qf_name]["quad_func"] = "true";
+            }
+#else
+            BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                "Detected quadtrature function mesh which requires mfem support");
+#endif
+        }
+
         if(is_mfem_mesh)
         {
+#ifndef HAVE_LIBMFEM
+            std::ostringstream err_oss;
+            err_oss << "avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata: "
+                        << "detected an mfem mesh when mfem is disabled"
+            BP_PLUGIN_EXCEPTION1(VisItException, err_oss.str());
+#endif
             // if we have a mfem mesh, add extra element_color variable
             md->Add(new avtScalarMetaData(mesh_topo_name + "/element_coloring",
                                           mesh_topo_name,
@@ -1256,8 +1376,15 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
             string varname = fields_itr.name();
             string var_topo_name = n_field["topology"].as_string();
             string var_mesh_name = mesh_name + "_" + var_topo_name;
-            string varname_wmesh = var_mesh_name + "/" + varname;
 
+            // quad func case, mesh name is different
+            if( n_field.has_child("basis") &&
+                n_field["basis"].as_string().find("QF_") != std::string::npos )
+            {
+                var_mesh_name = mesh_name + "_" + quad_func_fields_to_quad_func_topos[varname];
+            }
+
+            string varname_wmesh = var_mesh_name + "/" + varname;
             // Make the variable name that the user sees.
             string varname_display(varname_wmesh);
             if(n_field.has_child(DISPLAY_NAME))
@@ -1290,17 +1417,23 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
             }
             else if (n_field.has_child("basis"))
             {
+#ifdef HAVE_LIBMFEM
                 // if any of the fields are mfem grid funcs, we may have to
                 // treat the mesh as an mfem mesh, even if it lacks a basis func
-
                 m_mfem_mesh_map[var_topo_name] = true;
 
+                const std::string basis = n_field["basis"].as_string();
                 if (periodic_topos.count(var_topo_name) > 0)
                 {
                     // if this field belongs to a topology that might be a periodic 
                     // mfem mesh then we are always nodal because we are going to
                     // fall back to legacy LOR.
                     cent = AVT_NODECENT;
+                }
+                else if(basis.find("QF_") != std::string::npos) // quad func case
+                {
+                    // quad func data is presented as zone centered on a special mesh
+                    cent = AVT_ZONECENT;
                 }
                 else if (m_refinement_method != avtMFEMDataAdaptor::refinementMethod::Discontinuous_Refine) // if new LOR is turned on
                 {
@@ -1331,6 +1464,10 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
                         cent = AVT_ZONECENT;
                     }
                 }
+#else
+                BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                    "Detected mfem grid functions which require mfem support");
+#endif
             }
 
             // special 1D case
@@ -2311,6 +2448,21 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
             abs_1d_curve_field_name = FileFunctions::Basename(abs_meshname);
         }
 
+        // check for fetch of quad points mesh
+        // {mesh_name}_quad_func_o{order}
+        bool is_qf_mesh = avtMFEMDataAdaptor::CheckMeshNameForQuadratureFunctionString(abs_meshname_str);
+        int qf_order = -1; // -1 == not quad points case
+
+        // if quadpts mesh find order and the base mesh name
+        if(is_qf_mesh)
+        {
+            std::string qf_mesh_name = abs_meshname_str;
+            avtMFEMDataAdaptor::ParseQuadratureFunctionMeshString(qf_mesh_name,
+                                                                  abs_meshname_str,
+                                                                  qf_order);
+        }
+
+        BP_PLUGIN_INFO(abs_meshname << " is quad func mesh = " << is_qf_mesh);
         // reads a single mesh into a blueprint conforming output
         ReadBlueprintMesh(domain, abs_meshname_str, data);
         // check for empty mesh case
@@ -2389,11 +2541,19 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
 
             // use mfem to refine and create a vtk dataset
             mfem::Mesh *mesh = avtConduitBlueprintDataAdaptor::BlueprintToMFEM::MeshToMFEM(data);
-            res = avtMFEMDataAdaptor::RefineMeshToVTK(mesh,
-                                                      domain,
-                                                      m_selected_lod+1,
-                                                      m_refinement_method);
 
+            if(is_qf_mesh)
+            {
+                res = avtMFEMDataAdaptor::QuadratureFunctionMeshToVTK(mesh,
+                                                                      qf_order);
+            }
+            else
+            {
+                res = avtMFEMDataAdaptor::RefineMeshToVTK(mesh,
+                                                          domain,
+                                                          m_selected_lod+1,
+                                                          m_refinement_method);
+            }
             // cleanup the mfem mesh
             delete mesh;
         }
@@ -2879,15 +3039,31 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                                                                                  *field_ptr);
             }
         }
-        // if we have a basis, this field is actually an mfem grid function
+        // if we have a basis, this field is actually an mfem grid function or quadrature function
         else if(field_ptr->has_child("basis"))
         {
+
             // TODO: we currently have to replace colons, brackets, etc
             // to fetch from the mesh metadata, is there a standard helper
             // util in VisIt that can take care of this for us?
             string abs_meshname = metadata->MeshForVar(sanitize_var_name(abs_varname_str));
 
-            // the grid function needs the mesh in order to refine
+            // we need an mfem mesh to construct a grid function or quadrature function
+
+            // check for qfunc mesh
+            // {mesh_name}_quad_func_o{order}
+            bool is_qf_mesh = avtMFEMDataAdaptor::CheckMeshNameForQuadratureFunctionString(abs_meshname);
+            int qf_order = -1; // -1 == not quad points case
+
+            // if quadpts mesh find order and the base mesh name
+            if(is_qf_mesh)
+            {
+                std::string qf_mesh_name = abs_meshname;
+                avtMFEMDataAdaptor::ParseQuadratureFunctionMeshString(qf_mesh_name,
+                                                                      abs_meshname,
+                                                                      qf_order);
+                BP_PLUGIN_INFO("base mesh for quadrature function  is: " <<abs_meshname);
+            }
 
             // read the mesh data
             Node n_mesh;
@@ -2903,28 +3079,44 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
             if(!blueprint::mesh::verify(n_mesh,verify_info))
             {
                 BP_PLUGIN_INFO("blueprint::mesh::verify failed for field "
-                               << abs_meshname << " [domain " << domain << "]" << endl
-                               << "Verify Info " << endl
-                               << verify_info.to_yaml() << endl
-                               << "Data Schema " << endl
-                               << n_mesh.schema().to_yaml());
+                            << abs_meshname << " [domain " << domain << "]" << endl
+                            << "Verify Info " << endl
+                            << verify_info.to_yaml() << endl
+                            << "Data Schema " << endl
+                            << n_mesh.schema().to_yaml());
                 return NULL;
             }
 
             // create an mfem mesh
             mfem::Mesh *mesh = avtConduitBlueprintDataAdaptor::BlueprintToMFEM::MeshToMFEM(n_mesh);
 
-            // create the grid fuction
-            mfem::GridFunction *gf =  avtConduitBlueprintDataAdaptor::BlueprintToMFEM::FieldToMFEM(mesh,
-                                                                                 *field_ptr);
-            // refine the grid function into a vtk data array
-            res = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh,
-                                                              gf,
-                                                              m_selected_lod+1,
-                                                              m_refinement_method);
+            // quad func case
+            if(is_qf_mesh)
+            {
+                BP_PLUGIN_INFO("creating mfem quadrature function");
+                mfem::QuadratureFunction *qf = avtConduitBlueprintDataAdaptor::BlueprintToMFEM::FieldToMFEMQuadratureFunction(mesh,
+                                                                                *field_ptr);
+                res = avtMFEMDataAdaptor::QuadratureFunctionToVTK(qf);
 
-            // cleanup mfem data
-            delete gf;
+                // cleanup mfem quad func
+                delete qf;
+            }
+            else // grid func case
+            {
+                BP_PLUGIN_INFO("creating mfem grid function");
+                // create the grid fuction
+                mfem::GridFunction *gf =  avtConduitBlueprintDataAdaptor::BlueprintToMFEM::FieldToMFEM(mesh,
+                                                                                *field_ptr);
+                // refine the grid function into a vtk data array
+                res = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh,
+                                                                  gf,
+                                                                  m_selected_lod+1,
+                                                                  m_refinement_method);
+
+                // cleanup mfem grid func
+                delete gf;
+            }
+            // cleanup mfem mesh
             delete mesh;
         }
 

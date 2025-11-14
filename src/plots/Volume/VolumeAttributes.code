@@ -25,6 +25,13 @@ if(ICET_FOUND)
     add_definitions(-DHAVE_ICET)
 endif()
 Postfix:
+if(ICET_FOUND)
+    target_link_libraries(EVolumePlot_ser ${ICET_FULLPATH_LIB})
+    if(VISIT_PARALLEL)
+       target_link_libraries(EVolumePlot_par ${ICET_FULLPATH_LIB})
+    endif()
+endif()
+
 if(HAVE_ANARI)
     target_sources(GVolumePlot PUBLIC
         anari/AnariVolumeWidget.C)
