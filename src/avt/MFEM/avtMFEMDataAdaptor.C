@@ -406,7 +406,6 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
         // that disconnects the result for us, we choose to fall back to legacy
         // LOR.
 
-        // TODO we want to revisit this and see if there is a better way
         // The problem is, there is no easy way to tell if a mesh is periodic.
         // We know that all periodic meshes are L2, but not all L2 meshes are
         // periodic. So our best bet is to catch all L2 meshes and fall back
@@ -990,7 +989,6 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
         // that disconnects the result for us, we choose to fall back to legacy
         // LOR.
 
-        // TODO we want to revisit this and see if there is a better way
         // The problem is, there is no easy way to tell if a mesh is periodic.
         // We know that all periodic meshes are L2, but not all L2 meshes are
         // periodic. So our best bet is to catch all L2 meshes and fall back
