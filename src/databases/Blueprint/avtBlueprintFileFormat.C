@@ -1292,7 +1292,7 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
         if(topos_to_quad_func_topos.count(topo_name) )
         {
 #ifdef HAVE_LIBMFEM
-            BP_PLUGIN_INFO("Adding quadtrature function meshes for topology: " << topo_name );
+            BP_PLUGIN_INFO("Adding quadrature function meshes for topology: " << topo_name );
             // loop over all qf topos assoc'd with this main topo
             // add a mesh for each
             for(auto qf_topo : topos_to_quad_func_topos[topo_name])
@@ -1310,7 +1310,7 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
             }
 #else
             BP_PLUGIN_EXCEPTION1(InvalidVariableException,
-                "Detected quadtrature function mesh which requires mfem support");
+                "Detected quadrature function mesh which requires mfem support");
 #endif
         }
 

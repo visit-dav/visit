@@ -428,7 +428,7 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
     }
 
     // refine the mesh
-    mfem::Mesh lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::GaussLobatto);
+    mfem::Mesh lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::ClosedUniform);
 
     vtkDataSet *res_ds = LowOrderMeshToVTK(&lo_mesh);
 
@@ -445,7 +445,7 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
     int orig_nelems = mesh->GetNE();
 
     GeometryRefiner refiner;
-    refiner.SetType(BasisType::GetQuadrature1D(mfem::BasisType::GaussLobatto));
+    refiner.SetType(BasisType::GetQuadrature1D(mfem::BasisType::ClosedUniform));
 
     int lor_nelems = lo_mesh.GetNE();
 
@@ -1065,7 +1065,7 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     
     // refine the mesh and convert to vtk
     // it would be nice if this was cached somewhere but we will do it again
-    mfem::Mesh lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::GaussLobatto);
+    mfem::Mesh lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::ClosedUniform);
     mfem::FiniteElementSpace lo_fes(&lo_mesh, lo_col, ho_fes->GetVDim());
     mfem::GridFunction lo_gf(&lo_fes);
     // transform the higher order function to a low order function
