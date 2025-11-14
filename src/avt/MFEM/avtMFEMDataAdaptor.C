@@ -418,84 +418,66 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
 
     AVT_MFEM_INFO("High Order Mesh is not periodic.");
 
-    if (ref_method == refinementMethod::LOR_Projection_Default)
+    // mfem::Mesh::MakeRefined does not yet support pyramids
+    if(mesh->GetNE() > 0)
     {
-        // mfem::Mesh::MakeRefined does not yet support pyramids
-        if(mesh->GetNE() > 0)
+        if(mesh->GetElement(0)->GetType() == mfem::Element::PYRAMID)
         {
-            if(mesh->GetElement(0)->GetType() == mfem::Element::PYRAMID)
-            {
-                AVT_MFEM_EXCEPTION1(InvalidVariableException,
-                                    "Current MFEM implementation does not support refining Meshes with Pyramids.");
-            }
+            AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                                "Current MFEM implementation does not support refining Meshes with Pyramids.");
         }
-
-        // refine the mesh
-        mfem::Mesh lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::GaussLobatto);
-
-        vtkDataSet *res_ds = LowOrderMeshToVTK(&lo_mesh);
-
-        /// ----------------
-        // add original cell ids, which associate our refined elements with the
-        // original mfem elements.
-        /// ----------------
-        // NOTE:
-        //  This counting pattern follows the implementation of
-        // mfem::Mesh::MakeRefined. If its implementation changes significantly,
-        // we will have to adapt this logic as well.
-        /// ----------------
-
-        int orig_nelems = mesh->GetNE();
-
-        GeometryRefiner refiner;
-        refiner.SetType(BasisType::GetQuadrature1D(mfem::BasisType::GaussLobatto));
-
-        int lor_nelems = lo_mesh.GetNE();
-
-        vtkUnsignedIntArray *orig_cell_ids = vtkUnsignedIntArray::New();
-        orig_cell_ids->SetName("avtOriginalCellNumbers");
-        orig_cell_ids->SetNumberOfComponents(2);
-        orig_cell_ids->SetNumberOfTuples(lor_nelems);
-
-        unsigned int *orig_cell_ids_ptr = orig_cell_ids->GetPointer(0);
-
-        int orig_cell_ids_idx=0;
-        // assoc refined elements with orig element
-        for (int el = 0; el < orig_nelems; el++)
-        {
-           Geometry::Type geom = mesh->GetElementGeometry(el);
-
-           int nvert = Geometry::NumVerts[geom];
-           RefinedGeometry &RG = *refiner.Refine(geom, lod);
-
-           for (int j = 0; j < RG.RefGeoms.Size()/nvert; j++)
-           {
-               orig_cell_ids_ptr[orig_cell_ids_idx] = static_cast<unsigned int>(domain);
-               orig_cell_ids_ptr[orig_cell_ids_idx+1] = static_cast<unsigned int>(el);
-               orig_cell_ids_idx+=2;
-           }
-        }
-
-        res_ds->GetCellData()->AddArray(orig_cell_ids);
-        orig_cell_ids->Delete();
-
-        return res_ds;
     }
-    else if (ref_method == refinementMethod::LOR_Nodal_Projection)
+
+    // refine the mesh
+    mfem::Mesh lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::GaussLobatto);
+
+    vtkDataSet *res_ds = LowOrderMeshToVTK(&lo_mesh);
+
+    /// ----------------
+    // add original cell ids, which associate our refined elements with the
+    // original mfem elements.
+    /// ----------------
+    // NOTE:
+    //  This counting pattern follows the implementation of
+    // mfem::Mesh::MakeRefined. If its implementation changes significantly,
+    // we will have to adapt this logic as well.
+    /// ----------------
+
+    int orig_nelems = mesh->GetNE();
+
+    GeometryRefiner refiner;
+    refiner.SetType(BasisType::GetQuadrature1D(mfem::BasisType::GaussLobatto));
+
+    int lor_nelems = lo_mesh.GetNE();
+
+    vtkUnsignedIntArray *orig_cell_ids = vtkUnsignedIntArray::New();
+    orig_cell_ids->SetName("avtOriginalCellNumbers");
+    orig_cell_ids->SetNumberOfComponents(2);
+    orig_cell_ids->SetNumberOfTuples(lor_nelems);
+
+    unsigned int *orig_cell_ids_ptr = orig_cell_ids->GetPointer(0);
+
+    int orig_cell_ids_idx=0;
+    // assoc refined elements with orig element
+    for (int el = 0; el < orig_nelems; el++)
     {
-        AVT_MFEM_EXCEPTION1(InvalidVariableException,
-                            "TODO MFEM LOR refinement method not implemented: " << ref_method);
+       Geometry::Type geom = mesh->GetElementGeometry(el);
+
+       int nvert = Geometry::NumVerts[geom];
+       RefinedGeometry &RG = *refiner.Refine(geom, lod);
+
+       for (int j = 0; j < RG.RefGeoms.Size()/nvert; j++)
+       {
+           orig_cell_ids_ptr[orig_cell_ids_idx] = static_cast<unsigned int>(domain);
+           orig_cell_ids_ptr[orig_cell_ids_idx+1] = static_cast<unsigned int>(el);
+           orig_cell_ids_idx+=2;
+       }
     }
-    else if (ref_method == refinementMethod::LOR_Zonal_Projection)
-    {
-        AVT_MFEM_EXCEPTION1(InvalidVariableException,
-                            "TODO MFEM LOR refinement method not implemented: " << ref_method);
-    }
-    else
-    {
-        AVT_MFEM_EXCEPTION1(InvalidVariableException,
-                            "Unknown MFEM LOR refinement method: " << ref_method);
-    }
+
+    res_ds->GetCellData()->AddArray(orig_cell_ids);
+    orig_cell_ids->Delete();
+
+    return res_ds;
 }
 
 
@@ -1062,29 +1044,25 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
         delete_gf_to_use = true;
     }
 
-    if (ref_method == refinementMethod::LOR_Nodal_Projection)
+    if (ref_method == refinementMethod::LOR_Nodal_Projection ||
+        (ref_method == refinementMethod::LOR_Projection_Default && h1))
     {
-        // TODO must convert all to H1
-        AVT_MFEM_EXCEPTION1(InvalidVariableException,
-                            "TODO MFEM LOR refinement method not implemented: " << ref_method);
-    }
-    else if (ref_method == refinementMethod::LOR_Zonal_Projection)
-    {
-        // TODO must convert all to L2
-        AVT_MFEM_EXCEPTION1(InvalidVariableException,
-                            "TODO MFEM LOR refinement method not implemented: " << ref_method);
-    }
-
-    if (h1)
-    {
+        // convert to H1
         // node centered
         lo_col = new mfem::LinearFECollection;
     }
-    else // l2
+    else if (ref_method == refinementMethod::LOR_Zonal_Projection ||
+             (ref_method == refinementMethod::LOR_Projection_Default && l2))
     {
+        // convert to L2
         // element centered
         int p = 0; // single scalar
         lo_col = new mfem::L2_FECollection(p, mesh->Dimension(), 1);
+    }
+    else
+    {
+        AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                            "Unknown MFEM LOR refinement method: " << ref_method);
     }
     
     // refine the mesh and convert to vtk
