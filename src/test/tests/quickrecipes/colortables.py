@@ -138,7 +138,8 @@ def createContinuous():
     for pt in ct:
         p = ColorControlPoint()
         # colors is RGBA and must be in range 0...255
-        p.colors = (pt[0] * 255, pt[1] * 255, pt[2] * 255, 255)
+        # Python3.13, need to explicitly cast the floating point to int
+        p.colors = (int(pt[0] * 255), int(pt[1] * 255), int(pt[2] * 255), 255)
         p.position = pt[3]
         ccpl.AddControlPoints(p)
     AddColorTable("myrainbow", ccpl)
