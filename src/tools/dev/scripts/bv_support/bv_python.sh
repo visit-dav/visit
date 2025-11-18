@@ -323,6 +323,16 @@ function bv_python_info
     export PY_BABEL_BUILD_DIR="babel-${PY_BABEL_VERSION}"
     export PY_BABEL_SHA256_CHECKSUM=""
 
+    export PY_COLORAMA_VERSION="0.4.6"
+    export PY_COLORAMA_FILE="colorama-${PY_COLORAMA_VERSION}.tar.gz"
+    export PY_COLORAMA_BUILD_DIR="colorama-${PY_COLORAMA_VERSION}"
+    export PY_COLORAMA_SHA256_CHECKSUM=""
+
+    export PY_ROMAN_NUMERALS_VERSION="3.1.0"
+    export PY_ROMAN_NUMERALS_FILE="roman_numerals-${PY_ROMAN_NUMERALS_VERSION}.tar.gz"
+    export PY_ROMAN_NUMERALS_BUILD_DIR="roman_numerals-${PY_ROMAN_NUMERALS_VERSION}"
+    export PY__SHA256_CHECKSUM=""
+
     export PY_SNOWBALLSTEMMER_VERSION="3.0.1"
     export PY_SNOWBALLSTEMMER_FILE="snowballstemmer-${PY_SNOWBALLSTEMMER_VERSION}.tar.gz"
     export PY_SNOWBALLSTEMMER_BUILD_DIR="snowballstemmer-${PY_SNOWBALLSTEMMER_VERSION}"
@@ -604,6 +614,8 @@ function bv_python_ensure
                             download_py_module ${PY_IMAGESIZE_FILE} ${PY_IMAGESIZE_URL}
                             download_py_module ${PY_ALABASTER_FILE} ${PY_ALABASTER_URL}
                             download_py_module ${PY_BABEL_FILE} ${PY_BABEL_URL}
+                            download_py_module ${PY_COLORAMA_FILE} ${PY_COLORAMA_URL}
+                            download_py_module ${PY_ROMAN_NUMERALS_FILE} ${PY_ROMAN_NUMERALS_URL}
                             download_py_module ${PY_SNOWBALLSTEMMER_FILE} ${PY_SNOWBALLSTEMMER_URL}
                             download_py_module ${PY_DOCUTILS_FILE} ${PY_DOCUTILS_URL}
                             download_py_module ${PY_PYGMENTS_FILE} ${PY_PYGMENTS_URL}
@@ -1327,6 +1339,16 @@ function build_sphinx
         return 1
     fi
 
+    download_py_module ${PY_COLORAMA_FILE} ${PY_COLORAMA_URL}
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    download_py_module ${PY_ROMAN_NUMERALS_FILE} ${PY_ROMAN_NUMERALS_URL}
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
     download_py_module ${PY_SNOWBALLSTEMMER_FILE} ${PY_SNOWBALLSTEMMER_URL}
     if test $? -ne 0 ; then
         return 1
@@ -1416,6 +1438,17 @@ function build_sphinx
     if test $? -ne 0 ; then
         return 1
     fi
+
+    extract_py_module ${PY_COLORAMA_BUILD_DIR} ${PY_COLORAMA_FILE} "colorama"
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    extract_py_module ${PY_ROMAN_NUMERALS_BUILD_DIR} ${PY_ROMAN_NUMERALS_FILE} "roman_numerals"
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
 
     extract_py_module ${PY_SNOWBALLSTEMMER_BUILD_DIR} ${PY_SNOWBALLSTEMMER_FILE} "snowballstemmer"
     if test $? -ne 0 ; then
@@ -1513,6 +1546,16 @@ function build_sphinx
     fi
 
     install_py_module ${PY_BABEL_BUILD_DIR} "babel"
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    install_py_module ${PY_COLORAMA_BUILD_DIR} "colorama"
+    if test $? -ne 0 ; then
+        return 1
+    fi
+
+    install_py_module ${PY_ROMAN_NUMERALS_BUILD_DIR} "roman_numerals"
     if test $? -ne 0 ; then
         return 1
     fi
