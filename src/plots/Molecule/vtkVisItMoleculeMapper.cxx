@@ -413,7 +413,7 @@ vtkVisItMoleculeMapper::vtkVisItMoleculeMapper()
   this->AtomPolyData = vtkPolyData::New();
   // This Register shouldn't be necessary, but it fixes a crash when
   // deleting the ImposterMapper when the ImposterMapper is used to
-  // render. This could result in a memory leak, but there it code in
+  // render. This could result in a memory leak, but there is code in
   // the destructor to address this issue.
   this->AtomPolyData->Register(this);
   // Connect the trivial producers to forward the glyph polydata
