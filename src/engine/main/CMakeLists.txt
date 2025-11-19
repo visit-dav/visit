@@ -151,18 +151,11 @@ target_link_libraries(engine_ser
     avtpipeline_ser
 )
 
-if(CONDUIT_FOUND AND MFEM_FOUND)
-    LINK_DIRECTORIES(
-        ${MFEM_LIBRARY_DIR}
-        ${CONDUIT_LIBRARY_DIR}
-        )
+if(TARGET avtblueprint)
     INCLUDE_DIRECTORIES(
-        ${MFEM_INCLUDE_DIR}
-        ${CONDUIT_INCLUDE_DIR}
         ${VISIT_SOURCE_DIR}/avt/Blueprint
         )
-    TARGET_LINK_LIBRARIES(engine_ser 
-        ${MFEM_LIB} 
+    TARGET_LINK_LIBRARIES(engine_ser
         avtblueprint
         )
 endif()

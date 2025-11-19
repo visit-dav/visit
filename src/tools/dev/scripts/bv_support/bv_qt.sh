@@ -181,6 +181,33 @@ index 3e6abaf4dda7..7295a159caf6 100644
 +        if(__opengl_fw_lib_path AND NOT __opengl_fw_lib_path MATCHES "/([^/]+)\\.framework$")
              get_filename_component(__opengl_fw_path "${__opengl_fw_lib_path}" DIRECTORY)
          endif()
+
+@@ -30,16 +34,17 @@
+             set(__opengl_fw_path "-framework OpenGL")
+         endif()
+ 
+-        find_library(WrapOpenGL_AGL NAMES AGL)
+-        if(WrapOpenGL_AGL)
+-            set(__opengl_agl_fw_path "${WrapOpenGL_AGL}")
+-        endif()
+-        if(NOT __opengl_agl_fw_path)
+-            set(__opengl_agl_fw_path "-framework AGL")
+-        endif()
++        # On Darwin XCode 26 and macOS versions moving forward, do not provide AGL
++        # find_library(WrapOpenGL_AGL NAMES AGL)
++        # if(WrapOpenGL_AGL)
++        #     set(__opengl_agl_fw_path "${WrapOpenGL_AGL}")
++        # endif()
++        # if(NOT __opengl_agl_fw_path)
++        #     set(__opengl_agl_fw_path "-framework AGL")
++        # endif()
+ 
+         target_link_libraries(WrapOpenGL::WrapOpenGL INTERFACE ${__opengl_fw_path})
+-        target_link_libraries(WrapOpenGL::WrapOpenGL INTERFACE ${__opengl_agl_fw_path})
++        # target_link_libraries(WrapOpenGL::WrapOpenGL INTERFACE ${__opengl_agl_fw_path})
+     else()
+         target_link_libraries(WrapOpenGL::WrapOpenGL INTERFACE OpenGL::GL)
+     endif()
 EOF
 
 }

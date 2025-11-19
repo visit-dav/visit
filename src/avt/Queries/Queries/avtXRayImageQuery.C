@@ -2677,6 +2677,9 @@ avtXRayImageQuery::WriteBlueprintMetadata(conduit::Node &metadata,
 //    Justin Privitera, Mon Aug  7 15:49:36 PDT 2023
 //    Warn to debug when missing energy group bounds for blueprint output and
 //    when provided energy group bounds are not the right size.
+// 
+//    Justin Privitera, Wed Oct 29 12:12:31 PDT 2025
+//    Adjusted the spatial extents meshes to be centered at the origin.
 //
 // ****************************************************************************
 #ifdef HAVE_CONDUIT
@@ -2717,16 +2720,19 @@ avtXRayImageQuery::WriteBlueprintMeshCoordsets(conduit::Node &coordsets,
     const double nearDx{detectorWidth  / imageSize[0]};
     const double nearDy{detectorHeight / imageSize[1]};
 
+    const double halfDetectorWidth{detectorWidth / 2.0};
+    const double halfDetectorHeight{detectorHeight / 2.0};
+
     // set up spatial extents coords
     conduit::Node &spatial_coords = coordsets["spatial_coords"];
     spatial_coords["type"] = "rectilinear";
     spatial_coords["values/x"].set(conduit::DataType::float64(x_coords_dim));
-    double *spatial_xvals = spatial_coords["values/x"].value();
-    for (int i = 0; i < x_coords_dim; i ++) { spatial_xvals[i] = i * nearDx; }
+    conduit::float64_array spatial_xvals = spatial_coords["values/x"].value();
+    for (int i = 0; i < x_coords_dim; i ++) { spatial_xvals[i] = i * nearDx - halfDetectorWidth; }
 
     spatial_coords["values/y"].set(conduit::DataType::float64(y_coords_dim));
-    double *spatial_yvals = spatial_coords["values/y"].value();
-    for (int i = 0; i < y_coords_dim; i ++) { spatial_yvals[i] = i * nearDy; }
+    conduit::float64_array spatial_yvals = spatial_coords["values/y"].value();
+    for (int i = 0; i < y_coords_dim; i ++) { spatial_yvals[i] = i * nearDy - halfDetectorHeight; }
 
     // include energy group bins in blueprint output if they are provided
     if (energyGroupBounds)

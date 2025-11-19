@@ -151,7 +151,10 @@ avtCurveConstructorFilter::~avtCurveConstructorFilter()
 //    Kathleen Biagas, Tue Dec 19, 2023
 //    Consolidate logic for no-labels and labels.
 //    Add varname and count to CreateSingleOutput.
-
+//
+//    Eric Brugger, Fri Nov 14 15:51:38 PST 2025
+//    Fix some memory leaks.
+//
 // ****************************************************************************
 
 void avtCurveConstructorFilter::Execute()
@@ -288,6 +291,13 @@ void avtCurveConstructorFilter::Execute()
     }
 
     SetOutputDataTree(outTree);
+
+    for (size_t i = 0; i < count; ++i)
+    {
+        if (ds[i] != NULL)
+            ds[i]->Delete();
+    }
+    delete [] ds;
 }
 
 
@@ -317,6 +327,10 @@ void avtCurveConstructorFilter::Execute()
 //    don't save multiple curves when outputArray is too large.
 //    Utilize same varname for single-curve output as would be used for
 //    multi-curve output.
+//
+//    Kathleen Biagas, Mon Oct 27, 2025
+//    Changed logic surrounding outputArray: don't add anything to it if
+//    the size will be more than 100000 items.
 //
 // ****************************************************************************
 
@@ -505,16 +519,20 @@ avtCurveConstructorFilter::CreateSingleOutput(avtDataTree_p inTree, const string
     }
     nPoints = sortedXC->GetNumberOfTuples();
     outGrid->SetDimensions(nPoints, 1, 1);
-    outputArray.clear();
-    for (int i = 0; i < nPoints; i++)
-    {
-        outputArray.push_back(sortedXC->GetTuple1(i));
-        outputArray.push_back(sortedVal->GetTuple1(i));
-    }
+
     string varname = (!label.empty() ? label : (pipelineVariable != NULL ? pipelineVariable : "Curve"));
+
+    outputArray.clear();
     // Limit outputArray size that we send back to the client.
-    if(outputArray.size() < 100000)
+    if(nPoints*2 < 100000)
     {
+        for (int i = 0; i < nPoints; i++)
+        {
+            outputArray.push_back(sortedXC->GetTuple1(i));
+            outputArray.push_back(sortedVal->GetTuple1(i));
+        }
+
+        // if there will be more than 1 output curve
         if (count > 1)
         {
             outputInfo[varname] = outputArray;

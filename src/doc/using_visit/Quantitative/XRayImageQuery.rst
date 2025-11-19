@@ -1741,18 +1741,18 @@ That picture lives in image space, where the x and y dimensions are given in pix
 The spatial extents mesh is the same picture that was taken by the simulated x ray detector, but living in physical space.
 Instead of the x and y dimensions representing pixels, the x and y dimensions here represent spatial values.
 In the example below, these dimensions are in centimeters.
-The x and y values run from 0 to the detector width and height values, respectively, that appear in the :ref:`Other_Metadata` section of the Blueprint output.
-The z dimension represents actual energy group bins.
-These are values that were passed in via the query arguments (see :ref:`Standard_Arguments` for more information).
+The x and y values are centered at the origin, such that half the detector width and height lies on either side of the origin.
+These width and hieght values appear in the :ref:`Other_Metadata` section of the Blueprint output.
+The z dimension represents actual energy group bins, which are values that are passed to the query via the query arguments (see :ref:`Standard_Arguments` for more information).
 In the Blueprint example below, the z dimension represents Kiloelectron Volts.
 
-Another way to think about the spatial extents mesh is if the basic mesh output was resized and then pasted on top of the near plane mesh (:ref:`Imaging_Planes`), you would get the spatial extents mesh (ignoring the z dimension).
+Another way to think about the spatial extents mesh is if the basic mesh output was resized and then pasted on top of the near plane mesh (:ref:`Imaging_Planes`) (and translated to the origin), you would get the spatial extents mesh (ignoring the z dimension).
 The rationale for including this mesh is twofold: 
 
 1. It provides yet another view of the data. Perhaps seeing the output with spatial coordinates in x and y is more useful than seeing it with pixel coordinates. If parallel projection is used (:ref:`Complete_Camera_Specification`), the spatial view of the output is far more useful.
 2. This mesh acts as a container for various interesting pieces of data that users may want to pass through the query. This is the destination for the ``spatial_units`` and ``energy_units`` (:ref:`XRay_Units`), which show up under ``coordsets/spatial_coords/units``. This is also where the energy group bounds (:ref:`Standard_Arguments`) appear in the output, under ``coordsets/spatial_coords/values/z``.
 
-If the energy group bounds were not provided by the user, or the provided bounds do not match the actual number of bins used in the ray trace, then there will be a message explaining what went wrong under ``coordsets/spatial_coords/info``, and the z values will go from 0 to *n* where *n* is the number of bins.
+If the energy group bounds were not provided by the user, or the provided bounds do not match the actual number of bins used in the ray trace, then there will be a message explaining this under ``coordsets/spatial_coords/info``, and the z values will go from 0 to *n* where *n* is the number of bins.
 
 The other mesh that is included, the Spatial Energy Reduced Mesh, is a simplification of the Spatial Extents Mesh.
 We collapse the information in the Spatial Extents Mesh into 2D by taking, for each x and y element (or pixel), the field value (either intensities or path lengths) to be the sum of the field values along the z axis scaled by the corresponding energy bin widths, if they are provided by the user.
@@ -1779,8 +1779,8 @@ The following is the example from :ref:`Overview_of_Output`, but with only the s
     spatial_coords: 
       type: "rectilinear"
       values: 
-        x: [-0.0, -0.0559830658094596, -0.111966131618919, ..., -22.3372432579744, -22.3932263237838]
-        y: [-0.0, -0.0559830641410342, -0.111966128282068, ..., -16.7389361781692, -16.7949192423103]
+        x: [-10.0, -9.0, -8.0, ..., 9.0, 10.0]
+        y: [-12.0, -11.0, -10.0, ..., 11.0, 12.0]
         z: [3.7, 4.2]
       units: 
         x: "cm"
@@ -1793,8 +1793,8 @@ The following is the example from :ref:`Overview_of_Output`, but with only the s
     spatial_energy_reduced_coords: 
       type: "rectilinear"
       values: 
-        x: [-0.0, -0.0559830658094596, -0.111966131618919, ..., -22.3372432579744, -22.3932263237838]
-        y: [-0.0, -0.0559830641410342, -0.111966128282068, ..., -16.7389361781692, -16.7949192423103]
+        x: [-10.0, -9.0, -8.0, ..., 9.0, 10.0]
+        y: [-12.0, -11.0, -10.0, ..., 11.0, 12.0]
       units: 
         x: "cm"
         y: "cm"

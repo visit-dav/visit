@@ -11,6 +11,7 @@
 #include <map>
 #include <utility>
 
+#include <Conditional.h>
 #include <XMLParserUtil.h>
 
 // ****************************************************************************
@@ -48,6 +49,14 @@
 //    Kathleen Biagas, Thu Oct 9, 2025
 //    Added CXXFlags to conditions.
 //
+//    Kathleen Biagas, Tue Oct 21, 2025
+//    Conditionals now handled by a std::vector of Conditional.
+//    Modified GetCondition accordingly.
+//    Removed GetAllConditions.
+//    Moved bulk of ParseCondition logic into Conditional class.
+//    Removed QStringPairVector and QStringQStringPairVectorMap and their
+//    iterators, as they were only used for conditionals.
+//
 // ****************************************************************************
 
 class CodeFile
@@ -55,10 +64,6 @@ class CodeFile
   private:
     typedef std::map<QString, std::pair<QString,QString> > QStringPairMap;
     typedef std::map<QString, QString> QStringQStringMap;
-    typedef std::vector<std::pair<QString,QString> > QStringPairVector;
-    typedef std::map<QString, QStringPairVector > QStringQStringPairVectorMap;
-    typedef QStringQStringPairVectorMap::iterator PVMit;
-    typedef QStringQStringPairVectorMap::const_iterator cPVMit;
     QString currentTarget;
     QString filename;
     QString filepath;
@@ -68,8 +73,9 @@ class CodeFile
     QStringPairMap    var;
     QStringPairMap    constant;
     QStringQStringMap init;
-    QStringQStringPairVectorMap    condition;
   public:
+    std::vector<Conditional *> conditions;
+
     CodeFile(const QString &f) : filename(f)
     {
         currentTarget = "xml2atts";
@@ -217,68 +223,17 @@ class CodeFile
                       QStringList &cond, QStringList &val) const
     {
         bool retval = false;
-        QString key = MakeKey(target, condType);
-        for(cPVMit it = condition.begin(); it != condition.end(); ++it)
+        for (size_t i = 0; i < conditions.size(); ++i)
         {
-            if(it->first == key)
+            Conditional *c = conditions[i];
+            if (target == c->target && c->keyVals.count(condType) != 0)
             {
-                QStringPairVector sec = it->second;
-                for (size_t i = 0; i < sec.size(); ++i)
-                {
-                    cond += sec[i].first;
-                    val  += sec[i].second;
-                }
+                cond += c->condition;
+                val  += c->keyVals.at(condType);
                 retval = true;
             }
         }
         return retval;
-    }
-
-    void GetAllConditions(QStringList &t, QStringList &c, QStringList &d,
-                      QStringList &cf, QStringList &m, QStringList &e) const
-    {
-        QString target, cond, ctype, val;
-
-        for(cPVMit it = condition.begin(); it != condition.end(); ++it)
-        {
-            SplitKey(it->first, target, ctype);
-            QStringPairVector sec = it->second;
-            for (size_t i = 0; i < sec.size(); ++i)
-            {
-                cond = sec[i].first;
-                val  = sec[i].second;
-            }
-            t.push_back(target);
-            c.push_back(cond);
-            if(ctype == "Definitions:")
-            {
-                d.push_back(val);
-                cf.push_back("");
-                m.push_back("");
-                e.push_back("");
-            }
-            if(ctype == "CXXFlags:")
-            {
-                cf.push_back(val);
-                d.push_back("");
-                m.push_back("");
-                e.push_back("");
-            }
-            else if(ctype == "MLinkLibraries:")
-            {
-                m.push_back(val);
-                d.push_back("");
-                cf.push_back("");
-                e.push_back("");
-            }
-            else if(ctype == "ELinkLibraries:")
-            {
-                e.push_back(val);
-                d.push_back("");
-                cf.push_back("");
-                m.push_back("");
-            }
-        }
     }
 
 private:
@@ -442,58 +397,16 @@ private:
 
     void ParseCondition(QString &buff, const QString &name, QTextStream &in)
     {
-        const char *keys[15] = {"Includes:", \
-                                "Definitions:", \
-                                "CXXFlags:", \
-                                "ILinkLibraries:", \
-                                "GLinkLibraries:", \
-                                "VLinkLibraries:", \
-                                "SLinkLibraries:", \
-                                "MLinkLibraries:", \
-                                "ELinkLibraries:", \
-                                "ISources:", \
-                                "GSources:", \
-                                "VSources:", \
-                                "SSources:", \
-                                "MSources:", \
-                                "ESources:"};
+        Conditional *cond = new Conditional(currentTarget, name);
+        bool addConditional = false;
         buff = in.readLine();
         while (!in.atEnd() && GetKeyword(buff).isNull())
         {
-            for (int i = 0; i < 15; ++i)
-            {
-                QString key(keys[i]);
-                if (buff.left(key.size()) == key)
-                {
-                    QString value(buff.mid(key.size()).trimmed());
-                    while (value.right(1) == "\n")
-                        value = value.left(value.length() - 1);
-                    if (!value.isEmpty())
-                    {
-                        QString thisKey = Key(key);
-                        PVMit it;
-                        std::pair<QString, QString> p(name, value);
-                        for(it = condition.begin(); it != condition.end(); ++it)
-                        {
-                            if (thisKey == it->first)
-                                break;
-                        }
-                        if (it == condition.end())
-                        {
-                            QStringPairVector pv;
-                            pv.push_back(p);
-                            condition[thisKey] = pv;
-                        }
-                        else
-                        {
-                            it->second.push_back(p);
-                        }
-                    }
-                    break;
-                }
-            }
+            addConditional |= cond->ParseCondition(buff);
             buff = in.readLine();
         }
+        if(addConditional)
+            conditions.push_back(cond);
     }
 
     QString Key(const QString &key) const

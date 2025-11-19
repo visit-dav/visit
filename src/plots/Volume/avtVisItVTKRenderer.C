@@ -664,10 +664,26 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
         if(m_anariEnabled)
         {
             LOCAL_DEBUG << "ANARI Volume Mapper " << std::endl;
+            vtkAnariVolumeMapper *anariVolumeMapper = nullptr;
 
-            vtkAnariVolumeMapper *anariVolumeMapper = vtkAnariVolumeMapper::New();
-            m_volumeMapper = anariVolumeMapper;
+            if(m_volumeMapper != nullptr &&
+               m_volumeMapper->IsA("vtkAnariVolumeMapper"))
+            {
+                debug5 << "Reusing existing ANARI Volume Mapper " << std::endl;
+                anariVolumeMapper = vtkAnariVolumeMapper::SafeDownCast(m_volumeMapper);
+            }
+            else
+            {
+                if(m_volumeMapper != nullptr)
+                {
+                    m_volumeMapper->Delete();
+                }
 
+                debug5 << "Creating new ANARI Volume Mapper " << std::endl;
+                anariVolumeMapper = vtkAnariVolumeMapper::New();
+                m_volumeMapper = anariVolumeMapper;
+            }
+            
             if(!anariVolumeMapper->GetInitialized())
             {
                 anariVolumeMapper->Init();

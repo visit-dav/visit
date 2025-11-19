@@ -292,10 +292,16 @@ avtMFEMFileFormat::FetchDataFromCatFile(string const &cat_path, string const &ob
 //   Cyrus Harrison, Fri Mar  3 10:45:12 PST 2023
 //   Add support for directly reading mfem mesh files.
 //
+//    Cyrus Harrison, Fri Sep 26 09:06:42 PDT 2025
+//    Add support for Quadrature Functions
+// 
+//    Justin Privitera, Fri Nov  7 14:12:05 PST 2025
+//    Fixed a bug causing the LOD to be set to the maximum.
+//
 // ****************************************************************************
 void
 avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
-{    
+{
     ///
     /// Open the root file
     ///
@@ -306,7 +312,7 @@ avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     vector<string>dset_names;
     root_md.DataSets(dset_names);
 
-    // enumerate datasets)
+    // enumerate datasets
     selectedLOD = 0;
     for(int i=0;i<(int)dset_names.size();i++)
     {
@@ -326,7 +332,8 @@ avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                           extents,
                           nblocks,
                           block_origin,
-                          spatial_dim, topo_dim);
+                          spatial_dim,
+                          topo_dim);
 
         md->GetMeshes(i).LODs = atoi(dset.Mesh().Tag("max_lods").c_str());
         // Indicate that we're providing original cells.
@@ -345,14 +352,25 @@ avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                                dset_names[i].c_str(),
                                AVT_ZONECENT);
 
+
         /// add mesh variables
-        vector<string>field_names;
+        vector<string> field_names;
+        vector<string> qf_mesh_names;
         dset.Fields(field_names);
+
+        std::string qf_mesh_base_name =  dset_names[i] + "_quad_func_o";
+
         for(size_t j=0;j<field_names.size();j++)
         {
             JSONRootEntry &field = dset.Field(field_names[j]);
-            std::string slod = field.Tag("lod");
-            int ilod = std::min(md->GetMeshes(i).LODs,atoi(slod.c_str()));
+
+            int ilod = 0;
+            if(field.HasTag("lod"))
+            {
+                std::string slod = field.Tag("lod");
+                ilod = atoi(slod.c_str());
+            }
+
             selectedLOD = std::max(selectedLOD,ilod);
             std::string f_assoc = field.Tag("assoc");
 
@@ -404,6 +422,58 @@ avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                                           field_names[j].c_str(),
                                           dset_names[i].c_str(),
                                           AVT_NODECENT,3);
+                }
+            }
+            else if(f_assoc == "quadrature")
+            {
+                if(!field.HasTag("order"))
+                {
+                    // order of quad func is required to register mesh
+                    debug5 << "Warning: quadrature field `" <<  field_names[j]
+                           << "` is missing `order` tag" <<  " ...skipping it." << endl;
+                    continue;
+                }
+
+                std::string qf_mesh_name = qf_mesh_base_name + field.Tag("order");
+                // add if we have not seen a qf mesh of this order
+                auto qf_mesh_itr = std::find(qf_mesh_names.begin(),
+                                             qf_mesh_names.end(),
+                                             qf_mesh_name);
+
+                if(qf_mesh_itr == qf_mesh_names.end())
+                {
+                    qf_mesh_names.push_back(qf_mesh_name);
+                    AddMeshToMetaData(md,
+                                      qf_mesh_name.c_str(),
+                                      AVT_UNSTRUCTURED_MESH,
+                                      extents,
+                                      nblocks,
+                                      block_origin,
+                                      spatial_dim,
+                                      topo_dim);
+                }
+
+                if(field.Tag("comps") == "1")
+                {
+                    
+                    AddScalarVarToMetaData(md,
+                                           field_names[j].c_str(),
+                                           qf_mesh_name.c_str(),
+                                           AVT_ZONECENT);
+                }
+                else if(field.Tag("comps") == "2")
+                {
+                    AddVectorVarToMetaData(md,
+                                           field_names[j].c_str(),
+                                           qf_mesh_name.c_str(),
+                                           AVT_ZONECENT,2);
+                }
+                else if(field.Tag("comps") == "3")
+                {
+                    AddVectorVarToMetaData(md,
+                                           field_names[j].c_str(),
+                                           qf_mesh_name.c_str(),
+                                           AVT_ZONECENT,3);
                 }
             }
         }
@@ -562,13 +632,16 @@ avtMFEMFileFormat::GetTime()
 //    Cyrus Harrison, Thu Mar  2 08:45:54 PST 2023
 //    Add support for boundary mesh
 //
+//    Cyrus Harrison, Fri Sep 26 09:06:42 PDT 2025
+//    Add support for Quadrature Functions
+//
 // ****************************************************************************
 vtkDataSet *
 avtMFEMFileFormat::GetMesh(int domain, const char *meshname)
 {
     // get base mesh
     std::string mesh_name(meshname);
-
+   
     // check for fetch of boundary mesh
     std::string bndry_suffix = "_boundary";
     bool bndry_mesh = StringHelpers::ends_with(mesh_name,bndry_suffix);
@@ -579,12 +652,31 @@ avtMFEMFileFormat::GetMesh(int domain, const char *meshname)
         mesh_name = mesh_name.substr(0, mesh_name.size() - bndry_suffix.size());
     }
 
+    // check for fetch of quad points mesh
+    // {mesh_name}_quad_func_o{order}
+    bool quadpts_mesh = avtMFEMDataAdaptor::CheckMeshNameForQuadratureFunctionString(mesh_name);
+    int quadpts_order = -1; // -1 == not quad points case
+
+    // if quadpts mesh find order and the base mesh name
+    if(quadpts_mesh)
+    {
+        std::string qf_mesh_name = mesh_name;
+        avtMFEMDataAdaptor::ParseQuadratureFunctionMeshString(qf_mesh_name,
+                                                              mesh_name,
+                                                              quadpts_order);
+    }
+
     Mesh *mesh = FetchMesh(mesh_name,domain);
 
     vtkDataSet *res_ds = NULL;
     if(bndry_mesh)
     {
         res_ds = avtMFEMDataAdaptor::BoundaryMeshToVTK(mesh);
+    }
+    else if(quadpts_mesh)
+    {
+        res_ds = avtMFEMDataAdaptor::QuadratureFunctionMeshToVTK(mesh,
+                                                                 quadpts_order);
     }
     else
     {
@@ -777,6 +869,9 @@ avtMFEMFileFormat::FetchMesh(const std::string &mesh_name,int domain)
 //    Cyrus Harrison, Thu Mar  2 08:45:54 PST 2023
 //    Add support for boundary mesh + boundary atts field
 //
+//    Cyrus Harrison, Fri Sep 26 09:06:42 PDT 2025
+//    Add support for Quadrature Functions
+//
 // ****************************************************************************
 vtkDataArray *
 avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
@@ -810,6 +905,7 @@ avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
 
     vtkDataArray *rv;
 
+    // check for boundary mesh
     std::string bndry_suffix = "_boundary";
     bool bndry_mesh = StringHelpers::ends_with(mesh_name,bndry_suffix);
 
@@ -820,6 +916,13 @@ avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
         mesh_name = mesh_name.substr(0, mesh_name.size() - bndry_suffix.size());
     }
 
+    JSONRootEntry &field = root->DataSet(mesh_name).Field(var_name);
+    string field_path = field.Path().Expand(domain);
+    bool var_is_nodal = field.Tag("assoc") == "nodes";
+    bool var_is_grid_func = field.Tag("assoc") != "quadrature";
+    int  ncomps       = atoi(field.Tag("comps").c_str());
+    string cat_path = root->DataSet(mesh_name).CatPath().Get();
+    
     // get base mesh
     Mesh *mesh = FetchMesh(mesh_name,domain);
 
@@ -842,56 +945,95 @@ avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
         delete mesh;
         return rv;
     }
-
-    JSONRootEntry &field = root->DataSet(mesh_name).Field(var_name);
-    string field_path = field.Path().Expand(domain);
-    bool var_is_nodal = field.Tag("assoc") == "nodes";
-    int  ncomps       = atoi(field.Tag("comps").c_str());
-    string cat_path = root->DataSet(mesh_name).CatPath().Get();
-
-    GridFunction *gf = 0;
-    if (cat_path != "")
+    else if(StringHelpers::ends_with(var_name,"boundary_attribute"))
     {
-        std::istringstream igfstr;
-        FetchDataFromCatFile(cat_path, field_path, igfstr); 
-
-        if (igfstr)
-            gf = new GridFunction(mesh,igfstr);   
+        rv = avtMFEMDataAdaptor::BoundaryAttributeToVTK(mesh);
+        delete mesh;
+        return rv;
     }
 
-    if (!gf)
+    // grid function case
+    if(var_is_grid_func)
     {
-        visit_ifstream igf(field_path.c_str());
-        if (igf().fail())
+        GridFunction *gf = 0;
+        if (cat_path != "")
         {
-            //failed to open gf file
-            ostringstream msg;
-            msg << "Failed to open MFEM grid function: "
-                << " field name: \""       << mesh_name << "\""
-                << " domain: "             << domain
-                << " grid function path: \"" << field_path << "\"";
-            if (cat_path != "")
-                msg << " cat path: \"" << cat_path << "\"";
+            std::istringstream igfstr;
+            FetchDataFromCatFile(cat_path, field_path, igfstr); 
 
-            EXCEPTION1(InvalidFilesException, msg.str());
+            if (igfstr)
+                gf = new GridFunction(mesh,igfstr);   
         }
-        gf = new GridFunction(mesh,igf());   
-    }
 
-    int gf_ncomps = gf->VectorDim();
-    if (gf_ncomps != ncomps)
+        if (!gf)
+        {
+            visit_ifstream igf(field_path.c_str());
+            if (igf().fail())
+            {
+                //failed to open gf file
+                ostringstream msg;
+                msg << "Failed to open MFEM grid function: "
+                    << " field name: \""       << mesh_name << "\""
+                    << " domain: "             << domain
+                    << " grid function path: \"" << field_path << "\"";
+                if (cat_path != "")
+                    msg << " cat path: \"" << cat_path << "\"";
+
+                EXCEPTION1(InvalidFilesException, msg.str());
+            }
+            gf = new GridFunction(mesh,igf());   
+        }
+
+        int gf_ncomps = gf->VectorDim();
+        if (gf_ncomps != ncomps)
+        {
+            EXCEPTION1(InvalidVariableException, 
+                "Expected equality of number of components.");
+        }
+
+        rv = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh, 
+                                                        gf, 
+                                                        lod, 
+                                                        m_new_refine, 
+                                                        var_is_nodal);
+        
+        delete gf;
+    }
+    else // quadrature function case
     {
-        EXCEPTION1(InvalidVariableException, 
-            "Expected equality of number of components.");
-    }
+        QuadratureFunction *qf = 0;
+        if (cat_path != "")
+        {
+            std::istringstream iqfstr;
+            FetchDataFromCatFile(cat_path, field_path, iqfstr); 
 
-    rv = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh, 
-                                                     gf, 
-                                                     lod, 
-                                                     m_new_refine, 
-                                                     var_is_nodal);
+            if (iqfstr)
+                qf = new QuadratureFunction(mesh, iqfstr);   
+        }
+
+        if (!qf)
+        {
+            visit_ifstream iqf(field_path.c_str());
+            if (iqf().fail())
+            {
+                //failed to open gf file
+                ostringstream msg;
+                msg << "Failed to open MFEM quadrature function: "
+                    << " field name: \""       << mesh_name << "\""
+                    << " domain: "             << domain
+                    << " grid function path: \"" << field_path << "\"";
+                if (cat_path != "")
+                    msg << " cat path: \"" << cat_path << "\"";
+
+                EXCEPTION1(InvalidFilesException, msg.str());
+            }
+            qf = new QuadratureFunction(mesh,iqf());   
+        }
+      
+        rv = avtMFEMDataAdaptor::QuadratureFunctionToVTK(qf);
+        delete qf;        
+    }
     
-    delete gf;
     delete mesh;
 
     return rv;

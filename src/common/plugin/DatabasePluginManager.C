@@ -366,6 +366,48 @@ DatabasePluginManager::FreeCommonPluginInfo()
 }
 
 // ****************************************************************************
+// Method: DatabasePluginManager::FreeMDServerPluginInfo
+//
+// Purpose: 
+//   Frees mdserver plugin info.
+//
+// Programmer: Eric Brugger
+// Creation:   October 21, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+DatabasePluginManager::FreeMDServerPluginInfo()
+{
+    for (size_t i=0; i<mdserverPluginInfo.size(); i++)
+        delete mdserverPluginInfo[i];
+    mdserverPluginInfo.clear();
+}
+
+// ****************************************************************************
+// Method: DatabasePluginManager::FreeEnginePluginInfo
+//
+// Purpose: 
+//   Frees engine plugin info.
+//
+// Programmer: Eric Brugger
+// Creation:   October 21, 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+DatabasePluginManager::FreeEnginePluginInfo()
+{
+    for (size_t i=0; i<enginePluginInfo.size(); i++)
+        delete enginePluginInfo[i];
+    enginePluginInfo.clear();
+}
+
+// ****************************************************************************
 //  Method: DatabasePluginManager::ReloadPlugins
 //
 //  Purpose:
