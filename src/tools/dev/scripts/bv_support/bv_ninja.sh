@@ -1,6 +1,6 @@
 function bv_ninja_initialize
 {
-    export DO_NINJA="no"
+    export DO_NINJA="yes"
     export USE_SYSTEM_NINJA="no"
     add_extra_commandline_args "ninja" "alt-ninja-dir" 1 "Use alternative directory for ninja"
 }

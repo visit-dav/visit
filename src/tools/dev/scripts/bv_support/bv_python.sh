@@ -256,6 +256,7 @@ function bv_python_info
     export PY_SCIKIT_BUILDCORE_VERSION="0.11.6"
     export PY_SCIKIT_BUILDCORE_FILE="scikit_build_core-${PY_SCIKIT_BUILDCORE_VERSION}.tar.gz"
     export PY_SCIKIT_BUILDCORE_BUILD_DIR="scikit_build_core-${PY_SCIKIT_BUILDCORE_VERSION}"
+    export PY_SCIKIT_BUILDCORE_SHA256_CHECKSUM=""
 
     #needed by pillow
     export PY_PYBIND11_VERSION="3.0.1"
@@ -586,6 +587,7 @@ function bv_python_ensure
                         download_py_module ${PY_NUMPY_FILE} ${PY_NUMPY_URL}
                         # Pillow
                         download_py_module ${PY_PYBIND11_FILE} ${PY_PYBIND11_URL}
+                        download_py_module ${PY_SCIKIT_BUILDCORE_FILE} ${PY_SCIKITBUILDCORE_URL}
                         download_py_module ${PY_PILLOW_FILE} ${PY_PILLOW_URL}
                         # mpi4py
                         if [[ "$PY_BUILD_MPI4PY" == "yes" ]]; then
@@ -858,7 +860,7 @@ function build_pillow
     fi
 
     download_py_module ${PY_SCIKIT_BUILDCORE_DIR} ${PY_SCIKIT_BUILDCORE_URL}
-    if [[ $? != 0 ]] ; then
+    if test $? -ne 0 ; then
         return 1
     fi
 
@@ -935,7 +937,7 @@ function build_pillow
     fi
 
     extract_py_module ${PY_SCIKIT_BUILDCORE_BUILD_DIR} ${PY_SCIKIT_BUILDCORE_FILE} "scikit_build_core"
-    if [[ $? != 0 ]] ; then
+    if test $? -ne 0 ; then
         return 1
     fi
 
@@ -983,7 +985,6 @@ function build_pillow
      CXXFLAGS="${PYEXT_CXXFLAGS}" \
      LDFLAGS="${PYEXT_LDFLAGS}" \
     ${PYTHON_COMMAND} -m pip --no-cache-dir --disable-pip-version-check install --no-index --no-deps --no-build-isolation --no-binary :all: $configSettings .
-     #${PYTHON_COMMAND} ./setup.py build_ext -C webp=disable -C freetype=disable -C lcms=disable -C tiff=disable -C xcb=disable -C jpeg2000=disable -C jpeg=disable  install --prefix="${PYHOME}" --single-version-externally-managed --record record.txt
 
     set +x
     if test $? -ne 0 ; then
@@ -1094,19 +1095,6 @@ function build_requests
     if test $? -ne 0 ; then
           return 1
     fi
-
-    # NOW ALSO NEEDED BY NUMPY. Should there be some test to see if numpy wasn't built
-    # so that packaging can be build here?
-    #extract_py_module ${PY_PACKAGING_BUILD_DIR} ${PY_PACKAGING_FILE} "packaging"
-    #if test $? -ne 0 ; then
-    #    return 1
-    #fi
-
-    #install_py_module ${PY_PACKAGING_BUILD_DIR} "packaging"
-    #if test $? -ne 0 ; then
-    #      return 1
-    #fi
-
 
     extract_py_module ${PY_EDITABLES_BUILD_DIR} ${PY_EDITABLES_FILE} "editables"
     if test $? -ne 0 ; then
@@ -1394,7 +1382,7 @@ function build_sphinx
         return 1
     fi
 
-    download_py_module ${PY_SPHINXCONTRIB_APPLEHELP_FILE} ${PY_SPHINXCONTRIB_APPLEHELP_ULR}
+    download_py_module ${PY_SPHINXCONTRIB_APPLEHELP_FILE} ${PY_SPHINXCONTRIB_APPLEHELP_URL}
     if test $? -ne 0 ; then
         return 1
     fi
