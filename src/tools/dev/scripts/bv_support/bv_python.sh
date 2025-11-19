@@ -230,9 +230,9 @@ function bv_python_depends_on
 {
      pydep="ninja"
      if [[ $USE_SYSTEM_PYTHON == "no" ]] ; then
-        pydep="zlib"
+        pydep="${pydep} zlib"
      fi
-     echo $pydep
+     echo ${pydep}
 }
 
 function bv_python_info
