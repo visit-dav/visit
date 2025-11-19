@@ -111,6 +111,30 @@ vtkVisItTextActor::ComputeScaledFont(vtkViewport *viewport)
 }
 
 // ****************************************************************************
+// Method: vtkVisItTextActor::RenderOpaqueGeometry
+//
+// Purpose:
+//   Render text, make sure viewport changes are refle
+//
+// Arguments:
+//   viewport    Pointer to vtk viewport
+//
+// Modifications:
+//
+// ****************************************************************
+
+int vtkVisItTextActor::RenderOpaqueGeometry(vtkViewport *viewport)
+{
+  // the text size is relative to the viewport
+  // so if the viewport has changed, our text has as well
+  if(viewport->GetMTime() > this->GetMTime())
+  {
+    this->Modified();
+  }
+  return vtkTextActor::RenderOpaqueGeometry(viewport);
+}
+
+// ****************************************************************************
 // Method: vtkVisItTextActor::GetDPIScaledFontSize
 //
 // Purpose:
@@ -126,6 +150,8 @@ vtkVisItTextActor::ComputeScaledFont(vtkViewport *viewport)
 // Creation:   Mon Nov 10 11:03:28 PST 2025
 //
 // Modifications:
+//   Cyrus Harrison, Wed Nov 19 11:13:41 PST 2025
+//   Use direct scaling, avoid extra 1.05 scaling.
 //
 // ****************************************************************************
 double
@@ -135,6 +161,5 @@ vtkVisItTextActor::GetDPIScaledFontSize(vtkViewport *viewport,
   // Desired size seems relative to common dpi (72)
   // divide DPI to avoid extra large fonts
   vtkWindow *win = viewport->GetVTKWindow();
-  double desiredSizePixels = (viewport->GetSize()[1] * fontHeight * 72.0 / double(win->GetDPI()));
-  return desiredSizePixels * 1.05;
+  return (viewport->GetSize()[1] * fontHeight * 72.0 / double(win->GetDPI()));;
 }
