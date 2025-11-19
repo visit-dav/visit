@@ -52,6 +52,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vtkTextProperty.h>
 #include <vtkProperty2D.h>
 #include <vtkViewport.h>
+#include <vtkWindow.h>
 #include <DebugStream.h>
 #include <vectortypes.h>
 
@@ -289,7 +290,6 @@ vtkVisItAxisActor2D::~vtkVisItAxisActor2D()
 int vtkVisItAxisActor2D::RenderOpaqueGeometry(vtkViewport *viewport)
 {
   int i, renderedSomething=0;
-
   this->BuildAxis(viewport);
   
   // Everything is built, just have to render
@@ -528,6 +528,10 @@ void vtkVisItAxisActor2D::PrintSelf(ostream& os, vtkIndent indent)
 //   Mark C. Miller, Sun Apr 27 19:37:51 PDT 2025
 //   Fixed segv involving restricting labelCount<200 in loop variable around
 //   line 823.
+//
+//   Cyrus Harrison, Tue Nov 11 12:51:04 PST 2025
+//   Use dpi aware font scaling for titles and labels.
+//
 // ****************************************************************************
 
 void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
@@ -546,13 +550,6 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
 
   bool propsModified = (this->TitleTextProperty->GetMTime() > this->BuildTime) ||
                        (this->LabelTextProperty->GetMTime() > this->BuildTime);
-
-  if (this->GetMTime() < this->BuildTime &&
-      viewport->GetMTime() < this->BuildTime &&
-      !propsModified)
-    {
-    return; //already built
-    }
 
   // Check to see whether we have to rebuild everything
   if (this->GetMTime() < this->BuildTime &&
@@ -575,9 +572,9 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
   // Initialize and get important info
   this->Axis->Initialize();
   this->AxisActor->SetProperty(this->GetProperty());
-  
+
   size = viewport->GetSize();
-  
+
   // Compute the location of tick marks and labels
   if ( this->AdjustLabels )
     {
@@ -819,7 +816,8 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
           tprop->SetColor(this->LabelTextProperty->GetColor());
       else
           tprop->SetColor(this->GetProperty()->GetColor());
-      tprop->SetFontSize((int)(this->LabelFontHeight*size[1]));
+
+      tprop->SetFontSize((int)(GetDPIScaledFontSize(viewport,this->LabelFontHeight)));
       labelCount++;
       }
 
@@ -871,7 +869,8 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
         titleTprop->SetColor(this->TitleTextProperty->GetColor());
     else
         titleTprop->SetColor(this->GetProperty()->GetColor());
-    titleTprop->SetFontSize((int)(this->TitleFontHeight*size[1]));
+
+    titleTprop->SetFontSize((int)(GetDPIScaledFontSize(viewport,this->TitleFontHeight)));
 
     if (verticalOrientation)
       {
@@ -1692,4 +1691,33 @@ vtkVisItAxisActor2D::SetFontFamily(int val)
     }
     if(modified)
         this->Modified();
+}
+
+// ****************************************************************************
+// Method: vtkVisItAxisActor2D::GetDPIScaledFontSize
+//
+// Purpose:
+//   Helper for font size scaling that takes into account DPI settings
+//
+// Arguments:
+//   viewport    Pointer to vtk viewport
+//   fontHeight  Desired font height
+//
+// Returns:  Scaled font size
+//
+// Programmer: Cyrus Harrison
+// Creation:   Mon Nov 10 11:03:28 PST 2025
+//
+// Modifications:
+//
+// ****************************************************************************
+double
+vtkVisItAxisActor2D::GetDPIScaledFontSize(vtkViewport *viewport,
+                                           double fontHeight)
+{
+  // Desired size seems relative to common dpi (72)
+  // divide DPI to avoid extra large fonts
+  vtkWindow *win = viewport->GetVTKWindow();
+  double desiredSizePixels = (viewport->GetSize()[1] * fontHeight * 72.0 / double(win->GetDPI()));
+  return desiredSizePixels;// * 1.05;
 }
