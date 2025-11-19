@@ -733,7 +733,8 @@ void vtkVisItMoleculeMapper::UpdatePolyData()
 //
 //    Eric Brugger, Mon Nov 17 14:41:13 PST 2025
 //    I changed the allocation of "scol" to the standard "New" call
-//    instead of using "vtkNew" to fix a memory leak.
+//    instead of using "vtkNew" to fix a memory leak. I added a Delete
+//    for "pts" to fix a memory leak.
 //
 
 void vtkVisItMoleculeMapper::UpdateAtomPolyData()
