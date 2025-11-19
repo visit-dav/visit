@@ -768,8 +768,40 @@ def degen_hex_metrics():
     DrawPlots()
     SetQueryOutputToValue()
     TestValueEQ("Volume of hex2 mesh", Query("Volume"), 4)
+    DeleteAllPlots()
+
+    CloseDatabase(silo_data_path("degen_hex.silo"))
+
+def colmajor_vector_var():
+    """Col-major reordering for vector vars"""
+
+    OpenDatabase(silo_data_path("quadf77.silo"))
+
+    AddPlot("Vector","f")
+    ResetView()
+    DrawPlots()
+    v = GetView3D()
+    v.imageZoom = 0.8
+    SetView3D(v)
+
+    # If reordering happened correctly, node picks on variable "f"
+    # should be same as coords.
+    failedAt = (0,0,0)
+    for x in range(1,5):
+        for y in range (1,4):
+            p = NodePick((x,y,0))
+            if p['f'] != (x,y,0):
+                failedAt = (x,y,0)
+                break
+        if failedAt != (0,0,0):
+            break
+    TestValueEQ("f picks yield same as coord values", failedAt, (0,0,0))
+
+    DeleteAllPlots()
+    CloseDatabase(silo_data_path("quadf77.silo"))
 
 curvilinear_3d_surface()
 degen_hex_metrics()
+colmajor_vector_var()
 
 Exit()
