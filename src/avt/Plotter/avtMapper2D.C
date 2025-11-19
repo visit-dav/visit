@@ -46,11 +46,14 @@ avtMapper2D::avtMapper2D() : avtMapperBase()
 //  Creation:   April 13, 2017
 //
 //  Modifications:
+//    Eric Brugger, Tue Nov 11 13:41:42 PST 2025
+//    Call ClearSelf to free memory.
 //
 // ****************************************************************************
 
 avtMapper2D::~avtMapper2D()
 {
+    ClearSelf();
 }
 
 

@@ -5,6 +5,49 @@ Postfix:
     if(colorControlPoints.GetNumControlPoints() < 2)
          SetDefaultColorControlPoints();
 
+Target: xml2cmake
+Code: custom
+Prefix:
+if(ICET_FOUND)
+    # If we have Ice-T then add -DHAVE_ICET to the compilation flags.
+    # We need to link with OpenGL on Mac when we have IceT.
+    if(APPLE)
+        set(ICET_OPENGL ${OPENGL_gl_LIBRARY})
+    endif()
+    # Link icet libraries using absolute pathes
+    set(ICET_FULLPATH_LIB ${ICET_OPENGL})
+    foreach(X ${ICET_LIB})
+        list(APPEND ICET_FULLPATH_LIB "${ICET_LIBRARY_DIR}/${X}")
+    endforeach()
+    # Other setups
+    include_directories(${ICET_INCLUDE_DIR})
+    link_directories(${ICET_LIBRARY_DIR})
+    add_definitions(-DHAVE_ICET)
+endif()
+Postfix:
+if(ICET_FOUND)
+    target_link_libraries(EVolumePlot_ser ${ICET_FULLPATH_LIB})
+    if(VISIT_PARALLEL)
+       target_link_libraries(EVolumePlot_par ${ICET_FULLPATH_LIB})
+    endif()
+endif()
+
+if(HAVE_ANARI)
+    target_sources(GVolumePlot PUBLIC
+        anari/AnariVolumeWidget.C)
+    target_include_directories(GVolumePlot PUBLIC anari)
+endif()
+
+set(vtkmods VTK::RenderingVolumeOpenGL2)
+if(TARGET VTK::RenderingRayTracing)
+    list(APPEND vtkmods VTK::RenderingRayTracing)
+endif()
+vtk_module_autoinit(TARGETS VVolumePlot EVolumePlot_ser MODULES ${vtkmods})
+
+if(PARALLEL)
+    vtk_module_autoinit(TARGETS EVolumePlot_par MODULES ${vtkmods})
+endif()
+
 Target: xml2atts
 Initialization: colorControlPoints
     SetDefaultColorControlPoints();
@@ -599,4 +642,9 @@ VolumeAttributes_SetMaterialProperties(PyObject *self, PyObject *args)
 Target: xml2cmake
 Condition: VISIT_SLIVR
 Definitions: VISIT_SLIVR
+
+Target: xml2cmake
+Condition: TARGET VTK::RenderingRayTracing
+ELinkLibraries: VTK::RenderingRayTracing
+VLinkLibraries: VTK::RenderingRayTracing
 

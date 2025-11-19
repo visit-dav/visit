@@ -62,6 +62,9 @@ class EngineDatabasePluginInfo;
 //    Jeremy Meredith, Tue Dec 29 15:52:06 EST 2009
 //    Added ability to report warnings occurring during file opening.
 //
+//    Eric Brugger, Tue Oct 21 16:29:02 PDT 2025
+//    Added FreeMDServerPluginInfo and FreeEnginePluginInfo.
+//
 // ****************************************************************************
 
 class PLUGIN_API DatabasePluginManager : public PluginManager
@@ -96,6 +99,8 @@ class PLUGIN_API DatabasePluginManager : public PluginManager
     virtual void                    LoadEnginePluginInfo();
 
     virtual void                    FreeCommonPluginInfo();
+    virtual void                    FreeMDServerPluginInfo();
+    virtual void                    FreeEnginePluginInfo();
 
     virtual void                    BroadcastGeneralInfo(PluginBroadcaster *);
 

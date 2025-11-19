@@ -1155,6 +1155,8 @@ function run_build_visit()
             --parallel) parallel="yes"; DO_ICET="yes";;
             --prefix) next_arg="prefix";;
             --print-vars) next_action="print-vars";;
+            --print-files) next_action="print-files";;
+            --print-files-html) next_action="print-files-html";;
             --server-components-only) DO_SERVER_COMPONENTS_ONLY="yes";;
             --paradis) DO_PARADIS="yes";;
             --static) DO_STATIC_BUILD="yes"
@@ -1203,6 +1205,8 @@ function run_build_visit()
     if test -n "${next_action}" ; then
         case ${next_action} in
             print-vars) printvariables; exit 2;;
+            print-files) printfiles "txt"; exit 2;;
+            print-files-html) printfiles "html"; exit 2;;
             help) usage; exit 2;;
         esac
     fi

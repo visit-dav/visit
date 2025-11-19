@@ -89,6 +89,10 @@
 //    Don't use QIODevice::Text when writing on Windows as it writes CR\LF
 //    and we want to use unix-style line endings.
 //
+//    Kathleen Biagas, Tue Oct 21, 2025
+//    Change how Conditionals are handled, they are now stored in and
+//    accessed from CodeFile.
+//
 // ****************************************************************************
 
 class Attribute : public AttributeBase
@@ -356,21 +360,15 @@ class Attribute : public AttributeBase
             if (!(f->def.isEmpty()) && !(f->def.right(1) == "\n"))
                 out << Endl;
         }
-        for (i=0; i<conditionals.size(); i++)
+
+        if(codeFile && !codeFile->conditions.empty())
         {
-            Conditional *c = conditionals[i];
-            out << "Target: " << c->target << Endl;
-            currentTarget = c->target;
-            out << "Condition: " << c->condition << Endl;
-            if(!c->definitions.isEmpty())
-                out << "Definitions: " << c->definitions << Endl;
-            if(!c->cxxflags.isEmpty())
-                out << "CXXFlags: " << c->cxxflags << Endl;
-            if(!c->mlinklibs.isEmpty())
-                out << "MLinkLibraries: " << c->mlinklibs << Endl;
-            if(!c->elinklibs.isEmpty())
-                out << "ELinkLibraries: " << c->elinklibs << Endl;
-            out << Endl;
+            for (i=0; i < codeFile->conditions.size(); i++)
+            {
+                Conditional *c = codeFile->conditions[i];
+                c->WriteToCodeFile(out); 
+                currentTarget = c->target;
+            }
         }
 
         f->close();

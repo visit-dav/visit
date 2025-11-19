@@ -76,9 +76,26 @@ function bv_icet_ensure
 #                           Function 8.13, build_icet                         #
 # *************************************************************************** #
 
+function apply_icet_std_c99_patch
+{
+    sed -i "s/-ansi/-std=c99/" ${ICET_BUILD_DIR}/CMakeLists.txt
+
+    if [[ $? != 0 ]] ; then
+      warn "icet std c99 patch failed."
+      return 1
+    fi
+    return 0;
+}
+
 function apply_icet_patch
 {
     info "Patching IceT . . ."
+
+    apply_icet_std_c99_patch
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
     return 0
 }
 
