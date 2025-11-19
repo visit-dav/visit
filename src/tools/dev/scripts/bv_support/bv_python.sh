@@ -587,7 +587,7 @@ function bv_python_ensure
                         download_py_module ${PY_NUMPY_FILE} ${PY_NUMPY_URL}
                         # Pillow
                         download_py_module ${PY_PYBIND11_FILE} ${PY_PYBIND11_URL}
-                        download_py_module ${PY_SCIKIT_BUILDCORE_FILE} ${PY_SCIKITBUILDCORE_URL}
+                        download_py_module ${PY_SCIKIT_BUILDCORE_FILE} ${PY_SCIKIT_BUILDCORE_URL}
                         download_py_module ${PY_PILLOW_FILE} ${PY_PILLOW_URL}
                         # mpi4py
                         if [[ "$PY_BUILD_MPI4PY" == "yes" ]]; then
@@ -766,6 +766,8 @@ function build_python
     cd "$START_DIR"
     info "Done with Python"
 
+    # ensure packages can find cmake, ninja, meson (in python dir)
+    export PATH=${CMAKE_INSTALL}:${NINJA_INSTALL_DIR}/bin:${VISIT_PYTHON_DIR}/bin:$PATH
 
     # wheel and its dependencies
     download_py_module ${PY_FLITCORE_FILE} ${PY_FLITCORE_URL}
@@ -859,18 +861,18 @@ function build_pillow
         return 1
     fi
 
-    download_py_module ${PY_SCIKIT_BUILDCORE_DIR} ${PY_SCIKIT_BUILDCORE_URL}
+    download_py_module ${PY_SCIKIT_BUILDCORE_FILE} ${PY_SCIKIT_BUILDCORE_URL}
     if test $? -ne 0 ; then
         return 1
     fi
 
     download_py_module ${PY_PYBIND11_FILE} ${PY_PYBIND11_URL}
-    if [[ $? != 0 ]] ; then
+    if test $? -ne 0 ; then
         return 1
     fi
 
     download_py_module ${PY_PILLOW_FILE} ${PY_PILLOW_URL}
-    if [[ $? != 0 ]] ; then
+    if test $? -ne 0 ; then
         return 1
     fi
 
@@ -947,7 +949,7 @@ function build_pillow
     fi
 
     extract_py_module ${PY_PYBIND11_BUILD_DIR} ${PY_PYBIND11_FILE} "pybind11"
-    if [[ $? != 0 ]] ; then
+    if test $? -ne 0 ; then
         return 1
     fi
 
@@ -1264,8 +1266,6 @@ function build_numpy
     if [[ $? != 0 ]] ; then
         return 1
     fi
-
-    export PATH=$NINJA_INSTALL_DIR/bin:${VISIT_PYTHON_DIR}/bin:$PATH
 
     install_py_module ${PY_MESON_BUILD_DIR} "meson"
     if [[ $? != 0 ]] ; then
