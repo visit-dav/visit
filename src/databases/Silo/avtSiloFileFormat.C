@@ -8353,17 +8353,20 @@ avtSiloFileFormat::GetUcdVectorVar(DBfile *dbfile, const char *vname,
 //    Mark C. Miller, Wed Aug 13 22:20:07 PDT 2014
 //    Add support for tensor variables. Re-factor code for quad and point
 //    vars to this one template method.
+//
+//    Mark C. Miller, Tue Nov 11 20:04:22 PST 2025
+//    Handle row/col major order transposition
 // ****************************************************************************
 
 template <typename T, typename Tarr, typename DBvar>
 static vtkDataArray *
 CopyAndPadPointOrQuadVectorVar(const DBvar *mv, avtVarType vtype)
 {
-    int const Z = -1; // Place holder for zero'd components
+    int const Z = -1; // Place holder for components to be zero'd in the loop
     int const j_remap_2df[9] = {0,1,Z,2,3,Z,Z,Z,Z}; // map 2d full tensor to VTK
     int const j_remap_2d[9]  = {0,2,Z,2,1,Z,Z,Z,Z}; // map 2d symm. tensor comp Voigt order to VTK
     int const j_remap_3d[9]  = {0,5,4,5,1,3,4,3,2}; // map 3d symm. tensor comp Voigt order to VTK
-    int const *j_remap = 0;
+    int const *j_remap = 0;                         // all other cases map 1:1 to VTK
     size_t i;
     int j, nvtkcomps = mv->nvals;
     Tarr *vectors = Tarr::New();
@@ -8371,48 +8374,107 @@ CopyAndPadPointOrQuadVectorVar(const DBvar *mv, avtVarType vtype)
     if (vtype == AVT_UNKNOWN_TYPE && mv->nvals == 2)
         nvtkcomps = 3;
     else if (vtype == AVT_VECTOR_VAR)
-        nvtkcomps = 3; // zero pad extra components
+        nvtkcomps = 3; // Loop below will zero pad any extra VTK components
     else if (vtype == AVT_SYMMETRIC_TENSOR_VAR)
     {
         if (mv->nvals == 3)
             j_remap = j_remap_2d;
         else if (mv->nvals == 6)
             j_remap = j_remap_3d;
-        nvtkcomps = 9; // fill and/or zero pad extra components
+        nvtkcomps = 9; // Loop below will zero pad any extra VTK components
     }
     else if (vtype == AVT_TENSOR_VAR)
     {
         if (mv->nvals == 4)
             j_remap = j_remap_2df;
-        nvtkcomps = 9; // fill and/or zero pad extra components
+        nvtkcomps = 9; // Loop below will zero pad any extra VTK components
     }
+
     vectors->SetNumberOfComponents(nvtkcomps);
     vectors->SetNumberOfTuples(mv->nels);
     T *ptr = vectors->GetPointer(0);
 
-    if (j_remap)
+    // Handle major order reordering using logical indexing loops
+    if (mv->major_order != DB_ROWMAJOR)
     {
-        for (i = 0; i < (size_t)mv->nels; i++)
+        int nx = mv->dims[0];
+        int ny = mv->dims[1];
+        int nz = mv->ndims == 3 ? mv->dims[2] : 1;
+        int nxy = nx * ny;
+        int nyz = ny * nz;
+
+        if (j_remap)
         {
-            for (j = 0; j < nvtkcomps; j++)
+            for (int k = 0; k < nz; k++)
             {
-                if (j_remap[j] < 0)
-                    ptr[i*nvtkcomps+j] = ((T)0);
-                else
-                    ptr[i*nvtkcomps+j] = ((T**)(mv->vals))[j_remap[j]][i];
+                for (int j = 0; j < ny; j++)
+                {
+                    for (int i = 0; i < nx; i++)
+                    {
+                        int dstIdx = k*nxy + j*nx + i;
+                        int srcIdx = k + j*nz + i*nyz;
+
+                        for (int q = 0; q < nvtkcomps; q++)
+                        {
+                            if (j_remap[q] < 0)
+                                ptr[dstIdx*nvtkcomps+q] = ((T)0);
+                            else
+                                ptr[dstIdx*nvtkcomps+q] = ((T**)(mv->vals))[j_remap[q]][srcIdx];
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            for (int k = 0; k < nz; k++)
+            {
+                for (int j = 0; j < ny; j++)
+                {
+                    for (int i = 0; i < nx; i++)
+                    {
+                        int dstIdx = k*nxy + j*nx + i;
+                        int srcIdx = k + j*nz + i*nyz;
+
+                        for (int q = 0; q < nvtkcomps; q++)
+                        {
+                            if (q < mv->nvals)
+                                ptr[dstIdx*nvtkcomps+q] = ((T**)(mv->vals))[q][srcIdx];
+                            else
+                                ptr[dstIdx*nvtkcomps+q] = ((T)0);
+                        }
+                    }
+                }
             }
         }
     }
     else
     {
-        for (i = 0; i < (size_t)mv->nels; i++)
+        // Handle "normal" case...no need to manage logical indexing
+        if (j_remap)
         {
-            for (j = 0; j < nvtkcomps; j++)
+            for (i = 0; i < (size_t)mv->nels; i++)
             {
-                if (j < mv->nvals)
-                    ptr[i*nvtkcomps+j] = ((T**)(mv->vals))[j][i];
-                else
-                    ptr[i*nvtkcomps+j] = ((T)0);
+                for (j = 0; j < nvtkcomps; j++)
+                {
+                    if (j_remap[j] < 0)
+                        ptr[i*nvtkcomps+j] = ((T)0);
+                    else
+                        ptr[i*nvtkcomps+j] = ((T**)(mv->vals))[j_remap[j]][i];
+                }
+            }
+        }
+        else
+        {
+            for (i = 0; i < (size_t)mv->nels; i++)
+            {
+                for (j = 0; j < nvtkcomps; j++)
+                {
+                    if (j < mv->nvals)
+                        ptr[i*nvtkcomps+j] = ((T**)(mv->vals))[j][i];
+                    else
+                        ptr[i*nvtkcomps+j] = ((T)0);
+                }
             }
         }
     }
