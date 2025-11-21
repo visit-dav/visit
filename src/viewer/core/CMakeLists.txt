@@ -129,11 +129,9 @@ ${VISIT_SOURCE_DIR}/visit_vtk/osmesa
 ${VTK_INCLUDE_DIRS}
 )
 
-
 #******************** The viewercore_ser library ******************************
 add_library(viewercore_ser ${VIEWERCORE_SOURCES})
 set_target_properties(viewercore_ser PROPERTIES HAS_CXX ON)
-
 target_link_libraries(viewercore_ser
 viewerrpc
 visitcommon

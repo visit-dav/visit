@@ -245,6 +245,10 @@ ${VISIT_SOURCE_DIR}/winutil
 ${VISIT_SOURCE_DIR}/third_party_builtin
 )
 
+
+# Add link directories needed to use Qt.
+LINK_DIRECTORIES(/Users/harrison37/Work/github/qlementine/install/lib/)
+                 
 if(HAVE_ANARI)
     list(APPEND GUILIB_SOURCES
             anari/AnariRenderingWidget.C

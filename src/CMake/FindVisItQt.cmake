@@ -264,3 +264,5 @@ if(NOT VISIT_QT_SKIP_INSTALL)
     endif()
 endif()
 
+find_package(Qlementine
+             PATHS /Users/harrison37/Work/github/qlementine/install/)

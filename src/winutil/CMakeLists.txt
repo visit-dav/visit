@@ -44,10 +44,13 @@ ${VISIT_SOURCE_DIR}/winutil
 ${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
 ${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
 ${VTK_INCLUDE_DIRS}
+/Users/harrison37/Work/github/qlementine/install/include/
 )
 
 # Add link directories needed to use Qt.
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
+LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY}
+                 /Users/harrison37/Work/github/qlementine/install/lib/)
+
 
 ADD_LIBRARY(winutil ${WINUTIL_SOURCES})
 
@@ -60,5 +63,7 @@ TARGET_LINK_LIBRARIES(winutil visitcommon avtdbatts ${QT_QTCORE_LIBRARY} ${QT_QT
 if(LINUX)
     target_link_libraries(winutil ${QT_QTX11EXTRAS_LIBRARY} X11)
 endif()
+
+target_link_libraries(winutil qlementine)
 
 VISIT_INSTALL_TARGETS(winutil)

@@ -35,19 +35,24 @@
 // 
 // ****************************************************************************
 
+#include <oclero/qlementine.hpp>
+
 void
 GetAppearance(QApplication *a, AppearanceAttributes *aa)
 {
     const char *mName = "GetAppearance: ";
     
     // get system default style
-    QStyle *style = a->style();
-    QString style_class(style->metaObject()->className());
+    // QStyle *style = a->style();
+    // QString style_class(style->metaObject()->className());
 
-    std::string styleName = style_class.toStdString().substr(1, style_class.length()-6);
+
+    // std::string styleName = style_class.toStdString().substr(1, style_class.length()-6);
     
-    debug1 << mName << "Default System Style is: " << styleName << endl;
-    aa->SetDefaultStyle(styleName);
+    // debug1 << mName << "Default System Style is: " << styleName << endl;
+
+
+    //aa->SetDefaultStyle(style);
     
     // get system default font
     QFont font = a->font();
@@ -109,19 +114,21 @@ SetAppearance(QApplication *app, AppearanceAttributes *aa)
     if(aa->GetUseSystemDefault())
         newStyle = aa->GetDefaultStyle();
     bool changeStyle = newStyle != currentAtts.GetDefaultStyle();
-    if(changeStyle)
-    {
-        debug1 << mName << "Setting style to: " << newStyle << endl;
-        // Set the style via the style name.
-        app->setStyle(newStyle.c_str());
-    }
-     
+    // if(changeStyle)
+    // {
+    //     debug1 << mName << "Setting style to: " << newStyle << endl;
+    //     // Set the style via the style name.
+    //     app->setStyle(newStyle.c_str());
+    // }
+    auto* style = new oclero::qlementine::QlementineStyle(app);
+    app->setStyle(style);
     //
     // Set the font.
     //
     std::string newFont(aa->GetFontName());
     if(aa->GetUseSystemDefault())
         newFont = aa->GetDefaultFontName();
+    
     bool changeFont = (newFont != currentAtts.GetDefaultFontName()) || changeStyle;
     if(changeFont)
     {

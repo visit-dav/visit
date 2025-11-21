@@ -120,7 +120,7 @@ IF (NOT WIN32)
     # This keeps comm's exceptions visible when using -fvisibility=hidden
     ADD_DEFINITIONS(-DCOMM_EXPORTS)
 ENDIF (NOT WIN32)
-
+LINK_DIRECTORIES(/Users/harrison37/Work/github/qlementine/install/lib/)
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
 ${CMAKE_CURRENT_SOURCE_DIR}/ui

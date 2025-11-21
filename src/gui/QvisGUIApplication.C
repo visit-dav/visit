@@ -751,6 +751,8 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv, ViewerProxy *prox
     if(applicationFont.length() > 0)
         aa->SetFontName(applicationFont.toStdString());
 
+    
+        
     //
     // Create the application and customize its appearance. Note that we
     // are setting the initial font through the command line because Qt
