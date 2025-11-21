@@ -91,18 +91,18 @@ QvisSourceManagerWidget::QvisSourceManagerWidget(QWidget *parent)
     topLayout->setContentsMargins(5,5,5,5);
     dbActionsToolbar = new QToolBar(this);
     dbActionsToolbar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    dbOpenAction    = dbActionsToolbar->addAction(QIcon(QPixmap(db_open2_xpm)),tr("Open"),
+    dbOpenAction    = dbActionsToolbar->addAction(QIcon(QPixmap("/Users/harrison37/Downloads/file_open_50dp_FFFFFF.png")),tr("Open"),
                                                   this, SIGNAL(activateFileOpenWindow()));
 
-    dbReopenAction  = dbActionsToolbar->addAction(QIcon(QPixmap(db_close2_xpm)),tr("Close"),
+    dbReopenAction  = dbActionsToolbar->addAction(QIcon(QPixmap("/Users/harrison37/Downloads/folder_off_50dp_FFFFFF.png")),tr("Close"),
                                                   this, SLOT(closeCurrentSource()));
 
-    dbCloseAction   = dbActionsToolbar->addAction(QIcon(QPixmap(db_reopen_xpm)),tr("Reopen"),
+    dbCloseAction   = dbActionsToolbar->addAction(QIcon(QPixmap("/Users/harrison37/Downloads/refresh_50dp_FFFFFF.png")),tr("Reopen"),
                                                   this, SLOT(reOpenCurrentSource()));
     dbActionsToolbar->addSeparator();
-    dbReplaceAction = dbActionsToolbar->addAction(QIcon(QPixmap(db_replace_xpm)),tr("Replace"),
+    dbReplaceAction = dbActionsToolbar->addAction(QIcon(QPixmap("/Users/harrison37/Downloads/published_with_changes_50dp_FFFFFF.png")),tr("Replace"),
                                                   this, SLOT(replaceWithCurrentSource()));
-    dbOverlayAction = dbActionsToolbar->addAction(QIcon(QPixmap(db_overlay_xpm)),tr("Overlay"),
+    dbOverlayAction = dbActionsToolbar->addAction(QIcon(QPixmap("/Users/harrison37/Downloads/layers_50dp_FFFFFF.png")),tr("Overlay"),
                                                   this, SLOT(overlayWithCurrentSource()));
 
     sourceLabel = new QLabel(tr("Active source"), this);

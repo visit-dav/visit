@@ -421,8 +421,11 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     std::string cName = GetVisItResourcesFile(VISIT_RESOURCES_IMAGES, "cinema-menu.png");
     cinemaIcon.load(cName.c_str());
 
-    outputBlue = new QPixmap( output_blue_xpm );
-    outputRed = new QPixmap( output_red_xpm );
+    // outputBlue = new QPixmap( output_blue_xpm );
+    // outputRed = new QPixmap( output_red_xpm );
+
+    outputBlue = new QPixmap( "/Users/harrison37/Downloads/info_50dp_5985E1.png" );
+    outputRed = new QPixmap( "/Users/harrison37/Downloads/info_50dp_BB271A.png" );
 
     //
     // Add the File menu.

@@ -35,6 +35,7 @@ QvisVariablePopupMenu.C
 UnicodeHelper.C
 VariableMenuPopulator.C
 WindowMetrics.C
+DarkStyle.cpp
 )
 
 

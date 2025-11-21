@@ -244,12 +244,12 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
     // to set the proper popup menu behaivor. 
 
     // add plot menu action
-    plotAddMenuAction = plotActionsToolbar->addAction(QIcon(QPixmap(plot_add_xpm)),tr("Add"));
+    plotAddMenuAction = plotActionsToolbar->addAction(QIcon(QPixmap("/Users/harrison37/Downloads/add_photo_alternate_50dp_FFFFFF.png")),tr("Add"));
     QToolButton *add_button = (QToolButton*) plotActionsToolbar->widgetForAction(plotAddMenuAction);
     add_button->setPopupMode(QToolButton::InstantPopup);
 
     // add operators menu action
-    operMenuAction = plotActionsToolbar->addAction(QIcon(QPixmap(oper_add4_xpm)),tr("Operators"));
+    operMenuAction = plotActionsToolbar->addAction(QIcon(QPixmap("/Users/harrison37/Downloads/add_to_photos_50dp_FFFFFF.png")),tr("Operators"));
     QToolButton *oper_button = (QToolButton*) plotActionsToolbar->widgetForAction(operMenuAction);
     oper_button->setPopupMode(QToolButton::InstantPopup);
 
@@ -257,19 +257,19 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
     plotActionsToolbar->addSeparator();
 
     // add delete action
-    plotDeleteAction = plotActionsToolbar->addAction(QIcon(QPixmap(plot_del_xpm)),tr("Delete"),
+    plotDeleteAction = plotActionsToolbar->addAction(QIcon(QPixmap("/Users/harrison37/Downloads/delete_forever_50dp_FFFFFF.png")),tr("Delete"),
                                                      this,SLOT(deletePlots()));
 
     // add hide/show action
-    plotHideShowAction = plotActionsToolbar->addAction(QIcon(QPixmap(plot_hide_xpm)),tr("Hide/Show"),
+    plotHideShowAction = plotActionsToolbar->addAction(QIcon(QPixmap("/Users/harrison37/Downloads/hide_image_50dp_FFFFFF.png")),tr("Hide/Show"),
                                                        this, SLOT(hidePlots()));
 
     // add draw action
-    plotDrawAction = plotActionsToolbar->addAction(QIcon(QPixmap(plot_draw_xpm)),tr("Draw"),
+    plotDrawAction = plotActionsToolbar->addAction(QIcon(QPixmap("/Users/harrison37/Downloads/mode_50dp_FFFFFF.png")),tr("Draw"),
                                                    this, SLOT(drawPlots()));
 
     // add change variable menu action
-    varMenuAction = plotActionsToolbar->addAction(QIcon(QPixmap(plot_var_xpm)),tr("Variables"));
+    varMenuAction = plotActionsToolbar->addAction(QIcon(QPixmap("/Users/harrison37/Downloads/screen_rotation_alt_50dp_FFFFFF.png")),tr("Variables"));
     QToolButton *var_button = (QToolButton*) plotActionsToolbar->widgetForAction(varMenuAction);
     var_button->setPopupMode(QToolButton::InstantPopup);
 

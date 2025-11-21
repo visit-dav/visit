@@ -322,17 +322,30 @@ QvisVCRControl::QvisVCRControl(QWidget *parent) : QWidget(parent)
     activeButton = 2;
 
     // Create pixmaps for the buttons.
-    AugmentPixmap(frevpix_icon);
-    QPixmap p1((const char **)augmentedData);
-    AugmentPixmap(backpix_icon);
-    QPixmap p2((const char **)augmentedData);
-    AugmentPixmap(stoppix_icon);
-    QPixmap p3((const char **)augmentedData);
-    AugmentPixmap(playpix_icon);
-    QPixmap p4((const char **)augmentedData);
-    AugmentPixmap(fadvpix_icon);
-    QPixmap p5((const char **)augmentedData);
+    // AugmentPixmap(frevpix_icon);
+    // QPixmap p1((const char **)augmentedData);
+    // AugmentPixmap(backpix_icon);
+    // QPixmap p2((const char **)augmentedData);
+    // AugmentPixmap(stoppix_icon);
+    // QPixmap p3((const char **)augmentedData);
+    // AugmentPixmap(playpix_icon);
+    // QPixmap p4((const char **)augmentedData);
+    // AugmentPixmap(fadvpix_icon);
+    // QPixmap p5((const char **)augmentedData);
 
+    
+       // AugmentPixmap(frevpix_icon);
+    // back back skip_previous_50dp_FFFFFF
+    QPixmap p1("/Users/harrison37/Downloads/skip_previous_50dp_FFFFFF.png");
+    // back chevron_left_50dp_FFFFFF
+    QPixmap p2("/Users/harrison37/Downloads/chevron_left_50dp_FFFFFF.png");
+    // stop pause_50dp_FFFFFF
+    QPixmap p3("/Users/harrison37/Downloads/pause_50dp_FFFFFF.png");
+    // fwd play_arrow_50dp_FFFFFF
+    QPixmap p4("/Users/harrison37/Downloads/chevron_right_50dp_FFFFFF.png");
+    // fwd fwd skip_next_50dp_FFFFFF
+    QPixmap p5("/Users/harrison37/Downloads/skip_next_50dp_FFFFFF.png");
+    
     // Create the top layout.
     QHBoxLayout *topLayout = new QHBoxLayout(this);
     topLayout->setContentsMargins(0,0,0,0);

@@ -9,9 +9,15 @@
 #include <QFont>
 #include <QStyle>
 #include <QWidget>
-
+#include "DarkStyle.h"
 #include <AppearanceAttributes.h>
 #include <DebugStream.h>
+
+
+
+
+
+
 
 // ****************************************************************************
 // Method: QvisGUIApplication::ExtractSystemDefaultAppearance
@@ -115,7 +121,10 @@ SetAppearance(QApplication *app, AppearanceAttributes *aa)
         // Set the style via the style name.
         app->setStyle(newStyle.c_str());
     }
-     
+    
+    app->setStyle(new DarkStyle());
+    
+    
     //
     // Set the font.
     //
