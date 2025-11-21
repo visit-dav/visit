@@ -46,6 +46,10 @@ class MoleculeMapperHelper;
 //    Kathleen Biagas, June 16, 2021
 //    Remove use of vtkNew for ivars, was causing crash on deletion of class.
 //
+//    Eric Brugger, Mon Nov 17 14:41:13 PST 2025
+//    I added "scol" to the header so that I could Delete it in the
+//    destructor to fix a memory leak.
+//
 // ****************************************************************************
 
 class vtkVisItMoleculeMapper : public vtkDataSetMapper
@@ -312,6 +316,7 @@ protected:
 
   // Description:
   // Cached variables and update methods
+  vtkUnsignedCharArray *scol;
   vtkSphereSource *sphere;
   vtkPolyData *AtomPolyData;
   vtkTrivialProducer *AtomOutput;

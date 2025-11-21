@@ -631,6 +631,9 @@ avtMoleculePlot::GetLegend(void)
 //    total number of known elements in visit.  Added a fake "0" element
 //    which means "unknown", and hydrogen now starts at 1.
 //
+//    Eric Brugger, Mon Nov 17 14:41:13 PST 2025
+//    I added a delete for "colors" to fix a memory leak.
+//
 // ****************************************************************************
 
 void
@@ -805,6 +808,8 @@ avtMoleculePlot::SetLegendRange()
         levelsLegend->SetVarRange(min,max);
         levelsLegend->SetColorBarVisibility(1);
         levelsLegend->SetMessage(NULL);
+
+	delete [] colors;
     }
     else
     {

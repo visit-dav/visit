@@ -33,7 +33,10 @@
 //
 //    Tom Fogal, Fri Jan 28 15:26:59 MST 2011
 //    VTK API change.
-//   
+//
+//    Cyrus Harrison, Wed Nov 19 11:45:59 PST 2025
+//    Change default text annot size to 4% (to match old 3% with 4/3 scaling)
+//
 // ****************************************************************************
 
 avtText2DColleague::avtText2DColleague(VisWindowColleagueProxy &m) 
@@ -47,7 +50,7 @@ avtText2DColleague::avtText2DColleague(VisWindowColleagueProxy &m)
     //
     textActor = vtkVisItTextActor::New();
     textActor->SetTextScaleMode(vtkTextActor::TEXT_SCALE_MODE_VIEWPORT);
-    textActor->SetTextHeight(0.03);
+    textActor->SetTextHeight(0.04);
     SetText("2D text annotation");
     vtkCoordinate *pos = textActor->GetPositionCoordinate();
     pos->SetCoordinateSystemToNormalizedViewport();

@@ -19,6 +19,8 @@
 // Creation:   Mon Sep 19 15:20:50 PDT 2011
 //
 // Modifications:
+//   Cyrus Harrison, Wed Nov 19 11:32:07 PST 2025
+//   Add RenderOpaqueGeometry() to allow us to resize on viewport change
 //
 // ****************************************************************************
 
@@ -33,7 +35,7 @@ public:
 
   void SetTextHeight(float val);
   vtkGetMacro(TextHeight, float);
-
+  int RenderOpaqueGeometry(vtkViewport* viewport) override;
   void ComputeScaledFont(vtkViewport *viewport) override;
 
 protected:
