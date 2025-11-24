@@ -49,6 +49,27 @@ ClonedDataNetwork::~ClonedDataNetwork(void)
 }
 
 // ****************************************************************************
+//  Method:  ClonedDataNetwork::AddNode
+//
+//  Purpose:
+//    Add a Netnode to the node list. This method intercepts any calls to
+//    the parent class' AddNode method so that any Netnodes added after the
+//    DataNetwork is cloned can be saved and then deleted in ReleaseData.
+//
+//  Programmer:  Eric Brugger
+//  Creation:    November 24, 2025 
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+ClonedDataNetwork::AddNode(Netnode *n)
+{
+    cNodeList.push_back(n);
+    DataNetwork::AddNode(n);
+}
+
+// ****************************************************************************
 //  Method:  ClonedDataNetwork::ReleaseData
 //
 //  Purpose:
@@ -58,11 +79,17 @@ ClonedDataNetwork::~ClonedDataNetwork(void)
 //  Creation:    March 18, 2004 
 //
 //  Modifications:
+//    Eric Brugger, Mon Nov 24 10:17:20 PST 2025
+//    I added code to delete cNodeList.
 //
 // ****************************************************************************
 void
 ClonedDataNetwork::ReleaseData(void)
 {
+    for (int i = 0; i < cNodeList.size(); ++i)
+    {
+        delete cNodeList[i];
+    }
     if (*cPlot != NULL)
     {
         cPlot->ReleaseData();
