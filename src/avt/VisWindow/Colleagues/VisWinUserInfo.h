@@ -14,7 +14,7 @@
 #include <VisWinColleague.h>
 
 
-class vtkTextActor;
+class vtkVisItTextActor;
 
 class VisWindowColleagueProxy;
 
@@ -50,6 +50,9 @@ class VisWindowColleagueProxy;
 //    Brad Whitlock, Wed Jan 30 15:14:50 PST 2008
 //    Added SetTextAttributes.
 //
+//    Cyrus Harrison, Wed Nov 19 11:40:12 PST 2025
+//    Use vtkVisItTextActor to all db info to adapt to viewport changes.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinUserInfo : public VisWinColleague
@@ -68,7 +71,7 @@ class VISWINDOW_API VisWinUserInfo : public VisWinColleague
     void                 SetTextAttributes(const VisWinTextAttributes &textAtts);
 
   protected:
-    vtkTextActor        *infoActor;
+    vtkVisItTextActor   *infoActor;
     char                *infoString;
     VisWinTextAttributes textAttributes;
 
