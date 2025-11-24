@@ -1,4 +1,6 @@
-SET PYTHONPATH=@CMAKE_BINARY_DIR@/lib/@CMAKE_BUILD_TYPE@/site-packages/
+SET PYTHONPATH=@CMAKE_BINARY_DIR@/lib/@CMAKE_BUILD_TYPE@/site-packages/;@CMAKE_BINARY_DIR@/lib/@CMAKE_BUILD_TYPE@/python/lib/
+SET PYTHONHOME=@CMAKE_BINARY_DIR@/lib/@CMAKE_BUILD_TYPE@/site-packages/;@CMAKE_BINARY_DIR@/lib/@CMAKE_BUILD_TYPE@/python/lib/
+
 @PYTHON_EXECUTABLE@ @CMAKE_CURRENT_SOURCE_DIR@/run_visit_test_suite.py ^
    --lessverbose --no-timings --fuzzy ^
    -d @CMAKE_BINARY_DIR@/testdata ^
