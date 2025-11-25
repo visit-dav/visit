@@ -19,9 +19,12 @@
 #
 # ----------------------------------------------------------------------------
 
-Source(tests_path("plugins", "pluginVsInstallHelpers"))
+from pathlib import Path
+
+Source(Path(tests_path("plugins", "pluginVsInstallHelpers")).as_posix())
 
 do_plugin_type("operators", ["CartographicProjection", "CracksClipper", "RadialResample", "Slice", "Threshold"])
+
 # for future use
 #do_tests("operators", ["cart_proj.py", "cracksclipper.py", "radial_resample.py", "slice.py", "threshold.py"])
 
