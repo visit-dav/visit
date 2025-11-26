@@ -285,6 +285,9 @@ endif()
 #  running on 64-bit Windows 8 reports 'Program Files (x86)' for
 #  'ENV${PROGRAMFILES}'.
 #
+#  Kathleen Biagas, Wed Nov 26, 2025
+#  Escape ${CMAKE_COMMAND} to fix issues on Windows.
+#
 #-----------------------------------------------------------------------------
 find_program(TAR_EXE tar)
 if(TAR_EXE AND NOT WIN32)
@@ -292,7 +295,7 @@ if(TAR_EXE AND NOT WIN32)
     set(UNTAR_ARGS "xvf")
     set(TAR_ARGS "cvfJ")
 else()
-    set(TAR_CMD ${CMAKE_COMMAND})
+    set(TAR_CMD "\${CMAKE_COMMAND}")
     set(UNTAR_ARGS "-E tar xvf")
     set(TAR_ARGS "-E tar cvfJ")
 endif()
@@ -314,24 +317,32 @@ endif()
 
 #-----------------------------------------------------------------------------
 # Add install command for contents of "data"
+#
+# Modifications:
+#   Kathleen Biagas, Wed Nov 26, 2025
+#   Normalize path to visit_dist_data.tar.xz.
+#   Change install path for generated data files to:
+#       ${VISIT_INSTALLED_VERSION}/data
 #-----------------------------------------------------------------------------
 
 set(USE_VISIT_DIST_DATA_TARBALL false)
 
-if(EXISTS ${VISIT_SOURCE_DIR}/../data/visit_dist_data.tar.xz)
+cmake_path(SET VISIT_DIST_DATA_TARBALL NORMALIZE "${VISIT_SOURCE_DIR}/../data/visit_dist_data.tar.xz")
+
+if(EXISTS ${VISIT_DIST_DATA_TARBALL})
     # Need to test the size of visit_dist_data, because untar will fail if
     # its the lfs'd version of the file and not the real one. This happens
     # with build_visit,  because lfs content isn't pulled.
 
-    file(SIZE ${VISIT_SOURCE_DIR}/../data/visit_dist_data.tar.xz VDD_SIZE)
+    file(SIZE ${VISIT_DIST_DATA_TARBALL} VDD_SIZE)
     if(VDD_SIZE GREATER 200) # lfs'd files are generally ~130 bytes.
         set(USE_VISIT_DIST_DATA_TARBALL true)
     endif()
 endif()
 
 if(USE_VISIT_DIST_DATA_TARBALL)
-    set(DIST_UNTAR_CMD "${TAR_CMD} ${UNTAR_ARGS} ${VISIT_SOURCE_DIR}/../data/visit_dist_data.tar.xz")
-    install(CODE "execute_process(COMMAND ${DIST_UNTAR_CMD} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )")
+    set(DIST_UNTAR_CMD "${TAR_CMD} ${UNTAR_ARGS} ${VISIT_DIST_DATA_TARBALL}")
+    install(CODE "execute_process(COMMAND ${DIST_UNTAR_CMD} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})")
     install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/visit_dist_data/
         DESTINATION ${VISIT_INSTALLED_VERSION}/data
         DIRECTORY_PERMISSIONS
@@ -341,10 +352,10 @@ if(USE_VISIT_DIST_DATA_TARBALL)
 
 else()
     if(SILO_FOUND)
-        set(DATA_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR})
-        set(CMDS "")
         if(WIN32)
             set(DATA_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>)
+        else()
+            set(DATA_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR})
         endif()
 
         set(testall_output  curv2d.silo
@@ -430,11 +441,16 @@ else()
         if(NOT WIN32)
             string(REGEX REPLACE "([a-zA-Z0-9_\\.+]+)(;|$)" "${DATA_OUT_DIR}/\\1\\2" install_files "${all_example_output}")
         else()
-            string(REGEX REPLACE "([a-zA-Z0-9_\\.+]+)(;|$)" "${CMAKE_CURRENT_BINARY_DIR}/\${CMAKE_INSTALL_CONFIG_NAME}/\\1\\2" install_files "${all_example_output}")
+            string(REGEX REPLACE "([a-zA-Z0-9_\\.+]+)(;|$)" "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/\\1\\2" install_files "${all_example_output}")
+
+            message("install files: ${install_files}")
             visit_add_to_util_builds(create_data_examples)
         endif()
-        install(FILES ${install_files} DESTINATION data
-           PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ)
+        install(FILES ${install_files}
+                DESTINATION ${VISIT_INSTALLED_VERSION}/data
+                PERMISSIONS OWNER_READ OWNER_WRITE
+                            GROUP_READ GROUP_WRITE 
+                            WORLD_READ)
 
         # Create a target to build visit_dist_data.tar.xz
         file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/build_visit_dist_data.cmake CONTENT "
