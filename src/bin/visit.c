@@ -1293,7 +1293,6 @@ GetVisItEnvironment(stringVector &env, bool addPluginVars, bool &usingdev,
                 wcstombs_s(&convertedChars, nstring, newsize, szPath, _TRUNCATE);
                 userHome = nstring;
                 delete []nstring;
-                userHome.append("\\VisIt");
             }
             else
             {
