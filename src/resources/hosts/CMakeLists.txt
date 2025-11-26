@@ -13,6 +13,9 @@
 #   Added config, guiconfig and visitrc files, use OPTIONAL tag in case
 #   files don't exist.
 #
+#   Kathleen Biagas, Thu Nov 13, 2025
+#   Don't install customlauncher if building on windows.
+#
 #*****************************************************************************
 
 ## provide proper install structure windows vs other:
@@ -34,11 +37,14 @@ IF (VISIT_INSTALL_PROFILES_TO_HOSTS)
             DESTINATION ${LPROF_DEST}
             PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
     )
-    INSTALL(FILES "${CMAKE_CURRENT_SOURCE_DIR}/${VISIT_INSTALL_PROFILES_TO_HOSTS}/customlauncher"
-            DESTINATION ${BIN_DEST}
-            PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
-            OPTIONAL 
-    ) 
+    if(NOT WIN32) 
+        INSTALL(FILES "${CMAKE_CURRENT_SOURCE_DIR}/${VISIT_INSTALL_PROFILES_TO_HOSTS}/customlauncher"
+                DESTINATION ${BIN_DEST}
+                PERMISSIONS OWNER_READ OWNER_WRITE
+                            GROUP_READ GROUP_WRITE
+                            WORLD_READ
+                OPTIONAL) 
+    endif()
     INSTALL(FILES "${CMAKE_CURRENT_SOURCE_DIR}/${VISIT_INSTALL_PROFILES_TO_HOSTS}/config"
             DESTINATION ${CONFIG_DEST}
             PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
