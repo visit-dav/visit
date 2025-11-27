@@ -255,7 +255,7 @@ def test_mfem_lor_field(tag_name, dbfile):
     SetActivePlots(0)
     MultiresControlAtts = MultiresControlAttributes()
     MultiresControlAtts.resolution = 3
-    MultiresControlAtts.refMethod = MultiresControlAtts.LOR_Projection_Default
+    MultiresControlAtts.refMethod = MultiresControlAtts.Discontinuous_Refine
     SetOperatorOptions(MultiresControlAtts, 0, 1)
     set_test_view()
     DrawPlots()

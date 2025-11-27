@@ -1033,15 +1033,23 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     bool hdiv = basis.find("RT_") != std::string::npos;
     bool hcurl = basis.find("ND_") != std::string::npos;
 
-    const int bases = static_cast<int>(l2) +
-                      static_cast<int>(h1) +
-                      static_cast<int>(hdiv) +
-                      static_cast<int>(hcurl);
+    int bases = static_cast<int>(l2) +
+                static_cast<int>(h1) +
+                static_cast<int>(hdiv) +
+                static_cast<int>(hcurl);
+
+    // go ahead and fall back to nodal
+    if (0 == bases)
+    {
+        h1 = true;
+        bases = 1;
+    }
+
     // we must enforce only a single basis type
-    if (bases != 1)
+    if (1 != bases)
     {
         AVT_MFEM_EXCEPTION1(InvalidVariableException, 
-            "RefineGridFunctionToVTK: grid function must be one of either H1, L2, Hdiv, or Hcurl."
+            "RefineGridFunctionToVTK: grid function must be one of either H1, L2, Hdiv, or Hcurl. "
             "Unsupported basis type in " << basis);
     }
 
