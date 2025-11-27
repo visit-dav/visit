@@ -20,36 +20,55 @@
 #   Justin Privitera, Wed Apr 27 17:46:52 PDT 2022
 #   Updated adios2 to 2.7.1 and added all the libraries it creates to the
 #   installation as well as additional logic for parallel building.
-# 
+#
 #   Justin Privitera, Thu Jan 18 09:56:51 PST 2024
 #   adios2 libs have changed so I removed many of the old ones.
 #
 #   Mark C. Miller, Tue Mar 19 12:20:18 PDT 2024
 #   Adjust parallel to include both serial and parallel libs.
+#
+#   Vicente Adolfo Bolea Sanchez, Tue Nov 18 14:00:00 PDT 2025
+#   find_package(ADIOS2) to determine ADIOS2 version.
 #****************************************************************************/
 
-# Use the ADIOS_DIR hint from the config-site .cmake file
+# Use the ADIOS2_DIR hint from the config-site .cmake file
+if(VISIT_ADIOS2_DIR)
+   file(GLOB ADIOS2_DIR "${VISIT_ADIOS2_DIR}/lib*/cmake/adios2")
+   if(NOT ADIOS2_DIR)
+     message(FATAL_ERROR "Failed to find ADIOS2 at ADIOS2_DIR=${VISIT_ADIOS2_DIR}/lib*/cmake/adios2")
+   endif()
+   include(${ADIOS2_DIR}/adios2-config.cmake)
+   find_package(ADIOS2 CONFIG REQUIRED)
+   unset(ADIOS2_DIR)
 
-if(NOT WIN32)
-    SET_UP_THIRD_PARTY(ADIOS2 LIBS
-        adios2_c adios2_atl adios2_dill adios2_evpath adios2_ffs
-        adios2_perfstubs adios2_cxx11 adios2_core adios2_enet)
-else()
-    SET_UP_THIRD_PARTY(ADIOS2 LIBS
-        adios2_c adios2_cxx11 adios2_core adios2_atl
-        adios2_dill adios2_ffs )
-endif()
+   set(adios2_cxx_lib adios2_cxx)
+   set(adios2_cxx_mpi_lib adios2_cxx_mpi)
+   if(ADIOS2_VERSION VERSION_LESS_EQUAL 2.10)
+       set(adios2_cxx_lib adios2_cxx11)
+       set(adios2_cxx_mpi_lib adios2_cxx11_mpi)
+   endif()
 
-if(VISIT_PARALLEL)
-    if(NOT WIN32)
-        SET_UP_THIRD_PARTY(ADIOS2_PAR LIBS
-            adios2_c adios2_atl adios2_dill adios2_evpath adios2_ffs
-            adios2_perfstubs adios2_cxx11 adios2_core adios2_enet
-            adios2_c_mpi adios2_cxx11_mpi adios2_core_mpi)
-    else()
-        SET_UP_THIRD_PARTY(ADIOS2_PAR LIBS
-            adios2_c adios2_cxx11 adios2_core
-            adios2_atl adios2_dill adios2_ffs 
-            adios2_c_mpi adios2_cxx11_mpi adios2_core_mpi)
-    endif()
+   if(NOT WIN32)
+       SET_UP_THIRD_PARTY(ADIOS2 LIBS
+           adios2_c adios2_atl adios2_dill adios2_evpath adios2_ffs
+           adios2_perfstubs ${adios2_cxx_lib} adios2_core adios2_enet)
+   else()
+       SET_UP_THIRD_PARTY(ADIOS2 LIBS
+           adios2_c ${adios2_cxx_lib} adios2_core adios2_atl
+           adios2_dill adios2_ffs )
+   endif()
+
+   if(VISIT_PARALLEL)
+       if(NOT WIN32)
+           SET_UP_THIRD_PARTY(ADIOS2_PAR LIBS
+               adios2_c adios2_atl adios2_dill adios2_evpath adios2_ffs
+               adios2_perfstubs ${adios2_cxx_lib} adios2_core adios2_enet
+               adios2_c_mpi ${adios2_cxx_mpi_lib} adios2_core_mpi)
+       else()
+           SET_UP_THIRD_PARTY(ADIOS2_PAR LIBS
+               adios2_c ${adios2_cxx_lib} adios2_core
+               adios2_atl adios2_dill adios2_ffs
+               adios2_c_mpi ${adios2_cxx_mpi_lib} adios2_core_mpi)
+       endif()
+   endif()
 endif()
