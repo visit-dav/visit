@@ -850,7 +850,7 @@ avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
     AVT_MFEM_INFO("Converting Low Order Grid Function To VTK");
 
     mfem::FiniteElementSpace *fespace = gf->FESpace();
-    int vdim = fespace->GetVDim();
+    int vdim = fespace->GetVectorDim();
     int ndofs = fespace->GetNDofs();
 
     // all supported grid functions coming out of mfem end up being 
@@ -901,29 +901,44 @@ avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
 
 // ****************************************************************************
 mfem::GridFunction *
-ConvertVectorFEToL2(mfem::GridFunction *vec_gf)
+ConvertGridFunctionToScalar(mfem::GridFunction *org_gf, avtMFEMDataAdaptor::refinementMethod ref_method)
 {
-    mfem::Mesh *mesh = vec_gf->FESpace()->GetMesh();
+    mfem::Mesh *mesh = org_gf->FESpace()->GetMesh();
     const int dim = mesh->Dimension();
-    const int p = vec_gf->FESpace()->GetMaxElementOrder();
+    const int p = org_gf->FESpace()->GetMaxElementOrder();
 
-    // Return NULL if vec_gf is not as expected -- vector FE with vdim == 1:
-    if (vec_gf->FESpace()->FEColl()->GetRangeType(dim) !=
-        FiniteElement::RangeType::VECTOR ||
-        vec_gf->FESpace()->GetVDim() != 1)
+    FiniteElementCollection *new_fec = nullptr;
+    if (ref_method == avtMFEMDataAdaptor::refinementMethod::LOR_Nodal_Projection)
     {
-        return nullptr;
+        new_fec = new H1_FECollection(p, dim, BasisType::GaussLobatto);
     }
+    else if (ref_method == avtMFEMDataAdaptor::refinementMethod::LOR_Zonal_Projection)
+    {
+        new_fec = new L2_FECollection(p, dim, BasisType::GaussLobatto);
+    }
+    FiniteElementSpace *new_fes =
+        new FiniteElementSpace(mesh, new_fec, org_gf->VectorDim());
+    GridFunction *new_gf = new GridFunction(new_fes);
+    new_gf->MakeOwner(new_fec);
 
-    FiniteElementCollection *l2_fec =
-        new L2_FECollection(p, dim, BasisType::GaussLobatto);
-    FiniteElementSpace *l2_fes =
-        new FiniteElementSpace(mesh, l2_fec, vec_gf->VectorDim());
-    GridFunction *l2_gf = new GridFunction(l2_fes);
-    l2_gf->MakeOwner(l2_fec);
-    vec_gf->ProjectVectorFieldOn(*l2_gf);
-    return l2_gf;
+    if (org_gf->FESpace()->FEColl()->GetRangeType(dim) ==
+        FiniteElement::RangeType::VECTOR )
+    {
+       org_gf->ProjectVectorFieldOn(*new_gf);
+    }
+    else if ( org_gf->FESpace()->GetVectorDim() == 1 )
+    {
+       mfem::GridFunctionCoefficient gf_cf(org_gf);
+       new_gf->ProjectCoefficient(gf_cf);
+    }
+    else
+    {
+       mfem::VectorGridFunctionCoefficient gf_cf(org_gf);
+       new_gf->ProjectCoefficient(gf_cf);
+    }
+    return new_gf;
 }
+
 
 
 // ****************************************************************************
@@ -1000,30 +1015,28 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
 
     AVT_MFEM_INFO("High Order Mesh is not periodic.");
 
-    mfem::FiniteElementSpace *ho_fes = gf->FESpace();
-    if(!ho_fes)
+    if(!gf->FESpace())
     {
         AVT_MFEM_EXCEPTION1(InvalidVariableException, 
             "RefineGridFunctionToVTK: high order gf finite element space is null");
     }
-    // create the low order grid function
-    mfem::FiniteElementCollection *lo_col;
 
     // H1 is nodal
     // L2 is zonal
 
+    // extract basis type information
     std::string basis(gf->FESpace()->FEColl()->Name());
-    // we may have more than just L2 or H1 at this point
     bool l2 = basis.find("L2_") != std::string::npos;
     bool h1 = basis.find("H1_") != std::string::npos;
-    // TODO is this correct? We need test data
-    bool hdiv = basis.find("Hdiv_") != std::string::npos;
-    bool hcurl = basis.find("Hcurl_") != std::string::npos;
+    bool hdiv = basis.find("Hdiv_") != std::string::npos;    // TODO We need test data
+    bool hcurl = basis.find("Hcurl_") != std::string::npos;  // TODO  We need test data
+    bool nurbs = basis.find("NURBS") != std::string::npos;   // TODO We need test data
 
     const int bases = static_cast<int>(l2) +
                       static_cast<int>(h1) +
                       static_cast<int>(hdiv) +
-                      static_cast<int>(hcurl);
+                      static_cast<int>(hcurl) +
+                      static_cast<int>(nurbs);
     // we must enforce only a single basis type
     if (bases != 1)
     {
@@ -1032,30 +1045,43 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
             "Unsupported basis type in " << basis);
     }
 
+    // select projection type and convert gridfunction when necessary
     mfem::GridFunction *gf_to_use = gf;
     bool delete_gf_to_use = false;
-    if (hdiv || hcurl)
+    if (h1)
     {
-        gf_to_use = ConvertVectorFEToL2(gf);
-        l2 = true;
-        hdiv = hcurl = false;
+        ref_method = refinementMethod::LOR_Nodal_Projection;
+    }
+    else if (l2)
+    {
+        ref_method = refinementMethod::LOR_Zonal_Projection;
+    }
+    else if (hdiv || hcurl)
+    {
+        ref_method = refinementMethod::LOR_Zonal_Projection;
+        gf_to_use = ConvertGridFunctionToScalar(gf, ref_method); // Convert to L2
+        delete_gf_to_use = true;
+    }
+    else if (nurbs)
+    {
+        ref_method = refinementMethod::LOR_Nodal_Projection;
+        gf_to_use = ConvertGridFunctionToScalar(gf, ref_method); // Convert to H1
         delete_gf_to_use = true;
     }
 
-    if (ref_method == refinementMethod::LOR_Nodal_Projection ||
-        (ref_method == refinementMethod::LOR_Projection_Default && h1))
+    // create the low order grid function
+    mfem::FiniteElementCollection *lo_col;
+    if (ref_method == refinementMethod::LOR_Nodal_Projection)
     {
         // convert to H1
         // node centered
         lo_col = new mfem::LinearFECollection;
     }
-    else if (ref_method == refinementMethod::LOR_Zonal_Projection ||
-             (ref_method == refinementMethod::LOR_Projection_Default && l2))
+    else if (ref_method == refinementMethod::LOR_Zonal_Projection)
     {
         // convert to L2
         // element centered
-        int p = 0; // single scalar
-        lo_col = new mfem::L2_FECollection(p, mesh->Dimension(), 1);
+        lo_col = new mfem::L2_FECollection(0, mesh->Dimension(), 1);
     }
     else
     {
@@ -1066,12 +1092,12 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     // refine the mesh and convert to vtk
     // it would be nice if this was cached somewhere but we will do it again
     mfem::Mesh lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::ClosedUniform);
-    mfem::FiniteElementSpace lo_fes(&lo_mesh, lo_col, ho_fes->GetVDim());
+    mfem::FiniteElementSpace lo_fes(&lo_mesh, lo_col, gf->FESpace()->GetVectorDim());
     mfem::GridFunction lo_gf(&lo_fes);
     // transform the higher order function to a low order function
     // using a matrix free transfer operator
     mfem::OperatorHandle hi_to_lo(mfem::Operator::ANY_TYPE);
-    lo_fes.GetTransferOperator(*ho_fes, hi_to_lo);
+    lo_fes.GetTransferOperator(*gf_to_use->FESpace(), hi_to_lo);
     hi_to_lo.Ptr()->Mult(*gf_to_use, lo_gf);
 
     vtkDataArray *retval = LowOrderGridFunctionToVTK(&lo_gf);
