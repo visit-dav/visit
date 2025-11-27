@@ -443,7 +443,6 @@ else()
         else()
             string(REGEX REPLACE "([a-zA-Z0-9_\\.+]+)(;|$)" "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/\\1\\2" install_files "${all_example_output}")
 
-            message("install files: ${install_files}")
             visit_add_to_util_builds(create_data_examples)
         endif()
         install(FILES ${install_files}
