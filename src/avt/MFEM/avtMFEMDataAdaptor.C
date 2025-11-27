@@ -1030,9 +1030,8 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     // we may have more than just L2 or H1 at this point
     bool l2 = basis.find("L2_") != std::string::npos;
     bool h1 = basis.find("H1_") != std::string::npos;
-    // TODO is this correct? We need test data
-    bool hdiv = basis.find("Hdiv_") != std::string::npos;
-    bool hcurl = basis.find("Hcurl_") != std::string::npos;
+    bool hdiv = basis.find("RT_") != std::string::npos;
+    bool hcurl = basis.find("ND_") != std::string::npos;
 
     const int bases = static_cast<int>(l2) +
                       static_cast<int>(h1) +
