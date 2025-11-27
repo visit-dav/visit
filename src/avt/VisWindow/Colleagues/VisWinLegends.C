@@ -27,7 +27,12 @@ using std::vector;
 const double   VisWinLegends::leftColumnPosition  = 0.05;
 const double   VisWinLegends::rightColumnPosition = 0.80;
 const double   /*VisWinLegends::*/dbInfoVOffset   = 0.065;
-const double   VisWinLegends::dbInfoHeight        = (0.055 * 0.45);
+// Note:
+//  The 4.0 / 3.0 scale to the initial value here is to match a prior heurstic
+//  that was baked into all text scaling. This scaling was removed in favor
+//  of scaling that properly reflects height % of the viewport,
+//  it is here to perseve the initial value
+const double   VisWinLegends::dbInfoHeight        = (0.055 * 0.45 * 4.0 / 3.0);
 
 // ****************************************************************************
 //  Method: VisWinLegends constructor
@@ -406,7 +411,7 @@ VisWinLegends::UpdateDBInfo(vector<avtActor_p> &lst)
         }
         CreateDatabaseInfo(info,dbname,atts);
         dbInfoActor->SetInput(info);
-        dbInfoActor->SetTextHeight(dbInfoHeight * dbInfoTextAttributes.scale);    
+        dbInfoActor->SetTextHeight(dbInfoHeight * dbInfoTextAttributes.scale);
         
         double x = leftColumnPosition;
         double y = 0.98 - dbInfoVOffset;

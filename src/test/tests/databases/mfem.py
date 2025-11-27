@@ -38,6 +38,7 @@ ex01_results = [ f for f in mfem_roots if f.count("ex01") == 1]
 ex02_results = [ f for f in mfem_roots if f.count("ex02") == 1]
 mfem_mesh_files = glob.glob(data_path("mfem_test_data/*.mesh"))
 mfem_quad_func_files = glob.glob(data_path("mfem_quad_func_test_data/*.mfem_root"))
+mfem_hdiv_hcurl_files = glob.glob(data_path("mfem_hdiv_hcurl_examples/*.mfem_root"))
 
 def set_test_view():
     v = View3DAttributes()

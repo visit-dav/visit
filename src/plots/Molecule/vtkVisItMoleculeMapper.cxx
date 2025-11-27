@@ -48,7 +48,7 @@ using std::vector;
 
 #define MAX_DETAIL_LEVELS 4
 
-static int cylinder_quality_levels[4] = {
+static int cylinder_quality_levels[MAX_DETAIL_LEVELS] = {
     3,
     5,
     9,
@@ -114,7 +114,7 @@ MoleculeMapperHelper::CalculateCylPts()
 
   cylinders_calculated = true;
 
-  for (int detail=0; detail<4; detail++)
+  for (int detail=0; detail<MAX_DETAIL_LEVELS; detail++)
     {
     int cdetail = cylinder_quality_levels[detail];
     cyl_pts[detail] = new float[(cdetail+1)*4];
@@ -358,6 +358,11 @@ vtkStandardNewMacro(vtkVisItMoleculeMapper)
 //   Kathleen Biagas, Fri Jun 18 2021
 //   Register 'AtomPolyData' to this class to prevent strange crash under
 //   certain conditions when plot attributes update. (Bug #5794)
+//
+//   Eric Brugger, Mon Nov 17 14:41:13 PST 2025
+//   I added "scol" to the header so that I could Delete it in the
+//   destructor to fix a memory leak.
+
 
 vtkVisItMoleculeMapper::vtkVisItMoleculeMapper()
   : RenderAtoms(true),
@@ -390,6 +395,8 @@ vtkVisItMoleculeMapper::vtkVisItMoleculeMapper()
 
   this->Helper = new MoleculeMapperHelper();
 
+  this->scol = NULL;
+
   // ATOMS
   // Setup glyph sources
   this->sphere = vtkSphereSource::New();
@@ -404,6 +411,10 @@ vtkVisItMoleculeMapper::vtkVisItMoleculeMapper()
   this->AtomMapper->SetScaleModeToScaleByMagnitude();
 
   this->AtomPolyData = vtkPolyData::New();
+  // This Register shouldn't be necessary, but it fixes a crash when
+  // deleting the ImposterMapper when the ImposterMapper is used to
+  // render. This could result in a memory leak, but there is code in
+  // the destructor to address this issue.
   this->AtomPolyData->Register(this);
   // Connect the trivial producers to forward the glyph polydata
 
@@ -434,12 +445,32 @@ vtkVisItMoleculeMapper::vtkVisItMoleculeMapper()
 }
 
 //----------------------------------------------------------------------------
+// Modifications:
+//   Eric Brugger, Mon Nov 17 14:41:13 PST 2025
+//   I added a Delete for "AtomPolyData" if the reference count is 6 to
+//   fix a memory leak. I added a Delete for "scol" if the reference count
+//   is 3 to fix a memory leak.
+
 vtkVisItMoleculeMapper::~vtkVisItMoleculeMapper()
 {
+  // When using the ImposterMapper, the reference count for AtomPolyData
+  // is 4. When using the AtomMapper, the reference count for AtomPolyData
+  // is 6. By adding an extra Delete if the reference count is 6, we
+  // eliminate a memory leak.
+  if (this->AtomPolyData->GetReferenceCount() == 6)
+    this->AtomPolyData->Delete();
+
   if (this->MolColors)
     delete[] this->MolColors;
   this->MolColors = NULL;
   delete this->Helper;
+
+  // When using the ImposterMapper, the reference count for scol is 2.
+  // When using the AtomMapper, the reference count for scol is 3. By
+  // adding an extra Delete if the reference count is 3, we eliminate
+  // a memory leak.
+  if (this->scol && this->scol->GetReferenceCount() == 3)
+    this->scol->Delete();
 
   this->sphere->Delete();
   this->AtomPolyData->Delete();
@@ -700,6 +731,11 @@ void vtkVisItMoleculeMapper::UpdatePolyData()
 //    Kathleen Biagss, Thu Aug 11, 2022
 //    Support VTK9: use vtkCellArrayIterator.
 //
+//    Eric Brugger, Mon Nov 17 14:41:13 PST 2025
+//    I changed the allocation of "scol" to the standard "New" call
+//    instead of using "vtkNew" to fix a memory leak. I added a Delete
+//    for "pts" to fix a memory leak.
+//
 
 void vtkVisItMoleculeMapper::UpdateAtomPolyData()
 {
@@ -813,10 +849,14 @@ void vtkVisItMoleculeMapper::UpdateAtomPolyData()
       }
     }
 
-  vtkNew<vtkUnsignedCharArray> scol;
+  scol = vtkUnsignedCharArray::New();
   scol->SetName("Colors");
   scol->SetNumberOfComponents(4);
   scol->Allocate(numverts*3);
+  // This Register shouldn't be necessary, but it fixes a crash when
+  // deleting the ImposterMapper when the ImposterMapper is used to
+  // render. This could result in a memory leak, but there is code in
+  // the destructor to address this issue.
   scol->Register(this);
 
   vtkPoints *pts = points->NewInstance();
@@ -913,7 +953,9 @@ void vtkVisItMoleculeMapper::UpdateAtomPolyData()
   cells->Squeeze();
   scol->Squeeze();
   this->AtomPolyData->SetPoints(pts);
-  this->AtomPolyData->GetPointData()->SetScalars(scol.GetPointer());
+  pts->Delete();
+  this->AtomPolyData->GetPointData()->SetScalars(scol);
+  scol->Delete();
 
   this->AtomPolyData->SetVerts(cells.GetPointer());
   this->AtomPolyData->GetPointData()->AddArray(scaleFactors.GetPointer());
@@ -932,6 +974,10 @@ void vtkVisItMoleculeMapper::UpdateAtomPolyData()
 //    Kathleen Biagss, Thu Aug 11, 2022
 //    Added logic to check for radiusvar.
 //    Support VTK9: use vtkCellArrayIterator.
+//
+//    Eric Brugger, Mon Nov 17 14:41:13 PST 2025
+//    I added a Delete for "linePoints" and "cylPoints" to fix some memory
+//    leaks.
 //
 
 void vtkVisItMoleculeMapper::UpdateBondPolyData()
@@ -1229,9 +1275,11 @@ void vtkVisItMoleculeMapper::UpdateBondPolyData()
       }
     }
   this->BondLinesPolyData->SetPoints(linePoints);
+  linePoints->Delete();
   this->BondLinesPolyData->SetLines(lineLines.GetPointer());
   this->BondLinesPolyData->GetCellData()->SetScalars(lineBondColors.GetPointer());
   this->BondCylsPolyData->SetPoints(cylPoints);
+  cylPoints->Delete();
   this->BondCylsPolyData->SetPolys(cylPolys.GetPointer());
   this->BondCylsPolyData->GetCellData()->SetScalars(cylinderBondColors.GetPointer());
   this->BondCylsPolyData->GetPointData()->SetNormals(cylNorms.GetPointer());

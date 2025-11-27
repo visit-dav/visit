@@ -411,11 +411,18 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
         // periodic. So our best bet is to catch all L2 meshes and fall back
         // to legacy LOR.
 
-        AVT_MFEM_INFO("High Order Mesh may be periodic; falling back to Legacy LOR.");
-        return LegacyRefineMeshToVTK(mesh, domain, lod);
+        if (refinementMethod::LOR_Projection_Default == ref_method)
+        {
+            AVT_MFEM_INFO("High Order Mesh may be periodic and default "
+                          "projection has been selected; falling back to "
+                          "Legacy LOR.");
+            return LegacyRefineMeshToVTK(mesh, domain, lod);
+        }
     }
-
-    AVT_MFEM_INFO("High Order Mesh is not periodic.");
+    else
+    {
+        AVT_MFEM_INFO("High Order Mesh is not periodic.");
+    }
 
     // mfem::Mesh::MakeRefined does not yet support pyramids
     if(mesh->GetNE() > 0)
@@ -987,7 +994,7 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
 {
     AVT_MFEM_INFO("Creating Refined MFEM Field with lod:" << lod);
 
-    if (ref_method == refinementMethod::Discontinuous_Refine)
+    if (refinementMethod::Discontinuous_Refine == ref_method)
     {
         AVT_MFEM_INFO("Using Legacy LOR to refine grid function.");
         return LegacyRefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
@@ -1009,11 +1016,18 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
         // periodic. So our best bet is to catch all L2 meshes and fall back
         // to legacy LOR.
 
-        AVT_MFEM_INFO("High Order Mesh may be periodic; falling back to Legacy LOR.");
-        return LegacyRefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
+        if (refinementMethod::LOR_Projection_Default == ref_method)
+        {
+            AVT_MFEM_INFO("High Order Mesh may be periodic and default "
+                          "projection has been selected; falling back to "
+                          "Legacy LOR.");
+            return LegacyRefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
+        }
     }
-
-    AVT_MFEM_INFO("High Order Mesh is not periodic.");
+    else
+    {
+        AVT_MFEM_INFO("High Order Mesh is not periodic.");
+    }
 
     if(!gf->FESpace())
     {
@@ -1028,9 +1042,9 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     std::string basis(gf->FESpace()->FEColl()->Name());
     bool l2 = basis.find("L2_") != std::string::npos;
     bool h1 = basis.find("H1_") != std::string::npos;
-    bool hdiv = basis.find("Hdiv_") != std::string::npos;    // TODO We need test data
-    bool hcurl = basis.find("Hcurl_") != std::string::npos;  // TODO  We need test data
     bool nurbs = basis.find("NURBS") != std::string::npos;   // TODO We need test data
+    bool hdiv = basis.find("RT_") != std::string::npos;
+    bool hcurl = basis.find("ND_") != std::string::npos;
 
     const int bases = static_cast<int>(l2) +
                       static_cast<int>(h1) +
