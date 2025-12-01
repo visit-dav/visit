@@ -8,7 +8,7 @@
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/WS1/visit/visit/thirdparty_shared/3.5.0/toss4)
+SET(VISITHOME /usr/WS1/visit/visit/thirdparty_shared/3.5.0-python3.13/toss4)
 SET(VISITARCH linux-x86_64_gcc-10.3)
 
 ### NOTE: Modified from build_visit output
@@ -66,7 +66,7 @@ VISIT_OPTION_DEFAULT(VISIT_ZLIB_DIR ${VISITHOME}/zlib/${ZLIB_VERSION}/${VISITARC
 ##
 ## Python
 ##
-VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/3.9.18/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_PYTHON_DIR ${VISITHOME}/python/3.13.9/${VISITARCH})
 
 ##
 ## LLVM

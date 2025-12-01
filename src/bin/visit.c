@@ -1171,6 +1171,10 @@ ReadKey(const char *key, char **keyval)
  *   Kathleen Biagas, Thu Jun 8, 2021
  *   Add LIBPATH for non-dev, needed when importing VisIt into python.
  *
+ *   Kathleen Biagas, Thu Nov 20, 2025 
+ *   Set PYTHONHOME even when running from dev build, add 'python\lib'
+ *   subdirs, too.
+ *
  *****************************************************************************/
 
 string
@@ -1382,9 +1386,9 @@ GetVisItEnvironment(stringVector &env, bool addPluginVars, bool &usingdev,
      */
     if (!usingdev)
     {
-        sprintf(tmp, "PYTHONPATH=%s\\lib", visitpath);
+        sprintf(tmp, "PYTHONPATH=%s\\lib;%s\\lib\\python\\lib", visitpath, visitpath);
         env.push_back(tmp);
-        sprintf(tmp, "PYTHONHOME=%s\\lib\\python",visitpath);
+        sprintf(tmp, "PYTHONHOME=%s\\lib;%s\\lib\\python\\lib", visitpath, visitpath);
         env.push_back(tmp);
         sprintf(tmp, "LIBPATH=%s\\lib", visitpath);
         env.push_back(tmp);
@@ -1398,12 +1402,17 @@ GetVisItEnvironment(stringVector &env, bool addPluginVars, bool &usingdev,
         if (config.length() > 0)
         {
             sprintf(tmp, "PYTHONPATH=%s\\lib\\%s;%s\\lib\\%s\\Python\\Lib", svp.c_str(), config.c_str(), svp.c_str(), config.c_str());
+            env.push_back(tmp);
+            sprintf(tmp, "PYTHONHOME=%s\\lib\\%s;%s\\lib\\%s\\Python\\Lib", svp.c_str(), config.c_str(), svp.c_str(), config.c_str());
+            env.push_back(tmp);
         }
         else
         {
-            sprintf(tmp, "PYTHONPATH=%s\\lib;%s\\lib\\Python\\Lib", svp.c_str(), svp.c_str());
+            sprintf(tmp, "PYTHONPATH=%s\\lib;%s\\lib\\python\\Lib", svp.c_str(), svp.c_str());
+            env.push_back(tmp);
+            sprintf(tmp, "PYTHONHOME=%s\\lib;%s\\lib\\python\\Lib", svp.c_str(), svp.c_str());
+            env.push_back(tmp);
         }
-        env.push_back(tmp);
     }
 
     /*
