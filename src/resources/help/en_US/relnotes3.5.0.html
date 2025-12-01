@@ -45,6 +45,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Refactored how to import visit into a stand alone python module. This is now done via the 'visit_launcher' module, avoiding module namespace issues.</li>
   <li>Antialiasing is no longer an on/off option, there are two modes: MSAA (when available) and FXAA. The default is still no antialiasing.</li>
   <li>Added environment variable logging to VisIt's debug vlog files.</li>
+  <li>Updated Python to 3.13.9, support for Python 2 was removed.</li>
 </ul>
 
 <a name="Advanced_features"></a>
@@ -88,7 +89,6 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug in the Blueprint reader causing successful reading of Sidre data to trigger the failure case, leading to significantly degraded performance.</li>
   <li>The VisItXdmf reader has been removed, it hasn't been maintained. The Xdmf reader that utilizes the Xdmf library is still available.</li>
   <li>Added support for MFEM Quadrature Functions to the MFEM and Blueprint database plugins.</li>
-  <li>Updated Python to 3.13.9.</li>
 </ul>
 
 <a name="Plot_changes"></a>
