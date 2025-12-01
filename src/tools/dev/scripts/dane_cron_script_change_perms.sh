@@ -4,7 +4,7 @@
 #
 
 # Change directories to the working directory.
-cd /usr/WS1/visit/test_trunk
+cd /usr/workspace/visit/test_trunk/
 
 # Set the permissions so that others may access the test directory.
 chgrp -R visit .

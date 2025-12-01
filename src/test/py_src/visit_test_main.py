@@ -2462,6 +2462,9 @@ def TestBatchSimulation(sim):
 #    Kathleen Biagas, Tuesday Oct 22, 2024
 #    Replaced pascal with poodle.
 #
+#    Kathleen Biagas, Mon Dec  1 14:33:51 PST 2025
+#    Replaced poodle with dane.
+#
 # ----------------------------------------------------------------------------
 class Simulation(object):
     def __init__(self, vdir, s, sim2, np=1, batch=False):
@@ -2501,7 +2504,8 @@ class Simulation(object):
 
             # For now...
             import socket
-            if "poodle" in socket.gethostname() or \
+            if "dane" in socket.gethostname() or \
+               "poodle" in socket.gethostname() or \
                "quartz" in socket.gethostname() or \
                "ruby" in socket.gethostname() or \
                "syrah" in socket.gethostname():

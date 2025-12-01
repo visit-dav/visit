@@ -1,0 +1,10 @@
+# use /bin/sh to run commands, no matter what /etc/passwd says
+SHELL=/bin/sh
+# mail any output to 'cyrush@llnl.gov', no matter whose crontab this is
+MAILTO=cyrush@llnl.gov
+#
+# run at 11:00 PM, every day
+0 21 * * * /usr/workspace/visit/test_trunk/nightly_chron/dane_cron_script_run_test_suite.sh >> /usr/workspace/visit/test_trunk/nightly_chron/out_chron_test_suite 2>&1
+# run at 6:00 AM, every day
+0 7 * * * /usr/workspace/visit/test_trunk/nightly_chron/dane_cron_script_change_perms.sh >> /usr/workspace/visit/cyrush/nightly_chron/out_chron_perms 2>&1
+
