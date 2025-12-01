@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Change directories to the working directory.
-cd /usr/workspace/visit/test_trunk/nightly_chron/
+cd /usr/workspace/visit/test_trunk/nightly_cron/
 
 # Get the latest version of the test script
 rm -f regressiontest_dane
