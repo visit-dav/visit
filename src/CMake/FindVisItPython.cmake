@@ -94,6 +94,9 @@
 #   configuration being part of the library path on Windows.
 #   Also added cleanup of build artifacts left in source by `pip install`.
 #
+#   Kathleen Biagas, Mon Nov 24, 2025 
+#   Remove Python 2 logic.
+#
 #****************************************************************************/
 
 # - Find python libraries
@@ -546,8 +549,6 @@ if(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
                        ${PYTHON_DIR}/bin/pip${PYX_X} # pip3.Z
                        ${PYTHON_DIR}/bin/pyvenv
                        ${PYTHON_DIR}/bin/pyvenv-${PYX_X} # pyvenv-3.Z
-                       ${PYTHON_DIR}/bin/2to3
-                       ${PYTHON_DIR}/bin/2to3-${PYX_X}   #2to3-3.Z
                        )
 
         foreach(_py_extra ${_py_extras})
@@ -571,8 +572,7 @@ if(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
                 PATTERN "lib-tk" EXCLUDE
                 PATTERN "visit.*" EXCLUDE
                 PATTERN "visitmodule.*" EXCLUDE
-                PATTERN "visit_writer.*" EXCLUDE
-                PATTERN "Python-2.6-py2.6.egg-info" EXCLUDE)
+                PATTERN "visit_writer.*" EXCLUDE)
         endif()
 
         # Install the Python headers

@@ -556,7 +556,6 @@ function initialize_build_visit()
     export CREATE_RPM="no"
     export DO_CONTEXT_CHECK="yes"
     export VISIT_INSTALL_NETWORK=""
-    export DO_VTK94="no"
     DOWNLOAD_ONLY="no"
     LIST_TPS="no"
 
@@ -592,11 +591,11 @@ function initialize_build_visit()
     # handled before calling the bv_XXX_info methods. This would mainly
     # be arguments that affect the version of a package being built.
     #
-    for arg in "$@" ; do
-        case $arg in
-            --vtk94) DO_VTK94="yes"; DO_VTK="yes";;
-        esac
-    done
+    #for arg in "$@" ; do
+    #    case $arg in
+    #        --vtk94) DO_VTK94="yes"; DO_VTK="yes";;
+    #    esac
+    #done
 
     #get visit information..
     bv_visit_info
