@@ -83,11 +83,7 @@ if len(engines) > 0:
         # explicitly open a parallel engine, if possible
         # if it fails, the OpenDatabase will start a serial engine
         import socket
-        if "dane" in socket.gethostname() or \
-           "quartz" in socket.gethostname() or \
-           "pascal"  in socket.gethostname() or \
-           "poodle"  in socket.gethostname() or \
-           "syrah"   in socket.gethostname():
+        if "dane" in socket.gethostname():
             haveParallelEngine = OpenComputeEngine("localhost", ("-l", "srun", "-np", "2"))
         else:
             haveParallelEngine = OpenComputeEngine("localhost", ("-np", "2"))

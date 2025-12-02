@@ -2462,7 +2462,7 @@ def TestBatchSimulation(sim):
 #    Kathleen Biagas, Tuesday Oct 22, 2024
 #    Replaced pascal with poodle.
 #
-#    Kathleen Biagas, Mon Dec  1 14:33:51 PST 2025
+#    Cyrus Harrison, Mon Dec  1 14:33:51 PST 2025
 #    Replaced poodle with dane.
 #
 # ----------------------------------------------------------------------------
@@ -2504,11 +2504,7 @@ class Simulation(object):
 
             # For now...
             import socket
-            if "dane" in socket.gethostname() or \
-               "poodle" in socket.gethostname() or \
-               "quartz" in socket.gethostname() or \
-               "ruby" in socket.gethostname() or \
-               "syrah" in socket.gethostname():
+            if "dane" in socket.gethostname():
                 do_submit = 0
                 if do_submit:
                     msubscript = os.path.join(os.path.abspath(os.curdir), string.replace(self.sim2, "sim2", "msub"))

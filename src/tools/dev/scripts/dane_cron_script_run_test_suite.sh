@@ -1,7 +1,10 @@
 #!/bin/sh
+#
+# Cron driver script to run visit's test suite
+#
 
 # Change directories to the working directory.
-cd /usr/workspace/visit/test_trunk/nightly_cron/
+cd /usr/WS1/visit/test_trunk/nightly_cron/
 
 # Get the latest version of the test script
 rm -f regressiontest_dane
