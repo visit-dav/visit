@@ -435,7 +435,8 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
     }
 
     // refine the mesh
-    mfem::Mesh lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::ClosedUniform);
+    // mfem::Mesh lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::ClosedUniform);
+    mfem::Mesh lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::GaussLobatto);
 
     vtkDataSet *res_ds = LowOrderMeshToVTK(&lo_mesh);
 
@@ -452,7 +453,8 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
     int orig_nelems = mesh->GetNE();
 
     GeometryRefiner refiner;
-    refiner.SetType(BasisType::GetQuadrature1D(mfem::BasisType::ClosedUniform));
+    // refiner.SetType(BasisType::GetQuadrature1D(mfem::BasisType::ClosedUniform));
+    refiner.SetType(BasisType::GetQuadrature1D(mfem::BasisType::GaussLobatto));
 
     int lor_nelems = lo_mesh.GetNE();
 
@@ -857,7 +859,8 @@ avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
     AVT_MFEM_INFO("Converting Low Order Grid Function To VTK");
 
     mfem::FiniteElementSpace *fespace = gf->FESpace();
-    int vdim = fespace->GetVectorDim();
+    // int vdim = fespace->GetVectorDim();
+    int vdim = fespace->GetVDim();
     int ndofs = fespace->GetNDofs();
 
     // all supported grid functions coming out of mfem end up being 
@@ -1051,23 +1054,23 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     std::string basis(gf->FESpace()->FEColl()->Name());
     bool l2 = basis.find("L2_") != std::string::npos;
     bool h1 = basis.find("H1_") != std::string::npos;
-    bool nurbs = basis.find("NURBS") != std::string::npos;   // TODO We need test data
+    // bool nurbs = basis.find("NURBS") != std::string::npos;   // TODO We need test data
     bool hdiv = basis.find("RT_") != std::string::npos;
     bool hcurl = basis.find("ND_") != std::string::npos;
 
     std::cout << "basis: " << basis << std::endl;
 
-    std::cout << "var_is_nodal (guess): " << (var_is_nodal ? "true" : "false") << std::endl;
 
     int bases = static_cast<int>(l2) +
                 static_cast<int>(h1) +
                 static_cast<int>(hdiv) +
-                static_cast<int>(hcurl) +
-                static_cast<int>(nurbs);
+                static_cast<int>(hcurl)/* +
+                static_cast<int>(nurbs)*/;
 
     // go ahead and fall back to var_is_nodal guess
     if (0 == bases)
     {
+        std::cout << "using var_is_nodal (guess): " << (var_is_nodal ? "true" : "false") << std::endl;
         if (var_is_nodal)
         {
             h1 = true;
@@ -1106,19 +1109,19 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
             gf_to_use = ConvertGridFunctionToScalar(gf, ref_method_to_use); // Convert to L2
             delete_gf_to_use = true;
         }
-        else if (nurbs)
-        {
-            ref_method_to_use = refinementMethod::LOR_Nodal_Projection;
-            gf_to_use = ConvertGridFunctionToScalar(gf, ref_method_to_use); // Convert to H1
-            delete_gf_to_use = true;
-        }
+        // else if (nurbs)
+        // {
+        //     ref_method_to_use = refinementMethod::LOR_Nodal_Projection;
+        //     gf_to_use = ConvertGridFunctionToScalar(gf, ref_method_to_use); // Convert to H1
+        //     delete_gf_to_use = true;
+        // }
     }
     else if (refinementMethod::LOR_Nodal_Projection == ref_method ||
              refinementMethod::LOR_Zonal_Projection == ref_method)
     {
         ref_method_to_use = ref_method;
         // whatever refinement method we end up using, we cannot directly refine hdiv, hcurl, and nurbs
-        if (hdiv || hcurl || nurbs)
+        if (hdiv || hcurl/* || nurbs*/)
         {
             // we must convert to either h1 or l2 using the specified refinement method
             gf_to_use = ConvertGridFunctionToScalar(gf, ref_method_to_use);
@@ -1158,7 +1161,9 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     // refine the mesh and convert to vtk
     // it would be nice if this was cached somewhere but we will do it again
     mfem::Mesh lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::ClosedUniform);
-    mfem::FiniteElementSpace lo_fes(&lo_mesh, lo_col, gf->FESpace()->GetVectorDim());
+    // mfem::Mesh lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::GaussLobatto);
+    // mfem::FiniteElementSpace lo_fes(&lo_mesh, lo_col, gf->FESpace()->GetVectorDim());
+    mfem::FiniteElementSpace lo_fes(&lo_mesh, lo_col, gf->FESpace()->GetVDim());
     mfem::GridFunction lo_gf(&lo_fes);
     // transform the higher order function to a low order function
     // using a matrix free transfer operator

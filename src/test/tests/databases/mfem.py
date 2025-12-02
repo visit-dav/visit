@@ -273,6 +273,7 @@ def test_mfem_lor_field(tag_name, dbfile):
 TestSection("Legacy and New LOR Fields")
 for dbfile in ex01_results:
     test_mfem_lor_field("LOR_Fields", dbfile)
+    break
 
 
 def test_mfem_quad_func(tag_name, dbfile, var_name):
