@@ -908,7 +908,7 @@ avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
 
 // ****************************************************************************
 mfem::GridFunction *
-ConvertGridFunctionToScalar(mfem::GridFunction *org_gf, avtMFEMDataAdaptor::refinementMethod ref_method)
+ConvertGridFunctionToScalar(mfem::GridFunction *org_gf, const avtMFEMDataAdaptor::refinementMethod ref_method)
 {
     mfem::Mesh *mesh = org_gf->FESpace()->GetMesh();
     const int dim = mesh->Dimension();
@@ -989,14 +989,19 @@ vtkDataArray *
 avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
                                             mfem::GridFunction *gf,
                                             int lod,
-                                            refinementMethod ref_method,
+                                            const refinementMethod ref_method,
                                             bool var_is_nodal)
 {
-    AVT_MFEM_INFO("Creating Refined MFEM Field with lod:" << lod);
+    std::cout << "=========================================================" << std::endl;
+    AVT_MFEM_INFO("Creating Refined MFEM Field with lod: " << lod);
+    std::cout << "Creating Refined MFEM Field with lod: " << lod << std::endl;
+
+    refinementMethod ref_method_to_use = ref_method;
 
     if (refinementMethod::Discontinuous_Refine == ref_method)
     {
         AVT_MFEM_INFO("Using Legacy LOR to refine grid function.");
+        std::cout << "Using Legacy LOR to refine grid function." << std::endl;
         return LegacyRefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
     }
 
@@ -1021,11 +1026,15 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
             AVT_MFEM_INFO("High Order Mesh may be periodic and default "
                           "projection has been selected; falling back to "
                           "Legacy LOR.");
+            std::cout << "High Order Mesh may be periodic and default "
+                          "projection has been selected; falling back to "
+                          "Legacy LOR." << std::endl;
             return LegacyRefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
         }
     }
     else
     {
+        std::cout << "High Order Mesh is not periodic." << std::endl;
         AVT_MFEM_INFO("High Order Mesh is not periodic.");
     }
 
@@ -1045,6 +1054,10 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     bool nurbs = basis.find("NURBS") != std::string::npos;   // TODO We need test data
     bool hdiv = basis.find("RT_") != std::string::npos;
     bool hcurl = basis.find("ND_") != std::string::npos;
+
+    std::cout << "basis: " << basis << std::endl;
+
+    std::cout << "var_is_nodal (guess): " << (var_is_nodal ? "true" : "false") << std::endl;
 
     int bases = static_cast<int>(l2) +
                 static_cast<int>(h1) +
@@ -1077,36 +1090,60 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     // select projection type and convert gridfunction when necessary
     mfem::GridFunction *gf_to_use = gf;
     bool delete_gf_to_use = false;
-    if (h1)
+    if (refinementMethod::LOR_Projection_Default == ref_method)
     {
-        ref_method = refinementMethod::LOR_Nodal_Projection;
+        if (h1)
+        {
+            ref_method_to_use = refinementMethod::LOR_Nodal_Projection;
+        }
+        else if (l2)
+        {
+            ref_method_to_use = refinementMethod::LOR_Zonal_Projection;
+        }
+        else if (hdiv || hcurl)
+        {
+            ref_method_to_use = refinementMethod::LOR_Zonal_Projection;
+            gf_to_use = ConvertGridFunctionToScalar(gf, ref_method_to_use); // Convert to L2
+            delete_gf_to_use = true;
+        }
+        else if (nurbs)
+        {
+            ref_method_to_use = refinementMethod::LOR_Nodal_Projection;
+            gf_to_use = ConvertGridFunctionToScalar(gf, ref_method_to_use); // Convert to H1
+            delete_gf_to_use = true;
+        }
     }
-    else if (l2)
+    else if (refinementMethod::LOR_Nodal_Projection == ref_method ||
+             refinementMethod::LOR_Zonal_Projection == ref_method)
     {
-        ref_method = refinementMethod::LOR_Zonal_Projection;
+        ref_method_to_use = ref_method;
+        // whatever refinement method we end up using, we cannot directly refine hdiv, hcurl, and nurbs
+        if (hdiv || hcurl || nurbs)
+        {
+            // we must convert to either h1 or l2 using the specified refinement method
+            gf_to_use = ConvertGridFunctionToScalar(gf, ref_method_to_use);
+            delete_gf_to_use = true;
+        }
     }
-    else if (hdiv || hcurl)
+    else
     {
-        ref_method = refinementMethod::LOR_Zonal_Projection;
-        gf_to_use = ConvertGridFunctionToScalar(gf, ref_method); // Convert to L2
-        delete_gf_to_use = true;
+        AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                            "Unknown MFEM LOR refinement method: " << ref_method_to_use);
     }
-    else if (nurbs)
-    {
-        ref_method = refinementMethod::LOR_Nodal_Projection;
-        gf_to_use = ConvertGridFunctionToScalar(gf, ref_method); // Convert to H1
-        delete_gf_to_use = true;
-    }
+
+    std::cout << "final ref method: " << ref_method_to_use << std::endl;
+
+    std::cout << "=========================================================" << std::endl;
 
     // create the low order grid function
     mfem::FiniteElementCollection *lo_col;
-    if (ref_method == refinementMethod::LOR_Nodal_Projection)
+    if (ref_method_to_use == refinementMethod::LOR_Nodal_Projection)
     {
         // convert to H1
         // node centered
         lo_col = new mfem::LinearFECollection;
     }
-    else if (ref_method == refinementMethod::LOR_Zonal_Projection)
+    else if (ref_method_to_use == refinementMethod::LOR_Zonal_Projection)
     {
         // convert to L2
         // element centered
@@ -1115,7 +1152,7 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     else
     {
         AVT_MFEM_EXCEPTION1(InvalidVariableException,
-                            "Unknown MFEM LOR refinement method: " << ref_method);
+                            "Unknown MFEM LOR refinement method: " << ref_method_to_use);
     }
     
     // refine the mesh and convert to vtk

@@ -84,7 +84,7 @@ public:
       static vtkDataArray *RefineGridFunctionToVTK(mfem::Mesh *mesh,
                                                    mfem::GridFunction *gf,
                                                    int lod,
-                                                   refinementMethod ref_method,
+                                                   const refinementMethod ref_method,
                                                    bool var_is_nodal = true);
 
       static vtkDataArray *RefineElementColoringToVTK(mfem::Mesh *mesh,
