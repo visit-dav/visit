@@ -995,16 +995,13 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
                                             const refinementMethod ref_method,
                                             bool var_is_nodal)
 {
-    std::cout << "=========================================================" << std::endl;
     AVT_MFEM_INFO("Creating Refined MFEM Field with lod: " << lod);
-    std::cout << "Creating Refined MFEM Field with lod: " << lod << std::endl;
 
     refinementMethod ref_method_to_use = ref_method;
 
     if (refinementMethod::Discontinuous_Refine == ref_method)
     {
         AVT_MFEM_INFO("Using Legacy LOR to refine grid function.");
-        std::cout << "Using Legacy LOR to refine grid function." << std::endl;
         return LegacyRefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
     }
 
@@ -1029,15 +1026,11 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
             AVT_MFEM_INFO("High Order Mesh may be periodic and default "
                           "projection has been selected; falling back to "
                           "Legacy LOR.");
-            std::cout << "High Order Mesh may be periodic and default "
-                          "projection has been selected; falling back to "
-                          "Legacy LOR." << std::endl;
             return LegacyRefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
         }
     }
     else
     {
-        std::cout << "High Order Mesh is not periodic." << std::endl;
         AVT_MFEM_INFO("High Order Mesh is not periodic.");
     }
 
@@ -1054,23 +1047,19 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     std::string basis(gf->FESpace()->FEColl()->Name());
     bool l2 = basis.find("L2_") != std::string::npos;
     bool h1 = basis.find("H1_") != std::string::npos;
-    // bool nurbs = basis.find("NURBS") != std::string::npos;   // TODO We need test data
+    bool nurbs = basis.find("NURBS") != std::string::npos;   // TODO We need test data
     bool hdiv = basis.find("RT_") != std::string::npos;
     bool hcurl = basis.find("ND_") != std::string::npos;
-
-    std::cout << "basis: " << basis << std::endl;
-
 
     int bases = static_cast<int>(l2) +
                 static_cast<int>(h1) +
                 static_cast<int>(hdiv) +
-                static_cast<int>(hcurl)/* +
-                static_cast<int>(nurbs)*/;
+                static_cast<int>(hcurl) +
+                static_cast<int>(nurbs);
 
     // go ahead and fall back to var_is_nodal guess
     if (0 == bases)
     {
-        std::cout << "using var_is_nodal (guess): " << (var_is_nodal ? "true" : "false") << std::endl;
         if (var_is_nodal)
         {
             h1 = true;
@@ -1109,12 +1098,12 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
             gf_to_use = ConvertGridFunctionToScalar(gf, ref_method_to_use); // Convert to L2
             delete_gf_to_use = true;
         }
-        // else if (nurbs)
-        // {
-        //     ref_method_to_use = refinementMethod::LOR_Nodal_Projection;
-        //     gf_to_use = ConvertGridFunctionToScalar(gf, ref_method_to_use); // Convert to H1
-        //     delete_gf_to_use = true;
-        // }
+        else if (nurbs)
+        {
+            ref_method_to_use = refinementMethod::LOR_Nodal_Projection;
+            gf_to_use = ConvertGridFunctionToScalar(gf, ref_method_to_use); // Convert to H1
+            delete_gf_to_use = true;
+        }
     }
     else if (refinementMethod::LOR_Nodal_Projection == ref_method ||
              refinementMethod::LOR_Zonal_Projection == ref_method)
@@ -1133,10 +1122,6 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
         AVT_MFEM_EXCEPTION1(InvalidVariableException,
                             "Unknown MFEM LOR refinement method: " << ref_method_to_use);
     }
-
-    std::cout << "final ref method: " << ref_method_to_use << std::endl;
-
-    std::cout << "=========================================================" << std::endl;
 
     // create the low order grid function
     mfem::FiniteElementCollection *lo_col;
