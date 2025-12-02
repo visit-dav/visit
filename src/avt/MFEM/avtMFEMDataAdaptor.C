@@ -1038,11 +1038,18 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
                 static_cast<int>(hdiv) +
                 static_cast<int>(hcurl);
 
-    // go ahead and fall back to nodal
+    // go ahead and fall back to var_is_nodal guess
     if (0 == bases)
     {
-        h1 = true;
-        bases = 1;
+        if (var_is_nodal)
+        {
+            h1 = true;
+        }
+        else
+        {
+            l2 = true;
+        }
+        bases = 1;            
     }
 
     // we must enforce only a single basis type
