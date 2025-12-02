@@ -107,9 +107,9 @@ extern "C" void cli_runscript(const char *);
 //   Check for visitrc in golobal .visit directory to enable site-wide
 //   macros.
 //
-//   Kathleen Bonnell, Thu Jun 26 17:22:55 PDT 2008 
+//   Kathleen Bonnell, Thu Jun 26 17:22:55 PDT 2008
 //   Add special handling of '-s' and '-o' args on Windows, to ensure proper
-//   parsing of paths-with-spaces. 
+//   parsing of paths-with-spaces.
 //
 //    Jeremy Meredith, Thu Aug  7 15:01:14 EDT 2008
 //    Assume Python won't modify argv, and cast a string literal to
@@ -150,18 +150,18 @@ extern "C" void cli_runscript(const char *);
 //    Cyrus Harrison, Thu Apr 12 17:33:16 PDT 2012
 //    Update to reflect changes made in visit python module revamp.
 //
-//    Kathleen Biagas, Fri May 4 14:05:27 PDT 2012  
-//    Use GetVisItLibraryDirectory to find lib location. 
+//    Kathleen Biagas, Fri May 4 14:05:27 PDT 2012
+//    Use GetVisItLibraryDirectory to find lib location.
 //    SetIsDevelopmentVersion when -dv encountered.
 //
-//    Kathleen Biagas, Thu May 24 19:20:19 MST 2012  
+//    Kathleen Biagas, Thu May 24 19:20:19 MST 2012
 //    Ensure visit's lib dir has path-separators properly escaped on Windows
 //    before being passed to the pjoin command.
 //
 //    Brad Whitlock, Wed Jun 20 11:37:23 PDT 2012
 //    Added -minimized argument to minimize the cli window on Windows.
 //
-//    Kathleen Biagas, Thu May 24 19:20:19 MST 2012  
+//    Kathleen Biagas, Thu May 24 19:20:19 MST 2012
 //    Ensure runFile has path-separators properly escaped on Windows.
 //
 //    Cyrus Harrison, Wed Jul 23 16:16:49 PDT 2014
@@ -175,7 +175,7 @@ extern "C" void cli_runscript(const char *);
 //    before execution.
 //
 //    Cyrus Harrison, Wed Feb 24 16:09:45 PST 2021
-//    Adjustments for Pyside 2 support. 
+//    Adjustments for Pyside 2 support.
 //
 //    Kathleen Biagas, Fri Sep 24 08:36:43 PDT 2021
 //    When processing args, look for '-sla' or '-la' and skip the next arg,
@@ -183,7 +183,12 @@ extern "C" void cli_runscript(const char *);
 //    and we don't that option to be proccessed as a cli '-s' option.
 //
 //    Mark C. Miller, Tue Jan 28 11:01:53 PST 2025
-//    Fix CATCH macro usage. 
+//    Fix CATCH macro usage.
+//
+//    Kathleen Biagas, Mon Nov 25, 2025
+//    Add 'python/lib/site-packages' to sys.path on Windows to get things
+//    working with Python 3.13.  Remove automatic py2to3.
+//
 // ****************************************************************************
 
 int
@@ -202,13 +207,13 @@ main(int argc, char *argv[])
 
     int    argc_py_style = 0;
     char **argv_py_style = new char *[argc];
-    
+
     bool scriptOnly = false;
 
     int i=0;
 
     int argc2 = 0;
-    int argc_after_s = 0; 
+    int argc_after_s = 0;
     char* uifile = 0;
     const char* pyuiembedded_str = "-pyuiembedded"; //pass it along to client
 
@@ -272,12 +277,12 @@ main(int argc, char *argv[])
                         break;
                 }
                 i += (nArgsSkip -1);
-                // We want to remove the beginning and ending quotes, to 
+                // We want to remove the beginning and ending quotes, to
                 // ensure proper operation further on.
                 strncpy(tmpArg, tmpArg+1, tmplen-2);
                 tmpArg[tmplen-2] = '\0';
             }
-            else 
+            else
             {
                 sprintf(tmpArg, "%s", argv[i]);
             }
@@ -294,7 +299,7 @@ main(int argc, char *argv[])
             }
             else
             {
-                run_code = tmpArg; 
+                run_code = tmpArg;
             }
         }
 #else
@@ -358,7 +363,7 @@ main(int argc, char *argv[])
             scriptOnly = true;
             Py_InteractiveFlag=0;
             Py_InspectFlag=0;
-            
+
         }
         // These are all movie commands and should go into the
         // argv_after_s array rather that being skipped over. Also
@@ -424,7 +429,7 @@ main(int argc, char *argv[])
 
             // This argument is after -s file.py so count it unless it's
             // the -dv argument.
-            if(s_found && 
+            if(s_found &&
                strcmp(argv[i], "-dv") != 0)
             {
                 argv_after_s[argc_after_s++] = argv[i];
@@ -448,20 +453,20 @@ main(int argc, char *argv[])
     TRY
     {
 
-        // 
+        //
         // If there is a file named "visit.py" in the current working directory,
         // this will be imported instead of the actual visit python module.
-        // This is the expected  python interpreter behavior, but it is very 
-        // confusing when users stumble upon this. 
+        // This is the expected  python interpreter behavior, but it is very
+        // confusing when users stumble upon this.
         //
         // We decided to provide an error message to let users identify this case.
         //
-        
+
         FileFunctions::VisItStat_t vstat_info;
         if(FileFunctions::VisItStat("visit.py", &vstat_info) != -1)
         {
             std::ostringstream oss;
-            oss <<"!!!! - WARNING - !!!!" 
+            oss <<"!!!! - WARNING - !!!!"
                 << std::endl
                 <<"You have a file named 'visit.py' in your current working "
                 <<"directory. Python's standard module import logic will use "
@@ -478,14 +483,14 @@ main(int argc, char *argv[])
             std::cout << oss.str() << std::endl;
             debug1    << oss.str() << std::endl;
         }
-        
+
         // Initialize python
         Py_Initialize();
         PyEval_InitThreads();
         Py_SetProgramName(argv[0]);
 
         // prep sys.argv
-        // to confirm to python conventions, we want sys.argv to include runFile and argv_after_s
+        // to conform to python conventions, we want sys.argv to include runFile and argv_after_s
 
         if(runFile != 0)
         {
@@ -507,23 +512,27 @@ main(int argc, char *argv[])
         {
             PySys_SetArgv(argc_py_style, argv_py_style);
         }
-                
+
         PyRun_SimpleString((char*)"import sys");
         PyRun_SimpleString((char*)"import os");
         PyRun_SimpleString((char*)"from os.path import join as pjoin");
 
         // add lib to sys.path to pickup various dylibs.
-        std::string vlibdir  = GetVisItLibraryDirectory(); 
+        std::string vlibdir  = GetVisItLibraryDirectory();
         std::ostringstream oss;
 
         oss << "sys.path.append(pjoin(r'" << vlibdir  <<"','site-packages'))";
         PyRun_SimpleString(oss.str().c_str());
 
 #ifdef _WIN32
+        std::ostringstream libsp;
+        libsp << "sys.path.append(pjoin(r'" << vlibdir  <<"','python', 'lib', 'site-packages'))";
+        PyRun_SimpleString(libsp.str().c_str());
+
         if(GetIsDevelopmentVersion())
         {
             // retrieve ThirdParty directory
-            std::string dlldir  = GetVisItThirdPartyDirectory(); 
+            std::string dlldir  = GetVisItThirdPartyDirectory();
             // Add thirdparty DLL's directory
             std::ostringstream ss;
             ss << "os.add_dll_directory(r'" << dlldir  <<"')";
@@ -542,23 +551,14 @@ main(int argc, char *argv[])
         PyRun_SimpleString((char*)"import visit_utils");
         PyRun_SimpleString((char*)"from visit_utils.builtin import *");
 
-        // enable auto 2to3 support for passed scripts
-        if(py2to3)
-        {
-            // let folks know this is on:
-            std::cout << "VisIt CLI: Automatic Python 2to3 Conversion Enabled"
-                      << std::endl;
-            PyRun_SimpleString("visit_utils.builtin.SetAutoPy2to3(True)");
-        }
-
         // add original args to visit.argv_full, just in case
         // some one needs to access them.
-        
+
         PyObject *visit_module = PyImport_AddModule("visit"); //borrowed
         PyObject *visit_dict   = PyModule_GetDict(visit_module); //borrowed
         PyObject *py_argv_full = PyList_New(argc);
-    
-        for (int i = 0; i < argc; i++) 
+
+        for (int i = 0; i < argc; i++)
         {
             // takes over reference
             PyList_SET_ITEM(py_argv_full, i, PyString_FromString(argv[i]));
@@ -573,7 +573,7 @@ main(int argc, char *argv[])
                                   "__visit_source_stack__ = [] \n");
 
         PyRun_SimpleString((char*)"visit.Launch()");
-        
+
         // reload symbols from visit, since they may have changed
         PyRun_SimpleString((char*)"from visit import *");
 
@@ -603,17 +603,17 @@ main(int argc, char *argv[])
         {
             std::ostringstream command;
             std::vector<std::string> split = SplitValues(loadFile, ',');
-            
+
             if(split.size() == 2)
             {
                 command << "OpenDatabase(\"" << split[0] << "\", 0, \"" << split[1] << "\")";
-            }  
+            }
             else
             {
                 command << "OpenDatabase(\"" << loadFile << "\")";
             }
             PyRun_SimpleString(command.str().c_str());
-            
+
 #ifdef _WIN32
              delete [] loadFile;
 #endif
@@ -631,7 +631,7 @@ main(int argc, char *argv[])
             pycmd += "sys.path.append(__visit_script_path__)\n";
 
             PyRun_SimpleString(pycmd.c_str());
-            
+
             cli_runscript(runFile);
 
 #ifdef _WIN32
