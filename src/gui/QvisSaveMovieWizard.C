@@ -49,10 +49,6 @@
 
 #include <StringHelpers.h>
 
-#ifdef _WIN32
-#include <filesystem>
-#endif
-
 #define movieAtts ((MovieAttributes *)localCopy)
 
 #define MOVIE_TYPE_LAST_SETTINGS 0
@@ -267,10 +263,7 @@ QvisSaveMovieWizard::QvisSaveMovieWizard(AttributeSubject *atts, QWidget *parent
     // determine if ffmpeg exists
     bool haveffmpeg = false;
 #ifdef _WIN32
-    if(std::filesystem::exists("C:\\Windows\\System32\\where.exe"))
-    {
-        haveffmpeg = (system("C:\\Windows\\System32\\where.exe /Q ffmpeg") == 0);
-    }
+    haveffmpeg = (system("where /Q ffmpeg") == 0);
 #else
     haveffmpeg = (system("which ffmpeg") == 0);
 #endif
