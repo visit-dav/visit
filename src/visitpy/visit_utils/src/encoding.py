@@ -11,7 +11,7 @@
 
  examples:
     from visit_utils.encoding import *
-    print encoders()
+    print(encoders())
     encode("input.%04d.png","output.mpg")
     encode("input.%04d.png","output.wmv",fdup=5)
     encode("input.%04d.png","output.sm")
@@ -43,8 +43,6 @@ def encoders():
     res = []
     if not ffmpeg_bin() is None:
         res.extend(["mpg","wmv","avi","mov","swf","mp4","divx"])
-    if not img2sm_bin() is None:
-        res.append("sm")
     return res
 
 def extract(ifile,opattern):
