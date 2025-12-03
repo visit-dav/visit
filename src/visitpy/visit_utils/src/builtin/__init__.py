@@ -21,12 +21,13 @@
 #
 #    Mark C. Miller, Wed Mar 12 13:33:23 PDT 2025
 #    Add pure python cli imports
+#
+#    Kathleen Biagas, Tue Nov 18, 2025
+#    Remove convert2to3.
+#
 ###############################################################################
 from .evalfuncs import *
 from .writescript import WriteScript
-from .convert2to3 import ConvertPy2to3
-from .convert2to3 import GetAutoPy2to3
-from .convert2to3 import SetAutoPy2to3
 from .apropos import *
 from .flatten import *
 from .purepy_cli import *

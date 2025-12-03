@@ -14,7 +14,7 @@
 # consistent with those same files listed in the paths trigger
 #####
 variables:
-  container_tag: visitdav/visit-ci-develop:2025-07-14-shaf0cf7c
+  container_tag: visitdav/visit-ci-develop:2025-11-19-shac0f3de
   python_test_files: >
     ../../src/test/tests/databases/silo.py
     ../../src/test/tests/databases/blueprint.py
