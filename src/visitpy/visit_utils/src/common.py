@@ -16,8 +16,8 @@ import sys
 import subprocess
 import socket
 import re
-import imp
 import datetime
+import types
 
 from .property_tree import PropertyTree
 
@@ -130,7 +130,7 @@ def define_module(module_name,module_script,parent_dict=None):
         module = sys.modules[module_name]
     else:
         # create a new module
-        module = imp.new_module(module_name)
+        module = types.ModuleType(module_name)
         sys.modules[module_name] = module
         module.__file__ = "<%s>" % module_name
         module.__loader = None

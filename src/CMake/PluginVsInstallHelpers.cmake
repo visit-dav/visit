@@ -21,10 +21,10 @@
 #   Kathleen Biagas, Wed Jun  8 2022
 #   Install VisItIncludeVars.cmake.
 #
-#   Kathleen Biagas, Tue Jan 31, 2023 
+#   Kathleen Biagas, Tue Jan 31, 2023
 #   Change python_include_relative_path (add 'include' at end) for Windows.
 #
-#   Kathleen Biagas, Fri Mar 10, 2023 
+#   Kathleen Biagas, Fri Mar 10, 2023
 #   Replaced VTKh logic with VTKm.
 #
 #   Eric Brugger, Mon Jun 16 13:38:54 PDT 2025
@@ -32,6 +32,9 @@
 #
 #   Kathleen Biagas, Thu July 10, 2025
 #   Support OPENEXR libs in 'lib64'.
+#
+#   Kathleen Biagas, Tue Nov 18, 2025
+#   Use PYTHON_INCLUDE_PATH instead of PYTHON_INCLUDE_DIR.
 #
 #******************************************************************************
 
@@ -300,9 +303,9 @@ endif(VISIT_MPICH_INSTALL)
 if(UNIX)
    # python3's include dir has an 'm' after the version. For ease of
    # use with future versions, and to save having to figure this out again
-   # get and use the last part of the PYTHON_INCLUDE_DIR
+   # get and use the last part of the PYTHON_INCLUDE_PATH
    if(PYTHON_FOUND)
-       get_filename_component(py_inc_base ${PYTHON_INCLUDE_DIR} NAME)
+       get_filename_component(py_inc_base ${PYTHON_INCLUDE_PATH} NAME)
        set(python_include_relative_path "/python/include/${py_inc_base}")
    else()
        set(python_include_relative_path "")

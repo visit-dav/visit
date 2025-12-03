@@ -133,7 +133,7 @@ def cmfe_data_path(*args):
     if not platform.system() == "Windows":
         return data_path(*args)
     else:
-        return data_path(*args).replace("\\", "\\\\\\\\").replace(":", "\:")
+        return data_path(*args).replace("\\", "\\\\\\\\").replace(":", r"\:")
 
 
 # ----------------------------------------------------------------------------
@@ -167,7 +167,7 @@ def cmfe_silo_data_path(*args):
     if not platform.system() == "Windows":
         return silo_data_path(*args)
     else:
-        return silo_data_path(*args).replace("\\", "\\\\\\\\").replace(":", "\:")
+        return silo_data_path(*args).replace("\\", "\\\\\\\\").replace(":", r"\:")
 
 
 # ----------------------------------------------------------------------------

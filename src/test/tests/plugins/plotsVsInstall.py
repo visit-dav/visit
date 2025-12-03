@@ -18,7 +18,9 @@
 #
 # ----------------------------------------------------------------------------
 
-Source(tests_path("plugins", "pluginVsInstallHelpers"))
+from pathlib import Path
+
+Source(Path(tests_path("plugins", "pluginVsInstallHelpers")).as_posix())
 
 do_plugin_type("plots", ["Contour", "Label", "Molecule", "Tensor"])
 
