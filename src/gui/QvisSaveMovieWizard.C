@@ -266,8 +266,7 @@ QvisSaveMovieWizard::QvisSaveMovieWizard(AttributeSubject *atts, QWidget *parent
     // the /Q switch prevents the result from being printed to terminal
     haveffmpeg = (system("where /Q ffmpeg") == 0);
 #else
-    // this will print the result to the terminal ... is there a better way?
-    haveffmpeg = (system("which ffmpeg") == 0);
+    haveffmpeg = (system("which ffmpeg > /dev/null") == 0);
 #endif
     if(haveffmpeg)
     {
