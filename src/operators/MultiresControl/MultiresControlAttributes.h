@@ -32,6 +32,12 @@ public:
         LOR_Nodal_Projection,
         LOR_Zonal_Projection
     };
+    enum refinementBasisType
+    {
+        LOR_Basis_Default,
+        Closed_Uniform,
+        Gauss_Lobatto
+    };
 
     // These constructors are for objects of this class
     MultiresControlAttributes();
@@ -64,12 +70,14 @@ public:
     void SetResolution(int resolution_);
     void SetMaxResolution(int maxResolution_);
     void SetRefMethod(refinementMethod refMethod_);
+    void SetRefBasisType(refinementBasisType refBasisType_);
     void SetInfo(const std::string &info_);
 
     // Property getting methods
     int               GetResolution() const;
     int               GetMaxResolution() const;
     refinementMethod  GetRefMethod() const;
+    refinementBasisType GetRefBasisType() const;
     const std::string &GetInfo() const;
           std::string &GetInfo();
 
@@ -82,6 +90,11 @@ public:
     static bool refinementMethod_FromString(const std::string &, refinementMethod &);
 protected:
     static std::string refinementMethod_ToString(int);
+public:
+    static std::string refinementBasisType_ToString(refinementBasisType);
+    static bool refinementBasisType_FromString(const std::string &, refinementBasisType &);
+protected:
+    static std::string refinementBasisType_ToString(int);
 public:
 
     // Keyframing methods
@@ -96,6 +109,7 @@ public:
         ID_resolution = 0,
         ID_maxResolution,
         ID_refMethod,
+        ID_refBasisType,
         ID_info,
         ID__LAST
     };
@@ -104,12 +118,13 @@ private:
     int         resolution;
     int         maxResolution;
     int         refMethod;
+    int         refBasisType;
     std::string info;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define MULTIRESCONTROLATTRIBUTES_TMFS "iiis"
+#define MULTIRESCONTROLATTRIBUTES_TMFS "iiiis"
 
 #endif

@@ -68,6 +68,25 @@ PyMultiresControlAttributes_ToString(const MultiresControlAttributes *atts, cons
           break;
     }
 
+    const char *refBasisType_names = "LOR_Basis_Default, Closed_Uniform, Gauss_Lobatto";
+    switch (atts->GetRefBasisType())
+    {
+      case MultiresControlAttributes::LOR_Basis_Default:
+          snprintf(tmpStr, 1000, "%srefBasisType = %sLOR_Basis_Default  # %s\n", prefix, prefix, refBasisType_names);
+          str += tmpStr;
+          break;
+      case MultiresControlAttributes::Closed_Uniform:
+          snprintf(tmpStr, 1000, "%srefBasisType = %sClosed_Uniform  # %s\n", prefix, prefix, refBasisType_names);
+          str += tmpStr;
+          break;
+      case MultiresControlAttributes::Gauss_Lobatto:
+          snprintf(tmpStr, 1000, "%srefBasisType = %sGauss_Lobatto  # %s\n", prefix, prefix, refBasisType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     snprintf(tmpStr, 1000, "%sinfo = \"%s\"\n", prefix, atts->GetInfo().c_str());
     str += tmpStr;
     return str;
@@ -299,6 +318,73 @@ MultiresControlAttributes_GetRefMethod(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+MultiresControlAttributes_SetRefBasisType(PyObject *self, PyObject *args)
+{
+    PyMultiresControlAttributesObject *obj = (PyMultiresControlAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid refBasisType value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " LOR_Basis_Default";
+        ss << ", Closed_Uniform";
+        ss << ", Gauss_Lobatto";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the refBasisType in the object.
+    obj->data->SetRefBasisType(MultiresControlAttributes::refinementBasisType(cval));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+MultiresControlAttributes_GetRefBasisType(PyObject *self, PyObject *args)
+{
+    PyMultiresControlAttributesObject *obj = (PyMultiresControlAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetRefBasisType()));
+    return retval;
+}
+
+/*static*/ PyObject *
 MultiresControlAttributes_SetInfo(PyObject *self, PyObject *args)
 {
     PyMultiresControlAttributesObject *obj = (PyMultiresControlAttributesObject *)self;
@@ -358,6 +444,8 @@ PyMethodDef PyMultiresControlAttributes_methods[MULTIRESCONTROLATTRIBUTES_NMETH]
     {"GetMaxResolution", MultiresControlAttributes_GetMaxResolution, METH_VARARGS},
     {"SetRefMethod", MultiresControlAttributes_SetRefMethod, METH_VARARGS},
     {"GetRefMethod", MultiresControlAttributes_GetRefMethod, METH_VARARGS},
+    {"SetRefBasisType", MultiresControlAttributes_SetRefBasisType, METH_VARARGS},
+    {"GetRefBasisType", MultiresControlAttributes_GetRefBasisType, METH_VARARGS},
     {"SetInfo", MultiresControlAttributes_SetInfo, METH_VARARGS},
     {"GetInfo", MultiresControlAttributes_GetInfo, METH_VARARGS},
     {NULL, NULL}
@@ -399,6 +487,15 @@ PyMultiresControlAttributes_getattro(PyObject *self, PyObject *attr_name)
     if(strcmp(name, "LOR_Zonal_Projection") == 0)
         return PyInt_FromLong(long(MultiresControlAttributes::LOR_Zonal_Projection));
 
+    if(strcmp(name, "refBasisType") == 0)
+        return MultiresControlAttributes_GetRefBasisType(self, NULL);
+    if(strcmp(name, "LOR_Basis_Default") == 0)
+        return PyInt_FromLong(long(MultiresControlAttributes::LOR_Basis_Default));
+    if(strcmp(name, "Closed_Uniform") == 0)
+        return PyInt_FromLong(long(MultiresControlAttributes::Closed_Uniform));
+    if(strcmp(name, "Gauss_Lobatto") == 0)
+        return PyInt_FromLong(long(MultiresControlAttributes::Gauss_Lobatto));
+
     if(strcmp(name, "info") == 0)
         return MultiresControlAttributes_GetInfo(self, NULL);
 
@@ -422,6 +519,8 @@ PyMultiresControlAttributes_setattro(PyObject *self, PyObject *attr_name, PyObje
         obj = MultiresControlAttributes_SetMaxResolution(self, args);
     else if(strcmp(name, "refMethod") == 0)
         obj = MultiresControlAttributes_SetRefMethod(self, args);
+    else if(strcmp(name, "refBasisType") == 0)
+        obj = MultiresControlAttributes_SetRefBasisType(self, args);
     else if(strcmp(name, "info") == 0)
         obj = MultiresControlAttributes_SetInfo(self, args);
 

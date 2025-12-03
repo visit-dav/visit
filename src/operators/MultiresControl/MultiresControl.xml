@@ -10,6 +10,11 @@
         LOR_Nodal_Projection
         LOR_Zonal_Projection
       </Enum>
+      <Enum name="refinementBasisType">
+        LOR_Basis_Default
+        Closed_Uniform
+        Gauss_Lobatto
+      </Enum>
       <Field name="resolution" label="" type="int">
         0
       </Field>
@@ -18,6 +23,9 @@
       </Field>
       <Field name="refMethod" label="Refinement Method" type="enum" subtype="refinementMethod">
         LOR_Projection_Default
+      </Field>
+      <Field name="refBasisType" label="Refinement Basis Type" type="enum" subtype="refinementBasisType">
+        LOR_Basis_Default
       </Field>
       <Field name="info" label="Info" type="string" enabler="resolution:-1">
       </Field>

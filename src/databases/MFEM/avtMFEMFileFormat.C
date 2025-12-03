@@ -69,7 +69,8 @@ using namespace mfem;
 avtMFEMFileFormat::avtMFEMFileFormat(const char *filename, 
                                      const DBOptionsAttributes *readOpts)
     : avtSTMDFileFormat(&filename, 1),
-      m_refinement_method(avtMFEMDataAdaptor::refinementMethod::LOR_Projection_Default)
+      m_refinement_method(avtMFEMDataAdaptor::refinementMethod::LOR_Projection_Default),
+      m_refinement_basis_type(avtMFEMDataAdaptor::refinementBasisType::LOR_Basis_Default)
 {
     selectedLOD = 0;
     root        = NULL;
@@ -700,14 +701,16 @@ avtMFEMFileFormat::GetMesh(int domain, const char *meshname)
     else if(quadpts_mesh)
     {
         res_ds = avtMFEMDataAdaptor::QuadratureFunctionMeshToVTK(mesh,
-                                                                 quadpts_order);
+                                                                 quadpts_order,
+                                                                 m_refinement_basis_type);
     }
     else
     {
         res_ds = avtMFEMDataAdaptor::RefineMeshToVTK(mesh,
                                                      domain,
                                                      selectedLOD+1,
-                                                     m_refinement_method);
+                                                     m_refinement_method,
+                                                     m_refinement_basis_type);
     }
     delete mesh;
 
@@ -1016,10 +1019,11 @@ avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
         }
 
         rv = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh, 
-                                                        gf, 
-                                                        lod, 
-                                                        m_refinement_method, 
-                                                        var_is_nodal);
+                                                         gf, 
+                                                         lod, 
+                                                         m_refinement_method,
+                                                         m_refinement_basis_type,
+                                                         var_is_nodal);
         
         delete gf;
     }
@@ -1144,6 +1148,7 @@ avtMFEMFileFormat::RegisterDataSelections(const std::vector<avtDataSelection_p>&
                 static_cast<const avtResolutionSelection*>(*sels[i]);
             this->selectedLOD = sel->resolution();
             this->m_refinement_method = static_cast<avtMFEMDataAdaptor::refinementMethod>(sel->refinementMethod());
+            this->m_refinement_basis_type = static_cast<avtMFEMDataAdaptor::refinementBasisType>(sel->refinementBasisType());
             (*applied)[i] = true;
         }
     }

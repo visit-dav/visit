@@ -96,6 +96,7 @@ avtContract_p avtMultiresControlFilter::ModifyContract(avtContract_p contract)
 
     res->setResolution(atts.GetResolution());
     res->setRefinementMethod(atts.GetRefMethod());
+    res->setRefinementBasisType(atts.GetRefBasisType());
     contract->GetDataRequest()->AddDataSelection(res);
 
     // Attempt to lookup the domain level information.  If it gives this

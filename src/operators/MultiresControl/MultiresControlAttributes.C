@@ -43,6 +43,44 @@ MultiresControlAttributes::refinementMethod_FromString(const std::string &s, Mul
     return false;
 }
 
+//
+// Enum conversion methods for MultiresControlAttributes::refinementBasisType
+//
+
+static const char *refinementBasisType_strings[] = {
+"LOR_Basis_Default", "Closed_Uniform", "Gauss_Lobatto"
+};
+
+std::string
+MultiresControlAttributes::refinementBasisType_ToString(MultiresControlAttributes::refinementBasisType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 3) index = 0;
+    return refinementBasisType_strings[index];
+}
+
+std::string
+MultiresControlAttributes::refinementBasisType_ToString(int t)
+{
+    int index = (t < 0 || t >= 3) ? 0 : t;
+    return refinementBasisType_strings[index];
+}
+
+bool
+MultiresControlAttributes::refinementBasisType_FromString(const std::string &s, MultiresControlAttributes::refinementBasisType &val)
+{
+    val = MultiresControlAttributes::LOR_Basis_Default;
+    for(int i = 0; i < 3; ++i)
+    {
+        if(s == refinementBasisType_strings[i])
+        {
+            val = (refinementBasisType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // ****************************************************************************
 // Method: MultiresControlAttributes::MultiresControlAttributes
 //
@@ -63,6 +101,7 @@ void MultiresControlAttributes::Init()
     resolution = 0;
     maxResolution = 1;
     refMethod = LOR_Projection_Default;
+    refBasisType = LOR_Basis_Default;
 
     MultiresControlAttributes::SelectAll();
 }
@@ -87,6 +126,7 @@ void MultiresControlAttributes::Copy(const MultiresControlAttributes &obj)
     resolution = obj.resolution;
     maxResolution = obj.maxResolution;
     refMethod = obj.refMethod;
+    refBasisType = obj.refBasisType;
     info = obj.info;
 
     MultiresControlAttributes::SelectAll();
@@ -248,6 +288,7 @@ MultiresControlAttributes::operator == (const MultiresControlAttributes &obj) co
     return ((resolution == obj.resolution) &&
             (maxResolution == obj.maxResolution) &&
             (refMethod == obj.refMethod) &&
+            (refBasisType == obj.refBasisType) &&
             (info == obj.info));
 }
 
@@ -395,6 +436,7 @@ MultiresControlAttributes::SelectAll()
     Select(ID_resolution,    (void *)&resolution);
     Select(ID_maxResolution, (void *)&maxResolution);
     Select(ID_refMethod,     (void *)&refMethod);
+    Select(ID_refBasisType,  (void *)&refBasisType);
     Select(ID_info,          (void *)&info);
 }
 
@@ -444,6 +486,12 @@ MultiresControlAttributes::CreateNode(DataNode *parentNode, bool completeSave, b
     {
         addToParent = true;
         node->AddNode(new DataNode("refMethod", refinementMethod_ToString(refMethod)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_refBasisType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("refBasisType", refinementBasisType_ToString(refBasisType)));
     }
 
     if(completeSave || !FieldsEqual(ID_info, &defaultObject))
@@ -508,6 +556,22 @@ MultiresControlAttributes::SetFromNode(DataNode *parentNode)
                 SetRefMethod(value);
         }
     }
+    if((node = searchNode->GetNode("refBasisType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 3)
+                SetRefBasisType(refinementBasisType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            refinementBasisType value;
+            if(refinementBasisType_FromString(node->AsString(), value))
+                SetRefBasisType(value);
+        }
+    }
     if((node = searchNode->GetNode("info")) != 0)
         SetInfo(node->AsString());
 }
@@ -538,6 +602,13 @@ MultiresControlAttributes::SetRefMethod(MultiresControlAttributes::refinementMet
 }
 
 void
+MultiresControlAttributes::SetRefBasisType(MultiresControlAttributes::refinementBasisType refBasisType_)
+{
+    refBasisType = refBasisType_;
+    Select(ID_refBasisType, (void *)&refBasisType);
+}
+
+void
 MultiresControlAttributes::SetInfo(const std::string &info_)
 {
     info = info_;
@@ -564,6 +635,12 @@ MultiresControlAttributes::refinementMethod
 MultiresControlAttributes::GetRefMethod() const
 {
     return refinementMethod(refMethod);
+}
+
+MultiresControlAttributes::refinementBasisType
+MultiresControlAttributes::GetRefBasisType() const
+{
+    return refinementBasisType(refBasisType);
 }
 
 const std::string &
@@ -615,6 +692,7 @@ MultiresControlAttributes::GetFieldName(int index) const
     case ID_resolution:    return "resolution";
     case ID_maxResolution: return "maxResolution";
     case ID_refMethod:     return "refMethod";
+    case ID_refBasisType:  return "refBasisType";
     case ID_info:          return "info";
     default:  return "invalid index";
     }
@@ -643,6 +721,7 @@ MultiresControlAttributes::GetFieldType(int index) const
     case ID_resolution:    return FieldType_int;
     case ID_maxResolution: return FieldType_int;
     case ID_refMethod:     return FieldType_enum;
+    case ID_refBasisType:  return FieldType_enum;
     case ID_info:          return FieldType_string;
     default:  return FieldType_unknown;
     }
@@ -671,6 +750,7 @@ MultiresControlAttributes::GetFieldTypeName(int index) const
     case ID_resolution:    return "int";
     case ID_maxResolution: return "int";
     case ID_refMethod:     return "enum";
+    case ID_refBasisType:  return "enum";
     case ID_info:          return "string";
     default:  return "invalid index";
     }
@@ -711,6 +791,11 @@ MultiresControlAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) co
     case ID_refMethod:
         {  // new scope
         retval = (refMethod == obj.refMethod);
+        }
+        break;
+    case ID_refBasisType:
+        {  // new scope
+        retval = (refBasisType == obj.refBasisType);
         }
         break;
     case ID_info:

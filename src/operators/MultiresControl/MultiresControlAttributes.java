@@ -24,13 +24,17 @@ import llnl.visit.Plugin;
 
 public class MultiresControlAttributes extends AttributeSubject implements Plugin
 {
-    private static int MultiresControlAttributes_numAdditionalAtts = 4;
+    private static int MultiresControlAttributes_numAdditionalAtts = 5;
 
     // Enum values
     public final static int REFINEMENTMETHOD_LOR_PROJECTION_DEFAULT = 0;
     public final static int REFINEMENTMETHOD_DISCONTINUOUS_REFINE = 1;
     public final static int REFINEMENTMETHOD_LOR_NODAL_PROJECTION = 2;
     public final static int REFINEMENTMETHOD_LOR_ZONAL_PROJECTION = 3;
+
+    public final static int REFINEMENTBASISTYPE_LOR_BASIS_DEFAULT = 0;
+    public final static int REFINEMENTBASISTYPE_CLOSED_UNIFORM = 1;
+    public final static int REFINEMENTBASISTYPE_GAUSS_LOBATTO = 2;
 
 
     public MultiresControlAttributes()
@@ -40,6 +44,7 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
         resolution = 0;
         maxResolution = 1;
         refMethod = REFINEMENTMETHOD_LOR_PROJECTION_DEFAULT;
+        refBasisType = REFINEMENTBASISTYPE_LOR_BASIS_DEFAULT;
         info = new String("");
     }
 
@@ -50,6 +55,7 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
         resolution = 0;
         maxResolution = 1;
         refMethod = REFINEMENTMETHOD_LOR_PROJECTION_DEFAULT;
+        refBasisType = REFINEMENTBASISTYPE_LOR_BASIS_DEFAULT;
         info = new String("");
     }
 
@@ -60,6 +66,7 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
         resolution = obj.resolution;
         maxResolution = obj.maxResolution;
         refMethod = obj.refMethod;
+        refBasisType = obj.refBasisType;
         info = new String(obj.info);
 
         SelectAll();
@@ -81,6 +88,7 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
         return ((resolution == obj.resolution) &&
                 (maxResolution == obj.maxResolution) &&
                 (refMethod == obj.refMethod) &&
+                (refBasisType == obj.refBasisType) &&
                 (info.equals(obj.info)));
     }
 
@@ -106,16 +114,23 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
         Select(2);
     }
 
+    public void SetRefBasisType(int refBasisType_)
+    {
+        refBasisType = refBasisType_;
+        Select(3);
+    }
+
     public void SetInfo(String info_)
     {
         info = info_;
-        Select(3);
+        Select(4);
     }
 
     // Property getting methods
     public int    GetResolution() { return resolution; }
     public int    GetMaxResolution() { return maxResolution; }
     public int    GetRefMethod() { return refMethod; }
+    public int    GetRefBasisType() { return refBasisType; }
     public String GetInfo() { return info; }
 
     // Write and read methods.
@@ -128,6 +143,8 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
         if(WriteSelect(2, buf))
             buf.WriteInt(refMethod);
         if(WriteSelect(3, buf))
+            buf.WriteInt(refBasisType);
+        if(WriteSelect(4, buf))
             buf.WriteString(info);
     }
 
@@ -145,6 +162,9 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
             SetRefMethod(buf.ReadInt());
             break;
         case 3:
+            SetRefBasisType(buf.ReadInt());
+            break;
+        case 4:
             SetInfo(buf.ReadString());
             break;
         }
@@ -165,6 +185,14 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
         if(refMethod == REFINEMENTMETHOD_LOR_ZONAL_PROJECTION)
             str = str + "REFINEMENTMETHOD_LOR_ZONAL_PROJECTION";
         str = str + "\n";
+        str = str + indent + "refBasisType = ";
+        if(refBasisType == REFINEMENTBASISTYPE_LOR_BASIS_DEFAULT)
+            str = str + "REFINEMENTBASISTYPE_LOR_BASIS_DEFAULT";
+        if(refBasisType == REFINEMENTBASISTYPE_CLOSED_UNIFORM)
+            str = str + "REFINEMENTBASISTYPE_CLOSED_UNIFORM";
+        if(refBasisType == REFINEMENTBASISTYPE_GAUSS_LOBATTO)
+            str = str + "REFINEMENTBASISTYPE_GAUSS_LOBATTO";
+        str = str + "\n";
         str = str + stringToString("info", info, indent) + "\n";
         return str;
     }
@@ -174,6 +202,7 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
     private int    resolution;
     private int    maxResolution;
     private int    refMethod;
+    private int    refBasisType;
     private String info;
 }
 

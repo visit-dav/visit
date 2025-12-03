@@ -40,8 +40,8 @@ GetBlueprintReadOptions(void)
     mfem_lor_setting.push_back("Discontinuous Refine");
     mfem_lor_setting.push_back("LOR Nodal Projection");
     mfem_lor_setting.push_back("LOR Zonal Projection");
-    mfem_lor_setting.push_back("Legacy LOR"); // deprecated in favor of "Discontinuous Refine"
-    mfem_lor_setting.push_back("MFEM LOR"); // deprecated in favor of "LOR Projection (Default)"
+    mfem_lor_setting.push_back("Legacy LOR"); // replaced by "Discontinuous Refine"
+    mfem_lor_setting.push_back("MFEM LOR"); // replaced by "LOR Projection (Default)"
     rv->SetEnum("MFEM LOR Setting", 0);
     rv->SetEnumStrings("MFEM LOR Setting", mfem_lor_setting);
 

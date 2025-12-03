@@ -171,6 +171,7 @@ class avtBlueprintFileFormat : public avtSTMDFileFormat
   
     int                    m_selected_lod;
     avtMFEMDataAdaptor::refinementMethod m_refinement_method;
+    avtMFEMDataAdaptor::refinementBasisType m_refinement_basis_type;
 
     conduit::Node          m_mesh_and_topo_info;
     conduit::Node          m_matset_info;

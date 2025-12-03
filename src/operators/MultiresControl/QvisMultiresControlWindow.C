@@ -23,6 +23,13 @@ enum class refinementMethod
     LOR_Zonal_Projection
 };
 
+enum class refinementBasisType
+{
+    LOR_Basis_Default,
+    Closed_Uniform,
+    Gauss_Lobatto
+};
+
 
 // ****************************************************************************
 // Method: QvisMultiresControlWindow::QvisMultiresControlWindow
@@ -48,7 +55,9 @@ QvisMultiresControlWindow::QvisMultiresControlWindow(const int type,
       resolution(NULL),
       resolutionLevelLabel(NULL),
       refinementMethodLabel(NULL),
-      refinementMethod(NULL)
+      refinementMethod(NULL),
+      refinementBasisTypeLabel(NULL),
+      refinementBasisType(NULL)
 {
     atts = subj;
     fileServer->Attach(this);
@@ -132,6 +141,18 @@ QvisMultiresControlWindow::CreateWindowContents()
     connect(refinementMethod, SIGNAL(activated(int)),
             this, SLOT(refinementMethodChanged(int)));
     mainLayout->addWidget(refinementMethod, 1, 1);
+
+    refinementBasisTypeLabel = new QLabel(this);
+    refinementBasisTypeLabel->setText(tr("MFEM Refinement Basis Type:"));
+    mainLayout->addWidget(refinementBasisTypeLabel, 2, 0);
+
+    refinementBasisType = new QComboBox(this);
+    refinementBasisType->addItem(tr("LOR Basis Default"));
+    refinementBasisType->addItem(tr("Closed Uniform"));
+    refinementBasisType->addItem(tr("Gauss Lobatto"));
+    connect(refinementBasisType, SIGNAL(activated(int)),
+            this, SLOT(refinementBasisTypeChanged(int)));
+    mainLayout->addWidget(refinementBasisType, 2, 1);
 }
 
 
@@ -182,6 +203,10 @@ QvisMultiresControlWindow::UpdateWindow(bool doAll)
     this->refinementMethod->setCurrentIndex(atts->GetRefMethod());
     this->refinementMethod->blockSignals(false);
 
+    this->refinementBasisType->blockSignals(true);
+    this->refinementBasisType->setCurrentIndex(atts->GetRefBasisType());
+    this->refinementBasisType->blockSignals(false);
+
     this->resolution->blockSignals(true);
     this->resolution->setValue(atts->GetResolution());
     this->resolution->setMaximum(std::max(0, atts->GetMaxResolution()));
@@ -224,6 +249,11 @@ QvisMultiresControlWindow::GetCurrentValues(int which_widget)
     if(which_widget == MultiresControlAttributes::ID_refMethod || doAll)
     {
         atts->SetRefMethod(static_cast<MultiresControlAttributes::refinementMethod>(this->refinementMethod->currentIndex()));
+    }
+    // Do refinement basis type
+    if(which_widget == MultiresControlAttributes::ID_refBasisType || doAll)
+    {
+        atts->SetRefBasisType(static_cast<MultiresControlAttributes::refinementBasisType>(this->refinementBasisType->currentIndex()));
     }
 }
 
@@ -308,6 +338,19 @@ QvisMultiresControlWindow::refinementMethodChanged(int val)
     if (val != currRefinementMethod)
     {
         atts->SetRefMethod(static_cast<MultiresControlAttributes::refinementMethod>(val));
+        SetUpdate(false);
+        Apply();
+    }
+}
+
+
+void
+QvisMultiresControlWindow::refinementBasisTypeChanged(int val)
+{
+    const int currRefinementBasisType = atts->GetRefBasisType();
+    if (val != currRefinementBasisType)
+    {
+        atts->SetRefBasisType(static_cast<MultiresControlAttributes::refinementBasisType>(val));
         SetUpdate(false);
         Apply();
     }

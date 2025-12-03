@@ -59,6 +59,13 @@ public:
           LOR_Zonal_Projection
       };
 
+      enum class refinementBasisType
+      {
+          LOR_Basis_Default,
+          Closed_Uniform,
+          Gauss_Lobatto
+      };
+
       static vtkDataSet   *LegacyRefineMeshToVTK(mfem::Mesh *mesh,
                                                  int domain,
                                                  int lod);
@@ -68,11 +75,13 @@ public:
       static vtkDataSet   *RefineMeshToVTK(mfem::Mesh *mesh,
                                            int domain,
                                            int lod,
-                                           refinementMethod ref_method);
+                                           refinementMethod ref_method,
+                                           const refinementBasisType ref_basis_type);
 
       static vtkDataSet   *BoundaryMeshToVTK(mfem::Mesh *mesh);
       static vtkDataSet   *QuadratureFunctionMeshToVTK(mfem::Mesh *mesh,
-                                                       int order);
+                                                       int order,
+                                                       const refinementBasisType ref_basis_type);
 
       static vtkDataArray *LegacyRefineGridFunctionToVTK(mfem::Mesh *mesh,
                                                          mfem::GridFunction *gf,
@@ -85,6 +94,7 @@ public:
                                                    mfem::GridFunction *gf,
                                                    int lod,
                                                    const refinementMethod ref_method,
+                                                   const refinementBasisType ref_basis_type,
                                                    bool var_is_nodal = true);
 
       static vtkDataArray *RefineElementColoringToVTK(mfem::Mesh *mesh,
@@ -121,11 +131,24 @@ inline std::ostream& operator<<(std::ostream& os, avtMFEMDataAdaptor::refinement
     using refinementMethod = avtMFEMDataAdaptor::refinementMethod;
     switch(method)
     {
-        case refinementMethod::LOR_Projection_Default:   os << "LOR_Projection_Default"; break;
-        case refinementMethod::Discontinuous_Refine:     os << "Discontinuous_Refine"; break;
-        case refinementMethod::LOR_Nodal_Projection:     os << "LOR_Nodal_Projection"; break;
-        case refinementMethod::LOR_Zonal_Projection:     os << "LOR_Zonal_Projection"; break;
-        default:                                         os << "Unknown refinementMethod"; break;
+        case refinementMethod::LOR_Projection_Default: os << "LOR_Projection_Default"; break;
+        case refinementMethod::Discontinuous_Refine:   os << "Discontinuous_Refine"; break;
+        case refinementMethod::LOR_Nodal_Projection:   os << "LOR_Nodal_Projection"; break;
+        case refinementMethod::LOR_Zonal_Projection:   os << "LOR_Zonal_Projection"; break;
+        default:                                       os << "Unknown refinementMethod"; break;
+    }
+    return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, avtMFEMDataAdaptor::refinementBasisType method)
+{
+    using refinementBasisType = avtMFEMDataAdaptor::refinementBasisType;
+    switch(method)
+    {
+        case refinementBasisType::LOR_Basis_Default: os << "LOR_Basis_Default"; break;
+        case refinementBasisType::Closed_Uniform:    os << "Closed_Uniform"; break;
+        case refinementBasisType::Gauss_Lobatto:     os << "Gauss_Lobatto"; break;
+        default:                                     os << "Unknown refinementBasisType"; break;
     }
     return os;
 }

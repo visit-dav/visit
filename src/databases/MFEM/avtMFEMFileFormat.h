@@ -107,6 +107,8 @@ class avtMFEMFileFormat : public avtSTMDFileFormat
     std::map<std::string, std::pair<size_t,size_t> > catFileMap;
 
     avtMFEMDataAdaptor::refinementMethod m_refinement_method;
+
+    avtMFEMDataAdaptor::refinementBasisType m_refinement_basis_type;
 };
 
 #endif

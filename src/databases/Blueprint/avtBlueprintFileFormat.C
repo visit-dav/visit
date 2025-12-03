@@ -162,7 +162,8 @@ avtBlueprintFileFormat::avtBlueprintFileFormat(const char *filename, DBOptionsAt
       m_specset_info(),
       m_mfem_mesh_map(),
       m_mfem_material_map(),
-      m_refinement_method(avtMFEMDataAdaptor::refinementMethod::LOR_Projection_Default)
+      m_refinement_method(avtMFEMDataAdaptor::refinementMethod::LOR_Projection_Default),
+      m_refinement_basis_type(avtMFEMDataAdaptor::refinementBasisType::LOR_Basis_Default)
 {
     const int default_refinement_method = opts->GetEnum("MFEM LOR Setting");
 
@@ -1435,33 +1436,58 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
                     // quad func data is presented as zone centered on a special mesh
                     cent = AVT_ZONECENT;
                 }
-                else if (m_refinement_method != avtMFEMDataAdaptor::refinementMethod::Discontinuous_Refine) // if new LOR is turned on
+                else if (m_refinement_method == avtMFEMDataAdaptor::refinementMethod::LOR_Nodal_Projection)
+                {
+                    cent = AVT_NODECENT;
+                }
+                else if (m_refinement_method == avtMFEMDataAdaptor::refinementMethod::LOR_Zonal_Projection)
+                {
+                    cent = AVT_ZONECENT;
+                }
+                else if (m_refinement_method == avtMFEMDataAdaptor::refinementMethod::Discontinuous_Refine)
+                {
+                    cent = AVT_NODECENT;
+                }
+                else if (m_refinement_method != avtMFEMDataAdaptor::refinementMethod::LOR_Projection_Default)
                 {
                     const std::string basis = n_field["basis"].as_string();
-                    // H1 is nodal
-                    // L2 is zonal
                     const bool l2 = basis.find("L2_") != std::string::npos;
                     const bool h1 = basis.find("H1_") != std::string::npos;
-                    bool node_centered;
-                    if (h1 && l2)
+                    const bool nurbs = basis.find("NURBS") != std::string::npos;
+                    const bool hdiv = basis.find("RT_") != std::string::npos;
+                    const bool hcurl = basis.find("ND_") != std::string::npos;
+                    const int bases = static_cast<int>(l2) +
+                                      static_cast<int>(h1) +
+                                      static_cast<int>(hdiv) +
+                                      static_cast<int>(hcurl) +
+                                      static_cast<int>(nurbs);
+                    if (0 == bases)
                     {
-                        BP_PLUGIN_EXCEPTION1(InvalidVariableException, 
-                            "AddBlueprintMeshAndFieldMetadata: grid function cannot be both H1 and L2");
+                        // assume node centered
+                        cent = AVT_NODECENT;
                     }
-                    else if (!h1 && !l2) // guess
+                    else if (1 == bases)
                     {
-                        BP_PLUGIN_INFO("WARNING: AddBlueprintMeshAndFieldMetadata: Grid Function is "
-                                      "neither H1 nor L2. Guessing nodal association.");
-                        node_centered = true; 
+                        if (h1 || nurbs)
+                        {
+                            cent = AVT_NODECENT;
+                        }
+                        else if (l2 || hdiv || hcurl)
+                        {
+                            cent = AVT_ZONECENT;
+                        }
+                        else
+                        {
+                            BP_PLUGIN_EXCEPTION1(InvalidVariableException, 
+                                "AddBlueprintMeshAndFieldMetadata: "
+                                "Unsupported basis type in " << basis);
+                        }
                     }
                     else
                     {
-                        node_centered = h1 && !l2;
-                    }
-
-                    if (!node_centered)
-                    {
-                        cent = AVT_ZONECENT;
+                        BP_PLUGIN_EXCEPTION1(InvalidVariableException, 
+                            "AddBlueprintMeshAndFieldMetadata: grid function may not have multiple basis types. "
+                            "Unsupported basis type in " << basis);
                     }
                 }
 #else
@@ -2545,14 +2571,16 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
             if(is_qf_mesh)
             {
                 res = avtMFEMDataAdaptor::QuadratureFunctionMeshToVTK(mesh,
-                                                                      qf_order);
+                                                                      qf_order,
+                                                                      m_refinement_basis_type);
             }
             else
             {
                 res = avtMFEMDataAdaptor::RefineMeshToVTK(mesh,
                                                           domain,
                                                           m_selected_lod+1,
-                                                          m_refinement_method);
+                                                          m_refinement_method,
+                                                          m_refinement_basis_type);
             }
             // cleanup the mfem mesh
             delete mesh;
@@ -3025,7 +3053,8 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                 res = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh,
                                                                   gf,
                                                                   m_selected_lod+1,
-                                                                  m_refinement_method);
+                                                                  m_refinement_method,
+                                                                  m_refinement_basis_type);
 
                 // cleanup mfem data
                 delete gf;
@@ -3111,7 +3140,8 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                 res = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh,
                                                                   gf,
                                                                   m_selected_lod+1,
-                                                                  m_refinement_method);
+                                                                  m_refinement_method,
+                                                                  m_refinement_basis_type);
 
                 // cleanup mfem grid func
                 delete gf;
@@ -3552,6 +3582,7 @@ avtBlueprintFileFormat::RegisterDataSelections(
                 static_cast<const avtResolutionSelection*>(*sels[i]);
             this->m_selected_lod = sel->resolution();
             this->m_refinement_method = static_cast<avtMFEMDataAdaptor::refinementMethod>(sel->refinementMethod());
+            this->m_refinement_basis_type = static_cast<avtMFEMDataAdaptor::refinementBasisType>(sel->refinementBasisType());
             (*applied)[i] = true;
         }
     }

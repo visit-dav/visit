@@ -136,6 +136,7 @@ VTKCellTypeSize(int cell_type)
 // ****************************************************************************
 
 vtkDataSet *
+// TODO rename me to discontinuous refine
 avtMFEMDataAdaptor::LegacyRefineMeshToVTK(mfem::Mesh *mesh,
                                           int domain,
                                           int lod)
@@ -385,11 +386,12 @@ vtkDataSet *
 avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
                                     int domain,
                                     int lod,
-                                    refinementMethod ref_method)
+                                    const refinementMethod ref_method,
+                                    const refinementBasisType ref_basis_type)
 {
     AVT_MFEM_INFO("Creating Refined MFEM Mesh with lod:" << lod);
 
-    if (ref_method == refinementMethod::Discontinuous_Refine)
+    if (refinementMethod::Discontinuous_Refine == ref_method)
     {
         AVT_MFEM_INFO("Using Legacy LOR to refine mesh.");
         return LegacyRefineMeshToVTK(mesh, domain, lod);
@@ -435,8 +437,24 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
     }
 
     // refine the mesh
-    // mfem::Mesh lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::ClosedUniform);
-    mfem::Mesh lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::GaussLobatto);
+    mfem::Mesh lo_mesh;
+    if (refinementBasisType::LOR_Basis_Default == ref_basis_type)
+    {
+        lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::ClosedUniform);
+    }
+    else if (refinementBasisType::Closed_Uniform == ref_basis_type)
+    {
+        lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::ClosedUniform);
+    }
+    else if (refinementBasisType::Gauss_Lobatto == ref_basis_type)
+    {
+        lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::GaussLobatto);
+    }
+    else
+    {
+        AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                            "Unknown MFEM LOR refinement basis type: " << ref_basis_type);
+    }
 
     vtkDataSet *res_ds = LowOrderMeshToVTK(&lo_mesh);
 
@@ -453,8 +471,23 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
     int orig_nelems = mesh->GetNE();
 
     GeometryRefiner refiner;
-    // refiner.SetType(BasisType::GetQuadrature1D(mfem::BasisType::ClosedUniform));
-    refiner.SetType(BasisType::GetQuadrature1D(mfem::BasisType::GaussLobatto));
+    if (refinementBasisType::LOR_Basis_Default == ref_basis_type)
+    {
+        refiner.SetType(BasisType::GetQuadrature1D(mfem::BasisType::ClosedUniform));
+    }
+    else if (refinementBasisType::Closed_Uniform == ref_basis_type)
+    {
+        refiner.SetType(BasisType::GetQuadrature1D(mfem::BasisType::ClosedUniform));
+    }
+    else if (refinementBasisType::Gauss_Lobatto == ref_basis_type)
+    {
+        refiner.SetType(BasisType::GetQuadrature1D(mfem::BasisType::GaussLobatto));
+    }
+    else
+    {
+        AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                            "Unknown MFEM LOR refinement basis type: " << ref_basis_type);
+    }
 
     int lor_nelems = lo_mesh.GetNE();
 
@@ -701,7 +734,9 @@ avtMFEMDataAdaptor::BoundaryMeshToVTK(mfem::Mesh *mesh)
 //
 // ****************************************************************************
 vtkDataSet *
-avtMFEMDataAdaptor::QuadratureFunctionMeshToVTK(mfem::Mesh *mesh, int order)
+avtMFEMDataAdaptor::QuadratureFunctionMeshToVTK(mfem::Mesh *mesh,
+                                                int order,
+                                                const refinementBasisType ref_basis_type)
 {
     vtkDataSet *rv = nullptr;
    
@@ -722,9 +757,24 @@ avtMFEMDataAdaptor::QuadratureFunctionMeshToVTK(mfem::Mesh *mesh, int order)
     
     // Note:
     // mfem::BasisType::ClosedGL is what glviz uses
-    mfem::Mesh lo_mesh = mfem::Mesh::MakeRefined(*mesh,
-                                                 ref_factor,
-                                                 mfem::BasisType::GaussLobatto);
+    mfem::Mesh lo_mesh;
+    if (refinementBasisType::LOR_Basis_Default == ref_basis_type)
+    {
+        lo_mesh = mfem::Mesh::MakeRefined(*mesh, ref_factor, mfem::BasisType::GaussLobatto);
+    }
+    else if (refinementBasisType::Closed_Uniform == ref_basis_type)
+    {
+        lo_mesh = mfem::Mesh::MakeRefined(*mesh, ref_factor, mfem::BasisType::ClosedUniform);
+    }
+    else if (refinementBasisType::Gauss_Lobatto == ref_basis_type)
+    {
+        lo_mesh = mfem::Mesh::MakeRefined(*mesh, ref_factor, mfem::BasisType::GaussLobatto);
+    }
+    else
+    {
+        AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                            "Unknown MFEM LOR refinement basis type: " << ref_basis_type);
+    }
     
 
     vtkDataSet *res_ds = LowOrderMeshToVTK(&lo_mesh);
@@ -993,6 +1043,7 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
                                             mfem::GridFunction *gf,
                                             int lod,
                                             const refinementMethod ref_method,
+                                            const refinementBasisType ref_basis_type,
                                             bool var_is_nodal)
 {
     AVT_MFEM_INFO("Creating Refined MFEM Field with lod: " << lod);
@@ -1075,7 +1126,7 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     if (1 != bases)
     {
         AVT_MFEM_EXCEPTION1(InvalidVariableException, 
-            "RefineGridFunctionToVTK: grid function must be one of either H1, L2, Hdiv, or Hcurl. "
+            "RefineGridFunctionToVTK: grid function may not have multiple basis types. "
             "Unsupported basis type in " << basis);
     }
 
@@ -1145,8 +1196,24 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     
     // refine the mesh and convert to vtk
     // it would be nice if this was cached somewhere but we will do it again
-    mfem::Mesh lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::ClosedUniform);
-    // mfem::Mesh lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::GaussLobatto);
+    mfem::Mesh lo_mesh;
+    if (refinementBasisType::LOR_Basis_Default == ref_basis_type)
+    {
+        lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::ClosedUniform);
+    }
+    else if (refinementBasisType::Closed_Uniform == ref_basis_type)
+    {
+        lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::ClosedUniform);
+    }
+    else if (refinementBasisType::Gauss_Lobatto == ref_basis_type)
+    {
+        lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::GaussLobatto);
+    }
+    else
+    {
+        AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                            "Unknown MFEM LOR refinement basis type: " << ref_basis_type);
+    }
     // mfem::FiniteElementSpace lo_fes(&lo_mesh, lo_col, gf->FESpace()->GetVectorDim());
     mfem::FiniteElementSpace lo_fes(&lo_mesh, lo_col, gf->FESpace()->GetVDim());
     mfem::GridFunction lo_gf(&lo_fes);
