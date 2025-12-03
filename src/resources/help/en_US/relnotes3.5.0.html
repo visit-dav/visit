@@ -45,6 +45,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Refactored how to import visit into a stand alone python module. This is now done via the 'visit_launcher' module, avoiding module namespace issues.</li>
   <li>Antialiasing is no longer an on/off option, there are two modes: MSAA (when available) and FXAA. The default is still no antialiasing.</li>
   <li>Added environment variable logging to VisIt's debug vlog files.</li>
+  <li>Fix bug in PVLD reader that caused some files to not open.</li>
   <li>Updated Python to 3.13.9, support for Python 2 was removed.</li>
 </ul>
 
@@ -149,6 +150,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug with global mesh expressions causing them to only work on single domain data. They now function across all domains in parallel and in serial.</li>
   <li>Eliminated a couple of memory leaks. The first was in the operator that removes ghost zones and calculates external faces. The second was in the Resample operator.</li>
   <li>Fixed a crash with Curve plot when Curve contained more than 100000 points.</li>
+  <li>Fixed a crash in the PVLD parallel test suite.</li>
   <li>Fixed a problem where the Silo plugin would not honor major_order setting for vector variables (e.g. more than one component) on 2 or 3D point- or quad- meshes.</li>
   <li>Fixed a bug that prevented Silex from being distributed with the installation on Windows.</li>
   <li>Added more robust error messages when VisIt's launcher on Windows cannot determine a writeable folder for use as VISITUSERHOME.</li>

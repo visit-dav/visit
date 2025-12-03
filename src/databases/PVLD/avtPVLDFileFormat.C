@@ -1297,7 +1297,7 @@ avtPVLDFileFormat::AddSolidVariables( avtDatabaseMetaData *md )
                         Expression *pre= new Expression;
                         string prename = PVLD_Reader::ComposeNames( meshname,"Pressure" );
                         pre->SetName( prename );
-                        pre->SetDefinition( "-0.33333*trace(<" + orgname + ">)" );
+                        pre->SetDefinition( "trace(<" + orgname + ">)/-3.0" );
                         pre->SetType( Expression::ScalarMeshVar );
                         pre->SetHidden( false );
                         md->AddExpression(pre);
@@ -1449,7 +1449,7 @@ avtPVLDFileFormat::AddShellVariables( avtDatabaseMetaData *md )
                         Expression *pre= new Expression;
                         string prename = PVLD_Reader::ComposeNames( meshname,"Pressure" );
                         pre->SetName( prename );
-                        pre->SetDefinition( "-0.33333*trace(<" + orgname + ">)" );
+                        pre->SetDefinition( "trace(<" + orgname + ">)/-3.0" );
                         pre->SetType( Expression::ScalarMeshVar );
                         pre->SetHidden( false );
                         md->AddExpression(pre);
@@ -1568,7 +1568,7 @@ avtPVLDFileFormat::AddBeamVariables( avtDatabaseMetaData *md )
                         Expression *pre= new Expression;
                         string prename = PVLD_Reader::ComposeNames( meshname,"Pressure" );
                         pre->SetName( prename );
-                        pre->SetDefinition( "-0.33333*trace(<" + orgname + ">)" );
+                        pre->SetDefinition( "trace(<" + orgname + ">)/-3.0" );
                         pre->SetType( Expression::ScalarMeshVar );
                         pre->SetHidden( false );
                         md->AddExpression(pre);
@@ -1768,7 +1768,7 @@ avtPVLDFileFormat::AddSurfaceVariables( avtDatabaseMetaData *md )
                         Expression *pre= new Expression;
                         string prename = PVLD_Reader::ComposeNames( meshname,"Pressure" );
                         pre->SetName( prename );
-                        pre->SetDefinition( "-0.33333*trace(<" + orgname + ">)" );
+                        pre->SetDefinition( "trace(<" + orgname + ">)/-3.0" );
                         pre->SetType( Expression::ScalarMeshVar );
                         pre->SetHidden( false );
                         md->AddExpression(pre);
@@ -1864,7 +1864,7 @@ avtPVLDFileFormat::AddNodeVariables( const string& meshname, avtDatabaseMetaData
                     Expression *pre= new Expression;
                     string prename = PVLD_Reader::ComposeNames( meshname,"Pressure" );
                     pre->SetName( prename );
-                    pre->SetDefinition( "-0.33333*trace(<" + orgname + ">)" );
+                    pre->SetDefinition( "trace(<" + orgname + ">)/-3.0" );
                     pre->SetType( Expression::ScalarMeshVar );
                     pre->SetHidden( false );
                     md->AddExpression(pre);
