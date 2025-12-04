@@ -222,6 +222,7 @@ if(NOT VISIT_QT_SKIP_INSTALL)
             if(WIN32)
                 # also needed for build dir
                 add_custom_command(TARGET copy_qt_plugins
+                    POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy_directory
                         ${VISIT_QT_DIR}/plugins/${p}
                         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty/qtplugins/${p})

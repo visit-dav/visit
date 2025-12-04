@@ -173,6 +173,8 @@ SaveWindowAttributes::PixelData_FromString(const std::string &s, SaveWindowAttri
 // Creation:   omitted
 //
 // Modifications:
+//   Kathleen Biagas, Tue Nov 11, 2025
+//   Replace 'My images' with 'Images'.
 //
 // ****************************************************************************
 
@@ -187,14 +189,14 @@ void SaveWindowAttributes::Init()
     const char *visitHome = getenv("VISITUSERHOME");
     if(visitHome != 0)
     {
-        outputDirectory = std::string(visitHome) + "\\My images";
+        outputDirectory = std::string(visitHome) + "\\Images";
     }
     else
     {
         visitHome = getenv("VISITHOME");
         if(visitHome != 0)
         {
-            outputDirectory = std::string(visitHome) + "\\My images";
+            outputDirectory = std::string(visitHome) + "Images";
         }
         else
         {
