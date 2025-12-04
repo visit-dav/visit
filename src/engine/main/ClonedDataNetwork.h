@@ -20,6 +20,9 @@
 //  Creation:   March 18, 2004 
 //
 //  Modifications:
+//    Eric Brugger, Mon Nov 24 10:17:20 PST 2025
+//    I added AddNode so that any Netnodes added after the DataNetwork was
+//    cloned can be saved and then deleted in ReleaseData.
 //
 // ****************************************************************************
 
@@ -31,6 +34,8 @@ public:
 
     virtual void          SetPlot(avtPlot *_plot) { cPlot = _plot; };
 
+    virtual void          AddNode(Netnode *);
+
     virtual void          ReleaseData(void);
 
     virtual avtPlot_p     GetPlot(void) { return cPlot; };
@@ -40,6 +45,7 @@ public:
 
 protected:
     avtPlot_p             cPlot;
+    std::vector<Netnode*> cNodeList;
 };
 
 #endif

@@ -159,10 +159,26 @@ vtkVisItCellLocator::~vtkVisItCellLocator()
     }
 }
 
+//
+// Modificatons:
+//    Eric Brugger, Mon Nov 24 10:17:20 PST 2025
+//    Added code to Delete the leaves of the tree before deleting the tree.
+//
+
 void vtkVisItCellLocator::FreeSearchStructure()
 {
+  int i;
+
   if ( this->Tree )
     {
+    for (i=0; i<this->NumberOfOctants; i++)
+      {
+      if ( this->Tree[i] )
+        {
+        this->Tree[i]->Delete();
+        this->Tree[i] = NULL;
+        }
+      }
     delete [] this->Tree;
     this->Tree = NULL;
     }
@@ -170,7 +186,7 @@ void vtkVisItCellLocator::FreeSearchStructure()
 
 // Given an offset into the structure, the number of divisions in the octree,
 // an i,j,k location in the octree; return the index (idx) into the structure.
-// Method returns 1 is the specified i,j,k location is "outside" of the octree.
+// Method returns 1 if the specified i,j,k location is "outside" of the octree.
 int vtkVisItCellLocator::GenerateIndex(int offset, int numDivs, int i, int j,
                                   int k, vtkIdType &idx)
 {
@@ -1562,6 +1578,10 @@ vtkIdList* vtkVisItCellLocator::GetCells(int octantId)
 //    Kathleen Bonnell, Thu Nov  6 08:29:48 PST 2003
 //    Utilize user-specified-bounds if available.
 //
+//    Eric Brugger, Mon Nov 24 10:17:20 PST 2025
+//    Added code to set any references in Tree that matches parentOctant
+//    to NULL so that it won't be deleted multiple times in the destructor.
+//
 void vtkVisItCellLocator::BuildLocator()
   {
   double *bounds, length, cellBounds[6], *boundsPtr;
@@ -1760,6 +1780,18 @@ void vtkVisItCellLocator::BuildLocator()
       }
 
     } //for all cells
+
+  // Set all the leaves in the tree that match parentOctant to NULL so
+  // that they won't be deleted in the destructor. parentOctant is a
+  // vtkSmartPointer with only 1 reference and will be deleted at the
+  // exit of this method.
+  for ( i = 0; i < numOctants; i++ )
+    {
+    if (this->Tree[i] == parentOctant)
+      {
+      this->Tree[i] = NULL;
+      }
+    }
 
   this->BuildTime.Modified();
 }
