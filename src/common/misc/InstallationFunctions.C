@@ -252,20 +252,32 @@ GetUserVisItDirectory()
     }
     else
     {
-        char visituserpath[MAX_PATH], expvisituserpath[MAX_PATH];
-        int haveVISITUSERHOME=0;
-        TCHAR szPath[MAX_PATH];
-        FileFunctions::VisItStat_t fs;
-        if(SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, 
-                                 SHGFP_TYPE_CURRENT, szPath))) 
-        {
-            snprintf(visituserpath, MAX_PATH, "%s\\VisIt", szPath);
-            haveVISITUSERHOME = 1;
-        }
+        std::string tmp; 
+        bool haveVISITUSERHOME = false;
 
-        if (haveVISITUSERHOME)
+        // Check known folder
+        PWSTR szPath=nullptr;
+        HRESULT success = SHGetKnownFolderPath(FOLDERID_Documents,
+                                      KF_FLAG_DONT_VERIFY,
+                                      NULL, &szPath);
+        if(SUCCEEDED(success))
         {
-            ExpandEnvironmentStrings(visituserpath,expvisituserpath,MAX_PATH);
+            size_t origsize = wcslen(szPath) + 1;
+            size_t convertedChars = 0;
+            const size_t newsize = origsize * 2;
+            char* nstring = new char[newsize];
+            wcstombs_s(&convertedChars, nstring, newsize, szPath, _TRUNCATE);
+            tmp = nstring;
+            delete []nstring;
+        }
+        CoTaskMemFree(szPath);
+         
+        if(!tmp.empty())
+        {
+            tmp.append("\\VisIt");
+            char expvisituserpath[MAX_PATH];
+            FileFunctions::VisItStat_t fs;
+            ExpandEnvironmentStrings(tmp.c_str(),expvisituserpath,MAX_PATH);
             if (FileFunctions::VisItStat(expvisituserpath, &fs) == -1)
             {
                 _mkdir(expvisituserpath);

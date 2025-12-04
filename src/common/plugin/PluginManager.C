@@ -1355,6 +1355,10 @@ AddUniquePluginDir(stringVector &pluginDirs, const std::string &path)
 //    Brad Whitlock, Wed Dec 23 15:40:03 PST 2009
 //    Don't bother doing anything if VisIt is static.
 //
+//    Kathleen Biagas, Tue Nov 11, 2025 
+//    PluginDir on Windows should be set same as VISITUSERHOME when
+//    VISITPLUGINDIR env var not found.
+//
 // ****************************************************************************
 
 void
@@ -1372,29 +1376,18 @@ PluginManager::SetPluginDir(const char *PluginDir)
             // list already, this isn't a problem.
             if (pluginDirs.empty())
             {
-                debug4 << "No environment variable!" << endl;
+                debug4 << "No VISITPLUGINDIR environment variable!" << endl;
 #if defined(_WIN32)
-                char *tmp = new char[MAX_PATH];
-                if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_APPDATA, NULL,
-                                  SHGFP_TYPE_CURRENT, tmp)))
+                std::string tmp = GetUserVisItDirectory();
+                if(!tmp.empty())
                 {
-                    PathAppend(tmp, "LLNL");
-                    PathAppend(tmp, "VisIt");
-                    AddUniquePluginDir(pluginDirs, string(tmp) + VISIT_SLASH_STRING + 
+                    AddUniquePluginDir(pluginDirs, tmp + VISIT_SLASH_STRING + 
                                        managerName + "s");
-                    delete [] tmp;
                     return;
                 }
-                else
-                {
-                    delete [] tmp;
-                    EXCEPTION1(VisItException,
-                        "The path to AppData variable could not be found.");
-                }
-#else
+#endif
                 EXCEPTION1(VisItException,
                     "The environment variable VISITPLUGINDIR must be defined.");
-#endif
             }
             else
             {

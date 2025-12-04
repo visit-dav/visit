@@ -132,6 +132,9 @@ FileFunctions::VisItFstat(int fd, VisItStat_t *buf)
 //   Kathleen Bonnell, Thu Apr 22 17:23:43 MST 2010 
 //   Add '.' to test for isDir on Windows.
 //
+//   Kathleen Bonnell, Tue Nov 11, 2025
+//   Replace test for 'My Computer' with 'This PC'.
+//
 // ****************************************************************************
 
 bool
@@ -142,7 +145,7 @@ FileFunctions::ReadAndProcessDirectory(const std::string &directory,
     bool retval = false;
 
 #if defined(_WIN32)
-    if(directory == "My Computer")
+    if(directory == "This PC")
     {
         // Add the drives to the list.
         char buf[200];
@@ -324,6 +327,9 @@ FileFunctions::GetCurrentWorkingDirectory()
 //   Kathleen Biagas, Thu May 17, 2018
 //   Support UNC paths on windows.
 //
+//   Kathleen Bonnell, Tue Nov 11, 2025
+//   Replace test for 'My Computer' with 'This PC'.
+//
 // ****************************************************************************
 
 std::string
@@ -400,17 +406,17 @@ FileFunctions::ExpandPath(const std::string &path,
 #endif
     }
 #if defined(_WIN32)
-    else if(path.substr(0, 12) == "My Computer\\" && path[13] == ':')
+    else if(path.substr(0, 8) == "This PC\\" && path[9] == ':')
     {
-        // Filter out the "My Computer" part of the path.
-        newPath = path.substr(12);
+        // Filter out the "This PC" part of the path.
+        newPath = path.substr(8);
     }
     else if(path.size() > 1 && path[1] == ':')
     {
         // absolute path. do nothing
         newPath = path;
     }
-    else if(path == "My Computer")
+    else if(path == "This PC")
     {
         // special path. do nothing
         newPath = path;

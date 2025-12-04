@@ -365,7 +365,7 @@ function(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                             ${dllNAME}
                             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty)
         else() # try 'bin' directory
-            file(REAL_PATH "${curPATH}/../bin/${curNAMEWE}" dll_path)
+            cmake_path(SET dll_path NORMALIZE "${curPATH}/../bin/${curNAMEWE}")
             set(newdllNAME "${dll_path}.dll")
             if(EXISTS ${newdllNAME})
                 install(FILES ${newdllNAME}
