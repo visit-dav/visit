@@ -77,14 +77,12 @@ movie_format_info movieFormatInfo[] = {
     {"RGB  images",     "rgb"},
     {"TIFF images",     "tiff"},
     {MPEG_FORMAT,       "mpeg"},
-#ifndef _WIN32
     {"AVI movie",       "avi"},
     {"DIVX movie",      "divx"},
     {"MPEG 4 movie",    "mp4"},
     {"QuickTime movie", "mov"},
     {"SWF movie",       "swf"},
     {"WMV movie",       "wmv"},
-#endif
 };
 
 // Prefer MPEG since we provide an encoder for that format.
@@ -245,11 +243,42 @@ EnsureDirectoryExists(std::string &name, bool nameIsFile)
 //   Kathleen Biagas, Thu Dec 27 16:30:21 PST 2018
 //   Disable default button feature of this wizard.
 //
+//   Kathleen Biagas, Wed Dec 3, 2025
+//   Initialize availableFormats with universally available image formats
+//   and 'mpeg' movie format.  If 'ffmpeg' available, add more formats.
+//
 // ****************************************************************************
 
 QvisSaveMovieWizard::QvisSaveMovieWizard(AttributeSubject *atts, QWidget *parent) :
     QvisWizard(atts, parent), templateTitleToInfo(), sequencePages()
 {
+    availableFormats.push_back("bmp");
+    availableFormats.push_back("jpeg");
+    availableFormats.push_back("png");
+    availableFormats.push_back("ppm");
+    availableFormats.push_back("rgb");
+    availableFormats.push_back("tiff");
+    availableFormats.push_back("mpeg");
+
+    // determine if ffmpeg exists
+    bool haveffmpeg = false;
+#ifdef _WIN32
+    // the /Q switch prevents the result from being printed to terminal
+    haveffmpeg = (system("where /Q ffmpeg") == 0);
+#else
+    haveffmpeg = (system("which ffmpeg > /dev/null") == 0);
+#endif
+    if(haveffmpeg)
+    {
+        availableFormats.push_back("avi");
+        availableFormats.push_back("divx");
+        availableFormats.push_back("mp4");
+        availableFormats.push_back("mov");
+        availableFormats.push_back("swf");
+        availableFormats.push_back("wmv");
+    }
+
+
     setOption(QWizard::NoCancelButton, false);
     setOption(QWizard::HaveHelpButton, false);
     setOption(QWizard::HaveNextButtonOnLastPage, false);
@@ -1360,6 +1389,9 @@ QvisSaveMovieWizard::CreateSettingsOkayPage()
 //   Kathleen Biagas, Tue Apr 18 16:34:41 PDT 2023
 //   Support Qt6: buttonClicked -> idClicked.
 //
+//   Kathleen Biagas, Wed Dec 3, 2025
+//   Fill in formatCombo box from list of available formats.
+//
 // ****************************************************************************
 
 void
@@ -1385,18 +1417,9 @@ QvisSaveMovieWizard::CreateFormatPage()
     f2innerLayout->addStretch(10);
 
     page9_formatComboBox = new QComboBox(formatAndResolution);
-#ifdef _WIN32
-    int nFormats = N_MOVIE_FORMATS-1;
-#else
-    int nFormats = N_MOVIE_FORMATS;
-#endif
-
-    // removed check for img2sm via a QProcess call
-    // this was hanging on some platforms.
-
-    // Add all of the movie formats from the table.
-    for(int i = 0; i < nFormats; ++i)
-        page9_formatComboBox->addItem(movieFormatInfo[i].menu_name);
+    // Add all of the available movie formats.
+    for(size_t i = 0; i < availableFormats.size(); ++i)
+        page9_formatComboBox->addItem(FormatToMenuName(availableFormats[i].c_str()));
     page9_formatComboBox->setCurrentIndex(6);
     QLabel *formatLabel = new QLabel(tr("Format"), formatAndResolution);
     formatLabel->setBuddy(page9_formatComboBox);

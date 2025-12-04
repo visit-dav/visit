@@ -20,7 +20,7 @@ databaseComment = "explosion_Through_Name
 2bulletshidden
 1explosiveactive"
 exprList.GetExpressions(0).name = "Solid/Pressure"
-exprList.GetExpressions(0).definition = "-0.33333*trace(<Solid/Stress>)"
+exprList.GetExpressions(0).definition = "trace(<Solid/Stress>)/-3.0"
 exprList.GetExpressions(0).hidden = 0
 exprList.GetExpressions(0).type = exprList.GetExpressions(0).ScalarMeshVar  # Unknown, ScalarMeshVar, VectorMeshVar, TensorMeshVar, SymmetricTensorMeshVar, ArrayMeshVar, CurveMeshVar, Mesh, Material, Species
 exprList.GetExpressions(0).fromDB = 1
