@@ -33,12 +33,28 @@ SetDefaultFileOpenOptions("MFEM", readOptions)
 
 mfem_roots  = glob.glob(data_path("mfem_test_data/*.mfem_root"))
 mfem_roots.extend(glob.glob(data_path("mfem_wedge_and_pyramid_examples/wedge_*.mfem_root")))
-input_meshs  = [ f for f in mfem_roots if f.count("ex0") == 0]
+input_meshes = [ f for f in mfem_roots if f.count("ex0") == 0]
 ex01_results = [ f for f in mfem_roots if f.count("ex01") == 1]
 ex02_results = [ f for f in mfem_roots if f.count("ex02") == 1]
 mfem_mesh_files = glob.glob(data_path("mfem_test_data/*.mesh"))
 mfem_quad_func_files = glob.glob(data_path("mfem_quad_func_test_data/*.mfem_root"))
 mfem_hdiv_hcurl_files = glob.glob(data_path("mfem_hdiv_hcurl_examples/*.mfem_root"))
+
+# A selection of interesting meshes that effectively demonstrate 
+# discontinuous versus continuous LOR settings
+mfem_selected_meshes = [
+    glob.glob(data_path("mfem_test_data/amr-hex.mfem_root")),
+    glob.glob(data_path("mfem_test_data/ball-nurbs.mfem_root")),
+    glob.glob(data_path("mfem_test_data/fichera.mfem_root")),
+    glob.glob(data_path("mfem_test_data/klein-bottle.mfem_root")),
+    glob.glob(data_path("mfem_test_data/klein-donut.mfem_root")),
+    glob.glob(data_path("mfem_test_data/periodic-cube.mfem_root")),
+    glob.glob(data_path("mfem_test_data/periodic-hexagon.mfem_root")),
+    glob.glob(data_path("mfem_test_data/pipe-nurbs.mfem_root")),
+    glob.glob(data_path("mfem_test_data/square-disc-surf.mfem_root")),
+    glob.glob(data_path("mfem_test_data/star.mfem_root"))]
+
+print(mfem_selected_meshes)
 
 def set_test_view():
     v = View3DAttributes()
@@ -61,7 +77,7 @@ def set_test_view():
     v.windowValid = 1
     SetView3D(v)
 TestSection("Input Mesh Files")
-for f in input_meshs:
+for f in input_meshes:
     base = os.path.splitext(os.path.basename(f))[0]
     DeleteAllPlots()
     OpenDatabase(f)
@@ -134,7 +150,7 @@ DeleteAllPlots()
 CloseDatabase(data_path("mfem_test_data/ex02-beam-tet.mfem_root"))
 
 TestSection("Input Mesh Boundary Topology")
-for f in input_meshs:
+for f in input_meshes:
     base = os.path.splitext(os.path.basename(f))[0]
     DeleteAllPlots()
     OpenDatabase(f)
@@ -215,7 +231,7 @@ def test_mfem_lor_mesh(tag_name, dbfile):
     SetDefaultFileOpenOptions("MFEM", readOptions)
 
 TestSection("Legacy and New LOR")
-for dbfile in input_meshs:
+for dbfile in input_meshes:
     test_mfem_lor_mesh("LOR", dbfile)
 
 def test_mfem_lor_field(tag_name, dbfile):
@@ -316,5 +332,23 @@ def test_mfem_quad_func(tag_name, dbfile, var_name):
 TestSection("Quadrature Functions")
 for dbfile in mfem_quad_func_files:
     test_mfem_quad_func("quadrature_data", dbfile, "quad_field")
+
+def test_mfem_lor_controls_on_mesh(dbfile):
+    pass
+
+def test_mfem_lor_controls_on_grid_function(dbfile):
+    pass
+
+TestSection("LOR Controls")
+# these are hand-picked meshes that clearly demonstrate the refinement differences
+for dbfile in mfem_selected_meshes:
+    test_mfem_lor_controls_on_mesh(dbfile)
+# ex01 results all have scalar grid functions
+for dbfile in ex01_results:
+    test_mfem_lor_controls_on_grid_function(dbfile)
+# TODO
+# for dbfile in mfem_hdiv_hcurl_files:
+#     test_mfem_lor_controls(dbfile)
+
 
 Exit()
