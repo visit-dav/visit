@@ -738,6 +738,41 @@ avtMFEMDataAdaptor::QuadratureFunctionMeshToVTK(mfem::Mesh *mesh,
                                                 int order,
                                                 const refinementBasisType ref_basis_type)
 {
+    // TODO
+
+    // quad function mesh - no resolution, no projection, yes basis type
+    // quad function field - no resolution, no projection, yes basis type
+    // normal mesh - yes resolution, yes projection**, yes basis type
+    // gf field - yes resolution, yes projection, yes basis type
+
+    // **normal meshes are either LOR discontinuous or LOR continuous
+
+    // resolution selection: 42364832432
+
+    // basis choices (always applies to all mfem)
+    //    gauss lobatto (default)
+    //    closed uniform
+
+    // mesh refinement is 
+    //    discontinuous LOR
+    //    continuous LOR
+
+    // field projection is
+    //    default (it depends on finite element type)
+    //    zonal (only continuous)
+    //    nodal (discontinuous or continuous mesh refinement)
+
+
+    // for gui:
+    //   resolution
+    //   basis
+    //   mesh refinement
+    //   field refinement
+
+    // need 2d and 3d tests for these
+    // quad function tests for changing the basis
+
+
     vtkDataSet *rv = nullptr;
    
     // refine the mesh
@@ -758,6 +793,7 @@ avtMFEMDataAdaptor::QuadratureFunctionMeshToVTK(mfem::Mesh *mesh,
     // Note:
     // mfem::BasisType::ClosedGL is what glviz uses
     mfem::Mesh lo_mesh;
+    // TODO get rid of default; default will be gauss lobatto
     if (refinementBasisType::LOR_Basis_Default == ref_basis_type)
     {
         lo_mesh = mfem::Mesh::MakeRefined(*mesh, ref_factor, mfem::BasisType::GaussLobatto);
@@ -838,6 +874,11 @@ avtMFEMDataAdaptor::LegacyRefineGridFunctionToVTK(mfem::Mesh *mesh,
 
     vtkFloatArray *rv = vtkFloatArray::New();
 
+// TODO
+// if vector dim is greater than 1 then use it
+    // if it is equal to 1 use vdim
+    // b/c scalar versus vector finite elements
+
     int ncomps = gf->VectorDim();
 
     if(ncomps == 2)
@@ -912,9 +953,6 @@ avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
     // int vdim = fespace->GetVectorDim();
     int vdim = fespace->GetVDim();
     int ndofs = fespace->GetNDofs();
-
-    // all supported grid functions coming out of mfem end up being 
-    // associated with vertices
 
     AVT_MFEM_INFO("VTKDataArray num_tuples = " << ndofs << " "
                     << " num_comps = " << vdim);

@@ -53,10 +53,10 @@ class AVTMFEM_API avtMFEMDataAdaptor
 public:
       enum class refinementMethod
       {
-          LOR_Projection_Default,
-          Discontinuous_Refine,
-          LOR_Nodal_Projection,
-          LOR_Zonal_Projection
+          LOR_Projection_Default, // Continuous Mesh, Default Field
+          Discontinuous_Refine, // Discontinuous Mesh, Nodal Field
+          LOR_Nodal_Projection, // Continuous Mesh, Nodal Field
+          LOR_Zonal_Projection // Continuous Mesh, Zonal Field
       };
 
       enum class refinementBasisType
