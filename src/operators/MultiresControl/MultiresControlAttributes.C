@@ -6,37 +6,75 @@
 #include <DataNode.h>
 
 //
-// Enum conversion methods for MultiresControlAttributes::refinementMethod
+// Enum conversion methods for MultiresControlAttributes::meshRefinementMethod
 //
 
-static const char *refinementMethod_strings[] = {
-"LOR_Projection_Default", "Discontinuous_Refine", "LOR_Nodal_Projection",
-"LOR_Zonal_Projection"};
+static const char *meshRefinementMethod_strings[] = {
+"Default_LOR", "Discontinuous_LOR", "Continuous_LOR"
+};
 
 std::string
-MultiresControlAttributes::refinementMethod_ToString(MultiresControlAttributes::refinementMethod t)
+MultiresControlAttributes::meshRefinementMethod_ToString(MultiresControlAttributes::meshRefinementMethod t)
 {
     int index = int(t);
-    if(index < 0 || index >= 4) index = 0;
-    return refinementMethod_strings[index];
+    if(index < 0 || index >= 3) index = 0;
+    return meshRefinementMethod_strings[index];
 }
 
 std::string
-MultiresControlAttributes::refinementMethod_ToString(int t)
+MultiresControlAttributes::meshRefinementMethod_ToString(int t)
 {
-    int index = (t < 0 || t >= 4) ? 0 : t;
-    return refinementMethod_strings[index];
+    int index = (t < 0 || t >= 3) ? 0 : t;
+    return meshRefinementMethod_strings[index];
 }
 
 bool
-MultiresControlAttributes::refinementMethod_FromString(const std::string &s, MultiresControlAttributes::refinementMethod &val)
+MultiresControlAttributes::meshRefinementMethod_FromString(const std::string &s, MultiresControlAttributes::meshRefinementMethod &val)
 {
-    val = MultiresControlAttributes::LOR_Projection_Default;
-    for(int i = 0; i < 4; ++i)
+    val = MultiresControlAttributes::Default_LOR;
+    for(int i = 0; i < 3; ++i)
     {
-        if(s == refinementMethod_strings[i])
+        if(s == meshRefinementMethod_strings[i])
         {
-            val = (refinementMethod)i;
+            val = (meshRefinementMethod)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for MultiresControlAttributes::fieldProjectionMethod
+//
+
+static const char *fieldProjectionMethod_strings[] = {
+"Default_Projection", "Zonal_Projection", "Nodal_Projection"
+};
+
+std::string
+MultiresControlAttributes::fieldProjectionMethod_ToString(MultiresControlAttributes::fieldProjectionMethod t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 3) index = 0;
+    return fieldProjectionMethod_strings[index];
+}
+
+std::string
+MultiresControlAttributes::fieldProjectionMethod_ToString(int t)
+{
+    int index = (t < 0 || t >= 3) ? 0 : t;
+    return fieldProjectionMethod_strings[index];
+}
+
+bool
+MultiresControlAttributes::fieldProjectionMethod_FromString(const std::string &s, MultiresControlAttributes::fieldProjectionMethod &val)
+{
+    val = MultiresControlAttributes::Default_Projection;
+    for(int i = 0; i < 3; ++i)
+    {
+        if(s == fieldProjectionMethod_strings[i])
+        {
+            val = (fieldProjectionMethod)i;
             return true;
         }
     }
@@ -48,7 +86,7 @@ MultiresControlAttributes::refinementMethod_FromString(const std::string &s, Mul
 //
 
 static const char *refinementBasisType_strings[] = {
-"LOR_Basis_Default", "Closed_Uniform", "Gauss_Lobatto"
+"Default_LOR_Basis", "Closed_Uniform", "Gauss_Lobatto"
 };
 
 std::string
@@ -69,7 +107,7 @@ MultiresControlAttributes::refinementBasisType_ToString(int t)
 bool
 MultiresControlAttributes::refinementBasisType_FromString(const std::string &s, MultiresControlAttributes::refinementBasisType &val)
 {
-    val = MultiresControlAttributes::LOR_Basis_Default;
+    val = MultiresControlAttributes::Default_LOR_Basis;
     for(int i = 0; i < 3; ++i)
     {
         if(s == refinementBasisType_strings[i])
@@ -100,8 +138,9 @@ void MultiresControlAttributes::Init()
 {
     resolution = 0;
     maxResolution = 1;
-    refMethod = LOR_Projection_Default;
-    refBasisType = LOR_Basis_Default;
+    meshRefMethod = Default_LOR;
+    fieldProjMethod = Default_Projection;
+    refBasisType = Default_LOR_Basis;
 
     MultiresControlAttributes::SelectAll();
 }
@@ -125,7 +164,8 @@ void MultiresControlAttributes::Copy(const MultiresControlAttributes &obj)
 {
     resolution = obj.resolution;
     maxResolution = obj.maxResolution;
-    refMethod = obj.refMethod;
+    meshRefMethod = obj.meshRefMethod;
+    fieldProjMethod = obj.fieldProjMethod;
     refBasisType = obj.refBasisType;
     info = obj.info;
 
@@ -287,7 +327,8 @@ MultiresControlAttributes::operator == (const MultiresControlAttributes &obj) co
     // Create the return value
     return ((resolution == obj.resolution) &&
             (maxResolution == obj.maxResolution) &&
-            (refMethod == obj.refMethod) &&
+            (meshRefMethod == obj.meshRefMethod) &&
+            (fieldProjMethod == obj.fieldProjMethod) &&
             (refBasisType == obj.refBasisType) &&
             (info == obj.info));
 }
@@ -433,11 +474,12 @@ MultiresControlAttributes::NewInstance(bool copy) const
 void
 MultiresControlAttributes::SelectAll()
 {
-    Select(ID_resolution,    (void *)&resolution);
-    Select(ID_maxResolution, (void *)&maxResolution);
-    Select(ID_refMethod,     (void *)&refMethod);
-    Select(ID_refBasisType,  (void *)&refBasisType);
-    Select(ID_info,          (void *)&info);
+    Select(ID_resolution,      (void *)&resolution);
+    Select(ID_maxResolution,   (void *)&maxResolution);
+    Select(ID_meshRefMethod,   (void *)&meshRefMethod);
+    Select(ID_fieldProjMethod, (void *)&fieldProjMethod);
+    Select(ID_refBasisType,    (void *)&refBasisType);
+    Select(ID_info,            (void *)&info);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -482,10 +524,16 @@ MultiresControlAttributes::CreateNode(DataNode *parentNode, bool completeSave, b
         node->AddNode(new DataNode("maxResolution", maxResolution));
     }
 
-    if(completeSave || !FieldsEqual(ID_refMethod, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_meshRefMethod, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("refMethod", refinementMethod_ToString(refMethod)));
+        node->AddNode(new DataNode("meshRefMethod", meshRefinementMethod_ToString(meshRefMethod)));
+    }
+
+    if(completeSave || !FieldsEqual(ID_fieldProjMethod, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("fieldProjMethod", fieldProjectionMethod_ToString(fieldProjMethod)));
     }
 
     if(completeSave || !FieldsEqual(ID_refBasisType, &defaultObject))
@@ -540,20 +588,36 @@ MultiresControlAttributes::SetFromNode(DataNode *parentNode)
         SetResolution(node->AsInt());
     if((node = searchNode->GetNode("maxResolution")) != 0)
         SetMaxResolution(node->AsInt());
-    if((node = searchNode->GetNode("refMethod")) != 0)
+    if((node = searchNode->GetNode("meshRefMethod")) != 0)
     {
         // Allow enums to be int or string in the config file
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 4)
-                SetRefMethod(refinementMethod(ival));
+            if(ival >= 0 && ival < 3)
+                SetMeshRefMethod(meshRefinementMethod(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
         {
-            refinementMethod value;
-            if(refinementMethod_FromString(node->AsString(), value))
-                SetRefMethod(value);
+            meshRefinementMethod value;
+            if(meshRefinementMethod_FromString(node->AsString(), value))
+                SetMeshRefMethod(value);
+        }
+    }
+    if((node = searchNode->GetNode("fieldProjMethod")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 3)
+                SetFieldProjMethod(fieldProjectionMethod(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            fieldProjectionMethod value;
+            if(fieldProjectionMethod_FromString(node->AsString(), value))
+                SetFieldProjMethod(value);
         }
     }
     if((node = searchNode->GetNode("refBasisType")) != 0)
@@ -595,10 +659,17 @@ MultiresControlAttributes::SetMaxResolution(int maxResolution_)
 }
 
 void
-MultiresControlAttributes::SetRefMethod(MultiresControlAttributes::refinementMethod refMethod_)
+MultiresControlAttributes::SetMeshRefMethod(MultiresControlAttributes::meshRefinementMethod meshRefMethod_)
 {
-    refMethod = refMethod_;
-    Select(ID_refMethod, (void *)&refMethod);
+    meshRefMethod = meshRefMethod_;
+    Select(ID_meshRefMethod, (void *)&meshRefMethod);
+}
+
+void
+MultiresControlAttributes::SetFieldProjMethod(MultiresControlAttributes::fieldProjectionMethod fieldProjMethod_)
+{
+    fieldProjMethod = fieldProjMethod_;
+    Select(ID_fieldProjMethod, (void *)&fieldProjMethod);
 }
 
 void
@@ -631,10 +702,16 @@ MultiresControlAttributes::GetMaxResolution() const
     return maxResolution;
 }
 
-MultiresControlAttributes::refinementMethod
-MultiresControlAttributes::GetRefMethod() const
+MultiresControlAttributes::meshRefinementMethod
+MultiresControlAttributes::GetMeshRefMethod() const
 {
-    return refinementMethod(refMethod);
+    return meshRefinementMethod(meshRefMethod);
+}
+
+MultiresControlAttributes::fieldProjectionMethod
+MultiresControlAttributes::GetFieldProjMethod() const
+{
+    return fieldProjectionMethod(fieldProjMethod);
 }
 
 MultiresControlAttributes::refinementBasisType
@@ -689,11 +766,12 @@ MultiresControlAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_resolution:    return "resolution";
-    case ID_maxResolution: return "maxResolution";
-    case ID_refMethod:     return "refMethod";
-    case ID_refBasisType:  return "refBasisType";
-    case ID_info:          return "info";
+    case ID_resolution:      return "resolution";
+    case ID_maxResolution:   return "maxResolution";
+    case ID_meshRefMethod:   return "meshRefMethod";
+    case ID_fieldProjMethod: return "fieldProjMethod";
+    case ID_refBasisType:    return "refBasisType";
+    case ID_info:            return "info";
     default:  return "invalid index";
     }
 }
@@ -718,11 +796,12 @@ MultiresControlAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_resolution:    return FieldType_int;
-    case ID_maxResolution: return FieldType_int;
-    case ID_refMethod:     return FieldType_enum;
-    case ID_refBasisType:  return FieldType_enum;
-    case ID_info:          return FieldType_string;
+    case ID_resolution:      return FieldType_int;
+    case ID_maxResolution:   return FieldType_int;
+    case ID_meshRefMethod:   return FieldType_enum;
+    case ID_fieldProjMethod: return FieldType_enum;
+    case ID_refBasisType:    return FieldType_enum;
+    case ID_info:            return FieldType_string;
     default:  return FieldType_unknown;
     }
 }
@@ -747,11 +826,12 @@ MultiresControlAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_resolution:    return "int";
-    case ID_maxResolution: return "int";
-    case ID_refMethod:     return "enum";
-    case ID_refBasisType:  return "enum";
-    case ID_info:          return "string";
+    case ID_resolution:      return "int";
+    case ID_maxResolution:   return "int";
+    case ID_meshRefMethod:   return "enum";
+    case ID_fieldProjMethod: return "enum";
+    case ID_refBasisType:    return "enum";
+    case ID_info:            return "string";
     default:  return "invalid index";
     }
 }
@@ -788,9 +868,14 @@ MultiresControlAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) co
         retval = (maxResolution == obj.maxResolution);
         }
         break;
-    case ID_refMethod:
+    case ID_meshRefMethod:
         {  // new scope
-        retval = (refMethod == obj.refMethod);
+        retval = (meshRefMethod == obj.meshRefMethod);
+        }
+        break;
+    case ID_fieldProjMethod:
+        {  // new scope
+        retval = (fieldProjMethod == obj.fieldProjMethod);
         }
         break;
     case ID_refBasisType:

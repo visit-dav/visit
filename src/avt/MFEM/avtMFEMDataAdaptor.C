@@ -386,12 +386,12 @@ vtkDataSet *
 avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
                                     int domain,
                                     int lod,
-                                    const refinementMethod ref_method,
+                                    const meshRefinementMethod mesh_ref_method,
                                     const refinementBasisType ref_basis_type)
 {
     AVT_MFEM_INFO("Creating Refined MFEM Mesh with lod:" << lod);
 
-    if (refinementMethod::Discontinuous_Refine == ref_method)
+    if (refinementMethod::Discontinuous_LOR == mesh_ref_method)
     {
         AVT_MFEM_INFO("Using Legacy LOR to refine mesh.");
         return LegacyRefineMeshToVTK(mesh, domain, lod);
@@ -413,7 +413,7 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
         // periodic. So our best bet is to catch all L2 meshes and fall back
         // to legacy LOR.
 
-        if (refinementMethod::LOR_Projection_Default == ref_method)
+        if (refinementMethod::Default_LOR == mesh_ref_method)
         {
             AVT_MFEM_INFO("High Order Mesh may be periodic and default "
                           "projection has been selected; falling back to "
@@ -1080,10 +1080,15 @@ vtkDataArray *
 avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
                                             mfem::GridFunction *gf,
                                             int lod,
-                                            const refinementMethod ref_method,
+                                            const meshRefinementMethod mesh_ref_method,
+                                            const fieldProjectionMethod field_proj_method,
                                             const refinementBasisType ref_basis_type,
                                             bool var_is_nodal)
 {
+    // TODO I leave off here
+    // remember that if you do discontinuous + zonal you get an error
+
+
     AVT_MFEM_INFO("Creating Refined MFEM Field with lod: " << lod);
 
     refinementMethod ref_method_to_use = ref_method;

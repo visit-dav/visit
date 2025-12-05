@@ -15,21 +15,6 @@
 #include <FileServerList.h>
 #include <MultiresControlAttributes.h>
 
-enum class refinementMethod
-{
-    LOR_Projection_Default,
-    Discontinuous_Refine,
-    LOR_Nodal_Projection,
-    LOR_Zonal_Projection
-};
-
-enum class refinementBasisType
-{
-    LOR_Basis_Default,
-    Closed_Uniform,
-    Gauss_Lobatto
-};
-
 
 // ****************************************************************************
 // Method: QvisMultiresControlWindow::QvisMultiresControlWindow
@@ -54,8 +39,10 @@ QvisMultiresControlWindow::QvisMultiresControlWindow(const int type,
     : QvisOperatorWindow(type,subj, caption, shortName, notepad),
       resolution(NULL),
       resolutionLevelLabel(NULL),
-      refinementMethodLabel(NULL),
-      refinementMethod(NULL),
+      meshRefinementMethodLabel(NULL),
+      meshRefinementMethod(NULL),
+      fieldProjectionMethodLabel(NULL),
+      fieldProjectionMethod(NULL),
       refinementBasisTypeLabel(NULL),
       refinementBasisType(NULL)
 {
@@ -124,27 +111,18 @@ QvisMultiresControlWindow::CreateWindowContents()
     this->resolution->setValue(0);
     mainLayout->addWidget(this->resolution, 0, 1);
 
+    // TODO need a note here in the GUI to say that these things are for mfem
+
     connect(this->resolution, SIGNAL(valueChanged(int)), this,
             SLOT(updateResolutionLevelLabel(int)));
     connect(this->resolution, SIGNAL(sliderReleased()), this,
             SLOT(resolutionLevelChanged()));
 
-    refinementMethodLabel = new QLabel(this);
-    refinementMethodLabel->setText(tr("MFEM Refinement Method:"));
-    mainLayout->addWidget(refinementMethodLabel, 1, 0);
 
-    refinementMethod = new QComboBox(this);
-    refinementMethod->addItem(tr("LOR Projection (Default)"));
-    refinementMethod->addItem(tr("Discontinuous Refine"));
-    refinementMethod->addItem(tr("LOR Nodal Projection"));
-    refinementMethod->addItem(tr("LOR Zonal Projection"));
-    connect(refinementMethod, SIGNAL(activated(int)),
-            this, SLOT(refinementMethodChanged(int)));
-    mainLayout->addWidget(refinementMethod, 1, 1);
-
+    // basis type
     refinementBasisTypeLabel = new QLabel(this);
     refinementBasisTypeLabel->setText(tr("MFEM Refinement Basis Type:"));
-    mainLayout->addWidget(refinementBasisTypeLabel, 2, 0);
+    mainLayout->addWidget(refinementBasisTypeLabel, 1, 0);
 
     refinementBasisType = new QComboBox(this);
     refinementBasisType->addItem(tr("LOR Basis Default"));
@@ -152,7 +130,33 @@ QvisMultiresControlWindow::CreateWindowContents()
     refinementBasisType->addItem(tr("Gauss Lobatto"));
     connect(refinementBasisType, SIGNAL(activated(int)),
             this, SLOT(refinementBasisTypeChanged(int)));
-    mainLayout->addWidget(refinementBasisType, 2, 1);
+    mainLayout->addWidget(refinementBasisType, 1, 1);
+
+    // mesh refinement method
+    meshRefinementMethodLabel = new QLabel(this);
+    meshRefinementMethodLabel->setText(tr("MFEM Mesh Refinement Method:"));
+    mainLayout->addWidget(meshRefinementMethodLabel, 2, 0);
+
+    meshRefinementMethod = new QComboBox(this);
+    meshRefinementMethod->addItem(tr("Default LOR"));
+    meshRefinementMethod->addItem(tr("Discontinuous LOR"));
+    meshRefinementMethod->addItem(tr("Continuous LOR"));
+    connect(meshRefinementMethod, SIGNAL(activated(int)),
+            this, SLOT(meshRefinementMethodChanged(int)));
+    mainLayout->addWidget(meshRefinementMethod, 2, 1);
+
+    // field projection method
+    fieldProjectionMethodLabel = new QLabel(this);
+    fieldProjectionMethodLabel->setText(tr("MFEM Field Projection Method:"));
+    mainLayout->addWidget(fieldProjectionMethodLabel, 3, 0);
+
+    fieldProjectionMethod = new QComboBox(this);
+    fieldProjectionMethod->addItem(tr("Default Projection"));
+    fieldProjectionMethod->addItem(tr("Zonal Projection"));
+    fieldProjectionMethod->addItem(tr("Nodal Projection"));
+    connect(fieldProjectionMethod, SIGNAL(activated(int)),
+            this, SLOT(fieldProjectionMethodChanged(int)));
+    mainLayout->addWidget(fieldProjectionMethod, 3, 1);
 }
 
 
@@ -199,13 +203,17 @@ QvisMultiresControlWindow::UpdateWindow(bool doAll)
     }
     debug1 << atts->GetMaxResolution() << " levels of detail available.\n";
 
-    this->refinementMethod->blockSignals(true);
-    this->refinementMethod->setCurrentIndex(atts->GetRefMethod());
-    this->refinementMethod->blockSignals(false);
-
     this->refinementBasisType->blockSignals(true);
     this->refinementBasisType->setCurrentIndex(atts->GetRefBasisType());
     this->refinementBasisType->blockSignals(false);
+
+    this->meshRefinementMethod->blockSignals(true);
+    this->meshRefinementMethod->setCurrentIndex(atts->GetMeshRefMethod());
+    this->meshRefinementMethod->blockSignals(false);
+
+    this->fieldProjectionMethod->blockSignals(true);
+    this->fieldProjectionMethod->setCurrentIndex(atts->GetFieldProjMethod());
+    this->fieldProjectionMethod->blockSignals(false);
 
     this->resolution->blockSignals(true);
     this->resolution->setValue(atts->GetResolution());
@@ -245,15 +253,20 @@ QvisMultiresControlWindow::GetCurrentValues(int which_widget)
     {
         atts->SetResolution(this->resolution->value());
     }
-    // Do refinement method
-    if(which_widget == MultiresControlAttributes::ID_refMethod || doAll)
-    {
-        atts->SetRefMethod(static_cast<MultiresControlAttributes::refinementMethod>(this->refinementMethod->currentIndex()));
-    }
     // Do refinement basis type
     if(which_widget == MultiresControlAttributes::ID_refBasisType || doAll)
     {
         atts->SetRefBasisType(static_cast<MultiresControlAttributes::refinementBasisType>(this->refinementBasisType->currentIndex()));
+    }
+    // Do mesh refinement method
+    if(which_widget == MultiresControlAttributes::ID_meshRefMethod || doAll)
+    {
+        atts->SetRefMethod(static_cast<MultiresControlAttributes::meshRefinementMethod>(this->meshRefinementMethod->currentIndex()));
+    }
+    // Do field projection method
+    if(which_widget == MultiresControlAttributes::ID_fieldProjMethod || doAll)
+    {
+        atts->SetRefMethod(static_cast<MultiresControlAttributes::fieldProjectionMethod>(this->fieldProjectionMethod->currentIndex()));
     }
 }
 
@@ -332,19 +345,6 @@ QvisMultiresControlWindow::resolutionLevelChanged()
 
 
 void
-QvisMultiresControlWindow::refinementMethodChanged(int val)
-{
-    const int currRefinementMethod = atts->GetRefMethod();
-    if (val != currRefinementMethod)
-    {
-        atts->SetRefMethod(static_cast<MultiresControlAttributes::refinementMethod>(val));
-        SetUpdate(false);
-        Apply();
-    }
-}
-
-
-void
 QvisMultiresControlWindow::refinementBasisTypeChanged(int val)
 {
     const int currRefinementBasisType = atts->GetRefBasisType();
@@ -355,3 +355,31 @@ QvisMultiresControlWindow::refinementBasisTypeChanged(int val)
         Apply();
     }
 }
+
+
+void
+QvisMultiresControlWindow::meshRefinementMethodChanged(int val)
+{
+    const int currMeshRefinementMethod = atts->GetMeshRefMethod();
+    if (val != currMeshRefinementMethod)
+    {
+        atts->SetMeshRefMethod(static_cast<MultiresControlAttributes::meshRefinementMethod>(val));
+        SetUpdate(false);
+        Apply();
+    }
+}
+
+
+void
+QvisMultiresControlWindow::fieldProjectionMethodChanged(int val)
+{
+    const int currFieldProjectionMethod = atts->GetRefMethod();
+    if (val != currFieldProjectionMethod)
+    {
+        atts->SetFieldProjMethod(static_cast<MultiresControlAttributes::fieldProjectionMethod>(val));
+        SetUpdate(false);
+        Apply();
+    }
+}
+
+

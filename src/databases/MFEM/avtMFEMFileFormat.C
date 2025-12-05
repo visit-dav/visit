@@ -69,44 +69,12 @@ using namespace mfem;
 avtMFEMFileFormat::avtMFEMFileFormat(const char *filename, 
                                      const DBOptionsAttributes *readOpts)
     : avtSTMDFileFormat(&filename, 1),
-      m_refinement_method(avtMFEMDataAdaptor::refinementMethod::LOR_Projection_Default),
+      m_mesh_refinement_method(avtMFEMDataAdaptor::meshRefinementMethod::Default_LOR),
+      m_field_projection_method(avtMFEMDataAdaptor::fieldProjectionMethod::Default_Projection),
       m_refinement_basis_type(avtMFEMDataAdaptor::refinementBasisType::LOR_Basis_Default)
 {
     selectedLOD = 0;
     root        = NULL;
-    
-    const int default_refinement_method = readOpts->GetEnum("MFEM LOR Setting");
-
-    // LOR Projection (Default)
-    if (default_refinement_method == 0)
-    {
-        m_refinement_method = avtMFEMDataAdaptor::refinementMethod::LOR_Projection_Default;
-    }
-    // Discontinuous Refine
-    else if (default_refinement_method == 1)
-    {
-        m_refinement_method = avtMFEMDataAdaptor::refinementMethod::Discontinuous_Refine;
-    }
-    // LOR Nodal Projection
-    else if (default_refinement_method == 2)
-    {
-        m_refinement_method = avtMFEMDataAdaptor::refinementMethod::LOR_Nodal_Projection;
-    }
-    // LOR Zonal Projection
-    else if (default_refinement_method == 3)
-    {
-        m_refinement_method = avtMFEMDataAdaptor::refinementMethod::LOR_Zonal_Projection;
-    }
-    // Legacy LOR
-    else if (default_refinement_method == 4)
-    {
-        m_refinement_method = avtMFEMDataAdaptor::refinementMethod::Discontinuous_Refine;
-    }
-    // MFEM LOR
-    else if (default_refinement_method == 5)
-    {
-        m_refinement_method = avtMFEMDataAdaptor::refinementMethod::LOR_Projection_Default;
-    }
 }
 
 // ****************************************************************************
@@ -384,6 +352,8 @@ avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         dset.Fields(field_names);
 
         std::string qf_mesh_base_name =  dset_names[i] + "_quad_func_o";
+
+        // TODO here we should figure out the association
 
         for(size_t j=0;j<field_names.size();j++)
         {
@@ -709,7 +679,7 @@ avtMFEMFileFormat::GetMesh(int domain, const char *meshname)
         res_ds = avtMFEMDataAdaptor::RefineMeshToVTK(mesh,
                                                      domain,
                                                      selectedLOD+1,
-                                                     m_refinement_method,
+                                                     m_mesh_refinement_method,
                                                      m_refinement_basis_type);
     }
     delete mesh;
@@ -1021,7 +991,8 @@ avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
         rv = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh, 
                                                          gf, 
                                                          lod, 
-                                                         m_refinement_method,
+                                                         m_mesh_refinement_method,
+                                                         m_field_projection_method,
                                                          m_refinement_basis_type,
                                                          var_is_nodal);
         
@@ -1147,7 +1118,8 @@ avtMFEMFileFormat::RegisterDataSelections(const std::vector<avtDataSelection_p>&
             const avtResolutionSelection* sel =
                 static_cast<const avtResolutionSelection*>(*sels[i]);
             this->selectedLOD = sel->resolution();
-            this->m_refinement_method = static_cast<avtMFEMDataAdaptor::refinementMethod>(sel->refinementMethod());
+            this->m_mesh_refinement_method = static_cast<avtMFEMDataAdaptor::meshRefinementMethod>(sel->meshRefinementMethod());
+            this->m_field_projection_method = static_cast<avtMFEMDataAdaptor::fieldRefinementMethod>(sel->fieldProjectionMethod());
             this->m_refinement_basis_type = static_cast<avtMFEMDataAdaptor::refinementBasisType>(sel->refinementBasisType());
             (*applied)[i] = true;
         }

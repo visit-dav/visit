@@ -49,13 +49,16 @@ class QvisMultiresControlWindow : public QvisOperatorWindow
   private slots:
     void updateResolutionLevelLabel(int val);
     void resolutionLevelChanged();
-    void refinementMethodChanged(int val);
+    void meshRefinementMethodChanged(int val);
+    void fieldProjectionMethodChanged(int val);
     void refinementBasisTypeChanged(int val);
   private:
     QSlider   *resolution;
     QLabel    *resolutionLevelLabel;
-    QLabel    *refinementMethodLabel;
-    QComboBox *refinementMethod;
+    QLabel    *meshRefinementMethodLabel;
+    QComboBox *meshRefinementMethod;
+    QLabel    *fieldProjectionMethodLabel;
+    QComboBox *fieldProjectionMethod;
     QLabel    *refinementBasisTypeLabel;
     QComboBox *refinementBasisType;
 

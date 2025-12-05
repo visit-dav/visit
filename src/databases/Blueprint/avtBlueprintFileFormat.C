@@ -162,7 +162,8 @@ avtBlueprintFileFormat::avtBlueprintFileFormat(const char *filename, DBOptionsAt
       m_specset_info(),
       m_mfem_mesh_map(),
       m_mfem_material_map(),
-      m_refinement_method(avtMFEMDataAdaptor::refinementMethod::LOR_Projection_Default),
+      m_mesh_refinement_method(avtMFEMDataAdaptor::meshRefinementMethod::Default_LOR),
+      m_field_projection_method(avtMFEMDataAdaptor::fieldProjectionMethod::Default_Projection),
       m_refinement_basis_type(avtMFEMDataAdaptor::refinementBasisType::LOR_Basis_Default)
 {
     const int default_refinement_method = opts->GetEnum("MFEM LOR Setting");
@@ -2579,7 +2580,7 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
                 res = avtMFEMDataAdaptor::RefineMeshToVTK(mesh,
                                                           domain,
                                                           m_selected_lod+1,
-                                                          m_refinement_method,
+                                                          m_mesh_refinement_method,
                                                           m_refinement_basis_type);
             }
             // cleanup the mfem mesh
@@ -3053,7 +3054,8 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                 res = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh,
                                                                   gf,
                                                                   m_selected_lod+1,
-                                                                  m_refinement_method,
+                                                                  m_mesh_refinement_method,
+                                                                  m_field_projection_method,
                                                                   m_refinement_basis_type);
 
                 // cleanup mfem data
@@ -3140,7 +3142,8 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                 res = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh,
                                                                   gf,
                                                                   m_selected_lod+1,
-                                                                  m_refinement_method,
+                                                                  m_mesh_refinement_method,
+                                                                  m_field_projection_method,
                                                                   m_refinement_basis_type);
 
                 // cleanup mfem grid func
@@ -3581,7 +3584,8 @@ avtBlueprintFileFormat::RegisterDataSelections(
             const avtResolutionSelection* sel =
                 static_cast<const avtResolutionSelection*>(*sels[i]);
             this->m_selected_lod = sel->resolution();
-            this->m_refinement_method = static_cast<avtMFEMDataAdaptor::refinementMethod>(sel->refinementMethod());
+            this->m_mesh_refinement_method = static_cast<avtMFEMDataAdaptor::meshRefinementMethod>(sel->meshRefinementMethod());
+            this->m_field_projection_method = static_cast<avtMFEMDataAdaptor::fieldRefinementMethod>(sel->fieldProjectionMethod());
             this->m_refinement_basis_type = static_cast<avtMFEMDataAdaptor::refinementBasisType>(sel->refinementBasisType());
             (*applied)[i] = true;
         }

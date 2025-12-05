@@ -4,14 +4,18 @@
       ${VISIT_INCLUDE_DIR}/avt/Database/Ghost
     </CXXFLAGS>
     <Attribute name="MultiresControlAttributes" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="MultiresControlAttributes.code">
-      <Enum name="refinementMethod">
-        LOR_Projection_Default
-        Discontinuous_Refine
-        LOR_Nodal_Projection
-        LOR_Zonal_Projection
+      <Enum name="meshRefinementMethod">
+        Default_LOR
+        Discontinuous_LOR
+        Continuous_LOR
+      </Enum>
+      <Enum name="fieldProjectionMethod">
+        Default_Projection
+        Zonal_Projection
+        Nodal_Projection
       </Enum>
       <Enum name="refinementBasisType">
-        LOR_Basis_Default
+        Default_LOR_Basis
         Closed_Uniform
         Gauss_Lobatto
       </Enum>
@@ -21,11 +25,14 @@
       <Field name="maxResolution" label="Number of available resolutions" type="int">
         1
       </Field>
-      <Field name="refMethod" label="Refinement Method" type="enum" subtype="refinementMethod">
-        LOR_Projection_Default
+      <Field name="meshRefMethod" label="Mesh Refinement Method" type="enum" subtype="meshRefinementMethod">
+        Default_LOR
+      </Field>
+      <Field name="fieldProjMethod" label="Field Projection Method" type="enum" subtype="fieldProjectionMethod">
+        Default_Projection
       </Field>
       <Field name="refBasisType" label="Refinement Basis Type" type="enum" subtype="refinementBasisType">
-        LOR_Basis_Default
+        Default_LOR_Basis
       </Field>
       <Field name="info" label="Info" type="string" enabler="resolution:-1">
       </Field>

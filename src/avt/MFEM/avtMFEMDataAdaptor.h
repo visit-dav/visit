@@ -51,14 +51,22 @@ class vtkDataArray;
 class AVTMFEM_API avtMFEMDataAdaptor
 {
 public:
-      enum class refinementMethod
+    // TODO I want there to be two options, continuous (default) and discontinuous
+      enum class meshRefinementMethod
       {
-          LOR_Projection_Default, // Continuous Mesh, Default Field
-          Discontinuous_Refine, // Discontinuous Mesh, Nodal Field
-          LOR_Nodal_Projection, // Continuous Mesh, Nodal Field
-          LOR_Zonal_Projection // Continuous Mesh, Zonal Field
+          Default_LOR,
+          Discontinuous_LOR,
+          Continuous_LOR
       };
 
+      enum class fieldProjectionMethod
+      {
+          Default_Projection,
+          Zonal_Projection,
+          Nodal_Projection
+      };
+
+      // TODO I want there to be two options, gauss lb (default) and closed uniform
       enum class refinementBasisType
       {
           LOR_Basis_Default,
@@ -75,7 +83,7 @@ public:
       static vtkDataSet   *RefineMeshToVTK(mfem::Mesh *mesh,
                                            int domain,
                                            int lod,
-                                           refinementMethod ref_method,
+                                           const meshRefinementMethod mesh_ref_method,
                                            const refinementBasisType ref_basis_type);
 
       static vtkDataSet   *BoundaryMeshToVTK(mfem::Mesh *mesh);
@@ -93,7 +101,8 @@ public:
       static vtkDataArray *RefineGridFunctionToVTK(mfem::Mesh *mesh,
                                                    mfem::GridFunction *gf,
                                                    int lod,
-                                                   const refinementMethod ref_method,
+                                                   const meshRefinementMethod mesh_ref_method,
+                                                   const fieldProjectionMethod field_proj_method,
                                                    const refinementBasisType ref_basis_type,
                                                    bool var_is_nodal = true);
 
@@ -126,16 +135,28 @@ public:
 
 };
 
-inline std::ostream& operator<<(std::ostream& os, avtMFEMDataAdaptor::refinementMethod method)
+inline std::ostream& operator<<(std::ostream& os, avtMFEMDataAdaptor::meshRefinementMethod method)
 {
-    using refinementMethod = avtMFEMDataAdaptor::refinementMethod;
+    using meshRefinementMethod = avtMFEMDataAdaptor::meshRefinementMethod;
     switch(method)
     {
-        case refinementMethod::LOR_Projection_Default: os << "LOR_Projection_Default"; break;
-        case refinementMethod::Discontinuous_Refine:   os << "Discontinuous_Refine"; break;
-        case refinementMethod::LOR_Nodal_Projection:   os << "LOR_Nodal_Projection"; break;
-        case refinementMethod::LOR_Zonal_Projection:   os << "LOR_Zonal_Projection"; break;
-        default:                                       os << "Unknown refinementMethod"; break;
+        case meshRefinementMethod::Default_LOR:       os << "Default_LOR"; break;
+        case meshRefinementMethod::Discontinuous_LOR: os << "Discontinuous_LOR"; break;
+        case meshRefinementMethod::Continuous_LOR:    os << "Continuous_LOR"; break;
+        default:                                      os << "Unknown meshRefinementMethod"; break;
+    }
+    return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, avtMFEMDataAdaptor::fieldProjectionMethod method)
+{
+    using fieldProjectionMethod = avtMFEMDataAdaptor::fieldProjectionMethod;
+    switch(method)
+    {
+        case fieldProjectionMethod::Default_Projection: os << "Default_Projection"; break;
+        case fieldProjectionMethod::Zonal_Projection:   os << "Zonal_Projection"; break;
+        case fieldProjectionMethod::Nodal_Projection:   os << "Nodal_Projection"; break;
+        default:                                        os << "Unknown fieldProjectionMethod"; break;
     }
     return os;
 }

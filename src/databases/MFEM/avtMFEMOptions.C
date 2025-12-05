@@ -28,16 +28,6 @@ DBOptionsAttributes *
 GetMFEMReadOptions(void)
 {
     DBOptionsAttributes *rv = new DBOptionsAttributes;
-    std::vector<std::string> mfem_lor_setting;
-    mfem_lor_setting.push_back("LOR Projection (Default)");
-    mfem_lor_setting.push_back("Discontinuous Refine");
-    mfem_lor_setting.push_back("LOR Nodal Projection");
-    mfem_lor_setting.push_back("LOR Zonal Projection");
-    mfem_lor_setting.push_back("Legacy LOR"); // replaced by "Discontinuous Refine"
-    mfem_lor_setting.push_back("MFEM LOR"); // replaced by "LOR Projection (Default)"
-    rv->SetEnum("MFEM LOR Setting", 0);
-    rv->SetEnumStrings("MFEM LOR Setting", mfem_lor_setting);
-    
     return rv;
 }
 

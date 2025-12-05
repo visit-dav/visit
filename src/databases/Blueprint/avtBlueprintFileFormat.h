@@ -170,8 +170,9 @@ class avtBlueprintFileFormat : public avtSTMDFileFormat
     avtBlueprintTreeCache  *m_tree_cache;
   
     int                    m_selected_lod;
-    avtMFEMDataAdaptor::refinementMethod m_refinement_method;
-    avtMFEMDataAdaptor::refinementBasisType m_refinement_basis_type;
+    avtMFEMDataAdaptor::meshRefinementMethod  m_mesh_refinement_method;
+    avtMFEMDataAdaptor::fieldProjectionMethod m_field_projection_method;
+    avtMFEMDataAdaptor::refinementBasisType   m_refinement_basis_type;
 
     conduit::Node          m_mesh_and_topo_info;
     conduit::Node          m_matset_info;

@@ -11,7 +11,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define MULTIRESCONTROLATTRIBUTES_NMETH 13
+#define MULTIRESCONTROLATTRIBUTES_NMETH 15
 void           PyMultiresControlAttributes_StartUp(MultiresControlAttributes *subj, void *data);
 void           PyMultiresControlAttributes_CloseDown();
 PyMethodDef *  PyMultiresControlAttributes_GetMethodTable(int *nMethods);
