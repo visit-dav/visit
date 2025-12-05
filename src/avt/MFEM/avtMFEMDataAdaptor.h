@@ -51,12 +51,10 @@ class vtkDataArray;
 class AVTMFEM_API avtMFEMDataAdaptor
 {
 public:
-    // TODO I want there to be two options, continuous (default) and discontinuous
       enum class meshRefinementMethod
       {
-          Default_LOR,
-          Discontinuous_LOR,
-          Continuous_LOR
+          Continuous_LOR_Default,
+          Discontinuous_LOR
       };
 
       enum class fieldProjectionMethod
@@ -66,12 +64,10 @@ public:
           Nodal_Projection
       };
 
-      // TODO I want there to be two options, gauss lb (default) and closed uniform
       enum class refinementBasisType
       {
-          LOR_Basis_Default,
-          Closed_Uniform,
-          Gauss_Lobatto
+          Gauss_Lobatto_Default,
+          Closed_Uniform
       };
 
       static vtkDataSet   *LegacyRefineMeshToVTK(mfem::Mesh *mesh,
@@ -100,7 +96,7 @@ public:
 
       static vtkDataArray *RefineGridFunctionToVTK(mfem::Mesh *mesh,
                                                    mfem::GridFunction *gf,
-                                                   int lod,
+                                                   const int lod,
                                                    const meshRefinementMethod mesh_ref_method,
                                                    const fieldProjectionMethod field_proj_method,
                                                    const refinementBasisType ref_basis_type,
@@ -140,10 +136,9 @@ inline std::ostream& operator<<(std::ostream& os, avtMFEMDataAdaptor::meshRefine
     using meshRefinementMethod = avtMFEMDataAdaptor::meshRefinementMethod;
     switch(method)
     {
-        case meshRefinementMethod::Default_LOR:       os << "Default_LOR"; break;
-        case meshRefinementMethod::Discontinuous_LOR: os << "Discontinuous_LOR"; break;
-        case meshRefinementMethod::Continuous_LOR:    os << "Continuous_LOR"; break;
-        default:                                      os << "Unknown meshRefinementMethod"; break;
+        case meshRefinementMethod::Continuous_LOR_Default: os << "Continuous_LOR_Default"; break;
+        case meshRefinementMethod::Discontinuous_LOR:      os << "Discontinuous_LOR"; break;
+        default:                                           os << "Unknown meshRefinementMethod"; break;
     }
     return os;
 }
@@ -166,10 +161,9 @@ inline std::ostream& operator<<(std::ostream& os, avtMFEMDataAdaptor::refinement
     using refinementBasisType = avtMFEMDataAdaptor::refinementBasisType;
     switch(method)
     {
-        case refinementBasisType::LOR_Basis_Default: os << "LOR_Basis_Default"; break;
-        case refinementBasisType::Closed_Uniform:    os << "Closed_Uniform"; break;
-        case refinementBasisType::Gauss_Lobatto:     os << "Gauss_Lobatto"; break;
-        default:                                     os << "Unknown refinementBasisType"; break;
+        case refinementBasisType::Gauss_Lobatto_Default: os << "Gauss_Lobatto_Default"; break;
+        case refinementBasisType::Closed_Uniform:        os << "Closed_Uniform"; break;
+        default:                                         os << "Unknown refinementBasisType"; break;
     }
     return os;
 }

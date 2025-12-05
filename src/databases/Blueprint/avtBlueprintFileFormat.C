@@ -162,43 +162,10 @@ avtBlueprintFileFormat::avtBlueprintFileFormat(const char *filename, DBOptionsAt
       m_specset_info(),
       m_mfem_mesh_map(),
       m_mfem_material_map(),
-      m_mesh_refinement_method(avtMFEMDataAdaptor::meshRefinementMethod::Default_LOR),
+      m_mesh_refinement_method(avtMFEMDataAdaptor::meshRefinementMethod::Continuous_LOR_Default),
       m_field_projection_method(avtMFEMDataAdaptor::fieldProjectionMethod::Default_Projection),
-      m_refinement_basis_type(avtMFEMDataAdaptor::refinementBasisType::LOR_Basis_Default)
+      m_refinement_basis_type(avtMFEMDataAdaptor::refinementBasisType::Gauss_Lobatto_Default)
 {
-    const int default_refinement_method = opts->GetEnum("MFEM LOR Setting");
-
-    // LOR Projection (Default)
-    if (default_refinement_method == 0)
-    {
-        m_refinement_method = avtMFEMDataAdaptor::refinementMethod::LOR_Projection_Default;
-    }
-    // Discontinuous Refine
-    else if (default_refinement_method == 1)
-    {
-        m_refinement_method = avtMFEMDataAdaptor::refinementMethod::Discontinuous_Refine;
-    }
-    // LOR Nodal Projection
-    else if (default_refinement_method == 2)
-    {
-        m_refinement_method = avtMFEMDataAdaptor::refinementMethod::LOR_Nodal_Projection;
-    }
-    // LOR Zonal Projection
-    else if (default_refinement_method == 3)
-    {
-        m_refinement_method = avtMFEMDataAdaptor::refinementMethod::LOR_Zonal_Projection;
-    }
-    // Legacy LOR
-    else if (default_refinement_method == 4)
-    {
-        m_refinement_method = avtMFEMDataAdaptor::refinementMethod::Discontinuous_Refine;
-    }
-    // MFEM LOR
-    else if (default_refinement_method == 5)
-    {
-        m_refinement_method = avtMFEMDataAdaptor::refinementMethod::LOR_Projection_Default;
-    }
-
     m_tree_cache = new avtBlueprintTreeCache();
 }
 
@@ -1437,59 +1404,72 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
                     // quad func data is presented as zone centered on a special mesh
                     cent = AVT_ZONECENT;
                 }
-                else if (m_refinement_method == avtMFEMDataAdaptor::refinementMethod::LOR_Nodal_Projection)
+                else if (m_field_projection_method == avtMFEMDataAdaptor::fieldProjectionMethod::Zonal_Projection)
                 {
-                    cent = AVT_NODECENT;
-                }
-                else if (m_refinement_method == avtMFEMDataAdaptor::refinementMethod::LOR_Zonal_Projection)
-                {
+                    if (m_mesh_refinement_method == avtMFEMDataAdaptor::meshRefinementMethod::Discontinuous_LOR)
+                    {
+                        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                            "Zonal projection together with discontinuous low-order-refinement is not supported.");
+                    }
                     cent = AVT_ZONECENT;
                 }
-                else if (m_refinement_method == avtMFEMDataAdaptor::refinementMethod::Discontinuous_Refine)
+                else if (m_field_projection_method == avtMFEMDataAdaptor::Nodal_Projection)
                 {
                     cent = AVT_NODECENT;
                 }
-                else if (m_refinement_method != avtMFEMDataAdaptor::refinementMethod::LOR_Projection_Default)
+                else if (m_field_projection_method == avtMFEMDataAdaptor::fieldProjectionMethod::Default_Projection)
                 {
-                    const std::string basis = n_field["basis"].as_string();
-                    const bool l2 = basis.find("L2_") != std::string::npos;
-                    const bool h1 = basis.find("H1_") != std::string::npos;
-                    const bool nurbs = basis.find("NURBS") != std::string::npos;
-                    const bool hdiv = basis.find("RT_") != std::string::npos;
-                    const bool hcurl = basis.find("ND_") != std::string::npos;
-                    const int bases = static_cast<int>(l2) +
-                                      static_cast<int>(h1) +
-                                      static_cast<int>(hdiv) +
-                                      static_cast<int>(hcurl) +
-                                      static_cast<int>(nurbs);
-                    if (0 == bases)
+                    if (m_mesh_refinement_method == avtMFEMDataAdaptor::meshRefinementMethod::Discontinuous_LOR)
                     {
-                        // assume node centered
                         cent = AVT_NODECENT;
                     }
-                    else if (1 == bases)
+                    else
                     {
-                        if (h1 || nurbs)
+                        const std::string basis = n_field["basis"].as_string();
+                        const bool l2 = basis.find("L2_") != std::string::npos;
+                        const bool h1 = basis.find("H1_") != std::string::npos;
+                        const bool nurbs = basis.find("NURBS") != std::string::npos;
+                        const bool hdiv = basis.find("RT_") != std::string::npos;
+                        const bool hcurl = basis.find("ND_") != std::string::npos;
+                        const int bases = static_cast<int>(l2) +
+                                          static_cast<int>(h1) +
+                                          static_cast<int>(hdiv) +
+                                          static_cast<int>(hcurl) +
+                                          static_cast<int>(nurbs);
+                        if (0 == bases)
                         {
+                            // assume node centered
                             cent = AVT_NODECENT;
                         }
-                        else if (l2 || hdiv || hcurl)
+                        else if (1 == bases)
                         {
-                            cent = AVT_ZONECENT;
+                            if (h1 || nurbs)
+                            {
+                                cent = AVT_NODECENT;
+                            }
+                            else if (l2 || hdiv || hcurl)
+                            {
+                                cent = AVT_ZONECENT;
+                            }
+                            else
+                            {
+                                BP_PLUGIN_EXCEPTION1(InvalidVariableException, 
+                                    "AddBlueprintMeshAndFieldMetadata: "
+                                    "Unsupported basis type in " << basis);
+                            }
                         }
                         else
                         {
                             BP_PLUGIN_EXCEPTION1(InvalidVariableException, 
-                                "AddBlueprintMeshAndFieldMetadata: "
+                                "AddBlueprintMeshAndFieldMetadata: grid function may not have multiple basis types. "
                                 "Unsupported basis type in " << basis);
                         }
                     }
-                    else
-                    {
-                        BP_PLUGIN_EXCEPTION1(InvalidVariableException, 
-                            "AddBlueprintMeshAndFieldMetadata: grid function may not have multiple basis types. "
-                            "Unsupported basis type in " << basis);
-                    }
+                }
+                else
+                {
+                    BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                        "Unknown field projection method in " << m_field_projection_method);
                 }
 #else
                 BP_PLUGIN_EXCEPTION1(InvalidVariableException,

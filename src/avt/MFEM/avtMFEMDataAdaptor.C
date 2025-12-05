@@ -1079,7 +1079,7 @@ ConvertGridFunctionToScalar(mfem::GridFunction *org_gf, const avtMFEMDataAdaptor
 vtkDataArray *
 avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
                                             mfem::GridFunction *gf,
-                                            int lod,
+                                            const int lod,
                                             const meshRefinementMethod mesh_ref_method,
                                             const fieldProjectionMethod field_proj_method,
                                             const refinementBasisType ref_basis_type,
@@ -1087,6 +1087,7 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
 {
     // TODO I leave off here
     // remember that if you do discontinuous + zonal you get an error
+    // there is more to do elsewhere in this file for supporting the new cases
 
 
     AVT_MFEM_INFO("Creating Refined MFEM Field with lod: " << lod);

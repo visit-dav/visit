@@ -111,44 +111,45 @@ QvisMultiresControlWindow::CreateWindowContents()
     this->resolution->setValue(0);
     mainLayout->addWidget(this->resolution, 0, 1);
 
-    // TODO need a note here in the GUI to say that these things are for mfem
-
     connect(this->resolution, SIGNAL(valueChanged(int)), this,
             SLOT(updateResolutionLevelLabel(int)));
     connect(this->resolution, SIGNAL(sliderReleased()), this,
             SLOT(resolutionLevelChanged()));
 
+    // note about MFEM options
+    MFEMDisambiguationLabel = new QLabel(this);
+    MFEMDisambiguationLabel->setText(tr("TODO need a note about mfem"));
+    mainLayout->addWidget(MFEMDisambiguationLabel, 1, 0);
+
 
     // basis type
     refinementBasisTypeLabel = new QLabel(this);
     refinementBasisTypeLabel->setText(tr("MFEM Refinement Basis Type:"));
-    mainLayout->addWidget(refinementBasisTypeLabel, 1, 0);
+    mainLayout->addWidget(refinementBasisTypeLabel, 2, 0);
 
     refinementBasisType = new QComboBox(this);
-    refinementBasisType->addItem(tr("LOR Basis Default"));
+    refinementBasisType->addItem(tr("Gauss Lobatto (Default)"));
     refinementBasisType->addItem(tr("Closed Uniform"));
-    refinementBasisType->addItem(tr("Gauss Lobatto"));
     connect(refinementBasisType, SIGNAL(activated(int)),
             this, SLOT(refinementBasisTypeChanged(int)));
-    mainLayout->addWidget(refinementBasisType, 1, 1);
+    mainLayout->addWidget(refinementBasisType, 2, 1);
 
     // mesh refinement method
     meshRefinementMethodLabel = new QLabel(this);
     meshRefinementMethodLabel->setText(tr("MFEM Mesh Refinement Method:"));
-    mainLayout->addWidget(meshRefinementMethodLabel, 2, 0);
+    mainLayout->addWidget(meshRefinementMethodLabel, 3, 0);
 
     meshRefinementMethod = new QComboBox(this);
-    meshRefinementMethod->addItem(tr("Default LOR"));
+    meshRefinementMethod->addItem(tr("Continuous LOR (Default)"));
     meshRefinementMethod->addItem(tr("Discontinuous LOR"));
-    meshRefinementMethod->addItem(tr("Continuous LOR"));
     connect(meshRefinementMethod, SIGNAL(activated(int)),
             this, SLOT(meshRefinementMethodChanged(int)));
-    mainLayout->addWidget(meshRefinementMethod, 2, 1);
+    mainLayout->addWidget(meshRefinementMethod, 3, 1);
 
     // field projection method
     fieldProjectionMethodLabel = new QLabel(this);
     fieldProjectionMethodLabel->setText(tr("MFEM Field Projection Method:"));
-    mainLayout->addWidget(fieldProjectionMethodLabel, 3, 0);
+    mainLayout->addWidget(fieldProjectionMethodLabel, 4, 0);
 
     fieldProjectionMethod = new QComboBox(this);
     fieldProjectionMethod->addItem(tr("Default Projection"));
@@ -156,7 +157,7 @@ QvisMultiresControlWindow::CreateWindowContents()
     fieldProjectionMethod->addItem(tr("Nodal Projection"));
     connect(fieldProjectionMethod, SIGNAL(activated(int)),
             this, SLOT(fieldProjectionMethodChanged(int)));
-    mainLayout->addWidget(fieldProjectionMethod, 3, 1);
+    mainLayout->addWidget(fieldProjectionMethod, 4, 1);
 }
 
 

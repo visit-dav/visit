@@ -27,17 +27,15 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
     private static int MultiresControlAttributes_numAdditionalAtts = 6;
 
     // Enum values
-    public final static int MESHREFINEMENTMETHOD_DEFAULT_LOR = 0;
+    public final static int MESHREFINEMENTMETHOD_CONTINUOUS_LOR_DEFAULT = 0;
     public final static int MESHREFINEMENTMETHOD_DISCONTINUOUS_LOR = 1;
-    public final static int MESHREFINEMENTMETHOD_CONTINUOUS_LOR = 2;
 
     public final static int FIELDPROJECTIONMETHOD_DEFAULT_PROJECTION = 0;
     public final static int FIELDPROJECTIONMETHOD_ZONAL_PROJECTION = 1;
     public final static int FIELDPROJECTIONMETHOD_NODAL_PROJECTION = 2;
 
-    public final static int REFINEMENTBASISTYPE_DEFAULT_LOR_BASIS = 0;
+    public final static int REFINEMENTBASISTYPE_GAUSS_LOBATTO_DEFAULT = 0;
     public final static int REFINEMENTBASISTYPE_CLOSED_UNIFORM = 1;
-    public final static int REFINEMENTBASISTYPE_GAUSS_LOBATTO = 2;
 
 
     public MultiresControlAttributes()
@@ -46,9 +44,9 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
 
         resolution = 0;
         maxResolution = 1;
-        meshRefMethod = MESHREFINEMENTMETHOD_DEFAULT_LOR;
+        meshRefMethod = MESHREFINEMENTMETHOD_CONTINUOUS_LOR_DEFAULT;
         fieldProjMethod = FIELDPROJECTIONMETHOD_DEFAULT_PROJECTION;
-        refBasisType = REFINEMENTBASISTYPE_DEFAULT_LOR_BASIS;
+        refBasisType = REFINEMENTBASISTYPE_GAUSS_LOBATTO_DEFAULT;
         info = new String("");
     }
 
@@ -58,9 +56,9 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
 
         resolution = 0;
         maxResolution = 1;
-        meshRefMethod = MESHREFINEMENTMETHOD_DEFAULT_LOR;
+        meshRefMethod = MESHREFINEMENTMETHOD_CONTINUOUS_LOR_DEFAULT;
         fieldProjMethod = FIELDPROJECTIONMETHOD_DEFAULT_PROJECTION;
-        refBasisType = REFINEMENTBASISTYPE_DEFAULT_LOR_BASIS;
+        refBasisType = REFINEMENTBASISTYPE_GAUSS_LOBATTO_DEFAULT;
         info = new String("");
     }
 
@@ -195,12 +193,10 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
         str = str + intToString("resolution", resolution, indent) + "\n";
         str = str + intToString("maxResolution", maxResolution, indent) + "\n";
         str = str + indent + "meshRefMethod = ";
-        if(meshRefMethod == MESHREFINEMENTMETHOD_DEFAULT_LOR)
-            str = str + "MESHREFINEMENTMETHOD_DEFAULT_LOR";
+        if(meshRefMethod == MESHREFINEMENTMETHOD_CONTINUOUS_LOR_DEFAULT)
+            str = str + "MESHREFINEMENTMETHOD_CONTINUOUS_LOR_DEFAULT";
         if(meshRefMethod == MESHREFINEMENTMETHOD_DISCONTINUOUS_LOR)
             str = str + "MESHREFINEMENTMETHOD_DISCONTINUOUS_LOR";
-        if(meshRefMethod == MESHREFINEMENTMETHOD_CONTINUOUS_LOR)
-            str = str + "MESHREFINEMENTMETHOD_CONTINUOUS_LOR";
         str = str + "\n";
         str = str + indent + "fieldProjMethod = ";
         if(fieldProjMethod == FIELDPROJECTIONMETHOD_DEFAULT_PROJECTION)
@@ -211,12 +207,10 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
             str = str + "FIELDPROJECTIONMETHOD_NODAL_PROJECTION";
         str = str + "\n";
         str = str + indent + "refBasisType = ";
-        if(refBasisType == REFINEMENTBASISTYPE_DEFAULT_LOR_BASIS)
-            str = str + "REFINEMENTBASISTYPE_DEFAULT_LOR_BASIS";
+        if(refBasisType == REFINEMENTBASISTYPE_GAUSS_LOBATTO_DEFAULT)
+            str = str + "REFINEMENTBASISTYPE_GAUSS_LOBATTO_DEFAULT";
         if(refBasisType == REFINEMENTBASISTYPE_CLOSED_UNIFORM)
             str = str + "REFINEMENTBASISTYPE_CLOSED_UNIFORM";
-        if(refBasisType == REFINEMENTBASISTYPE_GAUSS_LOBATTO)
-            str = str + "REFINEMENTBASISTYPE_GAUSS_LOBATTO";
         str = str + "\n";
         str = str + stringToString("info", info, indent) + "\n";
         return str;

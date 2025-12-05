@@ -10,29 +10,28 @@
 //
 
 static const char *meshRefinementMethod_strings[] = {
-"Default_LOR", "Discontinuous_LOR", "Continuous_LOR"
-};
+"Continuous_LOR_Default", "Discontinuous_LOR"};
 
 std::string
 MultiresControlAttributes::meshRefinementMethod_ToString(MultiresControlAttributes::meshRefinementMethod t)
 {
     int index = int(t);
-    if(index < 0 || index >= 3) index = 0;
+    if(index < 0 || index >= 2) index = 0;
     return meshRefinementMethod_strings[index];
 }
 
 std::string
 MultiresControlAttributes::meshRefinementMethod_ToString(int t)
 {
-    int index = (t < 0 || t >= 3) ? 0 : t;
+    int index = (t < 0 || t >= 2) ? 0 : t;
     return meshRefinementMethod_strings[index];
 }
 
 bool
 MultiresControlAttributes::meshRefinementMethod_FromString(const std::string &s, MultiresControlAttributes::meshRefinementMethod &val)
 {
-    val = MultiresControlAttributes::Default_LOR;
-    for(int i = 0; i < 3; ++i)
+    val = MultiresControlAttributes::Continuous_LOR_Default;
+    for(int i = 0; i < 2; ++i)
     {
         if(s == meshRefinementMethod_strings[i])
         {
@@ -86,29 +85,28 @@ MultiresControlAttributes::fieldProjectionMethod_FromString(const std::string &s
 //
 
 static const char *refinementBasisType_strings[] = {
-"Default_LOR_Basis", "Closed_Uniform", "Gauss_Lobatto"
-};
+"Gauss_Lobatto_Default", "Closed_Uniform"};
 
 std::string
 MultiresControlAttributes::refinementBasisType_ToString(MultiresControlAttributes::refinementBasisType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 3) index = 0;
+    if(index < 0 || index >= 2) index = 0;
     return refinementBasisType_strings[index];
 }
 
 std::string
 MultiresControlAttributes::refinementBasisType_ToString(int t)
 {
-    int index = (t < 0 || t >= 3) ? 0 : t;
+    int index = (t < 0 || t >= 2) ? 0 : t;
     return refinementBasisType_strings[index];
 }
 
 bool
 MultiresControlAttributes::refinementBasisType_FromString(const std::string &s, MultiresControlAttributes::refinementBasisType &val)
 {
-    val = MultiresControlAttributes::Default_LOR_Basis;
-    for(int i = 0; i < 3; ++i)
+    val = MultiresControlAttributes::Gauss_Lobatto_Default;
+    for(int i = 0; i < 2; ++i)
     {
         if(s == refinementBasisType_strings[i])
         {
@@ -138,9 +136,9 @@ void MultiresControlAttributes::Init()
 {
     resolution = 0;
     maxResolution = 1;
-    meshRefMethod = Default_LOR;
+    meshRefMethod = Continuous_LOR_Default;
     fieldProjMethod = Default_Projection;
-    refBasisType = Default_LOR_Basis;
+    refBasisType = Gauss_Lobatto_Default;
 
     MultiresControlAttributes::SelectAll();
 }
@@ -594,7 +592,7 @@ MultiresControlAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 3)
+            if(ival >= 0 && ival < 2)
                 SetMeshRefMethod(meshRefinementMethod(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
@@ -626,7 +624,7 @@ MultiresControlAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 3)
+            if(ival >= 0 && ival < 2)
                 SetRefBasisType(refinementBasisType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)

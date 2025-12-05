@@ -45,19 +45,15 @@ PyMultiresControlAttributes_ToString(const MultiresControlAttributes *atts, cons
     str += tmpStr;
     snprintf(tmpStr, 1000, "%smaxResolution = %d\n", prefix, atts->GetMaxResolution());
     str += tmpStr;
-    const char *meshRefMethod_names = "Default_LOR, Discontinuous_LOR, Continuous_LOR";
+    const char *meshRefMethod_names = "Continuous_LOR_Default, Discontinuous_LOR";
     switch (atts->GetMeshRefMethod())
     {
-      case MultiresControlAttributes::Default_LOR:
-          snprintf(tmpStr, 1000, "%smeshRefMethod = %sDefault_LOR  # %s\n", prefix, prefix, meshRefMethod_names);
+      case MultiresControlAttributes::Continuous_LOR_Default:
+          snprintf(tmpStr, 1000, "%smeshRefMethod = %sContinuous_LOR_Default  # %s\n", prefix, prefix, meshRefMethod_names);
           str += tmpStr;
           break;
       case MultiresControlAttributes::Discontinuous_LOR:
           snprintf(tmpStr, 1000, "%smeshRefMethod = %sDiscontinuous_LOR  # %s\n", prefix, prefix, meshRefMethod_names);
-          str += tmpStr;
-          break;
-      case MultiresControlAttributes::Continuous_LOR:
-          snprintf(tmpStr, 1000, "%smeshRefMethod = %sContinuous_LOR  # %s\n", prefix, prefix, meshRefMethod_names);
           str += tmpStr;
           break;
       default:
@@ -83,19 +79,15 @@ PyMultiresControlAttributes_ToString(const MultiresControlAttributes *atts, cons
           break;
     }
 
-    const char *refBasisType_names = "Default_LOR_Basis, Closed_Uniform, Gauss_Lobatto";
+    const char *refBasisType_names = "Gauss_Lobatto_Default, Closed_Uniform";
     switch (atts->GetRefBasisType())
     {
-      case MultiresControlAttributes::Default_LOR_Basis:
-          snprintf(tmpStr, 1000, "%srefBasisType = %sDefault_LOR_Basis  # %s\n", prefix, prefix, refBasisType_names);
+      case MultiresControlAttributes::Gauss_Lobatto_Default:
+          snprintf(tmpStr, 1000, "%srefBasisType = %sGauss_Lobatto_Default  # %s\n", prefix, prefix, refBasisType_names);
           str += tmpStr;
           break;
       case MultiresControlAttributes::Closed_Uniform:
           snprintf(tmpStr, 1000, "%srefBasisType = %sClosed_Uniform  # %s\n", prefix, prefix, refBasisType_names);
-          str += tmpStr;
-          break;
-      case MultiresControlAttributes::Gauss_Lobatto:
-          snprintf(tmpStr, 1000, "%srefBasisType = %sGauss_Lobatto  # %s\n", prefix, prefix, refBasisType_names);
           str += tmpStr;
           break;
       default:
@@ -302,15 +294,14 @@ MultiresControlAttributes_SetMeshRefMethod(PyObject *self, PyObject *args)
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
 
-    if (cval < 0 || cval >= 3)
+    if (cval < 0 || cval >= 2)
     {
         std::stringstream ss;
         ss << "An invalid meshRefMethod value was given." << std::endl;
-        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << " Default_LOR";
+        ss << " Continuous_LOR_Default";
         ss << ", Discontinuous_LOR";
-        ss << ", Continuous_LOR";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -436,15 +427,14 @@ MultiresControlAttributes_SetRefBasisType(PyObject *self, PyObject *args)
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
 
-    if (cval < 0 || cval >= 3)
+    if (cval < 0 || cval >= 2)
     {
         std::stringstream ss;
         ss << "An invalid refBasisType value was given." << std::endl;
-        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << " Default_LOR_Basis";
+        ss << " Gauss_Lobatto_Default";
         ss << ", Closed_Uniform";
-        ss << ", Gauss_Lobatto";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -561,12 +551,10 @@ PyMultiresControlAttributes_getattro(PyObject *self, PyObject *attr_name)
         return MultiresControlAttributes_GetMaxResolution(self, NULL);
     if(strcmp(name, "meshRefMethod") == 0)
         return MultiresControlAttributes_GetMeshRefMethod(self, NULL);
-    if(strcmp(name, "Default_LOR") == 0)
-        return PyInt_FromLong(long(MultiresControlAttributes::Default_LOR));
+    if(strcmp(name, "Continuous_LOR_Default") == 0)
+        return PyInt_FromLong(long(MultiresControlAttributes::Continuous_LOR_Default));
     if(strcmp(name, "Discontinuous_LOR") == 0)
         return PyInt_FromLong(long(MultiresControlAttributes::Discontinuous_LOR));
-    if(strcmp(name, "Continuous_LOR") == 0)
-        return PyInt_FromLong(long(MultiresControlAttributes::Continuous_LOR));
 
     if(strcmp(name, "fieldProjMethod") == 0)
         return MultiresControlAttributes_GetFieldProjMethod(self, NULL);
@@ -579,12 +567,10 @@ PyMultiresControlAttributes_getattro(PyObject *self, PyObject *attr_name)
 
     if(strcmp(name, "refBasisType") == 0)
         return MultiresControlAttributes_GetRefBasisType(self, NULL);
-    if(strcmp(name, "Default_LOR_Basis") == 0)
-        return PyInt_FromLong(long(MultiresControlAttributes::Default_LOR_Basis));
+    if(strcmp(name, "Gauss_Lobatto_Default") == 0)
+        return PyInt_FromLong(long(MultiresControlAttributes::Gauss_Lobatto_Default));
     if(strcmp(name, "Closed_Uniform") == 0)
         return PyInt_FromLong(long(MultiresControlAttributes::Closed_Uniform));
-    if(strcmp(name, "Gauss_Lobatto") == 0)
-        return PyInt_FromLong(long(MultiresControlAttributes::Gauss_Lobatto));
 
     if(strcmp(name, "info") == 0)
         return MultiresControlAttributes_GetInfo(self, NULL);

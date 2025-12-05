@@ -55,6 +55,7 @@ class QvisMultiresControlWindow : public QvisOperatorWindow
   private:
     QSlider   *resolution;
     QLabel    *resolutionLevelLabel;
+    QLabel    *MFEMDisambiguationLabel;
     QLabel    *meshRefinementMethodLabel;
     QComboBox *meshRefinementMethod;
     QLabel    *fieldProjectionMethodLabel;

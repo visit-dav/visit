@@ -27,9 +27,8 @@ class MultiresControlAttributes : public AttributeSubject
 public:
     enum meshRefinementMethod
     {
-        Default_LOR,
-        Discontinuous_LOR,
-        Continuous_LOR
+        Continuous_LOR_Default,
+        Discontinuous_LOR
     };
     enum fieldProjectionMethod
     {
@@ -39,9 +38,8 @@ public:
     };
     enum refinementBasisType
     {
-        Default_LOR_Basis,
-        Closed_Uniform,
-        Gauss_Lobatto
+        Gauss_Lobatto_Default,
+        Closed_Uniform
     };
 
     // These constructors are for objects of this class
