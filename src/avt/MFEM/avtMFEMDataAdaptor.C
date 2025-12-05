@@ -395,7 +395,7 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
 
     AVT_MFEM_INFO("Creating Refined MFEM Mesh with lod:" << lod);
 
-    if (refinementMethod::Discontinuous_LOR == mesh_ref_method)
+    if (meshRefinementMethod::Discontinuous_LOR == mesh_ref_method)
     {
         AVT_MFEM_INFO("Using Legacy LOR to refine mesh.");
         return LegacyRefineMeshToVTK(mesh, domain, lod);
@@ -417,7 +417,7 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
         // periodic. So our best bet is to catch all L2 meshes and fall back
         // to legacy LOR.
 
-        if (refinementMethod::Default_LOR == mesh_ref_method)
+        if (meshRefinementMethod::Default_LOR == mesh_ref_method)
         {
             AVT_MFEM_INFO("High Order Mesh may be periodic and default "
                           "projection has been selected; falling back to "
@@ -1000,13 +1000,13 @@ ConvertGridFunctionToScalar(mfem::GridFunction *org_gf,
     const int p = org_gf->FESpace()->GetMaxElementOrder();
 
     FiniteElementCollection *new_fec = nullptr;
-    if (refinementBasisType::Gauss_Lobatto_Default == ref_basis_type)
+    if (avtMFEMDataAdaptor::refinementBasisType::Gauss_Lobatto_Default == ref_basis_type)
     {
-        if (avtMFEMDataAdaptor::refinementMethod::Nodal_Projection == field_proj_method)
+        if (avtMFEMDataAdaptor::fieldProjectionMethod::Nodal_Projection == field_proj_method)
         {
             new_fec = new H1_FECollection(p, dim, BasisType::GaussLobatto);
         }
-        else if (avtMFEMDataAdaptor::refinementMethod::Zonal_Projection == field_proj_method)
+        else if (avtMFEMDataAdaptor::fieldProjectionMethod::Zonal_Projection == field_proj_method)
         {
             new_fec = new L2_FECollection(p, dim, BasisType::GaussLobatto);
         }
@@ -1016,13 +1016,13 @@ ConvertGridFunctionToScalar(mfem::GridFunction *org_gf,
                                 "Unknown MFEM LOR field projection type: " << ref_basis_type);
         }
     }
-    else if (refinementBasisType::Closed_Uniform == ref_basis_type)
+    else if (avtMFEMDataAdaptor::refinementBasisType::Closed_Uniform == ref_basis_type)
     {
-        if (avtMFEMDataAdaptor::refinementMethod::Nodal_Projection == field_proj_method)
+        if (avtMFEMDataAdaptor::fieldProjectionMethod::Nodal_Projection == field_proj_method)
         {
             new_fec = new H1_FECollection(p, dim, BasisType::ClosedUniform);
         }
-        else if (avtMFEMDataAdaptor::refinementMethod::Zonal_Projection == field_proj_method)
+        else if (avtMFEMDataAdaptor::fieldProjectionMethod::Zonal_Projection == field_proj_method)
         {
             new_fec = new L2_FECollection(p, dim, BasisType::ClosedUniform);
         }
@@ -1222,26 +1222,26 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
         {
             // default hdiv, hcurl -> zonal
             field_proj_method_to_use = fieldProjectionMethod::Zonal_Projection;
-            gf_to_use = ConvertGridFunctionToScalar(gf, field_proj_method_to_use); // Convert to L2
+            gf_to_use = ConvertGridFunctionToScalar(gf, field_proj_method_to_use, ref_basis_type); // Convert to L2
             delete_gf_to_use = true;
         }
         else if (nurbs)
         {
             // default nurbs -> nodal
             field_proj_method_to_use = fieldProjectionMethod::Nodal_Projection;
-            gf_to_use = ConvertGridFunctionToScalar(gf, field_proj_method_to_use); // Convert to H1
+            gf_to_use = ConvertGridFunctionToScalar(gf, field_proj_method_to_use, ref_basis_type); // Convert to H1
             delete_gf_to_use = true;
         }
     }
-    else if (fieldProjectionMethod::LOR_Nodal_Projection == field_proj_method ||
-             fieldProjectionMethod::LOR_Zonal_Projection == field_proj_method)
+    else if (fieldProjectionMethod::Nodal_Projection == field_proj_method ||
+             fieldProjectionMethod::Zonal_Projection == field_proj_method)
     {
         field_proj_method_to_use = field_proj_method;
         // whatever refinement method we end up using, we cannot directly refine hdiv, hcurl, and nurbs
         if (hdiv || hcurl || nurbs)
         {
             // we must convert to either h1 or l2 using the specified refinement method
-            gf_to_use = ConvertGridFunctionToScalar(gf, field_proj_method_to_use);
+            gf_to_use = ConvertGridFunctionToScalar(gf, field_proj_method_to_use, ref_basis_type);
             delete_gf_to_use = true;
         }
     }

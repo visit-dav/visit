@@ -263,12 +263,12 @@ QvisMultiresControlWindow::GetCurrentValues(int which_widget)
     // Do mesh refinement method
     if(which_widget == MultiresControlAttributes::ID_meshRefMethod || doAll)
     {
-        atts->SetRefMethod(static_cast<MultiresControlAttributes::meshRefinementMethod>(this->meshRefinementMethod->currentIndex()));
+        atts->SetMeshRefMethod(static_cast<MultiresControlAttributes::meshRefinementMethod>(this->meshRefinementMethod->currentIndex()));
     }
     // Do field projection method
     if(which_widget == MultiresControlAttributes::ID_fieldProjMethod || doAll)
     {
-        atts->SetRefMethod(static_cast<MultiresControlAttributes::fieldProjectionMethod>(this->fieldProjectionMethod->currentIndex()));
+        atts->SetFieldProjMethod(static_cast<MultiresControlAttributes::fieldProjectionMethod>(this->fieldProjectionMethod->currentIndex()));
     }
 }
 
@@ -375,7 +375,7 @@ QvisMultiresControlWindow::meshRefinementMethodChanged(int val)
 void
 QvisMultiresControlWindow::fieldProjectionMethodChanged(int val)
 {
-    const int currFieldProjectionMethod = atts->GetRefMethod();
+    const int currFieldProjectionMethod = atts->GetFieldProjMethod();
     if (val != currFieldProjectionMethod)
     {
         atts->SetFieldProjMethod(static_cast<MultiresControlAttributes::fieldProjectionMethod>(val));
