@@ -389,6 +389,10 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
                                     const meshRefinementMethod mesh_ref_method,
                                     const refinementBasisType ref_basis_type)
 {
+    // discontinuous LOR -> forces discontinuous refine
+    // default LOR -> continuous refine unless mesh is periodic (see below)
+    // continuous LOR -> forces continuous refine
+
     AVT_MFEM_INFO("Creating Refined MFEM Mesh with lod:" << lod);
 
     if (refinementMethod::Discontinuous_LOR == mesh_ref_method)
@@ -438,17 +442,13 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
 
     // refine the mesh
     mfem::Mesh lo_mesh;
-    if (refinementBasisType::LOR_Basis_Default == ref_basis_type)
+    if (refinementBasisType::Gauss_Lobatto_Default == ref_basis_type)
     {
-        lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::ClosedUniform);
+        lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::GaussLobatto);
     }
     else if (refinementBasisType::Closed_Uniform == ref_basis_type)
     {
         lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::ClosedUniform);
-    }
-    else if (refinementBasisType::Gauss_Lobatto == ref_basis_type)
-    {
-        lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::GaussLobatto);
     }
     else
     {
@@ -471,17 +471,13 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
     int orig_nelems = mesh->GetNE();
 
     GeometryRefiner refiner;
-    if (refinementBasisType::LOR_Basis_Default == ref_basis_type)
+    if (refinementBasisType::Gauss_Lobatto_Default == ref_basis_type)
     {
-        refiner.SetType(BasisType::GetQuadrature1D(mfem::BasisType::ClosedUniform));
+        refiner.SetType(BasisType::GetQuadrature1D(mfem::BasisType::GaussLobatto));
     }
     else if (refinementBasisType::Closed_Uniform == ref_basis_type)
     {
         refiner.SetType(BasisType::GetQuadrature1D(mfem::BasisType::ClosedUniform));
-    }
-    else if (refinementBasisType::Gauss_Lobatto == ref_basis_type)
-    {
-        refiner.SetType(BasisType::GetQuadrature1D(mfem::BasisType::GaussLobatto));
     }
     else
     {
@@ -794,17 +790,13 @@ avtMFEMDataAdaptor::QuadratureFunctionMeshToVTK(mfem::Mesh *mesh,
     // mfem::BasisType::ClosedGL is what glviz uses
     mfem::Mesh lo_mesh;
     // TODO get rid of default; default will be gauss lobatto
-    if (refinementBasisType::LOR_Basis_Default == ref_basis_type)
+    if (refinementBasisType::Gauss_Lobatto_Default == ref_basis_type)
     {
         lo_mesh = mfem::Mesh::MakeRefined(*mesh, ref_factor, mfem::BasisType::GaussLobatto);
     }
     else if (refinementBasisType::Closed_Uniform == ref_basis_type)
     {
         lo_mesh = mfem::Mesh::MakeRefined(*mesh, ref_factor, mfem::BasisType::ClosedUniform);
-    }
-    else if (refinementBasisType::Gauss_Lobatto == ref_basis_type)
-    {
-        lo_mesh = mfem::Mesh::MakeRefined(*mesh, ref_factor, mfem::BasisType::GaussLobatto);
     }
     else
     {
@@ -999,20 +991,51 @@ avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
 
 // ****************************************************************************
 mfem::GridFunction *
-ConvertGridFunctionToScalar(mfem::GridFunction *org_gf, const avtMFEMDataAdaptor::refinementMethod ref_method)
+ConvertGridFunctionToScalar(mfem::GridFunction *org_gf,
+                            const avtMFEMDataAdaptor::fieldProjectionMethod field_proj_method,
+                            const avtMFEMDataAdaptor::refinementBasisType ref_basis_type)
 {
     mfem::Mesh *mesh = org_gf->FESpace()->GetMesh();
     const int dim = mesh->Dimension();
     const int p = org_gf->FESpace()->GetMaxElementOrder();
 
     FiniteElementCollection *new_fec = nullptr;
-    if (ref_method == avtMFEMDataAdaptor::refinementMethod::LOR_Nodal_Projection)
+    if (refinementBasisType::Gauss_Lobatto_Default == ref_basis_type)
     {
-        new_fec = new H1_FECollection(p, dim, BasisType::GaussLobatto);
+        if (avtMFEMDataAdaptor::refinementMethod::Nodal_Projection == field_proj_method)
+        {
+            new_fec = new H1_FECollection(p, dim, BasisType::GaussLobatto);
+        }
+        else if (avtMFEMDataAdaptor::refinementMethod::Zonal_Projection == field_proj_method)
+        {
+            new_fec = new L2_FECollection(p, dim, BasisType::GaussLobatto);
+        }
+        else
+        {
+            AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                                "Unknown MFEM LOR field projection type: " << ref_basis_type);
+        }
     }
-    else if (ref_method == avtMFEMDataAdaptor::refinementMethod::LOR_Zonal_Projection)
+    else if (refinementBasisType::Closed_Uniform == ref_basis_type)
     {
-        new_fec = new L2_FECollection(p, dim, BasisType::GaussLobatto);
+        if (avtMFEMDataAdaptor::refinementMethod::Nodal_Projection == field_proj_method)
+        {
+            new_fec = new H1_FECollection(p, dim, BasisType::ClosedUniform);
+        }
+        else if (avtMFEMDataAdaptor::refinementMethod::Zonal_Projection == field_proj_method)
+        {
+            new_fec = new L2_FECollection(p, dim, BasisType::ClosedUniform);
+        }
+        else
+        {
+            AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                                "Unknown MFEM LOR field projection type: " << ref_basis_type);
+        }
+    }
+    else
+    {
+        AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                            "Unknown MFEM LOR refinement basis type: " << ref_basis_type);
     }
     FiniteElementSpace *new_fes =
         new FiniteElementSpace(mesh, new_fec, org_gf->VectorDim());
@@ -1085,17 +1108,17 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
                                             const refinementBasisType ref_basis_type,
                                             bool var_is_nodal)
 {
-    // TODO I leave off here
-    // remember that if you do discontinuous + zonal you get an error
-    // there is more to do elsewhere in this file for supporting the new cases
-
-
     AVT_MFEM_INFO("Creating Refined MFEM Field with lod: " << lod);
 
-    refinementMethod ref_method_to_use = ref_method;
-
-    if (refinementMethod::Discontinuous_Refine == ref_method)
+    if (meshRefinementMethod::Discontinuous_LOR == mesh_ref_method)
     {
+        if (fieldProjectionMethod::Zonal_Projection == field_proj_method)
+        {
+            AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                "Zonal projection together with discontinuous low-order-refinement is not supported.");
+        }
+
+        // TODO name change to discontinuous refine
         AVT_MFEM_INFO("Using Legacy LOR to refine grid function.");
         return LegacyRefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
     }
@@ -1116,10 +1139,15 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
         // periodic. So our best bet is to catch all L2 meshes and fall back
         // to legacy LOR.
 
-        if (refinementMethod::LOR_Projection_Default == ref_method)
+        if (meshRefinementMethod::Default_LOR == mesh_ref_method)
         {
+            if (fieldProjectionMethod::Zonal_Projection == field_proj_method)
+            {
+                AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                    "Zonal projection together with discontinuous low-order-refinement is not supported.");
+            }
             AVT_MFEM_INFO("High Order Mesh may be periodic and default "
-                          "projection has been selected; falling back to "
+                          "refinement has been selected; falling back to "
                           "Legacy LOR.");
             return LegacyRefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
         }
@@ -1135,16 +1163,13 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
             "RefineGridFunctionToVTK: high order gf finite element space is null");
     }
 
-    // H1 is nodal
-    // L2 is zonal
-
     // extract basis type information
     std::string basis(gf->FESpace()->FEColl()->Name());
-    bool l2 = basis.find("L2_") != std::string::npos;
-    bool h1 = basis.find("H1_") != std::string::npos;
+    bool h1    = basis.find("H1_")   != std::string::npos; // nodal
+    bool l2    = basis.find("L2_")   != std::string::npos; // zonal
+    bool hdiv  = basis.find("RT_")   != std::string::npos;
+    bool hcurl = basis.find("ND_")   != std::string::npos;
     bool nurbs = basis.find("NURBS") != std::string::npos;   // TODO We need test data
-    bool hdiv = basis.find("RT_") != std::string::npos;
-    bool hcurl = basis.find("ND_") != std::string::npos;
 
     int bases = static_cast<int>(l2) +
                 static_cast<int>(h1) +
@@ -1174,59 +1199,67 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
             "Unsupported basis type in " << basis);
     }
 
+    // We will need to resolve the default field projection method to either zonal or nodal,
+    // so we include another variable to store the resulting field projection method.
+    fieldProjectionMethod field_proj_method_to_use = field_proj_method;
+
     // select projection type and convert gridfunction when necessary
     mfem::GridFunction *gf_to_use = gf;
     bool delete_gf_to_use = false;
-    if (refinementMethod::LOR_Projection_Default == ref_method)
+    if (fieldProjectionMethod::Default_Projection == field_proj_method)
     {
         if (h1)
         {
-            ref_method_to_use = refinementMethod::LOR_Nodal_Projection;
+            // default h1 -> nodal
+            field_proj_method_to_use = fieldProjectionMethod::Nodal_Projection;
         }
         else if (l2)
         {
-            ref_method_to_use = refinementMethod::LOR_Zonal_Projection;
+            // default l2 -> zonal
+            field_proj_method_to_use = fieldProjectionMethod::Zonal_Projection;
         }
         else if (hdiv || hcurl)
         {
-            ref_method_to_use = refinementMethod::LOR_Zonal_Projection;
-            gf_to_use = ConvertGridFunctionToScalar(gf, ref_method_to_use); // Convert to L2
+            // default hdiv, hcurl -> zonal
+            field_proj_method_to_use = fieldProjectionMethod::Zonal_Projection;
+            gf_to_use = ConvertGridFunctionToScalar(gf, field_proj_method_to_use); // Convert to L2
             delete_gf_to_use = true;
         }
         else if (nurbs)
         {
-            ref_method_to_use = refinementMethod::LOR_Nodal_Projection;
-            gf_to_use = ConvertGridFunctionToScalar(gf, ref_method_to_use); // Convert to H1
+            // default nurbs -> nodal
+            field_proj_method_to_use = fieldProjectionMethod::Nodal_Projection;
+            gf_to_use = ConvertGridFunctionToScalar(gf, field_proj_method_to_use); // Convert to H1
             delete_gf_to_use = true;
         }
     }
-    else if (refinementMethod::LOR_Nodal_Projection == ref_method ||
-             refinementMethod::LOR_Zonal_Projection == ref_method)
+    else if (fieldProjectionMethod::LOR_Nodal_Projection == field_proj_method ||
+             fieldProjectionMethod::LOR_Zonal_Projection == field_proj_method)
     {
-        ref_method_to_use = ref_method;
+        field_proj_method_to_use = field_proj_method;
         // whatever refinement method we end up using, we cannot directly refine hdiv, hcurl, and nurbs
-        if (hdiv || hcurl/* || nurbs*/)
+        if (hdiv || hcurl || nurbs)
         {
             // we must convert to either h1 or l2 using the specified refinement method
-            gf_to_use = ConvertGridFunctionToScalar(gf, ref_method_to_use);
+            gf_to_use = ConvertGridFunctionToScalar(gf, field_proj_method_to_use);
             delete_gf_to_use = true;
         }
     }
     else
     {
         AVT_MFEM_EXCEPTION1(InvalidVariableException,
-                            "Unknown MFEM LOR refinement method: " << ref_method_to_use);
+                            "Unknown MFEM LOR refinement method: " << field_proj_method_to_use);
     }
 
     // create the low order grid function
     mfem::FiniteElementCollection *lo_col;
-    if (ref_method_to_use == refinementMethod::LOR_Nodal_Projection)
+    if (fieldProjectionMethod::Nodal_Projection == field_proj_method_to_use)
     {
         // convert to H1
         // node centered
         lo_col = new mfem::LinearFECollection;
     }
-    else if (ref_method_to_use == refinementMethod::LOR_Zonal_Projection)
+    else if (fieldProjectionMethod::Zonal_Projection == field_proj_method_to_use)
     {
         // convert to L2
         // element centered
@@ -1235,30 +1268,25 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     else
     {
         AVT_MFEM_EXCEPTION1(InvalidVariableException,
-                            "Unknown MFEM LOR refinement method: " << ref_method_to_use);
+                            "Unknown MFEM LOR refinement method: " << field_proj_method_to_use);
     }
     
     // refine the mesh and convert to vtk
     // it would be nice if this was cached somewhere but we will do it again
     mfem::Mesh lo_mesh;
-    if (refinementBasisType::LOR_Basis_Default == ref_basis_type)
+    if (refinementBasisType::Gauss_Lobatto_Default == ref_basis_type)
     {
-        lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::ClosedUniform);
+        lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::GaussLobatto);
     }
     else if (refinementBasisType::Closed_Uniform == ref_basis_type)
     {
         lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::ClosedUniform);
-    }
-    else if (refinementBasisType::Gauss_Lobatto == ref_basis_type)
-    {
-        lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::GaussLobatto);
     }
     else
     {
         AVT_MFEM_EXCEPTION1(InvalidVariableException,
                             "Unknown MFEM LOR refinement basis type: " << ref_basis_type);
     }
-    // mfem::FiniteElementSpace lo_fes(&lo_mesh, lo_col, gf->FESpace()->GetVectorDim());
     mfem::FiniteElementSpace lo_fes(&lo_mesh, lo_col, gf->FESpace()->GetVDim());
     mfem::GridFunction lo_gf(&lo_fes);
     // transform the higher order function to a low order function
@@ -1273,7 +1301,7 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     {
         delete gf_to_use;
     }
-    
+
     delete lo_col;
 
     return retval;
