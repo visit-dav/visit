@@ -1413,7 +1413,7 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
                     }
                     cent = AVT_ZONECENT;
                 }
-                else if (m_field_projection_method == avtMFEMDataAdaptor::Nodal_Projection)
+                else if (m_field_projection_method == avtMFEMDataAdaptor::fieldProjectionMethod::Nodal_Projection)
                 {
                     cent = AVT_NODECENT;
                 }
@@ -3570,7 +3570,7 @@ avtBlueprintFileFormat::RegisterDataSelections(
                 static_cast<const avtResolutionSelection*>(*sels[i]);
             this->m_selected_lod = sel->resolution();
             this->m_mesh_refinement_method = static_cast<avtMFEMDataAdaptor::meshRefinementMethod>(sel->meshRefinementMethod());
-            this->m_field_projection_method = static_cast<avtMFEMDataAdaptor::fieldRefinementMethod>(sel->fieldProjectionMethod());
+            this->m_field_projection_method = static_cast<avtMFEMDataAdaptor::fieldProjectionMethod>(sel->fieldProjectionMethod());
             this->m_refinement_basis_type = static_cast<avtMFEMDataAdaptor::refinementBasisType>(sel->refinementBasisType());
             (*applied)[i] = true;
         }

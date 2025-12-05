@@ -95,7 +95,7 @@ avtContract_p avtMultiresControlFilter::ModifyContract(avtContract_p contract)
     avtResolutionSelection* res = new avtResolutionSelection;
 
     res->setResolution(atts.GetResolution());
-    res->setMeshRefinementMethod(atts.GetMeshRedMethod());
+    res->setMeshRefinementMethod(atts.GetMeshRefMethod());
     res->setFieldProjectionMethod(atts.GetFieldProjMethod());
     res->setRefinementBasisType(atts.GetRefBasisType());
     contract->GetDataRequest()->AddDataSelection(res);

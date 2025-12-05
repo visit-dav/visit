@@ -1119,7 +1119,7 @@ avtMFEMFileFormat::RegisterDataSelections(const std::vector<avtDataSelection_p>&
                 static_cast<const avtResolutionSelection*>(*sels[i]);
             this->selectedLOD = sel->resolution();
             this->m_mesh_refinement_method = static_cast<avtMFEMDataAdaptor::meshRefinementMethod>(sel->meshRefinementMethod());
-            this->m_field_projection_method = static_cast<avtMFEMDataAdaptor::fieldRefinementMethod>(sel->fieldProjectionMethod());
+            this->m_field_projection_method = static_cast<avtMFEMDataAdaptor::fieldProjectionMethod>(sel->fieldProjectionMethod());
             this->m_refinement_basis_type = static_cast<avtMFEMDataAdaptor::refinementBasisType>(sel->refinementBasisType());
             (*applied)[i] = true;
         }
