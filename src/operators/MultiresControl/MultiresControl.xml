@@ -5,7 +5,8 @@
     </CXXFLAGS>
     <Attribute name="MultiresControlAttributes" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="MultiresControlAttributes.code">
       <Enum name="meshRefinementMethod">
-        Continuous_LOR_Default
+        Default_LOR
+        Continuous_LOR
         Discontinuous_LOR
       </Enum>
       <Enum name="fieldProjectionMethod">
@@ -24,7 +25,7 @@
         1
       </Field>
       <Field name="meshRefMethod" label="Mesh Refinement Method" type="enum" subtype="meshRefinementMethod">
-        Continuous_LOR_Default
+        Default_LOR
       </Field>
       <Field name="fieldProjMethod" label="Field Projection Method" type="enum" subtype="fieldProjectionMethod">
         Default_Projection

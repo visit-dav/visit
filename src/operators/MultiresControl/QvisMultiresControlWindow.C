@@ -140,7 +140,8 @@ QvisMultiresControlWindow::CreateWindowContents()
     mainLayout->addWidget(meshRefinementMethodLabel, 3, 0);
 
     meshRefinementMethod = new QComboBox(this);
-    meshRefinementMethod->addItem(tr("Continuous LOR (Default)"));
+    meshRefinementMethod->addItem(tr("Default LOR"));
+    meshRefinementMethod->addItem(tr("Continuous LOR"));
     meshRefinementMethod->addItem(tr("Discontinuous LOR"));
     connect(meshRefinementMethod, SIGNAL(activated(int)),
             this, SLOT(meshRefinementMethodChanged(int)));

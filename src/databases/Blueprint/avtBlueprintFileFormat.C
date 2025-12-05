@@ -162,7 +162,7 @@ avtBlueprintFileFormat::avtBlueprintFileFormat(const char *filename, DBOptionsAt
       m_specset_info(),
       m_mfem_mesh_map(),
       m_mfem_material_map(),
-      m_mesh_refinement_method(avtMFEMDataAdaptor::meshRefinementMethod::Continuous_LOR_Default),
+      m_mesh_refinement_method(avtMFEMDataAdaptor::meshRefinementMethod::Default_LOR),
       m_field_projection_method(avtMFEMDataAdaptor::fieldProjectionMethod::Default_Projection),
       m_refinement_basis_type(avtMFEMDataAdaptor::refinementBasisType::Gauss_Lobatto_Default)
 {
@@ -1423,6 +1423,11 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
                     {
                         cent = AVT_NODECENT;
                     }
+                    // else if (m_mesh_refinement_method == avtMFEMDataAdaptor::meshRefinementMethod::Default_LOR)
+                    // {
+                        // we don't have a way to tell if the mesh is periodic or not yet, so we will guess
+                        // that it is not
+                    // }
                     else
                     {
                         const std::string basis = n_field["basis"].as_string();

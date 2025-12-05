@@ -69,7 +69,7 @@ using namespace mfem;
 avtMFEMFileFormat::avtMFEMFileFormat(const char *filename, 
                                      const DBOptionsAttributes *readOpts)
     : avtSTMDFileFormat(&filename, 1),
-      m_mesh_refinement_method(avtMFEMDataAdaptor::meshRefinementMethod::Continuous_LOR_Default),
+      m_mesh_refinement_method(avtMFEMDataAdaptor::meshRefinementMethod::Default_LOR),
       m_field_projection_method(avtMFEMDataAdaptor::fieldProjectionMethod::Default_Projection),
       m_refinement_basis_type(avtMFEMDataAdaptor::refinementBasisType::Gauss_Lobatto_Default)
 {

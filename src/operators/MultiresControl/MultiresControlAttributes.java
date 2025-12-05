@@ -27,8 +27,9 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
     private static int MultiresControlAttributes_numAdditionalAtts = 6;
 
     // Enum values
-    public final static int MESHREFINEMENTMETHOD_CONTINUOUS_LOR_DEFAULT = 0;
-    public final static int MESHREFINEMENTMETHOD_DISCONTINUOUS_LOR = 1;
+    public final static int MESHREFINEMENTMETHOD_DEFAULT_LOR = 0;
+    public final static int MESHREFINEMENTMETHOD_CONTINUOUS_LOR = 1;
+    public final static int MESHREFINEMENTMETHOD_DISCONTINUOUS_LOR = 2;
 
     public final static int FIELDPROJECTIONMETHOD_DEFAULT_PROJECTION = 0;
     public final static int FIELDPROJECTIONMETHOD_ZONAL_PROJECTION = 1;
@@ -44,7 +45,7 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
 
         resolution = 0;
         maxResolution = 1;
-        meshRefMethod = MESHREFINEMENTMETHOD_CONTINUOUS_LOR_DEFAULT;
+        meshRefMethod = MESHREFINEMENTMETHOD_DEFAULT_LOR;
         fieldProjMethod = FIELDPROJECTIONMETHOD_DEFAULT_PROJECTION;
         refBasisType = REFINEMENTBASISTYPE_GAUSS_LOBATTO_DEFAULT;
         info = new String("");
@@ -56,7 +57,7 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
 
         resolution = 0;
         maxResolution = 1;
-        meshRefMethod = MESHREFINEMENTMETHOD_CONTINUOUS_LOR_DEFAULT;
+        meshRefMethod = MESHREFINEMENTMETHOD_DEFAULT_LOR;
         fieldProjMethod = FIELDPROJECTIONMETHOD_DEFAULT_PROJECTION;
         refBasisType = REFINEMENTBASISTYPE_GAUSS_LOBATTO_DEFAULT;
         info = new String("");
@@ -193,8 +194,10 @@ public class MultiresControlAttributes extends AttributeSubject implements Plugi
         str = str + intToString("resolution", resolution, indent) + "\n";
         str = str + intToString("maxResolution", maxResolution, indent) + "\n";
         str = str + indent + "meshRefMethod = ";
-        if(meshRefMethod == MESHREFINEMENTMETHOD_CONTINUOUS_LOR_DEFAULT)
-            str = str + "MESHREFINEMENTMETHOD_CONTINUOUS_LOR_DEFAULT";
+        if(meshRefMethod == MESHREFINEMENTMETHOD_DEFAULT_LOR)
+            str = str + "MESHREFINEMENTMETHOD_DEFAULT_LOR";
+        if(meshRefMethod == MESHREFINEMENTMETHOD_CONTINUOUS_LOR)
+            str = str + "MESHREFINEMENTMETHOD_CONTINUOUS_LOR";
         if(meshRefMethod == MESHREFINEMENTMETHOD_DISCONTINUOUS_LOR)
             str = str + "MESHREFINEMENTMETHOD_DISCONTINUOUS_LOR";
         str = str + "\n";

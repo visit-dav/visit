@@ -45,11 +45,15 @@ PyMultiresControlAttributes_ToString(const MultiresControlAttributes *atts, cons
     str += tmpStr;
     snprintf(tmpStr, 1000, "%smaxResolution = %d\n", prefix, atts->GetMaxResolution());
     str += tmpStr;
-    const char *meshRefMethod_names = "Continuous_LOR_Default, Discontinuous_LOR";
+    const char *meshRefMethod_names = "Default_LOR, Continuous_LOR, Discontinuous_LOR";
     switch (atts->GetMeshRefMethod())
     {
-      case MultiresControlAttributes::Continuous_LOR_Default:
-          snprintf(tmpStr, 1000, "%smeshRefMethod = %sContinuous_LOR_Default  # %s\n", prefix, prefix, meshRefMethod_names);
+      case MultiresControlAttributes::Default_LOR:
+          snprintf(tmpStr, 1000, "%smeshRefMethod = %sDefault_LOR  # %s\n", prefix, prefix, meshRefMethod_names);
+          str += tmpStr;
+          break;
+      case MultiresControlAttributes::Continuous_LOR:
+          snprintf(tmpStr, 1000, "%smeshRefMethod = %sContinuous_LOR  # %s\n", prefix, prefix, meshRefMethod_names);
           str += tmpStr;
           break;
       case MultiresControlAttributes::Discontinuous_LOR:
@@ -294,13 +298,14 @@ MultiresControlAttributes_SetMeshRefMethod(PyObject *self, PyObject *args)
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
 
-    if (cval < 0 || cval >= 2)
+    if (cval < 0 || cval >= 3)
     {
         std::stringstream ss;
         ss << "An invalid meshRefMethod value was given." << std::endl;
-        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << " Continuous_LOR_Default";
+        ss << " Default_LOR";
+        ss << ", Continuous_LOR";
         ss << ", Discontinuous_LOR";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
@@ -551,8 +556,10 @@ PyMultiresControlAttributes_getattro(PyObject *self, PyObject *attr_name)
         return MultiresControlAttributes_GetMaxResolution(self, NULL);
     if(strcmp(name, "meshRefMethod") == 0)
         return MultiresControlAttributes_GetMeshRefMethod(self, NULL);
-    if(strcmp(name, "Continuous_LOR_Default") == 0)
-        return PyInt_FromLong(long(MultiresControlAttributes::Continuous_LOR_Default));
+    if(strcmp(name, "Default_LOR") == 0)
+        return PyInt_FromLong(long(MultiresControlAttributes::Default_LOR));
+    if(strcmp(name, "Continuous_LOR") == 0)
+        return PyInt_FromLong(long(MultiresControlAttributes::Continuous_LOR));
     if(strcmp(name, "Discontinuous_LOR") == 0)
         return PyInt_FromLong(long(MultiresControlAttributes::Discontinuous_LOR));
 

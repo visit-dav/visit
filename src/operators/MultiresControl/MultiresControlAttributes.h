@@ -27,7 +27,8 @@ class MultiresControlAttributes : public AttributeSubject
 public:
     enum meshRefinementMethod
     {
-        Continuous_LOR_Default,
+        Default_LOR,
+        Continuous_LOR,
         Discontinuous_LOR
     };
     enum fieldProjectionMethod

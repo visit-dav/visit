@@ -10,28 +10,29 @@
 //
 
 static const char *meshRefinementMethod_strings[] = {
-"Continuous_LOR_Default", "Discontinuous_LOR"};
+"Default_LOR", "Continuous_LOR", "Discontinuous_LOR"
+};
 
 std::string
 MultiresControlAttributes::meshRefinementMethod_ToString(MultiresControlAttributes::meshRefinementMethod t)
 {
     int index = int(t);
-    if(index < 0 || index >= 2) index = 0;
+    if(index < 0 || index >= 3) index = 0;
     return meshRefinementMethod_strings[index];
 }
 
 std::string
 MultiresControlAttributes::meshRefinementMethod_ToString(int t)
 {
-    int index = (t < 0 || t >= 2) ? 0 : t;
+    int index = (t < 0 || t >= 3) ? 0 : t;
     return meshRefinementMethod_strings[index];
 }
 
 bool
 MultiresControlAttributes::meshRefinementMethod_FromString(const std::string &s, MultiresControlAttributes::meshRefinementMethod &val)
 {
-    val = MultiresControlAttributes::Continuous_LOR_Default;
-    for(int i = 0; i < 2; ++i)
+    val = MultiresControlAttributes::Default_LOR;
+    for(int i = 0; i < 3; ++i)
     {
         if(s == meshRefinementMethod_strings[i])
         {
@@ -136,7 +137,7 @@ void MultiresControlAttributes::Init()
 {
     resolution = 0;
     maxResolution = 1;
-    meshRefMethod = Continuous_LOR_Default;
+    meshRefMethod = Default_LOR;
     fieldProjMethod = Default_Projection;
     refBasisType = Gauss_Lobatto_Default;
 
@@ -592,7 +593,7 @@ MultiresControlAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 2)
+            if(ival >= 0 && ival < 3)
                 SetMeshRefMethod(meshRefinementMethod(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)

@@ -51,9 +51,13 @@ class vtkDataArray;
 class AVTMFEM_API avtMFEMDataAdaptor
 {
 public:
+    // TODO I screwed up again - this needs to have a default case
+    // b/c default means periodic goes to discontinuous,
+    // continuous forces continuous, and discontinuous forces discontinuous
       enum class meshRefinementMethod
       {
-          Continuous_LOR_Default,
+          Default_LOR,
+          Continuous_LOR,
           Discontinuous_LOR
       };
 
@@ -136,9 +140,10 @@ inline std::ostream& operator<<(std::ostream& os, avtMFEMDataAdaptor::meshRefine
     using meshRefinementMethod = avtMFEMDataAdaptor::meshRefinementMethod;
     switch(method)
     {
-        case meshRefinementMethod::Continuous_LOR_Default: os << "Continuous_LOR_Default"; break;
-        case meshRefinementMethod::Discontinuous_LOR:      os << "Discontinuous_LOR"; break;
-        default:                                           os << "Unknown meshRefinementMethod"; break;
+        case meshRefinementMethod::Default_LOR:       os << "Default_LOR"; break;
+        case meshRefinementMethod::Continuous_LOR:    os << "Continuous_LOR"; break;
+        case meshRefinementMethod::Discontinuous_LOR: os << "Discontinuous_LOR"; break;
+        default:                                      os << "Unknown meshRefinementMethod"; break;
     }
     return os;
 }
