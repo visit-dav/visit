@@ -214,6 +214,9 @@
 //    instead of 'add_definitions' which requires -D prefix to be part of
 //    the definition.
 //
+//    Kathleen Biagas, Thu Dec 4, 2025
+//    Set CMake minimum version to 3.24 when building plugins against install.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -1320,7 +1323,8 @@ class CMakeGeneratorPlugin : public Plugin
         // include something in the generated output.
         if(!using_dev)
         {
-            out << "CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)" << Endl;
+            // use same CMake minimum as visit (src/CMakeLists.tx).
+            out << "CMAKE_MINIMUM_REQUIRED(VERSION 3.24 FATAL_ERROR)" << Endl;
             if(installpublic)
             {
                 out << "SET(VISIT_PLUGIN_DIR \"" << qvisitplugdirpub
