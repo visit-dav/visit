@@ -1728,6 +1728,9 @@ QvisFileWindowBase::pathChanged(int)
 //   Kathleen Biagas, Thu May 17, 2018
 //   Account for UNC style paths on Windows.
 //
+//   Kathleen Biagas, Tue Nov 11, 2025
+//   Replace use of 'My Computer' with 'This PC'.
+//
 // ****************************************************************************
 
 void
@@ -1761,7 +1764,7 @@ QvisFileWindowBase::changeDirectory(QListWidgetItem *item)
                 if(separator == "\\" && curPath.size() == 2)
                 {
                     if(curPath[1] == ':')
-                        newPath = "My Computer";
+                        newPath = "This PC";
                 }
                 else
                 {
@@ -1784,7 +1787,7 @@ QvisFileWindowBase::changeDirectory(QListWidgetItem *item)
                     // directory.  If there are no more separators beyond the
                     // \\, should it be set to "My Computer" or "My Network"??
                     if (newPath.find(separator, 2) == std::string::npos)
-                        newPath = "My Computer";
+                        newPath = "This PC";
                 }
 #endif
 

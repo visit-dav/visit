@@ -5,6 +5,8 @@
 """
 VisIt's test suite shim.
 """
+import os
+os.environ['VISIT_VLD_ELEMENT_PARTITIONING'] = '1'
 
 from visit_testing import run_main
 

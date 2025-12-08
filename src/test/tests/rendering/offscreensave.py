@@ -178,15 +178,15 @@ if not sys.platform.startswith("win"):
     # Cannot perform this test on Windows as image size is limited
     OpenDatabase(silo_data_path("curv2d.silo"))
 
-    TestLargeImage(16384, 16384, "19d173a8af27d8b552a58bf7b99fa771")
-    TestLargeImage(23168, 23168, "e76139eb88920334c6f931b5fec9c09d")
-    TestLargeImage(32768, 16380, "5a6315eae4bf7912a0ab6bd15f62d624")
+    TestLargeImage(16384, 16384, "b9ba1aee7d5f2c031e212d81bcdad4e7")
+    TestLargeImage(23168, 23168, "c98014414f27ef1a6d758c1f63b28fc4")
+    TestLargeImage(32768, 16380, "bbb9b82d676d94eaec47a6fc9eea4107")
 
     # The images sizes for the last 2 tests are too large so they
     # will get scaled to be within the size allowed. The 32768x32768
     # image will be 23168x23168 and the 32768x24000 will be 27071x19827.
-    TestLargeImage(32768, 32768, "e76139eb88920334c6f931b5fec9c09d")
-    TestLargeImage(32768, 24000, "8c9c5ba01ab8132a42b7d0fa457cabba")
+    TestLargeImage(32768, 32768, "c98014414f27ef1a6d758c1f63b28fc4")
+    TestLargeImage(32768, 24000, "0fa2320f3c33c47debc284ce605f59de")
 
     CloseDatabase(silo_data_path("curv2d.silo"))
 
