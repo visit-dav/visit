@@ -3,8 +3,8 @@ SHELL=/bin/sh
 # mail any output to 'cyrush@llnl.gov', no matter whose crontab this is
 MAILTO=cyrush@llnl.gov
 #
-# run at 11:00 PM, every day
-0 21 * * * /usr/WS1/visit/test_trunk/nightly_cron/dane_cron_script_run_test_suite.sh >> /usr/WS1/visit/test_trunk/nightly_cron/out_cron_test_suite 2>&1
+# run at 10:00 PM, every day
+0 20 * * * /usr/WS1/visit/test_trunk/nightly_cron/dane_cron_script_run_test_suite.sh >> /usr/WS1/visit/test_trunk/nightly_cron/out_cron_test_suite 2>&1
 # run at 6:00 AM, every day
-0 7 * * * /usr/WS1/visit/test_trunk/nightly_cron/dane_cron_script_change_perms.sh >> /usr/WS1/visit/cyrush/nightly_cron/out_cron_perms 2>&1
+0 7 * * * /usr/WS1/visit/test_trunk/nightly_cron/dane_cron_script_change_perms.sh >> /usr/WS1/visit/test_trunk/nightly_cron/out_cron_perms 2>&1
 
