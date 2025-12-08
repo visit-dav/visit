@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <iostream>
 
+#define H5_USE_110_API
 #include <hdf5.h>
 //#include <visit-hdf5.h>
 

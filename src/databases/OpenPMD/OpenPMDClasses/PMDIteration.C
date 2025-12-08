@@ -140,7 +140,7 @@ void PMDIteration::ScanFields(hid_t fileId)
 
 			// Get the type: group, dataset...
 			// int object_type =  H5Gget_objtype_by_idx(groupId, (size_t)i );
-			err = H5Oget_info_by_name(groupId, object_name , &object_info,
+			err = H5Oget_info_by_name(groupId, object_name , &object_info, H5O_INFO_ALL,
 										H5P_DEFAULT);
 
 			// Checking of the type
@@ -363,6 +363,7 @@ void PMDIteration::ScanParticles(hid_t fileId)
 				err = H5Oget_info_by_name(groupId,
 										objectName,
 										&objectInfo,
+                                                                                H5O_INFO_ALL,
 										H5P_DEFAULT);
 
 				// Check that the object is well a group
