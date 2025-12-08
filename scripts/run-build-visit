@@ -9,7 +9,7 @@
 # Usage:
 #    run-build-visit -<machine name> -v <version> -s <build_visit_script>
 #    Valid machine names:
-#       poodle     (LC, Linux, x86_64, toss4),
+#       dane       (LC, Linux, x86_64, toss4),
 #       rzwhippet  (LC, Linux, x86_64, toss4),
 #       rzvernal   (LC, Linux, x86_64, toss4-cray),
 #       crossroads (LANL, x86_64),
@@ -113,12 +113,16 @@
 #    Collapsed the 3 build cases for elcap, rzadams and tuolumne into
 #    tuolumne since they are now the same.
 #
+#    Cyrus Harrison, Mon Dec  1 14:40:14 PST 2025
+#    Added support for building on dane.
+#
 #-----------------------------------------------------------------------
 
 #
 # Parse the execute line, providing default values for error checking.
 #
-poodle=false
+
+dane=false
 rzwhippet=false
 rzvernal=false
 crossroads=false
@@ -139,9 +143,9 @@ ran_build_visit=false
 for abc
 do
    case $1 in
-      -poodle)
-         poodle=true
-         machine_name="poodle"
+      -dane)
+         dane=true
+         machine_name="dane"
          shift
          ;;
       -rzwhippet)
@@ -192,7 +196,7 @@ if [ "$build_visit_script" = "undefined" ] || [ "$version" = "undefined" ]
 then
    echo "Usage: -<machine name> -v <version> -s <build_visit_script>"
    echo "Valid machine names:"
-   echo "    poodle     (LC, Linux, x86_64, toss4),"
+   echo "    dane       (LC, Linux, x86_64, toss4),"
    echo "    rzwhippet  (LC, Linux, x86_64, toss4),"
    echo "    rzvernal   (LC, Linux, x86_64, toss4-cray),"
    echo "    crossroads (LANL, Linux, x86_64),"
@@ -218,7 +222,7 @@ fi
 #
 # Info and set ran_build_visit
 #
-if [ "$poodle" = true ] || [ "$rzwhippet" = true ] || \
+if [ "$dane" = true ] || [ "$rzwhippet" = true ] || \
    [ "$rzvernal" = true ] || [ "$crossroads" = true ] || \
    [ "$tuolumne" = true ]; then
    echo "Building on $machine_name"
@@ -231,7 +235,7 @@ fi
 #
 # Set destination directory
 #
-if [ "$poodle" = true ] || [ "$rzwhippet" = true ]; then
+if [ "$dane" = true ] || [ "$rzwhippet" = true ]; then
    dest_dir=/usr/workspace/visit/visit/thirdparty_shared/$version/toss4
 elif [ "$rzvernal" = true ]; then
    dest_dir=/usr/workspace/visit/visit/thirdparty_shared/$version/toss4-cray-gfx90a
@@ -247,7 +251,7 @@ fi
 #
 # Set destination group
 #
-if [ "$poodle" = true ] || [ "$rzwhippet" = true ] || \
+if [ "$dane" = true ] || [ "$rzwhippet" = true ] || \
    [ "$rzvernal" = true ] || [ "$tuolumne" = true ]; then
    dest_group=visit
 elif [ "$crossroads" = true ]; then
@@ -260,7 +264,7 @@ fi
 #
 # housekeeping
 #
-if [ "$poodle" = true ] || [ "$rzwhippet" = true ] || \
+if [ "$dane" = true ] || [ "$rzwhippet" = true ] || \
    [ "$rzvernal" = true ] || [ "$crossroads" = true ] || \
    [ "$tuolumne" = true ]; then
    if [ -f ${build_visit_script}_log.${machine_name} ]; then
@@ -277,7 +281,7 @@ fi
 #
 # Call build_visit
 #
-if [ "$poodle" = true ] || [ "$rzwhippet" = true ]; then
+if [ "$dane" = true ] || [ "$rzwhippet" = true ]; then
    env PAR_COMPILER=/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/bin/mpicc \
        PAR_COMPILER_CXX=/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/bin/mpicxx \
        PAR_INCLUDE=-I/usr/tce/packages/mvapich2/mvapich2-2.3.7-gcc-10.3.1/include \
@@ -316,7 +320,7 @@ fi
 #
 # Final housekeeping and permissions
 #
-if [ "$poodle" = true ] || [ "$rzwhippet" = true ] || \
+if [ "$dane" = true ] || [ "$rzwhippet" = true ] || \
    [ "$rzvernal" = true ] || [ "$crossroads" = true ] || \
    [ "$tuolumne" = true ]; then
    mv ${build_visit_script}_log ${build_visit_script}_log.${machine_name}
@@ -337,7 +341,7 @@ then
    echo "Invalid or missing machine name."
    echo "Usage: -<machine name> -v <version> -s <build_visit_script>"
    echo "Valid machine names:"
-   echo "    poodle     (LC, Linux, x86_64, toss4),"
+   echo "    dane       (LC, Linux, x86_64, toss4),"
    echo "    rzwhippet  (LC, Linux, x86_64, toss4),"
    echo "    rzvernal   (LC, Linux, x86_64, toss4-cray),"
    echo "    crossroads (LANL, Linux, x86_64),"

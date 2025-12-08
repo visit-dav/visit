@@ -8,7 +8,7 @@ out_dir = "/usr/workspace/wsa/visit/dashboard/dashboard"
 base_dirs = []
 
 imode = 0
-mode_dirs = ["poodle_trunk_serial", "poodle_trunk_parallel", "poodle_trunk_scalable_parallel_icet"]
+mode_dirs = ["dane_trunk_serial", "dane_trunk_parallel", "dane_trunk_scalable_parallel_icet"]
 
 ##############################################################################
 #
