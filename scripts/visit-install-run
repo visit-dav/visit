@@ -266,6 +266,9 @@ set -e
 #   Justin Privitera, Thu Oct  9 14:12:13 PDT 2025
 #   Removed lassen, rzansel, and sierra (blueOS).
 # 
+#   Cyrus Harrison, Mon Dec  1 14:40:14 PST 2025
+#   Changed poodle to dane.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -309,7 +312,7 @@ esac
 #
 # Parse the execute line, providing default values for error checking.
 #
-poodle=false
+dane=false
 rzwhippet=false
 magma=false
 tuolumne=false
@@ -329,9 +332,9 @@ architecture="unknown"
 for abc
 do
    case $1 in
-      -poodle)
-         poodle=true
-         machine_name="poodle"
+      -dane)
+         dane=true
+         machine_name="dane"
          architecture="linux-x86_64"
          network="llnl_open_cz"
          shift
@@ -394,7 +397,7 @@ if [ "$ver" = "undefined" ]
 then
    echo "Usage: [-<machine name>] -v <version>"
    echo "Valid machine names:"
-   echo "    poodle rzwhippet magma tuolumne rzadams"
+   echo "    dane rzwhippet magma tuolumne rzadams"
    echo "    elcap crossroads"
    echo "version should just be the version number (e.g. 3.4.9)"
    exit
@@ -430,7 +433,7 @@ ver=`echo $ver2 | tr "_" "."`
 #
 # create the install script and call visit-install
 #
-if [ "$poodle" = true ] || [ "$rzwhippet" = true ] || \
+if [ "$dane" = true ] || [ "$rzwhippet" = true ] || \
    [ "$magma" = true ] || [ "$tuolumne" = true ] || \
    [ "$elcap" = true ]; then
    rm -f machine_specific_install_script
@@ -456,7 +459,7 @@ fi
 #
 # resultlog
 #
-if [ "$poodle" = true ] || [ "$rzwhippet" = true ] || [ "$magma" = true ] || \
+if [ "$dane" = true ] || [ "$rzwhippet" = true ] || [ "$magma" = true ] || \
    [ "$tuolumne" = true ] || \
    [ "$elcap" = true ] || [ "$crossroads" = true ]; then
    cat <<EOF >> machine_specific_install_script
@@ -491,7 +494,7 @@ if [ "$rzadams" = true ]; then
    cat <<EOF >> machine_specific_install_script
 ln -s $install_location/$ver+/$architecture $install_location/$ver+/linux-x86_64-gfx90a
 EOF
-elif [ "$poodle" = true ] || [ "$rzwhippet" = true ] || \
+elif [ "$dane" = true ] || [ "$rzwhippet" = true ] || \
      [ "$magma" = true ] || [ "$tuolumne" = true ] || \
      [ "$elcap" = true ] || [ "$crossroads" = true ]; then
    # nothing to do for this case
@@ -505,7 +508,7 @@ fi
 #
 # email
 #
-if [ "$poodle" = true ] || [ "$rzwhippet" = true ] || \
+if [ "$dane" = true ] || [ "$rzwhippet" = true ] || \
    [ "$tuolumne" = true ]; then
    cat <<EOF >> machine_specific_install_script
 mail -s "VisIt install ($ver): $machine_name" $emailName < resultlog.$machine_name

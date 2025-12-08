@@ -403,7 +403,7 @@ esac
 #
 # Parse the execute line, providing default values for error checking.
 #
-poodle=false
+dane=false
 rzwhippet=false
 rzvernal=false
 tuolumne=false
@@ -423,10 +423,10 @@ config_site="unknown"
 for abc
 do
    case $1 in
-      -poodle)
-         poodle=true
-         machine_name="poodle"
-         config_site="poodle18.cmake"
+      -dane)
+         dane=true
+         machine_name="dane"
+         config_site="dane1.cmake"
          shift
          ;;
       -rzwhippet)
@@ -485,7 +485,7 @@ if [ "$dist" = "undefined" ]
 then
    echo "Usage: [-<machine name>] -d <distribution>"
    echo "Valid machine names:"
-   echo "    poodle rzwhippet rzvernal tuolumne rzadams elcap"
+   echo "    dane rzwhippet rzvernal tuolumne rzadams elcap"
    echo "    magma (LC, x86_64)"
    echo "    crossroads (LANL, x86_64)"
    echo "distribution should be the name of the distribution file minus the '.tar.gz'"
@@ -525,7 +525,7 @@ fi
 #
 # create the build script
 #
-if [ "$poodle" = true ] || [ "$rzwhippet" = true ] || \
+if [ "$dane" = true ] || [ "$rzwhippet" = true ] || \
    [ "$rzvernal" = true ] || [ "$magma" = true ] || \
    [ "$tuolumne" = true ] || [ "$elcap" = true ] || \
    [ "$crossroads" = true ]; then
@@ -542,7 +542,7 @@ fi
 #
 # set up paths
 #
-if [ "$poodle" = true ]; then
+if [ "$dane" = true ]; then
    cat <<EOF >> machine_specific_build_script
 XLOCALEDIR=/usr/lib/X11/locale
 PATH=/usr/bin/X11:\$PATH
@@ -580,7 +580,7 @@ fi
 #
 # housekeeping
 #
-if [ "$poodle" = true ] || [ "$magma" = true ] || [ "$rzvernal" = true ] || \
+if [ "$dane" = true ] || [ "$magma" = true ] || [ "$rzvernal" = true ] || \
    [ "$rzwhippet" = true ] || \
    [ "$tuolumne" = true ] || [ "$elcap" = true ]; then
    cat <<EOF >> machine_specific_build_script
@@ -622,7 +622,7 @@ fi
 # 
 # Actually build
 # 
-if [ "$poodle" = true ] || [ "$magma" = true ] || [ "$rzvernal" = true ] || \
+if [ "$dane" = true ] || [ "$magma" = true ] || [ "$rzvernal" = true ] || \
    [ "$rzwhippet" = true ] || [ "$tuolumne" = true ] || \
    [ "$elcap" = true ] || [ "$crossroads" = true ]; then
    cat <<EOF >> machine_specific_build_script
@@ -638,7 +638,7 @@ fi
 #
 # move things to result directory
 #
-if [ "$poodle" = true ] || [ "$rzwhippet" = true ] || [ "$rzvernal" = true ] || \
+if [ "$dane" = true ] || [ "$rzwhippet" = true ] || [ "$rzvernal" = true ] || \
    [ "$magma" = true ] || [ "$crossroads" = true ]; then
    cat <<EOF >> machine_specific_build_script
 rm -f $result_dir/buildlog.$machine_name
@@ -661,7 +661,7 @@ fi
 #
 # result log
 #
-if [ "$poodle" = true ] || [ "$magma" = true ] || [ "$rzvernal" = true ] || \
+if [ "$dane" = true ] || [ "$magma" = true ] || [ "$rzvernal" = true ] || \
    [ "$rzwhippet" = true ] || \
    [ "$tuolumne" = true ] || [ "$elcap" = true ] || \
    [ "$crossroads" = true ]; then
@@ -689,7 +689,7 @@ fi
 #
 # email
 #
-if [ "$poodle" = true ] || [ "$rzwhippet" = true ] || \
+if [ "$dane" = true ] || [ "$rzwhippet" = true ] || \
    [ "$rzvernal" = true ] || [ "$tuolumne" = true ]; then
    cat <<EOF >> machine_specific_build_script
 mail  -s "VisIt build ($dist): $machine_name" $emailName < resultlog
