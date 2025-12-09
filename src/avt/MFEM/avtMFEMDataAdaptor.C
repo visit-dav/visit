@@ -866,12 +866,7 @@ avtMFEMDataAdaptor::LegacyRefineGridFunctionToVTK(mfem::Mesh *mesh,
 
     vtkFloatArray *rv = vtkFloatArray::New();
 
-// TODO
-// if vector dim is greater than 1 then use it
-    // if it is equal to 1 use vdim
-    // b/c scalar versus vector finite elements
-
-    int ncomps = gf->VectorDim();
+    const int ncomps = gf->VectorDim();
 
     if(ncomps == 2)
         rv->SetNumberOfComponents(3);
@@ -942,22 +937,21 @@ avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
     AVT_MFEM_INFO("Converting Low Order Grid Function To VTK");
 
     mfem::FiniteElementSpace *fespace = gf->FESpace();
-    // int vdim = fespace->GetVectorDim();
-    int vdim = fespace->GetVDim();
-    int ndofs = fespace->GetNDofs();
+    const int ncomps = fespace->GetVectorDim();
+    const int ndofs = fespace->GetNDofs();
 
     AVT_MFEM_INFO("VTKDataArray num_tuples = " << ndofs << " "
-                    << " num_comps = " << vdim);
+                    << " num_comps = " << ncomps);
 
     vtkDataArray *retval = vtkDoubleArray::New();
     // vtk reqs us to set number of comps before number of tuples
-    retval->SetNumberOfComponents(vdim == 2 ? 3 : vdim);
+    retval->SetNumberOfComponents(ncomps == 2 ? 3 : ncomps);
     // set number of tuples
     retval->SetNumberOfTuples(ndofs);
 
     const double *values = gf->HostRead();
 
-    if (vdim == 1) // scalar case
+    if (ncomps == 1) // scalar case
     {
         for (vtkIdType i = 0; i < ndofs; i ++)
         {
@@ -968,21 +962,21 @@ avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
     {
         // deal with striding of all components
         bool bynodes = fespace->GetOrdering() == mfem::Ordering::byNODES;
-        int stride = bynodes ? 1 : vdim;
-        int vdim_stride = bynodes ? ndofs : 1;
+        int stride = bynodes ? 1 : ncomps;
+        int ncomps_stride = bynodes ? ndofs : 1;
         int offset = 0;
 
-        for (int i = 0;  i < vdim; i ++)
+        for (int i = 0;  i < ncomps; i ++)
         {
             for (vtkIdType j = 0; j < ndofs; j ++)
             {
                 retval->SetComponent(j, i, values[offset + j * stride]);
-                if(vdim == 2)
+                if(ncomps == 2)
                 {
                     retval->SetComponent(j, 2, 0.0);
                 }
             }
-            offset += vdim_stride;
+            offset += ncomps_stride;
         }
     }
 
@@ -1287,7 +1281,7 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
         AVT_MFEM_EXCEPTION1(InvalidVariableException,
                             "Unknown MFEM LOR refinement basis type: " << ref_basis_type);
     }
-    mfem::FiniteElementSpace lo_fes(&lo_mesh, lo_col, gf->FESpace()->GetVDim());
+    mfem::FiniteElementSpace lo_fes(&lo_mesh, lo_col, gf_to_use->FESpace()->GetVectorDim());
     mfem::GridFunction lo_gf(&lo_fes);
     // transform the higher order function to a low order function
     // using a matrix free transfer operator
