@@ -74,9 +74,9 @@ public:
           Closed_Uniform
       };
 
-      static vtkDataSet   *LegacyRefineMeshToVTK(mfem::Mesh *mesh,
-                                                 int domain,
-                                                 int lod);
+      static vtkDataSet   *DiscontinuousRefineMeshToVTK(mfem::Mesh *mesh,
+                                                        const int domain,
+                                                        const int lod);
 
       static vtkDataSet   *LowOrderMeshToVTK(mfem::Mesh *mesh);
 
@@ -91,10 +91,10 @@ public:
                                                        int order,
                                                        const refinementBasisType ref_basis_type);
 
-      static vtkDataArray *LegacyRefineGridFunctionToVTK(mfem::Mesh *mesh,
-                                                         mfem::GridFunction *gf,
-                                                         int lod,
-                                                         bool var_is_nodal);
+      static vtkDataArray *DiscontinuousRefineGridFunctionToVTK(mfem::Mesh *mesh,
+                                                                mfem::GridFunction *gf,
+                                                                const int lod,
+                                                                const bool var_is_nodal);
 
       static vtkDataArray *LowOrderGridFunctionToVTK(mfem::GridFunction *gf);
 

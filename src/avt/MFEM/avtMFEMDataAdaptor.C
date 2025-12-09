@@ -108,7 +108,7 @@ VTKCellTypeSize(int cell_type)
 }
 
 // ****************************************************************************
-//  Method: LegacyRefineMeshToVTK
+//  Method: DiscontinuousRefineMeshToVTK
 //
 //  Purpose:
 //    Constructs a vtkUnstructuredGrid that contains a refined mfem mesh.
@@ -137,9 +137,9 @@ VTKCellTypeSize(int cell_type)
 
 vtkDataSet *
 // TODO rename me to discontinuous refine
-avtMFEMDataAdaptor::LegacyRefineMeshToVTK(mfem::Mesh *mesh,
-                                          int domain,
-                                          int lod)
+avtMFEMDataAdaptor::DiscontinuousRefineMeshToVTK(mfem::Mesh *mesh,
+                                                 const int domain,
+                                                 const int lod)
 {
     // create output objects
     vtkUnstructuredGrid *res_ds  = vtkUnstructuredGrid::New();
@@ -361,7 +361,7 @@ avtMFEMDataAdaptor::LowOrderMeshToVTK(mfem::Mesh *mesh)
 //  Programmer: Justin Privitera
 //  Creation:   Wed Apr 13 13:53:06 PDT 2022
 //
-// Notes: See LegacyRefineMeshToVTK for the function originally 
+// Notes: See DiscontinuousRefineMeshToVTK for the function originally 
 //   with this name.
 // 
 // Modifications:
@@ -398,7 +398,7 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
     if (meshRefinementMethod::Discontinuous_LOR == mesh_ref_method)
     {
         AVT_MFEM_INFO("Using Legacy LOR to refine mesh.");
-        return LegacyRefineMeshToVTK(mesh, domain, lod);
+        return DiscontinuousRefineMeshToVTK(mesh, domain, lod);
     }
 
     if (mesh && mesh->GetNodalFESpace() && mesh->GetNodalFESpace()->IsDGSpace())
@@ -422,7 +422,7 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
             AVT_MFEM_INFO("High Order Mesh may be periodic and default "
                           "projection has been selected; falling back to "
                           "Legacy LOR.");
-            return LegacyRefineMeshToVTK(mesh, domain, lod);
+            return DiscontinuousRefineMeshToVTK(mesh, domain, lod);
         }
     }
     else
@@ -810,7 +810,7 @@ avtMFEMDataAdaptor::QuadratureFunctionMeshToVTK(mfem::Mesh *mesh,
 }
 
 // ****************************************************************************
-//  Method: LegacyRefineGridFunctionToVTK
+//  Method: DiscontinuousRefineGridFunctionToVTK
 //
 //  Purpose:
 //   Constructs a vtkDataArray that contains a refined mfem mesh field variable.
@@ -838,10 +838,10 @@ avtMFEMDataAdaptor::QuadratureFunctionMeshToVTK(mfem::Mesh *mesh,
 //
 // ****************************************************************************
 vtkDataArray *
-avtMFEMDataAdaptor::LegacyRefineGridFunctionToVTK(mfem::Mesh *mesh,
-                                                  mfem::GridFunction *gf,
-                                                  int lod,
-                                                  bool var_is_nodal)
+avtMFEMDataAdaptor::DiscontinuousRefineGridFunctionToVTK(mfem::Mesh *mesh,
+                                                         mfem::GridFunction *gf,
+                                                         const int lod,
+                                                         const bool var_is_nodal)
 {
     int npts=0;
     int neles=0;
@@ -873,7 +873,7 @@ avtMFEMDataAdaptor::LegacyRefineGridFunctionToVTK(mfem::Mesh *mesh,
     else
         rv->SetNumberOfComponents(ncomps);
 
-    if(var_is_nodal)
+    if (var_is_nodal)
         rv->SetNumberOfTuples(npts);
     else
         rv->SetNumberOfTuples(neles);
@@ -1071,7 +1071,7 @@ ConvertGridFunctionToScalar(mfem::GridFunction *org_gf,
 //  Programmer: Justin Privitera
 //  Creation:   Fri May  6 15:23:56 PDT 2022
 //
-//  Notes: See LegacyRefineGridFunctionToVTK for the function originally 
+//  Notes: See DiscontinuousRefineGridFunctionToVTK for the function originally 
 //   with this name.
 // 
 //  Modifications:
@@ -1114,7 +1114,7 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
 
         // TODO name change to discontinuous refine
         AVT_MFEM_INFO("Using Legacy LOR to refine grid function.");
-        return LegacyRefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
+        return DiscontinuousRefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
     }
 
     if (mesh && mesh->GetNodalFESpace() && mesh->GetNodalFESpace()->IsDGSpace())
@@ -1143,7 +1143,7 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
             AVT_MFEM_INFO("High Order Mesh may be periodic and default "
                           "refinement has been selected; falling back to "
                           "Legacy LOR.");
-            return LegacyRefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
+            return DiscontinuousRefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
         }
     }
     else
