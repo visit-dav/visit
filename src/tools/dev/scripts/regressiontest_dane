@@ -686,9 +686,9 @@ chmod 750 postit_${testHost}
 if test "$testHost" = "dane" ; then
     hostName=`hostname`
     subTag=`date +%Y-%m-%d-%H:%M`
-    ./checkout_${$testHost} $subTag
+    ./checkout_${testHost} $subTag
     sbatch --partition=pbatch --account=wbronze --time=10:00:00 --ntasks=56 --nodes=1 --tasks-per-node=56 \
-           -o ${workingDir}/${hostName}_testit_${subTag}.out ./runit_${$testHost} $subTag
+           -o ${workingDir}/${hostName}_testit_${subTag}.out ./runit_${testHost} $subTag
     sleep 28800
-    ./postit_${$testHost} $subTag
+    ./postit_${testHost} $subTag
 fi
