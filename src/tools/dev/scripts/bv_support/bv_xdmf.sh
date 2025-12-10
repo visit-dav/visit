@@ -168,7 +168,7 @@ EOF
     return 0;
 }
 
-function apply_xdmf_hdf520
+function apply_xdmf_hdf520_patch
 {
     info "Patching Xdmf 2.1.1 for HDF5-2.0. . ."
     patch -p0 << \EOF
@@ -352,7 +352,7 @@ function apply_xdmf_patch
             return 1
         fi
 
-        apply_xdmf_hdf520
+        apply_xdmf_hdf520_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi
@@ -361,15 +361,25 @@ function apply_xdmf_patch
     return 0;
 }
 
+#
+# We're using an ancient version of Xdmf lib (2.1.1 ~2012)
+# Its CMake logic doesn't use find_package() on HDF5. Patching
+# it to use find_package() still doesn't work due to differences
+# in assumptions about CMake variable names. When HDF5 is installed
+# with parallel enabled, any library including hdf5.h then also
+# hits a #include for mpi.h. So, we need to tell Xdmf's CMake where
+# to find mpi header files. This little bit of logic creates a tiny
+# CMake project to call find_package() on HDF5 and then tease from
+# it the relevant CMake variable.
+#
 function probe_hdf5_mpi_dependence
 {
-    set +x
     rm -rf build-visit-probe-hdf5
     mkdir -p build-visit-probe-hdf5
     cat > build-visit-probe-hdf5/CMakeLists.txt << \EOF
 cmake_minimum_required(VERSION 3.24)
 project(hdf5_probe LANGUAGES C)
-find_package(HDF5 CONFIG REQUIRED)
+find_package(HDF5)
 if(HDF5_MPI_C_INCLUDE_PATH)
   message(STATUS "HDF5_MPI_C_INCLUDE_PATH=${HDF5_MPI_C_INCLUDE_PATH}")
 endif()
@@ -382,7 +392,6 @@ EOF
     else
         echo ""
     fi
-    set -x
 }
 
 function build_xdmf
@@ -442,18 +451,21 @@ function build_xdmf
     fi
     xmllib=$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib${xml64}/libvtklibxml2${xmlsep}${VTK_SHORT_VERSION}.${SO_EXT}
 
+    # Probe HDF5 installation for MPI header file path, if any
     mpi_inc=$(probe_hdf5_mpi_dependence)
     info "HDF5 MPI include path detected as \"$mpi_inc\""
 
+    # The -Wno-dev arg to CMake here makes pawing through any
+    # failed output a lot easier.
     set -x
-    ${CMAKE_BIN} -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/Xdmf/${XDMF_VERSION}/${VISITARCH}"\
+    ${CMAKE_BIN} -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/Xdmf/${XDMF_VERSION}/${VISITARCH}" \
                  -DCMAKE_BUILD_TYPE:STRING="${VISIT_BUILD_MODE}" \
                  -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON \
                  -DBUILD_SHARED_LIBS:BOOL=${XDMF_SHARED_LIBS}\
-                 -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS} ${CXX_OPT_FLAGS} ${mpi_inc}"\
+                 -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS} ${CXX_OPT_FLAGS} ${mpi_inc}" \
                  -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-                 -DCMAKE_C_FLAGS:STRING="${CFLAGS} ${C_OPT_FLAGS} ${mpi_inc}"\
-                 -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
+                 -DCMAKE_C_FLAGS:STRING="${CFLAGS} ${C_OPT_FLAGS} ${mpi_inc}" \
+                 -DCMAKE_C_COMPILER:STRING=${C_COMPILER} \
                  -DBUILD_TESTING:BOOL=OFF \
                  -DXDMF_BUILD_MPI:BOOL=OFF \
                  -DXDMF_BUILD_VTK:BOOL=OFF \
