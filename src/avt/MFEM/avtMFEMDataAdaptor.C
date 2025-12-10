@@ -1099,6 +1099,7 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
                                             const meshRefinementMethod mesh_ref_method,
                                             const fieldProjectionMethod field_proj_method,
                                             const refinementBasisType ref_basis_type,
+                                            avtCentering &cent_change,
                                             bool var_is_nodal)
 {
     AVT_MFEM_INFO("Creating Refined MFEM Field with lod: " << lod);
@@ -1112,6 +1113,7 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
         }
 
         AVT_MFEM_INFO("Using Legacy LOR to refine grid function.");
+        cent_change = AVT_NODECENT;
         return DiscontinuousRefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
     }
 
@@ -1141,6 +1143,7 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
             AVT_MFEM_INFO("High Order Mesh may be periodic and default "
                           "refinement has been selected; falling back to "
                           "Legacy LOR.");
+            cent_change = AVT_NODECENT;
             return DiscontinuousRefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
         }
     }
@@ -1248,14 +1251,16 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     if (fieldProjectionMethod::Nodal_Projection == field_proj_method_to_use)
     {
         // convert to H1
-        // node centered
         lo_col = new mfem::LinearFECollection;
+        // node centered
+        cent_change = AVT_NODECENT;
     }
     else if (fieldProjectionMethod::Zonal_Projection == field_proj_method_to_use)
     {
         // convert to L2
-        // element centered
         lo_col = new mfem::L2_FECollection(0, mesh->Dimension(), 1);
+        // element centered
+        cent_change = AVT_ZONECENT;
     }
     else
     {

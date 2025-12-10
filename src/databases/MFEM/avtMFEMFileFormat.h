@@ -99,7 +99,8 @@ class avtMFEMFileFormat : public avtSTMDFileFormat
                                                                                                   
     vtkDataArray                    *GetRefinedVar(const std::string &mesh_name,
                                                    int chunk,
-                                                   int lod);
+                                                   int lod,
+                                                   avtCentering &cent_change);
                                                    
     JSONRoot                        *root;  
 

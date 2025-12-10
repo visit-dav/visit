@@ -7,6 +7,8 @@
 #include <avtmfem_exports.h>
 #include <mfem.hpp>
 
+#include <avtTypes.h>
+
 #include <ostream>
 
 //-----------------------------------------------------------------------------
@@ -104,6 +106,7 @@ public:
                                                    const meshRefinementMethod mesh_ref_method,
                                                    const fieldProjectionMethod field_proj_method,
                                                    const refinementBasisType ref_basis_type,
+                                                   avtCentering &cent_change,
                                                    bool var_is_nodal = true);
 
       static vtkDataArray *RefineElementColoringToVTK(mfem::Mesh *mesh,

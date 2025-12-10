@@ -3036,12 +3036,14 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                 mfem::GridFunction *gf =  avtConduitBlueprintDataAdaptor::BlueprintToMFEM::FieldToMFEM(mesh,
                                                                                                        fieldHO);
                 // refine the grid function into a vtk data array
+                avtCentering cent_change;
                 res = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh,
                                                                   gf,
                                                                   m_selected_lod+1,
                                                                   m_mesh_refinement_method,
                                                                   m_field_projection_method,
-                                                                  m_refinement_basis_type);
+                                                                  m_refinement_basis_type,
+                                                                  cent_change);
 
                 // cleanup mfem data
                 delete gf;
@@ -3124,12 +3126,14 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                 mfem::GridFunction *gf =  avtConduitBlueprintDataAdaptor::BlueprintToMFEM::FieldToMFEM(mesh,
                                                                                 *field_ptr);
                 // refine the grid function into a vtk data array
+                avtCentering cent_change;
                 res = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh,
                                                                   gf,
                                                                   m_selected_lod+1,
                                                                   m_mesh_refinement_method,
                                                                   m_field_projection_method,
-                                                                  m_refinement_basis_type);
+                                                                  m_refinement_basis_type,
+                                                                  cent_change);
 
                 // cleanup mfem grid func
                 delete gf;

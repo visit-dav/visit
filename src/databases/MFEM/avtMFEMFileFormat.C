@@ -710,15 +710,14 @@ avtMFEMFileFormat::GetMesh(int domain, const char *meshname)
 vtkDataArray *
 avtMFEMFileFormat::GetVar(int domain, const char *varname, avtCentering &cent_change)
 {
-    // TODO I left off here; let's see if I can get a change here to propagate back up
-    cent_change = AVT_NO_VARIABLE;
-    return GetRefinedVar(string(varname),domain,selectedLOD+1);
+    return GetRefinedVar(string(varname),domain,selectedLOD+1,cent_change);
 }
 
 vtkDataArray *
 avtMFEMFileFormat::GetVar(int domain, const char *varname)
 {
-    return GetRefinedVar(string(varname),domain,selectedLOD+1);
+    avtCentering cent_change;
+    return GetRefinedVar(string(varname),domain,selectedLOD+1,cent_change);
 }
 
 // ****************************************************************************
@@ -743,7 +742,9 @@ avtMFEMFileFormat::GetVar(int domain, const char *varname)
 vtkDataArray *
 avtMFEMFileFormat::GetVectorVar(int domain, const char *varname)
 {
-    return GetRefinedVar(string(varname),domain,selectedLOD+1);
+    // TODO avtCentering
+    avtCentering cent_change;
+    return GetRefinedVar(string(varname),domain,selectedLOD+1,cent_change);
 }
 
 
@@ -881,8 +882,11 @@ avtMFEMFileFormat::FetchMesh(const std::string &mesh_name,int domain)
 vtkDataArray *
 avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
                                  int domain,
-                                 int lod)
+                                 int lod,
+                                 avtCentering &cent_change)
 {
+    cent_change = AVT_UNKNOWN_CENT;
+
     if(root == NULL)
     {
         //failed to open mesh file
@@ -1002,6 +1006,7 @@ avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
                                                          m_mesh_refinement_method,
                                                          m_field_projection_method,
                                                          m_refinement_basis_type,
+                                                         cent_change,
                                                          var_is_nodal);
         
         delete gf;

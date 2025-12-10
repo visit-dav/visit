@@ -1562,7 +1562,8 @@ avtGenericDatabase::GetScalarVarDataset(const char *varname, int ts,
         return NULL;
     }
 
-    vtkDataArray *var  = GetScalarVariable(varname, ts, domain, material, dataRequest);
+    avtCentering cent_change;
+    vtkDataArray *var  = GetScalarVariable(varname, ts, domain, material, dataRequest, cent_change);
 
     if (var == NULL)
     {
@@ -1579,13 +1580,29 @@ avtGenericDatabase::GetScalarVarDataset(const char *varname, int ts,
     //
     var->SetName(varname);
 
-    if (smd->centering == AVT_NODECENT)
+    // there was no recorded centering change
+    if (cent_change == AVT_UNKNOWN_CENT)
     {
-        mesh->GetPointData()->SetScalars(var);
+        if (smd->centering == AVT_NODECENT)
+        {
+            mesh->GetPointData()->SetScalars(var);
+        }
+        else
+        {
+            mesh->GetCellData()->SetScalars(var);
+        }
     }
+    // centering was changed; we no longer rely on metadata
     else
     {
-        mesh->GetCellData()->SetScalars(var);
+        if (cent_change == AVT_NODECENT)
+        {
+            mesh->GetPointData()->SetScalars(var);
+        }
+        else
+        {
+            mesh->GetCellData()->SetScalars(var);
+        }
     }
 
     return mesh;
