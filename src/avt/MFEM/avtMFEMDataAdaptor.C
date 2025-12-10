@@ -136,7 +136,6 @@ VTKCellTypeSize(int cell_type)
 // ****************************************************************************
 
 vtkDataSet *
-// TODO rename me to discontinuous refine
 avtMFEMDataAdaptor::DiscontinuousRefineMeshToVTK(mfem::Mesh *mesh,
                                                  const int domain,
                                                  const int lod)
@@ -1112,7 +1111,6 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
                 "Zonal projection together with discontinuous low-order-refinement is not supported.");
         }
 
-        // TODO name change to discontinuous refine
         AVT_MFEM_INFO("Using Legacy LOR to refine grid function.");
         return DiscontinuousRefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
     }
