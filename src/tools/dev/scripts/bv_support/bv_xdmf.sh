@@ -306,36 +306,6 @@ EOF
         return 1
     fi
 
-    patch -p0 << \EOF
-diff -c Xdmf/CMakeLists.txt Xdmf.patched/CMakeLists.txt
-*** Xdmf/CMakeLists.txt	2011-03-10 17:45:29.000000000 -0800
---- Xdmf.patched/CMakeLists.txt	2025-12-09 18:27:31.823565000 -0800
-***************
-*** 308,313 ****
---- 308,315 ----
-    OPTION(XDMF_SYSTEM_HDF5_IS_PARALLEL "HDF5 Built for MPI" OFF)
-    IF (XDMF_SYSTEM_HDF5_IS_PARALLEL)
-    ENDIF (XDMF_SYSTEM_HDF5_IS_PARALLEL)
-+   find_package(HDF5)
-+   if(NOT HDF5_FOUND)
-    FIND_LIBRARY(HDF5_LIBRARY
-      hdf5
-      /usr/lib
-***************
-*** 318,323 ****
---- 320,326 ----
-      /usr/include
-      /opt/include
-      /usr/local/include)
-+   endif()
-    MESSAGE(STATUS "Using system HDF5")
-    INCLUDE_DIRECTORIES(${HDF5_INCLUDE_PATH})
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "Xdmf 2.1.1 for HDF5-2.0 patch #2 failed."
-        return 1
-    fi
-
     return 0;
 }
 
@@ -453,7 +423,7 @@ function build_xdmf
 
     # Probe HDF5 installation for MPI header file path, if any
     mpi_inc=$(probe_hdf5_mpi_dependence)
-    info "HDF5 MPI include path detected as \"$mpi_inc\""
+    info "Xdmf: HDF5 MPI include path detected as \"$mpi_inc\""
 
     # The -Wno-dev arg to CMake here makes pawing through any
     # failed output a lot easier.
