@@ -2578,7 +2578,20 @@ avtGenericDatabase::GetScalarVariable(const char *varname, int ts, int domain,
                                       const char *material,
                                       const avtDataRequest_p dataRequest)
 {
+    avtCentering cent_change;
+    return GetScalarVariable(varname, ts, domain, material, dataRequest, cent_change);
+}
+
+
+vtkDataArray *
+avtGenericDatabase::GetScalarVariable(const char *varname, int ts, int domain,
+                                      const char *material,
+                                      const avtDataRequest_p dataRequest,
+                                      avtCentering &cent_change)
+{
     (void)dataRequest;
+
+    cent_change = AVT_UNKNOWN_CENT;
 
     //
     // We have to be leery about doing any caching when the variables are
@@ -2615,7 +2628,7 @@ avtGenericDatabase::GetScalarVariable(const char *varname, int ts, int domain,
         //
         // We haven't read in this domain before, so fetch it from the files.
         //
-        var = Interface->GetVar(ts, domain, real_varname);
+        var = Interface->GetVar(ts, domain, real_varname, cent_change);
         if (var != NULL)
         {
             //

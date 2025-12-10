@@ -711,7 +711,7 @@ vtkDataArray *
 avtMFEMFileFormat::GetVar(int domain, const char *varname, avtCentering &cent_change)
 {
     // TODO I left off here; let's see if I can get a change here to propagate back up
-    cent_change = AVT_UNKNOWN_CENT;
+    cent_change = AVT_NO_VARIABLE;
     return GetRefinedVar(string(varname),domain,selectedLOD+1);
 }
 

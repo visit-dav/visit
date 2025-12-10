@@ -92,7 +92,8 @@ class DATABASE_API avtSTMDFileFormat : public avtFileFormat
 
     virtual vtkDataSet    *GetMesh(int, const char *) = 0;
     virtual vtkDataArray  *GetVar(int, const char *) = 0;
-    virtual vtkDataArray  *GetVar(int ts, const char *var, avtCentering &) { return GetVar(ts, var); };
+    virtual vtkDataArray  *GetVar(int ts, const char *var, avtCentering &cent_change) 
+                               { cent_change = AVT_UNKNOWN_CENT; return GetVar(ts, var); };
     virtual vtkDataArray  *GetVectorVar(int, const char *);
 
     virtual bool           HasCenteringChange() { return false; };

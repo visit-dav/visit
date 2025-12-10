@@ -438,6 +438,10 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
     vtkDataArray              *GetScalarVariable(const char *, int, int,
                                                  const char *,
                                                  const avtDataRequest_p);
+    vtkDataArray              *GetScalarVariable(const char *, int, int,
+                                                 const char *,
+                                                 const avtDataRequest_p,
+                                                 avtCentering &cent_change);
     vtkDataArray              *GetVectorVariable(const char *, int, int,
                                                  const char *,
                                                  const avtDataRequest_p);
