@@ -168,6 +168,177 @@ EOF
     return 0;
 }
 
+function apply_xdmf_hdf520
+{
+    info "Patching Xdmf 2.1.1 for HDF5-2.0. . ."
+    patch -p0 << \EOF
+diff -c Xdmf/libsrc/XdmfH5Driver.cxx Xdmf.patched/libsrc/XdmfH5Driver.cxx 
+*** Xdmf/libsrc/XdmfH5Driver.cxx	2011-03-10 17:45:29.000000000 -0800
+--- Xdmf.patched/libsrc/XdmfH5Driver.cxx	2025-12-08 04:39:51.371778000 -0800
+***************
+*** 33,38 ****
+--- 33,39 ----
+  #include "XdmfDsmBuffer.h"
+  #include "XdmfDsmComm.h"
+  #include "assert.h"
++ #define H5_USE_18_API
+  #include "hdf5.h"
+  
+  #include <cstring>
+***************
+*** 110,116 ****
+  #   define file_seek            lseek
+  #   define file_truncate        HDftruncate
+  #endif
+! #define MAXADDR (((haddr_t)1<<(8*sizeof(file_offset_t)-1))-1)
+  #define DSM_HSIZE_T size_t
+  #else
+  #define MAXADDR     ((haddr_t)~(size_t)0 - 1)
+--- 111,117 ----
+  #   define file_seek            lseek
+  #   define file_truncate        HDftruncate
+  #endif
+! #define MAXADDR HADDR_MAX
+  #define DSM_HSIZE_T size_t
+  #else
+  #define MAXADDR     ((haddr_t)~(size_t)0 - 1)
+***************
+*** 136,142 ****
+  #if (H5_VERS_MAJOR>1)||((H5_VERS_MAJOR==1)&&(H5_VERS_MINOR>=8))
+  static haddr_t H5FD_dsm_get_eoa(const H5FD_t *_file, H5FD_mem_t type);
+  static herr_t H5FD_dsm_set_eoa(H5FD_t *_file, H5FD_mem_t type, haddr_t addr);
+! static haddr_t H5FD_dsm_get_eof(const H5FD_t *_file);
+  #else
+  static haddr_t H5FD_dsm_get_eoa(H5FD_t *_file);
+  static herr_t H5FD_dsm_set_eoa(H5FD_t *_file, haddr_t addr);
+--- 137,143 ----
+  #if (H5_VERS_MAJOR>1)||((H5_VERS_MAJOR==1)&&(H5_VERS_MINOR>=8))
+  static haddr_t H5FD_dsm_get_eoa(const H5FD_t *_file, H5FD_mem_t type);
+  static herr_t H5FD_dsm_set_eoa(H5FD_t *_file, H5FD_mem_t type, haddr_t addr);
+! static haddr_t H5FD_dsm_get_eof(const H5FD_t *_file, H5FD_mem_t type);
+  #else
+  static haddr_t H5FD_dsm_get_eoa(H5FD_t *_file);
+  static herr_t H5FD_dsm_set_eoa(H5FD_t *_file, haddr_t addr);
+***************
+*** 149,189 ****
+  }
+  
+  static const H5FD_class_t H5FD_dsm_g = {
+!     "dsm",                      /*name          */
+!     MAXADDR,                    /*maxaddr       */
+!     H5F_CLOSE_WEAK,             /*fc_degree     */
+!     NULL,                       /*sb_size       */
+!     NULL,                       /*sb_encode     */
+!     NULL,                       /*sb_decode     */
+!     sizeof(H5FD_dsm_fapl_t),    /*fapl_size     */
+!     H5FD_dsm_fapl_get,          /*fapl_get      */
+!     NULL,                       /*fapl_copy     */
+!     NULL,                       /*fapl_free     */
+!     0,                          /*dxpl_size     */
+!     NULL,                       /*dxpl_copy     */
+!     NULL,                       /*dxpl_free     */
+!     H5FD_dsm_open,              /*open          */
+!     H5FD_dsm_close,             /*close         */
+!     H5FD_dsm_cmp,               /*cmp           */
+!     NULL,                       /*query         */
+! #if (H5_VERS_MAJOR>1)||((H5_VERS_MAJOR==1)&&(H5_VERS_MINOR>=8))
+!     NULL,                       /* get_type_map */
+! #endif
+!     NULL,                       /*alloc         */
+!     NULL,                       /*free          */
+!     H5FD_dsm_get_eoa,           /*get_eoa       */
+!     H5FD_dsm_set_eoa,           /*set_eoa       */
+!     H5FD_dsm_get_eof,           /*get_eof       */
+!     NULL,                       /*get_handle    */
+!     H5FD_dsm_read,              /*read          */
+!     H5FD_dsm_write,             /*write         */
+!     NULL,                       /*flush         */
+! #if (H5_VERS_MAJOR>1)||((H5_VERS_MAJOR==1)&&(H5_VERS_MINOR>=8))
+!     NULL,                       /* truncate     */
+! #endif
+!     NULL,                       /*lock          */
+!     NULL,                       /*unlock        */
+!     H5FD_FLMAP_SINGLE           /*fl_map        */
+  };
+  
+  
+--- 150,169 ----
+  }
+  
+  static const H5FD_class_t H5FD_dsm_g = {
+!     .name = "dsm",                           /*name          */
+!     .maxaddr = MAXADDR,                      /*maxaddr       */
+!     .fc_degree = H5F_CLOSE_WEAK,             /*fc_degree     */
+!     .fapl_size = sizeof(H5FD_dsm_fapl_t),    /*fapl_size     */
+!     .fapl_get = H5FD_dsm_fapl_get,           /*fapl_get      */
+!     .open = H5FD_dsm_open,                   /*open          */
+!     .close = H5FD_dsm_close,                 /*close         */
+!     .cmp = H5FD_dsm_cmp,                     /*cmp           */
+!     .get_eoa = H5FD_dsm_get_eoa,             /*get_eoa       */
+!     .set_eoa = H5FD_dsm_set_eoa,             /*set_eoa       */
+!     .get_eof = H5FD_dsm_get_eof,             /*get_eof       */
+!     .read = H5FD_dsm_read,                   /*read          */
+!     .write = H5FD_dsm_write,                 /*write         */
+!     .fl_map = H5FD_FLMAP_SINGLE              /*fl_map        */
+  };
+  
+  
+***************
+*** 685,691 ****
+   */
+  static haddr_t
+  #if (H5_VERS_MAJOR>1)||((H5_VERS_MAJOR==1)&&(H5_VERS_MINOR>=8))
+! H5FD_dsm_get_eof(const H5FD_t *_file)
+  #else
+  H5FD_dsm_get_eof(H5FD_t *_file)
+  #endif
+--- 665,671 ----
+   */
+  static haddr_t
+  #if (H5_VERS_MAJOR>1)||((H5_VERS_MAJOR==1)&&(H5_VERS_MINOR>=8))
+! H5FD_dsm_get_eof(const H5FD_t *_file, H5FD_mem_t type)
+  #else
+  H5FD_dsm_get_eof(H5FD_t *_file)
+  #endif
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Xdmf 2.1.1 for HDF5-2.0 patch #1 failed."
+        return 1
+    fi
+
+    patch -p0 << \EOF
+diff -c Xdmf/CMakeLists.txt Xdmf.patched/CMakeLists.txt
+*** Xdmf/CMakeLists.txt	2011-03-10 17:45:29.000000000 -0800
+--- Xdmf.patched/CMakeLists.txt	2025-12-09 18:27:31.823565000 -0800
+***************
+*** 308,313 ****
+--- 308,315 ----
+    OPTION(XDMF_SYSTEM_HDF5_IS_PARALLEL "HDF5 Built for MPI" OFF)
+    IF (XDMF_SYSTEM_HDF5_IS_PARALLEL)
+    ENDIF (XDMF_SYSTEM_HDF5_IS_PARALLEL)
++   find_package(HDF5)
++   if(NOT HDF5_FOUND)
+    FIND_LIBRARY(HDF5_LIBRARY
+      hdf5
+      /usr/lib
+***************
+*** 318,323 ****
+--- 320,326 ----
+      /usr/include
+      /opt/include
+      /usr/local/include)
++   endif()
+    MESSAGE(STATUS "Using system HDF5")
+    INCLUDE_DIRECTORIES(${HDF5_INCLUDE_PATH})
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Xdmf 2.1.1 for HDF5-2.0 patch #2 failed."
+        return 1
+    fi
+
+    return 0;
+}
+
 function apply_xdmf_patch
 {
     if [[ ${XDMF_VERSION} == 2.1.1 ]] ; then
@@ -180,9 +351,38 @@ function apply_xdmf_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi
+
+        apply_xdmf_hdf520
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
     fi
 
     return 0;
+}
+
+function probe_hdf5_mpi_dependence
+{
+    set +x
+    rm -rf build-visit-probe-hdf5
+    mkdir -p build-visit-probe-hdf5
+    cat > build-visit-probe-hdf5/CMakeLists.txt << \EOF
+cmake_minimum_required(VERSION 3.24)
+project(hdf5_probe LANGUAGES C)
+find_package(HDF5 CONFIG REQUIRED)
+if(HDF5_MPI_C_INCLUDE_PATH)
+  message(STATUS "HDF5_MPI_C_INCLUDE_PATH=${HDF5_MPI_C_INCLUDE_PATH}")
+endif()
+EOF
+    pushd build-visit-probe-hdf5 >/dev/null 2>&1
+    mpi_inc=$(${CMAKE_COMMAND} -DHDF5_DIR:PATH="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/cmake" . | grep HDF5_MPI_C_INCLUDE_PATH | cut -d'=' -f2)
+    popd >/dev/null 2>&1
+    if [[ -n "$mpi_inc" ]]; then
+        echo -I$mpi_inc
+    else
+        echo ""
+    fi
+    set -x
 }
 
 function build_xdmf
@@ -242,20 +442,24 @@ function build_xdmf
     fi
     xmllib=$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib${xml64}/libvtklibxml2${xmlsep}${VTK_SHORT_VERSION}.${SO_EXT}
 
+    mpi_inc=$(probe_hdf5_mpi_dependence)
+    info "HDF5 MPI include path detected as \"$mpi_inc\""
+
     set -x
     ${CMAKE_BIN} -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/Xdmf/${XDMF_VERSION}/${VISITARCH}"\
                  -DCMAKE_BUILD_TYPE:STRING="${VISIT_BUILD_MODE}" \
                  -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON \
                  -DBUILD_SHARED_LIBS:BOOL=${XDMF_SHARED_LIBS}\
-                 -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS} ${CXX_OPT_FLAGS}"\
+                 -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS} ${CXX_OPT_FLAGS} ${mpi_inc}"\
                  -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-                 -DCMAKE_C_FLAGS:STRING="${CFLAGS} ${C_OPT_FLAGS}"\
+                 -DCMAKE_C_FLAGS:STRING="${CFLAGS} ${C_OPT_FLAGS} ${mpi_inc}"\
                  -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
                  -DBUILD_TESTING:BOOL=OFF \
                  -DXDMF_BUILD_MPI:BOOL=OFF \
                  -DXDMF_BUILD_VTK:BOOL=OFF \
                  -DXDMF_BUILD_UTILS:BOOL=OFF \
                  -DXDMF_SYSTEM_HDF5:BOOL=ON \
+                 -DHDF5_DIR:PATH="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/cmake" \
                  -DHDF5_INCLUDE_PATH:PATH="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/include" \
                  -DHDF5_LIBRARY:FILEPATH="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib/libhdf5.${SO_EXT}" \
                  -DXDMF_SYSTEM_ZLIB:BOOL=ON \
@@ -264,6 +468,7 @@ function build_xdmf
                  -DXDMF_SYSTEM_LIBXML2:BOOL=ON \
                  -DLIBXML2_INCLUDE_PATH:PATH="${xmlinc}" \
                  -DLIBXML2_LIBRARY:FILEPATH="${xmllib}" \
+                 -Wno-dev \
                  .
     set +x
 
