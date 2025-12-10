@@ -75,7 +75,10 @@ class avtMFEMFileFormat : public avtSTMDFileFormat
 
     virtual vtkDataSet    *GetMesh(int, const char *);
     virtual vtkDataArray  *GetVar(int, const char *);
+    virtual vtkDataArray  *GetVar(int, const char *, avtCentering &);
     virtual vtkDataArray  *GetVectorVar(int, const char *);
+    
+    bool                   HasCenteringChange() override { return true; };
 
     virtual int            GetCycle();
     virtual double         GetTime();
@@ -86,6 +89,7 @@ class avtMFEMFileFormat : public avtSTMDFileFormat
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
     bool                   HasInvariantMetaData(void) const { return false; };
     bool                   HasInvariantSIL(void) const      { return false; };
+
   
   private:
     int                              selectedLOD;

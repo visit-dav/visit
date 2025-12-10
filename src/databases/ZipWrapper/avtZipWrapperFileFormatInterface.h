@@ -110,6 +110,7 @@ class avtZipWrapperFileFormatInterface : public avtFileFormatInterface
 
     virtual vtkDataSet     *GetMesh(int, int, const char *);
     virtual vtkDataArray   *GetVar(int, int, const char *);
+    virtual vtkDataArray   *GetVar(int, int, const char *, avtCentering &cent_change);
     virtual vtkDataArray   *GetVectorVar(int, int, const char *);
     virtual void           *GetAuxiliaryData(const char *, int, int, 
                                              const char *, void *, 

@@ -1138,6 +1138,13 @@ avtZipWrapperFileFormatInterface::CreateCacheNameIncludingSelections(std::string
 // ****************************************************************************
 
 vtkDataArray *
+avtZipWrapperFileFormatInterface::GetVar(int ts, int dom, const char *varname, avtCentering &cent_change)
+{
+    cent_change = AVT_UNKNOWN_CENT;
+    return GetVar(ts, dom, varname);
+}
+
+vtkDataArray *
 avtZipWrapperFileFormatInterface::GetVar(int ts, int dom, const char *varname)
 {
     if      (dbType == DB_TYPE_MTMD)

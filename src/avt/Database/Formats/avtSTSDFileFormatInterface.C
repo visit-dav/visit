@@ -177,6 +177,13 @@ avtSTSDFileFormatInterface::GetMesh(int ts, int dom, const char *mesh)
 // ****************************************************************************
 
 vtkDataArray *
+avtSTSDFileFormatInterface::GetVar(int ts, int dom, const char *var, avtCentering &cent_change)
+{
+    cent_change = AVT_UNKNOWN_CENT;
+    return GetVar(ts, dom, var);
+}
+
+vtkDataArray *
 avtSTSDFileFormatInterface::GetVar(int ts, int dom, const char *var)
 {
     if (ts < 0 || ts >= nTimesteps)

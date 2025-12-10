@@ -708,9 +708,17 @@ avtMFEMFileFormat::GetMesh(int domain, const char *meshname)
 //
 // ****************************************************************************
 vtkDataArray *
+avtMFEMFileFormat::GetVar(int domain, const char *varname, avtCentering &cent_change)
+{
+    // TODO I left off here; let's see if I can get a change here to propagate back up
+    cent_change = AVT_UNKNOWN_CENT;
+    return GetRefinedVar(string(varname),domain,selectedLOD+1);
+}
+
+vtkDataArray *
 avtMFEMFileFormat::GetVar(int domain, const char *varname)
-{   
-   return GetRefinedVar(string(varname),domain,selectedLOD+1);
+{
+    return GetRefinedVar(string(varname),domain,selectedLOD+1);
 }
 
 // ****************************************************************************

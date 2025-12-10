@@ -92,7 +92,10 @@ class DATABASE_API avtSTMDFileFormat : public avtFileFormat
 
     virtual vtkDataSet    *GetMesh(int, const char *) = 0;
     virtual vtkDataArray  *GetVar(int, const char *) = 0;
+    virtual vtkDataArray  *GetVar(int ts, const char *var, avtCentering &) { return GetVar(ts, var); };
     virtual vtkDataArray  *GetVectorVar(int, const char *);
+
+    virtual bool           HasCenteringChange() { return false; };
 
   protected:
     char                 **filenames;
@@ -102,6 +105,7 @@ class DATABASE_API avtSTMDFileFormat : public avtFileFormat
     int                    mostRecentAdded;
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData*) = 0;
+
 
     int                    AddFile(const char *);
     virtual void           CloseFile(int) {};

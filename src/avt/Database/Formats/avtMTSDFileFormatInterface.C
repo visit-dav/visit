@@ -181,6 +181,13 @@ avtMTSDFileFormatInterface::GetMesh(int ts, int dom, const char *mesh)
 // ****************************************************************************
 
 vtkDataArray *
+avtMTSDFileFormatInterface::GetVar(int ts, int dom, const char *var, avtCentering &cent_change)
+{
+    cent_change = AVT_UNKNOWN_CENT;
+    return GetVar(ts, dom, var);
+}
+
+vtkDataArray *
 avtMTSDFileFormatInterface::GetVar(int ts, int dom, const char *var)
 {
     int tsGroup = GetTimestepGroupForTimestep(ts);
