@@ -2107,7 +2107,8 @@ avtGenericDatabase::GetTensorVarDataset(const char *varname, int ts,
         return NULL;
     }
 
-    vtkDataArray *var = GetTensorVariable(varname, ts, domain, material, dataRequest);
+    avtCentering cent_change;
+    vtkDataArray *var = GetTensorVariable(varname, ts, domain, material, dataRequest, cent_change);
 
     if (var == NULL)
     {
@@ -2123,13 +2124,29 @@ avtGenericDatabase::GetTensorVarDataset(const char *varname, int ts,
     //
     var->SetName(varname);
 
-    if (tmd->centering == AVT_NODECENT)
+    // there was no centering change
+    if (cent_change == AVT_UNKNOWN_CENT)
     {
-        mesh->GetPointData()->SetTensors(var);
+        if (tmd->centering == AVT_NODECENT)
+        {
+            mesh->GetPointData()->SetTensors(var);
+        }
+        else
+        {
+            mesh->GetCellData()->SetTensors(var);
+        }
     }
+    // centering was changed; we no longer rely on metadata
     else
     {
-        mesh->GetCellData()->SetTensors(var);
+        if (cent_change == AVT_NODECENT)
+        {
+            mesh->GetPointData()->SetTensors(var);
+        }
+        else
+        {
+            mesh->GetCellData()->SetTensors(var);
+        }
     }
 
     return mesh;
@@ -2191,8 +2208,9 @@ avtGenericDatabase::GetSymmetricTensorVarDataset(const char *varname, int ts,
         return NULL;
     }
 
+    avtCentering cent_change;
     vtkDataArray *var = GetSymmetricTensorVariable(varname, ts, domain,
-                                                   material, dataRequest);
+                                                   material, dataRequest, cent_change);
 
     if (var == NULL)
     {
@@ -2232,8 +2250,6 @@ avtGenericDatabase::GetSymmetricTensorVarDataset(const char *varname, int ts,
             mesh->GetCellData()->SetTensors(var);
         }
     }
-
-    
 
     return mesh;
 }
@@ -2285,7 +2301,8 @@ avtGenericDatabase::GetArrayVarDataset(const char *varname, int ts,
         return NULL;
     }
 
-    vtkDataArray *var = GetArrayVariable(varname, ts, domain, material, dataRequest);
+    avtCentering cent_change;
+    vtkDataArray *var = GetArrayVariable(varname, ts, domain, material, dataRequest, cent_change);
 
     if (var == NULL)
     {
@@ -2301,13 +2318,29 @@ avtGenericDatabase::GetArrayVarDataset(const char *varname, int ts,
     //
     var->SetName(varname);
 
-    if (tmd->centering == AVT_NODECENT)
+    // there was no centering change
+    if (cent_change == AVT_UNKNOWN_CENT)
     {
-        mesh->GetPointData()->AddArray(var);
+        if (tmd->centering == AVT_NODECENT)
+        {
+            mesh->GetPointData()->AddArray(var);
+        }
+        else
+        {
+            mesh->GetCellData()->AddArray(var);
+        }
     }
+    // centering was changed; we no longer rely on metadata
     else
     {
-        mesh->GetCellData()->AddArray(var);
+        if (cent_change == AVT_NODECENT)
+        {
+            mesh->GetPointData()->AddArray(var);
+        }
+        else
+        {
+            mesh->GetCellData()->AddArray(var);
+        }
     }
 
     return mesh;
@@ -2485,7 +2518,8 @@ avtGenericDatabase::GetLabelVarDataset(const char *varname, int ts,
         return NULL;
     }
 
-    vtkDataArray *var = GetLabelVariable(varname, ts, domain, material);
+    avtCentering cent_change;
+    vtkDataArray *var = GetLabelVariable(varname, ts, domain, material, cent_change);
 
     if (var == NULL)
     {
@@ -2502,13 +2536,29 @@ avtGenericDatabase::GetLabelVarDataset(const char *varname, int ts,
     //
     var->SetName(varname);
 
-    if (lmd->centering == AVT_NODECENT)
+    // there was no centering change
+    if (cent_change == AVT_UNKNOWN_CENT)
     {
-        mesh->GetPointData()->SetScalars(var);
+        if (lmd->centering == AVT_NODECENT)
+        {
+            mesh->GetPointData()->SetScalars(var);
+        }
+        else
+        {
+            mesh->GetCellData()->SetScalars(var);
+        }
     }
+    // centering was changed; we no longer rely on metadata
     else
     {
-        mesh->GetCellData()->SetScalars(var);
+        if (cent_change == AVT_NODECENT)
+        {
+            mesh->GetPointData()->SetScalars(var);
+        }
+        else
+        {
+            mesh->GetCellData()->SetScalars(var);
+        }
     }
 
     return mesh;
@@ -2915,7 +2965,20 @@ avtGenericDatabase::GetTensorVariable(const char *varname, int ts, int domain,
                                       const char *material,
                                       const avtDataRequest_p dataRequest)
 {
+    avtCentering cent_change;
+    return GetTensorVariable(varname, ts, domain, material, dataRequest, cent_change);
+}
+
+vtkDataArray *
+avtGenericDatabase::GetTensorVariable(const char *varname, int ts, int domain,
+                                      const char *material,
+                                      const avtDataRequest_p dataRequest,
+                                      avtCentering &cent_change)
+{
     (void)dataRequest;
+
+    cent_change = AVT_UNKNOWN_CENT;
+
     //
     // We have to be leery about doing any caching when the variables are
     // defined on sub-meshes.  This is because if we add new secondary
@@ -2952,7 +3015,7 @@ avtGenericDatabase::GetTensorVariable(const char *varname, int ts, int domain,
         // We haven't read in this domain before, so fetch it from the files.
         // Note: we use the vector var interface to get tensors.
         //
-        var = Interface->GetVectorVar(ts, domain, real_varname);
+        var = Interface->GetVectorVar(ts, domain, real_varname, cent_change);
         if (var != NULL)
         {
             if (CachingRecommended(var) && Interface->CanCacheVariable(real_varname))
@@ -3031,7 +3094,7 @@ avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
                                                const avtDataRequest_p dataRequest)
 {
     avtCentering cent_change;
-    GetSymmetricTensorVariable(varname, ts, domain, material, dataRequest, cent_change);
+    return GetSymmetricTensorVariable(varname, ts, domain, material, dataRequest, cent_change);
 }
 
 vtkDataArray *
@@ -3041,6 +3104,9 @@ avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
                                                avtCentering &cent_change)
 {
     (void)dataRequest;
+
+    cent_change = AVT_UNKNOWN_CENT;
+
     //
     // We have to be leery about doing any caching when the variables are
     // defined on sub-meshes.  This is because if we add new secondary
@@ -3149,7 +3215,20 @@ avtGenericDatabase::GetArrayVariable(const char *varname, int ts, int domain,
                                      const char *material,
                                      const avtDataRequest_p dataRequest)
 {
+    avtCentering cent_change;
+    return GetArrayVariable(varname, ts, domain, material, dataRequest, cent_change);
+}
+
+vtkDataArray *
+avtGenericDatabase::GetArrayVariable(const char *varname, int ts, int domain,
+                                     const char *material,
+                                     const avtDataRequest_p dataRequest,
+                                     avtCentering &cent_change)
+{
     (void)dataRequest;
+
+    cent_change = AVT_UNKNOWN_CENT;
+
     //
     // We have to be leery about doing any caching when the variables are
     // defined on sub-meshes.  This is because if we add new secondary
@@ -3186,7 +3265,7 @@ avtGenericDatabase::GetArrayVariable(const char *varname, int ts, int domain,
         // We haven't read in this domain before, so fetch it from the files.
         // Note: we use the vector var interface to get arrays.
         //
-        var = Interface->GetVectorVar(ts, domain, real_varname);
+        var = Interface->GetVectorVar(ts, domain, real_varname, cent_change);
         if (var != NULL)
         {
             if (CachingRecommended(var) && Interface->CanCacheVariable(real_varname))
@@ -3246,6 +3325,16 @@ vtkDataArray *
 avtGenericDatabase::GetLabelVariable(const char *varname, int ts, int domain,
                                      const char *material)
 {
+    avtCentering cent_change;
+    return GetLabelVariable(varname, ts, domain, material, cent_change);
+}
+
+vtkDataArray *
+avtGenericDatabase::GetLabelVariable(const char *varname, int ts, int domain,
+                                     const char *material, avtCentering &cent_change)
+{
+
+    cent_change = AVT_UNKNOWN_CENT;
 
     //
     // We have to be leery about doing any caching when the variables are
@@ -3281,7 +3370,7 @@ avtGenericDatabase::GetLabelVariable(const char *varname, int ts, int domain,
         //
         // We haven't read in this domain before, so fetch it from the files.
         //
-        var = Interface->GetVar(ts, domain, real_varname);
+        var = Interface->GetVar(ts, domain, real_varname, cent_change);
         if (var != NULL)
         {
             if (CachingRecommended(var) && Interface->CanCacheVariable(real_varname))

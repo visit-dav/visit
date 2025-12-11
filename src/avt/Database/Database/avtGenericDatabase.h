@@ -458,15 +458,25 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                                           avtCentering &);
     vtkDataArray              *GetTensorVariable(const char *, int, int,
                                                  const char *,
+                                                 const avtDataRequest_p);
+    vtkDataArray              *GetTensorVariable(const char *, int, int,
+                                                 const char *,
                                                  const avtDataRequest_p,
                                                  avtCentering &);
     vtkDataArray              *GetArrayVariable(const char *, int, int,
                                                  const char *,
                                                  const avtDataRequest_p);
+    vtkDataArray              *GetArrayVariable(const char *, int, int,
+                                                 const char *,
+                                                 const avtDataRequest_p,
+                                                 avtCentering &);
     vtkDataArray              *GetSpeciesVariable(const char *, int, int,
                                                   const char *, int);
     vtkDataArray              *GetLabelVariable(const char *, int, int,
                                                 const char *);
+    vtkDataArray              *GetLabelVariable(const char *, int, int,
+                                                const char *,
+                                                avtCentering &);
     vtkDataArray              *GetGlobalNodeIds(int, const char *, int);
     vtkDataArray              *GetGlobalZoneIds(int, const char *, int);
     void                       AddSecondaryVariables(vtkDataSet *, int, int,
