@@ -686,6 +686,11 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                                 int level);
     void                       UpdateInternalState(int);
 
+    void                       HandleCentering(const avtCentering cent_change,
+                                               const avtCentering var_centering,
+                                               PickVarInfo &varInfo,
+                                               bool &zoneCent,
+                                               bool &validCentering);
     virtual bool               QueryScalars(const std::string &, const int,
                                             const int , const int ,
                                             const intVector &,

@@ -11187,6 +11187,64 @@ avtGenericDatabase::NumStagesForFetch(avtDataRequest_p spec)
     return numStages;
 }
 
+// ****************************************************************************
+//  Method: avtGenericDatabase::HandleCentering
+//
+//  Purpose:
+//    Quick helper to handle centering for all the query functions.
+//
+//  Programmer:   Justin Privitera
+//  Creation:     12/11/25
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+avtGenericDatabase::HandleCentering(const avtCentering cent_change,
+                                    const avtCentering var_centering,
+                                    PickVarInfo &varInfo,
+                                    bool &zoneCent,
+                                    bool &validCentering)
+{
+    zoneCent = false;
+    validCentering = true;
+    // no centering change; we can use metadata
+    if (AVT_UNKNOWN_CENT == cent_change)
+    {
+        if (AVT_NODECENT == var_centering)
+        {
+            varInfo.SetCentering(PickVarInfo::Nodal);
+            zoneCent = false;
+        }
+        else if (AVT_ZONECENT == var_centering)
+        {
+            varInfo.SetCentering(PickVarInfo::Zonal);
+            zoneCent = true;
+        }
+        else
+        {
+            validCentering = false;
+        }
+    }
+    else
+    {
+        if (AVT_NODECENT == cent_change)
+        {
+            varInfo.SetCentering(PickVarInfo::Nodal);
+            zoneCent = false;
+        }
+        else if (AVT_ZONECENT == cent_change)
+        {
+            varInfo.SetCentering(PickVarInfo::Zonal);
+            zoneCent = true;
+        }
+        else
+        {
+            validCentering = false;
+        }
+    }
+}
+
 
 // ****************************************************************************
 //  Method: avtGenericDatabase::QueryScalars
@@ -11264,27 +11322,14 @@ avtGenericDatabase::QueryScalars(const string &varName, const int dom,
         // additional args to this method or from PickVarInfo
         //
         avtDataRequest_p dataRequest;
+        avtCentering cent_change;
         vtkDataArray *scalars = GetScalarVariable(varName.c_str(), ts, dom,
-                                                  "_all", dataRequest);
+                                                  "_all", dataRequest, cent_change);
         if (scalars)
         {
             varInfo.SetTreatAsASCII(smd->treatAsASCII);
             bool zoneCent = false, validCentering = true;
-            if (smd->centering == AVT_NODECENT)
-            {
-                varInfo.SetCentering(PickVarInfo::Nodal);
-                zoneCent = false;
-            }
-            else if (smd->centering == AVT_ZONECENT)
-            {
-                varInfo.SetCentering(PickVarInfo::Zonal);
-                zoneCent = true;
-            }
-            else
-            {
-                validCentering = false;
-            }
-
+            HandleCentering(cent_change, smd->centering, varInfo, zoneCent, validCentering);
             if (validCentering)
             {
                 if (zoneCent != zonePick)
@@ -11478,28 +11523,16 @@ avtGenericDatabase::QueryVectors(const string &varName, const int dom,
         // additional args to this method or from PickVarInfo
         //
         avtDataRequest_p dataRequest;
+        avtCentering cent_change;
         vtkDataArray *vectors = GetVectorVariable(varName.c_str(), ts, dom,
-                                                  "_all", dataRequest);
+                                                  "_all", dataRequest, cent_change);
         int nComponents = 0;;
         double *temp = NULL;
         double mag = 0.;
         if (vectors)
         {
             bool zoneCent = false, validCentering = true;
-            if (vmd->centering == AVT_NODECENT)
-            {
-                varInfo.SetCentering(PickVarInfo::Nodal);
-                zoneCent = false;
-            }
-            else if (vmd->centering == AVT_ZONECENT)
-            {
-                varInfo.SetCentering(PickVarInfo::Zonal);
-                zoneCent = true;
-            }
-            else
-            {
-                validCentering = false;
-            }
+            HandleCentering(cent_change, vmd->centering, varInfo, zoneCent, validCentering);
             if (validCentering)
             {
                 nComponents = vectors->GetNumberOfComponents();
@@ -11622,27 +11655,15 @@ avtGenericDatabase::QueryTensors(const string &varName, const int dom,
         // additional args to this method or from PickVarInfo
         //
         avtDataRequest_p dataRequest;
+        avtCentering cent_change;
         vtkDataArray *tensors = GetTensorVariable(varName.c_str(), ts, dom,
-                                                  "_all", dataRequest);
+                                                  "_all", dataRequest, cent_change);
         int nComponents = 0;;
         double *temp = NULL;
         if (tensors)
         {
             bool zoneCent = false, validCentering = true;
-            if (tmd->centering == AVT_NODECENT)
-            {
-                varInfo.SetCentering(PickVarInfo::Nodal);
-                zoneCent = false;
-            }
-            else if (tmd->centering == AVT_ZONECENT)
-            {
-                varInfo.SetCentering(PickVarInfo::Zonal);
-                zoneCent = true;
-            }
-            else
-            {
-                validCentering = false;
-            }
+            HandleCentering(cent_change, tmd->centering, varInfo, zoneCent, validCentering);
             if (validCentering)
             {
                 nComponents = tensors->GetNumberOfComponents();
@@ -11742,27 +11763,15 @@ avtGenericDatabase::QueryArrays(const string &varName, const int dom,
         // additional args to this method or from PickVarInfo
         //
         avtDataRequest_p dataRequest;
+        avtCentering cent_change;
         vtkDataArray *array = GetArrayVariable(varName.c_str(), ts, dom,
-                                                  "_all", dataRequest);
+                                                  "_all", dataRequest, cent_change);
         int nComponents = 0;;
         double *temp = NULL;
         if (array)
         {
             bool zoneCent = false, validCentering = true;
-            if (tmd->centering == AVT_NODECENT)
-            {
-                varInfo.SetCentering(PickVarInfo::Nodal);
-                zoneCent = false;
-            }
-            else if (tmd->centering == AVT_ZONECENT)
-            {
-                varInfo.SetCentering(PickVarInfo::Zonal);
-                zoneCent = true;
-            }
-            else
-            {
-                validCentering = false;
-            }
+            HandleCentering(cent_change, tmd->centering, varInfo, zoneCent, validCentering);
             if (validCentering)
             {
                 nComponents = array->GetNumberOfComponents();
@@ -11871,26 +11880,14 @@ avtGenericDatabase::QuerySymmetricTensors(const string &varName,
         // additional args to this method or from PickVarInfo
         //
         avtDataRequest_p dataRequest;
+        avtCentering cent_change;
         vtkDataArray *tensors = GetSymmetricTensorVariable(varName.c_str(), ts,
-                                                           dom, "_all", dataRequest);
+                                                           dom, "_all", dataRequest, cent_change);
         int nComponents = 0;;
         if (tensors)
         {
             bool zoneCent = false, validCentering = true;
-            if (tmd->centering == AVT_NODECENT)
-            {
-                varInfo.SetCentering(PickVarInfo::Nodal);
-                zoneCent = false;
-            }
-            else if (tmd->centering == AVT_ZONECENT)
-            {
-                varInfo.SetCentering(PickVarInfo::Zonal);
-                zoneCent = true;
-            }
-            else
-            {
-                validCentering = false;
-            }
+            HandleCentering(cent_change, tmd->centering, varInfo, zoneCent, validCentering);
             if (validCentering)
             {
                 nComponents = tensors->GetNumberOfComponents();
@@ -11979,27 +11976,15 @@ avtGenericDatabase::QueryLabels(const string &varName, const int dom,
         stringVector names;
         doubleVector vals;
         char buff[80];
+        avtCentering cent_change;
         vtkDataArray *labels = GetLabelVariable(varName.c_str(), ts, dom,
-                                                "_all");
+                                                "_all",cent_change);
         int nComponents = 0;
         double *temp = NULL;
         if (labels)
         {
             bool zoneCent = false, validCentering = true;
-            if (lmd->centering == AVT_NODECENT)
-            {
-                varInfo.SetCentering(PickVarInfo::Nodal);
-                zoneCent = false;
-            }
-            else if (lmd->centering == AVT_ZONECENT)
-            {
-                varInfo.SetCentering(PickVarInfo::Zonal);
-                zoneCent = true;
-            }
-            else
-            {
-                validCentering = false;
-            }
+            HandleCentering(cent_change, lmd->centering, varInfo, zoneCent, validCentering);
             if (validCentering)
             {
                 nComponents = labels->GetNumberOfComponents();
