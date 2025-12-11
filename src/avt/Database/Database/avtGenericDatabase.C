@@ -2208,14 +2208,32 @@ avtGenericDatabase::GetSymmetricTensorVarDataset(const char *varname, int ts,
     //
     var->SetName(varname);
 
-    if (tmd->centering == AVT_NODECENT)
+    // there was no centering change
+    if (cent_change == AVT_UNKNOWN_CENT)
     {
-        mesh->GetPointData()->SetTensors(var);
+        if (tmd->centering == AVT_NODECENT)
+        {
+            mesh->GetPointData()->SetTensors(var);
+        }
+        else
+        {
+            mesh->GetCellData()->SetTensors(var);
+        }
     }
+    // centering was changed; we no longer rely on metadata
     else
     {
-        mesh->GetCellData()->SetTensors(var);
+        if (cent_change == AVT_NODECENT)
+        {
+            mesh->GetPointData()->SetTensors(var);
+        }
+        else
+        {
+            mesh->GetCellData()->SetTensors(var);
+        }
     }
+
+    
 
     return mesh;
 }
@@ -3010,7 +3028,17 @@ avtGenericDatabase::GetTensorVariable(const char *varname, int ts, int domain,
 vtkDataArray *
 avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
                                                int domain,const char *material,
-                                           const avtDataRequest_p dataRequest)
+                                               const avtDataRequest_p dataRequest)
+{
+    avtCentering cent_change;
+    GetSymmetricTensorVariable(varname, ts, domain, material, dataRequest, cent_change);
+}
+
+vtkDataArray *
+avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
+                                               int domain,const char *material,
+                                               const avtDataRequest_p dataRequest,
+                                               avtCentering &cent_change)
 {
     (void)dataRequest;
     //
@@ -3050,7 +3078,7 @@ avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
         // We haven't read in this domain before, so fetch it from the files.
         // Note: we use the vector var interface to get tensors.
         //
-        var = Interface->GetVectorVar(ts, domain, real_varname);
+        var = Interface->GetVectorVar(ts, domain, real_varname, cent_change);
         if (var != NULL)
         {
             //
