@@ -1697,135 +1697,30 @@ avtGenericDatabase::AddSecondaryVariables(vtkDataSet *ds, int ts, int domain,
             continue;
 
         //
-        // Do some preparation.  Decide the variable type and
-        // if it is node centered or zone centered.
-        //
-        vtkDataSetAttributes *atts = NULL;
-        switch (vt)
-        {
-          case AVT_SCALAR_VAR:
-            {
-                const avtScalarMetaData *smd=GetMetaData(ts)->GetScalar(varName);
-                if (smd->centering == AVT_NODECENT)
-                {
-                    atts = ds->GetPointData();
-                }
-                else
-                {
-                    atts = ds->GetCellData();
-                }
-            }
-            break;
-
-          case AVT_SYMMETRIC_TENSOR_VAR:
-            {
-                const avtSymmetricTensorMetaData *vmd =
-                                       GetMetaData(ts)->GetSymmTensor(varName);
-                if (vmd->centering == AVT_NODECENT)
-                {
-                    atts = ds->GetPointData();
-                }
-                else
-                {
-                    atts = ds->GetCellData();
-                }
-            }
-            break;
-
-          case AVT_TENSOR_VAR:
-            {
-                const avtTensorMetaData *vmd =
-                                           GetMetaData(ts)->GetTensor(varName);
-                if (vmd->centering == AVT_NODECENT)
-                {
-                    atts = ds->GetPointData();
-                }
-                else
-                {
-                    atts = ds->GetCellData();
-                }
-            }
-            break;
-
-          case AVT_VECTOR_VAR:
-            {
-                const avtVectorMetaData *vmd =
-                                           GetMetaData(ts)->GetVector(varName);
-                if (vmd->centering == AVT_NODECENT)
-                {
-                    atts = ds->GetPointData();
-                }
-                else
-                {
-                    atts = ds->GetCellData();
-                }
-            }
-            break;
-
-          case AVT_LABEL_VAR:
-            {
-                const avtLabelMetaData *lmd=GetMetaData(ts)->GetLabel(varName);
-                if (lmd->centering == AVT_NODECENT)
-                {
-                    atts = ds->GetPointData();
-                }
-                else
-                {
-                    atts = ds->GetCellData();
-                }
-            }
-            break;
-
-          case AVT_ARRAY_VAR:
-            {
-                const avtArrayMetaData *lmd=GetMetaData(ts)->GetArray(varName);
-                if (lmd->centering == AVT_NODECENT)
-                {
-                    atts = ds->GetPointData();
-                }
-                else
-                {
-                    atts = ds->GetCellData();
-                }
-            }
-            break;
-
-          case AVT_MATSPECIES:
-            atts = ds->GetCellData();
-            break;
-
-          case AVT_CURVE:
-            atts = ds->GetPointData();
-            break;
-
-          default:
-            EXCEPTION1(InvalidVariableException, varName);
-        }
-
-        //
         // Okay, now get the variable and add them to the dataset.
         //
         vtkDataArray *dat = NULL;
         vtkDataSet *mesh = NULL;
+        avtCentering cent_change = AVT_UNKNOWN_CENT;
         switch (vt)
         {
           case AVT_SCALAR_VAR:
-            dat = GetScalarVariable(varName, ts, domain, material, dataRequest);
+            dat = GetScalarVariable(varName, ts, domain, material, dataRequest, cent_change);
             break;
           case AVT_VECTOR_VAR:
-            dat = GetVectorVariable(varName, ts, domain, material, dataRequest);
+            dat = GetVectorVariable(varName, ts, domain, material, dataRequest, cent_change);
             break;
           case AVT_TENSOR_VAR:
-            dat = GetTensorVariable(varName, ts, domain, material, dataRequest);
+            dat = GetTensorVariable(varName, ts, domain, material, dataRequest, cent_change);
             break;
           case AVT_SYMMETRIC_TENSOR_VAR:
-            dat = GetSymmetricTensorVariable(varName, ts, domain, material, dataRequest);
+            dat = GetSymmetricTensorVariable(varName, ts, domain, material, dataRequest, cent_change);
             break;
           case AVT_LABEL_VAR:
-            dat = GetLabelVariable(varName, ts, domain, material);
+            dat = GetLabelVariable(varName, ts, domain, material, cent_change);
             break;
           case AVT_ARRAY_VAR:
-            dat = GetArrayVariable(varName, ts, domain, material, dataRequest);
+            dat = GetArrayVariable(varName, ts, domain, material, dataRequest, cent_change);
             break;
           case AVT_MATSPECIES:
             dat = GetSpeciesVariable(varName, ts, domain, material, nzones);
@@ -1838,6 +1733,91 @@ avtGenericDatabase::AddSecondaryVariables(vtkDataSet *ds, int ts, int domain,
             break;
           default:
             EXCEPTION1(InvalidVariableException, varName);
+        }
+
+        //
+        // Do some preparation.  Decide the variable type and
+        // if it is node centered or zone centered.
+        //
+        vtkDataSetAttributes *atts = NULL;
+        avtCentering var_centering = cent_change;
+        // if there was no centering override then we must fetch it from the metadata
+        if (AVT_UNKNOWN_CENT == cent_change)
+        {
+            switch (vt)
+            {
+                case AVT_SCALAR_VAR:
+                {
+                    const avtScalarMetaData *smd=GetMetaData(ts)->GetScalar(varName);
+                    var_centering = smd->centering;
+                    break;                    
+                }
+                case AVT_SYMMETRIC_TENSOR_VAR:
+                {
+                    const avtSymmetricTensorMetaData *vmd =GetMetaData(ts)->GetSymmTensor(varName);
+                    var_centering = vmd->centering;
+                    break;                    
+                }
+                case AVT_TENSOR_VAR:
+                {
+                    const avtTensorMetaData *vmd =GetMetaData(ts)->GetTensor(varName);
+                    var_centering = vmd->centering;
+                    break;                    
+                }
+                case AVT_VECTOR_VAR:
+                {
+                    const avtVectorMetaData *vmd =GetMetaData(ts)->GetVector(varName);
+                    var_centering = vmd->centering;
+                    break;                    
+                }
+                case AVT_LABEL_VAR:
+                {
+                    const avtLabelMetaData *lmd=GetMetaData(ts)->GetLabel(varName);
+                    var_centering = lmd->centering;
+                    break;                    
+                }
+                case AVT_ARRAY_VAR:
+                {
+                    const avtArrayMetaData *lmd=GetMetaData(ts)->GetArray(varName);
+                    var_centering = lmd->centering;
+                    break;                    
+                }
+                case AVT_MATSPECIES:
+                    break;
+                case AVT_CURVE:
+                    break;
+                default:
+                    EXCEPTION1(InvalidVariableException, varName);
+            }
+        }
+        // now that we know the centering, most cases collapse to one
+        switch (vt)
+        {
+            case AVT_SCALAR_VAR:
+            case AVT_VECTOR_VAR:
+            case AVT_TENSOR_VAR:
+            case AVT_SYMMETRIC_TENSOR_VAR:
+            case AVT_ARRAY_VAR:
+            case AVT_LABEL_VAR:
+            {
+                if (var_centering == AVT_NODECENT)
+                {
+                    atts = ds->GetPointData();
+                }
+                else
+                {
+                    atts = ds->GetCellData();
+                }
+                break;                
+            }
+            case AVT_MATSPECIES:
+                atts = ds->GetCellData();
+                break;
+            case AVT_CURVE:
+                atts = ds->GetPointData();
+                break;
+            default:
+                EXCEPTION1(InvalidVariableException, varName);
         }
 
         // We can arrive here with dat == NULL when a plugin decides to
