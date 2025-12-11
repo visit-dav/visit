@@ -185,7 +185,7 @@ function build_hdf5
            -DONLY_SHARED_LIBS:BOOL=ON"
     fi
 
-    if [[ "$DO_MOAB" == "yes" ]]; then
+    if [[ "$DO_MOAB" == "yes" || "$DO_MFEM" == "yes" || "$DO_NETCDF" == "yes" ]]; then
         cmk_opts="${cmk_opts} -DHDF5_BUILD_HL_LIB:BOOL=ON"
     else
         cmk_opts="${cmk_opts} -DHDF5_BUILD_HL_LIB:BOOL=OFF"
@@ -194,7 +194,7 @@ function build_hdf5
     if [[ "$DO_ZLIB" == "yes" ]]; then
         info "Configuring HDF5 with ZLib support."
         cmk_opts="${cmk_opts} \
-            -DHDF5_ENABLE_Z_LIB_SUPPORT:BOOL=ON \
+            -DHDF5_ENABLE_ZLIB_SUPPORT:BOOL=ON \
             -DZLIB_INCLUDE_DIR:PATH=\"${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/include\" \
             -DZLIB_LIBRARY_RELEASE:FILEPATH=\"${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/lib/libz.${SO_EXT}\""
     fi
