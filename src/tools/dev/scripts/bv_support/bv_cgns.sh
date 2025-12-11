@@ -282,10 +282,50 @@ EOF
     return 0
 }
 
+function apply_cgns_hdf520_patch
+{
+    info "Patching CGNS 4.1.0 configure for HDF5 2.0"
+    patch -p0 << \EOF
+diff -c CGNS-4.1.0/src/configure CGNS-4.1.0.patched/src/configure
+*** CGNS-4.1.0/src/configure	2021-03-03 08:22:54.000000000 -0800
+--- CGNS-4.1.0.patched/src/configure	2025-12-10 17:36:29.764546000 -0800
+***************
+*** 5686,5692 ****
+  
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking if HDF5 is 1.8 or greater" >&5
+  $as_echo_n "checking if HDF5 is 1.8 or greater... " >&6; }
+!   if test ${H5_VERS_MAJOR} -ge 1 && test ${H5_VERS_MINOR} -ge 8; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+  $as_echo "yes" >&6; }
+    else
+--- 5686,5694 ----
+  
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking if HDF5 is 1.8 or greater" >&5
+  $as_echo_n "checking if HDF5 is 1.8 or greater... " >&6; }
+!   if [ "$H5_VERS_MAJOR" -gt 1 ] || \
+!      { [ "$H5_VERS_MAJOR" -eq 1 ] && [ "$H5_VERS_MINOR" -ge 8 ]; }
+!   then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+  $as_echo "yes" >&6; }
+    else
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "CGNS patch for HDF5-2.0 failed."
+        return 1
+    fi
+
+    return 0
+}
+
 function apply_cgns_patch
 {
     if [[ ${CGNS_VERSION} == "4.1.0" ]] ; then
         apply_cgns_410_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+
+        apply_cgns_hdf520_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi
@@ -386,15 +426,17 @@ function build_cgns
     # Disable fortran
     FORTRANARGS="--with-fortran=no"
 
+    probe_hdf5_mpi_dependence
+
     set -x
     if [[ "$OPSYS" == "Darwin" ]] ; then
         env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-            CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+            CFLAGS="$CFLAGS $C_OPT_FLAGS $VISIT_HDF5_MPI_INCLUDE_FLAG" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS $VISIT_HDF5_MPI_INCLUDE_FLAG" \
             LDFLAGS="$LDFLAGS_ENV" LIBS="$LIBS_ENV" \
             ./configure --enable-64bit --enable-cgnstools=no ${cf_build_type} $H5ARGS $FORTRANARGS --prefix="$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH"
     else
         env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-            CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+            CFLAGS="$CFLAGS $C_OPT_FLAGS $VISIT_HDF5_MPI_INCLUDE_FLAG" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS $VISIT_HDF5_MPI_INCLUDE_FLAG" \
             ./configure --enable-64bit --enable-cgnstools=no ${cf_build_type} $H5ARGS $FORTRANARGS --prefix="$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH"
     fi
     set +x

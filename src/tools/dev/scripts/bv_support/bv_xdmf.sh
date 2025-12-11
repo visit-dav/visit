@@ -331,39 +331,6 @@ function apply_xdmf_patch
     return 0;
 }
 
-#
-# We're using an ancient version of Xdmf lib (2.1.1 ~2012)
-# Its CMake logic doesn't use find_package() on HDF5. Patching
-# it to use find_package() still doesn't work due to differences
-# in assumptions about CMake variable names. When HDF5 is installed
-# with parallel enabled, any library including hdf5.h then also
-# hits a #include for mpi.h. So, we need to tell Xdmf's CMake where
-# to find mpi header files. This little bit of logic creates a tiny
-# CMake project to call find_package() on HDF5 and then tease from
-# it the relevant CMake variable.
-#
-function probe_hdf5_mpi_dependence
-{
-    rm -rf build-visit-probe-hdf5
-    mkdir -p build-visit-probe-hdf5
-    cat > build-visit-probe-hdf5/CMakeLists.txt << \EOF
-cmake_minimum_required(VERSION 3.24)
-project(hdf5_probe LANGUAGES C)
-find_package(HDF5)
-if(HDF5_MPI_C_INCLUDE_PATH)
-  message(STATUS "HDF5_MPI_C_INCLUDE_PATH=${HDF5_MPI_C_INCLUDE_PATH}")
-endif()
-EOF
-    pushd build-visit-probe-hdf5 >/dev/null 2>&1
-    mpi_inc=$(${CMAKE_COMMAND} -DHDF5_DIR:PATH="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/cmake" . | grep HDF5_MPI_C_INCLUDE_PATH | cut -d'=' -f2)
-    popd >/dev/null 2>&1
-    if [[ -n "$mpi_inc" ]]; then
-        echo -I$mpi_inc
-    else
-        echo ""
-    fi
-}
-
 function build_xdmf
 {
     CMAKE_BIN="${CMAKE_COMMAND}"
@@ -422,8 +389,7 @@ function build_xdmf
     xmllib=$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib${xml64}/libvtklibxml2${xmlsep}${VTK_SHORT_VERSION}.${SO_EXT}
 
     # Probe HDF5 installation for MPI header file path, if any
-    mpi_inc=$(probe_hdf5_mpi_dependence)
-    info "Xdmf: HDF5 MPI include path detected as \"$mpi_inc\""
+    probe_hdf5_mpi_dependence
 
     # The -Wno-dev arg to CMake here makes pawing through any
     # failed output a lot easier.
@@ -432,9 +398,9 @@ function build_xdmf
                  -DCMAKE_BUILD_TYPE:STRING="${VISIT_BUILD_MODE}" \
                  -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON \
                  -DBUILD_SHARED_LIBS:BOOL=${XDMF_SHARED_LIBS}\
-                 -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS} ${CXX_OPT_FLAGS} ${mpi_inc}" \
+                 -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS} ${CXX_OPT_FLAGS} ${VISIT_HDF5_MPI_INCLUDE_FLAG}" \
                  -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-                 -DCMAKE_C_FLAGS:STRING="${CFLAGS} ${C_OPT_FLAGS} ${mpi_inc}" \
+                 -DCMAKE_C_FLAGS:STRING="${CFLAGS} ${C_OPT_FLAGS} ${VISIT_HDF5_MPI_INCLUDE_FLAG}" \
                  -DCMAKE_C_COMPILER:STRING=${C_COMPILER} \
                  -DBUILD_TESTING:BOOL=OFF \
                  -DXDMF_BUILD_MPI:BOOL=OFF \

@@ -1847,3 +1847,48 @@ function mangle_libraries
     touch "$mangled_dir"/done_mangling_library
     return 0
 }
+
+#
+# We use some ancient versions of third party libraries.
+# They don't handle building against a parallel enabled HDF5
+# install. When HDF5 is built for parallel, any library
+# including hdf5.h then also hits a #include for mpi.h. So, we
+# need to tell the library's CMake or Autotools logic where
+# to find MPI header files. The little bit of logic here creates
+# a tiny CMake project to call find_package() on HDF5 and then
+# tease from it the relevant CMake variable. If that variable is
+# already defined, because this function has been called before,
+# it just returns the value it computed previously.
+#
+function probe_hdf5_mpi_dependence
+{
+    if [ "${VISIT_HDF5_MPI_INCLUDE_FLAG+set}" = set ]; then
+        info "HDF5 MPI include flag detected as \"${VISIT_HDF5_MPI_INCLUDE_FLAG}\""
+        return
+    fi
+
+    if [[ "$DO_HDF5" == "yes" ]] ; then
+        rm -rf build-visit-probe-hdf5
+        mkdir -p build-visit-probe-hdf5
+        cat > build-visit-probe-hdf5/CMakeLists.txt << \EOF
+cmake_minimum_required(VERSION 3.24)
+project(hdf5_probe LANGUAGES C)
+find_package(HDF5)
+if(HDF5_MPI_C_INCLUDE_PATH)
+  message(STATUS "HDF5_MPI_C_INCLUDE_PATH=${HDF5_MPI_C_INCLUDE_PATH}")
+endif()
+EOF
+        pushd build-visit-probe-hdf5 >/dev/null 2>&1
+        mpi_inc=$(${CMAKE_COMMAND} -DHDF5_DIR:PATH="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/cmake" . | grep HDF5_MPI_C_INCLUDE_PATH | cut -d'=' -f2)
+        popd >/dev/null 2>&1
+        if [[ -n "$mpi_inc" ]]; then
+            export VISIT_HDF5_MPI_INCLUDE_FLAG="-I${mpi_inc}"
+        else
+            export VISIT_HDF5_MPI_INCLUDE_FLAG=""
+        fi
+    else
+        export VISIT_HDF5_MPI_INCLUDE_FLAG=""
+    fi
+    info "HDF5 MPI include flag detected as \"${VISIT_HDF5_MPI_INCLUDE_FLAG}\""
+}
+

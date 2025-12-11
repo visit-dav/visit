@@ -549,12 +549,14 @@ function build_h5part
          EXTRAARGS="ac_cv_build=aarch64-unknown-linux-gnu"
     fi
 
+    probe_hdf5_mpi_dependence
+
     info "Invoking command to configure H5Part"
     # In order to ensure $FORTRANARGS is expanded to build the arguments to
     # configure, we wrap the invokation in 'sh -c "..."' syntax
     set -x
     sh -c "./configure ${WITHHDF5ARG} ${OPTIONAL} CXX=\"$CXX_COMPILER\" \
-       CC=\"$C_COMPILER\" CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
+       CC=\"$C_COMPILER\" CFLAGS=\"$CFLAGS $C_OPT_FLAGS $VISIT_HDF5_MPI_INCLUDE_FLAG\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS $VISIT_HDF5_MPI_INCLUDE_FLAG\" \
        $FORTRANARGS $EXTRAARGS \
        --prefix=\"$VISITDIR/h5part/$H5PART_VERSION/$VISITARCH\""
     set +x

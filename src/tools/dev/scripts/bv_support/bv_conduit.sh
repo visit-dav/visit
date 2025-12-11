@@ -192,13 +192,15 @@ function build_conduit
     else
         cfg_opts="${cfg_opts} -DBUILD_SHARED_LIBS:BOOL=ON"
     fi
+
+    probe_hdf5_mpi_dependence
     
     cfg_opts="${cfg_opts} -DENABLE_TESTS:BOOL=false"
     cfg_opts="${cfg_opts} -DENABLE_DOCS:BOOL=false"
     cfg_opts="${cfg_opts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
     cfg_opts="${cfg_opts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
-    cfg_opts="${cfg_opts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS} ${PAR_LINKER_FLAGS}\""
-    cfg_opts="${cfg_opts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS} ${PAR_LINKER_FLAGS}\""
+    cfg_opts="${cfg_opts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS} ${PAR_LINKER_FLAGS} ${VISIT_HDF5_MPI_INCLUDE_FLAG}\""
+    cfg_opts="${cfg_opts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS} ${PAR_LINKER_FLAGS} ${VISIT_HDF5_MPI_INCLUDE_FLAG}\""
     if test "${OPSYS}" = "Darwin" ; then
         cfg_opts="${cfg_opts} -DCMAKE_INSTALL_NAME_DIR:PATH=${conduit_install_path}/lib"
         if test "${MACOSX_DEPLOYMENT_TARGET}" = "10.10"; then
