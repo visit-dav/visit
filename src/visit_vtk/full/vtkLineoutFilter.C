@@ -20,7 +20,7 @@
 #include <vtkVisItProbeFilter.h>
 
 
-vtkStandardNewMacro(vtkLineoutFilter);
+vtkStandardNewMacro(vtkLineoutFilter)
 
 
 // ****************************************************************************

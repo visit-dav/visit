@@ -22,7 +22,7 @@
 //
 // ****************************************************************************
 
-vtkStandardNewMacro(vtkUnstructuredGridRelevantPointsFilter);
+vtkStandardNewMacro(vtkUnstructuredGridRelevantPointsFilter)
 
 
 // ****************************************************************************

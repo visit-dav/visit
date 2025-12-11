@@ -10,7 +10,7 @@
 class VISIT_VTK_API vtkVisItStreamLine : public vtkStreamer
 {
 public:
-  vtkTypeMacro(vtkVisItStreamLine,vtkStreamer);
+  vtkTypeMacro(vtkVisItStreamLine,vtkStreamer)
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:

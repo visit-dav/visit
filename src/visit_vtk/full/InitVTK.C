@@ -35,10 +35,10 @@ class vtkVisItObjectFactory : public vtkObjectFactory
 //
 // Necessary for each object that will override a vtkObject.
 //
-VTK_CREATE_CREATE_FUNCTION(vtkVisItCellDataToPointData);
+VTK_CREATE_CREATE_FUNCTION(vtkVisItCellDataToPointData)
 
 #include <vtkVisItDataSetWriter.h>
-VTK_CREATE_CREATE_FUNCTION(vtkVisItDataSetWriter);
+VTK_CREATE_CREATE_FUNCTION(vtkVisItDataSetWriter)
 
 const char*
 vtkVisItObjectFactory::GetVTKSourceVersion()

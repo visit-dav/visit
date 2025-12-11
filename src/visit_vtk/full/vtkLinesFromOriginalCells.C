@@ -23,7 +23,7 @@
 //   Kathleen Bonnell, Wed Mar  6 15:14:29 PST 2002 
 //   Replace 'New' method with Macro to match VTK 4.0 API.
 //------------------------------------------------------------------------------
-vtkStandardNewMacro(vtkLinesFromOriginalCells);
+vtkStandardNewMacro(vtkLinesFromOriginalCells)
 
 // Construct object.
 

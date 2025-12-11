@@ -133,7 +133,7 @@ using std::vector;
 
 #define NUM_QCOEFFS 10 // # coefficients in a quadric rep
 
-vtkStandardNewMacro(vtkCSGGrid);
+vtkStandardNewMacro(vtkCSGGrid)
 
 // internal type used only for implementation
 typedef enum {

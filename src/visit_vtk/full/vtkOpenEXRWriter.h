@@ -28,7 +28,7 @@ class VISIT_VTK_API vtkOpenEXRWriter : public vtkImageWriter
 {
 public:
   static vtkOpenEXRWriter *New();
-  vtkTypeMacro(vtkOpenEXRWriter,vtkImageWriter);
+  vtkTypeMacro(vtkOpenEXRWriter,vtkImageWriter)
 
   void SetZBuffer(vtkFloatArray *arr);
   vtkFloatArray *GetZBuffer();

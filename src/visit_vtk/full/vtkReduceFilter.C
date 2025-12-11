@@ -17,7 +17,7 @@
 #include <vtkVisItUtility.h>
 
 
-vtkStandardNewMacro(vtkReduceFilter);
+vtkStandardNewMacro(vtkReduceFilter)
 
 
 vtkReduceFilter::vtkReduceFilter()
@@ -104,8 +104,8 @@ vtkReduceFilter::RequestData(
   vtkCellData *outCd = output->GetCellData();
   vtkPointData *outPd = output->GetPointData();
 
-  vtkDataArray *inCObjects;
-  vtkDataArray *inPObjects;
+  vtkDataArray *inCObjects = nullptr;
+  vtkDataArray *inPObjects = nullptr;
 
   if( reduceType == rVectors )
   {
@@ -121,7 +121,7 @@ vtkReduceFilter::RequestData(
   int npts = input->GetNumberOfPoints();
   int ncells = input->GetNumberOfCells();
 
-  if (inPObjects == NULL && inCObjects == NULL)
+  if (inPObjects == nullptr && inCObjects == nullptr)
   {
     vtkErrorMacro(<<"No objects to reduce");
     return 1;
@@ -141,11 +141,11 @@ vtkReduceFilter::RequestData(
   if (actingStride <= 0)
   {
     int totalObjects = 0;
-    if (inPObjects != NULL)
+    if (inPObjects != nullptr)
     {
         totalObjects += npts;
     }
-    if (inCObjects != NULL)
+    if (inCObjects != nullptr)
     {
         totalObjects += ncells;
     }
@@ -159,11 +159,11 @@ vtkReduceFilter::RequestData(
   else 
       outObjects = vtkFloatArray::New();
 
-  int nComponents;
+  int nComponents=0;
   
-  if (inPObjects != NULL)
+  if (inPObjects != nullptr)
     nComponents = inPObjects->GetNumberOfComponents();
-  else if (inCObjects != NULL)
+  else if (inCObjects != nullptr)
     nComponents = inCObjects->GetNumberOfComponents();
 
   float *fv = new float [nComponents];
@@ -173,9 +173,9 @@ vtkReduceFilter::RequestData(
 
   float nextToTake = 0.;
   int count = 0;
-  if (inPObjects != NULL)
+  if (inPObjects != nullptr)
   {
-    bool *foundcell = NULL;
+    bool *foundcell = nullptr;
     vtkDataArray *origCellArr =
       input->GetPointData()->GetArray("avtOriginalCellNumbers");
     vtkDataArray *origNodeArr =
@@ -257,9 +257,9 @@ vtkReduceFilter::RequestData(
 
   nextToTake = 0.;
   count = 0;
-  if (inCObjects != NULL && inPObjects == NULL)
+  if (inCObjects != nullptr && inPObjects == nullptr)
   {
-    bool *foundcell = NULL;
+    bool *foundcell = nullptr;
     vtkDataArray *origCellArr =
       input->GetCellData()->GetArray("avtOriginalCellNumbers");
     int ccmp = origCellArr ? origCellArr->GetNumberOfComponents() - 1 : -1;

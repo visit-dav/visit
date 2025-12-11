@@ -55,7 +55,7 @@ class vtkPointLocator;
 class VISIT_VTK_API vtkVisItFeatureEdges : public vtkPolyDataAlgorithm
 {
 public:
-  vtkTypeMacro(vtkVisItFeatureEdges,vtkPolyDataAlgorithm);
+  vtkTypeMacro(vtkVisItFeatureEdges,vtkPolyDataAlgorithm)
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:

@@ -36,7 +36,7 @@
 
 #include <TimingsManager.h>
 
-vtkStandardNewMacro(vtkVisItSplitter);
+vtkStandardNewMacro(vtkVisItSplitter)
 
 //
 // Function: AdjustPercentToZeroCrossing

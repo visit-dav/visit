@@ -69,7 +69,7 @@ public:
    * Standard methods for construction, type info, and printing.
    */
   static vtkExtractCellsByType *New();
-  vtkTypeMacro(vtkExtractCellsByType, vtkDataSetAlgorithm);
+  vtkTypeMacro(vtkExtractCellsByType, vtkDataSetAlgorithm)
   void PrintSelf(ostream &os, vtkIndent indent) override;
   //@}
 

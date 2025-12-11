@@ -698,12 +698,12 @@ void operator=(const vtkCSGGrid&);         // Not implemented.
 inline vtkIdType vtkCSGGrid::GetNumberOfPoints()
 {
 return GetNumberOfBoundaries();
-};
+}
 
 inline vtkIdType vtkCSGGrid::GetNumberOfBoundaries() const
 {
 return (vtkIdType) this->Boundaries->GetNumberOfItems();
-};
+}
 
 inline vtkIdType vtkCSGGrid::GetNumberOfCells() 
 {

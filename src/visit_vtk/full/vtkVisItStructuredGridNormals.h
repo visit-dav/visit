@@ -26,7 +26,7 @@ class vtkInformationVector;
 class VISIT_VTK_API vtkVisItStructuredGridNormals : public vtkStructuredGridAlgorithm
 {
   public:
-    vtkTypeMacro(vtkVisItStructuredGridNormals,vtkStructuredGridAlgorithm);
+    vtkTypeMacro(vtkVisItStructuredGridNormals,vtkStructuredGridAlgorithm)
 
     static vtkVisItStructuredGridNormals *New();
 

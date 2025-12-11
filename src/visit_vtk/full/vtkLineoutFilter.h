@@ -41,7 +41,7 @@ class VISIT_VTK_API vtkLineoutFilter : public vtkPolyDataAlgorithm
 {
 public:
   static vtkLineoutFilter *New();
-  vtkTypeMacro(vtkLineoutFilter,vtkPolyDataAlgorithm);
+  vtkTypeMacro(vtkLineoutFilter,vtkPolyDataAlgorithm)
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:

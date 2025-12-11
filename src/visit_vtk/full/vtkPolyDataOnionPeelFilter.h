@@ -77,7 +77,7 @@ vtkPolyDataOnionPeelFilter : public vtkPolyDataAlgorithm
 {
 public:
   static vtkPolyDataOnionPeelFilter *New();
-  vtkTypeMacro(vtkPolyDataOnionPeelFilter,vtkPolyDataAlgorithm);
+  vtkTypeMacro(vtkPolyDataOnionPeelFilter,vtkPolyDataAlgorithm)
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:

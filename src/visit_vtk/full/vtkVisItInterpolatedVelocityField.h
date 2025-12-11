@@ -14,7 +14,7 @@ class vtkVisItCellLocator;
 class VISIT_VTK_API vtkVisItInterpolatedVelocityField  : public vtkObject
 {
   public:
-  vtkTypeMacro(vtkVisItInterpolatedVelocityField,vtkObject);
+  vtkTypeMacro(vtkVisItInterpolatedVelocityField,vtkObject)
                   vtkVisItInterpolatedVelocityField();
     virtual      ~vtkVisItInterpolatedVelocityField();
 

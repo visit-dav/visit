@@ -40,7 +40,7 @@ public:
         REP_ID = 1,
     };
 
-    vtkTypeMacro(vtkMergeTree,vtkMutableDirectedGraph);
+    vtkTypeMacro(vtkMergeTree,vtkMutableDirectedGraph)
 
     static vtkMergeTree *New();
 
@@ -107,7 +107,7 @@ class VISIT_VTK_API vtkSegmentedMergeTree : public vtkMergeTree
 {
 public:
 
-    vtkTypeMacro(vtkSegmentedMergeTree,vtkMergeTree);
+    vtkTypeMacro(vtkSegmentedMergeTree,vtkMergeTree)
 
     static vtkSegmentedMergeTree *New();
 

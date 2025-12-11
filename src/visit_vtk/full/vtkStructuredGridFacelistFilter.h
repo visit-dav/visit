@@ -20,7 +20,7 @@ class VISIT_VTK_API vtkStructuredGridFacelistFilter :
   public vtkPolyDataAlgorithm
 {
 public:
-  vtkTypeMacro(vtkStructuredGridFacelistFilter,vtkPolyDataAlgorithm);
+  vtkTypeMacro(vtkStructuredGridFacelistFilter,vtkPolyDataAlgorithm)
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:

@@ -35,7 +35,7 @@
 #include <ClipCases.h>
 #include <vtkTriangulationTables.h>
 
-vtkStandardNewMacro(vtkVisItClipper);
+vtkStandardNewMacro(vtkVisItClipper)
 
 // ****************************************************************************
 //  Function: AdjustPercentToZeroCrossing

@@ -27,7 +27,7 @@ typedef struct
     int      cell_id;
 } coord_cell_id_pair;
 
-vtkStandardNewMacro(vtkAxisDepthSort);
+vtkStandardNewMacro(vtkAxisDepthSort)
 
 // ****************************************************************************
 //  Modifications:

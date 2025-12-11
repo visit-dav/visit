@@ -25,7 +25,7 @@ PURPOSE.  See the above copyright notice for more information.
 #include "vtkPolyData.h"
 #include "vtkPolyLine.h"
 
-vtkStandardNewMacro(vtkVisItTubeFilter);
+vtkStandardNewMacro(vtkVisItTubeFilter)
 
 // Construct object with radius 0.5, radius variation turned off, the number
 // of sides set to 3, and radius factor of 10.

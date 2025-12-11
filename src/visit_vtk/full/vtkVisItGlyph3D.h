@@ -104,7 +104,7 @@
 class VISIT_VTK_API vtkVisItGlyph3D : public vtkPolyDataAlgorithm
 {
 public:
-  vtkTypeMacro(vtkVisItGlyph3D,vtkPolyDataAlgorithm);
+  vtkTypeMacro(vtkVisItGlyph3D,vtkPolyDataAlgorithm)
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description

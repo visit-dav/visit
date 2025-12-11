@@ -21,7 +21,7 @@
 #include <vtkTriangleStrip.h>
 #include <vtkPoints.h>
 
-vtkStandardNewMacro(vtkVisItPolyDataNormals);
+vtkStandardNewMacro(vtkVisItPolyDataNormals)
 
 // ****************************************************************************
 //  Constructor:  vtkVisItPolyDataNormals::vtkVisItPolyDataNormals
@@ -167,7 +167,6 @@ vtkVisItPolyDataNormals::ExecutePointWithoutSplitting(
     // Get all the input and output objects we'll need to reference.
     //
     vtkPointData *inPD     = input->GetPointData();
-    vtkCellData  *inCD     = input->GetCellData();
     vtkPoints    *inPts    = input->GetPoints();
     vtkCellArray *outPolys = output->GetPolys();
     vtkPointData *outPD    = output->GetPointData();

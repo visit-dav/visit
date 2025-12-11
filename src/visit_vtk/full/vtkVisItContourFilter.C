@@ -40,7 +40,7 @@
 #include <vector>
 
 
-vtkStandardNewMacro(vtkVisItContourFilter);
+vtkStandardNewMacro(vtkVisItContourFilter)
 
 vtkVisItContourFilter::vtkVisItContourFilter()
 {
@@ -410,6 +410,7 @@ vtkVisItContourFilter::UnstructuredGridExecute(vtkDataSet *input,
 
     int nToProcess = (CellList != NULL ? CellListSize : nCells);
     int numIcantContour = 0;
+    vtkIdList *facePtIds = vtkIdList::New();
     for (vtkIdType i = 0 ; i < nToProcess ; i++)
     {
         vtkIdType  cellId = (CellList != NULL ? CellList[i] : i);
@@ -487,24 +488,28 @@ vtkVisItContourFilter::UnstructuredGridExecute(vtkDataSet *input,
         else
         {
             if (numIcantContour == 0)
+            {
                 stuff_I_cant_contour->GetCellData()->
                                        CopyAllocate(ug->GetCellData(), nCells);
+            }
 
             if(cellType == VTK_POLYHEDRON)
             {
-                vtkIdType nFaces;
-                const vtkIdType *facePtIds;
-                ug->GetFaceStream(cellId, nFaces, facePtIds);
-                stuff_I_cant_contour->InsertNextCell(cellType, npts, pts, 
-                     nFaces, facePtIds);
+                facePtIds->Reset(); 
+                ug->GetFaceStream(cellId, facePtIds);
+                stuff_I_cant_contour->InsertNextCell(cellType, facePtIds);
             }
             else
+            {
                 stuff_I_cant_contour->InsertNextCell(cellType, npts, pts);
+            }
+
             stuff_I_cant_contour->GetCellData()->
                             CopyData(ug->GetCellData(), cellId, numIcantContour);
             numIcantContour++;
         }
     }
+    facePtIds->Delete(); 
 
     if (numIcantContour > 0)
     {

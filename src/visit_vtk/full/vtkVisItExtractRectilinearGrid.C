@@ -23,7 +23,7 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
 
-vtkStandardNewMacro(vtkVisItExtractRectilinearGrid);
+vtkStandardNewMacro(vtkVisItExtractRectilinearGrid)
 
 // Construct object to extract all of the input data.
 vtkVisItExtractRectilinearGrid::vtkVisItExtractRectilinearGrid()

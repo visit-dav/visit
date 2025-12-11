@@ -36,7 +36,7 @@
 #include <vtkTrivialProducer.h>
 #include <vtkUnsignedCharArray.h>
 
-vtkStandardNewMacro(vtkVisItGlyph3D);
+vtkStandardNewMacro(vtkVisItGlyph3D)
 
 // Construct object with scaling on, scaling mode is by scalar value,
 // scale factor = 1.0, the range is (0,1), orient geometry is on, and

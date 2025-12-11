@@ -23,7 +23,7 @@ class VISIT_VTK_API vtkLinesFromOriginalCells : public vtkPolyDataAlgorithm
 {
 public:
   static vtkLinesFromOriginalCells *New();
-  vtkTypeMacro(vtkLinesFromOriginalCells,vtkPolyDataAlgorithm);
+  vtkTypeMacro(vtkLinesFromOriginalCells,vtkPolyDataAlgorithm)
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
   vtkSetMacro(UseOriginalCells, bool);

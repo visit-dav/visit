@@ -28,7 +28,7 @@
 #include <vtkPolyLine.h>
 
 
-vtkStandardNewMacro(vtkVisItStreamLine);
+vtkStandardNewMacro(vtkVisItStreamLine)
 
 #define VTK_STREAMLINE_EPSILON 1e-6
 #define VTK_START_FROM_POSITION 0

@@ -27,7 +27,7 @@
 class VISIT_VTK_API vtkVertexFilter : public vtkPolyDataAlgorithm
 {
 public:
-  vtkTypeMacro(vtkVertexFilter, vtkPolyDataAlgorithm);
+  vtkTypeMacro(vtkVertexFilter, vtkPolyDataAlgorithm)
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
   vtkSetMacro(VertexAtPoints,bool);

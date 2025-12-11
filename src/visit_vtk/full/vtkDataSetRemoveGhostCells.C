@@ -30,7 +30,7 @@
 //   Kathleen Bonnell, Wed Mar  6 13:48:48 PST 2002
 //   Use vtk Macro instead of old New method.
 //------------------------------------------------------------------------------
-vtkStandardNewMacro(vtkDataSetRemoveGhostCells);
+vtkStandardNewMacro(vtkDataSetRemoveGhostCells)
 
 
 // ****************************************************************************

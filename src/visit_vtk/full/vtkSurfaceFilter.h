@@ -46,7 +46,7 @@ class VISIT_VTK_API
 vtkSurfaceFilter : public vtkUnstructuredGridAlgorithm
 {
 public:
-  vtkTypeMacro(vtkSurfaceFilter,vtkUnstructuredGridAlgorithm);
+  vtkTypeMacro(vtkSurfaceFilter,vtkUnstructuredGridAlgorithm)
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
   static vtkSurfaceFilter *New();

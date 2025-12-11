@@ -27,7 +27,7 @@ class VISIT_VTK_API vtkUnstructuredGridRelevantPointsFilter :
 {
 public:
   vtkTypeMacro(vtkUnstructuredGridRelevantPointsFilter, 
-               vtkUnstructuredGridAlgorithm);
+               vtkUnstructuredGridAlgorithm)
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
   static vtkUnstructuredGridRelevantPointsFilter *New();

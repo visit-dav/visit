@@ -26,7 +26,7 @@
 
 #define DO_REFERENCE_COUNT
 
-vtkStandardNewMacro(vtkOpenEXRWriter);
+vtkStandardNewMacro(vtkOpenEXRWriter)
 
 vtkOpenEXRWriter::vtkOpenEXRWriter() : vtkImageWriter()
 {

@@ -21,7 +21,7 @@
 #include <vtkPolyData.h>
 #include <vtkTriangle.h>
 
-vtkStandardNewMacro(vtkVisItSTLWriter);
+vtkStandardNewMacro(vtkVisItSTLWriter)
 
 vtkVisItSTLWriter::vtkVisItSTLWriter()
 {

@@ -81,7 +81,7 @@ class vtkPoints;
 class VISIT_VTK_API vtkVisItTubeFilter : public vtkPolyDataAlgorithm
 {
 public:
-  vtkTypeMacro(vtkVisItTubeFilter,vtkPolyDataAlgorithm);
+  vtkTypeMacro(vtkVisItTubeFilter,vtkPolyDataAlgorithm)
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:

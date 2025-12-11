@@ -12,7 +12,7 @@ class VISIT_VTK_API vtkRGBWriter : public vtkImageWriter
 {
 public:
   static vtkRGBWriter *New();
-  vtkTypeMacro(vtkRGBWriter,vtkImageWriter);
+  vtkTypeMacro(vtkRGBWriter,vtkImageWriter)
 
 protected:
   vtkRGBWriter();

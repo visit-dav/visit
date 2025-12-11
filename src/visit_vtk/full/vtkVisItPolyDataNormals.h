@@ -30,7 +30,7 @@ class vtkInformationVector;
 class VISIT_VTK_API vtkVisItPolyDataNormals : public vtkPolyDataAlgorithm
 {
   public:
-    vtkTypeMacro(vtkVisItPolyDataNormals,vtkPolyDataAlgorithm);
+    vtkTypeMacro(vtkVisItPolyDataNormals,vtkPolyDataAlgorithm)
 
     static vtkVisItPolyDataNormals *New();
 

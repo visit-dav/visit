@@ -29,7 +29,7 @@ class vtkPoints;
 class VISIT_VTK_API vtkConnectedTubeFilter : public vtkPolyDataAlgorithm
 {
   public:
-    vtkTypeMacro(vtkConnectedTubeFilter,vtkPolyDataAlgorithm);
+    vtkTypeMacro(vtkConnectedTubeFilter,vtkPolyDataAlgorithm)
     void PrintSelf(ostream& os, vtkIndent indent) override;
     bool BuildConnectivityArrays(vtkPolyData *);
 

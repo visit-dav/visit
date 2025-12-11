@@ -19,7 +19,7 @@
 #include <vtkTriangle.h>
 
 
-vtkStandardNewMacro(vtkVisItPolyDataNormals2D);
+vtkStandardNewMacro(vtkVisItPolyDataNormals2D)
 
 // ****************************************************************************
 //  Constructor:  vtkVisItPolyDataNormals2D::vtkVisItPolyDataNormals2D

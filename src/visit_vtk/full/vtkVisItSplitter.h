@@ -42,7 +42,7 @@ class VISIT_VTK_API vtkVisItSplitter :
     public vtkUnstructuredGridAlgorithm
 {
   public:
-    vtkTypeMacro(vtkVisItSplitter,vtkUnstructuredGridAlgorithm);
+    vtkTypeMacro(vtkVisItSplitter,vtkUnstructuredGridAlgorithm)
     void PrintSelf(ostream& os, vtkIndent indent) override;
 
     static vtkVisItSplitter *New();

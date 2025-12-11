@@ -32,7 +32,7 @@ class VISIT_VTK_API vtkRectilinearLinesNoDataFilter :
   public vtkPolyDataAlgorithm
 {
 public:
-  vtkTypeMacro(vtkRectilinearLinesNoDataFilter,vtkPolyDataAlgorithm);
+  vtkTypeMacro(vtkRectilinearLinesNoDataFilter,vtkPolyDataAlgorithm)
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:

@@ -35,7 +35,7 @@
 //
 // ****************************************************************************
 
-vtkStandardNewMacro(vtkPolyDataOnionPeelFilter);
+vtkStandardNewMacro(vtkPolyDataOnionPeelFilter)
 
 
 // ****************************************************************************

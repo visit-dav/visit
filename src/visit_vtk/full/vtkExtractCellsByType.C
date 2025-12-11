@@ -33,7 +33,7 @@
 #include "vtkInformationVector.h"
 #include "vtkObjectFactory.h"
 
-vtkStandardNewMacro(vtkExtractCellsByType);
+vtkStandardNewMacro(vtkExtractCellsByType)
 
 #include <set>
 

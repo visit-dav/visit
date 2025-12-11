@@ -358,7 +358,7 @@ vtkConnectedTubeFilter::PointSequenceList::GetNextSequence(PointSequence &seq)
 // ----------------------------------------------------------------------------
 
 
-vtkStandardNewMacro(vtkConnectedTubeFilter);
+vtkStandardNewMacro(vtkConnectedTubeFilter)
 
 // ****************************************************************************
 //  Constructor:  vtkConnectedTubeFilter::vtkConnectedTubeFilter

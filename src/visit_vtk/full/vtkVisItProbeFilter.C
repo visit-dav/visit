@@ -25,7 +25,7 @@
 #include <vtkStreamingDemandDrivenPipeline.h>
 #include <DebugStream.h>
 
-vtkStandardNewMacro(vtkVisItProbeFilter);
+vtkStandardNewMacro(vtkVisItProbeFilter)
 
 //----------------------------------------------------------------------------
 //  Modifications:

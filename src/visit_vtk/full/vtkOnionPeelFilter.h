@@ -78,7 +78,7 @@ class VISIT_VTK_API
 vtkOnionPeelFilter : public vtkUnstructuredGridAlgorithm
 {
 public:
-  vtkTypeMacro(vtkOnionPeelFilter,vtkUnstructuredGridAlgorithm);
+  vtkTypeMacro(vtkOnionPeelFilter,vtkUnstructuredGridAlgorithm)
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
   static vtkOnionPeelFilter *New();

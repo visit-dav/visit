@@ -32,7 +32,7 @@
 class VISIT_VTK_API vtkReduceFilter : public vtkPolyDataAlgorithm
 {
 public:
-  vtkTypeMacro(vtkReduceFilter, vtkPolyDataAlgorithm);
+  vtkTypeMacro(vtkReduceFilter, vtkPolyDataAlgorithm)
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:

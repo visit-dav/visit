@@ -44,7 +44,7 @@ class VISIT_VTK_API vtkRectilinearGridFacelistFilter :
   public vtkPolyDataAlgorithm
 {
 public:
-  vtkTypeMacro(vtkRectilinearGridFacelistFilter,vtkPolyDataAlgorithm);
+  vtkTypeMacro(vtkRectilinearGridFacelistFilter,vtkPolyDataAlgorithm)
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:

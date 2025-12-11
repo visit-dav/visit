@@ -66,7 +66,7 @@ static void rgbfile_writefile(rgbfile_t *);
 //   Kathleen Bonnell, Wed Mar  6 15:14:29 PST 2002
 //   Replace 'New' method with Macro to match VTK 4.0 API.
 //------------------------------------------------------------------------------
-vtkStandardNewMacro(vtkRGBWriter);
+vtkStandardNewMacro(vtkRGBWriter)
 
 vtkRGBWriter::vtkRGBWriter()
 {

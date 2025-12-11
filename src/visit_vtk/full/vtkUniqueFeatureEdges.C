@@ -23,7 +23,7 @@
 #include <vtkTriangleStrip.h>
 #include <vtkUnsignedCharArray.h>
 
-vtkStandardNewMacro(vtkUniqueFeatureEdges);
+vtkStandardNewMacro(vtkUniqueFeatureEdges)
 
 // Construct object with feature angle = 30; all types of edges, except
 // manifold edges, are extracted

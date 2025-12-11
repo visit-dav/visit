@@ -38,7 +38,7 @@ class VISIT_VTK_API vtkMultiSplitter :
   public vtkUnstructuredGridAlgorithm
 {
   public:
-    vtkTypeMacro(vtkMultiSplitter,vtkUnstructuredGridAlgorithm);
+    vtkTypeMacro(vtkMultiSplitter,vtkUnstructuredGridAlgorithm)
     void PrintSelf(ostream& os, vtkIndent indent) override;
 
     static vtkMultiSplitter *New();

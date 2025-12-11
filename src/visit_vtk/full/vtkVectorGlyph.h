@@ -33,7 +33,7 @@
 class VISIT_VTK_API vtkVectorGlyph : public vtkPolyDataAlgorithm
 {
 public:
-  vtkTypeMacro(vtkVectorGlyph, vtkPolyDataAlgorithm);
+  vtkTypeMacro(vtkVectorGlyph, vtkPolyDataAlgorithm)
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:

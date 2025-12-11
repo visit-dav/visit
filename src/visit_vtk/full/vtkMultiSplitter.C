@@ -33,7 +33,7 @@
 
 #include <TimingsManager.h>
 
-vtkStandardNewMacro(vtkMultiSplitter);
+vtkStandardNewMacro(vtkMultiSplitter)
 
 // ****************************************************************************
 //  Constructor:  vtkMultiSplitter::vtkMultiSplitter

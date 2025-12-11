@@ -9,7 +9,7 @@
 #include <vtkPoints.h>
 #include <vtkObjectFactory.h>
 
-vtkStandardNewMacro(vtkCSGCell);
+vtkStandardNewMacro(vtkCSGCell)
 
 
 

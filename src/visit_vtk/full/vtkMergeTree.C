@@ -25,7 +25,7 @@
 // ****************************************************************************
 // ****************************************************************************
 
-vtkStandardNewMacro(vtkMergeTree);
+vtkStandardNewMacro(vtkMergeTree)
 
 // ****************************************************************************
 //  Method: vtkMergeTree constructor
@@ -130,7 +130,7 @@ vtkMergeTree::AddNode(vtkIdType id)
 // ****************************************************************************
 // ****************************************************************************
 
-vtkStandardNewMacro(vtkSegmentedMergeTree);
+vtkStandardNewMacro(vtkSegmentedMergeTree)
 
 // ****************************************************************************
 //  Method: vtkMergeTree constructor

@@ -73,7 +73,7 @@ class VISIT_VTK_API vtkVisItClipper : public vtkUnstructuredGridAlgorithm
         KEEP_WHOLE_CELL,
     };
 
-    vtkTypeMacro(vtkVisItClipper,vtkUnstructuredGridAlgorithm);
+    vtkTypeMacro(vtkVisItClipper,vtkUnstructuredGridAlgorithm)
     void PrintSelf(ostream& os, vtkIndent indent) override;
 
     static vtkVisItClipper *New();

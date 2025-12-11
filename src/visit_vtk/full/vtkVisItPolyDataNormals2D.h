@@ -27,7 +27,7 @@ class vtkInformationVector;
 class VISIT_VTK_API vtkVisItPolyDataNormals2D : public vtkPolyDataAlgorithm
 {
   public:
-    vtkTypeMacro(vtkVisItPolyDataNormals2D,vtkPolyDataAlgorithm);
+    vtkTypeMacro(vtkVisItPolyDataNormals2D,vtkPolyDataAlgorithm)
 
     static vtkVisItPolyDataNormals2D *New();
 

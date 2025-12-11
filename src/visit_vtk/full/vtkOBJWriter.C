@@ -24,7 +24,7 @@
 #include <vtkPolyData.h>
 #include <vtkPointData.h>
 
-vtkStandardNewMacro(vtkOBJWriter);
+vtkStandardNewMacro(vtkOBJWriter)
 
 vtkOBJWriter::vtkOBJWriter()
 {

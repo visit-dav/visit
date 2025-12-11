@@ -44,7 +44,7 @@
 #include <vtkVisItCutter.h>
 
 
-vtkStandardNewMacro(vtkSlicer);
+vtkStandardNewMacro(vtkSlicer)
 
 vtkSlicer::vtkSlicer()
 {
@@ -564,6 +564,7 @@ vtkSlicer::UnstructuredGridExecute(void)
     vtkIdType nToProcess = (CellList != NULL ? CellListSize : nCells);
     vtkIdType numIcantSlice = 0;
     vtkIdType numVertices = 0;
+    vtkIdList *facePtIds = vtkIdList::New();
     for (vtkIdType i = 0 ; i < nToProcess ; i++)
     {
         vtkIdType  cellId = (CellList != NULL ? CellList[i] : i);
@@ -682,19 +683,20 @@ vtkSlicer::UnstructuredGridExecute(void)
 
             if(cellType == VTK_POLYHEDRON)
             {
-                vtkIdType nFaces;
-                const vtkIdType *facePtIds;
-                ug->GetFaceStream(cellId, nFaces, facePtIds);
-                stuff_I_cant_slice->InsertNextCell(cellType, npts, pts,
-                    nFaces, facePtIds);
+                facePtIds->Reset();
+                ug->GetFaceStream(cellId, facePtIds);
+                stuff_I_cant_slice->InsertNextCell(cellType, facePtIds);
             }
             else
+            {
                 stuff_I_cant_slice->InsertNextCell(cellType, npts, pts);
+            }
             stuff_I_cant_slice->GetCellData()->
                             CopyData(ug->GetCellData(), cellId, numIcantSlice);
             numIcantSlice++;
         }
     }
+    facePtIds->Delete();
 
     if ((numIcantSlice > 0) || (numVertices > 0))
     {

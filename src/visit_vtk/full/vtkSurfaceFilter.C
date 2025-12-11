@@ -41,8 +41,8 @@
 //    Replace 'New' method with Macro to match VTK 4.0 API.
 // ****************************************************************************
 
-vtkStandardNewMacro(vtkSurfaceFilter);
-vtkCxxSetObjectMacro(vtkSurfaceFilter, inScalars, vtkDataArray); 
+vtkStandardNewMacro(vtkSurfaceFilter)
+vtkCxxSetObjectMacro(vtkSurfaceFilter, inScalars, vtkDataArray)
 
 
 // ****************************************************************************

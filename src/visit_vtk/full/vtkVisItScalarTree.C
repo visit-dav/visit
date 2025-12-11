@@ -30,7 +30,7 @@
 
 using std::vector;
 
-vtkStandardNewMacro(vtkVisItScalarTree);
+vtkStandardNewMacro(vtkVisItScalarTree)
 
 vtkVisItScalarTree::vtkVisItScalarTree()
 {

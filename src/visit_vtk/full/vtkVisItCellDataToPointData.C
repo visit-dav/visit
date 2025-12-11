@@ -28,7 +28,7 @@
 #include "vtkRectilinearGrid.h"
 #include "vtkStructuredGrid.h"
 
-vtkStandardNewMacro(vtkVisItCellDataToPointData);
+vtkStandardNewMacro(vtkVisItCellDataToPointData)
 
 // Instantiate object so that cell data is not passed to output.
 vtkVisItCellDataToPointData::vtkVisItCellDataToPointData()

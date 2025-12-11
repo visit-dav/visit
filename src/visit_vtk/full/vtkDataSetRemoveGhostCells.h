@@ -38,7 +38,7 @@ class VISIT_VTK_API vtkDataSetRemoveGhostCells : public vtkDataSetAlgorithm
 {
 public:
   static vtkDataSetRemoveGhostCells *New();
-  vtkTypeMacro(vtkDataSetRemoveGhostCells, vtkDataSetAlgorithm);
+  vtkTypeMacro(vtkDataSetRemoveGhostCells, vtkDataSetAlgorithm)
   void PrintSelf(ostream& os, vtkIndent indent) override;
   
   vtkSetMacro(GhostNodeTypesToRemove,unsigned char);

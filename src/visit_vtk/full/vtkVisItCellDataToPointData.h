@@ -52,7 +52,7 @@ class VISIT_VTK_API vtkVisItCellDataToPointData : public vtkDataSetAlgorithm
 {
 public:
   static vtkVisItCellDataToPointData *New();
-  vtkTypeMacro(vtkVisItCellDataToPointData,vtkDataSetAlgorithm);
+  vtkTypeMacro(vtkVisItCellDataToPointData,vtkDataSetAlgorithm)
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:

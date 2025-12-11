@@ -18,7 +18,7 @@
 #include <vtkTriangle.h>
 
 
-vtkStandardNewMacro(vtkVisItStructuredGridNormals);
+vtkStandardNewMacro(vtkVisItStructuredGridNormals)
 
 // ****************************************************************************
 //  Constructor:  vtkVisItStructuredGridNormals::vtkVisItStructuredGridNormals
