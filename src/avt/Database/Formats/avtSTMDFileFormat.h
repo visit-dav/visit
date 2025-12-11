@@ -109,7 +109,6 @@ class DATABASE_API avtSTMDFileFormat : public avtFileFormat
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData*) = 0;
 
-
     int                    AddFile(const char *);
     virtual void           CloseFile(int) {};
     static const int       MAX_FILES;
