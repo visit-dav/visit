@@ -740,11 +740,16 @@ avtMFEMFileFormat::GetVar(int domain, const char *varname)
 // ****************************************************************************
 
 vtkDataArray *
+avtMFEMFileFormat::GetVectorVar(int domain, const char *varname, avtCentering &cent_change)
+{
+    return GetRefinedVar(string(varname),domain,selectedLOD+1,cent_change);
+}
+
+vtkDataArray *
 avtMFEMFileFormat::GetVectorVar(int domain, const char *varname)
 {
-    // TODO avtCentering
     avtCentering cent_change;
-    return GetRefinedVar(string(varname),domain,selectedLOD+1,cent_change);
+    return GetVectorVar(domain, varname, cent_change);
 }
 
 

@@ -209,6 +209,24 @@ avtSTMDFileFormatInterface::GetVar(int ts, int dom, const char *var)
 // ****************************************************************************
 
 vtkDataArray *
+avtSTMDFileFormatInterface::GetVectorVar(int ts, int dom, const char *var, avtCentering &cent_change)
+{
+    cent_change = AVT_UNKNOWN_CENT;
+    if (ts < 0 || ts >= nTimesteps)
+    {
+        EXCEPTION2(BadIndexException, ts, nTimesteps);
+    }
+    if (timesteps[ts]->HasCenteringChange())
+    {
+        return timesteps[ts]->GetVectorVar(dom, var, cent_change);
+    }
+    else
+    {
+        return GetVectorVar(ts, dom, var);
+    }
+}
+
+vtkDataArray *
 avtSTMDFileFormatInterface::GetVectorVar(int ts, int dom, const char *var)
 {
     if (ts < 0 || ts >= nTimesteps)

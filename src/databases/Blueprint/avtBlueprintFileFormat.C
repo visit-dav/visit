@@ -3245,10 +3245,17 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname, avtCentering
 // ****************************************************************************
 
 vtkDataArray *
+avtBlueprintFileFormat::GetVectorVar(int domain, const char *varname, avtCentering &cent_change)
+{
+    // vector vars can simply use the normal GetVar logic
+    return GetVar(domain, varname, cent_change);
+}
+
+vtkDataArray *
 avtBlueprintFileFormat::GetVectorVar(int domain, const char *varname)
 {
     // vector vars can simply use the normal GetVar logic
-    return GetVar(domain,varname);
+    return GetVar(domain, varname);
 }
 
 // ****************************************************************************

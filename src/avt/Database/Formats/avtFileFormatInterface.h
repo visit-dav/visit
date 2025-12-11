@@ -211,8 +211,9 @@ class DATABASE_API avtFileFormatInterface
 
     virtual vtkDataSet     *GetMesh(int, int, const char *) = 0;
     virtual vtkDataArray   *GetVar(int, int, const char *) = 0;
-    virtual vtkDataArray   *GetVar(int, int, const char *, avtCentering &cent_change) = 0;
+    virtual vtkDataArray   *GetVar(int, int, const char *, avtCentering &) = 0;
     virtual vtkDataArray   *GetVectorVar(int, int, const char *) = 0;
+    virtual vtkDataArray   *GetVectorVar(int, int, const char *, avtCentering &) = 0;
     virtual void           *GetAuxiliaryData(const char *, int, int, 
                                              const char *, void *, 
                                              DestructorFunction &) = 0;

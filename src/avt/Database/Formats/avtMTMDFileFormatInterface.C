@@ -167,6 +167,13 @@ avtMTMDFileFormatInterface::GetVar(int ts, int dom, const char *var)
 // ****************************************************************************
 
 vtkDataArray *
+avtMTMDFileFormatInterface::GetVectorVar(int ts, int dom, const char *var, avtCentering &cent_change)
+{
+    cent_change = AVT_UNKNOWN_CENT;
+    return GetVectorVar(ts, dom, var);
+}
+
+vtkDataArray *
 avtMTMDFileFormatInterface::GetVectorVar(int ts, int dom, const char *var)
 {
     int tsGroup = GetTimestepGroupForTimestep(ts);

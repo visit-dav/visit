@@ -76,8 +76,9 @@ class DATABASE_API avtSTSDFileFormatInterface : public avtFileFormatInterface
 
     virtual vtkDataSet     *GetMesh(int, int, const char *);
     virtual vtkDataArray   *GetVar(int, int, const char *);
-    virtual vtkDataArray   *GetVar(int, int, const char *, avtCentering &cent_change);
+    virtual vtkDataArray   *GetVar(int, int, const char *, avtCentering &);
     virtual vtkDataArray   *GetVectorVar(int, int, const char *);
+    virtual vtkDataArray   *GetVectorVar(int, int, const char *, avtCentering &);
     virtual void           *GetAuxiliaryData(const char *var, int, int,
                                              const char *type, void *args, 
                                              DestructorFunction &);

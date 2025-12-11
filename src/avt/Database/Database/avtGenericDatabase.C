@@ -1580,7 +1580,7 @@ avtGenericDatabase::GetScalarVarDataset(const char *varname, int ts,
     //
     var->SetName(varname);
 
-    // there was no recorded centering change
+    // there was no centering change
     if (cent_change == AVT_UNKNOWN_CENT)
     {
         if (smd->centering == AVT_NODECENT)
@@ -1979,7 +1979,8 @@ avtGenericDatabase::GetVectorVarDataset(const char *varname, int ts,
         return NULL;
     }
 
-    vtkDataArray *var = GetVectorVariable(varname, ts, domain, material, dataRequest);
+    avtCentering cent_change;
+    vtkDataArray *var = GetVectorVariable(varname, ts, domain, material, dataRequest, cent_change);
 
     if (var == NULL)
     {
@@ -1995,26 +1996,56 @@ avtGenericDatabase::GetVectorVarDataset(const char *varname, int ts,
     //
     var->SetName(varname);
 
-    if (vmd->centering == AVT_NODECENT)
+    // there was no centering change
+    if (cent_change == AVT_UNKNOWN_CENT)
     {
-        if (var->GetNumberOfComponents() == 3)
+        if (vmd->centering == AVT_NODECENT)
         {
-            mesh->GetPointData()->SetVectors(var);
+            if (var->GetNumberOfComponents() == 3)
+            {
+                mesh->GetPointData()->SetVectors(var);
+            }
+            else
+            {
+                mesh->GetPointData()->AddArray(var);
+            }
         }
         else
         {
-            mesh->GetPointData()->AddArray(var);
+            if (var->GetNumberOfComponents() == 3)
+            {
+                mesh->GetCellData()->SetVectors(var);
+            }
+            else
+            {
+                mesh->GetCellData()->AddArray(var);
+            }
         }
     }
+    // centering was changed; we no longer rely on metadata
     else
     {
-        if (var->GetNumberOfComponents() == 3)
+        if (cent_change == AVT_NODECENT)
         {
-            mesh->GetCellData()->SetVectors(var);
+            if (var->GetNumberOfComponents() == 3)
+            {
+                mesh->GetPointData()->SetVectors(var);
+            }
+            else
+            {
+                mesh->GetPointData()->AddArray(var);
+            }
         }
         else
         {
-            mesh->GetCellData()->AddArray(var);
+            if (var->GetNumberOfComponents() == 3)
+            {
+                mesh->GetCellData()->SetVectors(var);
+            }
+            else
+            {
+                mesh->GetCellData()->AddArray(var);
+            }
         }
     }
 
@@ -2737,7 +2768,21 @@ avtGenericDatabase::GetVectorVariable(const char *varname, int ts, int domain,
                                       const char *material,
                                       const avtDataRequest_p dataRequest)
 {
+    avtCentering cent_change;
+    return GetVectorVariable(varname, ts, domain, material, dataRequest, cent_change);
+}
+
+
+vtkDataArray *
+avtGenericDatabase::GetVectorVariable(const char *varname, int ts, int domain,
+                                      const char *material,
+                                      const avtDataRequest_p dataRequest,
+                                      avtCentering &cent_change)
+{
     (void)dataRequest;
+
+    cent_change = AVT_UNKNOWN_CENT;
+
     //
     // We have to be leery about doing any caching when the variables are
     // defined on sub-meshes.  This is because if we add new secondary
@@ -2773,7 +2818,7 @@ avtGenericDatabase::GetVectorVariable(const char *varname, int ts, int domain,
         //
         // We haven't read in this domain before, so fetch it from the files.
         //
-        var = Interface->GetVectorVar(ts, domain, real_varname);
+        var = Interface->GetVectorVar(ts, domain, real_varname, cent_change);
         if (var != NULL)
         {
             if (CachingRecommended(var) && Interface->CanCacheVariable(real_varname))

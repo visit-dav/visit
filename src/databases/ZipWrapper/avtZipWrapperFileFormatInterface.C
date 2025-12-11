@@ -1174,6 +1174,13 @@ avtZipWrapperFileFormatInterface::GetVar(int ts, int dom, const char *varname)
 // ****************************************************************************
 
 vtkDataArray *
+avtZipWrapperFileFormatInterface::GetVectorVar(int ts, int dom, const char *varname, avtCentering &cent_change)
+{
+    cent_change = AVT_UNKNOWN_CENT;
+    return GetVectorVar(ts, dom, varname);
+}
+
+vtkDataArray *
 avtZipWrapperFileFormatInterface::GetVectorVar(int ts, int dom, const char *varname)
 {
     if      (dbType == DB_TYPE_MTMD)

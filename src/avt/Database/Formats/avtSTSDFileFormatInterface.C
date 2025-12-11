@@ -234,6 +234,13 @@ avtSTSDFileFormatInterface::GetVar(int ts, int dom, const char *var)
 // ****************************************************************************
 
 vtkDataArray *
+avtSTSDFileFormatInterface::GetVectorVar(int ts, int dom, const char *var, avtCentering &cent_change)
+{
+    cent_change = AVT_UNKNOWN_CENT;
+    return GetVectorVar(ts, dom, var);
+}
+
+vtkDataArray *
 avtSTSDFileFormatInterface::GetVectorVar(int ts, int dom, const char *var)
 {
     if (ts < 0 || ts >= nTimesteps)

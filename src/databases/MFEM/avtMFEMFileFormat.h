@@ -77,6 +77,7 @@ class avtMFEMFileFormat : public avtSTMDFileFormat
     virtual vtkDataArray  *GetVar(int, const char *);
     virtual vtkDataArray  *GetVar(int, const char *, avtCentering &);
     virtual vtkDataArray  *GetVectorVar(int, const char *);
+    virtual vtkDataArray  *GetVectorVar(int, const char *, avtCentering &);
     
     bool                   HasCenteringChange() override { return true; };
 

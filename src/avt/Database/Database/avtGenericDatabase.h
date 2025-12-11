@@ -441,10 +441,14 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
     vtkDataArray              *GetScalarVariable(const char *, int, int,
                                                  const char *,
                                                  const avtDataRequest_p,
-                                                 avtCentering &cent_change);
+                                                 avtCentering &);
     vtkDataArray              *GetVectorVariable(const char *, int, int,
                                                  const char *,
                                                  const avtDataRequest_p);
+    vtkDataArray              *GetVectorVariable(const char *, int, int,
+                                                 const char *,
+                                                 const avtDataRequest_p,
+                                                 avtCentering &);
     vtkDataArray              *GetSymmetricTensorVariable(const char *,int,int,
                                                           const char *,
                                                           const avtDataRequest_p);
