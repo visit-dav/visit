@@ -118,13 +118,19 @@ QvisMultiresControlWindow::CreateWindowContents()
 
     // note about MFEM options
     MFEMDisambiguationLabel = new QLabel(this);
-    MFEMDisambiguationLabel->setText(tr("TODO need a note about mfem"));
-    mainLayout->addWidget(MFEMDisambiguationLabel, 1, 0);
+    MFEMDisambiguationLabel->setText(tr("The below options are only relevant to high-order data from MFEM and Blueprint. "
+                                        "Additionally, the\nResolution control only affects "
+                                        "non-quadrature function meshes and fields."));
+    mainLayout->addWidget(MFEMDisambiguationLabel, 1, 0, 1, 2);
 
+
+    // TODO add a box
+    // High Order Options
 
     // basis type
     refinementBasisTypeLabel = new QLabel(this);
-    refinementBasisTypeLabel->setText(tr("MFEM Refinement Basis Type:"));
+    refinementBasisTypeLabel->setText(tr("Refinement Basis\n"
+                                         "(all high-order data)"));
     mainLayout->addWidget(refinementBasisTypeLabel, 2, 0);
 
     refinementBasisType = new QComboBox(this);
@@ -136,7 +142,8 @@ QvisMultiresControlWindow::CreateWindowContents()
 
     // mesh refinement method
     meshRefinementMethodLabel = new QLabel(this);
-    meshRefinementMethodLabel->setText(tr("MFEM Mesh Refinement Method:"));
+    meshRefinementMethodLabel->setText(tr("Mesh Refinement Method\n"
+                                          "(non-quadrature function meshes)"));
     mainLayout->addWidget(meshRefinementMethodLabel, 3, 0);
 
     meshRefinementMethod = new QComboBox(this);
@@ -149,7 +156,7 @@ QvisMultiresControlWindow::CreateWindowContents()
 
     // field projection method
     fieldProjectionMethodLabel = new QLabel(this);
-    fieldProjectionMethodLabel->setText(tr("MFEM Field Projection Method:"));
+    fieldProjectionMethodLabel->setText(tr("Grid Function Projection Method"));
     mainLayout->addWidget(fieldProjectionMethodLabel, 4, 0);
 
     fieldProjectionMethod = new QComboBox(this);
