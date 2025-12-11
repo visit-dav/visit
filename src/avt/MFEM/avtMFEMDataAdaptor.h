@@ -53,9 +53,6 @@ class vtkDataArray;
 class AVTMFEM_API avtMFEMDataAdaptor
 {
 public:
-    // TODO I screwed up again - this needs to have a default case
-    // b/c default means periodic goes to discontinuous,
-    // continuous forces continuous, and discontinuous forces discontinuous
       enum class meshRefinementMethod
       {
           Default_LOR,
