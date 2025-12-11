@@ -717,7 +717,7 @@ vtkDataArray *
 avtMFEMFileFormat::GetVar(int domain, const char *varname)
 {
     avtCentering cent_change;
-    return GetRefinedVar(string(varname),domain,selectedLOD+1,cent_change);
+    return GetVar(domain, varname, cent_change);
 }
 
 // ****************************************************************************

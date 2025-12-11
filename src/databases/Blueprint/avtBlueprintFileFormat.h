@@ -73,7 +73,10 @@ class avtBlueprintFileFormat : public avtSTMDFileFormat
     // Standard Mesh Access
     virtual vtkDataSet    *GetMesh(int, const char *);
     virtual vtkDataArray  *GetVar(int, const char *);
+    virtual vtkDataArray  *GetVar(int, const char *, avtCentering &);
     virtual vtkDataArray  *GetVectorVar(int, const char *);
+
+    bool                   HasCenteringChange() override { return true; };
 
     // Other types of Mesh Data (Materials, etc)
     virtual void          *GetAuxiliaryData(const char *var,

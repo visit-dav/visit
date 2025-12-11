@@ -2657,6 +2657,15 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
 vtkDataArray *
 avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
 {
+    avtCentering cent_change;
+    return GetVar(domain, abs_varname, cent_change);
+}
+
+vtkDataArray *
+avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname, avtCentering &cent_change)
+{
+    cent_change = AVT_UNKNOWN_CENT;
+
     try
     {
         BP_PLUGIN_INFO("GetVar: " << abs_varname << " [domain " << domain << "]");
@@ -3036,7 +3045,6 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                 mfem::GridFunction *gf =  avtConduitBlueprintDataAdaptor::BlueprintToMFEM::FieldToMFEM(mesh,
                                                                                                        fieldHO);
                 // refine the grid function into a vtk data array
-                avtCentering cent_change;
                 res = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh,
                                                                   gf,
                                                                   m_selected_lod+1,
@@ -3126,7 +3134,6 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                 mfem::GridFunction *gf =  avtConduitBlueprintDataAdaptor::BlueprintToMFEM::FieldToMFEM(mesh,
                                                                                 *field_ptr);
                 // refine the grid function into a vtk data array
-                avtCentering cent_change;
                 res = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh,
                                                                   gf,
                                                                   m_selected_lod+1,
