@@ -367,56 +367,170 @@ avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             }
 
             selectedLOD = std::max(selectedLOD,ilod);
-            std::string f_assoc = field.Tag("assoc");
+            const std::string &f_assoc = field.Tag("assoc");
 
-            if(f_assoc == "elements")
+            avtCentering cent = AVT_UNKNOWN_CENT;
+            if (f_assoc == "quadrature")
+            {
+                // quad func data is presented as zone centered on a special mesh
+                cent = AVT_ZONECENT;
+            }
+            else if (f_assoc == "elements" || f_assoc == "nodes")
+            {
+                std::string basis;
+                const bool has_basis = field.HasTag("basis");
+                if (has_basis)
+                {
+                    basis = field.Tag("basis");
+                }
+
+                if (has_basis && basis.find("QF_") != std::string::npos) // quad func case
+                {
+                    // quad func data is presented as zone centered on a special mesh
+                    cent = AVT_ZONECENT;
+                }
+                else
+                {
+                    if (m_field_projection_method == avtMFEMDataAdaptor::fieldProjectionMethod::Zonal_Projection)
+                    {
+                        if (m_mesh_refinement_method == avtMFEMDataAdaptor::meshRefinementMethod::Discontinuous_LOR)
+                        {
+                            EXCEPTION1(InvalidVariableException,
+                                "Zonal projection together with discontinuous low-order-refinement is not supported.");
+                        }
+                        cent = AVT_ZONECENT;
+                    }
+                    else if (m_field_projection_method == avtMFEMDataAdaptor::fieldProjectionMethod::Nodal_Projection)
+                    {
+                        cent = AVT_NODECENT;
+                    }
+                    else if (m_field_projection_method == avtMFEMDataAdaptor::fieldProjectionMethod::Default_Projection)
+                    {
+                        if (m_mesh_refinement_method == avtMFEMDataAdaptor::meshRefinementMethod::Discontinuous_LOR)
+                        {
+                            cent = AVT_NODECENT;
+                        }
+                        else if (m_mesh_refinement_method == avtMFEMDataAdaptor::meshRefinementMethod::Default_LOR &&
+                                 has_basis && basis.find("L2_") != std::string::npos)
+                        {
+                            // if this field belongs to a topology that might be a periodic 
+                            // mfem mesh then we are always nodal because we are going to
+                            // fall back to legacy LOR if we have selected default refinement.
+                            cent = AVT_NODECENT;
+                        }
+                        else
+                        {
+                            if (has_basis)
+                            {
+                                const bool l2 = basis.find("L2_") != std::string::npos;
+                                const bool h1 = basis.find("H1_") != std::string::npos;
+                                const bool nurbs = basis.find("NURBS") != std::string::npos;
+                                const bool hdiv = basis.find("RT_") != std::string::npos;
+                                const bool hcurl = basis.find("ND_") != std::string::npos;
+                                const int bases = static_cast<int>(l2) +
+                                                  static_cast<int>(h1) +
+                                                  static_cast<int>(hdiv) +
+                                                  static_cast<int>(hcurl) +
+                                                  static_cast<int>(nurbs);
+                                if (0 == bases)
+                                {
+                                    // fall back to provided association
+                                    if (f_assoc == "elements")
+                                    {
+                                        cent = AVT_ZONECENT;
+                                    }
+                                    else if (f_assoc == "nodes")
+                                    {
+                                        cent = AVT_NODECENT;
+                                    }
+                                    else
+                                    {
+                                        std::ostringstream oss;
+                                        oss << "Unsupported association in " << f_assoc;
+                                        EXCEPTION1(InvalidVariableException, oss.str().c_str());
+                                    }
+                                }
+                                else if (1 == bases)
+                                {
+                                    if (h1 || nurbs)
+                                    {
+                                        cent = AVT_NODECENT;
+                                    }
+                                    else if (l2 || hdiv || hcurl)
+                                    {
+                                        cent = AVT_ZONECENT;
+                                    }
+                                    else
+                                    {
+                                        std::ostringstream oss;
+                                        oss << "Unsupported basis type in " << basis;
+                                        EXCEPTION1(InvalidVariableException, oss.str().c_str());
+                                    }
+                                }
+                                else
+                                {
+                                    std::ostringstream oss;
+                                    oss << "Grid function may not have multiple basis types. "
+                                           "Unsupported basis type in " << basis;
+                                    EXCEPTION1(InvalidVariableException, oss.str().c_str());
+                                }
+                            }
+                            else
+                            {
+                                if (f_assoc == "elements")
+                                {
+                                    cent = AVT_ZONECENT;
+                                }
+                                else if (f_assoc == "nodes")
+                                {
+                                    cent = AVT_NODECENT;
+                                }
+                                else
+                                {
+                                    std::ostringstream oss;
+                                    oss << "Unsupported association in " << f_assoc;
+                                    EXCEPTION1(InvalidVariableException, oss.str().c_str());
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        std::ostringstream oss;
+                        oss << "Unknown field projection method in " << m_field_projection_method;
+                        EXCEPTION1(InvalidVariableException, oss.str().c_str());
+                    }
+                }
+            }
+            else
+            {
+                std::ostringstream oss;
+                oss << "Unsupported association in " << f_assoc;
+                EXCEPTION1(InvalidVariableException, oss.str().c_str());
+            }
+
+            if(f_assoc == "elements" || f_assoc == "nodes")
             {
                 if(!field.HasTag("comps") || field.Tag("comps") == "1")
                 {
                     AddScalarVarToMetaData(md,
                                            field_names[j].c_str(),
                                            dset_names[i].c_str(),
-                                           AVT_ZONECENT);
+                                           cent);
                 }
                 else if(field.Tag("comps") == "2")
                 {
                     AddVectorVarToMetaData(md,
-                                          field_names[j].c_str(),
-                                          dset_names[i].c_str(),
-                                          AVT_ZONECENT,2);
-                }
-                else if(field.Tag("comps") == "3")
-                {
-                    AddVectorVarToMetaData(md,
-                                          field_names[j].c_str(),
-                                          dset_names[i].c_str(),
-                                          AVT_ZONECENT,3);
-                }
-
-
-            }
-            else if(f_assoc == "nodes")
-            {
-                if(field.Tag("comps") == "1")
-                {
-                    AddScalarVarToMetaData(md,
                                            field_names[j].c_str(),
                                            dset_names[i].c_str(),
-                                           AVT_NODECENT);
-                }
-                else if(field.Tag("comps") == "2")
-                {
-                    AddVectorVarToMetaData(md,
-                                          field_names[j].c_str(),
-                                          dset_names[i].c_str(),
-                                          AVT_NODECENT,2);
+                                           cent,2);
                 }
                 else if(field.Tag("comps") == "3")
                 {
                     AddVectorVarToMetaData(md,
-                                          field_names[j].c_str(),
-                                          dset_names[i].c_str(),
-                                          AVT_NODECENT,3);
+                                           field_names[j].c_str(),
+                                           dset_names[i].c_str(),
+                                           cent,3);
                 }
             }
             else if(f_assoc == "quadrature")
@@ -448,27 +562,27 @@ avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                                       topo_dim);
                 }
 
-                if(field.Tag("comps") == "1")
+                if(!field.HasTag("comps") || field.Tag("comps") == "1")
                 {
                     
                     AddScalarVarToMetaData(md,
                                            field_names[j].c_str(),
                                            qf_mesh_name.c_str(),
-                                           AVT_ZONECENT);
+                                           cent);
                 }
                 else if(field.Tag("comps") == "2")
                 {
                     AddVectorVarToMetaData(md,
                                            field_names[j].c_str(),
                                            qf_mesh_name.c_str(),
-                                           AVT_ZONECENT,2);
+                                           cent,2);
                 }
                 else if(field.Tag("comps") == "3")
                 {
                     AddVectorVarToMetaData(md,
                                            field_names[j].c_str(),
                                            qf_mesh_name.c_str(),
-                                           AVT_ZONECENT,3);
+                                           cent,3);
                 }
             }
         }

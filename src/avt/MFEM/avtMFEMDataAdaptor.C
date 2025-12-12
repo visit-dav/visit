@@ -1183,7 +1183,7 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
         {
             l2 = true;
         }
-        bases = 1;            
+        bases = 1;
     }
 
     // we must enforce only a single basis type

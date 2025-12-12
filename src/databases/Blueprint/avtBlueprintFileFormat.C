@@ -1392,14 +1392,7 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
                 m_mfem_mesh_map[var_topo_name] = true;
 
                 const std::string basis = n_field["basis"].as_string();
-                if (periodic_topos.count(var_topo_name) > 0)
-                {
-                    // if this field belongs to a topology that might be a periodic 
-                    // mfem mesh then we are always nodal because we are going to
-                    // fall back to legacy LOR.
-                    cent = AVT_NODECENT;
-                }
-                else if(basis.find("QF_") != std::string::npos) // quad func case
+                if(basis.find("QF_") != std::string::npos) // quad func case
                 {
                     // quad func data is presented as zone centered on a special mesh
                     cent = AVT_ZONECENT;
@@ -1423,11 +1416,14 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
                     {
                         cent = AVT_NODECENT;
                     }
-                    // else if (m_mesh_refinement_method == avtMFEMDataAdaptor::meshRefinementMethod::Default_LOR)
-                    // {
-                        // we don't have a way to tell if the mesh is periodic or not yet, so we will guess
-                        // that it is not
-                    // }
+                    else if (m_mesh_refinement_method == avtMFEMDataAdaptor::meshRefinementMethod::Default_LOR &&
+                             periodic_topos.count(var_topo_name) > 0)
+                    {
+                        // if this field belongs to a topology that might be a periodic 
+                        // mfem mesh then we are always nodal because we are going to
+                        // fall back to legacy LOR if we have selected default refinement.
+                        cent = AVT_NODECENT;
+                    }
                     else
                     {
                         const std::string basis = n_field["basis"].as_string();
@@ -3022,7 +3018,7 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname, avtCentering
                 }
             }
 
-            // Check whether the data need to be refined anyway.
+            // Check whether the data needs to be refined anyway.
             const bool meshIsHO = n_mesh.has_path("topologies/" + topo_name + "/grid_function");
             if(meshIsHO && (tdims >= 2) && ((m_selected_lod+1) > 1))
             {
