@@ -341,47 +341,47 @@ vtkMultiSplitter::RequestData(
             {
                 unsigned char shapeType = *splitCase++;
                 {
-                    vtkIdType npts;
+                    vtkIdType npts2;
                     int interpID = -1;
                     int color    = -1;
                     switch (shapeType)
                     {
                       case ST_HEX:
-                        npts = 8;
+                        npts2 = 8;
                         color = *splitCase++;
                         break;
                       case ST_WDG:
-                        npts = 6;
+                        npts2 = 6;
                         color = *splitCase++;
                         break;
                       case ST_PYR:
-                        npts = 5;
+                        npts2 = 5;
                         color = *splitCase++;
                         break;
                       case ST_TET:
-                        npts = 4;
+                        npts2 = 4;
                         color = *splitCase++;
                         break;
                       case ST_QUA:
-                        npts = 4;
+                        npts2 = 4;
                         color = *splitCase++;
                         break;
                       case ST_TRI:
-                        npts = 3;
+                        npts2 = 3;
                         color = *splitCase++;
                         break;
                       case ST_LIN:
-                        npts = 2;
+                        npts2 = 2;
                         color = *splitCase++;
                         break;
                       case ST_VTX:
-                        npts = 1;
+                        npts2 = 1;
                         color = *splitCase++;
                         break;
                       case ST_PNT:
                         interpID = *splitCase++;
                         color    = *splitCase++;
-                        npts     = *splitCase++;
+                        npts2     = *splitCase++;
                         break;
                       default:
                         EXCEPTION1(ImproperUseException,
@@ -392,7 +392,7 @@ vtkMultiSplitter::RequestData(
                     bool out = (color == COLOR0);
 
                     vtkIdType shape[8];
-                    for (int p = 0 ; p < npts ; p++)
+                    for (vtkIdType p = 0 ; p < npts2 ; p++)
                     {
                         unsigned char pt = *splitCase++;
                         if (pt <= P7)
@@ -476,7 +476,7 @@ vtkMultiSplitter::RequestData(
                         vfv.AddVertex(cellId, shape[0], bf);
                         break;
                       case ST_PNT:
-                        interpIDs[interpID] = vfv.AddCentroidPoint(npts, shape);
+                        interpIDs[interpID] = vfv.AddCentroidPoint(npts2, shape);
                         break;
                     }
                 }

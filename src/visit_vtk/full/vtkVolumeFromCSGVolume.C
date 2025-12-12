@@ -450,11 +450,11 @@ vtkVolumeFromCSGVolume::UpdatePoints(vector<float> &pts)
     //
     // Determine if no shapes have been added and exit early if so.
     //
-    int ishape = 0;
-    while (ishape < nshapes &&
-           shapeCnt[ishape] == shapes[ishape]->GetTotalNumberOfShapes())
-        ishape++;
-    if (ishape >= nshapes)
+    int ishape2 = 0;
+    while (ishape2 < nshapes &&
+           shapeCnt[ishape2] == shapes[ishape2]->GetTotalNumberOfShapes())
+        ishape2++;
+    if (ishape2 >= nshapes)
         return;
 
     //

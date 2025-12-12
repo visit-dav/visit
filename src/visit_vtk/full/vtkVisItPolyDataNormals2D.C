@@ -166,10 +166,10 @@ vtkVisItPolyDataNormals2D::ExecutePoint(
     outCD->CopyAllocate(inCD, nTotalCells);
 
     auto connPtrL = vtk::TakeSmartPointer(inCL->NewIterator());
-    vtkIdType i = 0;
-    for (connPtrL->GoToFirstCell(); !connPtrL->IsDoneWithTraversal(); connPtrL->GoToNextCell(), ++i)
+    vtkIdType idx = 0;
+    for (connPtrL->GoToFirstCell(); !connPtrL->IsDoneWithTraversal(); connPtrL->GoToNextCell(), ++idx)
     {
-        outCD->CopyData(inCD, nVerts+i, nVerts+i);
+        outCD->CopyData(inCD, nVerts+idx, nVerts+idx);
         vtkIdType nPtIds;
         const vtkIdType *ptIds;
         connPtrL->GetCurrentCell(nPtIds, ptIds);

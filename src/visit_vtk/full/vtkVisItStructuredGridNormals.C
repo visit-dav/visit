@@ -158,23 +158,23 @@ vtkVisItStructuredGridNormals::ExecutePoint(vtkStructuredGrid *input,
             int cIdx = 0;
             if (i-1 >= 0)
             {
-                int idx = j*fastDim + i-1;
-                input->GetPoint(idx, compass[cIdx++]);
+                int idx2 = j*fastDim + i-1;
+                input->GetPoint(idx2, compass[cIdx++]);
             }
             if (j-1 >= 0)
             {
-                int idx = (j-1)*fastDim + i;
-                input->GetPoint(idx, compass[cIdx++]);
+                int idx2 = (j-1)*fastDim + i;
+                input->GetPoint(idx2, compass[cIdx++]);
             }
             if (i+1 < fastDim)
             {
-                int idx = (j)*fastDim + i+1;
-                input->GetPoint(idx, compass[cIdx++]);
+                int idx2 = (j)*fastDim + i+1;
+                input->GetPoint(idx2, compass[cIdx++]);
             }
             if (j+1 < slowDim)
             {
-                int idx = (j+1)*fastDim + i;
-                input->GetPoint(idx, compass[cIdx++]);
+                int idx2 = (j+1)*fastDim + i;
+                input->GetPoint(idx2, compass[cIdx++]);
             }
             // It we are at the corner, then we only have two points.
             // The loop below would consider their cross product twice

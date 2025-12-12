@@ -2289,18 +2289,18 @@ vtkCSGGrid::GetRegionBounds(int reg, std::vector<int> &bounds)
 // ****************************************************************************
 
 void
-vtkCSGGrid::PrintRegionTree(int reg, int *leftIds, int *rightIds,
-    int *regTypeFlags, int indent)
+vtkCSGGrid::PrintRegionTree(int reg, int *_leftIds, int *_rightIds,
+    int *_regTypeFlags, int indent)
 {
     SWAP_REGION;
-    int leftID  = leftIds[reg];
-    int rightID = rightIds[reg];
+    int leftID  = _leftIds[reg];
+    int rightID = _rightIds[reg];
 
     for (int i = 0; i < indent; i++)
         debug5 << "  ";
     debug5 << indent << ":" << reg << ":";
 
-    switch (regTypeFlags[reg])
+    switch (_regTypeFlags[reg])
     {
       case DBCSG_INNER:
         debug5 << "Inner:" << leftID << endl;
@@ -2310,22 +2310,22 @@ vtkCSGGrid::PrintRegionTree(int reg, int *leftIds, int *rightIds,
         break;
       case DBCSG_COMPLIMENT:
         debug5 << "Compliment:" << endl;
-        PrintRegionTree(leftID, leftIds, rightIds, regTypeFlags, indent+1);
+        PrintRegionTree(leftID, _leftIds, _rightIds, _regTypeFlags, indent+1);
         break;
       case DBCSG_UNION:
         debug5 << "Union:" << endl;
-        PrintRegionTree(leftID, leftIds, rightIds, regTypeFlags, indent+1);
-        PrintRegionTree(rightID, leftIds, rightIds, regTypeFlags, indent+1);
+        PrintRegionTree(leftID, _leftIds, _rightIds, _regTypeFlags, indent+1);
+        PrintRegionTree(rightID, _leftIds, _rightIds, _regTypeFlags, indent+1);
         break;
       case DBCSG_INTERSECT:
         debug5 << "Intersect:" << endl;
-        PrintRegionTree(leftID, leftIds, rightIds, regTypeFlags, indent+1);
-        PrintRegionTree(rightID, leftIds, rightIds, regTypeFlags, indent+1);
+        PrintRegionTree(leftID, _leftIds, _rightIds, _regTypeFlags, indent+1);
+        PrintRegionTree(rightID, _leftIds, _rightIds, _regTypeFlags, indent+1);
         break;
       case DBCSG_DIFF:
         debug5 << "Diff:" << endl;
-        PrintRegionTree(leftID, leftIds, rightIds, regTypeFlags, indent+1);
-        PrintRegionTree(rightID, leftIds, rightIds, regTypeFlags, indent+1);
+        PrintRegionTree(leftID, _leftIds, _rightIds, _regTypeFlags, indent+1);
+        PrintRegionTree(rightID, _leftIds, _rightIds, _regTypeFlags, indent+1);
         break;
       case DBCSG_XFORM:
         debug5 << "Xform:" << endl;

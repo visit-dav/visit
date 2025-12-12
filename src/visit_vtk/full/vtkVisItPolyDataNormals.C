@@ -587,10 +587,10 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting(vtkPolyData *input,
                 n[1] += normal[1];
                 n[2] += normal[2];
 
-                double nx = n[0];
-                double ny = n[1];
-                double nz = n[2];
-                double newlength = sqrt(nx*nx + ny*ny + nz*nz);
+                double nnx = n[0];
+                double nny = n[1];
+                double nnz = n[2];
+                double newlength = sqrt(nnx*nnx + nny*nny + nnz*nnz);
 
                 double *nn = ne->nn;
                 if (newlength != 0.0)

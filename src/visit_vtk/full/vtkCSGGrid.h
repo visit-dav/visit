@@ -302,8 +302,8 @@ protected:
 
   bool EvaluateRegionBits(int reg, vtkCSGFixedLengthBitField &bits);
   void GetRegionBounds(int reg, std::vector<int> &bounds);
-  void PrintRegionTree(int reg, int *leftIds, int *rightIds,
-                        int *regTypeFlags, int indent);
+  void PrintRegionTree(int reg, int *_leftIds, int *_rightIds,
+                        int *_regTypeFlags, int indent);
   void GetRegionTree(int reg);
 
   //

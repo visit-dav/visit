@@ -88,13 +88,11 @@ int vtkVisItCellDataToPointData::RequestData(
   vtkDataSet *output = vtkDataSet::SafeDownCast(
     outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
-  vtkIdType cellId, ptId, i, j, k, l;
+  vtkIdType cellId, i, j, k, l;
   vtkIdType numCells, numPts;
   vtkCellData *inPD=input->GetCellData();
   vtkPointData *outPD=output->GetPointData();
   vtkIdList *cellIds;
-  double weight;
-  double *weights;
 
   vtkDebugMacro(<<"Mapping cell data to point data");
 
@@ -110,7 +108,7 @@ int vtkVisItCellDataToPointData::RequestData(
     cellIds->Delete();
     return 1;
     }
-  weights = new double[VTK_MAX_CELLS_PER_POINT];
+  double *weights = new double[VTK_MAX_CELLS_PER_POINT];
   
   // Pass the point data first. The fields and attributes
   // which also exist in the cell data of the input will
@@ -168,7 +166,7 @@ int vtkVisItCellDataToPointData::RequestData(
     const int iOffset = 1;
     const int jOffset = (dims[0]-1);
     const int kOffset = (dims[0]-1)*(dims[1]-1);
-    double weights[4] = { 1., 0.5, 0.25, 0.125 };
+    double weights4[4] = { 1., 0.5, 0.25, 0.125 };
     int nids_array[4] = { 1, 2, 4, 8 };
     int ids[8];
 
@@ -204,7 +202,7 @@ int vtkVisItCellDataToPointData::RequestData(
           if (k == 0 || k == dims[2]-1)
             numBad++;
 
-          double weight = weights[3-numBad];
+          double weight = weights4[3-numBad];
           int nids = nids_array[3-numBad];
 
           int id = 0;
@@ -249,7 +247,7 @@ int vtkVisItCellDataToPointData::RequestData(
     } // End if
   else
     {
-    for (ptId=0; ptId < numPts && !abort; ptId++)
+    for (vtkIdType ptId=0; ptId < numPts && !abort; ptId++)
       {
       if ( !(ptId % progressInterval) )
         {
@@ -261,7 +259,7 @@ int vtkVisItCellDataToPointData::RequestData(
       numCells = cellIds->GetNumberOfIds();
       if ( numCells > 0 )
         {
-        weight = 1.0 / numCells;
+        double weight = 1.0 / numCells;
         for (cellId=0; cellId < numCells; cellId++)
           {
           weights[cellId] = weight;

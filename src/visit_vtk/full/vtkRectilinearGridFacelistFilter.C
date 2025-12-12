@@ -773,10 +773,10 @@ vtkRectilinearGridFacelistFilter::ConsolidateFacesWithGhostZones(
         int l, m;
         for (l = j+1 ; l < rowSize[i] ; ++l)
         {
-           int face = k*rowSize[i] + l;
-           if (faceUsed[face])
+           int face2 = k*rowSize[i] + l;
+           if (faceUsed[face2])
              break;
-           unsigned char gz_current = gza[startFace+face];
+           unsigned char gz_current = gza[startFace+face2];
            if (gz_current != gz_standard)
              break;
            lastRowMatch = l;
@@ -792,13 +792,13 @@ vtkRectilinearGridFacelistFilter::ConsolidateFacesWithGhostZones(
           bool all_matches = true;
           for (l = j ; l <= lastRowMatch ; ++l)
           {
-            int face = m*rowSize[i] + l;
-            if (faceUsed[face])
+            int face2 = m*rowSize[i] + l;
+            if (faceUsed[face2])
             {
               all_matches = false;
               break;
             }
-            unsigned char gz_current = gza[startFace+face];
+            unsigned char gz_current = gza[startFace+face2];
             if (gz_current != gz_standard)
             {
               all_matches = false;
@@ -815,8 +815,8 @@ vtkRectilinearGridFacelistFilter::ConsolidateFacesWithGhostZones(
         for (l = j ; l <= lastRowMatch ; ++l)
           for (m = k ; m <= lastColumnMatch ; ++m)
           {
-            int face = m*rowSize[i] + l;
-            faceUsed[face] = true;
+            int face2 = m*rowSize[i] + l;
+            faceUsed[face2] = true;
           }
 
         //
