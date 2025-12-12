@@ -74,11 +74,11 @@ public:
 
     // added functionality
     virtual void         setResolution(int r) { mResolution = r; }
-    virtual void         setMeshRefinementMethod(int newMeshRefinementMethod) 
-                            { newMeshRefinementMethod = mMeshRefinementMethod; }
-    virtual void         setFieldProjectionMethod(int newFieldProjectionMethod) 
+    virtual void         setMeshRefinementMethod(const int newMeshRefinementMethod) 
+                            { mMeshRefinementMethod = newMeshRefinementMethod; }
+    virtual void         setFieldProjectionMethod(const int newFieldProjectionMethod) 
                             { mFieldProjectionMethod = newFieldProjectionMethod; }
-    virtual void         setRefinementBasisType(int newRefinementBasisType) 
+    virtual void         setRefinementBasisType(const int newRefinementBasisType) 
                             { mRefinementBasisType = newRefinementBasisType; }
     virtual int          resolution() const { return mResolution; }
     virtual int          meshRefinementMethod() const { return mMeshRefinementMethod; }

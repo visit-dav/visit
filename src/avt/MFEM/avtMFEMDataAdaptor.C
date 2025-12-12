@@ -1066,7 +1066,15 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
                                             avtCentering &cent_change,
                                             bool var_is_nodal)
 {
+    std::cout << "=====================================" << std::endl;
+    std::cout << "meshRefinementMethod: " << mesh_ref_method << std::endl;
+    std::cout << "fieldProjectionMethod: " << field_proj_method << std::endl;
+    std::cout << "refinementBasisType: " << ref_basis_type << std::endl;
+
+
+
     AVT_MFEM_INFO("Creating Refined MFEM Field with lod: " << lod);
+    std::cout << "Creating Refined MFEM Field with lod: " << lod << std::endl;
 
     if (meshRefinementMethod::Discontinuous_LOR == mesh_ref_method)
     {
@@ -1077,6 +1085,7 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
         }
 
         AVT_MFEM_INFO("Using Legacy LOR to refine grid function.");
+        std::cout << "Using Legacy LOR to refine grid function." << std::endl;
         cent_change = AVT_NODECENT;
         return DiscontinuousRefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
     }
@@ -1107,12 +1116,16 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
             AVT_MFEM_INFO("High Order Mesh may be periodic and default "
                           "refinement has been selected; falling back to "
                           "Legacy LOR.");
+            std::cout << "High Order Mesh may be periodic and default "
+                          "refinement has been selected; falling back to "
+                          "Legacy LOR." << std::endl;
             cent_change = AVT_NODECENT;
             return DiscontinuousRefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
         }
     }
     else
     {
+        std::cout << "High Order Mesh is not periodic." << std::endl;
         AVT_MFEM_INFO("High Order Mesh is not periodic.");
     }
 
