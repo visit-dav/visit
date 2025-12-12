@@ -7,6 +7,7 @@
 #include <QApplication>
 #include <QLabel>
 #include <QGridLayout>
+#include <QGroupBox>
 #include <QSlider>
 #include <QComboBox>
 
@@ -116,56 +117,50 @@ QvisMultiresControlWindow::CreateWindowContents()
     connect(this->resolution, SIGNAL(sliderReleased()), this,
             SLOT(resolutionLevelChanged()));
 
-    // note about MFEM options
-    MFEMDisambiguationLabel = new QLabel(this);
-    MFEMDisambiguationLabel->setText(tr("The below options are only relevant to high-order data from MFEM and Blueprint. "
-                                        "Additionally, the\nResolution control only affects "
-                                        "non-quadrature function meshes and fields."));
-    mainLayout->addWidget(MFEMDisambiguationLabel, 1, 0, 1, 2);
-
-
-    // TODO add a box
     // High Order Options
+    QGroupBox *HOGroup = new QGroupBox(central);
+    HOGroup->setTitle(tr("MFEM and Blueprint High Order Options"));
+    mainLayout->addWidget(HOGroup, 1, 0, 2, 3);
+
+    QGridLayout *HOLayout = new QGridLayout(HOGroup);
 
     // basis type
-    refinementBasisTypeLabel = new QLabel(this);
-    refinementBasisTypeLabel->setText(tr("Refinement Basis\n"
-                                         "(all high-order data)"));
-    mainLayout->addWidget(refinementBasisTypeLabel, 2, 0);
+    refinementBasisTypeLabel = new QLabel(HOGroup);
+    refinementBasisTypeLabel->setText(tr("Refinement Basis"));
+    HOLayout->addWidget(refinementBasisTypeLabel, 2, 0);
 
-    refinementBasisType = new QComboBox(this);
+    refinementBasisType = new QComboBox(HOGroup);
     refinementBasisType->addItem(tr("Gauss Lobatto (Default)"));
     refinementBasisType->addItem(tr("Closed Uniform"));
     connect(refinementBasisType, SIGNAL(activated(int)),
             this, SLOT(refinementBasisTypeChanged(int)));
-    mainLayout->addWidget(refinementBasisType, 2, 1);
+    HOLayout->addWidget(refinementBasisType, 2, 1);
 
     // mesh refinement method
-    meshRefinementMethodLabel = new QLabel(this);
-    meshRefinementMethodLabel->setText(tr("Mesh Refinement Method\n"
-                                          "(non-quadrature function meshes)"));
-    mainLayout->addWidget(meshRefinementMethodLabel, 3, 0);
+    meshRefinementMethodLabel = new QLabel(HOGroup);
+    meshRefinementMethodLabel->setText(tr("Mesh Refinement Method"));
+    HOLayout->addWidget(meshRefinementMethodLabel, 3, 0);
 
-    meshRefinementMethod = new QComboBox(this);
+    meshRefinementMethod = new QComboBox(HOGroup);
     meshRefinementMethod->addItem(tr("Default LOR"));
     meshRefinementMethod->addItem(tr("Continuous LOR"));
     meshRefinementMethod->addItem(tr("Discontinuous LOR"));
     connect(meshRefinementMethod, SIGNAL(activated(int)),
             this, SLOT(meshRefinementMethodChanged(int)));
-    mainLayout->addWidget(meshRefinementMethod, 3, 1);
+    HOLayout->addWidget(meshRefinementMethod, 3, 1);
 
     // field projection method
-    fieldProjectionMethodLabel = new QLabel(this);
+    fieldProjectionMethodLabel = new QLabel(HOGroup);
     fieldProjectionMethodLabel->setText(tr("Grid Function Projection Method"));
-    mainLayout->addWidget(fieldProjectionMethodLabel, 4, 0);
+    HOLayout->addWidget(fieldProjectionMethodLabel, 4, 0);
 
-    fieldProjectionMethod = new QComboBox(this);
+    fieldProjectionMethod = new QComboBox(HOGroup);
     fieldProjectionMethod->addItem(tr("Default Projection"));
     fieldProjectionMethod->addItem(tr("Zonal Projection"));
     fieldProjectionMethod->addItem(tr("Nodal Projection"));
     connect(fieldProjectionMethod, SIGNAL(activated(int)),
             this, SLOT(fieldProjectionMethodChanged(int)));
-    mainLayout->addWidget(fieldProjectionMethod, 4, 1);
+    HOLayout->addWidget(fieldProjectionMethod, 4, 1);
 }
 
 
