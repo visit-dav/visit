@@ -733,41 +733,6 @@ avtMFEMDataAdaptor::QuadratureFunctionMeshToVTK(mfem::Mesh *mesh,
                                                 int order,
                                                 const refinementBasisType ref_basis_type)
 {
-    // TODO
-
-    // quad function mesh - no resolution, no projection, yes basis type
-    // quad function field - no resolution, no projection, yes basis type
-    // normal mesh - yes resolution, yes projection**, yes basis type
-    // gf field - yes resolution, yes projection, yes basis type
-
-    // **normal meshes are either LOR discontinuous or LOR continuous
-
-    // resolution selection: 42364832432
-
-    // basis choices (always applies to all mfem)
-    //    gauss lobatto (default)
-    //    closed uniform
-
-    // mesh refinement is 
-    //    discontinuous LOR
-    //    continuous LOR
-
-    // field projection is
-    //    default (it depends on finite element type)
-    //    zonal (only continuous)
-    //    nodal (discontinuous or continuous mesh refinement)
-
-
-    // for gui:
-    //   resolution
-    //   basis
-    //   mesh refinement
-    //   field refinement
-
-    // need 2d and 3d tests for these
-    // quad function tests for changing the basis
-
-
     vtkDataSet *rv = nullptr;
    
     // refine the mesh
@@ -788,7 +753,6 @@ avtMFEMDataAdaptor::QuadratureFunctionMeshToVTK(mfem::Mesh *mesh,
     // Note:
     // mfem::BasisType::ClosedGL is what glviz uses
     mfem::Mesh lo_mesh;
-    // TODO get rid of default; default will be gauss lobatto
     if (refinementBasisType::Gauss_Lobatto_Default == ref_basis_type)
     {
         lo_mesh = mfem::Mesh::MakeRefined(*mesh, ref_factor, mfem::BasisType::GaussLobatto);
@@ -1164,7 +1128,7 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     bool l2    = basis.find("L2_")   != std::string::npos; // zonal
     bool hdiv  = basis.find("RT_")   != std::string::npos;
     bool hcurl = basis.find("ND_")   != std::string::npos;
-    bool nurbs = basis.find("NURBS") != std::string::npos;   // TODO We need test data
+    bool nurbs = basis.find("NURBS") != std::string::npos;
 
     int bases = static_cast<int>(l2) +
                 static_cast<int>(h1) +

@@ -351,4 +351,10 @@ for dbfile in ex01_results:
 #     test_mfem_lor_controls(dbfile)
 
 
+# TODO
+# need 2d and 3d tests for all of the new multirescontrol options
+# we also need quad function tests for changing the basis
+# make sure we test with nurbs
+
+
 Exit()
