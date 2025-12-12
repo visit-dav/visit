@@ -67,6 +67,10 @@ class MovieTemplateConfig;
 //   Brad Whitlock, Mon Dec  6 16:04:47 PST 2010
 //   I added time step stride controls.
 //
+//   Kathleen Biagas, Wed Dec 3, 2025 
+//   Added availableFormats so that existence of ffmpeg can be checked
+//   and extra formats added if it is available.
+//
 // ****************************************************************************
 
 class QvisSaveMovieWizard : public QvisWizard
@@ -395,6 +399,10 @@ private:
     // How to generate?
     QWizardPage            *page13;
     QButtonGroup           *page13_buttongroup;
+
+  private:
+
+    std::vector<std::string> availableFormats; 
 };
 
 #endif

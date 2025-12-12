@@ -67,6 +67,9 @@
 #  Use custom command to copy bin files so that cmake keeps them
 #  up-to-date in `/bin` when the source files are modified.
 #
+#  Kathleen Biagas, Tue Nov 11, 2025
+#  Compile visit.c with C++ 17.
+#
 #****************************************************************************
 
 #-----------------------------------------------------------------------------
@@ -172,6 +175,7 @@ else()
     set_target_properties(visit_exe PROPERTIES OUTPUT_NAME visit)
     set_source_files_properties(visit.c PROPERTIES LANGUAGE CXX)
     target_include_directories(visit_exe PRIVATE ${VISIT_COMMON_INCLUDES})
+    target_compile_features(visit_exe PRIVATE cxx_std_17)
     target_link_libraries(visit_exe PRIVATE shlwapi)
     VISIT_INSTALL_TARGETS(visit_exe)
 

@@ -84,6 +84,10 @@
 //    Brad Whitlock, Tue Jan 10 14:38:24 PST 2012
 //    Set/get the expression node.
 //
+//    Eric Brugger, Mon Nov 24 10:17:20 PST 2025
+//    I maded AddNode virtual so that it can be intercepted in
+//    ClonedDataNetwork.
+//
 // ****************************************************************************
 
 class ENGINE_MAIN_API DataNetwork
@@ -98,7 +102,7 @@ public:
     void SetPlotName(const std::string &n) { plotName = n; };
     virtual void SetPlot(avtPlot *_plot) { plot = _plot; };
     void SetTerminalNode(Netnode* t) {terminalNode = t;};
-    void AddNode(Netnode *n) { nodeList.push_back(n); };
+    virtual void AddNode(Netnode *n) { nodeList.push_back(n); };
     
     void AddFilterNodeAfterExpressionEvaluator(NetnodeFilter *f);
     void SetContract(avtContract_p s) {contract = s;};

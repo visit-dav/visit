@@ -4,9 +4,12 @@
 
 #****************************************************************************
 # Modifications:
-#    Cyrus Harrison, Wed Mar 10 14:28:33 PST 2010   
-#    Use proper python include path ${PYTHON_INCLUDE_PATH}, instead of 
+#    Cyrus Harrison, Wed Mar 10 14:28:33 PST 2010
+#    Use proper python include path ${PYTHON_INCLUDE_PATH}, instead of
 #    ${PYTHON_INCLUDE_DIRS}
+#
+#    Kathleen Biagas, Thu Dec 4, 2025
+#    Use PYTHON_LIBRARY instead of PYTHON_LIBRARIES, matches rest of VisIt.
 #
 #****************************************************************************
 
@@ -34,19 +37,16 @@ ${VTK_INCLUDE_DIRS}
 ${PYTHON_INCLUDE_PATH}
 )
 
-# Add link directories
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${PYTHON_DIR})
-
 
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtpythonfilters_ser ${AVTPYTHON_FILTERS_SOURCES})
-TARGET_LINK_LIBRARIES(avtpythonfilters_ser visitcommon avtdbatts avtpipeline_ser ${PYTHON_LIBRARIES} )
+TARGET_LINK_LIBRARIES(avtpythonfilters_ser visitcommon avtdbatts avtpipeline_ser ${PYTHON_LIBRARY} )
 VISIT_INSTALL_TARGETS(avtpythonfilters_ser)
 
 #********************************* PARALLEL **********************************
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(avtpythonfilters_par ${AVTPYTHON_FILTERS_SOURCES})
-    TARGET_LINK_LIBRARIES(avtpythonfilters_par visitcommon avtdbatts avtpipeline_par ${PYTHON_LIBRARIES})
+    TARGET_LINK_LIBRARIES(avtpythonfilters_par visitcommon avtdbatts avtpipeline_par ${PYTHON_LIBRARY})
     VISIT_INSTALL_TARGETS(avtpythonfilters_par)
 ENDIF(VISIT_PARALLEL)
 

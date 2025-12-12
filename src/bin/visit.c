@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <visit-config.h>
 #include <windows.h>
 #include <Winbase.h>
 #include <errno.h>
@@ -16,11 +15,17 @@
 #include <shlobj.h>
 #include <shlwapi.h>
 
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
+
+// VisIt headers
+#include <visit-config.h>
+
+namespace fs = std::filesystem;
 
 using std::vector;
 using std::string;
@@ -152,6 +157,9 @@ bool RedirectConsoleIO();
 bool ReleaseConsole();
 void AdjustConsoleBuffer(int16_t minLength);
 bool CreateNewConsole(int16_t minLength);
+bool VerifyValidUserPath(std::string, bool, bool);
+
+static char *lastError = new char[512];
 
 static bool EndsWith(const char *s, const char *suffix)
 {
@@ -344,6 +352,9 @@ static bool EndsWith(const char *s, const char *suffix)
  *   Kathleen Biagas, Tue Mar 18, 2025
  *   Remove support for ultrawrapper.
  *
+ *   Kathleen Biagas, Tue Nov 11, 2025
+ *   Revamp error messages for attempts to find and set VISITUSERHOME folder.
+ *
  *****************************************************************************/
 
 int
@@ -388,7 +399,7 @@ VisItLauncherMain(int argc, char *argv[])
         else if(ARG("-help"))
         {
             string usageFile(GetUsageTextDir());
-            usageFile += "visitusage.txt";
+            usageFile.append("visitusage.txt");
             std::ifstream inFile;
             inFile.open(usageFile);
             std::stringstream strStream;
@@ -396,7 +407,7 @@ VisItLauncherMain(int argc, char *argv[])
             string usageText = strStream.str();
             inFile.close();
             // add the windows-specific text
-            usageText += string(windows_usage);
+            usageText.append(windows_usage);
 
 #ifdef VISIT_WINDOWS_APPLICATION
             // Create a console and redirect i/o to it.
@@ -414,8 +425,8 @@ VisItLauncherMain(int argc, char *argv[])
                 // Use the truncated help text here with a pointer to the
                 // user doc's for more information:
                 string msg(usage);
-                msg += "Please see the user manual for a more complete list.\n";
-                msg += "https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/gui_manual/StartupOptions/index.html";
+                msg.append("Please see the user manual for a more complete list.\n");
+                msg.append("https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/gui_manual/StartupOptions/index.html");
                 MessageBox(NULL,
                            (LPCSTR)msg.c_str(),
                            (LPCSTR)"Usage",
@@ -644,8 +655,8 @@ VisItLauncherMain(int argc, char *argv[])
                 for (int j = i+1; j < argc; j++)
                 {
                     nArgsSkip++;
-                    tmpArg += " ";
-                    tmpArg += argv[j];
+                    tmpArg.append(" ");
+                    tmpArg.append(argv[j]);
                     if (ENDSWITHQUOTE(argv[j]))
                         break;
                 }
@@ -674,7 +685,7 @@ VisItLauncherMain(int argc, char *argv[])
             if (!mpipath.empty())
             {
                 // add the executable
-                mpipath += "\\mpiexec.exe";
+                mpipath.append("\\mpiexec.exe");
             }
         }
         if (mpipath.empty())
@@ -683,7 +694,7 @@ VisItLauncherMain(int argc, char *argv[])
             mpipath = WinGetEnv("MSMPI_INC");
             if (!mpipath.empty())
             {
-                mpipath += "\\..\\Bin\\mpiexec.exe";
+                mpipath.append("\\..\\Bin\\mpiexec.exe");
                 // found the include path, point to Bin
                 // however, this env var is also set by MSMPI 8.1 SDK,
                 // so actually should check that executable exists
@@ -700,7 +711,7 @@ VisItLauncherMain(int argc, char *argv[])
             if (!mpipath.empty())
             {
                 // found the base path, point to Bin
-                mpipath += "\\Bin\\mpiexec.exe";
+                mpipath.append("\\Bin\\mpiexec.exe");
                 // check that mpiexec exists
                 if (!PathFileExists(mpipath.c_str()))
                 {
@@ -1213,8 +1224,8 @@ GetVisItEnvironment(stringVector &env, bool addPluginVars, bool &usingdev,
      */
     if(!haveVISITHOME)
     {
-        char tmpdir[MAX_PATH];
-        if (GetModuleFileName(NULL, tmpdir, MAX_PATH) != 0)
+        char tmpdir[512];
+        if (GetModuleFileName(NULL, tmpdir, 512) != 0)
         {
             size_t pos = 0;
             size_t len = strlen(tmpdir);
@@ -1259,88 +1270,70 @@ GetVisItEnvironment(stringVector &env, bool addPluginVars, bool &usingdev,
     }
 
     /*
-     * Determine visit user path (Path to My Documents).
+     * Determine visit user path: Path to user's Documents folder,
+     * or path stored in VISITUSERHOME if already set in environment.
      */
     string userHome;
     {
         // Test for user-specified VISITUSERHOME
-        string personalUserHome = WinGetEnv("VISITUSERHOME");
-        if (!personalUserHome.empty())
+        bool haveUserHomeEnv = true;
+        bool personalFailed = false;
+        bool havePersonal=false;
+        userHome = WinGetEnv("VISITUSERHOME");
+        if (userHome.empty())
         {
-            /* User specified path, check if writeable */
-            struct _stat fs;
-            if (_stat(personalUserHome.c_str(), &fs) == -1)
+            haveUserHomeEnv = false;
+            // Check known folder
+            PWSTR szPath=nullptr;
+            if(SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Documents,
+                                              KF_FLAG_DONT_VERIFY,
+                                              NULL, &szPath)))
             {
-                char tmp[1024];
-                snprintf(tmp, 1024, "VISITUSERHOME is set in your environment"
-                            " but the specified path does not exist.\n"
-                            "(%s)\n"
-                            "Please specify a valid path for VISITUSERHOME"
-                            " before running VisIt again.\n",
-                            personalUserHome.c_str());
-#ifdef VISIT_WINDOWS_APPLICATION
-                MessageBox(NULL, tmp, "", MB_ICONEXCLAMATION | MB_OK);
-#else
-                fprintf(stderr, tmp);
-#endif
-                exit(0);
-            }
-            if (! (fs.st_mode & _S_IFDIR))
-            {
-                char tmp[1024];
-                snprintf(tmp,1024, "VISITUSERHOME is set in your environment"
-                            " but the specified value is not a folder:\n"
-                            "(%s)\n"
-                            "Please specify a valid folder path for "
-                            "VISITUSERHOME before running VisIt again.\n",
-                            personalUserHome.c_str());
-#ifdef VISIT_WINDOWS_APPLICATION
-                MessageBox(NULL, tmp, "", MB_ICONEXCLAMATION | MB_OK);
-#else
-                fprintf(stderr, tmp);
-#endif
-                exit(0);
-            }
-            userHome = personalUserHome;
-            sprintf(tmpdir, "%s\\My images", personalUserHome.c_str());
-            if (_stat(tmpdir, &fs) == -1)
-            {
-                _mkdir(tmpdir);
-            }
-        }
-        else
-        {
-            char visituserpath[MAX_PATH], expvisituserpath[MAX_PATH];
-            bool haveVISITUSERHOME=0;
-            TCHAR szPath[MAX_PATH];
-            struct _stat fs;
-            if(SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL,
-                                     SHGFP_TYPE_CURRENT, szPath)))
-            {
-                snprintf(visituserpath, 512, "%s\\VisIt", szPath);
-                haveVISITUSERHOME = true;
-            }
-
-            if (haveVISITUSERHOME)
-            {
-                ExpandEnvironmentStrings(visituserpath,expvisituserpath,512);
-                if (_stat(expvisituserpath, &fs) == -1)
-                {
-                    _mkdir(expvisituserpath);
-                }
+                havePersonal = true;
+                size_t origsize = wcslen(szPath) + 1;
+                size_t convertedChars = 0;
+                const size_t newsize = origsize * 2;
+                char* nstring = new char[newsize];
+                wcstombs_s(&convertedChars, nstring, newsize, szPath, _TRUNCATE);
+                userHome = nstring;
+                delete []nstring;
             }
             else
             {
-                strcpy(expvisituserpath, visitpath);
+                personalFailed=true;
+                va_list *va = 0;
+                FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, 0, GetLastError(), 0,
+                  lastError, 512, va);
+
+                // try using visitpath
+                userHome = visitpath;
             }
-            sprintf(tmpdir, "%s\\My images", expvisituserpath);
-            if (_stat(tmpdir, &fs) == -1)
+            CoTaskMemFree(szPath);
+        }
+
+        if(VerifyValidUserPath(userHome, haveUserHomeEnv, personalFailed))
+        {
+            char expvisituserpath[512];
+            ExpandEnvironmentStrings(userHome.c_str(), expvisituserpath, 512);
+            if(havePersonal)
             {
-                _mkdir(tmpdir);
+                snprintf(expvisituserpath, 512, "%s\\VisIt", expvisituserpath);
+                if(!fs::is_directory(expvisituserpath))
+                {
+                    fs::create_directory(expvisituserpath);
+                }
             }
-            userHome = expvisituserpath;
+            snprintf(tmpdir, 512, "%s\\Images", expvisituserpath);
+            if(!fs::is_directory(tmpdir))
+            {
+                fs::create_directory(tmpdir);
+            }
             sprintf(tmp, "VISITUSERHOME=%s", expvisituserpath);
             env.push_back(tmp);
+        }
+        else
+        {
+            exit(0);
         }
     }
 
@@ -1453,7 +1446,7 @@ GetVisItEnvironment(stringVector &env, bool addPluginVars, bool &usingdev,
                 else
                 {
                     haveSSH = false;
-                    errmsg += "SSH registry key does not point to an executable.\n";
+                    errmsg.append("SSH registry key does not point to an executable.\n");
                 }
             }
             free(ssh);
@@ -1461,14 +1454,14 @@ GetVisItEnvironment(stringVector &env, bool addPluginVars, bool &usingdev,
         if (needVISITSSH && !haveSSH)
         {
             string qpath(visitpath);
-            qpath+=string("\\qtssh.exe");
+            qpath.append("\\qtssh.exe");
             sprintf(tmp, "VISITSSH=%s", qpath.c_str());
             env.push_back(tmp);
             sprintf(tmp, "VISITSSHARGS=-no-antispoof");
             env.push_back(tmp);
             if (!errmsg.empty())
             {
-                errmsg += "Using VisIt's qtssh.";
+                errmsg.append("Using VisIt's qtssh.");
 #ifdef VISIT_WINDOWS_APPLICATION
                 MessageBox(NULL,
                            (LPCSTR)errmsg.c_str(),
@@ -1619,9 +1612,9 @@ WinGetEnv(const char * name)
 string
 GetUsageTextDir()
 {
-    char modFName[MAX_PATH];
+    char modFName[512];
     string usageDir;
-    if (GetModuleFileName(NULL, modFName, MAX_PATH) != 0)
+    if (GetModuleFileName(NULL, modFName, 512) != 0)
     {
         string tpath(modFName);
         size_t pos = tpath.find_last_of('\\');
@@ -1762,5 +1755,77 @@ bool CreateNewConsole(int16_t minLength)
     }
 
     return result;
+}
+
+// Function to  determine if given path exists, is directory, and can
+// have file written to it.
+bool VerifyValidUserPath(std::string userPath,
+                         bool haveUserHomeEnv,
+                         bool personalFailed)
+{
+    bool isValid = true;
+
+    string errMsg;
+    if(haveUserHomeEnv)
+    {
+        errMsg.append("VisIt attempted to use ");
+        errMsg.append(userPath);
+        errMsg.append(" from your VISITUSERHOME environment variable.\n");
+    }
+    else if(personalFailed)
+    {
+        errMsg.append("VisIt tried to get the location of your personal Documents folder (");
+        errMsg.append(") to set as VISITUSERHOME, but received this error:");
+        errMsg.append(lastError);
+        errMsg.append("\nVisIt will try using its install location (");
+        errMsg.append(userPath);
+        errMsg.append(") instead.\n");
+    }
+    else
+    {
+        errMsg.append("VisIt attempted to use the location of your personal Documents folder (");
+        errMsg.append(userPath);
+        errMsg.append(") to set VISITUSERHOME.\n");
+    }
+
+    // Check if path exists and is writable
+
+    if(userPath.empty() || !fs::exists(userPath))
+    {
+        errMsg.append("The path does not exist.\n");
+        isValid = false;
+    }
+    else if(!fs::is_directory(userPath))
+    {
+        errMsg.append("The path is not a directory.\n");
+        isValid = false;
+    }
+    else
+    {
+        std::string testFile(userPath + "\\temp.txt");
+
+        std::ofstream tmp(testFile.c_str());
+        tmp << "writable" << std::endl;
+        tmp.close();
+        if(tmp.fail() || tmp.bad())
+        {
+            isValid = false;
+            errMsg.append("Cannot write to a file in the directory.\n");
+        }
+        fs::remove(testFile);
+    }
+
+    if(!isValid)
+    {
+        errMsg.append("Please specify a valid writable path for VISITUSERHOME environment variable before running VisIt again.\n");
+        errMsg.append( "\nSee https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/using_visit/Preferences/File_Locations.html#the-platform-and-the-user-s-home-directory\n");
+#ifdef VISIT_WINDOWS_APPLICATION
+        MessageBox(NULL, (LPCSTR)errMsg.c_str(), "", MB_ICONEXCLAMATION | MB_OK);
+#else
+        cerr << errMsg << endl;
+#endif
+    }
+    errMsg.clear();
+    return isValid;
 }
 

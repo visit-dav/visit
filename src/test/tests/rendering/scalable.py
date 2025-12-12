@@ -50,6 +50,9 @@
 #    Updated the list of hosts where srun was used to launch a parallel
 #    compute engine.
 #
+#    Cyrus Harrison, Mon Dec  1 14:34:33 PST 2025
+#    Added a case for dane
+#
 # ----------------------------------------------------------------------------
 
 if not sys.platform.startswith("win"):
@@ -80,10 +83,7 @@ if len(engines) > 0:
         # explicitly open a parallel engine, if possible
         # if it fails, the OpenDatabase will start a serial engine
         import socket
-        if "quartz" in socket.gethostname() or \
-           "pascal"  in socket.gethostname() or \
-           "poodle"  in socket.gethostname() or \
-           "syrah"   in socket.gethostname():
+        if "dane" in socket.gethostname():
             haveParallelEngine = OpenComputeEngine("localhost", ("-l", "srun", "-np", "2"))
         else:
             haveParallelEngine = OpenComputeEngine("localhost", ("-np", "2"))

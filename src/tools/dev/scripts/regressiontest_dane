@@ -188,6 +188,9 @@
 #   I changed the time limit on the batch job from 8 to 10 hours. I
 #   increased the number of cores used to build visit from 36 to 56.
 # 
+#   Cyrus Harrison, Mon Dec  1 14:34:33 PST 2025
+#   Changed to run on dane (instead of poodle)
+#
 
 
 # Determine the users name and e-mail address.
@@ -247,7 +250,7 @@ debug="false"
 branch="trunk"
 revision="latest"
 serial="false"
-testHost="poodle"
+testHost="dane"
 testDir="/usr/WS1/visit"
 post="true"
 
@@ -289,12 +292,12 @@ do
     esac
 done
 
+cmakeCmd="/usr/workspace/visit/visit/thirdparty_shared/3.5.0-python3.13/toss4/cmake/3.31.8/linux-x86_64_gcc-10.3/bin/cmake"
+
 if test "$branch" = "trunk" ; then
     workingDir="test_trunk"
-    cmakeCmd="/usr/WS1/visit/visit/thirdparty_shared/3.4.0/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/cmake"
 else
     workingDir="test_branch"
-    cmakeCmd="/usr/WS1/visit/visit/thirdparty_shared/3.4.0/toss4/cmake/3.24.3/linux-x86_64_gcc-10.3/bin/cmake"
 fi
 
 repoDir=$testDir/$workingDir/visit
@@ -432,11 +435,11 @@ else
 fi
 
 if test "$serial" = "true" ; then
-    sed -i "s/VISIT_PARALLEL ON/VISIT_PARALLEL OFF/" $repoDir/src/config-site/poodle18.cmake
+    sed -i "s/VISIT_PARALLEL ON/VISIT_PARALLEL OFF/" $repoDir/src/config-site/dane1.cmake
 fi
 if test "$branch" = "trunk" ; then
     $cmakeCmd \
-        -DVISIT_CONFIG_SITE=$repoDir/src/config-site/poodle18.cmake \
+        -DVISIT_CONFIG_SITE=$repoDir/src/config-site/dane1.cmake \
         -DCMAKE_BUILD_TYPE=Release \
         -DVISIT_BUILD_ALL_PLUGINS=1 \
         -DVISIT_ENABLE_DATA_MANUAL_EXAMPLES:BOOL=ON \
@@ -447,7 +450,7 @@ if test "$branch" = "trunk" ; then
         $repoDir/src >> ../buildlog 2>&1
 else
     $cmakeCmd \
-        -DVISIT_CONFIG_SITE=$repoDir/src/config-site/poodle18.cmake \
+        -DVISIT_CONFIG_SITE=$repoDir/src/config-site/dane1.cmake \
         -DCMAKE_BUILD_TYPE=Release \
         -DVISIT_BUILD_ALL_PLUGINS=1 \
         -DVISIT_ENABLE_DATA_MANUAL_EXAMPLES:BOOL=ON \
@@ -680,11 +683,12 @@ EOF
 chmod 750 postit_${testHost}
 
 # Run the test suite.
-if test "$testHost" = "poodle" ; then
+if test "$testHost" = "dane" ; then
     hostName=`hostname`
     subTag=`date +%Y-%m-%d-%H:%M`
-    ./checkout_poodle $subTag
-    sbatch --partition=pbatch --account=wbronze --time=10:00:00 --ntasks=56 --nodes=1 --tasks-per-node=56 -o ${hostName}_testit_${subTag}.out ./runit_poodle $subTag
+    ./checkout_${testHost} $subTag
+    sbatch --partition=pbatch --account=wbronze --time=10:00:00 --ntasks=56 --nodes=1 --tasks-per-node=56 \
+           -o ${workingDir}/${hostName}_testit_${subTag}.out ./runit_${testHost} $subTag
     sleep 28800
-    ./postit_poodle $subTag
+    ./postit_${testHost} $subTag
 fi
