@@ -353,8 +353,6 @@ avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
         std::string qf_mesh_base_name =  dset_names[i] + "_quad_func_o";
 
-        // TODO here we should figure out the association
-
         for(size_t j=0;j<field_names.size();j++)
         {
             JSONRootEntry &field = dset.Field(field_names[j]);
