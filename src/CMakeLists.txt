@@ -526,6 +526,14 @@ if(WIN32)
     visit_setup_windows()
 endif()
 
+# some Find modules might try to setup MPI themselves (adios2 is one), see if
+# this can be mitigated by using our Parallel first, before finding any TP libs.
+if(VISIT_PARALLEL)
+    include(${VISIT_SOURCE_DIR}/CMake/VisItParallel.cmake)
+    message(STATUS "PARALLEL version of VisIt")
+else()
+    message(STATUS "Serial version of VisIt")
+endif()
 
 include(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
@@ -635,12 +643,6 @@ if(VISIT_FORTRAN)
     enable_language(Fortran)
 endif()
 
-if(VISIT_PARALLEL)
-    include(${VISIT_SOURCE_DIR}/CMake/VisItParallel.cmake)
-    message(STATUS "PARALLEL version of VisIt")
-else()
-    message(STATUS "Serial version of VisIt")
-endif()
 
 set(VISIT_INCLUDE_DIR ${VISIT_SOURCE_DIR}  CACHE INTERNAL "Path to VisIt's includes")
 
