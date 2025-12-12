@@ -119,7 +119,7 @@ QvisMultiresControlWindow::CreateWindowContents()
 
     // High Order Options
     QGroupBox *HOGroup = new QGroupBox(central);
-    HOGroup->setTitle(tr("MFEM and Blueprint High Order Options"));
+    HOGroup->setTitle(tr("High Order Options"));
     mainLayout->addWidget(HOGroup, 1, 0, 2, 3);
 
     QGridLayout *HOLayout = new QGridLayout(HOGroup);
