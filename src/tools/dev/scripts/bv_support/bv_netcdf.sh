@@ -639,7 +639,9 @@ function apply_netcdf_patch
 {
     apply_netcdf_patch_for_exodusii
 
-    apply_netcdf_hdf520_patches
+    if [[ "$DO_HDF5" == "yes" ]] ; then
+        apply_netcdf_hdf520_patches
+    fi
 
     if [[ ${NETCDF_VERSION} == 4.1.1 ]] ; then
         if [[ "$OPSYS" == "Darwin" ]] ; then
@@ -748,7 +750,9 @@ function build_netcdf
     #
     # Ensure that if #include hdf5.h turns around and does #include mpi.h,
     # netcdf's compilation will find mpi.h...even though we're not ever
-    # going to use any netcdf parallel features.
+    # going to use any netcdf parallel features. Calling this is harmless
+    # even if HDF5 is not in play. The effect of the call is to either
+    # populate or leave blank VISIT_HDF5_MPI_INCLUDE_FLAG.
     #
     probe_hdf5_mpi_dependence
 
