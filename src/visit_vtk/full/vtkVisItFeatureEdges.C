@@ -130,7 +130,7 @@ int vtkVisItFeatureEdges::RequestData(
     }
   else
     {
-    ghostLevels = ((vtkUnsignedCharArray*)temp)->GetPointer(0);
+    ghostLevels = (static_cast<vtkUnsignedCharArray*>(temp))->GetPointer(0);
     }
 
   //  Check input
@@ -242,7 +242,7 @@ int vtkVisItFeatureEdges::RequestData(
     iter->GetCurrentCell(npts,pts);
     if ( ! (cellId % progressInterval) ) //manage progress / early abort
       {
-      this->UpdateProgress ((double)cellId / numCells);
+      this->UpdateProgress (static_cast<double>(cellId) / numCells);
       abort = this->GetAbortExecute();
       }
 

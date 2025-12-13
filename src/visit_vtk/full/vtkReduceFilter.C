@@ -149,7 +149,8 @@ vtkReduceFilter::RequestData(
     {
         totalObjects += ncells;
     }
-    actingStride = ceil(((float) totalObjects) / ((float) numEls));
+    actingStride = ceil(static_cast<float>(totalObjects) /
+                        static_cast<float>(numEls));
   }
 
   vtkPoints *outpts = vtkVisItUtility::NewPoints(input);
@@ -188,8 +189,11 @@ vtkReduceFilter::RequestData(
       // Find needed size, allocate, and initialize the "found" array
       int max = 0;
       for (int i=0; i<npts; i++)
-        if ((int)origCellArr->GetComponent(i,ccmp) > max)
-          max = (int)origCellArr->GetComponent(i,ccmp);
+      {
+        int val = static_cast<int>(origCellArr->GetComponent(i,ccmp));
+        if (val > max)
+          max = val;
+      }
       foundcell = new bool[max+1];
       for (int i=0; i<max+1; i++)
         foundcell[i] = false;
@@ -203,9 +207,9 @@ vtkReduceFilter::RequestData(
       int orignode = i;
       int origcell = -1;
       if (origNodeArr)
-        orignode = (int)origNodeArr->GetComponent(i,ncmp);
+        orignode = static_cast<int>(origNodeArr->GetComponent(i,ncmp));
       if (origCellArr)
-        origcell = (int)origCellArr->GetComponent(i,ccmp);
+        origcell = static_cast<int>(origCellArr->GetComponent(i,ccmp));
 
       if (origOnly && orignode<0)
         continue;
@@ -269,8 +273,11 @@ vtkReduceFilter::RequestData(
       // Find needed size, allocate, and initialize the "found" array
       int max = 0;
       for (int i=0; i<npts; i++)
-        if ((int)origCellArr->GetComponent(i,ccmp) > max)
-          max = (int)origCellArr->GetComponent(i,ccmp);
+      {
+        int val = static_cast<int>(origCellArr->GetComponent(i,ccmp));
+        if (val > max)
+          max = val;
+      }
       foundcell = new bool[max+1];
       for (int i=0; i<max+1; i++)
         foundcell[i] = false;
@@ -283,7 +290,7 @@ vtkReduceFilter::RequestData(
     {
       int origcell = i;
       if (origCellArr)
-        origcell = (int)origCellArr->GetComponent(i,ccmp);
+        origcell = static_cast<int>(origCellArr->GetComponent(i,ccmp));
 
       if (foundcell && (origcell<0 || foundcell[origcell]))
         continue;

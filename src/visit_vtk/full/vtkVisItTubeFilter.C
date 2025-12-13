@@ -221,7 +221,7 @@ int vtkVisItTubeFilter::RequestData(
     {
         inCellId = iter->GetCurrentCellId();
         iter->GetCurrentCell(npts, pts);
-        this->UpdateProgress((double)inCellId/numLines);
+        this->UpdateProgress(static_cast<double>(inCellId)/numLines);
         abort = this->GetAbortExecute();
 
         if (npts < 2)
@@ -454,7 +454,7 @@ int vtkVisItTubeFilter::GeneratePoints(vtkIdType offset, vtkIdType inCellId,
         else if ( inVectors && this->VaryRadius == VTK_VARY_RADIUS_BY_VECTOR )
         {
             sFactor =
-                sqrt((double)maxSpeed/vtkMath::Norm(inVectors->GetTuple(pts[j])));
+                sqrt(static_cast<double>(maxSpeed)/vtkMath::Norm(inVectors->GetTuple(pts[j])));
             if ( sFactor > this->RadiusFactor )
             {
                 sFactor = this->RadiusFactor;
@@ -480,8 +480,8 @@ int vtkVisItTubeFilter::GeneratePoints(vtkIdType offset, vtkIdType inCellId,
             {
                 for (i=0; i<3; i++)
                 {
-                    normal[i] = w[i]*cos((double)k*this->Theta) +
-                        nP[i]*sin((double)k*this->Theta);
+                    normal[i] = w[i]*cos(static_cast<double>(k*this->Theta)) +
+                        nP[i]*sin(static_cast<double>(k*this->Theta));
                     s[i] = p[i] + this->Radius * sFactor * normal[i];
                 }
                 newPts->InsertPoint(ptId,s);
@@ -503,12 +503,12 @@ int vtkVisItTubeFilter::GeneratePoints(vtkIdType offset, vtkIdType inCellId,
                     // polygonal appearance, as if by flat-shading around the tube,
                     // while still allowing smooth (gouraud) shading along the
                     // tube as it bends.
-                    normal[i]  = w[i]*cos((double)(k+0.0)*this->Theta) +
-                        nP[i]*sin((double)(k+0.0)*this->Theta);
-                    n_right[i] = w[i]*cos((double)(k-0.5)*this->Theta) +
-                        nP[i]*sin((double)(k-0.5)*this->Theta);
-                    n_left[i]  = w[i]*cos((double)(k+0.5)*this->Theta) +
-                        nP[i]*sin((double)(k+0.5)*this->Theta);
+                    normal[i]  = w[i]*cos(static_cast<double>(k+0.0)*this->Theta) +
+                        nP[i]*sin(static_cast<double>(k+0.0)*this->Theta);
+                    n_right[i] = w[i]*cos(static_cast<double>(k-0.5)*this->Theta) +
+                        nP[i]*sin(static_cast<double>(k-0.5)*this->Theta);
+                    n_left[i]  = w[i]*cos(static_cast<double>(k+0.5)*this->Theta) +
+                        nP[i]*sin(static_cast<double>(k+0.5)*this->Theta);
                     s[i] = p[i] + this->Radius * sFactor * normal[i];
                 }
                 newPts->InsertPoint(ptId,s);

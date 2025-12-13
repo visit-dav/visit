@@ -151,19 +151,9 @@ vtkRectilinearLinesNoDataFilter_AddLines(int nX, int nY, int nZ,
 
 #undef AddLineToPolyData
 
-//------------------------------------------------------------------------------
-vtkRectilinearLinesNoDataFilter* vtkRectilinearLinesNoDataFilter::New()
-{
-    // First try to create the object from the vtkObjectFactory
-    vtkObject* ret = vtkObjectFactory::CreateInstance("vtkRectilinearLinesNoDataFilter");
-    if(ret)
-    {
-        return (vtkRectilinearLinesNoDataFilter*)ret;
-    }
-    // If the factory was unable to create the object, then create it here.
-    return new vtkRectilinearLinesNoDataFilter;
-}
+vtkStandardNewMacro(vtkRectilinearLinesNoDataFilter)
 
+//------------------------------------------------------------------------------
 
 vtkRectilinearLinesNoDataFilter::vtkRectilinearLinesNoDataFilter()
 {

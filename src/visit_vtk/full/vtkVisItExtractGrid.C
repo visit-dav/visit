@@ -191,7 +191,8 @@ int vtkVisItExtractGrid::RequestInformation(
       outDims[i] = 1;
       }
     // We might as well make this work for negative extents.
-    mins[i] = (int)(floor((float)voi[2*i] / (float)rate[i]));
+    mins[i] = static_cast<int>(floor(static_cast<float>(voi[2*i]) /
+                                     static_cast<float>(rate[i])));
     }
 
   // Adjust the output dimensions if the boundaries are to be
@@ -308,9 +309,12 @@ int vtkVisItExtractGrid::RequestData(
   // We need to duplicate the computation done in 
   // ExecuteInformtation for the output whole extent.
   // Use shift as temporary variable (output mins).
-  shift[0] = (int)(floor( (float)(voi[0])/(float)(rate[0]) ));
-  shift[1] = (int)(floor( (float)(voi[2])/(float)(rate[1]) ));
-  shift[2] = (int)(floor( (float)(voi[4])/(float)(rate[2]) ));
+  shift[0] = static_cast<int>(floor(static_cast<float>(voi[0])/
+                                    static_cast<float>(rate[0])));
+  shift[1] = static_cast<int>(floor(static_cast<float>(voi[2])/
+                                    static_cast<float>(rate[1])));
+  shift[2] = static_cast<int>(floor(static_cast<float>(voi[4])/
+                                    static_cast<float>(rate[2])));
   // Take the different between the output and input mins (in input coordinates).
   shift[0] = voi[0] - (shift[0]*rate[0]);
   shift[1] = voi[2] - (shift[1]*rate[1]);

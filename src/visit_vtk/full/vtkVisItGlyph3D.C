@@ -696,7 +696,7 @@ vtkVisItGlyph3D::RequestData(
           value = vMag;
         }
 
-        index = (int) ((double)(value - this->Range[0]) * numberOfSources / den);
+        index = static_cast<int>(static_cast<double>(value - this->Range[0]) * numberOfSources / den);
         index = (index < 0 ? 0 :
                 (index >= numberOfSources ? (numberOfSources-1) : index));
 
@@ -987,7 +987,7 @@ vtkVisItGlyph3D::RequestData(
   if (connSize > 0 && (input->GetDataObjectType() == VTK_POLY_DATA ||
                        input->GetDataObjectType() == VTK_UNSTRUCTURED_GRID))
   {
-    vtkPolyData *in_polydata = (vtkPolyData *) input;
+    vtkPolyData *in_polydata = vtkPolyData::SafeDownCast(input);
 
     // we have non-verts ... make a separate output for the non-verts and then
     // append them together.

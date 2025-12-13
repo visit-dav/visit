@@ -810,7 +810,7 @@ vtkVisItClipper_Algorithm(Bridge &bridge, ScalarAccess scalar,
     // Do the actual clipping here
     //
     vtkIdType ptSizeGuess = (state.CellList == NULL
-                         ? (int) pow(float(nCells), 0.6667f) * 5 + 100
+                         ? static_cast<int>(pow(static_cast<float>(nCells), 0.6667f)) * 5 + 100
                          : state.CellListSize*5 + 100);
 
     vtkVolumeFromVolume vfvIn(nPts, ptSizeGuess);
@@ -1467,7 +1467,7 @@ vtkVisItClipper::RequestData(
         int pt_dims[3] = {0,0,0};
         if (do_type == VTK_RECTILINEAR_GRID)
         {
-            vtkRectilinearGrid *rg = (vtkRectilinearGrid*)ds;
+            vtkRectilinearGrid *rg = vtkRectilinearGrid::SafeDownCast(ds);
             rg->GetDimensions(pt_dims);
 
             vtkDataArray *X = rg->GetXCoordinates();
@@ -1501,7 +1501,7 @@ vtkVisItClipper::RequestData(
         }
         else // do_type == VTK_STRUCTURED_GRID
         {
-            vtkStructuredGrid *sg = (vtkStructuredGrid*)ds;
+            vtkStructuredGrid *sg = vtkStructuredGrid::SafeDownCast(ds);
             sg->GetDimensions(pt_dims);
             if(sg->GetPoints()->GetDataType() == VTK_FLOAT)
             {
@@ -1530,7 +1530,7 @@ vtkVisItClipper::RequestData(
     }
     else if (do_type == VTK_UNSTRUCTURED_GRID)
     {
-        vtkUnstructuredGrid *ug = (vtkUnstructuredGrid *)ds;
+        vtkUnstructuredGrid *ug = vtkUnstructuredGrid::SafeDownCast(ds);
 
         vtkUnstructuredGrid *stuff_I_cant_clip = vtkUnstructuredGrid::New();
         stuff_I_cant_clip->SetPoints(ug->GetPoints());
@@ -1562,7 +1562,7 @@ vtkVisItClipper::RequestData(
     }
     else if (do_type == VTK_POLY_DATA)
     {
-        vtkPolyData *pd = (vtkPolyData *)ds;
+        vtkPolyData *pd = vtkPolyData::SafeDownCast(ds);
 
         vtkUnstructuredGrid *stuff_I_cant_clip = vtkUnstructuredGrid::New();
         stuff_I_cant_clip->SetPoints(pd->GetPoints());

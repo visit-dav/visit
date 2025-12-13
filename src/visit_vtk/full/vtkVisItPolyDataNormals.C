@@ -241,7 +241,7 @@ vtkVisItPolyDataNormals::ExecutePointWithoutSplitting(
 
     // Renormalize the normals; they've only been accumulated so far,
     // and store in the vtkFloatArray.
-    float *newNormalPtr = (float*)newNormals->GetPointer(0);
+    float *newNormalPtr = newNormals->GetPointer(0);
     for (int i = 0 ; i < nPoints ; i++)
     {
         double nx = dnormals[i*3+0];
@@ -250,9 +250,9 @@ vtkVisItPolyDataNormals::ExecutePointWithoutSplitting(
         double length = sqrt(nx*nx + ny*ny + nz*nz);
         if (length != 0.0)
         {
-            newNormalPtr[i*3+0] = (float)(nx/length);
-            newNormalPtr[i*3+1] = (float)(ny/length);
-            newNormalPtr[i*3+2] = (float)(nz/length);
+            newNormalPtr[i*3+0] = static_cast<float>(nx/length);
+            newNormalPtr[i*3+1] = static_cast<float>(ny/length);
+            newNormalPtr[i*3+2] = static_cast<float>(nz/length);
         }
         else
         {
@@ -641,7 +641,7 @@ vtkVisItPolyDataNormals::ExecutePointWithSplitting(vtkPolyData *input,
     newNormals->SetNumberOfComponents(3);
     newNormals->SetNumberOfTuples(nOutPts);
     newNormals->SetName("Normals");
-    float *newNormalPtr = (float*)newNormals->GetPointer(0);
+    float *newNormalPtr = newNormals->GetPointer(0);
 
     // Add all the original points and normals
     for (int i = 0 ; i < nPoints ; i++)
@@ -760,12 +760,11 @@ vtkVisItPolyDataNormals::ExecuteCell(vtkPolyData *input, vtkPolyData *output)
     //
     // Create our normals array.
     //
-    vtkFloatArray *newNormals;
-    newNormals = vtkFloatArray::New();
+    vtkFloatArray *newNormals = vtkFloatArray::New();
     newNormals->SetNumberOfComponents(3);
     newNormals->SetNumberOfTuples(numOutCells);
     newNormals->SetName("Normals");
-    float *newNormalPtr = (float*)newNormals->GetPointer(0);
+    float *newNormalPtr = newNormals->GetPointer(0);
 
     //
     // Add normals for verts and lines.
@@ -832,9 +831,9 @@ vtkVisItPolyDataNormals::ExecuteCell(vtkPolyData *input, vtkPolyData *output)
 
         if (length != 0)
         {
-            newNormalPtr[0] = (float)(nx/length);
-            newNormalPtr[1] = (float)(ny/length);
-            newNormalPtr[2] = (float)(nz/length);
+            newNormalPtr[0] = static_cast<float>(nx/length);
+            newNormalPtr[1] = static_cast<float>(ny/length);
+            newNormalPtr[2] = static_cast<float>(nz/length);
         }
         else
         {

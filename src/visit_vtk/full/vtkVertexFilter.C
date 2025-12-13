@@ -146,7 +146,7 @@ vtkVertexFilter::RequestData(
     vtkUnstructuredGrid *ugrid = NULL;
     if (input->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
     {
-        ugrid = (vtkUnstructuredGrid *) input;
+        ugrid = vtkUnstructuredGrid::SafeDownCast(input);
     }
 
     for (i = 0 ; i < nOutPts ; i++)

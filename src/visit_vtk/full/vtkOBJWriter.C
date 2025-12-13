@@ -170,7 +170,7 @@ void vtkOBJWriter::WriteData()
         p = points->GetPoint(i);
         fprintf (fpObj, "v %g %g %g\n", p[0], p[1], p[2]);
     }
-    vtkIdType idNext = idStart + (int)(points->GetNumberOfPoints());
+    vtkIdType idNext = idStart + static_cast<int>(points->GetNumberOfPoints());
 
     // write out the point data
     vtkPointData *pntData = polydata->GetPointData();

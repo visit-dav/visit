@@ -136,7 +136,7 @@ void vtkVisItSTLWriter::WriteBinarySTL(vtkPoints *pts, vtkCellArray *polys)
   vtkDebugMacro("Writing Binary STL file");
   fwrite (header, 1, 80, fp);
 
-  ncells = (int) polys->GetNumberOfCells();
+  ncells = static_cast<int>(polys->GetNumberOfCells());
   vtkByteSwap::Swap4LE(&ncells);
   fwrite (&ncells, 1, 4, fp);
 
@@ -152,25 +152,33 @@ void vtkVisItSTLWriter::WriteBinarySTL(vtkPoints *pts, vtkCellArray *polys)
     pts->GetPoint(indx[2], v3);
 
     vtkTriangle::ComputeNormal(pts, npts, indx, dn);
-    float n[3] = {(float)dn[0], (float)dn[1], (float)dn[2]};
+    float n[3] = {static_cast<float>(dn[0]),
+                  static_cast<float>(dn[1]),
+                  static_cast<float>(dn[2])};
     vtkByteSwap::Swap4LE(n);
     vtkByteSwap::Swap4LE(n+1);
     vtkByteSwap::Swap4LE(n+2);
     fwrite (n, 4, 3, fp);
 
-    n[0] = (float)v1[0];  n[1] = (float)v1[1];  n[2] = (float)v1[2];
+    n[0] = static_cast<float>(v1[0]);
+    n[1] = static_cast<float>(v1[1]);
+    n[2] = static_cast<float>(v1[2]);
     vtkByteSwap::Swap4LE(n);
     vtkByteSwap::Swap4LE(n+1);
     vtkByteSwap::Swap4LE(n+2);
     fwrite (n, 4, 3, fp);
 
-    n[0] = (float)v2[0];  n[1] = (float)v2[1];  n[2] = (float)v2[2];
+    n[0] = static_cast<float>(v2[0]);
+    n[1] = static_cast<float>(v2[1]);
+    n[2] = static_cast<float>(v2[2]);
     vtkByteSwap::Swap4LE(n);
     vtkByteSwap::Swap4LE(n+1);
     vtkByteSwap::Swap4LE(n+2);
     fwrite (n, 4, 3, fp);
 
-    n[0] = (float)v3[0];  n[1] = (float)v3[1];  n[2] = (float)v3[2];
+    n[0] = static_cast<float>(v3[0]);
+    n[1] = static_cast<float>(v3[1]);
+    n[2] = static_cast<float>(v3[2]);
     vtkByteSwap::Swap4LE(n);
     vtkByteSwap::Swap4LE(n+1);
     vtkByteSwap::Swap4LE(n+2);

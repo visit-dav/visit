@@ -186,11 +186,11 @@ vtkPolyDataOnionPeelFilter::Initialize()
         int dims[3] = { 1, 1, 1};
         if (input->GetDataObjectType() == VTK_STRUCTURED_GRID)
         {
-            ((vtkStructuredGrid*)input)->GetDimensions(dims);
+            vtkStructuredGrid::SafeDownCast(input)->GetDimensions(dims);
         }
         else if (input->GetDataObjectType() == VTK_RECTILINEAR_GRID)
         {
-            ((vtkRectilinearGrid*)input)->GetDimensions(dims);
+            vtkRectilinearGrid::SafeDownCast(input)->GetDimensions(dims);
         }
         if (this->logicalIndex[0] >= dims[0] ||
             this->logicalIndex[1] >= dims[1] ||
@@ -985,7 +985,7 @@ vtkPolyDataOnionPeelFilter::FindCellsCorrespondingToOriginal(
         for (int i = comp; i < n; i+=nc )
         {
             int id = i / nc;
-            if (oc[i] == (unsigned int)orig && group->IsId(id) == -1)
+            if (oc[i] == static_cast<unsigned int>(orig) && group->IsId(id) == -1)
                 group->InsertNextId(id);
         }
     }

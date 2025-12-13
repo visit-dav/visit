@@ -32,7 +32,7 @@ template <typename T>
 class vtkPointAccessor
 {
 public:
-    vtkPointAccessor(vtkPoints *p) : pts((const T *)p->GetVoidPointer(0)) { };
+    vtkPointAccessor(vtkPoints *p) : pts(static_cast<const T *>(p->GetVoidPointer(0))) { };
     inline void GetPoint(vtkIdType id, double pt[3]) const
     {
         const T *ptr = pts + 3 * id;
@@ -94,9 +94,9 @@ public:
     vtkRectPointAccessor(const int *d, vtkDataArray *Xc, vtkDataArray *Yc, vtkDataArray *Zc)
     {
         dims[0] = d[0]; dims[1] = d[1]; dims[2] = d[2];
-        X = (const T *)Xc->GetVoidPointer(0);
-        Y = (const T *)Yc->GetVoidPointer(0);
-        Z = (const T *)Zc->GetVoidPointer(0);
+        X = static_cast<const T *>(Xc->GetVoidPointer(0));
+        Y = static_cast<const T *>(Yc->GetVoidPointer(0));
+        Z = static_cast<const T *>(Zc->GetVoidPointer(0));
         dims01 = dims[0] * dims[1];
     }
 
@@ -194,7 +194,7 @@ public:
     {        
     }
 
-    vtkAccessor(vtkDataArray *da) : arr((T *)da->GetVoidPointer(0)), own(false)
+    vtkAccessor(vtkDataArray *da) : arr(static_cast<T *>(da->GetVoidPointer(0))), own(false)
     {        
     }
 
@@ -241,7 +241,7 @@ public:
     vtkDirectAccessor(vtkDataArray *da) : arr(da)
     {
         N = arr->GetNumberOfComponents();
-        ptr = start = (T *)arr->GetVoidPointer(0);
+        ptr = start = static_cast<T *>(arr->GetVoidPointer(0));
         end = ptr + (N * arr->GetNumberOfTuples());
     }
 

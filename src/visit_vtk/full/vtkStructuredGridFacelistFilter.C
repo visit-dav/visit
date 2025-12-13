@@ -15,18 +15,9 @@
 #include <vtkStructuredGrid.h>
 
 
+vtkStandardNewMacro(vtkStructuredGridFacelistFilter)
+
 //------------------------------------------------------------------------------
-vtkStructuredGridFacelistFilter* vtkStructuredGridFacelistFilter::New()
-{
-  // First try to create the object from the vtkObjectFactory
-  vtkObject* ret = vtkObjectFactory::CreateInstance("vtkStructuredGridFacelistFilter");
-  if(ret)
-    {
-    return (vtkStructuredGridFacelistFilter*)ret;
-    }
-  // If the factory was unable to create the object, then create it here.
-  return new vtkStructuredGridFacelistFilter;
-}
 
 inline int
 PointIndex(int x, int y, int z, int nX, int nY, int nZ)

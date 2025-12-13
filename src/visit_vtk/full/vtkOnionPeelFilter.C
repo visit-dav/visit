@@ -182,11 +182,11 @@ vtkOnionPeelFilter::Initialize(vtkDataSet *input)
         int dims[3] = { 1, 1, 1};
         if (input->GetDataObjectType() == VTK_STRUCTURED_GRID)
         {
-            ((vtkStructuredGrid*)input)->GetDimensions(dims);
+            vtkStructuredGrid::SafeDownCast(input)->GetDimensions(dims);
         }
         else if (input->GetDataObjectType() == VTK_RECTILINEAR_GRID)
         {
-            ((vtkRectilinearGrid*)input)->GetDimensions(dims);
+            vtkRectilinearGrid::SafeDownCast(input)->GetDimensions(dims);
         }
         if (this->logicalIndex[0] >= dims[0] ||
             this->logicalIndex[1] >= dims[1] ||
@@ -945,8 +945,8 @@ vtkOnionPeelFilter::FindCellsCorrespondingToOriginal(vtkDataSet *input,
         for (int i = comp; i < n; i+=nc )
         {
             int id = i / nc;
-            maxId = (int)oc[i] > maxId ? (int)oc[i] : maxId; 
-            if (oc[i] == (unsigned int)orig && group->IsId(id) == -1)
+            maxId = static_cast<int>(oc[i]) > maxId ? static_cast<int>(oc[i]) : maxId; 
+            if (oc[i] == static_cast<unsigned int>(orig) && group->IsId(id) == -1)
                 group->InsertNextId(id);
         }
     }
@@ -996,7 +996,7 @@ vtkOnionPeelFilter::FindCellsCorrespondingToOriginal(vtkDataSet *input,
         for (int i = comp; i < n; i+=nc)
         {
             int id = i / nc;
-            maxId = (int)oc[i] > maxId ? (int)oc[i] : maxId;
+            maxId = static_cast<int>(oc[i]) > maxId ? static_cast<int>(oc[i]) : maxId;
             if (origs->IsId(oc[i]) != -1 && group->IsId(id) == -1)
                 group->InsertNextId(id);
         }

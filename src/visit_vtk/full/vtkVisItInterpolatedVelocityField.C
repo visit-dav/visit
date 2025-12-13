@@ -23,17 +23,8 @@
 static void
 InterpVector(vtkGenericCell *cell, int numPts, vtkDataArray *vectors, double *weights, double *vel);
 
-vtkVisItInterpolatedVelocityField* vtkVisItInterpolatedVelocityField::New()
-{
-  // First try to create the object from the vtkObjectFactory
-  vtkObject* ret = vtkObjectFactory::CreateInstance("vtkVisItInterpolatedVelocityField");
-  if(ret)
-    {
-    return (vtkVisItInterpolatedVelocityField*)ret;
-    }
-  // If the factory was unable to create the object, then create it here.
-  return new vtkVisItInterpolatedVelocityField;
-}
+
+vtkStandardNewMacro(vtkVisItInterpolatedVelocityField)
 
 vtkVisItInterpolatedVelocityField::vtkVisItInterpolatedVelocityField()
 {
@@ -136,7 +127,7 @@ vtkVisItInterpolatedVelocityField::Evaluate(double *pt, double *vel, double t)
     if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
     {
         int ijk[3];
-        vtkRectilinearGrid *rgrid = (vtkRectilinearGrid*)ds;
+        vtkRectilinearGrid *rgrid = vtkRectilinearGrid::SafeDownCast(ds);
         if (vtkVisItUtility::ComputeStructuredCoordinates(rgrid, pt, ijk) == 0)
             return false;
         cell = rgrid->ComputeCellId(ijk);

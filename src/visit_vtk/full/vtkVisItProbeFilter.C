@@ -142,7 +142,7 @@ int vtkVisItProbeFilter::RequestData(
     {
     if ( !(ptId % progressInterval) )
       {
-      this->UpdateProgress((double)ptId/numPts);
+      this->UpdateProgress(static_cast<double>(ptId)/numPts);
       abort = GetAbortExecute();
       }
 
@@ -156,7 +156,7 @@ int vtkVisItProbeFilter::RequestData(
       if (this->CellData)
         {
         // Copy the cell data
-        outPD->CopyData((vtkDataSetAttributes*)cd, cellId, ptId);
+        outPD->CopyData(static_cast<vtkDataSetAttributes*>(cd), cellId, ptId);
         }
       else 
         {

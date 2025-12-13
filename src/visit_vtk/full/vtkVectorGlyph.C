@@ -251,7 +251,7 @@ vtkVectorGlyph::RequestData(
         
         xform->SetInputConnection(sphere->GetOutputPort());
         xform->Update();
-        vtkPolyData *spherePolyData = (vtkPolyData *)xform->GetOutput();
+        vtkPolyData *spherePolyData = vtkPolyData::SafeDownCast(xform->GetOutput());
         vtkIdType np = spherePolyData->GetPoints()->GetNumberOfPoints();
         pts->SetNumberOfPoints(np);
         

@@ -159,13 +159,13 @@ int vtkLinesFromOriginalCells::RequestData(
     if ( (origCellsArr) && (origCellsArr->GetDataType() == VTK_UNSIGNED_INT)
       && (origCellsArr->GetNumberOfComponents() == 2))
     {
-      origCellNums = ((vtkUnsignedIntArray*)origCellsArr)->GetPointer(0);
+      origCellNums = vtkUnsignedIntArray::SafeDownCast(origCellsArr)->GetPointer(0);
     }
 
     vtkDataArray* cellNums3DArr = inCD->GetArray("avt3DCellNumbers");
     if (cellNums3DArr && cellNums3DArr->GetDataType() == VTK_UNSIGNED_INT)
     {
-      cellNums3D = ((vtkUnsignedIntArray*)cellNums3DArr)->GetPointer(0);
+      cellNums3D = vtkUnsignedIntArray::SafeDownCast(cellNums3DArr)->GetPointer(0);
     }
     polys = vtkPolyData::SafeDownCast(inInfo->Get(vtkDataObject::DATA_OBJECT()));
     polys->BuildLinks();  

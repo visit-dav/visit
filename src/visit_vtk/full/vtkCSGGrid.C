@@ -459,7 +459,7 @@ void
 vtkCSGGrid::CopyStructure(vtkDataSet *ds)
 {
   int i;
-  vtkCSGGrid *csgGrid=(vtkCSGGrid *)ds;
+  vtkCSGGrid *csgGrid=vtkCSGGrid::SafeDownCast(ds);
   this->Initialize();
 
   this->SetBoundaries(csgGrid->GetBoundaries());
@@ -1456,7 +1456,7 @@ vtkCSGGrid::AddBoundary(BoundaryType type, int numcoeffs,
         {
             vtkSphere *sphere = vtkSphere::New();
 
-            sphere->SetCenter(const_cast<double*>(coeffs));
+            sphere->SetCenter(coeffs);
             sphere->SetRadius(coeffs[3]);
 
             newBoundary = sphere;
@@ -1467,10 +1467,10 @@ vtkCSGGrid::AddBoundary(BoundaryType type, int numcoeffs,
         {
             vtkCylinder *cylinder = vtkCylinder::New();
 
-            cylinder->SetCenter((float) coeffs[0] + coeffs[3] * coeffs[6]/2.0,
-                                (float) coeffs[1] + coeffs[4] * coeffs[6]/2.0,
-                                (float) coeffs[2] + coeffs[5] * coeffs[6]/2.0);
-            cylinder->SetRadius((float) coeffs[7]);
+            cylinder->SetCenter(coeffs[0] + coeffs[3] * coeffs[6]/2.0,
+                                coeffs[1] + coeffs[4] * coeffs[6]/2.0,
+                                coeffs[2] + coeffs[5] * coeffs[6]/2.0);
+            cylinder->SetRadius(coeffs[7]);
 
             // if the desired cylinder is y-axis aligned, we don't need xform
             if (coeffs[3] != 0.0 || coeffs[5] != 0.0 ||
@@ -1541,8 +1541,8 @@ vtkCSGGrid::AddBoundary(BoundaryType type, int numcoeffs,
         {
             vtkPlane *plane = vtkPlane::New();
 
-            plane->SetOrigin((float) coeffs[0], (float) coeffs[1], (float) coeffs[2]);
-            plane->SetNormal((float) coeffs[3], (float) coeffs[4], (float) coeffs[5]);
+            plane->SetOrigin(coeffs[0], coeffs[1], coeffs[2]);
+            plane->SetNormal(coeffs[3], coeffs[4], coeffs[5]);
 
             newBoundary = plane;
             break;
@@ -1995,9 +1995,9 @@ vtkCSGGrid::DiscretizeSurfaces(
     //
     tol = ComputeRelativeTol(tol, minX, maxX, minY, maxY, minZ, maxZ);
     epsTol = tol;
-    int nX = (int) ((maxX - minX) / tol);
-    int nY = (int) ((maxY - minY) / tol);
-    int nZ = (int) ((maxZ - minZ) / tol);
+    int nX = static_cast<int>((maxX - minX) / tol);
+    int nY = static_cast<int>((maxY - minY) / tol);
+    int nZ = static_cast<int>((maxZ - minZ) / tol);
 
     int startZone = specificZone;
     int endZone = startZone + 1; 
@@ -2074,9 +2074,9 @@ vtkCSGGrid::DiscretizeSpace(
 
     tol = ComputeRelativeTol(tol, minX, maxX, minY, maxY, minZ, maxZ);
     epsTol = tol;
-    int nX = (int) ((maxX - minX) / tol);
-    int nY = (int) ((maxY - minY) / tol);
-    int nZ = (int) ((maxZ - minZ) / tol);
+    int nX = static_cast<int>((maxX - minX) / tol);
+    int nY = static_cast<int>((maxY - minY) / tol);
+    int nZ = static_cast<int>((maxZ - minZ) / tol);
     
     // in 2D, we would get 0 nodes in Z; we need at least 1 for a valid mesh
     if (nZ < 1)
@@ -2096,14 +2096,14 @@ vtkCSGGrid::DiscretizeSpace(
         coords[1]->SetNumberOfTuples(nY);
         coords[2]->SetNumberOfTuples(nZ);
         for (int j = 0 ; j < nX ; j++)
-            coords[0]->SetComponent(j, 0, minX + (maxX-minX)*float(j)/float(nX-1));
+            coords[0]->SetComponent(j, 0, minX + (maxX-minX)*static_cast<float>(j)/static_cast<float>(nX-1));
         for (int j = 0 ; j < nY ; j++)
-            coords[1]->SetComponent(j, 0, minY + (maxY-minY)*float(j)/float(nY-1));
+            coords[1]->SetComponent(j, 0, minY + (maxY-minY)*static_cast<float>(j)/static_cast<float>(nY-1));
         if (nZ > 1)
         {
             // 3D case
             for (int j = 0 ; j < nZ ; j++)
-                coords[2]->SetComponent(j, 0, minZ + (maxZ-minZ)*float(j)/float(nZ-1));
+                coords[2]->SetComponent(j, 0, minZ + (maxZ-minZ)*static_cast<float>(j)/static_cast<float>(nZ-1));
         }
         else
         {
@@ -2440,13 +2440,13 @@ vtkCSGGrid::CreateRectilinearGrid(const double bnds[6],
     coords[2]->SetNumberOfTuples(subRegion[5]-subRegion[4]+1);
     for (int i = subRegion[0] ; i < subRegion[1]+1 ; i++)
         coords[0]->SetComponent(i-subRegion[0], 0, bnds[0] +
-            (bnds[1]-bnds[0])*float(i)/ float(dims[0]));
+            (bnds[1]-bnds[0])*static_cast<float>(i)/ static_cast<float>(dims[0]));
     for (int i = subRegion[2] ; i < subRegion[3]+1 ; i++)
         coords[1]->SetComponent(i-subRegion[2], 0, bnds[2] +
-            (bnds[3]-bnds[2])*float(i)/ float(dims[1]));
+            (bnds[3]-bnds[2])*static_cast<float>(i)/ static_cast<float>(dims[1]));
     for (int i = subRegion[4] ; i < subRegion[5]+1 ; i++)
         coords[2]->SetComponent(i-subRegion[4], 0, bnds[4] +
-            (bnds[5]-bnds[4])*float(i)/ float(dims[2]));
+            (bnds[5]-bnds[4])*static_cast<float>(i)/ static_cast<float>(dims[2]));
     int dims2[3] = {subRegion[1]-subRegion[0]+1,
                     subRegion[3]-subRegion[2]+1,
                     subRegion[5]-subRegion[4]+1};
@@ -2590,8 +2590,8 @@ vtkCSGGrid::SplitGrid(vtkRectilinearGrid *rgrid, const int nBounds,
 static int
 CompareRegionBounds(const void *val1, const void *val2)
 {
-    double *dval1 = (double *)val1;
-    double *dval2 = (double *)val2;
+    const double *dval1 = static_cast<const double *>(val1);
+    const double *dval2 = static_cast<const double *>(val2);
     int i = 0;
     for (; i < 10; i++)
     {
@@ -2762,7 +2762,7 @@ vtkCSGGrid::ExtractRegionBounds(int specificZone, int &nRegionBounds,
     }
     zoneMap2 = new int[numBoundaries];
     for (int i = 0; i < nRegionBounds; i++)
-        zoneMap2[(int)fabs(regionBounds2[i*11])] = i;
+        zoneMap2[static_cast<int>(fabs(regionBounds2[i*11]))] = i;
 
     int nRegionBounds3 = 0;
     double *regionBounds3 = new double[nRegionBounds*10];
@@ -2771,7 +2771,7 @@ vtkCSGGrid::ExtractRegionBounds(int specificZone, int &nRegionBounds,
     {
         regionBounds3[0*10+i] = regionBounds2[0*11+1+i];
     }
-    zoneMap[(int)fabs(regionBounds2[0*11])] = nRegionBounds3;
+    zoneMap[static_cast<int>(fabs(regionBounds2[0*11]))] = nRegionBounds3;
 
     for (int i = 1; i < nRegionBounds; i++)
     {
@@ -2790,7 +2790,7 @@ vtkCSGGrid::ExtractRegionBounds(int specificZone, int &nRegionBounds,
                 regionBounds3[nRegionBounds3*10+j] = regionBounds2[i*11+1+j];
             }
         }
-        zoneMap[(int)fabs(regionBounds2[i*11])] = nRegionBounds3;
+        zoneMap[static_cast<int>(fabs(regionBounds2[i*11]))] = nRegionBounds3;
     }
     nRegionBounds3++;
 
@@ -3049,11 +3049,11 @@ vtkCSGGrid::AddCutZones(vtkUnstructuredGrid *cutBox,
             double *pt = cellPoints->GetPoint(j);
             double x = pt[0], y = pt[1], z = pt[2];
 
-            int Ix = (int) (x / epsTol * 10000.0 + 0.5);
+            int Ix = static_cast<int>(x / epsTol * 10000.0 + 0.5);
             float fx = Ix * epsTol / 10000.0;
-            int Iy = (int) (y / epsTol * 10000.0 + 0.5);
+            int Iy = static_cast<int>(y / epsTol * 10000.0 + 0.5);
             float fy = Iy * epsTol / 10000.0;
-            int Iz = (int) (z / epsTol * 10000.0 + 0.5);
+            int Iz = static_cast<int>(z / epsTol * 10000.0 + 0.5);
             float fz = Iz * epsTol / 10000.0;
 
             coord_t coord(fx,fy,fz);
@@ -3105,11 +3105,11 @@ vtkCSGGrid::MakeMeshZone(const Box *theBox,
         else
             z = theBox->z1; 
 
-        int Ix = (int) (x / epsTol * 10000.0 + 0.5);
+        int Ix = static_cast<int>(x / epsTol * 10000.0 + 0.5);
         float fx = Ix * epsTol / 10000.0;
-        int Iy = (int) (y / epsTol * 10000.0 + 0.5);
+        int Iy = static_cast<int>(y / epsTol * 10000.0 + 0.5);
         float fy = Iy * epsTol / 10000.0;
-        int Iz = (int) (z / epsTol * 10000.0 + 0.5);
+        int Iz = static_cast<int>(z / epsTol * 10000.0 + 0.5);
         float fz = Iz * epsTol / 10000.0;
 
         coord_t coord(fx,fy,fz);
@@ -3135,15 +3135,15 @@ vtkCSGGrid::AddBoundariesForZone2(int zoneId, vector<int> *bnds, vector<int> *se
     {
         case DBCSG_INNER:
             bnds->push_back(leftIds[zoneId]);
-            senses->push_back((int)INNER);
+            senses->push_back(INNER);
             break;
         case DBCSG_OUTER:
             bnds->push_back(leftIds[zoneId]);
-            senses->push_back((int)OUTER);
+            senses->push_back(OUTER);
             break;
         case DBCSG_ON:
             bnds->push_back(leftIds[zoneId]);
-            senses->push_back((int)ON);
+            senses->push_back(ON);
             break;
         case DBCSG_UNION:
         case DBCSG_INTERSECT:
@@ -3232,7 +3232,7 @@ vtkCSGGrid::MakeMeshZonesByCuttingBox4(const Box *theBox,
         // to approximate method if we expect to use too much memory here
         //
         float finalPieceCountEstimate =
-            (float) boundaryToStateMap.size() / bndNum * (piecesCurrent->size());
+            static_cast<float>(boundaryToStateMap.size()) / bndNum * (piecesCurrent->size());
         if (finalPieceCountEstimate > 50000.0)
         {
             // free up all the memory we've used so far
@@ -3271,7 +3271,7 @@ vtkCSGGrid::MakeMeshZonesByCuttingBox4(const Box *theBox,
                 for (int k = 0; k < 2; k++)
                 {
                     // k==0 ==> in piece ; k==1 ==> out piece
-                    if (sense == (int) INNER)
+                    if (sense == INNER)
                         pieceCutter->SetInsideOut(k==0 ? true : false);
                     else
                         pieceCutter->SetInsideOut(k==0 ? false: true);
@@ -3290,7 +3290,7 @@ vtkCSGGrid::MakeMeshZonesByCuttingBox4(const Box *theBox,
                     {
                         piecesNext->push_back(thePiece);
                         pieceBoundaryToStateMapsNext->push_back((*pieceBoundaryToStateMapsCurrent)[i]);
-                        if (sense == (int) INNER)
+                        if (sense == INNER)
                         {
                             (*pieceBoundaryToStateMapsNext)[pieceBoundaryToStateMapsNext->size()-1][bndId] = 
                                 k == 0 ? Box::LT_ZERO : Box::GT_ZERO;
@@ -3347,8 +3347,8 @@ vtkCSGGrid::MakeMeshZonesByCuttingBox4(const Box *theBox,
     bool addedAPiece = false;
     for (size_t i = 0; i < piecesCurrent->size(); i++)
     {
-        Box::FuncState pieceState = (Box::FuncState) EvalBoxStateOfRegion(0, zoneId,
-            (*pieceBoundaryToStateMapsCurrent)[i], 0);
+        Box::FuncState pieceState = static_cast<Box::FuncState>(EvalBoxStateOfRegion(0, zoneId,
+            (*pieceBoundaryToStateMapsCurrent)[i], 0));
         if (pieceState == Box::LT_ZERO)
         {
             addedAPiece = true;
@@ -3398,7 +3398,7 @@ vtkCSGGrid::MakeMeshZonesByCuttingBox2(const Box *theBox,
             boxCutter->SetClipFunction(quadric);
 
             const int sense = boundaryToSenseMap[theInt]; 
-            boxCutter->SetInsideOut(sense == (int) INNER ? true : false);
+            boxCutter->SetInsideOut(sense == INNER ? true : false);
             boxCutter->Update();
 
             vtkUnstructuredGrid *cutBox = boxCutter->GetOutput();
@@ -3470,7 +3470,7 @@ vtkCSGGrid::DiscretizeSpace3(
     //
     vector<int> boundaryStates;
     for (size_t i = 0; i < boundariesToCheck.size(); i++)
-        boundaryStates.push_back((int)Box::EQ_ZERO);
+        boundaryStates.push_back(static_cast<int>(Box::EQ_ZERO));
 
     // fudge the bounds a bit
     minX -= minX * (minX < 0.0 ? -discTol : discTol);
@@ -3501,7 +3501,7 @@ vtkCSGGrid::DiscretizeSpace3(
         map<int, int> boundaryToSenseMap;
         for (size_t i = 0; i < curBoxBoundaryStates.size(); i++)
         {
-            if (curBoxBoundaryStates[i] == (int) Box::EQ_ZERO)
+            if (curBoxBoundaryStates[i] == static_cast<int>(Box::EQ_ZERO))
             {
                 curBoxBoundaryStates[i] =
                     curBox->EvalBoxStateOfBoundary(&gridBoundaries[NUM_QCOEFFS*boundariesToCheck[i]], discTol);
@@ -3511,9 +3511,9 @@ vtkCSGGrid::DiscretizeSpace3(
         }
 
         Box::FuncState boxStateRelativeToWholeRegion =
-            (Box::FuncState) EvalBoxStateOfRegion(curBox,
+            static_cast<Box::FuncState>(EvalBoxStateOfRegion(curBox,
                                                   gridZones[specificZone],
-                                                  boundaryToStateMap, discTol);
+                                                  boundaryToStateMap, discTol));
 
         if (boxStateRelativeToWholeRegion == Box::LT_ZERO)
         {

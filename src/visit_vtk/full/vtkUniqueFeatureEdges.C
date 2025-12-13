@@ -136,7 +136,7 @@ int vtkUniqueFeatureEdges::RequestData(
     }
   else
     {
-    ghostLevels = ((vtkUnsignedCharArray*)temp)->GetPointer(0);
+    ghostLevels = (static_cast<vtkUnsignedCharArray*>(temp))->GetPointer(0);
     }
 
   //  Check input
@@ -244,7 +244,7 @@ int vtkUniqueFeatureEdges::RequestData(
     vtkIdType cellId = npIter->GetCurrentCellId();
     if ( ! (cellId % progressInterval) ) //manage progress / early abort
       {
-      this->UpdateProgress ((double)cellId / numCells);
+      this->UpdateProgress (static_cast<double>(cellId) / numCells);
       abort = this->GetAbortExecute();
       }
 
@@ -443,10 +443,10 @@ int vtkUniqueFeatureEdges::RequestUpdateExtent(
   vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
   vtkInformation *outInfo = outputVector->GetInformationObject(0);
 
-  int numPieces = (int) outInfo->Get(
-    vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_PIECES());
-  int ghostLevel = (int) outInfo->Get(
-    vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS());
+  int numPieces = static_cast<int>(outInfo->Get(
+    vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_PIECES()));
+  int ghostLevel = static_cast<int>(outInfo->Get(
+    vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS()));
   if (numPieces > 1)
     {
     inInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(),

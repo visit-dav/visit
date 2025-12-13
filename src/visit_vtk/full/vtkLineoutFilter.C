@@ -137,7 +137,7 @@ vtkLineoutFilter::RequestData(
   // the output is also polydata.
   //
   vtkPolyData *probeOut = vtkPolyData::New();
-  probeOut->CopyStructure((vtkPolyData*)this->Probe->GetOutput());
+  probeOut->CopyStructure(vtkPolyData::SafeDownCast(this->Probe->GetOutput()));
   vtkIdTypeArray *validPoints = this->Probe->GetValidPoints();
 
   if (validPoints == NULL || validPoints->GetNumberOfTuples() == 0)
@@ -178,7 +178,7 @@ vtkLineoutFilter::RequestData(
   if (gl && gl->GetDataType() == VTK_UNSIGNED_CHAR && 
       gl->GetNumberOfComponents() == 1)
     {
-        ghosts = ((vtkUnsignedCharArray*)gl)->GetPointer(0);
+        ghosts = vtkUnsignedCharArray::SafeDownCast(gl)->GetPointer(0);
     }
   //
   //  Distance needs to be calculated for each new point.

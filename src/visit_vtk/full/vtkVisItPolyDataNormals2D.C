@@ -199,7 +199,7 @@ vtkVisItPolyDataNormals2D::ExecutePoint(
 
     // Renormalize the normals; they've only been accumulated so far,
     // and store in the vtkFloatArray.
-    float *newNormalPtr = (float*)newNormals->GetPointer(0);
+    float *newNormalPtr = newNormals->GetPointer(0);
     for (vtkIdType i = 0 ; i < nPoints ; i++)
     {
         double nx = dnormals[i*3+0];
@@ -208,9 +208,9 @@ vtkVisItPolyDataNormals2D::ExecutePoint(
         double length = sqrt(nx*nx + ny*ny + nz*nz);
         if (length != 0.0)
         {
-            newNormalPtr[i*3+0] = (float)(nx/length);
-            newNormalPtr[i*3+1] = (float)(ny/length);
-            newNormalPtr[i*3+2] = (float)(nz/length);
+            newNormalPtr[i*3+0] = static_cast<float>(nx/length);
+            newNormalPtr[i*3+1] = static_cast<float>(ny/length);
+            newNormalPtr[i*3+2] = static_cast<float>(nz/length);
         }
         else
         {
@@ -274,7 +274,7 @@ vtkVisItPolyDataNormals2D::ExecuteCell(vtkPolyData *input, vtkPolyData *output)
     newNormals->SetNumberOfComponents(3);
     newNormals->SetNumberOfTuples(nCells);
     newNormals->SetName("Normals");
-    float *newNormalPtr = (float*)newNormals->GetPointer(0);
+    float *newNormalPtr = newNormals->GetPointer(0);
 
     // The verts come before the polys.  So add normals for them.
     vtkIdType numPrimitivesWithoutNormals = 0;
@@ -310,9 +310,9 @@ vtkVisItPolyDataNormals2D::ExecuteCell(vtkPolyData *input, vtkPolyData *output)
                 normal[2] = 0;
             }
         }
-        newNormalPtr[0] = (float)(normal[0]);
-        newNormalPtr[1] = (float)(normal[1]);
-        newNormalPtr[2] = (float)(normal[2]);
+        newNormalPtr[0] = static_cast<float>(normal[0]);
+        newNormalPtr[1] = static_cast<float>(normal[1]);
+        newNormalPtr[2] = static_cast<float>(normal[2]);
         newNormalPtr += 3;
     }
 

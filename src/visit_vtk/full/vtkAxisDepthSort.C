@@ -337,8 +337,8 @@ vtkAxisDepthSort::RequestData(
 int
 CoordSorter(const void *arg1, const void *arg2)
 {
-    const coord_cell_id_pair *c1 = (const coord_cell_id_pair *) arg1;
-    const coord_cell_id_pair *c2 = (const coord_cell_id_pair *) arg2;
+    const coord_cell_id_pair *c1 = static_cast<const coord_cell_id_pair *>(arg1);
+    const coord_cell_id_pair *c2 = static_cast<const coord_cell_id_pair *>(arg2);
 
     if (c1[0].coord > c2[0].coord)
     {

@@ -346,9 +346,9 @@ vtkVisItStructuredGridNormals::ExecuteCell(vtkStructuredGrid *input,
     
             if (length != 0)
             {
-                normal[0] = (float)(nx/length);
-                normal[1] = (float)(ny/length);
-                normal[2] = (float)(nz/length);
+                normal[0] = static_cast<float>(nx/length);
+                normal[1] = static_cast<float>(ny/length);
+                normal[2] = static_cast<float>(nz/length);
             }
             else
             {

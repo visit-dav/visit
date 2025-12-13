@@ -123,12 +123,12 @@ int vtkVisItCellDataToPointData::RequestData(
   int dims[3] = { 0, 0, 0 };
   if (input->GetDataObjectType() == VTK_RECTILINEAR_GRID)
   {
-    ((vtkRectilinearGrid *) input)->GetDimensions(dims);
+    vtkRectilinearGrid::SafeDownCast(input)->GetDimensions(dims);
     canFastTrackStructured = true;
   }
   else if (input->GetDataObjectType() == VTK_STRUCTURED_GRID)
   {
-    ((vtkStructuredGrid *) input)->GetDimensions(dims);
+    vtkStructuredGrid::SafeDownCast(input)->GetDimensions(dims);
     canFastTrackStructured = true;
   }
 
@@ -251,7 +251,7 @@ int vtkVisItCellDataToPointData::RequestData(
       {
       if ( !(ptId % progressInterval) )
         {
-        this->UpdateProgress((float)ptId/numPts);
+        this->UpdateProgress(static_cast<float>(ptId)/numPts);
         abort = GetAbortExecute();
         }
   

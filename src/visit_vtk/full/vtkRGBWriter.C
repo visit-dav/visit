@@ -34,26 +34,26 @@ typedef struct {
 } rgbfile_t;
 
 #define WriteShort(charptr, svalue)  {\
-   (charptr)[0] = (unsigned char)(((svalue)&0x0000FF00) >> 8); \
-   (charptr)[1] = (unsigned char)((svalue)&0x000000FF); \
+   (charptr)[0] = static_cast<unsigned char>(((svalue)&0x0000FF00) >> 8); \
+   (charptr)[1] = static_cast<unsigned char>((svalue)&0x000000FF); \
 }
 
 #define WriteInt(charptr, ivalue)  {\
-   (charptr)[0] = (unsigned char)(((ivalue)&0xFF000000) >> 24); \
-   (charptr)[1] = (unsigned char)(((ivalue)&0x00FF0000) >> 16); \
-   (charptr)[2] = (unsigned char)(((ivalue)&0x0000FF00) >> 8); \
-   (charptr)[3] = (unsigned char)((ivalue)&0x000000FF); \
+   (charptr)[0] = static_cast<unsigned char>(((ivalue)&0xFF000000) >> 24); \
+   (charptr)[1] = static_cast<unsigned char>(((ivalue)&0x00FF0000) >> 16); \
+   (charptr)[2] = static_cast<unsigned char>(((ivalue)&0x0000FF00) >> 8); \
+   (charptr)[3] = static_cast<unsigned char>((ivalue)&0x000000FF); \
 }
 
 #define ReadShort(charptr) \
-   (short)(((short)((charptr)[0] << 8) & 0xFF00) | \
-   ((short)((charptr)[1]) & 0x00FF))
+   static_cast<short>((static_cast<short>(charptr[0] << 8) & 0xFF00) | \
+                      (static_cast<short>(charptr[1]) & 0x00FF))
 
 #define ReadInt(charptr) \
-   (int)(((int)((charptr)[0] << 24) & 0xFF000000) | \
-   ((int)((charptr)[1] << 16) & 0x00FF0000) | \
-   ((int)((charptr)[2] << 8 ) & 0x0000FF00) | \
-   ((int)((charptr)[3]      ) & 0x000000FF))
+   static_cast<int>((static_cast<int>((charptr)[0] << 24) & 0xFF000000) | \
+                    (static_cast<int>((charptr)[1] << 16) & 0x00FF0000) | \
+                    (static_cast<int>((charptr)[2] << 8 ) & 0x0000FF00) | \
+                    (static_cast<int>((charptr)[3]      ) & 0x000000FF))
 
 // Static prototypes
 static void rgbfile_putrow(rgbfile_t *, unsigned char*, int, int);
@@ -168,7 +168,7 @@ void vtkRGBWriter::WriteFile(ostream *file, vtkImageData *data,
            ((wExt[5] -wExt[4] + 1)*(wExt[3] -wExt[2] + 1)*
             (wExt[1] -wExt[0] + 1));
 
-    target = (unsigned long)((extent[5]-extent[4]+1)*
+    target = static_cast<unsigned long>((extent[5]-extent[4]+1)*
               (extent[3]-extent[2]+1)/(50.0*area));
     ++target;
 
@@ -183,7 +183,7 @@ void vtkRGBWriter::WriteFile(ostream *file, vtkImageData *data,
 
         // Get a pointer to the RGB pixel data.
         unsigned char *ptr, *cptr;
-        ptr = (unsigned char *)data->GetScalarPointer(extent[0], y, 0);
+        ptr = static_cast<unsigned char *>(data->GetScalarPointer(extent[0], y, 0));
         cptr = ptr;
 
         // Split the rgb data into seperate channels.
@@ -296,24 +296,24 @@ rgbfile_writeheader(rgbfile_t *rgb)
     int i;
 
     // Write the top of the header
-    char *cptr = (char *)&(rgb->header);
+    char *cptr = reinterpret_cast<char *>(&rgb->header);
     for(i = 0; i < 104; ++i, ++cptr)
         rgb->file->put(*cptr);
 
     // Write some padding so the top of the header totals 512 bytes.
     for(i = 0; i < 408; ++i)
-        rgb->file->put((unsigned char)0);
+        rgb->file->put(0); //(unsigned char)0);
 
     // Compute the size of the rowstart and rowsize tables.
     int table_size = ReadShort(rgb->header.ysize) *
                      ReadShort(rgb->header.zsize) * 4;
 
     // Write the rowstart table and rowsize table.
-    cptr = (char *)rgb->rowstart;
+    cptr = reinterpret_cast<char *>(rgb->rowstart);
     for(i = 0; i < table_size; ++i, ++cptr)
         rgb->file->put(*cptr);
 
-    cptr = (char *)rgb->rowsize;
+    cptr = reinterpret_cast<char *>(rgb->rowsize);
     for(i = 0; i < table_size; ++i, ++cptr)
         rgb->file->put(*cptr);
 }
@@ -324,7 +324,7 @@ rgbfile_putrow(rgbfile_t *rgb, unsigned char *buffer, int y, int channel)
     unsigned char *temp_ptr = NULL;
 
     // Extract height information.
-    int height = (int)ReadShort(rgb->header.ysize);
+    int height = ReadShort(rgb->header.ysize);
 
     if(y >= 0 && y < height &&
        rgb->file != NULL &&
@@ -337,7 +337,7 @@ rgbfile_putrow(rgbfile_t *rgb, unsigned char *buffer, int y, int channel)
 
         // Allocate enough memory to hold the compressed buffer.
         unsigned char *compress = new unsigned char[size];
-        memcpy((void *)compress, (void *)rgb->rle_buf, size);
+        memcpy(static_cast<void *>(compress), static_cast<void *>(rgb->rle_buf), size);
 
         // Assign the compressed buffer to the right channel.
         if(channel == 0)
@@ -367,9 +367,9 @@ rgbfile_rle_encode(rgbfile_t *rgb,
     unsigned char *sptr = NULL;
     unsigned char *optr = NULL;
 
-    width = (int)ReadShort(rgb->header.xsize);
+    width = ReadShort(rgb->header.xsize);
     ibufend = iptr + width;
-    optr    = (unsigned char *)outbuf;
+    optr    = outbuf;
 
     while(iptr < ibufend)
     {
@@ -402,5 +402,5 @@ rgbfile_rle_encode(rgbfile_t *rgb,
     }
     *optr++ = 0;
 
-    return (optr - (unsigned char *)outbuf);
+    return (optr - outbuf);
 }

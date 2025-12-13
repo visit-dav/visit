@@ -17,12 +17,14 @@
 #define OPENEXR_DLL
 #endif
 
+#pragma warning(push, 0)
 #include <ImfRgba.h>
 #include <ImfRgbaFile.h>
 #include <ImfOutputFile.h>
 #include <ImfInputFile.h>
 #include <ImfChannelList.h>
 #include <ImfFrameBuffer.h>
+#pragma warning(pop)
 
 #define DO_REFERENCE_COUNT
 
@@ -196,7 +198,7 @@ GetValueImage(vtkImageData *img, int width, int height)
     vtkDataArray *v = img->GetPointData()->GetArray("value");
     if(v != NULL)
     {
-        retval = FlipFloatImage((const float *)v->GetVoidPointer(0), width, height);
+        retval = FlipFloatImage(static_cast<const float *>(v->GetVoidPointer(0)), width, height);
     }
     return retval;
 }
@@ -245,7 +247,7 @@ WriteOpenEXR(const char *filename, half *channels[4], const float *z,
     {
         frameBuffer.insert(channelNames[i],    // name
             Imf::Slice(Imf::HALF,              // type
-                       (char *) channels[i],   // base
+                       reinterpret_cast<char *>(const_cast<half*>(channels[i])),   // base
                        sizeof(half) * 1,       // xStride
                        sizeof(half) * width)); // yStride
     }
@@ -253,7 +255,7 @@ WriteOpenEXR(const char *filename, half *channels[4], const float *z,
     {
         frameBuffer.insert ("Z",               // name
             Imf::Slice(Imf::FLOAT,             // type
-                      (char *) z,              // base
+                       reinterpret_cast<char *>(const_cast<float*>(z)), // base
                        sizeof(float) * 1,      // xStride
                        sizeof(float) * width));// yStride
     }
@@ -261,7 +263,7 @@ WriteOpenEXR(const char *filename, half *channels[4], const float *z,
     {
         frameBuffer.insert ("L",               // name
             Imf::Slice(Imf::HALF,              // type
-                      (char *) lum,            // base
+                       reinterpret_cast<char *>(const_cast<half*>(lum)), // base
                        sizeof(half) * 1,       // xStride
                        sizeof(half) * width)); // yStride
     }
@@ -269,7 +271,7 @@ WriteOpenEXR(const char *filename, half *channels[4], const float *z,
     {
         frameBuffer.insert ("value",           // name
             Imf::Slice(Imf::FLOAT,             // type
-                      (char *) value,          // base
+                       reinterpret_cast<char *>(const_cast<float *>(value)), // base
                        sizeof(float) * 1,      // xStride
                        sizeof(float) * width));// yStride
     }
@@ -339,7 +341,7 @@ void vtkOpenEXRWriter::Write()
     // Flip the z buffer if we have one.
     float *z = NULL;
     if(zbuffer != NULL)
-        z = FlipFloatImage((const float *)zbuffer->GetVoidPointer(0), width, height);
+        z = FlipFloatImage(static_cast<const float *>(zbuffer->GetVoidPointer(0)), width, height);
 
     // See if there is luminance data.
     half *lum = GetLuminanceImage(GetInput(), width, height);

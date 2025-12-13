@@ -224,8 +224,8 @@ vtkDataSetRemoveGhostCells::UnstructuredGridExecute()
 
   vtkDebugMacro(<< "Executing remove ghost cells filter for unstructured grid");
  
-  vtkUnstructuredGrid *inGrid  = (vtkUnstructuredGrid*)input;
-  vtkUnstructuredGrid *outGrid = (vtkUnstructuredGrid*)output;
+  vtkUnstructuredGrid *inGrid  = vtkUnstructuredGrid::SafeDownCast(input);
+  vtkUnstructuredGrid *outGrid = vtkUnstructuredGrid::SafeDownCast(output);
  
   outGrid->vtkPointSet::ShallowCopy(inGrid);
   outGrid->SetPoints(inGrid->GetPoints());
@@ -245,7 +245,7 @@ vtkDataSetRemoveGhostCells::UnstructuredGridExecute()
       vtkErrorMacro("Can only operate on unsigned char ghost data");
       return;
   }
-  vtkUnsignedCharArray *ghosts = (vtkUnsignedCharArray *) arr;
+  vtkUnsignedCharArray *ghosts = vtkUnsignedCharArray::SafeDownCast(arr);
 
   vtkIdType ncells = inGrid->GetNumberOfCells();
   int totalSize = inGrid->GetCells()->GetSize();
@@ -363,14 +363,14 @@ vtkDataSetRemoveGhostCells::UnstructuredGridExecute()
 void
 vtkDataSetRemoveGhostCells::PolyDataExecute()
 {
-  vtkPolyData *inGrid  = (vtkPolyData*)input;
-  vtkPolyData *outGrid = (vtkPolyData*)output;
+  vtkPolyData *inGrid  = vtkPolyData::SafeDownCast(input);
+  vtkPolyData *outGrid = vtkPolyData::SafeDownCast(output);
 
-  vtkUnsignedCharArray *ghost_zones = (vtkUnsignedCharArray *)
-                            inGrid->GetCellData()->GetArray("avtGhostZones");
+  vtkUnsignedCharArray *ghost_zones = vtkUnsignedCharArray::SafeDownCast(
+                            inGrid->GetCellData()->GetArray("avtGhostZones"));
 
-  vtkUnsignedCharArray *ghost_nodes = (vtkUnsignedCharArray *)
-                            inGrid->GetPointData()->GetArray("avtGhostNodes");
+  vtkUnsignedCharArray *ghost_nodes = vtkUnsignedCharArray::SafeDownCast(
+                            inGrid->GetPointData()->GetArray("avtGhostNodes"));
 
   if ((ghost_zones == NULL) && (ghost_nodes == NULL))
     {
@@ -481,8 +481,8 @@ vtkDataSetRemoveGhostCells::PolyDataExecute()
 void
 vtkDataSetRemoveGhostCells::RectilinearGridExecute()
 {
-  vtkRectilinearGrid *inGrid  = (vtkRectilinearGrid*)input;
-  vtkRectilinearGrid *outGrid = (vtkRectilinearGrid*)output;
+  vtkRectilinearGrid *inGrid  = vtkRectilinearGrid::SafeDownCast(input);
+  vtkRectilinearGrid *outGrid = vtkRectilinearGrid::SafeDownCast(output);
 
   vtkDataArray *realDims = inGrid->GetFieldData()->GetArray("avtRealDims");
 
@@ -495,7 +495,7 @@ vtkDataSetRemoveGhostCells::RectilinearGridExecute()
     {
         // make sure the realDims data isn't garbage (the facelist filter
         // will undermine us here if we don't double check)
-        vtkIntArray *iarr = (vtkIntArray *)realDims;
+        vtkIntArray *iarr = vtkIntArray::SafeDownCast(realDims);
 
         int ddims[3];
         int rdims[6];
@@ -519,11 +519,11 @@ vtkDataSetRemoveGhostCells::RectilinearGridExecute()
   int i, voi[6];
   for (i = 0; i < 6; i++)
     {
-    voi[i] = (int) realDims->GetComponent(i, 0);
+    voi[i] = static_cast<int>(realDims->GetComponent(i, 0));
     }
 
-  vtkUnsignedCharArray *arr = (vtkUnsignedCharArray *)
-                              inGrid->GetCellData()->GetArray("avtGhostZones");
+  vtkUnsignedCharArray *arr = vtkUnsignedCharArray::SafeDownCast(
+                              inGrid->GetCellData()->GetArray("avtGhostZones"));
   if (GhostZoneTypesToRemove != 255 && arr != NULL)
   {
     unsigned char *ghosts = arr->GetPointer(0);
@@ -592,8 +592,8 @@ vtkDataSetRemoveGhostCells::RectilinearGridExecute()
 void
 vtkDataSetRemoveGhostCells::StructuredGridExecute()
 {
-  vtkStructuredGrid *inGrid  = (vtkStructuredGrid*)input;
-  vtkStructuredGrid *outGrid = (vtkStructuredGrid*)output;
+  vtkStructuredGrid *inGrid  = vtkStructuredGrid::SafeDownCast(input);
+  vtkStructuredGrid *outGrid = vtkStructuredGrid::SafeDownCast(output);
  
   vtkDataArray *realDims = inGrid->GetFieldData()->GetArray("avtRealDims");
   if (!realDims || (realDims->GetDataType() != VTK_INT)
@@ -608,11 +608,11 @@ vtkDataSetRemoveGhostCells::StructuredGridExecute()
    int i, voi[6];
    for (i = 0; i < 6; i++)
    {
-     voi[i] = (int) realDims->GetComponent(i, 0);
+     voi[i] = static_cast<int>(realDims->GetComponent(i, 0));
    }
  
-  vtkUnsignedCharArray *arr = (vtkUnsignedCharArray *)
-                              inGrid->GetCellData()->GetArray("avtGhostZones");
+  vtkUnsignedCharArray *arr = vtkUnsignedCharArray::SafeDownCast(
+                              inGrid->GetCellData()->GetArray("avtGhostZones"));
   if ((ForceConfirmRegion || GhostZoneTypesToRemove != 255) && arr != NULL)
   {
     unsigned char *ghosts = arr->GetPointer(0);

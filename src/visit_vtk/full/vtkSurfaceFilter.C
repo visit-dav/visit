@@ -104,9 +104,9 @@ vtkSurfaceFilter::RequestData(
   }
 
   if (input->GetDataObjectType() == VTK_RECTILINEAR_GRID)
-      this->ExecuteRectilinearGrid( (vtkRectilinearGrid *) input, output);
+      this->ExecuteRectilinearGrid(vtkRectilinearGrid::SafeDownCast(input), output);
   else
-      this->ExecutePointSet( (vtkPointSet*) input, output);
+      this->ExecutePointSet(vtkPointSet::SafeDownCast(input), output);
 
   return 1;
 } // RequestData
@@ -295,11 +295,11 @@ vtkSurfaceFilter::ExecutePointSet(vtkPointSet *ps, vtkUnstructuredGrid *output)
     switch(ps->GetDataObjectType())
     {
         case VTK_POLY_DATA : 
-             aCell = ((vtkPolyData*)ps)->GetCell(j); break;
+             aCell = vtkPolyData::SafeDownCast(ps)->GetCell(j); break;
         case VTK_STRUCTURED_GRID : 
-             aCell = ((vtkStructuredGrid*)ps)->GetCell(j); break;
+             aCell = vtkStructuredGrid::SafeDownCast(ps)->GetCell(j); break;
         case VTK_UNSTRUCTURED_GRID : 
-             aCell = ((vtkUnstructuredGrid*)ps)->GetCell(j); break;
+             aCell = vtkUnstructuredGrid::SafeDownCast(ps)->GetCell(j); break;
     }
     cellTypes[j] = aCell->GetCellType();
     cells->InsertNextCell(aCell);

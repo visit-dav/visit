@@ -152,9 +152,9 @@ vtkMultiSplitter::RequestData(
     int        dims[3];
     rg->GetDimensions(dims);
 
-    float *X   = (float* ) rg->GetXCoordinates()->GetVoidPointer(0);
-    float *Y   = (float* ) rg->GetYCoordinates()->GetVoidPointer(0);
-    float *Z   = (float* ) rg->GetZCoordinates()->GetVoidPointer(0);
+    vtkDataArray *X = rg->GetXCoordinates();
+    vtkDataArray *Y = rg->GetYCoordinates();
+    vtkDataArray *Z = rg->GetZCoordinates();
 
     int npts = dims[0] * dims[1] * dims[2];
     std::vector<float> pts;
@@ -166,14 +166,14 @@ vtkMultiSplitter::RequestData(
         {
             for (int i = 0; i < dims[0]; i++)
             {
-                 pts.push_back(X[i]);
-                 pts.push_back(Y[j]);
-                 pts.push_back(Z[k]);
+                 pts.push_back(X->GetTuple1(i));
+                 pts.push_back(Y->GetTuple1(j));
+                 pts.push_back(Z->GetTuple1(k));
             }
         }
     }
 
-    int ptSizeGuess = (int) pow(float(npts), 0.6667f) * 5 + 100;
+    int ptSizeGuess = static_cast<int>(pow(static_cast<float>(npts), 0.6667f)) * 5 + 100;
     vtkVolumeFromCSGVolume vfv(npts, ptSizeGuess);
 
     ndx = 0;
@@ -213,7 +213,7 @@ vtkMultiSplitter::RequestData(
         // Create the array of the clip values for the current boundary.
         //
         clipFunction->SetCoefficients(&bounds[iBnd*10]);
-        npts = (int)pts.size() / 3;
+        npts = static_cast<int>(pts.size()) / 3;
         float *clipArray = new float[npts];
         for (int i = 0; i < npts; i++)
         {
@@ -488,7 +488,7 @@ vtkMultiSplitter::RequestData(
         vfv.UpdatePoints(pts);
     }
 
-    vfv.ConstructDataSet(inCD, output, &pts[0], (int)pts.size()/3, newTags);
+    vfv.ConstructDataSet(inCD, output, &pts[0], static_cast<int>(pts.size())/3, newTags);
 
     return 1;
 }

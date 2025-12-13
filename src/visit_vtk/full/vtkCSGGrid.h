@@ -702,7 +702,7 @@ return GetNumberOfBoundaries();
 
 inline vtkIdType vtkCSGGrid::GetNumberOfBoundaries() const
 {
-return (vtkIdType) this->Boundaries->GetNumberOfItems();
+return static_cast<vtkIdType>(this->Boundaries->GetNumberOfItems());
 }
 
 inline vtkIdType vtkCSGGrid::GetNumberOfCells() 

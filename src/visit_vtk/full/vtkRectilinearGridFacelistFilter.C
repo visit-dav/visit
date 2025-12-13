@@ -21,18 +21,7 @@
 
 using  std::vector;
 
-//------------------------------------------------------------------------------
-vtkRectilinearGridFacelistFilter* vtkRectilinearGridFacelistFilter::New()
-{
-    // First try to create the object from the vtkObjectFactory
-    vtkObject* ret = vtkObjectFactory::CreateInstance("vtkRectilinearGridFacelistFilter");
-    if(ret)
-    {
-        return (vtkRectilinearGridFacelistFilter*)ret;
-    }
-    // If the factory was unable to create the object, then create it here.
-    return new vtkRectilinearGridFacelistFilter;
-}
+vtkStandardNewMacro(vtkRectilinearGridFacelistFilter)
 
 
 vtkRectilinearGridFacelistFilter::vtkRectilinearGridFacelistFilter()
@@ -692,13 +681,13 @@ vtkRectilinearGridFacelistFilter::ConsolidateFacesWithGhostZones(
   vtkPointData *inPointData = pd->GetPointData();
   vtkCellData *inCellData   = pd->GetCellData();
   vtkCellData *outCellData  = cpd->GetCellData();
-  vtkUnsignedCharArray *gzv = (vtkUnsignedCharArray *)
-                                 inCellData->GetArray("avtGhostZones");
+  vtkUnsignedCharArray *gzv = static_cast<vtkUnsignedCharArray *>
+                              (inCellData->GetArray("avtGhostZones"));
   unsigned char *gza        = NULL;
   bool constructGZA = false;
   vector<unsigned char> ghost_zones;
-  vtkUnsignedCharArray *gnv = (vtkUnsignedCharArray *)
-                                 inPointData->GetArray("avtGhostNodes");
+  vtkUnsignedCharArray *gnv = static_cast<vtkUnsignedCharArray *>
+                                 (inPointData->GetArray("avtGhostNodes"));
   if (gzv == NULL && gnv == NULL)
   {
       EXCEPTION0(ImproperUseException);
@@ -750,8 +739,7 @@ vtkRectilinearGridFacelistFilter::ConsolidateFacesWithGhostZones(
   // in about O(nfaces) time.
   //
   int nOutputCells = 0;
-  int nSides = (int)sideStart.size();
-  for (int i = 0 ; i < nSides ; ++i)
+  for (size_t i = 0 ; i < sideStart.size() ; ++i)
   {
     int nEntries = rowSize[i]*columnSize[i];
     int startFace = sideStart[i];

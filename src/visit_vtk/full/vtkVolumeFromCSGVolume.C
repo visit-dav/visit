@@ -494,7 +494,7 @@ vtkVolumeFromCSGVolume::UpdatePoints(vector<float> &pts)
     //
     // Construct all the centroid points and add them to the points list.
     //
-    const int centroidStart = (int)pts.size() / 3;
+    const int centroidStart = static_cast<int>(pts.size()) / 3;
     nLists = centroid_list.GetNumberOfLists();
     for (int i = 0 ; i < nLists ; i++)
     {
