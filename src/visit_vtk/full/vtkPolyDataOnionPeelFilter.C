@@ -226,14 +226,7 @@ vtkPolyDataOnionPeelFilter::Initialize()
     {
         if (bsc_callback != NULL) 
         {
-            if (useLogicalIndex)
-            {
-                bsc_callback(bsc_args, SeedId, numIds, false);
-            }
-            else 
-            {
-                bsc_callback(bsc_args, SeedId, numIds, false);
-            }
+            bsc_callback(bsc_args, SeedId, numIds, false);
         }
         vtkWarningMacro(<<"SeedId " << this->SeedId << " is Invalid."
                         <<"\nValid ids range from 0 to " << numIds-1 << ".");
@@ -253,14 +246,7 @@ vtkPolyDataOnionPeelFilter::Initialize()
         {
             if (bsc_callback != NULL) 
             {
-                if (useLogicalIndex)
-                {
-                    bsc_callback(bsc_args, SeedId, numIds, true);
-                }
-                else 
-                {
-                    bsc_callback(bsc_args, SeedId, numIds, true);
-                }
+                bsc_callback(bsc_args, SeedId, numIds, true);
             }
             vtkWarningMacro(<<"SeedId " << this->SeedId << " is a Ghost Cell.");
             return false; //unsuccessful initialization
@@ -547,11 +533,7 @@ vtkPolyDataOnionPeelFilter::RequestData(
 
     vtkDebugMacro(<<"Generating PolyDataOnionPeelFilter Layers");
 
-    bool success;
-    if (this->SeedIdIsForCell)
-       success = this->Initialize();
-    else 
-       success = this->Initialize();
+    bool success = this->Initialize();
 
     if (!success)
     {
