@@ -547,8 +547,8 @@ dateTag=\$1
 # maximum of "retry_count" times.
 #
 finished_file="$runFinishedFile"
-retry_count=60
-retry_delay=1
+retry_count=120
+retry_delay=600
 while [ ! -f "\$finished_file" ] && [ \$retry_count -gt 0 ]
 do
     sleep \$retry_delay
