@@ -247,7 +247,7 @@ WriteOpenEXR(const char *filename, half *channels[4], const float *z,
     {
         frameBuffer.insert(channelNames[i],    // name
             Imf::Slice(Imf::HALF,              // type
-                       reinterpret_cast<char *>(const_cast<half*>(channels[i])),   // base
+                       reinterpret_cast<char *>((channels[i])),   // base
                        sizeof(half) * 1,       // xStride
                        sizeof(half) * width)); // yStride
     }

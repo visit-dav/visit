@@ -708,7 +708,7 @@ vtkVisItGlyph3D::RequestData(
           value = vMag;
         }
 
-        index = static_cast<int>(static_cast<double>(value - this->Range[0]) * numberOfSources / den);
+        index = static_cast<int>((value - this->Range[0]) * numberOfSources / den);
         index = (index < 0 ? 0 :
                 (index >= numberOfSources ? (numberOfSources-1) : index));
 

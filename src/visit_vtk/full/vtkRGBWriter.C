@@ -50,10 +50,10 @@ typedef struct {
                       (static_cast<short>(charptr[1]) & 0x00FF))
 
 #define ReadInt(charptr) \
-   static_cast<int>((static_cast<int>((charptr)[0] << 24) & 0xFF000000) | \
-                    (static_cast<int>((charptr)[1] << 16) & 0x00FF0000) | \
-                    (static_cast<int>((charptr)[2] << 8 ) & 0x0000FF00) | \
-                    (static_cast<int>((charptr)[3]      ) & 0x000000FF))
+   static_cast<int>(((charptr)[0] << 24 & 0xFF000000) | \
+                    (((charptr)[1] << 16) & 0x00FF0000) | \
+                    (((charptr)[2] << 8 ) & 0x0000FF00) | \
+                    (((charptr)[3]      ) & 0x000000FF))
 
 // Static prototypes
 static void rgbfile_putrow(rgbfile_t *, unsigned char*, int, int);
