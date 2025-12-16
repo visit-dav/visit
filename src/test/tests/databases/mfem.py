@@ -98,118 +98,6 @@ for f in input_meshes:
     DeleteAllPlots()
     CloseDatabase(f)
 
-def test_mfem_lor_controls_on_grid_function(tag_name, f, vector=False):
-    base = os.path.splitext(os.path.basename(f))[0]
-    DeleteAllPlots()
-    OpenDatabase(f)
-    if vector is True:
-        AddPlot("Vector","gf")
-        AddPlot("Pseudocolor","gf_magnitude")
-    else:
-        AddPlot("Pseudocolor","gf")
-    AddOperator("MultiresControl", 1)
-    SetActivePlots(0)
-    ResetView()
-    DrawPlots()
-    MultiresControlAtts = MultiresControlAttributes()
-    MultiresControlAtts.resolution = 3
-    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Default_LOR
-    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Default_Projection
-    MultiresControlAtts.refBasisType = MultiresControlAtts.Gauss_Lobatto_Default
-    SetOperatorOptions(MultiresControlAtts, 0, 1)
-    Test(tag_name + "_" + base + "_default_lor_default_proj_gausslobatto_basis")
-
-    MultiresControlAtts = MultiresControlAttributes()
-    MultiresControlAtts.resolution = 3
-    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Default_LOR
-    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Default_Projection
-    MultiresControlAtts.refBasisType = MultiresControlAtts.Closed_Uniform
-    SetOperatorOptions(MultiresControlAtts, 0, 1)
-    Test(tag_name + "_" + base + "_default_lor_default_proj_closeduniform_basis")
-
-    MultiresControlAtts = MultiresControlAttributes()
-    MultiresControlAtts.resolution = 3
-    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Continuous_LOR
-    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Default_Projection
-    MultiresControlAtts.refBasisType = MultiresControlAtts.Gauss_Lobatto_Default
-    SetOperatorOptions(MultiresControlAtts, 0, 1)
-    Test(tag_name + "_" + base + "_continuous_lor_default_proj_gausslobatto_basis")
-
-    MultiresControlAtts = MultiresControlAttributes()
-    MultiresControlAtts.resolution = 3
-    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Continuous_LOR
-    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Default_Projection
-    MultiresControlAtts.refBasisType = MultiresControlAtts.Closed_Uniform
-    SetOperatorOptions(MultiresControlAtts, 0, 1)
-    Test(tag_name + "_" + base + "_continuous_lor_default_proj_closeduniform_basis")
-
-    MultiresControlAtts = MultiresControlAttributes()
-    MultiresControlAtts.resolution = 3
-    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Continuous_LOR
-    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Zonal_Projection
-    MultiresControlAtts.refBasisType = MultiresControlAtts.Gauss_Lobatto_Default
-    SetOperatorOptions(MultiresControlAtts, 0, 1)
-    Test(tag_name + "_" + base + "_continuous_lor_zonal_proj_gausslobatto_basis")
-
-    MultiresControlAtts = MultiresControlAttributes()
-    MultiresControlAtts.resolution = 3
-    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Continuous_LOR
-    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Zonal_Projection
-    MultiresControlAtts.refBasisType = MultiresControlAtts.Closed_Uniform
-    SetOperatorOptions(MultiresControlAtts, 0, 1)
-    Test(tag_name + "_" + base + "_continuous_lor_zonal_proj_closeduniform_basis")
-
-    MultiresControlAtts = MultiresControlAttributes()
-    MultiresControlAtts.resolution = 3
-    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Continuous_LOR
-    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Nodal_Projection
-    MultiresControlAtts.refBasisType = MultiresControlAtts.Gauss_Lobatto_Default
-    SetOperatorOptions(MultiresControlAtts, 0, 1)
-    Test(tag_name + "_" + base + "_continuous_lor_nodal_proj_gausslobatto_basis")
-
-    MultiresControlAtts = MultiresControlAttributes()
-    MultiresControlAtts.resolution = 3
-    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Continuous_LOR
-    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Nodal_Projection
-    MultiresControlAtts.refBasisType = MultiresControlAtts.Closed_Uniform
-    SetOperatorOptions(MultiresControlAtts, 0, 1)
-    Test(tag_name + "_" + base + "_continuous_lor_nodal_proj_closeduniform_basis")
-
-    MultiresControlAtts = MultiresControlAttributes()
-    MultiresControlAtts.resolution = 3
-    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Discontinuous_LOR
-    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Default_Projection
-    MultiresControlAtts.refBasisType = MultiresControlAtts.Gauss_Lobatto_Default
-    SetOperatorOptions(MultiresControlAtts, 0, 1)
-    Test(tag_name + "_" + base + "_discontinuous_lor_default_proj_gausslobatto_basis")
-
-    MultiresControlAtts = MultiresControlAttributes()
-    MultiresControlAtts.resolution = 3
-    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Discontinuous_LOR
-    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Default_Projection
-    MultiresControlAtts.refBasisType = MultiresControlAtts.Closed_Uniform
-    SetOperatorOptions(MultiresControlAtts, 0, 1)
-    Test(tag_name + "_" + base + "_discontinuous_lor_default_proj_closeduniform_basis")
-
-    MultiresControlAtts = MultiresControlAttributes()
-    MultiresControlAtts.resolution = 3
-    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Discontinuous_LOR
-    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Nodal_Projection
-    MultiresControlAtts.refBasisType = MultiresControlAtts.Gauss_Lobatto_Default
-    SetOperatorOptions(MultiresControlAtts, 0, 1)
-    Test(tag_name + "_" + base + "_discontinuous_lor_nodal_proj_gausslobatto_basis")
-
-    MultiresControlAtts = MultiresControlAttributes()
-    MultiresControlAtts.resolution = 3
-    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Discontinuous_LOR
-    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Nodal_Projection
-    MultiresControlAtts.refBasisType = MultiresControlAtts.Closed_Uniform
-    SetOperatorOptions(MultiresControlAtts, 0, 1)
-    Test(tag_name + "_" + base + "_discontinuous_lor_nodal_proj_closeduniform_basis")
-
-    DeleteAllPlots()
-    CloseDatabase(f)
-
 TestSection("MFEM Expressions")
 OpenDatabase(data_path("mfem_test_data/ex02-beam-tet.mfem_root"))
 AddPlot("Pseudocolor","mag-gf")
@@ -368,6 +256,118 @@ def test_mfem_lor_controls_on_mesh(tag_name, dbfile):
     DeleteAllPlots()
     ResetView()
     CloseDatabase(dbfile)
+
+def test_mfem_lor_controls_on_grid_function(tag_name, f, vector=False):
+    base = os.path.splitext(os.path.basename(f))[0]
+    DeleteAllPlots()
+    OpenDatabase(f)
+    if vector is True:
+        AddPlot("Vector","gf")
+        AddPlot("Pseudocolor","gf_magnitude")
+    else:
+        AddPlot("Pseudocolor","gf")
+    AddOperator("MultiresControl", 1)
+    SetActivePlots(0)
+    ResetView()
+    DrawPlots()
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 3
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Default_LOR
+    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Default_Projection
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Gauss_Lobatto_Default
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    Test(tag_name + "_" + base + "_default_lor_default_proj_gausslobatto_basis")
+
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 3
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Default_LOR
+    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Default_Projection
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Closed_Uniform
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    Test(tag_name + "_" + base + "_default_lor_default_proj_closeduniform_basis")
+
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 3
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Continuous_LOR
+    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Default_Projection
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Gauss_Lobatto_Default
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    Test(tag_name + "_" + base + "_continuous_lor_default_proj_gausslobatto_basis")
+
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 3
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Continuous_LOR
+    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Default_Projection
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Closed_Uniform
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    Test(tag_name + "_" + base + "_continuous_lor_default_proj_closeduniform_basis")
+
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 3
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Continuous_LOR
+    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Zonal_Projection
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Gauss_Lobatto_Default
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    Test(tag_name + "_" + base + "_continuous_lor_zonal_proj_gausslobatto_basis")
+
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 3
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Continuous_LOR
+    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Zonal_Projection
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Closed_Uniform
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    Test(tag_name + "_" + base + "_continuous_lor_zonal_proj_closeduniform_basis")
+
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 3
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Continuous_LOR
+    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Nodal_Projection
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Gauss_Lobatto_Default
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    Test(tag_name + "_" + base + "_continuous_lor_nodal_proj_gausslobatto_basis")
+
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 3
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Continuous_LOR
+    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Nodal_Projection
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Closed_Uniform
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    Test(tag_name + "_" + base + "_continuous_lor_nodal_proj_closeduniform_basis")
+
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 3
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Discontinuous_LOR
+    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Default_Projection
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Gauss_Lobatto_Default
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    Test(tag_name + "_" + base + "_discontinuous_lor_default_proj_gausslobatto_basis")
+
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 3
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Discontinuous_LOR
+    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Default_Projection
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Closed_Uniform
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    Test(tag_name + "_" + base + "_discontinuous_lor_default_proj_closeduniform_basis")
+
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 3
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Discontinuous_LOR
+    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Nodal_Projection
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Gauss_Lobatto_Default
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    Test(tag_name + "_" + base + "_discontinuous_lor_nodal_proj_gausslobatto_basis")
+
+    MultiresControlAtts = MultiresControlAttributes()
+    MultiresControlAtts.resolution = 3
+    MultiresControlAtts.meshRefMethod = MultiresControlAtts.Discontinuous_LOR
+    MultiresControlAtts.fieldProjMethod = MultiresControlAtts.Nodal_Projection
+    MultiresControlAtts.refBasisType = MultiresControlAtts.Closed_Uniform
+    SetOperatorOptions(MultiresControlAtts, 0, 1)
+    Test(tag_name + "_" + base + "_discontinuous_lor_nodal_proj_closeduniform_basis")
+
+    DeleteAllPlots()
+    CloseDatabase(f)
 
 TestSection("LOR Mesh Controls")
 # these are hand-picked meshes that clearly demonstrate the refinement differences
