@@ -91,8 +91,20 @@ vtkSlicer::RequestData(
     //
     input  = vtkDataSet::SafeDownCast(
         inInfo->Get(vtkDataObject::DATA_OBJECT()));
+    if(input == nullptr)
+    {
+        vtkErrorMacro("No input");
+        return 1;
+    }
+
     output = vtkPolyData::SafeDownCast(
         outInfo->Get(vtkDataObject::DATA_OBJECT()));
+
+    if(output == nullptr)
+    {
+        vtkErrorMacro("No output");
+        return 1;
+    }
 
     int do_type = input->GetDataObjectType();
     if (do_type == VTK_RECTILINEAR_GRID)
@@ -253,7 +265,7 @@ private:
 void
 vtkSlicer::StructuredGridExecute(void)
 {
-    vtkStructuredGrid *sg = vtkStructuredGrid::SafeDownCast(input);
+    vtkStructuredGrid *sg = static_cast<vtkStructuredGrid*>(input);
     int pt_dims[3];
     sg->GetDimensions(pt_dims);
     if (pt_dims[0] <= 1 || pt_dims[1] <= 1 || pt_dims[2] <= 1)
@@ -436,7 +448,7 @@ private:
 void
 vtkSlicer::RectilinearGridExecute(void)
 {
-    vtkRectilinearGrid *rg = vtkRectilinearGrid::SafeDownCast(input);
+    vtkRectilinearGrid *rg = static_cast<vtkRectilinearGrid*>(input);
     int pt_dims[3];
     rg->GetDimensions(pt_dims);
     if (pt_dims[0] <= 1 || pt_dims[1] <= 1 || pt_dims[2] <= 1)
@@ -534,7 +546,7 @@ vtkSlicer::UnstructuredGridExecute(void)
     // non-zoo elements.  If all the elements are from the zoo, then just
     // slice them with no appending.
 
-    vtkUnstructuredGrid *ug = vtkUnstructuredGrid::SafeDownCast(input);
+    vtkUnstructuredGrid *ug = static_cast<vtkUnstructuredGrid*>(input);
 
     vtkIdType          nCells = ug->GetNumberOfCells();
     vtkPoints         *inPts  = ug->GetPoints();

@@ -56,18 +56,18 @@ vtkVisItGlyph3D::vtkVisItGlyph3D()
   this->IndexMode = VTK_INDEXING_OFF;
   this->GeneratePointIds = false;
   this->TreatVectorsAs2D = false;
-  this->PointIdsName = NULL;
+  this->PointIdsName = nullptr;
   this->SetPointIdsName("InputPointIds");
   this->SetNumberOfInputPorts(2);
-  this->InputScalarsSelection = NULL;
-  this->InputVectorsSelection = NULL;
-  this->InputNormalsSelection = NULL;
+  this->InputScalarsSelection = nullptr;
+  this->InputVectorsSelection = nullptr;
+  this->InputNormalsSelection = nullptr;
 
-  this->ScalarsForColoring = NULL;
-  this->ScalarsForScaling = NULL;
-  this->VectorsForColoring = NULL;
-  this->VectorsForScaling = NULL;
-  this->TensorsForScaling = NULL;
+  this->ScalarsForColoring = nullptr;
+  this->ScalarsForScaling = nullptr;
+  this->VectorsForColoring = nullptr;
+  this->VectorsForScaling = nullptr;
+  this->TensorsForScaling = nullptr;
 
   this->UseFullFrameScaling = 0;
   this->FullFrameScaling[0] = 1.;
@@ -81,15 +81,15 @@ vtkVisItGlyph3D::~vtkVisItGlyph3D()
   {
     delete []PointIdsName;
   }
-  this->SetInputScalarsSelection(NULL);
-  this->SetInputVectorsSelection(NULL);
-  this->SetInputNormalsSelection(NULL);
+  this->SetInputScalarsSelection(nullptr);
+  this->SetInputVectorsSelection(nullptr);
+  this->SetInputNormalsSelection(nullptr);
 
-  this->SetScalarsForColoring(NULL);
-  this->SetScalarsForScaling(NULL);
-  this->SetVectorsForColoring(NULL);
-  this->SetVectorsForScaling(NULL);
-  this->SetTensorsForScaling(NULL);
+  this->SetScalarsForColoring(nullptr);
+  this->SetScalarsForScaling(nullptr);
+  this->SetVectorsForColoring(nullptr);
+  this->SetVectorsForScaling(nullptr);
+  this->SetTensorsForScaling(nullptr);
 }
 
 // ****************************************************************************
@@ -173,16 +173,16 @@ vtkVisItGlyph3D::RequestData(
   vtkPolyData *output = vtkPolyData::SafeDownCast(
     outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
-  vtkPointData *pd;
-  vtkCellData  *cd;
-  vtkDataArray *inScalars = NULL;
-  vtkDataArray *inScalars_forColoring = NULL;
-  vtkDataArray *inScalars_forScaling = NULL;
+  vtkPointData *pd = nullptr;
+  vtkCellData  *cd = nullptr;
+  vtkDataArray *inScalars = nullptr;
+  vtkDataArray *inScalars_forColoring = nullptr;
+  vtkDataArray *inScalars_forScaling = nullptr;
 
-  vtkDataArray *inVectors = NULL;
-  vtkDataArray *inVectors_forColoring = NULL;
-  vtkDataArray *inVectors_forScaling = NULL;
-  vtkDataArray *inTensors_forScaling = NULL;
+  vtkDataArray *inVectors = nullptr;
+  vtkDataArray *inVectors_forColoring = nullptr;
+  vtkDataArray *inVectors_forScaling = nullptr;
+  vtkDataArray *inTensors_forScaling = nullptr;
 
   // flags indicating pointdata(true) or celldata(false)
   bool inScalars_pd             = true;
@@ -196,22 +196,22 @@ vtkVisItGlyph3D::RequestData(
 
   int requestedGhostLevel;
   unsigned char* inGhostLevels=0;
-  vtkDataArray *inNormals = NULL, *sourceNormals = NULL;
+  vtkDataArray *inNormals = nullptr, *sourceNormals = nullptr;
   vtkIdType numPts, numSourcePts, numSourceCells, i;
   int index;
-  vtkPoints *sourcePts = NULL;
-  vtkPoints *newPts;
-  vtkDataArray *newScalars=NULL;
-  vtkDataArray *newVectors=NULL;
-  vtkDataArray *newNormals=NULL;
+  vtkPoints *sourcePts = nullptr;
+  vtkPoints *newPts = nullptr;
+  vtkDataArray *newScalars=nullptr;
+  vtkDataArray *newVectors=nullptr;
+  vtkDataArray *newNormals=nullptr;
   double x[3], v[3];
   double vNew[3], s = 0.0, vMag = 0.0, value;
   vtkTransform *trans = vtkTransform::New();
   vtkMatrix4x4 *def_mat = vtkMatrix4x4::New();
-  vtkCell *cell;
-  vtkIdList *cellPts;
+  vtkCell *cell = nullptr;
+  vtkIdList *cellPts = nullptr;
   int npts;
-  vtkIdList *pts;
+  vtkIdList *pts = nullptr;
   vtkIdType ptIncr, cellId;
   int haveVectors, haveNormals;
   double scalex,scaley,scalez, den;
@@ -219,13 +219,13 @@ vtkVisItGlyph3D::RequestData(
   vtkPointData *outputPD = outPD->GetPointData();
   vtkCellData *outputCD = outPD->GetCellData();
 
-  vtkDataArray *inOrigNodes = NULL;
-  vtkDataArray *inOrigCells = NULL;
-  vtkDataArray *outOrigNodes = NULL;
-  vtkDataArray *outOrigCells = NULL;
+  vtkDataArray *inOrigNodes = nullptr;
+  vtkDataArray *inOrigCells = nullptr;
+  vtkDataArray *outOrigNodes = nullptr;
+  vtkDataArray *outOrigCells = nullptr;
 
   int numberOfSources = this->GetNumberOfInputConnections(1);
-  vtkPolyData *defaultSource = NULL;
+  vtkPolyData *defaultSource = nullptr;
   vtkIdTypeArray *pointIds=0;
 
   vtkDebugMacro(<<"Generating glyphs");
@@ -243,52 +243,52 @@ vtkVisItGlyph3D::RequestData(
   cd = input->GetCellData();
 
   inScalars = pd->GetScalars(this->InputScalarsSelection);
-  if(inScalars == NULL)
+  if(inScalars == nullptr)
   {
     inScalars_pd = false;
     inScalars = cd->GetScalars(this->InputScalarsSelection);
   }
 
   inVectors = pd->GetVectors(this->InputVectorsSelection);
-  if(inVectors == NULL)
+  if(inVectors == nullptr)
   {
     inVectors_pd = false;
     inVectors = cd->GetVectors(this->InputVectorsSelection);
   }
 
   inNormals = pd->GetNormals(this->InputNormalsSelection);
-  if(inNormals == NULL)
+  if(inNormals == nullptr)
   {
     inNormals_pd = false;
     inNormals = cd->GetNormals(this->InputNormalsSelection);
   }
 
   inScalars_forColoring = pd->GetArray(this->ScalarsForColoring);
-  if (inScalars_forColoring == NULL)
+  if (inScalars_forColoring == nullptr)
   {
     inScalars_forColoring_pd = false;
     inScalars_forColoring = cd->GetArray(this->ScalarsForColoring);
   }
   inScalars_forScaling  = pd->GetArray(this->ScalarsForScaling);
-  if (inScalars_forScaling == NULL)
+  if (inScalars_forScaling == nullptr)
   {
     inScalars_forScaling_pd = false;
     inScalars_forScaling = cd->GetArray(this->ScalarsForScaling);
   }
   inVectors_forColoring = pd->GetArray(this->VectorsForColoring);
-  if (inVectors_forColoring == NULL)
+  if (inVectors_forColoring == nullptr)
   {
     inVectors_forColoring_pd = false;
     inVectors_forColoring = cd->GetArray(this->VectorsForColoring);
   }
   inVectors_forScaling  = pd->GetArray(this->VectorsForScaling);
-  if (inVectors_forScaling == NULL)
+  if (inVectors_forScaling == nullptr)
   {
     inVectors_forScaling_pd = false;
     inVectors_forScaling = cd->GetArray(this->VectorsForScaling);
   }
   inTensors_forScaling  = pd->GetArray(this->TensorsForScaling);
-  if (inTensors_forScaling == NULL)
+  if (inTensors_forScaling == nullptr)
   {
     inTensors_forScaling_pd = false;
     inTensors_forScaling = cd->GetArray(this->TensorsForScaling);
@@ -331,14 +331,14 @@ vtkVisItGlyph3D::RequestData(
     den = 1.0;
   }
   if ( this->VectorMode != VTK_VECTOR_ROTATION_OFF &&
-       ((this->VectorMode == VTK_USE_VECTOR && inVectors_forScaling != NULL) ||
-        (this->VectorMode == VTK_USE_NORMAL && inNormals != NULL)) )
+       ((this->VectorMode == VTK_USE_VECTOR && inVectors_forScaling != nullptr) ||
+        (this->VectorMode == VTK_USE_NORMAL && inNormals != nullptr)) )
   {
     haveVectors = 1;
   }
   else if ( this->VectorMode != VTK_VECTOR_ROTATION_OFF &&
-       ((this->VectorMode == VTK_USE_VECTOR && inVectors != NULL) ||
-        (this->VectorMode == VTK_USE_NORMAL && inNormals != NULL)) )
+       ((this->VectorMode == VTK_USE_VECTOR && inVectors != nullptr) ||
+        (this->VectorMode == VTK_USE_NORMAL && inNormals != nullptr)) )
   {
     haveVectors = 1;
   }
@@ -354,7 +354,7 @@ vtkVisItGlyph3D::RequestData(
            this->VectorMode == VTK_USE_VECTOR) ||
         (!inNormals && this->VectorMode == VTK_USE_NORMAL))) )
   {
-    if ( this->GetSource(0) == NULL )
+    if ( this->GetSource(0) == nullptr )
     {
       vtkErrorMacro(<<"Indexing on but don't have data to index with");
       pts->Delete();
@@ -390,19 +390,19 @@ vtkVisItGlyph3D::RequestData(
     defaultSource->InsertNextCell(VTK_LINE, 2, defaultPointIds);
     this->SetSourceData(defaultSource);
     defaultSource->Delete();
-    defaultSource = NULL;
+    defaultSource = nullptr;
     defaultPoints->Delete();
-    defaultPoints = NULL;
+    defaultPoints = nullptr;
   }
 
   if ( this->IndexMode != VTK_INDEXING_OFF )
   {
-    pd = NULL;
+    pd = nullptr;
     numSourcePts = numSourceCells = 0;
     haveNormals = 1;
     for (numSourcePts=numSourceCells=i=0; i < numberOfSources; i++)
     {
-      if ( this->GetSource(i) != NULL )
+      if ( this->GetSource(i) != nullptr )
       {
         numSourcePts += this->GetSource(i)->GetNumberOfPoints();
         numSourceCells += this->GetSource(i)->GetNumberOfCells();
@@ -446,17 +446,23 @@ vtkVisItGlyph3D::RequestData(
   if ( this->ColorMode == VTK_COLOR_BY_SCALAR && inScalars_forColoring)
   {
     newScalars = inScalars_forColoring->NewInstance();
-    newScalars->SetNumberOfComponents(inScalars_forColoring->GetNumberOfComponents());
-    newScalars->Allocate(inScalars_forColoring->GetNumberOfComponents()*
+    if (newScalars != nullptr)
+    {
+      newScalars->SetNumberOfComponents(inScalars_forColoring->GetNumberOfComponents());
+      newScalars->Allocate(inScalars_forColoring->GetNumberOfComponents()*
                          numPts*numSourcePts);
-    newScalars->SetName(inScalars_forColoring->GetName());
+      newScalars->SetName(inScalars_forColoring->GetName());
+    }
   }
   else if ( this->ColorMode == VTK_COLOR_BY_SCALAR && inScalars)
   {
     newScalars = inScalars->NewInstance();
-    newScalars->SetNumberOfComponents(inScalars->GetNumberOfComponents());
-    newScalars->Allocate(inScalars->GetNumberOfComponents()*numPts*numSourcePts);
-    newScalars->SetName(inScalars->GetName());
+    if (newScalars != nullptr)
+    {
+      newScalars->SetNumberOfComponents(inScalars->GetNumberOfComponents());
+      newScalars->Allocate(inScalars->GetNumberOfComponents()*numPts*numSourcePts);
+      newScalars->SetName(inScalars->GetName());
+    }
   }
   else if ( (this->ColorMode == VTK_COLOR_BY_SCALE) && inScalars)
   {
@@ -494,19 +500,25 @@ vtkVisItGlyph3D::RequestData(
     newNormals->Allocate(3*numPts*numSourcePts);
     newNormals->SetName("Normals");
   }
-  if ( inOrigNodes )
+  if (inOrigNodes != nullptr)
   {
     outOrigNodes = inOrigNodes->NewInstance();
-    outOrigNodes->SetNumberOfComponents(inOrigNodes->GetNumberOfComponents());
-    outOrigNodes->Allocate(inOrigNodes->GetNumberOfComponents()*numSourceCells*numPts);
-    outOrigNodes->SetName(inOrigNodes->GetName());
+    if(outOrigNodes != nullptr)
+    {
+      outOrigNodes->SetNumberOfComponents(inOrigNodes->GetNumberOfComponents());
+      outOrigNodes->Allocate(inOrigNodes->GetNumberOfComponents()*numSourceCells*numPts);
+      outOrigNodes->SetName(inOrigNodes->GetName());
+    }
   }
-  if ( inOrigCells )
+  if (inOrigCells != nullptr)
   {
     outOrigCells = inOrigCells->NewInstance();
-    outOrigCells->SetNumberOfComponents(inOrigCells->GetNumberOfComponents());
-    outOrigCells->Allocate(inOrigCells->GetNumberOfComponents()*numSourceCells*numPts);
-    outOrigCells->SetName(inOrigCells->GetName());
+    if(outOrigCells != nullptr)
+    {
+      outOrigCells->SetNumberOfComponents(inOrigCells->GetNumberOfComponents());
+      outOrigCells->Allocate(inOrigCells->GetNumberOfComponents()*numSourceCells*numPts);
+      outOrigCells->SetName(inOrigCells->GetName());
+    }
   }
 
   int connSize = 0;
@@ -569,7 +581,7 @@ vtkVisItGlyph3D::RequestData(
         if (this->ScaleMode == VTK_SCALE_BY_TENSOR)
         {
           // def_mat is Identity at its creation, only change needed elements.
-          double* tensor = NULL;
+          double* tensor = nullptr;
           if (inTensors_forScaling_pd)
             tensor = inTensors_forScaling->GetTuple9(inPtId);
           else
@@ -700,7 +712,7 @@ vtkVisItGlyph3D::RequestData(
         index = (index < 0 ? 0 :
                 (index >= numberOfSources ? (numberOfSources-1) : index));
 
-        if ( this->GetSource(index) != NULL )
+        if ( this->GetSource(index) != nullptr )
         {
           sourcePts = this->GetSource(index)->GetPoints();
           sourceNormals = this->GetSource(index)->GetPointData()->GetNormals();
@@ -710,7 +722,7 @@ vtkVisItGlyph3D::RequestData(
       }
 
       // Make sure we're not indexing into empty glyph
-      if ( this->GetSource(index) == NULL )
+      if ( this->GetSource(index) == nullptr )
       {
         continue;
       }
@@ -738,8 +750,8 @@ vtkVisItGlyph3D::RequestData(
         trans->Scale(1,1,0);
       }
 
-      double *inNode = NULL;
-      double *inCell = NULL;
+      double *inNode = nullptr;
+      double *inCell = nullptr;
       if (inOrigNodes)
       {
         inNode = inOrigNodes->GetTuple(inPtId);
@@ -987,13 +999,15 @@ vtkVisItGlyph3D::RequestData(
   if (connSize > 0 && (input->GetDataObjectType() == VTK_POLY_DATA ||
                        input->GetDataObjectType() == VTK_UNSTRUCTURED_GRID))
   {
-    vtkPolyData *in_polydata = vtkPolyData::SafeDownCast(input);
+    vtkPointSet *in_pointset = vtkPointSet::SafeDownCast(input);
+    if(in_pointset == nullptr)
+        return 0;
 
     // we have non-verts ... make a separate output for the non-verts and then
     // append them together.
     vtkPolyData *outPD2 = vtkPolyData::New();
-    outPD2->SetPoints(in_polydata->GetPoints());
-    outPD2->GetPointData()->ShallowCopy(in_polydata->GetPointData());
+    outPD2->SetPoints(in_pointset->GetPoints());
+    outPD2->GetPointData()->ShallowCopy(in_pointset->GetPointData());
     // ignore cell data ... it won't match up with glyphed verts anyway.
     outPD2->Allocate(connSize);
     for (i = 0 ; i < numCells ; i++)
@@ -1157,7 +1171,7 @@ vtkVisItGlyph3D::GetSource(int id)
 {
   if ( id < 0 || id >= this->GetNumberOfInputConnections(1) )
   {
-    return NULL;
+    return nullptr;
   }
   else
   {
@@ -1186,7 +1200,7 @@ vtkVisItGlyph3D::PrintSelf(ostream& os, vtkIndent indent)
 
   if ( this->GetNumberOfInputConnections(1) < 2 )
   {
-    if ( this->GetSource(0) != NULL )
+    if ( this->GetSource(0) != nullptr )
     {
       os << indent << "Source: (" << this->GetSource(0) << ")\n";
     }

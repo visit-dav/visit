@@ -146,6 +146,12 @@ vtkAxisDepthSort::RequestData(
     vtkPolyData *input = vtkPolyData::SafeDownCast(
         inInfo->Get(vtkDataObject::DATA_OBJECT()));
 
+    if(input == nullptr)
+    {
+        vtkErrorMacro("No input");
+        return 1;
+    }
+
     int ncells = input->GetNumberOfCells();
 
     coord_cell_id_pair *pairs = new coord_cell_id_pair[ncells];

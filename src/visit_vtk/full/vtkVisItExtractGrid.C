@@ -347,6 +347,11 @@ int vtkVisItExtractGrid::RequestData(
   //
   outSize = (uExt[1]-uExt[0]+1)*(uExt[3]-uExt[2]+1)*(uExt[5]-uExt[4]+1);
   newPts = inPts->NewInstance(); 
+  if(newPts == nullptr)
+    {
+    vtkErrorMacro("Could not create a new instance of inPts");
+    return 0;
+    }
   newPts->SetDataType(inPts->GetDataType());
   newPts->SetNumberOfPoints(outSize);
   outPD->CopyAllocate(pd,outSize,outSize);

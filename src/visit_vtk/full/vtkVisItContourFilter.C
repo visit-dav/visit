@@ -232,7 +232,7 @@ int
 vtkVisItContourFilter::StructuredGridExecute(vtkDataSet *input, 
                                              vtkPolyData *output)
 {
-    vtkStructuredGrid *sg = vtkStructuredGrid::SafeDownCast(input);
+    vtkStructuredGrid *sg = static_cast<vtkStructuredGrid*>(input);
     int pt_dims[3];
     sg->GetDimensions(pt_dims);
     if (pt_dims[0] <= 1 || pt_dims[1] <= 1 || pt_dims[2] <= 1)
@@ -305,7 +305,7 @@ int
 vtkVisItContourFilter::RectilinearGridExecute(vtkDataSet *input,
                                               vtkPolyData *output)
 {
-    vtkRectilinearGrid *rg = vtkRectilinearGrid::SafeDownCast(input);
+    vtkRectilinearGrid *rg = static_cast<vtkRectilinearGrid*>(input);
     int pt_dims[3];
     rg->GetDimensions(pt_dims);
     if (pt_dims[0] <= 1 || pt_dims[1] <= 1 || pt_dims[2] <= 1)
@@ -377,7 +377,7 @@ vtkVisItContourFilter::UnstructuredGridExecute(vtkDataSet *input,
     // non-zoo elements.  If all the elements are from the zoo, then just
     // contour them with no appending.
 
-    vtkUnstructuredGrid *ug = vtkUnstructuredGrid::SafeDownCast(input);
+    vtkUnstructuredGrid *ug = static_cast<vtkUnstructuredGrid*>(input);
 
     vtkIdType          nCells = ug->GetNumberOfCells();
     vtkPoints         *inPts  = ug->GetPoints();

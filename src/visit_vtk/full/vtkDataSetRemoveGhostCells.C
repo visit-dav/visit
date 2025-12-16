@@ -81,8 +81,20 @@ vtkDataSetRemoveGhostCells::RequestData(
     //
     input  = vtkDataSet::SafeDownCast(
         inInfo->Get(vtkDataObject::DATA_OBJECT()));
+    if (input == nullptr)
+    {
+        vtkErrorMacro("No input");
+        return 1;
+    }
+ 
     output = vtkDataSet::SafeDownCast(
         outInfo->Get(vtkDataObject::DATA_OBJECT()));
+    if (output == nullptr)
+    {
+        vtkErrorMacro("No output");
+        return 1;
+    }
+ 
 
     switch(input->GetDataObjectType())
     {
@@ -224,8 +236,8 @@ vtkDataSetRemoveGhostCells::UnstructuredGridExecute()
 
   vtkDebugMacro(<< "Executing remove ghost cells filter for unstructured grid");
  
-  vtkUnstructuredGrid *inGrid  = vtkUnstructuredGrid::SafeDownCast(input);
-  vtkUnstructuredGrid *outGrid = vtkUnstructuredGrid::SafeDownCast(output);
+  vtkUnstructuredGrid *inGrid  = static_cast<vtkUnstructuredGrid*>(input);
+  vtkUnstructuredGrid *outGrid = static_cast<vtkUnstructuredGrid*>(output);
  
   outGrid->vtkPointSet::ShallowCopy(inGrid);
   outGrid->SetPoints(inGrid->GetPoints());

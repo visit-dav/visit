@@ -32,8 +32,8 @@
 vtkConnectedTubeFilter::PointSequence::PointSequence()
 {
     length    = 0;
-    index     = NULL;
-    cellindex = NULL;
+    index     = nullptr;
+    cellindex = nullptr;
 }
 
 // ****************************************************************************
@@ -47,10 +47,10 @@ vtkConnectedTubeFilter::PointSequence::~PointSequence()
 {
     if (index)
         delete[] index;
-    index = NULL;
+    index = nullptr;
     if (cellindex)
         delete[] cellindex;
-    cellindex = NULL;
+    cellindex = nullptr;
 }
 
 // ****************************************************************************
@@ -122,14 +122,14 @@ vtkConnectedTubeFilter::PointSequence::Add(vtkIdType i, vtkIdType ci)
 // ****************************************************************************
 vtkConnectedTubeFilter::PointSequenceList::PointSequenceList()
 {
-    pts             = NULL;
+    pts             = nullptr;
     len             = 0;
-    numneighbors    = NULL;
-    connectivity[0] = NULL;
-    connectivity[1] = NULL;
-    cellindex       = NULL;
+    numneighbors    = nullptr;
+    connectivity[0] = nullptr;
+    connectivity[1] = nullptr;
+    cellindex       = nullptr;
 
-    visited = NULL;
+    visited = nullptr;
     index   = -1;
     lookforloops = false;
 }
@@ -374,7 +374,7 @@ vtkConnectedTubeFilter::vtkConnectedTubeFilter()
     this->CreateNormals = false;
     this->Capping = false;
 
-    pseqlist = NULL;
+    pseqlist = nullptr;
 }
 
 // ****************************************************************************
@@ -388,7 +388,7 @@ vtkConnectedTubeFilter::~vtkConnectedTubeFilter()
 {
     if (pseqlist)
         delete pseqlist;
-    pseqlist = NULL;
+    pseqlist = nullptr;
 }
 
 // ****************************************************************************
@@ -407,8 +407,8 @@ vtkConnectedTubeFilter::~vtkConnectedTubeFilter()
 // ****************************************************************************
 bool vtkConnectedTubeFilter::BuildConnectivityArrays(vtkPolyData *input)
 {
-    vtkPoints    *inPts   = NULL;
-    vtkCellArray *inLines = NULL;
+    vtkPoints    *inPts   = nullptr;
+    vtkCellArray *inLines = nullptr;
     int numPts;
     int numCells;
     vtkDebugMacro(<<"Building tube connectivity arrays");
@@ -430,7 +430,7 @@ bool vtkConnectedTubeFilter::BuildConnectivityArrays(vtkPolyData *input)
     {
         // We know we can't use it anyway; delete it now
         delete pseqlist;
-        pseqlist = NULL;
+        pseqlist = nullptr;
     }
 
     return success;
@@ -484,12 +484,22 @@ int vtkConnectedTubeFilter::RequestData(
     //
     vtkPolyData  *input = vtkPolyData::SafeDownCast(
         inInfo->Get(vtkDataObject::DATA_OBJECT()));
+    if (input == nullptr)
+    {
+        vtkErrorMacro("No input");
+        return 0;
+    }
     vtkPolyData *output = vtkPolyData::SafeDownCast(
         outInfo->Get(vtkDataObject::DATA_OBJECT()));
+    if (output == nullptr)
+    {
+        vtkErrorMacro("No output");
+        return 0;
+    }
 
     // Get all the appropriate input arrays
-    vtkPoints    *inPts   = NULL;
-    vtkCellArray *inLines = NULL;
+    vtkPoints    *inPts   = nullptr;
+    vtkCellArray *inLines = nullptr;
     vtkCellData  *inCD    = input->GetCellData();
     vtkPointData *inPD    = input->GetPointData();
     int numPts;
@@ -520,20 +530,25 @@ int vtkConnectedTubeFilter::RequestData(
     newPts->Allocate(maxNewPoints);
     vtkCellArray  *newCells   = vtkCellArray::New();
     newCells->Allocate(maxNewCells, 4*maxNewCells + 2*NumberOfSides);
-    vtkDataArray *newNormals = NULL;
+    vtkDataArray *newNormals = nullptr;
 
-    vtkPointData  *newPD      = NULL;
+    vtkPointData  *newPD      = nullptr;
     newPD = output->GetPointData();
     newPD->CopyNormalsOff();
     newPD->CopyAllocate(inPD, maxNewPoints);
 
-    vtkCellData   *newCD      = NULL;
+    vtkCellData   *newCD      = nullptr;
     newCD = output->GetCellData();
     newCD->CopyAllocate(inCD, maxNewCells);
 
     if (CreateNormals)
     {
         newNormals = inPts->GetData()->NewInstance();
+        if(newNormals == nullptr)
+        {
+            vtkErrorMacro("Could not get a new instance of vtkPoints");
+            return 1;
+        }
         newNormals->SetNumberOfComponents(3);
         newNormals->SetName("Normals");
         newPD->SetNormals(newNormals);
@@ -697,7 +712,7 @@ int vtkConnectedTubeFilter::RequestData(
 
     // don't forget the sequence list; we're done with it
     delete pseqlist;
-    pseqlist = NULL;
+    pseqlist = nullptr;
 
     return 1;
 }

@@ -295,11 +295,11 @@ vtkSurfaceFilter::ExecutePointSet(vtkPointSet *ps, vtkUnstructuredGrid *output)
     switch(ps->GetDataObjectType())
     {
         case VTK_POLY_DATA : 
-             aCell = vtkPolyData::SafeDownCast(ps)->GetCell(j); break;
+             aCell = static_cast<vtkPolyData*>(ps)->GetCell(j); break;
         case VTK_STRUCTURED_GRID : 
-             aCell = vtkStructuredGrid::SafeDownCast(ps)->GetCell(j); break;
+             aCell = static_cast<vtkStructuredGrid*>(ps)->GetCell(j); break;
         case VTK_UNSTRUCTURED_GRID : 
-             aCell = vtkUnstructuredGrid::SafeDownCast(ps)->GetCell(j); break;
+             aCell = static_cast<vtkUnstructuredGrid*>(ps)->GetCell(j); break;
     }
     cellTypes[j] = aCell->GetCellType();
     cells->InsertNextCell(aCell);

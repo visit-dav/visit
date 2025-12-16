@@ -56,7 +56,7 @@ static void
 AdjustPercentToZeroCrossing(double p0[3], double p1[3], 
     vtkImplicitFunction *func, double *percent)
 {
-    if (func == 0)
+    if (func == nullptr)
         return;
 
     // we only handle general quadrics at the moment
@@ -69,6 +69,8 @@ AdjustPercentToZeroCrossing(double p0[3], double p1[3],
     //  0     1     2     3     4     5     6    7    8    9
     //
     vtkQuadric *quadric = vtkQuadric::SafeDownCast(func);
+    if (quadric == nullptr)
+        return;
     const double *a = quadric->GetCoefficients();
 
     // quick check for planar functions. They're linear and so
@@ -1150,122 +1152,130 @@ vtkVisItSplitter::RequestData(
     //
     vtkDataSet *ds = vtkDataSet::SafeDownCast(
         inInfo->Get(vtkDataObject::DATA_OBJECT()));
+    if(ds == nullptr)
+    {
+        vtkErrorMacro("No input.");
+        return 1;
+    }
     vtkUnstructuredGrid *output = vtkUnstructuredGrid::SafeDownCast(
         outInfo->Get(vtkDataObject::DATA_OBJECT()));
+    if(output == nullptr)
+    {
+        vtkErrorMacro("No output.");
+        return 1;
+    }
 
     int do_type = ds->GetDataObjectType();
 
     // Set general input/output data
     int t0 = visitTimer->StartTimer();
-    if (do_type == VTK_RECTILINEAR_GRID || do_type == VTK_STRUCTURED_GRID)
+    if (do_type == VTK_RECTILINEAR_GRID)
     {
         int pt_dims[3] = {0,0,0};
-        if (do_type == VTK_RECTILINEAR_GRID)
-        {
-            vtkRectilinearGrid *rg = vtkRectilinearGrid::SafeDownCast(ds);
-            rg->GetDimensions(pt_dims);
+        vtkRectilinearGrid *rg = static_cast<vtkRectilinearGrid*>(ds);
+        rg->GetDimensions(pt_dims);
 
-            vtkDataArray *X = rg->GetXCoordinates();
-            vtkDataArray *Y = rg->GetYCoordinates();
-            vtkDataArray *Z = rg->GetZCoordinates();
-            int tx = X->GetDataType();
-            int ty = Y->GetDataType();
-            int tz = Z->GetDataType();
-            bool same = (tx == ty) && (ty == tz);
-            if(same && tx == VTK_FLOAT)
-            {
-                SplitterBridgeRectilinearGrid<vtkRectPointAccessor<float> > bridge(rg, pt_dims, X, Y, Z);
-                vtkVisItSplitter_RectExecute(bridge, pt_dims, 
-                    this->state, output);
-            }
-            else if(same && tx == VTK_DOUBLE)
-            {
-                SplitterBridgeRectilinearGrid<vtkRectPointAccessor<double> > bridge(rg, pt_dims, X, Y, Z);
-                vtkVisItSplitter_RectExecute(bridge, pt_dims, 
-                    this->state, output);
-            }
-            else
-            {
-                SplitterBridgeRectilinearGrid<vtkGeneralRectPointAccessor> bridge(rg, pt_dims, X, Y, Z);
-                vtkVisItSplitter_RectExecute(bridge, pt_dims, 
-                    this->state, output);
-            }
-        }
-        else // do_type == VTK_STRUCTURED_GRID
+        vtkDataArray *X = rg->GetXCoordinates();
+        vtkDataArray *Y = rg->GetYCoordinates();
+        vtkDataArray *Z = rg->GetZCoordinates();
+        int tx = X->GetDataType();
+        int ty = Y->GetDataType();
+        int tz = Z->GetDataType();
+        bool same = (tx == ty) && (ty == tz);
+        if(same && tx == VTK_FLOAT)
         {
-            vtkStructuredGrid *sg = vtkStructuredGrid::SafeDownCast(ds);
-            sg->GetDimensions(pt_dims);
-            if(sg->GetPoints()->GetDataType() == VTK_FLOAT)
-            {
-                SplitterBridgeStructuredGrid<vtkPointAccessor<float> > bridge(sg);
-                vtkVisItSplitter_Execute(bridge,  
-                    this->state, output);
-            }
-            else if(sg->GetPoints()->GetDataType() == VTK_FLOAT)
-            {
-                SplitterBridgeStructuredGrid<vtkPointAccessor<double> > bridge(sg);
-                vtkVisItSplitter_Execute(bridge,  
-                    this->state, output);
-            }
-/* This case probably does not happen...
-            else
-            {
-                SplitterBridge<vtkGeneralPointAccessor> bridge(sg);
-                vtkVisItSplitter_Execute(bridge, 
-                    this->state, output);
-            }
-*/
+            SplitterBridgeRectilinearGrid<vtkRectPointAccessor<float> > bridge(rg, pt_dims, X, Y, Z);
+            vtkVisItSplitter_RectExecute(bridge, pt_dims, 
+                this->state, output);
         }
+        else if(same && tx == VTK_DOUBLE)
+        {
+            SplitterBridgeRectilinearGrid<vtkRectPointAccessor<double> > bridge(rg, pt_dims, X, Y, Z);
+            vtkVisItSplitter_RectExecute(bridge, pt_dims, 
+                this->state, output);
+        }
+        else
+        {
+            SplitterBridgeRectilinearGrid<vtkGeneralRectPointAccessor> bridge(rg, pt_dims, X, Y, Z);
+            vtkVisItSplitter_RectExecute(bridge, pt_dims, 
+                this->state, output);
+        }
+    }
+    else if(do_type == VTK_STRUCTURED_GRID)
+    {
+        int pt_dims[3] = {0,0,0};
+        vtkStructuredGrid *sg = static_cast<vtkStructuredGrid*>(ds);
+        sg->GetDimensions(pt_dims);
+        if(sg->GetPoints()->GetDataType() == VTK_FLOAT)
+        {
+            SplitterBridgeStructuredGrid<vtkPointAccessor<float> > bridge(sg);
+            vtkVisItSplitter_Execute(bridge,  
+                this->state, output);
+        }
+        else if(sg->GetPoints()->GetDataType() == VTK_FLOAT)
+        {
+            SplitterBridgeStructuredGrid<vtkPointAccessor<double> > bridge(sg);
+            vtkVisItSplitter_Execute(bridge,  
+                this->state, output);
+        }
+#if 0 // This case probably does not happen...
+        else
+        {
+            SplitterBridge<vtkGeneralPointAccessor> bridge(sg);
+            vtkVisItSplitter_Execute(bridge, 
+                this->state, output);
+        }
+#endif
     }
     else if (do_type == VTK_UNSTRUCTURED_GRID)
     {
-        vtkUnstructuredGrid *ug = vtkUnstructuredGrid::SafeDownCast(ds);
-
-        if(ug->GetPoints()->GetDataType() == VTK_FLOAT)
+        vtkUnstructuredGrid *ug = static_cast<vtkUnstructuredGrid*>(ds);
+        vtkPoints *pts = ug->GetPoints();
+        if(pts != nullptr && pts->GetDataType() == VTK_FLOAT)
         {
             SplitterBridgeUnstructuredGrid<vtkPointAccessor<float> > bridge(ug);
             vtkVisItSplitter_Execute(bridge,
                 this->state, output);
         }
-        else if(ug->GetPoints()->GetDataType() == VTK_DOUBLE)
+        else if(pts != nullptr && pts->GetDataType() == VTK_DOUBLE)
         {
             SplitterBridgeUnstructuredGrid<vtkPointAccessor<double> > bridge(ug);
             vtkVisItSplitter_Execute(bridge,
                 this->state, output);
         }
-/* This case probably does not happen...
+#if 0 //This case probably does not happen...
         else
         {
             SplitterBridgeUnstructuredGrid<vtkGeneralPointAccessor> bridge(ug);
             vtkVisItSplitter_UnstructuredExecute(bridge, 
                 this->state, output);
         }
-*/
+#endif
     }
     else if (do_type == VTK_POLY_DATA)
     {
-        vtkPolyData *pd = vtkPolyData::SafeDownCast(ds);
-
-        if(pd->GetPoints()->GetDataType() == VTK_FLOAT)
+        vtkPolyData *pd = static_cast<vtkPolyData*>(ds);
+        vtkPoints *pts = pd->GetPoints();
+        if(pts != nullptr && pts->GetDataType() == VTK_FLOAT)
         {
             SplitterBridgePolyData<vtkPointAccessor<float> > bridge(pd);
             vtkVisItSplitter_Execute(bridge,
                 this->state, output);
         }
-        else if(pd->GetPoints()->GetDataType() == VTK_DOUBLE)
+        else if(pts != nullptr && pts->GetDataType() == VTK_DOUBLE)
         {
             SplitterBridgePolyData<vtkPointAccessor<double> > bridge(pd);
             vtkVisItSplitter_Execute(bridge,
                 this->state, output);
         }
-/* This case probably does not happen...
+#if 0 // This case probably does not happen...
         else
         {
             SplitterBridgePolyData<vtkGeneralPointAccessor> bridge(pd);
             vtkVisItSplitter_Execute(bridge, 
                 this->state, output);
         }
-*/
+#endif
     }
     else
     {

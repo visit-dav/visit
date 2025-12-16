@@ -126,23 +126,23 @@ vtkVisItTensorGlyph::RequestData(
   vtkPolyData *output = vtkPolyData::SafeDownCast(
     outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
-  vtkDataArray *inTensors;
+  vtkDataArray *inTensors=nullptr;
   double tensor[9];
-  vtkDataArray *inScalars;
+  vtkDataArray *inScalars=nullptr;
   vtkIdType numPts, numSourcePts, numSourceCells, inPtId, i;
   int j;
-  vtkPoints *sourcePts;
-  vtkDataArray *sourceNormals;
-  vtkCellArray *sourceCells, *cells;
-  vtkPoints *newPts;
-  vtkFloatArray *newScalars=NULL;
-  vtkFloatArray *newNormals=NULL;
+  vtkPoints *sourcePts=nullptr;
+  vtkDataArray *sourceNormals=nullptr;
+  vtkCellArray *sourceCells=nullptr, *cells=nullptr;
+  vtkPoints *newPts=nullptr;
+  vtkFloatArray *newScalars=nullptr;
+  vtkFloatArray *newNormals=nullptr;
   double x[3], s;
-  vtkTransform *trans;
-  vtkCell *cell;
-  vtkIdList *cellPts;
+  vtkTransform *trans=nullptr;
+  vtkCell *cell=nullptr;
+  vtkIdList *cellPts=nullptr;
   int npts;
-  vtkIdType *pts;
+  vtkIdType *pts=nullptr;
   vtkIdType ptIncr, cellId;
   vtkIdType subIncr;
   int numDirs, dir, eigen_dir, symmetric_dir;
@@ -152,15 +152,16 @@ vtkVisItTensorGlyph::RequestData(
   double v0[3], v1[3], v2[3];
   double xv[3], yv[3], zv[3];
   double maxScale;
-  vtkPointData *pd, *outPD;
-  vtkCellData *outCD;
+  vtkPointData *pd=nullptr, *outPD=nullptr;
+  vtkCellData *outCD=nullptr;
 
-  vtkDataArray *inOrigNodes = NULL;
-  vtkDataArray *inOrigCells = NULL;
-  vtkDataArray *outOrigNodes = NULL;
-  vtkDataArray *outOrigCells = NULL;
+  vtkDataArray *inOrigNodes = nullptr;
+  vtkDataArray *inOrigCells = nullptr;
+  vtkDataArray *outOrigNodes = nullptr;
+  vtkDataArray *outOrigCells = nullptr;
 
-  if (this->GetSource() == NULL || source == NULL || input == NULL || output == NULL)
+  if (this->GetSource() == nullptr || source == nullptr || 
+      input == nullptr || output == nullptr)
     {
     vtkErrorMacro("No source.");
     return 1;
@@ -265,19 +266,25 @@ vtkVisItTensorGlyph::RequestData(
     newNormals->Allocate(numDirs*3*numPts*numSourcePts);
     }
 
-  if ( inOrigNodes )
+  if (inOrigNodes != nullptr)
     {
     outOrigNodes = inOrigNodes->NewInstance();
-    outOrigNodes->SetNumberOfComponents(inOrigNodes->GetNumberOfComponents());
-    outOrigNodes->Allocate(inOrigNodes->GetNumberOfComponents()*numSourceCells*numPts);
-    outOrigNodes->SetName(inOrigNodes->GetName());
+    if(outOrigNodes != nullptr)
+      {
+      outOrigNodes->SetNumberOfComponents(inOrigNodes->GetNumberOfComponents());
+      outOrigNodes->Allocate(inOrigNodes->GetNumberOfComponents()*numSourceCells*numPts);
+      outOrigNodes->SetName(inOrigNodes->GetName());
+      }
     }
-  if ( inOrigCells )
+  if (inOrigCells != nullptr)
     {
     outOrigCells = inOrigCells->NewInstance();
-    outOrigCells->SetNumberOfComponents(inOrigCells->GetNumberOfComponents());
-    outOrigCells->Allocate(inOrigCells->GetNumberOfComponents()*numSourceCells*numPts);
-    outOrigCells->SetName(inOrigCells->GetName());
+    if(outOrigCells != nullptr)
+      {
+      outOrigCells->SetNumberOfComponents(inOrigCells->GetNumberOfComponents());
+      outOrigCells->Allocate(inOrigCells->GetNumberOfComponents()*numSourceCells*numPts);
+      outOrigCells->SetName(inOrigCells->GetName());
+      }
     }
 
   //
@@ -285,8 +292,8 @@ vtkVisItTensorGlyph::RequestData(
   //
   for (inPtId=0; inPtId < numPts; inPtId++)
     {
-    double *inNode = NULL;
-    double *inCell = NULL;
+    double *inNode = nullptr;
+    double *inCell = nullptr;
     if (inOrigNodes)
       inNode = inOrigNodes->GetTuple(inPtId);
     if (inOrigCells)
@@ -593,7 +600,7 @@ vtkPolyData *vtkVisItTensorGlyph::GetSource()
 {
   if (this->GetNumberOfInputConnections(1) < 1)
     {
-    return NULL;
+    return nullptr;
     }
   return vtkPolyData::SafeDownCast(this->GetExecutive()->GetInputData(1, 0));
 }

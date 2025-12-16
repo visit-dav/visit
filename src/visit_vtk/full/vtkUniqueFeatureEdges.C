@@ -216,15 +216,18 @@ int vtkUniqueFeatureEdges::RequestData(
   if ( this->FeatureEdges )
     {
     polyNormals = inPts->GetData()->NewInstance();
-    polyNormals->SetNumberOfComponents(3);
-    polyNormals->Allocate(newPolys->GetNumberOfCells());
-
-    auto npIter = vtk::TakeSmartPointer(newPolys->NewIterator());
-    for (npIter->GoToFirstCell(); !npIter->IsDoneWithTraversal(); npIter->GoToNextCell())
+    if(polyNormals != nullptr)
       {
-      npIter->GetCurrentCell(npts,pts);
-      vtkPolygon::ComputeNormal(inPts,npts,pts,n);
-      polyNormals->InsertTuple(npIter->GetCurrentCellId(),n);
+      polyNormals->SetNumberOfComponents(3);
+      polyNormals->Allocate(newPolys->GetNumberOfCells());
+
+      auto npIter = vtk::TakeSmartPointer(newPolys->NewIterator());
+      for (npIter->GoToFirstCell(); !npIter->IsDoneWithTraversal(); npIter->GoToNextCell())
+        {
+        npIter->GetCurrentCell(npts,pts);
+        vtkPolygon::ComputeNormal(inPts,npts,pts,n);
+        polyNormals->InsertTuple(npIter->GetCurrentCellId(),n);
+        }
       }
 
     cosAngle = cos( vtkMath::RadiansFromDegrees( this->FeatureAngle ) );

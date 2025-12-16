@@ -182,11 +182,11 @@ vtkOnionPeelFilter::Initialize(vtkDataSet *input)
         int dims[3] = { 1, 1, 1};
         if (input->GetDataObjectType() == VTK_STRUCTURED_GRID)
         {
-            vtkStructuredGrid::SafeDownCast(input)->GetDimensions(dims);
+            static_cast<vtkStructuredGrid*>(input)->GetDimensions(dims);
         }
         else if (input->GetDataObjectType() == VTK_RECTILINEAR_GRID)
         {
-            vtkRectilinearGrid::SafeDownCast(input)->GetDimensions(dims);
+            static_cast<vtkRectilinearGrid*>(input)->GetDimensions(dims);
         }
         if (this->logicalIndex[0] >= dims[0] ||
             this->logicalIndex[1] >= dims[1] ||
@@ -522,8 +522,18 @@ vtkOnionPeelFilter::RequestData(
   // get the input and output
   vtkDataSet *input = vtkDataSet::SafeDownCast(
     inInfo->Get(vtkDataObject::DATA_OBJECT()));
+  if(input == nullptr)
+  {
+     vtkErrorMacro("No input");
+     return 1;
+  }
   vtkUnstructuredGrid *output = vtkUnstructuredGrid::SafeDownCast(
     outInfo->Get(vtkDataObject::DATA_OBJECT()));
+  if(output == nullptr)
+  {
+     vtkErrorMacro("No output");
+     return 1;
+  }
 
     vtkDebugMacro(<<"Generating OnionPeelFilter Layers");
 

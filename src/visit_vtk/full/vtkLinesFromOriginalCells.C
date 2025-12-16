@@ -101,6 +101,12 @@ int vtkLinesFromOriginalCells::RequestData(
   vtkDataSet *input = vtkDataSet::SafeDownCast(
     inInfo->Get(vtkDataObject::DATA_OBJECT()));
 
+  if(input == nullptr)
+  {
+     vtkErrorMacro("No input");
+     return 1;
+  }
+
   vtkIdType numCells, numPts; 
   //  Check input
   //
@@ -118,6 +124,11 @@ int vtkLinesFromOriginalCells::RequestData(
   // get the output 
   vtkPolyData *output = vtkPolyData::SafeDownCast(
     outInfo->Get(vtkDataObject::DATA_OBJECT()));
+  if(output == nullptr)
+  {
+     vtkErrorMacro("No output");
+     return 1;
+  }
 
   vtkCellData *inCD = input->GetCellData();
   vtkCellData *outCD = output->GetCellData();

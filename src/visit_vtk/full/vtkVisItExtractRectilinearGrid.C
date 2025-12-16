@@ -344,6 +344,11 @@ int vtkVisItExtractRectilinearGrid::RequestData(
     vtkWarningMacro("Multiple componenet axis coordinate.");
     }
   outCoords = inCoords->NewInstance();
+  if(outCoords == nullptr)
+    {
+    vtkErrorMacro("Could not create a new instance of inCoords");
+    return 0;
+    }
   outCoords->Allocate(uExt[1]-uExt[0]+1);
   outCoords->Allocate(uExt[1]-uExt[0]+1);
   outCoords->SetNumberOfTuples(uExt[1]-uExt[0]+1);
@@ -366,6 +371,11 @@ int vtkVisItExtractRectilinearGrid::RequestData(
     vtkWarningMacro("Multiple componenet axis coordinate.");
     }
   outCoords = inCoords->NewInstance();
+  if(outCoords == nullptr)
+    {
+    vtkErrorMacro("Could not create a new instance of inCoords");
+    return 0;
+    }
   outCoords->Allocate(uExt[3]-uExt[2]+1);
   outCoords->SetNumberOfTuples(uExt[3]-uExt[2]+1);
   for ( k=uExt[2]; k <= uExt[3]; ++k)
@@ -386,6 +396,11 @@ int vtkVisItExtractRectilinearGrid::RequestData(
     vtkWarningMacro("Multiple componenet axis coordinate.");
     }
   outCoords = inCoords->NewInstance();
+  if(outCoords == nullptr)
+    {
+    vtkErrorMacro("Could not create a new instance of inCoords");
+    return 0;
+    }
   outCoords->Allocate(uExt[5]-uExt[4]+1);
   outCoords->SetNumberOfTuples(uExt[5]-uExt[4]+1);
   for ( k=uExt[4]; k <= uExt[5]; ++k)

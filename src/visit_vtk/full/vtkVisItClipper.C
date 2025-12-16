@@ -69,6 +69,8 @@ AdjustPercentToZeroCrossing(double p0[3], double p1[3],
     //  0     1     2     3     4     5     6    7    8    9
     //
     vtkQuadric *quadric = vtkQuadric::SafeDownCast(func);
+    if(quadric == nullptr)
+        return;
     const double *a = quadric->GetCoefficients();
 
     // quick check for planar functions. They're linear and so
@@ -1455,82 +1457,94 @@ vtkVisItClipper::RequestData(
     //
     vtkDataSet *ds = vtkDataSet::SafeDownCast(
         inInfo->Get(vtkDataObject::DATA_OBJECT()));
+
+    if(ds == nullptr)
+    {
+        vtkErrorMacro("No input.");
+        return 1;
+    }
+
     vtkUnstructuredGrid *output = vtkUnstructuredGrid::SafeDownCast(
         outInfo->Get(vtkDataObject::DATA_OBJECT()));
+
+    if(output == nullptr)
+    {
+        vtkErrorMacro("No output.");
+        return 1;
+    }
 
     int t0 = visitTimer->StartTimer();
     int do_type = ds->GetDataObjectType();
 
-    if (do_type == VTK_RECTILINEAR_GRID || do_type == VTK_STRUCTURED_GRID)
+    if (do_type == VTK_RECTILINEAR_GRID)
     {
         vtkUnstructuredGrid *stuff_I_cant_clip = vtkUnstructuredGrid::New();
         int pt_dims[3] = {0,0,0};
-        if (do_type == VTK_RECTILINEAR_GRID)
-        {
-            vtkRectilinearGrid *rg = vtkRectilinearGrid::SafeDownCast(ds);
-            rg->GetDimensions(pt_dims);
+        vtkRectilinearGrid *rg = static_cast<vtkRectilinearGrid*>(ds);
+        rg->GetDimensions(pt_dims);
 
-            vtkDataArray *X = rg->GetXCoordinates();
-            vtkDataArray *Y = rg->GetYCoordinates();
-            vtkDataArray *Z = rg->GetZCoordinates();
-            int tx = X->GetDataType();
-            int ty = Y->GetDataType();
-            int tz = Z->GetDataType();
-            bool same = (tx == ty) && (ty == tz);
-            if(same && tx == VTK_FLOAT)
-            {
-                ClipperBridgeRectilinearGrid<vtkRectPointAccessor<float> > 
-                    bridge(rg, pt_dims, X, Y, Z);
-                vtkVisItClipper_RectExecute(bridge, pt_dims, 
-                    this->state, ds, output, stuff_I_cant_clip, this);
-            }
-            else if(same && tx == VTK_DOUBLE)
-            {
-                ClipperBridgeRectilinearGrid<vtkRectPointAccessor<double> > 
-                    bridge(rg, pt_dims, X, Y, Z);
-                vtkVisItClipper_RectExecute(bridge, pt_dims, 
-                    this->state, ds, output, stuff_I_cant_clip, this);
-            }
-            else
-            {
-                ClipperBridgeRectilinearGrid<vtkGeneralRectPointAccessor> 
-                    bridge(rg, pt_dims, X, Y, Z);
-                vtkVisItClipper_RectExecute(bridge, pt_dims, 
-                    this->state, ds, output, stuff_I_cant_clip, this);
-            }
-        }
-        else // do_type == VTK_STRUCTURED_GRID
+        vtkDataArray *X = rg->GetXCoordinates();
+        vtkDataArray *Y = rg->GetYCoordinates();
+        vtkDataArray *Z = rg->GetZCoordinates();
+        int tx = X->GetDataType();
+        int ty = Y->GetDataType();
+        int tz = Z->GetDataType();
+        bool same = (tx == ty) && (ty == tz);
+        if(same && tx == VTK_FLOAT)
         {
-            vtkStructuredGrid *sg = vtkStructuredGrid::SafeDownCast(ds);
-            sg->GetDimensions(pt_dims);
-            if(sg->GetPoints()->GetDataType() == VTK_FLOAT)
-            {
-                ClipperBridgeStructuredGrid<vtkPointAccessor<float> > 
-                    bridge(sg);
-                vtkVisItClipper_Execute(bridge,  this->state, ds, output, 
-                    stuff_I_cant_clip, this);
-            }
-            else if(sg->GetPoints()->GetDataType() == VTK_DOUBLE)
-            {
-                ClipperBridgeStructuredGrid<vtkPointAccessor<double> > bridge(sg);
-                vtkVisItClipper_Execute(bridge,  this->state, ds, output, 
-                    stuff_I_cant_clip, this);
-            }
-/* This case probably does not happen...
-            else
-            {
-                ClipperBridge<vtkGeneralPointAccessor> bridge(sg);
-                vtkVisItClipper_Execute(bridge, this->state, ds, output,
-                    stuff_I_cant_clip, this);
-            }
-*/
+            ClipperBridgeRectilinearGrid<vtkRectPointAccessor<float> > 
+                bridge(rg, pt_dims, X, Y, Z);
+            vtkVisItClipper_RectExecute(bridge, pt_dims, 
+                this->state, ds, output, stuff_I_cant_clip, this);
         }
-
+        else if(same && tx == VTK_DOUBLE)
+        {
+            ClipperBridgeRectilinearGrid<vtkRectPointAccessor<double> > 
+                bridge(rg, pt_dims, X, Y, Z);
+            vtkVisItClipper_RectExecute(bridge, pt_dims, 
+                this->state, ds, output, stuff_I_cant_clip, this);
+        }
+        else
+        {
+            ClipperBridgeRectilinearGrid<vtkGeneralRectPointAccessor> 
+                bridge(rg, pt_dims, X, Y, Z);
+            vtkVisItClipper_RectExecute(bridge, pt_dims, 
+                this->state, ds, output, stuff_I_cant_clip, this);
+        }
+        stuff_I_cant_clip->Delete();
+    }
+    else if (do_type == VTK_STRUCTURED_GRID)
+    {
+        vtkUnstructuredGrid *stuff_I_cant_clip = vtkUnstructuredGrid::New();
+        int pt_dims[3] = {0,0,0};
+        vtkStructuredGrid *sg = static_cast<vtkStructuredGrid*>(ds);
+        sg->GetDimensions(pt_dims);
+        if(sg->GetPoints()->GetDataType() == VTK_FLOAT)
+        {
+            ClipperBridgeStructuredGrid<vtkPointAccessor<float> > 
+                bridge(sg);
+            vtkVisItClipper_Execute(bridge,  this->state, ds, output, 
+                stuff_I_cant_clip, this);
+        }
+        else if(sg->GetPoints()->GetDataType() == VTK_DOUBLE)
+        {
+            ClipperBridgeStructuredGrid<vtkPointAccessor<double> > bridge(sg);
+            vtkVisItClipper_Execute(bridge,  this->state, ds, output, 
+                stuff_I_cant_clip, this);
+        }
+#if 0 // This case probably does not happen...
+        else
+        {
+            ClipperBridge<vtkGeneralPointAccessor> bridge(sg);
+            vtkVisItClipper_Execute(bridge, this->state, ds, output,
+                stuff_I_cant_clip, this);
+        }
+#endif
         stuff_I_cant_clip->Delete();
     }
     else if (do_type == VTK_UNSTRUCTURED_GRID)
     {
-        vtkUnstructuredGrid *ug = vtkUnstructuredGrid::SafeDownCast(ds);
+        vtkUnstructuredGrid *ug = static_cast<vtkUnstructuredGrid*>(ds);
 
         vtkUnstructuredGrid *stuff_I_cant_clip = vtkUnstructuredGrid::New();
         stuff_I_cant_clip->SetPoints(ug->GetPoints());
@@ -1549,20 +1563,19 @@ vtkVisItClipper::RequestData(
             vtkVisItClipper_Execute(bridge, this->state, ds, output, 
                 stuff_I_cant_clip, this);
         }
-/* This case probably does not happen...
+#if 0 // This case probably does not happen...
         else
         {
             ClipperBridgeUnstructuredGrid<vtkGeneralPointAccessor> bridge(ug);
             vtkVisItClipper_UnstructuredExecute(bridge, this->state, ds,
                 output, stuff_I_cant_clip, this);
         }
-*/
-
+#endif
         stuff_I_cant_clip->Delete();
     }
     else if (do_type == VTK_POLY_DATA)
     {
-        vtkPolyData *pd = vtkPolyData::SafeDownCast(ds);
+        vtkPolyData *pd = static_cast<vtkPolyData*>(ds);
 
         vtkUnstructuredGrid *stuff_I_cant_clip = vtkUnstructuredGrid::New();
         stuff_I_cant_clip->SetPoints(pd->GetPoints());
@@ -1581,15 +1594,14 @@ vtkVisItClipper::RequestData(
             vtkVisItClipper_Execute(bridge, this->state, ds, output, 
                 stuff_I_cant_clip, this);
         }
-/* This case probably does not happen...
+#if 0 // This case probably does not happen...
         else
         {
             ClipperBridgePolyData<vtkGeneralPointAccessor> bridge(pd);
             vtkVisItClipper_Execute(bridge, this->state, ds, output,
                 stuff_I_cant_clip, this);
         }
-*/
-
+#endif
         stuff_I_cant_clip->Delete();
     }
     else

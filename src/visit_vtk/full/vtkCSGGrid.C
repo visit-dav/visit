@@ -458,8 +458,12 @@ vtkCSGGrid::Initialize()
 void
 vtkCSGGrid::CopyStructure(vtkDataSet *ds)
 {
-  int i;
   vtkCSGGrid *csgGrid=vtkCSGGrid::SafeDownCast(ds);
+  if(csgGrid == nullptr)
+  {
+      vtkErrorMacro("Could not cast vtkDataSet to vtkCSGGrid");
+      return;
+  }
   this->Initialize();
 
   this->SetBoundaries(csgGrid->GetBoundaries());
@@ -468,14 +472,14 @@ vtkCSGGrid::CopyStructure(vtkDataSet *ds)
 
   this->numBoundaries = csgGrid->numBoundaries;
   this->gridBoundaries = new double[NUM_QCOEFFS*this->numBoundaries];
-  for (i = 0; i < NUM_QCOEFFS*this->numBoundaries; i++)
+  for (int i = 0; i < NUM_QCOEFFS*this->numBoundaries; i++)
     this->gridBoundaries[i] = csgGrid->gridBoundaries[i];
 
   this->numRegions = csgGrid->numRegions;
   this->leftIds = new int[this->numRegions];
   this->rightIds = new int[this->numRegions];
   this->regTypeFlags = new int[this->numRegions];
-  for (i = 0; i < this->numRegions; i++)
+  for (int i = 0; i < this->numRegions; i++)
     {
     this->leftIds[i] = csgGrid->leftIds[i];
     this->rightIds[i] = csgGrid->rightIds[i];
@@ -484,10 +488,10 @@ vtkCSGGrid::CopyStructure(vtkDataSet *ds)
 
   this->numZones = csgGrid->numZones;
   this->gridZones = new int[this->numZones];
-  for (i = 0; i < this->numZones; i++)
+  for (int i = 0; i < this->numZones; i++)
     this->gridZones[i] = csgGrid->gridZones[i];
 
-  for (i = 0; i < 6; i++)
+  for (int i = 0; i < 6; i++)
     this->Bounds[i] = csgGrid->Bounds[i];
 }
 
@@ -652,9 +656,14 @@ static unsigned long GetActualMemorySizeOfImplicitFunc(vtkImplicitFunction *func
         case FUNC_MULTIPLANE:
         {
             vtkPlanes *planes = vtkPlanes::SafeDownCast(func);
-            size += planes->GetPoints()->GetActualMemorySize();
-            size += planes->GetNormals()->GetActualMemorySize();
-            size += planes->GetNumberOfPlanes() * sizeof(vtkPlane);
+            if(planes != nullptr &&
+               planes->GetPoints() != nullptr &&
+               planes->GetNormals() != nullptr)
+            {
+                size += planes->GetPoints()->GetActualMemorySize();
+                size += planes->GetNormals()->GetActualMemorySize();
+                size += planes->GetNumberOfPlanes() * sizeof(vtkPlane);
+            }
             break;
         }
         case FUNC_UNKNOWN_IMPLICIT:
@@ -797,29 +806,29 @@ vtkCSGGrid::PrintSelf(ostream& os, vtkIndent indent)
             case FUNC_CYLINDER:
             {
                 os << ", is a cylinder" << endl;
-                vtkCylinder *cylinder = vtkCylinder::SafeDownCast(func);
-                  cylinder->PrintSelf(os, indent2.GetNextIndent());
+                vtkCylinder *cylinder = static_cast<vtkCylinder*>(func);
+                cylinder->PrintSelf(os, indent2.GetNextIndent());
                 break;
             }
             case FUNC_PLANE:
             {
                 os << ", is a plane" << endl;
-                vtkPlane *plane = vtkPlane::SafeDownCast(func);
-                  plane->PrintSelf(os, indent2.GetNextIndent());
+                vtkPlane *plane = static_cast<vtkPlane*>(func);
+                plane->PrintSelf(os, indent2.GetNextIndent());
                 break;
             }
             case FUNC_SPHERE:
             {
                 os << ", is a sphere" << endl;
-                vtkSphere *sphere = vtkSphere::SafeDownCast(func);
-                  sphere->PrintSelf(os, indent2.GetNextIndent());
+                vtkSphere *sphere = static_cast<vtkSphere*>(func);
+                sphere->PrintSelf(os, indent2.GetNextIndent());
                 break;
             }
             case FUNC_QUADRIC:
             {
                 os << ", is a quadric" << endl;
-                vtkQuadric *quadric = vtkQuadric::SafeDownCast(func);
-                  quadric->PrintSelf(os, indent2.GetNextIndent());
+                vtkQuadric *quadric = static_cast<vtkQuadric*>(func);
+                quadric->PrintSelf(os, indent2.GetNextIndent());
                 break;
             }
             default:
@@ -858,21 +867,21 @@ vtkCSGGrid::PrintSelf(ostream& os, vtkIndent indent)
                         case FUNC_CYLINDER:
                         {
                             os << ", is the OUTER of a cylinder" << endl;
-                            vtkCylinder *cylinder = vtkCylinder::SafeDownCast(rightFunc);
+                            vtkCylinder *cylinder = static_cast<vtkCylinder*>(rightFunc);
                               cylinder->PrintSelf(os, indent2.GetNextIndent());
                             break;
                         }
                         case FUNC_SPHERE:
                         {
                             os << ", is the OUTER of a sphere" << endl;
-                            vtkSphere *sphere = vtkSphere::SafeDownCast(rightFunc);
+                            vtkSphere *sphere = static_cast<vtkSphere*>(rightFunc);
                               sphere->PrintSelf(os, indent2.GetNextIndent());
                             break;
                         }
                         case FUNC_QUADRIC:
                         {
                             os << ", is the OUTER of a quadric" << endl;
-                            vtkQuadric *quadric = vtkQuadric::SafeDownCast(rightFunc);
+                            vtkQuadric *quadric = static_cast<vtkQuadric*>(rightFunc);
                               quadric->PrintSelf(os, indent2.GetNextIndent());
                             break;
                         }
@@ -904,29 +913,29 @@ vtkCSGGrid::PrintSelf(ostream& os, vtkIndent indent)
             case FUNC_CYLINDER:
             {
                 os << ", is the INNER of a cylinder" << endl;
-                vtkCylinder *cylinder = vtkCylinder::SafeDownCast(func);
+                vtkCylinder *cylinder = static_cast<vtkCylinder*>(func);
                   cylinder->PrintSelf(os, indent2.GetNextIndent());
                 break;
             }
             case FUNC_PLANE:
             {
                 os << ", is the INNER of a plane" << endl;
-                vtkPlane *plane = vtkPlane::SafeDownCast(func);
+                vtkPlane *plane = static_cast<vtkPlane*>(func);
                   plane->PrintSelf(os, indent2.GetNextIndent());
                 break;
             }
             case FUNC_SPHERE:
             {
                 os << ", is the INNER of a sphere" << endl;
-                vtkSphere *sphere = vtkSphere::SafeDownCast(func);
+                vtkSphere *sphere = static_cast<vtkSphere*>(func);
                   sphere->PrintSelf(os, indent2.GetNextIndent());
                 break;
             }
             case FUNC_QUADRIC:
             {
                 os << ", is the INNER of a quadric" << endl;
-                vtkQuadric *quadric = vtkQuadric::SafeDownCast(func);
-                  quadric->PrintSelf(os, indent2.GetNextIndent());
+                vtkQuadric *quadric = static_cast<vtkQuadric*>(func);
+                quadric->PrintSelf(os, indent2.GetNextIndent());
                 break;
             }
             default:
@@ -1641,7 +1650,7 @@ vtkCSGGrid::AddRegion(vtkIdType bndId, RegionOp op)
             //
             // Copy the sphere boundary
             //
-            vtkSphere *sphereBnd = vtkSphere::SafeDownCast(bnd);
+            vtkSphere *sphereBnd = static_cast<vtkSphere*>(bnd);
             vtkSphere *sphereReg = vtkSphere::New();
             sphereReg->SetCenter(sphereBnd->GetCenter());
             sphereReg->SetRadius(sphereBnd->GetRadius());
@@ -1657,7 +1666,7 @@ vtkCSGGrid::AddRegion(vtkIdType bndId, RegionOp op)
             //
             // Copy the plane boundary
             //
-            vtkPlane *planeBnd = vtkPlane::SafeDownCast(bnd);
+            vtkPlane *planeBnd = static_cast<vtkPlane*>(bnd);
             vtkPlane *planeReg = vtkPlane::New();
             planeReg->SetOrigin(planeBnd->GetOrigin());
 
@@ -1683,7 +1692,7 @@ vtkCSGGrid::AddRegion(vtkIdType bndId, RegionOp op)
             //
             // Copy the cylinder boundary
             //
-            vtkCylinder *cylBnd = vtkCylinder::SafeDownCast(bnd);
+            vtkCylinder *cylBnd = static_cast<vtkCylinder*>(bnd);
             vtkCylinder *cylReg = vtkCylinder::New();
             cylReg->SetCenter(cylBnd->GetCenter());
             cylReg->SetRadius(cylBnd->GetRadius());
@@ -1700,7 +1709,7 @@ vtkCSGGrid::AddRegion(vtkIdType bndId, RegionOp op)
             //
             //
             //
-            vtkQuadric *quadricBnd = vtkQuadric::SafeDownCast(bnd);
+            vtkQuadric *quadricBnd = static_cast<vtkQuadric*>(bnd);
             vtkQuadric *quadricReg = vtkQuadric::New();
             quadricReg->SetCoefficients(quadricBnd->GetCoefficients());
 
@@ -1805,7 +1814,7 @@ vtkCSGGrid::AddRegion(vtkIdType regId, const double *coeffs)
     {
         case FUNC_SPHERE:
         {
-            vtkSphere *oldSphere = vtkSphere::SafeDownCast(oldReg);
+            vtkSphere *oldSphere = static_cast<vtkSphere*>(oldReg);
             vtkSphere *newSphere = vtkSphere::New();
             newSphere->SetCenter(oldSphere->GetCenter());
             newSphere->SetRadius(oldSphere->GetRadius());
@@ -1815,7 +1824,7 @@ vtkCSGGrid::AddRegion(vtkIdType regId, const double *coeffs)
         }
         case FUNC_PLANE:
         {
-            vtkPlane *oldPlane = vtkPlane::SafeDownCast(oldReg);
+            vtkPlane *oldPlane = static_cast<vtkPlane*>(oldReg);
             vtkPlane *newPlane = vtkPlane::New();
             newPlane->SetOrigin(oldPlane->GetOrigin());
             newPlane->SetNormal(oldPlane->GetNormal());
@@ -1825,7 +1834,7 @@ vtkCSGGrid::AddRegion(vtkIdType regId, const double *coeffs)
         }
         case FUNC_CYLINDER: 
         {
-            vtkCylinder *oldCylinder = vtkCylinder::SafeDownCast(oldReg);
+            vtkCylinder *oldCylinder = static_cast<vtkCylinder*>(oldReg);
             vtkCylinder *newCylinder = vtkCylinder::New();
             newCylinder->SetCenter(oldCylinder->GetCenter());
             newCylinder->SetRadius(oldCylinder->GetRadius());
@@ -1835,20 +1844,20 @@ vtkCSGGrid::AddRegion(vtkIdType regId, const double *coeffs)
         }
         case FUNC_BOOLEAN:
         {
-            vtkImplicitBoolean *oldBool = vtkImplicitBoolean::SafeDownCast(oldReg);
+            vtkImplicitBoolean *oldBool = static_cast<vtkImplicitBoolean*>(oldReg);
             vtkImplicitBoolean *newBool = vtkImplicitBoolean::New();
 
             vtkImplicitFunctionCollection *oldColl = oldBool->GetFunction();
             newBool->SetOperationType(newBool->GetOperationType());
-            newBool->AddFunction(vtkImplicitFunction::SafeDownCast(oldColl->GetItemAsObject(0)));
-            newBool->AddFunction(vtkImplicitFunction::SafeDownCast(oldColl->GetItemAsObject(1)));
+            newBool->AddFunction(static_cast<vtkImplicitFunction*>(oldColl->GetItemAsObject(0)));
+            newBool->AddFunction(static_cast<vtkImplicitFunction*>(oldColl->GetItemAsObject(1)));
 
             newRegion = newBool;
             break;
         }
         case FUNC_QUADRIC:
         {
-            vtkQuadric *oldQuadric = vtkQuadric::SafeDownCast(oldReg);
+            vtkQuadric *oldQuadric = static_cast<vtkQuadric*>(oldReg);
             vtkQuadric *newQuadric = vtkQuadric::New();
             newQuadric->SetCoefficients(oldQuadric->GetCoefficients());
 

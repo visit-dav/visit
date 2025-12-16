@@ -93,6 +93,12 @@ vtkVectorGlyph::RequestData(
     vtkPolyData *output = vtkPolyData::SafeDownCast(
         outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
+    if (output == nullptr)
+    {
+        vtkErrorMacro("No output");
+        return 1;
+    }
+
     vtkPoints *pts = vtkPoints::New();
     output->SetPoints(pts);
     pts->Delete();
@@ -252,6 +258,11 @@ vtkVectorGlyph::RequestData(
         xform->SetInputConnection(sphere->GetOutputPort());
         xform->Update();
         vtkPolyData *spherePolyData = vtkPolyData::SafeDownCast(xform->GetOutput());
+        if (spherePolyData == nullptr)
+        {
+          vtkErrorMacro("Could not cast xfform output to vtkPolyData");
+          return 1;
+        }
         vtkIdType np = spherePolyData->GetPoints()->GetNumberOfPoints();
         pts->SetNumberOfPoints(np);
         
