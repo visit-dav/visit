@@ -191,6 +191,12 @@
 #   Cyrus Harrison, Mon Dec  1 14:34:33 PST 2025
 #   Changed to run on dane (instead of poodle)
 #
+#   Eric Brugger, Fri Dec 12 14:57:38 PST 2025
+#   Updated the logging so that the checkout, run and post scripts each
+#   create their own log file. The post script now runs after a file
+#   indicating the test run finished appears rather than a fixed amount
+#   of time. Removed the debug option.
+#
 
 
 # Determine the users name and e-mail address.
@@ -246,7 +252,6 @@ fi
 # Parse the command line to determine if we should run the test suite
 # on the trunk or RC.
 #
-debug="false"
 branch="trunk"
 revision="latest"
 serial="false"
@@ -273,10 +278,6 @@ do
             serial="false"
             shift
             ;;
-        -d)
-            debug="true"
-            shift
-            ;;
         -r)
             revision=$2
             shift 2
@@ -300,8 +301,28 @@ else
     workingDir="test_branch"
 fi
 
+subTag=`date +%Y-%m-%d-%H:%M`
+
 repoDir=$testDir/$workingDir/visit
 buildDir=$testDir/$workingDir/build
+logDir=$testDir/$workingDir/nightly_logs
+checkoutLogFile=$logDir/$subTag/checkout_${testHost}_log
+runLogFile=$logDir/$subTag/run_${testHost}_log
+postLogFile=$logDir/$subTag/post_${testHost}_log
+runFinishedFile=$testDir/$workingDir/nightly_cron/run_finished
+
+# Create the working directory if necessary.
+if test ! -e $testDir/$workingDir; then
+    mkdir $testDir/$workingDir
+fi
+
+# Create the nightly_logs directory if necessary.
+if test ! -e $logDir; then
+    mkdir $logDir
+fi
+
+# Create the log directory for this run.
+mkdir $logDir/$subTag
 
 #
 # Create the script to checkout the source code.
@@ -315,55 +336,44 @@ export PATH=/usr/tce/bin:$PATH
 
 dateTag=\$1
 
-# Update the repository.
-if test "$debug" = "true" ; then
-   echo "Checkout of $branch started at: \`date\`" | mail -s "Checkout started" $userEmail
-fi
-
-echo "Checkout of $branch started at: \`date\`"
-
-# Create the working directory if necessary.
-if test ! -e $testDir/$workingDir; then
-    mkdir $testDir/$workingDir
-fi
-
 cd $testDir/$workingDir
 
 # clean up from previous runs
 rm -rf build
-rm -f  buildlog
+
+echo "Checkout of $branch started at \`date\`"
 
 # Clone the repository if necessary.
 if test ! -e $repoDir; then
-    git clone  --recursive ssh://git@github.com/visit-dav/visit.git >> ./buildlog 2>&1
+    echo "git clone started at \`date\`"
+    git clone  --recursive ssh://git@github.com/visit-dav/visit.git
 
     # Enter the repo and perform commands only needed on a fresh clone
     cd visit
-    git submodule init >> ../buildlog 2>&1
+    git submodule init
 fi
 
 # Enter the repository.
 cd $repoDir
 
 # Update the repository.
-hostname >> ../buildlog 2>&1
-git --version >> ../buildlog 2>&1
-echo "rm -f .git/index.lock" >> ../buildlog 2>&1
-rm -f .git/index.lock >> ../buildlog 2>&1
-echo "git checkout develop started at: \`date\`" >> ../buildlog 2>&1
-git checkout develop >> ../buildlog 2>&1
+hostname
+git --version
+echo "rm -f .git/index.lock"
+rm -f .git/index.lock
+git checkout develop
 
 # ensure submodule is up to date
-echo "git submodule update" >> ../buildlog 2>&1
-git submodule update >> ../buildlog 2>&1
+echo "git submodule update"
+git submodule update
 
-echo "git pull" >> ../buildlog 2>&1
-git pull >> ../buildlog 2>&1
+echo "git pull"
+git pull
 
-echo "git lfs pull" >> ../buildlog 2>&1
-git lfs pull >> ../buildlog 2>&1
+echo "git lfs pull"
+git lfs pull
 
-echo "Repository updated" >> ../buildlog 2>&1
+echo "Repository updated at \`date\`"
 
 cd $testDir/$workingDir
 
@@ -385,11 +395,7 @@ else
     fi
 fi
 
-if test "$debug" = "true" ; then
-    echo "Checkout of $branch completed at: \`date\`" | mail -s "Checkout completed" $userEmail
-fi
-
-echo "Checkout of $branch completed at: \`date\`"
+echo "Checkout of $branch completed at \`date\`"
 
 EOF
 
@@ -402,12 +408,12 @@ rm -f runit_${testHost}
 cat <<EOF > runit_${testHost}
 #!/bin/sh
 
-echo "Test run started at: \`date\`"
-
 # So the script uses the correct git.
 export PATH=/usr/tce/bin:$PATH
 
 dateTag=\$1
+
+echo "Test run started at \`date\`"
 
 if test "$serial" = "true" ; then
     modes="$testHost,$branch,serial"
@@ -416,7 +422,6 @@ else
 fi
 
 cd $testDir/$workingDir
-
 
 # Build the code
 mkdir build
@@ -447,7 +452,7 @@ if test "$branch" = "trunk" ; then
         -DIGNORE_THIRD_PARTY_LIB_PROBLEMS:BOOL=ON \
         -DCMAKE_CXX_FLAGS_RELEASE:STRING="-fopenmp -O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
         -DCMAKE_C_FLAGS_RELEASE:STRING="-O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
-        $repoDir/src >> ../buildlog 2>&1
+        $repoDir/src
 else
     $cmakeCmd \
         -DVISIT_CONFIG_SITE=$repoDir/src/config-site/dane1.cmake \
@@ -457,60 +462,43 @@ else
         -DIGNORE_THIRD_PARTY_LIB_PROBLEMS:BOOL=ON \
         -DCMAKE_CXX_FLAGS_RELEASE:STRING="-fopenmp -O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
         -DCMAKE_C_FLAGS_RELEASE:STRING="-O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
-        $repoDir/src >> ../buildlog 2>&1
+        $repoDir/src
 fi
 
 make -k -j 56 1>./make.out 2>./make.err
 make -k manuals 1>./make.out 2>./make.err
 make -k -j 56 package 1>./make.out 2>./make.err
 if test $? -ne 0; then
-    echo "Source build FAILED at: \`date\`" | mail -s "Source build FAILED" $userEmail
+    echo "Source build FAILED at \`date\`"
     exit 1
 fi
-if test "$debug" = "true" ; then
-    echo "Source build completed at: \`date\`" | mail -s "Source build completed" $userEmail
-fi
-cat ./make.out >> ../buildlog
-cat ./make.err >> ../buildlog
+cat ./make.out
+cat ./make.err
 
-echo "Source build completed at: \`date\`" >> ../buildlog
+echo "Source build completed at \`date\`"
 
 # Copy stripack lib for ffp plugin tests
 cp /usr/workspace/wsa/visit/visit/thirdparty_shared/3.3.2/toss4/stripack/libstripack.so ./lib/.
 
 # Build the test data
 cd testdata
-make -j 8 data >> ../../buildlog 2>&1
-if test "$debug" = "true" ; then
-    echo "Data build completed at: \`date\`" | mail -s "Data build completed" $userEmail
-fi
+make -j 8 data
 cd ../
 
-echo "Data build completed at: \`date\`" >> ../buildlog
+echo "Data build completed at \`date\`"
 
-if test "$debug" = "true" ; then
-    echo "Starting install:\`date\`" | mail -s "Starting install" $userEmail
-fi
-
-echo "Starting install:\`date\`" >> ../buildlog
+echo "Starting install at \`date\`"
 
 # Install the package
 version=\`cat $repoDir/src/VERSION\`
 
 $repoDir/scripts/visit-install -c llnl_open \$version linux-x86_64 ./_install >> ./install_log 2>&1
 
-if test "$debug" = "true" ; then
-    echo "Install completed at: \`date\`" | mail -s "Install completed" $userEmail
-fi
-cat ./install_log >> ../buildlog
+cat ./install_log
 
-echo "Install completed at: \`date\`" >> ../buildlog
+echo "Install completed at \`date\`"
 
-if test "$debug" = "true" ; then
-    echo "Starting tests:\`date\`" | mail -s "Starting tests" $userEmail
-fi
-
-echo "Starting tests:\`date\`" >> ../buildlog
+echo "Starting tests at \`date\`"
 
 # Run the tests, consolidating the results in one directory
 cd $testDir/$workingDir/build/test
@@ -519,23 +507,18 @@ for m in \$modes; do
     theMode=\`echo \$m | tr ',' '_'\`
     resDir=output/\$theMode
 
-    if test "$debug" = "true" ; then
-        echo "runtest with mode = \$m" | mail -s "runtest with mode = \$m" $userEmail
-    fi
-
-    echo "runtest with mode = \$m" >> ../../buildlog
+    echo "runtest with mode = \$m at \`date\`"
 
 
     # Run the test
-    ./run_visit_test_suite.sh  --parallel-launch "srun" -o \$resDir -m "\$m" -n 1 --cmake $cmakeCmd >> ../../buildlog 2>&1
+    ./run_visit_test_suite.sh  --parallel-launch "srun" -o \$resDir -m "\$m" -n 1 --cmake $cmakeCmd
 
     # Move the results to the consolidation directory
     mv \$resDir/html \$dateTag/\$theMode
-    if test "$debug" = "true" ; then
-        echo "Test \$m completed at: \`date\`" | mail -s "Tests completed" $userEmail
-    fi
-    echo "Test \$m completed at: \`date\`" >> ../../buildlog
+    echo "Test \$m completed at \`date\`"
 done
+
+touch $runFinishedFile
 
 EOF
 
@@ -554,18 +537,42 @@ export PATH=/usr/tce/bin:$PATH
 
 if test "\$#" -ne 1; then
     echo "Usage: \$0 date_tag"
-    exit
+    exit 1
 fi
 
 dateTag=\$1
+
+#
+# Check if the test suite completed every "retry_delay" seconds, for a
+# maximum of "retry_count" times.
+#
+finished_file="$runFinishedFile"
+retry_count=120
+retry_delay=600
+while [ ! -f "\$finished_file" ] && [ \$retry_count -gt 0 ]
+do
+    sleep \$retry_delay
+    echo "Checking if test suite completed at \`date\`, retry_count=\$retry_count."
+    ((retry_count--))
+done
+
+if [ ! -f "\$finished_file" ]; then
+    echo "Test suite never finished, aborting posting of results at \`date\`."
+    exit 1
+fi
+
+#
+# The test suite completed, let's post the results.
+#
+echo "Posting results at \`date\`."
 
 cd $buildDir/test
 
 # if we don't have a test results directory, exit with failure now
 if test ! -d "\$dateTag"; then
-    echo "\$dateTag doesn't exist."
+    echo "\$dateTag doesn't exist, aborting posting of results at \`date\`."
     $repoDir/src/tools/dev/scripts/visit-notify-test-failure -host $testHost
-    exit
+    exit 1
 fi
 
 # Determine if the test suite passed or failed.
@@ -594,6 +601,7 @@ if test "$post" = "true" ; then
     # last pass.
     cd $repoDir
     if test "\$hasFailed" = ""; then
+        echo "Updating lastpass_$testHost at \`date\`."
         gitHead=\`git log -1 | grep "^commit" | cut -d' ' -f2\`
         # First do a "git checkout" on lastpass to restore it in case
         # it was modified and not committed. Then do a "git pull" to
@@ -610,6 +618,7 @@ if test "$post" = "true" ; then
     fi
 
     # Copy the results to the dashboard checkout on quartz. 
+    echo "Updating the dashboard at \`date\`."
     cd $buildDir/test
     python3 $repoDir/src/tools/dev/scripts/visit-copy-test-results.py
 
@@ -631,6 +640,7 @@ if test "$post" = "true" ; then
     git push
     
     # Move the new results to old_results.
+    echo "Moving the new results to old_results at \`date\`."
     cd $buildDir/test
     mv \$newResults ../../old_results
 
@@ -638,6 +648,7 @@ if test "$post" = "true" ; then
     #
     # The visit-notify-test-failure script expects to be in the repo
     # directory.
+    echo "Sending out the email at \`date\`."
     cd $repoDir
     if test "\$hasFailed" = ""; then
         $repoDir/src/tools/dev/scripts/visit-notify-test-failure -pass -host $testHost
@@ -650,31 +661,20 @@ if test "$post" = "true" ; then
 
     # If its the first day of the month, purge test results from 3 months ago.
     if test "\$(date +%d)" = "01" ; then
-         cd $testDir/$workingDir/old_results
-         month=\`date +%m\`
-         deleteMonth=\$(((month -1 + 12 - 3) % 12 + 1))
-         year=\`date +%Y\`
-         deleteYear=\$((year - 1 + (month + 12 - 4) / 12))
-         d1=\$( printf '%04d' \$deleteYear )
-         d2=\$( printf '%02d' \$deleteMonth )
-         dirs="\${d1}_\${d2}*"
-         echo "\$dirs"
+        echo "Purging results from 3 months ago at \`date\`."
+        cd $testDir/$workingDir/old_results
+        month=\`date +%m\`
+        deleteMonth=\$(((month -1 + 12 - 3) % 12 + 1))
+        year=\`date +%Y\`
+        deleteYear=\$((year - 1 + (month + 12 - 4) / 12))
+        d1=\$( printf '%04d' \$deleteYear )
+        d2=\$( printf '%02d' \$deleteMonth )
+        dirs="\${d1}_\${d2}*"
+        echo "\$dirs"
 
-         # leaving commented out till it can be vetted
-         # Remove the local copies
-         # rm -f \$dirs
-
-         #
-         # Leaving this commented out for the moment.
-         #
-         #cd /usr/WS1/visit/dashboard/dashboard
-         #
-         #git del \$dirs
-         #$repoDir/src/tools/dev/scripts/visit-update-test-website
-         #git add index.html
-         #git commit -m "Deleting old results."
-         #git pull
-         #git push
+        # leaving commented out till it can be vetted
+        # Remove the local copies
+        # rm -f \$dirs
     fi
 fi
 
@@ -685,10 +685,9 @@ chmod 750 postit_${testHost}
 # Run the test suite.
 if test "$testHost" = "dane" ; then
     hostName=`hostname`
-    subTag=`date +%Y-%m-%d-%H:%M`
-    ./checkout_${testHost} $subTag
+    ./checkout_${testHost} $subTag > $checkoutLogFile 2>&1
+    rm -f $runFinishedFile
     sbatch --partition=pbatch --account=wbronze --time=10:00:00 --ntasks=56 --nodes=1 --tasks-per-node=56 \
-           -o ${workingDir}/${hostName}_testit_${subTag}.out ./runit_${testHost} $subTag
-    sleep 28800
-    ./postit_${testHost} $subTag
+           -o ${workingDir}/${hostName}_testit_${subTag}.out ./runit_${testHost} $subTag > $runLogFile 2>&1
+    ./postit_${testHost} $subTag > $postLogFile 2>&1
 fi
