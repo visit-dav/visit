@@ -341,6 +341,13 @@ class     vtkUnstructuredGrid;
 //    Kathleen Biagas, Thu Aug 21, 2025
 //    Add optional 'isPrimary' arg to ExchangeVariable to aid in setting
 //    'active' variables (eg ActiveScalars, ActiveVectors, etc).
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Add overrides for GetScalarVariable, GetVectorVariable,
+//    GetSymmetricTensorVariable, GetTensorVariable, GetArrayVariable, and
+//    GetLabelVariable to handle centering changes.
+//    Refactored some shared centering logic from the QueryXXX methods into
+//    a new method called HandleCentering.
 //
 // ****************************************************************************
 

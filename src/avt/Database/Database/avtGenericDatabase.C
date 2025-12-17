@@ -1537,6 +1537,9 @@ avtGenericDatabase::GetDataset(const char *varname, int ts, int domain,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Replaced data type args with data specification
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Handle centering changes.
 // ****************************************************************************
 
 vtkDataSet *
@@ -1669,6 +1672,9 @@ avtGenericDatabase::GetScalarVarDataset(const char *varname, int ts,
 //
 //    Mark C. Miller, Wed Jul  8 18:29:43 PDT 2015
 //    Added a continue for data==NULL (possible for null returns from plugins)
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Rewrote this method to handle potential centering changes.
 // ****************************************************************************
 
 void
@@ -1934,6 +1940,9 @@ avtGenericDatabase::GetMeshDataset(const char *varname, int ts, int domain,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Replaced data type args with data specification
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Handle centering changes.
 // ****************************************************************************
 
 vtkDataSet *
@@ -2062,6 +2071,9 @@ avtGenericDatabase::GetVectorVarDataset(const char *varname, int ts,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Replaced data type args with data specification
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Handle centering changes.
 // ****************************************************************************
 
 vtkDataSet *
@@ -2162,6 +2174,9 @@ avtGenericDatabase::GetTensorVarDataset(const char *varname, int ts,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Replaced data type args with data specification
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Handle centering changes.
 // ****************************************************************************
 
 vtkDataSet *
@@ -2256,6 +2271,9 @@ avtGenericDatabase::GetSymmetricTensorVarDataset(const char *varname, int ts,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Replaced data type args with data specification
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Handle centering changes.
 // ****************************************************************************
 
 vtkDataSet *
@@ -2472,6 +2490,9 @@ avtGenericDatabase::GetSpeciesDataset(const char *specname, int ts, int domain,
 //    Cyrus Harrison, Fri Aug 14 11:10:03 PDT 2009
 //    Removed creation of lvs, it is no longer necessary to communicate
 //    that we have a label string.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Handle centering changes.
 //
 // ****************************************************************************
 
@@ -2666,6 +2687,9 @@ avtGenericDatabase::GetSpeciesVariable(const char *specname, int ts,
 //
 //    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
 //    clean up a warning
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Add override and logic for handling centering changes.
 //
 // ****************************************************************************
 
@@ -2808,6 +2832,9 @@ avtGenericDatabase::GetScalarVariable(const char *varname, int ts, int domain,
 //
 //    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
 //    clean up a warning
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Add override and logic for handling centering changes.
 //
 // ****************************************************************************
 
@@ -2937,6 +2964,9 @@ avtGenericDatabase::GetVectorVariable(const char *varname, int ts, int domain,
 //
 //    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
 //    clean up a warning
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Add override and logic for handling centering changes.
 //
 // ****************************************************************************
 
@@ -3065,6 +3095,9 @@ avtGenericDatabase::GetTensorVariable(const char *varname, int ts, int domain,
 //
 //    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
 //    clean up a warning
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Add override and logic for handling centering changes.
 //
 // ****************************************************************************
 
@@ -3187,6 +3220,9 @@ avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
 //
 //    Burlen Loring, Fri Oct  2 17:02:27 PDT 2015
 //    clean up a warning
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Add override and logic for handling centering changes.
 //
 // ****************************************************************************
 
@@ -3298,6 +3334,9 @@ avtGenericDatabase::GetArrayVariable(const char *varname, int ts, int domain,
 //
 //    Hank Childs, Tue Dec 20 11:51:30 PST 2011
 //    Add support for caching with selections.
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Add override and logic for handling centering changes.
 //
 // ****************************************************************************
 
@@ -11292,6 +11331,9 @@ avtGenericDatabase::HandleCentering(const avtCentering cent_change,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Changed dummy args for type conversion to dummy arg for data spec
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Handled centering change and refactored centering logic to a helper.
 //
 // ****************************************************************************
 
@@ -11495,6 +11537,9 @@ avtGenericDatabase::QueryScalars(const string &varName, const int dom,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Changed dummy args for type conversion to dummy arg for data spec
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Handled centering change and refactored centering logic to a helper.
 // ****************************************************************************
 
 bool
@@ -11626,6 +11671,9 @@ avtGenericDatabase::QueryVectors(const string &varName, const int dom,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Changed dummy args for type conversion to dummy arg for data spec
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Handled centering change and refactored centering logic to a helper.
 // ****************************************************************************
 
 bool
@@ -11734,6 +11782,9 @@ avtGenericDatabase::QueryTensors(const string &varName, const int dom,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Changed dummy args for type conversion to dummy arg for data spec
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Handled centering change and refactored centering logic to a helper.
 // ****************************************************************************
 
 bool
@@ -11850,6 +11901,9 @@ avtGenericDatabase::QueryArrays(const string &varName, const int dom,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Changed dummy args for type conversion to dummy arg for data spec
+// 
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Handled centering change and refactored centering logic to a helper.
 // ****************************************************************************
 
 bool
@@ -11954,6 +12008,8 @@ avtGenericDatabase::QuerySymmetricTensors(const string &varName,
 // Creation:   Mon Apr 4 11:51:56 PDT 2005
 //
 // Modifications:
+//    Justin Privitera, Wed Dec 17 14:01:55 PST 2025
+//    Handled centering change and refactored centering logic to a helper.
 //
 // ****************************************************************************
 
